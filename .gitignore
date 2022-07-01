@@ -3,3 +3,11 @@
 .Rdata
 .httr-oauth
 .DS_Store
+cache.sqlite
+streamFind.Rproj
+dev/Handbook_backend_streamFind.html
+Handbook_backend_streamFind.html
+settings.rds
+settings_pp.rds
+settings.json
+settings_pp_2.json
