@@ -1,23 +1,44 @@
 Package: streamFind
-Title: Workflow Designer for Non-target Screening and Advanced Data
-    Analysis
-Version: 0.0.0.9000
+Title: Flexible data analysis and workflow designer to identify chemicals
+    in the water cycle
+Version: 0.0.1
 Authors@R: 
     person("Ricardo", "Cunha", , "cunha@iuta.de", role = c("cre", "aut"))
-Description: Backend and frontend platform for assembly of functionalities
-    used during non-target screening in environmental analysis.
+Description: The streamFind package consists of a backend and frontend
+    platform for assembly of modular functionalities to support
+    spectrometric and spectroscopic data processing for environmental and
+    quality studies of the water cycle.  The streamFind package is a data
+    processing workflow designer to stimulate the use of advanced data
+    analysis (e.g., non-target screening, statistical analysis, etc.)  in
+    routine studies, promoting standardization of data processing and
+    easing the retrospective inclusion of data. With an open-source
+    character, the streamFind package aims to enhance the use and faster
+    adoption of functionalities from the scientific community.  The
+    package can be used by academics but also by technicians due to the
+    comprehensive documentation and well categorized set of
+    functionalities (modules) integrated. The comprehensiveness of
+    streamFind also eases and aims the implementation of new
+    functionalities by skilled users, following the defined implementation
+    rules.
 License: GPL (>= 3)
+URL: https://github.com/ricardobachertdacunha/streamFind
+BugReports: https://github.com/ricardobachertdacunha/streamFind/issues
 Imports: 
     config (>= 0.3.1),
+    data.table,
     golem (>= 0.3.2),
-    shiny (>= 1.7.1)
+    mzR,
+    purrr,
+    shiny (>= 1.7.1),
+    stringr,
+    utils
 Suggests: 
     spelling,
     testthat (>= 3.0.0)
+RdMacros: 
+    Rdpack
 Config/testthat/edition: 3
 Encoding: UTF-8
 Language: en-US
-LazyData: true
-RoxygenNote: 7.1.2
-URL: https://github.com/ricardobachertdacunha/streamFind
-BugReports: https://github.com/ricardobachertdacunha/streamFind/issues
+LazyData: false
+RoxygenNote: 7.2.0
