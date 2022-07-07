@@ -100,6 +100,8 @@ setMethod("[", c("streamProject", "ANY", "missing", "missing"), function(x, i, .
 #'
 #' @export
 #'
+#' @aliases projectInfo,streamProject,streamProject-method
+#'
 setMethod("projectInfo", "streamProject", function(object, projectTitle = NULL, projectDate = NULL) {
 
   if (missing(projectTitle) & missing(projectDate)) {
@@ -117,6 +119,8 @@ setMethod("projectInfo", "streamProject", function(object, projectTitle = NULL, 
 #'
 #' @export
 #'
+#' @aliases path,streamProject,streamProject-method
+#'
 setMethod("path", "streamProject", function(object) object@path)
 
 #### analysisInfo -------------------------------------------------------
@@ -127,14 +131,43 @@ setMethod("path", "streamProject", function(object) object@path)
 #'
 #' @export
 #'
-setMethod("analysisInfo", "streamProject", function(object) {
-  return(data.frame(
-    "path" = sapply(object@analyses, function(x) dirname(x@file)),
+#' @importMethodsFrom patRoon analysisInfo
+#'
+#' @aliases analysisInfo,streamProject,streamProject-method
+#'
+setMethod("analysisInfo", "streamProject", function(obj) {
+  temp <- data.frame(
+    "path" = sapply(obj@analyses, function(x) dirname(x@file)),
+    "analysis" = sapply(obj@analyses, function(x) x@analysis),
+    "group" = sapply(obj@analyses, function(x) x@replicate),
+    "blank" = sapply(obj@analyses, function(x) x@blank),
+    "class" = sapply(obj@analyses, function(x) is(x)),
+    "file" = sapply(obj@analyses, function(x) x@file))
+
+  rownames(temp) <- seq_len(nrow(temp))
+  return(temp)
+})
+
+#### analysisTable -------------------------------------------------------
+
+#' @describeIn streamProject getter for analysis table as \link{data.table} with
+#' four columns: file, analysis, replicate and blank.
+#'
+#' @export
+#'
+#' @importFrom data.table data.table
+#'
+#' @aliases analysisTable,streamProject,streamProject-method
+#'
+setMethod("analysisTable", "streamProject", function(object) {
+  temp <- data.table(
+    "file" = sapply(object@analyses, function(x) x@file),
     "analysis" = sapply(object@analyses, function(x) x@analysis),
-    "group" = sapply(object@analyses, function(x) x@replicate),
-    "blank" = sapply(object@analyses, function(x) x@blank),
-    "class" = sapply(object@analyses, function(x) is(x)))
+    "replicate" = sapply(object@analyses, function(x) x@replicate),
+    "blank" = sapply(object@analyses, function(x) x@blank)
   )
+  rownames(temp) <- seq_len(nrow(temp))
+  return(temp)
 })
 
 #### files -----------------------------------------------------------
@@ -142,6 +175,8 @@ setMethod("analysisInfo", "streamProject", function(object) {
 #' @describeIn streamProject getter for analysis file paths.
 #'
 #' @export
+#'
+#' @aliases files,streamProject,streamProject-method
 #'
 setMethod("files", "streamProject", function(object) sapply(object@analyses, function(x) x@file))
 
@@ -151,6 +186,10 @@ setMethod("files", "streamProject", function(object) sapply(object@analyses, fun
 #'
 #' @export
 #'
+#' @importMethodsFrom patRoon analyses
+#'
+#' @aliases analyses,streamProject,streamProject-method
+#'
 setMethod("analyses", "streamProject", function(obj) sapply(obj@analyses, function(x) x@analysis))
 
 #### replicates ----------------------------------------------------------
@@ -158,6 +197,8 @@ setMethod("analyses", "streamProject", function(obj) sapply(obj@analyses, functi
 #' @describeIn streamProject getter for replicate names.
 #'
 #' @export
+#'
+#' @aliases replicates,streamProject,streamProject-method
 #'
 setMethod("replicates", "streamProject", function(object) sapply(object@analyses, function(x) x@replicate))
 
@@ -171,6 +212,8 @@ setMethod("replicates", "streamProject", function(object) sapply(object@analyses
 #' @param value A character vector applicable to the respective method.
 #'
 #' @export
+#'
+#' @aliases replicates<-,streamProject,streamProject-method
 #'
 setMethod("replicates<-", signature("streamProject", "ANY"), function(object, value) {
 
@@ -191,6 +234,8 @@ setMethod("replicates<-", signature("streamProject", "ANY"), function(object, va
 #'
 #' @export
 #'
+#' @aliases blanks,streamProject,streamProject-method
+#'
 setMethod("blanks", "streamProject", function(object) sapply(object@analyses, function(x) x@blank))
 
 #### blanks<- ------------------------------------------------------------
@@ -203,6 +248,8 @@ setMethod("blanks", "streamProject", function(object) sapply(object@analyses, fu
 #' @param value A character vector applicable to the respective method.
 #'
 #' @export
+#'
+#' @aliases blanks<-,streamProject,streamProject-method
 #'
 setMethod("blanks<-", signature("streamProject", "ANY"), function(object, value) {
 
@@ -228,6 +275,8 @@ setMethod("blanks<-", signature("streamProject", "ANY"), function(object, value)
 #'
 #' @importFrom data.table rbindlist
 #'
+#' @aliases metadata,streamProject,streamProject-method
+#'
 setMethod("metadata", "streamProject", function(object, analyses = NULL, which = NULL) {
 
   if (!is.null(analyses)) object <- object[analyses]
@@ -240,5 +289,3 @@ setMethod("metadata", "streamProject", function(object, analyses = NULL, which =
 
   return(mtd)
 })
-
-# TODO make addMetadata method for analyses

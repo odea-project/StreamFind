@@ -52,19 +52,17 @@ msFeatures_validity <- function(object) {
 #' @md
 setClass("msFeatures",
          slots = c(
-           metadata = "data.table",
-           replicates = "data.table",
            analyses = "data.table",
-           peaks = "data.table",
+           intensity = "data.table",
+           metadata = "data.table",
            annotation = "list",
            #IS = "data.table",
            parameters = "list"
          ),
          prototype = list(
-           metadata = data.table(),
-           replicates = data.table(),
            analyses = data.table(),
-           peaks = data.table(),
+           intensity = data.table(),
+           metadata = data.table(),
            annotation = list(),
            #IS = data.table(),
            parameters = list()

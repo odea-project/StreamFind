@@ -1,21 +1,24 @@
 
 
-#' peakPicking
+#' @title peakPicking
 #'
-#' @description Finds chromatographic peaks from centroided MS data in the
-#' analyses of a given \linkS4class{msData} object.
-#' The peak picking uses the \pkg{patRoon} package and
+#' @description Finds chromatographic peaks from MS data in an \linkS4class{msAnalysis}
+#' object or in MS analyses a given \linkS4class{msData} object.
+#' The peak picking uses the \pkg{patRoon} package for data processing.
+#'
+#' @param object An \linkS4class{msData} or \linkS4class{msAnalysis} object.
+#' @template args-single-settings
+#'
+#' @details See \link[patRoon]{findFeatures} for more information.
 #' the following algorithms are available:
 #' "xcms3", "xcms", "openms", "envipick", "sirius", "kpic2", "safd".
 #' The parameters depend on the algorithm chosen.
 #' See ?\pkg{patRoon} for further information.
 #'
-#' @param object An \linkS4class{msData} or \linkS4class{msAnalysis} object.
-#' @param algorithm A character string with the algorithm to use for peak picking.
-#' @param settings List of parameter settings for the specified algorithm.
-#' See \link[patRoon]{findFeatures} for more information.
+#' @return An \linkS4class{msAnalysis}/\linkS4class{msData} object
+#' with peaks added.
 #'
-#' @return An \linkS4class{msData} object with peaks added per analyses.
+#' @seealso \link[patRoon]{findFeatures}
 #'
 #' @references
 #' \insertRef{patroon01}{streamFind}
@@ -27,9 +30,7 @@
 #' @importFrom patRoon findFeatures featureTable
 #' @importFrom dplyr left_join
 #'
-peakPicking <- function(object = NULL,
-                        algorithm = NA_character_,
-                        settings = NULL) {
+peakPicking <- function(object = NULL, settings = NULL) {
 
   valid <- FALSE
 
@@ -42,7 +43,7 @@ peakPicking <- function(object = NULL,
   }
 
   #check in object for parameters
-  if (is.na(algorithm)) {
+  if (is.null(settings)) {
 
     prs <- getParameters(object, call = "peakPicking")
     prs[sapply(prs, is.null)] <- NULL #remove NULLs from search
@@ -50,7 +51,7 @@ peakPicking <- function(object = NULL,
     if (length(unique(prs)) == 1 & length(prs) > 0) {
       prs <- unique(prs)
       algorithm <- getAlgorithm(prs[[1]])#all equal or samples with NULL, takes from the first first
-      settings <- getSettings(prs[[1]])
+      params <- getSettings(prs[[1]])
 
     } else if (length(prs) > 0) {
       algorithm <- sapply(prs, function(x) getAlgorithm(x)) #different in samples
@@ -61,9 +62,18 @@ peakPicking <- function(object = NULL,
         return(object)
       }
     }
+  } else if (checkmate::testClass(settings, "settings")) {
+
+    algorithm <- getAlgorithm(settings)
+    params <- getSettings(settings)
+
+  } else {
+
+    algorithm <- NA_character_
   }
 
-  if (TRUE %in% is.na(algorithm)) {
+
+  if (TRUE %in% is.null(algorithm)) {
     warning("Peak picking algorihtm not defined!")
     return(object)
   }
@@ -77,25 +87,26 @@ peakPicking <- function(object = NULL,
 
     sinfo$algorithm <- algorithm
     ag <- list(analysisInfo = sinfo, algorithm = algorithm)
-    pat <- do.call("findFeatures", c(ag, settings, verbose = TRUE))
+    pat <- do.call("findFeatures", c(ag, params, verbose = TRUE))
 
-    stgs <- createSettings(call = "peakPicking", algorithm = algorithm, settings = settings)
+    stgs <- createSettings(call = "peakPicking", algorithm = algorithm, settings = params)
+
     object <- addParameters(object, stgs)
 
 
   } else {
 
-    settings <- sapply(prs, function(x) getSettings(x))
+    params <- sapply(prs, function(x) getSettings(x))
     sinfo$algorithm <- algorithm
 
     sinfo <- split(sinfo, f = sinfo$algorithm)
 
     #check if parameter settings are different in each algorithm
-    sinfo <- lapply(sinfo, function(x, settings) {
+    sinfo <- lapply(sinfo, function(x, params) {
       stgs_temp <- unique(settings[x$analysis])
       if (length(stgs_temp) > 1) x <- split(x, f = x$analysis)
       return(x)
-    }, settings = settings)
+    }, params = params)
 
     sinfo_new <- list()
 
@@ -107,12 +118,12 @@ peakPicking <- function(object = NULL,
       }
     }
 
-    pat_list <- lapply(sinfo_new, function(x, settings) {
-      stgs <- unique(settings[x$analysis])[[1]]
+    pat_list <- lapply(sinfo_new, function(x, params) {
+      par_tmp <- unique(params[x$analysis])[[1]]
       ags <- list(analysisInfo = x, algorithm = unique(x$algorithm))
-      pat_temp <- do.call("findFeatures", c(ags, stgs, verbose = TRUE))
+      pat_temp <- do.call("findFeatures", c(ags, par_tmp, verbose = TRUE))
       return(pat_temp)
-    }, settings = settings)
+    }, params = params)
 
 
     #bring all to one features object
@@ -179,52 +190,82 @@ buildPeaksTable <- function(object, pat) {
   if (!valid) warning("Peaks table not build as the input from peak picking
                       is not a features or featureGroups class object!")
 
+  if (checkmate::testClass(pat, "featuresXCMS3") | checkmate::testClass(pat, "featureGroupsXCMS3")) {
+    if (xcms::hasFilledChromPeaks(pat@xdata)) {
+      extra <- as.data.table(xcms::chromPeaks(pat@xdata, isFilledColumn = TRUE))
+      extra[, analysis := anaInfo$analysis[extra$sample]]
+      extra[, analysis := factor(analysis, levels = anaInfo$analysis)]
+      extra <- split(extra, extra$analysis)
 
-  peaks <- rbindlist(peaks, idcol = "analysis", fill = TRUE)
+      # extra <- as.data.table(xcms::chromPeaks(pat@xdata, isFilledColumn = TRUE))
+      # #extra <- setnames(extra, c("maxo", "into"), c("intensity", "area"))
+      # extra[, analysis := anaInfo$analysis[extra$sample]]
+      # extra[, analysis := factor(analysis, levels = anaInfo$analysis)]
+      # extra <- split(extra, extra$analysis)
 
-  peaks <- setnames(
-    peaks,
-    c("ID", "ret", "retmin", "retmax"),
-    c("id", "rt", "rtmin", "rtmax"),
-  )
+      for (a in names(peaks)) {
+        if (nrow(peaks[[a]]) == nrow(extra[[a]]) & all(peaks[[a]]$mz == extra[[a]]$mz)) {
+          #newCols <- colnames(extra)[!colnames(extra) %in% colnames(peaks)]
+          #peaks <- cbind(peaks, extra[, newCols, with = FALSE])
+          #peaks[, sample := NULL]
+          peaks[[a]][, is_filled := extra[[a]]$is_filled]
+        }
+      }
+    }
+  }
 
-  # if (checkmate::testClass(pat, "featuresXCMS3") | checkmate::testClass(pat, "featureGroupsXCMS3")) {
-  #   extra <- as.data.table(xcms::chromPeaks(pat@xdata, isFilledColumn = TRUE))
-  #   extra <- setnames(extra, c("maxo", "into"), c("intensity", "area"))
-  #   extra[, analysis := anaInfo$analysis[extra$sample]]
-  #   extra[, analysis := factor(analysis, levels = anaInfo$analysis)]
-  #   setorder(extra, analysis)
-  #
-  #   if (nrow(peaks) == nrow(extra) & all(peaks$mz == extra$mz)) {
-  #     newCols <- colnames(extra)[!colnames(extra) %in% colnames(peaks)]
-  #     peaks <- cbind(peaks, extra[, newCols, with = FALSE])
-  #     peaks[, sample := NULL]
-  #   }
-  # }
+  peaks <- lapply(peaks, function(x, object) {
+    temp <- copy(x)
+    setnames(temp, c("ID", "ret", "retmin", "retmax"), c("id", "rt", "rtmin", "rtmax"), skip_absent = TRUE)
+    setnames(temp, "group", "feature", skip_absent = TRUE)
+    temp[, dppm := round((mzmax - mzmin) / mzmin * 1E6, digits = 0)]
+    temp[, drt := round(rtmax - rtmin, digits = 0)]
 
-  peaks <- setnames(peaks, "group", "feature", skip_absent = TRUE)
+    temp <- temp[order(mz), ]
+    temp <- temp[order(rt), ]
 
-  rpl <- anaInfo$group
-  names(rpl) <- anaInfo$analysis
-  peaks[, replicate := rpl[peaks$analysis]][]
-  peaks[, dppm := round((mzmax - mzmin) / mzmin * 1E6, digits = 0)]
-  peaks[, drt := round(rtmax - rtmin, digits = 0)]
-  peaks$index <- seq_len(nrow(peaks))
+    temp$index <- seq_len(nrow(temp))
 
-  peaks$id <- paste0(
-    "m",
-    round(peaks$mz, digits = 3),
-    "_d",
-    peaks$dppm,
-    "_r",
-    round(peaks$rt, digits = 0),
-    "_t",
-    peaks$drt,
-    "_p",
-    peaks$index
-  )
+    temp <- select(
+      temp,
+      id,
+      index,
+      rt, mz,
+      intensity, area,
+      drt, rtmin, rtmax,
+      dppm, mzmin, mzmax,
+      everything()
+    )
 
-  # TODO implement multiple polarities to ammend the peak id accordingly
+    temp$id <- paste0(
+      "m",
+      round(temp$mz, digits = 3),
+      "_d",
+      temp$dppm,
+      "_r",
+      round(temp$rt, digits = 0),
+      "_t",
+      temp$drt,
+      "_p",
+      temp$index
+    )
+
+    return(temp)
+  })
+
+
+  if (checkmate::testClass(object, "msAnalysis")) {
+    object@peaks <- copy(peaks[[1]])
+
+  } else {
+    object@analyses <- lapply(analyses(object), function(x, object, peaks) {
+      temp <- object@analyses[[x]]
+      temp@peaks <- copy(peaks[[x]])
+      return(temp)
+    }, object = object, peaks = peaks)
+  }
+
+  # TODO implement multiple polarities to amend the peak id accordingly
   # pols <- polarities(object)
   # peaks$adduct <- NA_character_
   # for (anl in analyses(object)) {
@@ -233,33 +274,6 @@ buildPeaksTable <- function(object, pat) {
   #
   #   #TODO implement polarity switching when both is output of polarities
   # }
-
-  peaks <- select(peaks,
-    id,
-    index,
-    analysis,
-    replicate,
-    rt, mz,
-    intensity, area,
-    drt, rtmin, rtmax,
-    dppm, mzmin, mzmax,
-    everything()
-  )
-
-  peaks <- peaks[order(mz), ]
-  peaks <- peaks[order(rt), ]
-  peaks <- peaks[order(analysis), ]
-
-  if (checkmate::testClass(object, "msAnalysis")) {
-    object@peaks <- peaks[, `:=`(analysis = NULL, replicate = NULL)]
-
-  } else {
-    object@analyses <- lapply(object@analyses, function(x, peaks) {
-      x@peaks <- peaks[analysis %in% x@analysis, ]
-      x@peaks[, `:=`(analysis = NULL, replicate = NULL)]
-      return(x)
-    }, peaks = peaks)
-  }
 
   cat("Done! \n")
   return(object)

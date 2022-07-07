@@ -179,6 +179,8 @@ setMethod("show", "msAnalysis", function(object) {
 #'
 #' @export
 #'
+#' @aliases files,msAnalysis,msAnalysis-method
+#'
 setMethod("files", "msAnalysis", function(object) {
   fl <- object@file
   names(fl) <- analyses(object)
@@ -193,13 +195,35 @@ setMethod("files", "msAnalysis", function(object) {
 #'
 #' @export
 #'
-setMethod("analysisInfo", "msAnalysis", function(object) {
+#' @aliases analysisInfo,msAnalysis,msAnalysis-method
+#'
+setMethod("analysisInfo", "msAnalysis", function(obj) {
   return(data.frame(
-    "path" = dirname(object@file),
+    "path" = dirname(obj@file),
+    "analysis" = obj@analysis,
+    "group" = obj@replicate,
+    "blank" = obj@blank,
+    "class" = is(obj))
+  )
+})
+
+#### analysisTable -------------------------------------------------------
+
+#' @describeIn msAnalysis getter for analysis table as \link{data.table} with
+#' four columns: file, analysis, replicate and blank.
+#'
+#' @export
+#'
+#' @importFrom data.table data.table
+#'
+#' @aliases analysisTable,msAnalysis,msAnalysis-method
+#'
+setMethod("analysisTable", "msAnalysis", function(object) {
+  return(data.table(
+    "file" = object@file,
     "analysis" = object@analysis,
-    "group" = object@replicate,
-    "blank" = object@blank,
-    "class" = is(object))
+    "replicate" = object@replicate,
+    "blank" = object@blank)
   )
 })
 
@@ -210,6 +234,8 @@ setMethod("analysisInfo", "msAnalysis", function(object) {
 #' @export
 #'
 #' @importMethodsFrom patRoon analyses
+#'
+#' @aliases analyses,msAnalysis,msAnalysis-method
 #'
 setMethod("analyses", "msAnalysis", function(obj) {
   ana <- obj@analysis
@@ -223,6 +249,8 @@ setMethod("analyses", "msAnalysis", function(obj) {
 #' @describeIn msAnalysis getter for the replicate name.
 #'
 #' @export
+#'
+#' @aliases replicates,msAnalysis,msAnalysis-method
 #'
 setMethod("replicates", "msAnalysis", function(object) {
   rep <- object@replicate
@@ -238,6 +266,8 @@ setMethod("replicates", "msAnalysis", function(object) {
 #' @param value A character string applicable to the respective method.
 #'
 #' @export
+#'
+#' @aliases replicates<-,msAnalysis,msAnalysis-method
 #'
 setMethod("replicates<-", signature("msAnalysis", "ANY"), function(object, value) {
 
@@ -255,6 +285,8 @@ setMethod("replicates<-", signature("msAnalysis", "ANY"), function(object, value
 #'
 #' @export
 #'
+#' @aliases blanks,msAnalysis,msAnalysis-method
+#'
 setMethod("blanks", "msAnalysis", function(object) {
   blk <- object@blank
   names(blk) <- analyses(object)
@@ -269,6 +301,8 @@ setMethod("blanks", "msAnalysis", function(object) {
 #' @param value A character string applicable to the respective method.
 #'
 #' @export
+#'
+#' @aliases blanks<-,msAnalysis,msAnalysis-method
 #'
 setMethod("blanks<-", signature("msAnalysis", "ANY"), function(object, value) {
 
@@ -291,6 +325,8 @@ setMethod("blanks<-", signature("msAnalysis", "ANY"), function(object, value) {
 #'
 #' @importFrom data.table rbindlist
 #'
+#' @aliases metadata,msAnalysis,msAnalysis-method
+#'
 setMethod("metadata", "msAnalysis", function(object, which = NULL) {
 
   if (!is.null(which)) {
@@ -311,6 +347,8 @@ setMethod("metadata", "msAnalysis", function(object, which = NULL) {
 #' @describeIn msAnalysis getter for analyses polarity.
 #'
 #' @export
+#'
+#' @aliases polarities,msAnalysis,msAnalysis-method
 #'
 setMethod("polarities", "msAnalysis", function(object) {
   mt <- metadata(object, which = "polarity")
@@ -360,6 +398,8 @@ setMethod("EICs", "msAnalysis", function(object,
 #'
 #' @export
 #'
+#' @aliases plotEICs,msAnalysis,msAnalysis-method
+#'
 setMethod("plotEICs", "msAnalysis", function(object,
                                              mz = NULL, ppm = 20,
                                              rt = NULL, sec = 30, id = NULL,
@@ -381,6 +421,8 @@ setMethod("plotEICs", "msAnalysis", function(object,
 #' @export
 #'
 #' @importFrom data.table `:=` setcolorder
+#'
+#' @aliases TICs,msAnalysis,msAnalysis-method
 #'
 setMethod("TICs", "msAnalysis", function(object) {
 
@@ -409,6 +451,8 @@ setMethod("TICs", "msAnalysis", function(object) {
 #'
 #' @export
 #'
+#' @aliases plotTICs,msAnalysis,msAnalysis-method
+#'
 setMethod("plotTICs", "msAnalysis", function(object,
                                              title = NULL,
                                              interactive = FALSE) {
@@ -427,6 +471,8 @@ setMethod("plotTICs", "msAnalysis", function(object,
 #' are used to construct the targets. See ?\link{makeTargets} for more information.
 #'
 #' @export
+#'
+#' @aliases XICs,msAnalysis,msAnalysis-method
 #'
 setMethod("XICs", "msAnalysis", function(object,
                                          mz = NULL, ppm = 20,
@@ -457,6 +503,8 @@ setMethod("XICs", "msAnalysis", function(object,
 #'
 #' @importFrom data.table is.data.table
 #'
+#' @aliases plotXICs,msAnalysis,msAnalysis-method
+#'
 setMethod("plotXICs", "msAnalysis", function(object,
                                              mz = NULL, ppm = 20,
                                              rt = NULL, sec = 60, id = NULL,
@@ -481,12 +529,136 @@ setMethod("plotXICs", "msAnalysis", function(object,
   return(plot)
 })
 
+### MS2s -----------------------------------------------------------------
+
+#' @describeIn msAnalysis get MS2 data for specified \emph{m/z} and retention time (seconds) targets.
+#' The \code{clusteringUnit} defines the method used for clustering.
+#' Possible values are \emph{euclidean} (the default) or \emph{distance}.
+#' The mass (in Da) and time (in seconds) isolation windows to screen for the respective precursors
+#' are defined with the arguments \code{isolationMassWindow} and \code{isolationTimeWindow}, respectively.
+#' The \code{clusteringUnit} and \code{clusteringWindow} define
+#' the mass deviation unit and deviation to cluster mass traces from different spectra, respectively.
+#' For the \code{clusteringUnit}, possible values are \emph{mz} (the default) or \emph{ppm}.
+#' The \code{minIntensityPre} and \code{minIntensityPost}
+#' define the minimum intensity for mass traces before and after clustering, respectively.
+#' Set \code{mergeVoltages} to \code{TRUE} for merging spectra acquired with different collision energies.
+#' The \code{mergeBy} argument is used to merge spectra by "samples" or "replicates".
+#' When \code{NULL}, MS2 is given per target and per sample.
+#'
+#' @template args-single-settings
+#'
+#' @export
+#'
+#' @aliases MS2s,msAnalysis,msAnalysis-method
+#'
+setMethod("MS2s", "msAnalysis", function(object = NULL,
+                                     mz = NULL, ppm = 20,
+                                     rt = NULL, sec = 60, id = NULL,
+                                     settings = NULL) {
+
+  level <- 2
+  return(extractMSn(object, analyses = NULL, level, mz, ppm, rt, sec, id, settings))
+})
+
+### plotMS2s -------------------------------------------------------------
+
+#' @describeIn msAnalysis plots MS2 data for specified \emph{m/z} and retention time (seconds) targets
+#' in analyses of an \linkS4class{msData} object. The \code{clusteringUnit} defines the method used for clustering.
+#' Possible values are \emph{euclidean} (the default) or \emph{distance}.
+#' The mass (in Da) and time (in seconds) isolation windows to screen for the respective precursors
+#' are defined with the arguments \code{isolationMassWindow} and \code{isolationTimeWindow}, respectively.
+#' The \code{clusteringUnit} and \code{clusteringWindow} define
+#' the mass deviation unit and deviation to cluster mass traces from different spectra, respectively.
+#' For the \code{clusteringUnit}, possible values are \emph{mz} (the default) or \emph{ppm}.
+#' The \code{minIntensityPre} and \code{minIntensityPost}
+#' define the minimum intensity for mass traces before and after clustering, respectively.
+#' Set \code{mergeVoltages} to \code{TRUE} for merging spectra acquired with different collision energies.
+#' The \code{mergeBy} argument is used to merge spectra by "samples" or "replicates".
+#' When \code{NULL}, MS2 is given per target and per sample. The possible values for the
+#' \code{colorBy} argument are "targets" and "voltages" to color by
+#' each target, sample, replicate or collision energy, respectively.
+#'
+#' @export
+#'
+#' @aliases plotMS2s,msAnalysis,msAnalysis-method
+#'
+setMethod("plotMS2s", "msAnalysis", function(object = NULL,
+                                         mz = NULL, ppm = 20,
+                                         rt = NULL, sec = 60, id = NULL,
+                                         settings = NULL,
+                                         legendNames = NULL,
+                                         title = NULL,
+                                         colorBy = "targets",
+                                         interactive = FALSE) {
+
+  level <- 2
+  ms2 <- extractMSn(object, analyses = NULL, level, mz, ppm, rt, sec, id, settings)
+  if (nrow(ms2) < 1) return(cat("Data was not found for any of the targets!"))
+  return(
+    plotMS2s(ms2, legendNames = legendNames, title = title,
+             colorBy = colorBy, interactive = interactive
+    )
+  )
+})
+
+### loadRawData ----------------------------------------------------------
+
+#' @describeIn msAnalysis adds raw spectra and chromatograms to the respective
+#' slots of an \linkS4class{msAnalysis} object.
+#'
+#' @export
+#'
+#' @aliases loadRawData,msAnalysis,msAnalysis-method
+#'
+setMethod("loadRawData", "msAnalysis", function(object) {
+
+  lvs <- metadata(object, "msLevels")$msLevels
+  lvs <- as.numeric(strsplit(lvs, "; ", fixed = TRUE)[[1]])
+
+  rd_list <- loadRawDataMZR(files(object),
+                            spectra = TRUE,
+                            level = lvs,
+                            rtr = NULL,
+                            chroms = TRUE,
+                            chromsID = NULL,
+                            ifChromNoSpectra = FALSE)
+
+  if ("spectra" %in% names(rd_list)) object@spectra <- rd_list$spectra
+  if ("chroms" %in% names(rd_list)) object@chromatograms <- rd_list$chroms
+
+  return(object)
+})
+
+### spectra ----------------------------------------------------------
+
+#' @describeIn msAnalysis getter for slot spectra in the \linkS4class{msAnalysis}.
+#'
+#' @export
+#'
+#' @aliases spectra,msAnalysis,msAnalysis-method
+#'
+setMethod("spectra", "msAnalysis", function(object) {
+
+  return(object@spectra)
+})
+
+### hasAdjustedRetentionTime ---------------------------------------------
+
+#' @describeIn msAnalysis getter for presence of adjusted retention time
+#' in the \linkS4class{msAnalysis}.
+#'
+#' @export
+#'
+#' @aliases hasAdjustedRetentionTime,msAnalysis,msAnalysis-method
+#'
+setMethod("hasAdjustedRetentionTime", "msAnalysis", function(object) {
+
+  return("rtAdjusted" %in% colnames(object@spectra))
+})
 
 ### addParameters ----------------------------------------------------------
 
 #' @describeIn msAnalysis adds processing parameters to the analysis.
-#'
-#' @template args-single-settings
 #'
 #' @export
 #'
@@ -631,6 +803,8 @@ setMethod("plotPeaks", "msAnalysis", function(object,
 #' @param ylim A length one or two numeric vector for setting the \emph{y} limits of a plot.
 #'
 #' @export
+#'
+#' @aliases mapPeaks,msAnalysis,msAnalysis-method
 #'
 setMethod("mapPeaks", "msAnalysis", function(object,
                                              targetsID = NULL,

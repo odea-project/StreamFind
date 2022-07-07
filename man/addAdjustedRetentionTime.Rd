@@ -4,12 +4,13 @@
 \alias{addAdjustedRetentionTime}
 \title{addAdjustedRetentionTime}
 \usage{
-addAdjustedRetentionTime(object)
+addAdjustedRetentionTime(object, pat)
 }
 \arguments{
 \item{object}{An \linkS4class{msData} object.}
 }
 \description{
 Function to add adjusted retention time information
-to the scans slot of the \linkS4class{msData} object.
+to the spectra slot of each \linkS4class{msAnalysis} in the
+\linkS4class{msData} object.
 }

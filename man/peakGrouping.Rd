@@ -4,16 +4,13 @@
 \alias{peakGrouping}
 \title{peakGrouping}
 \usage{
-peakGrouping(object = NULL, algorithm = NA_character_, settings = NULL)
+peakGrouping(object = NULL, settings = NULL)
 }
 \arguments{
 \item{object}{A \linkS4class{msData} object with
 \linkS4class{msAnalysis} objects containing peaks.}
 
-\item{algorithm}{The algorithm to use for peak alignment and grouping.}
-
-\item{settings}{The respective list of parameter settings.
-See \link[patRoon]{groupFeatures} for more information.}
+\item{settigns}{A \linkS4class{settings} object.}
 }
 \value{
 An \linkS4class{msData} object
@@ -21,10 +18,17 @@ containing a features S4 class.
 }
 \description{
 Grouping and alignment of peaks across samples.
-The peak grouping uses the \pkg{patRoon} package and
+The peak grouping uses the \pkg{patRoon} package.
+}
+\details{
+and
 the following algorithms are possible: "xcms3", "xcms", "openms".
 See ?\pkg{patRoon} for further information.
+See \link[patRoon]{groupFeatures} for more information.
 }
 \references{
 \insertRef{patroon01}{streamFind}
+}
+\seealso{
+\link[patRoon]{groupFeatures}
 }

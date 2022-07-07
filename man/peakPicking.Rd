@@ -4,23 +4,24 @@
 \alias{peakPicking}
 \title{peakPicking}
 \usage{
-peakPicking(object = NULL, algorithm = NA_character_, settings = NULL)
+peakPicking(object = NULL, settings = NULL)
 }
 \arguments{
 \item{object}{An \linkS4class{msData} or \linkS4class{msAnalysis} object.}
 
-\item{algorithm}{A character string with the algorithm to use for peak picking.}
-
-\item{settings}{List of parameter settings for the specified algorithm.
-See \link[patRoon]{findFeatures} for more information.}
+\item{settigns}{A \linkS4class{settings} object.}
 }
 \value{
-An \linkS4class{msData} object with peaks added per analyses.
+An \linkS4class{msAnalysis}/\linkS4class{msData} object
+with peaks added.
 }
 \description{
-Finds chromatographic peaks from centroided MS data in the
-analyses of a given \linkS4class{msData} object.
-The peak picking uses the \pkg{patRoon} package and
+Finds chromatographic peaks from MS data in an \linkS4class{msAnalysis}
+object or in MS analyses a given \linkS4class{msData} object.
+The peak picking uses the \pkg{patRoon} package for data processing.
+}
+\details{
+See \link[patRoon]{findFeatures} for more information.
 the following algorithms are available:
 "xcms3", "xcms", "openms", "envipick", "sirius", "kpic2", "safd".
 The parameters depend on the algorithm chosen.
@@ -28,4 +29,7 @@ See ?\pkg{patRoon} for further information.
 }
 \references{
 \insertRef{patroon01}{streamFind}
+}
+\seealso{
+\link[patRoon]{findFeatures}
 }

@@ -42,9 +42,6 @@ msData_validity <- function(object) {
 #'
 #' @export
 #'
-#' @importClassesFrom patRoon featuresSIRIUS featureGroupsSIRIUS componentsCliqueMS
-#' @importFrom purrr quietly
-#'
 #' @md
 setClass("msData",
   slots = c(
@@ -101,6 +98,8 @@ setMethod("show", "msData", function(object) {
 #' @template args-single-analyses
 #'
 #' @export
+#'
+#' @aliases getAnalyses,msData,msData-method
 #'
 setMethod("getAnalyses", "msData", function(object, analyses = NULL) {
 
@@ -178,6 +177,8 @@ setMethod("[", c("msData", "ANY", "missing", "missing"), function(x, i, ...) {
 #'
 #' @export
 #'
+#' @aliases polarities,msData,msData-method
+#'
 setMethod("polarities", "msData", function(object) {
   mt <- metadata(object, which = "polarity")
   mt_v <- mt$polarity
@@ -225,16 +226,18 @@ setMethod("EICs", "msData", function(object,
 #'
 #' @export
 #'
+#' @aliases plotEICs,msData,msData-method
+#'
 setMethod("plotEICs", "msData", function(object,
                                          analyses = NULL,
-                                         mz = NULL, ppm = 20,
-                                         rt = NULL, sec = 30, id = NULL,
+                                         mz = NULL, rt = NULL,
+                                         ppm = 20, sec = 30, id = NULL,
                                          colorBy = "targets",
                                          legendNames = NULL,
                                          title = NULL,
                                          interactive = FALSE) {
 
-  eic <- extractEICs(object, analyses, mz, rt, ppm, id)
+  eic <- extractEICs(object, analyses = analyses, mz = mz, rt = rt, ppm = ppm, sec = sec, id = id)
 
   return(plotEICs(eic, analyses = NULL, colorBy, legendNames, title, interactive))
 })
@@ -248,6 +251,8 @@ setMethod("plotEICs", "msData", function(object,
 #' @export
 #'
 #' @importFrom data.table `:=` setcolorder
+#'
+#' @aliases TICs,msData,msData-method
 #'
 setMethod("TICs", "msData", function(object, analyses = NULL) {
 
@@ -288,6 +293,8 @@ setMethod("TICs", "msData", function(object, analyses = NULL) {
 #'
 #' @export
 #'
+#' @aliases plotTICs,msData,msData-method
+#'
 setMethod("plotTICs", "msData", function(object,
                                          samples = NULL,
                                          colorBy = "analyses",
@@ -309,6 +316,8 @@ setMethod("plotTICs", "msData", function(object,
 #' are used to construct the targets. See ?\link{makeTargets} for more information.
 #'
 #' @export
+#'
+#' @aliases XICs,msData,msData-method
 #'
 setMethod("XICs", "msData", function(object,
                                      analyses = NULL,
@@ -340,6 +349,8 @@ setMethod("XICs", "msData", function(object,
 #'
 #' @importFrom data.table is.data.table
 #'
+#' @aliases plotXICs,msData,msData-method
+#'
 setMethod("plotXICs", "msData", function(object,
                                          analyses = NULL,
                                          mz = NULL, ppm = 20,
@@ -365,6 +376,137 @@ setMethod("plotXICs", "msData", function(object,
   return(plot)
 })
 
+### MS2s -----------------------------------------------------------------
+
+#' @describeIn msData get MS2 data for specified \emph{m/z} and retention time (seconds) targets
+#' in analyses of an \linkS4class{msData} object. The \code{clusteringUnit} defines the method used for clustering.
+#' Possible values are \emph{euclidean} (the default) or \emph{distance}.
+#' The mass (in Da) and time (in seconds) isolation windows to screen for the respective precursors
+#' are defined with the arguments \code{isolationMassWindow} and \code{isolationTimeWindow}, respectively.
+#' The \code{clusteringUnit} and \code{clusteringWindow} define
+#' the mass deviation unit and deviation to cluster mass traces from different spectra, respectively.
+#' For the \code{clusteringUnit}, possible values are \emph{mz} (the default) or \emph{ppm}.
+#' The \code{minIntensityPre} and \code{minIntensityPost}
+#' define the minimum intensity for mass traces before and after clustering, respectively.
+#' Set \code{mergeVoltages} to \code{TRUE} for merging spectra acquired with different collision energies.
+#' The \code{mergeBy} argument is used to merge spectra by "samples" or "replicates".
+#' When \code{NULL}, MS2 is given per target and per sample.
+#'
+#' @param settings A \linkS4class{settings} S4 class object with call for \code{extractMSn}.
+#'
+#' @export
+#'
+#' @aliases MS2s,msData,msData-method
+#'
+setMethod("MS2s", "msData", function(object = NULL,
+                                     analyses = NULL,
+                                     mz = NULL, ppm = 20,
+                                     rt = NULL, sec = 60, id = NULL,
+                                     settings = NULL) {
+
+  level <- 2
+  return(extractMSn(object, analyses, level, mz, ppm, rt, sec, id, settings))
+})
+
+### plotMS2s -------------------------------------------------------------
+
+#' @describeIn msData plots MS2 data for specified \emph{m/z} and retention time (seconds) targets
+#' in analyses of an \linkS4class{msData} object. The \code{clusteringUnit} defines the method used for clustering.
+#' Possible values are \emph{euclidean} (the default) or \emph{distance}.
+#' The mass (in Da) and time (in seconds) isolation windows to screen for the respective precursors
+#' are defined with the arguments \code{isolationMassWindow} and \code{isolationTimeWindow}, respectively.
+#' The \code{clusteringUnit} and \code{clusteringWindow} define
+#' the mass deviation unit and deviation to cluster mass traces from different spectra, respectively.
+#' For the \code{clusteringUnit}, possible values are \emph{mz} (the default) or \emph{ppm}.
+#' The \code{minIntensityPre} and \code{minIntensityPost}
+#' define the minimum intensity for mass traces before and after clustering, respectively.
+#' Set \code{mergeVoltages} to \code{TRUE} for merging spectra acquired with different collision energies.
+#' The \code{mergeBy} argument is used to merge spectra by "samples" or "replicates".
+#' When \code{NULL}, MS2 is given per target and per sample. The possible values for the
+#' \code{colorBy} argument are "targets", "samples", "replicates" and "voltages" to colour by
+#' each target, sample, replicate or collision energy, respectively.
+#'
+#' @export
+#'
+#' @aliases plotMS2s,msData,msData-method
+#'
+setMethod("plotMS2s", "msData", function(object = NULL,
+                                         analyses = NULL,
+                                         mz = NULL, ppm = 20,
+                                         rt = NULL, sec = 60, id = NULL,
+                                         settings = NULL,
+                                         legendNames = NULL,
+                                         title = NULL,
+                                         colorBy = "targets",
+                                         interactive = FALSE) {
+
+  level <- 2
+  ms2 <- extractMSn(object, analyses, level, mz, ppm, rt, sec, id, settings)
+  if (nrow(ms2) < 1) return(cat("Data was not found for any of the targets!"))
+  return(
+    plotMS2s(ms2, legendNames = legendNames, title = title,
+      colorBy = colorBy, interactive = interactive
+    )
+  )
+})
+
+### loadRawData ----------------------------------------------------------
+
+#' @describeIn msData adds processing parameters to the analysis.
+#'
+#' @export
+#'
+#' @aliases loadRawData,msData,msData-method
+#'
+setMethod("loadRawData", "msData", function(object, analyses = NULL) {
+
+  analyses <- checkAnalysesArgument(object, analyses)
+  object <- object[analyses]
+
+  object@analyses <- lapply(object@analyses, function(x) {
+    x <- loadRawData(x)
+    return(x)
+  })
+
+  return(object)
+})
+
+### spectra ----------------------------------------------------------
+
+#' @describeIn msData getter for slot spectra in analyses of an \linkS4class{msData} object.
+#'
+#' @export
+#'
+#' @importFrom data.table rbindlist
+#'
+#' @aliases spectra,msData,msData-method
+#'
+setMethod("spectra", "msData", function(object, analyses = NULL) {
+
+  analyses <- checkAnalysesArgument(object, analyses)
+  object <- object[analyses]
+
+  spec <- lapply(object@analyses, function(x) {
+    return(x@spectra)
+  })
+  spec <- rbindlist(spec, idcol = "analysis")
+
+  return(spec)
+})
+
+### hasAdjustedRetentionTime ---------------------------------------------
+
+#' @describeIn msData getter for presence of adjusted retention time
+#' in the analyses.
+#'
+#' @export
+#'
+#' @aliases hasAdjustedRetentionTime,msData,msData-method
+#'
+setMethod("hasAdjustedRetentionTime", "msData", function(object) {
+
+  return(sapply(object@analyses, function(x) "rtAdjusted" %in% colnames(x@spectra)))
+})
 
 ### addParameters ----------------------------------------------------------
 
@@ -470,7 +612,7 @@ setMethod("getParameters", "msData", function(object,
 #'
 #' @export
 #'
-#' @importFrom data.table setnames
+#' @importFrom data.table setnames copy
 #' @importFrom dplyr select everything
 #' @importClassesFrom patRoon features featuresOpenMS
 #'
@@ -481,8 +623,8 @@ setMethod("as.features", "msData", function(object) {
   anaInfo <- analysisInfo(object)
 
   feat <- lapply(object@analyses, function(x) {
-    ft <- x@peaks
-    ft <- data.table::setnames(ft,
+    ft <- copy(x@peaks)
+    setnames(ft,
       c("id", "rt", "rtmin", "rtmax", "feature"),
       c("ID", "ret", "retmin", "retmax", "group"),
       skip_absent = TRUE
@@ -530,13 +672,14 @@ setMethod("peaks", "msData", function(object,
   obj <- object[which(analyses %in% analyses(object))]
 
   pks <- lapply(obj@analyses, function(x) {
-    pks_a <- peaks(x, targetsID, mz, ppm, rt, sec)
+    pks_a <- peaks(x, targetsID, mz, rt, ppm, sec)
     return(pks_a)
   })
 
   pks <- rbindlist(pks, idcol = "analysis")
   rpl <- data.table(analysis = analyses(obj), replicate = replicates(obj))
   pks <- pks[rpl, on = .(analysis = analysis)]
+  pks <- pks[!is.na(id), ]
 
   return(pks)
 })
@@ -581,6 +724,11 @@ setMethod("plotPeaks", "msData", function(object,
   pks_tars$rtmin <- min(pks_tars$rtmin) - 60
   pks_tars$rtmax <- max(pks_tars$rtmax) + 60
 
+  if (nrow(pks_tars) == 0) {
+    warning("No peaks were found with the defined targets!")
+    return(NULL)
+  }
+
   eic <- lapply(obj@analyses, function(x, pks_tars) {
     eic <- EICs(x, mz = pks_tars[analysis %in% analyses(x), ])
   }, pks_tars = pks_tars)
@@ -609,6 +757,8 @@ setMethod("plotPeaks", "msData", function(object,
 #' @param ylim A length one or two numeric vector for setting the \emph{y} limits of a plot.
 #'
 #' @export
+#'
+#' @aliases mapPeaks,msData,msData-method
 #'
 setMethod("mapPeaks", "msData", function(object,
                                          analyses = NULL,
@@ -666,6 +816,8 @@ setMethod("mapPeaks", "msData", function(object,
 #'
 #' @importFrom dplyr left_join
 #'
+#' @aliases features,msData,msData-method
+#'
 setMethod("features", "msData", function(object,
                                          targetsID = NULL,
                                          mz = NULL, ppm = 20,
@@ -676,7 +828,7 @@ setMethod("features", "msData", function(object,
   feats <- object@features
 
   if (!is.null(targetsID)) {
-    out_fts <- feats@features[id %in% targetsID, ]
+    out_fts <- feats@intensity[id %in% targetsID, ]
   } else if (!is.null(mz)) {
     targets <- makeTargets(mz, rt, ppm, sec)
     sel <- rep(FALSE, nrow(feats@metadata))
@@ -684,27 +836,34 @@ setMethod("features", "msData", function(object,
       sel[between(feats@metadata$mz, targets$mzmin[i], targets$mzmax[i]) &
             between(feats@metadata$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
     }
-    out_fts <- feats@features[sel]
+    out_fts <- feats@intensity[sel]
   } else {
-    out_fts <- feats@features
+    out_fts <- feats@intensity
   }
 
-  if (!average) {
-    tp_pks <- setNames(data.frame(matrix(ncol = length(analyses(object)), nrow = 1)), analyses(object))
-    tp_pks[1, ] <- 0
+  if (average) {
+    rpl <- unique(feats@analyses$replicate)
+    rpl_ana <- lapply(rpl, function(x, st) {
+      st$analysis[st$replicate == x]
+    }, st = feats@analyses)
+    names(rpl_ana) <- rpl
 
-    out_fts_list <- lapply(out_fts$id, function(x, object, tp_pks) {
-      pks <- copy(tp_pks)
-      pks[1, ] <- sapply(analyses(object), function(a, object, x) {
-        temp <- copy(object@analyses[[a]]@peaks)
-        temp <- temp$intensity[temp$feature %in% x]
-        if (length(temp) == 0) temp <- 0
-        return(temp)
-      }, object = object, x = x)
-      return(pks)
-    }, object = object, tp_pks = tp_pks)
-    names(out_fts_list) <- out_fts$id
-    out_fts <- rbindlist(out_fts_list, idcol = "id")
+    out_sd <- lapply(rpl_ana, function(x, out_fts) {
+      temp <- out_fts[, x, with = FALSE]
+      temp <- apply(temp, 1, function(x) sd(x) / mean(x) * 100)
+      temp[is.nan(temp)] <- 0
+      temp <- round(temp, digits = 0)
+      return(temp)
+    }, out_fts = out_fts)
+
+    for (r in rpl) {
+      out_fts[[r]] <- apply(out_fts[, .SD, .SDcols = rpl_ana[[r]]], 1, mean)
+    }
+
+    out_fts[, (feats@analyses$analysis) := NULL]
+
+    names(out_sd) <- paste0(rpl, "_sd")
+    out_fts <- cbind(out_fts, as.data.table(out_sd))
   }
 
   if (complete) {
@@ -733,6 +892,8 @@ setMethod("features", "msData", function(object,
 #' @export
 #'
 #' @importFrom data.table rbindlist
+#'
+#' @aliases plotFeatures,msData,msData-method
 #'
 setMethod("plotFeatures", "msData", function(object,
                                               analyses = NULL,
@@ -781,6 +942,18 @@ setMethod("plotFeatures", "msData", function(object,
 
   eic <- rbindlist(eic)
 
+  adj_rt <- hasAdjustedRetentionTime(obj)
+  if (TRUE %in% adj_rt) {
+    for (i in names(adj_rt)[adj_rt]) {
+      eic[analysis == i, rt := sapply(rt, function(x, ana) {
+        ana@spectra[rt == x, rtAdjusted]
+      }, ana = getAnalyses(obj, analyses = i))]
+      pks[analysis == i, rt := sapply(rt, function(x, ana) {
+        ana@spectra[rt == x, rtAdjusted]
+      }, ana = getAnalyses(obj, analyses = i))]
+    }
+  }
+
   return(
     plotPeaks(eic, pks, analyses = NULL,
               colorBy = colorBy,
@@ -789,22 +962,52 @@ setMethod("plotFeatures", "msData", function(object,
               interactive = interactive
     )
   )
+})
 
 
-  # TODO apply correction of retention time for peaks from features
-  # if (hasAdjustedRetentionTime(object)) {
-  #   spls <- unique(eic$sample)
-  #   for (i in spls) {
-  #     eic[sample == i, rt := sapply(rt, function(x, object, i) {
-  #       object@scans[[i]][retentionTime == x, adjustedRetentionTime]
-  #     }, object = object, i = i)]
-  #   }
-  # }
+### as.featureGroups ----------------------------------------------------------
 
-  #
-  # for (f_tar in unique(pks$feature)) {
-  #   pks[feature %in% f_tar, rt := feats[id %in% f_tar, rt]]
-  # }
-  #
+#' @describeIn msData converts the \linkS4class{msData}
+#' to a \linkS4class{featureGroups} object from the package \pkg{patRoon}.
+#'
+#' @export
+#'
+#' @importFrom data.table copy rbindlist as.data.table
+#' @importClassesFrom patRoon featureGroups featureGroupsOpenMS
+#'
+#' @aliases as.featureGroups,msData,msData-method
+#'
+setMethod("as.featureGroups", "msData", function(object) {
 
+  anaInfo <- analysisInfo(object)
+
+  feat <- as.features(object)
+
+  groups_temp <- features(object, average = FALSE)
+  groups <- copy(groups_temp)
+  groups <- as.data.table(t(groups[, id := NULL]))
+
+  groupInfo_temp <- object@features@metadata
+  groupInfo <- copy(groupInfo_temp)
+  groupInfo <- as.data.frame(groupInfo[, .(rt, mz)])
+  colnames(groupInfo) <- c("rts", "mzs")
+
+  new_id <- object@features@metadata[, .(index, mz, rt)]
+  new_id <- paste0("M", round(new_id$mz, digits = 0),
+                  "_R", round(new_id$rt, digits = 0),
+                  "_", new_id$index)
+
+  colnames(groups) <- new_id
+  rownames(groups) <- seq_len(nrow(groups))
+
+  rownames(groupInfo) <- new_id
+
+  ftindex <- rbindlist(groupInfo_temp$peaks)
+  ftindex <- as.data.table(t(ftindex))
+  colnames(ftindex) <- new_id
+  rownames(ftindex) <- seq_len(nrow(ftindex))
+
+  # TODO adapt for as.featuresSet when multiple polarities present
+
+  return(new("featureGroupsOpenMS", groups = groups, analysisInfo = anaInfo, groupInfo = groupInfo, features = feat, ftindex = ftindex))
 })

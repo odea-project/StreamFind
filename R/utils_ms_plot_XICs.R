@@ -218,7 +218,7 @@ plotInteractiveXICs <- function(xic,
 
 
   } else {
-    finalplot <- mainPlot
+    finalplot <- mainPlot[[1]]
   }
 
   return(finalplot)

@@ -24,14 +24,25 @@ License: GPL (>= 3)
 URL: https://github.com/ricardobachertdacunha/streamFind
 BugReports: https://github.com/ricardobachertdacunha/streamFind/issues
 Imports: 
+    checkmate,
     config (>= 0.3.1),
     data.table,
+    dplyr,
+    fastcluster,
     golem (>= 0.3.2),
+    grDevices,
+    jsonlite,
     mzR,
-    purrr,
+    patRoon,
+    plotly,
+    plyr,
+    RColorBrewer,
     shiny (>= 1.7.1),
+    stats,
     stringr,
-    utils
+    tools,
+    utils,
+    xcms
 Suggests: 
     spelling,
     testthat (>= 3.0.0)

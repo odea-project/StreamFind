@@ -9,10 +9,10 @@ setGeneric("projectInfo", function(object, ...) standardGeneric("projectInfo"))
 #' @noRd
 setGeneric("path", function(object, ...) standardGeneric("path"))
 
-#' analysisInfo
+#' analysisTable
 #'
 #' @noRd
-setGeneric("analysisInfo", function(object) standardGeneric("analysisInfo"))
+setGeneric("analysisTable", function(object) standardGeneric("analysisTable"))
 
 #' files
 #'
@@ -59,6 +59,16 @@ setGeneric("getAnalyses", function(object, ...) standardGeneric("getAnalyses"))
 #' @noRd
 setGeneric("metadata", function(object, ...) standardGeneric("metadata"))
 
+#' loadRawData
+#'
+#' @noRd
+setGeneric("loadRawData", function(object, ...) standardGeneric("loadRawData"))
+
+#' spectra
+#'
+#' @noRd
+setGeneric("spectra", function(object, ...) standardGeneric("spectra"))
+
 #' EICs
 #'
 #' @noRd
@@ -88,6 +98,16 @@ setGeneric("XICs", function(object, ...) standardGeneric("XICs"))
 #'
 #' @noRd
 setGeneric("plotXICs", function(object, ...) standardGeneric("plotXICs"))
+
+#' MS2s
+#'
+#' @noRd
+setGeneric("MS2s", function(object, ...) standardGeneric("MS2s"))
+
+#' plotMS2s
+#'
+#' @noRd
+setGeneric("plotMS2s", function(object, ...) standardGeneric("plotMS2s"))
 
 #' peaks
 #'
@@ -164,3 +184,8 @@ setGeneric("exportSettings", function(object, ...) standardGeneric("exportSettin
 #'
 #' @noRd
 setGeneric("as.features", function(object, ...) standardGeneric("as.features"))
+
+#' as.featureGroups
+#'
+#' @noRd
+setGeneric("as.featureGroups", function(object, ...) standardGeneric("as.featureGroups"))

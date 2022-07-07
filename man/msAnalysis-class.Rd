@@ -6,21 +6,47 @@
 \alias{initialize,msAnalysis-method}
 \alias{show,msAnalysis-method}
 \alias{files,msAnalysis-method}
+\alias{files,msAnalysis,msAnalysis-method}
 \alias{analysisInfo,msAnalysis-method}
+\alias{analysisInfo,msAnalysis,msAnalysis-method}
+\alias{analysisTable,msAnalysis-method}
+\alias{analysisTable,msAnalysis,msAnalysis-method}
 \alias{analyses,msAnalysis-method}
+\alias{analyses,msAnalysis,msAnalysis-method}
 \alias{replicates,msAnalysis-method}
+\alias{replicates,msAnalysis,msAnalysis-method}
 \alias{replicates<-,msAnalysis-method}
+\alias{replicates<-,msAnalysis,msAnalysis-method}
 \alias{blanks,msAnalysis-method}
+\alias{blanks,msAnalysis,msAnalysis-method}
 \alias{blanks<-,msAnalysis-method}
+\alias{blanks<-,msAnalysis,msAnalysis-method}
 \alias{metadata,msAnalysis-method}
+\alias{metadata,msAnalysis,msAnalysis-method}
 \alias{polarities,msAnalysis-method}
+\alias{polarities,msAnalysis,msAnalysis-method}
 \alias{EICs,msAnalysis-method}
 \alias{EICs,msAnalysis,msAnalysis-method}
 \alias{plotEICs,msAnalysis-method}
+\alias{plotEICs,msAnalysis,msAnalysis-method}
 \alias{TICs,msAnalysis-method}
+\alias{TICs,msAnalysis,msAnalysis-method}
 \alias{plotTICs,msAnalysis-method}
+\alias{plotTICs,msAnalysis,msAnalysis-method}
 \alias{XICs,msAnalysis-method}
+\alias{XICs,msAnalysis,msAnalysis-method}
 \alias{plotXICs,msAnalysis-method}
+\alias{plotXICs,msAnalysis,msAnalysis-method}
+\alias{MS2s,msAnalysis-method}
+\alias{MS2s,msAnalysis,msAnalysis-method}
+\alias{plotMS2s,msAnalysis-method}
+\alias{plotMS2s,msAnalysis,msAnalysis-method}
+\alias{loadRawData,msAnalysis-method}
+\alias{loadRawData,msAnalysis,msAnalysis-method}
+\alias{spectra,msAnalysis-method}
+\alias{spectra,msAnalysis,msAnalysis-method}
+\alias{hasAdjustedRetentionTime,msAnalysis-method}
+\alias{hasAdjustedRetentionTime,msAnalysis,msAnalysis-method}
 \alias{addParameters,msAnalysis-method}
 \alias{addParameters,msAnalysis,msAnalysis-method}
 \alias{getParameters,msAnalysis-method}
@@ -30,6 +56,7 @@
 \alias{plotPeaks,msAnalysis-method}
 \alias{plotPeaks,msAnalysis,msAnalysis-method}
 \alias{mapPeaks,msAnalysis-method}
+\alias{mapPeaks,msAnalysis,msAnalysis-method}
 \title{msAnalysis-class}
 \usage{
 ## S4 method to initialize an "msAnalysis" object \cr
@@ -39,7 +66,9 @@
 
 \S4method{files}{msAnalysis}(object)
 
-\S4method{analysisInfo}{msAnalysis}(object)
+\S4method{analysisInfo}{msAnalysis}(obj)
+
+\S4method{analysisTable}{msAnalysis}(object)
 
 \S4method{analyses}{msAnalysis}(obj)
 
@@ -89,6 +118,36 @@
   secMark = 10,
   numberRows = 1
 )
+
+\S4method{MS2s}{msAnalysis}(
+  object = NULL,
+  mz = NULL,
+  ppm = 20,
+  rt = NULL,
+  sec = 60,
+  id = NULL,
+  settings = NULL
+)
+
+\S4method{plotMS2s}{msAnalysis}(
+  object = NULL,
+  mz = NULL,
+  ppm = 20,
+  rt = NULL,
+  sec = 60,
+  id = NULL,
+  settings = NULL,
+  legendNames = NULL,
+  title = NULL,
+  colorBy = "targets",
+  interactive = FALSE
+)
+
+\S4method{loadRawData}{msAnalysis}(object)
+
+\S4method{spectra}{msAnalysis}(object)
+
+\S4method{hasAdjustedRetentionTime}{msAnalysis}(object)
 
 \S4method{addParameters}{msAnalysis}(object, settings)
 
@@ -201,6 +260,9 @@ for inspection, processing and evaluation.
 four columns: path, analysis, group and blank. The \link{data.frame}
 can be used as analysisInfo in \pkg{patRoon}.
 
+\item \code{analysisTable}: getter for analysis table as \link{data.table} with
+four columns: file, analysis, replicate and blank.
+
 \item \code{analyses}: getter for analysis name.
 
 \item \code{replicates}: getter for the replicate name.
@@ -251,6 +313,44 @@ When ranges were given to build the XIC, exact \emph{m/z} and time targets can b
 the argument \code{targetsMark}. \code{targetsMark} should be a two column table named mz and rt with
 exact \emph{m/z} and time targets. Note that the number of rows should be the same as the number of target
 in the XIC. The number of rows to plot multiple targets can be defined by the \code{numberRows} argument.
+
+\item \code{MS2s}: get MS2 data for specified \emph{m/z} and retention time (seconds) targets.
+The \code{clusteringUnit} defines the method used for clustering.
+Possible values are \emph{euclidean} (the default) or \emph{distance}.
+The mass (in Da) and time (in seconds) isolation windows to screen for the respective precursors
+are defined with the arguments \code{isolationMassWindow} and \code{isolationTimeWindow}, respectively.
+The \code{clusteringUnit} and \code{clusteringWindow} define
+the mass deviation unit and deviation to cluster mass traces from different spectra, respectively.
+For the \code{clusteringUnit}, possible values are \emph{mz} (the default) or \emph{ppm}.
+The \code{minIntensityPre} and \code{minIntensityPost}
+define the minimum intensity for mass traces before and after clustering, respectively.
+Set \code{mergeVoltages} to \code{TRUE} for merging spectra acquired with different collision energies.
+The \code{mergeBy} argument is used to merge spectra by "samples" or "replicates".
+When \code{NULL}, MS2 is given per target and per sample.
+
+\item \code{plotMS2s}: plots MS2 data for specified \emph{m/z} and retention time (seconds) targets
+in analyses of an \linkS4class{msData} object. The \code{clusteringUnit} defines the method used for clustering.
+Possible values are \emph{euclidean} (the default) or \emph{distance}.
+The mass (in Da) and time (in seconds) isolation windows to screen for the respective precursors
+are defined with the arguments \code{isolationMassWindow} and \code{isolationTimeWindow}, respectively.
+The \code{clusteringUnit} and \code{clusteringWindow} define
+the mass deviation unit and deviation to cluster mass traces from different spectra, respectively.
+For the \code{clusteringUnit}, possible values are \emph{mz} (the default) or \emph{ppm}.
+The \code{minIntensityPre} and \code{minIntensityPost}
+define the minimum intensity for mass traces before and after clustering, respectively.
+Set \code{mergeVoltages} to \code{TRUE} for merging spectra acquired with different collision energies.
+The \code{mergeBy} argument is used to merge spectra by "samples" or "replicates".
+When \code{NULL}, MS2 is given per target and per sample. The possible values for the
+\code{colorBy} argument are "targets" and "voltages" to color by
+each target, sample, replicate or collision energy, respectively.
+
+\item \code{loadRawData}: adds raw spectra and chromatograms to the respective
+slots of an \linkS4class{msAnalysis} object.
+
+\item \code{spectra}: getter for slot spectra in the \linkS4class{msAnalysis}.
+
+\item \code{hasAdjustedRetentionTime}: getter for presence of adjusted retention time
+in the \linkS4class{msAnalysis}.
 
 \item \code{addParameters}: adds processing parameters to the analysis.
 

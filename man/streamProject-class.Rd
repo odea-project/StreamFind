@@ -6,15 +6,27 @@
 \alias{show,streamProject-method}
 \alias{[,streamProject,ANY,missing,missing-method}
 \alias{projectInfo,streamProject-method}
+\alias{projectInfo,streamProject,streamProject-method}
 \alias{path,streamProject-method}
+\alias{path,streamProject,streamProject-method}
 \alias{analysisInfo,streamProject-method}
+\alias{analysisInfo,streamProject,streamProject-method}
+\alias{analysisTable,streamProject-method}
+\alias{analysisTable,streamProject,streamProject-method}
 \alias{files,streamProject-method}
+\alias{files,streamProject,streamProject-method}
 \alias{analyses,streamProject-method}
+\alias{analyses,streamProject,streamProject-method}
 \alias{replicates,streamProject-method}
+\alias{replicates,streamProject,streamProject-method}
 \alias{replicates<-,streamProject-method}
+\alias{replicates<-,streamProject,streamProject-method}
 \alias{blanks,streamProject-method}
+\alias{blanks,streamProject,streamProject-method}
 \alias{blanks<-,streamProject-method}
+\alias{blanks<-,streamProject,streamProject-method}
 \alias{metadata,streamProject-method}
+\alias{metadata,streamProject,streamProject-method}
 \title{streamProject}
 \usage{
 \S4method{show}{streamProject}(object)
@@ -25,7 +37,9 @@
 
 \S4method{path}{streamProject}(object)
 
-\S4method{analysisInfo}{streamProject}(object)
+\S4method{analysisInfo}{streamProject}(obj)
+
+\S4method{analysisTable}{streamProject}(object)
 
 \S4method{files}{streamProject}(object)
 
@@ -75,6 +89,9 @@ based on the specified arguments, returning the original class object.
 \item \code{analysisInfo}: getter for analysis info as \link{data.frame} with
 four columns: path, analysis, group and blank. The \link{data.frame}
 can be used as analysisInfo in \pkg{patRoon}.
+
+\item \code{analysisTable}: getter for analysis table as \link{data.table} with
+four columns: file, analysis, replicate and blank.
 
 \item \code{files}: getter for analysis file paths.
 

@@ -49,9 +49,6 @@ For the moment, only 1 is possible.}
 \item{names}{A character string with names for each feature given in \code{ID}.
 Note that length should match between \code{names} and \code{ID}.
 If length does not match \code{names} are not used.}
-
-\item{interactive}{Logical, set to \code{TRUE} to use
-the \pkg{plotly} instead of \pkg{ggplot2}. The default is \code{TRUE}.}
 }
 \value{
 A double plot with peak chromatograms on the top part

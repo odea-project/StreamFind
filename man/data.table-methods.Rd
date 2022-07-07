@@ -7,6 +7,8 @@
 \alias{plotTICs,data.table,data.table-method}
 \alias{plotXICs,data.table-method}
 \alias{plotXICs,data.table,data.table-method}
+\alias{plotMS2s,data.table-method}
+\alias{plotMS2s,data.table,data.table-method}
 \alias{plotPeaks,data.table-method}
 \alias{plotPeaks,data.table,data.table-method}
 \title{plotEICs-data.table}
@@ -38,6 +40,17 @@
   ppmMark = 5,
   secMark = 10,
   numberRows = 1
+)
+
+\S4method{plotMS2s}{data.table}(
+  object = NULL,
+  analyses = NULL,
+  replicates = NULL,
+  targets = NULL,
+  legendNames = NULL,
+  title = NULL,
+  colorBy = "targets",
+  interactive = FALSE
 )
 
 \S4method{plotPeaks}{data.table}(
@@ -83,6 +96,9 @@ of the target mark.}
 \item{numberRows}{A numeric vector of length one to define
 the number of rows to grid the plots.}
 
+\item{replicates}{A numeric or character vector with the indice/s or name/s
+of replicates from the \code{object}.}
+
 \item{pks}{A table with the target peaks as obtained by the method \link{peaks}.}
 }
 \description{
@@ -108,6 +124,15 @@ When ranges were given to build the XIC, exact \emph{m/z} and time targets can b
 the argument \code{targetsMark}. \code{targetsMark} should be a two column table named mz and rt with
 exact \emph{m/z} and time targets. Note that the number of rows should be the same as the number of target
 in the XIC. The number of rows to plot multiple targets can be defined by the \code{numberRows} argument.
+
+Plots MS2 data for specified \emph{m/z} and retention time (seconds) targets
+in a \link[data.table]{data.table} as obtained by the \link{MS2s}. The targets in the
+object can be filtered using the \code{targets} argument. Also, "analyses" and "replicates"
+can be filtered using the \code{analyses} and \code{replicates} arguments, respectively.
+Note that the column analysis/replicate should be present.
+The possible values for the \code{colorBy} argument are
+"targets", "analyses", "replicates" and "voltages" to color by
+each target, analysis, replicate or collision energy, respectively.
 
 A method for plotting EIC (\code{object}) of chromatographic peaks (\code{pks}).
 The \code{colorBy} argument can be be \code{"analyses"}, \code{replicates} or \code{targets}

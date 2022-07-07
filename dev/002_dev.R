@@ -15,6 +15,7 @@
 
 ## Dependencies ----
 ## Amend DESCRIPTION with dependencies read from package code parsing
+
 attachment::att_amend_desc()
 
 #6 package(s) removed: attempt, DT, glue, htmltools, patRoon, Rdpack.

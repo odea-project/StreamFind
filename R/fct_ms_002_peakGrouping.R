@@ -3,18 +3,22 @@
 #' @title peakGrouping
 #'
 #' @description Grouping and alignment of peaks across samples.
-#' The peak grouping uses the \pkg{patRoon} package and
-#' the following algorithms are possible: "xcms3", "xcms", "openms".
-#' See ?\pkg{patRoon} for further information.
+#' The peak grouping uses the \pkg{patRoon} package.
 #'
 #' @param object A \linkS4class{msData} object with
 #' \linkS4class{msAnalysis} objects containing peaks.
-#' @param algorithm The algorithm to use for peak alignment and grouping.
-#' @param settings The respective list of parameter settings.
-#' See \link[patRoon]{groupFeatures} for more information.
+#' @template args-single-settings
+#'
 #'
 #' @return An \linkS4class{msData} object
 #' containing a features S4 class.
+#'
+#' @details and
+#' the following algorithms are possible: "xcms3", "xcms", "openms".
+#' See ?\pkg{patRoon} for further information.
+#' See \link[patRoon]{groupFeatures} for more information.
+#'
+#' @seealso \link[patRoon]{groupFeatures}
 #'
 #' @references
 #' \insertRef{patroon01}{streamFind}
@@ -26,9 +30,7 @@
 #' @importFrom patRoon groupFeatures
 #' @importMethodsFrom patRoon as.data.table
 #'
-peakGrouping <- function(object = NULL,
-                         algorithm = NA_character_,
-                         settings = NULL) {
+peakGrouping <- function(object = NULL, settings = NULL) {
 
   checkmate::assertClass(object, "msData")
 
@@ -41,64 +43,56 @@ peakGrouping <- function(object = NULL,
   }
 
   # TODO implement as.featuresSet for multiple polarities
-
   pat <- as.features(object)
 
-  if (is.na(algorithm)) {
+  if (is.null(settings)) {
+
     prs <- getParameters(object, where = "features", call = "peakGrouping")
     if (length(prs) > 0) {
       algorithm = getAlgorithm(prs)
-      settings = getSettings(prs)
+      params = getSettings(prs)
     }
+
+  } else if (checkmate::testClass(settings, "settings")) {
+
+    algorithm <- getAlgorithm(settings)
+    params <- getSettings(settings)
+
+  } else {
+
+    algorithm <- NA_character_
   }
+
 
   if (is.na(algorithm)) {
     warning("Peak grouping algorihtm not defined!")
     return(object)
   }
 
+
   if (algorithm == "xcms3") {
-      settings$groupParam@sampleGroups <- replicates(object)
-    if (settings$rtalign) {
-      settings$preGroupParam@sampleGroups <- replicates(object)
+      params$groupParam@sampleGroups <- replicates(object)
+    if (params$rtalign) {
+      params$preGroupParam@sampleGroups <- replicates(object)
     }
   }
 
   ag <- list(obj = pat, algorithm = algorithm)
 
-  pat <- do.call(groupFeatures, c(ag, settings, verbose = TRUE))
+  pat <- do.call(groupFeatures, c(ag, params, verbose = TRUE))
 
-  stgs <- createSettings(call = "peaksGrouping", algorithm = algorithm, settings = settings)
+  stgs <- createSettings(call = "peaksGrouping", algorithm = algorithm, settings = params)
+
   object <- addParameters(object, settings = stgs, where = "features")
 
   object <- buildPeaksTable(object, pat)
 
   object <- buildFeatures(object, pat)
 
-
-  # TODO implement adjusted retention time as in ntsIUTA
-  #object <- addAdjustedRetentionTime(object)
-
-  # if (simplify) {
-  #   newFeats <- new("featuresSIRIUS",
-  #     analysisInfo = pat@features@analysisInfo,
-  #     features = pat@features@features
-  #   )
-  #
-  #   newFeatGroups <- new("featureGroupsSIRIUS",
-  #     groups = pat@groups,
-  #     groupInfo = pat@groupInfo,
-  #     analysisInfo = pat@analysisInfo,
-  #     features = newFeats,
-  #     ftindex = pat@ftindex
-  #   )
-  #
-  #   object@pat <- newFeatGroups
-  # }
+  object <- addAdjustedRetentionTime(object, pat)
 
   return(object)
 }
-
 
 
 #' buildFeatures
@@ -116,38 +110,18 @@ buildFeatures <- function(object, pat) {
 
   cat("Building table with features... ")
 
+  feat <- patRoon::as.data.table(pat, average = FALSE)
+  feat[, `:=`(ret = NULL, mz = NULL)]
 
-  feat <- patRoon::as.data.table(pat, average = TRUE)
-  feat <- setnames(feat, "ret", "rt")
-
-  feat_b <- patRoon::as.data.table(pat, average = FALSE)
-
-  rpl <- unique(replicates(object))
-
-  rpl_ana <- lapply(rpl, function(x, st) {
-    st$analysis[st$group == x]
-  }, st = analysisInfo(object))
-
-  feat_sd <- lapply(rpl_ana, function(x, feat_b) {
-    temp <- feat_b[, x, with = FALSE]
-    temp <- apply(temp, 1, function(x) sd(x) / mean(x) * 100)
-    temp[is.nan(temp)] <- 0
-    temp <- round(temp, digits = 0)
-    return(temp)
-  }, feat_b = feat_b)
-
-  names(feat_sd) <- paste0(rpl, "_sd")
-  feat <- cbind(feat, as.data.table(feat_sd))
-
-
-  mtd <- copy(feat)
+  mtd <- patRoon::as.data.table(pat, average = TRUE)
   setnames(mtd, "ret", "rt")
   mtd <- mtd[, .(group, mz, rt)]
 
   pk <- peaks(object)
-  if (!"index" %in% colnames(pk)) pk$index <- seq_len(nrow(pk))
+  index <- lapply(mtd$group, function(x, pk) {
+    return(which(pk$feature == x))
+  }, pk = pk)
 
-  index <- lapply(mtd$group, function(x) pk[feature == x, index])
   mtd$mzmin <- unlist(lapply(index, function(x) min(pk[x, mz])))
   mtd$mzmax <- unlist(lapply(index, function(x) max(pk[x, mz])))
   mtd$rtmin <- unlist(lapply(index, function(x) min(pk[x, rt])))
@@ -158,18 +132,28 @@ buildFeatures <- function(object, pat) {
 
   pk$replicate <- factor(pk$replicate, levels = unique(replicates(object)))
 
-  mtd$npeaks <- lapply(index, function(x) {
-    as.data.frame(table(pk$replicate[x]))$Freq
-  })
+  mtd$npeaks <- lapply(index, function(x, object) {
+    temp <- as.data.frame(table(pk$replicate[x]))$Freq
+    names(temp) <- unique(replicates(object))
+    return(temp)
+  }, object = object)
+
+  tp_pks <- setNames(data.frame(matrix(ncol = length(analyses(object)), nrow = 1)), analyses(object))
+  tp_pks[1, ] <- 0
+
+  mtd$peaks <- lapply(index, function(x, pk, tp_pks) {
+    temp <- copy(tp_pks)
+    temp[1, colnames(temp) %in% pk$analysis[x]] <- pk$index[x]
+    return(temp)
+  }, pk = pk, tp_pks = tp_pks)
 
   mtd$index <- as.numeric(sub(".*_", "", mtd$group))
 
-  # TODO update after implementing filling peaks
-  # if ("is_filled" %in% colnames(pk)) {
-  #   mtd$hasFilled <- unlist(lapply(index, function(x) 1 %in% pk$is_filled[x]))
-  # } else {
-  #   mtd$hasFilled <- FALSE
-  # }
+  if ("is_filled" %in% colnames(pk)) {
+    mtd$hasFilled <- unlist(lapply(index, function(x) 1 %in% pk$is_filled[x]))
+  } else {
+    mtd$hasFilled <- FALSE
+  }
 
   new_id <- paste0(
     "m",
@@ -191,28 +175,8 @@ buildFeatures <- function(object, pat) {
   mtd <- select(mtd, id, index, rt, mz, drt, rtmin, rtmax, dppm, mzmin, mzmax, everything())
 
   feat <- dplyr::left_join(feat, new_id, by = "group")
-  feat[, `:=`(group = NULL, mz = NULL, rt = NULL)]
+  feat[, group := NULL]
   feat <- select(feat, id, everything())
-
-  feat_b <- dplyr::left_join(feat_b, new_id, by = "group")
-  feat_b[, `:=`(group = NULL, mz = NULL, rt = NULL)]
-  feat_b <- select(feat_b, id, everything())
-
-
-
-
-
-
-  pksIdx <- max(pat@ftindex)
-  pksIdx <- t(pksIdx)
-  colnames(pksIdx) <- mtd$id
-
-
-
-
-
-
-
 
   #updates feature id in peaks table of each analysis
   setnames(new_id, c("group", "id"), c("feature", "new_feature"))
@@ -223,10 +187,14 @@ buildFeatures <- function(object, pat) {
     return(x)
   }, new_id = new_id)
 
+  anaInfo <- as.data.table(analysisInfo(object))
+  anaInfo <- anaInfo[, .(file, analysis, group, blank, class)]
+  setnames(anaInfo, "group", "replicate")
+  # TODO add set column to define the polarity of each sample
+
+  object@features@analyses <- anaInfo
+  object@features@intensity <- feat
   object@features@metadata <- mtd
-  object@features@replicates <- feat
-  object@features@analyses <- feat_b
-  object@features@peaks
 
   cat("Done! \n")
   return(object)
@@ -236,7 +204,8 @@ buildFeatures <- function(object, pat) {
 #' @title addAdjustedRetentionTime
 #'
 #' @description Function to add adjusted retention time information
-#' to the scans slot of the \linkS4class{msData} object.
+#' to the spectra slot of each \linkS4class{msAnalysis} in the
+#' \linkS4class{msData} object.
 #'
 #' @param object An \linkS4class{msData} object.
 #'
@@ -245,11 +214,9 @@ buildFeatures <- function(object, pat) {
 #' @importClassesFrom xcms XCMSnExp PeakGroupsParam
 #' @importClassesFrom patRoon featureGroupsXCMS3
 #'
-addAdjustedRetentionTime <- function(object) {
+addAdjustedRetentionTime <- function(object, pat) {
 
   checkmate::assertClass(object, "msData")
-
-  pat <- object@pat
 
   if (checkmate::testClass(pat, "featureGroupsXCMS3") & xcms::hasAdjustedRtime(pat@xdata)) {
 
@@ -269,33 +236,43 @@ addAdjustedRetentionTime <- function(object) {
       pkAdj <- xcms::peakGroupsMatrix(pkAdj)
     }
 
-    scans <- object@scans
-    scans <- lapply(seq_len(length(scans)), function(x, scans, rtAdj, addAdjPoints, pkAdj) {
+    hasSpectra <- sapply(object@analyses, function(x) nrow(x@spectra))
+    hasSpectra <- hasSpectra > 0
+    names(hasSpectra) <- analyses(object)
+
+    object@analyses <- lapply(object@analyses, function(x, hasSpectra) {
+      if (!hasSpectra[analyses(x)]) {
+        x@spectra <- loadBasicRawSpectraHeaderMZR(files(x))
+      }
+      return(x)
+    }, hasSpectra = hasSpectra)
+
+    object@analyses <- lapply(object@analyses, function(x, object, rtAdj, addAdjPoints, pkAdj) {
+
+      ana_idx <- which(analyses(object) %in% analyses(x))
 
       rts <- names(rtAdj)
-      rts <- stringr::str_detect(rts, paste0("F", x))
+      rts <- stringr::str_detect(rts, paste0("F", ana_idx))
       rts <- rtAdj[rts]
 
-      temp <- scans[[x]]
-      temp[, adjustedRetentionTime := rts]
-      temp[, adjustment := adjustedRetentionTime - retentionTime]
+      temp <- x@spectra
+      temp[, rtAdjusted := rts]
+      temp[, adjustment := rtAdjusted - rt]
 
       if (addAdjPoints) {
-        pk_rts <- unique(pkAdj[, x])
-        pk_rts <- pk_rts[pk_rts %in% temp$retentionTime]
-        temp[retentionTime %in% pk_rts, adjPoints := pk_rts]
+        pk_rts <- unique(pkAdj[, ana_idx])
+        pk_rts <- pk_rts[pk_rts %in% temp$rt]
+        temp[rt %in% pk_rts, adjPoints := pk_rts]
       }
 
-      return(temp)
+      x@spectra <- copy(temp)
+
+      return(x)
     },
-    scans = scans,
+    object = object,
     rtAdj = rtAdj,
     addAdjPoints = addAdjPoints,
     pkAdj = pkAdj)
-
-    names(scans) <- samples(object)
-
-    object@scans <- scans
 
     cat("Done! \n")
     return(object)
@@ -303,8 +280,6 @@ addAdjustedRetentionTime <- function(object) {
 
   return(object)
 }
-
-
 
 
 #' @title updateFeatureTable

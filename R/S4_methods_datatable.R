@@ -139,6 +139,7 @@ setMethod("plotTICs", "data.table", function(object,
 #' @aliases plotXICs,data.table,data.table-method
 #'
 #' @importFrom data.table is.data.table
+#' @importFrom stringr str_split
 #'
 setMethod("plotXICs", "data.table", function(object,
                                              analyses = NULL,
@@ -200,6 +201,102 @@ setMethod("plotXICs", "data.table", function(object,
     secMark = secMark,
     numberRows = numberRows
   )
+
+  return(plot)
+})
+
+
+### plotMS2s - data.table ------------------------------------------------
+
+#' @title plotMS2s-data.table
+#'
+#' @description Plots MS2 data for specified \emph{m/z} and retention time (seconds) targets
+#' in a \link[data.table]{data.table} as obtained by the \link{MS2s}. The targets in the
+#' object can be filtered using the \code{targets} argument. Also, "analyses" and "replicates"
+#' can be filtered using the \code{analyses} and \code{replicates} arguments, respectively.
+#' Note that the column analysis/replicate should be present.
+#' The possible values for the \code{colorBy} argument are
+#' "targets", "analyses", "replicates" and "voltages" to color by
+#' each target, analysis, replicate or collision energy, respectively.
+#'
+#' @param object A \link[data.table]{data.table} as produced by the method \link{MS2s}.
+#' @template args-single-analyses
+#' @param replicates A numeric or character vector with the indice/s or name/s
+#' of replicates from the \code{object}.
+#' @param targets A character vector with target names.
+#' @param legendNames A character vector with the same length and order
+#' as the number and order of targets to be used as plot legend.
+#' @template args_plots_colorby_title_interactive
+#'
+#' @export
+#'
+#' @rdname data.table-methods
+#' @aliases plotMS2s,data.table,data.table-method
+#'
+#' @importFrom data.table data.table
+#'
+setMethod("plotMS2s", "data.table", function(object = NULL,
+                                             analyses = NULL,
+                                             replicates = NULL,
+                                             targets = NULL,
+                                             legendNames = NULL,
+                                             title = NULL,
+                                             colorBy = "targets",
+                                             interactive = FALSE) {
+
+  ms2 <- copy(object)
+
+  if (!is.null(analyses) & "analysis" %in% colnames(ms2)) {
+    if (class(analyses) == "numeric") analyses <- unique(ms2$analysis)[analyses]
+    ms2[analysis %in% analyses, ]
+  }
+
+  if (!is.null(replicates) & "replicate" %in% colnames(ms2)) {
+    if (class(replicates) == "numeric") replicates <- unique(ms2$replicate)[replicates]
+    ms2[replicate %in% replicates, ]
+  }
+
+  if (!is.null(targets)) ms2[id %in% targets, ]
+
+  if (nrow(ms2) < 1) return(cat("Data was not found for any of the targets!"))
+
+  if (colorBy == "analyses" & "analysis" %in% colnames(ms2)) {
+    leg <- unique(ms2$sample)
+    varkey <- ms2$sample
+  } else if (colorBy == "replicates" & "replicate" %in% colnames(ms2)) {
+    leg <- unique(ms2$replicate)
+    varkey <- ms2$replicate
+  } else if (colorBy == "voltages" & "ce" %in% colnames(ms2)) {
+    leg <- unique(ms2$voltage)
+    varkey <- ms2$voltage
+  } else if (!is.null(legendNames) & length(legendNames) == length(unique(ms2$id))) {
+    leg <- legendNames
+    names(leg) <- unique(ms2$id)
+    varkey <- sapply(ms2$id, function(x) leg[[x]])
+  } else {
+    leg <- unique(ms2$id)
+    varkey <- ms2$id
+  }
+
+  ms2[, var := varkey]
+  ms2$var <- factor(ms2$var, levels = unique(ms2$var), labels = unique(ms2$var))
+
+  if (!interactive) {
+
+    win.metafile()
+    dev.control("enable")
+    plotStaticMSn(
+      ms2,
+      title
+    )
+    plot <- recordPlot()
+    dev.off()
+
+  } else {
+
+    plot <- plotInteractiveMSn(ms2, title)
+
+  }
 
   return(plot)
 })

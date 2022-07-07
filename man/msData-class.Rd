@@ -5,15 +5,32 @@
 \alias{msData-class}
 \alias{show,msData-method}
 \alias{getAnalyses,msData-method}
+\alias{getAnalyses,msData,msData-method}
 \alias{[,msData,ANY,missing,missing-method}
 \alias{polarities,msData-method}
+\alias{polarities,msData,msData-method}
 \alias{EICs,msData-method}
 \alias{EICs,msData,msData-method}
 \alias{plotEICs,msData-method}
+\alias{plotEICs,msData,msData-method}
 \alias{TICs,msData-method}
+\alias{TICs,msData,msData-method}
 \alias{plotTICs,msData-method}
+\alias{plotTICs,msData,msData-method}
 \alias{XICs,msData-method}
+\alias{XICs,msData,msData-method}
 \alias{plotXICs,msData-method}
+\alias{plotXICs,msData,msData-method}
+\alias{MS2s,msData-method}
+\alias{MS2s,msData,msData-method}
+\alias{plotMS2s,msData-method}
+\alias{plotMS2s,msData,msData-method}
+\alias{loadRawData,msData-method}
+\alias{loadRawData,msData,msData-method}
+\alias{spectra,msData-method}
+\alias{spectra,msData,msData-method}
+\alias{hasAdjustedRetentionTime,msData-method}
+\alias{hasAdjustedRetentionTime,msData,msData-method}
 \alias{addParameters,msData-method}
 \alias{addParameters,msData,msData-method}
 \alias{getParameters,msData-method}
@@ -24,8 +41,13 @@
 \alias{plotPeaks,msData-method}
 \alias{plotPeaks,msData,msData-method}
 \alias{mapPeaks,msData-method}
+\alias{mapPeaks,msData,msData-method}
 \alias{features,msData-method}
+\alias{features,msData,msData-method}
 \alias{plotFeatures,msData-method}
+\alias{plotFeatures,msData,msData-method}
+\alias{as.featureGroups,msData-method}
+\alias{as.featureGroups,msData,msData-method}
 \title{msData}
 \usage{
 \S4method{show}{msData}(object)
@@ -50,8 +72,8 @@
   object,
   analyses = NULL,
   mz = NULL,
-  ppm = 20,
   rt = NULL,
+  ppm = 20,
   sec = 30,
   id = NULL,
   colorBy = "targets",
@@ -95,6 +117,38 @@
   secMark = 10,
   numberRows = 1
 )
+
+\S4method{MS2s}{msData}(
+  object = NULL,
+  analyses = NULL,
+  mz = NULL,
+  ppm = 20,
+  rt = NULL,
+  sec = 60,
+  id = NULL,
+  settings = NULL
+)
+
+\S4method{plotMS2s}{msData}(
+  object = NULL,
+  analyses = NULL,
+  mz = NULL,
+  ppm = 20,
+  rt = NULL,
+  sec = 60,
+  id = NULL,
+  settings = NULL,
+  legendNames = NULL,
+  title = NULL,
+  colorBy = "targets",
+  interactive = FALSE
+)
+
+\S4method{loadRawData}{msData}(object, analyses = NULL)
+
+\S4method{spectra}{msData}(object, analyses = NULL)
+
+\S4method{hasAdjustedRetentionTime}{msData}(object)
 
 \S4method{addParameters}{msData}(object, settings, where = "analyses", analyses = NULL)
 
@@ -143,7 +197,6 @@
 
 \S4method{features}{msData}(
   object,
-  analyses = NULL,
   targetsID = NULL,
   mz = NULL,
   ppm = 20,
@@ -166,6 +219,8 @@
   title = NULL,
   interactive = FALSE
 )
+
+\S4method{as.featureGroups}{msData}(object)
 }
 \arguments{
 \item{object}{An \linkS4class{msData} object.}
@@ -217,6 +272,8 @@ of the target mark.}
 
 \item{numberRows}{A numeric vector of length one to define
 the number of rows to grid the plots.}
+
+\item{settings}{A \linkS4class{settings} S4 class object with call for \code{extractMSn}.}
 
 \item{where}{A character vector defining where to get the \linkS4class{settings}.}
 
@@ -290,6 +347,43 @@ the argument \code{targetsMark}. \code{targetsMark} should be a two column table
 exact \emph{m/z} and time targets. Note that the number of rows should be the same as the number of target
 in the XIC. The number of rows to plot multiple targets can be defined by the \code{numberRows} argument.
 
+\item \code{MS2s}: get MS2 data for specified \emph{m/z} and retention time (seconds) targets
+in analyses of an \linkS4class{msData} object. The \code{clusteringUnit} defines the method used for clustering.
+Possible values are \emph{euclidean} (the default) or \emph{distance}.
+The mass (in Da) and time (in seconds) isolation windows to screen for the respective precursors
+are defined with the arguments \code{isolationMassWindow} and \code{isolationTimeWindow}, respectively.
+The \code{clusteringUnit} and \code{clusteringWindow} define
+the mass deviation unit and deviation to cluster mass traces from different spectra, respectively.
+For the \code{clusteringUnit}, possible values are \emph{mz} (the default) or \emph{ppm}.
+The \code{minIntensityPre} and \code{minIntensityPost}
+define the minimum intensity for mass traces before and after clustering, respectively.
+Set \code{mergeVoltages} to \code{TRUE} for merging spectra acquired with different collision energies.
+The \code{mergeBy} argument is used to merge spectra by "samples" or "replicates".
+When \code{NULL}, MS2 is given per target and per sample.
+
+\item \code{plotMS2s}: plots MS2 data for specified \emph{m/z} and retention time (seconds) targets
+in analyses of an \linkS4class{msData} object. The \code{clusteringUnit} defines the method used for clustering.
+Possible values are \emph{euclidean} (the default) or \emph{distance}.
+The mass (in Da) and time (in seconds) isolation windows to screen for the respective precursors
+are defined with the arguments \code{isolationMassWindow} and \code{isolationTimeWindow}, respectively.
+The \code{clusteringUnit} and \code{clusteringWindow} define
+the mass deviation unit and deviation to cluster mass traces from different spectra, respectively.
+For the \code{clusteringUnit}, possible values are \emph{mz} (the default) or \emph{ppm}.
+The \code{minIntensityPre} and \code{minIntensityPost}
+define the minimum intensity for mass traces before and after clustering, respectively.
+Set \code{mergeVoltages} to \code{TRUE} for merging spectra acquired with different collision energies.
+The \code{mergeBy} argument is used to merge spectra by "samples" or "replicates".
+When \code{NULL}, MS2 is given per target and per sample. The possible values for the
+\code{colorBy} argument are "targets", "samples", "replicates" and "voltages" to colour by
+each target, sample, replicate or collision energy, respectively.
+
+\item \code{loadRawData}: adds processing parameters to the analysis.
+
+\item \code{spectra}: getter for slot spectra in analyses of an \linkS4class{msData} object.
+
+\item \code{hasAdjustedRetentionTime}: getter for presence of adjusted retention time
+in the analyses.
+
 \item \code{addParameters}: adds processing parameters to analyses or features as defined
 by the argument \code{where}. So where can be either "analyses" or "features".
 
@@ -334,6 +428,9 @@ The \code{colorBy} argument can be be \code{"analyses"}, \code{replicates} or \c
 The \code{legendNames} is a character vector with the same length as targets for plotting and
 can be used to lengend the plot. Note that, by setting \code{legendNames} the \code{colorBy}
 is set to "targets" automatically.
+
+\item \code{as.featureGroups}: converts the \linkS4class{msData}
+to a \linkS4class{featureGroups} object from the package \pkg{patRoon}.
 }}
 
 \section{Slots}{

@@ -104,9 +104,13 @@ t(metadata(exS1, analyses = 1))
 t(metadata(exA1))
 ```
 
+## Add metadata
+
+`r # TODO make addMetadata method for analyses`
+
 # Low level data access and plotting
 
-The tools for low level access and plotting (i.e., traces and chromatograms) share a target search approach. The data search is based on pre-defined time and mass (inc. _m/z_) targets. For traces (i.e., raw MS mass traces), time (seconds) and _m/z_ (Da) ranges are given for accessing and plotting. Access to mass traces is relevant for further development of data processing functionalists and for visualization of raw data to support evaluation of processing steps (e.g., peaks wrongly not found during peak picking).
+The tools for low level access and plotting (i.e., traces and chromatograms) share a target search approach. The data search is based on pre-defined time and mass (inc. _m/z_) targets. For traces (i.e., raw MS mass traces), time (in seconds) and _m/z_ (in Da) ranges are given for accessing and plotting. Access to mass traces is relevant for further development of data processing steps/functions and for visualization of raw data, easing the evaluation of processing steps (e.g., peaks wrongly not found during peak picking).
 
 ## Defining targets
 
@@ -235,7 +239,33 @@ plotXICs(exS1[1], mz = targets04[1, ])
 plotXICs(exA1, mz = mz01[2], rt = rt01[2], ppm = 500, sec = 120)
 ```
 
-`r # TODO add MSn low level access`
+# Loading raw data
+
+The S4 method applied above query the data from the raw data files as that is less disk memory intense. However, for certain cases the raw data might be needed entirely. Therefore, the data can be loaded and stored as a simple _data.table_ in the respective _msAnalysis_ (or other classes of the same level). Below we demonstrate how to load (via `loadRawData` S4 method) and access (via `spectra` or `chromatograms`) the raw spectra and chromatograms to/from an _msAnalaysis_ and _msData_ object. Both S4 methods (`spectra` or `chromatograms`) return a _data.table_ where further operations can be applied to subset the data, as demonstrated below.
+
+```{r loadRawData}
+#load raw data to an msAnalysis object
+exA1 <- loadRawData(exA1)
+
+#example of accessing the six most intense fragments of the first target with msAnalysis
+s_data <- spectra(exA1)
+s_data <- s_data[preMZ >= targets04$mzmin[1] & preMZ <= targets04$mzmax[1], ]
+s_data <- s_data[rt >= targets04$rtmin[1] & rt <= targets04$rtmax[1], ]
+s_data <- s_data[order(intensity, decreasing = TRUE), ]
+s_data[1:6, ]
+
+#load raw data to an msData object.
+exS1 <- loadRawData(exS1, analyses = NULL)
+
+#example of accessing the two most intense fragments of the first target with msData
+s_data_2 <- spectra(exS1)
+s_data_2 <- s_data_2[preMZ >= targets04$mzmin[1] & preMZ <= targets04$mzmax[1], ]
+s_data_2 <- s_data_2[rt >= targets04$rtmin[1] & rt <= targets04$rtmax[1], ]
+s_data_2 <- s_data_2[order(intensity, decreasing = TRUE), ]
+s_data_2[1:4, ]
+```
+
+`r # TODO create method to access chromatograms in msAnalysis and msData`
 
 # Basic workflow
 
@@ -324,10 +354,10 @@ exS2_pp <- exS2
 
 param <- xcms::CentWaveParam(
   ppm = 15, peakwidth = c(5, 60),
-  snthresh = 10, prefilter = c(6, 10000),
+  snthresh = 10, prefilter = c(6, 1500),
   mzCenterFun = "mean", integrate = 2,
   mzdiff = -0.0001, fitgauss = TRUE,
-  noise = 250, verboseColumns = TRUE,
+  noise = 500, verboseColumns = TRUE,
   firstBaselineCheck = FALSE,
   extendLengthMSW = TRUE
 )
@@ -367,7 +397,7 @@ exS2_pp <- peakPicking(exS2_pp)
 exS2_pp
 
 #alternatively, parameters can be added during the function call
-exS2_pp_2 <- peakPicking(exS2, algorithm = "xcms3", settings = param)
+exS2_pp_2 <- peakPicking(exS2, settings = settings_pp)
 
 # parameters are added to each analysis after running peak picking
 summary(getParameters(exS2_pp_2, where = "analyses", analyses = 1))
@@ -473,7 +503,7 @@ mapPeaks(exA2, mz = targets04[1, ], xlim = 30, ylim = 0.001)
 mapPeaks(exS2_pp, mz = targets04[2, ], colorBy = "replicates", xlim = 30, ylim = 0.001)
 ```
 
-## Alingment and Grouping
+## Alingment and grouping
 
 After peak picking, a common following step is to group the peaks across analyses. A retention time alignment can be applied to correct elution deviations across analyses. The result of peak grouping and alignment is added to the _msFeatures_ S4 class object already present in the _msData_.
 
@@ -483,7 +513,6 @@ The processing parameters for grouping and alignment are added similarly to the 
 The settings are added to the slot parameters of the _msFeatures_ object and can be obtained by the method `getParameters`, as shown below.
 
 ```{r creating_grouping_parameters}
-
 param_g <- list(
   rtalign = TRUE,
   loadRawData = TRUE,
@@ -531,7 +560,20 @@ The data processing for grouping and alignment follows the same principle as pea
 exS2_pg <- peakGrouping(exS2_pp)
 
 #adding the parameters as arguments
-exS2_pg_2 <- peakGrouping(exS2_pp, algorithm = "xcms3", settings = param_g)
+exS2_pg_2 <- peakGrouping(exS2_pp, settings = settings_pg)
+```
+
+### msFeatures class
+
+The structure of the _msFeatures_ is shown below. The slot `analyses` is the `data.table` as obtained by the `analysisInfo`, containing basic information about the analyses, such as file, replicate and associeted blank. The intensity slot has the intensity of the feature in each analysis (i.e., peak intensity in each analysis). The slot metadata has other information about each feature, such as average _m/z_ and retention time.
+
+`r # TODO add annotation description`
+
+The slot parameters has the list of settings used to obtain/process the features.
+
+```{r msFeatures_class}
+#accessing directly the msFeatures slot, not recommended
+str(exS2_pg@features, max.level = 2)
 ```
 
 ### Inspecting features
@@ -542,11 +584,11 @@ Features can be accessed via the method `features` applied to a _msData_ object.
 #getter for feature intensities and intensity deviations
 features(exS2_pg, mz = targets04)
 
-#getter for all the feature details by setting complete to TRUE
+#getter for all the feature metadata by setting complete to TRUE
 t(features(exS2_pg_2, mz = targets04[1, ], complete = TRUE))
 
 #getter for features with intensities for each sample by setting average to FALSE
-t(features(exS2_pg_2, mz = targets04[1, ], average = FALSE))
+features(exS2_pg_2, mz = targets04[1, ], average = FALSE)
 
 #plotting features
 plotFeatures(exS2_pg, mz = targets04, colorBy = "targets", interactive = FALSE)
@@ -558,28 +600,114 @@ plotFeatures(exS2_pg, mz = targets04, colorBy = "replicates", interactive = TRUE
 plotFeaturePeaks(exS2_pg, mz = targets04)
 ```
 
-```{r}
+### Alignment results
 
+The alignment results can be inspected with the `plotAlignment` function. However, the time adjustment results are only available when using the algorithm "xcms3" for alignment.
 
-
+```{r plot_alignment}
+plotAlignment(exS2_pg)
 ```
 
+## Recursive integration
+
+As peak picking can result in false negatives and to ensure that false positives are less likely, a recursive integration is often performed for filling missing peaks in a feature. The recursive integration consists of extracting the mass traces in the feature region from analyses not represented, returning the hipotetical peak intensity. The exact collection of mass traces and calculation of the peak intensity (or height) is dependent on the algorithm applied. Below, an example of the recursive integration workflow using the function [fillChromPeaks](https://rdrr.io/bioc/xcms/man/fillChromPeaks.html) from the package [xcms](https://bioconductor.org/packages/release/bioc/html/xcms.html) is shown. The function `peakFilling` is used for recursive integration and a _settings_ S4 class object is given to define the algorithm and respective parameters. A _settings_ object can be obtained with `fillingSettingsDefaultXCMS` for a default _ChromPeakAreaParam_ from xcms. Note that the peakFilling settings are added to the parameters slot of the _msData_ object.
+
+```{r recursive_integration_settings}
+#default settings S4 class with ChromPeakAreaParam from xcms as parameter settings
+settings_fl <- fillingSettingsDefaultXCMS()
+
+settings_fl
+```
+
+```{r recursive_integration_procesing, results='hide', message=FALSE}
+#filling peaks for msData
+exS2_pg_fl <- peakFilling(exS2_pg, settings = settings_fl)
+```
+
+## Inspecting of filled peaks
+
+To inspect filled peaks, the function `plotFeaturePeaks` can be used as shown below. The white dots represent filled peaks, meaning that the intensity value was not obtained from peak picking. The recursive integration is relevant to further minimize false negative features by reinforce the presence of the feature in the relevant analyses but not in the blank analysis replicate. Also, on the other end, for reducing false positives by confirming the presence of the features at similar level in the blank replicate analysis, as shown below. The second feature, at 935 seconds, peaks were picked only for the influent but the blank has very similar level as confirmed by recursive integration, which most likely is related to peaks from noise. Applying filtering by blank subtraction further during the basic data processing workflow, would remove the irrelevant features, such as the example shown below.
+
+```{r recursive_integration_inspection}
+# inspecting the filled peaks for a given mz and rt target
+plotFeaturePeaks(exS2_pg_fl, mz = 441.1670, rt = 916, ppm = 20, sec = 60)
+```
+
+## Annotation
+
+`r # TODO improve annotation of features/peaks``
+
+## Quality
+
+
+## Filter
+
+
+# MSn
+
+Often MS acquisition includes operation in tandem mode, where fragmentation spectra (i.e., MSn, where n is the level of fragmentation) are acquired. The most common fragmentation data is MS/MS or MS2 either acquired via data dependent or independent acquisition.
+
+## Processing settings
+
+Settings are needed to extract and average the fragmentation data. Below an example of settings used for accessing and averaging MS2 data is given. The resulting _settings_ object is then used further in the call to `MS2s` or `plotMS2s`.
+
+```{r create_settings_msn}
+#the parameter settings to obtained and process MSn spectra
+param_msn <- list(
+  isolationTimeWindow = 0,
+  isolationMassWindow = 1.3,
+  clusteringMethod = "distance",
+  clusteringUnit = "ppm",
+  clusteringWindow = 10,
+  minIntensityPre = 200,
+  minIntensityPost = 300,
+  asPatRoon = FALSE, #when TRUE, is only used by running generateMS2
+  mergeVoltages = TRUE,
+  mergeBy = "analyses"
+)
+
+#creating the settings S4 class
+settings_msn <- createSettings(
+  call = "extractMSn",
+  algorithm = "streamFind",
+  settings = param_msn
+)
+
+# the class of settings 
+is(settings_msn)
+```
+
+## Access and plot MS2
+
+The method `MS2s` can be used to collect MS2 data from given targets, following the same principle as `makeTargets` within `EICs`. Similarly, `plotMS2s` can be used to access and directly plot MS2 data from targets, as shown below. A more general function for accessing the data is `extractMSn`, where further fragmentation levels can be accessed. When using streamFind basic workflow, the use of `MS2s` and `plotMS2s` is recommended. All the S4 methods/function can be applied for _msAnalysis_ and _msData_ objects.
+
+```{r extract_msn}
+#head of MS2 data for target 1 in a msAnalysis object
+head(MS2s(exA1, mz = targets04[1, ], settings = settings_msn))
+
+#ploting the MS2 data of the first target in a msAnalysis object
+plotMS2s(exA1, mz = targets04[1, ], settings = settings_msn, interactive = FALSE)
+
+#most intense MS2 data traces for both targets in a msData object
+s_data_3 <- MS2s(exS1, mz = targets04, settings = settings_msn)
+s_data_3 <- s_data_3[order(intensity, decreasing = TRUE), ]
+head(s_data_3)
+
+#ploting the MS2 data of the first target in a msAnalysis object
+plotMS2s(exS1, mz = targets04, settings = settings_msn, interactive = TRUE, colorBy = "targets")
+```
+
+## MS2 for features/peaks
+
+` # TODO create function for collecting MS2 data for peaks/features`
+
+# Workflows
 
 
 
 
 
 
-# Data access and visualization
-
-Data access and visualization assets are implemented for different data levels: low level data (i.e., mass traces), peaks and features. Additionally, basic and advanced tools are available for accessing, plotting and exporting data (e.g., chromatograms), statistical results (e.g., PCA) and other workflow dependent data/results.
-
-
-
-
-
-
-## S4 method
 
 
 
@@ -588,9 +716,7 @@ Data access and visualization assets are implemented for different data levels: 
 
 
 
-
-
-
+# Miscellaneous
 
 ```{r demoCode, echo=FALSE, eval=FALSE, include=FALSE}
 
@@ -646,18 +772,6 @@ Data access and visualization assets are implemented for different data levels: 
 
 ```
 
-
-
-## Peaks
-
-
-
-## Features
-
-## Workflows
-
-
-
 # Instructions
 
 This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents.
@@ -677,7 +791,7 @@ Code is automaticelly embedded unless `echo` chunk option is set to `FALSE`.
 Evaluation of code in a given chunk can be skiped by setting `eval` to `FALSE`.
 Code chunks should always be unically named.  
 
-```{r exCode}
+```{r exCode, echo=FALSE, eval=FALSE, include=FALSE}
 
 #Example of code chunk
 
@@ -692,16 +806,16 @@ list(a = 1:6, b = 1:10)
 The `knitr::kable` function can be used for displaying tables, see table \@ref(tab:exTable). Consult <https://haozhu233.github.io/kableExtra/awesome_table_in_html.html> for other costumization options.
 Table caption is added with the argument `caption` of the `kable` function.   
 
-```{r exTable}
+```{r exTable, echo=FALSE, eval=FALSE, include=FALSE}
 
-df <- data.frame(name = c("a", "b", "c", "d", "e", "f"), col1 = 1:6, col2 = 1:6)
-
-knitr::kable(df, caption = "Example of table caption.") %>%
-kable_styling(
-  font_size = 12,
-  bootstrap_options = c("striped", "hover", "condensed", "responsive"),
-  fixed_thead = TRUE
-)
+# df <- data.frame(name = c("a", "b", "c", "d", "e", "f"), col1 = 1:6, col2 = 1:6)
+# 
+# knitr::kable(df, caption = "Example of table caption.") %>%
+# kable_styling(
+#   font_size = 12,
+#   bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+#   fixed_thead = TRUE
+# )
 
 ```
 
