@@ -48,7 +48,7 @@ usethis::use_test("app")
 # Documentation
 
 ## Vignette ----
-usethis::use_vignette("streamFind")
+usethis::use_vignette("handbook_backend")
 devtools::build_vignettes()
 
 ## Code Coverage----

@@ -1,7 +1,5 @@
 
 
-### fillingSettingsDefaultXCMS -----
-
 #' @title fillingSettingsDefaultXCMS
 #'
 #' @return A \linkS4class{settings} object containing parameters for
@@ -84,7 +82,7 @@ peakFilling <- function(object, settings = NULL) {
   }
 
   if (is.na(algorithm)) {
-    warning("Peak filling algorihtm not defined!")
+    warning("Peak filling algorithm not defined!")
     return(object)
   }
 
@@ -134,6 +132,8 @@ peakFilling <- function(object, settings = NULL) {
   }
 
   object <- addParameters(object, where = "features", settings = prs)
+
+  validObject(object)
 
   return(object)
 }

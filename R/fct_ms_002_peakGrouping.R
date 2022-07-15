@@ -91,6 +91,8 @@ peakGrouping <- function(object = NULL, settings = NULL) {
 
   object <- addAdjustedRetentionTime(object, pat)
 
+  validObject(object)
+
   return(object)
 }
 
@@ -132,11 +134,17 @@ buildFeatures <- function(object, pat) {
 
   pk$replicate <- factor(pk$replicate, levels = unique(replicates(object)))
 
-  mtd$npeaks <- lapply(index, function(x, object) {
-    temp <- as.data.frame(table(pk$replicate[x]))$Freq
-    names(temp) <- unique(replicates(object))
-    return(temp)
-  }, object = object)
+  # n_pks <- setNames(data.frame(matrix(ncol = length(unique(replicates(object))), nrow = 1)), unique(replicates(object)))
+  # n_pks[1, ] <- 0
+  #
+  # mtd$npeaks <- lapply(index, function(x, object, n_pks) {
+  #   temp <- as.data.frame(table(pk$replicate[x]))
+  #   temp_2 <- temp$Freq
+  #   names(temp_2) <-  temp$Var1
+  #   temp_3 <- copy(n_pks)
+  #   temp_3[names(temp_2)] <- temp_2
+  #   return(temp_3)
+  # }, object = object, n_pks)
 
   tp_pks <- setNames(data.frame(matrix(ncol = length(analyses(object)), nrow = 1)), analyses(object))
   tp_pks[1, ] <- 0
@@ -153,6 +161,11 @@ buildFeatures <- function(object, pat) {
     mtd$hasFilled <- unlist(lapply(index, function(x) 1 %in% pk$is_filled[x]))
   } else {
     mtd$hasFilled <- FALSE
+  }
+
+  if (!"filtered" %in% colnames(mtd)) {
+    mtd$filtered <- FALSE
+    mtd$filter <- NA_character_
   }
 
   new_id <- paste0(

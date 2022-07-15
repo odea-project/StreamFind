@@ -58,7 +58,7 @@
 \arguments{
 \item{object}{An \linkS4class{streamProject} object.}
 
-\item{i}{The indice/s or name/s of the analysis to keep in the \code{x} object.}
+\item{i}{The indice/s or name/s of the analyses to keep in the \code{x} object.}
 
 \item{projectTitle}{A character string to be used as project title.}
 
@@ -76,7 +76,7 @@ The \code{streamProject} is the most basic class of the \pkg{streamFind} package
 \itemize{
 \item \code{show}: prints the details of an \linkS4class{streamProject} object.
 
-\item \code{[}: subset on analysis, using analysis index or name.
+\item \code{[}: subset on analyses, using analysis index or name.
 
 \item \code{projectInfo}: setter and getter for project title, date and path.
 When the \code{projectTitle} and \code{projectDate} arguments

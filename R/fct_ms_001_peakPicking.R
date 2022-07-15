@@ -163,66 +163,144 @@ peakPicking <- function(object = NULL, settings = NULL) {
 #' information for peaks for each sample.
 #'
 #' @importClassesFrom patRoon features
-#' @importFrom dplyr select
+#' @importFrom dplyr select left_join full_join
 #' @importMethodsFrom xcms chromPeaks
-#' @importFrom data.table rbindlist as.data.table setnames setorder
+#' @importFrom data.table rbindlist as.data.table setnames setorder copy
 #' @importFrom checkmate testClass
 #'
 buildPeaksTable <- function(object, pat) {
 
   cat("Building peaks table... ")
 
-  valid <- FALSE
 
   if (checkmate::testClass(pat, "features")) {
     valid <- TRUE
     peaks <- pat@features
     anaInfo <- pat@analysisInfo
+
+    if (checkmate::testClass(pat, "featuresXCMS3")) {
+      if (xcms::hasFilledChromPeaks(pat@xdata)) {
+        extra <- as.data.table(xcms::chromPeaks(pat@xdata, isFilledColumn = TRUE))
+        extra[, analysis := anaInfo$analysis[extra$sample]]
+        extra[, analysis := factor(analysis, levels = anaInfo$analysis)]
+        extra <- split(extra, extra$analysis)
+      } else { extra <- NULL }
+    } else { extra <- NULL }
+
+    peaks <- lapply(names(peaks), function(x, extra, peaks) {
+      temp <- peaks[[x]]
+
+      if (!is.null(extra)) {
+        if (temp == nrow(extra[[x]]) & all(temp$mz == extra[[x]]$mz)) {
+          temp[, is_filled := extra[[x]]$is_filled]
+        }
+      }
+
+      if (!"is_filled" %in% colnames(temp)) temp$is_filled <- 0
+      if (!"filtered" %in% colnames(temp)) temp$filtered <- FALSE
+      if (!"filter" %in% colnames(temp)) temp$filter <- NA_character_
+
+      setnames(temp, c("ID", "ret", "retmin", "retmax"), c("id", "rt", "rtmin", "rtmax"), skip_absent = TRUE)
+      setnames(temp, "group", "feature", skip_absent = TRUE)
+      return(temp)
+    }, extra = extra, peaks = peaks)
   }
+
 
   if (checkmate::testClass(pat, "featureGroups")) {
     valid <- TRUE
     peaks <- pat@features@features
     anaInfo <- pat@analysisInfo
-  }
 
+    if (checkmate::testClass(pat, "featureGroupsXCMS3")) {
+      if (xcms::hasFilledChromPeaks(pat@xdata)) {
+        extra <- as.data.table(xcms::chromPeaks(pat@xdata, isFilledColumn = TRUE))
+        extra[, analysis := anaInfo$analysis[extra$sample]]
+        extra[, analysis := factor(analysis, levels = anaInfo$analysis)]
+        extra <- split(extra, extra$analysis)
+      } else { extra <- NULL }
+    } else { extra <- NULL }
 
-  if (!valid) warning("Peaks table not build as the input from peak picking
-                      is not a features or featureGroups class object!")
+    peaks <- lapply(analyses(object), function(x, extra, peaks) {
+      temp <- peaks[[x]]
 
-  if (checkmate::testClass(pat, "featuresXCMS3") | checkmate::testClass(pat, "featureGroupsXCMS3")) {
-    if (xcms::hasFilledChromPeaks(pat@xdata)) {
-      extra <- as.data.table(xcms::chromPeaks(pat@xdata, isFilledColumn = TRUE))
-      extra[, analysis := anaInfo$analysis[extra$sample]]
-      extra[, analysis := factor(analysis, levels = anaInfo$analysis)]
-      extra <- split(extra, extra$analysis)
-
-      # extra <- as.data.table(xcms::chromPeaks(pat@xdata, isFilledColumn = TRUE))
-      # #extra <- setnames(extra, c("maxo", "into"), c("intensity", "area"))
-      # extra[, analysis := anaInfo$analysis[extra$sample]]
-      # extra[, analysis := factor(analysis, levels = anaInfo$analysis)]
-      # extra <- split(extra, extra$analysis)
-
-      for (a in names(peaks)) {
-        if (nrow(peaks[[a]]) == nrow(extra[[a]]) & all(peaks[[a]]$mz == extra[[a]]$mz)) {
-          #newCols <- colnames(extra)[!colnames(extra) %in% colnames(peaks)]
-          #peaks <- cbind(peaks, extra[, newCols, with = FALSE])
-          #peaks[, sample := NULL]
-          peaks[[a]][, is_filled := extra[[a]]$is_filled]
+      if (!is.null(extra)) {
+        if (nrow(temp) == nrow(extra[[x]]) & all(temp$mz == extra[[x]]$mz)) {
+          temp[, is_filled := extra[[x]]$is_filled]
         }
       }
-    }
+
+      setnames(temp, c("ID", "ret", "retmin", "retmax"), c("id", "rt", "rtmin", "rtmax"), skip_absent = TRUE)
+      setnames(temp, "group", "feature", skip_absent = TRUE)
+      return(temp)
+    }, extra = extra, peaks = peaks)
+    names(peaks) <- analyses(object)
+
+    peaks_org <- lapply(object@analyses, function(x) x@peaks)
+
+    # amending existing peaks as patRoon removes peaks not grouped (represented in features)
+    peaks <- lapply(analyses(object), function(x, peaks, peaks_org) {
+      temp <- copy(peaks[[x]])
+      temp_org <- copy(peaks_org[[x]])
+
+      temp_rem <- dplyr::anti_join(temp_org, temp, by = c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax"))
+
+      temp_old <- dplyr::semi_join(temp, temp_org, by = c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax"))
+
+      temp_new <- dplyr::anti_join(temp, temp_org, by = c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax"))
+
+      temp_list <- list(
+        temp_old,
+        temp_new,
+        temp_rem
+      )
+
+      temp <- rbindlist(temp_list, fill = TRUE)
+
+      # update_col <- stringr::str_detect(colnames(temp_new), "_remove")
+      # org_col_names <- stringr::str_extract(colnames(temp_new)[update_col], ".*(?=_remove)")
+      #
+      # for (i in seq_len(length(org_col_names))) {
+      #   or_c <- org_col_names[i]
+      #   up_c <- paste0(or_c, "_remove")
+      #   r_rem <- is.na(temp_new[[or_c]])
+      #   if (or_c %in% "feature") {
+      #     temp_new[, (or_c) := temp_new[[up_c]]]
+      #   } else {
+      #     temp_new[r_rem, (or_c) := temp_new[[up_c]][r_rem]]
+      #   }
+      # }
+      #
+      # rem_col_names <- colnames(temp_new)[update_col]
+      # temp_new[, (rem_col_names) := NULL]
+
+      if (!"is_filled" %in% colnames(temp)) temp$is_filled <- 0
+      if (!"filtered" %in% colnames(temp)) temp$filtered <- FALSE
+      if (!"filter" %in% colnames(temp)) temp$filter <- NA_character_
+
+      temp$filtered[is.na(temp$filtered)] <- FALSE
+      temp$is_filled[is.na(temp$is_filled)] <- 0
+
+      return(temp)
+
+    }, peaks = peaks, peaks_org = peaks_org)
   }
+
 
   peaks <- lapply(peaks, function(x, object) {
     temp <- copy(x)
-    setnames(temp, c("ID", "ret", "retmin", "retmax"), c("id", "rt", "rtmin", "rtmax"), skip_absent = TRUE)
-    setnames(temp, "group", "feature", skip_absent = TRUE)
+
+    if ("feature" %in% colnames(temp)) {
+      temp[is.na(feature), filter := "grouping"]
+      temp[is.na(feature), filtered := TRUE]
+    }
+
     temp[, dppm := round((mzmax - mzmin) / mzmin * 1E6, digits = 0)]
     temp[, drt := round(rtmax - rtmin, digits = 0)]
 
     temp <- temp[order(mz), ]
     temp <- temp[order(rt), ]
+    temp <- temp[order(filtered), ]
 
     temp$index <- seq_len(nrow(temp))
 
@@ -253,6 +331,7 @@ buildPeaksTable <- function(object, pat) {
     return(temp)
   })
 
+  names(peaks) <- analyses(object)
 
   if (checkmate::testClass(object, "msAnalysis")) {
     object@peaks <- copy(peaks[[1]])

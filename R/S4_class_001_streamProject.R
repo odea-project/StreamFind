@@ -62,9 +62,9 @@ setMethod("show", "streamProject", function(object) {
 
 #### [ sub-setting analyses ----------------------------------------------
 
-#' @describeIn streamProject subset on analysis, using analysis index or name.
+#' @describeIn streamProject subset on analyses, using analysis index or name.
 #'
-#' @param i The indice/s or name/s of the analysis to keep in the \code{x} object.
+#' @param i The indice/s or name/s of the analyses to keep in the \code{x} object.
 #'
 #' @export
 #'
@@ -76,12 +76,13 @@ setMethod("[", c("streamProject", "ANY", "missing", "missing"), function(x, i, .
       sidx <- i
     } else {
       if (FALSE %in% (i %in% analyses(x))) {
-        warning("Given analysis name/s not found in the msData object.")
+        warning("Given analysis name/s not found in the object.")
         return(x)
       }
       sname <- i
       sidx <- which(analyses(x) %in% sname)
     }
+
     x@analyses <- x@analyses[sidx]
   }
   return(x)

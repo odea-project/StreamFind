@@ -637,9 +637,9 @@ setMethod("loadRawData", "msAnalysis", function(object) {
 #'
 #' @aliases spectra,msAnalysis,msAnalysis-method
 #'
-setMethod("spectra", "msAnalysis", function(object) {
+setMethod("spectra", "msAnalysis", function(obj) {
 
-  return(object@spectra)
+  return(obj@spectra)
 })
 
 ### hasAdjustedRetentionTime ---------------------------------------------
@@ -712,6 +712,7 @@ setMethod("getParameters", "msAnalysis", function(object, call = NULL) {
 #' given in the \code{targetsID} argument to select the respective peaks.
 #'
 #' @template args-single-targetsID
+#' @template args-single-filtered
 #'
 #' @export
 #'
@@ -722,9 +723,14 @@ setMethod("getParameters", "msAnalysis", function(object, call = NULL) {
 setMethod("peaks", "msAnalysis", function(object,
                                           targetsID = NULL,
                                           mz = NULL, ppm = 20,
-                                          rt = NULL, sec = 60) {
+                                          rt = NULL, sec = 60,
+                                          filtered = TRUE) {
 
-  pks <- object@peaks
+  if (!filtered) {
+    pks <- object@peaks[!object@peaks$filtered, ]
+  } else {
+    pks <- object@peaks
+  }
 
   if (!is.null(targetsID) & "feature" %in% colnames(pks)) {
     pks <- pks[id %in% targetsID | feature %in% targetsID, ]
@@ -770,13 +776,14 @@ setMethod("plotPeaks", "msAnalysis", function(object,
                                               targetsID = NULL,
                                               mz = NULL, ppm = 20,
                                               rt = NULL, sec = 30,
+                                              filtered = TRUE,
                                               legendNames = NULL,
                                               title = NULL,
                                               interactive = FALSE) {
 
   colorBy = "targets"
 
-  pks <- peaks(object, targetsID, mz, ppm, rt, sec)
+  pks <- peaks(object, targetsID, mz, ppm, rt, sec, filtered)
 
   pks_tars <- copy(pks[, .(id, mz, rt, mzmin, mzmax, rtmin, rtmax)])
   pks_tars$rtmin <- min(pks_tars$rtmin) - 60
@@ -810,6 +817,7 @@ setMethod("mapPeaks", "msAnalysis", function(object,
                                              targetsID = NULL,
                                              mz = NULL, ppm = 20,
                                              rt = NULL, sec = 30,
+                                             filtered = TRUE,
                                              legendNames = NULL,
                                              xlim = 30,
                                              ylim = 0.05,
@@ -821,7 +829,8 @@ setMethod("mapPeaks", "msAnalysis", function(object,
     object,
     targetsID,
     mz, ppm,
-    rt, sec
+    rt, sec,
+    filtered
   )
 
   if (nrow(pks) < 1) return(cat("Requested peaks were not found!"))
@@ -841,4 +850,31 @@ setMethod("mapPeaks", "msAnalysis", function(object,
   plot <- mapPeaksInteractive(pks, xlim, ylim, title)
 
   return(plot)
+})
+
+#### [ sub-setting peaks ----------------------------------------------
+
+#' @describeIn msAnalysis subset on peaks, using peak index or name.
+#'
+#' @param i The indice/s or name/s of the peaks to keep in the \code{x} object.
+#'
+#' @export
+#'
+setMethod("[", c("msAnalysis", "ANY", "missing", "missing"), function(x, i, ...) {
+
+  if (!missing(i)) {
+    if (!is.character(i)) {
+      pname <- peaks(x)[i, ]
+      pname <- pname$id
+    } else {
+      if (FALSE %in% (i %in% peaks(x)$id)) {
+        warning("Given peak name/s not found in the object.")
+        return(x)
+      }
+      pname <- i
+    }
+
+    x@peaks <- x@peaks[id %in% pname, ]
+  }
+  return(x)
 })

@@ -73,4 +73,60 @@ setClass("msFeatures",
 
 ### S4 methods ----------------------------------------------------------------------------------------------
 
+#### [ sub-setting analyses ----------------------------------------------
 
+#' @describeIn msFeatures subset on analyses, using analysis index or name.
+#'
+#' @param i The indice/s or name/s of the analyses to keep in the \code{x} object.
+#'
+#' @export
+#'
+setMethod("[", c("msFeatures", "ANY", "missing", "missing"), function(x, i, ...) {
+
+  if (!missing(i)) {
+    if (nrow(x@analyses) > 0) {
+      if (!is.character(i)) {
+        sname <- x@analyses$analysis[i]
+        sidx <- i
+      } else {
+        if (FALSE %in% (i %in% x@analyses$analysis[i])) {
+          warning("Given analysis name/s not found in the msFeatures object.")
+          return(x)
+        }
+        sname <- i
+        sidx <- which(x@analyses$analysis %in% sname)
+      }
+
+      cols_rem <- which(!x@analyses$analysis %in% sname)
+
+      cols_rem <- x@analyses$analysis[cols_rem]
+
+      if (length(cols_rem) > 0) {
+
+        x@analyses <- x@analyses[sidx, ]
+
+        temp_int <- copy(x@intensity)
+
+        temp_int[, (cols_rem) := NULL]
+
+        check_null_intensity <- apply(temp_int[, 2:ncol(temp_int)], 1, function(z) max(z))
+        check_null_intensity <- check_null_intensity == 0
+
+        x@intensity <- temp_int[!check_null_intensity, ]
+
+        x@metadata <- x@metadata[!check_null_intensity, ]
+
+        x@metadata$peaks <- lapply(x@metadata$peaks, function(p, sname) {
+          p <- p[, !names(p) %in% sname]
+          return(p)
+        }, sname = sname)
+
+        # TODO check is is really necessary to have the components object, maybe a method to produce the components object can be added
+        # if (length(x@annotation) > 0) {
+        #   x@annotation[[1]] <- x@annotation[[1]][, which(check_null_intensity)]
+        # }
+      }
+    }
+  }
+  return(x)
+})

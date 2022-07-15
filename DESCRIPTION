@@ -44,6 +44,8 @@ Imports:
     utils,
     xcms
 Suggests: 
+    knitr,
+    rmarkdown,
     spelling,
     testthat (>= 3.0.0)
 RdMacros: 
@@ -53,3 +55,4 @@ Encoding: UTF-8
 Language: en-US
 LazyData: false
 RoxygenNote: 7.2.0
+VignetteBuilder: knitr

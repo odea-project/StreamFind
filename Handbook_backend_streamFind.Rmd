@@ -1,16 +1,18 @@
 ---
 title: "Handbook streamFind: Backend"
 author: "Ricardo Cunha"
-date: '2022-06-15'
 output:
   bookdown::html_document2:
     toc: yes
     toc_float: yes
     theme: paper
+    css: "Handbook_backend_streamFind.css"
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, fig.align = "center", fig.width = 9) #results = "asis"
+knitr::opts_chunk$set(echo = TRUE, fig.align = "center", fig.width = 9, cache = TRUE)
 ```
 <br> <br>  
 
@@ -25,7 +27,6 @@ library(ggplot2)
 library(plotly)
 
 devtools::load_all()
-
 ```
 
 # Objective
@@ -353,11 +354,11 @@ The function `createSettings` is use to assemble the _settings_ object, as shown
 exS2_pp <- exS2
 
 param <- xcms::CentWaveParam(
-  ppm = 15, peakwidth = c(5, 60),
-  snthresh = 10, prefilter = c(6, 1500),
+  ppm = 10, peakwidth = c(5, 60),
+  snthresh = 5, prefilter = c(4, 800),
   mzCenterFun = "mean", integrate = 2,
   mzdiff = -0.0001, fitgauss = TRUE,
-  noise = 500, verboseColumns = TRUE,
+  noise = 250, verboseColumns = TRUE,
   firstBaselineCheck = FALSE,
   extendLengthMSW = TRUE
 )
@@ -519,15 +520,15 @@ param_g <- list(
   groupParam = xcms::PeakDensityParam(
     sampleGroups = "holder",
     bw = 3,
-    minFraction = 0.5,
-    minSamples = 1,
+    minFraction = 0.6,
+    minSamples = 2,
     binSize = 0.008,
     maxFeatures = 100),
   preGroupParam = xcms::PeakDensityParam(
     sampleGroups = "holder",
     bw = 5,
-    minFraction = 0.5,
-    minSamples = 1,
+    minFraction = 1,
+    minSamples = 3,
     binSize = 0.008,
     maxFeatures = 100),
   retAlignParam = xcms::PeakGroupsParam(
@@ -624,7 +625,7 @@ settings_fl
 exS2_pg_fl <- peakFilling(exS2_pg, settings = settings_fl)
 ```
 
-## Inspecting of filled peaks
+### Inspection of filled peaks
 
 To inspect filled peaks, the function `plotFeaturePeaks` can be used as shown below. The white dots represent filled peaks, meaning that the intensity value was not obtained from peak picking. The recursive integration is relevant to further minimize false negative features by reinforce the presence of the feature in the relevant analyses but not in the blank analysis replicate. Also, on the other end, for reducing false positives by confirming the presence of the features at similar level in the blank replicate analysis, as shown below. The second feature, at 935 seconds, peaks were picked only for the influent but the blank has very similar level as confirmed by recursive integration, which most likely is related to peaks from noise. Applying filtering by blank subtraction further during the basic data processing workflow, would remove the irrelevant features, such as the example shown below.
 
@@ -635,13 +636,113 @@ plotFeaturePeaks(exS2_pg_fl, mz = 441.1670, rt = 916, ppm = 20, sec = 60)
 
 ## Annotation
 
+Annotation of isotopes and adducts is crucial not only to prioritize the relevant features but also to deliver essential information for further identification, such as charge, isotopic pattern and adduct yield.
+
+```{r annotation_processing, results='hide'}
+#creating settings for using CAMERA
+settings_an <- createSettings(
+  call = "peakAnnotation",
+  algorithm = "camera",
+  settings = list(
+    ionization = NA_character_,
+    onlyIsotopes = FALSE,
+    minSize = 1,
+    relMinReplicates = 1,
+    extraOpts = list(
+      sigma = 6,
+      perfwhm = 0.35,
+      cor_eic_th = 0.3,
+      graphMethod = "hcs",
+      pval = 0.05,
+      calcCiS = TRUE,
+      calcIso = TRUE,
+      calcCaS = TRUE,
+      maxcharge = 3,
+      maxiso = 5,
+      ppm = 15,
+      mzabs = 0.008,
+      rules =  data.table::fread(system.file("rules/primary_adducts_pos.csv", package = "CAMERA"), header = TRUE),
+      multiplier = 3,
+      max_peaks = 500,
+      intval = "maxo"
+    )
+  )
+)
+
+exS2_pg_fl_an <- peakAnnotation(exS2_pg_fl, settings = settings_an)
+```
+
+The results of annotation are stored under annotation of the _msFeatures_ S4 class and matches the [components](https://rickhelmus.github.io/patRoon/reference/components-class.html) S4 class of the [patRoon](https://github.com/rickhelmus/patRoon) package. This means that the feature components can be accessed via the `getAnnotation` method for an _msData_ object and inspected also with native methods from patRoon.
+
+### Inspection of annotation
+
+The annotation can be inspected with the `annotation` S4 method for the _msData_ object, as shown below. The method `plotAnnotation` can then be used to visualize the annotation of features, as shown below.
+
+```{r}
+#isotopic and adduct features annotated with a given target mz and rt
+t(annotation(exS2_pg_fl_an, mz = 441.1670, ppm = 10, rt = 916, sec = 5, all = FALSE))
+
+#plotting the annotation of each feature in a given target
+plotAnnotation(exS2_pg_fl_an, mz = 441.1670, ppm = 10, rt = 916, sec = 5, all = FALSE)
+```
+
 `r # TODO improve annotation of features/peaks``
+
+## Filter data
+
+Data filtration is crucial for proper prioritization of relevant peaks/features. In streamFind, two levels of data filtration is implemented.
+
+### Sub-seeting with '['
+
+The first is based on data sub-setting using the method `[` and is permanent, meaning that the peaks/features are completely removed from the _msAnalysis_/_msFeatures_. An example is shown below for data filtration using the `[` method for different classes.
+
+```{r}
+#sub-setting the msData class on analyses (the 3 first)
+exS2_pg[1:3, ]
+
+#sub-setting the msData class on analys2s and features (the 3 last analyses and features annotated with a target)
+target_s <- annotation(exS2_pg_fl_an, mz = 441.1670, ppm = 10, rt = 916, sec = 5, all = FALSE)
+exS2_pg_fl_an[4:6, target_s$id]
+
+#sub-seeting the msData class on analys2s and features by index
+exS2_pg_fl_an[1:2, 1:5]
+
+#sub-setting an msAnalysis class on the first 5 peaks
+exA2[1:5]
+```
+
+### Filter methods
+
+The second method uses filter methods (i.e., `filterPeaks` and `filterFeatures`) and is conservative, meaning that the data is conserved but tagged as filtered (i.e., the _filtered_ column is changed to `TRUE` and the respective filter tag is added to column _filter_, as shown below).
+Both filtered peaks and features can be permanently removed by running the methods `removeFilteredPeaks` or `removeFilteredFeatures`, respectively. Note that, removing features permanently does not remove filtered peaks but peaks not represented by features are filtered with "grouping" tag. 
+When removing peaks, the features left without peaks representation are removed as well.
+Also, the methods `peaks` and `features` have the argument _filtered_ to return filtered peaks/features. The default for _filtered_ argument is `TRUE`, meaning that filtered peaks/features are returned by default for methods `peaks` and `features`.
+
+`r # TODO add filtered argument to peaks and features methods`
+
+```{r}
+
+
+
+
+
+
+
+
+```
+
 
 ## Quality
 
+The quality of the data is crucial to improve the prioritization of peaks/features and the relevance of the results. In streamFind, two functions are available to calculate quality of peaks/features: `calculateSNR` and `calculateMetaClean` to estimate the signal-to-noise ration and several fitting parameters of each peak/feature, respectively. The latter is based on the [MetaClean](https://rdrr.io/cran/MetaClean/) R package and is applied via patRoon. It is important to emphasize that peaks/features should be filtered with basic filters (e.g., blank subtraction, minimum intensity, etc.) before applying quality calculation has the computational demand for large number of peaks/features is high.
 
-## Filter
+```{r}
 
+exS2_pg <- calculateSNR(exS2_pg, targetsID = features(exS2_pg)[["id"]][1:5])
+
+features(exS2_pg, complete = TRUE)[1:5, ]
+
+```
 
 # MSn
 
@@ -719,6 +820,24 @@ plotMS2s(exS1, mz = targets04, settings = settings_msn, interactive = TRUE, colo
 # Miscellaneous
 
 ```{r demoCode, echo=FALSE, eval=FALSE, include=FALSE}
+
+
+# object <- exS2_pg_fl
+# settings <- annotationSettingsDefaultCAMERA()
+# settings <- annotationSettingsDefaultRAMClustR()
+# object <- addParameters(object, where = "features", settings)
+# 
+# 
+# 
+# findFGroup(comp, "M239_R936_497")
+# as.data.frame(comp[702, ])
+# 
+# mapPeaks(object, mz = data.table(mzmin = 208, mzmax = 220, rtmin = 635, rtmax = 645))
+# 
+# plotXICs(object, analyses = 1:2, mz = 262.0450, ppm = 40, rt = 936, sec = 120)
+# 
+# View(features(object, mz = 441.1670, ppm = 20, rt = 916, sec = 10, complete = TRUE))
+# View(features(object, complete = TRUE)[monoiso %in% "m441.168_d0.7_r916_t6_f3225", ])
 
 # trimSpectraFilesMZR(files = choose.files(), rtr = c(500, 1000), mzr = c(200, 800), onlyMS1 = TRUE)
 # 
@@ -866,7 +985,7 @@ body, p {
   color: black;
   font-family: Arial;
   text-align: justify;
-  font-size: 12pt;
+  font-size: 14pt;
 }
 h1{
   font-size: 26pt;

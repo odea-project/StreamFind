@@ -57,6 +57,7 @@
 \alias{plotPeaks,msAnalysis,msAnalysis-method}
 \alias{mapPeaks,msAnalysis-method}
 \alias{mapPeaks,msAnalysis,msAnalysis-method}
+\alias{[,msAnalysis,ANY,missing,missing-method}
 \title{msAnalysis-class}
 \usage{
 ## S4 method to initialize an "msAnalysis" object \cr
@@ -145,7 +146,7 @@
 
 \S4method{loadRawData}{msAnalysis}(object)
 
-\S4method{spectra}{msAnalysis}(object)
+\S4method{spectra}{msAnalysis}(obj)
 
 \S4method{hasAdjustedRetentionTime}{msAnalysis}(object)
 
@@ -179,6 +180,8 @@
   ylim = 0.05,
   title = NULL
 )
+
+\S4method{[}{msAnalysis,ANY,missing,missing}(x, i, j, ..., drop = TRUE)
 }
 \arguments{
 \item{object}{An \linkS4class{msAnalysis} object.}
@@ -234,6 +237,8 @@ the number of rows to grid the plots.}
 \item{xlim}{A length one or two numeric vector for setting the \emph{x} limits of a plot.}
 
 \item{ylim}{A length one or two numeric vector for setting the \emph{y} limits of a plot.}
+
+\item{i}{The indice/s or name/s of the peaks to keep in the \code{x} object.}
 
 \item{file}{A character string with the complete file path.}
 
@@ -372,6 +377,8 @@ can be used to legend the plot.
 \item \code{mapPeaks}: a method for mapping peaks mass and time space.
 The \code{legendNames} is a character vector with the same length as targets for plotting and
 can be used to legend the plot.
+
+\item \code{[}: subset on peaks, using peak index or name.
 }}
 
 \section{Slots}{

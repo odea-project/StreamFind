@@ -3,12 +3,24 @@
 \docType{class}
 \name{msFeatures-class}
 \alias{msFeatures-class}
+\alias{[,msFeatures,ANY,missing,missing-method}
 \title{msFeatures-class}
+\usage{
+\S4method{[}{msFeatures,ANY,missing,missing}(x, i, j, ..., drop = TRUE)
+}
+\arguments{
+\item{i}{The indice/s or name/s of the analyses to keep in the \code{x} object.}
+}
 \description{
 An S4 class representing an MS sample/file within the \pkg{streamFind} package.
 The \code{msFeatures} is used to store and manage MS data and the respective methods can be used
 for inspection, processing and evaluation.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{[}: subset on analyses, using analysis index or name.
+}}
+
 \section{Slots}{
 
 \describe{

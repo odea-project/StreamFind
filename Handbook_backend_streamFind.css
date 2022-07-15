@@ -1,0 +1,38 @@
+body .main-container {
+  max-width: 1280px !important;
+  width: 1280px !important;
+}
+body {
+  max-width: 1280px !important;
+}
+body, p {
+  color: black;
+  font-family: Arial;
+  text-align: justify;
+  font-size: 14pt;
+}
+h1{
+  font-size: 26pt;
+  font-weight: bold;
+}
+h2{
+  font-size:20pt;
+  font-weight: bold;
+}
+h3{
+  font-size:16pt;
+  font-weight: bold;
+}
+list-group-item .active{
+  background-color: #239B56;
+}
+list-group-item .active:focus{
+  background-color: #239B56;
+}
+list-group-item .active:hover{
+  background-color: #239B56;
+}
+caption {
+  color: black;
+  font-size: 1.0em;
+}

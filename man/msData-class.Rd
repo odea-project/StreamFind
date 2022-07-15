@@ -48,6 +48,13 @@
 \alias{plotFeatures,msData,msData-method}
 \alias{as.featureGroups,msData-method}
 \alias{as.featureGroups,msData,msData-method}
+\alias{annotation,msData-method}
+\alias{annotation,msData,msData-method}
+\alias{plotAnnotation,msData-method}
+\alias{plotAnnotation,msData,msData-method}
+\alias{[,msData,ANY,ANY,missing-method}
+\alias{[,msData,ANY,ANY,ANY-method}
+\alias{filterFeatures,msData-method}
 \title{msData}
 \usage{
 \S4method{show}{msData}(object)
@@ -146,7 +153,7 @@
 
 \S4method{loadRawData}{msData}(object, analyses = NULL)
 
-\S4method{spectra}{msData}(object, analyses = NULL)
+\S4method{spectra}{msData}(obj)
 
 \S4method{hasAdjustedRetentionTime}{msData}(object)
 
@@ -221,6 +228,35 @@
 )
 
 \S4method{as.featureGroups}{msData}(object)
+
+\S4method{annotation}{msData}(
+  object,
+  targetsID = NULL,
+  mz = NULL,
+  ppm = 20,
+  rt = NULL,
+  sec = 60,
+  id = NULL,
+  all = FALSE
+)
+
+\S4method{plotAnnotation}{msData}(
+  object,
+  targetsID = NULL,
+  mz = NULL,
+  ppm = 20,
+  rt = NULL,
+  sec = 30,
+  id = NULL,
+  all = FALSE,
+  colorBy = "isotopes"
+)
+
+\S4method{[}{msData,ANY,ANY,missing}(x, i, j, ..., drop = TRUE)
+
+\S4method{[}{msData,ANY,ANY,ANY}(x, i, j, p)
+
+\S4method{filterFeatures}{msData}(object, ...)
 }
 \arguments{
 \item{object}{An \linkS4class{msData} object.}
@@ -230,6 +266,10 @@ When \code{NULL}, all the analyses are used.}
 
 \item{i}{A character or numeric vector with the indice/s or name/s of
 the analysis to keep while sub-setting.}
+
+\item{j}{The indice/s or \emph{id}/s for of analyses, features or/and peaks to keep.}
+
+\item{...}{List of arguments for the respective method.}
 
 \item{mz}{A vector with target \emph{m/z} values or
 a two columns data.table or data.frame with minimum and maximum \emph{m/z} values.
@@ -275,6 +315,8 @@ the number of rows to grid the plots.}
 
 \item{settings}{A \linkS4class{settings} S4 class object with call for \code{extractMSn}.}
 
+\item{obj}{An \linkS4class{msData} object.}
+
 \item{where}{A character vector defining where to get the \linkS4class{settings}.}
 
 \item{call}{The call name of the settings to retrieve.}
@@ -286,6 +328,8 @@ the number of rows to grid the plots.}
 \item{ylim}{A length one or two numeric vector for setting the \emph{y} limits of a plot.}
 
 \item{complete}{Logical, set to \code{TRUE} for a complete version of the output.}
+
+\item{all}{Logical, set to \code{TRUE} for displaying all features/peaks.}
 
 \item{settigns}{A \linkS4class{settings} object.}
 }
@@ -300,11 +344,7 @@ The \code{msData} object inherits the \linkS4class{streamProject} structure with
 
 \item \code{getAnalyses}: getter for analysis names.
 
-\item \code{[}: subset on analysis, using analysis index or name.
-Note that filtering of features is lazy to make it fast.
-Only average \emph{m/z}, retention time and intensity are updated.
-Run updateFeatureTable() with \code{FAST} set to \code{FALSE} for a complete update of
-features. Note that the update might invalitate present quality parameters and annotation.
+\item \code{[}: subset on analyses, using index or analyses name.
 
 \item \code{polarities}: getter for analyses polarity.
 
@@ -431,6 +471,43 @@ is set to "targets" automatically.
 
 \item \code{as.featureGroups}: converts the \linkS4class{msData}
 to a \linkS4class{featureGroups} object from the package \pkg{patRoon}.
+
+\item \code{annotation}: getter for annotation (i.e., isotopes and adducts clusters).
+When giving the argument \code{all} as \code{TRUE},
+all the features within the target feature annotation cluster are included in the output.
+
+\item \code{plotAnnotation}: plots peaks from given feature annotation targets
+in the \linkS4class{msData} object. The \code{colorBy} argument can be
+set to \code{"isotopes"} for coloring by monoisotopic mass instead of neutral mass of the cluster.
+
+\item \code{[}: subset on analyses and features, using index or name.
+Note that this method is irreversible.
+
+\item \code{[}: subset on analyses, features and peaks, using index or name.
+Note that this method is irreversible.
+
+\item \code{filterFeatures}: filter features in an \linkS4class{msData} object.
+Filters can be given with extra arguments (i.e., \code{...}).
+The available filters are as follows:
+\itemize{
+ \item \code{minIntensity}: features below a minimum intensity threshold.
+For example, minIntensity = 3000, removes features with maximum
+peak representation below 3000 counts;
+ \item \code{blankThreshold}: features that are not more intense than a defined
+threshold multiplier of the assigned blank intensity.
+For example, blankThreshold = 3, features with maximum peak representation
+that are not higher than 3 times the blank intensity;
+ \item \code{maxReplicateIntensityDeviation} features based on a
+maximum standard deviation (SD), in percentage, among replicate samples.
+For example, maxReplicateIntensityDeviation = 30, filters features that do not have
+the SD below 30% in at least one sample replicate group.
+ \item \code{minReplicateAbundance}: features that are not present with at least
+a specified frequency in one sample replicate group.
+For example, minReplicateAbundance = 2, filters featues that are not represented
+in at least two samples within a replicate.
+ \item \code{snRatio} features below a minimum signal-to-noise (s/n) ratio threshold.
+For example, snRatio = 3, filters features below a s/n ratio of 3.
+}
 }}
 
 \section{Slots}{

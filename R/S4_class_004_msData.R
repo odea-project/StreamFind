@@ -64,6 +64,8 @@ setClass("msData",
 #'
 #' @export
 #'
+#' @importFrom data.table data.table
+#'
 setMethod("show", "msData", function(object) {
 
   cat(
@@ -75,12 +77,16 @@ setMethod("show", "msData", function(object) {
     sep = ""
   )
   if (length(object@analyses) > 0) {
-    tb <- data.frame(
+    tb <- data.table(
       replicate = sapply(object@analyses, function(x) x@replicate),
       blank = sapply(object@analyses, function(x) x@blank),
       class = sapply(object@analyses, function(x) is(x)),
       peaks = sapply(object@analyses, function(x) nrow(x@peaks))
     )
+
+    if (nrow(object@features@metadata) > 0) {
+      tb$features <- apply(object@features@intensity[, .SD, .SDcols = analyses(object)], 2, function(x) length(x[x > 0]))
+    }
     print(tb)
     # for (i in seq_len(length(object@analyses))) {
     #   cat("      - ", names(object@analyses[i]), " (", is(object@analyses[[i]])  , "-class) \n", sep = "")
@@ -116,56 +122,35 @@ setMethod("getAnalyses", "msData", function(object, analyses = NULL) {
   return(list())
 })
 
-#### [ sub-setting analysis ----------------------------------------------
+#### [ sub-setting analyses ----------------------------------------------
 
-#' @describeIn msData subset on analysis, using analysis index or name.
-#' Note that filtering of features is lazy to make it fast.
-#' Only average \emph{m/z}, retention time and intensity are updated.
-#' Run updateFeatureTable() with \code{FAST} set to \code{FALSE} for a complete update of
-#' features. Note that the update might invalitate present quality parameters and annotation.
+#' @describeIn msData subset on analyses, using index or analyses name.
 #'
 #' @template args-single-i-subsetting
 #'
 #' @export
 #'
-#' @importMethodsFrom patRoon analyses groupNames
+#' @importFrom data.table copy
 #'
 setMethod("[", c("msData", "ANY", "missing", "missing"), function(x, i, ...) {
 
   if (!missing(i)) {
 
-    object <- callNextMethod()
+    x <- callNextMethod()
 
-    return(object)
+    x@features <- x@features[i]
 
-    # if (!is.character(i)) {
-    #   sname <- analyses(x)[i]
-    #   sidx <- i
-    # } else {
-    #   if (FALSE %in% (i %in% analyses(x))) {
-    #     warning("Given analysis name/s not found in the msData object.")
-    #     return(x)
-    #   }
-    #   sname <- i
-    #   sidx <- which(analyses(x) %in% sname)
-    # }
-    #
-    # x@analyses <- x@analyses[sidx]
-
-
-    # if (length(analyses(x@pat)) > 0) {
-    #
-    #   x@pat <- x@pat[sidx]
-    #
-    #   if (nrow(x@peaks) > 0) {
-    #     x@peaks <- x@peaks[sample %in% sname, ]
-    #     x@peaks <- x@peaks[feature %in% groupNames(x@pat), ]
-    #   }
-    #
-    #   if (nrow(x@features) > 0) x <- updateFeatureTable(x, fast = TRUE)
-    #
-    #   if (nrow(x@unified) > 0) x@unified <- x@unified[id %in% unique(x@peaks$feature), ]
-    # }
+    #when has features, updates feature column in peaks slot of each analysis
+    if (nrow(x@features@metadata) > 0) {
+      f_id <- features(x)[["id"]]
+      x@analyses <- lapply(x@analyses, function(z, f_id) {
+        temp <- z@peaks
+        temp[!feature %in% f_id, `:=`(feature = NA_character_, filtered = TRUE, filter = "grouping")]
+        z@peaks <- copy(temp)
+        return(z)
+      }, f_id = f_id)
+    }
+    return(x)
   }
 
   return(x)
@@ -481,12 +466,9 @@ setMethod("loadRawData", "msData", function(object, analyses = NULL) {
 #'
 #' @aliases spectra,msData,msData-method
 #'
-setMethod("spectra", "msData", function(object, analyses = NULL) {
+setMethod("spectra", "msData", function(obj) {
 
-  analyses <- checkAnalysesArgument(object, analyses)
-  object <- object[analyses]
-
-  spec <- lapply(object@analyses, function(x) {
+  spec <- lapply(obj@analyses, function(x) {
     return(x@spectra)
   })
   spec <- rbindlist(spec, idcol = "analysis")
@@ -623,7 +605,11 @@ setMethod("as.features", "msData", function(object) {
   anaInfo <- analysisInfo(object)
 
   feat <- lapply(object@analyses, function(x) {
+
     ft <- copy(x@peaks)
+
+    if ("filtered" %in% colnames(ft)) ft <- ft[!ft$filtered, ]
+
     setnames(ft,
       c("id", "rt", "rtmin", "rtmax", "feature"),
       c("ID", "ret", "retmin", "retmax", "group"),
@@ -655,6 +641,7 @@ setMethod("as.features", "msData", function(object) {
 #' Also, analyses can be selected using the \code{analyses} argument.
 #'
 #' @template args-single-targetsID
+#' @template args-single-filtered
 #'
 #' @export
 #'
@@ -666,15 +653,21 @@ setMethod("peaks", "msData", function(object,
                                       analyses = NULL,
                                       targetsID = NULL,
                                       mz = NULL, ppm = 20,
-                                      rt = NULL, sec = 60) {
+                                      rt = NULL, sec = 60,
+                                      filtered = TRUE) {
 
   analyses <- checkAnalysesArgument(object, analyses)
-  obj <- object[which(analyses %in% analyses(object))]
+  obj <- object
+  obj@analyses <- obj@analyses[analyses]
 
-  pks <- lapply(obj@analyses, function(x) {
-    pks_a <- peaks(x, targetsID, mz, rt, ppm, sec)
+  pks <- lapply(obj@analyses, function(x, filtered) {
+    pks_a <- peaks(
+      x, targetsID = targetsID,
+      mz = mz, rt = rt, ppm = ppm, sec = sec,
+      filtered = filtered
+    )
     return(pks_a)
-  })
+  }, filtered = filtered)
 
   pks <- rbindlist(pks, idcol = "analysis")
   rpl <- data.table(analysis = analyses(obj), replicate = replicates(obj))
@@ -710,15 +703,17 @@ setMethod("plotPeaks", "msData", function(object,
                                           targetsID = NULL,
                                           mz = NULL, ppm = 20,
                                           rt = NULL, sec = 30,
+                                          filtered = TRUE,
                                           colorBy = "targets",
                                           legendNames = NULL,
                                           title = NULL,
                                           interactive = FALSE) {
 
   analyses <- checkAnalysesArgument(object, analyses)
-  obj <- object[which(analyses %in% analyses(object))]
+  obj <- object
+  obj@analyses <- obj@analyses[analyses]
 
-  pks <- peaks(obj, analyses = NULL, targetsID, mz, ppm, rt, sec)
+  pks <- peaks(obj, analyses = NULL, targetsID, mz, ppm, rt, sec, filtered)
 
   pks_tars <- copy(pks[, .(analysis, replicate, id, mz, rt, mzmin, mzmax, rtmin, rtmax)])
   pks_tars$rtmin <- min(pks_tars$rtmin) - 60
@@ -765,6 +760,7 @@ setMethod("mapPeaks", "msData", function(object,
                                          targetsID = NULL,
                                          mz = NULL, ppm = 20,
                                          rt = NULL, sec = 30,
+                                         filtered = TRUE,
                                          colorBy = "targets",
                                          legendNames = NULL,
                                          xlim = 30,
@@ -776,7 +772,8 @@ setMethod("mapPeaks", "msData", function(object,
     analyses,
     targetsID,
     mz, ppm,
-    rt, sec
+    rt, sec,
+    filtered
   )
 
   if (nrow(pks) < 1) return(cat("Requested peaks were not found!"))
@@ -822,19 +819,29 @@ setMethod("features", "msData", function(object,
                                          targetsID = NULL,
                                          mz = NULL, ppm = 20,
                                          rt = NULL, sec = 60,
+                                         filtered = TRUE,
                                          complete = FALSE,
                                          average = TRUE) {
 
-  feats <- object@features
+  if (!filtered) {
+    ft_to_keep <- object@features@metadata$id[!object@features@metadata$filtered]
+    feats <- object@features[ft_to_keep]
+  } else {
+    feats <- object@features
+  }
 
   if (!is.null(targetsID)) {
     out_fts <- feats@intensity[id %in% targetsID, ]
   } else if (!is.null(mz)) {
-    targets <- makeTargets(mz, rt, ppm, sec)
+    targets <- makeTargets(mz = mz, rt = rt, ppm = ppm, sec = sec)
     sel <- rep(FALSE, nrow(feats@metadata))
     for (i in seq_len(nrow(targets))) {
-      sel[between(feats@metadata$mz, targets$mzmin[i], targets$mzmax[i]) &
-            between(feats@metadata$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
+      if (targets$rtmax[i] > 0) {
+        sel[between(feats@metadata$mz, targets$mzmin[i], targets$mzmax[i]) &
+              between(feats@metadata$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
+      } else {
+        sel[between(feats@metadata$mz, targets$mzmin[i], targets$mzmax[i])] <- TRUE
+      }
     }
     out_fts <- feats@intensity[sel]
   } else {
@@ -896,31 +903,34 @@ setMethod("features", "msData", function(object,
 #' @aliases plotFeatures,msData,msData-method
 #'
 setMethod("plotFeatures", "msData", function(object,
-                                              analyses = NULL,
-                                              targetsID = NULL,
-                                              mz = NULL, ppm = 20,
-                                              rt = NULL, sec = 30,
-                                              colorBy = "targets",
-                                              legendNames = NULL,
-                                              title = NULL,
-                                              interactive = FALSE) {
+                                             analyses = NULL,
+                                             targetsID = NULL,
+                                             mz = NULL, ppm = 20,
+                                             rt = NULL, sec = 30,
+                                             filtered = TRUE,
+                                             colorBy = "targets",
+                                             legendNames = NULL,
+                                             title = NULL,
+                                             interactive = FALSE) {
 
   analyses <- checkAnalysesArgument(object, analyses)
   obj <- object[which(analyses %in% analyses(object))]
 
   feats <- features(
-    obj,
-    targetsID,
-    mz,
-    ppm,
-    rt,
-    sec
+    object = obj,
+    targetsID = targetsID,
+    mz = mz,
+    ppm = ppm,
+    rt = rt,
+    sec = sec,
+    filtered = filtered
   )
 
   pks <- peaks(
     obj,
     analyses,
-    targetsID = feats$id
+    targetsID = feats$id,
+    filtered = filtered
   )
 
   if (!is.null(legendNames) & length(legendNames) == length(unique(pks$feature))) {
@@ -945,12 +955,16 @@ setMethod("plotFeatures", "msData", function(object,
   adj_rt <- hasAdjustedRetentionTime(obj)
   if (TRUE %in% adj_rt) {
     for (i in names(adj_rt)[adj_rt]) {
-      eic[analysis == i, rt := sapply(rt, function(x, ana) {
-        ana@spectra[rt == x, rtAdjusted]
-      }, ana = getAnalyses(obj, analyses = i))]
-      pks[analysis == i, rt := sapply(rt, function(x, ana) {
-        ana@spectra[rt == x, rtAdjusted]
-      }, ana = getAnalyses(obj, analyses = i))]
+      eic[analysis == i, rt := unlist(sapply(rt, function(x, ana) {
+        temp <- copy(ana@spectra[rt == x, ])
+        return(temp$rtAdjusted)
+      }, ana = getAnalyses(obj, analyses = i)))]
+
+      # TODO Adds the retention adjustment to the peak average, not working
+      # pks[analysis == i, rt := unlist(sapply(rt, function(x, ana) {
+      #   temp <- copy(ana@spectra[rt == x, ])
+      #   return(temp$rtAdjusted)
+      # }, ana = getAnalyses(obj, analyses = i)))]
     }
   }
 
@@ -989,13 +1003,16 @@ setMethod("as.featureGroups", "msData", function(object) {
 
   groupInfo_temp <- object@features@metadata
   groupInfo <- copy(groupInfo_temp)
-  groupInfo <- as.data.frame(groupInfo[, .(rt, mz)])
-  colnames(groupInfo) <- c("rts", "mzs")
+  groupInfo <- as.data.frame(groupInfo[, .(rt, mz, id)])
+  colnames(groupInfo) <- c("rts", "mzs", "id")
 
-  new_id <- object@features@metadata[, .(index, mz, rt)]
-  new_id <- paste0("M", round(new_id$mz, digits = 0),
-                  "_R", round(new_id$rt, digits = 0),
-                  "_", new_id$index)
+  new_id <- object@features@metadata$id
+
+  # make group id as patRoon, so far works without it
+  # new_id <- object@features@metadata[, .(index, mz, rt)]
+  # new_id <- paste0("M", round(new_id$mz, digits = 0),
+  #                 "_R", round(new_id$rt, digits = 0),
+  #                 "_", new_id$index)
 
   colnames(groups) <- new_id
   rownames(groups) <- seq_len(nrow(groups))
@@ -1007,7 +1024,249 @@ setMethod("as.featureGroups", "msData", function(object) {
   colnames(ftindex) <- new_id
   rownames(ftindex) <- seq_len(nrow(ftindex))
 
+  # TODO adapt to exclude filtered features
   # TODO adapt for as.featuresSet when multiple polarities present
 
   return(new("featureGroupsOpenMS", groups = groups, analysisInfo = anaInfo, groupInfo = groupInfo, features = feat, ftindex = ftindex))
+})
+
+
+### annotation -----------------------------------------------------------
+
+#' @describeIn msData getter for annotation (i.e., isotopes and adducts clusters).
+#' When giving the argument \code{all} as \code{TRUE},
+#' all the features within the target feature annotation cluster are included in the output.
+#'
+#' @param all Logical, set to \code{TRUE} for displaying all features/peaks.
+#'
+#' @export
+#'
+#' @aliases annotation,msData,msData-method
+#'
+setMethod("annotation", "msData", function(object,
+                                           targetsID = NULL,
+                                           mz = NULL, ppm = 20,
+                                           rt = NULL, sec = 60, id = NULL,
+                                           all = FALSE) {
+
+  feats <- object@features@metadata
+
+  if (!"component" %in% colnames(feats)) {
+    return(cat("Annotation seems to not be present in the given object!"))
+  }
+
+  if (!is.null(targetsID)) {
+    feats <- feats[id %in% targetsID, ]
+  } else {
+    targets <- makeTargets(mz = mz, rt = rt, ppm = ppm, sec = sec, id = id)
+
+    sel <- rep(FALSE, nrow(feats))
+    for (i in seq_len(nrow(targets))) {
+      sel[between(feats$mz, targets$mzmin[i], targets$mzmax[i]) &
+            between(feats$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
+    }
+
+    feats <- feats[sel]
+  }
+
+  all_feats <- features(object, complete = TRUE, average = TRUE)
+
+  if (all) {
+    outfeats <- all_feats[component %in% feats$component, ]
+  } else {
+    outfeats <- all_feats[(monoiso %in% feats$id | neutralMass %in% feats$neutralMass) & component %in% feats$component, ]
+  }
+
+  return(outfeats)
+})
+
+
+### plotAnnotation -------------------------------------------------------
+
+#' @describeIn msData plots peaks from given feature annotation targets
+#' in the \linkS4class{msData} object. The \code{colorBy} argument can be
+#' set to \code{"isotopes"} for coloring by monoisotopic mass instead of neutral mass of the cluster.
+#'
+#' @export
+#'
+#' @importFrom data.table rbindlist
+#'
+#' @aliases plotAnnotation,msData,msData-method
+#'
+setMethod("plotAnnotation", "msData", function(object,
+                                               targetsID = NULL,
+                                               mz = NULL, ppm = 20,
+                                               rt = NULL, sec = 30, id = NULL,
+                                               all = FALSE,
+                                               colorBy = "isotopes") {
+
+  comps <- annotation(
+    object = object,
+    targetsID = targetsID,
+    mz = mz,
+    ppm = ppm,
+    rt = rt,
+    sec = sec,
+    all = all
+  )
+
+  return(
+    plotAnnotationInteractive(
+      object = object,
+      comps = comps,
+      colorBy = colorBy
+    )
+  )
+})
+
+
+### [ sub-setting features -----------------------------------------------
+
+#' @describeIn msData subset on analyses and features, using index or name.
+#' Note that this method is irreversible.
+#'
+#' @param j The indice/s or \emph{id}/s for of features to keep.
+#'
+#' @export
+#'
+#' @importClassesFrom patRoon components
+#' @importFrom data.table copy
+#'
+setMethod("[", c("msData", "ANY", "ANY", "missing"), function(x, i, j, ...) {
+
+  if (!missing(i)) x <- x[i]
+
+  if (!missing(j)) {
+
+    if (nrow(x@features@metadata) == 0) {
+      warning("There are no features in the msData object!")
+      return(x)
+    }
+
+    if (!is.character(j)) j <- features(x)$id[j]
+
+    x@features@intensity <- x@features@intensity[id %in% j, ]
+    x@features@metadata <- x@features@metadata[id %in% j, ]
+
+    x@analyses <- lapply(x@analyses, function(z, j) {
+      temp <- z@peaks
+      temp[!feature %in% j, `:=`(feature = NA_character_, filtered = TRUE, filter = "grouping")]
+      z@peaks <- copy(temp)
+      return(z)
+    }, j = j)
+
+    #if (length(x@features@annotation) > 0) x@features@annotation[[1]] <- x@features@annotation[[1]][, j]
+  }
+
+  return(x)
+})
+
+### [ sub-setting peaks -----------------------------------------------
+
+#' @describeIn msData subset on analyses, features and peaks, using index or name.
+#' Note that this method is irreversible.
+#'
+#' @param j The indice/s or \emph{id}/s for of analyses, features or/and peaks to keep.
+#'
+#' @export
+#'
+#' @importClassesFrom patRoon components
+#' @importFrom data.table copy
+#'
+setMethod("[", c("msData", "ANY", "ANY", "ANY"), function(x, i, j, p) {
+
+  if (!missing(i)) x <- x[i]
+
+  if (!missing(j)) x <- x[, j]
+
+  if (!missing(p)) {
+
+    if (!is.character(p)) {
+      p <- peaks(x)$id[p]
+      x@analyses <- lapply(x@analyses, function(z, p) {
+        temp <- z@peaks
+        temp <- temp[id %in% p, ]
+        z@peaks <- copy(temp)
+        return(z)
+      }, p = p)
+
+    #sub-sets the index of each analysis
+    } else {
+      x@analyses <- lapply(x@analyses, function(z, p) {
+        temp <- z@peaks
+        temp <- temp[p, ]
+        z@peaks <- copy(temp)
+        return(z)
+      }, p = p)
+    }
+  }
+
+  return(x)
+})
+
+### filterFeatures ---------------------------------------------------------------
+
+#' @describeIn msData filter features in an \linkS4class{msData} object.
+#' Filters can be given with extra arguments (i.e., \code{...}).
+#' The available filters are as follows:
+#' \itemize{
+#'  \item \code{minIntensity}: features below a minimum intensity threshold.
+#' For example, minIntensity = 3000, removes features with maximum
+#' peak representation below 3000 counts;
+#'  \item \code{blankThreshold}: features that are not more intense than a defined
+#' threshold multiplier of the assigned blank intensity.
+#' For example, blankThreshold = 3, features with maximum peak representation
+#' that are not higher than 3 times the blank intensity;
+#'  \item \code{maxReplicateIntensityDeviation} features based on a
+#' maximum standard deviation (SD), in percentage, among replicate samples.
+#' For example, maxReplicateIntensityDeviation = 30, filters features that do not have
+#' the SD below 30% in at least one sample replicate group.
+#'  \item \code{minReplicateAbundance}: features that are not present with at least
+#' a specified frequency in one sample replicate group.
+#' For example, minReplicateAbundance = 2, filters featues that are not represented
+#' in at least two samples within a replicate.
+#'  \item \code{snRatio} features below a minimum signal-to-noise (s/n) ratio threshold.
+#' For example, snRatio = 3, filters features below a s/n ratio of 3.
+#' }
+#'
+#' @param obj An \linkS4class{msData} object.
+#' @param ... List of arguments for the respective method.
+#'
+#' @export
+#'
+setMethod("filterFeatures", "msData", function(object, ...) {
+
+  filterList <- list(...)
+
+  if (length(filterList) == 0) {
+    warning("No filters selected or recognized.")
+    return(obj)
+  }
+
+  filters <- names(filterList)
+
+  listOfViableFilters <- c(
+    "minIntensity",
+    "blankThreshold",
+    "maxReplicateIntensityDeviation",
+    "snRatio",
+    "minReplicateAbundance"
+  )
+
+  if (!all(filters %in% listOfViableFilters)) {
+    warning("At least one filters is not recognized.")
+    return(obj)
+  }
+
+  for (i in seq_len(length(filters))) {
+    switch(names(filterList)[i],
+           minIntensity = (obj <- minIntensity(obj, unlist(filterList[i]))),
+           blankThreshold = (obj <- blankThreshold(obj, unlist(filterList[i]))),
+           maxReplicateIntensityDeviation = (obj <- maxReplicateIntensityDeviation(obj, unlist(filterList[i]))),
+           minReplicateAbundance = (obj <- minReplicateAbundance(obj, unlist(filterList[i]))),
+           snRatio = (obj <- snRatio(obj, unlist(filterList[i])))
+    )
+  }
+
+  return(obj)
 })

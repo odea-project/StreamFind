@@ -67,7 +67,7 @@ setGeneric("loadRawData", function(object, ...) standardGeneric("loadRawData"))
 #' spectra
 #'
 #' @noRd
-setGeneric("spectra", function(object, ...) standardGeneric("spectra"))
+setGeneric("spectra", function(obj, ...) standardGeneric("spectra"))
 
 #' EICs
 #'
@@ -139,21 +139,25 @@ setGeneric("plotFeatures", function(object, ...) standardGeneric("plotFeatures")
 #' @noRd
 setGeneric("mapFeatures", function(object, ...) standardGeneric("mapFeatures"))
 
+#' filterFeatures
+#'
+#' @noRd
+setGeneric("filterFeatures", function(object, ...) standardGeneric("filterFeatures"))
+
 #' hasAdjustedRetentionTime
 #'
 #' @noRd
 setGeneric("hasAdjustedRetentionTime", function(object) standardGeneric("hasAdjustedRetentionTime"))
 
-#' components
+#' annotation
 #'
 #' @noRd
-setGeneric("components", function(object, ...) standardGeneric("components"))
+setGeneric("annotation", function(object, ...) standardGeneric("annotation"))
 
-#' plotComponents
+#' plotAnnotation
 #'
 #' @noRd
-setGeneric("plotComponents", function(object, ...) standardGeneric("plotComponents"))
-
+setGeneric("plotAnnotation", function(object, ...) standardGeneric("plotAnnotation"))
 
 #' addParameters
 #'

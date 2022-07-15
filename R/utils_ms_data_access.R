@@ -277,6 +277,8 @@ extractEICs <- function(object = NULL,
     targets[mzmin == 0, mzmin := metadata(ms_ana, which = "lowMz")$lowMz]
     targets[mzmax == 0, mzmax := metadata(ms_ana, which = "highMz")$highMz]
 
+    # TODO check if analyses has spectra to use that instead
+
     eic <- patRoon::getEICs(fl, targets[, .(retmin, retmax, mzmin, mzmax)])
 
     names(eic) <- targets[["id"]]
@@ -315,7 +317,8 @@ loadBasicRawSpectraHeaderMZR <- function(file) {
 }
 
 
-#' @importFrom mzR openMSfile header peaks chromatogramHeader chromatograms
+#' @importFrom mzR openMSfile
+#' @importMethodsFrom mzR header peaks chromatogramHeader chromatograms
 #' @importFrom data.table data.table as.data.table rbindlist copy
 #' @importFrom dplyr inner_join
 #'
@@ -448,6 +451,8 @@ extractXICs <- function(object = NULL,
   targets <- makeTargets(mz, rt, ppm, sec, id)
 
   xicList <- list()
+
+  # TODO check if analyses has spectra to use that instead
 
   xicList <- lapply(analyses, function(x, targets, object) {
 
