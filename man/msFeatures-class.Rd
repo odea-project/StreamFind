@@ -3,13 +3,56 @@
 \docType{class}
 \name{msFeatures-class}
 \alias{msFeatures-class}
+\alias{analyses,msFeatures-method}
+\alias{analyses,msFeatures,msFeatures-method}
+\alias{replicates,msFeatures-method}
+\alias{replicates,msFeatures,msFeatures-method}
+\alias{blanks,msFeatures-method}
+\alias{blanks,msFeatures,msFeatures-method}
+\alias{addParameters,msFeatures-method}
+\alias{addParameters,msFeatures,msFeatures-method}
+\alias{getParameters,msFeatures-method}
+\alias{getParameters,msFeatures,msFeatures-method}
+\alias{features,msFeatures-method}
+\alias{features,msFeatures,msFeatures-method}
 \alias{[,msFeatures,ANY,missing,missing-method}
+\alias{[,msFeatures,ANY,ANY,missing-method}
 \title{msFeatures-class}
 \usage{
+\S4method{analyses}{msFeatures}(obj)
+
+\S4method{replicates}{msFeatures}(object)
+
+\S4method{blanks}{msFeatures}(object)
+
+\S4method{addParameters}{msFeatures}(object, settings)
+
+\S4method{getParameters}{msFeatures}(object, call = NULL)
+
+\S4method{features}{msFeatures}(
+  object,
+  targetsID = NULL,
+  mz = NULL,
+  ppm = 20,
+  rt = NULL,
+  sec = 60,
+  filtered = TRUE,
+  complete = FALSE,
+  average = TRUE
+)
+
 \S4method{[}{msFeatures,ANY,missing,missing}(x, i, j, ..., drop = TRUE)
+
+\S4method{[}{msFeatures,ANY,ANY,missing}(x, i, j, ..., drop = TRUE)
 }
 \arguments{
-\item{i}{The indice/s or name/s of the analyses to keep in the \code{x} object.}
+\item{call}{The call name of the settings to retrieve.}
+
+\item{complete}{Logical, set to \code{TRUE} for a complete version of the output.}
+
+\item{i}{The indice/s or name/s of the features to keep in the \code{x} object.}
+
+\item{settigns}{A \linkS4class{settings} object.}
 }
 \description{
 An S4 class representing an MS sample/file within the \pkg{streamFind} package.
@@ -18,7 +61,22 @@ for inspection, processing and evaluation.
 }
 \section{Methods (by generic)}{
 \itemize{
+\item \code{analyses}: getter for analysis names.
+
+\item \code{replicates}: getter for replicate names.
+
+\item \code{blanks}: getter for blank names.
+
+\item \code{addParameters}: adds processing parameters for features.
+
+\item \code{getParameters}: gets processing parameters.
+
+\item \code{features}: getter for features (i.e., grouped peaks). When
+complete is set to \code{TRUE}, additional feature metadata is also returned.
+
 \item \code{[}: subset on analyses, using analysis index or name.
+
+\item \code{[}: subset on features, using feature index or name.
 }}
 
 \section{Slots}{

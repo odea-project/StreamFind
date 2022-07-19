@@ -1,5 +1,5 @@
 ---
-title: "Handbook streamFind: Backend"
+title: "Handbook streamFind: backend"
 author: "Ricardo Cunha"
 output:
   bookdown::html_document2:
@@ -12,24 +12,27 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, fig.align = "center", fig.width = 9, cache = TRUE)
+knitr::opts_chunk$set(echo = TRUE, fig.align = "center", cache = TRUE) # fig.width = 9,
 ```
 <br> <br>  
 
 ***
 
-```{r libraries, include=FALSE}
+```{r libraries, include=FALSE, cache=FALSE}
 
 library(knitr)
 library(kableExtra)
 library(magrittr)
 library(ggplot2)
 library(plotly)
+library(streamFind)
 
-devtools::load_all()
+#devtools::load_all("../")
 ```
 
 # Objective
+
+The streamFind package is a backend (code based) and frontend ([shiny](https://shiny.rstudio.com/) app) platform for assembly of modular workflows to support spectrometric and spectroscopic data processing. The major focus of streamFind is data processing for environmental and quality studies of the water cycle. The streamFind package aims to stimulate the use of advanced data analysis (e.g., non-target screening, statistical analysis, etc.) in routine studies, promoting standardization of data processing and structure and easing the retrospective evaluation of data. The streamFind package can be used by academics but also by technicians due to the comprehensive documentation and well categorized set of integrated functionalities (modules). This handbook focuses on describing and demonstrating the backend of the streamFind package.
 
 # Install
 
@@ -39,32 +42,74 @@ devtools::load_all()
 
 # Resources
 
-Trimmed example files are included in the streamFind package and are loaded below. The trimming was done with the function `trimSpectraFilesMZR` from streamFind which uses the package [mzR](https://bioconductor.org/packages/release/bioc/html/mzR.html).
+## Files
 
-```{r resource_files}
+The streamFind package includes example files, which are located  in the folder `system.file(package = "streamFind", dir = "extdata")`. Note, the MS files (.mzML) were trimmed with the function `trimSpectraFilesMZR` to reduce their size. The files available are described in Table \@ref(tab:description-files).
+
+```{r resource-files, cache=FALSE}
+#path to files
 r_path <- system.file(package = "streamFind", dir = "extdata")
+
+#list of file full paths
 files <- list.files(r_path, full.names = TRUE)
 ```
 
-# S4 classes
+```{r description-files, echo=FALSE}
+df_files_desc <- data.frame(
+  file_name = basename(files),
+  type = c(rep("MS/MS", 9)),
+  polarity = c(rep("positive", 9)),
+  description = c(
+    rep("Basic centroided MS data spiked with chemicals.", 3),
+    rep("Blank centroided MS data spiked with internal standards.", 3),
+    rep("Wastewater secondary effluent centroided MS data spiked with internal standards.", 3)
+  )
+)
 
-The streamFind package uses S4 class objects to define the data structure. The S4 classes, respective methods and usage are presented and exemplified through a demonstration of the basic workflow (pre-processing) for HRMS data. In short, the basic pre-processing workflow includes the following recommended steps:  (1) project creation, (2) data conversion (when needed), (3) replicate analyses assignment, (4) peak finding (or peak picking), alignment, grouping and isotopic and adduct annotation across analyses and (5) feature quality evaluation and (6) filtering.
+knitr::kable(df_files_desc, caption = "Files included in the streamFind package.") %>%
+kable_styling(font_size = 11, bootstrap_options = c("striped", "hover", "condensed", "responsive"), fixed_thead = TRUE)
+```
 
-The semantics in streamFind package is described in details in section x. Yet, a brief summary is given below for the most relevant terms:  
-  * __trace__ correspond to a raw data signal (e.g., mass trace in MS data) obtained from a given analysis file;  
-  * __peak__ correspond to a cluster of traces (e.g., integrated chromatographic MS peak) within an analysis file;  
-  * __feature__ correspond to a group of corresponding peaks across analysis files;  
+## Spiked chemicals
 
-## streamProject
+`r # TODO add a list of spiked chemical in the package` List the chemicals spiked in the MS data files.
+
+# Objects
+
+The streamFind package uses S4 class objects. The S4 classes, main methods and usage are presented and exemplified in this section. An overview of the S4 classes and their hierarchy is presented in Figure \@ref(fig:classes-overview) using MS analyses as an example. Other data types, such as from UV and Raman analyses, would lead to different classes (e.g., _uvData_ and _uvAnalysis_ and _ramanData_ and _ramanAnalysis_, respectively) but the hierarchy is similar as shown for MS data.
+
+```{r classes-overview, echo=FALSE, fig.cap="Overview of the S4 classes and their hierarchy with emphasis on MS analyses.", out.width="120%"}
+knitr::include_graphics(paste0(getwd(), "/hb_backend_figures/classes_overview.png"))
+```
+
+## Basic terminalogy
+
+In streamFind, the terms listed below are consistently applied throughout the objects and functionalities.
+
+* __project__ is the project title;
+* __analysis__ is the name or the actual analysis file;
+* __replicate__ is the name of an analysis replicate group;
+* __blank__ is the name of a blank analysis replicate group ot be used for blank (blind) subtration;
+* __trace__ correspond to a raw data signal (e.g., mass trace in MS data) obtained from a given analysis file;  
+* __spectra__ in MS is a table with a spectrum for each cycle time (i.e., retention time);
+* __EIC__ is an extracted ion chromatograms (retention time vs intensity);
+* __TIC__ is a total ion chromatograms (retention time vs intensity);
+* __XIC__ is a three dimensional ion chromatogram (_m/z_ vs retention time vs intensity);
+* __peak__ correspond to a cluster of traces (e.g., integrated chromatographic MS peak) within an analysis file;
+* __feature__ correspond to a group of corresponding peaks across analysis files;
+* __MS2__ correspond to second order fragmentation data as acquired in tandem MS;
+(...)
+
+## streamProject class
 
 The project creation is demonstrated below for three HRMS files (triplicate) where a set of substances were spiked. The project path can be assign as argument but left as default (i.e., the working directory) for this example.
 The initial S4 class created in the `newStreamProject` function is _streamProject_.
 
-```{r newStreamProject_call, message=FALSE, results='hide'}
+```{r newStreamProject-call, message=FALSE, results='hide'}
 exS1 <- newStreamProject(files = files[1:3])
 ```
 
-## msData
+## msData class
 
 Because the added files were all with mzML format, the sub-class is directly defined as _msData_, adding additional structure for further processing of MS data. Other data formats/structure will lead to different sub-classes (e.g., _uvData_ and _ramanData_) but is not yet implemented within streamFind.
 
@@ -83,9 +128,9 @@ which includes the _msFeatures_ S4 class(presented in section X).
 str(exS1, max.level = 2)
 ```
 
-## msAnalysis
+## msAnalysis class
 
-The _msAnalysis_ class is structured as shown below. Note that the S4 method `getAnalyses` for _msData_ was used to obtain the _msAnalysis_ of the first analysis as defined by the second argument. In general, access and plotting S4 methods can also be applied directly to the _msAnalysis_ class besides _msData_ (as described in \@ref(data-access-and-visualization)) but is not part of the basic workflow and mostly used for advanced data visualization and access of low level data (e.g., traces).  
+The _msAnalysis_ class is structured as shown below. Note that the S4 method `getAnalyses` for _msData_ was used to obtain the _msAnalysis_ of the first analysis as defined by the second argument. In general, access and plotting S4 methods can also be applied directly to the _msAnalysis_ class besides _msData_ (as described in \@ref(low-level-data-access-and-plotting)) but is not part of the basic workflow and mostly used for advanced data visualization and access of low level data (e.g., traces).  
 
 The slots analysis, file and replicate correspond to the analysis name, the full file path and the replicate group name, respectively. The metadata slot is a list of objects with various informative entries of the analysis. The metadata list can be expanded with additional information about the analysis/sample (e.g., sample location, weather conditions, process sensor data, etc.). Below, the `getMetadata` S4 method of _msData_ is used to display the metadata of the first file. Note, `getMetadata` also works for _msAnalysis_ S4 class as shown below in the commented code. The slot parameters is used to store processing steps (e.g., peak picking) as _settingsSet_ S4 class objects, including the processing step name/ID, the algorithm used and the respective settings applied. The parameters can be applied for history track but also for re-run the processing when required. The spectra and chromatograms slots are used to store low level data (i.e., mass traces) from the MS files. Finally, the peaks slot is used to store the chromatographic peaks after peak picking. As no other processing step was applied the spectra, chromatograms and peaks tables are empty for now.
 
@@ -99,10 +144,10 @@ str(exA1, max.level = 2)
 * metadata of _msAnalysis_:  
 
 ```{r metadata_structure}
-t(metadata(exS1, analyses = 1))
+t(streamFind::metadata(exS1, analyses = 1))
 
 #applied directly to the msAnalysis S4 class
-t(metadata(exA1))
+t(streamFind::metadata(exA1))
 ```
 
 ## Add metadata
@@ -270,9 +315,11 @@ s_data_2[1:4, ]
 
 # Basic workflow
 
-The basic workflow consists of essential steps for processing of raw data.
+The basic workflow (Figure \@ref(fig:workflow-scheme)) includes the following steps: (1) project creation, (2) data conversion (when required/applicable), (3) assignment of analysis replicate names and respective blank analysis replicates, (4) peak finding (or peak picking), (5) peak alignment and grouping into features across analyses, (6) filling of peaks missing in features, (7) annotation of isotopic and adduct features and (8) feature quality evaluation and (9) filtering. The usage of the S4 class objects within the basic workflow (pre-processing) for HRMS data is presented in this section with examples.
 
-`r # TODO make a scheme of the basic workflow, maybe from the PPT`
+```{r workflow-scheme, echo=FALSE, fig.cap="Basic workflow scheme."}
+knitr::include_graphics(paste0(getwd(), "/hb_backend_figures/workflow_scheme.png"))
+```
 
 ## Project creation
 
@@ -484,7 +531,7 @@ all.equal(settings_pp_2, settings_pp_2_imported)
 
 The access and visualization of peaks uses the calculated/estimated time and _m/z_ dimensions for collecting and plotting the correspondent mass traces. Examples are shown below to extract and plot peaks from both _msData_ and _msAnalysis_.
 
-```{r}
+```{r inspecting_peaks}
 #access to peaks in msData based on built targets as used for extracting EICs
 peaks(exS2_pp[c(1, 4)], mz = mz01[1], rt = rt01[1], ppm = 10, sec = 30)
 
@@ -638,7 +685,7 @@ plotFeaturePeaks(exS2_pg_fl, mz = 441.1670, rt = 916, ppm = 20, sec = 60)
 
 Annotation of isotopes and adducts is crucial not only to prioritize the relevant features but also to deliver essential information for further identification, such as charge, isotopic pattern and adduct yield.
 
-```{r annotation_processing, results='hide'}
+```{r annotation_processing, results='hide', message=FALSE}
 #creating settings for using CAMERA
 settings_an <- createSettings(
   call = "peakAnnotation",
@@ -678,9 +725,9 @@ The results of annotation are stored under annotation of the _msFeatures_ S4 cla
 
 The annotation can be inspected with the `annotation` S4 method for the _msData_ object, as shown below. The method `plotAnnotation` can then be used to visualize the annotation of features, as shown below.
 
-```{r}
+```{r annotation_results}
 #isotopic and adduct features annotated with a given target mz and rt
-t(annotation(exS2_pg_fl_an, mz = 441.1670, ppm = 10, rt = 916, sec = 5, all = FALSE))
+t(streamFind::annotation(exS2_pg_fl_an, mz = 441.1670, ppm = 10, rt = 916, sec = 5, all = FALSE))
 
 #plotting the annotation of each feature in a given target
 plotAnnotation(exS2_pg_fl_an, mz = 441.1670, ppm = 10, rt = 916, sec = 5, all = FALSE)
@@ -690,40 +737,69 @@ plotAnnotation(exS2_pg_fl_an, mz = 441.1670, ppm = 10, rt = 916, sec = 5, all = 
 
 ## Filter data
 
-Data filtration is crucial for proper prioritization of relevant peaks/features. In streamFind, two levels of data filtration is implemented.
+Data filtration is crucial for proper prioritization of relevant peaks/features. In streamFind, two levels of data filtration is implemented: (1) data sub-setting (permanent) and (2) filter processing steps for peaks and/or features (tagged but not removed).
 
 ### Sub-seeting with '['
 
 The first is based on data sub-setting using the method `[` and is permanent, meaning that the peaks/features are completely removed from the _msAnalysis_/_msFeatures_. An example is shown below for data filtration using the `[` method for different classes.
 
-```{r}
+```{r filter_subsetting}
 #sub-setting the msData class on analyses (the 3 first)
 exS2_pg[1:3, ]
 
 #sub-setting the msData class on analys2s and features (the 3 last analyses and features annotated with a target)
-target_s <- annotation(exS2_pg_fl_an, mz = 441.1670, ppm = 10, rt = 916, sec = 5, all = FALSE)
+target_s <- streamFind::annotation(exS2_pg_fl_an, mz = 441.1670, ppm = 10, rt = 916, sec = 5, all = FALSE)
 exS2_pg_fl_an[4:6, target_s$id]
 
-#sub-seeting the msData class on analys2s and features by index
+#sub-seeting the msData class on analyses ([i, ]) and features ([, j]) by index
 exS2_pg_fl_an[1:2, 1:5]
 
 #sub-setting an msAnalysis class on the first 5 peaks
 exA2[1:5]
 ```
 
-### Filter methods
+### Filter functions
 
-The second method uses filter methods (i.e., `filterPeaks` and `filterFeatures`) and is conservative, meaning that the data is conserved but tagged as filtered (i.e., the _filtered_ column is changed to `TRUE` and the respective filter tag is added to column _filter_, as shown below).
-Both filtered peaks and features can be permanently removed by running the methods `removeFilteredPeaks` or `removeFilteredFeatures`, respectively. Note that, removing features permanently does not remove filtered peaks but peaks not represented by features are filtered with "grouping" tag. 
-When removing peaks, the features left without peaks representation are removed as well.
-Also, the methods `peaks` and `features` have the argument _filtered_ to return filtered peaks/features. The default for _filtered_ argument is `TRUE`, meaning that filtered peaks/features are returned by default for methods `peaks` and `features`.
+The second method uses filter functions (i.e., `filterPeaks` and `filterFeatures`) and is conservative, meaning that the data is conserved but tagged as filtered (i.e., the _filtered_ column is changed to `TRUE` and the respective filter tag is added to column _filter_, as shown below). Both filtered peaks and features can be permanently removed by running the methods `removeFilteredPeaks` or `removeFilteredFeatures`, respectively. Note that, removing features permanently does not remove filtered peaks but peaks not represented by features are filtered with "grouping" tag. When removing peaks, the features left without peaks representation are removed as well. Also, the methods `peaks` and `features` have the argument _filtered_ to return filtered peaks/features. The default for the _filtered_ argument is `TRUE`, meaning that filtered peaks/features are returned by default for methods `peaks` and `features`. Simmilarly, to peakPicking, peak Grouping, etc., the filter methods use a _msSettings_ S4 class to store the filtering parameters. Also, the filtering _msSettings_ object when applied is stored in the parameters section opf the respective class (i.e., `filterPeaks` settings are stored in the _msAnalysis_ and `filterFeatures` settings are stored in the _msFeatures_).
 
-`r # TODO add filtered argument to peaks and features methods`
+#### Filter features
 
-```{r}
+```{r filter_features}
 
+filters <- list(
+  minIntensity = 5000,
+  blankThreshold = 3,
+  maxReplicateIntensityDeviation = 30,
+  minReplicateAbundance = 3,
+  excludeIsotopes = TRUE,
+  excludeAdducts = TRUE
+)
 
+settings_filFeat <- createSettings(
+  call = "filterFeatures",
+  algorithm = "filter",
+  settings = filters
+)
 
+exS2_pg_fl_an_filFeat <- addParameters(exS2_pg_fl_an, where = "features", settings = settings_filFeat)
+
+exS2_pg_fl_an_filFeat <- filterFeatures(exS2_pg_fl_an_filFeat)
+
+#number of features not filtered
+nrow(features(exS2_pg_fl_an, filtered = FALSE))
+
+#number of features not filtered after applying the filters
+nrow(features(exS2_pg_fl_an_filFeat, filtered = FALSE))
+
+#remove permanently all filtered features from the msData object
+exS2_pg_fl_an_filFeat_rem <- removeFilteredFeatures(exS2_pg_fl_an_filFeat, which =  "all")
+
+exS2_pg_fl_an_filFeat_rem
+```
+
+#### Filter peaks
+
+```{r filter_peaks}
 
 
 
@@ -732,15 +808,16 @@ Also, the methods `peaks` and `features` have the argument _filtered_ to return 
 ```
 
 
+
 ## Quality
 
 The quality of the data is crucial to improve the prioritization of peaks/features and the relevance of the results. In streamFind, two functions are available to calculate quality of peaks/features: `calculateSNR` and `calculateMetaClean` to estimate the signal-to-noise ration and several fitting parameters of each peak/feature, respectively. The latter is based on the [MetaClean](https://rdrr.io/cran/MetaClean/) R package and is applied via patRoon. It is important to emphasize that peaks/features should be filtered with basic filters (e.g., blank subtraction, minimum intensity, etc.) before applying quality calculation has the computational demand for large number of peaks/features is high.
 
-```{r}
+```{r quality_sn}
 
-exS2_pg <- calculateSNR(exS2_pg, targetsID = features(exS2_pg)[["id"]][1:5])
-
-features(exS2_pg, complete = TRUE)[1:5, ]
+# exS2_pg <- calculateSNR(exS2_pg, targetsID = features(exS2_pg)[["id"]][1:5])
+# 
+# features(exS2_pg, complete = TRUE)[1:5, ]
 
 ```
 
@@ -925,16 +1002,16 @@ list(a = 1:6, b = 1:10)
 The `knitr::kable` function can be used for displaying tables, see table \@ref(tab:exTable). Consult <https://haozhu233.github.io/kableExtra/awesome_table_in_html.html> for other costumization options.
 Table caption is added with the argument `caption` of the `kable` function.   
 
-```{r exTable, echo=FALSE, eval=FALSE, include=FALSE}
+```{r exTable, echo=TRUE, eval=TRUE, include=TRUE}
 
-# df <- data.frame(name = c("a", "b", "c", "d", "e", "f"), col1 = 1:6, col2 = 1:6)
-# 
-# knitr::kable(df, caption = "Example of table caption.") %>%
-# kable_styling(
-#   font_size = 12,
-#   bootstrap_options = c("striped", "hover", "condensed", "responsive"),
-#   fixed_thead = TRUE
-# )
+df <- data.frame(name = c("a", "b", "c", "d", "e", "f"), col1 = 1:6, col2 = 1:6)
+
+knitr::kable(df, caption = "Example of table caption.") %>%
+kable_styling(
+  font_size = 12,
+  bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+  fixed_thead = TRUE
+)
 
 ```
 

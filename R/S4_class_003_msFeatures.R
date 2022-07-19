@@ -73,6 +73,169 @@ setClass("msFeatures",
 
 ### S4 methods ----------------------------------------------------------------------------------------------
 
+#### analyses ------------------------------------------------------------
+
+#' @describeIn msFeatures getter for analysis names.
+#'
+#' @export
+#'
+#' @importMethodsFrom patRoon analyses
+#'
+#' @aliases analyses,msFeatures,msFeatures-method
+#'
+setMethod("analyses", "msFeatures", function(obj) obj@analyses$analysis)
+
+#### replicates ----------------------------------------------------------
+
+#' @describeIn msFeatures getter for replicate names.
+#'
+#' @export
+#'
+#' @aliases replicates,msFeatures,msFeatures-method
+#'
+setMethod("replicates", "msFeatures", function(object) object@analyses$replicate)
+
+#### blanks --------------------------------------------------------------
+
+#' @describeIn msFeatures getter for blank names.
+#'
+#' @export
+#'
+#' @aliases blanks,msFeatures,msFeatures-method
+#'
+setMethod("blanks", "msFeatures", function(object) object@analyses$blank)
+
+
+### addParameters ----------------------------------------------------------
+
+#' @describeIn msFeatures adds processing parameters for features.
+#'
+#' @template args-single-settings
+#'
+#' @export
+#'
+#' @aliases addParameters,msFeatures,msFeatures-method
+#'
+setMethod("addParameters", "msFeatures", function(object, settings) {
+
+  valid <- checkmate::testClass(settings, "settings")
+
+  if (!valid) {
+    warning("Arguments not correct, returning original object!")
+    return(object)
+  }
+
+  object@features@parameters[[getCall(settings)]] <- settings
+
+  return(object)
+})
+
+### getParameters ----------------------------------------------------------
+
+#' @describeIn msFeatures gets processing parameters.
+#'
+#' @param call The call name of the settings to retrieve.
+#'
+#' @export
+#'
+#' @aliases getParameters,msFeatures,msFeatures-method
+#'
+setMethod("getParameters", "msFeatures", function(object, call = NULL) {
+
+  if (is.null(call)) {
+    param <- object@parameters
+  } else {
+    param <- object@parameters[[call]]
+  }
+
+  return(param)
+})
+
+### features ------------------------------------------------------------------------------------------------
+
+#' @describeIn msFeatures getter for features (i.e., grouped peaks). When
+#' complete is set to \code{TRUE}, additional feature metadata is also returned.
+#'
+#' @param complete Logical, set to \code{TRUE} for a complete version of the output.
+#'
+#' @export
+#'
+#' @importFrom dplyr left_join
+#' @importFrom data.table data.table
+#'
+#' @aliases features,msFeatures,msFeatures-method
+#'
+setMethod("features", "msFeatures", function(object,
+                                             targetsID = NULL,
+                                             mz = NULL, ppm = 20,
+                                             rt = NULL, sec = 60,
+                                             filtered = TRUE,
+                                             complete = FALSE,
+                                             average = TRUE) {
+
+  if (!filtered) {
+    mtd <- copy(object@metadata)
+    ft_to_keep <- mtd$id[FALSE %in% mtd$filtered]
+    feats <- object[, ft_to_keep]
+  } else {
+    feats <- object
+  }
+
+  if (!is.null(targetsID)) {
+    out_fts <- feats@intensity[id %in% targetsID, ]
+  } else if (!is.null(mz)) {
+    targets <- makeTargets(mz = mz, rt = rt, ppm = ppm, sec = sec)
+    sel <- rep(FALSE, nrow(feats@metadata))
+    for (i in seq_len(nrow(targets))) {
+      if (targets$rtmax[i] > 0) {
+        sel[between(feats@metadata$mz, targets$mzmin[i], targets$mzmax[i]) &
+              between(feats@metadata$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
+      } else {
+        sel[between(feats@metadata$mz, targets$mzmin[i], targets$mzmax[i])] <- TRUE
+      }
+    }
+    out_fts <- feats@intensity[sel]
+  } else {
+    out_fts <- feats@intensity
+  }
+
+  if (average) {
+    rpl <- unique(feats@analyses$replicate)
+    rpl_ana <- lapply(rpl, function(x, st) {
+      st$analysis[st$replicate == x]
+    }, st = feats@analyses)
+    names(rpl_ana) <- rpl
+
+    out_sd <- lapply(rpl_ana, function(x, out_fts) {
+      temp <- out_fts[, x, with = FALSE]
+      temp <- apply(temp, 1, function(x) sd(x) / mean(x) * 100)
+      temp[is.nan(temp)] <- 0
+      temp <- round(temp, digits = 0)
+      return(temp)
+    }, out_fts = out_fts)
+
+    for (r in rpl) {
+      out_fts[[r]] <- apply(out_fts[, .SD, .SDcols = rpl_ana[[r]]], 1, mean)
+    }
+
+    out_fts[, (feats@analyses$analysis) := NULL]
+
+    names(out_sd) <- paste0(rpl, "_sd")
+    out_fts <- cbind(out_fts, as.data.table(out_sd))
+  }
+
+  if (complete) {
+    out_mtd <- feats@metadata[id %in% out_fts$id, ]
+    out_fts <- left_join(out_mtd, out_fts, by = "id")
+  }
+
+  if (nrow(out_fts) < 1) {
+    warning("Features not found in the msFeatures object.")
+  }
+
+  return(out_fts)
+})
+
 #### [ sub-setting analyses ----------------------------------------------
 
 #' @describeIn msFeatures subset on analyses, using analysis index or name.
@@ -128,5 +291,34 @@ setMethod("[", c("msFeatures", "ANY", "missing", "missing"), function(x, i, ...)
       }
     }
   }
+  return(x)
+})
+
+#### [ sub-setting features ----------------------------------------------
+
+#' @describeIn msFeatures subset on features, using feature index or name.
+#'
+#' @param i The indice/s or name/s of the features to keep in the \code{x} object.
+#'
+#' @export
+#'
+setMethod("[", c("msFeatures", "ANY", "ANY", "missing"), function(x, i, j,...) {
+
+  if (!missing(i)) {
+    x <- x[i]
+  }
+
+  if (!missing(j)) {
+    if (nrow(x@metadata) == 0) {
+      warning("There are no features in the msData object!")
+      return(x)
+    }
+
+    if (!is.character(j)) j <- features(x)$id[j]
+
+    x@intensity <- x@intensity[id %in% j, ]
+    x@metadata <- x@metadata[id %in% j, ]
+  }
+
   return(x)
 })

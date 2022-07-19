@@ -39,6 +39,8 @@ fillingSettingsDefaultXCMS <- function() {
 #'
 #' @return An \linkS4class{msData} object including filled missing peaks in analyses.
 #'
+#' @export
+#'
 #' @references
 #' \insertRef{xcms01}{streamFind}
 #' \insertRef{xcms02}{streamFind}

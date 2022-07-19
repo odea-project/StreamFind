@@ -134,18 +134,6 @@ buildFeatures <- function(object, pat) {
 
   pk$replicate <- factor(pk$replicate, levels = unique(replicates(object)))
 
-  # n_pks <- setNames(data.frame(matrix(ncol = length(unique(replicates(object))), nrow = 1)), unique(replicates(object)))
-  # n_pks[1, ] <- 0
-  #
-  # mtd$npeaks <- lapply(index, function(x, object, n_pks) {
-  #   temp <- as.data.frame(table(pk$replicate[x]))
-  #   temp_2 <- temp$Freq
-  #   names(temp_2) <-  temp$Var1
-  #   temp_3 <- copy(n_pks)
-  #   temp_3[names(temp_2)] <- temp_2
-  #   return(temp_3)
-  # }, object = object, n_pks)
-
   tp_pks <- setNames(data.frame(matrix(ncol = length(analyses(object)), nrow = 1)), analyses(object))
   tp_pks[1, ] <- 0
 

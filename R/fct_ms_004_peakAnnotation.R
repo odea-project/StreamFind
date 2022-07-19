@@ -393,10 +393,13 @@ annotateFeatures <- function(object, pat, comp, prefAdduct = "[M+H]+") {
     return(x)
   }, feats = feats)
 
+  names(new_id) <- feats$id
 
 
   #amend msFeatures feature id
+  feats[, monoiso := new_id[feats$monoiso]]
   feats$id <- new_id
+
   object@features@metadata <- feats
   object@features@intensity$id <- new_id
 

@@ -24,7 +24,7 @@ msData_validity <- function(object) {
     }
   }
 
-  # TODO validation for features classes
+  # TODO validation for features classes, including the analysis/replicates and blanks
 
   return(valid)
 }
@@ -823,66 +823,77 @@ setMethod("features", "msData", function(object,
                                          complete = FALSE,
                                          average = TRUE) {
 
-  if (!filtered) {
-    ft_to_keep <- object@features@metadata$id[!object@features@metadata$filtered]
-    feats <- object@features[ft_to_keep]
-  } else {
-    feats <- object@features
-  }
+  return(
+    features(
+      object = object@features,
+      targetsID = targetsID,
+      mz = mz, ppm = ppm,
+      rt = rt, sec = sec,
+      filtered = filtered,
+      complete = complete,
+      average = average
+    )
+  )
 
-  if (!is.null(targetsID)) {
-    out_fts <- feats@intensity[id %in% targetsID, ]
-  } else if (!is.null(mz)) {
-    targets <- makeTargets(mz = mz, rt = rt, ppm = ppm, sec = sec)
-    sel <- rep(FALSE, nrow(feats@metadata))
-    for (i in seq_len(nrow(targets))) {
-      if (targets$rtmax[i] > 0) {
-        sel[between(feats@metadata$mz, targets$mzmin[i], targets$mzmax[i]) &
-              between(feats@metadata$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
-      } else {
-        sel[between(feats@metadata$mz, targets$mzmin[i], targets$mzmax[i])] <- TRUE
-      }
-    }
-    out_fts <- feats@intensity[sel]
-  } else {
-    out_fts <- feats@intensity
-  }
-
-  if (average) {
-    rpl <- unique(feats@analyses$replicate)
-    rpl_ana <- lapply(rpl, function(x, st) {
-      st$analysis[st$replicate == x]
-    }, st = feats@analyses)
-    names(rpl_ana) <- rpl
-
-    out_sd <- lapply(rpl_ana, function(x, out_fts) {
-      temp <- out_fts[, x, with = FALSE]
-      temp <- apply(temp, 1, function(x) sd(x) / mean(x) * 100)
-      temp[is.nan(temp)] <- 0
-      temp <- round(temp, digits = 0)
-      return(temp)
-    }, out_fts = out_fts)
-
-    for (r in rpl) {
-      out_fts[[r]] <- apply(out_fts[, .SD, .SDcols = rpl_ana[[r]]], 1, mean)
-    }
-
-    out_fts[, (feats@analyses$analysis) := NULL]
-
-    names(out_sd) <- paste0(rpl, "_sd")
-    out_fts <- cbind(out_fts, as.data.table(out_sd))
-  }
-
-  if (complete) {
-    out_mtd <- feats@metadata[id %in% out_fts$id, ]
-    out_fts <- left_join(out_mtd, out_fts, by = "id")
-  }
-
-  if (nrow(out_fts) < 1) {
-    warning("Features not found in the msData object.")
-  }
-
-  return(out_fts)
+  # if (!filtered) {
+  #   ft_to_keep <- object@features@metadata$id[!object@features@metadata$filtered]
+  #   feats <- object@features[ft_to_keep]
+  # } else {
+  #   feats <- object@features
+  # }
+  #
+  # if (!is.null(targetsID)) {
+  #   out_fts <- feats@intensity[id %in% targetsID, ]
+  # } else if (!is.null(mz)) {
+  #   targets <- makeTargets(mz = mz, rt = rt, ppm = ppm, sec = sec)
+  #   sel <- rep(FALSE, nrow(feats@metadata))
+  #   for (i in seq_len(nrow(targets))) {
+  #     if (targets$rtmax[i] > 0) {
+  #       sel[between(feats@metadata$mz, targets$mzmin[i], targets$mzmax[i]) &
+  #             between(feats@metadata$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
+  #     } else {
+  #       sel[between(feats@metadata$mz, targets$mzmin[i], targets$mzmax[i])] <- TRUE
+  #     }
+  #   }
+  #   out_fts <- feats@intensity[sel]
+  # } else {
+  #   out_fts <- feats@intensity
+  # }
+  #
+  # if (average) {
+  #   rpl <- unique(feats@analyses$replicate)
+  #   rpl_ana <- lapply(rpl, function(x, st) {
+  #     st$analysis[st$replicate == x]
+  #   }, st = feats@analyses)
+  #   names(rpl_ana) <- rpl
+  #
+  #   out_sd <- lapply(rpl_ana, function(x, out_fts) {
+  #     temp <- out_fts[, x, with = FALSE]
+  #     temp <- apply(temp, 1, function(x) sd(x) / mean(x) * 100)
+  #     temp[is.nan(temp)] <- 0
+  #     temp <- round(temp, digits = 0)
+  #     return(temp)
+  #   }, out_fts = out_fts)
+  #
+  #   for (r in rpl) {
+  #     out_fts[[r]] <- apply(out_fts[, .SD, .SDcols = rpl_ana[[r]]], 1, mean)
+  #   }
+  #
+  #   out_fts[, (feats@analyses$analysis) := NULL]
+  #
+  #   names(out_sd) <- paste0(rpl, "_sd")
+  #   out_fts <- cbind(out_fts, as.data.table(out_sd))
+  # }
+  #
+  # if (complete) {
+  #   out_mtd <- feats@metadata[id %in% out_fts$id, ]
+  #   out_fts <- left_join(out_mtd, out_fts, by = "id")
+  # }
+  #
+  # if (nrow(out_fts) < 1) {
+  #   warning("Features not found in the msData object.")
+  # }
+  #return(out_fts)
 })
 
 
@@ -997,16 +1008,22 @@ setMethod("as.featureGroups", "msData", function(object) {
 
   feat <- as.features(object)
 
-  groups_temp <- features(object, average = FALSE)
+  if ("filtered" %in% colnames(object@features@metadata)) {
+    feat_id_notFiltered <- object@features@metadata$id[!object@features@metadata$filtered]
+  } else {
+    feat_id_notFiltered <- object@features@metadata$id
+  }
+
+  groups_temp <- features(object, targetsID = feat_id_notFiltered, average = FALSE)
   groups <- copy(groups_temp)
   groups <- as.data.table(t(groups[, id := NULL]))
 
-  groupInfo_temp <- object@features@metadata
+  groupInfo_temp <- object@features@metadata[ id %in% feat_id_notFiltered, ]
   groupInfo <- copy(groupInfo_temp)
   groupInfo <- as.data.frame(groupInfo[, .(rt, mz, id)])
   colnames(groupInfo) <- c("rts", "mzs", "id")
 
-  new_id <- object@features@metadata$id
+  new_id <- groupInfo_temp$id
 
   # make group id as patRoon, so far works without it
   # new_id <- object@features@metadata[, .(index, mz, rt)]
@@ -1024,7 +1041,6 @@ setMethod("as.featureGroups", "msData", function(object) {
   colnames(ftindex) <- new_id
   rownames(ftindex) <- seq_len(nrow(ftindex))
 
-  # TODO adapt to exclude filtered features
   # TODO adapt for as.featuresSet when multiple polarities present
 
   return(new("featureGroupsOpenMS", groups = groups, analysisInfo = anaInfo, groupInfo = groupInfo, features = feat, ftindex = ftindex))
@@ -1202,71 +1218,4 @@ setMethod("[", c("msData", "ANY", "ANY", "ANY"), function(x, i, j, p) {
   }
 
   return(x)
-})
-
-### filterFeatures ---------------------------------------------------------------
-
-#' @describeIn msData filter features in an \linkS4class{msData} object.
-#' Filters can be given with extra arguments (i.e., \code{...}).
-#' The available filters are as follows:
-#' \itemize{
-#'  \item \code{minIntensity}: features below a minimum intensity threshold.
-#' For example, minIntensity = 3000, removes features with maximum
-#' peak representation below 3000 counts;
-#'  \item \code{blankThreshold}: features that are not more intense than a defined
-#' threshold multiplier of the assigned blank intensity.
-#' For example, blankThreshold = 3, features with maximum peak representation
-#' that are not higher than 3 times the blank intensity;
-#'  \item \code{maxReplicateIntensityDeviation} features based on a
-#' maximum standard deviation (SD), in percentage, among replicate samples.
-#' For example, maxReplicateIntensityDeviation = 30, filters features that do not have
-#' the SD below 30% in at least one sample replicate group.
-#'  \item \code{minReplicateAbundance}: features that are not present with at least
-#' a specified frequency in one sample replicate group.
-#' For example, minReplicateAbundance = 2, filters featues that are not represented
-#' in at least two samples within a replicate.
-#'  \item \code{snRatio} features below a minimum signal-to-noise (s/n) ratio threshold.
-#' For example, snRatio = 3, filters features below a s/n ratio of 3.
-#' }
-#'
-#' @param obj An \linkS4class{msData} object.
-#' @param ... List of arguments for the respective method.
-#'
-#' @export
-#'
-setMethod("filterFeatures", "msData", function(object, ...) {
-
-  filterList <- list(...)
-
-  if (length(filterList) == 0) {
-    warning("No filters selected or recognized.")
-    return(obj)
-  }
-
-  filters <- names(filterList)
-
-  listOfViableFilters <- c(
-    "minIntensity",
-    "blankThreshold",
-    "maxReplicateIntensityDeviation",
-    "snRatio",
-    "minReplicateAbundance"
-  )
-
-  if (!all(filters %in% listOfViableFilters)) {
-    warning("At least one filters is not recognized.")
-    return(obj)
-  }
-
-  for (i in seq_len(length(filters))) {
-    switch(names(filterList)[i],
-           minIntensity = (obj <- minIntensity(obj, unlist(filterList[i]))),
-           blankThreshold = (obj <- blankThreshold(obj, unlist(filterList[i]))),
-           maxReplicateIntensityDeviation = (obj <- maxReplicateIntensityDeviation(obj, unlist(filterList[i]))),
-           minReplicateAbundance = (obj <- minReplicateAbundance(obj, unlist(filterList[i]))),
-           snRatio = (obj <- snRatio(obj, unlist(filterList[i])))
-    )
-  }
-
-  return(obj)
 })

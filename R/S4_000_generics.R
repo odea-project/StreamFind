@@ -139,11 +139,6 @@ setGeneric("plotFeatures", function(object, ...) standardGeneric("plotFeatures")
 #' @noRd
 setGeneric("mapFeatures", function(object, ...) standardGeneric("mapFeatures"))
 
-#' filterFeatures
-#'
-#' @noRd
-setGeneric("filterFeatures", function(object, ...) standardGeneric("filterFeatures"))
-
 #' hasAdjustedRetentionTime
 #'
 #' @noRd

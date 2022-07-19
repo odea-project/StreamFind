@@ -73,7 +73,7 @@ peakPicking <- function(object = NULL, settings = NULL) {
   }
 
 
-  if (TRUE %in% is.null(algorithm)) {
+  if (TRUE %in% is.na(algorithm)) {
     warning("Peak picking algorihtm not defined!")
     return(object)
   }

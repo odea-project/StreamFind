@@ -154,7 +154,15 @@
 
 \S4method{getParameters}{msAnalysis}(object, call = NULL)
 
-\S4method{peaks}{msAnalysis}(object, targetsID = NULL, mz = NULL, ppm = 20, rt = NULL, sec = 60)
+\S4method{peaks}{msAnalysis}(
+  object,
+  targetsID = NULL,
+  mz = NULL,
+  ppm = 20,
+  rt = NULL,
+  sec = 60,
+  filtered = TRUE
+)
 
 \S4method{plotPeaks}{msAnalysis}(
   object,
@@ -163,6 +171,7 @@
   ppm = 20,
   rt = NULL,
   sec = 30,
+  filtered = TRUE,
   legendNames = NULL,
   title = NULL,
   interactive = FALSE
@@ -175,6 +184,7 @@
   ppm = 20,
   rt = NULL,
   sec = 30,
+  filtered = TRUE,
   legendNames = NULL,
   xlim = 30,
   ylim = 0.05,
@@ -233,6 +243,9 @@ the number of rows to grid the plots.}
 \item{call}{The call name of the settings to retrieve.}
 
 \item{targetsID}{A character vector with the ID of targets (e.g., peaks or features IDs).}
+
+\item{filtered}{Logical. When \code{TRUE} (the default), filtered are returned.
+When \code{FALSE}, filtered data are excluded.}
 
 \item{xlim}{A length one or two numeric vector for setting the \emph{x} limits of a plot.}
 
