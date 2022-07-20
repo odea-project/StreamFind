@@ -81,7 +81,7 @@
 
 \S4method{blanks}{msAnalysis}(object) <- value
 
-\S4method{metadata}{msAnalysis}(object, which = NULL)
+\S4method{metadata}{msAnalysis}(x, which = NULL)
 
 \S4method{polarities}{msAnalysis}(object)
 
@@ -146,7 +146,7 @@
 
 \S4method{loadRawData}{msAnalysis}(object)
 
-\S4method{spectra}{msAnalysis}(obj)
+\S4method{spectra}{msAnalysis}(object)
 
 \S4method{hasAdjustedRetentionTime}{msAnalysis}(object)
 

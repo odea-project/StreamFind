@@ -1,13 +1,10 @@
 
+### Generics ------------------------------------------------------------------------------------------------
+
 #' projectInfo
 #'
 #' @noRd
 setGeneric("projectInfo", function(object, ...) standardGeneric("projectInfo"))
-
-#' path
-#'
-#' @noRd
-setGeneric("path", function(object, ...) standardGeneric("path"))
 
 #' analysisTable
 #'
@@ -54,20 +51,10 @@ setGeneric("polarities<-", function(object, value) standardGeneric("polarities<-
 #' @noRd
 setGeneric("getAnalyses", function(object, ...) standardGeneric("getAnalyses"))
 
-#' metadata
-#'
-#' @noRd
-setGeneric("metadata", function(object, ...) standardGeneric("metadata"))
-
 #' loadRawData
 #'
 #' @noRd
 setGeneric("loadRawData", function(object, ...) standardGeneric("loadRawData"))
-
-#' spectra
-#'
-#' @noRd
-setGeneric("spectra", function(obj, ...) standardGeneric("spectra"))
 
 #' EICs
 #'
@@ -114,11 +101,6 @@ setGeneric("plotMS2s", function(object, ...) standardGeneric("plotMS2s"))
 #' @noRd
 setGeneric("peaks", function(object, ...) standardGeneric("peaks"))
 
-#' plotPeaks
-#'
-#' @noRd
-setGeneric("plotPeaks", function(object, ...) standardGeneric("plotPeaks"))
-
 #' mapPeaks
 #'
 #' @noRd
@@ -143,11 +125,6 @@ setGeneric("mapFeatures", function(object, ...) standardGeneric("mapFeatures"))
 #'
 #' @noRd
 setGeneric("hasAdjustedRetentionTime", function(object) standardGeneric("hasAdjustedRetentionTime"))
-
-#' annotation
-#'
-#' @noRd
-setGeneric("annotation", function(object, ...) standardGeneric("annotation"))
 
 #' plotAnnotation
 #'
@@ -188,3 +165,34 @@ setGeneric("as.features", function(object, ...) standardGeneric("as.features"))
 #'
 #' @noRd
 setGeneric("as.featureGroups", function(object, ...) standardGeneric("as.featureGroups"))
+
+### External Generics ---------------------------------------------------------------------------------------
+
+#### ProtGenerics --------------------------------------------------------
+#' @importMethodsFrom ProtGenerics spectra
+#' @noRd
+NULL
+
+#### patRoon -------------------------------------------------------------
+#' @importMethodsFrom patRoon analysisInfo analyses
+#' @export
+#' @noRd
+NULL
+
+#### xcms ----------------------------------------------------------------
+#' @importMethodsFrom xcms plotPeaks
+#' @export
+#' @noRd
+NULL
+
+#### BiocGenerics --------------------------------------------------------
+#' @importMethodsFrom BiocGenerics path annotation
+#' @export
+#' @noRd
+NULL
+
+#### S4Vectors -----------------------------------------------------------
+#' @importMethodsFrom S4Vectors metadata
+#' @export
+#' @noRd
+NULL

@@ -20,7 +20,7 @@
 #'
 #' @export
 #'
-#' @importFrom data.table is.data.table
+#' @importFrom data.table data.table is.data.table
 #'
 newStreamProject <- function(files = NA_character_,
                              path = getwd(),
@@ -41,7 +41,7 @@ newStreamProject <- function(files = NA_character_,
 
   if (is.data.frame(files) | is.data.table(files)) {
 
-    #check if path and analysis is given instead of file name
+    #check if path and analysis are given instead of file name
     if ("path" %in% colnames(files) & !"file" %in% colnames(files) & "analysis" %in% colnames(files)) {
 
       f_path_files <- apply(files, 1, function(x) {

@@ -118,6 +118,8 @@ setMethod("projectInfo", "streamProject", function(object, projectTitle = NULL, 
 
 #' @describeIn streamProject getter for project path.
 #'
+#' @importMethodsFrom BiocGenerics path
+#'
 #' @export
 #'
 #' @aliases path,streamProject,streamProject-method
@@ -272,18 +274,19 @@ setMethod("blanks<-", signature("streamProject", "ANY"), function(object, value)
 #'
 #' @template args-single-which-entry
 #'
-#' @export
-#'
+#' @importMethodsFrom S4Vectors metadata
 #' @importFrom data.table rbindlist
+#'
+#' @export
 #'
 #' @aliases metadata,streamProject,streamProject-method
 #'
-setMethod("metadata", "streamProject", function(object, analyses = NULL, which = NULL) {
+setMethod("metadata", "streamProject", function(x, analyses = NULL, which = NULL) {
 
-  if (!is.null(analyses)) object <- object[analyses]
+  if (!is.null(analyses)) x <- x[analyses]
 
-  mtd <- lapply(object@analyses, function(x, which) {
-    return(metadata(x, which))
+  mtd <- lapply(x@analyses, function(z, which) {
+    return(metadata(z, which))
   }, which = which)
 
   mtd <- data.table::rbindlist(mtd)

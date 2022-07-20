@@ -53,7 +53,7 @@
 
 \S4method{blanks}{streamProject}(object) <- value
 
-\S4method{metadata}{streamProject}(object, analyses = NULL, which = NULL)
+\S4method{metadata}{streamProject}(x, analyses = NULL, which = NULL)
 }
 \arguments{
 \item{object}{An \linkS4class{streamProject} object.}

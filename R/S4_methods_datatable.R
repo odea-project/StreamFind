@@ -320,6 +320,7 @@ setMethod("plotMS2s", "data.table", function(object = NULL,
 #'
 #' @export
 #'
+#' @importMethodsFrom xcms plotPeaks
 #' @importFrom data.table rbindlist
 #'
 #' @rdname data.table-methods

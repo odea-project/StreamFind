@@ -462,13 +462,14 @@ setMethod("loadRawData", "msData", function(object, analyses = NULL) {
 #'
 #' @export
 #'
+#' @importMethodsFrom ProtGenerics spectra
 #' @importFrom data.table rbindlist
 #'
 #' @aliases spectra,msData,msData-method
 #'
-setMethod("spectra", "msData", function(obj) {
+setMethod("spectra", "msData", function(object) {
 
-  spec <- lapply(obj@analyses, function(x) {
+  spec <- lapply(object@analyses, function(x) {
     return(x@spectra)
   })
   spec <- rbindlist(spec, idcol = "analysis")
@@ -694,6 +695,7 @@ setMethod("peaks", "msData", function(object,
 #'
 #' @export
 #'
+#' @importMethodsFrom xcms plotPeaks
 #' @importFrom data.table rbindlist copy
 #'
 #' @aliases plotPeaks,msData,msData-method
@@ -1056,6 +1058,8 @@ setMethod("as.featureGroups", "msData", function(object) {
 #' @param all Logical, set to \code{TRUE} for displaying all features/peaks.
 #'
 #' @export
+#'
+#' @importMethodsFrom BiocGenerics annotation
 #'
 #' @aliases annotation,msData,msData-method
 #'

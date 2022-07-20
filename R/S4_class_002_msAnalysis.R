@@ -323,16 +323,17 @@ setMethod("blanks<-", signature("msAnalysis", "ANY"), function(object, value) {
 #'
 #' @export
 #'
+#' @importMethodsFrom S4Vectors metadata
 #' @importFrom data.table rbindlist
 #'
 #' @aliases metadata,msAnalysis,msAnalysis-method
 #'
-setMethod("metadata", "msAnalysis", function(object, which = NULL) {
+setMethod("metadata", "msAnalysis", function(x, which = NULL) {
 
   if (!is.null(which)) {
-    mtd_a <- c(list(analysis = object@analysis), object@metadata[which])
+    mtd_a <- c(list(analysis = x@analysis), x@metadata[which])
   } else {
-    mtd_a <- c(list(analysis = object@analysis), object@metadata)
+    mtd_a <- c(list(analysis = x@analysis), x@metadata)
   }
 
   if ("msLevels" %in% names(mtd_a)) mtd_a$msLevels <- paste(sort(mtd_a$msLevels), collapse = "; ")
@@ -635,11 +636,13 @@ setMethod("loadRawData", "msAnalysis", function(object) {
 #'
 #' @export
 #'
+#' @importMethodsFrom ProtGenerics spectra
+#'
 #' @aliases spectra,msAnalysis,msAnalysis-method
 #'
-setMethod("spectra", "msAnalysis", function(obj) {
+setMethod("spectra", "msAnalysis", function(object) {
 
-  return(obj@spectra)
+  return(object@spectra)
 })
 
 ### hasAdjustedRetentionTime ---------------------------------------------
@@ -768,6 +771,7 @@ setMethod("peaks", "msAnalysis", function(object,
 #'
 #' @export
 #'
+#' @importMethodsFrom xcms plotPeaks
 #' @importFrom data.table rbindlist copy
 #'
 #' @aliases plotPeaks,msAnalysis,msAnalysis-method

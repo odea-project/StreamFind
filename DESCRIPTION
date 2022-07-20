@@ -48,6 +48,8 @@ Suggests:
     rmarkdown,
     spelling,
     testthat (>= 3.0.0)
+VignetteBuilder: 
+    knitr
 RdMacros: 
     Rdpack
 Config/testthat/edition: 3
@@ -55,4 +57,3 @@ Encoding: UTF-8
 Language: en-US
 LazyData: false
 RoxygenNote: 7.2.0
-VignetteBuilder: knitr

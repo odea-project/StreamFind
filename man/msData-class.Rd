@@ -152,7 +152,7 @@
 
 \S4method{loadRawData}{msData}(object, analyses = NULL)
 
-\S4method{spectra}{msData}(obj)
+\S4method{spectra}{msData}(object)
 
 \S4method{hasAdjustedRetentionTime}{msData}(object)
 
