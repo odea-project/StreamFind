@@ -293,6 +293,7 @@ extractEICs <- function(object = NULL,
   eics <- rbindlist(eicList)
   setcolorder(eics, c("analysis", "replicate", "id", "rt", "intensity"))
 
+  #removes zeros
   #eics <- eics[intensity > 0, ]
 
   return(copy(eics))

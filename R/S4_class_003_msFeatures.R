@@ -175,7 +175,8 @@ setMethod("features", "msFeatures", function(object,
 
   if (!filtered) {
     mtd <- copy(object@metadata)
-    ft_to_keep <- mtd$id[FALSE %in% mtd$filtered]
+    ft_to_keep <- !mtd$filtered
+    ft_to_keep <- mtd$id[ft_to_keep]
     feats <- object[, ft_to_keep]
   } else {
     feats <- object

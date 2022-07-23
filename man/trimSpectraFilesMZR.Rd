@@ -6,9 +6,12 @@
 \usage{
 trimSpectraFilesMZR(
   files,
+  MS1 = TRUE,
+  MS2 = TRUE,
   rtr = NULL,
   mzr = NULL,
-  onlyMS1 = TRUE,
+  mzr_ms2 = NULL,
+  intensityThreshold = NULL,
   copyMetadata = TRUE,
   path = NULL,
   prefix = "trim_"
@@ -17,13 +20,24 @@ trimSpectraFilesMZR(
 \arguments{
 \item{files}{A character vector with the full path of the files to trim.}
 
+\item{MS1}{Set to TRUE for trimming MS level one data.}
+
+\item{MS2}{Set to TRUE for trimming MS level two data.}
+
 \item{rtr}{A numeric vector of length 2 with the maximum and minimum
 time range to trim the files, in seconds.}
 
 \item{mzr}{A numeric vector of length 2 with the maximum and minimum
 \emph{m/z} range to trim the files, in Da.}
 
-\item{onlyMS1}{Set to TRUE for trimming only MS level one data.}
+\item{mzr_ms2}{A numeric vector of length 2 with the maximum and minimum
+\emph{m/z} range to trim MS2 data files, in Da. when NULL and MS2 is TRUE
+the mzr is used instead.}
+
+\item{intensityThreshold}{A numeric vector of length one with the minimum
+intensity threshold. Traces below the given intensity threshold are removed.
+If a length two vector is given, the first value if applied for MS1 data
+and the second to MS2 data.}
 
 \item{copyMetadata}{Set to TRUE to copy metadata from the original file.}
 
