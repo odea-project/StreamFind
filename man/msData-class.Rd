@@ -4,6 +4,8 @@
 \name{msData-class}
 \alias{msData-class}
 \alias{show,msData-method}
+\alias{addAnalyses,msData-method}
+\alias{addAnalyses,msData,msData-method}
 \alias{getAnalyses,msData-method}
 \alias{getAnalyses,msData,msData-method}
 \alias{[,msData,ANY,missing,missing-method}
@@ -57,6 +59,8 @@
 \title{msData}
 \usage{
 \S4method{show}{msData}(object)
+
+\S4method{addAnalyses}{msData}(object, analyses = NULL)
 
 \S4method{getAnalyses}{msData}(object, analyses = NULL)
 
@@ -341,21 +345,23 @@ The \code{msData} object inherits the \linkS4class{streamProject} structure with
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{show}: prints the details of an \linkS4class{msData} object.
+\item \code{show(msData)}: prints the details of an \linkS4class{msData} object.
 
-\item \code{getAnalyses}: getter for analysis names.
+\item \code{addAnalyses(msData)}: getter for analysis names.
 
-\item \code{[}: subset on analyses, using index or analyses name.
+\item \code{getAnalyses(msData)}: getter for analysis names.
 
-\item \code{polarities}: getter for analyses polarity.
+\item \code{x[i}: subset on analyses, using index or analyses name.
 
-\item \code{EICs}: get extracted ion chromatograms (EICs)
+\item \code{polarities(msData)}: getter for analyses polarity.
+
+\item \code{EICs(msData)}: get extracted ion chromatograms (EICs)
 for specified \emph{m/z} (Da) and retention time (seconds) targets
 in given analyses. The arguments \code{mz}, \code{ppm}, \code{rt}
 and \code{sec} are used to construct the targets.
 See ?\link{makeTargets} for more information.
 
-\item \code{plotEICs}: a method for plotting extracted ion chromatograms (EICs)
+\item \code{plotEICs(msData)}: a method for plotting extracted ion chromatograms (EICs)
 of data in an \linkS4class{msData} object.
 The arguments for data collection are the same as the \link{EICs} method.
 A \link[data.table]{date.table} can be used instead.
@@ -365,19 +371,19 @@ The \code{legendNames} is a character vector with the same length as targets for
 can be used to legend the plot. Note that, by setting \code{legendNames} the \code{colorBy}
 is set to "targets".
 
-\item \code{TICs}: extracts total ion chromatograms (TICs)
+\item \code{TICs(msData)}: extracts total ion chromatograms (TICs)
 for analyses in an \linkS4class{msData} object.
 
-\item \code{plotTICs}: plots a total ion chromatogram (TIC) for abalyses in the object.
+\item \code{plotTICs(msData)}: plots a total ion chromatogram (TIC) for abalyses in the object.
 The colorBy argument can be "analyses" or "replicates"
 to color the plot by analyses or by analysis replicates.
 
-\item \code{XICs}: get three dimensional (\emph{m/z}, time and intensity)
+\item \code{XICs(msData)}: get three dimensional (\emph{m/z}, time and intensity)
 extracted ion chromatograms (XICs) for specified \emph{m/z} and retention time pair targets
 in analyses of an \linkS4class{msData} object. The arguments \code{mz}, \code{ppm}, \code{rt}, \code{sec} and \code{id}
 are used to construct the targets. See ?\link{makeTargets} for more information.
 
-\item \code{plotXICs}: plots three dimensional (\emph{m/z}, time and intensity)
+\item \code{plotXICs(msData)}: plots three dimensional (\emph{m/z}, time and intensity)
 extracted ion chromatograms (XICs) for specified \emph{m/z} and retention time pair targets
 in analyses of an \linkS4class{msData} object. The arguments \code{mz}, \code{ppm}, \code{rt},
 \code{sec} and \code{id} are used to construct the targets. See ?\link{makeTargets} for more information.
@@ -388,7 +394,7 @@ the argument \code{targetsMark}. \code{targetsMark} should be a two column table
 exact \emph{m/z} and time targets. Note that the number of rows should be the same as the number of target
 in the XIC. The number of rows to plot multiple targets can be defined by the \code{numberRows} argument.
 
-\item \code{MS2s}: get MS2 data for specified \emph{m/z} and retention time (seconds) targets
+\item \code{MS2s(msData)}: get MS2 data for specified \emph{m/z} and retention time (seconds) targets
 in analyses of an \linkS4class{msData} object. The \code{clusteringUnit} defines the method used for clustering.
 Possible values are \emph{euclidean} (the default) or \emph{distance}.
 The mass (in Da) and time (in seconds) isolation windows to screen for the respective precursors
@@ -402,7 +408,7 @@ Set \code{mergeVoltages} to \code{TRUE} for merging spectra acquired with differ
 The \code{mergeBy} argument is used to merge spectra by "samples" or "replicates".
 When \code{NULL}, MS2 is given per target and per sample.
 
-\item \code{plotMS2s}: plots MS2 data for specified \emph{m/z} and retention time (seconds) targets
+\item \code{plotMS2s(msData)}: plots MS2 data for specified \emph{m/z} and retention time (seconds) targets
 in analyses of an \linkS4class{msData} object. The \code{clusteringUnit} defines the method used for clustering.
 Possible values are \emph{euclidean} (the default) or \emph{distance}.
 The mass (in Da) and time (in seconds) isolation windows to screen for the respective precursors
@@ -418,29 +424,29 @@ When \code{NULL}, MS2 is given per target and per sample. The possible values fo
 \code{colorBy} argument are "targets", "samples", "replicates" and "voltages" to colour by
 each target, sample, replicate or collision energy, respectively.
 
-\item \code{loadRawData}: adds processing parameters to the analysis.
+\item \code{loadRawData(msData)}: adds processing parameters to the analysis.
 
-\item \code{spectra}: getter for slot spectra in analyses of an \linkS4class{msData} object.
+\item \code{spectra(msData)}: getter for slot spectra in analyses of an \linkS4class{msData} object.
 
-\item \code{hasAdjustedRetentionTime}: getter for presence of adjusted retention time
+\item \code{hasAdjustedRetentionTime(msData)}: getter for presence of adjusted retention time
 in the analyses.
 
-\item \code{addParameters}: adds processing parameters to analyses or features as defined
+\item \code{addParameters(msData)}: adds processing parameters to analyses or features as defined
 by the argument \code{where}. So where can be either "analyses" or "features".
 
-\item \code{getParameters}: gets processing parameters from analyses or features as defined
+\item \code{getParameters(msData)}: gets processing parameters from analyses or features as defined
 by the argument \code{where}. So where can be either "analyses" or "features".
 
-\item \code{as.features}: converts the \linkS4class{msData}
+\item \code{as.features(msData)}: converts the \linkS4class{msData}
 to a \linkS4class{features} object from the package \pkg{patRoon}.
 
-\item \code{peaks}: getter for chromatographic peaks.
+\item \code{peaks(msData)}: getter for chromatographic peaks.
 The arguments \code{targetID} and \code{mz}/\code{rt} can be used
 to select specific peaks. The \emph{id} of peaks and/or features can be
 given in the \code{targetsID} argument to select the respective peaks.
 Also, analyses can be selected using the \code{analyses} argument.
 
-\item \code{plotPeaks}: a method for plotting chromatographic peaks
+\item \code{plotPeaks(msData)}: a method for plotting chromatographic peaks
 in an \linkS4class{msData} object.
 The arguments \code{targetID} and \code{mz}/\code{rt} can be used
 to select specific peaks. The \emph{id} of peaks and/or features can be
@@ -452,17 +458,17 @@ The \code{legendNames} is a character vector with the same length as targets for
 can be used to lengend the plot. Note that, by setting \code{legendNames} the \code{colorBy}
 is set to "targets" automatically.
 
-\item \code{mapPeaks}: a method for mapping peaks mass and time space.
+\item \code{mapPeaks(msData)}: a method for mapping peaks mass and time space.
 The \code{colorBy} argument can be be \code{"analyses"}, \code{replicates} or \code{targets}
 (the default), for coloring by analyses, replicates or peak targets, respectively.
 The \code{legendNames} is a character vector with the same length as targets for plotting and
 can be used to legend the plot. Note that, by setting \code{legendNames} the \code{colorBy}
 is set to "targets" automatically.
 
-\item \code{features}: getter for features (i.e., grouped peaks). When
+\item \code{features(msData)}: getter for features (i.e., grouped peaks). When
 complete is set to \code{TRUE}, additional feature metadata is also returned.
 
-\item \code{plotFeatures}: A method for plotting peaks from given features
+\item \code{plotFeatures(msData)}: A method for plotting peaks from given features
 in an \linkS4class{msData} object.
 The \code{colorBy} argument can be be \code{"analyses"}, \code{replicates} or \code{targets}
 (the default), for coloring by analyses, replicates or peak targets, respectively.
@@ -470,24 +476,24 @@ The \code{legendNames} is a character vector with the same length as targets for
 can be used to lengend the plot. Note that, by setting \code{legendNames} the \code{colorBy}
 is set to "targets" automatically.
 
-\item \code{as.featureGroups}: converts the \linkS4class{msData}
+\item \code{as.featureGroups(msData)}: converts the \linkS4class{msData}
 to a \linkS4class{featureGroups} object from the package \pkg{patRoon}.
 
-\item \code{annotation}: getter for annotation (i.e., isotopes and adducts clusters).
+\item \code{annotation(msData)}: getter for annotation (i.e., isotopes and adducts clusters).
 When giving the argument \code{all} as \code{TRUE},
 all the features within the target feature annotation cluster are included in the output.
 
-\item \code{plotAnnotation}: plots peaks from given feature annotation targets
+\item \code{plotAnnotation(msData)}: plots peaks from given feature annotation targets
 in the \linkS4class{msData} object. The \code{colorBy} argument can be
 set to \code{"isotopes"} for coloring by monoisotopic mass instead of neutral mass of the cluster.
 
-\item \code{[}: subset on analyses and features, using index or name.
+\item \code{x[i}: subset on analyses and features, using index or name.
 Note that this method is irreversible.
 
-\item \code{[}: subset on analyses, features and peaks, using index or name.
+\item \code{x[i}: subset on analyses, features and peaks, using index or name.
 Note that this method is irreversible.
+
 }}
-
 \section{Slots}{
 
 \describe{

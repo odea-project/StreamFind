@@ -97,6 +97,67 @@ setMethod("show", "msData", function(object) {
 
 })
 
+#### addAnalyses ---------------------------------------------------------
+
+#' @describeIn msData getter for analysis names.
+#'
+#' @template args-single-analyses
+#'
+#' @export
+#'
+#' @aliases addAnalyses,msData,msData-method
+#'
+setMethod("addAnalyses", "msData", function(object, analyses = NULL) {
+
+  if (!is.null(analyses)) {
+
+    a1 <- analyses
+
+    cls <- NA_character_
+
+    if (length(a1) == 1) {
+      cls <- class(a1)
+    } else {
+      cls <- sapply(a1, function(x) class(x))
+    }
+
+    if (all(cls %in% "msAnalysis")) {
+
+      if (!is.list(a1)) {
+        a1 <- list(a1)
+        names(a1) <- analyses(analyses)
+      } else {
+        names(a1) <- sapply(a1, function(x) analyses(x))
+      }
+
+      #check name
+      if (TRUE %in% (names(a1) %in% analyses(object))) {
+        warning("Analysis name is already in msData!")
+        return(object)
+      }
+
+      object@analyses <- c(object@analyses, a1)
+      object@analyses <-  object@analyses[order(names(object@analyses))]
+
+      #note that any present features are erased as new analyses invalidate the grouping/alignment
+      object@features <- new("msFeatures")
+
+      #remove feature assignments
+      object@analyses <- lapply(object@analyses, function(x) {
+        if (nrow(x@peaks) > 0) {
+          x@peaks$feature <- NA_character_
+        }
+        return(x)
+      })
+
+      return(object)
+    }
+  }
+
+  warning("No msAnalysis object given to add!")
+  return(object)
+})
+
 #### getAnalyses ---------------------------------------------------------
 
 #' @describeIn msData getter for analysis names.

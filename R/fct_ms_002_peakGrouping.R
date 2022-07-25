@@ -43,6 +43,7 @@ peakGrouping <- function(object = NULL, settings = NULL) {
   }
 
   # TODO implement as.featuresSet for multiple polarities
+  # TODO check if all analyses have peaks before grouping
   pat <- as.features(object)
 
   if (is.null(settings)) {

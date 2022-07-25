@@ -57,7 +57,7 @@ newStreamProject <- function(files = NA_character_,
     }
 
     if ("replicate" %in% colnames(files)) {
-      replicates <- files$replicates
+      replicates <- files$replicate
       names(replicates) <- files$file
     }
 
@@ -126,34 +126,4 @@ newStreamProject <- function(files = NA_character_,
   }
 
   return(object)
-}
-
-
-#' @title addAnalyses
-#'
-#' @description Adds file/s to a \linkS4class{streamProject} object.
-#'
-#' @param files A list of complete paths to be added.
-#' The default is a UI to choose the files.
-#' @param object A \linkS4class{streamProject} object to add the files.
-#' @template args-newStreamProject-replicates-blanks
-#'
-#' @return Returns the object including the added files
-#' in the \code{samples} slot.
-#'
-#' @note When the has files, new files are added
-#' below in the \code{samples}. If processed data is already present,
-#' the new files will invalidate the structure.
-#' Therefore, data should be processed again.
-#'
-#' @export
-#'
-addAnalyses <- function(files = utils::choose.files(),
-                        object = NULL,
-                        replicates = NULL) {
-
-  # TODO make function to add files/analyses to an existing streamProject
-
-
-  return("add analysis files")
 }

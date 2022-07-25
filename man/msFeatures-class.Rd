@@ -61,24 +61,24 @@ for inspection, processing and evaluation.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{analyses}: getter for analysis names.
+\item \code{analyses(msFeatures)}: getter for analysis names.
 
-\item \code{replicates}: getter for replicate names.
+\item \code{replicates(msFeatures)}: getter for replicate names.
 
-\item \code{blanks}: getter for blank names.
+\item \code{blanks(msFeatures)}: getter for blank names.
 
-\item \code{addParameters}: adds processing parameters for features.
+\item \code{addParameters(msFeatures)}: adds processing parameters for features.
 
-\item \code{getParameters}: gets processing parameters.
+\item \code{getParameters(msFeatures)}: gets processing parameters.
 
-\item \code{features}: getter for features (i.e., grouped peaks). When
+\item \code{features(msFeatures)}: getter for features (i.e., grouped peaks). When
 complete is set to \code{TRUE}, additional feature metadata is also returned.
 
-\item \code{[}: subset on analyses, using analysis index or name.
+\item \code{x[i}: subset on analyses, using analysis index or name.
 
-\item \code{[}: subset on features, using feature index or name.
+\item \code{x[i}: subset on features, using feature index or name.
+
 }}
-
 \section{Slots}{
 
 \describe{

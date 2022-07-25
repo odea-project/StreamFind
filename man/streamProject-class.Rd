@@ -74,47 +74,47 @@ The \code{streamProject} is the most basic class of the \pkg{streamFind} package
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{show}: prints the details of an \linkS4class{streamProject} object.
+\item \code{show(streamProject)}: prints the details of an \linkS4class{streamProject} object.
 
-\item \code{[}: subset on analyses, using analysis index or name.
+\item \code{x[i}: subset on analyses, using analysis index or name.
 
-\item \code{projectInfo}: setter and getter for project title, date and path.
+\item \code{projectInfo(streamProject)}: setter and getter for project title, date and path.
 When the \code{projectTitle} and \code{projectDate} arguments
 are missing it returns a list with the project title, date and path.
 If arguments are given, the project title and date are updated
 based on the specified arguments, returning the original class object.
 
-\item \code{path}: getter for project path.
+\item \code{path(streamProject)}: getter for project path.
 
-\item \code{analysisInfo}: getter for analysis info as \link{data.frame} with
+\item \code{analysisInfo(streamProject)}: getter for analysis info as \link{data.frame} with
 four columns: path, analysis, group and blank. The \link{data.frame}
 can be used as analysisInfo in \pkg{patRoon}.
 
-\item \code{analysisTable}: getter for analysis table as \link{data.table} with
+\item \code{analysisTable(streamProject)}: getter for analysis table as \link{data.table} with
 four columns: file, analysis, replicate and blank.
 
-\item \code{files}: getter for analysis file paths.
+\item \code{files(streamProject)}: getter for analysis file paths.
 
-\item \code{analyses}: getter for analysis names.
+\item \code{analyses(streamProject)}: getter for analysis names.
 
-\item \code{replicates}: getter for replicate names.
+\item \code{replicates(streamProject)}: getter for replicate names.
 
-\item \code{replicates<-}: setter for analysis replicate names.
+\item \code{replicates(streamProject) <- value}: setter for analysis replicate names.
 The \code{value} is a character vector with the same length as
 the number of analyses in the \code{object},
 containing analysis replicate name for each analysis.
 
-\item \code{blanks}: getter for blank names.
+\item \code{blanks(streamProject)}: getter for blank names.
 
-\item \code{blanks<-}: setter for associated blank replicate for each analyses.
+\item \code{blanks(streamProject) <- value}: setter for associated blank replicate for each analyses.
 The \code{value} is a character vector with the same length as
 the number of analyses in the \code{object},
 containing the associated blank replicate name of each analysis.
 
-\item \code{metadata}: getter for analysis metadata.
+\item \code{metadata(streamProject)}: getter for analysis metadata.
 Returns a \link[data.table]{date.table} with a row per analysis.
-}}
 
+}}
 \section{Slots}{
 
 \describe{

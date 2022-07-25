@@ -206,22 +206,22 @@ The nomenclature listed below is consistently applied throughout the objects and
 
 ## streamProject class
 
-The project creation is demonstrated below for the three MS files (triplicate) where a set of chemicals were spiked (see \@ref(spiked-chemicals)). The project path can be assign as argument but for the example below it was left as default (i.e., the working directory).
-The initial S4 class created in the `newStreamProject` function is _streamProject_. The subclass is then defined according to the type of files added. Note that multiple file types are not possible as a subclass cannot be defined.
+The project creation is demonstrated below for the three MS files (triplicate, 1 to 3 in \@ref(tab:description-files)) where a set of chemicals were spiked (see \@ref(spiked-chemicals) with tag IS and S). The project path can be assigned as argument but for the example below it was left as default (i.e., the working directory). The initial S4 class created in the `newStreamProject` function is _streamProject_. The subclass is then defined according to the type of files added. Note that multiple file types are not possible as a subclass cannot be defined.
 
 ```{r newstreamproject-call, message=FALSE, results='hide'}
+#New streamProject with the files 1 to 3
 sp1 <- newStreamProject(files = files[1:3], title = "Example_01")
 ```
 
 ## msData class
 
-Because the added files were all with mzML format (i.e., MS files), the subclass is directly defined as _msData_. The structure for further processing data is then set for MS data. Other data formats/structure will lead to different subclasses (e.g., _uvData_ and _ramanData_) but is not yet implemented within the streamFind package.
+Because the added files were all with mzML format (i.e., MS files), the subclass is directly defined as _msData_. The structure for further processing data is then set for MS data. Other data formats/structure will lead to different sub classes (e.g., _uvData_ and _ramanData_) but is not yet implemented within the streamFind package.
 
 ```{r msdata_streamproject_classes}
 is(sp1)
 ```
 
-The _msData_ structure includes the _streamProject_ class plus the `features` slot. The project, date and path slots correspond to the project title, creation date and directory in disk, respectively. The analyses slot is a list with a _msAnalysis_ S4 class object per MS file added. The structure of the _msAnalysis_ class is described in the next sub-chapter. The `features` slot is a _msFeatures_ S4 class object to hold the results from alignment, grouping and annotation of peaks across analyses. Further information for _msAnalysis_ is given in the next sub-chapter (\@ref(msanalysis-class))  and for _msFeatures_ is given in the sub-chapter \@ref(msfeatures-class), after creation of features by performing alignment and grouping of peaks across analyses.
+The _msData_ structure includes the _streamProject_ class plus the `features` slot. The project, date and path slots correspond to the project title, creation date and directory in disk, respectively. The analyses slot is a list with a _msAnalysis_ S4 class object per MS file added. The structure of the _msAnalysis_ class is described in the next sub-chapter. The `features` slot is a _msFeatures_ S4 class object to hold the results from alignment, grouping and annotation of peaks across analyses. Further information for _msAnalysis_ is given in the next sub-chapter (\@ref(msanalysis-class)) and for _msFeatures_ is given in the sub-chapter \@ref(msfeatures-class), after creation of features by performing alignment and grouping of peaks across analyses.
 
 * _msData_ structure:
 
@@ -231,9 +231,9 @@ str(sp1, max.level = 2)
 
 ## msAnalysis class
 
-The _msAnalysis_ class is structured as shown below. Note that the S4 method `getAnalyses` for _msData_ was used to obtain the _msAnalysis_ of the first analysis as defined by the second argument. In general, access and plotting S4 methods can also be applied directly to the _msAnalysis_ class besides _msData_ (as described in \@ref(raw-data-access)) but is not part of the basic workflow and mostly used for advanced data visualization and access of low level data (e.g., traces).  
+The _msAnalysis_ class is structured as shown below. Note that the S4 method `getAnalyses` for _msData_ was used to obtain the _msAnalysis_ of the first analysis as defined by the second argument. In general, access to raw data (i.e., traces and chromatograms) as well as respective plotting S4 methods can be applied to both the _msAnalysis_ and _msData_ (as described in \@ref(raw-data-access)). 
 
-The slots analysis, file and replicate correspond to the analysis name, the full file path and the replicate group name, respectively. The metadata slot is a list of objects with various informative entries of the analysis. The metadata list can be expanded with additional information about the analysis/sample (e.g., sample location, weather conditions, process sensor data, etc.). Below, the `getMetadata` S4 method of _msData_ is used to display the metadata of the first file. Note, `getMetadata` also works for _msAnalysis_ S4 class as shown below in the commented code. The slot parameters is used to store processing steps (e.g., peak picking) as _settingsSet_ S4 class objects, including the processing step name/ID, the algorithm used and the respective settings applied. The parameters can be applied for history track but also for re-run the processing when required. The spectra and chromatograms slots are used to store low level data (i.e., mass traces) from the MS files. Finally, the peaks slot is used to store the chromatographic peaks after peak picking. As no other processing step was applied the spectra, chromatograms and peaks tables are empty for now.
+The slots analysis, file and replicate correspond to the analysis name, the full file path and the replicate group name, respectively. The metadata slot is a list of objects with informative entries of the analysis file. The metadata list can be expanded with additional information about the analysis/sample (e.g., sample location, weather conditions, process sensor data, etc.). The slot parameters is used to store processing steps (e.g., peak picking) as _settings_ S4 class objects, including the processing step name/ID, the algorithm used and the respective settings applied. The parameters can be used for history track but also for re-run the processing steps when required. The spectra and chromatograms slots are used to store low level data (i.e., mass traces either in profile or centroided modes) from the MS files. Finally, the peaks slot is used to store the chromatographic peaks after peak picking. As no other processing step was applied the spectra, chromatograms and peaks tables in the _msAnalysis_ are empty for now.
 
  * _msAnalysis_ structure:  
 
@@ -242,11 +242,38 @@ a1 <- getAnalyses(sp1, 1)
 str(a1, max.level = 2)
 ```
 
-### Create msAnalysis
+### Create an msAnalysis
 
-`r # TODO make method to open a file as xAnalysis``
+An _msAnalysis_ object can be created without the need of running `newStreamProject`. The method `newAnalysis` can be used for initiating the _msAnalysis_ when a full path of an MS file (i.e., with extension mzML or other MS format) is given. Similar to `newStreamProject`, the format of the file given as file argument dictates the class of the analysis object returned from the `newAnalysis` function.
+
+```{r create-msanalysis}
+#creating an msAnalysis object for the 4th file, corresponding to profile MS data
+aProf <- newAnalysis(file = files[4])
+
+is(aProf)
+```
+
+### Add msAnalysis to msData
+
+As the method `getAnalysis` can be used to obtain an _msAnalysis_ from an _msData_ object, the method `addAnalyses` is used to add extra _msAnalysis_ objects to _msData_. Below the files 4 to 6 are added to the already created _msData_ (containing files 1 to 3). Note that both `getAnalyses` and `addAnalyses` can be applied to equivalent classes to _msData_ (i.e., _uvData_ and _ramanData_)
+
+```{r add-msanalysis}
+
+#all profile MS files
+aProfs <- lapply(files[4:6], function(x) newAnalysis(x))
+
+#adding the profile analyses to msData
+sp1 <- addAnalyses(sp1, analyses = aProfs)
+
+#show added files in msData
+sp1
+```
 
 ### Handle metadata
+
+#### Get metadata
+
+Below, the `getMetadata` S4 method of _msData_ is used to display the metadata of the first file. Note, `getMetadata` also works for _msAnalysis_ S4 class as shown below in the commented code. 
 
 * metadata of _msAnalysis_:  
 
@@ -257,9 +284,7 @@ t(streamFind::metadata(sp1, analyses = 1))
 t(streamFind::metadata(a1))
 ```
 
-
-
-## Add metadata
+#### Add metadata
 
 `r # TODO make addMetadata method for analyses`
 

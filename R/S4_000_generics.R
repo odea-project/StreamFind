@@ -46,6 +46,11 @@ setGeneric("polarities", function(object, ...) standardGeneric("polarities"))
 #' @noRd
 setGeneric("polarities<-", function(object, value) standardGeneric("polarities<-"))
 
+#' addAnalyses
+#'
+#' @noRd
+setGeneric("addAnalyses", function(object, ...) standardGeneric("addAnalyses"))
+
 #' getAnalyses
 #'
 #' @noRd

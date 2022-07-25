@@ -268,60 +268,60 @@ for inspection, processing and evaluation.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{initialize}: initializes an \linkS4class{msAnalysis} object.
+\item \code{initialize(msAnalysis)}: initializes an \linkS4class{msAnalysis} object.
 
-\item \code{show}: prints the details of an \linkS4class{msAnalysis} object.
+\item \code{show(msAnalysis)}: prints the details of an \linkS4class{msAnalysis} object.
 
-\item \code{files}: getter for analysis file path.
+\item \code{files(msAnalysis)}: getter for analysis file path.
 
-\item \code{analysisInfo}: getter for analysis info as \link{data.frame} with
+\item \code{analysisInfo(msAnalysis)}: getter for analysis info as \link{data.frame} with
 four columns: path, analysis, group and blank. The \link{data.frame}
 can be used as analysisInfo in \pkg{patRoon}.
 
-\item \code{analysisTable}: getter for analysis table as \link{data.table} with
+\item \code{analysisTable(msAnalysis)}: getter for analysis table as \link{data.table} with
 four columns: file, analysis, replicate and blank.
 
-\item \code{analyses}: getter for analysis name.
+\item \code{analyses(msAnalysis)}: getter for analysis name.
 
-\item \code{replicates}: getter for the replicate name.
+\item \code{replicates(msAnalysis)}: getter for the replicate name.
 
-\item \code{replicates<-}: setter for analysis replicate name.
+\item \code{replicates(msAnalysis) <- value}: setter for analysis replicate name.
 The \code{value} is a character string with analysis replicate name.
 
-\item \code{blanks}: getter for associated blank replicate name.
+\item \code{blanks(msAnalysis)}: getter for associated blank replicate name.
 
-\item \code{blanks<-}: setter for associated blank replicate.
+\item \code{blanks(msAnalysis) <- value}: setter for associated blank replicate.
 The \code{value} is a character string with associated blank replicate name.
 
-\item \code{metadata}: getter for analysis metadata.
+\item \code{metadata(msAnalysis)}: getter for analysis metadata.
 Returns a \link[data.table]{date.table} with a column per metadata entry.
 
-\item \code{polarities}: getter for analyses polarity.
+\item \code{polarities(msAnalysis)}: getter for analyses polarity.
 
-\item \code{EICs}: get extracted ion chromatograms (EICs)
+\item \code{EICs(msAnalysis)}: get extracted ion chromatograms (EICs)
 for specified \emph{m/z} (Da) and retention time (seconds) targets.
 The arguments \code{mz}, \code{ppm}, \code{rt}
 and \code{sec} are used to construct the targets.
 See ?\link{makeTargets} for more information.
 
-\item \code{plotEICs}: A method for plotting extracted ion chromatograms (EICs)
+\item \code{plotEICs(msAnalysis)}: A method for plotting extracted ion chromatograms (EICs)
 of data in the analysis file.
 The arguments for data collection are the same as the \link{EICs} method.
 A \link[data.table]{date.table} can be used instead.
 The \code{legendNames} is a character vector with the same length as targets for plotting and
 can be used to legend the plot. Note, the plot legends the data by target.
 
-\item \code{TICs}: extracts the total ion chromatograms (TICs)
+\item \code{TICs(msAnalysis)}: extracts the total ion chromatograms (TICs)
 of analysis.
 
-\item \code{plotTICs}: plots the total ion chromatogram (TIC) in the analysis.
+\item \code{plotTICs(msAnalysis)}: plots the total ion chromatogram (TIC) in the analysis.
 
-\item \code{XICs}: get three dimensional (\emph{m/z}, time and intensity)
+\item \code{XICs(msAnalysis)}: get three dimensional (\emph{m/z}, time and intensity)
 extracted ion chromatograms (XICs) for specified \emph{m/z} and retention time pair targets
 in analysis. The arguments \code{mz}, \code{ppm}, \code{rt}, \code{sec} and \code{id}
 are used to construct the targets. See ?\link{makeTargets} for more information.
 
-\item \code{plotXICs}: plots three dimensional (\emph{m/z}, time and intensity)
+\item \code{plotXICs(msAnalysis)}: plots three dimensional (\emph{m/z}, time and intensity)
 extracted ion chromatograms (XICs) for specified \emph{m/z} and retention time pair targets
 in analyses of an \linkS4class{msAnalysis} object. The arguments \code{mz}, \code{ppm}, \code{rt},
 \code{sec} and \code{id} are used to construct the targets. See ?\link{makeTargets} for more information.
@@ -332,7 +332,7 @@ the argument \code{targetsMark}. \code{targetsMark} should be a two column table
 exact \emph{m/z} and time targets. Note that the number of rows should be the same as the number of target
 in the XIC. The number of rows to plot multiple targets can be defined by the \code{numberRows} argument.
 
-\item \code{MS2s}: get MS2 data for specified \emph{m/z} and retention time (seconds) targets.
+\item \code{MS2s(msAnalysis)}: get MS2 data for specified \emph{m/z} and retention time (seconds) targets.
 The \code{clusteringUnit} defines the method used for clustering.
 Possible values are \emph{euclidean} (the default) or \emph{distance}.
 The mass (in Da) and time (in seconds) isolation windows to screen for the respective precursors
@@ -346,7 +346,7 @@ Set \code{mergeVoltages} to \code{TRUE} for merging spectra acquired with differ
 The \code{mergeBy} argument is used to merge spectra by "samples" or "replicates".
 When \code{NULL}, MS2 is given per target and per sample.
 
-\item \code{plotMS2s}: plots MS2 data for specified \emph{m/z} and retention time (seconds) targets
+\item \code{plotMS2s(msAnalysis)}: plots MS2 data for specified \emph{m/z} and retention time (seconds) targets
 in analyses of an \linkS4class{msData} object. The \code{clusteringUnit} defines the method used for clustering.
 Possible values are \emph{euclidean} (the default) or \emph{distance}.
 The mass (in Da) and time (in seconds) isolation windows to screen for the respective precursors
@@ -362,24 +362,24 @@ When \code{NULL}, MS2 is given per target and per sample. The possible values fo
 \code{colorBy} argument are "targets" and "voltages" to color by
 each target, sample, replicate or collision energy, respectively.
 
-\item \code{loadRawData}: adds raw spectra and chromatograms to the respective
+\item \code{loadRawData(msAnalysis)}: adds raw spectra and chromatograms to the respective
 slots of an \linkS4class{msAnalysis} object.
 
-\item \code{spectra}: getter for slot spectra in the \linkS4class{msAnalysis}.
+\item \code{spectra(msAnalysis)}: getter for slot spectra in the \linkS4class{msAnalysis}.
 
-\item \code{hasAdjustedRetentionTime}: getter for presence of adjusted retention time
+\item \code{hasAdjustedRetentionTime(msAnalysis)}: getter for presence of adjusted retention time
 in the \linkS4class{msAnalysis}.
 
-\item \code{addParameters}: adds processing parameters to the analysis.
+\item \code{addParameters(msAnalysis)}: adds processing parameters to the analysis.
 
-\item \code{getParameters}: gets processing parameters in the analysis.
+\item \code{getParameters(msAnalysis)}: gets processing parameters in the analysis.
 
-\item \code{peaks}: getter for chromatographic peaks.
+\item \code{peaks(msAnalysis)}: getter for chromatographic peaks.
 The arguments \code{targetID} and \code{mz}/\code{rt} can be used
 to select specific peaks. The \emph{id} of peaks and/or features can be
 given in the \code{targetsID} argument to select the respective peaks.
 
-\item \code{plotPeaks}: a method for plotting chromatographic peaks
+\item \code{plotPeaks(msAnalysis)}: a method for plotting chromatographic peaks
 in an \linkS4class{msAnalysis} object.
 The arguments \code{targetID} and \code{mz}/\code{rt} can be used
 to select specific peaks. The \emph{id} of peaks and/or features can be
@@ -387,13 +387,13 @@ given in the \code{targetsID} argument to select the respective peaks.
 The \code{legendNames} is a character vector with the same length as targets for plotting and
 can be used to legend the plot.
 
-\item \code{mapPeaks}: a method for mapping peaks mass and time space.
+\item \code{mapPeaks(msAnalysis)}: a method for mapping peaks mass and time space.
 The \code{legendNames} is a character vector with the same length as targets for plotting and
 can be used to legend the plot.
 
-\item \code{[}: subset on peaks, using peak index or name.
-}}
+\item \code{x[i}: subset on peaks, using peak index or name.
 
+}}
 \section{Slots}{
 
 \describe{

@@ -36,15 +36,15 @@ and the list of respective parameter settings.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{getAlgorithm}: getter for algorithm.
+\item \code{getAlgorithm(settings)}: getter for algorithm.
 
-\item \code{getSettings}: getter for settings.
+\item \code{getSettings(settings)}: getter for settings.
 
-\item \code{getCall}: getter for function call.
+\item \code{getCall(settings)}: getter for function call.
 
-\item \code{exportSettings}: exports the settings as either JSON or rds.
+\item \code{exportSettings(settings)}: exports the settings as either JSON or rds.
+
 }}
-
 \section{Slots}{
 
 \describe{
