@@ -1,41 +1,42 @@
 
 
-#' @title newStreamProject
+#' @title newStreamSet
 #'
-#' @description Creates a new \pkg{streamFind} project.
+#' @description Creates a new \pkg{streamFind} set of analyses.
 #'
-#' @template args-newStreamProject-files
-#' @template args-newStreamProject-path-title-date
-#' @template args-newStreamProject-replicates-blanks
+#' @template args-newStreamSet-files
+#' @template args-newStreamSet-path-title-date
+#' @template args-newStreamSet-replicates-blanks
 #' @param makeNewProject Logical, set to \code{TRUE} to create an R project
 #' in the given \code{path} and open a new R session.
 #'
-#' @note The format of the files added will dictate the subclass of the \linkS4class{streamProject}.
+#' @note The format of the files added will dictate the subclass of the \linkS4class{streamSet}.
 #' For instance, \emph{.mzML} or \emph{.mzXML} files will lead to the subclass
 #' \linkS4class{msData}, which will contain an \linkS4class{msAnalysis} for each file.
 #'
-#' @return A subclass of \linkS4class{streamProject} depending on the added
+#' @return A \linkS4class{streamSet} with a subclass depending on the added
 #' file formats. For instance, an \linkS4class{msData} is returned for
-#' \emph{mzML} and \emph{mzXML} files.
+#' \emph{mzML} and \emph{mzXML} files. when files from different types are mixed
+#' a subclass is not defined, returning the \linkS4class{streamSet} object with a list of files.
 #'
 #' @export
 #'
 #' @importFrom data.table data.table is.data.table
 #'
-newStreamProject <- function(files = NA_character_,
-                             path = getwd(),
-                             title = NA_character_,
-                             date = Sys.Date(),
-                             replicates = NULL,
-                             blanks = NULL,
-                             makeNewProject = FALSE) {
+newStreamSet <- function(files = NA_character_,
+                         path = getwd(),
+                         title = NA_character_,
+                         date = Sys.Date(),
+                         replicates = NULL,
+                         blanks = NULL,
+                         makeNewProject = FALSE) {
 
   if (TRUE %in% is.na(files)) {
     return(warning("At least one file should be added to create a stream project!"))
   }
 
-  proj <- new("streamProject")
-  proj@project <- title
+  proj <- new("streamSet")
+  proj@title <- title
   proj@date <- date
   proj@path <- path
 
@@ -96,8 +97,16 @@ newStreamProject <- function(files = NA_character_,
   )
 
   for (f in files) {
+
     if (grepl("mzML", f) | grepl("mzXML", f)) {
       analyses[[gsub(".mzML|.mzXML", "", basename(f))]] <- new("msAnalysis", file = f, replicate = unname(replicates[f]), blank = unname(blanks[f]))
+    }
+
+    # TODO check for raw format of MS files for asking for conversion
+
+    if (TRUE %in% grepl(tools::file_ext(f), compatibleFileFormatsForConversion()$format)) {
+      warning("MS vendor file found! Use the function convertFiles
+              for conversion to mzML/mzXML. See ?convertFiles for more information.")
     }
 
     # TODO implement further file types check-ups, such as for ramanAnalysis or uvAnalysis
@@ -113,15 +122,18 @@ newStreamProject <- function(files = NA_character_,
   #check if a single sample type was found
   an_type <- unique(sapply(analyses, function(x) is(x)))
   if (length(an_type) > 1) {
-    warning("More than one file type was added! Not possible to assign a project sub-class.")
+    proj@analyses <- files
+    warning("More than one file type was added! Not possible to assign a set sub-class.")
     return(proj)
   }
 
   if ("msAnalysis" %in% an_type) {
     object <- new("msData", proj)
     object@analyses <- object@analyses[sort(names(object@analyses), decreasing = FALSE)]
+
   } else {
-    warning("File type was not recognized! Not possible to assign a stream project sub-class.")
+    proj@analyses <- files
+    warning("File type was not recognized! Not possible to assign a set sub-class.")
     return(proj)
   }
 

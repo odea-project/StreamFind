@@ -34,10 +34,10 @@ msData_validity <- function(object) {
 #' @title msData
 #'
 #' @description An S4 class object to store and manage processing of files with MS data.
-#'   The \code{msData} object inherits the \linkS4class{streamProject} structure with type defined as
+#'   The \code{msData} object inherits the \linkS4class{streamSet} structure with type defined as
 #'   \emph{ms}.
 #'
-#' @template slot-streamProject
+#' @template slot-streamSet
 #' @template slot-msData
 #'
 #' @export
@@ -47,7 +47,7 @@ setClass("msData",
   slots = c(
     features = "msFeatures"
   ),
-  contains = "streamProject",
+  contains = "streamSet",
   prototype = list(
     features = new("msFeatures")
   ),
@@ -70,14 +70,14 @@ setMethod("show", "msData", function(object) {
 
   cat(
     "  Class         ", paste(is(object), collapse = "; "), "\n",
-    "  Project       ", object@project, "\n",
+    "  Title         ", object@title, "\n",
     "  Date          ", as.character(object@date), "\n",
     "  Path          ", object@path, "\n",
-    "  Analyses: \n",
     sep = ""
   )
   if (length(object@analyses) > 0) {
     tb <- data.table(
+      analysis = analyses(object),
       replicate = sapply(object@analyses, function(x) x@replicate),
       blank = sapply(object@analyses, function(x) x@blank),
       class = sapply(object@analyses, function(x) is(x)),
@@ -87,14 +87,255 @@ setMethod("show", "msData", function(object) {
     if (nrow(object@features@metadata) > 0) {
       tb$features <- apply(object@features@intensity[, .SD, .SDcols = analyses(object)], 2, function(x) length(x[x > 0]))
     }
+
     print(tb)
-    # for (i in seq_len(length(object@analyses))) {
-    #   cat("      - ", names(object@analyses[i]), " (", is(object@analyses[[i]])  , "-class) \n", sep = "")
-    # }
+
   } else {
     cat("     n.a.", "\n", sep = "")
   }
 
+})
+
+#### analysisInfo -------------------------------------------------------
+
+#' @describeIn msData getter for analysis info as \link{data.frame} with
+#' four columns: path, analysis, group and blank. The \link{data.frame}
+#' can be used as analysisInfo in \pkg{patRoon}.
+#'
+#' @export
+#'
+#' @importMethodsFrom patRoon analysisInfo
+#'
+#' @aliases analysisInfo,msData,msData-method
+#'
+setMethod("analysisInfo", "msData", function(obj) {
+  temp <- data.frame(
+    "path" = sapply(obj@analyses, function(x) dirname(x@file)),
+    "analysis" = sapply(obj@analyses, function(x) x@analysis),
+    "group" = sapply(obj@analyses, function(x) x@replicate),
+    "blank" = sapply(obj@analyses, function(x) x@blank),
+    "class" = sapply(obj@analyses, function(x) is(x)),
+    "file" = sapply(obj@analyses, function(x) x@file))
+
+  rownames(temp) <- seq_len(nrow(temp))
+  return(temp)
+})
+
+#### analysisTable -------------------------------------------------------
+
+#' @describeIn msData getter for analysis table as \link{data.table} with
+#' four columns: file, analysis, replicate and blank.
+#'
+#' @export
+#'
+#' @importFrom data.table data.table
+#'
+#' @aliases analysisTable,msData,msData-method
+#'
+setMethod("analysisTable", "msData", function(object) {
+  temp <- data.table(
+    "file" = sapply(object@analyses, function(x) x@file),
+    "analysis" = sapply(object@analyses, function(x) x@analysis),
+    "replicate" = sapply(object@analyses, function(x) x@replicate),
+    "blank" = sapply(object@analyses, function(x) x@blank)
+  )
+  rownames(temp) <- seq_len(nrow(temp))
+  return(temp)
+})
+
+#### files -----------------------------------------------------------
+
+#' @describeIn msData getter for analysis file paths.
+#'
+#' @export
+#'
+#' @aliases files,msData,msData-method
+#'
+setMethod("files", "msData", function(object) sapply(object@analyses, function(x) x@file))
+
+#### analyses ------------------------------------------------------------
+
+#' @describeIn msData getter for analysis names.
+#'
+#' @export
+#'
+#' @importMethodsFrom patRoon analyses
+#'
+#' @aliases analyses,msData,msData-method
+#'
+setMethod("analyses", "msData", function(obj) sapply(obj@analyses, function(x) x@analysis))
+
+#### replicates ----------------------------------------------------------
+
+#' @describeIn msData getter for replicate names.
+#'
+#' @export
+#'
+#' @aliases replicates,msData,msData-method
+#'
+setMethod("replicates", "msData", function(object) sapply(object@analyses, function(x) x@replicate))
+
+#### replicates<- --------------------------------------------------------
+
+#' @describeIn msData setter for analysis replicate names.
+#' The \code{value} is a character vector with the same length as
+#' the number of analyses in the \code{object},
+#' containing analysis replicate name for each analysis.
+#'
+#' @param value A character vector applicable to the respective method.
+#'
+#' @export
+#'
+#' @aliases replicates<-,msData,msData-method
+#'
+setMethod("replicates<-", signature("msData", "ANY"), function(object, value) {
+
+  ana <- analyses(object)
+  if (length(value) != length(ana)) {
+    warning("Length of value does not match the number of analyses.")
+    return(object)
+  }
+
+  names(value) <- ana
+  for (a in ana) object@analyses[[a]]@replicate <- unname(value[a])
+  return(object)
+})
+
+#### blanks --------------------------------------------------------------
+
+#' @describeIn msData getter for blank names.
+#'
+#' @export
+#'
+#' @aliases blanks,msData,msData-method
+#'
+setMethod("blanks", "msData", function(object) sapply(object@analyses, function(x) x@blank))
+
+#### blanks<- ------------------------------------------------------------
+
+#' @describeIn msData setter for associated blank replicate for each analyses.
+#' The \code{value} is a character vector with the same length as
+#' the number of analyses in the \code{object},
+#' containing the associated blank replicate name of each analysis.
+#'
+#' @param value A character vector applicable to the respective method.
+#'
+#' @export
+#'
+#' @aliases blanks<-,msData,msData-method
+#'
+setMethod("blanks<-", signature("msData", "ANY"), function(object, value) {
+
+  ana <- analyses(object)
+  if (length(value) != length(ana)) {
+    warning("Length of value does not match the number of analyses.")
+    return(object)
+  }
+
+  names(value) <- ana
+  for (a in ana) object@analyses[[a]]@blank <- unname(value[a])
+  return(object)
+})
+
+#### metadata ---------------------------------------------------------
+
+#' @describeIn msData getter for analyses metadata.
+#' Returns a \link[data.table]{date.table} with a row per analysis.
+#'
+#' @template args-single-which-entry
+#'
+#' @importMethodsFrom S4Vectors metadata
+#' @importFrom data.table rbindlist
+#'
+#' @export
+#'
+#' @aliases metadata,msData,msData-method
+#'
+setMethod("metadata", "msData", function(x, analyses = NULL, which = NULL) {
+
+  if (!is.null(analyses)) x <- x[analyses]
+
+  mtd <- lapply(x@analyses, function(z, which) {
+    return(metadata(z, which))
+  }, which = which)
+
+  mtd <- data.table::rbindlist(mtd, fill = TRUE)
+
+  return(mtd)
+})
+
+#### addMetadata ---------------------------------------------------------
+
+#' @describeIn msData setter for analyses metadata.
+#'
+#' @param metadata A list with a named vector of metadata for each analyses in the
+#' \linkS4class{msData} object or a \code{data.frame} or \code{data.table}
+#' with metadata added as columns and with the number of row equal to
+#' the number of analyses in the \linkS4class{msData} object.
+#'
+#' @export
+#'
+#' @importMethodsFrom S4Vectors metadata
+#' @importFrom data.table is.data.table
+#'
+#' @aliases addMetadata,msData,msData-method
+#'
+setMethod("addMetadata", "msData", function(object, metadata = NULL, overwrite = FALSE) {
+
+  if (is.data.frame(metadata) | is.data.table(metadata)) {
+
+    if (!"analysis" %in% colnames(metadata)) metdata$analysis <- analyses(object)
+
+    name_is_already_there <- lapply(metadata$analysis, function(x, metadata, object) {
+      names(metadata[metadata$analysis %in% x, !colnames(metadata) %in% "analysis"]) %in% names(object@analyses[[x]]@metadata)
+    }, metadata = metadata, object = object)
+    names(name_is_already_there) <- metadata$analysis
+
+    metadata <- split(metadata, metadata$analysis)
+    metadata <- lapply(metadata, function(x) return(x[, !colnames(x) %in% "analysis"]))
+
+  } else if (is.list(metadata)) {
+
+    if (length(metadata) != length(object@analyses)) {
+      warning("Metadata list must be the same length as the number of analyses!")
+      return(object)
+    }
+
+    if (all(sapply(metadata, function(x) is.null(names(x))))) {
+      warning("Metadata must be a named vector named!")
+      return(object)
+    }
+
+    if (TRUE %in% is.null(names(metadata))) names(metadata) <- analyses(object)
+
+    name_is_already_there <- lapply(names(metadata), function(x, metadata, object) {
+      names(metadata[[x]]) %in% names(object@analyses[[x]]@metadata)
+    }, metadata = metadata, object = object)
+    names(name_is_already_there) <- names(metadata)
+
+  }
+
+  if (exists("name_is_already_there")) {
+
+    if (TRUE %in% unlist(name_is_already_there) & !overwrite) {
+      warning("Metadata name/s already exist/s and overwrite is not allowed!")
+      return(object)
+    }
+
+    for (ana in names(metadata)) {
+      if (TRUE %in% name_is_already_there[[ana]]) {
+        mtd <- as.list(metadata[[ana]])
+        object@analyses[[ana]]@metadata[names(object@analyses[[ana]]@metadata) %in% names(mtd)] <- mtd[name_is_already_there[[ana]]]
+        object@analyses[[ana]]@metadata <- c(object@analyses[[ana]]@metadata, mtd[!name_is_already_there[[ana]]])
+      } else {
+        mtd <- as.list(metadata[[ana]])
+        object@analyses[[ana]]@metadata <- c(object@analyses[[ana]]@metadata, mtd)
+      }
+    }
+    return(object)
+  }
+
+  return(object)
 })
 
 #### addAnalyses ---------------------------------------------------------
@@ -232,7 +473,6 @@ setMethod("polarities", "msData", function(object) {
   return(mt_v)
 })
 
-
 ### EICs -----------------------------------------------------------------
 
 #' @describeIn msData get extracted ion chromatograms (EICs)
@@ -342,7 +582,7 @@ setMethod("TICs", "msData", function(object, analyses = NULL) {
 #' @aliases plotTICs,msData,msData-method
 #'
 setMethod("plotTICs", "msData", function(object,
-                                         samples = NULL,
+                                         analyses = NULL,
                                          colorBy = "analyses",
                                          title = NULL,
                                          interactive = FALSE) {

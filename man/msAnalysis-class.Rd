@@ -23,6 +23,8 @@
 \alias{blanks<-,msAnalysis,msAnalysis-method}
 \alias{metadata,msAnalysis-method}
 \alias{metadata,msAnalysis,msAnalysis-method}
+\alias{addMetadata,msAnalysis-method}
+\alias{addMetadata,msAnalysis,msAnalysis-method}
 \alias{polarities,msAnalysis-method}
 \alias{polarities,msAnalysis,msAnalysis-method}
 \alias{EICs,msAnalysis-method}
@@ -82,6 +84,8 @@
 \S4method{blanks}{msAnalysis}(object) <- value
 
 \S4method{metadata}{msAnalysis}(x, which = NULL)
+
+\S4method{addMetadata}{msAnalysis}(object, metadata = NULL, overwrite = FALSE)
 
 \S4method{polarities}{msAnalysis}(object)
 
@@ -200,6 +204,9 @@
 
 \item{which}{A character vector with the entry name/s.}
 
+\item{metadata}{A named vector with metadata entries or a one row \code{data.frame} or \code{data.table}
+with metadata added as columns.}
+
 \item{mz}{A vector with target \emph{m/z} values or
 a two columns data.table or data.frame with minimum and maximum \emph{m/z} values.
 Alternatively, \emph{m/z} and retention time values can be given as one data.table/data.frame
@@ -295,6 +302,8 @@ The \code{value} is a character string with associated blank replicate name.
 
 \item \code{metadata(msAnalysis)}: getter for analysis metadata.
 Returns a \link[data.table]{date.table} with a column per metadata entry.
+
+\item \code{addMetadata(msAnalysis)}: setter for analysis metadata.
 
 \item \code{polarities(msAnalysis)}: getter for analyses polarity.
 

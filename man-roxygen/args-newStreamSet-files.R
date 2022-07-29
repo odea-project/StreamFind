@@ -1,4 +1,4 @@
-#' @param files A character vector with the full path of files to create the project.
+#' @param files A character vector with the full path of files to create the analyses set.
 #' Alternatively, a \link{data.frame} or \link[data.table]{data.table} with the columns
 #' file, replicate and blank corresponding to the file full path, analysis replicate names and
 #' respective blank analysis replicate name. When a table is given with replicates and blanks,

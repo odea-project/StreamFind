@@ -4,6 +4,26 @@
 \name{msData-class}
 \alias{msData-class}
 \alias{show,msData-method}
+\alias{analysisInfo,msData-method}
+\alias{analysisInfo,msData,msData-method}
+\alias{analysisTable,msData-method}
+\alias{analysisTable,msData,msData-method}
+\alias{files,msData-method}
+\alias{files,msData,msData-method}
+\alias{analyses,msData-method}
+\alias{analyses,msData,msData-method}
+\alias{replicates,msData-method}
+\alias{replicates,msData,msData-method}
+\alias{replicates<-,msData-method}
+\alias{replicates<-,msData,msData-method}
+\alias{blanks,msData-method}
+\alias{blanks,msData,msData-method}
+\alias{blanks<-,msData-method}
+\alias{blanks<-,msData,msData-method}
+\alias{metadata,msData-method}
+\alias{metadata,msData,msData-method}
+\alias{addMetadata,msData-method}
+\alias{addMetadata,msData,msData-method}
 \alias{addAnalyses,msData-method}
 \alias{addAnalyses,msData,msData-method}
 \alias{getAnalyses,msData-method}
@@ -60,6 +80,26 @@
 \usage{
 \S4method{show}{msData}(object)
 
+\S4method{analysisInfo}{msData}(obj)
+
+\S4method{analysisTable}{msData}(object)
+
+\S4method{files}{msData}(object)
+
+\S4method{analyses}{msData}(obj)
+
+\S4method{replicates}{msData}(object)
+
+\S4method{replicates}{msData}(object) <- value
+
+\S4method{blanks}{msData}(object)
+
+\S4method{blanks}{msData}(object) <- value
+
+\S4method{metadata}{msData}(x, analyses = NULL, which = NULL)
+
+\S4method{addMetadata}{msData}(object, metadata = NULL, overwrite = FALSE)
+
 \S4method{addAnalyses}{msData}(object, analyses = NULL)
 
 \S4method{getAnalyses}{msData}(object, analyses = NULL)
@@ -96,7 +136,7 @@
 
 \S4method{plotTICs}{msData}(
   object,
-  samples = NULL,
+  analyses = NULL,
   colorBy = "analyses",
   title = NULL,
   interactive = FALSE
@@ -267,8 +307,17 @@
 \arguments{
 \item{object}{An \linkS4class{msData} object.}
 
+\item{value}{A character vector applicable to the respective method.}
+
 \item{analyses}{A numeric or character vector with the index or analysis name/s.
 When \code{NULL}, all the analyses are used.}
+
+\item{which}{A character vector with the entry name/s.}
+
+\item{metadata}{A list with a named vector of metadata for each analyses in the
+\linkS4class{msData} object or a \code{data.frame} or \code{data.table}
+with metadata added as columns and with the number of row equal to
+the number of analyses in the \linkS4class{msData} object.}
 
 \item{i}{A character or numeric vector with the indice/s or name/s of
 the analysis to keep while sub-setting.}
@@ -340,12 +389,42 @@ When \code{FALSE}, filtered data are excluded.}
 }
 \description{
 An S4 class object to store and manage processing of files with MS data.
-The \code{msData} object inherits the \linkS4class{streamProject} structure with type defined as
+The \code{msData} object inherits the \linkS4class{streamSet} structure with type defined as
 \emph{ms}.
 }
 \section{Methods (by generic)}{
 \itemize{
 \item \code{show(msData)}: prints the details of an \linkS4class{msData} object.
+
+\item \code{analysisInfo(msData)}: getter for analysis info as \link{data.frame} with
+four columns: path, analysis, group and blank. The \link{data.frame}
+can be used as analysisInfo in \pkg{patRoon}.
+
+\item \code{analysisTable(msData)}: getter for analysis table as \link{data.table} with
+four columns: file, analysis, replicate and blank.
+
+\item \code{files(msData)}: getter for analysis file paths.
+
+\item \code{analyses(msData)}: getter for analysis names.
+
+\item \code{replicates(msData)}: getter for replicate names.
+
+\item \code{replicates(msData) <- value}: setter for analysis replicate names.
+The \code{value} is a character vector with the same length as
+the number of analyses in the \code{object},
+containing analysis replicate name for each analysis.
+
+\item \code{blanks(msData)}: getter for blank names.
+
+\item \code{blanks(msData) <- value}: setter for associated blank replicate for each analyses.
+The \code{value} is a character vector with the same length as
+the number of analyses in the \code{object},
+containing the associated blank replicate name of each analysis.
+
+\item \code{metadata(msData)}: getter for analyses metadata.
+Returns a \link[data.table]{date.table} with a row per analysis.
+
+\item \code{addMetadata(msData)}: setter for analyses metadata.
 
 \item \code{addAnalyses(msData)}: getter for analysis names.
 
@@ -497,11 +576,11 @@ Note that this method is irreversible.
 \section{Slots}{
 
 \describe{
-\item{\code{project}}{A character string with the project title.}
+\item{\code{title}}{A character string with the stream set title.}
 
-\item{\code{date}}{The date of the project.}
+\item{\code{date}}{The date of the set.}
 
-\item{\code{path}}{A character string with the project path.}
+\item{\code{path}}{A character string with the set path.}
 
 \item{\code{analyses}}{A list with \linkS4class{msAnalysis} objects for each analysis file added to the project.}
 

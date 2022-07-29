@@ -314,7 +314,7 @@ setMethod("blanks<-", signature("msAnalysis", "ANY"), function(object, value) {
   return(object)
 })
 
-#### metadata ---------------------------------------------------------
+#### metadata ------------------------------------------------------------
 
 #' @describeIn msAnalysis getter for analysis metadata.
 #'  Returns a \link[data.table]{date.table} with a column per metadata entry.
@@ -324,7 +324,7 @@ setMethod("blanks<-", signature("msAnalysis", "ANY"), function(object, value) {
 #' @export
 #'
 #' @importMethodsFrom S4Vectors metadata
-#' @importFrom data.table rbindlist
+#' @importFrom data.table as.data.table
 #'
 #' @aliases metadata,msAnalysis,msAnalysis-method
 #'
@@ -341,6 +341,56 @@ setMethod("metadata", "msAnalysis", function(x, which = NULL) {
   mtd_a <- data.table::as.data.table(mtd_a)
 
   return(mtd_a)
+})
+
+#### addMetadata ---------------------------------------------------------
+
+#' @describeIn msAnalysis setter for analysis metadata.
+#'
+#' @param metadata A named vector with metadata entries or a one row \code{data.frame} or \code{data.table}
+#' with metadata added as columns.
+#'
+#' @export
+#'
+#' @importMethodsFrom S4Vectors metadata
+#' @importFrom data.table is.data.table
+#'
+#' @aliases addMetadata,msAnalysis,msAnalysis-method
+#'
+setMethod("addMetadata", "msAnalysis", function(object, metadata = NULL, overwrite = FALSE) {
+
+  if (is.data.frame(metadata) | is.data.table(metadata)) {
+    name_is_already_there <- colnames(metadata) %in% names(object@metadata)
+    metadata <- metadata[1, ] #only takes the first row
+
+  } else if (is.vector(metadata)) {
+    if (is.null(names(metadata))) {
+      warning("Metadata must be a named vector named!")
+      return(object)
+    }
+    name_is_already_there <- names(metadata) %in% names(object@metadata)
+  }
+
+  if (exists("name_is_already_there")) {
+    if (TRUE %in% name_is_already_there & !overwrite) {
+      warning("Metadata name/s already exist/s!")
+      return(object)
+    }
+
+    if (TRUE %in% name_is_already_there) {
+      metadata <- as.list(metadata)
+      object@metadata[names(object@metadata) %in% names(metadata)] <- metadata[name_is_already_there]
+      object@metadata <- c(object@metadata, metadata[!name_is_already_there])
+      return(object)
+
+    } else {
+      metadata <- as.list(metadata)
+      object@metadata <- c(object@metadata, metadata)
+      return(object)
+    }
+  }
+
+  return(object)
 })
 
 #### polarities ----------------------------------------------------------

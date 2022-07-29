@@ -1,10 +1,10 @@
 
 ### Generics ------------------------------------------------------------------------------------------------
 
-#' projectInfo
+#' setInfo
 #'
 #' @noRd
-setGeneric("projectInfo", function(object, ...) standardGeneric("projectInfo"))
+setGeneric("setInfo", function(object, ...) standardGeneric("setInfo"))
 
 #' analysisTable
 #'
@@ -55,6 +55,11 @@ setGeneric("addAnalyses", function(object, ...) standardGeneric("addAnalyses"))
 #'
 #' @noRd
 setGeneric("getAnalyses", function(object, ...) standardGeneric("getAnalyses"))
+
+#' addMetadata
+#'
+#' @noRd
+setGeneric("addMetadata", function(object, ...) standardGeneric("addMetadata"))
 
 #' loadRawData
 #'
