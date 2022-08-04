@@ -1,24 +1,24 @@
 command: C:/Program Files/OpenMS-2.7.0/bin/FeatureFinderMetabo.exe
-args: -algorithm:common:noise_threshold_int 500 -algorithm:common:chrom_peak_snr 10 -algorithm:common:chrom_fwhm 10 -algorithm:mtd:mass_error_ppm 15 -algorithm:mtd:reestimate_mt_sd true -algorithm:mtd:trace_termination_criterion sample_rate -algorithm:mtd:trace_termination_outliers 5 -algorithm:mtd:min_sample_rate 1 -algorithm:mtd:min_trace_length 3 -algorithm:mtd:max_trace_length -1 -algorithm:epd:width_filtering fixed -algorithm:epd:min_fwhm 2 -algorithm:epd:max_fwhm 40 -algorithm:ffm:local_rt_range 10 -algorithm:ffm:local_mz_range 6.5 -algorithm:ffm:isotope_filtering_model metabolites (5% RMS) -algorithm:ffm:mz_scoring_13C false -algorithm:ffm:use_smoothed_intensities true -algorithm:ffm:report_convex_hulls true -in C:\Users\Ricardo\AppData\Local\R\win-library\4.2\streamFind\extdata/02_ww_is_pos_influent-r003.mzML -out C:\Users\Ricardo\AppData\Local\Temp\RtmpGUSkE8\file344160b1715.featureXML
+args: -algorithm:common:noise_threshold_int 500 -algorithm:common:chrom_peak_snr 10 -algorithm:common:chrom_fwhm 10 -algorithm:mtd:mass_error_ppm 15 -algorithm:mtd:reestimate_mt_sd true -algorithm:mtd:trace_termination_criterion sample_rate -algorithm:mtd:trace_termination_outliers 5 -algorithm:mtd:min_sample_rate 1 -algorithm:mtd:min_trace_length 3 -algorithm:mtd:max_trace_length -1 -algorithm:epd:width_filtering fixed -algorithm:epd:min_fwhm 2 -algorithm:epd:max_fwhm 40 -algorithm:ffm:local_rt_range 10 -algorithm:ffm:local_mz_range 6.5 -algorithm:ffm:isotope_filtering_model metabolites (5% RMS) -algorithm:ffm:mz_scoring_13C false -algorithm:ffm:use_smoothed_intensities true -algorithm:ffm:report_convex_hulls true -in C:\Users\Ricardo\AppData\Local\R\win-library\4.2\streamFind\extdata/02_ww_is_pos_influent-r003.mzML -out C:\Users\Ricardo\AppData\Local\Temp\RtmpcRniP0\file277040383a6.featureXML
 
 ---
 
 output:
 Progress of 'loading spectra list':
-  35.73 %               -- done [took 0.53 s (CPU), 0.55 s (Wall)] -- 
+  32.44 %               -- done [took 0.45 s (CPU), 0.49 s (Wall)] -- 
 Progress of 'mass trace detection':
--- done [took 0.02 s (CPU), 0.02 s (Wall)] -- 
+-- done [took 0.02 s (CPU), 0.01 s (Wall)] -- 
 Progress of 'elution peak detection':
--- done [took 0.09 s (CPU), 0.11 s (Wall)] -- 
+-- done [took 0.08 s (CPU), 0.08 s (Wall)] -- 
 Progress of 'assembling mass traces to features':
 Loading metabolite isotope model with 5% RMS error
--- done [took 0.02 s (CPU), 0.03 s (Wall)] -- 
+-- done [took 0.02 s (CPU), 0.02 s (Wall)] -- 
 -- FF-Metabo stats --
 Input traces:    637
 Output features: 513 (total trace count: 637)
 Progress of 'Storing featureXML file':
--- done [took 0.13 s (CPU), 0.15 s (Wall)] -- 
-FeatureFinderMetabo took 1.32 s (wall), 1.13 s (CPU), 0.08 s (system), 1.05 s (user); Peak Memory Usage: 34 MB.
+-- done [took 0.05 s (CPU), 0.05 s (Wall)] -- 
+FeatureFinderMetabo took 0.92 s (wall), 0.88 s (CPU), 0.02 s (system), 0.86 s (user); Peak Memory Usage: 34 MB.
 
 
 standard error output:

@@ -1,26 +1,27 @@
 
 
-## S4 methods - data.table ----------------------------------------------------------------------------------
+## S4 methods - data.table -----------------------------------------------------
 
-### plotEICs -------------------------------------------------------------
+### plotEICs-data.table --------------------------------------------------
 
 #' @title plotEICs-data.table
 #'
 #' @description An S4 method for plotting extracted ion chromatograms (EICs)
-#' of data in a \link[data.table]{data.table} object obtained with the \link{EICs} method.
-#' The \code{colorBy} argument can be be \code{"analyses"}, \code{replicates} or \code{targets}
-#' (the default), for coloring by analyses, replicates or EICs targets (id), respectively.
-#' The \code{legendNames} is a character vector with the same length as targets for plotting and
-#' can be used to legend the plot. Note that, by setting \code{legendNames} the \code{colorBy}
-#' is set to "targets" even when other colorBy is used.
+#' of data in a \link[data.table]{data.table} object obtained with the
+#' \link{EICs} method. The \code{colorBy} argument can be be \code{"analyses"},
+#' \code{replicates} or \code{targets} (the default), for coloring by analyses,
+#' replicates or EICs targets (id), respectively. The \code{legendNames} is a
+#' character vector with the same length as targets for plotting and can be
+#' used to legend the plot. Note that, by setting \code{legendNames}
+#' the \code{colorBy} is set to "targets" even when other colorBy is used.
 #'
-#' @param object A \link[data.table]{data.table} as produced by the method \link{EICs}.
+#' @param object A \link[data.table]{data.table} as produced by
+#' the method \link{EICs}.
 #' @template args-single-analyses
 #' @template args_plots_colorby_legendNames_title_interactive
 #'
 #' @export
 #'
-#' @rdname data.table-methods
 #' @aliases plotEICs,data.table,data.table-method
 #'
 setMethod("plotEICs", "data.table", function(object,
@@ -85,13 +86,14 @@ setMethod("plotEICs", "data.table", function(object,
 })
 
 
-### plotTICs - data.table ------------------------------------------------
+### plotTICs-data.table --------------------------------------------------
 
 #' @title plotTICs-data.table
 #'
-#' @description Plots a total ion chromatogram (TIC) from the \link[data.table]{data.table}
-#' obtained by the S4 method \link{TICs}. The colorBy argument can be
-#' "analyses" or "replicates" to color the plot by analyses or by analysis replicates.
+#' @description Plots a total ion chromatogram (TIC) from the
+#' \link[data.table]{data.table} obtained by the S4 method \link{TICs}.
+#' The colorBy argument can be "analyses" or "replicates" to color
+#' the plot by analyses or by analysis replicates.
 #'
 #' @template args-single-analyses
 #' @template args_plots_colorby_title_interactive
@@ -106,27 +108,37 @@ setMethod("plotTICs", "data.table", function(object,
                                              colorBy = "analyses",
                                              title = NULL,
                                              interactive = FALSE) {
-
-  return(plotEICs(object, analyses = analyses, colorBy = colorBy, title = title, interactive = interactive))
+  return(
+    plotEICs(object,
+      analyses = analyses,
+      colorBy = colorBy,
+      title = title,
+      interactive = interactive
+    )
+  )
 })
 
-
-### plotXICs - data.table ------------------------------------------------
+### plotXICs-data.table --------------------------------------------------
 
 #' @title plotXICs-data.table
 #'
 #' @description Plots three dimensional (\emph{m/z}, time and intensity)
-#' extracted ion chromatograms (XICs) for specified \emph{m/z} and retention time pair targets
-#' in analyses of a \link[data.table]{data.table} object as produced
-#' by the \link{XICs} method. \code{analyses} and \code{targets} can be used to filter the XIC table.
-#' When \code{plotTargetMark} is \code{TRUE} a target is plotted representing the deviations as defined
-#' by the arguments \code{ppmMark} and \code{secMark} in ppm and seconds, respectively.
-#' When ranges were given to build the XIC, exact \emph{m/z} and time targets can be specified with
-#' the argument \code{targetsMark}. \code{targetsMark} should be a two column table named mz and rt with
-#' exact \emph{m/z} and time targets. Note that the number of rows should be the same as the number of target
-#' in the XIC. The number of rows to plot multiple targets can be defined by the \code{numberRows} argument.
+#' extracted ion chromatograms (XICs) for specified \emph{m/z} and
+#' retention time pair targets in analyses of a \link[data.table]{data.table}
+#' object as produced by the \link{XICs} method.
+#' \code{analyses} and \code{targets} can be used to filter the XIC table.
+#' When \code{plotTargetMark} is \code{TRUE} a target is plotted representing
+#' the deviations as defined by the arguments \code{ppmMark} and \code{secMark}
+#' in ppm and seconds, respectively. When ranges were given to build the XIC,
+#' exact \emph{m/z} and time targets can be specified with the argument
+#' \code{targetsMark}. \code{targetsMark} should be a two column table
+#' named mz and rt with exact \emph{m/z} and time targets.
+#' Note that the number of rows should be the same as the number of target in
+#' the XIC. The number of rows to plot multiple targets can be defined by
+#' the \code{numberRows} argument.
 #'
-#' @param object A \link[data.table]{data.table} as produced by the method \link{XICs}.
+#' @param object A \link[data.table]{data.table} as produced by
+#' the method \link{XICs}.
 #' @template args-single-analyses
 #' @param targets A character vector with target names.
 #' @param legendNames A character vector with the same length and order
@@ -135,7 +147,6 @@ setMethod("plotTICs", "data.table", function(object,
 #'
 #' @export
 #'
-#' @rdname data.table-methods
 #' @aliases plotXICs,data.table,data.table-method
 #'
 #' @importFrom data.table is.data.table
@@ -173,8 +184,13 @@ setMethod("plotXICs", "data.table", function(object,
   if (plotTargetMark) {
     otherTargets <- FALSE
     if (!is.null(targetsMark)) {
+
       if ((!is.data.table(targetsMark) | is.data.frame(targetsMark))) {
-        if (nrow(targetsMark) == length(ids) & "mz" %in% colnames(targetsMark) & "rt" %in% colnames(targetsMark)) {
+
+        if (nrow(targetsMark) == length(ids) &
+            "mz" %in% colnames(targetsMark) &
+            "rt" %in% colnames(targetsMark)) {
+
           tgmMZ <- targetsMark$mz
           names(tgmMZ) <- unique(xic$id)
           tgmRT <- targetsMark$rt
@@ -182,13 +198,18 @@ setMethod("plotXICs", "data.table", function(object,
           xic[, mz_id := tgmMZ[xic$id]]
           xic[, rt_id := tgmRT[xic$id]]
           otherTargets <- TRUE
+
         }
       }
     }
 
     if (!otherTargets & class(xic$mz_id) == "character") {
-      tgmMZ <- sapply(xic$mz_id, function(x) mean(as.numeric(stringr::str_split(x, "-", simplify = TRUE)[1, ])))
-      tgmRT <- sapply(xic$rt_id, function(x) mean(as.numeric(stringr::str_split(x, "-", simplify = TRUE)[1, ])))
+
+      tgmMZ <- sapply(xic$mz_id, function(x)
+        mean(as.numeric(stringr::str_split(x, "-", simplify = TRUE)[1, ])))
+
+      tgmRT <- sapply(xic$rt_id, function(x)
+        mean(as.numeric(stringr::str_split(x, "-", simplify = TRUE)[1, ])))
       xic[, mz_id := tgmMZ]
       xic[, rt_id := tgmRT]
     }
@@ -206,20 +227,22 @@ setMethod("plotXICs", "data.table", function(object,
 })
 
 
-### plotMS2s - data.table ------------------------------------------------
+### plotMS2s-data.table --------------------------------------------------
 
 #' @title plotMS2s-data.table
 #'
-#' @description Plots MS2 data for specified \emph{m/z} and retention time (seconds) targets
-#' in a \link[data.table]{data.table} as obtained by the \link{MS2s}. The targets in the
-#' object can be filtered using the \code{targets} argument. Also, "analyses" and "replicates"
-#' can be filtered using the \code{analyses} and \code{replicates} arguments, respectively.
+#' @description Plots MS2 data for specified \emph{m/z} and retention time
+#' (seconds) targets in a \link[data.table]{data.table} as obtained by the
+#' \link{MS2s}. The targets in the object can be filtered using the
+#' \code{targets} argument. Also, "analyses" and "replicates" can be filtered
+#' using the \code{analyses} and \code{replicates} arguments, respectively.
 #' Note that the column analysis/replicate should be present.
 #' The possible values for the \code{colorBy} argument are
 #' "targets", "analyses", "replicates" and "voltages" to color by
 #' each target, analysis, replicate or collision energy, respectively.
 #'
-#' @param object A \link[data.table]{data.table} as produced by the method \link{MS2s}.
+#' @param object A \link[data.table]{data.table} as produced by
+#' the method \link{MS2s}.
 #' @template args-single-analyses
 #' @param replicates A numeric or character vector with the indice/s or name/s
 #' of replicates from the \code{object}.
@@ -230,7 +253,6 @@ setMethod("plotXICs", "data.table", function(object,
 #'
 #' @export
 #'
-#' @rdname data.table-methods
 #' @aliases plotMS2s,data.table,data.table-method
 #'
 #' @importFrom data.table data.table
@@ -302,19 +324,22 @@ setMethod("plotMS2s", "data.table", function(object = NULL,
 })
 
 
-### plotPeaks ------------------------------------------------------------
+### plotPeaks-data.table -------------------------------------------------------
 
 #' @title plotPeaks-data.table
 #'
-#' @description A method for plotting EIC (\code{object}) of chromatographic peaks (\code{pks}).
-#' The \code{colorBy} argument can be be \code{"analyses"}, \code{replicates} or \code{targets}
-#' (the default), for coloring by analyses, replicates or target peaks (id), respectively.
-#' The \code{legendNames} is a character vector with the same length as target peaks for plotting and
-#' can be used to legend the plot. Note that, by setting \code{legendNames} the \code{colorBy}
-#' is set to "targets" even when other colorBy is used.
+#' @description A method for plotting EIC (\code{object}) of chromatographic
+#' peaks (\code{pks}). The \code{colorBy} argument can be be \code{"analyses"},
+#' \code{replicates} or \code{targets} (the default), for coloring by analyses,
+#' replicates or target peaks (id), respectively. The \code{legendNames} is a
+#' character vector with the same length as target peaks for plotting and
+#' can be used to legend the plot. Note that, by setting \code{legendNames}
+#' the \code{colorBy} is set to "targets" even when other colorBy is used.
 #'
-#' @param object A \link[data.table]{data.table} as produced by the method \link{EICs}.
-#' @param pks A table with the target peaks as obtained by the method \link{peaks}.
+#' @param object A \link[data.table]{data.table} as produced by
+#' the method \link{EICs}.
+#' @param peaks A table with the target peaks as obtained by
+#' the method \link{peaks}.
 #' @template args-single-analyses
 #' @template args_plots_colorby_legendNames_title_interactive
 #'
@@ -323,11 +348,10 @@ setMethod("plotMS2s", "data.table", function(object = NULL,
 #' @importMethodsFrom xcms plotPeaks
 #' @importFrom data.table rbindlist
 #'
-#' @rdname data.table-methods
 #' @aliases plotPeaks,data.table,data.table-method
 #'
 setMethod("plotPeaks", "data.table", function(object,
-                                              pks,
+                                              peaks,
                                               analyses = NULL,
                                               colorBy = "targets",
                                               legendNames = NULL,
@@ -337,9 +361,6 @@ setMethod("plotPeaks", "data.table", function(object,
 
   eic <- copy(object)
 
-  #removes the zeros which might omit information
-  #eic <- eic[intensity > 0, ]
-
   if (!is.null(analyses)) {
     if (class(analyses) == "numeric") analyses <- unique(eic$analysis)[analyses]
     eic[analysis %in% analyses, ]
@@ -348,17 +369,25 @@ setMethod("plotPeaks", "data.table", function(object,
   if (nrow(eic) < 1) return(cat("Data was not found for any of the targets!"))
 
   if (colorBy == "analyses") {
+
     leg <- unique(eic$analysis)
     varkey <- eic$analysis
+
   } else if (colorBy == "replicates") {
+
     leg <- unique(eic[, .(analysis, replicate)])
     leg <- leg$replicate
     varkey <- eic$replicate
-  } else if (!is.null(legendNames) & length(legendNames) == length(unique(eic$id))) {
+
+  } else if (!is.null(legendNames) &
+             length(legendNames) == length(unique(eic$id))) {
+
     leg <- legendNames
     names(leg) <- unique(eic$id)
     varkey <- sapply(eic$id, function(x) leg[[x]])
+
   } else {
+
     leg <- unique(eic$id)
     varkey <- eic$id
   }
@@ -372,14 +401,14 @@ setMethod("plotPeaks", "data.table", function(object,
     return(
       plotPeaksStatic(
         eic,
-        pks,
+        peaks,
         title
       )
     )
 
   } else {
 
-    plot <- plotPeaksInteractive(eic, pks, title, colorBy)
+    plot <- plotPeaksInteractive(eic, peaks, title, colorBy)
 
     return(plot)
   }

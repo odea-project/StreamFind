@@ -2,22 +2,22 @@
 checkAnalysesArgument <- function(object, analyses) {
 
   if (is.character(analyses)) {
-    if (FALSE %in% (analyses %in% analyses(object))) {
+    if (FALSE %in% (analyses %in% analysisNames(object))) {
       warning("Given analysis names not found in the msData object!")
-      return(analyses(object))
+      return(analysisNames(object))
     }
-    analyses <- analyses(object)[analyses(object) %in% analyses]
+    analyses <- analysisNames(object)[analysisNames(object) %in% analyses]
 
   } else if (is.numeric(analyses)) {
 
-    if (max(analyses) > length(analyses(object))) {
+    if (max(analyses) > length(analysisNames(object))) {
       warning("Analyses index not matching the number of analyses in the object!")
-      return(analyses(object))
+      return(analysisNames(object))
     }
-    analyses <- analyses(object)[analyses]
+    analyses <- analysisNames(object)[analyses]
 
   } else {
 
-    return(analyses(object))
+    return(analysisNames(object))
   }
 }

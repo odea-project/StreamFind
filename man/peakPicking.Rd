@@ -12,20 +12,24 @@ peakPicking(object = NULL, settings = NULL)
 \item{settigns}{A \linkS4class{settings} object.}
 }
 \value{
-An \linkS4class{msAnalysis}/\linkS4class{msData} object
-with peaks added.
+An \linkS4class{msAnalysis} or \linkS4class{msData} object
+with peaks added to the respective slot.
 }
 \description{
 Finds chromatographic peaks from MS data in an \linkS4class{msAnalysis}
 object or in MS analyses a given \linkS4class{msData} object.
-The peak picking uses the \pkg{patRoon} package for data processing.
+The peak picking uses the \pkg{patRoon} package for data processing, enabling the
+use of several algorithms (see details).
 }
 \details{
-See \link[patRoon]{findFeatures} for more information.
-the following algorithms are available:
+See the \pkg{patRoon}'s \link[patRoon]{findFeatures} function or the
+\href{https://rickhelmus.github.io/patRoon/reference/findFeatures.html}{reference guide}
+for more information. The following algorithms are available:
 "xcms3", "xcms", "openms", "envipick", "sirius", "kpic2", "safd".
-The parameters depend on the algorithm chosen.
-See ?\pkg{patRoon} for further information.
+The \linkS4class{settings} depend on the algorithm chosen.
+}
+\note{
+The \linkS4class{settings} call must be set to peakPicking.
 }
 \references{
 \insertRef{patroon01}{streamFind}

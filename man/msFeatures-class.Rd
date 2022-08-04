@@ -3,12 +3,12 @@
 \docType{class}
 \name{msFeatures-class}
 \alias{msFeatures-class}
-\alias{analyses,msFeatures-method}
-\alias{analyses,msFeatures,msFeatures-method}
-\alias{replicates,msFeatures-method}
-\alias{replicates,msFeatures,msFeatures-method}
-\alias{blanks,msFeatures-method}
-\alias{blanks,msFeatures,msFeatures-method}
+\alias{analysisNames,msFeatures-method}
+\alias{analysisNames,msFeatures,msFeatures-method}
+\alias{replicateNames,msFeatures-method}
+\alias{replicateNames,msFeatures,msFeatures-method}
+\alias{blankReplicateNames,msFeatures-method}
+\alias{blankReplicateNames,msFeatures,msFeatures-method}
 \alias{addParameters,msFeatures-method}
 \alias{addParameters,msFeatures,msFeatures-method}
 \alias{getParameters,msFeatures-method}
@@ -19,11 +19,11 @@
 \alias{[,msFeatures,ANY,ANY,missing-method}
 \title{msFeatures-class}
 \usage{
-\S4method{analyses}{msFeatures}(obj)
+\S4method{analysisNames}{msFeatures}(object)
 
-\S4method{replicates}{msFeatures}(object)
+\S4method{replicateNames}{msFeatures}(object)
 
-\S4method{blanks}{msFeatures}(object)
+\S4method{blankReplicateNames}{msFeatures}(object)
 
 \S4method{addParameters}{msFeatures}(object, settings)
 
@@ -61,11 +61,11 @@ for inspection, processing and evaluation.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{analyses(msFeatures)}: getter for analysis names.
+\item \code{analysisNames(msFeatures)}: getter for analysis names.
 
-\item \code{replicates(msFeatures)}: getter for replicate names.
+\item \code{replicateNames(msFeatures)}: getter for replicate names.
 
-\item \code{blanks(msFeatures)}: getter for blank names.
+\item \code{blankReplicateNames(msFeatures)}: getter for blank names.
 
 \item \code{addParameters(msFeatures)}: adds processing parameters for features.
 

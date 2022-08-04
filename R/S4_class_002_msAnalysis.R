@@ -63,10 +63,10 @@ setClass("msAnalysis",
     replicate = NA_character_,
     blank = NA_character_,
     metadata = list(),
-    spectra = data.table::data.table(),
-    chromatograms = data.table::data.table(),
+    spectra = data.table(),
+    chromatograms = data.table(),
     parameters = list(),
-    peaks = data.table::data.table()
+    peaks = data.table()
   ),
   validity = msAnalysis_validity
 )
@@ -102,17 +102,17 @@ setMethod("initialize", "msAnalysis", function(.Object, ...) {
   } else {
 
     fl <- .Object@file
-    msf <- mzR::openMSfile(fl, backend = "pwiz")
+    msf <- openMSfile(fl, backend = "pwiz")
 
-    hd <- data.table::as.data.table(mzR::header(msf))
-    rInfo <- mzR::runInfo(msf)
-    acInfo <- mzR::instrumentInfo(msf)
+    hd <- as.data.table(header(msf))
+    rInfo <- runInfo(msf)
+    acInfo <- instrumentInfo(msf)
 
     .Object@analysis <- gsub(".mzML|.mzXML", "", basename(fl))
 
     if (is.na(.Object@replicate)) {
       .Object@replicate <- .Object@analysis
-      .Object@replicate <- stringr::str_replace(.Object@replicate, "-", "_")
+      .Object@replicate <- str_replace(.Object@replicate, "-", "_")
       .Object@replicate <- sub("_[^_]+$", "", .Object@replicate)
     }
 
@@ -130,7 +130,7 @@ setMethod("initialize", "msAnalysis", function(.Object, ...) {
       .Object@metadata <- c(.Object@metadata, rInfo, acInfo)
     }
 
-    suppressWarnings(mzR::close(msf))
+    suppressWarnings(close(msf))
 
     return(.Object)
   }
@@ -173,17 +173,17 @@ setMethod("show", "msAnalysis", function(object) {
 
 })
 
-#### files -----------------------------------------------------------
+#### filePaths -----------------------------------------------------------
 
 #' @describeIn msAnalysis getter for analysis file path.
 #'
 #' @export
 #'
-#' @aliases files,msAnalysis,msAnalysis-method
+#' @aliases filePaths,msAnalysis,msAnalysis-method
 #'
-setMethod("files", "msAnalysis", function(object) {
+setMethod("filePaths", "msAnalysis", function(object) {
   fl <- object@file
-  names(fl) <- analyses(object)
+  names(fl) <- analysisNames(object)
   return(fl)
 })
 
@@ -227,38 +227,36 @@ setMethod("analysisTable", "msAnalysis", function(object) {
   )
 })
 
-#### analyses ------------------------------------------------------------
+#### analysisNames ------------------------------------------------------------
 
 #' @describeIn msAnalysis getter for analysis name.
 #'
 #' @export
 #'
-#' @importMethodsFrom patRoon analyses
+#' @aliases analysisNames,msAnalysis,msAnalysis-method
 #'
-#' @aliases analyses,msAnalysis,msAnalysis-method
-#'
-setMethod("analyses", "msAnalysis", function(obj) {
-  ana <- obj@analysis
+setMethod("analysisNames", "msAnalysis", function(object) {
+  ana <- object@analysis
   names(ana) <- ana
   return(ana)
 
 })
 
-#### replicates ----------------------------------------------------------
+#### replicateNames ----------------------------------------------------------
 
 #' @describeIn msAnalysis getter for the replicate name.
 #'
 #' @export
 #'
-#' @aliases replicates,msAnalysis,msAnalysis-method
+#' @aliases replicateNames,msAnalysis,msAnalysis-method
 #'
-setMethod("replicates", "msAnalysis", function(object) {
+setMethod("replicateNames", "msAnalysis", function(object) {
   rep <- object@replicate
-  names(rep) <- analyses(object)
+  names(rep) <- analysisNames(object)
   return(rep)
 })
 
-#### replicates<- --------------------------------------------------------
+#### replicateNames<- --------------------------------------------------------
 
 #' @describeIn msAnalysis setter for analysis replicate name.
 #'  The \code{value} is a character string with analysis replicate name.
@@ -267,9 +265,9 @@ setMethod("replicates", "msAnalysis", function(object) {
 #'
 #' @export
 #'
-#' @aliases replicates<-,msAnalysis,msAnalysis-method
+#' @aliases replicateNames<-,msAnalysis,msAnalysis-method
 #'
-setMethod("replicates<-", signature("msAnalysis", "ANY"), function(object, value) {
+setMethod("replicateNames<-", signature("msAnalysis", "ANY"), function(object, value) {
 
   if (length(value) != 1) {
     warning("Length of value must be one.")
@@ -279,21 +277,21 @@ setMethod("replicates<-", signature("msAnalysis", "ANY"), function(object, value
   return(object)
 })
 
-#### blanks --------------------------------------------------------------
+#### blankReplicateNames --------------------------------------------------------------
 
 #' @describeIn msAnalysis getter for associated blank replicate name.
 #'
 #' @export
 #'
-#' @aliases blanks,msAnalysis,msAnalysis-method
+#' @aliases blankReplicateNames,msAnalysis,msAnalysis-method
 #'
-setMethod("blanks", "msAnalysis", function(object) {
+setMethod("blankReplicateNames", "msAnalysis", function(object) {
   blk <- object@blank
-  names(blk) <- analyses(object)
+  names(blk) <- analysisNames(object)
   return(blk)
 })
 
-#### blanks<- ------------------------------------------------------------
+#### blankReplicateNames<- ------------------------------------------------------------
 
 #' @describeIn msAnalysis setter for associated blank replicate.
 #' The \code{value} is a character string with associated blank replicate name.
@@ -302,9 +300,9 @@ setMethod("blanks", "msAnalysis", function(object) {
 #'
 #' @export
 #'
-#' @aliases blanks<-,msAnalysis,msAnalysis-method
+#' @aliases blankReplicateNames<-,msAnalysis,msAnalysis-method
 #'
-setMethod("blanks<-", signature("msAnalysis", "ANY"), function(object, value) {
+setMethod("blankReplicateNames<-", signature("msAnalysis", "ANY"), function(object, value) {
 
   if (length(value) != 1) {
     warning("Length of value must be one.")
@@ -336,9 +334,11 @@ setMethod("metadata", "msAnalysis", function(x, which = NULL) {
     mtd_a <- c(list(analysis = x@analysis), x@metadata)
   }
 
-  if ("msLevels" %in% names(mtd_a)) mtd_a$msLevels <- paste(sort(mtd_a$msLevels), collapse = "; ")
+  if ("msLevels" %in% names(mtd_a)) {
+    mtd_a$msLevels <- paste(sort(mtd_a$msLevels), collapse = "; ")
+  }
 
-  mtd_a <- data.table::as.data.table(mtd_a)
+  mtd_a <- as.data.table(mtd_a)
 
   return(mtd_a)
 })
@@ -408,6 +408,85 @@ setMethod("polarities", "msAnalysis", function(object) {
   return(mt_v)
 })
 
+### loadRawData ----------------------------------------------------------
+
+#' @describeIn msAnalysis adds raw spectra and chromatograms to the respective
+#' slots of an \linkS4class{msAnalysis} object.
+#'
+#' @param minIntensityMS1 Numeric value on length one with the
+#' minimum intensity of MS1 level traces.
+#' @param minIntensityMS2 Numeric value on length one with the
+#' minimum intensity of MS2 level traces.
+#'
+#' @export
+#'
+#' @importFrom data.table copy
+#'
+#' @aliases loadRawData,msAnalysis,msAnalysis-method
+#'
+setMethod("loadRawData", "msAnalysis", function(object,
+                                                minIntensityMS1 = 0,
+                                                minIntensityMS2 = 0) {
+
+  lvs <- metadata(object, "msLevels")$msLevels
+  lvs <- as.numeric(strsplit(lvs, "; ", fixed = TRUE)[[1]])
+
+  rd_list <- loadRawDataMZR(filePaths(object),
+                            spectra = TRUE,
+                            level = lvs,
+                            rtr = NULL,
+                            minIntensityMS1 = minIntensityMS1,
+                            minIntensityMS2 = minIntensityMS2,
+                            chroms = TRUE,
+                            chromsID = NULL,
+                            ifChromNoSpectra = FALSE)
+
+  if ("spectra" %in% names(rd_list)) object@spectra <- copy(rd_list$spectra)
+  if ("chroms" %in% names(rd_list)) object@chromatograms <- copy(rd_list$chroms)
+
+  return(object)
+})
+
+### hasLoadedSpectra -----------------------------------------------------
+
+#' @describeIn msAnalysis check if the \linkS4class{msAnalysis} has loaded raw spectra.
+#'
+#' @export
+#'
+#' @aliases hasLoadedSpectra,msAnalysis,msAnalysis-method
+#'
+setMethod("hasLoadedSpectra", "msAnalysis", function(object) {
+
+  return(nrow(object@spectra) > 0 && "intensity" %in% colnames(object@spectra))
+})
+
+### hasLoadedChromatograms -----------------------------------------------
+
+#' @describeIn msAnalysis check if the \linkS4class{msAnalysis} has loaded raw chromatograms.
+#'
+#' @export
+#'
+#' @aliases hasLoadedChromatograms,msAnalysis,msAnalysis-method
+#'
+setMethod("hasLoadedChromatograms", "msAnalysis", function(object) {
+
+  return(nrow(object@chromatograms) > 0)
+})
+
+### spectra --------------------------------------------------------------
+
+#' @describeIn msAnalysis getter for slot spectra in the \linkS4class{msAnalysis}.
+#'
+#' @export
+#'
+#' @importMethodsFrom ProtGenerics spectra
+#'
+#' @aliases spectra,msAnalysis,msAnalysis-method
+#'
+setMethod("spectra", "msAnalysis", function(object) {
+
+  return(object@spectra)
+})
 
 ### EICs -----------------------------------------------------------------
 
@@ -419,6 +498,8 @@ setMethod("polarities", "msAnalysis", function(object) {
 #'
 #' @template args-makeTargets
 #'
+#' @importFrom data.table rbindlist as.data.table
+#'
 #' @export
 #'
 #' @aliases EICs,msAnalysis,msAnalysis-method
@@ -427,9 +508,34 @@ setMethod("EICs", "msAnalysis", function(object,
                                          mz = NULL, ppm = 20,
                                          rt = NULL, sec = 60, id = NULL) {
 
-  return(extractEICs(object, analyses = NULL, mz, ppm, rt, sec, id))
-})
+  targets <- makeTargets(mz, rt, ppm, sec, id)
 
+  rtr <- c(min(targets$rtmin), max(targets$rtmax))
+  if (rtr[2] == 0) rtr = NULL
+
+  if (!hasLoadedSpectra(object)) {
+    spec <- loadRawDataMZR(file = filePaths(object), chroms = FALSE, level = 1, rtr = rtr)
+    spec <- spec$spectra
+  } else {
+    spec <- spectra(object)
+    spec <- spec[lv == 1, ]
+    spec <- spec[, .(index, scan, lv, rt, mz, intensity)]
+  }
+
+  spec <- list(as.data.frame(spec))
+  names(spec) <- analysisNames(object)
+
+  targets$analysis <- analysisNames(object)
+  targets$replicate <- replicateNames(object)
+
+  eics <- rcpp_extract_eics(spec = spec, targets = targets)
+
+  eics <- rbindlist(eics)
+
+  eics <- eics[, .(intensity = sum(intensity)), by = c("analysis", "replicate","id", "rt")]
+
+  return(eics)
+})
 
 ### plotEICs -------------------------------------------------------------
 
@@ -458,11 +564,16 @@ setMethod("plotEICs", "msAnalysis", function(object,
                                              title = NULL,
                                              interactive = FALSE) {
 
-  eic <- extractEICs(object, analyses, mz, rt, ppm, id)
+  eic <- EICs(object, mz, ppm, rt, sec, id)
 
-  return(plotEICs(eic, analyses = NULL, colorBy = "targets", legendNames, title, interactive))
+  return(
+    plotEICs(eic,
+      analyses = NULL,
+      colorBy = "targets",
+      legendNames, title, interactive
+    )
+  )
 })
-
 
 ### TICs -----------------------------------------------------------------
 
@@ -477,24 +588,39 @@ setMethod("plotEICs", "msAnalysis", function(object,
 #'
 setMethod("TICs", "msAnalysis", function(object) {
 
-  file <- files(object)
-
-  tic <- loadRawDataMZR(file, spectra = FALSE, chroms = TRUE, chromsID = "TIC")[[1]]
+  if (!hasLoadedChromatograms(object)) {
+    tic <- loadRawDataMZR(
+      filePaths(object),
+      spectra = FALSE, chroms = TRUE,
+      chromsID = "TIC")[["chroms"]]
+  } else {
+    tic <- object@chromatograms[id %in% "TIC", ]
+  }
 
   if (nrow(tic) < 1) {
-    tic <- extractEICs(object, analyses = NULL, mz = NULL, rt = NULL)
-    tic <- tic[, .(id, rt, intensity)]
+
+    targets <- makeTargets()
+    targets$id <- "TIC"
+    targets[rtmin == 0, rtmin := metadata(object, which = "dStartTime")$dStartTime]
+    targets[rtmax == 0, rtmax := metadata(object, which = "dEndTime")$dEndTime]
+    targets[mzmin == 0, mzmin := metadata(object, which = "lowMz")$lowMz]
+    targets[mzmax == 0, mzmax := metadata(object, which = "highMz")$highMz]
+
+    tic <- EICs(object, mz = targets)
+    tic <- tic[, .(id = unique(id), intensity = sum(intensity)), by = "rt"]
+
   } else {
     tic <- tic[, .(id, rt, intensity)]
   }
-  tic[, `:=`(analysis = analyses(object), replicate = replicates(object))]
+
+  tic[, `:=`(analysis = analysisNames(object), replicate = replicateNames(object))]
   setcolorder(tic, c("analysis", "replicate", "id", "rt", "intensity"))
+
   if (max(tic$rt) < 120) tic[, rt := rt * 60]
   tic <- tic[intensity > 0, ]
 
   return(tic)
 })
-
 
 ### plotTICs -------------------------------------------------------------
 
@@ -510,9 +636,15 @@ setMethod("plotTICs", "msAnalysis", function(object,
 
   tics <- TICs(object)
 
-  return(plotTICs(tics, analyses = NULL, colorBy = "analyses", title = title, interactive = interactive))
+  return(
+    plotTICs(tics,
+      analyses = NULL,
+      colorBy = "analyses",
+      title = title,
+      interactive = interactive
+    )
+  )
 })
-
 
 ### XICs -----------------------------------------------------------------
 
@@ -523,13 +655,36 @@ setMethod("plotTICs", "msAnalysis", function(object,
 #'
 #' @export
 #'
+#' @importFrom data.table rbindlist
+#'
 #' @aliases XICs,msAnalysis,msAnalysis-method
 #'
 setMethod("XICs", "msAnalysis", function(object,
                                          mz = NULL, ppm = 20,
                                          rt = NULL, sec = 60, id = NULL) {
 
-  xic <- extractXICs(object, analyses = NULL, mz, ppm, rt, sec, id)
+  targets <- makeTargets(mz, rt, ppm, sec, id)
+
+  rtr <- c(min(targets$rtmin) * 0.8, max(targets$rtmax) * 1.2)
+  if (rtr[2] == 0) rtr = NULL
+
+  if (!hasLoadedSpectra(object)) {
+    spec <- loadRawDataMZR(file = filePaths(object), chroms = FALSE, level = 1, rtr = rtr)
+    spec <- spec$spectra
+  } else {
+    spec <- spectra(object)
+    spec <- spec[lv == 1, ]
+    spec <- spec[, .(index, scan, lv, rt, mz, intensity)]
+  }
+
+  spec <- list(as.data.frame(spec))
+  names(spec) <- analysisNames(object)
+
+  targets$analysis <- analysisNames(object)
+
+  xic <- rcpp_extract_xics(spec = spec, targets = targets)
+
+  xic <- rbindlist(xic)
 
   return(xic)
 })
@@ -566,15 +721,15 @@ setMethod("plotXICs", "msAnalysis", function(object,
                                              secMark = 10,
                                              numberRows = 1) {
 
-  xic <- extractXICs(object, analyses, mz, ppm, rt, sec, id)
+  xic <- XICs(object, mz, ppm, rt, sec, id)
 
   plot <- plotXICs(xic,
-                   legendNames = legendNames,
-                   plotTargetMark = plotTargetMark,
-                   targetsMark = targetsMark,
-                   ppmMark = ppmMark,
-                   secMark = secMark,
-                   numberRows = numberRows
+   legendNames = legendNames,
+   plotTargetMark = plotTargetMark,
+   targetsMark = targetsMark,
+   ppmMark = ppmMark,
+   secMark = secMark,
+   numberRows = numberRows
   )
 
   return(plot)
@@ -593,7 +748,7 @@ setMethod("plotXICs", "msAnalysis", function(object,
 #' The \code{minIntensityPre} and \code{minIntensityPost}
 #' define the minimum intensity for mass traces before and after clustering, respectively.
 #' Set \code{mergeVoltages} to \code{TRUE} for merging spectra acquired with different collision energies.
-#' The \code{mergeBy} argument is used to merge spectra by "samples" or "replicates".
+#' The \code{mergeBy} argument is used to merge spectra by "samples" or "replicateNames".
 #' When \code{NULL}, MS2 is given per target and per sample.
 #'
 #' @template args-single-settings
@@ -624,7 +779,7 @@ setMethod("MS2s", "msAnalysis", function(object = NULL,
 #' The \code{minIntensityPre} and \code{minIntensityPost}
 #' define the minimum intensity for mass traces before and after clustering, respectively.
 #' Set \code{mergeVoltages} to \code{TRUE} for merging spectra acquired with different collision energies.
-#' The \code{mergeBy} argument is used to merge spectra by "samples" or "replicates".
+#' The \code{mergeBy} argument is used to merge spectra by "samples" or "replicateNames".
 #' When \code{NULL}, MS2 is given per target and per sample. The possible values for the
 #' \code{colorBy} argument are "targets" and "voltages" to color by
 #' each target, sample, replicate or collision energy, respectively.
@@ -652,49 +807,6 @@ setMethod("plotMS2s", "msAnalysis", function(object = NULL,
   )
 })
 
-### loadRawData ----------------------------------------------------------
-
-#' @describeIn msAnalysis adds raw spectra and chromatograms to the respective
-#' slots of an \linkS4class{msAnalysis} object.
-#'
-#' @export
-#'
-#' @aliases loadRawData,msAnalysis,msAnalysis-method
-#'
-setMethod("loadRawData", "msAnalysis", function(object) {
-
-  lvs <- metadata(object, "msLevels")$msLevels
-  lvs <- as.numeric(strsplit(lvs, "; ", fixed = TRUE)[[1]])
-
-  rd_list <- loadRawDataMZR(files(object),
-                            spectra = TRUE,
-                            level = lvs,
-                            rtr = NULL,
-                            chroms = TRUE,
-                            chromsID = NULL,
-                            ifChromNoSpectra = FALSE)
-
-  if ("spectra" %in% names(rd_list)) object@spectra <- rd_list$spectra
-  if ("chroms" %in% names(rd_list)) object@chromatograms <- rd_list$chroms
-
-  return(object)
-})
-
-### spectra ----------------------------------------------------------
-
-#' @describeIn msAnalysis getter for slot spectra in the \linkS4class{msAnalysis}.
-#'
-#' @export
-#'
-#' @importMethodsFrom ProtGenerics spectra
-#'
-#' @aliases spectra,msAnalysis,msAnalysis-method
-#'
-setMethod("spectra", "msAnalysis", function(object) {
-
-  return(object@spectra)
-})
-
 ### hasAdjustedRetentionTime ---------------------------------------------
 
 #' @describeIn msAnalysis getter for presence of adjusted retention time
@@ -715,12 +827,14 @@ setMethod("hasAdjustedRetentionTime", "msAnalysis", function(object) {
 #'
 #' @export
 #'
+#' @importFrom checkmate testClass
+#'
 #' @aliases addParameters,msAnalysis,msAnalysis-method
 #'
 setMethod("addParameters", "msAnalysis", function(object,
                                                   settings) {
 
-  valid <- checkmate::testClass(settings, "settings")
+  valid <- testClass(settings, "settings")
 
   if (!valid) {
     warning("Arguments not correct, returning original object!")
@@ -751,11 +865,23 @@ setMethod("getParameters", "msAnalysis", function(object, call = NULL) {
     param <- list(object@parameters[[call]])
   }
 
-  names(param) <- analyses(object)
+  names(param) <- analysisNames(object)
 
   return(param)
 })
 
+### hasPeaks -----------------------------------------------------
+
+#' @describeIn msAnalysis check if the \linkS4class{msAnalysis} has peaks.
+#'
+#' @export
+#'
+#' @aliases hasPeaks,msAnalysis,msAnalysis-method
+#'
+setMethod("hasPeaks", "msAnalysis", function(object) {
+
+  return(nrow(object@peaks) > 0)
+})
 
 ### peaks ----------------------------------------------------------------
 
@@ -837,16 +963,16 @@ setMethod("plotPeaks", "msAnalysis", function(object,
 
   colorBy = "targets"
 
-  pks <- peaks(object, targetsID, mz, ppm, rt, sec, filtered)
+  peaks <- peaks(object, targetsID, mz, ppm, rt, sec, filtered)
 
-  pks_tars <- copy(pks[, .(id, mz, rt, mzmin, mzmax, rtmin, rtmax)])
+  pks_tars <- copy(peaks[, .(id, mz, rt, mzmin, mzmax, rtmin, rtmax)])
   pks_tars$rtmin <- min(pks_tars$rtmin) - 60
   pks_tars$rtmax <- max(pks_tars$rtmax) + 60
 
   eic <- EICs(object, mz = pks_tars)
 
   return(
-    plotPeaks(eic, pks, analyses = NULL, colorBy = "targets",
+    plotPeaks(eic, peaks, analyses = NULL, colorBy = "targets",
       legendNames = legendNames,
       title = title,
       interactive = interactive
@@ -879,7 +1005,7 @@ setMethod("mapPeaks", "msAnalysis", function(object,
 
   colorBy = "targets"
 
-  pks <- peaks(
+  peaks <- peaks(
     object,
     targetsID,
     mz, ppm,
@@ -889,19 +1015,19 @@ setMethod("mapPeaks", "msAnalysis", function(object,
 
   if (nrow(pks) < 1) return(cat("Requested peaks were not found!"))
 
-  if (!is.null(legendNames) & length(legendNames) == length(unique(pks$id))) {
+  if (!is.null(legendNames) & length(legendNames) == length(unique(peaks$id))) {
     leg <- legendNames
     names(leg) <- unique(pks$id)
     varkey <- sapply(pks$id, function(x) leg[x])
   } else {
-    leg <- paste0(pks$id, " - ", round(pks$mz, digits = 4), "/", round(pks$rt, digits = 0))
-    names(leg) <- pks$id
-    varkey <- sapply(pks$id, function(x) leg[names(leg) == x])
+    leg <- paste0(peaks$id, " - ", round(pks$mz, digits = 4), "/", round(peaks$rt, digits = 0))
+    names(leg) <- peaks$id
+    varkey <- sapply(peaks$id, function(x) leg[names(leg) == x])
   }
 
-  pks[, var := varkey][]
+  peaks[, var := varkey][]
 
-  plot <- mapPeaksInteractive(pks, xlim, ylim, title)
+  plot <- mapPeaksInteractive(peaks, xlim, ylim, title)
 
   return(plot)
 })

@@ -72,9 +72,9 @@ peakGrouping <- function(object = NULL, settings = NULL) {
 
 
   if (algorithm == "xcms3") {
-      params$groupParam@sampleGroups <- replicates(object)
+      params$groupParam@sampleGroups <- replicateNames(object)
     if (params$rtalign) {
-      params$preGroupParam@sampleGroups <- replicates(object)
+      params$preGroupParam@sampleGroups <- replicateNames(object)
     }
   }
 
@@ -133,9 +133,9 @@ buildFeatures <- function(object, pat) {
   mtd$dppm <- round(((mtd$mzmax - mtd$mzmin) / mtd$mz) * 1E6, digits = 1)
   mtd$drt <- round(mtd$rtmax - mtd$rtmin, digits = 0)
 
-  pk$replicate <- factor(pk$replicate, levels = unique(replicates(object)))
+  pk$replicate <- factor(pk$replicate, levels = unique(replicateNames(object)))
 
-  tp_pks <- setNames(data.frame(matrix(ncol = length(analyses(object)), nrow = 1)), analyses(object))
+  tp_pks <- setNames(data.frame(matrix(ncol = length(analysisNames(object)), nrow = 1)), analysisNames(object))
   tp_pks[1, ] <- 0
 
   mtd$peaks <- lapply(index, function(x, pk, tp_pks) {
@@ -240,18 +240,18 @@ addAdjustedRetentionTime <- function(object, pat) {
 
     hasSpectra <- sapply(object@analyses, function(x) nrow(x@spectra))
     hasSpectra <- hasSpectra > 0
-    names(hasSpectra) <- analyses(object)
+    names(hasSpectra) <- analysisNames(object)
 
     object@analyses <- lapply(object@analyses, function(x, hasSpectra) {
-      if (!hasSpectra[analyses(x)]) {
-        x@spectra <- loadBasicRawSpectraHeaderMZR(files(x))
+      if (!hasSpectra[analysisNames(x)]) {
+        x@spectra <- loadBasicRawSpectraHeaderMZR(filePaths(x))
       }
       return(x)
     }, hasSpectra = hasSpectra)
 
     object@analyses <- lapply(object@analyses, function(x, object, rtAdj, addAdjPoints, pkAdj) {
 
-      ana_idx <- which(analyses(object) %in% analyses(x))
+      ana_idx <- which(analysisNames(object) %in% analysisNames(x))
 
       rts <- names(rtAdj)
       rts <- stringr::str_detect(rts, paste0("F", ana_idx))
@@ -313,7 +313,7 @@ updateFeatureTable <- function(object, fast = TRUE) {
 
   feat <- setnames(feat, c("ret", "group"), c("rt", "id"))
 
-  rpl <- unique(replicates(object))
+  rpl <- unique(replicateNames(object))
 
   hasRemoved <- FALSE
 

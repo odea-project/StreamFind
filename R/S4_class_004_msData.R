@@ -16,9 +16,9 @@ msData_validity <- function(object) {
     valid <- FALSE
   }
 
-  blks <- na.omit(blanks(object))
+  blks <- na.omit(blankReplicateNames(object))
   if (length(blks) > 0) {
-    if (FALSE %in% (blks %in% replicates(object))) {
+    if (FALSE %in% (blks %in% replicateNames(object))) {
       warning("Blank replicates not present in analyses set!")
       valid <- FALSE
     }
@@ -77,15 +77,19 @@ setMethod("show", "msData", function(object) {
   )
   if (length(object@analyses) > 0) {
     tb <- data.table(
-      analysis = analyses(object),
+      analysis = analysisNames(object),
       replicate = sapply(object@analyses, function(x) x@replicate),
       blank = sapply(object@analyses, function(x) x@blank),
-      class = sapply(object@analyses, function(x) is(x)),
-      peaks = sapply(object@analyses, function(x) nrow(x@peaks))
+      class = sapply(object@analyses, function(x) is(x))
     )
 
+    tb$traces <- sapply(object@analyses, function(x) nrow(x@spectra))
+    tb$peaks <- sapply(object@analyses, function(x) nrow(x@peaks))
+
     if (nrow(object@features@metadata) > 0) {
-      tb$features <- apply(object@features@intensity[, .SD, .SDcols = analyses(object)], 2, function(x) length(x[x > 0]))
+      tb$features <- apply(object@features@intensity[, .SD, .SDcols = analysisNames(object)], 2, function(x) length(x[x > 0]))
+    } else {
+      tb$features <- 0
     }
 
     print(tb)
@@ -143,39 +147,37 @@ setMethod("analysisTable", "msData", function(object) {
   return(temp)
 })
 
-#### files -----------------------------------------------------------
+#### filePaths -----------------------------------------------------------
 
 #' @describeIn msData getter for analysis file paths.
 #'
 #' @export
 #'
-#' @aliases files,msData,msData-method
+#' @aliases filePaths,msData,msData-method
 #'
-setMethod("files", "msData", function(object) sapply(object@analyses, function(x) x@file))
+setMethod("filePaths", "msData", function(object) sapply(object@analyses, function(x) x@file))
 
-#### analyses ------------------------------------------------------------
+#### analysisNames ------------------------------------------------------------
 
 #' @describeIn msData getter for analysis names.
 #'
 #' @export
 #'
-#' @importMethodsFrom patRoon analyses
+#' @aliases analysisNames,msData,msData-method
 #'
-#' @aliases analyses,msData,msData-method
-#'
-setMethod("analyses", "msData", function(obj) sapply(obj@analyses, function(x) x@analysis))
+setMethod("analysisNames", "msData", function(object) sapply(object@analyses, function(x) x@analysis))
 
-#### replicates ----------------------------------------------------------
+#### replicateNames ----------------------------------------------------------
 
 #' @describeIn msData getter for replicate names.
 #'
 #' @export
 #'
-#' @aliases replicates,msData,msData-method
+#' @aliases replicateNames,msData,msData-method
 #'
-setMethod("replicates", "msData", function(object) sapply(object@analyses, function(x) x@replicate))
+setMethod("replicateNames", "msData", function(object) sapply(object@analyses, function(x) x@replicate))
 
-#### replicates<- --------------------------------------------------------
+#### replicateNames<- --------------------------------------------------------
 
 #' @describeIn msData setter for analysis replicate names.
 #' The \code{value} is a character vector with the same length as
@@ -186,11 +188,11 @@ setMethod("replicates", "msData", function(object) sapply(object@analyses, funct
 #'
 #' @export
 #'
-#' @aliases replicates<-,msData,msData-method
+#' @aliases replicateNames<-,msData,msData-method
 #'
-setMethod("replicates<-", signature("msData", "ANY"), function(object, value) {
+setMethod("replicateNames<-", signature("msData", "ANY"), function(object, value) {
 
-  ana <- analyses(object)
+  ana <- analysisNames(object)
   if (length(value) != length(ana)) {
     warning("Length of value does not match the number of analyses.")
     return(object)
@@ -201,17 +203,17 @@ setMethod("replicates<-", signature("msData", "ANY"), function(object, value) {
   return(object)
 })
 
-#### blanks --------------------------------------------------------------
+#### blankReplicateNames --------------------------------------------------------------
 
 #' @describeIn msData getter for blank names.
 #'
 #' @export
 #'
-#' @aliases blanks,msData,msData-method
+#' @aliases blankReplicateNames,msData,msData-method
 #'
-setMethod("blanks", "msData", function(object) sapply(object@analyses, function(x) x@blank))
+setMethod("blankReplicateNames", "msData", function(object) sapply(object@analyses, function(x) x@blank))
 
-#### blanks<- ------------------------------------------------------------
+#### blankReplicateNames<- ------------------------------------------------------------
 
 #' @describeIn msData setter for associated blank replicate for each analyses.
 #' The \code{value} is a character vector with the same length as
@@ -222,11 +224,11 @@ setMethod("blanks", "msData", function(object) sapply(object@analyses, function(
 #'
 #' @export
 #'
-#' @aliases blanks<-,msData,msData-method
+#' @aliases blankReplicateNames<-,msData,msData-method
 #'
-setMethod("blanks<-", signature("msData", "ANY"), function(object, value) {
+setMethod("blankReplicateNames<-", signature("msData", "ANY"), function(object, value) {
 
-  ana <- analyses(object)
+  ana <- analysisNames(object)
   if (length(value) != length(ana)) {
     warning("Length of value does not match the number of analyses.")
     return(object)
@@ -259,7 +261,7 @@ setMethod("metadata", "msData", function(x, analyses = NULL, which = NULL) {
     return(metadata(z, which))
   }, which = which)
 
-  mtd <- data.table::rbindlist(mtd, fill = TRUE)
+  mtd <- rbindlist(mtd, fill = TRUE)
 
   return(mtd)
 })
@@ -284,7 +286,7 @@ setMethod("addMetadata", "msData", function(object, metadata = NULL, overwrite =
 
   if (is.data.frame(metadata) | is.data.table(metadata)) {
 
-    if (!"analysis" %in% colnames(metadata)) metdata$analysis <- analyses(object)
+    if (!"analysis" %in% colnames(metadata)) metdata$analysis <- analysisNames(object)
 
     name_is_already_there <- lapply(metadata$analysis, function(x, metadata, object) {
       names(metadata[metadata$analysis %in% x, !colnames(metadata) %in% "analysis"]) %in% names(object@analyses[[x]]@metadata)
@@ -340,50 +342,47 @@ setMethod("addMetadata", "msData", function(object, metadata = NULL, overwrite =
 
 #### addAnalyses ---------------------------------------------------------
 
-#' @describeIn msData getter for analysis names.
+#' @describeIn msData adds \linkS4class{msAnalysis} objects to the existing
+#' \linkS4class{msData}.
 #'
-#' @template args-single-analyses
+#' @param analysisList A list of \linkS4class{msAnalysis} objects.
 #'
 #' @export
 #'
 #' @aliases addAnalyses,msData,msData-method
 #'
-setMethod("addAnalyses", "msData", function(object, analyses = NULL) {
+setMethod("addAnalyses", "msData", function(object, analysisList = NULL) {
 
-  if (!is.null(analyses)) {
-
-    a1 <- analyses
+  if (!is.null(analysisList)) {
 
     cls <- NA_character_
 
-    if (length(a1) == 1) {
-      cls <- class(a1)
+    if (length(analysisList) == 1) {
+      cls <- class(analysisList)
     } else {
-      cls <- sapply(a1, function(x) class(x))
+      cls <- sapply(analysisList, function(x) class(x))
     }
 
     if (all(cls %in% "msAnalysis")) {
 
-      if (!is.list(a1)) {
-        a1 <- list(a1)
-        names(a1) <- analyses(analyses)
+      if (!is.list(analysisList)) {
+        analysisList <- list(analysisList)
+        names(analysisList) <- analysisNames(analysisList)
       } else {
-        names(a1) <- sapply(a1, function(x) analyses(x))
+        names(analysisList) <- sapply(analysisList, function(x) analysisNames(x))
       }
 
       #check name
-      if (TRUE %in% (names(a1) %in% analyses(object))) {
-        warning("Analysis name is already in msData!")
+      if (TRUE %in% (names(a1) %in% analysisNames(object))) {
+        warning("Analysis name/s to add is already in msData!")
         return(object)
       }
 
-      object@analyses <- c(object@analyses, a1)
+      object@analyses <- c(object@analyses, analysisList)
       object@analyses <-  object@analyses[order(names(object@analyses))]
 
-      #note that any present features are erased as new analyses invalidate the grouping/alignment
       object@features <- new("msFeatures")
 
-      #remove feature assignments
       object@analyses <- lapply(object@analyses, function(x) {
         if (nrow(x@peaks) > 0) {
           x@peaks$feature <- NA_character_
@@ -485,15 +484,57 @@ setMethod("polarities", "msData", function(object) {
 #'
 #' @export
 #'
+#' @importFrom data.table rbindlist
+#' @importFrom dplyr full_join
+#'
 #' @aliases EICs,msData,msData-method
 #'
 setMethod("EICs", "msData", function(object,
                                      analyses = NULL,
                                      mz = NULL, ppm = 20,
                                      rt = NULL, sec = 60, id = NULL) {
-  return(extractEICs(object, analyses, mz, ppm, rt, sec, id))
-})
 
+  analyses <- checkAnalysesArgument(object, analyses)
+
+  targets <- makeTargets(mz, rt, ppm, sec, id)
+
+  rtr <- c(min(targets$rtmin), max(targets$rtmax))
+  if (rtr[2] == 0) rtr = NULL
+
+  spec <- lapply(object@analyses[analyses], function(x, rtr) {
+
+    if (!hasLoadedSpectra(x)) {
+      temp <- loadRawDataMZR(file = filePaths(x), chroms = FALSE, level = 1, rtr = rtr)
+      temp <- temp$spectra
+    } else {
+      temp <- spectra(x)
+      temp <- temp[lv == 1, ]
+      temp <- temp[, .(index, scan, lv, rt, mz, intensity)]
+    }
+    return(temp)
+  }, rtr = rtr)
+
+  names(spec) <- analyses
+
+  targets <- full_join(
+    targets,
+    data.table(
+      analysis = analyses,
+      replicate = replicateNames(object)[analyses]
+    ),
+    by = character()
+  )
+
+  # TODO add in cpp a check for returning an empty table when no traces are extracted
+
+  eics <- rcpp_extract_eics(spec = spec, targets = targets)
+
+  eics <- rbindlist(eics)
+
+  eics <- eics[, .(intensity = sum(intensity)), by = c("analysis", "replicate", "id", "rt")]
+
+  return(eics)
+})
 
 ### plotEICs -------------------------------------------------------------
 
@@ -516,18 +557,22 @@ setMethod("EICs", "msData", function(object,
 #'
 setMethod("plotEICs", "msData", function(object,
                                          analyses = NULL,
-                                         mz = NULL, rt = NULL,
-                                         ppm = 20, sec = 30, id = NULL,
+                                         mz = NULL, ppm = 20,
+                                         rt = NULL, sec = 30, id = NULL,
                                          colorBy = "targets",
                                          legendNames = NULL,
                                          title = NULL,
                                          interactive = FALSE) {
 
-  eic <- extractEICs(object, analyses = analyses, mz = mz, rt = rt, ppm = ppm, sec = sec, id = id)
+  eic <- EICs(object, analyses, mz, ppm, rt, sec, id)
 
-  return(plotEICs(eic, analyses = NULL, colorBy, legendNames, title, interactive))
+  return(
+    plotEICs(eic,
+      analyses = NULL, colorBy,
+      legendNames, title, interactive
+    )
+  )
 })
-
 
 ### TICs -----------------------------------------------------------------
 
@@ -536,7 +581,7 @@ setMethod("plotEICs", "msData", function(object,
 #'
 #' @export
 #'
-#' @importFrom data.table `:=` setcolorder
+#' @importFrom data.table rbindlist
 #'
 #' @aliases TICs,msData,msData-method
 #'
@@ -545,30 +590,10 @@ setMethod("TICs", "msData", function(object, analyses = NULL) {
   analyses <- checkAnalysesArgument(object, analyses)
   if (is.null(analyses)) return(data.table())
 
-  tics <- list()
+  tics <- lapply(object@analyses[analyses], function(x) TICs(x))
 
-  for (i in analyses) {
-
-    file <- files(object)[i]
-
-    tic <- loadRawDataMZR(file, spectra = FALSE, chroms = TRUE, chromsID = "TIC")[[1]]
-
-    if (nrow(tic) < 1) {
-      tic <- extractEICs(object, analyses = i, mz = NULL, rt = NULL)
-      tic <- tic[, .(id, rt, intensity)]
-    } else {
-      tic <- tic[, .(id, rt, intensity)]
-    }
-    tic[, `:=`(analysis = i, replicate = replicates(object)[i])]
-    setcolorder(tic, c("analysis", "replicate", "id", "rt", "intensity"))
-    if (max(tic$rt) < 120) tic[, rt := rt * 60]
-    tic <- tic[intensity > 0, ]
-    tics[[i]] <- tic
-    rm(tic)
-  }
   return(rbindlist(tics))
 })
-
 
 ### plotTICs -------------------------------------------------------------
 
@@ -590,9 +615,13 @@ setMethod("plotTICs", "msData", function(object,
   tics <- TICs(object, analyses = analyses)
 
 
-  return(plotTICs(tics, analyses = NULL, colorBy = colorBy, title = title, interactive = interactive))
+  return(
+    plotTICs(tics,
+      analyses = NULL, colorBy = colorBy,
+      title = title, interactive = interactive
+    )
+  )
 })
-
 
 ### XICs -----------------------------------------------------------------
 
@@ -603,6 +632,9 @@ setMethod("plotTICs", "msData", function(object,
 #'
 #' @export
 #'
+#' @importFrom data.table rbindlist
+#' @importFrom dplyr full_join
+#'
 #' @aliases XICs,msData,msData-method
 #'
 setMethod("XICs", "msData", function(object,
@@ -610,11 +642,43 @@ setMethod("XICs", "msData", function(object,
                                      mz = NULL, ppm = 20,
                                      rt = NULL, sec = 60, id = NULL) {
 
-  xic <- extractXICs(object, analyses, mz, ppm, rt, sec, id)
+  analyses <- checkAnalysesArgument(object, analyses)
+
+  targets <- makeTargets(mz, rt, ppm, sec, id)
+
+  rtr <- c(min(targets$rtmin) * 0.8, max(targets$rtmax) * 1.2)
+  if (rtr[2] == 0) rtr = NULL
+
+  spec <- lapply(object@analyses[analyses], function(x, rtr) {
+
+    if (!hasLoadedSpectra(x)) {
+      temp <- loadRawDataMZR(file = filePaths(x), chroms = FALSE, level = 1, rtr = rtr)
+      temp <- temp$spectra
+    } else {
+      temp <- spectra(x)
+      temp <- temp[lv == 1, ]
+      temp <- temp[, .(index, scan, lv, rt, mz, intensity)]
+    }
+    return(temp)
+  }, rtr = rtr)
+
+  names(spec) <- analyses
+
+  targets <- full_join(
+    targets,
+    data.table(
+      analysis = analyses,
+      replicate = replicateNames(object)[analyses]
+    ),
+    by = character()
+  )
+
+  xic <- rcpp_extract_xics(spec = spec, targets = targets)
+
+  xic <- rbindlist(xic)
 
   return(xic)
 })
-
 
 ### plotXICs -------------------------------------------------------------
 
@@ -648,7 +712,7 @@ setMethod("plotXICs", "msData", function(object,
                                          secMark = 10,
                                          numberRows = 1) {
 
-  xic <- extractXICs(object, analyses, mz, ppm, rt, sec, id)
+  xic <- XICs(object, analyses, mz, ppm, rt, sec, id)
 
   plot <- plotXICs(xic,
     legendNames = legendNames,
@@ -740,21 +804,56 @@ setMethod("plotMS2s", "msData", function(object = NULL,
 
 #' @describeIn msData adds processing parameters to the analysis.
 #'
+#' @param minIntensityMS1 Numeric value on length one with the
+#' minimum intensity of MS1 level traces.
+#' @param minIntensityMS2 Numeric value on length one with the
+#' minimum intensity of MS2 level traces.
+#'
 #' @export
 #'
 #' @aliases loadRawData,msData,msData-method
 #'
-setMethod("loadRawData", "msData", function(object, analyses = NULL) {
+setMethod("loadRawData", "msData", function(object,
+                                            analyses = NULL,
+                                            minIntensityMS1 = 0,
+                                            minIntensityMS2 = 0) {
 
   analyses <- checkAnalysesArgument(object, analyses)
-  object <- object[analyses]
 
-  object@analyses <- lapply(object@analyses, function(x) {
-    x <- loadRawData(x)
+  temp <- lapply(object@analyses[analyses], function(x, minIntensityMS1, minIntensityMS2) {
+    x <- loadRawData(x, minIntensityMS1, minIntensityMS2)
     return(x)
-  })
+  }, minIntensityMS1 = minIntensityMS1, minIntensityMS2 = minIntensityMS2)
+
+  object@analyses[analyses] <- temp
 
   return(object)
+})
+
+### hasLoadedSpectra -----------------------------------------------------------
+
+#' @describeIn msData check if the analyses in \linkS4class{msData} have loaded raw spectra.
+#'
+#' @export
+#'
+#' @aliases hasLoadedSpectra,msData,msData-method
+#'
+setMethod("hasLoadedSpectra", "msData", function(object) {
+
+  return(sapply(object@analyses, function(x) hasLoadedSpectra(x)))
+})
+
+### hasLoadedChromatograms -----------------------------------------------------------
+
+#' @describeIn msData check if the analyses in \linkS4class{msData} have loaded raw chromatograms.
+#'
+#' @export
+#'
+#' @aliases hasLoadedChromatograms,msData,msData-method
+#'
+setMethod("hasLoadedChromatograms", "msData", function(object) {
+
+  return(sapply(object@analyses, function(x) hasLoadedChromatograms(x)))
 })
 
 ### spectra ----------------------------------------------------------
@@ -803,6 +902,8 @@ setMethod("hasAdjustedRetentionTime", "msData", function(object) {
 #'
 #' @export
 #'
+#' @importFrom checkmate testClass testChoice
+#'
 #' @aliases addParameters,msData,msData-method
 #'
 setMethod("addParameters", "msData", function(object,
@@ -810,9 +911,11 @@ setMethod("addParameters", "msData", function(object,
                                               where = "analyses",
                                               analyses = NULL) {
 
-  valid <- checkmate::testClass(settings, "settings")
+  valid <- FALSE
 
-  valid <- checkmate::testChoice(where, c("analyses", "features"))
+  valid <- testClass(settings, "settings")
+
+  valid <- testChoice(where, c("analyses", "features"))
 
   if (!valid) {
     warning("Arguments not correct, returning original object!")
@@ -847,6 +950,8 @@ setMethod("addParameters", "msData", function(object,
 #'
 #' @export
 #'
+#' @importFrom checkmate testChoice
+#'
 #' @aliases addParameters,msData,msData-method
 #'
 setMethod("getParameters", "msData", function(object,
@@ -854,7 +959,7 @@ setMethod("getParameters", "msData", function(object,
                                               analyses = NULL,
                                               call = NULL) {
 
-  valid <- checkmate::testChoice(where, c("analyses", "features"))
+  valid <- testChoice(where, c("analyses", "features"))
 
   if (!valid) {
     warning("Arguments not correct, returning original object!")
@@ -933,6 +1038,18 @@ setMethod("as.features", "msData", function(object) {
   return(new("featuresOpenMS", features = feat, analysisInfo = anaInfo))
 })
 
+### hasPeaks -----------------------------------------------------------
+
+#' @describeIn msData check if the analyses in \linkS4class{msData} have peaks.
+#'
+#' @export
+#'
+#' @aliases hasPeaks,msData,msData-method
+#'
+setMethod("hasPeaks", "msData", function(object) {
+
+  return(sapply(object@analyses, function(x) hasPeaks(x)))
+})
 
 ### peaks ----------------------------------------------------------------
 
@@ -972,7 +1089,7 @@ setMethod("peaks", "msData", function(object,
   }, filtered = filtered)
 
   pks <- rbindlist(pks, idcol = "analysis")
-  rpl <- data.table(analysis = analyses(obj), replicate = replicates(obj))
+  rpl <- data.table(analysis = analyses(obj), replicate = replicateNames(obj))
   pks <- pks[rpl, on = .(analysis = analysis)]
   pks <- pks[!is.na(id), ]
 
@@ -1016,9 +1133,9 @@ setMethod("plotPeaks", "msData", function(object,
   obj <- object
   obj@analyses <- obj@analyses[analyses]
 
-  pks <- peaks(obj, analyses = NULL, targetsID, mz, ppm, rt, sec, filtered)
+  peaks <- peaks(obj, analyses = NULL, targetsID, mz, ppm, rt, sec, filtered)
 
-  pks_tars <- copy(pks[, .(analysis, replicate, id, mz, rt, mzmin, mzmax, rtmin, rtmax)])
+  pks_tars <- copy(peaks[, .(analysis, replicate, id, mz, rt, mzmin, mzmax, rtmin, rtmax)])
   pks_tars$rtmin <- min(pks_tars$rtmin) - 60
   pks_tars$rtmax <- max(pks_tars$rtmax) + 60
 
@@ -1034,7 +1151,7 @@ setMethod("plotPeaks", "msData", function(object,
   eic <- rbindlist(eic)
 
   return(
-    plotPeaks(eic, pks, analyses = NULL, colorBy = colorBy,
+    plotPeaks(eic, peaks, analyses = NULL, colorBy = colorBy,
               legendNames = legendNames,
               title = title,
               interactive = interactive
@@ -1070,7 +1187,7 @@ setMethod("mapPeaks", "msData", function(object,
                                          ylim = 0.05,
                                          title = NULL) {
 
-  pks <- peaks(
+  peaks <- peaks(
     object,
     analyses,
     targetsID,
@@ -1079,28 +1196,28 @@ setMethod("mapPeaks", "msData", function(object,
     filtered
   )
 
-  if (nrow(pks) < 1) return(cat("Requested peaks were not found!"))
+  if (nrow(peaks) < 1) return(cat("Requested peaks were not found!"))
 
   if (colorBy == "analyses") {
-    leg <- unique(pks$analysis)
-    varkey <- pks$analysis
+    leg <- unique(peaks$analysis)
+    varkey <- peaks$analysis
   } else if (colorBy == "replicates") {
-    leg <- unique(pks[, .(analysis, replicate)])
+    leg <- unique(peaks[, .(analysis, replicate)])
     leg <- leg$replicate
-    varkey <- pks$replicate
-  } else if (!is.null(legendNames) & length(legendNames) == length(unique(pks$id))) {
+    varkey <- peaks$replicate
+  } else if (!is.null(legendNames) & length(legendNames) == length(unique(peaks$id))) {
     leg <- legendNames
-    names(leg) <- unique(pks$id)
-    varkey <- sapply(pks$id, function(x) leg[x])
+    names(leg) <- unique(peaks$id)
+    varkey <- sapply(peaks$id, function(x) leg[x])
   } else {
-    leg <- pks$id
-    names(leg) <- pks$id
-    varkey <- sapply(pks$id, function(x) leg[names(leg) == x])
+    leg <- peaks$id
+    names(leg) <- peaks$id
+    varkey <- sapply(peaks$id, function(x) leg[names(leg) == x])
   }
 
-  pks[, var := varkey][]
+  peaks[, var := varkey][]
 
-  plot <- mapPeaksInteractive(pks, xlim, ylim, title)
+  plot <- mapPeaksInteractive(peaks, xlim, ylim, title)
 
   return(plot)
 })
@@ -1240,23 +1357,23 @@ setMethod("plotFeatures", "msData", function(object,
     filtered = filtered
   )
 
-  pks <- peaks(
+  peaks <- peaks(
     obj,
     analyses,
     targetsID = feats$id,
     filtered = filtered
   )
 
-  if (!is.null(legendNames) & length(legendNames) == length(unique(pks$feature))) {
-    names(legendNames) <- unique(pks$feature)
-    pks$feature <- sapply(pks$feature, function(x) legendNames[x])
-    names(legendNames) <- pks$id
+  if (!is.null(legendNames) & length(legendNames) == length(unique(peaks$feature))) {
+    names(legendNames) <- unique(peaks$feature)
+    peaks$feature <- sapply(peaks$feature, function(x) legendNames[x])
+    names(legendNames) <- peaks$id
   } else if (colorBy %in% "targets") {
-    legendNames <- pks$feature
-    names(legendNames) <- pks$id
+    legendNames <- peaks$feature
+    names(legendNames) <- peaks$id
   }
 
-  pks_tars <- copy(pks[, .(analysis, replicate, id, mz, rt, mzmin, mzmax, rtmin, rtmax)])
+  pks_tars <- copy(peaks[, .(analysis, replicate, id, mz, rt, mzmin, mzmax, rtmin, rtmax)])
   pks_tars$rtmin <- min(pks_tars$rtmin) - 60
   pks_tars$rtmax <- max(pks_tars$rtmax) + 60
 
@@ -1283,7 +1400,7 @@ setMethod("plotFeatures", "msData", function(object,
   }
 
   return(
-    plotPeaks(eic, pks, analyses = NULL,
+    plotPeaks(eic, peaks, analyses = NULL,
               colorBy = colorBy,
               legendNames = legendNames,
               title = title,

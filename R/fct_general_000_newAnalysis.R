@@ -1,5 +1,4 @@
 
-
 #' @title newAnalysis
 #'
 #' @description Creates a new \pkg{streamFind} analysis object.
@@ -12,27 +11,26 @@
 #' \linkS4class{msAnalysis}, which will contain the structure for
 #' handling MS data.
 #'
-#' @return An S4 class depending on the added
-#' file format. For instance, an \linkS4class{msAnalysis} is returned for
+#' @return An S4 class depending on the added file format.
+#' For instance, an \linkS4class{msAnalysis} is returned for
 #' \emph{mzML} and \emph{mzXML} files.  If more than one file is given as
 #' \code{file}, a \linkS4class{streamProject} object is returned instead.
 #'
 #' @export
 #'
 #' @importFrom data.table data.table is.data.table
+#' @importFrom tools file_ext
 #'
 newAnalysis <- function(file = NA_character_,
                         replicate = NULL,
                         blank = NULL) {
 
-  if (TRUE %in% is.na(file)) {
-    return(warning("At least one file should be added to initiate an analysis obect!"))
-  }
-
   if (is.data.frame(file) | is.data.table(file)) {
 
-    #check if path and analysis are given instead of file name
-    if ("path" %in% colnames(file) & !"file" %in% colnames(file) & "analysis" %in% colnames(file)) {
+    #add file column, for enabling the use of analysisInfo from patRoon
+    if ("path" %in% colnames(file) &
+        !"file" %in% colnames(file) &
+        "analysis" %in% colnames(file)) {
 
       f_path_file <- apply(file, 1, function(x) {
         list.files(path = x["path"], pattern = x["analysis"], full.names = TRUE)
@@ -40,7 +38,7 @@ newAnalysis <- function(file = NA_character_,
 
       if (length(f_path_file) > nrow(file)) {
         p_formats <- c("mzML", "mzXML")
-        f_path_file <- f_path_file[tools::file_ext(f_path_file) %in% p_format]
+        f_path_file <- f_path_file[file_ext(f_path_file) %in% p_formats]
       }
 
       file$file <- f_path_file
@@ -51,17 +49,37 @@ newAnalysis <- function(file = NA_character_,
       names(replicate) <- file$file
     }
 
-    if ("group" %in% colnames(file)) {
-      replicate <- files$group
-      names(replicate) <- files$file
+    if ("group" %in% colnames(fils)) {
+      replicate <- file$group
+      names(replicate) <- file$file
     }
 
     if ("blank" %in% colnames(file)) {
-      blank <- files$blank
+      blank <- file$blank
       names(blank) <- file$file
     }
 
     file <- file$file
+  }
+
+  file <- file[file.exists(file)]
+
+  fFormats <- ".mzML|.mzXML"
+
+  file <- file[grepl(fFormats, file)]
+
+  if (length(files) < 1) {
+
+    # TODO suggest to convert files
+    # if (TRUE %in% grepl(tools::file_ext(f), compatibleFileFormatsForConversion()$format)) {
+    #   warning("MS vendor file found! Use the function convertFiles
+    #           for conversion to mzML/mzXML. See ?convertFiles for more information.")
+    # }
+
+    warning("A valid file path should be added
+            to create an analysis object!")
+
+    return(NULL)
   }
 
   if (is.null(replicate)) {
@@ -88,15 +106,17 @@ newAnalysis <- function(file = NA_character_,
     )
   }
 
-  cat("Loading analysis file...")
+  message("Loading analysis file...")
 
   if (grepl("mzML", file) | grepl("mzXML", file)) {
-    analysis <- new("msAnalysis", file = file, replicate = unname(replicate), blank = unname(blank))
+    analysis <- new("msAnalysis",
+      file = file, replicate = unname(replicate), blank = unname(blank)
+    )
   }
 
   # TODO implement further file types check-ups, such as for ramanAnalysis or uvAnalysis, as well for other MS file formats to implement convert functions
 
-  cat(" Done! \n")
+  message(" Done! \n")
 
   return(analysis)
 }

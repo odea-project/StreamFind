@@ -1,5 +1,4 @@
 
-
 #' @title makeTargets
 #'
 #' @description Helper function to build \emph{m/z} and retention time
@@ -104,8 +103,8 @@ makeTargets <- function(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL) {
       id = NA_character_,
       mz = mz,
       rt = 0,
-      mzmin = mz - ((ppm / 1E5) * mz),
-      mzmax = mz + ((ppm / 1E5) * mz),
+      mzmin = mz - ((ppm / 1E6) * mz),
+      mzmax = mz + ((ppm / 1E6) * mz),
       rtmin = 0,
       rtmax = 0
     )
@@ -213,94 +212,8 @@ makeTargets <- function(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL) {
   return(mzrts)
 }
 
-
-#' @title extractEICs
-#'
-#' @description Extracts MS1 level ion chromatograms (EICs) from raw data
-#' of specified \emph{m/z} and retention time pair/s. The function uses the
-#' \link[patRoon]{getEICs} function from \pkg{patRoon}.
-#'
-#' @template args-single-object-msData
-#' @template args-single-analyses
-#' @template args-makeTargets
-#'
-#' @return A \code{data.table} with the columns
-#' \code{analysis}, \code{replicate}, \code{id}, \code{rt}, and \code{intensity}
-#' representing the analysis name, the analysis replicate name,
-#' the target id, the retention time and the sum of the intensities
-#' for the collected \emph{m/z} in each spectrum (i.e., MS scan), respectively.
-#'
-#' @export
-#'
-#' @references
-#' \insertRef{patroon01}{streamFind}
-#'
-#' \insertRef{proteo01}{streamFind}
-#'
-#' @importFrom checkmate testClass
-#' @importFrom data.table rbindlist setnames setcolorder copy
-#' @importFrom patRoon getEICs
-#'
-extractEICs <- function(object = NULL,
-                        analyses = NULL,
-                        mz = NULL, ppm = 20,
-                        rt = NULL, sec = 60, id = NULL) {
-
-  valid <- FALSE
-
-  if (checkmate::testClass(object, "msData") | checkmate::testClass(object, "msAnalysis"))
-    valid = TRUE
-
-  if (!valid) {
-    warning("Invalid class object used as argument!")
-    return(data.table())
-  }
-
-  analyses <- checkAnalysesArgument(object, analyses)
-  if (is.null(analyses)) return(data.table())
-
-  targets <- makeTargets(mz = mz, rt = rt, ppm = ppm, sec = sec, id = id)
-  data.table::setnames(targets, c("rtmin", "rtmax"), c("retmin", "retmax"))
-
-  eicList <- lapply(analyses, function(x, targets, object) {
-
-    fl <- files(object)[x]
-
-    ms_ana <- object
-    if (checkmate::testClass(ms_ana, "msData")) ms_ana <- ms_ana@analyses[[x]]
-
-    targets[mz == 0 & rt == 0, id := "TIC"]
-    targets[mz == 0 & rt == 0, mz := NA]
-    targets[mz == 0 & rt == 0, rt := NA]
-    targets[retmin == 0, retmin := metadata(ms_ana, which = "dStartTime")$dStartTime]
-    targets[retmax == 0, retmax := metadata(ms_ana, which = "dEndTime")$dEndTime]
-    targets[mzmin == 0, mzmin := metadata(ms_ana, which = "lowMz")$lowMz]
-    targets[mzmax == 0, mzmax := metadata(ms_ana, which = "highMz")$highMz]
-
-    # TODO check if analyses has spectra to use that instead
-
-    eic <- patRoon::getEICs(fl, targets[, .(retmin, retmax, mzmin, mzmax)])
-
-    names(eic) <- targets[["id"]]
-    eic <- rbindlist(eic, idcol = "id")
-    setnames(eic, c("id", "rt", "intensity"))
-    eic[, analysis := x]
-    eic[, replicate := replicates(object)[x]][]
-
-    return(eic)
-  }, targets = targets, object = object)
-
-  eics <- rbindlist(eicList)
-  setcolorder(eics, c("analysis", "replicate", "id", "rt", "intensity"))
-
-  #removes zeros
-  #eics <- eics[intensity > 0, ]
-
-  return(copy(eics))
-}
-
-
 #' @importFrom data.table as.data.table
+#' @importFrom mzR openMSfile header close
 #'
 loadBasicRawSpectraHeaderMZR <- function(file) {
 
@@ -308,9 +221,18 @@ loadBasicRawSpectraHeaderMZR <- function(file) {
 
   zH <- as.data.table(header(zF))
 
-  zH <- zH[, .(seqNum, acquisitionNum, msLevel, retentionTime)]
+  if (nrow(zH) > 0) {
+    zH <- zH[, .(seqNum, acquisitionNum, msLevel, retentionTime)]
+    colnames(zH) <- c("index", "scan", "lv", "rt")
 
-  colnames(zH) <- c("index", "scan", "lv", "rt")
+  } else {
+    zH <- data.table(
+      index = numeric(),
+      scan = numeric(),
+      lv = numeric(),
+      rt = numeric()
+    )
+  }
 
   suppressWarnings(mzR::close(zF))
 
@@ -319,11 +241,13 @@ loadBasicRawSpectraHeaderMZR <- function(file) {
 
 
 #' @importFrom mzR openMSfile
+#' @importClassesFrom mzR mzRpwiz
 #' @importMethodsFrom mzR header peaks chromatogramHeader chromatograms
 #' @importFrom data.table data.table as.data.table rbindlist copy
 #' @importFrom dplyr inner_join
 #'
 loadRawDataMZR <- function(file, spectra = TRUE, level = 1, rtr = NULL,
+                           minIntensityMS1 = 0, minIntensityMS2 = 0,
                            chroms = TRUE, chromsID = NULL,
                            ifChromNoSpectra = FALSE) {
 
@@ -332,17 +256,23 @@ loadRawDataMZR <- function(file, spectra = TRUE, level = 1, rtr = NULL,
   zF <- openMSfile(file, backend = "pwiz")
 
   if (chroms) {
+
     cH <- as.data.table(suppressWarnings(mzR::chromatogramHeader(zF)))
+
     if (!is.null(chromsID)) cH <- cH[cH$chromatogramId %in% chromsID, ]
+
     if (nrow(cH) > 0) {
+
       cC <- mzR::chromatograms(zF, cH$chromatogramIndex)
+
       if (!is.data.frame(cC)) {
         names(cC) <- cH$chromatogramIndex
         cC <- rbindlist(cC, idcol = "index")
         cC$index <- as.numeric(cC$index)
         colnames(cC) <- c("index", "rt", "intensity")
         cH_b <- data.table(index = cH$chromatogramIndex, id = cH$chromatogramId)
-        cH_n <- dplyr::inner_join(cH_b, cC, by = "index") #cH_b[cC, on = .(index = index)]
+        cH_n <- dplyr::inner_join(cH_b, cC, by = "index")
+
       } else {
         cH_n <- data.table(
           index = cH$chromatogramIndex,
@@ -351,9 +281,18 @@ loadRawDataMZR <- function(file, spectra = TRUE, level = 1, rtr = NULL,
           intensity = cC[, 2]
         )
       }
+
+      cH_n <- cH_n[intensity > minIntensityMS1, ]
+
       dl[["chroms"]] <- cH_n
+
     } else {
-      dl[["chroms"]] <- data.table()
+      dl[["chroms"]] <- data.table(
+        index = numeric(),
+        rt = numeric(),
+        intensity = numeric(),
+        id = character()
+      )
     }
   }
 
@@ -362,6 +301,7 @@ loadRawDataMZR <- function(file, spectra = TRUE, level = 1, rtr = NULL,
   }
 
   if (spectra) {
+
     zH <- header(zF)
 
     if (!is.null(rtr) & length(rtr) == 2) {
@@ -377,7 +317,8 @@ loadRawDataMZR <- function(file, spectra = TRUE, level = 1, rtr = NULL,
       names(zD) <- zH$seqNum
       zD <- rbindlist(zD, idcol = "index")
       zD$index <- as.numeric(zD$index)
-      if (2 %in% level) {
+
+      if (TRUE %in% (level == 2)) {
         zH_b <- data.table(
           index = zH$seqNum,
           scan = zH$acquisitionNum,
@@ -388,6 +329,7 @@ loadRawDataMZR <- function(file, spectra = TRUE, level = 1, rtr = NULL,
           preCharge = zH$precursorCharge,
           rt = zH$retentionTime
         )
+
       } else {
         zH_b <- data.table(
           index = zH$seqNum,
@@ -396,114 +338,32 @@ loadRawDataMZR <- function(file, spectra = TRUE, level = 1, rtr = NULL,
           rt = zH$retentionTime
         )
       }
-      zH_n <- dplyr::inner_join(zH_b, zD, by = "index") #zH_b[zD, on = .(index = index)]
+
+      zH_n <- dplyr::inner_join(zH_b, zD, by = "index")
+
+      # TODO add an intensity threshold when loading raw data
+      #removes empty traces
+      zH_n <- zH_n[!(intensity <= minIntensityMS1 & lv == 1), ]
+      zH_n <- zH_n[!(intensity <= minIntensityMS2 & lv == 2), ]
+
       dl[["spectra"]] <- zH_n
+
     } else {
-      dl[["spectra"]] <- data.table()
+      dl[["spectra"]] <- data.table(
+        index = numeric(),
+        scan = numeric(),
+        lv = numeric(),
+        rt = numeric(),
+        mz = numeric(),
+        intensity = numeric()
+      )
     }
   }
 
   suppressWarnings(mzR::close(zF))
+
   return(dl)
 }
-
-
-#' @title extractXICs
-#'
-#' @description Extracts three dimensional MS1 level ion chromatograms (XICs)
-#' from raw data of specified \emph{m/z} and retention time pair/s.
-#' The XIC extraction is slower than the \link{extractEICs}, therefore it should
-#' be used for limited/narrow mass and time ranges. To load the raw spectra,
-#' the \pkg{patRoon} package is used.
-#'
-#' @template args-single-object-msData
-#' @template args-single-analyses
-#' @template args-makeTargets
-#'
-#' @return A \link[data.table]{data.table} with the columns
-#' \code{analysis}, \code{replicate}, \code{id}, \code{mz}, \code{rt}, and \code{intensity}
-#' representing the analysis name, the analysis replicate name,
-#' the XIC target id, the \emph{m/z}, the retention time and the intensity
-#' of each \emph{m/z} and retention time pair, respectively.
-#'
-#' @export
-#'
-#' @importFrom checkmate assertClass
-#' @importFrom data.table rbindlist setcolorder copy `:=`
-#'
-extractXICs <- function(object = NULL,
-                        analyses = NULL,
-                        mz = NULL, ppm = 20,
-                        rt = NULL, sec = 60, id = NULL) {
-
-  valid <- FALSE
-
-  if (checkmate::testClass(object, "msData") | checkmate::testClass(object, "msAnalysis"))
-    valid = TRUE
-
-  if (!valid) {
-    warning("Invalid class object used as argument!")
-    return(data.table())
-  }
-
-  analyses <- checkAnalysesArgument(object, analyses)
-  if (is.null(analyses)) return(data.table())
-
-  targets <- makeTargets(mz, rt, ppm, sec, id)
-
-  xicList <- list()
-
-  # TODO check if analyses has spectra to use that instead
-
-  xicList <- lapply(analyses, function(x, targets, object) {
-
-    rtr <- c(min(targets$rtmin) * 0.7, max(targets$rtmax) * 1.3)
-    if (rtr[1] == 0 & rtr[2] == 0) rtr <- NULL
-
-    fl <- files(object)[x]
-
-    xic <- loadRawDataMZR(fl, level = 1, chroms = FALSE, rtr = rtr)
-    xic <- xic$spectra
-
-    xics <- list()
-
-    for (i in seq_len(nrow(targets))) {
-      xic_temp <- copy(xic[
-        rt >= targets$rtmin[i] &
-        rt <= targets$rtmax[i] &
-        mz >= targets$mzmin[i] &
-        mz <= targets$mzmax[i],
-      ])
-      xic_temp[, `:=`(id = targets$id[i], mz_id = targets$mz[i], rt_id = targets$rt[i])]
-      xics[[targets$id[i]]] <- xic_temp
-      rm(xic_temp)
-    }
-
-    xics <- rbindlist(xics)
-    xics[, `:=`(analysis = x, replicate = replicates(object)[x])]
-
-    return(xics)
-  }, targets = targets, object = object)
-
-  xics <- rbindlist(xicList)
-  xics[, .(analysis, replicate, id, mz_id, rt_id, mz, rt, intensity)]
-
-  # TODO implemented alignment correction for XICs
-  # if (hasAdjustedRetentionTime(object)) {
-  #
-  #   spls <- unique(xics$sample)
-  #
-  #   for (i in spls) {
-  #     xics[sample == i, rt := sapply(rt, function(x, object, i) {
-  #       object@scans[[i]][retentionTime == x, adjustedRetentionTime]
-  #     }, object = object, i = i)]
-  #   }
-  #
-  # }
-
-  return(copy(xics))
-}
-
 
 #' @title extractMSn
 #'
@@ -576,7 +436,7 @@ extractMSn <- function(
 
   settings$asPatRoon <- FALSE
 
-  fls <- files(object)
+  fls <- filePaths(object)
 
   targets <- makeTargets(mz, rt, ppm, sec, id)
 

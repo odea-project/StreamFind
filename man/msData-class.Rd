@@ -8,18 +8,18 @@
 \alias{analysisInfo,msData,msData-method}
 \alias{analysisTable,msData-method}
 \alias{analysisTable,msData,msData-method}
-\alias{files,msData-method}
-\alias{files,msData,msData-method}
-\alias{analyses,msData-method}
-\alias{analyses,msData,msData-method}
-\alias{replicates,msData-method}
-\alias{replicates,msData,msData-method}
-\alias{replicates<-,msData-method}
-\alias{replicates<-,msData,msData-method}
-\alias{blanks,msData-method}
-\alias{blanks,msData,msData-method}
-\alias{blanks<-,msData-method}
-\alias{blanks<-,msData,msData-method}
+\alias{filePaths,msData-method}
+\alias{filePaths,msData,msData-method}
+\alias{analysisNames,msData-method}
+\alias{analysisNames,msData,msData-method}
+\alias{replicateNames,msData-method}
+\alias{replicateNames,msData,msData-method}
+\alias{replicateNames<-,msData-method}
+\alias{replicateNames<-,msData,msData-method}
+\alias{blankReplicateNames,msData-method}
+\alias{blankReplicateNames,msData,msData-method}
+\alias{blankReplicateNames<-,msData-method}
+\alias{blankReplicateNames<-,msData,msData-method}
 \alias{metadata,msData-method}
 \alias{metadata,msData,msData-method}
 \alias{addMetadata,msData-method}
@@ -49,6 +49,10 @@
 \alias{plotMS2s,msData,msData-method}
 \alias{loadRawData,msData-method}
 \alias{loadRawData,msData,msData-method}
+\alias{hasLoadedSpectra,msData-method}
+\alias{hasLoadedSpectra,msData,msData-method}
+\alias{hasLoadedChromatograms,msData-method}
+\alias{hasLoadedChromatograms,msData,msData-method}
 \alias{spectra,msData-method}
 \alias{spectra,msData,msData-method}
 \alias{hasAdjustedRetentionTime,msData-method}
@@ -58,6 +62,8 @@
 \alias{getParameters,msData-method}
 \alias{as.features,msData-method}
 \alias{as.features,msData,msData-method}
+\alias{hasPeaks,msData-method}
+\alias{hasPeaks,msData,msData-method}
 \alias{peaks,msData-method}
 \alias{peaks,msData,msData-method}
 \alias{plotPeaks,msData-method}
@@ -84,23 +90,23 @@
 
 \S4method{analysisTable}{msData}(object)
 
-\S4method{files}{msData}(object)
+\S4method{filePaths}{msData}(object)
 
-\S4method{analyses}{msData}(obj)
+\S4method{analysisNames}{msData}(object)
 
-\S4method{replicates}{msData}(object)
+\S4method{replicateNames}{msData}(object)
 
-\S4method{replicates}{msData}(object) <- value
+\S4method{replicateNames}{msData}(object) <- value
 
-\S4method{blanks}{msData}(object)
+\S4method{blankReplicateNames}{msData}(object)
 
-\S4method{blanks}{msData}(object) <- value
+\S4method{blankReplicateNames}{msData}(object) <- value
 
 \S4method{metadata}{msData}(x, analyses = NULL, which = NULL)
 
 \S4method{addMetadata}{msData}(object, metadata = NULL, overwrite = FALSE)
 
-\S4method{addAnalyses}{msData}(object, analyses = NULL)
+\S4method{addAnalyses}{msData}(object, analysisList = NULL)
 
 \S4method{getAnalyses}{msData}(object, analyses = NULL)
 
@@ -122,8 +128,8 @@
   object,
   analyses = NULL,
   mz = NULL,
-  rt = NULL,
   ppm = 20,
+  rt = NULL,
   sec = 30,
   id = NULL,
   colorBy = "targets",
@@ -194,7 +200,11 @@
   interactive = FALSE
 )
 
-\S4method{loadRawData}{msData}(object, analyses = NULL)
+\S4method{loadRawData}{msData}(object, analyses = NULL, minIntensityMS1 = 0, minIntensityMS2 = 0)
+
+\S4method{hasLoadedSpectra}{msData}(object)
+
+\S4method{hasLoadedChromatograms}{msData}(object)
 
 \S4method{spectra}{msData}(object)
 
@@ -205,6 +215,8 @@
 \S4method{getParameters}{msData}(object, where = "analyses", analyses = NULL, call = NULL)
 
 \S4method{as.features}{msData}(object)
+
+\S4method{hasPeaks}{msData}(object)
 
 \S4method{peaks}{msData}(
   object,
@@ -319,6 +331,8 @@ When \code{NULL}, all the analyses are used.}
 with metadata added as columns and with the number of row equal to
 the number of analyses in the \linkS4class{msData} object.}
 
+\item{analysisList}{A list of \linkS4class{msAnalysis} objects.}
+
 \item{i}{A character or numeric vector with the indice/s or name/s of
 the analysis to keep while sub-setting.}
 
@@ -368,6 +382,12 @@ the number of rows to grid the plots.}
 
 \item{settings}{A \linkS4class{settings} S4 class object with call for \code{extractMSn}.}
 
+\item{minIntensityMS1}{Numeric value on length one with the
+minimum intensity of MS1 level traces.}
+
+\item{minIntensityMS2}{Numeric value on length one with the
+minimum intensity of MS2 level traces.}
+
 \item{where}{A character vector defining where to get the \linkS4class{settings}.}
 
 \item{call}{The call name of the settings to retrieve.}
@@ -403,20 +423,20 @@ can be used as analysisInfo in \pkg{patRoon}.
 \item \code{analysisTable(msData)}: getter for analysis table as \link{data.table} with
 four columns: file, analysis, replicate and blank.
 
-\item \code{files(msData)}: getter for analysis file paths.
+\item \code{filePaths(msData)}: getter for analysis file paths.
 
-\item \code{analyses(msData)}: getter for analysis names.
+\item \code{analysisNames(msData)}: getter for analysis names.
 
-\item \code{replicates(msData)}: getter for replicate names.
+\item \code{replicateNames(msData)}: getter for replicate names.
 
-\item \code{replicates(msData) <- value}: setter for analysis replicate names.
+\item \code{replicateNames(msData) <- value}: setter for analysis replicate names.
 The \code{value} is a character vector with the same length as
 the number of analyses in the \code{object},
 containing analysis replicate name for each analysis.
 
-\item \code{blanks(msData)}: getter for blank names.
+\item \code{blankReplicateNames(msData)}: getter for blank names.
 
-\item \code{blanks(msData) <- value}: setter for associated blank replicate for each analyses.
+\item \code{blankReplicateNames(msData) <- value}: setter for associated blank replicate for each analyses.
 The \code{value} is a character vector with the same length as
 the number of analyses in the \code{object},
 containing the associated blank replicate name of each analysis.
@@ -426,7 +446,8 @@ Returns a \link[data.table]{date.table} with a row per analysis.
 
 \item \code{addMetadata(msData)}: setter for analyses metadata.
 
-\item \code{addAnalyses(msData)}: getter for analysis names.
+\item \code{addAnalyses(msData)}: adds \linkS4class{msAnalysis} objects to the existing
+\linkS4class{msData}.
 
 \item \code{getAnalyses(msData)}: getter for analysis names.
 
@@ -505,6 +526,10 @@ each target, sample, replicate or collision energy, respectively.
 
 \item \code{loadRawData(msData)}: adds processing parameters to the analysis.
 
+\item \code{hasLoadedSpectra(msData)}: check if the analyses in \linkS4class{msData} have loaded raw spectra.
+
+\item \code{hasLoadedChromatograms(msData)}: check if the analyses in \linkS4class{msData} have loaded raw chromatograms.
+
 \item \code{spectra(msData)}: getter for slot spectra in analyses of an \linkS4class{msData} object.
 
 \item \code{hasAdjustedRetentionTime(msData)}: getter for presence of adjusted retention time
@@ -518,6 +543,8 @@ by the argument \code{where}. So where can be either "analyses" or "features".
 
 \item \code{as.features(msData)}: converts the \linkS4class{msData}
 to a \linkS4class{features} object from the package \pkg{patRoon}.
+
+\item \code{hasPeaks(msData)}: check if the analyses in \linkS4class{msData} have peaks.
 
 \item \code{peaks(msData)}: getter for chromatographic peaks.
 The arguments \code{targetID} and \code{mz}/\code{rt} can be used

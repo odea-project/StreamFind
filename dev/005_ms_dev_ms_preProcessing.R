@@ -10,6 +10,48 @@ files2 <- list.files(dir2, full.names = TRUE)
 fl <- files1[1:3]
 files <- fl
 
+
+### RaMS ---------------------
+
+library(RaMS)
+
+fl <- choose.files()
+
+fl <- c(
+  "C:\\Users\\Ricardo\\Documents\\R_DemoProject\\msfiles\\09_Sample_Sciex_MRM_Chromatograms_Nitrosamines_10ngml.mzML",
+  "C:\\Users\\Ricardo\\Documents\\R_DemoProject\\msfiles\\10_Sample_Sciex_MRM_Spectra_Nitrosamines_10ngml.mzML"
+)
+
+test <- xml2::as_list(xml2::read_xml(fl[1]))
+xml2::xml_structure(test, indent = 1)
+
+
+test$indexedmzML$mzML$run$chromatogramList[[3]]$binaryDataArrayList
+
+test <- grabMSdata(file = fl[1], grab_what = "TIC")
+
+msdata <- grabMSdata(files = fl[2], grab_what = "MS1") #rtrange = c(1100/60, 1200/60)
+
+data_nodes <- xml2::xml_find_all(files[1])
+
+
+
+targets4
+
+
+
+files
+
+
+
+test <- mzR::openMSfile(fl[1])
+
+test_chrom <- chromatogramHeader(test)
+test_chrom <- chromatograms(test)
+
+test <- mzR::close(test)
+
+
 ### Classes Hierarchy ---------------------------------------------------------------------------------------
 
 test <- new("msAnalysis", file = fl[1])
@@ -29,6 +71,9 @@ analyses(test1)
 test2 <- new("msmsData", test1)
 
 is(test1)
+
+
+
 
 
 

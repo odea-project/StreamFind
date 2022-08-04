@@ -4,14 +4,14 @@
 \alias{plotPeaksInteractive}
 \title{plotPeaksInteractive}
 \usage{
-plotPeaksInteractive(eic, pks, title, colorBy)
+plotPeaksInteractive(eic, peaks, title, colorBy)
 }
 \arguments{
 \item{eic}{A data table with the analysis, replicate,
 id, rt, intensity and var (i.e., the plotting variables for each peak)
 as columns.}
 
-\item{pks}{A data table with the individual peaks to plot.}
+\item{peaks}{A data table with the individual peaks to plot.}
 
 \item{title}{An optional character vector to be used as title.}
 

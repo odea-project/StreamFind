@@ -1,15 +1,15 @@
 Package: streamFind
 Title: Flexible data analysis and workflow designer to identify chemicals
     in the water cycle
-Version: 0.0.1
-Authors@R: 
-    person("Ricardo", "Cunha", , "cunha@iuta.de", role = c("cre", "aut"))
+Version: 0.1.1
+Authors@R: person("Ricardo", "Cunha", email="cunha@iuta.de", role=c("cre", "aut"),
+    comment = c(ORCID = "0000-0002-6791-0119"))
 Description: The streamFind package consists of a backend and frontend
     platform for assembly of modular functionalities to support
     spectrometric and spectroscopic data processing for environmental and
-    quality studies of the water cycle.  The streamFind package is a data
+    quality studies of the water cycle. The streamFind package is a data
     processing workflow designer to stimulate the use of advanced data
-    analysis (e.g., non-target screening, statistical analysis, etc.)  in
+    analysis (e.g., non-target screening, statistical analysis, etc.) in
     routine studies, promoting standardization of data processing and
     easing the retrospective inclusion of data. With an open-source
     character, the streamFind package aims to enhance the use and faster
@@ -42,7 +42,8 @@ Imports:
     stringr,
     tools,
     utils,
-    xcms
+    xcms,
+    Rcpp (>= 1.0.8)
 Suggests: 
     knitr,
     rmarkdown,
@@ -57,3 +58,4 @@ Encoding: UTF-8
 Language: en-US
 LazyData: false
 RoxygenNote: 7.2.1
+LinkingTo: Rcpp

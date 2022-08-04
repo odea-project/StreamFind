@@ -17,7 +17,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Ricardo Cunha \email{cunha@iuta.de}
+\strong{Maintainer}: Ricardo Cunha \email{cunha@iuta.de} (\href{https://orcid.org/0000-0002-6791-0119}{ORCID})
 
 }
 \keyword{internal}

@@ -11,35 +11,42 @@ setGeneric("setInfo", function(object, ...) standardGeneric("setInfo"))
 #' @noRd
 setGeneric("analysisTable", function(object) standardGeneric("analysisTable"))
 
-#' files
+#' filePaths
 #'
 #' @noRd
-setGeneric("files", function(object) standardGeneric("files"))
+setGeneric("filePaths", function(object) standardGeneric("filePaths"))
 
-#' replicates
+#' analysisNames
 #'
 #' @noRd
-setGeneric("replicates", function(object) standardGeneric("replicates"))
+setGeneric("analysisNames", function(object) standardGeneric("analysisNames"))
 
-#' replicates<-
+#' replicateNames
 #'
 #' @noRd
-setGeneric("replicates<-", function(object, value) standardGeneric("replicates<-"))
+setGeneric("replicateNames", function(object) standardGeneric("replicateNames"))
 
-#' blanks
+#' replicateNames<-
 #'
 #' @noRd
-setGeneric("blanks", function(object) standardGeneric("blanks"))
+setGeneric("replicateNames<-", function(object, value) standardGeneric("replicateNames<-"))
 
-#' blanks<-
+#' blankReplicateNames
 #'
 #' @noRd
-setGeneric("blanks<-", function(object, value) standardGeneric("blanks<-"))
+setGeneric("blankReplicateNames", function(object) standardGeneric("blankReplicateNames"))
+
+#' blankReplicateNames<-
+#'
+#' @noRd
+setGeneric("blankReplicateNames<-", function(object, value) standardGeneric("blankReplicateNames<-"))
 
 #' polarities
 #'
 #' @noRd
 setGeneric("polarities", function(object, ...) standardGeneric("polarities"))
+
+# TODO remove setter for polarities as it should be as in the file
 
 #' polarities<-
 #'
@@ -65,6 +72,16 @@ setGeneric("addMetadata", function(object, ...) standardGeneric("addMetadata"))
 #'
 #' @noRd
 setGeneric("loadRawData", function(object, ...) standardGeneric("loadRawData"))
+
+#' hasLoadedSpectra
+#'
+#' @noRd
+setGeneric("hasLoadedSpectra", function(object, ...) standardGeneric("hasLoadedSpectra"))
+
+#' hasLoadedChromatograms
+#'
+#' @noRd
+setGeneric("hasLoadedChromatograms", function(object, ...) standardGeneric("hasLoadedChromatograms"))
 
 #' EICs
 #'
@@ -105,6 +122,11 @@ setGeneric("MS2s", function(object, ...) standardGeneric("MS2s"))
 #'
 #' @noRd
 setGeneric("plotMS2s", function(object, ...) standardGeneric("plotMS2s"))
+
+#' hasPeaks
+#'
+#' @noRd
+setGeneric("hasPeaks", function(object, ...) standardGeneric("hasPeaks"))
 
 #' peaks
 #'
@@ -184,7 +206,7 @@ setGeneric("as.featureGroups", function(object, ...) standardGeneric("as.feature
 NULL
 
 #### patRoon -------------------------------------------------------------
-#' @importMethodsFrom patRoon analysisInfo analyses
+#' @importMethodsFrom patRoon analysisInfo
 #' @export
 #' @noRd
 NULL

@@ -282,7 +282,7 @@ minReplicateAbundanceFeatures <- function(obj, value = 3) {
   feats_org <- copy(obj@metadata)
 
   rpl <- replicates(obj)
-  ana <- analyses(obj)
+  ana <- analysisNames(obj)
   names(rpl) <- ana
 
   check <- feats_org$id

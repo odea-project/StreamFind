@@ -10,18 +10,21 @@
 #' @param makeNewProject Logical, set to \code{TRUE} to create an R project
 #' in the given \code{path} and open a new R session.
 #'
-#' @note The format of the files added will dictate the subclass of the \linkS4class{streamSet}.
-#' For instance, \emph{.mzML} or \emph{.mzXML} files will lead to the subclass
-#' \linkS4class{msData}, which will contain an \linkS4class{msAnalysis} for each file.
+#' @note The format of the files added will dictate the subclass of
+#' the \linkS4class{streamSet}. For instance, \emph{.mzML} or \emph{.mzXML}
+#' files will lead to the subclass \linkS4class{msData}, which will contain
+#' an \linkS4class{msAnalysis} for each file added.
 #'
 #' @return A \linkS4class{streamSet} with a subclass depending on the added
 #' file formats. For instance, an \linkS4class{msData} is returned for
 #' \emph{mzML} and \emph{mzXML} files. when files from different types are mixed
-#' a subclass is not defined, returning the \linkS4class{streamSet} object with a list of files.
+#' a subclass is not defined, returning the \linkS4class{streamSet} object
+#' with the list of file paths in the \code{analyses} slot.
 #'
 #' @export
 #'
 #' @importFrom data.table data.table is.data.table
+#' @importFrom BiocParallel bplapply SerialParam SnowParam
 #'
 newStreamSet <- function(files = NA_character_,
                          path = getwd(),
@@ -31,22 +34,15 @@ newStreamSet <- function(files = NA_character_,
                          blanks = NULL,
                          makeNewProject = FALSE) {
 
-  if (TRUE %in% is.na(files)) {
-    return(warning("At least one file should be added to create a stream project!"))
-  }
-
-  proj <- new("streamSet")
-  proj@title <- title
-  proj@date <- date
-  proj@path <- path
-
   if (is.data.frame(files) | is.data.table(files)) {
 
-    #check if path and analysis are given instead of file name
-    if ("path" %in% colnames(files) & !"file" %in% colnames(files) & "analysis" %in% colnames(files)) {
+    #add file column, for enabling the use of analysisInfo from patRoon
+    if ("path" %in% colnames(files) &
+                  !"file" %in% colnames(files) &
+                            "analysis" %in% colnames(files)) {
 
       f_path_files <- apply(files, 1, function(x) {
-          list.files(path = x["path"], pattern = x["analysis"], full.names = TRUE)
+        list.files(path = x["path"], pattern = x["analysis"], full.names = TRUE)
       })
 
       if (length(f_path_files) > nrow(files)) {
@@ -75,66 +71,88 @@ newStreamSet <- function(files = NA_character_,
     files <- files$file
   }
 
-  if (is.null(replicates)) {
+  files <- files[file.exists(files)]
+
+  fFormats <- ".mzML|.mzXML"
+
+  files <- files[grepl(fFormats, files)]
+
+  if (length(files) < 1) {
+
+    # TODO suggest to convert files
+    # if (TRUE %in% grepl(tools::file_ext(f), compatibleFileFormatsForConversion()$format)) {
+    #   warning("MS vendor file found! Use the function convertFiles
+    #           for conversion to mzML/mzXML. See ?convertFiles for more information.")
+    # }
+
+    warning("At least one valid file paths should be added
+            to create a stream project!")
+
+    return(new("streamSet"))
+  }
+
+  object <- new("streamSet")
+  object@title <- title
+  object@date <- date
+  object@path <- path
+
+  if (is.null(replicates) |
+                  length(replicates) != length(files) |
+                                          is.character(replicates)) {
+
     replicates <- rep(NA_character_, length(files))
     names(replicates) <- files
   }
 
-  if (is.null(blanks)) {
+  if (is.null(blanks) |
+                length(blanks) != length(files) |
+                                              is.character(blanks)) {
+
     blanks <- rep(NA_character_, length(files))
     names(blanks) <- files
   }
 
-  analyses <- list()
 
-  cat("Loading analysis files... \n")
-  pb <- txtProgressBar(
-    min = 0,
-    max = length(files),
-    style = 3,
-    width = 50,
-    char = "+"
-  )
+  if (all(grepl(".mzML|.mzXML", files))) {
 
-  for (f in files) {
+    # TODO check if number of files and workers are high enough to add parallel processing
 
-    if (grepl("mzML", f) | grepl("mzXML", f)) {
-      analyses[[gsub(".mzML|.mzXML", "", basename(f))]] <- new("msAnalysis", file = f, replicate = unname(replicates[f]), blank = unname(blanks[f]))
+    cat("Loading analysis files... \n")
+
+    analyses <- BiocParallel::bplapply(files, function(x, replicates, blanks) {
+      rpl <- unname(replicates[x])
+      blk <- unname(blanks[x])
+
+      ana <- new("msAnalysis", file = x, replicate = rpl, blank = blk)
+    },
+    BPPARAM = SerialParam(progressbar = TRUE),
+    replicates = replicates,
+    blanks = blanks)
+
+    names(analyses) <- sapply(analyses, FUN = function(x) analysisNames(x))
+
+    analyses <- analyses[sort(names(analyses), decreasing = FALSE)]
+
+    ana_type <- sapply(analyses, function(x) is(x))
+
+    if (all(ana_type %in% "msAnalysis")) {
+
+      object <- new("msData", object)
+      object@analyses <- analyses
+
+    } else {
+      object@analyses <- files
+      warning("More than one file type was added!
+              Not possible to assign a set sub-class.")
     }
 
-    # TODO check for raw format of MS files for asking for conversion
-
-    if (TRUE %in% grepl(tools::file_ext(f), compatibleFileFormatsForConversion()$format)) {
-      warning("MS vendor file found! Use the function convertFiles
-              for conversion to mzML/mzXML. See ?convertFiles for more information.")
-    }
-
-    # TODO implement further file types check-ups, such as for ramanAnalysis or uvAnalysis
-
-    setTxtProgressBar(pb, which(f == files))
-  }
-
-  cat(" Done! \n")
-  close(pb)
-
-  proj@analyses <- analyses
-
-  #check if a single sample type was found
-  an_type <- unique(sapply(analyses, function(x) is(x)))
-  if (length(an_type) > 1) {
-    proj@analyses <- files
-    warning("More than one file type was added! Not possible to assign a set sub-class.")
-    return(proj)
-  }
-
-  if ("msAnalysis" %in% an_type) {
-    object <- new("msData", proj)
-    object@analyses <- object@analyses[sort(names(object@analyses), decreasing = FALSE)]
+  # TODO add other else if conditions for other file types
 
   } else {
-    proj@analyses <- files
-    warning("File type was not recognized! Not possible to assign a set sub-class.")
-    return(proj)
+
+    object@analyses <- files
+    warning("More than one file type was added!
+            Not possible to assign a set sub-class.")
   }
 
   return(object)

@@ -9,6 +9,10 @@
 \alias{setInfo,streamSet,streamSet-method}
 \alias{path,streamSet-method}
 \alias{path,streamSet,streamSet-method}
+\alias{analysisNames,streamSet-method}
+\alias{analysisNames,streamSet,streamSet-method}
+\alias{addAnalyses,streamSet-method}
+\alias{addAnalyses,streamSet,streamSet-method}
 \title{streamSet}
 \usage{
 \S4method{show}{streamSet}(object)
@@ -18,6 +22,10 @@
 \S4method{setInfo}{streamSet}(object, title = NULL, date = NULL)
 
 \S4method{path}{streamSet}(object)
+
+\S4method{analysisNames}{streamSet}(object)
+
+\S4method{addAnalyses}{streamSet}(object, analysisList = NULL)
 }
 \arguments{
 \item{object}{An \linkS4class{streamSet} object.}
@@ -27,6 +35,8 @@
 \item{title}{A character string to be used as set title.}
 
 \item{date}{The \link{Date} of the set.}
+
+\item{analysisList}{A list of named analyses paths as character string.}
 }
 \description{
 An S4 class object containing the set title, date,
@@ -45,6 +55,10 @@ If arguments are given, the set title and date are updated
 based on the specified arguments, returning the original class object.
 
 \item \code{path(streamSet)}: getter for set path.
+
+\item \code{analysisNames(streamSet)}: getter for the analysis names.
+
+\item \code{addAnalyses(streamSet)}: getter for analysis names.
 
 }}
 \section{Slots}{

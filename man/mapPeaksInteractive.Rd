@@ -4,10 +4,10 @@
 \alias{mapPeaksInteractive}
 \title{mapPeaksInteractive}
 \usage{
-mapPeaksInteractive(pks, xlim = 60, ylim = 5, title, colorBy = "targets")
+mapPeaksInteractive(peaks, xlim = 60, ylim = 5, title, colorBy = "targets")
 }
 \arguments{
-\item{pks}{A data table with the individual peak details to plot.}
+\item{peaks}{A data table with the individual peak details to plot.}
 
 \item{xlim}{A length one or two numeric vector for setting the \emph{x} limits (in seconds) of the plot.}
 

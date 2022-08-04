@@ -7,12 +7,12 @@
 #' @param eic A data table with the analysis, replicate,
 #' id, rt, intensity and var (i.e., the plotting variables for each peak)
 #' as columns.
-#' @param pks A data table with the individual peaks to plot.
+#' @param peaks A data table with the individual peaks to plot.
 #' @param title An optional character vector to be used as title.
 #'
 #' @return A plot of chromatographic peaks.
 #'
-plotPeaksStatic <- function(eic, pks, title = NULL) {
+plotPeaksStatic <- function(eic, peaks, title = NULL) {
 
   cl <- getColors(unique(eic$var))
   ids <- unique(eic$id)
@@ -29,16 +29,8 @@ plotPeaksStatic <- function(eic, pks, title = NULL) {
   for (t in ids) {
     lt <- unique(eic[id == t, var])
     pk_eic <- eic[id == t, ]
-    pk_a <- pks[pks$id == t, ]
+    pk_a <- peaks[peaks$id == t, ]
     pk_eic_a <- pk_eic[rt >= pk_a$rtmin & rt <= pk_a$rtmax & id == t, ]
-    lines(
-      x = pk_eic$rt,
-      y = pk_eic$intensity,
-      type = "l",
-      pch = 19,
-      cex = 0.5,
-      col = cl[lt]
-    )
     points(
       x = pk_eic$rt,
       y = pk_eic$intensity,
@@ -88,7 +80,7 @@ plotPeaksStatic <- function(eic, pks, title = NULL) {
 #' @param eic A data table with the analysis, replicate,
 #' id, rt, intensity and var (i.e., the plotting variables for each peak)
 #' as columns.
-#' @param pks A data table with the individual peaks to plot.
+#' @param peaks A data table with the individual peaks to plot.
 #' @param title An optional character vector to be used as title.
 #' @param colorBy Possible values are \code{"targets"} (the default),
 #' \code{"analyses"} or \code{replicates},
@@ -98,7 +90,7 @@ plotPeaksStatic <- function(eic, pks, title = NULL) {
 #'
 #' @importFrom plotly toRGB plot_ly add_trace layout add_segments
 #'
-plotPeaksInteractive <- function(eic, pks, title, colorBy) {
+plotPeaksInteractive <- function(eic, peaks, title, colorBy) {
 
   leg <- unique(eic$var)
   cl <- getColors(leg)
@@ -125,8 +117,7 @@ plotPeaksInteractive <- function(eic, pks, title, colorBy) {
     plot <- plot %>% add_trace(
       x = eic[id == t, rt],
       y = y,
-      type = "scatter", mode = "lines+markers",
-      line = list(width = 0.5, color = unname(cl[lt])),
+      type = "scatter", mode = "markers",
       marker = list(size = 2, color = unname(cl[lt])),
       name = lt,
       legendgroup = lt,
@@ -135,7 +126,7 @@ plotPeaksInteractive <- function(eic, pks, title, colorBy) {
     )
     if (length(y) >= 1) showL[lt] <- FALSE
 
-    pk <- pks[pks$id == t, ]
+    pk <- peaks[peaks$id == t, ]
     pk_eic <- eic[rt >= pk$rtmin & rt <= pk$rtmax & id == t, ]
 
     hT <- paste(
@@ -160,7 +151,8 @@ plotPeaksInteractive <- function(eic, pks, title, colorBy) {
     plot <- plot %>%  add_trace(
       x = pk_eic$rt,
       y = pk_eic$intensity,
-      type = "scatter", mode =  "markers",
+      type = "scatter", mode =  "lines+markers",
+      line = list(width = 0.5, color = unname(cl[lt])),
       fill = "tozeroy", connectgaps = TRUE,
       fillcolor = paste(color = unname(cl[lt]), 50, sep = ""),
       marker = list(size = 3, color = unname(cl[lt])),
@@ -199,7 +191,7 @@ plotPeaksInteractive <- function(eic, pks, title, colorBy) {
 #'
 #' @description Function for plotting peak spaces.
 #'
-#' @param pks A data table with the individual peak details to plot.
+#' @param peaks A data table with the individual peak details to plot.
 #' @param xlim A length one or two numeric vector for setting the \emph{x} limits (in seconds) of the plot.
 #' @param ylim A length one or two numeric vector for setting the \emph{m/z} limits of the plot.
 #' @param title An optional character vector to be used as title.
@@ -211,44 +203,44 @@ plotPeaksInteractive <- function(eic, pks, title, colorBy) {
 #'
 #' @importFrom plotly toRGB plot_ly add_trace layout
 #'
-mapPeaksInteractive <- function(pks, xlim = 60, ylim = 5, title, colorBy = "targets") {
+mapPeaksInteractive <- function(peaks, xlim = 60, ylim = 5, title, colorBy = "targets") {
 
   if (length(xlim) == 1) {
-    rtr <- c(min(pks$rtmin) - xlim, max(pks$rtmax) + xlim)
+    rtr <- c(min(peaks$rtmin) - xlim, max(peaks$rtmax) + xlim)
   } else if (length(xlim) == 2) {
     rtr <- xlim
   } else {
-    rtr <- c(min(pks$rtmin), max(pks$rtmax))
+    rtr <- c(min(peaks$rtmin), max(peaks$rtmax))
   }
 
   if (length(ylim) == 1) {
-    mzr <- c(min(pks$mzmin) - ylim, max(pks$mzmax) + ylim)
+    mzr <- c(min(peaks$mzmin) - ylim, max(peaks$mzmax) + ylim)
   } else if (length(ylim) == 2) {
     mzr <- ylim
   } else {
-    mzr <- c(min(pks$mzmin), max(pks$mzmax))
+    mzr <- c(min(peaks$mzmin), max(peaks$mzmax))
   }
 
-  cl <- getColors(unique(pks$var))
+  cl <- getColors(unique(peaks$var))
 
   plot <- plot_ly()
 
   plot <- plot %>% add_trace(
-    x = pks$rt, y = pks$mz, color = pks$var,
+    x = peaks$rt, y = peaks$mz, color = peaks$var,
     type = "scatter", mode = "markers", colors = cl,
     marker = list(size = 8),
     hoverinfo = "text",
     text = paste(
-      "</br> peak: ", pks$id,
-      "</br> analysis: ", pks$analysis,
-      "</br> <i>m/z</i>: ", round(pks$mz, digits = 4),
-      "</br> dppm: ", round(((pks$mzmax - pks$mzmin) / pks$mz) * 1E6, digits = 0),
-      "</br> rt: ", round(pks$rt, digits = 0),
-      "</br> drt: ", round(pks$rtmax - pks$rtmin, digits = 0),
-      "</br> Int: ", round(pks$intensity, digits = 0),
+      "</br> peak: ", peaks$id,
+      "</br> analysis: ", peaks$analysis,
+      "</br> <i>m/z</i>: ", round(peaks$mz, digits = 4),
+      "</br> dppm: ", round(((peaks$mzmax - peaks$mzmin) / peaks$mz) * 1E6, digits = 0),
+      "</br> rt: ", round(peaks$rt, digits = 0),
+      "</br> drt: ", round(peaks$rtmax - peaks$rtmin, digits = 0),
+      "</br> Int: ", round(peaks$intensity, digits = 0),
       "</br> Filled: ",
-      if ("is_filled" %in% colnames(pks)) {
-        ifelse(pks$is_filled == 1, TRUE, FALSE)
+      if ("is_filled" %in% colnames(peaks)) {
+        ifelse(peaks$is_filled == 1, TRUE, FALSE)
       } else {
         FALSE
       }
@@ -257,17 +249,17 @@ mapPeaksInteractive <- function(pks, xlim = 60, ylim = 5, title, colorBy = "targ
 
   shapes <- list()
 
-  for (i in seq_len(nrow(pks))) {
+  for (i in seq_len(nrow(peaks))) {
     shapes[[i]] <- list(
       type = "rect",
-      fillcolor = cl[names(cl) %in% pks$var[i]],
+      fillcolor = cl[names(cl) %in% peaks$var[i]],
       opacity = 0.2,
-      line = list(color = cl[names(cl) %in% pks$var[i]]),
-      x0 = pks$rtmin[i],
-      x1 = pks$rtmax[i],
+      line = list(color = cl[names(cl) %in% peaks$var[i]]),
+      x0 = peaks$rtmin[i],
+      x1 = peaks$rtmax[i],
       xref = "x",
-      y0 = pks$mzmin[i],
-      y1 = pks$mzmax[i],
+      y0 = peaks$mzmin[i],
+      y1 = peaks$mzmax[i],
       yref = "y"
     )
   }

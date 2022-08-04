@@ -15,13 +15,13 @@ newStreamSet(
 )
 }
 \arguments{
-\item{files}{A character vector with the full path of files to create the analyses set.
-Alternatively, a \link{data.frame} or \link[data.table]{data.table} with the columns
-file, replicate and blank corresponding to the file full path, analysis replicate names and
-respective blank analysis replicate name. When a table is given with replicates and blanks,
-the arguments \emph{replicates} and  \emph{blanks} are ignored.
-For files, only formats \emph{mzML} and \emph{mzXML} are currently supported.
-Note that certain processing algorithms have file format limitations.}
+\item{files}{A character vector with the full path of files to create
+the analyses set. Alternatively, a \link{data.frame} or
+\link[data.table]{data.table} with the columns file, replicate and blank
+corresponding to the file full path, analysis replicate names and
+respective blank analysis replicate name. When a table is given with
+replicates and blanks, the arguments \emph{replicates} and  \emph{blanks} are ignored.
+For files, only formats \emph{mzML} and \emph{mzXML} are currently supported.}
 
 \item{path}{A character string with the directory for the set creation.
 The default is the working directory as defined by \code{getwd()}.}
@@ -30,14 +30,15 @@ The default is the working directory as defined by \code{getwd()}.}
 
 \item{date}{A \code{Date} object to define set date.}
 
-\item{replicates}{Optional character vector with the same length as the number of files
-to be added with the name of the analysis replicate group for each file.
-The default is \code{NULL} which attempts  to group the analysis using
-the name of the files. The replicate names can always be edited using the class method.}
+\item{replicates}{Optional character vector (with the same length as the
+number of files to be added) defining the name of the analysis replicate
+group for each file. The default is \code{NULL} which attempts  to group
+the analysis using the name of the files. The replicate names can always
+be edited using the class method \link{replicateNames<-}.}
 
-\item{blanks}{Optional character vector with the same length as the number of files
-to be added with the name of the associate blank analysis replicate group for each file.
-The default is \code{NULL}.}
+\item{blanks}{Optional character vector (with the same length as the
+number of files to be added) with the name of the associate blank analysis
+replicate group for each file. The default is \code{NULL}.}
 
 \item{makeNewProject}{Logical, set to \code{TRUE} to create an R project
 in the given \code{path} and open a new R session.}
@@ -46,13 +47,15 @@ in the given \code{path} and open a new R session.}
 A \linkS4class{streamSet} with a subclass depending on the added
 file formats. For instance, an \linkS4class{msData} is returned for
 \emph{mzML} and \emph{mzXML} files. when files from different types are mixed
-a subclass is not defined, returning the \linkS4class{streamSet} object with a list of files.
+a subclass is not defined, returning the \linkS4class{streamSet} object
+with the list of file paths in the \code{analyses} slot.
 }
 \description{
 Creates a new \pkg{streamFind} set of analyses.
 }
 \note{
-The format of the files added will dictate the subclass of the \linkS4class{streamSet}.
-For instance, \emph{.mzML} or \emph{.mzXML} files will lead to the subclass
-\linkS4class{msData}, which will contain an \linkS4class{msAnalysis} for each file.
+The format of the files added will dictate the subclass of
+the \linkS4class{streamSet}. For instance, \emph{.mzML} or \emph{.mzXML}
+files will lead to the subclass \linkS4class{msData}, which will contain
+an \linkS4class{msAnalysis} for each file added.
 }

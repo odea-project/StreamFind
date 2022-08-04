@@ -4,14 +4,14 @@
 \alias{plotPeaksStatic}
 \title{plotPeaksStatic}
 \usage{
-plotPeaksStatic(eic, pks, title = NULL)
+plotPeaksStatic(eic, peaks, title = NULL)
 }
 \arguments{
 \item{eic}{A data table with the analysis, replicate,
 id, rt, intensity and var (i.e., the plotting variables for each peak)
 as columns.}
 
-\item{pks}{A data table with the individual peaks to plot.}
+\item{peaks}{A data table with the individual peaks to plot.}
 
 \item{title}{An optional character vector to be used as title.}
 }

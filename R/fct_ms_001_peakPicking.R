@@ -4,19 +4,22 @@
 #'
 #' @description Finds chromatographic peaks from MS data in an \linkS4class{msAnalysis}
 #' object or in MS analyses a given \linkS4class{msData} object.
-#' The peak picking uses the \pkg{patRoon} package for data processing.
+#' The peak picking uses the \pkg{patRoon} package for data processing, enabling the
+#' use of several algorithms (see details).
 #'
 #' @param object An \linkS4class{msData} or \linkS4class{msAnalysis} object.
 #' @template args-single-settings
 #'
-#' @details See \link[patRoon]{findFeatures} for more information.
-#' the following algorithms are available:
-#' "xcms3", "xcms", "openms", "envipick", "sirius", "kpic2", "safd".
-#' The parameters depend on the algorithm chosen.
-#' See ?\pkg{patRoon} for further information.
+#' @note The \linkS4class{settings} call must be set to peakPicking.
 #'
-#' @return An \linkS4class{msAnalysis}/\linkS4class{msData} object
-#' with peaks added.
+#' @details See the \pkg{patRoon}'s \link[patRoon]{findFeatures} function or the
+#' \href{https://rickhelmus.github.io/patRoon/reference/findFeatures.html}{reference guide}
+#' for more information. The following algorithms are available:
+#' "xcms3", "xcms", "openms", "envipick", "sirius", "kpic2", "safd".
+#' The \linkS4class{settings} depend on the algorithm chosen.
+#'
+#' @return An \linkS4class{msAnalysis} or \linkS4class{msData} object
+#' with peaks added to the respective slot.
 #'
 #' @seealso \link[patRoon]{findFeatures}
 #'
@@ -46,19 +49,20 @@ peakPicking <- function(object = NULL, settings = NULL) {
   if (is.null(settings)) {
 
     prs <- getParameters(object, call = "peakPicking")
-    prs[sapply(prs, is.null)] <- NULL #remove NULLs from search
+    prs[sapply(prs, is.null)] <- NULL
 
     if (length(unique(prs)) == 1 & length(prs) > 0) {
       prs <- unique(prs)
-      algorithm <- getAlgorithm(prs[[1]])#all equal or samples with NULL, takes from the first first
+      algorithm <- getAlgorithm(prs[[1]])
       params <- getSettings(prs[[1]])
 
     } else if (length(prs) > 0) {
+
       algorithm <- sapply(prs, function(x) getAlgorithm(x)) #different in samples
 
-      if (length(algorithm) != length(analyses(object))) {
+      if (length(algorithm) != length(analysisNames(object))) {
         warning(paste0("Settings not present for the analyses: ",
-          paste(analyses(object)[!analyses(object) %in% names(algorithm)], collapse = "; ")))
+          paste(analysisNames(object)[!analysisNames(object) %in% names(algorithm)], collapse = "; ")))
         return(object)
       }
     }
@@ -92,7 +96,6 @@ peakPicking <- function(object = NULL, settings = NULL) {
     stgs <- createSettings(call = "peakPicking", algorithm = algorithm, settings = params)
 
     object <- addParameters(object, stgs)
-
 
   } else {
 
@@ -221,7 +224,7 @@ buildPeaksTable <- function(object, pat) {
       } else { extra <- NULL }
     } else { extra <- NULL }
 
-    peaks <- lapply(analyses(object), function(x, extra, peaks) {
+    peaks <- lapply(analysisNames(object), function(x, extra, peaks) {
       temp <- peaks[[x]]
 
       if (!is.null(extra)) {
@@ -234,12 +237,12 @@ buildPeaksTable <- function(object, pat) {
       setnames(temp, "group", "feature", skip_absent = TRUE)
       return(temp)
     }, extra = extra, peaks = peaks)
-    names(peaks) <- analyses(object)
+    names(peaks) <- analysisNames(object)
 
     peaks_org <- lapply(object@analyses, function(x) x@peaks)
 
     # amending existing peaks as patRoon removes peaks not grouped (represented in features)
-    peaks <- lapply(analyses(object), function(x, peaks, peaks_org) {
+    peaks <- lapply(analysisNames(object), function(x, peaks, peaks_org) {
       temp <- copy(peaks[[x]])
       temp_org <- copy(peaks_org[[x]])
 
@@ -331,13 +334,13 @@ buildPeaksTable <- function(object, pat) {
     return(temp)
   })
 
-  names(peaks) <- analyses(object)
+  names(peaks) <- analysisNames(object)
 
   if (checkmate::testClass(object, "msAnalysis")) {
     object@peaks <- copy(peaks[[1]])
 
   } else {
-    object@analyses <- lapply(analyses(object), function(x, object, peaks) {
+    object@analyses <- lapply(analysisNames(object), function(x, object, peaks) {
       temp <- object@analyses[[x]]
       temp@peaks <- copy(peaks[[x]])
       return(temp)
@@ -347,7 +350,7 @@ buildPeaksTable <- function(object, pat) {
   # TODO implement multiple polarities to amend the peak id accordingly
   # pols <- polarities(object)
   # peaks$adduct <- NA_character_
-  # for (anl in analyses(object)) {
+  # for (anl in analysisNames(object)) {
   #   if ("positive" %in% pols[anl]) peaks[analysis %in% anl, adduct := "[M+H]+"]
   #   if ("negative" %in% pols[anl]) peaks[analysis %in% anl, adduct := "[M-H]-"]
   #

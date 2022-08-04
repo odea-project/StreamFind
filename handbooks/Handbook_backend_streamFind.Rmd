@@ -128,10 +128,11 @@ files <- list.files(r_path, pattern = ".mzML", full.names = TRUE)
 ```{r description-files, echo=FALSE}
 df_files_desc <- data.frame(
   N. = seq_len(length(files)),
+  file_type = rep("MS", 6 + 18),
   file_name = basename(files),
   device = c(rep("Agilent Q-TOF", 24)),
-  type = c(rep("centroided", 3), rep("profile", 3), rep("profile", 18)),
-  mode = c(rep("MS/MS", 24)),
+  data_type = c(rep("centroid", 3), rep("profile", 3), rep("centroid", 18)),
+  ac_mode = c(rep("MS/MS", 24)),
   polarity = c(rep("positive", 6),
                rep("negative", 3), rep("positive",3),
                rep("negative", 3), rep("positive",3),
@@ -146,8 +147,8 @@ df_files_desc <- data.frame(
 )
 
 knitr::kable(df_files_desc, caption = "Files included in the streamFind package.") %>%
-  column_spec(column = 2, width = "100px") %>%
-  column_spec(column = 3, width = "60px") %>%
+  column_spec(column = 3, width = "100px") %>%
+  column_spec(column = 4, width = "60px") %>%
   kable_styling(font_size = 11.5, bootstrap_options = c("striped", "hover", "responsive"), fixed_thead = TRUE) %>%
   scroll_box(width = "100%", height = "600px")
 ```
@@ -167,8 +168,10 @@ db[, `:=`("mz_pos" = neutralMass + 1.0073, "mz_neg" = neutralMass - 1.0073 )]
 db[grepl("neg", db$comment), ionization := "both"]
 data.table::setnames(db, "mixIUTA", "tag")
 db[tag %in% 1, tag := "CS"]
+db[, in_file := "1-6"]
+db[tag %in% "IS", in_file := "1-24"]
 
-knitr::kable(db[, .(name, CAS, formula, neutralMass, rt, ionization, tag)], caption = "Chemical standards spiked.") %>%
+knitr::kable(db[, .(name, CAS, formula, neutralMass, rt, ionization, tag, in_file)], caption = "Chemical standards spiked.") %>%
   kable_styling(font_size = 11, bootstrap_options = c("striped", "hover", "responsive"), fixed_thead = TRUE) %>%
   scroll_box(width = "100%", height = "600px")
 ```
@@ -265,7 +268,7 @@ As the method `getAnalysis` can be used to obtain an _msAnalysis_ from an _msDat
 aProfs <- lapply(files[4:6], function(x) newAnalysis(x))
 
 #adding the profile analyses to msData
-sp1 <- addAnalyses(sp1, analyses = aProfs)
+sp1 <- addAnalyses(sp1, analysisList = aProfs)
 
 #show added files in msData
 sp1
@@ -281,10 +284,10 @@ Below, the `getMetadata` S4 method of _msData_ is used to display the metadata. 
 
 ```{r metadata_structure}
 #metadata of the fourth analyses in the msData
-t(streamFind::metadata(sp1, analyses = 4))
+t(metadata(sp1, analyses = 4))
 
 #applied directly to the msAnalysis S4 class
-t(streamFind::metadata(a1))
+t(metadata(a1))
 ```
 
 #### Add metadata
@@ -314,7 +317,6 @@ metadata(a1, which = names(meta_vec))
 add metadata to an _msData_ object (sp1):
 
 ```{r}
-
 #as a named vector
 meta_1 <- c("water", TRUE, "centroid")
 names(meta_1) <- c("matrix", "spiked", "datatype")
@@ -325,7 +327,7 @@ names(meta_2) <- c("matrix", "spiked", "datatype")
 meta_vec_list <- c(rep(list(meta_1), 3), rep(list(meta_2), 3))
 
 #optional, but when numbered list the order is taken as is
-names(meta_vec_list) <- analyses(sp1)
+names(meta_vec_list) <- analysisNames(sp1)
 
 sp1 <- addMetadata(sp1, metadata = meta_vec_list)
 
@@ -333,7 +335,7 @@ metadata(sp1, which = names(meta_1))
 
 #as a data.frame (would also work with data.table)
 meta_df_2 <- data.frame(
-  analysis = analyses(sp1),
+  analysis = analysisNames(sp1),
   matrix = rep("water_as_df", 6),
   spiked = rep(TRUE, 6),
   datatype = c(rep("centroid", 3), rep("profile", 3))
@@ -356,19 +358,29 @@ The tools for raw data access and plotting (i.e., spectra and chromatograms) sha
 
 ## Defining targets
 
-As aforementioned, access to raw data is based on defining _m/z_ and retention time targets. The function `makeTargets` is used for comprehensively build targets. As shown below, multiple ways can be used to assemble targets but similarly returning a uniform `data.table` class object with a target list. Accessing and plotting S4 methods in streamFind use the `makeTargets` function to collect raw data from the analysis files. Therefore, the arguments `mz`, `rt`, `ppm`, `sec` and `id` are present in most S4 methods for accessing and plotting data as demonstrated in the following sections.
+As aforementioned, access to raw data is based on defining _m/z_ and retention time targets. The function `makeTargets` is used for comprehensively build targets. As shown below for Carbamazepin d10 and Diuron d6, multiple ways can be used to assemble targets but similarly returning a uniform `data.table` class object with a target list. Accessing and plotting S4 methods in streamFind use the `makeTargets` function to collect raw data from the analysis files. Therefore, the arguments `mz`, `rt`, `ppm`, `sec` and `id` are present in most S4 methods for accessing and plotting data as demonstrated in the following sections.
+
+```{r carb-diu}
+carb <- db[name %in% "Carbamazepin d10", .(name, neutralMass, rt)]
+carb$mz <- carb$neutralMass + 1.0073
+carb
+
+diu <- db[name %in% "Diuron d6", .(name, neutralMass, rt)]
+diu$mz <- diu$neutralMass + 1.0073
+diu
+```
 
 ```{r make_targets}
 #case 1
-mz1 <- c(247.1651, 239.0628)
+mz1 <- c(247.1650, 239.0620)
 rt1 <- c(1075, 1157)
 id1 <- c("target1", "target2")
-targets1 <- makeTargets(mz = mz1, rt = rt1, ppm = 20, sec = 60, id = id1)
+targets1 <- makeTargets(mz = mz1, rt = rt1, ppm = 20, sec = 30, id = id1)
 
 targets1
 
 #case 2
-mz2 <- data.frame(mzmin = c(247.1626, 239.0604), mzmax = c(247.1676, 239.0652))
+mz2 <- data.frame(mzmin = c(247.1601, 239.0572), mzmax = c(247.1699, 239.0668))
 rt2 <- data.frame(rtmin = c(1045, 1127), rtmax = c(1105, 1187))
 targets2 <- makeTargets(mz = mz2, rt = rt2)
 
@@ -377,17 +389,17 @@ targets2
 #case 3
 mz3 <- data.frame(
   id = c("target1", "target2"),
-  mz = c(247.1651, 239.0628),
+  mz = c(247.1650, 239.0620),
   rt = c(1075, 1157)
 )
-targets3 <- makeTargets(mz = mz3, ppm = 20, sec = 60)
+targets3 <- makeTargets(mz = mz3, ppm = 20, sec = 30)
 
 targets3
 
 #case 4
 mz4 <- data.frame(
   id = c("target1", "target2"),
-  mzmin = c(247.1626, 239.0604), mzmax = c(247.1676, 239.0652),
+  mzmin = c(247.1601, 239.0572), mzmax = c(247.1699, 239.0668),
   rtmin = c(1045, 1127), rtmax = c(1105, 1187)
 )
 targets4 <- makeTargets(mz = mz4)
@@ -395,10 +407,17 @@ targets4 <- makeTargets(mz = mz4)
 targets4
 ```
 
-## EICs
+```{r test-targets}
+#test all equal target 1
+t1 <- rbind(targets1[1, ], targets2[1,], targets3[1, ], targets4[1, ])
+all(round(apply(t1[, 2:7], 2, sd), digits = 4) == 0) 
 
-`r # TODO remove zeros when returning EIC table?`
-`r # TODO add check for spectra/chroms is the object before querying the data?`
+#test all equal target 2
+t2 <- rbind(targets1[2, ], targets2[2,], targets3[2, ], targets4[2, ])
+all(round(apply(t2[, 2:7], 2, sd), digits = 4) == 0)
+```
+
+## EICs
 
 Extracted ion chromatograms (EICs) are obtained either from loaded spectra in the _msData_ or _msAnalysis_ objects or from querying traces directly in the raw data file (mzML or mzXML). The latter is less disk memory intense as data is loaded from raw files on demand. The S4 method `EICs` is used to extract MS1 data from raw data files.
 
@@ -409,8 +428,8 @@ head(eic1, 6)
 ```
 
 ```{r eics-method-2}
-#EIC of targets from second analyses using msData class
-eic2 <- EICs(sp1, analyses = 2, mz = targets4)
+#EIC of targets from analyses 1 to 3 using msData class
+eic2 <- EICs(sp1, analyses = 1:3, mz = targets4)
 head(eic2, 6)
 ```
 
@@ -427,10 +446,14 @@ plotEICs(sp1, analyses = 1:3, mz = targets4, colorBy = "analyses", interactive =
 ```
 
 ```{r ploteics-interactive-2}
-#the same plot as the first for data.table but interactive
+#using msAnalysis
 plotEICs(a1, mz = targets4, interactive = TRUE)
 ```
 
+```{r ploteics-interactive-3}
+#using msData centroid (file 3) vs profile (file 4); note that the higher intensity for profile data is due to the sum of the traces within the same spectrum (i.e., with the same retention time)
+plotEICs(sp1, analyses = 3:4, mz = targets3, colorBy = "replicates", interactive = TRUE)
+```
 
 ## TICs
 
@@ -470,7 +493,7 @@ A more informative method of obtaining EICs is via the method `XICs` which extra
 
 ```{r xics-method}
 #using the msData class object for second target with wide ppm range
-xic1 <- XICs(sp1, analyses = 3:4, mz = mz1[2], rt = rt1[2], ppm = 50, sec = 30)
+xic1 <- XICs(sp1, analyses = 3:4, mz = mz1[2], rt = rt1[2], ppm = 500, sec = 30)
 xic1
 ```
 
@@ -495,17 +518,36 @@ plotXICs(sp1[1], mz = targets4[1, ])
 
 ```{r plotxics-method-3}
 #for the msAnalysis, the second target with wide m/z and rt ranges
-plotXICs(a1, mz = mz1[2], rt = rt1[2], ppm = 500, sec = 120)
+plotXICs(a1, mz = mz1[2], rt = rt1[2], ppm = 50, sec = 120)
 ```
 
 # Loading raw data
 
-The S4 method applied above query the data from the raw data files as that is less disk memory intense. However, for certain cases the raw data might be needed entirely. Therefore, the data can be loaded and stored as a simple _data.table_ in the respective _msAnalysis_ (or other classes of the same level). Below we demonstrate how to load (via `loadRawData` S4 method) and access (via `spectra` or `chromatograms`) the raw spectra and chromatograms to/from an _msAnalaysis_ and _msData_ object. Both S4 methods (`spectra` or `chromatograms`) return a _data.table_ where further operations can be applied to subset the data, as demonstrated below.
+The S4 methods applied above parse the data from the raw data files which is less disk memory intense but slower. Alternatively, the raw data can be loaded to (each) _msAnalysis_  and from their is faster available. However, when loaded, the raw data has a higher memory footprint.
+Therefore, the data can be optionally loaded and stored as a simple _data.table_ in the respective _msAnalysis_ (other classes of the same level might have the raw data directly loaded if the data has a lower memory footprint). Below we demonstrate how to load (via `loadRawData` S4 method) and access (via `spectra` or `chromatograms`) the raw spectra and chromatograms from an _msAnalaysis_ and _msData_ object. Both S4 methods (`spectra` or `chromatograms`) return a _data.table_ where further operations can be applied to subset the data, as demonstrated below. The standard _data.table_ operations can be applied, see documentation in https://cran.r-project.org/web/packages/data.table/ for more information and code examples/instructions. A cheat sheet for _data.table_ operations can be downloaded in https://raw.githubusercontent.com/rstudio/cheatsheets/main/datatable.pdf. In streamFind, the _data.table_ is always the preferred format for table objects.
 
 ```{r loadrawdata-msanalysis}
-#load raw data to an msAnalysis object
-a1 <- loadRawData(a1)
+#load raw data to an msAnalysis object, while setting a minimum intensity value for both MS1 and MS2 traces
+a1 <- loadRawData(a1, minIntensityMS1 = 200, minIntensityMS2 = 100)
+```
 
+```{r loadrawdata-msanalysis-show}
+a1
+```
+
+
+```{r loadrawdata-msdata}
+#load raw data to the first three samples in an msData object.
+sp1 <- loadRawData(sp1, analyses = 1:3)
+```
+
+```{r loadrawdata-msdata-show}
+sp1
+```
+
+## Spectra
+
+```{r spectra-msanalysis}
 #example of accessing the six most intense fragments of the first target with msAnalysis
 s_data <- spectra(a1)
 s_data <- s_data[preMZ >= targets4$mzmin[1] & preMZ <= targets4$mzmax[1], ]
@@ -514,10 +556,7 @@ s_data <- s_data[order(intensity, decreasing = TRUE), ]
 s_data[1:6, ]
 ```
 
-```{r loadrawdata-msdata}
-#load raw data to the first three samples in an msData object.
-sp1 <- loadRawData(sp1, analyses = 1:3)
-
+```{r spectra-msdata}
 #example of accessing the two most intense fragments of the first target with msData
 s_data_2 <- spectra(sp1)
 s_data_2 <- s_data_2[preMZ >= targets4$mzmin[1] & preMZ <= targets4$mzmax[1], ]
@@ -525,6 +564,8 @@ s_data_2 <- s_data_2[rt >= targets4$rtmin[1] & rt <= targets4$rtmax[1], ]
 s_data_2 <- s_data_2[order(intensity, decreasing = TRUE), ]
 s_data_2[1:4, ]
 ```
+
+## Chromatograms
 
 `r # TODO create method to access chromatograms in msAnalysis and msData`
 
@@ -536,7 +577,7 @@ Regarding MS data, the format used in streamFind is .mzML or .mzXML either centr
 vfor <- streamFind::compatibleFileFormatsForConversion()
 knitr::kable(vfor, caption = "Vendor formats possible to be converted to mzML/mzXML.") %>%
   kable_styling(font_size = 11, bootstrap_options = c("striped", "hover", "responsive"), fixed_thead = TRUE) %>%
-  scroll_box(width = "100%", height = "600px")
+  scroll_box(width = "100%", height = "300px")
 ```
 
 ```{r converting-raw-data, eval = FALSE}
@@ -580,48 +621,48 @@ Before preforming data processing, the analysis names (i.e., replicate name and 
 
 ### Assign replicate names
 
-An essential aspect of environmental analysis is to operate with sample/analysis replicates. The replicates in _msData_ or _msAnalysis_ can be obtained by the `replicates` S4 method as shown below. The setter (assignment) for the replicate names is demonstrated below with the method `replicates<-` that takes a vector of character strings with the same length as the number of analyses in a _msData_ object or length one for a single analysis in _msAnalysis_. Alternatively, a table with a replicate character column or a character vector can be given in the files or replicates arguments, respectively.
+An essential aspect of environmental analysis is to operate with sample/analysis replicates. The replicates in _msData_ or _msAnalysis_ can be obtained by the `replicateNames` S4 method as shown below. The setter (assignment) for the replicate names is demonstrated below with the method `replicateNames<-` that takes a vector of character strings with the same length as the number of analyses in a _msData_ object or length one for a single analysis in _msAnalysis_. Alternatively, a table with a replicate character column or a character vector can be given in the files or replicates arguments, respectively.
 
-```{r assign-replicates}
+```{r assign-replicatenames}
 #getter for replicate names in msData
-replicates(sp2)
+replicateNames(sp2)
 
 #setter for replicate names in msData
-replicates(sp2) <- c(rep("blank", 3),rep("influent", 3))  
-replicates(sp2)
+replicateNames(sp2) <- c(rep("blank", 3),rep("influent", 3))  
+replicateNames(sp2)
 
 #setter for replicate name in msAnalysis
 a2 <- getAnalyses(sp2, 4)
-replicates(a2) <- "wastewater"
+replicateNames(a2) <- "wastewater"
 
 #getter for replicate name in msAnalysis
-replicates(a2)
+replicateNames(a2)
 ```
 
-### Assign blanks
+### Assign blankReplicateNames
 
 The blank subtraction is another crucial aspect in environmental analysis. The getter and setter for blank subtraction works the same way as replicates. See examples below. The blank analysis replicate is then assign to the respective analysis. In the example, the first replicate group is assign to the influent samples. Note that the blank will also be assigned to itself. Although not shown, different blank analysis replicates can be assigned to different analysis. The blank subtraction (\@ref(filter-functions)) is then applied per analysis replicate considering the assigned blank replicate. Getting and assigning blank replicates from an _msAnalysis_ is also possible. However, assigning a blank without the context of a _streamSet_ and without the structure of _msData_ or similar level classes is not recommended. For cross project analysis, a subset of the analyses (_msAnalysis_ objects) in a given _msData_ can be concatenated to another _msData_, carrying the assigned blank replicate for each analysis as well as all the other analysis information (see `r # TODO make section cross project analysis``section cross project analysis for more information).
 
-```{r assign-blanks}
+```{r assign-blankreplicatenames}
 #getter for blank replicates in each sample in a msData object
-blanks(sp2)
+blankReplicateNames(sp2)
 
 #setter for the blank analysis replicate of msData object
-blanks(sp2) <- rep("blank", 6)
-blanks(sp2)
+blankReplicateNames(sp2) <- rep("blank", 6)
+blankReplicateNames(sp2)
 
 #getter for msAnalysis
-blanks(a2)
+blankReplicateNames(a2)
 ```
 
 ### Other getter S4 methods
 
 ```{r other-s4methods}
 #getter for analysis names in msdata
-analyses(sp2)
+analysisNames(sp2)
 
 #getter for analysis name in msAnalysis
-analyses(a2)
+analysisNames(a2)
 
 #getter for polarity of analyses in a msData
 polarities(sp2)
@@ -649,7 +690,7 @@ The function `createSettings` is use to assemble the _settings_ object, as shown
 sp2_pp <- sp2
 
 param <- xcms::CentWaveParam(
-  ppm = 10, peakwidth = c(5, 60),
+  ppm = 12, peakwidth = c(5, 40),
   snthresh = 5, prefilter = c(4, 800),
   mzCenterFun = "mean", integrate = 2,
   mzdiff = -0.0001, fitgauss = TRUE,
@@ -753,7 +794,7 @@ sp2_pp_3 <- addParameters(sp2_pp_3, settings = settings_pp, where = "analyses")
 sp2_pp_3 <- addParameters(sp2_pp_3, settings = settings_pp_2, where = "analyses", analyses = 4:6)
 
 # the algorithm of the influent samples is different
-sapply(analyses(sp2_pp_3), function(x) getAlgorithm(getParameters(sp2_pp_3, where = "analyses", analyses = x)[[1]]))
+sapply(analysisNames(sp2_pp_3), function(x) getAlgorithm(getParameters(sp2_pp_3, where = "analyses", analyses = x)[[1]]))
 ```
 
 ```{r peakpicking-multiple-run, results='hide', message=FALSE}
@@ -762,7 +803,7 @@ sp2_pp_3 <- peakPicking(sp2_pp_3)
 ```
 
 ```{r peakpicking-multiple-show}
-# as the peak parameters with "openms" as algorithm were less stringent, the influent samples have more peaks then when "xcms3" is used 
+# as the peak parameters with "openms" as algorithm were more stringent, the influent analyses have less peaks when compared to "xcms3" 
 sp2_pp_3
 ```
 
@@ -804,14 +845,9 @@ For a _msData_ object:
 peaks(sp2_pp[c(1, 4)], mz = mz1[1], rt = rt1[1], ppm = 10, sec = 30)
 ```
 
-
 ```{r inspecting-peaks-msdata-table}
 #access to peaks in msData based on built targets as used for extracting EICs
-pks_1 <- peaks(sp2_pp[c(1, 4)], mz = mz1[1], rt = rt1[1], ppm = 10, sec = 30)
-
-knitr::kable(pks_1, caption = "Peaks data.table from msData using the peaks S4 method.") %>%
-  kable_styling(font_size = 11, bootstrap_options = c("striped", "hover", "responsive"), fixed_thead = TRUE) %>%
-  scroll_box(width = "100%", height = "600px")
+peaks(sp2_pp[c(1, 4)], mz = mz1[1], rt = rt1[1], ppm = 10, sec = 30)
 ```
 
 ```{r inspecting-peaks-msdata-plot}
@@ -1196,6 +1232,10 @@ plotMS2s(sp1, mz = targets4, settings = settings_msn, interactive = TRUE, colorB
 
 ```{r democode, echo=FALSE, eval=FALSE, include=FALSE}
 
+# knitr::kable(pks_1, caption = "Peaks data.table from msData using the peaks S4 method.") %>%
+#   kable_styling(font_size = 11, bootstrap_options = c("striped", "hover", "responsive"), fixed_thead = TRUE) %>%
+#   scroll_box(width = "100%", height = "600px")
+
 
 # object <- sp2_pg_fl
 # settings <- annotationSettingsDefaultCAMERA()
@@ -1228,33 +1268,33 @@ plotMS2s(sp1, mz = targets4, settings = settings_msn, interactive = TRUE, colorB
 
 # setInfo(msd)
 # path(msd)
-# files(msd)
-# analyses(msd)
-# replicates(msd)
-# blanks(msd)
+# filePaths(msd)
+# analysisNames(msd)
+# replicateNames(msd)
+# blankReplicateNames(msd)
 # polarities(msd)
 # analysisInfo(msd)
 # 
-# replicates(msd) <- c("s1", "s2")
-# blanks(msd) <- c(NA_character_, "s2")
+# replicateNames(msd) <- c("s1", "s2")
+# blankReplicateNames(msd) <- c(NA_character_, "s2")
 # 
 # validObject(msd)
 # 
-# files(msa_1)
-# analyses(msa_1)
-# replicates(msa_1)
-# blanks(msa_1)
+# filePaths(msa_1)
+# analysisNames(msa_1)
+# replicateNames(msa_1)
+# blankReplicateNames(msa_1)
 # polarities(msa_1)
 # 
-# replicates(msa_1) <- "s1"
-# blanks(msa_1) <- "s2"
+# replicateNames(msa_1) <- "s1"
+# blankReplicateNames(msa_1) <- "s2"
 
 # object <- msd
 # 
 # loadMS1 <- function(object, analysis = NULL, what = "MS1") {
 #   
 #   
-#   test <- RaMS::grabMSdata(files(object)[1], grab_what = "MS1", rtrange = c(min(rt_02), max(rt_02)))
+#   test <- RaMS::grabMSdata(filePaths(object)[1], grab_what = "MS1", rtrange = c(min(rt_02), max(rt_02)))
 #   
 #   ms2 <- test$MS2
 #   

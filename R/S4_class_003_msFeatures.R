@@ -73,37 +73,35 @@ setClass("msFeatures",
 
 ### S4 methods ----------------------------------------------------------------------------------------------
 
-#### analyses ------------------------------------------------------------
+#### analysisNames ------------------------------------------------------------
 
 #' @describeIn msFeatures getter for analysis names.
 #'
 #' @export
 #'
-#' @importMethodsFrom patRoon analyses
+#' @aliases analysisNames,msFeatures,msFeatures-method
 #'
-#' @aliases analyses,msFeatures,msFeatures-method
-#'
-setMethod("analyses", "msFeatures", function(obj) obj@analyses$analysis)
+setMethod("analysisNames", "msFeatures", function(object) object@analyses$analysis)
 
-#### replicates ----------------------------------------------------------
+#### replicateNames ----------------------------------------------------------
 
 #' @describeIn msFeatures getter for replicate names.
 #'
 #' @export
 #'
-#' @aliases replicates,msFeatures,msFeatures-method
+#' @aliases replicateNames,msFeatures,msFeatures-method
 #'
-setMethod("replicates", "msFeatures", function(object) object@analyses$replicate)
+setMethod("replicateNames", "msFeatures", function(object) object@analyses$replicate)
 
-#### blanks --------------------------------------------------------------
+#### blankReplicateNames --------------------------------------------------------------
 
 #' @describeIn msFeatures getter for blank names.
 #'
 #' @export
 #'
-#' @aliases blanks,msFeatures,msFeatures-method
+#' @aliases blankReplicateNames,msFeatures,msFeatures-method
 #'
-setMethod("blanks", "msFeatures", function(object) object@analyses$blank)
+setMethod("blankReplicateNames", "msFeatures", function(object) object@analyses$blank)
 
 
 ### addParameters ----------------------------------------------------------

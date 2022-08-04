@@ -5,28 +5,36 @@
 \alias{msAnalysis-class}
 \alias{initialize,msAnalysis-method}
 \alias{show,msAnalysis-method}
-\alias{files,msAnalysis-method}
-\alias{files,msAnalysis,msAnalysis-method}
+\alias{filePaths,msAnalysis-method}
+\alias{filePaths,msAnalysis,msAnalysis-method}
 \alias{analysisInfo,msAnalysis-method}
 \alias{analysisInfo,msAnalysis,msAnalysis-method}
 \alias{analysisTable,msAnalysis-method}
 \alias{analysisTable,msAnalysis,msAnalysis-method}
-\alias{analyses,msAnalysis-method}
-\alias{analyses,msAnalysis,msAnalysis-method}
-\alias{replicates,msAnalysis-method}
-\alias{replicates,msAnalysis,msAnalysis-method}
-\alias{replicates<-,msAnalysis-method}
-\alias{replicates<-,msAnalysis,msAnalysis-method}
-\alias{blanks,msAnalysis-method}
-\alias{blanks,msAnalysis,msAnalysis-method}
-\alias{blanks<-,msAnalysis-method}
-\alias{blanks<-,msAnalysis,msAnalysis-method}
+\alias{analysisNames,msAnalysis-method}
+\alias{analysisNames,msAnalysis,msAnalysis-method}
+\alias{replicateNames,msAnalysis-method}
+\alias{replicateNames,msAnalysis,msAnalysis-method}
+\alias{replicateNames<-,msAnalysis-method}
+\alias{replicateNames<-,msAnalysis,msAnalysis-method}
+\alias{blankReplicateNames,msAnalysis-method}
+\alias{blankReplicateNames,msAnalysis,msAnalysis-method}
+\alias{blankReplicateNames<-,msAnalysis-method}
+\alias{blankReplicateNames<-,msAnalysis,msAnalysis-method}
 \alias{metadata,msAnalysis-method}
 \alias{metadata,msAnalysis,msAnalysis-method}
 \alias{addMetadata,msAnalysis-method}
 \alias{addMetadata,msAnalysis,msAnalysis-method}
 \alias{polarities,msAnalysis-method}
 \alias{polarities,msAnalysis,msAnalysis-method}
+\alias{loadRawData,msAnalysis-method}
+\alias{loadRawData,msAnalysis,msAnalysis-method}
+\alias{hasLoadedSpectra,msAnalysis-method}
+\alias{hasLoadedSpectra,msAnalysis,msAnalysis-method}
+\alias{hasLoadedChromatograms,msAnalysis-method}
+\alias{hasLoadedChromatograms,msAnalysis,msAnalysis-method}
+\alias{spectra,msAnalysis-method}
+\alias{spectra,msAnalysis,msAnalysis-method}
 \alias{EICs,msAnalysis-method}
 \alias{EICs,msAnalysis,msAnalysis-method}
 \alias{plotEICs,msAnalysis-method}
@@ -43,16 +51,14 @@
 \alias{MS2s,msAnalysis,msAnalysis-method}
 \alias{plotMS2s,msAnalysis-method}
 \alias{plotMS2s,msAnalysis,msAnalysis-method}
-\alias{loadRawData,msAnalysis-method}
-\alias{loadRawData,msAnalysis,msAnalysis-method}
-\alias{spectra,msAnalysis-method}
-\alias{spectra,msAnalysis,msAnalysis-method}
 \alias{hasAdjustedRetentionTime,msAnalysis-method}
 \alias{hasAdjustedRetentionTime,msAnalysis,msAnalysis-method}
 \alias{addParameters,msAnalysis-method}
 \alias{addParameters,msAnalysis,msAnalysis-method}
 \alias{getParameters,msAnalysis-method}
 \alias{getParameters,msAnalysis,msAnalysis-method}
+\alias{hasPeaks,msAnalysis-method}
+\alias{hasPeaks,msAnalysis,msAnalysis-method}
 \alias{peaks,msAnalysis-method}
 \alias{peaks,msAnalysis,msAnalysis-method}
 \alias{plotPeaks,msAnalysis-method}
@@ -67,27 +73,35 @@
 
 \S4method{show}{msAnalysis}(object)
 
-\S4method{files}{msAnalysis}(object)
+\S4method{filePaths}{msAnalysis}(object)
 
 \S4method{analysisInfo}{msAnalysis}(obj)
 
 \S4method{analysisTable}{msAnalysis}(object)
 
-\S4method{analyses}{msAnalysis}(obj)
+\S4method{analysisNames}{msAnalysis}(object)
 
-\S4method{replicates}{msAnalysis}(object)
+\S4method{replicateNames}{msAnalysis}(object)
 
-\S4method{replicates}{msAnalysis}(object) <- value
+\S4method{replicateNames}{msAnalysis}(object) <- value
 
-\S4method{blanks}{msAnalysis}(object)
+\S4method{blankReplicateNames}{msAnalysis}(object)
 
-\S4method{blanks}{msAnalysis}(object) <- value
+\S4method{blankReplicateNames}{msAnalysis}(object) <- value
 
 \S4method{metadata}{msAnalysis}(x, which = NULL)
 
 \S4method{addMetadata}{msAnalysis}(object, metadata = NULL, overwrite = FALSE)
 
 \S4method{polarities}{msAnalysis}(object)
+
+\S4method{loadRawData}{msAnalysis}(object, minIntensityMS1 = 0, minIntensityMS2 = 0)
+
+\S4method{hasLoadedSpectra}{msAnalysis}(object)
+
+\S4method{hasLoadedChromatograms}{msAnalysis}(object)
+
+\S4method{spectra}{msAnalysis}(object)
 
 \S4method{EICs}{msAnalysis}(object, mz = NULL, ppm = 20, rt = NULL, sec = 60, id = NULL)
 
@@ -148,15 +162,13 @@
   interactive = FALSE
 )
 
-\S4method{loadRawData}{msAnalysis}(object)
-
-\S4method{spectra}{msAnalysis}(object)
-
 \S4method{hasAdjustedRetentionTime}{msAnalysis}(object)
 
 \S4method{addParameters}{msAnalysis}(object, settings)
 
 \S4method{getParameters}{msAnalysis}(object, call = NULL)
+
+\S4method{hasPeaks}{msAnalysis}(object)
 
 \S4method{peaks}{msAnalysis}(
   object,
@@ -206,6 +218,12 @@
 
 \item{metadata}{A named vector with metadata entries or a one row \code{data.frame} or \code{data.table}
 with metadata added as columns.}
+
+\item{minIntensityMS1}{Numeric value on length one with the
+minimum intensity of MS1 level traces.}
+
+\item{minIntensityMS2}{Numeric value on length one with the
+minimum intensity of MS2 level traces.}
 
 \item{mz}{A vector with target \emph{m/z} values or
 a two columns data.table or data.frame with minimum and maximum \emph{m/z} values.
@@ -279,7 +297,7 @@ for inspection, processing and evaluation.
 
 \item \code{show(msAnalysis)}: prints the details of an \linkS4class{msAnalysis} object.
 
-\item \code{files(msAnalysis)}: getter for analysis file path.
+\item \code{filePaths(msAnalysis)}: getter for analysis file path.
 
 \item \code{analysisInfo(msAnalysis)}: getter for analysis info as \link{data.frame} with
 four columns: path, analysis, group and blank. The \link{data.frame}
@@ -288,16 +306,16 @@ can be used as analysisInfo in \pkg{patRoon}.
 \item \code{analysisTable(msAnalysis)}: getter for analysis table as \link{data.table} with
 four columns: file, analysis, replicate and blank.
 
-\item \code{analyses(msAnalysis)}: getter for analysis name.
+\item \code{analysisNames(msAnalysis)}: getter for analysis name.
 
-\item \code{replicates(msAnalysis)}: getter for the replicate name.
+\item \code{replicateNames(msAnalysis)}: getter for the replicate name.
 
-\item \code{replicates(msAnalysis) <- value}: setter for analysis replicate name.
+\item \code{replicateNames(msAnalysis) <- value}: setter for analysis replicate name.
 The \code{value} is a character string with analysis replicate name.
 
-\item \code{blanks(msAnalysis)}: getter for associated blank replicate name.
+\item \code{blankReplicateNames(msAnalysis)}: getter for associated blank replicate name.
 
-\item \code{blanks(msAnalysis) <- value}: setter for associated blank replicate.
+\item \code{blankReplicateNames(msAnalysis) <- value}: setter for associated blank replicate.
 The \code{value} is a character string with associated blank replicate name.
 
 \item \code{metadata(msAnalysis)}: getter for analysis metadata.
@@ -306,6 +324,15 @@ Returns a \link[data.table]{date.table} with a column per metadata entry.
 \item \code{addMetadata(msAnalysis)}: setter for analysis metadata.
 
 \item \code{polarities(msAnalysis)}: getter for analyses polarity.
+
+\item \code{loadRawData(msAnalysis)}: adds raw spectra and chromatograms to the respective
+slots of an \linkS4class{msAnalysis} object.
+
+\item \code{hasLoadedSpectra(msAnalysis)}: check if the \linkS4class{msAnalysis} has loaded raw spectra.
+
+\item \code{hasLoadedChromatograms(msAnalysis)}: check if the \linkS4class{msAnalysis} has loaded raw chromatograms.
+
+\item \code{spectra(msAnalysis)}: getter for slot spectra in the \linkS4class{msAnalysis}.
 
 \item \code{EICs(msAnalysis)}: get extracted ion chromatograms (EICs)
 for specified \emph{m/z} (Da) and retention time (seconds) targets.
@@ -352,7 +379,7 @@ For the \code{clusteringUnit}, possible values are \emph{mz} (the default) or \e
 The \code{minIntensityPre} and \code{minIntensityPost}
 define the minimum intensity for mass traces before and after clustering, respectively.
 Set \code{mergeVoltages} to \code{TRUE} for merging spectra acquired with different collision energies.
-The \code{mergeBy} argument is used to merge spectra by "samples" or "replicates".
+The \code{mergeBy} argument is used to merge spectra by "samples" or "replicateNames".
 When \code{NULL}, MS2 is given per target and per sample.
 
 \item \code{plotMS2s(msAnalysis)}: plots MS2 data for specified \emph{m/z} and retention time (seconds) targets
@@ -366,15 +393,10 @@ For the \code{clusteringUnit}, possible values are \emph{mz} (the default) or \e
 The \code{minIntensityPre} and \code{minIntensityPost}
 define the minimum intensity for mass traces before and after clustering, respectively.
 Set \code{mergeVoltages} to \code{TRUE} for merging spectra acquired with different collision energies.
-The \code{mergeBy} argument is used to merge spectra by "samples" or "replicates".
+The \code{mergeBy} argument is used to merge spectra by "samples" or "replicateNames".
 When \code{NULL}, MS2 is given per target and per sample. The possible values for the
 \code{colorBy} argument are "targets" and "voltages" to color by
 each target, sample, replicate or collision energy, respectively.
-
-\item \code{loadRawData(msAnalysis)}: adds raw spectra and chromatograms to the respective
-slots of an \linkS4class{msAnalysis} object.
-
-\item \code{spectra(msAnalysis)}: getter for slot spectra in the \linkS4class{msAnalysis}.
 
 \item \code{hasAdjustedRetentionTime(msAnalysis)}: getter for presence of adjusted retention time
 in the \linkS4class{msAnalysis}.
@@ -382,6 +404,8 @@ in the \linkS4class{msAnalysis}.
 \item \code{addParameters(msAnalysis)}: adds processing parameters to the analysis.
 
 \item \code{getParameters(msAnalysis)}: gets processing parameters in the analysis.
+
+\item \code{hasPeaks(msAnalysis)}: check if the \linkS4class{msAnalysis} has peaks.
 
 \item \code{peaks(msAnalysis)}: getter for chromatographic peaks.
 The arguments \code{targetID} and \code{mz}/\code{rt} can be used

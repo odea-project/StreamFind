@@ -51,7 +51,7 @@ calculateSNR <-  function(object, targetsID = NULL, rtExpand = 200, filtered = F
     with_features <- TRUE
   } else {
     peaks_org <- peaks(object)
-    if (checkmate::testClass(object, "msAnalysis")) peaks_org$analysis <- analyses(object)
+    if (checkmate::testClass(object, "msAnalysis")) peaks_org$analysis <- analysisNames(object)
     with_features <- FALSE
   }
 
@@ -84,7 +84,7 @@ calculateSNR <-  function(object, targetsID = NULL, rtExpand = 200, filtered = F
   }
 
   #extract centroids from each peak in each sample, expanding the rt
-  ana <- analyses(object)
+  ana <- analysisNames(object)
   pks <- peaks_sn[, .(id, mzmin, mzmax, rtmin, rtmax, analysis)]
   pks <- pks[, `:=`(rtmin = rtmin - rtExpand, rtmax = rtmax + rtExpand)]
 
@@ -161,7 +161,7 @@ calculateSNR <-  function(object, targetsID = NULL, rtExpand = 200, filtered = F
 
   if (checkmate::testClass(object, "msData")) {
     object@analyses <- lapply(object@analyses, function(x, peaks_org) {
-      ana <- analyses(x)
+      ana <- analysisNames(x)
       temp <- peaks_org[analysis %in% ana, ]
       temp[, `:=`(analysis = NULL, replicate = NULL)]
       x@peaks <- copy(temp)
