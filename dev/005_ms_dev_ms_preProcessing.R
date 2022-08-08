@@ -18,11 +18,34 @@ library(RaMS)
 fl <- choose.files()
 
 fl <- c(
-  "C:\\Users\\Ricardo\\Documents\\R_DemoProject\\msfiles\\09_Sample_Sciex_MRM_Chromatograms_Nitrosamines_10ngml.mzML",
+  "C:\\Users\\Ricardo\\Documents\\R_DemoProject\\msfiles\\09_Sample_Sciex_MRM_Chromatograms_Nitrosamines_10ngml.mzML"
+)
+
+fl <- c(
   "C:\\Users\\Ricardo\\Documents\\R_DemoProject\\msfiles\\10_Sample_Sciex_MRM_Spectra_Nitrosamines_10ngml.mzML"
 )
 
-test <- xml2::as_list(xml2::read_xml(fl[1]))
+
+
+test <- RaMS::grabMSdata(fl, grab_what = c("metadata", "MS1"))
+test$metadata$config_data
+
+rm(test)
+
+test <- xml2::read_xml(fl[1])
+init_node <- xml2::xml_find_all(test, xpath = "//d1:spectrum")
+
+xml2::xml_ns(test)
+
+
+test <- xml2::read_xml(files[4])
+init_node <- xml2::xml_find_all(test, xpath = '//d1:spectrum/d1:cvParam[@name = "profile spectrum"]')
+head(xml2::xml_attr(init_node, "name"))
+
+init_node <- xml2::xml_find_all(test, xpath = '//d1:spectrum[d1:cvParam[@accession="MS:1000128"]]')
+
+test2 <- xml2::as_list(init_node)
+
 xml2::xml_structure(test, indent = 1)
 
 
@@ -34,6 +57,73 @@ msdata <- grabMSdata(files = fl[2], grab_what = "MS1") #rtrange = c(1100/60, 120
 
 data_nodes <- xml2::xml_find_all(files[1])
 
+#### metadata entries mzR ---------
+
+
+# $polarity
+# [1] "positive"
+#
+# $centroided
+# [1] TRUE
+#
+# $scanCount
+# [1] 1886
+#
+# $lowMz
+# [1] 0
+#
+# $highMz
+# [1] 449.9957
+#
+# $dStartTime
+# [1] 900.093
+#
+# $dEndTime
+# [1] 1349.886
+#
+# $msLevels
+# [1] 1 2
+#
+# $startTimeStamp
+# [1] "2022-06-17T14:45:28Z"
+#
+# $manufacturer
+# [1] "instrument model"
+#
+# $model
+# [1] "Agilent instrument model"
+#
+# $ionisation
+# [1] "microelectrospray"
+#
+# $analyzer
+# [1] "quadrupole"
+#
+# $detector
+# [1] "microchannel plate detector"
+#
+# $software
+# [1] "MassHunter 8.0"
+#
+# $sample
+# [1] ""
+#
+# $source
+# [1] ""
+
+#### cols header mrR ------
+
+# [1] "seqNum"                     "acquisitionNum"             "msLevel"                    "polarity"
+# [5] "peaksCount"                 "totIonCurrent"              "retentionTime"              "basePeakMZ"
+# [9] "basePeakIntensity"          "collisionEnergy"            "ionisationEnergy"           "lowMZ"
+# [13] "highMZ"                     "precursorScanNum"           "precursorMZ"                "precursorCharge"
+# [17] "precursorIntensity"         "mergedScan"                 "mergedResultScanNum"        "mergedResultStartScanNum"
+# [21] "mergedResultEndScanNum"     "injectionTime"              "filterString"               "spectrumId"
+# [25] "centroided"                 "ionMobilityDriftTime"       "isolationWindowTargetMZ"    "isolationWindowLowerOffset"
+# [29] "isolationWindowUpperOffset" "scanWindowLowerLimit"       "scanWindowUpperLimit"
+
+
+metadata(a1)
 
 
 targets4
@@ -41,6 +131,9 @@ targets4
 
 
 files
+
+
+fl <- files[1]
 
 
 

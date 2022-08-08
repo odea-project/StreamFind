@@ -9,7 +9,8 @@ excludeAdductsFeatures(obj, value = TRUE)
 \arguments{
 \item{obj}{An \linkS4class{msFeatures} object.}
 
-\item{value}{Logical, when \code{TRUE}, adducts with protonated/deprotonated ions present are filtered.}
+\item{value}{Logical, when \code{TRUE}, adducts with protonated/deprotonated
+ions present are filtered.}
 }
 \description{
 excludeAdductsFeatures

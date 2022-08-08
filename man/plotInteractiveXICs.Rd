@@ -13,6 +13,8 @@ plotInteractiveXICs(
 )
 }
 \arguments{
+\item{xic}{A \linkS4class{data.table} from the method \code{\link{XICs}}.}
+
 \item{plotTargetMark}{Logical, set to \code{TRUE} (the default) to plot a
 target mark.}
 
@@ -25,8 +27,6 @@ of the target mark. The default is 10 ppm.}
 \item{numberRows}{A numeric vector of length one to define
 the number of rows to grid the plots.
 Note that each target is always plotted in one row for all selected analyses.}
-
-\item{object}{A \link[data.table]{data.table} from the method \link{XICs}.}
 }
 \value{
 An iterative plot of the traces for the requested

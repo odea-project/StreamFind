@@ -1,41 +1,43 @@
 
-
-### filterFeatures ------------------------------------------------------------------------------------------
+### main functions -------------------------------------------------------------
 
 #' @title filterFeatures
 #'
-#' @description Filter features in an \linkS4class{msData} or \linkS4class{msFeatures} object.
+#' @description Filter features in an \linkS4class{msData} or
+#'  \linkS4class{msFeatures} object.
 #'
 #' @details Filters are added as an \linkS4class{settings} object with
 #' the slot call defined as "filterFeatures", the slot algorithm set to "filter"
-#' and the filtering parameters are given as an ordered list in the settings slot.
-#' The available filters are as follows:
+#' and the filtering parameters are given as an ordered list in the settings
+#' slot. The available filters are as follows:
 #' \itemize{
 #'  \item \code{minIntensity}: features below a minimum intensity threshold.
 #' For example, minIntensity = 3000, removes features with maximum
 #' peak representation below 3000 counts;
-#'  \item \code{blankThreshold}: features that are not more intense than a defined
-#' threshold multiplier of the assigned blank intensity.
+#'  \item \code{blankThreshold}: features that are not more intense than a
+#' defined threshold multiplier of the assigned blank intensity.
 #' For example, blankThreshold = 3, features with maximum peak representation
 #' that are not higher than 3 times the blank intensity;
 #'  \item \code{maxReplicateIntensityDeviation} features based on a
 #' maximum standard deviation (SD), in percentage, among replicate analyses.
-#' For example, maxReplicateIntensityDeviation = 30, filters features that do not have
-#' the SD below 30% in at least one analysis replicate group.
-#'  \item \code{minReplicateAbundance}: features that are not present with at least
-#' a specified frequency in one analysis replicate group.
-#' For example, minReplicateAbundance = 2, filters features that are not represented
-#' in at least two analyses within a replicate.
-#'  \item \code{excludeIsotopes} features annotated as isotopes are excluded (i.e., filtered).
-#'  \item \code{excludeAdducts} features annotated as adducts are filtered when the corresponding
-#'  protonated/deprotonated ion is present.
-#'  \item \code{snRatio} features below a minimum signal-to-noise (s/n) ratio threshold.
-#' For example, snRatio = 3, filters features with a maximum s/n in corresponding peaks below a 3.
+#' For example, maxReplicateIntensityDeviation = 30, filters features that
+#' do not have the SD below 30% in at least one analysis replicate group.
+#'  \item \code{minReplicateAbundance}: features that are not present with
+#' at least a specified frequency in one analysis replicate group.
+#' For example, minReplicateAbundance = 2, filters features that are not
+#' represented in at least two analyses within a replicate.
+#'  \item \code{excludeIsotopes} features annotated as isotopes are excluded
+#' (i.e., filtered).
+#'  \item \code{excludeAdducts} features annotated as adducts are filtered
+#' when the corresponding protonated/deprotonated ion is present.
+#'  \item \code{snRatio} features below a minimum signal-to-noise (s/n) ratio
+#'  threshold. For example, snRatio = 3, filters features with a maximum s/n
+#'  in corresponding peaks below a 3.
 #' }
 #'
 #' @note The \linkS4class{settings} object with the filters can be added
-#' directly to the \code{object}. When \code{settings} is \code{NULL}, the filters
-#' in the \code{object} are used instead.
+#' directly to the \code{object}. When \code{settings} is \code{NULL}, the
+#' filters in the \code{object} are used instead.
 #'
 #' @param object An \linkS4class{msData} or \linkS4class{msFeatures} object.
 #' @template args-single-settings
@@ -46,7 +48,7 @@ filterFeatures <- function(object, settings = NULL) {
 
   valid <- FALSE
 
-  if (checkmate::testClass(object, "msData") | checkmate::testClass(object, "msFeatures"))
+  if (testClass(object, "msData") | testClass(object, "msFeatures"))
     valid = TRUE
 
   if (!valid) {
@@ -54,7 +56,7 @@ filterFeatures <- function(object, settings = NULL) {
     return(object)
   }
 
-  if (checkmate::testClass(object, "msData")) {
+  if (testClass(object, "msData")) {
     obj <- object@features
   } else {
     obj <- object
@@ -77,7 +79,7 @@ filterFeatures <- function(object, settings = NULL) {
       algorithm <- NA_character_
     }
 
-  } else if (checkmate::testClass(settings, "settings")) {
+  } else if (testClass(settings, "settings")) {
 
     algorithm <- getAlgorithm(settings)
     filterList <- getSettings(settings)
@@ -133,26 +135,25 @@ filterFeatures <- function(object, settings = NULL) {
   return(object)
 }
 
-### removeFilteredFeatures ----------------------------------------------------------------------------------
-
 #' @title removeFilteredFeatures
 #'
 #' @description Function to remove permanently filtered features from a
 #' \linkS4class{msData} or \linkS4class{msFeatures} object.
 #'
 #' @param object An \linkS4class{msFeatures} object.
-#' @param which A character vector with the filter tag/s of features to be removed.
-#' The default is \emph{all} to remove all filtered features.
+#' @param which A character vector with the filter tag/s of features to be
+#' removed. The default is \emph{all} to remove all filtered features.
 #'
 #' @export
 #'
+#' @importFrom checkmate testClass
 #' @importFrom data.table copy
 #'
 removeFilteredFeatures <- function(object, which = "all") {
 
   valid <- FALSE
 
-  if (checkmate::testClass(object, "msData") | checkmate::testClass(object, "msFeatures"))
+  if (testClass(object, "msData") | testClass(object, "msFeatures"))
     valid = TRUE
 
   if (!valid) {
@@ -160,7 +161,7 @@ removeFilteredFeatures <- function(object, which = "all") {
     return(object)
   }
 
-  if (checkmate::testClass(object, "msData")) {
+  if (testClass(object, "msData")) {
     temp_mtd <- copy(object@features@metadata)
   } else {
     temp_mtd <- copy(object@metadata)
@@ -177,14 +178,13 @@ removeFilteredFeatures <- function(object, which = "all") {
   return(object)
 }
 
-### filters -------------------------------------------------------------------------------------------------
-
-### minIntensity ---------------------------------------------------------
+### filters --------------------------------------------------------------------
 
 #' minIntensityFeatures
 #'
 #' @param obj An \linkS4class{msFeatures} object.
-#' @param value A numerical value with the desired minimum intensity for features.
+#' @param value A numerical value with the desired minimum intensity for
+#' features.
 #'
 #' @importFrom data.table copy
 #'
@@ -202,8 +202,6 @@ minIntensityFeatures <- function(obj, value = 5000) {
 
   return(obj)
 }
-
-### blankThreshold -------------------------------------------------------
 
 #' blankThresholdFeatures
 #'
@@ -232,7 +230,9 @@ blankThresholdFeatures <- function(obj, value = 3) {
     temp[, (rp) := temp[, rp, with = FALSE] < temp[, bl, with = FALSE] * value]
   }
 
-  check <- apply(temp[, rpl, with = FALSE], MARGIN = 1, function(x) all(x, na.rm = TRUE))
+  check <- apply(temp[, rpl, with = FALSE], MARGIN = 1, function(x) {
+     all(x, na.rm = TRUE)
+  })
 
   temp_mtd <- copy(obj@metadata)
   temp_mtd[is.na(filter) & check, `:=`(filtered = TRUE, filter = "blank")]
@@ -240,8 +240,6 @@ blankThresholdFeatures <- function(obj, value = 3) {
 
   return(obj)
 }
-
-### maxReplicateIntensityDeviation ---------------------------------------
 
 #' maxReplicateIntensityDeviationFeatures
 #'
@@ -262,18 +260,18 @@ maxReplicateIntensityDeviationFeatures <- function(obj, value = 40) {
   }, value = value)
 
   temp_mtd <- copy(obj@metadata)
-  temp_mtd[is.na(filter) & check, `:=`(filtered = TRUE, filter = "maxReplicateIntensityDeviation")]
+  temp_mtd[is.na(filter) & check, `:=`(filtered = TRUE,
+                                       filter = "maxReplicateIntensityDeviation")]
   obj@metadata <- copy(temp_mtd)
 
   return(obj)
 }
 
-### minReplicateAbundance ------------------------------------------------
-
 #' minReplicateAbundanceFeatures
 #'
 #' @param obj An \linkS4class{msFeatures} object.
-#' @param value A numerical value set at the desired minimum representation in replicates.
+#' @param value A numerical value set at the desired minimum representation in
+#' replicates.
 #'
 #' @importFrom data.table copy
 #'
@@ -300,13 +298,12 @@ minReplicateAbundanceFeatures <- function(obj, value = 3) {
   }, feats_org = feats_org, rpl = rpl, value = value, bl = unique(blanks(obj))))
 
   temp_mtd <- copy(obj@metadata)
-  temp_mtd[is.na(filter) & check, `:=`(filtered = TRUE, filter = "minReplicateAbundance")]
+  temp_mtd[is.na(filter) & check, `:=`(filtered = TRUE,
+                                       filter = "minReplicateAbundance")]
   obj@metadata <- copy(temp_mtd)
 
   return(obj)
 }
-
-### excludeIsotopes ------------------------------------------------
 
 #' excludeIsotopesFeatures
 #'
@@ -320,7 +317,8 @@ excludeIsotopesFeatures <- function(obj, value = TRUE) {
   feats_org <- copy(obj@metadata)
 
   if ("isonr" %in% colnames(feats_org)) {
-    feats_org[is.na(filter) & isonr > 0, `:=`(filtered = TRUE, filter = "isotope")]
+    feats_org[is.na(filter) & isonr > 0, `:=`(filtered = TRUE,
+                                              filter = "isotope")]
   }
 
   obj@metadata <- copy(feats_org)
@@ -328,12 +326,11 @@ excludeIsotopesFeatures <- function(obj, value = TRUE) {
   return(obj)
 }
 
-### excludeAdducts -------------------------------------------------------
-
 #' excludeAdductsFeatures
 #'
 #' @param obj An \linkS4class{msFeatures} object.
-#' @param value Logical, when \code{TRUE}, adducts with protonated/deprotonated ions present are filtered.
+#' @param value Logical, when \code{TRUE}, adducts with protonated/deprotonated
+#' ions present are filtered.
 #'
 #' @importFrom data.table copy
 #'
@@ -341,7 +338,8 @@ excludeAdductsFeatures <- function(obj, value = TRUE) {
 
   feats_org <- copy(obj@metadata)
 
-  if ("neutralMass" %in% colnames(feats_org) & "adduct_ion" %in% colnames(feats_org)) {
+  if ("neutralMass" %in% colnames(feats_org) &
+      "adduct_ion" %in% colnames(feats_org)) {
 
     adduct_names <- getParameters(obj, "peakAnnotation")
     adduct_names <- getSettings(adduct_names)
@@ -368,7 +366,8 @@ excludeAdductsFeatures <- function(obj, value = TRUE) {
     check <- unlist(check)
     check <- check[check]
 
-    feats_org[is.na(filter) & id %in% names(check), `:=`(filtered = TRUE, filter = "adduct")]
+    feats_org[is.na(filter) & id %in% names(check), `:=`(filtered = TRUE,
+                                                         filter = "adduct")]
   }
 
   obj@metadata <- copy(feats_org)
@@ -377,12 +376,11 @@ excludeAdductsFeatures <- function(obj, value = TRUE) {
 }
 
 # TODO improve filter sn after final sn calculation
-### snRatioThreshold -----------------------------------------------------
-
 #' snRatioThresholdFeatures
 #'
 #' @param obj An \linkS4class{msFeatures} object.
-#' @param snRatio A numerical value set at the desired signal-to-noise ratio for features.
+#' @param value A numerical value with the desired minimum signal-to-noise ratio
+#' for features.
 #'
 snRatioThresholdFeatures <- function(obj, value = 10) {
 
@@ -393,7 +391,9 @@ snRatioThresholdFeatures <- function(obj, value = 10) {
     return(obj)
   }
 
-  if (!"filterTag" %in% colnames(feats_org)) feats_org[, filterTag := NA_character_]
+  if (!"filterTag" %in% colnames(feats_org)) {
+    feats_org[, filterTag := NA_character_]
+  }
 
   check <- feats_org$sn_value > value | is.na(feats_org$sn_value)
 

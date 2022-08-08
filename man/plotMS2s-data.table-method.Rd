@@ -2,7 +2,6 @@
 % Please edit documentation in R/S4_methods_datatable.R
 \name{plotMS2s,data.table-method}
 \alias{plotMS2s,data.table-method}
-\alias{plotMS2s,data.table,data.table-method}
 \title{plotMS2s-data.table}
 \usage{
 \S4method{plotMS2s}{data.table}(
@@ -17,14 +16,14 @@
 )
 }
 \arguments{
-\item{object}{A \link[data.table]{data.table} as produced by
-the method \link{MS2s}.}
+\item{object}{A \linkS4class{data.table} as produced by
+the method \code{\link{MS2s}}.}
 
-\item{analyses}{A numeric or character vector with the index or analysis name/s.
-When \code{NULL}, all the analyses are used.}
+\item{analyses}{A numeric or character vector with the index or
+analysis name/s. When \code{NULL}, all the analyses are used.}
 
 \item{replicates}{A numeric or character vector with the indice/s or name/s
-of replicates from the \code{object}.}
+of replicates from the object.}
 
 \item{targets}{A character vector with target names.}
 
@@ -40,12 +39,12 @@ the \pkg{plotly} instead of \pkg{base}. The default is \code{FALSE}.}
 }
 \description{
 Plots MS2 data for specified \emph{m/z} and retention time
-(seconds) targets in a \link[data.table]{data.table} as obtained by the
-\link{MS2s}. The targets in the object can be filtered using the
+(seconds) targets in a \linkS4class{data.table} as obtained by the
+\code{\link{MS2s}}. The targets in the object can be filtered using the
 \code{targets} argument. Also, "analyses" and "replicates" can be filtered
 using the \code{analyses} and \code{replicates} arguments, respectively.
 Note that the column analysis/replicate should be present.
 The possible values for the \code{colorBy} argument are
-"targets", "analyses", "replicates" and "voltages" to color by
+"targets", "analyses", "replicates" and "ce" to color by
 each target, analysis, replicate or collision energy, respectively.
 }

@@ -30,7 +30,15 @@
 \arguments{
 \item{object}{An \linkS4class{streamSet} object.}
 
-\item{i}{The indice/s or name/s of the analyses to keep in the \code{x} object.}
+\item{x}{A \linkS4class{streamSet} object.}
+
+\item{i}{The indice/s or name/s of the analyses to keep in \code{x}.}
+
+\item{j}{Not applicable to \linkS4class{streamSet}.}
+
+\item{...}{Other arguments.}
+
+\item{drop}{Not applicable to \linkS4class{streamSet}.}
 
 \item{title}{A character string to be used as set title.}
 

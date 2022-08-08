@@ -14,6 +14,21 @@ clusterMSnToPatRoon(
   minIntensityPost
 )
 }
+\arguments{
+\item{cl_plists}{...}
+
+\item{mlists}{...}
+
+\item{targets}{...}
+
+\item{clusteringMethod}{...}
+
+\item{clusteringUnit}{...}
+
+\item{clusteringWindow}{...}
+
+\item{minIntensityPost}{...}
+}
 \value{
 A \linkS4class{MSPeakLists} object with clustered data.
 }

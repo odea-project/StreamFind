@@ -1,19 +1,23 @@
-#' @slot analysis A character string with the MS file name the without extension.
+#' @slot analysis A character string with the MS file name without the extension.
 #' @slot file A character string with the complete path of the MS file.
-#' @slot replicate A character string with the respective sample replicate group name.
+#' @slot replicate A character string with the respective analysis
+#' replicate group name.
+#' @slot blank A character string with the associated blank analysis replicate name.
 #' @slot metadata A list with other information queried from the MS files.
-#' The info corresponds to the merged output of \link[mzR]{runInfo} and \link[mzR]{instrumentInfo}
-#' from the \pkg{mzR} package.
-#' @slot spectra A \link[data.table]{data.table} obtained by
+#' The info corresponds to the merged output of \link[mzR]{runInfo}
+#' and \link[mzR]{instrumentInfo} from the \pkg{mzR} package.
+#' @slot spectra A \linkS4class{data.table} obtained by
 #' the \link[mzR]{peaks} function of the \pkg{mzR} package.
 #' Although the function \link[mzR]{peaks} returns a \code{list},
-#' the output is collapsed to a \link[data.table]{data.table}.
-#' @slot chromatograms A \link[data.table]{data.table} obtained by
+#' the output is collapsed to a \linkS4class{data.table}.
+#' @slot chromatograms A \linkS4class{data.table} obtained by
 #' the \link[mzR]{chromatogram} function of the \pkg{mzR} package.
 #' Although the function \link[mzR]{chromatogram} returns a \code{list},
-#' the output is collapsed to a \link[data.table]{data.table}.
-#' @slot parameters A list with parameter \linkS4class{msSettings} for data processing, such as peak picking.
-#' @slot peaks A \link[data.table]{data.table} with feature details, containing the following columns:
+#' the output is collapsed to a \linkS4class{data.table}.
+#' @slot parameters A list with parameter \linkS4class{settings} for data
+#' processing, such as peak picking.
+#' @slot peaks A \linkS4class{data.table} with feature details,
+#' containing the following columns:
 #' \enumerate{
 #'  \item \strong{id}: character, the identifier of the peak;
 #'  \item \strong{rt}: numeric, the calculated retention time (in seconds);

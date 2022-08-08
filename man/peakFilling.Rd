@@ -9,22 +9,24 @@ peakFilling(object, settings = NULL)
 \arguments{
 \item{object}{An \linkS4class{msData} object containing features.}
 
-\item{settings}{A \linkS4class{settings} object with parameter for filling peaks.}
+\item{settings}{A \linkS4class{settings} object with parameter
+for filling peaks.}
 }
 \value{
-An \linkS4class{msData} object including filled missing peaks in analyses.
+An \linkS4class{msData} object including filled missing peaks
+in analyses.
 }
 \description{
-Recursive integration for filling missing peaks within each feature.
+Recursive integration for filling missing peaks
+within each feature.
 }
 \details{
 The function \code{\link[xcms]{fillChromPeaks}}
 from the \pkg{xcms} package can be used,
 giving the respective parameters with the argument \code{settings}.
-list with parameters according to the defined algorithm.
-When the algorithm is set to \emph{xcms3}, the settings are the S4 class objects
-\linkS4class{FillChromPeaksParam} or \linkS4class{ChromPeakAreaParam}.
-See \code{?\link[xcms]{fillChromPeaks}} for more information.
+When the algorithm is set to \emph{xcms3}, the settings are the S4 class
+object \linkS4class{FillChromPeaksParam} or \linkS4class{ChromPeakAreaParam}.
+See \code{\link[xcms]{fillChromPeaks}} for more information.
 }
 \references{
 \insertRef{xcms01}{streamFind}

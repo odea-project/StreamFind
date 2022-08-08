@@ -19,23 +19,26 @@ extractMSn(
 \arguments{
 \item{object}{An \linkS4class{msData} or \linkS4class{msAnalysis} object.}
 
-\item{analyses}{A numeric or character vector with the index or analysis name/s.
-When \code{NULL}, all the analyses are used.}
+\item{analyses}{A numeric or character vector with the index or
+analysis name/s. When \code{NULL}, all the analyses are used.}
 
 \item{level}{A numeric vector with length 1 to defined the MS level.
 Currently, only level 2, corresponding to MS/MS, is possible.}
 
-\item{mz}{A vector with target \emph{m/z} values or
-a two columns data.table or data.frame with minimum and maximum \emph{m/z} values.
-Alternatively, \emph{m/z} and retention time values can be given as one data.table/data.frame
-and the deviations given as \code{ppm} and \code{sec} are used to calculate the ranges.
-The same also works for min and max values of \emph{m/z} and retention time targets.
-Note that when mass/time ranges are given, \code{ppm} and \code{sec} are not used.}
+\item{mz}{A vector with target \emph{m/z} values or a two columns
+\linkS4class{data.table} or data.frame with minimum and maximum
+\emph{m/z} values. Alternatively, \emph{m/z} and retention time values
+can be given as one \linkS4class{data.table}/data.frame and the deviations
+given as \code{ppm} and \code{sec} are used to calculate the ranges.
+The same also works for min and max values of \emph{m/z} and retention
+time targets. Note that when mass/time ranges are given, \code{ppm} and
+\code{sec} are not used.}
 
 \item{ppm}{A numeric vector of length one with the mass deviation, in ppm.}
 
 \item{rt}{A vector with target retention time values or
-a two columns data.table/data.frame with minimum and maximum retention time values.}
+a two columns \linkS4class{data.table}/data.frame with minimum
+and maximum retention time values.}
 
 \item{sec}{A numeric vector of length one with the time deviation, in seconds.}
 

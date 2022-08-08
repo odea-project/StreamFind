@@ -9,11 +9,12 @@ buildPeaksTable(object, pat)
 \arguments{
 \item{object}{A \linkS4class{msData} or \linkS4class{msAnalysis} object.}
 
-\item{pat}{A \linkS4class{features} or \linkS4class{featureGroups} object from the package \pkg{patRoon}.}
+\item{pat}{A \linkS4class{features} or \linkS4class{featureGroups} object
+from the package \pkg{patRoon}.}
 }
 \value{
-A \link[data.table]{data.table} containing
-information for peaks for each sample.
+A \linkS4class{data.table} containing information of peaks found
+in each sample.
 }
 \description{
 buildPeaksTable

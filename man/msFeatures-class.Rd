@@ -36,6 +36,7 @@
   ppm = 20,
   rt = NULL,
   sec = 60,
+  id = NULL,
   filtered = TRUE,
   complete = FALSE,
   average = TRUE
@@ -46,13 +47,53 @@
 \S4method{[}{msFeatures,ANY,ANY,missing}(x, i, j, ..., drop = TRUE)
 }
 \arguments{
+\item{object}{An \linkS4class{msFeatures} object.}
+
+\item{settings}{A \linkS4class{settings} object.}
+
 \item{call}{The call name of the settings to retrieve.}
 
-\item{complete}{Logical, set to \code{TRUE} for a complete version of the output.}
+\item{targetsID}{A character vector with the ID of targets
+(e.g., peaks or features IDs).}
 
-\item{i}{The indice/s or name/s of the features to keep in the \code{x} object.}
+\item{mz}{A vector with target \emph{m/z} values or a two columns
+\linkS4class{data.table} or data.frame with minimum and maximum
+\emph{m/z} values. Alternatively, \emph{m/z} and retention time values
+can be given as one \linkS4class{data.table}/data.frame and the deviations
+given as \code{ppm} and \code{sec} are used to calculate the ranges.
+The same also works for min and max values of \emph{m/z} and retention
+time targets. Note that when mass/time ranges are given, \code{ppm} and
+\code{sec} are not used.}
 
-\item{settigns}{A \linkS4class{settings} object.}
+\item{ppm}{A numeric vector of length one with the mass deviation, in ppm.}
+
+\item{rt}{A vector with target retention time values or
+a two columns \linkS4class{data.table}/data.frame with minimum
+and maximum retention time values.}
+
+\item{sec}{A numeric vector of length one with the time deviation, in seconds.}
+
+\item{id}{An id vector with target identifiers. When not given
+is added as a combination of the \emph{m/z} and retention time ranges or values.}
+
+\item{filtered}{Logical. When \code{TRUE} (the default),
+filtered data is returned. When \code{FALSE}, filtered data is excluded.}
+
+\item{complete}{Logical, set to \code{TRUE} for a complete
+version of the output.}
+
+\item{average}{Logical, set to \code{TRUE} for returning the intensity of
+features averaged for each replicate group.}
+
+\item{x}{An \linkS4class{msFeatures} object.}
+
+\item{i}{The indice/s or name/s of the analyses to keep in \code{x}.}
+
+\item{j}{The indice/s or \emph{id}/s for of features to keep..}
+
+\item{...}{Other arguments.}
+
+\item{drop}{Not applicable to \linkS4class{msFeatures}.}
 }
 \description{
 An S4 class representing an MS sample/file within the \pkg{streamFind} package.
@@ -82,47 +123,19 @@ complete is set to \code{TRUE}, additional feature metadata is also returned.
 \section{Slots}{
 
 \describe{
-\item{\code{analysis}}{A character string with the MS file name the without extension.}
+\item{\code{analyses}}{A \linkS4class{data.table} with the information about the
+analyses, analysis file paths and  replicates and associated replicate blanks
+used to created the features.}
 
-\item{\code{file}}{A character string with the complete path of the MS file.}
+\item{\code{intensity}}{A \linkS4class{data.table} with the a row for each feature
+with the intensity of each peak in each analyses of the set.}
 
-\item{\code{replicate}}{A character string with the respective sample replicate group name.}
+\item{\code{metadata}}{A \linkS4class{data.table} with metadata for each feature.}
 
-\item{\code{metadata}}{A list with other information queried from the MS files.
-The info corresponds to the merged output of \link[mzR]{runInfo} and \link[mzR]{instrumentInfo}
-from the \pkg{mzR} package.}
+\item{\code{annotation}}{...}
 
-\item{\code{spectra}}{A \link[data.table]{data.table} obtained by
-the \link[mzR]{peaks} function of the \pkg{mzR} package.
-Although the function \link[mzR]{peaks} returns a \code{list},
-the output is collapsed to a \link[data.table]{data.table}.}
-
-\item{\code{chromatograms}}{A \link[data.table]{data.table} obtained by
-the \link[mzR]{chromatogram} function of the \pkg{mzR} package.
-Although the function \link[mzR]{chromatogram} returns a \code{list},
-the output is collapsed to a \link[data.table]{data.table}.}
-
-\item{\code{parameters}}{A list with parameter \linkS4class{msSettings} for data processing, such as peak picking.}
-
-\item{\code{peaks}}{A \link[data.table]{data.table} with feature details, containing the following columns:
-\enumerate{
- \item \strong{id}: character, the identifier of the peak;
- \item \strong{rt}: numeric, the calculated retention time (in seconds);
- \item \strong{mz}: numeric, the calculated \emph{m/z} value;
- \item \strong{intensity}: numeric, the calculated intensity or height (in counts);
- \item \strong{area}: numeric, the calculated area of the peak;
- \item \strong{rtmin}: numeric, the minimum retention time (in seconds);
- \item \strong{rtmax}: numeric, the maximum retention time, (in seconds);
- \item \strong{mzmin}: numeric, the minimum \emph{m/z} value;
- \item \strong{mzmax}: numeric, the maximum \emph{m/z} value;
- \item \strong{adduct}: character, the annotated adduct ion representation of the peak;
- \item \strong{isotope}: numeric, the annotated isotopic number;
- \item \strong{monoIsotope}: character, the identifier of the mono isotopic ion;
- \item \strong{scans}: numeric vector, the scans used for the feature integration;
- \item \strong{feature}: character, the identifier of the peaks group (i.e., feature) after
- alignment and grouping of corresponding peaks across samples;
- \item \strong{...} other columns added from various functions.
-}}
+\item{\code{parameters}}{An ordered list of \linkS4class{settings} for each
+processing step.}
 }}
 
 \references{

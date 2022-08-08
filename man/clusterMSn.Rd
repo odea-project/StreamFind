@@ -15,6 +15,23 @@ clusterMSn(
   targets
 )
 }
+\arguments{
+\item{ids}{...}
+
+\item{msnList}{...}
+
+\item{clusteringMethod}{...}
+
+\item{clusteringUnit}{...}
+
+\item{clusteringWindow}{...}
+
+\item{mergeVoltages}{...}
+
+\item{mergeBy}{...}
+
+\item{targets}{...}
+}
 \value{
 A data table with clustered MSn data for given targets.
 }

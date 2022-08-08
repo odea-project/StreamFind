@@ -10,25 +10,26 @@ peakGrouping(object = NULL, settings = NULL)
 \item{object}{A \linkS4class{msData} object with
 \linkS4class{msAnalysis} objects containing peaks.}
 
-\item{settigns}{A \linkS4class{settings} object.}
+\item{settings}{A \linkS4class{settings} object.}
 }
 \value{
-An \linkS4class{msData} object
-containing a features S4 class.
+An \linkS4class{msData} object containing a features S4 class.
 }
 \description{
 Grouping and alignment of peaks across samples.
 The peak grouping uses the \pkg{patRoon} package.
 }
 \details{
-and
-the following algorithms are possible: "xcms3", "xcms", "openms".
+The following algorithms are possible: "xcms3", "xcms", "openms".
 See ?\pkg{patRoon} for further information.
-See \link[patRoon]{groupFeatures} for more information.
+See \code{\link[patRoon]{groupFeatures}} for more information.
+}
+\note{
+The call in the \linkS4class{settings} must be set to "peakGrouping".
 }
 \references{
 \insertRef{patroon01}{streamFind}
 }
 \seealso{
-\link[patRoon]{groupFeatures}
+\code{\link[patRoon]{groupFeatures}}
 }

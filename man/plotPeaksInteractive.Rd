@@ -23,6 +23,5 @@ for coloring by target peaks, analyses or replicates, respectively.}
 A chromatographic peak plot through \pkg{plotly}.
 }
 \description{
-Plots chromatographic peaks from a \linkS4class{ntsData} object
-with the package \pkg{platly} for an interactive user experience.
+Plots chromatographic peaks with the package \pkg{plotly}.
 }

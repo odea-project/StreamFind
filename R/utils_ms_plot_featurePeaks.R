@@ -1,32 +1,14 @@
 
-
 #' @title plotFeaturePeaks
 #'
 #' @description Plots peaks for each feature in an \linkS4class{msData} object.
 #'
 #' @param object An \linkS4class{msData} object.
-#' @param analyses The index or name of the analyses.
-#' The default is \code{NULL} and all analyses are used.
-#' @param targetsID The identifier of the features of interest.
-#' When not \code{NULL}, overwrites any given \code{mz} and \code{rt} value.
-#' @param mz Optional target \emph{m/z} to find features using
-#' the mass deviation specified by the \code{ppm} parameter.
-#' @param ppm The mass deviation to extract the features
-#' when \code{mz} is specified.
-#' @param rt The retention time in minutes or seconds,
-#' depending on the defined \code{rtUnit}, see below.
-#' Only used when \code{mz} is specified.
-#' @param rtWindow The time deviation to collect features.
-#' The time unit is the defined by \code{rtUnit}.
-#' A time interval can be given with a length 2 vector,
-#' defining the minimum and maximum retention time.
-#' @param rtUnit Possible entries are \code{min} or \code{sec}.
-#' The default is \code{min}.
-#' @param msLevel The MS level to extract the data.
-#' For the moment, only 1 is possible.
-#' @param names A character string with names for each feature given in \code{ID}.
-#' Note that length should match between \code{names} and \code{ID}.
-#' If length does not match \code{names} are not used.
+#' @template args-single-analyses
+#' @template args-single-targetsID
+#' @template args-makeTargets
+#' @param heights A numeric vector of length two to control the height of
+#' the first and second plot, respectively.
 #'
 #' @return A double plot with peak chromatograms on the top part
 #' and feature peak groups below.
@@ -40,8 +22,7 @@ plotFeaturePeaks <- function(object,
                              analyses = NULL,
                              targetsID = NULL,
                              mz = NULL, ppm = 20,
-                             rt = NULL, sec = 30,
-                             legendNames = NULL,
+                             rt = NULL, sec = 30, id = NULL,
                              heights = c(0.6, 0.4)) {
 
   checkmate::assertClass(object, "msData")
@@ -77,8 +58,8 @@ plotFeaturePeaks <- function(object,
     pks[id == x, feature]
   }, pks = pks)
 
-  if (!is.null(legendNames) & length(legendNames) == length(unique(eic$var))) {
-    leg <- legendNames
+  if (!is.null(id) & length(id) == length(unique(eic$var))) {
+    leg <- id
     names(leg) <- unique(eic$var)
     eic$var <- sapply(eic$var, function(x) leg[x])
   } else {

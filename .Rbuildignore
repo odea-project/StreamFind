@@ -9,3 +9,8 @@ $run_dev.*
 ^man-roxygen$
 ^doc$
 ^Meta$
+^handbooks$
+^cache.sqlite$
+^log$
+^settings_pp_2\.json$
+^settings_pp\.rds$

@@ -2,7 +2,6 @@
 % Please edit documentation in R/S4_methods_datatable.R
 \name{plotEICs,data.table-method}
 \alias{plotEICs,data.table-method}
-\alias{plotEICs,data.table,data.table-method}
 \title{plotEICs-data.table}
 \usage{
 \S4method{plotEICs}{data.table}(
@@ -15,13 +14,14 @@
 )
 }
 \arguments{
-\item{object}{A \link[data.table]{data.table} as produced by
-the method \link{EICs}.}
+\item{object}{A \linkS4class{data.table} as produced by
+the method \code{\link{EICs}}.}
 
-\item{analyses}{A numeric or character vector with the index or analysis name/s.
-When \code{NULL}, all the analyses are used.}
+\item{analyses}{A numeric or character vector with the index or
+analysis name/s. When \code{NULL}, all the analyses are used.}
 
-\item{colorBy}{A length one character vector applicable to the respective method.}
+\item{colorBy}{A length one character vector applicable to the
+respective method.}
 
 \item{legendNames}{A character vector with the same length and order
 as the number and order of targets to be used as plot legend.}
@@ -33,11 +33,11 @@ the \pkg{plotly} instead of \pkg{base}. The default is \code{FALSE}.}
 }
 \description{
 An S4 method for plotting extracted ion chromatograms (EICs)
-of data in a \link[data.table]{data.table} object obtained with the
-\link{EICs} method. The \code{colorBy} argument can be be \code{"analyses"},
-\code{replicates} or \code{targets} (the default), for coloring by analyses,
+of data in a \linkS4class{data.table} object obtained with the
+\code{\link{EICs}} method. The \code{colorBy} argument can be be "analyses",
+"replicates" or "targets" (the default), for coloring by analyses,
 replicates or EICs targets (id), respectively. The \code{legendNames} is a
 character vector with the same length as targets for plotting and can be
 used to legend the plot. Note that, by setting \code{legendNames}
-the \code{colorBy} is set to "targets" even when other colorBy is used.
+the \code{colorBy} is set to "targets" even when other is given.
 }

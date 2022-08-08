@@ -1,2 +1,2 @@
-#' @param filtered Logical. When \code{TRUE} (the default), filtered are returned.
-#' When \code{FALSE}, filtered data are excluded.
+#' @param filtered Logical. When \code{TRUE} (the default),
+#' filtered data is returned. When \code{FALSE}, filtered data is excluded.

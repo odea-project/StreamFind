@@ -309,7 +309,7 @@
   sec = 30,
   id = NULL,
   all = FALSE,
-  colorBy = "isotopes"
+  colorBy = "mass"
 )
 
 \S4method{[}{msData,ANY,ANY,missing}(x, i, j, ..., drop = TRUE)
@@ -319,43 +319,56 @@
 \arguments{
 \item{object}{An \linkS4class{msData} object.}
 
+\item{obj}{A \linkS4class{msData} object.}
+
 \item{value}{A character vector applicable to the respective method.}
 
-\item{analyses}{A numeric or character vector with the index or analysis name/s.
-When \code{NULL}, all the analyses are used.}
+\item{x}{An \linkS4class{msData} object.}
+
+\item{analyses}{A numeric or character vector with the index or
+analysis name/s. When \code{NULL}, all the analyses are used.}
 
 \item{which}{A character vector with the entry name/s.}
 
-\item{metadata}{A list with a named vector of metadata for each analyses in the
-\linkS4class{msData} object or a \code{data.frame} or \code{data.table}
-with metadata added as columns and with the number of row equal to
-the number of analyses in the \linkS4class{msData} object.}
+\item{metadata}{A list with a named vector of metadata for each analyses
+in the \linkS4class{msData} object or a \code{data.frame} or
+\code{data.table} with metadata added as columns and with the number of
+row equal to the number of analyses in the \linkS4class{msData} object.}
+
+\item{overwrite}{Logical, set to \code{TRUE} to overwrite.}
 
 \item{analysisList}{A list of \linkS4class{msAnalysis} objects.}
 
-\item{i}{A character or numeric vector with the indice/s or name/s of
-the analysis to keep while sub-setting.}
+\item{i}{The indice/s or name/s of the analyses to keep in \code{x}.}
 
-\item{j}{The indice/s or \emph{id}/s for of analyses, features or/and peaks to keep.}
+\item{j}{The indice/s or \emph{id}/s for of features to keep.}
 
-\item{mz}{A vector with target \emph{m/z} values or
-a two columns data.table or data.frame with minimum and maximum \emph{m/z} values.
-Alternatively, \emph{m/z} and retention time values can be given as one data.table/data.frame
-and the deviations given as \code{ppm} and \code{sec} are used to calculate the ranges.
-The same also works for min and max values of \emph{m/z} and retention time targets.
-Note that when mass/time ranges are given, \code{ppm} and \code{sec} are not used.}
+\item{...}{Other arguments.}
+
+\item{drop}{Not applicable to \linkS4class{msData}.}
+
+\item{mz}{A vector with target \emph{m/z} values or a two columns
+\linkS4class{data.table} or data.frame with minimum and maximum
+\emph{m/z} values. Alternatively, \emph{m/z} and retention time values
+can be given as one \linkS4class{data.table}/data.frame and the deviations
+given as \code{ppm} and \code{sec} are used to calculate the ranges.
+The same also works for min and max values of \emph{m/z} and retention
+time targets. Note that when mass/time ranges are given, \code{ppm} and
+\code{sec} are not used.}
 
 \item{ppm}{A numeric vector of length one with the mass deviation, in ppm.}
 
 \item{rt}{A vector with target retention time values or
-a two columns data.table/data.frame with minimum and maximum retention time values.}
+a two columns \linkS4class{data.table}/data.frame with minimum
+and maximum retention time values.}
 
 \item{sec}{A numeric vector of length one with the time deviation, in seconds.}
 
 \item{id}{An id vector with target identifiers. When not given
 is added as a combination of the \emph{m/z} and retention time ranges or values.}
 
-\item{colorBy}{A length one character vector applicable to the respective method.}
+\item{colorBy}{A length one character vector applicable to the
+respective method.}
 
 \item{legendNames}{A character vector with the same length and order
 as the number and order of targets to be used as plot legend.}
@@ -380,7 +393,7 @@ of the target mark.}
 \item{numberRows}{A numeric vector of length one to define
 the number of rows to grid the plots.}
 
-\item{settings}{A \linkS4class{settings} S4 class object with call for \code{extractMSn}.}
+\item{settings}{A \linkS4class{settings} object.}
 
 \item{minIntensityMS1}{Numeric value on length one with the
 minimum intensity of MS1 level traces.}
@@ -392,10 +405,11 @@ minimum intensity of MS2 level traces.}
 
 \item{call}{The call name of the settings to retrieve.}
 
-\item{targetsID}{A character vector with the ID of targets (e.g., peaks or features IDs).}
+\item{targetsID}{A character vector with the ID of targets
+(e.g., peaks or features IDs).}
 
-\item{filtered}{Logical. When \code{TRUE} (the default), filtered are returned.
-When \code{FALSE}, filtered data are excluded.}
+\item{filtered}{Logical. When \code{TRUE} (the default),
+filtered data is returned. When \code{FALSE}, filtered data is excluded.}
 
 \item{xlim}{A length one or two numeric vector for setting the \emph{x} limits of a plot.}
 
@@ -403,9 +417,12 @@ When \code{FALSE}, filtered data are excluded.}
 
 \item{complete}{Logical, set to \code{TRUE} for a complete version of the output.}
 
+\item{average}{Logical, set to \code{TRUE} for returning the intensity of
+features averaged for each replicate group.}
+
 \item{all}{Logical, set to \code{TRUE} for displaying all features/peaks.}
 
-\item{settigns}{A \linkS4class{settings} object.}
+\item{p}{The indice/s or \emph{id}/s of peaks to keep.}
 }
 \description{
 An S4 class object to store and manage processing of files with MS data.
@@ -442,7 +459,7 @@ the number of analyses in the \code{object},
 containing the associated blank replicate name of each analysis.
 
 \item \code{metadata(msData)}: getter for analyses metadata.
-Returns a \link[data.table]{date.table} with a row per analysis.
+Returns a \linkS4class{data.table} with a row per analysis.
 
 \item \code{addMetadata(msData)}: setter for analyses metadata.
 
@@ -464,7 +481,7 @@ See ?\link{makeTargets} for more information.
 \item \code{plotEICs(msData)}: a method for plotting extracted ion chromatograms (EICs)
 of data in an \linkS4class{msData} object.
 The arguments for data collection are the same as the \link{EICs} method.
-A \link[data.table]{date.table} can be used instead.
+A \linkS4class{data.table} can be used instead.
 The \code{colorBy} argument can be \code{"analyses"}, \code{replicates} or \code{targets}
 (the default), for coloring by analyses, replicates or EICs targets, respectively.
 The \code{legendNames} is a character vector with the same length as targets for plotting and
@@ -591,7 +608,8 @@ all the features within the target feature annotation cluster are included in th
 
 \item \code{plotAnnotation(msData)}: plots peaks from given feature annotation targets
 in the \linkS4class{msData} object. The \code{colorBy} argument can be
-set to \code{"isotopes"} for coloring by monoisotopic mass instead of neutral mass of the cluster.
+set to \code{"isotopes"} for coloring by monoisotopic mass instead of
+neutral mass of the cluster.
 
 \item \code{x[i}: subset on analyses and features, using index or name.
 Note that this method is irreversible.

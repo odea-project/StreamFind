@@ -9,13 +9,10 @@ peakAnnotation(object = NULL, settings = NULL)
 \arguments{
 \item{object}{An \linkS4class{msData} object with peaks/features.}
 
-\item{settigns}{A \linkS4class{settings} object.}
-
-\item{excludeBlanks}{Logical, set to \code{TRUE} for excluding
-blank replicates from annotation. Blank intensities are not considered.}
+\item{settings}{A \linkS4class{settings} object.}
 }
 \value{
-An \linkS4class{ntsData} object with annotated peaks/features.
+An \linkS4class{msData} object with annotated peaks/features.
 }
 \description{
 Annotation of isotopic and adduct peaks in features.

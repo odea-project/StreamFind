@@ -1,27 +1,26 @@
 
-
 #' @title peakPicking
 #'
-#' @description Finds chromatographic peaks from MS data in an \linkS4class{msAnalysis}
-#' object or in MS analyses a given \linkS4class{msData} object.
-#' The peak picking uses the \pkg{patRoon} package for data processing, enabling the
-#' use of several algorithms (see details).
+#' @description Finds chromatographic peaks from MS data in an
+#' \linkS4class{msAnalysis} or in MS analyses of a given \linkS4class{msData}.
+#' The peak picking uses the \pkg{patRoon} package for data processing,
+#' enabling the use of several algorithms (see details).
 #'
 #' @param object An \linkS4class{msData} or \linkS4class{msAnalysis} object.
 #' @template args-single-settings
 #'
-#' @note The \linkS4class{settings} call must be set to peakPicking.
+#' @note The \linkS4class{settings} call must be set to "peakPicking".
 #'
-#' @details See the \pkg{patRoon}'s \link[patRoon]{findFeatures} function or the
-#' \href{https://rickhelmus.github.io/patRoon/reference/findFeatures.html}{reference guide}
-#' for more information. The following algorithms are available:
-#' "xcms3", "xcms", "openms", "envipick", "sirius", "kpic2", "safd".
-#' The \linkS4class{settings} depend on the algorithm chosen.
+#' @details See the \pkg{patRoon}'s \code{\link[patRoon]{findFeatures}} or the
+#' \href{https://rickhelmus.github.io/patRoon/reference/findFeatures.html}{guide}
+#' for more information. The following algorithms are available via
+#' \pkg{patRoon}: "xcms3", "xcms", "openms", "envipick", "sirius", "kpic2",
+#' "safd". The \linkS4class{settings} depend on the algorithm chosen.
 #'
 #' @return An \linkS4class{msAnalysis} or \linkS4class{msData} object
 #' with peaks added to the respective slot.
 #'
-#' @seealso \link[patRoon]{findFeatures}
+#' @seealso \code{\link[patRoon]{findFeatures}}
 #'
 #' @references
 #' \insertRef{patroon01}{streamFind}
@@ -37,7 +36,7 @@ peakPicking <- function(object = NULL, settings = NULL) {
 
   valid <- FALSE
 
-  if (checkmate::testClass(object, "msData") | checkmate::testClass(object, "msAnalysis"))
+  if (testClass(object, "msData") | testClass(object, "msAnalysis"))
     valid = TRUE
 
   if (!valid) {
@@ -45,7 +44,7 @@ peakPicking <- function(object = NULL, settings = NULL) {
     return(object)
   }
 
-  #check in object for parameters
+
   if (is.null(settings)) {
 
     prs <- getParameters(object, call = "peakPicking")
@@ -58,15 +57,23 @@ peakPicking <- function(object = NULL, settings = NULL) {
 
     } else if (length(prs) > 0) {
 
-      algorithm <- sapply(prs, function(x) getAlgorithm(x)) #different in samples
+      algorithm <- sapply(prs, function(x) getAlgorithm(x))
 
       if (length(algorithm) != length(analysisNames(object))) {
-        warning(paste0("Settings not present for the analyses: ",
-          paste(analysisNames(object)[!analysisNames(object) %in% names(algorithm)], collapse = "; ")))
+
+        warning(
+          paste0("Settings not present for the analyses: ",
+            paste(analysisNames(object)[!analysisNames(object) %in%
+              names(algorithm)],
+              collapse = "; "
+            )
+          )
+        )
+
         return(object)
       }
     }
-  } else if (checkmate::testClass(settings, "settings")) {
+  } else if (testClass(settings, "settings")) {
 
     algorithm <- getAlgorithm(settings)
     params <- getSettings(settings)
@@ -93,7 +100,11 @@ peakPicking <- function(object = NULL, settings = NULL) {
     ag <- list(analysisInfo = sinfo, algorithm = algorithm)
     pat <- do.call("findFeatures", c(ag, params, verbose = TRUE))
 
-    stgs <- createSettings(call = "peakPicking", algorithm = algorithm, settings = params)
+    stgs <- createSettings(
+      call = "peakPicking",
+      algorithm = algorithm,
+      settings = params
+    )
 
     object <- addParameters(object, stgs)
 
@@ -145,9 +156,11 @@ peakPicking <- function(object = NULL, settings = NULL) {
 
     combFeatures_new <- combFeatures_new[order(names(combFeatures_new))]
 
-    pat <- new("featuresSIRIUS", analysisInfo = combAnaInfo, features = combFeatures_new)
+    pat <- new("featuresSIRIUS",
+      analysisInfo = combAnaInfo,
+      features = combFeatures_new
+    )
   }
-
 
   object <- buildPeaksTable(object, pat)
 
@@ -156,18 +169,18 @@ peakPicking <- function(object = NULL, settings = NULL) {
   return(object)
 }
 
-
 #' @title buildPeaksTable
 #'
 #' @param object A \linkS4class{msData} or \linkS4class{msAnalysis} object.
-#' @param pat A \linkS4class{features} or \linkS4class{featureGroups} object from the package \pkg{patRoon}.
+#' @param pat A \linkS4class{features} or \linkS4class{featureGroups} object
+#' from the package \pkg{patRoon}.
 #'
-#' @return A \link[data.table]{data.table} containing
-#' information for peaks for each sample.
+#' @return A \linkS4class{data.table} containing information of peaks found
+#' in each sample.
 #'
 #' @importClassesFrom patRoon features
-#' @importFrom dplyr select left_join full_join
-#' @importMethodsFrom xcms chromPeaks
+#' @importFrom dplyr select left_join full_join semi_join anti_join
+#' @importMethodsFrom xcms chromPeaks hasFilledChromPeaks
 #' @importFrom data.table rbindlist as.data.table setnames setorder copy
 #' @importFrom checkmate testClass
 #'
@@ -175,15 +188,14 @@ buildPeaksTable <- function(object, pat) {
 
   cat("Building peaks table... ")
 
-
-  if (checkmate::testClass(pat, "features")) {
+  if (testClass(pat, "features")) {
     valid <- TRUE
     peaks <- pat@features
     anaInfo <- pat@analysisInfo
 
-    if (checkmate::testClass(pat, "featuresXCMS3")) {
-      if (xcms::hasFilledChromPeaks(pat@xdata)) {
-        extra <- as.data.table(xcms::chromPeaks(pat@xdata, isFilledColumn = TRUE))
+    if (testClass(pat, "featuresXCMS3")) {
+      if (hasFilledChromPeaks(pat@xdata)) {
+        extra <- as.data.table(chromPeaks(pat@xdata, isFilledColumn = TRUE))
         extra[, analysis := anaInfo$analysis[extra$sample]]
         extra[, analysis := factor(analysis, levels = anaInfo$analysis)]
         extra <- split(extra, extra$analysis)
@@ -203,21 +215,24 @@ buildPeaksTable <- function(object, pat) {
       if (!"filtered" %in% colnames(temp)) temp$filtered <- FALSE
       if (!"filter" %in% colnames(temp)) temp$filter <- NA_character_
 
-      setnames(temp, c("ID", "ret", "retmin", "retmax"), c("id", "rt", "rtmin", "rtmax"), skip_absent = TRUE)
+      setnames(temp,
+               c("ID", "ret", "retmin", "retmax"),
+               c("id", "rt", "rtmin", "rtmax"), skip_absent = TRUE)
+
       setnames(temp, "group", "feature", skip_absent = TRUE)
+
       return(temp)
     }, extra = extra, peaks = peaks)
   }
 
-
-  if (checkmate::testClass(pat, "featureGroups")) {
+  if (testClass(pat, "featureGroups")) {
     valid <- TRUE
     peaks <- pat@features@features
     anaInfo <- pat@analysisInfo
 
-    if (checkmate::testClass(pat, "featureGroupsXCMS3")) {
-      if (xcms::hasFilledChromPeaks(pat@xdata)) {
-        extra <- as.data.table(xcms::chromPeaks(pat@xdata, isFilledColumn = TRUE))
+    if (testClass(pat, "featureGroupsXCMS3")) {
+      if (hasFilledChromPeaks(pat@xdata)) {
+        extra <- as.data.table(chromPeaks(pat@xdata, isFilledColumn = TRUE))
         extra[, analysis := anaInfo$analysis[extra$sample]]
         extra[, analysis := factor(analysis, levels = anaInfo$analysis)]
         extra <- split(extra, extra$analysis)
@@ -233,24 +248,35 @@ buildPeaksTable <- function(object, pat) {
         }
       }
 
-      setnames(temp, c("ID", "ret", "retmin", "retmax"), c("id", "rt", "rtmin", "rtmax"), skip_absent = TRUE)
+      setnames(temp,
+               c("ID", "ret", "retmin", "retmax"),
+               c("id", "rt", "rtmin", "rtmax"), skip_absent = TRUE)
+
       setnames(temp, "group", "feature", skip_absent = TRUE)
+
       return(temp)
+
     }, extra = extra, peaks = peaks)
+
     names(peaks) <- analysisNames(object)
 
     peaks_org <- lapply(object@analyses, function(x) x@peaks)
 
-    # amending existing peaks as patRoon removes peaks not grouped (represented in features)
+    # amending existing peaks as patRoon removes peaks not grouped
     peaks <- lapply(analysisNames(object), function(x, peaks, peaks_org) {
+
       temp <- copy(peaks[[x]])
+
       temp_org <- copy(peaks_org[[x]])
 
-      temp_rem <- dplyr::anti_join(temp_org, temp, by = c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax"))
+      temp_rem <- anti_join(
+        temp_org, temp, by = c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax"))
 
-      temp_old <- dplyr::semi_join(temp, temp_org, by = c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax"))
+      temp_old <- semi_join(
+        temp, temp_org, by = c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax"))
 
-      temp_new <- dplyr::anti_join(temp, temp_org, by = c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax"))
+      temp_new <- anti_join(
+        temp, temp_org, by = c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax"))
 
       temp_list <- list(
         temp_old,
@@ -259,23 +285,6 @@ buildPeaksTable <- function(object, pat) {
       )
 
       temp <- rbindlist(temp_list, fill = TRUE)
-
-      # update_col <- stringr::str_detect(colnames(temp_new), "_remove")
-      # org_col_names <- stringr::str_extract(colnames(temp_new)[update_col], ".*(?=_remove)")
-      #
-      # for (i in seq_len(length(org_col_names))) {
-      #   or_c <- org_col_names[i]
-      #   up_c <- paste0(or_c, "_remove")
-      #   r_rem <- is.na(temp_new[[or_c]])
-      #   if (or_c %in% "feature") {
-      #     temp_new[, (or_c) := temp_new[[up_c]]]
-      #   } else {
-      #     temp_new[r_rem, (or_c) := temp_new[[up_c]][r_rem]]
-      #   }
-      # }
-      #
-      # rem_col_names <- colnames(temp_new)[update_col]
-      # temp_new[, (rem_col_names) := NULL]
 
       if (!"is_filled" %in% colnames(temp)) temp$is_filled <- 0
       if (!"filtered" %in% colnames(temp)) temp$filtered <- FALSE
@@ -288,7 +297,6 @@ buildPeaksTable <- function(object, pat) {
 
     }, peaks = peaks, peaks_org = peaks_org)
   }
-
 
   peaks <- lapply(peaks, function(x, object) {
     temp <- copy(x)
@@ -336,7 +344,7 @@ buildPeaksTable <- function(object, pat) {
 
   names(peaks) <- analysisNames(object)
 
-  if (checkmate::testClass(object, "msAnalysis")) {
+  if (testClass(object, "msAnalysis")) {
     object@peaks <- copy(peaks[[1]])
 
   } else {
@@ -358,5 +366,6 @@ buildPeaksTable <- function(object, pat) {
   # }
 
   cat("Done! \n")
+
   return(object)
 }

@@ -1,5 +1,4 @@
 
-
 #' @title plotPeaksStatic
 #'
 #' @description Static plot of chromatographic peaks using the \pkg{base} package.
@@ -9,6 +8,8 @@
 #' as columns.
 #' @param peaks A data table with the individual peaks to plot.
 #' @param title An optional character vector to be used as title.
+#'
+#' @importFrom graphics axis legend lines points polygon
 #'
 #' @return A plot of chromatographic peaks.
 #'
@@ -40,8 +41,6 @@ plotPeaksStatic <- function(eic, peaks, title = NULL) {
       col = cl[lt]
     )
 
-    #pk_eic_a <- pk_eic_a[intensity > 0, ]
-
     polygon(
       c(pk_eic_a$rt, rev(pk_eic_a$rt)),
       c(pk_eic_a$intensity, rep(0, length(pk_eic_a$intensity))),
@@ -69,13 +68,9 @@ plotPeaksStatic <- function(eic, peaks, title = NULL) {
   )
 }
 
-
-
-
 #' @title plotPeaksInteractive
 #'
-#' @description Plots chromatographic peaks from a \linkS4class{ntsData} object
-#' with the package \pkg{platly} for an interactive user experience.
+#' @description Plots chromatographic peaks with the package \pkg{plotly}.
 #'
 #' @param eic A data table with the analysis, replicate,
 #' id, rt, intensity and var (i.e., the plotting variables for each peak)
@@ -146,8 +141,6 @@ plotPeaksInteractive <- function(eic, peaks, title, colorBy) {
       }
     )
 
-    #pk_eic <- pk_eic[intensity > 0, ]
-
     plot <- plot %>%  add_trace(
       x = pk_eic$rt,
       y = pk_eic$intensity,
@@ -185,7 +178,6 @@ plotPeaksInteractive <- function(eic, peaks, title, colorBy) {
 
   return(plot)
 }
-
 
 #' @title mapPeaksInteractive
 #'

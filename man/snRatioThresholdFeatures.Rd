@@ -9,7 +9,8 @@ snRatioThresholdFeatures(obj, value = 10)
 \arguments{
 \item{obj}{An \linkS4class{msFeatures} object.}
 
-\item{snRatio}{A numerical value set at the desired signal-to-noise ratio for features.}
+\item{value}{A numerical value with the desired minimum signal-to-noise ratio
+for features.}
 }
 \description{
 snRatioThresholdFeatures

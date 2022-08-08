@@ -1,11 +1,10 @@
 
-
 #' @title plotInteractiveXICs
 #'
 #' @description Plot traces or profile data for a target compound
 #' using expected \emph{m/z} and retention time pairs, including deviations.
 #'
-#' @param object A \link[data.table]{data.table} from the method \link{XICs}.
+#' @param xic A \linkS4class{data.table} from the method \code{\link{XICs}}.
 #' @param plotTargetMark Logical, set to \code{TRUE} (the default) to plot a
 #' target mark.
 #' @param ppmMark A numeric vector of length one to define the mass deviation, in ppm,

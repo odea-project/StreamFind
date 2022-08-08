@@ -106,6 +106,8 @@ setMethod("show", "msData", function(object) {
 #' four columns: path, analysis, group and blank. The \link{data.frame}
 #' can be used as analysisInfo in \pkg{patRoon}.
 #'
+#' @param obj A \linkS4class{msData} object.
+#'
 #' @export
 #'
 #' @importMethodsFrom patRoon analysisInfo
@@ -242,7 +244,7 @@ setMethod("blankReplicateNames<-", signature("msData", "ANY"), function(object, 
 #### metadata ---------------------------------------------------------
 
 #' @describeIn msData getter for analyses metadata.
-#' Returns a \link[data.table]{date.table} with a row per analysis.
+#' Returns a \linkS4class{data.table} with a row per analysis.
 #'
 #' @template args-single-which-entry
 #'
@@ -270,10 +272,11 @@ setMethod("metadata", "msData", function(x, analyses = NULL, which = NULL) {
 
 #' @describeIn msData setter for analyses metadata.
 #'
-#' @param metadata A list with a named vector of metadata for each analyses in the
-#' \linkS4class{msData} object or a \code{data.frame} or \code{data.table}
-#' with metadata added as columns and with the number of row equal to
-#' the number of analyses in the \linkS4class{msData} object.
+#' @param metadata A list with a named vector of metadata for each analyses
+#' in the \linkS4class{msData} object or a \code{data.frame} or
+#' \code{data.table} with metadata added as columns and with the number of
+#' row equal to the number of analyses in the \linkS4class{msData} object.
+#' @param overwrite Logical, set to \code{TRUE} to overwrite.
 #'
 #' @export
 #'
@@ -282,7 +285,9 @@ setMethod("metadata", "msData", function(x, analyses = NULL, which = NULL) {
 #'
 #' @aliases addMetadata,msData,msData-method
 #'
-setMethod("addMetadata", "msData", function(object, metadata = NULL, overwrite = FALSE) {
+setMethod("addMetadata", "msData", function(object,
+                                            metadata = NULL,
+                                            overwrite = FALSE) {
 
   if (is.data.frame(metadata) | is.data.table(metadata)) {
 
@@ -373,7 +378,7 @@ setMethod("addAnalyses", "msData", function(object, analysisList = NULL) {
       }
 
       #check name
-      if (TRUE %in% (names(a1) %in% analysisNames(object))) {
+      if (TRUE %in% (names(analysisList) %in% analysisNames(object))) {
         warning("Analysis name/s to add is already in msData!")
         return(object)
       }
@@ -541,7 +546,7 @@ setMethod("EICs", "msData", function(object,
 #' @describeIn msData a method for plotting extracted ion chromatograms (EICs)
 #' of data in an \linkS4class{msData} object.
 #' The arguments for data collection are the same as the \link{EICs} method.
-#' A \link[data.table]{date.table} can be used instead.
+#' A \linkS4class{data.table} can be used instead.
 #' The \code{colorBy} argument can be \code{"analyses"}, \code{replicates} or \code{targets}
 #' (the default), for coloring by analyses, replicates or EICs targets, respectively.
 #' The \code{legendNames} is a character vector with the same length as targets for plotting and
@@ -1228,6 +1233,8 @@ setMethod("mapPeaks", "msData", function(object,
 #' complete is set to \code{TRUE}, additional feature metadata is also returned.
 #'
 #' @param complete Logical, set to \code{TRUE} for a complete version of the output.
+#' @param average Logical, set to \code{TRUE} for returning the intensity of
+#' features averaged for each replicate group.
 #'
 #' @export
 #'
@@ -1523,7 +1530,8 @@ setMethod("annotation", "msData", function(object,
 
 #' @describeIn msData plots peaks from given feature annotation targets
 #' in the \linkS4class{msData} object. The \code{colorBy} argument can be
-#' set to \code{"isotopes"} for coloring by monoisotopic mass instead of neutral mass of the cluster.
+#' set to \code{"isotopes"} for coloring by monoisotopic mass instead of
+#' neutral mass of the cluster.
 #'
 #' @export
 #'
@@ -1536,7 +1544,7 @@ setMethod("plotAnnotation", "msData", function(object,
                                                mz = NULL, ppm = 20,
                                                rt = NULL, sec = 30, id = NULL,
                                                all = FALSE,
-                                               colorBy = "isotopes") {
+                                               colorBy = "mass") {
 
   comps <- annotation(
     object = object,
@@ -1563,7 +1571,11 @@ setMethod("plotAnnotation", "msData", function(object,
 #' @describeIn msData subset on analyses and features, using index or name.
 #' Note that this method is irreversible.
 #'
+#' @param x An \linkS4class{msData} object.
+#' @param i The indice/s or name/s of the analyses to keep in \code{x}.
 #' @param j The indice/s or \emph{id}/s for of features to keep.
+#' @param drop Not applicable to \linkS4class{msData}.
+#' @param ... Other arguments.
 #'
 #' @export
 #'
@@ -1592,8 +1604,6 @@ setMethod("[", c("msData", "ANY", "ANY", "missing"), function(x, i, j, ...) {
       z@peaks <- copy(temp)
       return(z)
     }, j = j)
-
-    #if (length(x@features@annotation) > 0) x@features@annotation[[1]] <- x@features@annotation[[1]][, j]
   }
 
   return(x)
@@ -1604,7 +1614,7 @@ setMethod("[", c("msData", "ANY", "ANY", "missing"), function(x, i, j, ...) {
 #' @describeIn msData subset on analyses, features and peaks, using index or name.
 #' Note that this method is irreversible.
 #'
-#' @param j The indice/s or \emph{id}/s for of analyses, features or/and peaks to keep.
+#' @param p The indice/s or \emph{id}/s of peaks to keep.
 #'
 #' @export
 #'

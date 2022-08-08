@@ -2,7 +2,6 @@
 % Please edit documentation in R/S4_methods_datatable.R
 \name{plotTICs,data.table-method}
 \alias{plotTICs,data.table-method}
-\alias{plotTICs,data.table,data.table-method}
 \title{plotTICs-data.table}
 \usage{
 \S4method{plotTICs}{data.table}(
@@ -14,8 +13,11 @@
 )
 }
 \arguments{
-\item{analyses}{A numeric or character vector with the index or analysis name/s.
-When \code{NULL}, all the analyses are used.}
+\item{object}{A \linkS4class{data.table} as produced by
+the method \code{\link{TICs}}.}
+
+\item{analyses}{A numeric or character vector with the index or
+analysis name/s. When \code{NULL}, all the analyses are used.}
 
 \item{colorBy}{A length one character vector applicable to the respective method.}
 
@@ -26,7 +28,7 @@ the \pkg{plotly} instead of \pkg{base}. The default is \code{FALSE}.}
 }
 \description{
 Plots a total ion chromatogram (TIC) from the
-\link[data.table]{data.table} obtained by the S4 method \link{TICs}.
+\linkS4class{data.table} obtained by the S4 method \code{\link{TICs}}.
 The colorBy argument can be "analyses" or "replicates" to color
 the plot by analyses or by analysis replicates.
 }

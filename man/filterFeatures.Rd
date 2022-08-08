@@ -9,41 +9,44 @@ filterFeatures(object, settings = NULL)
 \arguments{
 \item{object}{An \linkS4class{msData} or \linkS4class{msFeatures} object.}
 
-\item{settigns}{A \linkS4class{settings} object.}
+\item{settings}{A \linkS4class{settings} object.}
 }
 \description{
-Filter features in an \linkS4class{msData} or \linkS4class{msFeatures} object.
+Filter features in an \linkS4class{msData} or
+ \linkS4class{msFeatures} object.
 }
 \details{
 Filters are added as an \linkS4class{settings} object with
 the slot call defined as "filterFeatures", the slot algorithm set to "filter"
-and the filtering parameters are given as an ordered list in the settings slot.
-The available filters are as follows:
+and the filtering parameters are given as an ordered list in the settings
+slot. The available filters are as follows:
 \itemize{
  \item \code{minIntensity}: features below a minimum intensity threshold.
 For example, minIntensity = 3000, removes features with maximum
 peak representation below 3000 counts;
- \item \code{blankThreshold}: features that are not more intense than a defined
-threshold multiplier of the assigned blank intensity.
+ \item \code{blankThreshold}: features that are not more intense than a
+defined threshold multiplier of the assigned blank intensity.
 For example, blankThreshold = 3, features with maximum peak representation
 that are not higher than 3 times the blank intensity;
  \item \code{maxReplicateIntensityDeviation} features based on a
 maximum standard deviation (SD), in percentage, among replicate analyses.
-For example, maxReplicateIntensityDeviation = 30, filters features that do not have
-the SD below 30% in at least one analysis replicate group.
- \item \code{minReplicateAbundance}: features that are not present with at least
-a specified frequency in one analysis replicate group.
-For example, minReplicateAbundance = 2, filters features that are not represented
-in at least two analyses within a replicate.
- \item \code{excludeIsotopes} features annotated as isotopes are excluded (i.e., filtered).
- \item \code{excludeAdducts} features annotated as adducts are filtered when the corresponding
- protonated/deprotonated ion is present.
- \item \code{snRatio} features below a minimum signal-to-noise (s/n) ratio threshold.
-For example, snRatio = 3, filters features with a maximum s/n in corresponding peaks below a 3.
+For example, maxReplicateIntensityDeviation = 30, filters features that
+do not have the SD below 30% in at least one analysis replicate group.
+ \item \code{minReplicateAbundance}: features that are not present with
+at least a specified frequency in one analysis replicate group.
+For example, minReplicateAbundance = 2, filters features that are not
+represented in at least two analyses within a replicate.
+ \item \code{excludeIsotopes} features annotated as isotopes are excluded
+(i.e., filtered).
+ \item \code{excludeAdducts} features annotated as adducts are filtered
+when the corresponding protonated/deprotonated ion is present.
+ \item \code{snRatio} features below a minimum signal-to-noise (s/n) ratio
+ threshold. For example, snRatio = 3, filters features with a maximum s/n
+ in corresponding peaks below a 3.
 }
 }
 \note{
 The \linkS4class{settings} object with the filters can be added
-directly to the \code{object}. When \code{settings} is \code{NULL}, the filters
-in the \code{object} are used instead.
+directly to the \code{object}. When \code{settings} is \code{NULL}, the
+filters in the \code{object} are used instead.
 }

@@ -9,7 +9,8 @@ minReplicateAbundanceFeatures(obj, value = 3)
 \arguments{
 \item{obj}{An \linkS4class{msFeatures} object.}
 
-\item{value}{A numerical value set at the desired minimum representation in replicates.}
+\item{value}{A numerical value set at the desired minimum representation in
+replicates.}
 }
 \description{
 minReplicateAbundanceFeatures

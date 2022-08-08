@@ -6,6 +6,15 @@
 \usage{
 plotAnnotationInteractive(object, comps, colorBy = "isotopes")
 }
+\arguments{
+\item{object}{An \linkS4class{msData} object.}
+
+\item{comps}{A \linkS4class{data.table} as obtained by the
+method \code{annotation} for \linkS4class{msData}.}
+
+\item{colorBy}{A string value to define the plotting legend.
+Possible values are "mass" and "isotopes".}
+}
 \value{
 A dotted plot with features annotation.
 }

@@ -7,8 +7,8 @@
 fillingSettingsDefaultXCMS()
 }
 \value{
-A \linkS4class{settings} object containing parameters for
-recursive integration of peaks from analyses not represented in a given feature.
+A \linkS4class{settings} object containing parameters for recursive
+integration of peaks from analyses not represented in a given feature.
 }
 \description{
 fillingSettingsDefaultXCMS

@@ -9,8 +9,8 @@ removeFilteredFeatures(object, which = "all")
 \arguments{
 \item{object}{An \linkS4class{msFeatures} object.}
 
-\item{which}{A character vector with the filter tag/s of features to be removed.
-The default is \emph{all} to remove all filtered features.}
+\item{which}{A character vector with the filter tag/s of features to be
+removed. The default is \emph{all} to remove all filtered features.}
 }
 \description{
 Function to remove permanently filtered features from a

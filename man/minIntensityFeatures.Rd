@@ -9,7 +9,8 @@ minIntensityFeatures(obj, value = 5000)
 \arguments{
 \item{obj}{An \linkS4class{msFeatures} object.}
 
-\item{value}{A numerical value with the desired minimum intensity for features.}
+\item{value}{A numerical value with the desired minimum intensity for
+features.}
 }
 \description{
 minIntensityFeatures

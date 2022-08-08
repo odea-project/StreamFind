@@ -7,7 +7,7 @@
 plotAlignment(object, interactive = TRUE)
 }
 \arguments{
-\item{object}{An \linkS4class{msData} or \linkS4class{msAnalyses} object with adjusted retention time.}
+\item{object}{An \linkS4class{msData} or \linkS4class{msAnalysis} object with adjusted retention time.}
 
 \item{interactive}{Logical, set to \code{TRUE} for plotting with \pkg{plotly} package.}
 }

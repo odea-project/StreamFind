@@ -99,7 +99,7 @@ setMethod("exportSettings", "settings", function(object,
       settings = object@settings
     )
 
-    object_list <- jsonlite::toJSON(object_list,
+    object_list <- toJSON(object_list,
       force = TRUE, auto_unbox = TRUE, pretty = TRUE
     )
 
@@ -107,7 +107,6 @@ setMethod("exportSettings", "settings", function(object,
   }
 
 })
-
 
 ##### importSettings -----------------------------------------------------
 
@@ -120,14 +119,17 @@ setMethod("exportSettings", "settings", function(object,
 #' @export
 #'
 #' @importFrom jsonlite fromJSON
+#' @importFrom tools file_ext
 #'
 importSettings <- function(file) {
 
-  if (tools::file_ext(file) %in% "json") {
-    object_list <- jsonlite::fromJSON(file)
+  if (file_ext(file) %in% "json") {
+    object_list <- fromJSON(file)
 
     #check if settings entries are data.frame
-    if (is.data.frame(object_list$settings)) object_list$settings <- list(object_list$settings)
+    if (is.data.frame(object_list$settings)) {
+      object_list$settings <- list(object_list$settings)
+    }
 
     object_list$settings <- lapply(object_list$settings, function(x) {
 
@@ -163,7 +165,7 @@ importSettings <- function(file) {
     )
   }
 
-  if (tools::file_ext(file) %in% "rds") {
+  if (file_ext(file) %in% "rds") {
     return(readRDS(file))
   }
 }

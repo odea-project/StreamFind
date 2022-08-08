@@ -2,7 +2,6 @@
 % Please edit documentation in R/S4_methods_datatable.R
 \name{plotPeaks,data.table-method}
 \alias{plotPeaks,data.table-method}
-\alias{plotPeaks,data.table,data.table-method}
 \title{plotPeaks-data.table}
 \usage{
 \S4method{plotPeaks}{data.table}(
@@ -16,16 +15,17 @@
 )
 }
 \arguments{
-\item{object}{A \link[data.table]{data.table} as produced by
-the method \link{EICs}.}
+\item{object}{A \linkS4class{data.table} as produced by
+the method \code{\link{EICs}}.}
 
 \item{peaks}{A table with the target peaks as obtained by
-the method \link{peaks}.}
+the method \code{\link{peaks}}.}
 
-\item{analyses}{A numeric or character vector with the index or analysis name/s.
-When \code{NULL}, all the analyses are used.}
+\item{analyses}{A numeric or character vector with the index or
+analysis name/s. When \code{NULL}, all the analyses are used.}
 
-\item{colorBy}{A length one character vector applicable to the respective method.}
+\item{colorBy}{A length one character vector applicable to the
+respective method.}
 
 \item{legendNames}{A character vector with the same length and order
 as the number and order of targets to be used as plot legend.}
@@ -36,11 +36,13 @@ as the number and order of targets to be used as plot legend.}
 the \pkg{plotly} instead of \pkg{base}. The default is \code{FALSE}.}
 }
 \description{
-A method for plotting EIC (\code{object}) of chromatographic
-peaks (\code{pks}). The \code{colorBy} argument can be be \code{"analyses"},
-\code{replicates} or \code{targets} (the default), for coloring by analyses,
-replicates or target peaks (id), respectively. The \code{legendNames} is a
-character vector with the same length as target peaks for plotting and
-can be used to legend the plot. Note that, by setting \code{legendNames}
-the \code{colorBy} is set to "targets" even when other colorBy is used.
+A method for plotting EIC \linkS4class{data.table} of
+chromatographic peaks. The \code{colorBy} argument can be be "analyses",
+"replicates" or "targets" (the default), for coloring by analyses,
+replicates or target peaks (i.e., peak id), respectively. The
+\code{legendNames} is a character vector with the same length as target
+peaks for plotting and can be used to legend the plot. Note that,
+by setting \code{legendNames} the \code{colorBy} is set to "targets" even
+when other is given. Note that the id in \code{object} and \code{peaks}
+must match.
 }

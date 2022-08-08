@@ -72,7 +72,11 @@ setMethod("show", "streamSet", function(object) {
 
 #' @describeIn streamSet subset on analyses, using analysis index or name.
 #'
-#' @param i The indice/s or name/s of the analyses to keep in the \code{x} object.
+#' @param x A \linkS4class{streamSet} object.
+#' @param i The indice/s or name/s of the analyses to keep in \code{x}.
+#' @param j Not applicable to \linkS4class{streamSet}.
+#' @param drop Not applicable to \linkS4class{streamSet}.
+#' @param ... Other arguments.
 #'
 #' @export
 #'

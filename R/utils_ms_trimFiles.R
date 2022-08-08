@@ -1,9 +1,8 @@
 
-
 #' @title trimSpectraMZR
 #'
-#' @description Trim \emph{mzML} or \emph{mzXML} files based on time (in seconds)
-#' and  \emph{m/z} (in Da) ranges using the \pkg{mzR} package.
+#' @description Trim \emph{mzML} or \emph{mzXML} files based on time
+#' (in seconds) and  \emph{m/z} (in Da) ranges using the \pkg{mzR} package.
 #'
 #' @param files A character vector with the full path of the files to trim.
 #' @param rtr A numeric vector of length 2 with the maximum and minimum
@@ -14,7 +13,7 @@
 #' \emph{m/z} range to trim the files, in Da.
 #' @param mzr_ms2 A numeric vector of length 2 with the maximum and minimum
 #' \emph{m/z} range to trim MS2 data files, in Da. when NULL and MS2 is TRUE
-#' the mzr is used instead.
+#' the \code{mzr} argument is used instead.
 #' @param intensityThreshold A numeric vector of length one with the minimum
 #' intensity threshold. Traces below the given intensity threshold are removed.
 #' If a length two vector is given, the first value if applied for MS1 data
@@ -39,11 +38,13 @@
 #' \insertRef{mzr04}{streamFind}
 #'
 #' @importFrom mzR openMSfile header peaks close copyWriteMSData writeMSData
+#' @importFrom tools file_ext
+#'
 #'
 trimSpectraFilesMZR <- function(files, MS1 = TRUE, MS2 = TRUE,
                                 rtr = NULL, mzr = NULL, mzr_ms2 = NULL,
-                                intensityThreshold = NULL,
-                                copyMetadata = TRUE, path = NULL, prefix = "trim_") {
+                                intensityThreshold = NULL, copyMetadata = TRUE,
+                                path = NULL, prefix = "trim_") {
 
   if (!is.null(rtr) & !is.numeric(rtr)) {
     return(warning("rtr must be numeric!"))
@@ -109,13 +110,13 @@ trimSpectraFilesMZR <- function(files, MS1 = TRUE, MS2 = TRUE,
 
   for (f in files) {
 
-    if (!tools::file_ext(f) %in% c("mzML", "mzXML")) {
+    if (!file_ext(f) %in% c("mzML", "mzXML")) {
       warning(paste0("File ", basename(f), " not as mzML or mzXML. Skipped!"))
       next
     }
 
-    msf <- mzR::openMSfile(f)
-    hd <- mzR::header(msf)
+    msf <- openMSfile(f)
+    hd <- header(msf)
 
     if (!is.null(rtr)) {
       hd2 <- hd[hd$retentionTime >= rtr[1] & hd$retentionTime <= rtr[2], ]
@@ -123,21 +124,25 @@ trimSpectraFilesMZR <- function(files, MS1 = TRUE, MS2 = TRUE,
 
     if (!is.null(mzr) | !is.null(mzr_ms2)) {
 
-      spec <- mzR::peaks(msf, scans = hd2$seqNum)
+      spec <- peaks(msf, scans = hd2$seqNum)
 
       for (s in seq_len(length(spec))) {
         altered <- FALSE
 
         if (!is.matrix(spec[[s]])) {
-          spec[[s]] <- matrix(spec[[s]], ncol = 2, dimnames = list(1, c("mz", "intensity")))
+          spec[[s]] <- matrix(spec[[s]],
+                              ncol = 2,
+                              dimnames = list(1, c("mz", "intensity")))
         }
 
         if (MS1 & hd2$msLevel[s] == 1 & !is.null(mzr)) {
           altered <- TRUE
-          spec[[s]] <- spec[[s]][spec[[s]][, 1] >= mzr[1] & spec[[s]][, 1] <= mzr[2], ]
+          spec[[s]] <- spec[[s]][spec[[s]][, 1] >= mzr[1] &
+                                   spec[[s]][, 1] <= mzr[2], ]
 
           if (!is.matrix(spec[[s]])) {
-            spec[[s]] <- matrix(spec[[s]], ncol = 2, dimnames = list(1, c("mz", "intensity")))
+            spec[[s]] <- matrix(spec[[s]], ncol = 2,
+                                dimnames = list(1, c("mz", "intensity")))
           }
 
           if (!is.null(intensityThreshold)) {
@@ -148,10 +153,12 @@ trimSpectraFilesMZR <- function(files, MS1 = TRUE, MS2 = TRUE,
         if (MS2 & hd2$msLevel[s] == 2 & !is.null(mzr_ms2)) {
           altered <- TRUE
 
-          spec[[s]] <- spec[[s]][spec[[s]][, 1] >= mzr_ms2[1] & spec[[s]][, 1] <= mzr_ms2[2], ]
+          spec[[s]] <- spec[[s]][spec[[s]][, 1] >= mzr_ms2[1] &
+                                   spec[[s]][, 1] <= mzr_ms2[2], ]
 
           if (!is.matrix(spec[[s]])) {
-            spec[[s]] <- matrix(spec[[s]], ncol = 2, dimnames = list(1, c("mz", "intensity")))
+            spec[[s]] <- matrix(spec[[s]], ncol = 2,
+                                dimnames = list(1, c("mz", "intensity")))
           }
 
           if (!is.null(intensityThreshold)) {
@@ -163,15 +170,18 @@ trimSpectraFilesMZR <- function(files, MS1 = TRUE, MS2 = TRUE,
         if (altered) {
 
           if (!is.matrix(spec[[s]])) {
-            spec[[s]] <- matrix(spec[[s]], ncol = 2, dimnames = list(1, c("mz", "intensity")))
+            spec[[s]] <- matrix(spec[[s]], ncol = 2,
+                                dimnames = list(1, c("mz", "intensity")))
           }
 
           hd2$peaksCount[s] <- nrow(spec[[s]])
           hd2$totIonCurrent[s] <- sum(spec[[s]][, 2])
 
           if (nrow(spec[[s]]) > 0) {
-            hd2$basePeakMZ[s] <- spec[[s]][spec[[s]][, 2] == max(spec[[s]][, 2]), 1][1] # when duplicated get the first
-            hd2$basePeakIntensity[s] <- spec[[s]][spec[[s]][, 2] == max(spec[[s]][, 2]), 2][1]
+            hd2$basePeakMZ[s] <-
+              spec[[s]][spec[[s]][, 2] == max(spec[[s]][, 2]), 1][1] # when duplicated get the first
+            hd2$basePeakIntensity[s] <-
+              spec[[s]][spec[[s]][, 2] == max(spec[[s]][, 2]), 2][1]
             hd2$lowMZ[s] <- min(spec[[s]][, 1])[1]
             hd2$highMZ[s] <- max(spec[[s]][, 1])[1]
             hd2$scanWindowLowerLimit[s] <- min(spec[[s]][, 1])[1]
@@ -203,21 +213,23 @@ trimSpectraFilesMZR <- function(files, MS1 = TRUE, MS2 = TRUE,
     if (!is.null(path)) savePath <- path
 
     if (copyMetadata) {
-      mzR::copyWriteMSData(
+      copyWriteMSData(
         object = spec,
         file = paste0(savePath, "/", prefix, basename(f)),
         original_file = f,
         header = hd2,
         outformat = format_tag,
-        software_processing = unlist(c("mzR", paste0(packageVersion("mzR")), "MS:-1", "Trimmed spectra"))
+        software_processing = unlist(
+          c("mzR", paste0(packageVersion("mzR")), "MS:-1", "Trimmed spectra"))
       )
     } else {
-      mzR::writeMSData(
+      writeMSData(
         object = spec,
         file = paste0(savePath, "/", prefix, basename(f)),
         header = hd2,
         outformat = format_tag,
-        software_processing = unlist(c("mzR", paste0(packageVersion("mzR")), "MS:-1", "Trimmed spectra"))
+        software_processing = unlist(
+          c("mzR", paste0(packageVersion("mzR")), "MS:-1", "Trimmed spectra"))
       )
     }
     setTxtProgressBar(pb, which(f == files))

@@ -32,7 +32,7 @@ time range to trim the files, in seconds.}
 
 \item{mzr_ms2}{A numeric vector of length 2 with the maximum and minimum
 \emph{m/z} range to trim MS2 data files, in Da. when NULL and MS2 is TRUE
-the mzr is used instead.}
+the \code{mzr} argument is used instead.}
 
 \item{intensityThreshold}{A numeric vector of length one with the minimum
 intensity threshold. Traces below the given intensity threshold are removed.
@@ -51,8 +51,8 @@ Saves the trimmed \emph{mzML} or \emph{mzXML} files
 in a given path, adding a pre-defined prefix to the file name.
 }
 \description{
-Trim \emph{mzML} or \emph{mzXML} files based on time (in seconds)
-and  \emph{m/z} (in Da) ranges using the \pkg{mzR} package.
+Trim \emph{mzML} or \emph{mzXML} files based on time
+(in seconds) and  \emph{m/z} (in Da) ranges using the \pkg{mzR} package.
 }
 \references{
 \insertRef{mzr01}{streamFind}

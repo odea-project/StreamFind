@@ -9,7 +9,8 @@ calculateSNR(object, targetsID = NULL, rtExpand = 200, filtered = FALSE)
 \arguments{
 \item{object}{An \linkS4class{msData} object.}
 
-\item{targetsID}{Optionally, a character vector with the \emph{id} of the features to calculate the sn ratio.}
+\item{targetsID}{Optionally, a character vector with the \emph{id} of
+the features to calculate the sn ratio.}
 
 \item{rtExpand}{The time, in seconds,
 expansion before and after the time window of each feature
@@ -20,21 +21,24 @@ peaks/features filtered. The default is \code{FALSE}.}
 }
 \value{
 An \linkS4class{msData} or \linkS4class{msAnalysis} object with the
-noise and sn columns amended to the peaks slot. When features are present, the
-columns noise, noise_sd, sn and sn_sd are added to the slot metadata of the
-\linkS4class{msFeatures} object in the given \linkS4class{msData}.
+noise and sn columns amended to the peaks slot. When features are present,
+the columns noise, noise_sd, sn and sn_sd are added to the slot metadata of
+the \linkS4class{msFeatures} object in the given \linkS4class{msData}.
 }
 \description{
-Calculates the signal-to-noise (sn) ratio for peaks in a given \linkS4class{msData}
-or \linkS4class{msAnalysis} object. If features are present in the \linkS4class{msData},
-the minimum sn of the corresponding peaks group are returned in the metadata slot.
+Calculates the signal-to-noise (sn) ratio for peaks in a
+given \linkS4class{msData} or \linkS4class{msAnalysis} object.
+If features are present in the \linkS4class{msData}, the minimum sn of
+the corresponding peaks group are returned in the metadata slot.
 The argument \code{targetsID} can be used to specify for which peaks/features
 the sn is to be calculated.
 }
 \details{
-The noise is estimated by the maximum intensity of the background mass traces
-(i.e., traces belonging to the same mass bin as the peak but taken from a wider and predefined
-time window (\code{rtExpand}) before and after the peak limit. The sn is then calculated by
-dividing the maximum intensity of the peak with the estimated noise.
-Mass traces that belong to other peaks within the same mass and time windows are excluded before noise estimation.
+The noise is estimated by the maximum intensity of the background
+mass traces (i.e., traces belonging to the same mass bin as the peak but
+taken from a wider and predefined time window (\code{rtExpand}) before
+and after the peak limit. The sn is then calculated by dividing the maximum
+intensity of the peak with the estimated noise. Mass traces that belong to
+other peaks within the same mass and time windows are excluded before
+noise estimation.
 }

@@ -12,43 +12,41 @@ plotFeaturePeaks(
   ppm = 20,
   rt = NULL,
   sec = 30,
-  legendNames = NULL,
+  id = NULL,
   heights = c(0.6, 0.4)
 )
 }
 \arguments{
 \item{object}{An \linkS4class{msData} object.}
 
-\item{analyses}{The index or name of the analyses.
-The default is \code{NULL} and all analyses are used.}
+\item{analyses}{A numeric or character vector with the index or
+analysis name/s. When \code{NULL}, all the analyses are used.}
 
-\item{targetsID}{The identifier of the features of interest.
-When not \code{NULL}, overwrites any given \code{mz} and \code{rt} value.}
+\item{targetsID}{A character vector with the ID of targets
+(e.g., peaks or features IDs).}
 
-\item{mz}{Optional target \emph{m/z} to find features using
-the mass deviation specified by the \code{ppm} parameter.}
+\item{mz}{A vector with target \emph{m/z} values or a two columns
+\linkS4class{data.table} or data.frame with minimum and maximum
+\emph{m/z} values. Alternatively, \emph{m/z} and retention time values
+can be given as one \linkS4class{data.table}/data.frame and the deviations
+given as \code{ppm} and \code{sec} are used to calculate the ranges.
+The same also works for min and max values of \emph{m/z} and retention
+time targets. Note that when mass/time ranges are given, \code{ppm} and
+\code{sec} are not used.}
 
-\item{ppm}{The mass deviation to extract the features
-when \code{mz} is specified.}
+\item{ppm}{A numeric vector of length one with the mass deviation, in ppm.}
 
-\item{rt}{The retention time in minutes or seconds,
-depending on the defined \code{rtUnit}, see below.
-Only used when \code{mz} is specified.}
+\item{rt}{A vector with target retention time values or
+a two columns \linkS4class{data.table}/data.frame with minimum
+and maximum retention time values.}
 
-\item{rtWindow}{The time deviation to collect features.
-The time unit is the defined by \code{rtUnit}.
-A time interval can be given with a length 2 vector,
-defining the minimum and maximum retention time.}
+\item{sec}{A numeric vector of length one with the time deviation, in seconds.}
 
-\item{rtUnit}{Possible entries are \code{min} or \code{sec}.
-The default is \code{min}.}
+\item{id}{An id vector with target identifiers. When not given
+is added as a combination of the \emph{m/z} and retention time ranges or values.}
 
-\item{msLevel}{The MS level to extract the data.
-For the moment, only 1 is possible.}
-
-\item{names}{A character string with names for each feature given in \code{ID}.
-Note that length should match between \code{names} and \code{ID}.
-If length does not match \code{names} are not used.}
+\item{heights}{A numeric vector of length two to control the height of
+the first and second plot, respectively.}
 }
 \value{
 A double plot with peak chromatograms on the top part

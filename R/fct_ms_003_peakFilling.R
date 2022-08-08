@@ -2,10 +2,12 @@
 
 #' @title fillingSettingsDefaultXCMS
 #'
-#' @return A \linkS4class{settings} object containing parameters for
-#' recursive integration of peaks from analyses not represented in a given feature.
+#' @return A \linkS4class{settings} object containing parameters for recursive
+#' integration of peaks from analyses not represented in a given feature.
 #'
 #' @export
+#'
+#' @importClassesFrom xcms ChromPeakAreaParam
 #'
 fillingSettingsDefaultXCMS <- function() {
 
@@ -23,21 +25,23 @@ fillingSettingsDefaultXCMS <- function() {
 
 #' @title peakFilling
 #'
-#' @description Recursive integration for filling missing peaks within each feature.
+#' @description Recursive integration for filling missing peaks
+#' within each feature.
 #'
 #' @param object An \linkS4class{msData} object containing features.
-#' @param settings A \linkS4class{settings} object with parameter for filling peaks.
+#' @param settings A \linkS4class{settings} object with parameter
+#' for filling peaks.
 #'
 #'
 #' @details The function \code{\link[xcms]{fillChromPeaks}}
 #' from the \pkg{xcms} package can be used,
 #' giving the respective parameters with the argument \code{settings}.
-#' list with parameters according to the defined algorithm.
-#' When the algorithm is set to \emph{xcms3}, the settings are the S4 class objects
-#' \linkS4class{FillChromPeaksParam} or \linkS4class{ChromPeakAreaParam}.
-#' See \code{?\link[xcms]{fillChromPeaks}} for more information.
+#' When the algorithm is set to \emph{xcms3}, the settings are the S4 class
+#' object \linkS4class{FillChromPeaksParam} or \linkS4class{ChromPeakAreaParam}.
+#' See \code{\link[xcms]{fillChromPeaks}} for more information.
 #'
-#' @return An \linkS4class{msData} object including filled missing peaks in analyses.
+#' @return An \linkS4class{msData} object including filled missing peaks
+#' in analyses.
 #'
 #' @export
 #'
@@ -55,7 +59,7 @@ fillingSettingsDefaultXCMS <- function() {
 #'
 peakFilling <- function(object, settings = NULL) {
 
-  checkmate::assertClass(object, "msData")
+  assertClass(object, "msData")
 
   noPeaks <- sapply(object@analyses, function(x) nrow(x@peaks))
   noPeaks <- TRUE %in% (0 %in% noPeaks)
@@ -90,9 +94,9 @@ peakFilling <- function(object, settings = NULL) {
 
   if (algorithm == "xcms") {
 
-    if (checkmate::testClass(settings, "list")) settings <- settings[[1]]
+    if (testClass(settings, "list")) settings <- settings[[1]]
 
-    Exp <- patRoon::getXCMSnExp(pat, loadRawData = TRUE)
+    Exp <- getXCMSnExp(pat, loadRawData = TRUE)
 
     if (TRUE %in% hasAdjustedRetentionTime(object)) {
       adjRT <- lapply(object@analyses, function(x) {
@@ -123,9 +127,9 @@ peakFilling <- function(object, settings = NULL) {
       Exp@msFeatureData <- xFD
     }
 
-    Exp <- xcms::fillChromPeaks(Exp, param = settings)
+    Exp <- fillChromPeaks(Exp, param = settings)
 
-    pat <- patRoon::importFeatureGroupsXCMS3(Exp, analysisInfo(object))
+    pat <- importFeatureGroupsXCMS3(Exp, analysisInfo(object))
 
     object <- buildPeaksTable(object, pat)
 

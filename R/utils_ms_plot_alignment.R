@@ -4,7 +4,7 @@
 #'
 #' @description Plots the results from the retention time alignment across analyses.
 #'
-#' @param object An \linkS4class{msData} or \linkS4class{msAnalyses} object with adjusted retention time.
+#' @param object An \linkS4class{msData} or \linkS4class{msAnalysis} object with adjusted retention time.
 #' @param interactive Logical, set to \code{TRUE} for plotting with \pkg{plotly} package.
 #'
 #' @return A plot with the retention time alignment differences for each sample.

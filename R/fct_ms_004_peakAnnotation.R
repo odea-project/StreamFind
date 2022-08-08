@@ -1,9 +1,8 @@
 
-
 #' @title annotationSettingsDefaultCAMERA
 #'
-#' @return A \linkS4class{settings} object containing parameters for
-#' recursive integration of peaks from analyses not represented in a given feature.
+#' @return A \linkS4class{settings} object containing parameters for recursive
+#' integration of peaks from analyses not represented in a given feature.
 #'
 #' @export
 #'
@@ -34,7 +33,10 @@ annotationSettingsDefaultCAMERA <- function() {
           maxiso = 5,
           ppm = 15,
           mzabs = 0.008,
-          rules =  data.table::fread(system.file("rules/primary_adducts_pos.csv", package = "CAMERA"), header = TRUE),
+          rules =  fread(
+            system.file("rules/primary_adducts_pos.csv", package = "CAMERA"),
+            header = TRUE
+          ),
           multiplier = 3,
           max_peaks = 500,
           intval = "maxo"
@@ -46,8 +48,8 @@ annotationSettingsDefaultCAMERA <- function() {
 
 #' @title annotationSettingsDefaultRAMClustR
 #'
-#' @return A \linkS4class{settings} object containing parameters for
-#' recursive integration of peaks from analyses not represented in a given feature.
+#' @return A \linkS4class{settings} object containing parameters for recursive
+#' integration of peaks from analyses not represented in a given feature.
 #'
 #' @export
 #'
@@ -69,10 +71,6 @@ annotationSettingsDefaultRAMClustR <- function() {
         relMzDev = 5,
         minSize = 2,
         relMinReplicates = 1,
-        # RCExperimentVals = list(
-        #   design = list(platform = "LC-MS"),
-        #   instrument = list(ionization = ionization, MSlevs = 1)
-        # ),
         extraOptsRC = NULL,
         extraOptsFM = NULL
       )
@@ -86,10 +84,8 @@ annotationSettingsDefaultRAMClustR <- function() {
 #'
 #' @param object An \linkS4class{msData} object with peaks/features.
 #' @template args-single-settings
-#' @param excludeBlanks Logical, set to \code{TRUE} for excluding
-#' blank replicates from annotation. Blank intensities are not considered.
 #'
-#' @return An \linkS4class{ntsData} object with annotated peaks/features.
+#' @return An \linkS4class{msData} object with annotated peaks/features.
 #'
 #' @export
 #'
@@ -99,7 +95,7 @@ annotationSettingsDefaultRAMClustR <- function() {
 #'
 peakAnnotation <- function(object = NULL, settings = NULL) {
 
-  checkmate::assertClass(object, "msData")
+  assertClass(object, "msData")
 
   noPeaks <- sapply(object@analyses, function(x) nrow(x@peaks))
   noPeaks <- TRUE %in% (0 %in% noPeaks)
@@ -122,7 +118,7 @@ peakAnnotation <- function(object = NULL, settings = NULL) {
       algorithm <- NA_character_
     }
 
-  } else if (checkmate::testClass(settings, "settings")) {
+  } else if (testClass(settings, "settings")) {
     prs <- settings
     algorithm = getAlgorithm(prs)
     settings = getSettings(prs)
@@ -141,13 +137,15 @@ peakAnnotation <- function(object = NULL, settings = NULL) {
   #check up for polarity
   pola <- polarities(object)
   if (length(unique(pola)) == 1) {
-    if (unique(pola) %in% "positive" & algorithm %in% c("camera", "ramclustr")) {
+    if (unique(pola) %in% "positive" &
+        algorithm %in% c("camera", "ramclustr")) {
+
       settings$ionization <- unique(pola)
     }
     # TODO implement check for negative and multiple polarities/connect to patRoon sets
   }
 
-  comp <- do.call(patRoon::generateComponents, c(ag, settings))
+  comp <- do.call("generateComponents", c(ag, settings))
 
   # TODO convert to the simplest structure for components in patRoon
   # TODO sub-setting takes too long. Is it reall nedded or info in features metadata is enough?
@@ -168,18 +166,23 @@ peakAnnotation <- function(object = NULL, settings = NULL) {
   return(object)
 }
 
-
 #' @title annotateFeatures
 #'
-#' @description Selects the ions from the components and amends the festure data table.
+#' @description Selects the ions from the components and amends the metadata
+#' \linkS4class{msData} in the \linkS4class{msFeatures}.
 #'
 #' @param object An \linkS4class{msData} object with peaks/features.
 #' @param prefAdduct A character string with the preferred adduct.
 #' Possible values are \code{"[M+H]+"} (the default) and \code{"[M-H]-"} for
 #' positive and negative ionization, respectively.
+#' @param pat A \linkS4class{featureGroups} object  from \pkg{patRoon}.
+#' @param comp A \linkS4class{components} object from \pkg{patRoon}.
 #'
 #' @importMethodsFrom patRoon componentTable
 #' @importFrom data.table rbindlist setnames fread
+#' @importFrom stringr str_extract str_detect
+#' @importFrom utils setTxtProgressBar txtProgressBar
+#' @importFrom dplyr left_join
 #'
 annotateFeatures <- function(object, pat, comp, prefAdduct = "[M+H]+") {
 
@@ -197,24 +200,32 @@ annotateFeatures <- function(object, pat, comp, prefAdduct = "[M+H]+") {
 
   #change to streamFind package folder
   if ("[M+H]+" %in% prefAdduct) {
-    db_adducts <- fread(system.file("rules/primary_adducts_pos.csv", package = "CAMERA"), header = TRUE)
+    db_adducts <- fread(
+      system.file("rules/primary_adducts_pos.csv", package = "CAMERA"),
+      header = TRUE
+    )
   } else {
-    db_adducts <- fread(system.file("rules/primary_adducts_neg.csv", package = "CAMERA"), header = TRUE)
+    db_adducts <- fread(
+      system.file("rules/primary_adducts_neg.csv", package = "CAMERA"),
+      header = TRUE
+    )
   }
 
-  comp_df <- patRoon::componentTable(comp)
+  comp_df <- componentTable(comp)
   comp_df <- rbindlist(comp_df, idcol = "component")
 
   #In cliqueMS colnames are: neutralMass (changes to M_adduct) isonr charge adduct_ion  intensity intensity_rel
   #In ramclustr colnames are: intensity intensity_rel group isogroup isonr charge adduct_ion ppm
-  setnames(comp_df, c("group", "neutralMass"), c("id", "M_adduct"), skip_absent = TRUE)
+  setnames(comp_df,
+           c("group", "neutralMass"),
+           c("id", "M_adduct"), skip_absent = TRUE)
 
   if (!"M_adduct" %in% colnames(comp_df)) {
     comp_df[, M_adduct := as.numeric(NA)]
   }
 
   if (!"isogroup" %in% colnames(comp_df)) {
-    comp_df[, isogroup := as.numeric(stringr::str_extract(comp_df$component, "[:digit:]"))]
+    comp_df[, isogroup := as.numeric(str_extract(comp_df$component, "[:digit:]"))]
   }
   comp_df$isonr <- as.numeric(comp_df$isonr)
 
@@ -253,7 +264,8 @@ annotateFeatures <- function(object, pat, comp, prefAdduct = "[M+H]+") {
       } else {
         temp[, `:=`(rt_d = 0, mz_d = 0)]
         for (i in seq_len(nrow(temp))) {
-          temp2 <- comp_df[component %in% temp$component[i] & M_adduct == temp$M_adduct[i], ]
+          temp2 <- comp_df[component %in% temp$component[i] &
+                             M_adduct == temp$M_adduct[i], ]
 
           if (prefAdduct %in% temp2$adduct_ion) {
             temp$rt_d[i] <-  abs(temp$ret[i] - temp2[adduct_ion %in% prefAdduct, ret])
@@ -265,17 +277,23 @@ annotateFeatures <- function(object, pat, comp, prefAdduct = "[M+H]+") {
             )
           } else if (length(unique(temp2$adduct_ion)) == 1) {
 
-            temp[1, colnames(temp)[stringr::str_detect(colnames(temp), "ad")] := NA]
+            temp[1, colnames(temp)[str_detect(colnames(temp), "ad")] := NA]
             temp <- temp[1, ]
             break
 
           } else {
-            temp$rt_d[i] <-  abs(temp$ret[i] - temp2[M_adduct %in% temp$M_adduct[i] & !adduct_ion %in% temp$adduct_ion[i], ret])
+            temp$rt_d[i] <-  abs(
+              temp$ret[i] -
+                temp2[M_adduct %in% temp$M_adduct[i] &
+                  !adduct_ion %in% temp$adduct_ion[i], ret])
+
             temp$mz_d[i] <-  abs(
               temp$mz[i] -
-                temp2[M_adduct %in% temp$M_adduct[i] & !adduct_ion %in% temp$adduct_ion[i], mz] -
-                db_adducts[name %in% temp$adduct_ion[i], massdiff] +
-                db_adducts[name %in% temp2[M_adduct %in% temp$M_adduct[i] & !adduct_ion %in% temp$adduct_ion[i], adduct_ion], massdiff]
+                temp2[M_adduct %in% temp$M_adduct[i] &
+                !adduct_ion %in% temp$adduct_ion[i], mz] -
+                      db_adducts[name %in% temp$adduct_ion[i], massdiff] +
+                        db_adducts[name %in% temp2[M_adduct %in% temp$M_adduct[i] &
+                        !adduct_ion %in% temp$adduct_ion[i], adduct_ion], massdiff]
             )
           }
         }
@@ -290,13 +308,15 @@ annotateFeatures <- function(object, pat, comp, prefAdduct = "[M+H]+") {
 
       #amend neutralMass for multiple charged isotopes
       if (TRUE %in% (temp$charge > 1) & TRUE %in% (temp$isonr == 0)) {
-        ntm <- (aft[id %in% x_id, mz] - db_adducts[name %in% prefAdduct, massdiff]) * temp$charge
+        ntm <- (aft[id %in% x_id, mz] -
+                  db_adducts[name %in% prefAdduct, massdiff]) * temp$charge
       }
 
       #amend direct ions to the protonated ion
       if (TRUE %in% grepl("[M]", temp$adduct_ion, fixed = TRUE)) {
         #retrieve the mass of the respective adduct
-        mono_id <- comp_df[component %in% temp$component & isogroup %in% temp$isogroup & isonr %in% 0, ]
+        mono_id <- comp_df[component %in% temp$component &
+                             isogroup %in% temp$isogroup & isonr %in% 0, ]
 
         if (nrow(mono_id) > 1) {
           mono_id[, dist := abs(temp$mz - mz)]
@@ -310,7 +330,8 @@ annotateFeatures <- function(object, pat, comp, prefAdduct = "[M+H]+") {
           ntm <- comp_df[id %in% mono_x_id, M_adduct]
           aft[id %in% x_id, isonr := temp$isonr]
           aft[id %in% x_id, monoiso := mono_x_id]
-          aft[id %in% x_id, rel_intensity := as.numeric(temp$intensity) / comp_df[group %in% mono_x_group, intensity]]
+          aft[id %in% x_id, rel_intensity :=
+                as.numeric(temp$intensity) / comp_df[group %in% mono_x_group, intensity]]
         }
         mono_x_id <- character()
       }
@@ -319,7 +340,8 @@ annotateFeatures <- function(object, pat, comp, prefAdduct = "[M+H]+") {
       if (TRUE %in% (temp$isonr > 0)) {
 
         #retrieve the mass of the respective adduct
-        mono_id <- comp_df[component %in% temp$component & isogroup %in% temp$isogroup & isonr %in% 0, ]
+        mono_id <- comp_df[component %in% temp$component &
+                             isogroup %in% temp$isogroup & isonr %in% 0, ]
 
         if (nrow(mono_id) > 1) {
           mono_id[, dist := abs(temp$mz - mz)]
@@ -332,7 +354,8 @@ annotateFeatures <- function(object, pat, comp, prefAdduct = "[M+H]+") {
           aft[id %in% x_id, isonr := temp$isonr]
           aft[id %in% x_id, monoiso := mono_x_id]
           temp$adduct_ion <- paste0("[M+", temp$isonr, "]")
-          aft[id %in% x_id, rel_intensity := as.numeric(temp$intensity) / aft[id %in% mono_x_id, intensity]]
+          aft[id %in% x_id, rel_intensity :=
+                as.numeric(temp$intensity) / aft[id %in% mono_x_id, intensity]]
         }
         mono_x_id <- character()
       }
@@ -341,7 +364,9 @@ annotateFeatures <- function(object, pat, comp, prefAdduct = "[M+H]+") {
         aft[id %in% x_id, neutralMass := ntm]
 
         #condition to not change the adduct ion if there was no annotation added
-        if (!is.na(temp$adduct_ion)) aft[id %in% x_id, adduct_ion := temp$adduct_ion]
+        if (!is.na(temp$adduct_ion)) {
+          aft[id %in% x_id, adduct_ion := temp$adduct_ion]
+        }
       }
       ntm <- NA
 
@@ -367,7 +392,7 @@ annotateFeatures <- function(object, pat, comp, prefAdduct = "[M+H]+") {
   colN <- colN[!colN %in% "id"]
   keepColN <- colnames(feats)[!colnames(feats) %in% colN]
 
-  feats <- dplyr::left_join(feats[, keepColN, with = FALSE], aft, by = "id")
+  feats <- left_join(feats[, keepColN, with = FALSE], aft, by = "id")
 
   cat("Adding annotation to msFeatures...")
   #amend ids with annotation
@@ -383,7 +408,10 @@ annotateFeatures <- function(object, pat, comp, prefAdduct = "[M+H]+") {
         iso_p <- rep(0, max(feats$isonr))
         isotopes <- feats[monoiso %in% x & isonr > 0, ]
         if (nrow(isotopes) > 0) {
-          iso_p[isotopes$isonr] <- round((isotopes$intensity / temp$intensity) * 100, digits = 0)
+          iso_p[isotopes$isonr] <- round((isotopes$intensity /
+                                          temp$intensity) *
+                                            100, digits = 0)
+
           x_b <- paste0(x_b, "_i", paste(iso_p, collapse = "/"))
         }
       }
@@ -405,7 +433,8 @@ annotateFeatures <- function(object, pat, comp, prefAdduct = "[M+H]+") {
 
   #amend msAnalysis feature id
   object@analyses <- lapply(object@analyses, function(x, new_id) {
-    x@peaks[feature %in% names(new_id), feature :=  new_id[names(new_id) %in% x@peaks$feature]]
+    x@peaks[feature %in% names(new_id), feature :=
+              new_id[names(new_id) %in% x@peaks$feature]]
     return(x)
   }, new_id = new_id)
 

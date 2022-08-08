@@ -1,223 +1,353 @@
 
-#' @title makeTargets
+#' @title msAnalysisLoadMetadata
 #'
-#' @description Helper function to build \emph{m/z} and retention time
-#' target pairs for searching data. Each target is composed of an
-#' id and \emph{m/z} (Da) and time (seconds) ranges. When mass is defined without
-#' time, the time range return NA and vice versa.
+#' @description Creates a \linkS4class{msAnalysis} for each mzML/mzXML file
+#' in a given data.frame with columns "file", "replicate" and "blank".
+#' The function uses code from the \pkg{RaMS} package to obtain file metadata
+#' using the \pkg{xml2}.
 #'
-#' @template args-makeTargets
+#' @param file_df A data.frame with the columns "file", "replicate" and "blank"
+#' for each file to be converted to a \linkS4class{msAnalysis}.
 #'
-#' @return A data.table with \emph{m/z} and retention time target pairs identified by an id.
-#'
-#' @export
-#'
-#' @importFrom data.table data.table is.data.table as.data.table
-#'
-makeTargets <- function(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL) {
+#' @noRd
+msAnalysisLoadMetadata <- function(file_df) {
 
-  mzrts <- data.table(
-    id = NA_character_,
-    mz = 0,
-    rt = 0,
-    mzmin = 0,
-    mzmax = 0,
-    rtmin = 0,
-    rtmax = 0
-  )
+  file_df <- split(file_df, file_df$file)
 
-  # when only rt is given
-  if (is.null(mz) & !is.null(rt)) {
+  # TODO Add parallel processing globally
+  # 1. Check if number of files and workers
+  # are high enough to add parallel processing
+  # 2. Check if has linux or win to run show or fork
+  # make global function for it
 
-    # as vector
-    if (length(rt) >= 1 & is.vector(rt)) {
+  #bpp <- SerialParam(progressbar = TRUE)
+  #bpp <- SnowParam(progressbar = TRUE)
 
-      mzrts <- data.table(
-        id = NA_character_,
-        mz = rt,
-        rt = 0,
-        mzmin = 0,
-        mzmax = 0,
-        rtmin = 0,
-        rtmax = 0
-      )
-      mzrts[, rtmin := rt - sec]
-      mzrts[, rtmax := rt + sec]
+  analyses <- lapply(file_df, function(x) {
 
-      #adds id
-      if (!is.null(id) & length(id) == length(rt)) {
-        mzrts[, id := id][]
-      } else {
-        mzrts[, id := paste(rtmin, "-", rtmax, sep = "")][]
-      }
-
-    # as table
-    } else if (is.data.frame(rt) | is.data.table(rt)) {
-      rt <- as.data.table(rt)
-
-      if ("rt" %in% colnames(rt) & !"rtmin" %in% colnames(mz)) {
-        mzrts <- data.table(
-          id = NA_character_,
-          mz = rt,
-          rt = 0,
-          mzmin = 0,
-          mzmax = 0,
-          rtmin = 0,
-          rtmax = 0
-        )
-        mzrts$rtmin <- rt$rt - sec
-        mzrts$rtmax <- rt$rt + sec
-
-      } else if ("rtmin" %in% colnames(rt) & nrow(rt) == nrow(mz)) {
-        mzrts <- data.table(
-          id = NA_character_,
-          mz = apply(rt[, .(rtmin, rtmax)], 1, mean),
-          rt = 0,
-          mzmin = rt$rtmin,
-          mzmax = rt$rtmax,
-          rtmin = 0,
-          rtmax = 0
-        )
-
-        if ("rt" %in% colnames(rt)) {
-          mzrts$rt <- mz$rt
-        } else {
-          mzrts$rt <-  apply(rt[, .(rtmin, rtmax)], 1, mean)
-        }
-      }
-
-      #adds id
-      if (!is.null(id) %in% length(id) == nrow(mzrts)) {
-        mzrts$id <- id
-      } else if ("id" %in% colnames(rt)) {
-        mzrts$id <- rt$id
-      } else {
-        mzrts[, id := paste(rtmin, "-", rtmax, sep = "")][]
-      }
+    if (!requireNamespace("RaMS", quietly = TRUE)) {
+      warning("Package RaMS not installed!")
+      return(NULL)
     }
 
-  #when mz is vector, expects rt as vector as well and ranges are calculated
-  } else if (length(mz) >= 1 & is.vector(mz)) {
+    ana <- list()
 
-    mzrts <- data.table(
-      id = NA_character_,
-      mz = mz,
-      rt = 0,
-      mzmin = mz - ((ppm / 1E6) * mz),
-      mzmax = mz + ((ppm / 1E6) * mz),
-      rtmin = 0,
-      rtmax = 0
-    )
-    #mzrts$mzmin <- mz - ((ppm / 1E6) * mz)
-    #mzrts[, mzmax := mz + ((ppm / 1E6) * mz)]
+    fl <- x$file
+    if (grepl(".mzML", fl)) meta <- mzMLGrabMetadata(fl)
+    if (grepl(".mzXML", fl)) meta <- mzXMLGrabMetadata(fl)
 
-    if (is.vector(rt) & length(rt) == length(mz)) {
-      mzrts$rt <- rt
-      mzrts$rtmin <- c(rt - sec)
-      mzrts$rtmax <- c(rt + sec)
-    }
+    ana$analysis <- gsub(".mzML|.mzXML", "", basename(fl))
+    ana$file <- fl
 
-    if (!is.null(id) & length(id) == nrow(mzrts)) {
-      mzrts$id <- id
+    if (is.na(x$replicate)) {
+      ana$replicate <- ana$analysis
+      ana$replicate <- gsub( "-", "_", ana$replicate)
+      ana$replicate <- sub("_[^_]+$", "", ana$replicate)
     } else {
-      mzrts[, id := paste(
-        round(mzmin, digits = 4),
-        "-",
-        round(mzmax, digits = 4),
-        "/", rtmin,
-        "-", rtmax,
-        sep = ""
-      )][]
+      ana$replicate <- x$replicate
     }
 
-  #when mz is a table, ranges could be already in table
-  } else if (is.data.frame(mz) | is.data.table(mz)) {
-    mz <- as.data.table(mz)
+    ana$blank <- x$blank
 
-    #when mz is in table but not ranges
-    if ("mz" %in% colnames(mz) & !"mzmin" %in% colnames(mz)) {
-      mzrts <- data.table(
-        id = NA_character_,
-        mz = mz$mz,
-        rt = 0,
-        mzmin = 0,
-        mzmax = 0,
-        rtmin = 0,
-        rtmax = 0
-      )
-      mzrts[, mzmin := mz - ((ppm / 1E6) * mz)]
-      mzrts[, mzmax := mz + ((ppm / 1E6) * mz)]
+    ana$metadata <- meta
 
-    #when mzmin is in table
-    } else if ("mzmin" %in% colnames(mz)) {
-      mzrts <- data.table(
-        id = NA_character_,
-        mz = apply(mz[, .(mzmin, mzmax)], 1, mean),
-        rt = 0,
-        mzmin = mz$mzmin,
-        mzmax = mz$mzmax,
-        rtmin = 0,
-        rtmax = 0
-      )
-      if ("mz" %in% colnames(mz)) mzrts$mz <- mz$mz
-    }
+    return(ana)
 
-    #when rt in also in mz table
-    if ("rt" %in% colnames(mz) & !"rtmin" %in% colnames(mz)) {
-      mzrts$rt <- mz$rt
-      mzrts$rtmin <- mz$rt - sec
-      mzrts$rtmax <- mz$rt + sec
-    } else if ("rtmin" %in% colnames(mz)) {
-      mzrts$rt <-  apply(mz[, .(rtmin, rtmax)], 1, mean)
-      mzrts$rtmin <- mz$rtmin
-      mzrts$rtmax <- mz$rtmax
-      if ("rt" %in% colnames(mz)) mzrts$rt <- mz$rt
-    }
+  }) #BPPARAM = bpp
 
-    #when rt is given as a table is rt argument
-    if (is.data.frame(rt) | is.data.table(rt)) {
-      rt <- as.data.table(rt)
+  analyses <- lapply(analyses, function(x) {
 
-      if ("rt" %in% colnames(rt) & nrow(rt) == nrow(mz) & !"rtmin" %in% colnames(mz)) {
-        mzrts$rt <- rt$rt
-        mzrts$rtmin <- rt$rt - sec
-        mzrts$rtmax <- rt$rt + sec
-      } else if ("rtmin" %in% colnames(rt) & nrow(rt) == nrow(mz)) {
-        mzrts$rt <-  apply(rt[, .(rtmin, rtmax)], 1, mean)
-        mzrts$rtmin <- rt$rtmin
-        mzrts$rtmax <- rt$rtmax
-        if ("rt" %in% colnames(rt)) mzrts$rt <- mz$rt
-      }
-    }
+    ana <- new("msAnalysis",
+               analysis = x$analysis, file = x$file,
+               replicate = x$replicate, blank = x$blank,
+               metadata = x$metadata)
 
-    #adds id
-    if (!is.null(id) & length(id) == nrow(mzrts)) {
-      mzrts$id <- id
-    } else if ("id" %in% colnames(mz)) {
-      mzrts$id <- mz$id
-    } else {
-      mzrts[, id := paste(
-        round(mzmin, digits = 4),
-        "-",
-        round(mzmax, digits = 4),
-        "/",
-        rtmin,
-        "-",
-        rtmax,
-        sep = ""
-      )][]
-    }
+    return(ana)
+  })
+
+  names(analyses) <- sapply(analyses, FUN = function(x) analysisNames(x))
+
+  analyses <- analyses[sort(names(analyses), decreasing = FALSE)]
+
+  return(analyses)
+}
+
+
+
+#' @title mzMLGrabMetadata
+#'
+#' @description Code adapted from package \pkg{RaMS} developed by
+#' William Kumler. See more details in:
+#' \href{https://github.com/wkumler/RaMS}.
+#'
+#' @param fl An mzML file.
+#'
+#' @importFrom xml2 read_xml xml_find_first xml_attr xml_find_all xml_name
+#'
+#' @noRd
+mzMLGrabMetadata <- function(fl) {
+
+  xml_data <- xml2::read_xml(fl)
+
+  source_node <- xml2::xml_find_first(xml_data, xpath = "//d1:sourceFile")
+  if (length(source_node) > 0) {
+    source_file <- xml2::xml_attr(source_node, "name")
+  } else {
+    source_file <- "None found"
   }
 
-  return(mzrts)
+  inst_xpath <- "//d1:referenceableParamGroup/d1:cvParam"
+  inst_nodes <- xml2::xml_find_first(xml_data, xpath = inst_xpath)
+  if (length(inst_nodes) > 0) {
+    inst_val <- xml2::xml_attr(inst_nodes, "name")
+  } else {
+    inst_val <- "None found"
+  }
+
+  config_xpath <- "//d1:componentList/child::node()"
+  config_nodes <- xml2::xml_find_all(xml_data, xpath = config_xpath)
+  if (length(inst_nodes) > 0) {
+    config_types <- xml2::xml_name(config_nodes)
+    config_order <- xml2::xml_attr(config_nodes, "order")
+    config_name_nodes <- xml2::xml_find_first(config_nodes, "d1:cvParam")
+    config_names <- xml2::xml_attr(config_name_nodes, "name")
+  } else {
+    config_types <- "None found"
+    config_order <- "None found"
+    config_names <- "None found"
+  }
+
+  time_node <- xml2::xml_find_first(xml_data, xpath = "//d1:run")
+  time_val <- xml2::xml_attr(time_node, "startTimeStamp")
+  if (!is.na(time_val)) {
+    time_stamp <- as.POSIXct(strptime(time_val, "%Y-%m-%dT%H:%M:%SZ"))
+  } else {
+    time_stamp <- as.POSIXct(NA)
+  }
+
+  # spectra_xpath <- '//d1:spectrum'
+  # spectra_nodes <- xml2::xml_find_all(xml_data, xpath = spectra_xpath)
+  # if (length(spectra_nodes) > 0) {
+  #   number_spectra <- length(spectra_nodes)
+  # } else {
+  #   number_spectra <- 0
+  # }
+
+  mslevel_xpath <- '//d1:spectrum/d1:cvParam[@name="ms level"]'
+  mslevel_nodes <- xml2::xml_find_all(xml_data, xpath = mslevel_xpath)
+  number_spectra <- length(mslevel_nodes)
+  if (length(mslevel_nodes) > 0) {
+    ms_levels <- paste0(unique(xml2::xml_attr(mslevel_nodes, "value")),
+                       collapse = ", ")
+  } else {
+    ms_levels <- "None found"
+  }
+
+  centroided_xpath <- '//d1:spectrum/d1:cvParam[@name="centroid spectrum"]'
+  #profile_xpath <- '//d1:spectrum/d1:cvParam[@name="profile spectrum"]'
+  centroided_nodes <- xml2::xml_find_all(xml_data, xpath = centroided_xpath)
+  #profile_nodes <- xml2::xml_find_all(xml_data, xpath = profile_xpath)
+  if (length(centroided_nodes) > 0) {
+    centroided <- TRUE
+  } else {
+    centroided <- FALSE
+  }
+
+  polarity_xpath <- '//d1:spectrum/d1:cvParam[@accession="MS:1000130"]'
+  polarity_nodes <- xml2::xml_find_all(xml_data, polarity_xpath)
+  if (length(polarity_nodes) > 0) {
+    polarities <- unique(
+      gsub(" scan", "", xml2::xml_attr(polarity_nodes, "name"))
+    )
+  } else {
+    polarities <- "None found"
+  }
+
+  chrom_xpath <- '//d1:chromatogram'
+  chrom_nodes <- xml2::xml_find_all(xml_data, chrom_xpath)
+  number_chromatograms <- length(chrom_nodes)
+
+  meta <- list(
+    "source_file" = source_file,
+    "inst_data" = inst_val,
+    "config_data" = list(data.frame(
+      order = config_order,
+      type = config_types,
+      name = config_names
+    )),
+    "time_stamp" = time_stamp,
+    "number_spectra" = number_spectra,
+    "ms_levels" = ms_levels,
+    "centroided" = centroided,
+    "polarity" = polarities,
+    "number_chromatograms" = number_chromatograms
+  )
+
+  return(meta)
 }
+
+
+
+#' @title mzXMLGrabMetadata
+#'
+#' @description Code adapted from package \pkg{RaMS} developed by
+#' William Kumler. See more details in:
+#' \href{https://github.com/wkumler/RaMS}.
+#'
+#' @param fl An mzXML file.
+#'
+#' @importFrom xml2 read_xml xml_find_first xml_attr xml_find_all xml_name
+#'
+#' @noRd
+mzXMLGrabMetadata <- function(fl){
+
+  xml_data <- xml2::read_xml(fl)
+
+  source_node <- xml2::xml_find_first(xml_data, xpath = "//d1:parentFile")
+  if (length(source_node) > 0) {
+    source_file <- basename(xml2::xml_attr(source_node, "fileName"))
+  } else {
+    source_file <- "None found"
+  }
+
+  inst_xpath <- "//d1:msInstrument/child::node()[starts-with(name(), 'ms')]"
+  inst_nodes <- xml2::xml_find_all(xml_data, xpath = inst_xpath)
+  if (length(inst_nodes) > 0) {
+    inst_names <- xml2::xml_attr(inst_nodes, "category")
+    inst_vals <- xml2::xml_attr(inst_nodes, "value")
+    names(inst_vals) <- inst_names
+  } else {
+    inst_vals <- "None found"
+    names(inst_vals) <- "Instrument data"
+  }
+
+  mslevel_nodes <- xml2::xml_find_all(xml_data, xpath = "//d1:scan")
+  if (length(mslevel_nodes) > 0) {
+    mslevels <- paste0(unique(xml2::xml_attr(mslevel_nodes, "msLevel")),
+                       collapse = ", ")
+  } else {
+    mslevels <- "None found"
+  }
+
+  polarity_nodes <- xml2::xml_find_all(xml_data, xpath = "//d1:scan")
+  if (length(polarity_nodes) > 0) {
+    polarities <- paste0(unique(xml2::xml_attr(polarity_nodes, "polarity")),
+                         collapse = ", ")
+  } else {
+    polarities <- "None found"
+  }
+
+  meta <- list(
+    source_file = source_file,
+    inst_data = list(inst_vals),
+    mslevels = mslevels,
+    polarity = polarities
+  )
+
+  return(meta)
+}
+
+
+
+#' @importFrom xml2 read_xml xml_find_first xml_attr xml_find_all xml_name
+#' @importFrom data.table data.table
+#'
+mzMLloadBasicSpectraHeader <- function(fl) {
+
+  xml_data <- xml2::read_xml(fl)
+
+  spectra_x <- '//d1:spectrum'
+  spectra_n <- xml2::xml_find_all(xml_data, xpath = spectra_x)
+
+  if (length(spectra_n) > 0) {
+
+    index <- as.numeric(xml2::xml_attr(spectra_n, "index"))
+    scan <- as.numeric(gsub("\\D", "", xml2::xml_attr(spectra_n, "id")))
+
+    lv_x <- 'd1:cvParam[@name="ms level"]'
+    lv <- xml2::xml_find_all(spectra_n, xpath = lv_x)
+    lv <- as.numeric(xml2::xml_attr(lv, "value"))
+
+    rt_x <- 'd1:scanList/d1:scan/d1:cvParam[@name="scan start time"]'
+    rt <- xml2::xml_find_all(spectra_n, xpath = rt_x)
+    rt <- as.numeric(xml2::xml_attr(rt, "value"))
+
+    lvs <- unique(lv)
+
+    if (2 %in% lvs) {
+
+      total_scans <- length(scan)
+      ce <- rep(NA_real_, total_scans)
+      preScan <- rep(NA_real_, total_scans)
+      preMZ <- rep(NA_real_, total_scans)
+
+      for (i in lvs[-1]) {
+
+        msn_x <- paste0('//d1:spectrum[d1:cvParam[@name="ms level" and @value="', i, '"]]')
+        msn_n <- xml2::xml_find_all(xml_data, xpath = msn_x)
+
+        msn_scan <- as.numeric(gsub("\\D", "", xml2::xml_attr(msn_n, "id")))
+
+        preScan_x <- paste0('d1:precursorList/d1:precursor')
+        preScan_v <- xml2::xml_find_all(msn_n, preScan_x)
+        preScan_v <- xml2::xml_attr(preScan_v, "spectrumRef")
+        preScan_v <- as.numeric(gsub("\\D", "", preScan_v))
+        preScan[scan %in% msn_scan] <- preScan_v
+
+        ce_x <- paste0('d1:precursorList/d1:precursor/d1:activation',
+                           '/d1:cvParam[@name="collision energy"]')
+        ce_v <- xml2::xml_find_all(msn_n, ce_x)
+        ce_v <- as.integer(xml2::xml_attr(ce_v, "value"))
+        ce[scan %in% msn_scan] <- ce_v
+
+        preMZ_x <- paste0('d1:precursorList/d1:precursor/d1:selectedIonList',
+                              '/d1:selectedIon/d1:cvParam[@name="selected ion m/z"]')
+        preMZ_v <- xml2::xml_find_all(msn_n, preMZ_x)
+        preMZ_v <- as.numeric(xml2::xml_attr(preMZ_v, "value"))
+        preMZ[scan %in% msn_scan] <- preMZ_v
+      }
+
+      df_a <- data.table::data.table(
+        "index" = index,
+        "scan" = scan,
+        "lv" = lv,
+        "ce" = ce,
+        "preScan" = preScan,
+        "preMZ" = preMZ,
+        "rt" = rt
+      )
+
+    } else {
+
+      df_a <- data.table::data.table(
+        "index" = index,
+        "scan" = scan,
+        "lv" = lv,
+        "rt" = rt
+      )
+    }
+
+  } else {
+
+    df_a <- data.table::data.table(
+      "index" = numeric(),
+      "scan" = numeric(),
+      "lv" = numeric(),
+      "rt" = numeric()
+    )
+  }
+
+  return(df_a)
+}
+
+
 
 #' @importFrom data.table as.data.table
 #' @importFrom mzR openMSfile header close
 #'
-loadBasicRawSpectraHeaderMZR <- function(file) {
+loadBasicRawSpectraHeaderMZR <- function(fl) {
 
-  zF <- openMSfile(file, backend = "pwiz")
+  zF <- openMSfile(fl, backend = "pwiz")
 
   zH <- as.data.table(header(zF))
 
@@ -238,6 +368,7 @@ loadBasicRawSpectraHeaderMZR <- function(file) {
 
   return(zH)
 }
+
 
 
 #' @importFrom mzR openMSfile
@@ -579,10 +710,20 @@ extractMSn <- function(
 #'
 #' @description Function to cluster MSn data.
 #'
+#' @param ids ...
+#' @param msnList ...
+#' @param clusteringMethod ...
+#' @param clusteringUnit ...
+#' @param clusteringWindow ...
+#' @param mergeVoltages ...
+#' @param mergeBy ...
+#' @param targets ...
+#'
 #' @return A data table with clustered MSn data for given targets.
 #'
 #' @importFrom data.table copy setcolorder setorder
 #' @importFrom fastcluster hclust
+#' @importFrom stats as.dist cutree dist filter na.omit rt setNames var
 #'
 clusterMSn <- function(
     ids,
@@ -625,7 +766,7 @@ clusterMSn <- function(
           mzMat <- mzMat[, lapply(.SD, function(x, dt) x / t$mz * 1E6, dt = t), .SDcols = colnames(mzMat)]
           mzMat <- as.dist(mzMat)
         }
-        hc <- fastcluster::hclust(mzMat, method = "complete")
+        hc <- hclust(mzMat, method = "complete")
         t[, cluster := cutree(hc, h = clusteringWindow)]
 
       }
@@ -802,6 +943,14 @@ clusterMSn <- function(
 #'
 #' @description Function to cluster spectra and convert to
 #' an \linkS4class{MSPeakLists} object.
+#'
+#' @param cl_plists ...
+#' @param mlists ...
+#' @param targets ...
+#' @param clusteringMethod ...
+#' @param clusteringUnit ...
+#' @param clusteringWindow ...
+#' @param minIntensityPost ...
 #'
 #' @return A \linkS4class{MSPeakLists} object with clustered data.
 #'

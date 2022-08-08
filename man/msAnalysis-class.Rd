@@ -3,7 +3,6 @@
 \docType{class}
 \name{msAnalysis-class}
 \alias{msAnalysis-class}
-\alias{initialize,msAnalysis-method}
 \alias{show,msAnalysis-method}
 \alias{filePaths,msAnalysis-method}
 \alias{filePaths,msAnalysis,msAnalysis-method}
@@ -68,9 +67,6 @@
 \alias{[,msAnalysis,ANY,missing,missing-method}
 \title{msAnalysis-class}
 \usage{
-## S4 method to initialize an "msAnalysis" object \cr
-\code{new("msAnalysis", file)}
-
 \S4method{show}{msAnalysis}(object)
 
 \S4method{filePaths}{msAnalysis}(object)
@@ -212,12 +208,18 @@
 \arguments{
 \item{object}{An \linkS4class{msAnalysis} object.}
 
+\item{obj}{A \linkS4class{msAnalysis} object.}
+
 \item{value}{A character string applicable to the respective method.}
+
+\item{x}{A \linkS4class{msAnalysis} object.}
 
 \item{which}{A character vector with the entry name/s.}
 
-\item{metadata}{A named vector with metadata entries or a one row \code{data.frame} or \code{data.table}
-with metadata added as columns.}
+\item{metadata}{A named vector with metadata entries or a one row
+\code{data.frame} or \code{data.table} with metadata added as columns.}
+
+\item{overwrite}{Logical, set to \code{TRUE} to overwrite.}
 
 \item{minIntensityMS1}{Numeric value on length one with the
 minimum intensity of MS1 level traces.}
@@ -225,17 +227,20 @@ minimum intensity of MS1 level traces.}
 \item{minIntensityMS2}{Numeric value on length one with the
 minimum intensity of MS2 level traces.}
 
-\item{mz}{A vector with target \emph{m/z} values or
-a two columns data.table or data.frame with minimum and maximum \emph{m/z} values.
-Alternatively, \emph{m/z} and retention time values can be given as one data.table/data.frame
-and the deviations given as \code{ppm} and \code{sec} are used to calculate the ranges.
-The same also works for min and max values of \emph{m/z} and retention time targets.
-Note that when mass/time ranges are given, \code{ppm} and \code{sec} are not used.}
+\item{mz}{A vector with target \emph{m/z} values or a two columns
+\linkS4class{data.table} or data.frame with minimum and maximum
+\emph{m/z} values. Alternatively, \emph{m/z} and retention time values
+can be given as one \linkS4class{data.table}/data.frame and the deviations
+given as \code{ppm} and \code{sec} are used to calculate the ranges.
+The same also works for min and max values of \emph{m/z} and retention
+time targets. Note that when mass/time ranges are given, \code{ppm} and
+\code{sec} are not used.}
 
 \item{ppm}{A numeric vector of length one with the mass deviation, in ppm.}
 
 \item{rt}{A vector with target retention time values or
-a two columns data.table/data.frame with minimum and maximum retention time values.}
+a two columns \linkS4class{data.table}/data.frame with minimum
+and maximum retention time values.}
 
 \item{sec}{A numeric vector of length one with the time deviation, in seconds.}
 
@@ -265,12 +270,17 @@ of the target mark.}
 \item{numberRows}{A numeric vector of length one to define
 the number of rows to grid the plots.}
 
+\item{settings}{A \linkS4class{settings} object.}
+
+\item{colorBy}{A string defining the color method for plotting.}
+
 \item{call}{The call name of the settings to retrieve.}
 
-\item{targetsID}{A character vector with the ID of targets (e.g., peaks or features IDs).}
+\item{targetsID}{A character vector with the ID of targets
+(e.g., peaks or features IDs).}
 
-\item{filtered}{Logical. When \code{TRUE} (the default), filtered are returned.
-When \code{FALSE}, filtered data are excluded.}
+\item{filtered}{Logical. When \code{TRUE} (the default),
+filtered data is returned. When \code{FALSE}, filtered data is excluded.}
 
 \item{xlim}{A length one or two numeric vector for setting the \emph{x} limits of a plot.}
 
@@ -278,24 +288,19 @@ When \code{FALSE}, filtered data are excluded.}
 
 \item{i}{The indice/s or name/s of the peaks to keep in the \code{x} object.}
 
-\item{file}{A character string with the complete file path.}
+\item{j}{Not applicable to \linkS4class{msAnalysis}.}
 
-\item{replicate}{optional character string for analysis replicate name}
-
-\item{blank}{optional character string for associated blank replicate name}
-
-\item{settigns}{A \linkS4class{settings} object.}
+\item{drop}{Not applicable to \linkS4class{msAnalysis}.}
 }
 \description{
-An S4 class representing an MS sample/file within the \pkg{streamFind} package.
-The \code{msAnalysis} is used to store and manage MS data and the respective methods can be used
-for inspection, processing and evaluation.
+An S4 class representing an MS sample/file within the
+\pkg{streamFind} package. The \code{msAnalysis} is used to store and
+manage MS data and the respective methods can be used for inspection,
+processing and evaluation.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{initialize(msAnalysis)}: initializes an \linkS4class{msAnalysis} object.
-
-\item \code{show(msAnalysis)}: prints the details of an \linkS4class{msAnalysis} object.
+\item \code{show(msAnalysis)}: shows the details of an \linkS4class{msAnalysis}.
 
 \item \code{filePaths(msAnalysis)}: getter for analysis file path.
 
@@ -319,7 +324,7 @@ The \code{value} is a character string with analysis replicate name.
 The \code{value} is a character string with associated blank replicate name.
 
 \item \code{metadata(msAnalysis)}: getter for analysis metadata.
-Returns a \link[data.table]{date.table} with a column per metadata entry.
+Returns a \linkS4class{data.table} with a column per metadata entry.
 
 \item \code{addMetadata(msAnalysis)}: setter for analysis metadata.
 
@@ -328,11 +333,14 @@ Returns a \link[data.table]{date.table} with a column per metadata entry.
 \item \code{loadRawData(msAnalysis)}: adds raw spectra and chromatograms to the respective
 slots of an \linkS4class{msAnalysis} object.
 
-\item \code{hasLoadedSpectra(msAnalysis)}: check if the \linkS4class{msAnalysis} has loaded raw spectra.
+\item \code{hasLoadedSpectra(msAnalysis)}: checks if the \linkS4class{msAnalysis} has loaded
+raw spectra.
 
-\item \code{hasLoadedChromatograms(msAnalysis)}: check if the \linkS4class{msAnalysis} has loaded raw chromatograms.
+\item \code{hasLoadedChromatograms(msAnalysis)}: checks if the \linkS4class{msAnalysis} has loaded raw
+chromatograms.
 
-\item \code{spectra(msAnalysis)}: getter for slot spectra in the \linkS4class{msAnalysis}.
+\item \code{spectra(msAnalysis)}: getter for slot spectra in the
+\linkS4class{msAnalysis}.
 
 \item \code{EICs(msAnalysis)}: get extracted ion chromatograms (EICs)
 for specified \emph{m/z} (Da) and retention time (seconds) targets.
@@ -340,12 +348,13 @@ The arguments \code{mz}, \code{ppm}, \code{rt}
 and \code{sec} are used to construct the targets.
 See ?\link{makeTargets} for more information.
 
-\item \code{plotEICs(msAnalysis)}: A method for plotting extracted ion chromatograms (EICs)
-of data in the analysis file.
+\item \code{plotEICs(msAnalysis)}: A method for plotting extracted ion chromatograms
+(EICs) of data in the analysis file.
 The arguments for data collection are the same as the \link{EICs} method.
-A \link[data.table]{date.table} can be used instead.
-The \code{legendNames} is a character vector with the same length as targets for plotting and
-can be used to legend the plot. Note, the plot legends the data by target.
+A \linkS4class{data.table} can be used instead.
+The \code{legendNames} is a character vector with the same length as
+targets for plotting and can be used to legend the plot.
+Note, the plot legends the data by target.
 
 \item \code{TICs(msAnalysis)}: extracts the total ion chromatograms (TICs)
 of analysis.
@@ -353,20 +362,25 @@ of analysis.
 \item \code{plotTICs(msAnalysis)}: plots the total ion chromatogram (TIC) in the analysis.
 
 \item \code{XICs(msAnalysis)}: get three dimensional (\emph{m/z}, time and intensity)
-extracted ion chromatograms (XICs) for specified \emph{m/z} and retention time pair targets
-in analysis. The arguments \code{mz}, \code{ppm}, \code{rt}, \code{sec} and \code{id}
-are used to construct the targets. See ?\link{makeTargets} for more information.
+extracted ion chromatograms (XICs) for specified \emph{m/z} and retention
+time pair targets in analysis. The arguments \code{mz}, \code{ppm},
+\code{rt}, \code{sec} and \code{id} are used to construct the targets.
+See ?\link{makeTargets} for more information.
 
 \item \code{plotXICs(msAnalysis)}: plots three dimensional (\emph{m/z}, time and intensity)
-extracted ion chromatograms (XICs) for specified \emph{m/z} and retention time pair targets
-in analyses of an \linkS4class{msAnalysis} object. The arguments \code{mz}, \code{ppm}, \code{rt},
-\code{sec} and \code{id} are used to construct the targets. See ?\link{makeTargets} for more information.
-When \code{plotTargetMark} is \code{TRUE} a target is plotted representing the deviations as defined
-by the arguments \code{ppmMark} and \code{secMark} in ppm and seconds, respectively.
-When ranges were given to build the XIC, exact \emph{m/z} and time targets can be specified with
-the argument \code{targetsMark}. \code{targetsMark} should be a two column table named mz and rt with
-exact \emph{m/z} and time targets. Note that the number of rows should be the same as the number of target
-in the XIC. The number of rows to plot multiple targets can be defined by the \code{numberRows} argument.
+extracted ion chromatograms (XICs) for specified \emph{m/z} and retention
+time pair targets in analyses of an \linkS4class{msAnalysis} object.
+The arguments \code{mz}, \code{ppm}, \code{rt}, \code{sec} and \code{id} are
+used to construct the targets. See ?\link{makeTargets} for more information.
+When \code{plotTargetMark} is \code{TRUE} a target is plotted representing
+the deviations as defined by the arguments \code{ppmMark} and \code{secMark}
+in ppm and seconds, respectively. When ranges were given to build the XIC,
+exact \emph{m/z} and time targets can be specified with the argument
+\code{targetsMark}. \code{targetsMark} should be a two column table named
+mz and rt with exact \emph{m/z} and time targets. Note that the number of
+rows should be the same as the number of target in the XIC. The number of
+rows to plot multiple targets can be defined by the \code{numberRows}
+argument.
 
 \item \code{MS2s(msAnalysis)}: get MS2 data for specified \emph{m/z} and retention time (seconds) targets.
 The \code{clusteringUnit} defines the method used for clustering.
@@ -393,7 +407,7 @@ For the \code{clusteringUnit}, possible values are \emph{mz} (the default) or \e
 The \code{minIntensityPre} and \code{minIntensityPost}
 define the minimum intensity for mass traces before and after clustering, respectively.
 Set \code{mergeVoltages} to \code{TRUE} for merging spectra acquired with different collision energies.
-The \code{mergeBy} argument is used to merge spectra by "samples" or "replicateNames".
+The \code{mergeBy} argument is used to merge spectra by "analyses" or "replicates".
 When \code{NULL}, MS2 is given per target and per sample. The possible values for the
 \code{colorBy} argument are "targets" and "voltages" to color by
 each target, sample, replicate or collision energy, respectively.
@@ -430,29 +444,34 @@ can be used to legend the plot.
 \section{Slots}{
 
 \describe{
-\item{\code{analysis}}{A character string with the MS file name the without extension.}
+\item{\code{analysis}}{A character string with the MS file name without the extension.}
 
 \item{\code{file}}{A character string with the complete path of the MS file.}
 
-\item{\code{replicate}}{A character string with the respective sample replicate group name.}
+\item{\code{replicate}}{A character string with the respective analysis
+replicate group name.}
+
+\item{\code{blank}}{A character string with the associated blank analysis replicate name.}
 
 \item{\code{metadata}}{A list with other information queried from the MS files.
-The info corresponds to the merged output of \link[mzR]{runInfo} and \link[mzR]{instrumentInfo}
-from the \pkg{mzR} package.}
+The info corresponds to the merged output of \link[mzR]{runInfo}
+and \link[mzR]{instrumentInfo} from the \pkg{mzR} package.}
 
-\item{\code{spectra}}{A \link[data.table]{data.table} obtained by
+\item{\code{spectra}}{A \linkS4class{data.table} obtained by
 the \link[mzR]{peaks} function of the \pkg{mzR} package.
 Although the function \link[mzR]{peaks} returns a \code{list},
-the output is collapsed to a \link[data.table]{data.table}.}
+the output is collapsed to a \linkS4class{data.table}.}
 
-\item{\code{chromatograms}}{A \link[data.table]{data.table} obtained by
+\item{\code{chromatograms}}{A \linkS4class{data.table} obtained by
 the \link[mzR]{chromatogram} function of the \pkg{mzR} package.
 Although the function \link[mzR]{chromatogram} returns a \code{list},
-the output is collapsed to a \link[data.table]{data.table}.}
+the output is collapsed to a \linkS4class{data.table}.}
 
-\item{\code{parameters}}{A list with parameter \linkS4class{msSettings} for data processing, such as peak picking.}
+\item{\code{parameters}}{A list with parameter \linkS4class{settings} for data
+processing, such as peak picking.}
 
-\item{\code{peaks}}{A \link[data.table]{data.table} with feature details, containing the following columns:
+\item{\code{peaks}}{A \linkS4class{data.table} with feature details,
+containing the following columns:
 \enumerate{
  \item \strong{id}: character, the identifier of the peak;
  \item \strong{rt}: numeric, the calculated retention time (in seconds);

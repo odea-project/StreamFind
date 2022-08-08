@@ -1,8 +1,13 @@
 
-
 #' @title plotAnnotationInteractive
 #'
 #' @description Function to plot features annotation.
+#'
+#' @param object An \linkS4class{msData} object.
+#' @param comps A \linkS4class{data.table} as obtained by the
+#' method \code{annotation} for \linkS4class{msData}.
+#' @param colorBy A string value to define the plotting legend.
+#' Possible values are "mass" and "isotopes".
 #'
 #' @return A dotted plot with features annotation.
 #'
@@ -57,7 +62,9 @@ plotAnnotationInteractive <- function(object, comps, colorBy = "isotopes") {
       x = temp$rt,
       y = temp$mz,
       type = "scatter", mode = "markers+text",
-      marker = list(size = 20 * temp$intensity, opacity = 0.6, color = tempCol, line = list(color = tempCol)),
+      marker = list(size = 20 * temp$intensity,
+                    opacity = 0.6, color = tempCol,
+                    line = list(color = tempCol)),
       text =  temp$adduct_ion,
       textposition = "midle right",
       textfont = list(size = 12, color = tempCol),

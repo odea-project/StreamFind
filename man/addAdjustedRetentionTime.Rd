@@ -8,6 +8,8 @@ addAdjustedRetentionTime(object, pat)
 }
 \arguments{
 \item{object}{An \linkS4class{msData} object.}
+
+\item{pat}{A \linkS4class{featureGroups} object from \pkg{patRoon}.}
 }
 \description{
 Function to add adjusted retention time information

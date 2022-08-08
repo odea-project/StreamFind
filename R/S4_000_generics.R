@@ -1,204 +1,418 @@
 
-### Generics ------------------------------------------------------------------------------------------------
+### Generics -------------------------------------------------------------------
 
-#' setInfo
+#' @title setInfo
 #'
-#' @noRd
+#' @description Generic for getting set information.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("setInfo", function(object, ...) standardGeneric("setInfo"))
 
-#' analysisTable
+
+
+#' @title analysisTable
 #'
-#' @noRd
+#' @description Generic for getting an analysis table.
+#'
+#' @param object A method specific class object.
+#'
 setGeneric("analysisTable", function(object) standardGeneric("analysisTable"))
 
-#' filePaths
+
+
+#' @title filePaths
 #'
-#' @noRd
+#' @description Generic for getting file paths
+#'
+#' @param object A method specific class object.
+#'
 setGeneric("filePaths", function(object) standardGeneric("filePaths"))
 
-#' analysisNames
+
+#' @title analysisNames
 #'
-#' @noRd
+#' @description Generic for getting analysis names.
+#'
+#' @param object A method specific class object.
+#'
 setGeneric("analysisNames", function(object) standardGeneric("analysisNames"))
 
-#' replicateNames
+
+
+#' @title replicateNames
 #'
-#' @noRd
+#' @description Generic for getting replicate names.
+#'
+#' @param object A method specific class object.
+#'
 setGeneric("replicateNames", function(object) standardGeneric("replicateNames"))
 
-#' replicateNames<-
+
+
+#' @title replicateNames<-
 #'
-#' @noRd
+#' @description Generic for setting replicate names.
+#'
+#' @param object A method specific class object.
+#' @param value A method specific vector with names.
+#'
 setGeneric("replicateNames<-", function(object, value) standardGeneric("replicateNames<-"))
 
-#' blankReplicateNames
+
+
+#' @title blankReplicateNames
 #'
-#' @noRd
+#' @description Generic for getting blank replicate names.
+#'
+#' @param object A method specific class object.
+#'
 setGeneric("blankReplicateNames", function(object) standardGeneric("blankReplicateNames"))
 
-#' blankReplicateNames<-
+
+
+#' @title blankReplicateNames<-
 #'
-#' @noRd
+#' @description Generic for setting blank replicate names.
+#'
+#' @param object A method specific class object.
+#' @param value A method specific vector with names.
+#'
 setGeneric("blankReplicateNames<-", function(object, value) standardGeneric("blankReplicateNames<-"))
 
-#' polarities
+
+
+#' @title polarities
 #'
-#' @noRd
+#' @description Generic for getting polarities.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("polarities", function(object, ...) standardGeneric("polarities"))
 
-# TODO remove setter for polarities as it should be as in the file
 
-#' polarities<-
-#'
-#' @noRd
-setGeneric("polarities<-", function(object, value) standardGeneric("polarities<-"))
 
-#' addAnalyses
+#' @title addAnalyses
 #'
-#' @noRd
+#' @description Generic for adding analyses.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("addAnalyses", function(object, ...) standardGeneric("addAnalyses"))
 
-#' getAnalyses
+
+
+#' @title getAnalyses
 #'
-#' @noRd
+#' @description Generic for getting analyses.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("getAnalyses", function(object, ...) standardGeneric("getAnalyses"))
 
-#' addMetadata
+
+
+#' @title addMetadata
 #'
-#' @noRd
+#' @description Generic for adding metadata.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("addMetadata", function(object, ...) standardGeneric("addMetadata"))
 
-#' loadRawData
+
+
+#' @title loadRawData
 #'
-#' @noRd
+#' @description Generic for loading raw data.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("loadRawData", function(object, ...) standardGeneric("loadRawData"))
 
-#' hasLoadedSpectra
+
+
+#' @title hasLoadedSpectra
 #'
-#' @noRd
+#' @description Generic for checking if has loaded spectra.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("hasLoadedSpectra", function(object, ...) standardGeneric("hasLoadedSpectra"))
 
-#' hasLoadedChromatograms
+
+
+#' @title hasLoadedChromatograms
 #'
-#' @noRd
+#' @description Generic for checking if has loaded chromatograms.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("hasLoadedChromatograms", function(object, ...) standardGeneric("hasLoadedChromatograms"))
 
-#' EICs
+
+
+#' @title EICs
 #'
-#' @noRd
+#' @description Generic for getting extracted ion chromatograms (EICs).
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("EICs", function(object, ...) standardGeneric("EICs"))
 
-#' plotEICs
+
+
+#' @title plotEICs
 #'
-#' @noRd
+#' @description Generic for plotting extracted ion chromatograms (EICs).
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("plotEICs", function(object, ...) standardGeneric("plotEICs"))
 
-#' TICs
+
+
+#' @title TICs
 #'
-#' @noRd
+#' @description Generic for getting total ion chromatograms (EICs).
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("TICs", function(object, ...) standardGeneric("TICs"))
 
-#' plotTICs
+
+
+#' @title plotTICs
 #'
-#' @noRd
+#' @description Generic for plotting total ion chromatograms (EICs).
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("plotTICs", function(object, ...) standardGeneric("plotTICs"))
 
-#' XICs
+
+
+#' @title XICs
 #'
-#' @noRd
+#' @description Generic for getting three dimensional ion chromatograms (XICs).
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("XICs", function(object, ...) standardGeneric("XICs"))
 
-#' plotXICs
+
+
+#' @title plotXICs
 #'
-#' @noRd
+#' @description Generic for plotting three dimensional ion chromatograms (XICs).
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("plotXICs", function(object, ...) standardGeneric("plotXICs"))
 
-#' MS2s
+
+
+#' @title MS2s
 #'
-#' @noRd
+#' @description Generic for getting MS 2 spectra.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("MS2s", function(object, ...) standardGeneric("MS2s"))
 
-#' plotMS2s
+
+
+#' @title plotMS2s
 #'
-#' @noRd
+#' @description Generic for plotting MS 2 spectra.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("plotMS2s", function(object, ...) standardGeneric("plotMS2s"))
 
-#' hasPeaks
+
+
+#' @title hasPeaks
 #'
-#' @noRd
+#' @description Generic for checking if has peaks.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("hasPeaks", function(object, ...) standardGeneric("hasPeaks"))
 
-#' peaks
+
+
+#' @title peaks
 #'
-#' @noRd
+#' @description Generic for getting peaks.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("peaks", function(object, ...) standardGeneric("peaks"))
 
-#' mapPeaks
+
+
+#' @title mapPeaks
 #'
-#' @noRd
+#' @description Generic for plotting a map of peaks.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("mapPeaks", function(object, ...) standardGeneric("mapPeaks"))
 
-#' features
+
+
+#' @title features
 #'
-#' @noRd
+#' @description Generic for getting features.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("features", function(object, ...) standardGeneric("features"))
 
-#' plotFeatures
+
+
+#' @title plotFeatures
 #'
-#' @noRd
+#' @description Generic for plotting features.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("plotFeatures", function(object, ...) standardGeneric("plotFeatures"))
 
-#' mapFeatures
+
+
+#' @title mapFeatures
 #'
-#' @noRd
+#' @description Generic for plotting a map of features.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("mapFeatures", function(object, ...) standardGeneric("mapFeatures"))
 
-#' hasAdjustedRetentionTime
+
+
+#' @title hasAdjustedRetentionTime
 #'
-#' @noRd
+#' @description Generic for checking is has adjusted retention time.
+#'
+#' @param object A method specific class object.
+#'
 setGeneric("hasAdjustedRetentionTime", function(object) standardGeneric("hasAdjustedRetentionTime"))
 
-#' plotAnnotation
+
+
+#' @title plotAnnotation
 #'
-#' @noRd
+#' @description Generic for plotting annotation.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("plotAnnotation", function(object, ...) standardGeneric("plotAnnotation"))
 
-#' addParameters
+
+
+#' @title addParameters
 #'
-#' @noRd
+#' @description Generic for adding parameters.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("addParameters", function(object, ...) standardGeneric("addParameters"))
 
-#' getParameters
+
+
+#' @title getParameters
 #'
-#' @noRd
+#' @description Generic for getting parameters.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("getParameters", function(object, ...) standardGeneric("getParameters"))
 
-#' getAlgorithm
+
+
+#' @title getAlgorithm
 #'
-#' @noRd
+#' @description Generic for getting algorithm.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("getAlgorithm", function(object, ...) standardGeneric("getAlgorithm"))
 
-#' getSettings
+
+
+#' @title getSettings
 #'
-#' @noRd
+#' @description Generic for getting settings.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("getSettings", function(object, ...) standardGeneric("getSettings"))
 
-#' exportSettings
+
+
+#' @title exportSettings
 #'
-#' @noRd
+#' @description Generic for exporting settings.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("exportSettings", function(object, ...) standardGeneric("exportSettings"))
 
-#' as.features
+
+
+#' @title as.features
 #'
-#' @noRd
+#' @description Generic for converting to features.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("as.features", function(object, ...) standardGeneric("as.features"))
 
-#' as.featureGroups
+
+
+#' @title as.featureGroups
 #'
-#' @noRd
+#' @description Generic for converting to featureGroups.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
 setGeneric("as.featureGroups", function(object, ...) standardGeneric("as.featureGroups"))
 
-### External Generics ---------------------------------------------------------------------------------------
+
+
+### External Generics ----------------------------------------------------------
 
 #### ProtGenerics --------------------------------------------------------
 #' @importMethodsFrom ProtGenerics spectra

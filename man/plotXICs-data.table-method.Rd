@@ -2,7 +2,6 @@
 % Please edit documentation in R/S4_methods_datatable.R
 \name{plotXICs,data.table-method}
 \alias{plotXICs,data.table-method}
-\alias{plotXICs,data.table,data.table-method}
 \title{plotXICs-data.table}
 \usage{
 \S4method{plotXICs}{data.table}(
@@ -18,11 +17,11 @@
 )
 }
 \arguments{
-\item{object}{A \link[data.table]{data.table} as produced by
-the method \link{XICs}.}
+\item{object}{A \linkS4class{data.table} as produced by
+the method \code{\link{XICs}}.}
 
-\item{analyses}{A numeric or character vector with the index or analysis name/s.
-When \code{NULL}, all the analyses are used.}
+\item{analyses}{A numeric or character vector with the index or
+analysis name/s. When \code{NULL}, all the analyses are used.}
 
 \item{targets}{A character vector with target names.}
 
@@ -47,8 +46,8 @@ the number of rows to grid the plots.}
 \description{
 Plots three dimensional (\emph{m/z}, time and intensity)
 extracted ion chromatograms (XICs) for specified \emph{m/z} and
-retention time pair targets in analyses of a \link[data.table]{data.table}
-object as produced by the \link{XICs} method.
+retention time pair targets in analyses of a \linkS4class{data.table}
+object as produced by the \code{\link{XICs}} method.
 \code{analyses} and \code{targets} can be used to filter the XIC table.
 When \code{plotTargetMark} is \code{TRUE} a target is plotted representing
 the deviations as defined by the arguments \code{ppmMark} and \code{secMark}

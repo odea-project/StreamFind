@@ -28,7 +28,7 @@ msFeatures_validity <- function(object) {
 #' The \code{msFeatures} is used to store and manage MS data and the respective methods can be used
 #' for inspection, processing and evaluation.
 #'
-#' @template slot-msAnalysis
+#' @template slot-msFeatures
 #'
 #' @references
 #' \insertRef{patroon01}{streamFind}
@@ -56,7 +56,6 @@ setClass("msFeatures",
            intensity = "data.table",
            metadata = "data.table",
            annotation = "list",
-           #IS = "data.table",
            parameters = "list"
          ),
          prototype = list(
@@ -64,7 +63,6 @@ setClass("msFeatures",
            intensity = data.table(),
            metadata = data.table(),
            annotation = list(),
-           #IS = data.table(),
            parameters = list()
          ),
          validity = msFeatures_validity
@@ -76,6 +74,8 @@ setClass("msFeatures",
 #### analysisNames ------------------------------------------------------------
 
 #' @describeIn msFeatures getter for analysis names.
+#'
+#' @param object An \linkS4class{msFeatures} object.
 #'
 #' @export
 #'
@@ -154,7 +154,13 @@ setMethod("getParameters", "msFeatures", function(object, call = NULL) {
 #' @describeIn msFeatures getter for features (i.e., grouped peaks). When
 #' complete is set to \code{TRUE}, additional feature metadata is also returned.
 #'
-#' @param complete Logical, set to \code{TRUE} for a complete version of the output.
+#' @template args-single-targetsID
+#' @template args-makeTargets
+#' @template args-single-filtered
+#' @param complete Logical, set to \code{TRUE} for a complete
+#' version of the output.
+#' @param average Logical, set to \code{TRUE} for returning the intensity of
+#' features averaged for each replicate group.
 #'
 #' @export
 #'
@@ -166,7 +172,7 @@ setMethod("getParameters", "msFeatures", function(object, call = NULL) {
 setMethod("features", "msFeatures", function(object,
                                              targetsID = NULL,
                                              mz = NULL, ppm = 20,
-                                             rt = NULL, sec = 60,
+                                             rt = NULL, sec = 60, id = NULL,
                                              filtered = TRUE,
                                              complete = FALSE,
                                              average = TRUE) {
@@ -239,7 +245,10 @@ setMethod("features", "msFeatures", function(object,
 
 #' @describeIn msFeatures subset on analyses, using analysis index or name.
 #'
-#' @param i The indice/s or name/s of the analyses to keep in the \code{x} object.
+#' @param x An \linkS4class{msFeatures} object.
+#' @param i The indice/s or name/s of the analyses to keep in \code{x}.
+#' @param drop Not applicable to \linkS4class{msFeatures}.
+#' @param ... Other arguments.
 #'
 #' @export
 #'
@@ -297,7 +306,7 @@ setMethod("[", c("msFeatures", "ANY", "missing", "missing"), function(x, i, ...)
 
 #' @describeIn msFeatures subset on features, using feature index or name.
 #'
-#' @param i The indice/s or name/s of the features to keep in the \code{x} object.
+#' @param j The indice/s or \emph{id}/s for of features to keep..
 #'
 #' @export
 #'
