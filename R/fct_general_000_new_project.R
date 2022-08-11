@@ -144,7 +144,7 @@ newAnalysis <- function(file = NA_character_,
   }
 
   if (grepl("mzML", file_df$file) | grepl("mzXML", file_df$file)) {
-    analysis <- msAnalysisLoadMetadata(file_df)
+    analysis <- msAnalysis_loadMetadata(file_df)
     if (is.list(analysis)) analysis <- analysis[[1]]
   }
 
@@ -200,7 +200,7 @@ newStreamSet <- function(files = NA_character_,
 
   if (all(grepl(".mzML|.mzXML", file_df$file))) {
 
-    analyses <- msAnalysisLoadMetadata(file_df)
+    analyses <- msAnalysis_loadMetadata(file_df)
 
     ana_type <- sapply(analyses, function(x) is(x))
 

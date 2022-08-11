@@ -250,7 +250,7 @@ addAdjustedRetentionTime <- function(object, pat) {
 
     object@analyses <- lapply(object@analyses, function(x, hasSpectra) {
       if (!hasSpectra[analysisNames(x)]) {
-        x@spectra <- loadBasicRawSpectraHeaderMZR(filePaths(x))
+        x <- loadSpectraInfo(x)
       }
       return(x)
     }, hasSpectra = hasSpectra)

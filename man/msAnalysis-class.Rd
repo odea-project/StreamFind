@@ -20,12 +20,14 @@
 \alias{blankReplicateNames,msAnalysis,msAnalysis-method}
 \alias{blankReplicateNames<-,msAnalysis-method}
 \alias{blankReplicateNames<-,msAnalysis,msAnalysis-method}
-\alias{metadata,msAnalysis-method}
-\alias{metadata,msAnalysis,msAnalysis-method}
+\alias{getMetadata,msAnalysis-method}
+\alias{getMetadata,msAnalysis,msAnalysis-method}
 \alias{addMetadata,msAnalysis-method}
 \alias{addMetadata,msAnalysis,msAnalysis-method}
 \alias{polarities,msAnalysis-method}
 \alias{polarities,msAnalysis,msAnalysis-method}
+\alias{loadSpectraInfo,msAnalysis-method}
+\alias{loadSpectraInfo,msAnalysis,msAnalysis-method}
 \alias{loadRawData,msAnalysis-method}
 \alias{loadRawData,msAnalysis,msAnalysis-method}
 \alias{hasLoadedSpectra,msAnalysis-method}
@@ -85,11 +87,13 @@
 
 \S4method{blankReplicateNames}{msAnalysis}(object) <- value
 
-\S4method{metadata}{msAnalysis}(x, which = NULL)
+\S4method{getMetadata}{msAnalysis}(object, which = NULL)
 
 \S4method{addMetadata}{msAnalysis}(object, metadata = NULL, overwrite = FALSE)
 
 \S4method{polarities}{msAnalysis}(object)
+
+\S4method{loadSpectraInfo}{msAnalysis}(object)
 
 \S4method{loadRawData}{msAnalysis}(object, minIntensityMS1 = 0, minIntensityMS2 = 0)
 
@@ -212,8 +216,6 @@
 
 \item{value}{A character string applicable to the respective method.}
 
-\item{x}{A \linkS4class{msAnalysis} object.}
-
 \item{which}{A character vector with the entry name/s.}
 
 \item{metadata}{A named vector with metadata entries or a one row
@@ -286,6 +288,8 @@ filtered data is returned. When \code{FALSE}, filtered data is excluded.}
 
 \item{ylim}{A length one or two numeric vector for setting the \emph{y} limits of a plot.}
 
+\item{x}{A \linkS4class{msAnalysis} object.}
+
 \item{i}{The indice/s or name/s of the peaks to keep in the \code{x} object.}
 
 \item{j}{Not applicable to \linkS4class{msAnalysis}.}
@@ -323,12 +327,19 @@ The \code{value} is a character string with analysis replicate name.
 \item \code{blankReplicateNames(msAnalysis) <- value}: setter for associated blank replicate.
 The \code{value} is a character string with associated blank replicate name.
 
-\item \code{metadata(msAnalysis)}: getter for analysis metadata.
-Returns a \linkS4class{data.table} with a column per metadata entry.
+\item \code{getMetadata(msAnalysis)}: getter for analysis metadata.
+Returns a list of metadata entries as defined by \code{which}.
+When \code{which} is \code{NULL}, all entries are returned.
 
 \item \code{addMetadata(msAnalysis)}: setter for analysis metadata.
 
 \item \code{polarities(msAnalysis)}: getter for analyses polarity.
+
+\item \code{loadSpectraInfo(msAnalysis)}: adds raw spectra information (i.e., scan number,
+ms level and retention time of each spectrum) to the slot \code{spectra}
+of an \linkS4class{msAnalysis} object. If the levels are higher than
+one, as the case of MS/MS data, the collision energy and precursor scan and
+\emph{m/z} are also returned.
 
 \item \code{loadRawData(msAnalysis)}: adds raw spectra and chromatograms to the respective
 slots of an \linkS4class{msAnalysis} object.

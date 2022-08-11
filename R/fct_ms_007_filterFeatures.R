@@ -214,13 +214,13 @@ blankThresholdFeatures <- function(obj, value = 3) {
 
   feats_int <- features(obj, average = TRUE)
 
-  blk <- blanks(obj)[!blanks(obj) == replicates(obj)]
-  rpl <- replicates(obj)[!blanks(obj) == replicates(obj)]
+  blk <- blankReplicateNames(obj)[!blankReplicateNames(obj) == replicateNames(obj)]
+  rpl <- replicateNames(obj)[!blankReplicateNames(obj) == replicateNames(obj)]
 
   names(rpl) <- blk
   rpl <- rpl[!duplicated(rpl)]
 
-  allRpl <- unique(replicates(obj))
+  allRpl <- unique(replicateNames(obj))
 
   temp <- feats_int[, allRpl, with = FALSE]
 
@@ -252,7 +252,7 @@ maxReplicateIntensityDeviationFeatures <- function(obj, value = 40) {
 
   feats_int <- features(obj, average = TRUE)
 
-  rpl <- unique(replicates(obj)[!blanks(obj) == replicates(obj)])
+  rpl <- unique(replicateNames(obj)[!blankReplicateNames(obj) == replicateNames(obj)])
   rplSD <- paste0(rpl, "_sd")
 
   check <- apply(feats_int[, rplSD, with = FALSE], MARGIN = 1, function(x, value) {
@@ -279,7 +279,7 @@ minReplicateAbundanceFeatures <- function(obj, value = 3) {
 
   feats_org <- copy(obj@metadata)
 
-  rpl <- replicates(obj)
+  rpl <- replicateNames(obj)
   ana <- analysisNames(obj)
   names(rpl) <- ana
 
@@ -295,7 +295,7 @@ minReplicateAbundanceFeatures <- function(obj, value = 3) {
     } else {
       return(FALSE)
     }
-  }, feats_org = feats_org, rpl = rpl, value = value, bl = unique(blanks(obj))))
+  }, feats_org = feats_org, rpl = rpl, value = value, bl = unique(blankReplicateNames(obj))))
 
   temp_mtd <- copy(obj@metadata)
   temp_mtd[is.na(filter) & check, `:=`(filtered = TRUE,

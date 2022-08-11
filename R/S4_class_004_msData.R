@@ -33,9 +33,9 @@ msData_validity <- function(object) {
 
 #' @title msData
 #'
-#' @description An S4 class object to store and manage processing of files with MS data.
-#'   The \code{msData} object inherits the \linkS4class{streamSet} structure with type defined as
-#'   \emph{ms}.
+#' @description An S4 class object to store and manage processing of files with
+#' MS data. The \code{msData} object inherits the \linkS4class{streamSet}
+#' structure with type defined as \emph{ms}.
 #'
 #' @template slot-streamSet
 #' @template slot-msData
@@ -54,7 +54,7 @@ setClass("msData",
   validity = msData_validity
 )
 
-### S4 methods ----------------------------------------------------------------------------------------------
+### S4 methods -----------------------------------------------------------------
 
 #### show ----------------------------------------------------------------
 
@@ -87,7 +87,10 @@ setMethod("show", "msData", function(object) {
     tb$peaks <- sapply(object@analyses, function(x) nrow(x@peaks))
 
     if (nrow(object@features@metadata) > 0) {
-      tb$features <- apply(object@features@intensity[, .SD, .SDcols = analysisNames(object)], 2, function(x) length(x[x > 0]))
+      tb$features <- apply(
+        object@features@intensity[, .SD, .SDcols = analysisNames(object)], 2,
+        function(x) length(x[x > 0])
+      )
     } else {
       tb$features <- 0
     }
@@ -241,10 +244,12 @@ setMethod("blankReplicateNames<-", signature("msData", "ANY"), function(object, 
   return(object)
 })
 
-#### metadata ---------------------------------------------------------
+#### getMetadata ---------------------------------------------------------------
 
 #' @describeIn msData getter for analyses metadata.
-#' Returns a \linkS4class{data.table} with a row per analysis.
+#' Returns a nested list for each analysis (as defined by the \code{analyses})
+#' with the list of metadata entries as defined by the \code{which} argument.
+#' When \code{which} is \code{NULL}, all entries are returned.
 #'
 #' @template args-single-which-entry
 #'
@@ -253,17 +258,15 @@ setMethod("blankReplicateNames<-", signature("msData", "ANY"), function(object, 
 #'
 #' @export
 #'
-#' @aliases metadata,msData,msData-method
+#' @aliases getMetadata,msData,msData-method
 #'
-setMethod("metadata", "msData", function(x, analyses = NULL, which = NULL) {
+setMethod("getMetadata", "msData", function(object, analyses = NULL, which = NULL) {
 
-  if (!is.null(analyses)) x <- x[analyses]
+  if (!is.null(analyses)) object <- object[analyses]
 
-  mtd <- lapply(x@analyses, function(z, which) {
-    return(metadata(z, which))
+  mtd <- lapply(object@analyses, function(z, which) {
+    return(getMetadata(z, which))
   }, which = which)
-
-  mtd <- rbindlist(mtd, fill = TRUE)
 
   return(mtd)
 })
@@ -313,7 +316,7 @@ setMethod("addMetadata", "msData", function(object,
       return(object)
     }
 
-    if (TRUE %in% is.null(names(metadata))) names(metadata) <- analyses(object)
+    if (TRUE %in% is.null(names(metadata))) names(metadata) <- analysisNames(object)
 
     name_is_already_there <- lapply(names(metadata), function(x, metadata, object) {
       names(metadata[[x]]) %in% names(object@analyses[[x]]@metadata)
@@ -417,7 +420,7 @@ setMethod("getAnalyses", "msData", function(object, analyses = NULL) {
 
   if (!is.null(analyses)) {
     if (is.character(analyses)) {
-      analyses <- which(analyses == analyses(object))
+      analyses <- which(analyses == analysisNames(object))
     }
     if (length(analyses) > 0 && is.numeric(analyses)) {
       if (length(analyses) == 1) return(object@analyses[[analyses]])
@@ -471,9 +474,8 @@ setMethod("[", c("msData", "ANY", "missing", "missing"), function(x, i, ...) {
 #' @aliases polarities,msData,msData-method
 #'
 setMethod("polarities", "msData", function(object) {
-  mt <- metadata(object, which = "polarity")
-  mt_v <- mt$polarity
-  names(mt_v) <- mt$analysis
+  mt <- getMetadata(object, which = "polarity")
+  mt_v <- unlist(lapply(mt, function(x) x$polarity))
   return(mt_v)
 })
 
@@ -509,7 +511,10 @@ setMethod("EICs", "msData", function(object,
   spec <- lapply(object@analyses[analyses], function(x, rtr) {
 
     if (!hasLoadedSpectra(x)) {
-      temp <- loadRawDataMZR(file = filePaths(x), chroms = FALSE, level = 1, rtr = rtr)
+      temp <- msAnalysis_loadRawData(
+        fl = filePaths(x),
+        chroms = FALSE, level = 1, rtr = rtr
+      )
       temp <- temp$spectra
     } else {
       temp <- spectra(x)
@@ -657,7 +662,10 @@ setMethod("XICs", "msData", function(object,
   spec <- lapply(object@analyses[analyses], function(x, rtr) {
 
     if (!hasLoadedSpectra(x)) {
-      temp <- loadRawDataMZR(file = filePaths(x), chroms = FALSE, level = 1, rtr = rtr)
+      temp <- msAnalysis_loadRawData(
+        fl = filePaths(x),
+        chroms = FALSE, level = 1, rtr = rtr
+      )
       temp <- temp$spectra
     } else {
       temp <- spectra(x)
@@ -805,9 +813,40 @@ setMethod("plotMS2s", "msData", function(object = NULL,
   )
 })
 
+
+
+### loadSpectraInfo ----------------------------------------------------------
+
+#' @describeIn msData adds raw spectra information (i.e., scan number,
+#'  ms level and retention time of each spectrum) to the slot \code{spectra}
+#'  of each \linkS4class{msAnalysis} in the \linkS4class{msData}.
+#'  If the levels are higher than one, as the case of MS/MS data,
+#'  the collision energy and precursor scan and \emph{m/z} are also returned.
+#'
+#' @export
+#'
+#' @aliases loadSpectraInfo,msData,msData-method
+#'
+setMethod("loadSpectraInfo", "msData", function(object, analyses = NULL) {
+
+  analyses <- checkAnalysesArgument(object, analyses)
+
+  temp <- lapply(object@analyses[analyses], function(x) {
+    x <- loadSpectraInfo(x)
+    return(x)
+  })
+
+  object@analyses[analyses] <- temp
+
+  return(object)
+})
+
+
+
 ### loadRawData ----------------------------------------------------------
 
-#' @describeIn msData adds processing parameters to the analysis.
+#' @describeIn msData adds raw data to all or defined analyses in the
+#' \linkS4class{msData} object.
 #'
 #' @param minIntensityMS1 Numeric value on length one with the
 #' minimum intensity of MS1 level traces.
@@ -882,7 +921,9 @@ setMethod("spectra", "msData", function(object) {
   return(spec)
 })
 
-### hasAdjustedRetentionTime ---------------------------------------------
+
+
+### hasAdjustedRetentionTime ---------------------------------------------------
 
 #' @describeIn msData getter for presence of adjusted retention time
 #' in the analyses.
@@ -893,10 +934,13 @@ setMethod("spectra", "msData", function(object) {
 #'
 setMethod("hasAdjustedRetentionTime", "msData", function(object) {
 
-  return(sapply(object@analyses, function(x) "rtAdjusted" %in% colnames(x@spectra)))
+  return(sapply(object@analyses,
+    function(x) "rtAdjusted" %in% colnames(x@spectra)))
 })
 
-### addParameters ----------------------------------------------------------
+
+
+### addParameters --------------------------------------------------------------
 
 #' @describeIn msData adds processing parameters to analyses or features as defined
 #' by the argument \code{where}. So where can be either "analyses" or "features".
@@ -1094,7 +1138,7 @@ setMethod("peaks", "msData", function(object,
   }, filtered = filtered)
 
   pks <- rbindlist(pks, idcol = "analysis")
-  rpl <- data.table(analysis = analyses(obj), replicate = replicateNames(obj))
+  rpl <- data.table(analysis = analysisNames(obj), replicate = replicateNames(obj))
   pks <- pks[rpl, on = .(analysis = analysis)]
   pks <- pks[!is.na(id), ]
 
@@ -1150,7 +1194,7 @@ setMethod("plotPeaks", "msData", function(object,
   }
 
   eic <- lapply(obj@analyses, function(x, pks_tars) {
-    eic <- EICs(x, mz = pks_tars[analysis %in% analyses(x), ])
+    eic <- EICs(x, mz = pks_tars[analysis %in% analysisNames(x), ])
   }, pks_tars = pks_tars)
 
   eic <- rbindlist(eic)
@@ -1352,7 +1396,7 @@ setMethod("plotFeatures", "msData", function(object,
                                              interactive = FALSE) {
 
   analyses <- checkAnalysesArgument(object, analyses)
-  obj <- object[which(analyses %in% analyses(object))]
+  obj <- object[which(analyses %in% analysisNames(object))]
 
   feats <- features(
     object = obj,
@@ -1385,7 +1429,7 @@ setMethod("plotFeatures", "msData", function(object,
   pks_tars$rtmax <- max(pks_tars$rtmax) + 60
 
   eic <- lapply(object@analyses, function(x, pks_tars) {
-    eic <- EICs(x, mz = pks_tars[analysis %in% analyses(x), ])
+    eic <- EICs(x, mz = pks_tars[analysis %in% analysisNames(x), ])
   }, pks_tars = pks_tars)
 
   eic <- rbindlist(eic)

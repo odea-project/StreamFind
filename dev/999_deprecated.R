@@ -62,8 +62,6 @@ extractEICs <- function(object = NULL,
     targets[mzmin == 0, mzmin := metadata(ms_ana, which = "lowMz")$lowMz]
     targets[mzmax == 0, mzmax := metadata(ms_ana, which = "highMz")$highMz]
 
-    # TODO check if analyses has spectra to use that instead
-
     eic <- patRoon::getEICs(fl, targets[, .(retmin, retmax, mzmin, mzmax)])
 
     names(eic) <- targets[["id"]]
@@ -130,8 +128,6 @@ extractXICs <- function(object = NULL,
 
   xicList <- list()
 
-  # TODO check if analyses has spectra to use that instead
-
   xicList <- lapply(analyses, function(x, targets, object) {
 
     rtr <- c(min(targets$rtmin) * 0.7, max(targets$rtmax) * 1.3)
@@ -165,7 +161,6 @@ extractXICs <- function(object = NULL,
   xics <- rbindlist(xicList)
   xics <- xics[, .(analysis, replicate, id, mz_id, rt_id, mz, rt, intensity)]
 
-  # TODO implemented alignment correction for XICs
   # if (hasAdjustedRetentionTime(object)) {
   #
   #   spls <- unique(xics$sample)
@@ -411,12 +406,6 @@ setMethod("initialize", "msAnalysis", function(.Object, ...) {
 msAnalysisLoadMZR <- function(file_df) {
 
   file_df <- split(file_df, file_df$file)
-
-  # TODO Add parallel processing globally
-  # 1. Check if number of files and workers
-  # are high enough to add parallel processing
-  # 2. Check if has linux or win to run show or fork
-  # make global function for it
 
   bpp <- SerialParam(progressbar = TRUE)
   #bpp <- SnowParam(progressbar = TRUE)

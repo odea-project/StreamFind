@@ -42,7 +42,7 @@ plotFeaturePeaks <- function(object,
 
   eic <- lapply(split(pks, pks$analysis), function(x, object) {
     return(
-      extractEICs(
+      EICs(
         object,
         analyses = unique(x$analysis),
         mz = x

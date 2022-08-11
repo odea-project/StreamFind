@@ -31,6 +31,7 @@ setGeneric("analysisTable", function(object) standardGeneric("analysisTable"))
 setGeneric("filePaths", function(object) standardGeneric("filePaths"))
 
 
+
 #' @title analysisNames
 #'
 #' @description Generic for getting analysis names.
@@ -115,6 +116,15 @@ setGeneric("addAnalyses", function(object, ...) standardGeneric("addAnalyses"))
 setGeneric("getAnalyses", function(object, ...) standardGeneric("getAnalyses"))
 
 
+#' @title getMetadata
+#'
+#' @description Generic for getting metadata.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
+setGeneric("getMetadata", function(object, ...) standardGeneric("getMetadata"))
+
 
 #' @title addMetadata
 #'
@@ -124,6 +134,17 @@ setGeneric("getAnalyses", function(object, ...) standardGeneric("getAnalyses"))
 #' @param ... Other method specific arguments.
 #'
 setGeneric("addMetadata", function(object, ...) standardGeneric("addMetadata"))
+
+
+
+#' @title loadSpectraInfo
+#'
+#' @description Generic for loading basic spectra information.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
+setGeneric("loadSpectraInfo", function(object, ...) standardGeneric("loadSpectraInfo"))
 
 
 
@@ -433,12 +454,6 @@ NULL
 
 #### BiocGenerics --------------------------------------------------------
 #' @importMethodsFrom BiocGenerics path annotation
-#' @export
-#' @noRd
-NULL
-
-#### S4Vectors -----------------------------------------------------------
-#' @importMethodsFrom S4Vectors metadata
 #' @export
 #' @noRd
 NULL

@@ -115,34 +115,40 @@ remotes::install_github("ricardobachertdacunha/streamFind", dependencies = TRUE)
 
 ## Files
 
-The streamFind package includes example files, which are located  in the folder `system.file(package = "streamFind", dir = "extdata")`. The files available are described in Table \@ref(tab:description-files). Note, the MS files (.mzML) were trimmed with the function `trimSpectraFilesMZR` to reduce their size. The centroided Agilent Q-TOF files were trimmed with retention time between 900 and 1350 seconds, _m/z_ for MS1 data between 200 and 450 Da and _m/z_ for MS2 between 35 and 450 Da. Additionally, MS1 and MS2 traces below 100 and 50 counts were removed, respectively. The profile Agilent Q-TOF files were trimmed with retention time between 1000 and 1200 seconds, _m/z_ for MS1 data between 200 and 300 Da and _m/z_ for MS2 between 35 and 300 Da. Additionally, MS1 and MS2 traces below 1 count were removed to exclude empty spectra. The files are used within the document for demonstration of the backend.
+The streamFind package includes example data files via the streamFindData R package. Once installed the full file paths of MS data files can be obtained as shown below. Alternatively, the files can be obtained directly from folder `system.file(package = "streamFindData", dir = "extdata")`. The files available are described in Table \@ref(tab:description-files). Note, the MS files (.mzML) were trimmed with the function `trimSpectraFilesMZR` to reduce their size. The centroided Agilent Q-TOF files were trimmed with retention time between 900 and 1350 seconds, _m/z_ for MS1 data between 200 and 450 Da and _m/z_ for MS2 between 35 and 450 Da. Additionally, MS1 and MS2 traces below 100 and 50 counts were removed, respectively. The profile Agilent Q-TOF files were trimmed with retention time between 1000 and 1200 seconds, _m/z_ for MS1 data between 200 and 300 Da and _m/z_ for MS2 between 35 and 300 Da. Additionally, MS1 and MS2 traces below 1 count were removed to exclude empty spectra. The files are used within the document for demonstration of the backend.
 
 ```{r resource-files, cache=FALSE}
-#path to files
-r_path <- system.file(package = "streamFind", dir = "extdata")
 
-#list of file full paths
-files <- list.files(r_path, pattern = ".mzML", full.names = TRUE)
+r_path <- system.file(package = "streamFindData", dir = "extdata")
+
+files <- list.files(r_path, pattern = ".mzML|.mzXML", full.names = TRUE)
+
+#list of file full paths from the data package
+#files <- streamFindData::msFilePaths()
 ```
 
 ```{r description-files, echo=FALSE}
 df_files_desc <- data.frame(
   N. = seq_len(length(files)),
-  file_type = rep("MS", 6 + 18),
+  file_type = rep("MS", 27),
   file_name = basename(files),
-  device = c(rep("Agilent Q-TOF", 24)),
-  data_type = c(rep("centroid", 3), rep("profile", 3), rep("centroid", 18)),
-  ac_mode = c(rep("MS/MS", 24)),
-  polarity = c(rep("positive", 6),
+  device = c(rep("Agilent Q-TOF", 27)),
+  data_type = c(rep("centroid", 6), rep("profile", 3), rep("centroid", 18)),
+  ac_mode = c(rep("MS/MS", 27)),
+  polarity = c(rep("positive", 9),
                rep("negative", 3), rep("positive",3),
                rep("negative", 3), rep("positive",3),
                rep("negative", 3), rep("positive",3)),
   description = c(
-    rep("Basic centroided MS data spiked with chemical and internal standards (CS and IS, respectively).", 3),
-    rep("Basic profile MS data spiked with CS and IS.", 3),
-    rep("Blank MS data spiked with IS.", 6),
-    rep("Wastewater secondary effluent MS data spiked with IS.", 6),
-    rep("Wastewater secondary effluent treated with ozonated strong water MS data spiked with IS.", 6)
+    rep("Basic centroided MS data as mzML spiked with chemical 
+        and internal standards (CS and IS, respectively).", 3),
+    rep("Basic centroided MS data as mzXML spiked with chemical 
+        and internal standards (CS and IS, respectively).", 3),
+    rep("Basic profile MS data as mzML spiked with CS and IS.", 3),
+    rep("Blank MS data as mzML spiked with IS.", 6),
+    rep("Wastewater secondary effluent MS data as mzML spiked with IS.", 6),
+    rep("Wastewater secondary effluent treated with ozonated 
+        strong water MS data as mzML spiked with IS.", 6)
   )
 )
 
@@ -251,7 +257,7 @@ An _msAnalysis_ object can be created without the need of running `newStreamSet`
 
 ```{r create-msanalysis, message=FALSE, results='hide'}
 #creating an msAnalysis object for the 4th file, corresponding to profile MS data
-aProf <- newAnalysis(file = files[4])
+aProf <- newAnalysis(file = files[7])
 ```
 
 ```{r create-msanalysis-show}
@@ -260,12 +266,12 @@ aProf
 
 ### Add msAnalysis to msData
 
-As the method `getAnalysis` can be used to obtain an _msAnalysis_ from an _msData_ object, the method `addAnalyses` is used to add extra _msAnalysis_ objects to _msData_. Below the files 4 to 6 are added to the already created _msData_ (containing files 1 to 3). Note that both `getAnalyses` and `addAnalyses` can be applied to equivalent classes to _msData_ (i.e., _uvData_ and _ramanData_). Also, note that when adding analyses to an _msData_ object with features (i.e., with peaks grouped across analyses), the _msFeatures_ content is cleared as the grouping is invalidated with new _msAnalysis_ objects.
+As the method `getAnalysis` can be used to obtain an _msAnalysis_ from an _msData_ object, the method `addAnalyses` is used to add extra _msAnalysis_ objects to _msData_. Below the files 7 to 9 are added to the already created _msData_ (containing files 1 to 3). Note that both `getAnalyses` and `addAnalyses` can be applied to equivalent classes to _msData_ (i.e., _uvData_ and _ramanData_). Also, note that when adding analyses to an _msData_ object with features (i.e., with peaks grouped across analyses), the _msFeatures_ content is cleared as the grouping is invalidated with new _msAnalysis_ objects.
 
 ```{r add-msanalysis}
 
 #all profile MS files
-aProfs <- lapply(files[4:6], function(x) newAnalysis(x))
+aProfs <- lapply(files[7:9], function(x) newAnalysis(x))
 
 #adding the profile analyses to msData
 sp1 <- addAnalyses(sp1, analysisList = aProfs)
@@ -280,21 +286,21 @@ sp1
 
 Below, the `getMetadata` S4 method of _msData_ is used to display the metadata. Note, `getMetadata` also works for _msAnalysis_ S4 class as shown below. 
 
-* metadata of _msAnalysis_:  
+* get metadata:  
 
 ```{r metadata_structure}
 #metadata of the fourth analyses in the msData
-t(metadata(sp1, analyses = 4))
+getMetadata(sp1, analyses = 4)
 
 #applied directly to the msAnalysis S4 class
-t(metadata(a1))
+getMetadata(a1)
 ```
 
 #### Add metadata
 
 Additional metadata can be added with the `addMetadata` method for both _msAnalysis_ and _msData_. Note that for _msData_ the metadata input needs to be a list of vectors with the same length as the number of analyses or a data.frame/data.table with the number of rows as the nmumber of analyses, as shown below.
 
-add metadata to an _msAnalysis_ object (a1):
+* add metadata to an _msAnalysis_ object (a1):
 
 ```{r add-metadata-msanalysis}
 #as a named vector
@@ -303,7 +309,7 @@ names(meta_vec) <- c("matrix", "spiked")
 
 a1 <- addMetadata(a1, metadata = meta_vec)
 
-metadata(a1, which = names(meta_vec))
+getMetadata(a1, which = names(meta_vec))
 
 #as data.frame (would also work with data.table)
 meta_df <- data.frame(matrix = "water_as_df", spiked = TRUE)
@@ -311,10 +317,10 @@ meta_df <- data.frame(matrix = "water_as_df", spiked = TRUE)
 #add overwrite to TRUE, as the metadata name is already in the msAnalysis
 a1 <- addMetadata(a1, metadata = meta_df, overwrite = TRUE)
 
-metadata(a1, which = names(meta_vec))
+getMetadata(a1, which = names(meta_vec))
 ```
 
-add metadata to an _msData_ object (sp1):
+* add metadata to an _msData_ object (sp1):
 
 ```{r}
 #as a named vector
@@ -331,7 +337,7 @@ names(meta_vec_list) <- analysisNames(sp1)
 
 sp1 <- addMetadata(sp1, metadata = meta_vec_list)
 
-metadata(sp1, which = names(meta_1))
+getMetadata(sp1, which = names(meta_1))
 
 #as a data.frame (would also work with data.table)
 meta_df_2 <- data.frame(
@@ -349,7 +355,7 @@ meta_df_2 <- data.frame(
 #add overwrite to TRUE, as the metadata name is already in the analyses of msData
 sp1 <- addMetadata(sp1, metadata = meta_df_2, overwrite = TRUE)
 
-metadata(sp1, which = colnames(meta_df_2))
+getMetadata(sp1, analyses = c(3, 4), which = names(meta_1))
 ```
 
 # Accessing raw data
@@ -458,6 +464,8 @@ plotEICs(sp1, analyses = 3:4, mz = targets3, colorBy = "replicates", interactive
 ## TICs
 
 Total ion chromatograms (TICs) are obtained either by pre-loading and adding the chromatogram data to the _msAnalysis_, extracting the data in a `TICs` call (S4 method) or loading all spectra and applying the sum of intensities to each spectrum. Note, TIC is already available as chromatogram in mzML data from the major HRMS vendors. The S4 method TICs first evaluates if the TIC chromatogram is available in the mzML and when not, the spectra data is extracted and used instead.
+
+`r # TODO add faster functionality for TIC and BPC based on xml2``
 
 ```{r tics_method}
 # TIC for both analyses in the msData class object
@@ -608,7 +616,7 @@ knitr::include_graphics(paste0(getwd(), "/hb_backend_figures/workflow_scheme.png
 The analysis set creation is demonstrated below for six HRMS data files corresponding to blank and wastewater influent samples, both measured in triplicate. The argument `files` is the main input and can either be a list of full path files, a table with file (i.e., full file path), replicate (i.e., the name of the analysis replicate group for each file) and blank (i.e., the name of the associated blank analysis replicate group for each file), or the `analysisInfo` data.frame from the package [patRoon](https://github.com/rickhelmus/patRoon). The set path can be assign as argument `path` and is the directory where all the set files (i.e., scripts, cache databases, objects and results) will be stored by default.
 
 ```{r newstreamset-basicworkflow, message=FALSE, results='hide'}
-sp2 <- newStreamSet(files = files[c(10:12, 16:18)], path = getwd(), title = "Project Example")
+sp2 <- newStreamSet(files = files[c(13:15, 19:21)], path = getwd(), title = "Project Example")
 ```
 
 ```{r newstreamset-object-show}
@@ -658,6 +666,9 @@ blankReplicateNames(a2)
 ### Other getter S4 methods
 
 ```{r other-s4methods}
+#getter for the analysis table
+analysisTable(sp2)
+
 #getter for analysis names in msdata
 analysisNames(sp2)
 
@@ -665,7 +676,7 @@ analysisNames(sp2)
 analysisNames(a2)
 
 #getter for polarity of analyses in a msData
-polarities(sp2)
+#polarities(sp2)
 
 #getter for polarity of an msAnalysis
 polarities(a2)

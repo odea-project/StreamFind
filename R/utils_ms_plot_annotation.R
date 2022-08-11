@@ -13,7 +13,7 @@
 #'
 plotAnnotationInteractive <- function(object, comps, colorBy = "isotopes") {
 
-  rpl <- unique(replicates(object))
+  rpl <- unique(replicateNames(object))
   intTemp <- comps[, rpl, with = FALSE]
   intMean <- apply(intTemp, 1, FUN = mean)
   intSD <- apply(intTemp, 1, FUN = sd)

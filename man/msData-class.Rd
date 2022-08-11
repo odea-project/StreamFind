@@ -20,8 +20,8 @@
 \alias{blankReplicateNames,msData,msData-method}
 \alias{blankReplicateNames<-,msData-method}
 \alias{blankReplicateNames<-,msData,msData-method}
-\alias{metadata,msData-method}
-\alias{metadata,msData,msData-method}
+\alias{getMetadata,msData-method}
+\alias{getMetadata,msData,msData-method}
 \alias{addMetadata,msData-method}
 \alias{addMetadata,msData,msData-method}
 \alias{addAnalyses,msData-method}
@@ -47,6 +47,8 @@
 \alias{MS2s,msData,msData-method}
 \alias{plotMS2s,msData-method}
 \alias{plotMS2s,msData,msData-method}
+\alias{loadSpectraInfo,msData-method}
+\alias{loadSpectraInfo,msData,msData-method}
 \alias{loadRawData,msData-method}
 \alias{loadRawData,msData,msData-method}
 \alias{hasLoadedSpectra,msData-method}
@@ -102,7 +104,7 @@
 
 \S4method{blankReplicateNames}{msData}(object) <- value
 
-\S4method{metadata}{msData}(x, analyses = NULL, which = NULL)
+\S4method{getMetadata}{msData}(object, analyses = NULL, which = NULL)
 
 \S4method{addMetadata}{msData}(object, metadata = NULL, overwrite = FALSE)
 
@@ -199,6 +201,8 @@
   colorBy = "targets",
   interactive = FALSE
 )
+
+\S4method{loadSpectraInfo}{msData}(object, analyses = NULL)
 
 \S4method{loadRawData}{msData}(object, analyses = NULL, minIntensityMS1 = 0, minIntensityMS2 = 0)
 
@@ -323,8 +327,6 @@
 
 \item{value}{A character vector applicable to the respective method.}
 
-\item{x}{An \linkS4class{msData} object.}
-
 \item{analyses}{A numeric or character vector with the index or
 analysis name/s. When \code{NULL}, all the analyses are used.}
 
@@ -338,6 +340,8 @@ row equal to the number of analyses in the \linkS4class{msData} object.}
 \item{overwrite}{Logical, set to \code{TRUE} to overwrite.}
 
 \item{analysisList}{A list of \linkS4class{msAnalysis} objects.}
+
+\item{x}{An \linkS4class{msData} object.}
 
 \item{i}{The indice/s or name/s of the analyses to keep in \code{x}.}
 
@@ -425,9 +429,9 @@ features averaged for each replicate group.}
 \item{p}{The indice/s or \emph{id}/s of peaks to keep.}
 }
 \description{
-An S4 class object to store and manage processing of files with MS data.
-The \code{msData} object inherits the \linkS4class{streamSet} structure with type defined as
-\emph{ms}.
+An S4 class object to store and manage processing of files with
+MS data. The \code{msData} object inherits the \linkS4class{streamSet}
+structure with type defined as \emph{ms}.
 }
 \section{Methods (by generic)}{
 \itemize{
@@ -458,8 +462,10 @@ The \code{value} is a character vector with the same length as
 the number of analyses in the \code{object},
 containing the associated blank replicate name of each analysis.
 
-\item \code{metadata(msData)}: getter for analyses metadata.
-Returns a \linkS4class{data.table} with a row per analysis.
+\item \code{getMetadata(msData)}: getter for analyses metadata.
+Returns a nested list for each analysis (as defined by the \code{analyses})
+with the list of metadata entries as defined by the \code{which} argument.
+When \code{which} is \code{NULL}, all entries are returned.
 
 \item \code{addMetadata(msData)}: setter for analyses metadata.
 
@@ -541,7 +547,14 @@ When \code{NULL}, MS2 is given per target and per sample. The possible values fo
 \code{colorBy} argument are "targets", "samples", "replicates" and "voltages" to colour by
 each target, sample, replicate or collision energy, respectively.
 
-\item \code{loadRawData(msData)}: adds processing parameters to the analysis.
+\item \code{loadSpectraInfo(msData)}: adds raw spectra information (i.e., scan number,
+ms level and retention time of each spectrum) to the slot \code{spectra}
+of each \linkS4class{msAnalysis} in the \linkS4class{msData}.
+If the levels are higher than one, as the case of MS/MS data,
+the collision energy and precursor scan and \emph{m/z} are also returned.
+
+\item \code{loadRawData(msData)}: adds raw data to all or defined analyses in the
+\linkS4class{msData} object.
 
 \item \code{hasLoadedSpectra(msData)}: check if the analyses in \linkS4class{msData} have loaded raw spectra.
 

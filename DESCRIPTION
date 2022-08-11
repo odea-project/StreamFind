@@ -57,7 +57,8 @@ Suggests:
     knitr,
     rmarkdown,
     spelling,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    golem
 VignetteBuilder: 
     knitr
 RdMacros: 
