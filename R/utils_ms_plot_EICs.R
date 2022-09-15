@@ -72,8 +72,6 @@ plotStaticEICs <- function(eic, title = NULL) {
 #'
 #' @return A EIC interactive plot.
 #'
-#' @importFrom plotly toRGB plot_ly add_trace layout
-#'
 plotInteractiveEICs <- function(eic, title, colorBy) {
 
   leg <- unique(eic$var)

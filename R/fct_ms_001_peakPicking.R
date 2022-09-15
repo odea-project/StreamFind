@@ -27,11 +27,6 @@
 #'
 #' @export
 #'
-#' @importFrom checkmate testClass
-#' @importClassesFrom patRoon features
-#' @importFrom patRoon findFeatures featureTable
-#' @importFrom dplyr left_join
-#'
 peakPicking <- function(object = NULL, settings = NULL) {
 
   valid <- FALSE
@@ -177,12 +172,6 @@ peakPicking <- function(object = NULL, settings = NULL) {
 #'
 #' @return A \linkS4class{data.table} containing information of peaks found
 #' in each sample.
-#'
-#' @importClassesFrom patRoon features
-#' @importFrom dplyr select left_join full_join semi_join anti_join
-#' @importMethodsFrom xcms chromPeaks hasFilledChromPeaks
-#' @importFrom data.table rbindlist as.data.table setnames setorder copy
-#' @importFrom checkmate testClass
 #'
 buildPeaksTable <- function(object, pat) {
 

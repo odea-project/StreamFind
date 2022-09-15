@@ -15,9 +15,6 @@
 #'
 #' @export
 #'
-#' @importFrom checkmate assertClass
-#' @importFrom plotly plot_ly add_trace layout hide_colorbar subplot toRGB
-#'
 plotFeaturePeaks <- function(object,
                              analyses = NULL,
                              targetsID = NULL,
@@ -25,7 +22,7 @@ plotFeaturePeaks <- function(object,
                              rt = NULL, sec = 30, id = NULL,
                              heights = c(0.6, 0.4)) {
 
-  checkmate::assertClass(object, "msData")
+  assertClass(object, "msData")
 
   fts <- features(
     object,

@@ -20,9 +20,6 @@
 #'
 #' @export
 #'
-#' @importFrom grDevices colorRamp
-#' @importFrom plotly plot_ly layout add_annotations toRGB subplot hide_colorbar hide_legend
-#'
 plotInteractiveXICs <- function(xic,
                                 plotTargetMark = TRUE,
                                 ppmMark = 5,

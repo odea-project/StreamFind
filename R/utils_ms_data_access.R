@@ -866,6 +866,8 @@ mzXML_loadRawData <- function(fl, levels = c(1, 2), rtr = NULL,
       `none` = "none"
     )
 
+    if (is.null(comp)) comp <- "none"
+
     prs <- xml2::xml_attr(enc_n, "precision")
     prs <- as.numeric(prs)/8
 
@@ -873,7 +875,7 @@ mzXML_loadRawData <- function(fl, levels = c(1, 2), rtr = NULL,
     endi_enc <- switch(byte_order, `network` = "big")
 
     peak_n <- xml2::xml_text(xml2::xml_find_all(scan_n, xpath = "d1:peaks"))
-    vals <- lapply(peak_n, function(z){
+    vals <- lapply(peak_n, function(z, comp, prs, endi_enc = endi_enc){
       if (!nchar(z)) return(matrix(ncol = 2, nrow = 0))
       temp <- base64enc::base64decode(z)
       temp <- as.raw(temp)
@@ -883,7 +885,7 @@ mzXML_loadRawData <- function(fl, levels = c(1, 2), rtr = NULL,
       )
       temp <- matrix(temp, ncol = 2, byrow = TRUE)
       return(temp)
-    })
+    }, comp = comp, prs = prs, endi_enc = endi_enc)
 
     df_b <- mapply(cbind, scan, vals, SIMPLIFY = FALSE)
     df_b <- lapply(df_b, as.data.frame)

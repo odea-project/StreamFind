@@ -10,8 +10,6 @@
 #'
 #' @return A MSn plot.
 #'
-#' @importFrom plyr round_any
-#'
 plotStaticMSn <- function(ms2, title = NULL) {
 
   cl <- getColors(unique(ms2$var))
@@ -71,9 +69,6 @@ plotStaticMSn <- function(ms2, title = NULL) {
 #' @param title A character vector to be used as title.
 #'
 #' @return A EIC interactive plot.
-#'
-#' @importFrom plotly toRGB plot_ly add_trace layout
-#' @importFrom plyr round_any
 #'
 plotInteractiveMSn <- function(ms2, title) {
 

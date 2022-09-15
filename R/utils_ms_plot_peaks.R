@@ -83,8 +83,6 @@ plotPeaksStatic <- function(eic, peaks, title = NULL) {
 #'
 #' @return A chromatographic peak plot through \pkg{plotly}.
 #'
-#' @importFrom plotly toRGB plot_ly add_trace layout add_segments
-#'
 plotPeaksInteractive <- function(eic, peaks, title, colorBy) {
 
   leg <- unique(eic$var)
@@ -192,8 +190,6 @@ plotPeaksInteractive <- function(eic, peaks, title, colorBy) {
 #' for coloring by target peaks, analyses or replicates, respectively.
 #'
 #' @return A peak/s map plot produced through \pkg{plotly}.
-#'
-#' @importFrom plotly toRGB plot_ly add_trace layout
 #'
 mapPeaksInteractive <- function(peaks, xlim = 60, ylim = 5, title, colorBy = "targets") {
 

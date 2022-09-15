@@ -6,8 +6,6 @@
 #'
 #' @export
 #'
-#' @importFrom data.table fread
-#'
 annotationSettingsDefaultCAMERA <- function() {
 
   return(
@@ -88,10 +86,6 @@ annotationSettingsDefaultRAMClustR <- function() {
 #' @return An \linkS4class{msData} object with annotated peaks/features.
 #'
 #' @export
-#'
-#' @importFrom checkmate assertClass
-#' @importMethodsFrom patRoon generateComponents
-#' @importClassesFrom patRoon components
 #'
 peakAnnotation <- function(object = NULL, settings = NULL) {
 
@@ -177,12 +171,6 @@ peakAnnotation <- function(object = NULL, settings = NULL) {
 #' positive and negative ionization, respectively.
 #' @param pat A \linkS4class{featureGroups} object  from \pkg{patRoon}.
 #' @param comp A \linkS4class{components} object from \pkg{patRoon}.
-#'
-#' @importMethodsFrom patRoon componentTable
-#' @importFrom data.table rbindlist setnames fread
-#' @importFrom stringr str_extract str_detect
-#' @importFrom utils setTxtProgressBar txtProgressBar
-#' @importFrom dplyr left_join
 #'
 annotateFeatures <- function(object, pat, comp, prefAdduct = "[M+H]+") {
 

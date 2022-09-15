@@ -23,11 +23,6 @@
 #'
 #' @export
 #'
-#' @importFrom checkmate assertClass testClass
-#' @importClassesFrom patRoon featureGroups
-#' @importFrom patRoon groupFeatures
-#' @importMethodsFrom patRoon as.data.table
-#'
 peakGrouping <- function(object = NULL, settings = NULL) {
 
   assertClass(object, "msData")
@@ -102,10 +97,6 @@ peakGrouping <- function(object = NULL, settings = NULL) {
 #' @param pat A \linkS4class{featureGroups} object from the package \pkg{patRoon}
 #'
 #' @return An \linkS4class{msData} object with updated features slot.
-#'
-#' @importMethodsFrom patRoon as.data.table groupTable
-#' @importFrom data.table setnames setorder copy
-#' @importFrom dplyr select everything left_join
 #'
 buildFeatures <- function(object, pat) {
 
@@ -215,12 +206,6 @@ buildFeatures <- function(object, pat) {
 #'
 #' @param object An \linkS4class{msData} object.
 #' @param pat A \linkS4class{featureGroups} object from \pkg{patRoon}.
-#'
-#' @importFrom checkmate testClass assertClass
-#' @importMethodsFrom xcms adjustedRtime processHistory peakGroupsMatrix hasAdjustedRtime
-#' @importClassesFrom xcms XCMSnExp PeakGroupsParam
-#' @importClassesFrom patRoon featureGroupsXCMS3
-#' @importFrom stringr str_detect
 #'
 addAdjustedRetentionTime <- function(object, pat) {
 

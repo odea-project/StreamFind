@@ -61,7 +61,7 @@ convertFiles <- function(files = NULL, type = "ms", outfile = "mzML", outdir = N
     return(copy(temp))
   }, comfor = compatibleFileFormatsForConversion())
 
-  files_check <- data.table::rbindlist(files_check)
+  files_check <- rbindlist(files_check)
 
   files_check <- unique(files_check, by = c("format", "file"))
 

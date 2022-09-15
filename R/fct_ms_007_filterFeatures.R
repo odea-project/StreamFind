@@ -146,9 +146,6 @@ filterFeatures <- function(object, settings = NULL) {
 #'
 #' @export
 #'
-#' @importFrom checkmate testClass
-#' @importFrom data.table copy
-#'
 removeFilteredFeatures <- function(object, which = "all") {
 
   valid <- FALSE
@@ -186,8 +183,6 @@ removeFilteredFeatures <- function(object, which = "all") {
 #' @param value A numerical value with the desired minimum intensity for
 #' features.
 #'
-#' @importFrom data.table copy
-#'
 minIntensityFeatures <- function(obj, value = 5000) {
 
   feat_int <- copy(obj@intensity)
@@ -207,8 +202,6 @@ minIntensityFeatures <- function(obj, value = 5000) {
 #'
 #' @param obj An \linkS4class{msFeatures} object.
 #' @param value A numerical value to multiply the assigned blank intensity.
-#'
-#' @importFrom data.table copy
 #'
 blankThresholdFeatures <- function(obj, value = 3) {
 
@@ -246,8 +239,6 @@ blankThresholdFeatures <- function(obj, value = 3) {
 #' @param obj An \linkS4class{msFeatures} object.
 #' @param value A numerical value set at the desired sd percentage maximum.
 #'
-#' @importFrom data.table copy
-#'
 maxReplicateIntensityDeviationFeatures <- function(obj, value = 40) {
 
   feats_int <- features(obj, average = TRUE)
@@ -272,8 +263,6 @@ maxReplicateIntensityDeviationFeatures <- function(obj, value = 40) {
 #' @param obj An \linkS4class{msFeatures} object.
 #' @param value A numerical value set at the desired minimum representation in
 #' replicates.
-#'
-#' @importFrom data.table copy
 #'
 minReplicateAbundanceFeatures <- function(obj, value = 3) {
 
@@ -310,8 +299,6 @@ minReplicateAbundanceFeatures <- function(obj, value = 3) {
 #' @param obj An \linkS4class{msFeatures} object.
 #' @param value Logical, when \code{TRUE} isotopes are filtered.
 #'
-#' @importFrom data.table copy
-#'
 excludeIsotopesFeatures <- function(obj, value = TRUE) {
 
   feats_org <- copy(obj@metadata)
@@ -331,8 +318,6 @@ excludeIsotopesFeatures <- function(obj, value = TRUE) {
 #' @param obj An \linkS4class{msFeatures} object.
 #' @param value Logical, when \code{TRUE}, adducts with protonated/deprotonated
 #' ions present are filtered.
-#'
-#' @importFrom data.table copy
 #'
 excludeAdductsFeatures <- function(obj, value = TRUE) {
 

@@ -12,8 +12,6 @@
 #'
 #' @export
 #'
-#' @importFrom data.table data.table is.data.table as.data.table
-#'
 makeTargets <- function(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL) {
 
   mzrts <- data.table(

@@ -144,9 +144,6 @@ setMethod("plotTICs", "data.table", function(object,
 #'
 #' @aliases plotXICs,data.table-method
 #'
-#' @importFrom data.table is.data.table
-#' @importFrom stringr str_split
-#'
 setMethod("plotXICs", "data.table", function(object,
                                              analyses = NULL,
                                              targets = NULL,
@@ -251,9 +248,6 @@ setMethod("plotXICs", "data.table", function(object,
 #'
 #' @aliases plotMS2s,data.table-method
 #'
-#' @importFrom data.table data.table
-#' @importFrom grDevices dev.control dev.off recordPlot win.metafile
-#'
 setMethod("plotMS2s", "data.table", function(object = NULL,
                                              analyses = NULL,
                                              replicates = NULL,
@@ -302,14 +296,14 @@ setMethod("plotMS2s", "data.table", function(object = NULL,
 
   if (!interactive) {
 
-    win.metafile()
-    dev.control("enable")
-    plotStaticMSn(
-      ms2,
-      title
+    return(
+      plotStaticMSn(
+        ms2,
+        title
+      )
     )
-    plot <- recordPlot()
-    dev.off()
+    # plot <- recordPlot()
+    # dev.off()
 
   } else {
 
@@ -344,9 +338,6 @@ setMethod("plotMS2s", "data.table", function(object = NULL,
 #' @template args_plots_colorby_legendNames_title_interactive
 #'
 #' @export
-#'
-#' @importMethodsFrom xcms plotPeaks
-#' @importFrom data.table rbindlist setorder
 #'
 #' @aliases plotPeaks,data.table-method
 #'

@@ -215,3 +215,51 @@ sampleNames(msd)
 
 data.table::rbindlist(msd@samples[[1]])
 
+
+
+### Test Shimadzu mzXML errors ------------------------------------------------------------------------------
+
+file <- file.choose()
+
+ana <- newAnalysis(file)
+ana <- loadRawData(ana)
+
+ana_rams <- RaMS::grabMSdata(file)
+
+db_2 <- db[,c(1:3, 24:27)]
+
+TICs(ana)
+plotTICs(ana, interactive = TRUE)
+
+target <- makeTargets(mz = data.frame(mzmin = 232.5, mzmax = 233.4))
+plotEICs(ana, mz = target)
+
+traces <- spectra(ana)
+
+param <- xcms::CentWaveParam(
+  ppm = 500, peakwidth = c(2, 40),
+  snthresh = 3, prefilter = c(4, 800),
+  mzCenterFun = "mean", integrate = 2,
+  mzdiff = -0.0001, fitgauss = TRUE,
+  noise = 250, verboseColumns = TRUE,
+  firstBaselineCheck = FALSE,
+  extendLengthMSW = TRUE
+)
+
+#creating the settings S4 class for peak picking
+settings_pp <- createSettings(
+  call = "peakPicking",
+  algorithm = "xcms3",
+  settings = param
+)
+
+ana <- peakPicking(ana, settings = settings_pp)
+
+p_ana <- peaks(ana)
+
+plotPeaks(ana, targetsID = "m329.05_d0_r753_t19_p867")
+
+
+
+
+

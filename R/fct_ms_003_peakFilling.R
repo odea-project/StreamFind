@@ -7,8 +7,6 @@
 #'
 #' @export
 #'
-#' @importClassesFrom xcms ChromPeakAreaParam
-#'
 fillingSettingsDefaultXCMS <- function() {
 
   return(
@@ -49,13 +47,6 @@ fillingSettingsDefaultXCMS <- function() {
 #' \insertRef{xcms01}{streamFind}
 #' \insertRef{xcms02}{streamFind}
 #' \insertRef{xcms03}{streamFind}
-#'
-#' @importMethodsFrom patRoon getXCMSnExp
-#' @importFrom patRoon importFeatureGroupsXCMS3
-#' @importMethodsFrom xcms fillChromPeaks
-#' @importClassesFrom xcms ChromPeakAreaParam FillChromPeaksParam XCMSnExp
-#' @importClassesFrom patRoon featuresSIRIUS featureGroupsSIRIUS featureGroups
-#' @importFrom checkmate assertClass testClass
 #'
 peakFilling <- function(object, settings = NULL) {
 

@@ -64,8 +64,6 @@ setClass("msData",
 #'
 #' @export
 #'
-#' @importFrom data.table data.table
-#'
 setMethod("show", "msData", function(object) {
 
   cat(
@@ -113,8 +111,6 @@ setMethod("show", "msData", function(object) {
 #'
 #' @export
 #'
-#' @importMethodsFrom patRoon analysisInfo
-#'
 #' @aliases analysisInfo,msData,msData-method
 #'
 setMethod("analysisInfo", "msData", function(obj) {
@@ -136,8 +132,6 @@ setMethod("analysisInfo", "msData", function(obj) {
 #' four columns: file, analysis, replicate and blank.
 #'
 #' @export
-#'
-#' @importFrom data.table data.table
 #'
 #' @aliases analysisTable,msData,msData-method
 #'
@@ -253,9 +247,6 @@ setMethod("blankReplicateNames<-", signature("msData", "ANY"), function(object, 
 #'
 #' @template args-single-which-entry
 #'
-#' @importMethodsFrom S4Vectors metadata
-#' @importFrom data.table rbindlist
-#'
 #' @export
 #'
 #' @aliases getMetadata,msData,msData-method
@@ -282,9 +273,6 @@ setMethod("getMetadata", "msData", function(object, analyses = NULL, which = NUL
 #' @param overwrite Logical, set to \code{TRUE} to overwrite.
 #'
 #' @export
-#'
-#' @importMethodsFrom S4Vectors metadata
-#' @importFrom data.table is.data.table
 #'
 #' @aliases addMetadata,msData,msData-method
 #'
@@ -439,8 +427,6 @@ setMethod("getAnalyses", "msData", function(object, analyses = NULL) {
 #'
 #' @export
 #'
-#' @importFrom data.table copy
-#'
 setMethod("[", c("msData", "ANY", "missing", "missing"), function(x, i, ...) {
 
   if (!missing(i)) {
@@ -490,9 +476,6 @@ setMethod("polarities", "msData", function(object) {
 #' @template args-makeTargets
 #'
 #' @export
-#'
-#' @importFrom data.table rbindlist
-#' @importFrom dplyr full_join
 #'
 #' @aliases EICs,msData,msData-method
 #'
@@ -591,8 +574,6 @@ setMethod("plotEICs", "msData", function(object,
 #'
 #' @export
 #'
-#' @importFrom data.table rbindlist
-#'
 #' @aliases TICs,msData,msData-method
 #'
 setMethod("TICs", "msData", function(object, analyses = NULL) {
@@ -610,7 +591,6 @@ setMethod("TICs", "msData", function(object, analyses = NULL) {
 #' @describeIn msData plots a total ion chromatogram (TIC) for abalyses in the object.
 #' The colorBy argument can be "analyses" or "replicates"
 #' to color the plot by analyses or by analysis replicates.
-#'
 #'
 #' @export
 #'
@@ -641,9 +621,6 @@ setMethod("plotTICs", "msData", function(object,
 #' are used to construct the targets. See ?\link{makeTargets} for more information.
 #'
 #' @export
-#'
-#' @importFrom data.table rbindlist
-#' @importFrom dplyr full_join
 #'
 #' @aliases XICs,msData,msData-method
 #'
@@ -709,8 +686,6 @@ setMethod("XICs", "msData", function(object,
 #' @template args_plots_xics
 #'
 #' @export
-#'
-#' @importFrom data.table is.data.table
 #'
 #' @aliases plotXICs,msData,msData-method
 #'
@@ -906,9 +881,6 @@ setMethod("hasLoadedChromatograms", "msData", function(object) {
 #'
 #' @export
 #'
-#' @importMethodsFrom ProtGenerics spectra
-#' @importFrom data.table rbindlist
-#'
 #' @aliases spectra,msData,msData-method
 #'
 setMethod("spectra", "msData", function(object) {
@@ -950,8 +922,6 @@ setMethod("hasAdjustedRetentionTime", "msData", function(object) {
 #' @template args-single-analyses
 #'
 #' @export
-#'
-#' @importFrom checkmate testClass testChoice
 #'
 #' @aliases addParameters,msData,msData-method
 #'
@@ -998,8 +968,6 @@ setMethod("addParameters", "msData", function(object,
 #' @param call The call name of the settings to retrieve.
 #'
 #' @export
-#'
-#' @importFrom checkmate testChoice
 #'
 #' @aliases addParameters,msData,msData-method
 #'
@@ -1049,10 +1017,6 @@ setMethod("getParameters", "msData", function(object,
 #' to a \linkS4class{features} object from the package \pkg{patRoon}.
 #'
 #' @export
-#'
-#' @importFrom data.table setnames copy
-#' @importFrom dplyr select everything
-#' @importClassesFrom patRoon features featuresOpenMS
 #'
 #' @aliases as.features,msData,msData-method
 #'
@@ -1113,8 +1077,6 @@ setMethod("hasPeaks", "msData", function(object) {
 #'
 #' @export
 #'
-#' @importFrom dplyr between
-#'
 #' @aliases peaks,msData,msData-method
 #'
 setMethod("peaks", "msData", function(object,
@@ -1161,9 +1123,6 @@ setMethod("peaks", "msData", function(object,
 #' is set to "targets" automatically.
 #'
 #' @export
-#'
-#' @importMethodsFrom xcms plotPeaks
-#' @importFrom data.table rbindlist copy
 #'
 #' @aliases plotPeaks,msData,msData-method
 #'
@@ -1282,8 +1241,6 @@ setMethod("mapPeaks", "msData", function(object,
 #'
 #' @export
 #'
-#' @importFrom dplyr left_join
-#'
 #' @aliases features,msData,msData-method
 #'
 setMethod("features", "msData", function(object,
@@ -1305,66 +1262,6 @@ setMethod("features", "msData", function(object,
       average = average
     )
   )
-
-  # if (!filtered) {
-  #   ft_to_keep <- object@features@metadata$id[!object@features@metadata$filtered]
-  #   feats <- object@features[ft_to_keep]
-  # } else {
-  #   feats <- object@features
-  # }
-  #
-  # if (!is.null(targetsID)) {
-  #   out_fts <- feats@intensity[id %in% targetsID, ]
-  # } else if (!is.null(mz)) {
-  #   targets <- makeTargets(mz = mz, rt = rt, ppm = ppm, sec = sec)
-  #   sel <- rep(FALSE, nrow(feats@metadata))
-  #   for (i in seq_len(nrow(targets))) {
-  #     if (targets$rtmax[i] > 0) {
-  #       sel[between(feats@metadata$mz, targets$mzmin[i], targets$mzmax[i]) &
-  #             between(feats@metadata$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
-  #     } else {
-  #       sel[between(feats@metadata$mz, targets$mzmin[i], targets$mzmax[i])] <- TRUE
-  #     }
-  #   }
-  #   out_fts <- feats@intensity[sel]
-  # } else {
-  #   out_fts <- feats@intensity
-  # }
-  #
-  # if (average) {
-  #   rpl <- unique(feats@analyses$replicate)
-  #   rpl_ana <- lapply(rpl, function(x, st) {
-  #     st$analysis[st$replicate == x]
-  #   }, st = feats@analyses)
-  #   names(rpl_ana) <- rpl
-  #
-  #   out_sd <- lapply(rpl_ana, function(x, out_fts) {
-  #     temp <- out_fts[, x, with = FALSE]
-  #     temp <- apply(temp, 1, function(x) sd(x) / mean(x) * 100)
-  #     temp[is.nan(temp)] <- 0
-  #     temp <- round(temp, digits = 0)
-  #     return(temp)
-  #   }, out_fts = out_fts)
-  #
-  #   for (r in rpl) {
-  #     out_fts[[r]] <- apply(out_fts[, .SD, .SDcols = rpl_ana[[r]]], 1, mean)
-  #   }
-  #
-  #   out_fts[, (feats@analyses$analysis) := NULL]
-  #
-  #   names(out_sd) <- paste0(rpl, "_sd")
-  #   out_fts <- cbind(out_fts, as.data.table(out_sd))
-  # }
-  #
-  # if (complete) {
-  #   out_mtd <- feats@metadata[id %in% out_fts$id, ]
-  #   out_fts <- left_join(out_mtd, out_fts, by = "id")
-  # }
-  #
-  # if (nrow(out_fts) < 1) {
-  #   warning("Features not found in the msData object.")
-  # }
-  #return(out_fts)
 })
 
 
@@ -1379,8 +1276,6 @@ setMethod("features", "msData", function(object,
 #' is set to "targets" automatically.
 #'
 #' @export
-#'
-#' @importFrom data.table rbindlist
 #'
 #' @aliases plotFeatures,msData,msData-method
 #'
@@ -1468,9 +1363,6 @@ setMethod("plotFeatures", "msData", function(object,
 #'
 #' @export
 #'
-#' @importFrom data.table copy rbindlist as.data.table
-#' @importClassesFrom patRoon featureGroups featureGroupsOpenMS
-#'
 #' @aliases as.featureGroups,msData,msData-method
 #'
 setMethod("as.featureGroups", "msData", function(object) {
@@ -1528,8 +1420,6 @@ setMethod("as.featureGroups", "msData", function(object) {
 #'
 #' @export
 #'
-#' @importMethodsFrom BiocGenerics annotation
-#'
 #' @aliases annotation,msData,msData-method
 #'
 setMethod("annotation", "msData", function(object,
@@ -1579,8 +1469,6 @@ setMethod("annotation", "msData", function(object,
 #'
 #' @export
 #'
-#' @importFrom data.table rbindlist
-#'
 #' @aliases plotAnnotation,msData,msData-method
 #'
 setMethod("plotAnnotation", "msData", function(object,
@@ -1623,9 +1511,6 @@ setMethod("plotAnnotation", "msData", function(object,
 #'
 #' @export
 #'
-#' @importClassesFrom patRoon components
-#' @importFrom data.table copy
-#'
 setMethod("[", c("msData", "ANY", "ANY", "missing"), function(x, i, j, ...) {
 
   if (!missing(i)) x <- x[i]
@@ -1661,9 +1546,6 @@ setMethod("[", c("msData", "ANY", "ANY", "missing"), function(x, i, j, ...) {
 #' @param p The indice/s or \emph{id}/s of peaks to keep.
 #'
 #' @export
-#'
-#' @importClassesFrom patRoon components
-#' @importFrom data.table copy
 #'
 setMethod("[", c("msData", "ANY", "ANY", "ANY"), function(x, i, j, p) {
 

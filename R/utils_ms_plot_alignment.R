@@ -11,9 +11,6 @@
 #'
 #' @export
 #'
-#' @importFrom plotly toRGB plot_ly add_trace layout
-#' @importFrom data.table copy
-#'
 plotAlignment <- function(object, interactive = TRUE) {
 
   valid <- FALSE

@@ -1,6 +1,7 @@
 .Rproj.user
 .Rhistory
 .Rdata
+.RData
 .httr-oauth
 .DS_Store
 cache.sqlite
@@ -19,3 +20,4 @@ settings_pp_2.json
 inst/doc
 /doc/
 /Meta/
+/log/

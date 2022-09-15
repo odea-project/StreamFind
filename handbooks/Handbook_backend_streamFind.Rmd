@@ -120,6 +120,7 @@ The streamFind package includes example data files via the streamFindData R pack
 ```{r resource-files, cache=FALSE}
 
 r_path <- system.file(package = "streamFindData", dir = "extdata")
+#r_path <- system.file(package = "streamFind", dir = "extdata")
 
 files <- list.files(r_path, pattern = ".mzML|.mzXML", full.names = TRUE)
 

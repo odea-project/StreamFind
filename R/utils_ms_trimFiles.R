@@ -37,10 +37,6 @@
 #'
 #' \insertRef{mzr04}{streamFind}
 #'
-#' @importFrom mzR openMSfile header peaks close copyWriteMSData writeMSData
-#' @importFrom tools file_ext
-#'
-#'
 trimSpectraFilesMZR <- function(files, MS1 = TRUE, MS2 = TRUE,
                                 rtr = NULL, mzr = NULL, mzr_ms2 = NULL,
                                 intensityThreshold = NULL, copyMetadata = TRUE,

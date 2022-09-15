@@ -47,8 +47,6 @@ msFeatures_validity <- function(object) {
 #'
 #' @export
 #'
-#' @importFrom data.table data.table
-#'
 #' @md
 setClass("msFeatures",
          slots = c(
@@ -163,9 +161,6 @@ setMethod("getParameters", "msFeatures", function(object, call = NULL) {
 #' features averaged for each replicate group.
 #'
 #' @export
-#'
-#' @importFrom dplyr left_join
-#' @importFrom data.table data.table
 #'
 #' @aliases features,msFeatures,msFeatures-method
 #'

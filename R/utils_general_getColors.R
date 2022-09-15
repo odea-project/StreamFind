@@ -10,10 +10,6 @@
 #'
 #' @export
 #'
-#' @importFrom RColorBrewer brewer.pal
-#' @importFrom grDevices colorRampPalette
-#' @importFrom dplyr count
-#'
 getColors <- function(obj) {
 
   colors <- c(brewer.pal(8, "Greys")[6],

@@ -33,10 +33,6 @@
 #'
 #' @export
 #'
-#' @importFrom checkmate testClass
-#' @importFrom stats sd
-#' @importFrom data.table copy rbindlist
-#'
 calculateSNR <-  function(object,
                           targetsID = NULL,
                           rtExpand = 200,

@@ -44,8 +44,6 @@ msAnalysis_validity <- function(object) {
 #'
 #' @export
 #'
-#' @importFrom data.table data.table
-#'
 #' @md
 setClass("msAnalysis",
   slots = c(
@@ -161,8 +159,6 @@ setMethod("analysisInfo", "msAnalysis", function(obj) {
 #' four columns: file, analysis, replicate and blank.
 #'
 #' @export
-#'
-#' @importFrom data.table data.table
 #'
 #' @aliases analysisTable,msAnalysis,msAnalysis-method
 #'
@@ -293,9 +289,6 @@ setMethod("getMetadata", "msAnalysis", function(object, which = NULL) {
 #'
 #' @export
 #'
-#' @importMethodsFrom S4Vectors metadata
-#' @importFrom data.table is.data.table
-#'
 #' @aliases addMetadata,msAnalysis,msAnalysis-method
 #'
 setMethod("addMetadata", "msAnalysis", function(object,
@@ -396,8 +389,6 @@ setMethod("loadSpectraInfo", "msAnalysis", function(object) {
 #'
 #' @export
 #'
-#' @importFrom data.table copy
-#'
 #' @aliases loadRawData,msAnalysis,msAnalysis-method
 #'
 setMethod("loadRawData", "msAnalysis", function(object,
@@ -459,8 +450,6 @@ setMethod("hasLoadedChromatograms", "msAnalysis", function(object) {
 #'
 #' @export
 #'
-#' @importMethodsFrom ProtGenerics spectra
-#'
 #' @aliases spectra,msAnalysis,msAnalysis-method
 #'
 setMethod("spectra", "msAnalysis", function(object) {
@@ -477,8 +466,6 @@ setMethod("spectra", "msAnalysis", function(object) {
 #' See ?\link{makeTargets} for more information.
 #'
 #' @template args-makeTargets
-#'
-#' @importFrom data.table rbindlist as.data.table
 #'
 #' @export
 #'
@@ -503,7 +490,7 @@ setMethod("EICs", "msAnalysis", function(object,
   } else {
     spec <- spectra(object)
     spec <- spec[lv == 1, ]
-    spec <- spec[, .(index, scan, lv, rt, mz, intensity)]
+    spec <- spec[, .(scan, lv, rt, mz, intensity)]
   }
 
   spec <- list(as.data.frame(spec))
@@ -516,8 +503,10 @@ setMethod("EICs", "msAnalysis", function(object,
 
   eics <- rbindlist(eics)
 
-  eics <- eics[, .(intensity = sum(intensity)),
-               by = c("analysis", "replicate","id", "rt")]
+  if (nrow(eics) > 0) {
+    eics <- eics[, .(intensity = sum(intensity)),
+                 by = c("analysis", "replicate","id", "rt")]
+  }
 
   return(eics)
 })
@@ -567,8 +556,6 @@ setMethod("plotEICs", "msAnalysis", function(object,
 #'
 #' @export
 #'
-#' @importFrom data.table `:=` setcolorder
-#'
 #' @aliases TICs,msAnalysis,msAnalysis-method
 #'
 setMethod("TICs", "msAnalysis", function(object) {
@@ -578,6 +565,7 @@ setMethod("TICs", "msAnalysis", function(object) {
       fl = filePaths(object),
       spectra = FALSE, chroms = TRUE,
       chromsID = "TIC")[["chroms"]]
+    if (is.null(tic)) tic = data.table()
   } else {
     tic <- object@chromatograms[id %in% "TIC", ]
   }
@@ -642,8 +630,6 @@ setMethod("plotTICs", "msAnalysis", function(object,
 #'
 #' @export
 #'
-#' @importFrom data.table rbindlist
-#'
 #' @aliases XICs,msAnalysis,msAnalysis-method
 #'
 setMethod("XICs", "msAnalysis", function(object,
@@ -699,8 +685,6 @@ setMethod("XICs", "msAnalysis", function(object,
 #' @template args_plots_xics
 #'
 #' @export
-#'
-#' @importFrom data.table is.data.table
 #'
 #' @aliases plotXICs,msAnalysis,msAnalysis-method
 #'
@@ -824,8 +808,6 @@ setMethod("hasAdjustedRetentionTime", "msAnalysis", function(object) {
 #'
 #' @export
 #'
-#' @importFrom checkmate testClass
-#'
 #' @aliases addParameters,msAnalysis,msAnalysis-method
 #'
 setMethod("addParameters", "msAnalysis", function(object,
@@ -892,8 +874,6 @@ setMethod("hasPeaks", "msAnalysis", function(object) {
 #'
 #' @export
 #'
-#' @importFrom dplyr between
-#'
 #' @aliases peaks,msAnalysis,msAnalysis-method
 #'
 setMethod("peaks", "msAnalysis", function(object,
@@ -943,9 +923,6 @@ setMethod("peaks", "msAnalysis", function(object,
 #' can be used to legend the plot.
 #'
 #' @export
-#'
-#' @importMethodsFrom xcms plotPeaks
-#' @importFrom data.table rbindlist copy
 #'
 #' @aliases plotPeaks,msAnalysis,msAnalysis-method
 #'

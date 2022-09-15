@@ -17,8 +17,6 @@ checkFileValidity <- function(file = NA_character_) {
 #' @template args-newAnalysis-file
 #' @template args-newAnalysis-replicate-blank
 #'
-#' @importFrom data.table is.data.table
-#'
 #' @noRd
 checkFilesInput <- function(file = NA_character_,
                             replicate = NA_character_,
