@@ -280,12 +280,12 @@ mzML_loadMetadata <- function(fl) {
   meta2 <- list(
     "time_stamp" = time_stamp,
     "number_spectra" = number_spectra,
+    "centroided" = centroided,
     "ms_levels" = ms_levels,
     "mz_low" = mz_low,
     "mz_high" = mz_high,
     "rt_start" = rt_start,
     "rt_end" = rt_end,
-    "centroided" = centroided,
     "polarity" = polarities,
     "number_chromatograms" = number_chromatograms
   )
@@ -642,13 +642,6 @@ mzXML_loadMetadata <- function(fl){
 
   xml_data <- read_xml(fl)
 
-  source_n <- xml_find_first(xml_data, xpath = "//d1:parentFile")
-  if (length(source_n) > 0) {
-    source_file <- basename(xml_attr(source_n, "fileName"))
-  } else {
-    source_file <- NA_character_
-  }
-
   inst_x <- "//d1:msInstrument/child::node()[starts-with(name(), 'ms')]"
   inst_n <- xml_find_all(xml_data, xpath = inst_x)
   if (length(inst_n) > 0) {
@@ -665,6 +658,8 @@ mzXML_loadMetadata <- function(fl){
 
   scan_n <- xml_find_all(xml_data, xpath = "//d1:scan")
 
+  number_spectra <- length(scan_n)
+
   if (length(scan_n) > 0) {
 
   centroided <- as.integer(unique(xml_attr(scan_n, "centroided")))
@@ -680,8 +675,10 @@ mzXML_loadMetadata <- function(fl){
   mz_high <- max(as.numeric(xml_attr(scan_n, "highMz")))
 
   rt <- xml_attr(scan_n, "retentionTime")
+  unit <- unique(gsub(".*[0-9]", "", rt))
   rt <- gsub("[^0-9.-]", "", rt)
   rt <- as.numeric(rt)
+  if (!"S" %in% unit) rt <- rt * 60
   rt_start <- min(rt)
   rt_end <- max(rt)
 
@@ -691,6 +688,7 @@ mzXML_loadMetadata <- function(fl){
 
   } else {
 
+    number_spectra <- NA_integer_
     centroided <- NA
     ms_levels <- NA_integer_
     mz_low <- NA_real_
@@ -700,19 +698,19 @@ mzXML_loadMetadata <- function(fl){
     polarities <- NA_character_
   }
 
-  meta1 <- list("source_file" = source_file)
-
-  meta2 <- list(
+  meta <- list(
+    "number_spectra" = number_spectra,
     "centroided" = centroided,
     "ms_levels" = ms_levels,
     "mz_low" = mz_low,
     "mz_high" = mz_high,
     "rt_start" = rt_start,
     "rt_end" = rt_end,
-    "polarity" = polarities
+    "polarity" = polarities,
+    "number_chromatograms" = 0
   )
 
-  meta <- c(meta1, config, meta2)
+  meta <- c(config, meta)
 
   return(meta)
 }
