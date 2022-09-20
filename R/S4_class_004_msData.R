@@ -496,7 +496,7 @@ setMethod("EICs", "msData", function(object,
     if (!hasLoadedSpectra(x)) {
       temp <- msAnalysis_loadRawData(
         fl = filePaths(x),
-        chroms = FALSE, level = 1, rtr = rtr
+        chroms = FALSE, levels = 1, rtr = rtr
       )
       temp <- temp$spectra
     } else {
@@ -1090,14 +1090,22 @@ setMethod("peaks", "msData", function(object,
   obj <- object
   obj@analyses <- obj@analyses[analyses]
 
-  pks <- lapply(obj@analyses, function(x, filtered) {
+  pks <- lapply(obj@analyses, function(x, targetsID,
+                                       mz, ppm, rt, sec, filtered) {
     pks_a <- peaks(
       x, targetsID = targetsID,
-      mz = mz, rt = rt, ppm = ppm, sec = sec,
+      mz = mz, ppm = ppm, rt = rt, sec = sec,
       filtered = filtered
     )
     return(pks_a)
-  }, filtered = filtered)
+  },
+    filtered = filtered,
+    targetsID = targetsID,
+    mz = mz,
+    rt = rt,
+    ppm = ppm,
+    sec = sec
+  )
 
   pks <- rbindlist(pks, idcol = "analysis")
   rpl <- data.table(analysis = analysisNames(obj), replicate = replicateNames(obj))
@@ -1153,7 +1161,10 @@ setMethod("plotPeaks", "msData", function(object,
   }
 
   eic <- lapply(obj@analyses, function(x, pks_tars) {
-    eic <- EICs(x, mz = pks_tars[analysis %in% analysisNames(x), ])
+    tar <- pks_tars[analysis %in% analysisNames(x), ]
+    if (nrow(tar) < 1) return(data.table())
+    eic <- EICs(x, mz = tar)
+    return(eic)
   }, pks_tars = pks_tars)
 
   eic <- rbindlist(eic)

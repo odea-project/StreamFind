@@ -22,7 +22,7 @@
 #' @importMethodsFrom patRoon generateComponents componentTable
 #' @importFrom patRoon importFeatureGroupsXCMS3
 #'
-#' @importFrom dplyr select left_join full_join semi_join anti_join
+#' @importFrom dplyr select left_join full_join semi_join anti_join right_join
 #' @importFrom dplyr between everything count
 #'
 #' @importClassesFrom xcms XCMSnExp PeakGroupsParam ChromPeakAreaParam
@@ -51,6 +51,10 @@
 #' @importFrom mzR openMSfile header peaks close copyWriteMSData writeMSData
 #'
 #' @importFrom tools file_ext
+#'
+#' @importFrom xml2 read_xml xml_find_first xml_attr xml_find_all xml_name
+#' @importFrom xml2 xml_text
+#'
 #'
 #' @noRd
 NULL

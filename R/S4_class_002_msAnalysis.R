@@ -97,7 +97,7 @@ setMethod("show", "msAnalysis", function(object) {
     "  Spectra        ", object@metadata$number_spectra, "\n",
     "  Chromatograms  ", object@metadata$number_chromatograms, "\n",
     "  Loaded traces  ", nrow(object@spectra), "\n",
-    "  Loaded chroms  ", nrow(object@chromatograms), "\n",
+    "  Loaded chroms  ", length(unique(object@chromatograms$id)), "\n",
     "  Picked peaks   ", nrow(object@peaks), "\n",
     "  Parameters: \n",
     sep = ""

@@ -12,6 +12,19 @@
 #' @noRd
 msAnalysis_loadMetadata <- function(file_df) {
 
+  inval <- TRUE
+
+  if (testClass(file_df, c("data.frame"))) {
+    n_files <- nrow(file_df)
+    if (n_files > 0) inval <- FALSE
+  }
+
+  if (inval) return(new("msAnalysis"))
+
+  cat("Loading ...0% ")
+  tracker <- round(seq(0, 100, length.out = n_files + 1))[-1]
+  file_df$tracker <- tracker
+
   file_df <- split(file_df, file_df$file)
 
   # TODO Add parallel processing globally
@@ -20,19 +33,12 @@ msAnalysis_loadMetadata <- function(file_df) {
   # 2. Check if has linux or win to run show or fork
   # make global function for it
 
-  #bpp <- SerialParam(progressbar = TRUE)
-  #bpp <- SnowParam(progressbar = TRUE)
-
   analyses <- lapply(file_df, function(x) {
-
-    if (!requireNamespace("RaMS", quietly = TRUE)) {
-      warning("Package RaMS not installed!")
-      return(NULL)
-    }
 
     ana <- list()
 
     fl <- x$file
+
     if (grepl(".mzML", fl)) meta <- mzML_loadMetadata(fl)
     if (grepl(".mzXML", fl)) meta <- mzXML_loadMetadata(fl)
 
@@ -51,16 +57,21 @@ msAnalysis_loadMetadata <- function(file_df) {
 
     ana$metadata <- meta
 
+    cat(paste0(x$tracker, "% "))
+
     return(ana)
 
-  }) #BPPARAM = bpp
+  })
 
   analyses <- lapply(analyses, function(x) {
 
     ana <- new("msAnalysis",
-               analysis = x$analysis, file = x$file,
-               replicate = x$replicate, blank = x$blank,
-               metadata = x$metadata)
+      analysis = x$analysis,
+      file = x$file,
+      replicate = x$replicate,
+      blank = x$blank,
+      metadata = x$metadata
+    )
 
     return(ana)
   })
@@ -68,6 +79,8 @@ msAnalysis_loadMetadata <- function(file_df) {
   names(analyses) <- sapply(analyses, FUN = function(x) analysisNames(x))
 
   analyses <- analyses[sort(names(analyses), decreasing = FALSE)]
+
+  cat(" Done! \n")
 
   return(analyses)
 }
@@ -84,13 +97,13 @@ msAnalysis_loadMetadata <- function(file_df) {
 #' @return A \linkS4class{data.table}.
 #'
 #' @noRd
-msAnalysis_loadSpectraInfo <- function(fl) {
+msAnalysis_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
 
   if (grepl(".mzML", fl))
-    spec_info <- mzML_loadSpectraInfo(fl)
+    spec_info <- mzML_loadSpectraInfo(fl, rtr = NULL, levels = NULL)
 
   if (grepl(".mzXML", fl))
-    spec_info <- mzXML_loadSpectraInfo(fl)
+    spec_info <- mzXML_loadSpectraInfo(fl, rtr = NULL, levels = NULL)
 
   return(spec_info)
 }
@@ -152,34 +165,32 @@ msAnalysis_loadRawData <- function(fl,
 #'
 #' @param fl An mzML file.
 #'
-#' @importFrom xml2 read_xml xml_find_first xml_attr xml_find_all xml_name
-#'
 #' @noRd
 mzML_loadMetadata <- function(fl) {
 
-  xml_data <- xml2::read_xml(fl)
+  xml_data <- read_xml(fl)
 
-  source_node <- xml2::xml_find_first(xml_data, xpath = "//d1:sourceFile")
+  source_node <- xml_find_first(xml_data, xpath = "//d1:sourceFile")
   if (length(source_node) > 0) {
-    source_file <- xml2::xml_attr(source_node, "name")
+    source_file <- xml_attr(source_node, "name")
   } else {
     source_file <- NA_character_
   }
 
   inst_x <- "//d1:referenceableParamGroup/d1:cvParam"
-  inst_n <- xml2::xml_find_first(xml_data, xpath = inst_x)
+  inst_n <- xml_find_first(xml_data, xpath = inst_x)
   if (length(inst_n) > 0) {
-    inst_val <- xml2::xml_attr(inst_n, "name")
+    inst_val <- xml_attr(inst_n, "name")
   } else {
     inst_val <- NA_character_
   }
 
   config_x <- "//d1:componentList/child::node()"
-  config_n <- xml2::xml_find_all(xml_data, xpath = config_x)
+  config_n <- xml_find_all(xml_data, xpath = config_x)
   if (length(config_n) > 0) {
-    config_names <- xml2::xml_name(config_n)
-    config_names_n <- xml2::xml_find_first(config_n, "d1:cvParam")
-    config_vals <- xml2::xml_attr(config_names_n, "name")
+    config_names <- xml_name(config_n)
+    config_names_n <- xml_find_first(config_n, "d1:cvParam")
+    config_vals <- xml_attr(config_names_n, "name")
   } else {
     config_names <- NA_character_
     config_vals <- NA_character_
@@ -189,8 +200,8 @@ mzML_loadMetadata <- function(fl) {
   config <- split(config, config$name)
   config <- lapply(config, function(x) x$value)
 
-  time_n <- xml2::xml_find_first(xml_data, xpath = "//d1:run")
-  time_val <- xml2::xml_attr(time_n, "startTimeStamp")
+  time_n <- xml_find_first(xml_data, xpath = "//d1:run")
+  time_val <- xml_attr(time_n, "startTimeStamp")
   if (!is.na(time_val)) {
     time_stamp <- as.POSIXct(strptime(time_val, "%Y-%m-%dT%H:%M:%SZ"))
   } else {
@@ -198,37 +209,37 @@ mzML_loadMetadata <- function(fl) {
   }
 
   ms_level_x <- '//d1:spectrum/d1:cvParam[@name="ms level"]'
-  ms_level_n <- xml2::xml_find_all(xml_data, xpath = ms_level_x)
+  ms_level_n <- xml_find_all(xml_data, xpath = ms_level_x)
   number_spectra <- length(ms_level_n)
   if (length(ms_level_n) > 0) {
-    ms_levels <- as.integer(unique(xml2::xml_attr(ms_level_n, "value")))
+    ms_levels <- as.integer(unique(xml_attr(ms_level_n, "value")))
   } else {
     ms_levels <- NA_integer_
   }
 
   mz_low_x <- '//d1:spectrum/d1:cvParam[@name="lowest observed m/z"]'
-  mz_low_n <- xml2::xml_find_all(xml_data, xpath = mz_low_x)
+  mz_low_n <- xml_find_all(xml_data, xpath = mz_low_x)
   if (length(mz_low_n) > 0) {
-    mz_low <- min(as.numeric(xml2::xml_attr(mz_low_n, "value")))
+    mz_low <- min(as.numeric(xml_attr(mz_low_n, "value")))
   } else {
     mz_low <- NA_real_
   }
 
   mz_high_x <- '//d1:spectrum/d1:cvParam[@name="highest observed m/z"]'
-  mz_high_n <- xml2::xml_find_all(xml_data, xpath = mz_high_x)
+  mz_high_n <- xml_find_all(xml_data, xpath = mz_high_x)
   if (length(mz_high_n) > 0) {
-    mz_high <- max(as.numeric(xml2::xml_attr(mz_high_n, "value")))
+    mz_high <- max(as.numeric(xml_attr(mz_high_n, "value")))
   } else {
     mz_high <- NA_real_
   }
 
   centroided_x <- '//d1:spectrum/d1:cvParam[@accession="MS:1000127"]'
-  centroided_n <- xml2::xml_find_all(xml_data, xpath = centroided_x)
+  centroided_n <- xml_find_all(xml_data, xpath = centroided_x)
   if (length(centroided_n) > 0) {
     centroided <- TRUE
   } else {
     profile_x <- '//d1:spectrum/d1:cvParam[@accession="MS:1000128"]'
-    profile_n <- xml2::xml_find_all(xml_data, xpath = profile_x)
+    profile_n <- xml_find_all(xml_data, xpath = profile_x)
     if (length(profile_n) > 0) {
       centroided <- FALSE
     } else {
@@ -237,18 +248,21 @@ mzML_loadMetadata <- function(fl) {
   }
 
   polarity_x <- '//d1:spectrum/d1:cvParam[@accession="MS:1000130"]'
-  polarity_n <- xml2::xml_find_all(xml_data, polarity_x)
+  polarity_n <- xml_find_all(xml_data, polarity_x)
   if (length(polarity_n) > 0) {
     polarities <- unique(
-      gsub(" scan", "", xml2::xml_attr(polarity_n, "name"))
+      gsub(" scan", "", xml_attr(polarity_n, "name"))
     )
   } else {
     polarities <- NA_character_
   }
 
   rt_x <- '//d1:spectrum/d1:scanList/d1:scan/d1:cvParam[@name="scan start time"]'
-  rt <- xml2::xml_find_all(xml_data, xpath = rt_x)
-  rt <- as.numeric(xml2::xml_attr(rt, "value"))
+  rt <- xml_find_all(xml_data, xpath = rt_x)
+  unit <- unique(xml_attr(rt, "unitName"))
+  rt <- as.numeric(xml_attr(rt, "value"))
+  if ("minute" %in% unit) rt = rt * 60
+
   if (length(rt) > 0) {
     rt_start <- min(rt)
     rt_end <- max(rt)
@@ -258,7 +272,7 @@ mzML_loadMetadata <- function(fl) {
   }
 
   chrom_x <- '//d1:chromatogram'
-  chrom_n <- xml2::xml_find_all(xml_data, chrom_x)
+  chrom_n <- xml_find_all(xml_data, chrom_x)
   number_chromatograms <- length(chrom_n)
 
   meta1 <- list("source_file" = source_file, "inst_data" = inst_val)
@@ -297,21 +311,19 @@ mzML_loadMetadata <- function(fl) {
 #' columns "ce" (collision energy), "preScan" and "preMZ" are added
 #' to identify the precursor.
 #'
-#' @importFrom xml2 read_xml xml_find_first xml_attr xml_find_all
-#'
 #' @noRd
 mzML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
 
-  xml_data <- xml2::read_xml(fl)
+  xml_data <- read_xml(fl)
 
   spectra_x <- '//d1:spectrum'
-  spectra_n <- xml2::xml_find_all(xml_data, xpath = spectra_x)
+  spectra_n <- xml_find_all(xml_data, xpath = spectra_x)
 
   if (length(spectra_n) > 0) {
 
     lv_x <- 'd1:cvParam[@name="ms level"]'
-    lv <- xml2::xml_find_all(spectra_n, xpath = lv_x)
-    lv <- as.integer(xml2::xml_attr(lv, "value"))
+    lv <- xml_find_all(spectra_n, xpath = lv_x)
+    lv <- as.integer(xml_attr(lv, "value"))
 
     if (!is.null(levels)) {
       check_lv <- lv %in% levels
@@ -320,8 +332,11 @@ mzML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
     }
 
     rt_x <- 'd1:scanList/d1:scan/d1:cvParam[@name="scan start time"]'
-    rt <- xml2::xml_find_all(spectra_n, xpath = rt_x)
-    rt <- as.numeric(xml2::xml_attr(rt, "value"))
+    rt <- xml_find_all(spectra_n, xpath = rt_x)
+    unit <- unique(xml_attr(rt, "unitName"))
+    rt <- as.numeric(xml_attr(rt, "value"))
+
+    if ("minute" %in% unit) rt = rt * 60
 
     if (!is.null(rtr) & length(rtr) == 2 & is.numeric(rtr)) {
       rtr <- sort(rtr)
@@ -331,8 +346,8 @@ mzML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
       spectra_n <- spectra_n[check_rt]
     }
 
-    index <- as.numeric(xml2::xml_attr(spectra_n, "index"))
-    scan <- as.numeric(gsub("\\D", "", xml2::xml_attr(spectra_n, "id")))
+    index <- as.numeric(xml_attr(spectra_n, "index"))
+    scan <- as.numeric(gsub("\\D", "", xml_attr(spectra_n, "id")))
 
     lvs <- sort(unique(lv))
 
@@ -346,30 +361,30 @@ mzML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
       for (i in lvs[-1]) {
 
         msn_x <- paste0('//d1:spectrum[d1:cvParam[@name="ms level" and @value="', i, '"]]')
-        msn_n <- xml2::xml_find_all(xml_data, xpath = msn_x)
+        msn_n <- xml_find_all(xml_data, xpath = msn_x)
 
-        msn_scan <- as.numeric(gsub("\\D", "", xml2::xml_attr(msn_n, "id")))
+        msn_scan <- as.numeric(gsub("\\D", "", xml_attr(msn_n, "id")))
 
         preScan_x <- paste0('d1:precursorList/d1:precursor')
-        preScan_v <- xml2::xml_find_all(msn_n, preScan_x)
-        preScan_v <- xml2::xml_attr(preScan_v, "spectrumRef")
+        preScan_v <- xml_find_all(msn_n, preScan_x)
+        preScan_v <- xml_attr(preScan_v, "spectrumRef")
         preScan_v <- as.numeric(gsub("\\D", "", preScan_v))
         preScan[scan %in% msn_scan] <- preScan_v
 
         ce_x <- paste0('d1:precursorList/d1:precursor/d1:activation',
                            '/d1:cvParam[@name="collision energy"]')
-        ce_v <- xml2::xml_find_all(msn_n, ce_x)
-        ce_v <- as.integer(xml2::xml_attr(ce_v, "value"))
+        ce_v <- xml_find_all(msn_n, ce_x)
+        ce_v <- as.integer(xml_attr(ce_v, "value"))
         ce[scan %in% msn_scan] <- ce_v
 
         preMZ_x <- paste0('d1:precursorList/d1:precursor/d1:selectedIonList',
                           '/d1:selectedIon/d1:cvParam[@name="selected ion m/z"]')
-        preMZ_v <- xml2::xml_find_all(msn_n, preMZ_x)
-        preMZ_v <- as.numeric(xml2::xml_attr(preMZ_v, "value"))
+        preMZ_v <- xml_find_all(msn_n, preMZ_x)
+        preMZ_v <- as.numeric(xml_attr(preMZ_v, "value"))
         preMZ[scan %in% msn_scan] <- preMZ_v
       }
 
-      df_a <- data.table::data.table(
+      df_a <- data.table(
         "index" = index,
         "scan" = scan,
         "lv" = lv,
@@ -381,7 +396,7 @@ mzML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
 
     } else {
 
-      df_a <- data.table::data.table(
+      df_a <- data.table(
         "index" = index,
         "scan" = scan,
         "lv" = lv,
@@ -391,7 +406,7 @@ mzML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
 
   } else {
 
-    df_a <- data.table::data.table(
+    df_a <- data.table(
       "index" = numeric(),
       "scan" = numeric(),
       "lv" = numeric(),
@@ -428,10 +443,6 @@ mzML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
 #' columns "ce" (collision energy), "preScan" and "preMZ" are added
 #' to identify the precursor.
 #'
-#' @importFrom data.table data.table
-#' @importFrom dplyr right_join
-#' @importFrom xml2 read_xml xml_find_first xml_attr xml_find_all xml_text
-#'
 #' @noRd
 mzML_loadRawData <- function(fl, spectra = TRUE, levels = c(1, 2), rtr = NULL,
                              minIntensityMS1 = 0, minIntensityMS2 = 0,
@@ -440,34 +451,34 @@ mzML_loadRawData <- function(fl, spectra = TRUE, levels = c(1, 2), rtr = NULL,
 
   dl <- list()
 
-  xml_data <- xml2::read_xml(fl)
+  xml_data <- read_xml(fl)
 
   if (chroms) {
 
     chroms_x <- '//d1:chromatogram'
-    chroms_n <- xml2::xml_find_all(xml_data, xpath = chroms_x)
+    chroms_n <- xml_find_all(xml_data, xpath = chroms_x)
 
     if (length(chroms_n) == 1) chroms_n <- list(chroms_n)
 
     chroms_data <- lapply(chroms_n, function(x) {
 
-      idx <- as.numeric(xml2::xml_attr(x, "index"))
-      id <- xml2::xml_attr(x, "id")
+      idx <- as.numeric(xml_attr(x, "index"))
+      id <- xml_attr(x, "id")
 
       arrays <- 'd1:binaryDataArrayList/d1:binaryDataArray'
-      arrays <- xml2::xml_find_all(x, xpath = arrays)
+      arrays <- xml_find_all(x, xpath = arrays)
 
       arrays <- lapply(arrays[1:2], function(z) {
 
         precision <- 'd1:cvParam[@accession="MS:1000523"]'
-        precision <- xml2::xml_find_all(z, xpath = precision)
-        precision <- xml2::xml_attr(precision, "name")
+        precision <- xml_find_all(z, xpath = precision)
+        precision <- xml_attr(precision, "name")
         precision <- sub(precision, pattern = "-bit float", replacement = "")
         precision <- as.numeric(precision)/8
 
         comp <- 'd1:cvParam[@accession="MS:1000574"]'
-        comp <- xml2::xml_find_all(z, xpath = comp)
-        comp <- xml2::xml_attr(comp, "name")
+        comp <- xml_find_all(z, xpath = comp)
+        comp <- xml_attr(comp, "name")
         comp <- switch(comp,
           `zlib` = "gzip",
           `zlib compression` = "gzip",
@@ -476,8 +487,8 @@ mzML_loadRawData <- function(fl, spectra = TRUE, levels = c(1, 2), rtr = NULL,
         )
 
         val <- 'd1:binary'
-        val <- xml2::xml_find_all(z, xpath = val)
-        val <- xml2::xml_text(val)
+        val <- xml_find_all(z, xpath = val)
+        val <- xml_text(val)
         val <- base64enc::base64decode(val)
         val <- as.raw(val)
         val <- memDecompress(val, type = comp)
@@ -486,9 +497,9 @@ mzML_loadRawData <- function(fl, spectra = TRUE, levels = c(1, 2), rtr = NULL,
         )
 
         time_unit <- 'd1:cvParam[@name="time array"]'
-        time_unit <- xml2::xml_find_all(z, xpath = time_unit)
+        time_unit <- xml_find_all(z, xpath = time_unit)
         if (length(time_unit) > 0) {
-          unit <- xml2::xml_attr(time_unit, "unitName")
+          unit <- xml_attr(time_unit, "unitName")
           if ("minute" %in% unit) val <- val * 60
         }
 
@@ -498,7 +509,7 @@ mzML_loadRawData <- function(fl, spectra = TRUE, levels = c(1, 2), rtr = NULL,
       rt <- arrays[[1]]
       intensity <- arrays[[2]]
 
-      out_df <- data.table::data.table(
+      out_df <- data.table(
         "index" = idx,
         "id" = id,
         "rt" = rt,
@@ -507,11 +518,11 @@ mzML_loadRawData <- function(fl, spectra = TRUE, levels = c(1, 2), rtr = NULL,
     })
 
     if (length(chroms_data) > 0) {
-      dl[["chroms"]] <- data.table::rbindlist(chroms_data)
+      dl[["chroms"]] <- rbindlist(chroms_data)
       dl[["chroms"]] <- dl[["chroms"]][intensity > minIntensityMS1, ]
 
     } else{
-      dl[["chroms"]] <- data.table::data.table(
+      dl[["chroms"]] <- data.table(
         "index" = numeric(),
         "id" = character(),
         "rt" = numeric(),
@@ -527,20 +538,20 @@ mzML_loadRawData <- function(fl, spectra = TRUE, levels = c(1, 2), rtr = NULL,
   if (spectra) {
 
     spectra_x <- '//d1:spectrum'
-    spectra_n <- xml2::xml_find_all(xml_data, xpath = spectra_x)
+    spectra_n <- xml_find_all(xml_data, xpath = spectra_x)
 
     if (length(spectra_n) > 0) {
 
       df_a <- mzML_loadSpectraInfo(fl, rtr, levels)
-      index <- as.numeric(xml2::xml_attr(spectra_n, "index"))
+      index <- as.numeric(xml_attr(spectra_n, "index"))
       index_check <- index %in% df_a$index
       index <- index[index_check]
       spectra_n <- spectra_n[index_check]
 
       comp_x <- paste0('//d1:cvParam[@accession="MS:1000574"]|',
                       '//d1:cvParam[@accession="MS:1000576"]')
-      comp_n <- xml2::xml_find_first(spectra_n[[1]], comp_x)
-      comp <- xml2::xml_attr(comp_n, "name")
+      comp_n <- xml_find_first(spectra_n[[1]], comp_x)
+      comp <- xml_attr(comp_n, "name")
       comp <- switch(comp,
         `zlib` = "gzip",
         `zlib compression` = "gzip",
@@ -549,14 +560,14 @@ mzML_loadRawData <- function(fl, spectra = TRUE, levels = c(1, 2), rtr = NULL,
       )
 
       mz_prs <- '//d1:cvParam[@accession="MS:1000523"]'
-      mz_prs <- xml2::xml_find_first(spectra_n[[1]], xpath = mz_prs)
-      mz_prs <- xml2::xml_attr(mz_prs, "name")
+      mz_prs <- xml_find_first(spectra_n[[1]], xpath = mz_prs)
+      mz_prs <- xml_attr(mz_prs, "name")
       mz_prs <- sub(mz_prs, pattern = "-bit float", replacement = "")
       mz_prs <- as.numeric(mz_prs)/8
 
       int_prs <- '//d1:cvParam[@accession="MS:1000521"]'
-      int_prs <- xml2::xml_find_first(spectra_n[[1]], xpath = int_prs)
-      int_prs <- xml2::xml_attr(int_prs, "name")
+      int_prs <- xml_find_first(spectra_n[[1]], xpath = int_prs)
+      int_prs <- xml_attr(int_prs, "name")
       int_prs <- sub(int_prs, pattern = "-bit float", replacement = "")
       int_prs <- as.numeric(int_prs)/8
 
@@ -564,7 +575,7 @@ mzML_loadRawData <- function(fl, spectra = TRUE, levels = c(1, 2), rtr = NULL,
       if (is.na(mz_prs)) mz_prs <- int_prs
 
       mz_x <- 'd1:binaryDataArrayList/d1:binaryDataArray[1]/d1:binary'
-      mz <- xml2::xml_text(xml2::xml_find_all(spectra_n, mz_x))
+      mz <- xml_text(xml_find_all(spectra_n, mz_x))
       mz <- lapply(mz, function(z, comp, mz_prs) {
         if (!nchar(z)) return(numeric(0))
         temp <- base64enc::base64decode(z)
@@ -575,7 +586,7 @@ mzML_loadRawData <- function(fl, spectra = TRUE, levels = c(1, 2), rtr = NULL,
       }, comp = comp, mz_prs = mz_prs)
 
       intensity_x <- 'd1:binaryDataArrayList/d1:binaryDataArray[2]/d1:binary'
-      intensity <- xml2::xml_text(xml2::xml_find_all(spectra_n, intensity_x))
+      intensity <- xml_text(xml_find_all(spectra_n, intensity_x))
       intensity <- lapply(intensity, function(z, comp, int_prs) {
         if (!nchar(z)) return(numeric(0))
         temp <- base64enc::base64decode(z)
@@ -585,20 +596,20 @@ mzML_loadRawData <- function(fl, spectra = TRUE, levels = c(1, 2), rtr = NULL,
                         n = length(temp)/int_prs, size = int_prs)
       }, comp = comp, int_prs = int_prs)
 
-      df_b <- data.table::data.table(
+      df_b <- data.table(
         "index" = rep(index, sapply(mz, length)),
         "mz" = as.numeric(unlist(mz)),
         "intensity" = as.numeric(unlist(intensity))
       )
 
-      df_out <- dplyr::right_join(df_a, df_b, by = "index")
+      df_out <- right_join(df_a, df_b, by = "index")
 
       df_out <- df_out[!(intensity <= minIntensityMS1 & lv == 1), ]
       df_out <- df_out[!(intensity <= minIntensityMS2 & lv == 2), ]
 
     } else {
 
-      df_out <- data.table::data.table(
+      df_out <- data.table(
         "index" = numeric(),
         "scan" = numeric(),
         "lv" = numeric(),
@@ -626,25 +637,23 @@ mzML_loadRawData <- function(fl, spectra = TRUE, levels = c(1, 2), rtr = NULL,
 #'
 #' @param fl An mzXML file.
 #'
-#' @importFrom xml2 read_xml xml_find_first xml_attr xml_find_all xml_name
-#'
 #' @noRd
 mzXML_loadMetadata <- function(fl){
 
-  xml_data <- xml2::read_xml(fl)
+  xml_data <- read_xml(fl)
 
-  source_n <- xml2::xml_find_first(xml_data, xpath = "//d1:parentFile")
+  source_n <- xml_find_first(xml_data, xpath = "//d1:parentFile")
   if (length(source_n) > 0) {
-    source_file <- basename(xml2::xml_attr(source_n, "fileName"))
+    source_file <- basename(xml_attr(source_n, "fileName"))
   } else {
     source_file <- NA_character_
   }
 
   inst_x <- "//d1:msInstrument/child::node()[starts-with(name(), 'ms')]"
-  inst_n <- xml2::xml_find_all(xml_data, xpath = inst_x)
+  inst_n <- xml_find_all(xml_data, xpath = inst_x)
   if (length(inst_n) > 0) {
-    inst_names <- xml2::xml_attr(inst_n, "category")
-    inst_vals <- xml2::xml_attr(inst_n, "value")
+    inst_names <- xml_attr(inst_n, "category")
+    inst_vals <- xml_attr(inst_n, "value")
   } else {
     inst_names <- "instrument_data"
     inst_vals <- NA_character_
@@ -654,29 +663,29 @@ mzXML_loadMetadata <- function(fl){
   config <- split(config, config$name)
   config <- lapply(config, function(x) x$value)
 
-  scan_n <- xml2::xml_find_all(xml_data, xpath = "//d1:scan")
+  scan_n <- xml_find_all(xml_data, xpath = "//d1:scan")
 
   if (length(scan_n) > 0) {
 
-  centroided <- as.integer(unique(xml2::xml_attr(scan_n, "centroided")))
+  centroided <- as.integer(unique(xml_attr(scan_n, "centroided")))
   if (1 %in% centroided) {
     centroided <- TRUE
   } else {
     centroided <- FALSE
   }
 
-  ms_levels <- as.integer(unique(xml2::xml_attr(scan_n, "msLevel")))
-  mz_low <- min(as.numeric(xml2::xml_attr(scan_n, "lowMz")))
+  ms_levels <- as.integer(unique(xml_attr(scan_n, "msLevel")))
+  mz_low <- min(as.numeric(xml_attr(scan_n, "lowMz")))
 
-  mz_high <- max(as.numeric(xml2::xml_attr(scan_n, "highMz")))
+  mz_high <- max(as.numeric(xml_attr(scan_n, "highMz")))
 
-  rt <- xml2::xml_attr(scan_n, "retentionTime")
+  rt <- xml_attr(scan_n, "retentionTime")
   rt <- gsub("[^0-9.-]", "", rt)
   rt <- as.numeric(rt)
   rt_start <- min(rt)
   rt_end <- max(rt)
 
-  polarities <- unique(xml2::xml_attr(scan_n, "polarity"))
+  polarities <- unique(xml_attr(scan_n, "polarity"))
   polarities[polarities %in% "+"] <- "positive"
   polarities[polarities %in% "-"] <- "negative"
 
@@ -727,18 +736,16 @@ mzXML_loadMetadata <- function(fl){
 #' columns "ce" (collision energy), "preScan" and "preMZ" are added
 #' to identify the precursor.
 #'
-#' @importFrom xml2 read_xml xml_find_first xml_attr xml_find_all
-#'
 #' @noRd
 mzXML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
 
-  xml_data <- xml2::read_xml(fl)
+  xml_data <- read_xml(fl)
 
-  scan_n <- xml2::xml_find_all(xml_data, xpath = "//d1:scan[@peaksCount>0]")
+  scan_n <- xml_find_all(xml_data, xpath = "//d1:scan[@peaksCount>0]")
 
   if (length(scan_n) > 0) {
 
-    lv <- as.integer(xml2::xml_attr(scan_n, "msLevel"))
+    lv <- as.integer(xml_attr(scan_n, "msLevel"))
 
     if (!is.null(levels)) {
       check_lv <- lv %in% levels
@@ -746,9 +753,11 @@ mzXML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
       scan_n <- scan_n[check_lv]
     }
 
-    rt <- xml2::xml_attr(scan_n, "retentionTime")
+    rt <- xml_attr(scan_n, "retentionTime")
     rt <- gsub("[^0-9.-]", "", rt)
     rt <- as.numeric(rt)
+
+    if (max(rt) < 70) rt <- rt * 60
 
     if (!is.null(rtr) & length(rtr) == 2 & is.numeric(rtr)) {
       rtr <- sort(rtr)
@@ -758,7 +767,7 @@ mzXML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
       scan_n <- scan_n[check_rt]
     }
 
-    scan <- as.numeric(xml2::xml_attr(scan_n, "num"))
+    scan <- as.numeric(xml_attr(scan_n, "num"))
 
     lvs <- unique(lv)
 
@@ -771,21 +780,21 @@ mzXML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
 
       for (i in lvs[-1]) {
         msn_x <- paste0('//d1:scan[@msLevel="', i, '" and @peaksCount>0]')
-        msn_n <- xml2::xml_find_all(xml_data, xpath = msn_x)
+        msn_n <- xml_find_all(xml_data, xpath = msn_x)
 
-        msn_scan <- as.numeric(xml2::xml_attr(msn_n, "num"))
+        msn_scan <- as.numeric(xml_attr(msn_n, "num"))
         check_msn_scan <- msn_scan %in% scan
         msn_scan <- msn_scan[check_msn_scan]
         msn_n <- msn_n[check_msn_scan]
-        msn_ce <- as.numeric(xml2::xml_attr(msn_n, "collisionEnergy"))
+        msn_ce <- as.numeric(xml_attr(msn_n, "collisionEnergy"))
         ce[scan %in% msn_scan] <- msn_ce
 
-        msn_pre_n <- xml2::xml_find_all(msn_n, xpath = "d1:precursorMz")
-        msn_preMz <- as.numeric(xml2::xml_text(msn_pre_n))
+        msn_pre_n <- xml_find_all(msn_n, xpath = "d1:precursorMz")
+        msn_preMz <- as.numeric(xml_text(msn_pre_n))
         preMZ[scan %in% msn_scan] <- msn_preMz
       }
 
-      df_a <- data.table::data.table(
+      df_a <- data.table(
         "scan" = scan,
         "lv" = lv,
         "ce" = ce,
@@ -795,14 +804,14 @@ mzXML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
 
     } else {
 
-      df_a <- data.table::data.table(
+      df_a <- data.table(
         "scan" = scan,
         "lv" = lv,
         "rt" = rt
       )
     }
   } else {
-    df_a <- data.table::data.table(
+    df_a <- data.table(
       "index" = numeric(),
       "scan" = numeric(),
       "lv" = numeric(),
@@ -834,31 +843,27 @@ mzXML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
 #' When MS levels above 2 are present, columns "ce" (collision energy),
 #' "preScan" and "preMZ" are added to identify the precursor.
 #'
-#' @importFrom data.table data.table
-#' @importFrom dplyr right_join
-#' @importFrom xml2 read_xml xml_find_first xml_attr xml_find_all xml_text
-#'
 #' @noRd
 mzXML_loadRawData <- function(fl, levels = c(1, 2), rtr = NULL,
                               minIntensityMS1 = 0, minIntensityMS2 = 0) {
 
   dl <- list()
 
-  xml_data <- xml2::read_xml(fl)
+  xml_data <- read_xml(fl)
 
-  scan_n <- xml2::xml_find_all(xml_data, xpath = "//d1:scan[@peaksCount>0]")
+  scan_n <- xml_find_all(xml_data, xpath = "//d1:scan[@peaksCount>0]")
 
   if (length(scan_n) > 0) {
 
     df_a <- mzXML_loadSpectraInfo(fl, rtr, levels)
-    scan <- as.numeric(xml2::xml_attr(scan_n, "num"))
+    scan <- as.numeric(xml_attr(scan_n, "num"))
     scan_check <- scan %in% df_a$scan
     scan <- scan[scan_check]
     scan_n <- scan_n[scan_check]
 
-    enc_n <- xml2::xml_find_first(xml_data, '//d1:peaks')
+    enc_n <- xml_find_first(xml_data, '//d1:peaks')
 
-    comp <- xml2::xml_attr(enc_n, "compressionType")
+    comp <- xml_attr(enc_n, "compressionType")
     comp <- switch(comp,
       `zlib` = "gzip",
       `zlib compression` = "gzip",
@@ -868,13 +873,13 @@ mzXML_loadRawData <- function(fl, levels = c(1, 2), rtr = NULL,
 
     if (is.null(comp)) comp <- "none"
 
-    prs <- xml2::xml_attr(enc_n, "precision")
+    prs <- xml_attr(enc_n, "precision")
     prs <- as.numeric(prs)/8
 
-    byte_order <- xml2::xml_attr(enc_n, "byteOrder")
+    byte_order <- xml_attr(enc_n, "byteOrder")
     endi_enc <- switch(byte_order, `network` = "big")
 
-    peak_n <- xml2::xml_text(xml2::xml_find_all(scan_n, xpath = "d1:peaks"))
+    peak_n <- xml_text(xml_find_all(scan_n, xpath = "d1:peaks"))
     vals <- lapply(peak_n, function(z, comp, prs, endi_enc = endi_enc){
       if (!nchar(z)) return(matrix(ncol = 2, nrow = 0))
       temp <- base64enc::base64decode(z)
@@ -889,17 +894,17 @@ mzXML_loadRawData <- function(fl, levels = c(1, 2), rtr = NULL,
 
     df_b <- mapply(cbind, scan, vals, SIMPLIFY = FALSE)
     df_b <- lapply(df_b, as.data.frame)
-    df_b <- data.table::rbindlist(df_b)
+    df_b <- rbindlist(df_b)
     colnames(df_b) <- c("scan", "mz", "intensity")
 
-    df_out <- dplyr::right_join(df_a, df_b, by = "scan")
+    df_out <- right_join(df_a, df_b, by = "scan")
 
     df_out <- df_out[!(intensity <= minIntensityMS1 & lv == 1), ]
     df_out <- df_out[!(intensity <= minIntensityMS2 & lv == 2), ]
 
   } else {
 
-    df_out <- data.table::data.table(
+    df_out <- data.table(
       "scan" = numeric(),
       "lv" = numeric(),
       "rt" = numeric(),
@@ -917,7 +922,6 @@ mzXML_loadRawData <- function(fl, levels = c(1, 2), rtr = NULL,
 
 ### Parse mzML/mzXML - mzR -----------------------------------------------------
 
-#' @importFrom data.table as.data.table
 #' @importFrom mzR openMSfile header close
 #'
 loadBasicRawSpectraHeaderMZR <- function(fl) {
@@ -977,7 +981,7 @@ loadRawDataMZR <- function(file, spectra = TRUE, level = 1, rtr = NULL,
         cC$index <- as.numeric(cC$index)
         colnames(cC) <- c("index", "rt", "intensity")
         cH_b <- data.table(index = cH$chromatogramIndex, id = cH$chromatogramId)
-        cH_n <- dplyr::inner_join(cH_b, cC, by = "index")
+        cH_n <- inner_join(cH_b, cC, by = "index")
 
       } else {
         cH_n <- data.table(
