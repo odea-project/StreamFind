@@ -323,7 +323,7 @@ getMetadata(a1, which = names(meta_vec))
 
 * add metadata to an _msData_ object (sp1):
 
-```{r}
+```{r add-metadata-msdata}
 #as a named vector
 meta_1 <- c("water", TRUE, "centroid")
 names(meta_1) <- c("matrix", "spiked", "datatype")

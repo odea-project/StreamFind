@@ -739,7 +739,10 @@ mzXML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
 
   xml_data <- read_xml(fl)
 
-  scan_n <- xml_find_all(xml_data, xpath = "//d1:scan[@peaksCount>0]")
+  # TODO xcms error when removing empty septra
+  #scan_n <- xml_find_all(xml_data, xpath = "//d1:scan[@peaksCount>0]")
+
+  scan_n <- xml_find_all(xml_data, xpath = "//d1:scan")
 
   if (length(scan_n) > 0) {
 
@@ -777,7 +780,8 @@ mzXML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
 
 
       for (i in lvs[-1]) {
-        msn_x <- paste0('//d1:scan[@msLevel="', i, '" and @peaksCount>0]')
+        #msn_x <- paste0('//d1:scan[@msLevel="', i, '" and @peaksCount>0]')
+        msn_x <- paste0('//d1:scan[@msLevel="', i, '"]')
         msn_n <- xml_find_all(xml_data, xpath = msn_x)
 
         msn_scan <- as.numeric(xml_attr(msn_n, "num"))
@@ -849,7 +853,9 @@ mzXML_loadRawData <- function(fl, levels = c(1, 2), rtr = NULL,
 
   xml_data <- read_xml(fl)
 
-  scan_n <- xml_find_all(xml_data, xpath = "//d1:scan[@peaksCount>0]")
+  #scan_n <- xml_find_all(xml_data, xpath = "//d1:scan[@peaksCount>0]")
+
+  scan_n <- xml_find_all(xml_data, xpath = "//d1:scan")
 
   if (length(scan_n) > 0) {
 

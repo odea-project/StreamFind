@@ -175,6 +175,8 @@ removeFilteredFeatures <- function(object, which = "all") {
   return(object)
 }
 
+# TODO make function to clear filters and filtered info
+
 ### filters --------------------------------------------------------------------
 
 #' minIntensityFeatures

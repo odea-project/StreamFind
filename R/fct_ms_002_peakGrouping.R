@@ -241,17 +241,22 @@ addAdjustedRetentionTime <- function(object, pat) {
     }, hasSpectra = hasSpectra)
 
     object@analyses <- lapply(object@analyses,
-      function(x, object, rtAdj, addAdjPoints, pkAdj) {
+      function(x, object, rtAdj, addAdjPoints, pkAdj, n_ana) {
 
       ana_idx <- which(analysisNames(object) %in% analysisNames(x))
 
       rts <- names(rtAdj)
-      rts <- str_detect(rts, paste0("F", ana_idx))
+      ana_idx_string <- paste0(
+        "F",
+        paste(rep("0", nchar(n_ana) - nchar(ana_idx)), collapse = ""),
+        ana_idx
+      )
+      rts <- str_detect(rts, ana_idx_string)
       rts <- rtAdj[rts]
 
       temp <- x@spectra
-      temp[, rtAdjusted := rts]
-      temp[, adjustment := rtAdjusted - rt]
+      temp$rtAdjusted <- rts
+      temp$adjustment <- temp$rtAdjusted - temp$rt
 
       if (addAdjPoints) {
         pk_rts <- unique(pkAdj[, ana_idx])
@@ -266,7 +271,8 @@ addAdjustedRetentionTime <- function(object, pat) {
     object = object,
     rtAdj = rtAdj,
     addAdjPoints = addAdjPoints,
-    pkAdj = pkAdj)
+    pkAdj = pkAdj,
+    n_ana = length(object@analyses))
 
     cat("Done! \n")
     return(object)
