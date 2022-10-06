@@ -206,7 +206,8 @@ buildPeaksTable <- function(object, pat) {
 
       setnames(temp,
                c("ID", "ret", "retmin", "retmax"),
-               c("id", "rt", "rtmin", "rtmax"), skip_absent = TRUE)
+               c("id", "rt", "rtmin", "rtmax"),
+               skip_absent = TRUE)
 
       setnames(temp, "group", "feature", skip_absent = TRUE)
 
@@ -239,15 +240,17 @@ buildPeaksTable <- function(object, pat) {
 
       setnames(temp,
                c("ID", "ret", "retmin", "retmax"),
-               c("id", "rt", "rtmin", "rtmax"), skip_absent = TRUE)
+               c("id", "rt", "rtmin", "rtmax"),
+               skip_absent = TRUE)
 
       setnames(temp, "group", "feature", skip_absent = TRUE)
 
       return(temp)
-
     }, extra = extra, peaks = peaks)
 
     names(peaks) <- analysisNames(object)
+
+
 
     peaks_org <- lapply(object@analyses, function(x) x@peaks)
 

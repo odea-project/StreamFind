@@ -4,11 +4,7 @@
 \alias{newAnalysis}
 \title{newAnalysis}
 \usage{
-newAnalysis(
-  file = NA_character_,
-  replicate = NA_character_,
-  blank = NA_character_
-)
+newAnalysis(file = NA_character_)
 }
 \arguments{
 \item{file}{A character vector with the full path of the file to create

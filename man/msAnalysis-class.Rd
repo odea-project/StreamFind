@@ -12,14 +12,6 @@
 \alias{analysisTable,msAnalysis,msAnalysis-method}
 \alias{analysisNames,msAnalysis-method}
 \alias{analysisNames,msAnalysis,msAnalysis-method}
-\alias{replicateNames,msAnalysis-method}
-\alias{replicateNames,msAnalysis,msAnalysis-method}
-\alias{replicateNames<-,msAnalysis-method}
-\alias{replicateNames<-,msAnalysis,msAnalysis-method}
-\alias{blankReplicateNames,msAnalysis-method}
-\alias{blankReplicateNames,msAnalysis,msAnalysis-method}
-\alias{blankReplicateNames<-,msAnalysis-method}
-\alias{blankReplicateNames<-,msAnalysis,msAnalysis-method}
 \alias{getMetadata,msAnalysis-method}
 \alias{getMetadata,msAnalysis,msAnalysis-method}
 \alias{addMetadata,msAnalysis-method}
@@ -78,14 +70,6 @@
 \S4method{analysisTable}{msAnalysis}(object)
 
 \S4method{analysisNames}{msAnalysis}(object)
-
-\S4method{replicateNames}{msAnalysis}(object)
-
-\S4method{replicateNames}{msAnalysis}(object) <- value
-
-\S4method{blankReplicateNames}{msAnalysis}(object)
-
-\S4method{blankReplicateNames}{msAnalysis}(object) <- value
 
 \S4method{getMetadata}{msAnalysis}(object, which = NULL)
 
@@ -214,8 +198,6 @@
 
 \item{obj}{A \linkS4class{msAnalysis} object.}
 
-\item{value}{A character string applicable to the respective method.}
-
 \item{which}{A character vector with the entry name/s.}
 
 \item{metadata}{A named vector with metadata entries or a one row
@@ -316,16 +298,6 @@ can be used as analysisInfo in \pkg{patRoon}.
 four columns: file, analysis, replicate and blank.
 
 \item \code{analysisNames(msAnalysis)}: getter for analysis name.
-
-\item \code{replicateNames(msAnalysis)}: getter for the replicate name.
-
-\item \code{replicateNames(msAnalysis) <- value}: setter for analysis replicate name.
-The \code{value} is a character string with analysis replicate name.
-
-\item \code{blankReplicateNames(msAnalysis)}: getter for associated blank replicate name.
-
-\item \code{blankReplicateNames(msAnalysis) <- value}: setter for associated blank replicate.
-The \code{value} is a character string with associated blank replicate name.
 
 \item \code{getMetadata(msAnalysis)}: getter for analysis metadata.
 Returns a list of metadata entries as defined by \code{which}.

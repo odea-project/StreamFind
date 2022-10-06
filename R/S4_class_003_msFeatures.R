@@ -271,21 +271,25 @@ setMethod("[", c("msFeatures", "ANY", "missing", "missing"), function(x, i, ...)
 
         x@analyses <- x@analyses[sidx, ]
 
-        temp_int <- copy(x@intensity)
+        if (nrow(x@intensity) > 0) {
 
-        temp_int[, (cols_rem) := NULL]
+          temp_int <- copy(x@intensity)
 
-        check_null_intensity <- apply(temp_int[, 2:ncol(temp_int)], 1, function(z) max(z))
-        check_null_intensity <- check_null_intensity == 0
+          temp_int[, (cols_rem) := NULL]
 
-        x@intensity <- temp_int[!check_null_intensity, ]
+          check_null_intensity <- apply(temp_int[, 2:ncol(temp_int)], 1, function(z) max(z))
+          check_null_intensity <- check_null_intensity == 0
 
-        x@metadata <- x@metadata[!check_null_intensity, ]
+          x@intensity <- temp_int[!check_null_intensity, ]
 
-        x@metadata$peaks <- lapply(x@metadata$peaks, function(p, sname) {
-          p <- p[, !names(p) %in% sname]
-          return(p)
-        }, sname = sname)
+          x@metadata <- x@metadata[!check_null_intensity, ]
+
+          x@metadata$peaks <- lapply(x@metadata$peaks, function(p, sname) {
+            p <- p[, !names(p) %in% sname]
+            return(p)
+          }, sname = sname)
+
+        }
 
         # TODO check is is really necessary to have the components object, maybe a method to produce the components object can be added
         # if (length(x@annotation) > 0) {

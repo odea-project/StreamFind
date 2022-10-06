@@ -184,12 +184,12 @@ buildFeatures <- function(object, pat) {
     return(x)
   }, new_id = new_id)
 
-  anaInfo <- as.data.table(analysisInfo(object))
-  anaInfo <- anaInfo[, .(file, analysis, group, blank, class)]
-  setnames(anaInfo, "group", "replicate")
+  # anaInfo <- as.data.table(analysisInfo(object))
+  # anaInfo <- anaInfo[, .(file, analysis, group, blank, class)]
+  # setnames(anaInfo, "group", "replicate")
   # TODO add set column to define the polarity of each sample
 
-  object@features@analyses <- anaInfo
+  #object@features@analyses <- anaInfo
   object@features@intensity <- feat
   object@features@metadata <- mtd
 

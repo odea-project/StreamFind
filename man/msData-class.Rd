@@ -108,7 +108,12 @@
 
 \S4method{addMetadata}{msData}(object, metadata = NULL, overwrite = FALSE)
 
-\S4method{addAnalyses}{msData}(object, analysisList = NULL)
+\S4method{addAnalyses}{msData}(
+  object,
+  analysisList = NULL,
+  replicates = NA_character_,
+  blanks = NA_character_
+)
 
 \S4method{getAnalyses}{msData}(object, analyses = NULL)
 

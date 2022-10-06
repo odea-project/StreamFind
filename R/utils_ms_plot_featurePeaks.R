@@ -25,15 +25,15 @@ plotFeaturePeaks <- function(object,
   assertClass(object, "msData")
 
   fts <- features(
-    object,
-    targetsID,
-    mz, ppm,
-    rt, sec
+    object = object,
+    targetsID = targetsID,
+    mz = mz, ppm = ppm,
+    rt = rt, sec = sec
   )
 
   pks <- peaks(
-    object,
-    analyses,
+    object = object,
+    analyses = analyses,
     targets = fts$id
   )
 

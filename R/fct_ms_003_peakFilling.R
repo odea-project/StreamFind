@@ -120,6 +120,9 @@ peakFilling <- function(object, settings = NULL) {
 
     Exp <- fillChromPeaks(Exp, param = settings)
 
+    anaInfo <- analysisInfo(object)
+    anaInfo$blank[is.na(anaInfo$blank)] <- ""
+
     pat <- importFeatureGroupsXCMS3(Exp, analysisInfo(object))
 
     object <- buildPeaksTable(object, pat)

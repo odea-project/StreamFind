@@ -27,6 +27,19 @@ library(plotly)
 library(streamFind)
 ```
 
+```{r libraries-dev, eval=FALSE, include=FALSE, cache=FALSE}
+#for development only
+library(data.table)
+library(xml2)
+library(checkmate)
+library(stringr)
+library(tools)
+library(dplyr)
+library(xcms)
+library(patRoon)
+```
+
+
 # Objective
 
 The streamFind package is a backend (code based) and frontend ([shiny](https://shiny.rstudio.com/) app) platform for assembly of modular workflows to support spectrometric and spectroscopic data processing. The major focus of streamFind is data processing for environmental and quality studies. The streamFind package aims to stimulate the use of advanced data analysis (e.g., non-target screening, statistical analysis, etc.) in routine studies, promoting standardization of data processing and structure and easing the retrospective evaluation of data. The streamFind package can be used by academics but also by technicians due to the comprehensive documentation and well categorized set of integrated functionalities (modules). This handbook focuses on describing and demonstrating the backend of the streamFind package.
@@ -243,7 +256,7 @@ str(sp1, max.level = 2)
 
 The _msAnalysis_ class is structured as shown below. Note that the S4 method `getAnalyses` for _msData_ was used to obtain the _msAnalysis_ of the first analysis as defined by the second argument. In general, access to raw data (i.e., traces and chromatograms) as well as respective plotting S4 methods can be applied to both the _msAnalysis_ and _msData_ (as described in \@ref(accessing-raw-data)). 
 
-The slots analysis, file and replicate correspond to the analysis name, the full file path and the replicate group name, respectively. The metadata slot is a list of objects with informative entries of the analysis file. The metadata list can be expanded with additional information about the analysis/sample (e.g., sample location, weather conditions, process sensor data, etc.). The slot parameters is used to store processing steps (e.g., peak picking) as _settings_ S4 class objects, including the processing step name/ID, the algorithm used and the respective settings applied. The parameters can be used for history track but also for re-run the processing steps when required. The spectra and chromatograms slots are used to store low level data (i.e., mass traces either in profile or centroided modes) from the MS files. Finally, the peaks slot is used to store the chromatographic peaks after peak picking. As no other processing step was applied the spectra, chromatograms and peaks tables in the _msAnalysis_ are empty for now.
+The slot analysis corresponds to the analysis name. The metadata slot is a list of objects with informative entries of the analysis file. The metadata list can be expanded with additional information about the analysis/sample (e.g., sample location, weather conditions, process sensor data, etc.). The slot parameters is used to store processing steps (e.g., peak picking) as _settings_ S4 class objects, including the processing step name/ID, the algorithm used and the respective settings applied. The parameters can be used for history track but also for re-run the processing steps when required. The spectra and chromatograms slots are used to store low level data (i.e., mass traces either in profile or centroided modes) from the MS files. Finally, the peaks slot is used to store the chromatographic peaks after peak picking. As no other processing step was applied the spectra, chromatograms and peaks tables in the _msAnalysis_ are empty for now.
 
  * _msAnalysis_ structure:  
 
@@ -630,7 +643,7 @@ Before preforming data processing, the analysis names (i.e., replicate name and 
 
 ### Assign replicate names
 
-An essential aspect of environmental analysis is to operate with sample/analysis replicates. The replicates in _msData_ or _msAnalysis_ can be obtained by the `replicateNames` S4 method as shown below. The setter (assignment) for the replicate names is demonstrated below with the method `replicateNames<-` that takes a vector of character strings with the same length as the number of analyses in a _msData_ object or length one for a single analysis in _msAnalysis_. Alternatively, a table with a replicate character column or a character vector can be given in the files or replicates arguments, respectively.
+An essential aspect of environmental analysis is to operate with sample/analysis replicates. The replicates in _msData_ can be obtained by the `replicateNames` S4 method as shown below. The setter (assignment) for the replicate names is demonstrated below with the method `replicateNames<-` that takes a vector of character strings with the same length as the number of analyses in a _msData_ object. Alternatively, a table with a replicate character column or a character vector can be given in the files or replicates arguments, respectively. Note that _msAnalysis_ doesn't contain information about replicate correspondence. The correspondence between analyses is storage in the _msFeatures_ within the _msData_.
 
 ```{r assign-replicatenames}
 #getter for replicate names in msData
@@ -639,18 +652,11 @@ replicateNames(sp2)
 #setter for replicate names in msData
 replicateNames(sp2) <- c(rep("blank", 3),rep("influent", 3))  
 replicateNames(sp2)
-
-#setter for replicate name in msAnalysis
-a2 <- getAnalyses(sp2, 4)
-replicateNames(a2) <- "wastewater"
-
-#getter for replicate name in msAnalysis
-replicateNames(a2)
 ```
 
 ### Assign blankReplicateNames
 
-The blank subtraction is another crucial aspect in environmental analysis. The getter and setter for blank subtraction works the same way as replicates. See examples below. The blank analysis replicate is then assign to the respective analysis. In the example, the first replicate group is assign to the influent samples. Note that the blank will also be assigned to itself. Although not shown, different blank analysis replicates can be assigned to different analysis. The blank subtraction (\@ref(filter-functions)) is then applied per analysis replicate considering the assigned blank replicate. Getting and assigning blank replicates from an _msAnalysis_ is also possible. However, assigning a blank without the context of a _streamSet_ and without the structure of _msData_ or similar level classes is not recommended. For cross project analysis, a subset of the analyses (_msAnalysis_ objects) in a given _msData_ can be concatenated to another _msData_, carrying the assigned blank replicate for each analysis as well as all the other analysis information (see `r # TODO make section cross project analysis``section cross project analysis for more information).
+The blank subtraction is another crucial aspect in environmental analysis. The getter and setter for blank subtraction works the same way as replicates. See examples below. The blank analysis replicate is then assign to the respective analysis. In the example, the first replicate group is assign to the influent samples. Note that the blank will also be assigned to itself. Although not shown, different blank analysis replicates can be assigned to different analysis. The blank subtraction (\@ref(filter-functions)) is then applied per analysis replicate considering the assigned blank replicate. For cross project analysis, a subset of the analyses (_msAnalysis_ objects) in a given _msData_ can be concatenated to another _msData_, carrying the assigned blank replicate for each analysis as well as all the other analysis information (see `r # TODO make section cross project analysis``section cross project analysis for more information).
 
 ```{r assign-blankreplicatenames}
 #getter for blank replicates in each sample in a msData object
@@ -659,12 +665,11 @@ blankReplicateNames(sp2)
 #setter for the blank analysis replicate of msData object
 blankReplicateNames(sp2) <- rep("blank", 6)
 blankReplicateNames(sp2)
-
-#getter for msAnalysis
-blankReplicateNames(a2)
 ```
 
 ### Other getter S4 methods
+
+`r # TODO list all S4 methods``
 
 ```{r other-s4methods}
 #getter for the analysis table
@@ -1027,9 +1032,11 @@ sp2_pg_fl <- peakFilling(sp2_pg, settings = settings_fl)
 
 To inspect filled peaks, the function `plotFeaturePeaks` can be used as shown below. The white dots represent filled peaks, meaning that the intensity value was not obtained from peak picking. The recursive integration is relevant to further minimize false negative features by reinforce the presence of the feature in the relevant analyses but not in the blank analysis replicate. Also, on the other end, for reducing false positives by confirming the presence of the features at similar level in the blank replicate analysis, as shown below. The second feature, at 935 seconds, peaks were picked only for the influent but the blank has very similar level as confirmed by recursive integration, which most likely is related to peaks from noise. Applying filtering by blank subtraction further during the basic data processing workflow, would remove the irrelevant features, such as the example shown below.
 
+`r # TODO find another example for filling results`
+
 ```{r recursive-integration-inspection}
 # inspecting the filled peaks for a given mz and rt target
-plotFeaturePeaks(sp2_pg_fl, mz = 441.1670, rt = 916, ppm = 20, sec = 60)
+plotFeaturePeaks(sp2_pg_fl, mz = 441.1670, rt = 1097, ppm = 20, sec = 60)
 ```
 
 ## Annotation

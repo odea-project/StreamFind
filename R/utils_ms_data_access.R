@@ -1,20 +1,21 @@
 
 #' @title msAnalysis_loadMetadata
 #'
-#' @description Creates a \linkS4class{msAnalysis} for each mzML/mzXML file
+#' @description Creates an \linkS4class{msAnalysis} for each mzML/mzXML file
 #' in a given data.frame with columns "file", "replicate" and "blank".
-#' The function uses code from the \pkg{RaMS} package to obtain file metadata
-#' using the \pkg{xml2}.
+#' The function uses code adapted from the \pkg{RaMS} R package to obtain
+#' file metadata using the \pkg{xml2} R package in the back-end.
 #'
-#' @param file_df A data.frame with the columns "file", "replicate" and "blank"
-#' for each file to be converted to a \linkS4class{msAnalysis}.
+#' @param file_df A \linkS4class{data.table} with the columns
+#' "file", "replicate" and "blank" for each file to be converted
+#' to a \linkS4class{msAnalysis}.
 #'
 #' @noRd
 msAnalysis_loadMetadata <- function(file_df) {
 
   inval <- TRUE
 
-  if (testClass(file_df, c("data.frame"))) {
+  if (testClass(file_df, c("data.table"))) {
     n_files <- nrow(file_df)
     if (n_files > 0) inval <- FALSE
   }
@@ -25,7 +26,7 @@ msAnalysis_loadMetadata <- function(file_df) {
   tracker <- round(seq(0, 100, length.out = n_files + 1))[-1]
   file_df$tracker <- tracker
 
-  file_df <- split(file_df, file_df$file)
+  file_df <- split(file_df, factor(file_df$file, levels = file_df$file))
 
   # TODO Add parallel processing globally
   # 1. Check if number of files and workers
@@ -45,16 +46,6 @@ msAnalysis_loadMetadata <- function(file_df) {
     ana$analysis <- gsub(".mzML|.mzXML", "", basename(fl))
     ana$file <- fl
 
-    if (is.na(x$replicate)) {
-      ana$replicate <- ana$analysis
-      ana$replicate <- gsub( "-", "_", ana$replicate)
-      ana$replicate <- sub("_[^_]+$", "", ana$replicate)
-    } else {
-      ana$replicate <- x$replicate
-    }
-
-    ana$blank <- x$blank
-
     ana$metadata <- meta
 
     cat(paste0(x$tracker, "% "))
@@ -68,8 +59,6 @@ msAnalysis_loadMetadata <- function(file_df) {
     ana <- new("msAnalysis",
       analysis = x$analysis,
       file = x$file,
-      replicate = x$replicate,
-      blank = x$blank,
       metadata = x$metadata
     )
 
@@ -100,10 +89,10 @@ msAnalysis_loadMetadata <- function(file_df) {
 msAnalysis_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
 
   if (grepl(".mzML", fl))
-    spec_info <- mzML_loadSpectraInfo(fl, rtr = NULL, levels = NULL)
+    spec_info <- mzML_loadSpectraInfo(fl, rtr = rtr, levels = levels)
 
   if (grepl(".mzXML", fl))
-    spec_info <- mzXML_loadSpectraInfo(fl, rtr = NULL, levels = NULL)
+    spec_info <- mzXML_loadSpectraInfo(fl, rtr = rtr, levels = levels)
 
   return(spec_info)
 }
@@ -163,7 +152,7 @@ msAnalysis_loadRawData <- function(fl,
 #' William Kumler. See more details in:
 #' \href{https://github.com/wkumler/RaMS}.
 #'
-#' @param fl An mzML file.
+#' @param fl A full path to an mzML file.
 #'
 #' @noRd
 mzML_loadMetadata <- function(fl) {
@@ -247,11 +236,17 @@ mzML_loadMetadata <- function(fl) {
     }
   }
 
-  polarity_x <- '//d1:spectrum/d1:cvParam[@accession="MS:1000130"]'
-  polarity_n <- xml_find_all(xml_data, polarity_x)
-  if (length(polarity_n) > 0) {
-    polarities <- unique(
-      gsub(" scan", "", xml_attr(polarity_n, "name"))
+  polarity_pos <- '//d1:spectrum/d1:cvParam[@accession="MS:1000130"]'
+  polarity_pos <- xml_find_all(xml_data, polarity_pos)
+
+  polarity_neg <- '//d1:spectrum/d1:cvParam[@accession="MS:1000129"]'
+  polarity_neg <- xml_find_all(xml_data, polarity_neg)
+
+
+  if (length(polarity_pos) > 0 | length(polarity_neg) > 0) {
+    polarities <- c(
+      unique(gsub(" scan", "", xml_attr(polarity_pos, "name"))),
+      unique(gsub(" scan", "", xml_attr(polarity_neg, "name")))
     )
   } else {
     polarities <- NA_character_
@@ -304,10 +299,12 @@ mzML_loadMetadata <- function(fl) {
 #' William Kumler. See more details in:
 #' \href{https://github.com/wkumler/RaMS}.
 #'
-#' @param fl An mzML file.
+#' @param fl A full path to an mzML file.
+#' @param rtr ...
+#' @param levels ...
 #'
 #' @return A \linkS4class{data.table} with columns "index", "scan",
-#' "lv" (for MS levels) and "rt". When MS levels above 2 are present,
+#' "level" (for MS levels) and "rt". When MS levels above 2 are present,
 #' columns "ce" (collision energy), "preScan" and "preMZ" are added
 #' to identify the precursor.
 #'
@@ -321,14 +318,14 @@ mzML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
 
   if (length(spectra_n) > 0) {
 
-    lv_x <- 'd1:cvParam[@name="ms level"]'
-    lv <- xml_find_all(spectra_n, xpath = lv_x)
-    lv <- as.integer(xml_attr(lv, "value"))
+    level_x <- 'd1:cvParam[@name="ms level"]'
+    level <- xml_find_all(spectra_n, xpath = level_x)
+    level <- as.integer(xml_attr(level, "value"))
 
     if (!is.null(levels)) {
-      check_lv <- lv %in% levels
-      lv <- lv[check_lv]
-      spectra_n <- spectra_n[check_lv]
+      check_level <- level %in% levels
+      level <- level[check_level]
+      spectra_n <- spectra_n[check_level]
     }
 
     rt_x <- 'd1:scanList/d1:scan/d1:cvParam[@name="scan start time"]'
@@ -342,23 +339,23 @@ mzML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
       rtr <- sort(rtr)
       check_rt <- rt >= rtr[1] & rt <= rtr[2]
       rt <- rt[check_rt]
-      lv <- lv[check_rt]
+      level <- level[check_rt]
       spectra_n <- spectra_n[check_rt]
     }
 
     index <- as.numeric(xml_attr(spectra_n, "index"))
     scan <- as.numeric(gsub("\\D", "", xml_attr(spectra_n, "id")))
 
-    lvs <- sort(unique(lv))
+    levels <- sort(unique(level))
 
-    if (2 %in% lvs[-1]) {
+    if (2 %in% levels[-1]) {
 
       total_scans <- length(scan)
       ce <- rep(NA_real_, total_scans)
       preScan <- rep(NA_real_, total_scans)
       preMZ <- rep(NA_real_, total_scans)
 
-      for (i in lvs[-1]) {
+      for (i in levels[-1]) {
 
         msn_x <- paste0('//d1:spectrum[d1:cvParam[@name="ms level" and @value="', i, '"]]')
         msn_n <- xml_find_all(xml_data, xpath = msn_x)
@@ -387,7 +384,7 @@ mzML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
       df_a <- data.table(
         "index" = index,
         "scan" = scan,
-        "lv" = lv,
+        "level" = level,
         "ce" = ce,
         "preScan" = preScan,
         "preMZ" = preMZ,
@@ -399,7 +396,7 @@ mzML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
       df_a <- data.table(
         "index" = index,
         "scan" = scan,
-        "lv" = lv,
+        "level" = level,
         "rt" = rt
       )
     }
@@ -409,7 +406,7 @@ mzML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
     df_a <- data.table(
       "index" = numeric(),
       "scan" = numeric(),
-      "lv" = numeric(),
+      "level" = numeric(),
       "rt" = numeric()
     )
   }
@@ -439,7 +436,7 @@ mzML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
 #' spectra.
 #'
 #' @return A \linkS4class{data.table} with columns "index", "scan",
-#' "lv" (for MS levels) and "rt". When MS levels above 2 are present,
+#' "level" (for MS levels) and "rt". When MS levels above 2 are present,
 #' columns "ce" (collision energy), "preScan" and "preMZ" are added
 #' to identify the precursor.
 #'
@@ -604,15 +601,15 @@ mzML_loadRawData <- function(fl, spectra = TRUE, levels = c(1, 2), rtr = NULL,
 
       df_out <- right_join(df_a, df_b, by = "index")
 
-      df_out <- df_out[!(intensity <= minIntensityMS1 & lv == 1), ]
-      df_out <- df_out[!(intensity <= minIntensityMS2 & lv == 2), ]
+      df_out <- df_out[!(intensity <= minIntensityMS1 & level == 1), ]
+      df_out <- df_out[!(intensity <= minIntensityMS2 & level == 2), ]
 
     } else {
 
       df_out <- data.table(
         "index" = numeric(),
         "scan" = numeric(),
-        "lv" = numeric(),
+        "level" = numeric(),
         "rt" = numeric(),
         "mz" = numeric(),
         "intensity" = numeric()
@@ -635,7 +632,7 @@ mzML_loadRawData <- function(fl, spectra = TRUE, levels = c(1, 2), rtr = NULL,
 #' William Kumler. See more details in:
 #' \href{https://github.com/wkumler/RaMS}.
 #'
-#' @param fl An mzXML file.
+#' @param fl A full path to an mzXML file.
 #'
 #' @noRd
 mzXML_loadMetadata <- function(fl){
@@ -724,13 +721,13 @@ mzXML_loadMetadata <- function(fl){
 #' William Kumler. See more details in:
 #' \href{https://github.com/wkumler/RaMS}.
 #'
-#' @param fl An mzXML file.
+#' @param fl A full path to an mzXML file.
 #' @param rtr A numeric vector of length two with the time range
 #' (i.e., min and max values).
 #' @param levels A integer vector with the MS levels.
 #'
 #' @return A \linkS4class{data.table} with columns "index", "scan",
-#' "lv" (for MS levels) and "rt". When MS levels above 2 are present,
+#' "level" (for MS levels) and "rt". When MS levels above 2 are present,
 #' columns "ce" (collision energy), "preScan" and "preMZ" are added
 #' to identify the precursor.
 #'
@@ -746,12 +743,12 @@ mzXML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
 
   if (length(scan_n) > 0) {
 
-    lv <- as.integer(xml_attr(scan_n, "msLevel"))
+    level <- as.integer(xml_attr(scan_n, "msLevel"))
 
     if (!is.null(levels)) {
-      check_lv <- lv %in% levels
-      lv <- lv[check_lv]
-      scan_n <- scan_n[check_lv]
+      check_level <- level %in% levels
+      level <- level[check_level]
+      scan_n <- scan_n[check_level]
     }
 
     rt <- xml_attr(scan_n, "retentionTime")
@@ -764,22 +761,22 @@ mzXML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
       rtr <- sort(rtr)
       check_rt <- rt >= rtr[1] & rt <= rtr[2]
       rt <- rt[check_rt]
-      lv <- lv[check_rt]
+      level <- level[check_rt]
       scan_n <- scan_n[check_rt]
     }
 
     scan <- as.numeric(xml_attr(scan_n, "num"))
 
-    lvs <- unique(lv)
+    levels <- unique(level)
 
-    if (2 %in% lvs) {
+    if (2 %in% levels) {
 
       total_scans <- length(scan)
       ce <- rep(NA_real_, total_scans)
       preMZ <- rep(NA_real_, total_scans)
 
 
-      for (i in lvs[-1]) {
+      for (i in levels[-1]) {
         #msn_x <- paste0('//d1:scan[@msLevel="', i, '" and @peaksCount>0]')
         msn_x <- paste0('//d1:scan[@msLevel="', i, '"]')
         msn_n <- xml_find_all(xml_data, xpath = msn_x)
@@ -798,7 +795,7 @@ mzXML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
 
       df_a <- data.table(
         "scan" = scan,
-        "lv" = lv,
+        "level" = level,
         "ce" = ce,
         "preMZ" = preMZ,
         "rt" = rt
@@ -808,7 +805,7 @@ mzXML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
 
       df_a <- data.table(
         "scan" = scan,
-        "lv" = lv,
+        "level" = level,
         "rt" = rt
       )
     }
@@ -816,7 +813,7 @@ mzXML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
     df_a <- data.table(
       "index" = numeric(),
       "scan" = numeric(),
-      "lv" = numeric(),
+      "level" = numeric(),
       "rt" = numeric()
     )
   }
@@ -832,7 +829,7 @@ mzXML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
 #' Code adapted from package \pkg{RaMS} developed by
 #' William Kumler. See more details in: \href{https://github.com/wkumler/RaMS}.
 #'
-#' @param fl An mzXML file.
+#' @param fl A full path to an mzXML file.
 #' @param levels A integer vector with the MS levels.
 #' @param rtr A numeric vector of length two defining the time range.
 #' @param minIntensityMS1 A numeric value with the minimum intensity
@@ -841,7 +838,7 @@ mzXML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
 #' for MS2 data.
 #'
 #' @return A list with a \linkS4class{data.table} named "spectra" with columns
-#' "index", "scan", "lv" (for MS levels), "rt", "mz" and "intensity".
+#' "index", "scan", "level" (for MS levels), "rt", "mz" and "intensity".
 #' When MS levels above 2 are present, columns "ce" (collision energy),
 #' "preScan" and "preMZ" are added to identify the precursor.
 #'
@@ -903,14 +900,14 @@ mzXML_loadRawData <- function(fl, levels = c(1, 2), rtr = NULL,
 
     df_out <- right_join(df_a, df_b, by = "scan")
 
-    df_out <- df_out[!(intensity <= minIntensityMS1 & lv == 1), ]
-    df_out <- df_out[!(intensity <= minIntensityMS2 & lv == 2), ]
+    df_out <- df_out[!(intensity <= minIntensityMS1 & level == 1), ]
+    df_out <- df_out[!(intensity <= minIntensityMS2 & level == 2), ]
 
   } else {
 
     df_out <- data.table(
       "scan" = numeric(),
-      "lv" = numeric(),
+      "level" = numeric(),
       "rt" = numeric(),
       "mz" = numeric(),
       "intensity" = numeric()
@@ -936,13 +933,13 @@ loadBasicRawSpectraHeaderMZR <- function(fl) {
 
   if (nrow(zH) > 0) {
     zH <- zH[, .(seqNum, acquisitionNum, msLevel, retentionTime)]
-    colnames(zH) <- c("index", "scan", "lv", "rt")
+    colnames(zH) <- c("index", "scan", "level", "rt")
 
   } else {
     zH <- data.table(
       index = numeric(),
       scan = numeric(),
-      lv = numeric(),
+      level = numeric(),
       rt = numeric()
     )
   }
@@ -1036,7 +1033,7 @@ loadRawDataMZR <- function(file, spectra = TRUE, level = 1, rtr = NULL,
         zH_b <- data.table(
           index = zH$seqNum,
           scan = zH$acquisitionNum,
-          lv = zH$msLevel,
+          level = zH$msLevel,
           ce = zH$collisionEnergy,
           preScan = zH$precursorScanNum,
           preMZ = zH$precursorMZ,
@@ -1048,7 +1045,7 @@ loadRawDataMZR <- function(file, spectra = TRUE, level = 1, rtr = NULL,
         zH_b <- data.table(
           index = zH$seqNum,
           scan = zH$acquisitionNum,
-          lv = zH$msLevel,
+          level = zH$msLevel,
           rt = zH$retentionTime
         )
       }
@@ -1057,8 +1054,8 @@ loadRawDataMZR <- function(file, spectra = TRUE, level = 1, rtr = NULL,
 
       # TODO add an intensity threshold when loading raw data
       #removes empty traces
-      zH_n <- zH_n[!(intensity <= minIntensityMS1 & lv == 1), ]
-      zH_n <- zH_n[!(intensity <= minIntensityMS2 & lv == 2), ]
+      zH_n <- zH_n[!(intensity <= minIntensityMS1 & level == 1), ]
+      zH_n <- zH_n[!(intensity <= minIntensityMS2 & level == 2), ]
 
       dl[["spectra"]] <- zH_n
 
@@ -1066,7 +1063,7 @@ loadRawDataMZR <- function(file, spectra = TRUE, level = 1, rtr = NULL,
       dl[["spectra"]] <- data.table(
         index = numeric(),
         scan = numeric(),
-        lv = numeric(),
+        level = numeric(),
         rt = numeric(),
         mz = numeric(),
         intensity = numeric()
@@ -1205,7 +1202,7 @@ extractMSn <- function(
 
         pHolder[[idf]] <- list()
 
-        msms <- copy(spectra[lv == level, ])
+        msms <- copy(spectra[level == level, ])
 
         msms <- msms[
           preMZ >= targets$mzmin[i] &
@@ -1219,7 +1216,7 @@ extractMSn <- function(
           ]
         }
 
-        ms <- copy(spectra[lv == (level - 1), ])
+        ms <- copy(spectra[level == (level - 1), ])
         ms <- ms[scan %in% unique(msms$preScan), ]
 
         msms <- msms[intensity >= settings$minIntensityPre, ]
@@ -1641,11 +1638,11 @@ clusterMSnToPatRoon <- function(
   loopN2 <- 0
 
   for (f in names(av_plists)) {
-    for (lv in names(av_plists[[f]])) {
+    for (level in names(av_plists[[f]])) {
 
       loopN2 <- loopN2 + 1
 
-      t <- av_plists[[f]][[lv]]
+      t <- av_plists[[f]][[level]]
       t <- t[sapply(t, nrow) > 0]
       t <- copy(rbindlist(t, fill = TRUE))
       idf <- targets[id == f, ]
@@ -1702,7 +1699,7 @@ clusterMSnToPatRoon <- function(
         }
       }
 
-      av_plists[[f]][[lv]] <- copy(t)
+      av_plists[[f]][[level]] <- copy(t)
 
       setTxtProgressBar(pb2, loopN2)
     }

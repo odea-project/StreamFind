@@ -1,13 +1,13 @@
 
-checkFileValidity <- function(file = NA_character_) {
+checkFileValidity <- function(fl = NA_character_) {
 
   # TODO add other file formats (inc. Raman and UV)
   # and checkups for general evaluation
   fFormats <- ".mzML|.mzXML"
 
-  check <- grepl(fFormats, file) & is.character(file)
+  check <- grepl(fFormats, fl) & is.character(fl)
 
-  check <- check & file.exists(file)
+  check <- check & file.exists(fl)
 
   return(check)
 }
@@ -18,76 +18,80 @@ checkFileValidity <- function(file = NA_character_) {
 #' @template args-newAnalysis-replicate-blank
 #'
 #' @noRd
-checkFilesInput <- function(file = NA_character_,
-                            replicate = NA_character_,
-                            blank = NA_character_) {
+checkFilesInput <- function(files = NA_character_,
+                            replicates = NA_character_,
+                            blanks = NA_character_) {
 
-  if (is.data.frame(file) | is.data.table(file)) {
+  if (is.data.frame(files) | is.data.table(files)) {
 
-    if ("path" %in% colnames(file) &
-          !"file" %in% colnames(file) &
-            "analysis" %in% colnames(file)) {
+    if ("path" %in% colnames(files) &
+          !"file" %in% colnames(files) &
+            "analysis" %in% colnames(files)) {
 
 
-      f_path_file <- apply(file, 1, function(x) {
+      f_path_file <- apply(files, 1, function(x) {
         list.files(path = x["path"],
                    pattern = x["analysis"],
                    full.names = TRUE)
       })
 
-      if (length(f_path_file) > nrow(file)) {
+      if (length(f_path_file) > nrow(files)) {
         f_path_file <- f_path_file[checkFileValidity(f_path_file)]
       }
 
-      if (legnth(file$file) == length(f_path_file)) {
-        file$file <- f_path_file
+      if (nrow(files) == length(f_path_file)) {
+        files$file <- sapply(files$analysis, function(x, f_path_file) {
+          return(f_path_file[grep(x, f_path_file)])
+        }, f_path_file = f_path_file)
+
       } else {
         warning("Files with same name but different valid formats present!")
         return(NULL)
       }
     }
 
-    if ("replicate" %in% colnames(file)) {
-        replicate <- file$replicate
-        names(replicate) <- file$file
+    if ("replicate" %in% colnames(files)) {
+        replicates <- file$replicate
+        names(replicates) <- files$file
     }
 
-    if ("group" %in% colnames(file)) {
-        replicate <- file$group
-        names(replicate) <- file$file
+    if ("group" %in% colnames(files)) {
+        replicates <- files$group
+        names(replicates) <- files$file
     }
 
-    if ("blank" %in% colnames(file)) {
-        blank <- file$blank
-        names(blank) <- file$file
+    if ("blank" %in% colnames(files)) {
+        blank <- files$blank
+        blank <- gsub("", NA_character_, blank)
+        names(blank) <- files$file
+
     }
 
-    file <- file$file
+    files_v <- files$file
+
+  } else {
+    files_v <- files
   }
 
-  if ((length(replicate) == 1 & TRUE %in% is.na(replicate)) |
-      length(replicate) != length(file)) {
+  if ((length(replicates) == 1 & TRUE %in% is.na(replicates)) |
+      length(replicates) != length(files_v)) {
 
-    replicate <- rep(NA_character_, length(file))
-    names(replicate) <- file
+    replicates <- file_path_sans_ext(basename(files_v))
+    replicates <- gsub( "-", "_", replicates)
+    replicates <- sub("_[^_]+$", "", replicates)
+    names(replicates) <- files_v
   }
 
-  if (length(blank) == 1 & TRUE %in% is.na(blank) |
-      length(replicate) != length(file)) {
+  if (length(blanks) == 1 & TRUE %in% is.na(blanks) |
+      length(blanks) != length(files)) {
 
-    blank <- rep(NA_character_, length(file))
-    names(blank) <- file
+    blanks <- rep(NA_character_, length(files_v))
+    names(blanks) <- files_v
   }
 
-  file <- file[checkFileValidity(file)]
+  files_v <- files_v[checkFileValidity(files_v)]
 
-  if (length(file) < 1) {
-
-    # TODO suggest to convert files
-    # if (TRUE %in% grepl(tools::file_ext(f), compatibleFileFormatsForConversion()$format)) {
-    #   warning("MS vendor file found! Use the function convertFiles
-    #           for conversion to mzML/mzXML. See ?convertFiles for more information.")
-    # }
+  if (length(files_v) < 1) {
 
     warning("A valid file path should be added
             to create an analysis object!")
@@ -96,11 +100,11 @@ checkFilesInput <- function(file = NA_character_,
 
   } else {
 
-    file_df <- data.frame(
-      "file" = file,
-      "replicate" = replicate,
-      "blank" = blank,
-      row.names = NULL
+    file_df <- data.table(
+      "file" = files_v,
+      "replicate" = replicates,
+      "blank" = blanks,
+      keep.rownames = FALSE
     )
 
     return(file_df)
@@ -128,11 +132,9 @@ checkFilesInput <- function(file = NA_character_,
 #'
 #' @export
 #'
-newAnalysis <- function(file = NA_character_,
-                        replicate = NA_character_,
-                        blank = NA_character_) {
+newAnalysis <- function(file = NA_character_) {
 
-  file_df <- checkFilesInput(file, replicate, blank)
+  file_df <- checkFilesInput(file)
 
   if (is.null(file_df)) return(NULL)
 
@@ -207,14 +209,32 @@ newStreamSet <- function(files = NA_character_,
       object <- new("msData", object)
       object@analyses <- analyses
 
+      object@features@analyses <- data.table(
+        file = filePaths(object),
+        analysis = names(analyses)
+      )
+
+      object@features@analyses$replicate <- file_df$replicate[
+        file_df$file %in% filePaths(object)
+      ]
+
+
+      object@features@analyses$blank <- file_df$blank[
+        file_df$file %in% filePaths(object)
+      ]
+
+      object@features@analyses$class <- ana_type
+
     } else {
 
       warning("More than one file type was added!
               Not possible to assign a set sub-class")
+
       return(NULL)
     }
 
   # TODO add other else if() conditions for other file types
+
   } else {
 
     warning("More than one file type was added!

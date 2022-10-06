@@ -49,8 +49,6 @@ setClass("msAnalysis",
   slots = c(
     analysis = "character",
     file = "character",
-    replicate = "character",
-    blank = "character",
     metadata = "list",
     spectra = "data.table",
     chromatograms = "data.table",
@@ -60,8 +58,6 @@ setClass("msAnalysis",
   prototype = list(
     analysis = NA_character_,
     file = NA_character_,
-    replicate = NA_character_,
-    blank = NA_character_,
     metadata = list(),
     spectra = data.table(),
     chromatograms = data.table(),
@@ -88,8 +84,6 @@ setMethod("show", "msAnalysis", function(object) {
   cat(
     "  Class          ", is(object), "\n",
     "  Name           ", object@analysis, "\n",
-    "  Replicate      ", object@replicate, "\n",
-    "  Blank          ", object@blank, "\n",
     "  Polarity       ", paste(object@metadata$polarity, collapse = ", "), "\n",
     "  File           ", object@file, "\n",
     "  Levels         ", paste(object@metadata$ms_levels, collapse = ", "), " \n",
@@ -147,8 +141,8 @@ setMethod("analysisInfo", "msAnalysis", function(obj) {
   return(data.frame(
     "path" = dirname(obj@file),
     "analysis" = obj@analysis,
-    "group" = obj@replicate,
-    "blank" = obj@blank,
+    "group" = obj@analysis,
+    "blank" = "",
     "class" = is(obj))
   )
 })
@@ -166,8 +160,9 @@ setMethod("analysisTable", "msAnalysis", function(object) {
   return(data.table(
     "file" = object@file,
     "analysis" = object@analysis,
-    "replicate" = object@replicate,
-    "blank" = object@blank)
+    "replicate" = object@analysis,
+    "blank" = NA_character_),
+    "class" = is(object)
   )
 })
 
@@ -184,76 +179,6 @@ setMethod("analysisNames", "msAnalysis", function(object) {
   names(ana) <- ana
   return(ana)
 
-})
-
-#### replicateNames ------------------------------------------------------------
-
-#' @describeIn msAnalysis getter for the replicate name.
-#'
-#' @export
-#'
-#' @aliases replicateNames,msAnalysis,msAnalysis-method
-#'
-setMethod("replicateNames", "msAnalysis", function(object) {
-  rep <- object@replicate
-  names(rep) <- analysisNames(object)
-  return(rep)
-})
-
-#### replicateNames<- ----------------------------------------------------------
-
-#' @describeIn msAnalysis setter for analysis replicate name.
-#'  The \code{value} is a character string with analysis replicate name.
-#'
-#' @param value A character string applicable to the respective method.
-#'
-#' @export
-#'
-#' @aliases replicateNames<-,msAnalysis,msAnalysis-method
-#'
-setMethod("replicateNames<-",
-          signature("msAnalysis", "ANY"), function(object, value) {
-
-  if (length(value) != 1) {
-    warning("Length of value must be one.")
-    return(object)
-  }
-  object@replicate <- unname(value)
-  return(object)
-})
-
-#### blankReplicateNames -------------------------------------------------------
-
-#' @describeIn msAnalysis getter for associated blank replicate name.
-#'
-#' @export
-#'
-#' @aliases blankReplicateNames,msAnalysis,msAnalysis-method
-#'
-setMethod("blankReplicateNames", "msAnalysis", function(object) {
-  blk <- object@blank
-  names(blk) <- analysisNames(object)
-  return(blk)
-})
-
-#### blankReplicateNames<- -----------------------------------------------------
-
-#' @describeIn msAnalysis setter for associated blank replicate.
-#' The \code{value} is a character string with associated blank replicate name.
-#'
-#' @export
-#'
-#' @aliases blankReplicateNames<-,msAnalysis,msAnalysis-method
-#'
-setMethod("blankReplicateNames<-",
-          signature("msAnalysis", "ANY"), function(object, value) {
-
-  if (length(value) != 1) {
-    warning("Length of value must be one.")
-    return(object)
-  }
-  object@blank <- unname(value)
-  return(object)
 })
 
 #### getMetadata ---------------------------------------------------------------
@@ -395,12 +320,12 @@ setMethod("loadRawData", "msAnalysis", function(object,
                                                 minIntensityMS1 = 0,
                                                 minIntensityMS2 = 0) {
 
-  lvs <- getMetadata(object, "ms_levels")$ms_levels
+  levels <- getMetadata(object, "ms_levels")$ms_levels
 
   rd_list <- msAnalysis_loadRawData(
     fl = filePaths(object),
     spectra = TRUE,
-    level = lvs,
+    levels = levels,
     rtr = NULL,
     minIntensityMS1 = minIntensityMS1,
     minIntensityMS2 = minIntensityMS2,
@@ -483,21 +408,20 @@ setMethod("EICs", "msAnalysis", function(object,
   if (!hasLoadedSpectra(object)) {
     spec <- msAnalysis_loadRawData(
       fl = filePaths(object),
-      chroms = FALSE, level = 1, rtr = rtr
+      chroms = FALSE, levels = 1, rtr = rtr
     )
 
     spec <- spec$spectra
   } else {
     spec <- spectra(object)
-    spec <- spec[lv == 1, ]
-    spec <- spec[, .(scan, lv, rt, mz, intensity)]
+    spec <- spec[level == 1, ]
+    spec <- spec[, .(scan, level, rt, mz, intensity)]
   }
 
   spec <- list(as.data.frame(spec))
   names(spec) <- analysisNames(object)
 
   targets$analysis <- analysisNames(object)
-  targets$replicate <- replicateNames(object)
 
   eics <- rcpp_extract_eics(spec = spec, targets = targets)
 
@@ -505,7 +429,7 @@ setMethod("EICs", "msAnalysis", function(object,
 
   if (nrow(eics) > 0) {
     eics <- eics[, .(intensity = sum(intensity)),
-                 by = c("analysis", "replicate","id", "rt")]
+                 by = c("analysis","id", "rt")]
   }
 
   return(eics)
@@ -587,8 +511,8 @@ setMethod("TICs", "msAnalysis", function(object) {
     tic <- tic[, .(id, rt, intensity)]
   }
 
-  tic[, `:=`(analysis = analysisNames(object), replicate = replicateNames(object))]
-  setcolorder(tic, c("analysis", "replicate", "id", "rt", "intensity"))
+  tic[, `:=`(analysis = analysisNames(object))]
+  setcolorder(tic, c("analysis", "id", "rt", "intensity"))
 
   if (max(tic$rt) < 120) tic[, rt := rt * 60]
   tic <- tic[intensity > 0, ]
@@ -644,12 +568,12 @@ setMethod("XICs", "msAnalysis", function(object,
   if (!hasLoadedSpectra(object)) {
     spec <- msAnalysis_loadRawData(
       fl = filePaths(object),
-      chroms = FALSE, level = 1, rtr = rtr)
+      chroms = FALSE, levels = 1, rtr = rtr)
     spec <- spec$spectra
   } else {
     spec <- spectra(object)
-    spec <- spec[lv == 1, ]
-    spec <- spec[, .(index, scan, lv, rt, mz, intensity)]
+    spec <- spec[level == 1, ]
+    spec <- spec[, .(index, scan, level, rt, mz, intensity)]
   }
 
   spec <- list(as.data.frame(spec))

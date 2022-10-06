@@ -16,7 +16,9 @@ msData_validity <- function(object) {
     valid <- FALSE
   }
 
-  blks <- na.omit(blankReplicateNames(object))
+  blks <- blankReplicateNames(object)
+  blks[blks %in% ""] <- NA_character_
+  blks <- na.omit(blks)
   if (length(blks) > 0) {
     if (FALSE %in% (blks %in% replicateNames(object))) {
       warning("Blank replicates not present in analyses set!")
@@ -76,8 +78,8 @@ setMethod("show", "msData", function(object) {
   if (length(object@analyses) > 0) {
     tb <- data.table(
       analysis = analysisNames(object),
-      replicate = sapply(object@analyses, function(x) x@replicate),
-      blank = sapply(object@analyses, function(x) x@blank),
+      replicate = replicateNames(object),
+      blank = blankReplicateNames(object),
       class = sapply(object@analyses, function(x) is(x))
     )
 
@@ -117,10 +119,11 @@ setMethod("analysisInfo", "msData", function(obj) {
   temp <- data.frame(
     "path" = sapply(obj@analyses, function(x) dirname(x@file)),
     "analysis" = sapply(obj@analyses, function(x) x@analysis),
-    "group" = sapply(obj@analyses, function(x) x@replicate),
-    "blank" = sapply(obj@analyses, function(x) x@blank),
+    "group" = replicateNames(object),
+    "blank" = blankReplicateNames(object),
     "class" = sapply(obj@analyses, function(x) is(x)),
-    "file" = sapply(obj@analyses, function(x) x@file))
+    "file" = filePaths(object)
+  )
 
   rownames(temp) <- seq_len(nrow(temp))
   return(temp)
@@ -137,10 +140,11 @@ setMethod("analysisInfo", "msData", function(obj) {
 #'
 setMethod("analysisTable", "msData", function(object) {
   temp <- data.table(
-    "file" = sapply(object@analyses, function(x) x@file),
+    "file" = filePaths(object),
     "analysis" = sapply(object@analyses, function(x) x@analysis),
-    "replicate" = sapply(object@analyses, function(x) x@replicate),
-    "blank" = sapply(object@analyses, function(x) x@blank)
+    "replicate" = replicateNames(object),
+    "blank" = blankReplicateNames(object),
+    "class" = sapply(object@analyses, function(x) is(x))
   )
   rownames(temp) <- seq_len(nrow(temp))
   return(temp)
@@ -164,7 +168,10 @@ setMethod("filePaths", "msData", function(object) sapply(object@analyses, functi
 #'
 #' @aliases analysisNames,msData,msData-method
 #'
-setMethod("analysisNames", "msData", function(object) sapply(object@analyses, function(x) x@analysis))
+setMethod("analysisNames", "msData", function(object) {
+  return(sapply(object@analyses, function(x) x@analysis))
+})
+
 
 #### replicateNames ----------------------------------------------------------
 
@@ -174,7 +181,11 @@ setMethod("analysisNames", "msData", function(object) sapply(object@analyses, fu
 #'
 #' @aliases replicateNames,msData,msData-method
 #'
-setMethod("replicateNames", "msData", function(object) sapply(object@analyses, function(x) x@replicate))
+setMethod("replicateNames", "msData", function(object) {
+  replicates <- object@features@analyses$replicate
+  names(replicates) <- object@features@analyses$analysis
+  return(replicates)
+})
 
 #### replicateNames<- --------------------------------------------------------
 
@@ -197,8 +208,8 @@ setMethod("replicateNames<-", signature("msData", "ANY"), function(object, value
     return(object)
   }
 
-  names(value) <- ana
-  for (a in ana) object@analyses[[a]]@replicate <- unname(value[a])
+  object@features@analyses$replicate <- value
+
   return(object)
 })
 
@@ -210,7 +221,11 @@ setMethod("replicateNames<-", signature("msData", "ANY"), function(object, value
 #'
 #' @aliases blankReplicateNames,msData,msData-method
 #'
-setMethod("blankReplicateNames", "msData", function(object) sapply(object@analyses, function(x) x@blank))
+setMethod("blankReplicateNames", "msData", function(object) {
+  blanks <- object@features@analyses$blank
+  names(blanks) <- object@features@analyses$analysis
+  return(blanks)
+})
 
 #### blankReplicateNames<- ------------------------------------------------------------
 
@@ -233,8 +248,8 @@ setMethod("blankReplicateNames<-", signature("msData", "ANY"), function(object, 
     return(object)
   }
 
-  names(value) <- ana
-  for (a in ana) object@analyses[[a]]@blank <- unname(value[a])
+  object@features@analyses$blank <- value
+
   return(object)
 })
 
@@ -347,7 +362,12 @@ setMethod("addMetadata", "msData", function(object,
 #'
 #' @aliases addAnalyses,msData,msData-method
 #'
-setMethod("addAnalyses", "msData", function(object, analysisList = NULL) {
+setMethod("addAnalyses", "msData", function(object,
+                                            analysisList = NULL,
+                                            replicates = NA_character_,
+                                            blanks = NA_character_) {
+  # placer for var
+  analysis <- NULL
 
   if (!is.null(analysisList)) {
 
@@ -374,10 +394,26 @@ setMethod("addAnalyses", "msData", function(object, analysisList = NULL) {
         return(object)
       }
 
+      file_df <- checkFilesInput(
+        files = sapply(analysisList, function(x) filePaths(x)),
+        replicates, blanks
+      )
+      file_df$analysis <- sapply(analysisList, function(x) analysisNames(x))
+      file_df$class <- cls
+
+      old_file_df <- analysisTable(object)
+
+      setcolorder(file_df, colnames(old_file_df))
+
+      new_file_df <- rbind(old_file_df, file_df)
+      setorder(new_file_df, analysis)
+
+
       object@analyses <- c(object@analyses, analysisList)
       object@analyses <-  object@analyses[order(names(object@analyses))]
 
       object@features <- new("msFeatures")
+      object@features@analyses <- copy(new_file_df)
 
       object@analyses <- lapply(object@analyses, function(x) {
         if (nrow(x@peaks) > 0) {
@@ -388,6 +424,8 @@ setMethod("addAnalyses", "msData", function(object, analysisList = NULL) {
 
       return(object)
     }
+
+    # TODO add possibility to add file paths also in addAnalyses
   }
 
   warning("No msAnalysis object given to add!")
@@ -501,8 +539,8 @@ setMethod("EICs", "msData", function(object,
       temp <- temp$spectra
     } else {
       temp <- spectra(x)
-      temp <- temp[lv == 1, ]
-      temp <- temp[, .(index, scan, lv, rt, mz, intensity)]
+      temp <- temp[level == 1, ]
+      temp <- temp[, .(index, scan, level, rt, mz, intensity)]
     }
     return(temp)
   }, rtr = rtr)
@@ -578,12 +616,24 @@ setMethod("plotEICs", "msData", function(object,
 #'
 setMethod("TICs", "msData", function(object, analyses = NULL) {
 
+  analysis <- NULL
+  replicate <- NULL
+
   analyses <- checkAnalysesArgument(object, analyses)
   if (is.null(analyses)) return(data.table())
 
-  tics <- lapply(object@analyses[analyses], function(x) TICs(x))
+  tics <- lapply(object@analyses[analyses], function(x, object) {
+   temp <- TICs(x)
+   if (nrow(temp) > 0) {
+    temp$replicate <- replicateNames(object)[analysisNames(x)]
+    temp <- select(temp, analysis, replicate, everything())
+   }
 
-  return(rbindlist(tics))
+  }, object = object)
+
+  tics <- rbindlist(tics)
+
+  return(tics)
 })
 
 ### plotTICs -------------------------------------------------------------
@@ -641,13 +691,13 @@ setMethod("XICs", "msData", function(object,
     if (!hasLoadedSpectra(x)) {
       temp <- msAnalysis_loadRawData(
         fl = filePaths(x),
-        chroms = FALSE, level = 1, rtr = rtr
+        chroms = FALSE, levels = 1, rtr = rtr
       )
       temp <- temp$spectra
     } else {
       temp <- spectra(x)
-      temp <- temp[lv == 1, ]
-      temp <- temp[, .(index, scan, lv, rt, mz, intensity)]
+      temp <- temp[level == 1, ]
+      temp <- temp[, .(index, scan, level, rt, mz, intensity)]
     }
     return(temp)
   }, rtr = rtr)
@@ -1160,12 +1210,13 @@ setMethod("plotPeaks", "msData", function(object,
     return(NULL)
   }
 
-  eic <- lapply(obj@analyses, function(x, pks_tars) {
+  eic <- lapply(obj@analyses, function(x, pks_tars, object) {
     tar <- pks_tars[analysis %in% analysisNames(x), ]
     if (nrow(tar) < 1) return(data.table())
     eic <- EICs(x, mz = tar)
+    eic$replicate <- replicateNames(object)[analysisNames(x)]
     return(eic)
-  }, pks_tars = pks_tars)
+  }, pks_tars = pks_tars, object = object)
 
   eic <- rbindlist(eic)
 
@@ -1334,9 +1385,11 @@ setMethod("plotFeatures", "msData", function(object,
   pks_tars$rtmin <- min(pks_tars$rtmin) - 60
   pks_tars$rtmax <- max(pks_tars$rtmax) + 60
 
-  eic <- lapply(object@analyses, function(x, pks_tars) {
+  eic <- lapply(object@analyses, function(x, pks_tars,object) {
     eic <- EICs(x, mz = pks_tars[analysis %in% analysisNames(x), ])
-  }, pks_tars = pks_tars)
+    eic$replicate <- replicateNames(object)[analysisNames(x)]
+    return(eic)
+  }, pks_tars = pks_tars, object = object)
 
   eic <- rbindlist(eic)
 
