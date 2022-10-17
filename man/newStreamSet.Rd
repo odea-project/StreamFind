@@ -45,17 +45,17 @@ in the given \code{path} and open a new R session.}
 }
 \value{
 A \linkS4class{streamSet} with a subclass depending on the added
-file formats. For instance, an \linkS4class{msData} is returned for
-\emph{mzML} and \emph{mzXML} files. when files from different types are mixed
-a subclass is not defined, returning the \linkS4class{streamSet} object
-with the list of file paths in the \code{analyses} slot.
+file formats.
 }
 \description{
-Creates a new \pkg{streamFind} set of analyses.
+Creates a \linkS4class{streamSet} with analyses.
 }
 \note{
 The format of the files added will dictate the subclass of
 the \linkS4class{streamSet}. For instance, \emph{.mzML} or \emph{.mzXML}
 files will lead to the subclass \linkS4class{msData}, which will contain
-an \linkS4class{msAnalysis} for each file added.
+an \linkS4class{msAnalysis} for each file added. when files from different
+types are mixed a subclass is not defined, returning the
+\linkS4class{streamSet} object with the list of file paths in the
+\code{analyses} slot.
 }

@@ -14,9 +14,10 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, fig.align = "center", fig.width = 9, cache = TRUE)
 ```
-<br> <br>  
 
-***
+<br> <br>
+
+------------------------------------------------------------------------
 
 ```{r libraries, include=FALSE, cache=FALSE}
 library(knitr)
@@ -39,7 +40,6 @@ library(xcms)
 library(patRoon)
 ```
 
-
 # Objective
 
 The streamFind package is a backend (code based) and frontend ([shiny](https://shiny.rstudio.com/) app) platform for assembly of modular workflows to support spectrometric and spectroscopic data processing. The major focus of streamFind is data processing for environmental and quality studies. The streamFind package aims to stimulate the use of advanced data analysis (e.g., non-target screening, statistical analysis, etc.) in routine studies, promoting standardization of data processing and structure and easing the retrospective evaluation of data. The streamFind package can be used by academics but also by technicians due to the comprehensive documentation and well categorized set of integrated functionalities (modules). This handbook focuses on describing and demonstrating the backend of the streamFind package.
@@ -51,26 +51,26 @@ For installation of the streamFind package, it is recommended to firstly ensure 
 ## Install dependencies
 
 ### R and RTools
- 
-[R](https://cran.r-project.org/) and [RTools](https://cran.r-project.org/bin/windows/Rtools/) are essential dependencies. The `r R.version.string` can be obtained in https://cran.r-project.org/. The RTools can be downloaded in https://cran.r-project.org/bin/windows/Rtools/. Make sure to download the right version for the R version installed. Installation instructions are given in both sources.
+
+[R](https://cran.r-project.org/) and [RTools](https://cran.r-project.org/bin/windows/Rtools/) are essential dependencies. The `r R.version.string` can be obtained in <https://cran.r-project.org/>. The RTools can be downloaded in <https://cran.r-project.org/bin/windows/Rtools/>. Make sure to download the right version for the R version installed. Installation instructions are given in both sources.
 
 ### Third party software
 
 The external third party dependencies recommended are listed in the section [other dependencies](https://rickhelmus.github.io/patRoon/handbook_bd/manual-installation.html#other-dependencies) from the patRoon [handbook](https://rickhelmus.github.io/patRoon/handbook_bd/manual-installation.html#r-prerequisites). Below we list the mandatory and really recommended software and resources.
 
-* [ProteoWizard](https://proteowizard.sourceforge.io/), required for conversion of vendor MS formats to mzML/mzXML;  
-* [Java JDK](https://www.oracle.com/java/technologies/downloads/), mandatory for patRoon when plotting structure using MetFrag;  
-* [OpenMS](https://www.openms.de/downloads/); esternal tool for peak picking, grouping and alignment;  
-* [MetFrag CL](http://ipb-halle.github.io/MetFrag/projects/metfragcl/), used for formula annotation in patRoon;  
-* [PubChemLite](https://zenodo.org/record/6503754#.YtqxE3bP1hE), database used with MetFrag in patRoon;  
-* [SIRIUS](https://bio.informatik.uni-jena.de/software/sirius/), tool for peak picking and formula annotation in patRoon;    
-* [BioTransformer](https://bitbucket.org/djoumbou/biotransformer/downloads/), used for prediction of transformation products in patRoon;  
-* [SAFD](https://bitbucket.org/SSamanipour/safd.jl/src/master/), tool for peak picking with data in profile mode;  
-* [Open Babel](http://openbabel.org/wiki/Main_Page), used in patRoon for validation of chemicals properties (e.g., InChI and formulae);  
+-   [ProteoWizard](https://proteowizard.sourceforge.io/), required for conversion of vendor MS formats to mzML/mzXML;\
+-   [Java JDK](https://www.oracle.com/java/technologies/downloads/), mandatory for patRoon when plotting structure using MetFrag;\
+-   [OpenMS](https://www.openms.de/downloads/); esternal tool for peak picking, grouping and alignment;\
+-   [MetFrag CL](http://ipb-halle.github.io/MetFrag/projects/metfragcl/), used for formula annotation in patRoon;\
+-   [PubChemLite](https://zenodo.org/record/6503754#.YtqxE3bP1hE), database used with MetFrag in patRoon;\
+-   [SIRIUS](https://bio.informatik.uni-jena.de/software/sirius/), tool for peak picking and formula annotation in patRoon;\
+-   [BioTransformer](https://bitbucket.org/djoumbou/biotransformer/downloads/), used for prediction of transformation products in patRoon;\
+-   [SAFD](https://bitbucket.org/SSamanipour/safd.jl/src/master/), tool for peak picking with data in profile mode;\
+-   [Open Babel](http://openbabel.org/wiki/Main_Page), used in patRoon for validation of chemicals properties (e.g., InChI and formulae);
 
 ### R packages
 
-The following code lines are adapted from the patRoon [handbook](https://rickhelmus.github.io/patRoon/handbook_bd/manual-installation.html#r-prerequisites) to ensure that both patRoon and other mutual R dependencies are installed properly.
+The following code lines are from the patRoon [handbook](https://rickhelmus.github.io/patRoon/handbook_bd/manual-installation.html#r-prerequisites) to ensure that both patRoon and other mutual R dependencies are installed properly.
 
 ```{r r-packages, eval=FALSE}
 install.packages(c("BiocManager", "remotes"))
@@ -99,7 +99,7 @@ remotes::install_github("KelseyChetnik/MetaClean")
 remotes::install_github("rickhelmus/patRoon", upgrade = "never", dependencies = TRUE)
 ```
 
-After installation of the patRoon R package, the location of each third party software should be given in an `.Rprofile` file as suggested in section [other dependencies](https://rickhelmus.github.io/patRoon/handbook_bd/manual-installation.html#other-dependencies) the patRoon [handbook](https://rickhelmus.github.io/patRoon/handbook_bd/manual-installation.html#r-prerequisites). For facilitation the same code lines are given below. The function `patRoon::verifyDependencies()` from patRoon can be used to verify if all dependencies are found.
+After installation of the patRoon R package, the location of each third party software should be given in an `.Rprofile` file as suggested in section [other dependencies](https://rickhelmus.github.io/patRoon/handbook_bd/manual-installation.html#other-dependencies) of the patRoon [handbook](https://rickhelmus.github.io/patRoon/handbook_bd/manual-installation.html#r-prerequisites). For facilitation the same code lines are given below. The function `patRoon::verifyDependencies()` from patRoon can be used to verify if all dependencies are found.
 
 ```{r options-third-party-software, eval=FALSE}
 options(patRoon.path.pwiz = "C:/ProteoWizard") # location of ProteoWizard installation folder
@@ -115,20 +115,21 @@ options(patRoon.path.obabel = "C:/Program Files/OpenBabel-3.0.0") # directory wi
 
 ## Install streamFind
 
-The streamFind package can be installed from the GitHub repository https://github.com/ricardobachertdacunha/streamFind with the following code line.
+The streamFind package can be installed from the GitHub repository <https://github.com/ricardobachertdacunha/streamFind> with the following code line.
 
 ```{r install-streamfind, eval=FALSE}
 remotes::install_github("ricardobachertdacunha/streamFind", dependencies = TRUE)
 ```
- 
+
 ## Docker image
 
+To be done.
 
 # Resources
 
 ## Files
 
-The streamFind package includes example data files via the streamFindData R package. Once installed the full file paths of MS data files can be obtained as shown below. Alternatively, the files can be obtained directly from folder `system.file(package = "streamFindData", dir = "extdata")`. The files available are described in Table \@ref(tab:description-files). Note, the MS files (.mzML) were trimmed with the function `trimSpectraFilesMZR` to reduce their size. The centroided Agilent Q-TOF files were trimmed with retention time between 900 and 1350 seconds, _m/z_ for MS1 data between 200 and 450 Da and _m/z_ for MS2 between 35 and 450 Da. Additionally, MS1 and MS2 traces below 100 and 50 counts were removed, respectively. The profile Agilent Q-TOF files were trimmed with retention time between 1000 and 1200 seconds, _m/z_ for MS1 data between 200 and 300 Da and _m/z_ for MS2 between 35 and 300 Da. Additionally, MS1 and MS2 traces below 1 count were removed to exclude empty spectra. The files are used within the document for demonstration of the backend.
+The streamFind package includes example data files via the streamFindData R package. Once installed the full file paths of MS data files can be obtained as shown below. Alternatively, the files can be obtained directly from folder `system.file(package = "streamFindData", dir = "extdata")`. The files available are described in Table \@ref(tab:description-files). Note, the MS files (.mzML) were trimmed with the function `trimSpectraFilesMZR` to reduce their size. The centroided Agilent Q-TOF files were trimmed with retention time between 900 and 1350 seconds, *m/z* for MS1 data between 200 and 450 Da and *m/z* for MS2 between 35 and 450 Da. Additionally, MS1 and MS2 traces below 100 and 50 counts were removed, respectively. The profile Agilent Q-TOF files were trimmed with retention time between 1000 and 1200 seconds, *m/z* for MS1 data between 200 and 300 Da and *m/z* for MS2 between 35 and 300 Da. Additionally, MS1 and MS2 traces below 1 count were removed to exclude empty spectra. The files are used within the document for demonstration of the backend.
 
 ```{r resource-files, cache=FALSE}
 
@@ -175,7 +176,7 @@ knitr::kable(df_files_desc, caption = "Files included in the streamFind package.
 
 ## Spiked chemicals
 
-The chemicals spiked in the files are described below in Table \@ref(tab:show-table-chemicals). The internal standards (IS) are spiked to all Agilent Q-TOF files. The chemical standards (S) were only spiked for the first 6  Agilent Q-TOF files not to the blanks nor wastewater analysis files. Note that not all IS and S are visible in the profile Agilent Q-TOF files as a narrower trimming was applied.
+The chemicals spiked in the files are described below in Table \@ref(tab:show-table-chemicals). The internal standards (IS) are spiked to all Agilent Q-TOF files. The chemical standards (S) were only spiked for the first 6 Agilent Q-TOF files not to the blanks nor wastewater analysis files. Note that not all IS and S are visible in the profile Agilent Q-TOF files as a narrower trimming was applied.
 
 ```{r load-table-chemicals}
 db <- paste0(r_path, "/spiked_chemicals_hrms.csv")
@@ -184,21 +185,21 @@ db <- data.table::fread(db)
 
 ```{r show-table-chemicals, echo=FALSE}
 db$ionization <- "positive"
-db[, `:=`("mz_pos" = neutralMass + 1.0073, "mz_neg" = neutralMass - 1.0073 )]
+db[, `:=`("mz_pos" = mass + 1.0073, "mz_neg" = mass - 1.0073 )]
 db[grepl("neg", db$comment), ionization := "both"]
-data.table::setnames(db, "mixIUTA", "tag")
+data.table::setnames(db, "mix_id", "tag", skip_absent = TRUE)
 db[tag %in% 1, tag := "CS"]
 db[, in_file := "1-6"]
 db[tag %in% "IS", in_file := "1-24"]
 
-knitr::kable(db[, .(name, CAS, formula, neutralMass, rt, ionization, tag, in_file)], caption = "Chemical standards spiked.") %>%
+knitr::kable(db[, .(name, formula, mass, rt, ionization, tag, in_file)], caption = "Chemical standards spiked.") %>%
   kable_styling(font_size = 11, bootstrap_options = c("striped", "hover", "responsive"), fixed_thead = TRUE) %>%
   scroll_box(width = "100%", height = "600px")
 ```
 
 # Objects
 
-The streamFind package uses S4 class objects (e.g., _streamSet_, _msData_, _msAnalysis_, etc.) for structuring data. The S4 classes and their main getter and setter methods are presented and exemplified in this section. An overview of the S4 classes and their hierarchy is presented in Figure \@ref(fig:classes-overview) using MS analyses as an example. Other data types, such as from UV and Raman analyses, would lead to different classes (e.g., _uvData_ and _uvAnalysis_ and _ramanData_ and _ramanAnalysis_, respectively) but the hierarchy is similar as shown for MS data.
+The streamFind package uses S4 class objects (e.g., *streamSet*, *msData*, *msAnalysis*, etc.) for structuring data. The S4 classes and their main getter and setter methods are presented and exemplified in this section. An overview of the S4 classes and their hierarchy is presented in Figure \@ref(fig:classes-overview) using MS analyses as an example. Other data types, such as from UV and Raman analyses, would lead to different classes (e.g., *uvData* and *uvAnalysis* and *ramanData* and *ramanAnalysis*, respectively) but the hierarchy is similar as shown for MS data.
 
 ```{r classes-overview, echo=FALSE, fig.cap="Overview of the S4 classes and their hierarchy with emphasis on MS analyses.", out.width="100%"}
 knitr::include_graphics(paste0(getwd(), "/hb_backend_figures/classes_overview.png"))
@@ -208,28 +209,27 @@ knitr::include_graphics(paste0(getwd(), "/hb_backend_figures/classes_overview.pn
 
 The nomenclature listed below is consistently applied throughout the objects and arguments of functionalities in the streamFind package. Other less relevant terms are used but not listed. For further information please consult the specific documentation of each object or functionality when required using the `?x` method, where x is the name of the S4 class, S4 method or function.
 
-
-* _streamSet_ refers to the broader S4 class applied in the streamFind package and holds basic information for an analysis set, see \@ref(streamset-class);
-* _msData_ refers to the S4 subclass of _streamSet_ when MS analyses (i.e., MS files) are added to the set, see \@ref(msdata-class);
-* _msAnalysis_ refers to the S4 class of the object generated for each MS file added to the _msData_ object in the slot "analyses";
-* `setInfo` is the method to obtain the basic information (i.e., title, date and path) of a _streamSet_ object;
-* `analyses` is the name of the slot holding the analyses (as list) and is also a method to get the analysis names in the _streamSet_;
-* `replicate` is the name of an analysis replicate group and the method to get the replicate names;
-* `blank` is the name of a blank analysis replicate group to be used for blank (blind) subtraction and the method to get blank replicate names;
-* __traces__ corresponds to a raw data signal (e.g., mass trace in MS data) obtained from a given analysis file;
-* `spectra` for MS analyses is the method to get a table with a spectrum for each cycle time (i.e., retention time);
-* __EIC__ is an extracted ion chromatogram (retention time vs intensity) and can be obtained with the method `EICs`;
-* __TIC__ is a total ion chromatograms (retention time vs intensity) and can be obtained with the method `TICs`;
-* __XIC__ is a three dimensional ion chromatogram (_m/z_ vs retention time vs intensity) and can be obtained with the method `XICs`;
-* __peak__ corresponds to a cluster of traces (e.g., integrated chromatographic MS peak) within an analysis file and can be accessed with the method `peaks`; 
-* __feature__ corresponds to a group of corresponding peaks across analysis files/analyses and can be accessed with the method `features`;
-* __MS2__ corresponds to second order fragmentation data as acquired in tandem MS or MS/MS mode and can be accessed with the method `MS2s`. 
+-   *streamSet* refers to the broader S4 class applied in the streamFind package and holds basic information for an analysis set, see \@ref(streamset-class);
+-   *msData* refers to the S4 subclass of *streamSet* when MS analyses (i.e., MS files) are added to the set, see \@ref(msdata-class);
+-   *msAnalysis* refers to the S4 class of the object generated for each MS file added to the *msData* object in the slot "analyses";
+-   `setInfo` is the method to obtain the basic information (i.e., title, date and path) of a *streamSet* object;
+-   `analyses` is the name of the slot holding the analyses (as list) and is also a method to get the analysis names in the *streamSet*;
+-   `replicate` is the name of an analysis replicate group and the method to get the replicate names;
+-   `blank` is the name of a blank analysis replicate group to be used for blank (blind) subtraction and the method to get blank replicate names;
+-   **traces** corresponds to a raw data signal (e.g., mass trace in MS data) obtained from a given analysis file;
+-   `spectra` for MS analyses is the method to get a table with a spectrum for each cycle time (i.e., retention time);
+-   **EIC** is an extracted ion chromatogram (retention time vs intensity) and can be obtained with the method `EICs`;
+-   **TIC** is a total ion chromatograms (retention time vs intensity) and can be obtained with the method `TICs`;
+-   **XIC** is a three dimensional ion chromatogram (*m/z* vs retention time vs intensity) and can be obtained with the method `XICs`;
+-   **peak** corresponds to a cluster of traces (e.g., integrated chromatographic MS peak) within an analysis file and can be accessed with the method `peaks`;
+-   **feature** corresponds to a group of corresponding peaks across analysis files/analyses and can be accessed with the method `features`;
+-   **MS2** corresponds to second order fragmentation data as acquired in tandem MS or MS/MS mode and can be accessed with the method `MS2s`.
 
 (...) `r # TODO add chromatograms entry and make method`
 
 ## streamSet class
 
-The set creation is demonstrated below for the three MS files (triplicate, 1 to 3 in \@ref(tab:description-files)) where a set of chemicals were spiked (see \@ref(spiked-chemicals) with tag IS and S). The set path can be assigned as argument but for the example below it was left as default (i.e., the working directory). The initial S4 class created in the `newStreamSet` function is _streamSet_. The subclass is then defined according to the type of files added. Note that multiple file types are not possible as a subclass cannot be defined.
+The set creation is demonstrated below for the three MS files (triplicate, 1 to 3 in \@ref(tab:description-files)) where a set of chemicals were spiked (see \@ref(spiked-chemicals) with tag IS and S). The set path can be assigned as argument but for the example below it was left as default (i.e., the working directory). The initial S4 class created in the `newStreamSet` function is *streamSet*. The subclass is then defined according to the type of files added. Note that multiple file types are not possible as a subclass cannot be defined.
 
 ```{r newstreamset-call, message=FALSE, results='hide'}
 #New streamSet with the files 1 to 3
@@ -238,15 +238,15 @@ sp1 <- newStreamSet(files = files[1:3], title = "Example_01")
 
 ## msData class
 
-Because the added files were all with mzML format (i.e., MS files), the subclass is directly defined as _msData_. The structure for further processing data is then set for MS data. Other data formats/structure will lead to different sub classes (e.g., _uvData_ and _ramanData_) but is not yet implemented within the streamFind package.
+Because the added files were all with mzML format (i.e., MS files), the subclass is directly defined as *msData*. The structure for further processing data is then set for MS data. Other data formats/structure will lead to different sub classes (e.g., *uvData* and *ramanData*) but is not yet implemented within the streamFind package.
 
 ```{r msdata_streamset_classes}
 is(sp1)
 ```
 
-The _msData_ structure includes the _streamSet_ class plus the `features` slot. The title, date and path slots correspond to the set title, creation date and directory in disk, respectively. The analyses slot is a list with a _msAnalysis_ S4 class object per MS file added. The structure of the _msAnalysis_ class is described in the next sub-chapter. The `features` slot is a _msFeatures_ S4 class object to hold the results from alignment, grouping and annotation of peaks across analyses. Further information for _msAnalysis_ is given in the next sub-chapter (\@ref(msanalysis-class)) and for _msFeatures_ is given in the sub-chapter \@ref(msfeatures-class), after creation of features by performing alignment and grouping of peaks across analyses.
+The *msData* structure includes the *streamSet* class plus the `features` slot. The title, date and path slots correspond to the set title, creation date and directory in disk, respectively. The analyses slot is a list with a *msAnalysis* S4 class object per MS file added. The structure of the *msAnalysis* class is described in the next sub-chapter. The `features` slot is a *msFeatures* S4 class object to hold the results from alignment, grouping and annotation of peaks across analyses. Further information for *msAnalysis* is given in the next sub-chapter (\@ref(msanalysis-class)) and for *msFeatures* is given in the sub-chapter \@ref(msfeatures-class), after creation of features by performing alignment and grouping of peaks across analyses.
 
-* _msData_ structure:
+-   *msData* structure:
 
 ```{r structure_msdata}
 str(sp1, max.level = 2)
@@ -254,11 +254,11 @@ str(sp1, max.level = 2)
 
 ## msAnalysis class
 
-The _msAnalysis_ class is structured as shown below. Note that the S4 method `getAnalyses` for _msData_ was used to obtain the _msAnalysis_ of the first analysis as defined by the second argument. In general, access to raw data (i.e., traces and chromatograms) as well as respective plotting S4 methods can be applied to both the _msAnalysis_ and _msData_ (as described in \@ref(accessing-raw-data)). 
+The *msAnalysis* class is structured as shown below. Note that the S4 method `getAnalyses` for *msData* was used to obtain the *msAnalysis* of the first analysis as defined by the second argument. In general, access to raw data (i.e., traces and chromatograms) as well as respective plotting S4 methods can be applied to both the *msAnalysis* and *msData* (as described in \@ref(accessing-raw-data)).
 
-The slot analysis corresponds to the analysis name. The metadata slot is a list of objects with informative entries of the analysis file. The metadata list can be expanded with additional information about the analysis/sample (e.g., sample location, weather conditions, process sensor data, etc.). The slot parameters is used to store processing steps (e.g., peak picking) as _settings_ S4 class objects, including the processing step name/ID, the algorithm used and the respective settings applied. The parameters can be used for history track but also for re-run the processing steps when required. The spectra and chromatograms slots are used to store low level data (i.e., mass traces either in profile or centroided modes) from the MS files. Finally, the peaks slot is used to store the chromatographic peaks after peak picking. As no other processing step was applied the spectra, chromatograms and peaks tables in the _msAnalysis_ are empty for now.
+The slot analysis corresponds to the analysis name. The metadata slot is a list of objects with informative entries of the analysis file. The metadata list can be expanded with additional information about the analysis/sample (e.g., sample location, weather conditions, process sensor data, etc.). The slot parameters is used to store processing steps (e.g., peak picking) as *settings* S4 class objects, including the processing step name/ID, the algorithm used and the respective settings applied. The parameters can be used for history track but also for re-run the processing steps when required. The spectra and chromatograms slots are used to store low level data (i.e., mass traces either in profile or centroided modes) from the MS files. Finally, the peaks slot is used to store the chromatographic peaks after peak picking. As no other processing step was applied the spectra, chromatograms and peaks tables in the *msAnalysis* are empty for now.
 
- * _msAnalysis_ structure:  
+-   *msAnalysis* structure:
 
 ```{r msanalysis_structure}
 a1 <- getAnalyses(sp1, 1)
@@ -267,7 +267,7 @@ str(a1, max.level = 2)
 
 ### Create an msAnalysis
 
-An _msAnalysis_ object can be created without the need of running `newStreamSet`. The method `newAnalysis` can be used for initiating the _msAnalysis_ when a full path of an MS file (i.e., with extension mzML or other MS format) is given. Similar to `newStreamSet`, the format of the file given as file argument dictates the class of the analysis object returned from the `newAnalysis` function.
+An *msAnalysis* object can be created without the need of running `newStreamSet`. The method `newAnalysis` can be used for initiating the *msAnalysis* when a full path of an MS file (i.e., with extension mzML or other MS format) is given. Similar to `newStreamSet`, the format of the file given as file argument dictates the class of the analysis object returned from the `newAnalysis` function.
 
 ```{r create-msanalysis, message=FALSE, results='hide'}
 #creating an msAnalysis object for the 4th file, corresponding to profile MS data
@@ -280,7 +280,7 @@ aProf
 
 ### Add msAnalysis to msData
 
-As the method `getAnalysis` can be used to obtain an _msAnalysis_ from an _msData_ object, the method `addAnalyses` is used to add extra _msAnalysis_ objects to _msData_. Below the files 7 to 9 are added to the already created _msData_ (containing files 1 to 3). Note that both `getAnalyses` and `addAnalyses` can be applied to equivalent classes to _msData_ (i.e., _uvData_ and _ramanData_). Also, note that when adding analyses to an _msData_ object with features (i.e., with peaks grouped across analyses), the _msFeatures_ content is cleared as the grouping is invalidated with new _msAnalysis_ objects.
+As the method `getAnalysis` can be used to obtain an *msAnalysis* from an *msData* object, the method `addAnalyses` is used to add extra *msAnalysis* objects to *msData*. Below the files 7 to 9 are added to the already created *msData* (containing files 1 to 3). Note that both `getAnalyses` and `addAnalyses` can be applied to equivalent classes to *msData* (i.e., *uvData* and *ramanData*). Also, note that when adding analyses to an *msData* object with features (i.e., with peaks grouped across analyses), the *msFeatures* content is cleared as the grouping is invalidated with new *msAnalysis* objects.
 
 ```{r add-msanalysis}
 
@@ -298,9 +298,9 @@ sp1
 
 #### Get metadata
 
-Below, the `getMetadata` S4 method of _msData_ is used to display the metadata. Note, `getMetadata` also works for _msAnalysis_ S4 class as shown below. 
+Below, the `getMetadata` S4 method of *msData* is used to display the metadata. Note, `getMetadata` also works for *msAnalysis* S4 class as shown below.
 
-* get metadata:  
+-   get metadata:
 
 ```{r metadata_structure}
 #metadata of the fourth analyses in the msData
@@ -312,9 +312,9 @@ getMetadata(a1)
 
 #### Add metadata
 
-Additional metadata can be added with the `addMetadata` method for both _msAnalysis_ and _msData_. Note that for _msData_ the metadata input needs to be a list of vectors with the same length as the number of analyses or a data.frame/data.table with the number of rows as the nmumber of analyses, as shown below.
+Additional metadata can be added with the `addMetadata` method for both *msAnalysis* and *msData*. Note that for *msData* the metadata input needs to be a list of vectors with the same length as the number of analyses or a data.frame/data.table with the number of rows as the nmumber of analyses, as shown below.
 
-* add metadata to an _msAnalysis_ object (a1):
+-   add metadata to an *msAnalysis* object (a1):
 
 ```{r add-metadata-msanalysis}
 #as a named vector
@@ -334,7 +334,7 @@ a1 <- addMetadata(a1, metadata = meta_df, overwrite = TRUE)
 getMetadata(a1, which = names(meta_vec))
 ```
 
-* add metadata to an _msData_ object (sp1):
+-   add metadata to an *msData* object (sp1):
 
 ```{r add-metadata-msdata}
 #as a named vector
@@ -374,56 +374,72 @@ getMetadata(sp1, analyses = c(3, 4), which = names(meta_1))
 
 # Accessing raw data
 
-The tools for raw data access and plotting (i.e., spectra and chromatograms) share a target search approach. The data search is based on pre-defined time and mass (inc. _m/z_) targets. For traces (i.e., raw MS mass traces), time (in seconds) and _m/z_ (in Da) ranges are given for accessing and plotting. Access to mass traces is relevant for further development of data processing steps/functions and for visualization of raw data, easing the evaluation of processing steps (e.g., peaks wrongly not found during peak picking).
+The tools for raw data access and plotting (i.e., spectra and chromatograms) share a target search approach. The data search is based on pre-defined time and mass (inc. *m/z*) targets. For traces (i.e., raw MS mass traces), time (in seconds) and *m/z* (in Da) ranges are given for accessing and plotting. Access to mass traces is relevant for further development of data processing steps/functions and for visualization of raw data, easing the evaluation of processing steps (e.g., peaks wrongly not found during peak picking).
 
 ## Defining targets
 
-As aforementioned, access to raw data is based on defining _m/z_ and retention time targets. The function `makeTargets` is used for comprehensively build targets. As shown below for Carbamazepin d10 and Diuron d6, multiple ways can be used to assemble targets but similarly returning a uniform `data.table` class object with a target list. Accessing and plotting S4 methods in streamFind use the `makeTargets` function to collect raw data from the analysis files. Therefore, the arguments `mz`, `rt`, `ppm`, `sec` and `id` are present in most S4 methods for accessing and plotting data as demonstrated in the following sections.
+As aforementioned, access to raw data is based on defining *m/z* and retention time targets. The function `makeTargets` is used for comprehensively build targets. As shown below for Carbamazepin d10 and Diuron d6, multiple ways can be used to assemble targets but similarly returning a uniform `data.table` class object with a target list. Accessing and plotting S4 methods in streamFind use the `makeTargets` function to collect raw data from the analysis files. Therefore, the arguments `mz`, `rt`, `ppm`, `sec` and `id` are present in most S4 methods for accessing and plotting data as demonstrated in the following sections.
 
 ```{r carb-diu}
-carb <- db[name %in% "Carbamazepin d10", .(name, neutralMass, rt)]
-carb$mz <- carb$neutralMass + 1.0073
-carb
+#Carbamazepin-d10 is ionized only in positive mode
+carbamazepin_d10 <- db[name %in% "Carbamazepin-d10", .(name, mass, rt)]
+carbamazepin_d10
 
-diu <- db[name %in% "Diuron d6", .(name, neutralMass, rt)]
-diu$mz <- diu$neutralMass + 1.0073
-diu
+#Diuron-d6 is ionized in both positive and negative modes
+diuron_d6 <- db[name %in% "Diuron-d6", .(name, mass, rt)]
+diuron_d6
 ```
 
 ```{r make_targets}
+carb_pos <- carbamazepin_d10$mass + 1.0073
+carb_rt <- carbamazepin_d10$rt
+diu_pos <- diuron_d6$mass + 1.0073
+diu_rt <- diuron_d6$rt
+
+sec_dev <- 30 #seconds
+ppm_dev <- 20
+
 #case 1
-mz1 <- c(247.1650, 239.0620)
-rt1 <- c(1075, 1157)
+mz1 <- c(carb_pos, diu_pos)
+rt1 <- c(carb_rt, diu_rt)
 id1 <- c("target1", "target2")
-targets1 <- makeTargets(mz = mz1, rt = rt1, ppm = 20, sec = 30, id = id1)
+targets1 <- makeTargets(mz = mz1, rt = rt1, ppm = ppm_dev, sec = sec_dev, id = id1)
 
 targets1
 
 #case 2
-mz2 <- data.frame(mzmin = c(247.1601, 239.0572), mzmax = c(247.1699, 239.0668))
-rt2 <- data.frame(rtmin = c(1045, 1127), rtmax = c(1105, 1187))
-targets2 <- makeTargets(mz = mz2, rt = rt2)
+ppm_carb <- ppm_dev / 1E6 * carb_pos
+ppm_diu <- ppm_dev / 1E6 * diu_pos
 
+mz2 <- data.frame(mzmin = c(carb_pos - ppm_carb, diu_pos - ppm_diu),
+                  mzmax = c(carb_pos + ppm_carb, diu_pos + ppm_diu))
+
+rt2 <- data.frame(rtmin = c(carb_rt - sec_dev, diu_rt - sec_dev),
+                  rtmax = c(carb_rt + sec_dev, diu_rt + sec_dev))
+
+targets2 <- makeTargets(mz = mz2, rt = rt2)
 targets2
 
 #case 3
 mz3 <- data.frame(
   id = c("target1", "target2"),
-  mz = c(247.1650, 239.0620),
-  rt = c(1075, 1157)
+  mz = c(carb_pos, diu_pos),
+  rt = c(carb_rt, diu_rt)
 )
-targets3 <- makeTargets(mz = mz3, ppm = 20, sec = 30)
 
+targets3 <- makeTargets(mz = mz3, ppm = ppm_dev, sec = sec_dev)
 targets3
 
 #case 4
 mz4 <- data.frame(
   id = c("target1", "target2"),
-  mzmin = c(247.1601, 239.0572), mzmax = c(247.1699, 239.0668),
-  rtmin = c(1045, 1127), rtmax = c(1105, 1187)
+  mzmin = c(carb_pos - ppm_carb, diu_pos - ppm_diu),
+  mzmax = c(carb_pos + ppm_carb, diu_pos + ppm_diu),
+  rtmin = c(carb_rt - sec_dev, diu_rt - sec_dev),
+  rtmax = c(carb_rt + sec_dev, diu_rt + sec_dev)
 )
-targets4 <- makeTargets(mz = mz4)
 
+targets4 <- makeTargets(mz = mz4)
 targets4
 ```
 
@@ -439,7 +455,7 @@ all(round(apply(t2[, 2:7], 2, sd), digits = 4) == 0)
 
 ## EICs
 
-Extracted ion chromatograms (EICs) are obtained either from loaded spectra in the _msData_ or _msAnalysis_ objects or from querying traces directly in the raw data file (mzML or mzXML). The latter is less disk memory intense as data is loaded from raw files on demand. The S4 method `EICs` is used to extract MS1 data from raw data files.
+Extracted ion chromatograms (EICs) are obtained either from loaded spectra in the *msData* or *msAnalysis* objects or from querying traces directly in the raw data file (mzML or mzXML). The latter is less disk memory intense as data is loaded from raw files on demand. The S4 method `EICs` is used to extract MS1 data from raw data files.
 
 ```{r eics-method}
 #EIC of targets from first analysis using msAnalysis class
@@ -453,7 +469,7 @@ eic2 <- EICs(sp1, analyses = 1:3, mz = targets4)
 head(eic2, 6)
 ```
 
-The obtained EICs can be plotted with `plotEICs` S4 method, as shown below. The object for `plotEICs` can be a `data.table` as resulting from the `EICs` method or the actual _msData_ or _msAnalysis_ objects, using the same arguments as in `EICs` for collecting the data (i.e., to define the targets).
+The obtained EICs can be plotted with `plotEICs` S4 method, as shown below. The object for `plotEICs` can be a `data.table` as resulting from the `EICs` method or the actual *msData* or *msAnalysis* objects, using the same arguments as in `EICs` for collecting the data (i.e., to define the targets).
 
 ```{r ploteics-static}
 #plot the produced EIC data.table
@@ -477,9 +493,7 @@ plotEICs(sp1, analyses = 3:4, mz = targets3, colorBy = "replicates", interactive
 
 ## TICs
 
-Total ion chromatograms (TICs) are obtained either by pre-loading and adding the chromatogram data to the _msAnalysis_, extracting the data in a `TICs` call (S4 method) or loading all spectra and applying the sum of intensities to each spectrum. Note, TIC is already available as chromatogram in mzML data from the major HRMS vendors. The S4 method TICs first evaluates if the TIC chromatogram is available in the mzML and when not, the spectra data is extracted and used instead.
-
-`r # TODO add faster functionality for TIC and BPC based on xml2``
+Total ion chromatograms (TICs) are obtained either by pre-loading and adding the chromatogram data to the *msAnalysis*, extracting the data in a `TICs` call (S4 method) or loading all spectra and applying the sum of intensities to each spectrum. Note, TIC is already available as chromatogram in mzML data from the major HRMS vendors. The S4 method TICs first evaluates if the TIC chromatogram is available in the mzML and when not, the spectra data is extracted and used instead.
 
 ```{r tics_method}
 # TIC for both analyses in the msData class object
@@ -511,7 +525,7 @@ plotTICs(a1)
 
 ## XICs
 
-A more informative method of obtaining EICs is via the method `XICs` which extract a the three dimensional (_m/Z_, rt and intensity) chromatograms from given targets. In the example below, the _m/z_ dimension is also included in the resulting table to improve inspection of traces.
+A more informative method of obtaining EICs is via the method `XICs` which extract a the three dimensional (*m/Z*, rt and intensity) chromatograms from given targets. In the example below, the *m/z* dimension is also included in the resulting table to improve inspection of traces.
 
 ```{r xics-method}
 #using the msData class object for second target with wide ppm range
@@ -525,7 +539,7 @@ xic2 <- XICs(a1, mz = targets4)
 head(xic2, 3)
 ```
 
-Similarly, the XICs can be plotted with the S4 method `plotXICs`, as shown below. Other arguments are available for plotting `XICs`, including a target area for the expected targets. As shown in the plot below, the red mark is defined by the arguments `targetsMark` (a table with columns mz and rt to define the expected _m/z_ and retention times) and `ppmMark` and `secMark` to define the mass (in ppm) and time (in seconds) range of the target squares. The `numberRows` is used to control the number of rows of the grouped plot. The concept for the XIC plot is adapted from the R package [MSnbase](https://bioconductor.org/packages/release/bioc/html/MSnbase.html).
+Similarly, the XICs can be plotted with the S4 method `plotXICs`, as shown below. Other arguments are available for plotting `XICs`, including a target area for the expected targets. As shown in the plot below, the red mark is defined by the arguments `targetsMark` (a table with columns mz and rt to define the expected *m/z* and retention times) and `ppmMark` and `secMark` to define the mass (in ppm) and time (in seconds) range of the target squares. The `numberRows` is used to control the number of rows of the grouped plot. The concept for the XIC plot is adapted from the R package [MSnbase](https://bioconductor.org/packages/release/bioc/html/MSnbase.html).
 
 ```{r plotxics-method}
 #using the output of XICs S4 method (a data.table) for plotting centroided and profile data
@@ -545,18 +559,16 @@ plotXICs(a1, mz = mz1[2], rt = rt1[2], ppm = 50, sec = 120)
 
 # Loading raw data
 
-The S4 methods applied above parse the data from the raw data files which is less disk memory intense but slower. Alternatively, the raw data can be loaded to (each) _msAnalysis_  and from their is faster available. However, when loaded, the raw data has a higher memory footprint.
-Therefore, the data can be optionally loaded and stored as a simple _data.table_ in the respective _msAnalysis_ (other classes of the same level might have the raw data directly loaded if the data has a lower memory footprint). Below we demonstrate how to load (via `loadRawData` S4 method) and access (via `spectra` or `chromatograms`) the raw spectra and chromatograms from an _msAnalaysis_ and _msData_ object. Both S4 methods (`spectra` or `chromatograms`) return a _data.table_ where further operations can be applied to subset the data, as demonstrated below. The standard _data.table_ operations can be applied, see documentation in https://cran.r-project.org/web/packages/data.table/ for more information and code examples/instructions. A cheat sheet for _data.table_ operations can be downloaded in https://raw.githubusercontent.com/rstudio/cheatsheets/main/datatable.pdf. In streamFind, the _data.table_ is always the preferred format for table objects.
+The S4 methods applied above parse the data from the raw data files which is less disk memory intense but slower. Alternatively, the raw data can be loaded to (each) *msAnalysis* and from their is faster available. However, when loaded, the raw data has a higher memory footprint. Therefore, the data can be optionally loaded and stored as a simple *data.table* in the respective *msAnalysis* (other classes of the same level might have the raw data directly loaded if the data has a lower memory footprint). Below we demonstrate how to load (via `loadRawData` S4 method) and access (via `spectra` or `chromatograms`) the raw spectra and chromatograms from an *msAnalaysis* and *msData* object. Both S4 methods (`spectra` or `chromatograms`) return a *data.table* where further operations can be applied to subset the data, as demonstrated below. The standard *data.table* operations can be applied, see documentation in <https://cran.r-project.org/web/packages/data.table/> for more information and code examples/instructions. A cheat sheet for *data.table* operations can be downloaded in <https://raw.githubusercontent.com/rstudio/cheatsheets/main/datatable.pdf>. In streamFind, the *data.table* is always the preferred format for table objects.
 
 ```{r loadrawdata-msanalysis}
 #load raw data to an msAnalysis object, while setting a minimum intensity value for both MS1 and MS2 traces
-a1 <- loadRawData(a1, minIntensityMS1 = 200, minIntensityMS2 = 100)
+a1 <- loadRawData(a1, minIntensityMS1 = 0, minIntensityMS2 = 100)
 ```
 
 ```{r loadrawdata-msanalysis-show}
 a1
 ```
-
 
 ```{r loadrawdata-msdata}
 #load raw data to the first three samples in an msData object.
@@ -627,10 +639,10 @@ knitr::include_graphics(paste0(getwd(), "/hb_backend_figures/workflow_scheme.png
 
 ## Creation of analysis set
 
-The analysis set creation is demonstrated below for six HRMS data files corresponding to blank and wastewater influent samples, both measured in triplicate. The argument `files` is the main input and can either be a list of full path files, a table with file (i.e., full file path), replicate (i.e., the name of the analysis replicate group for each file) and blank (i.e., the name of the associated blank analysis replicate group for each file), or the `analysisInfo` data.frame from the package [patRoon](https://github.com/rickhelmus/patRoon). The set path can be assign as argument `path` and is the directory where all the set files (i.e., scripts, cache databases, objects and results) will be stored by default.
+The analysis set creation is demonstrated below for twelve HRMS data files corresponding to blank and wastewater influent samples, both measured in triplicate and in positive and negative modes. The argument `files` is the main input and can either be a vector of full path files, a table with file (i.e., full file path), replicate (i.e., the name of the analysis replicate group for each file) and blank (i.e., the name of the associated blank analysis replicate group for each file), or the `analysisInfo` data.frame from the package [patRoon](https://github.com/rickhelmus/patRoon). The set path can be assign as argument `path` and is the directory where all the set files (i.e., scripts, cache databases, objects and results) will be stored by default.
 
 ```{r newstreamset-basicworkflow, message=FALSE, results='hide'}
-sp2 <- newStreamSet(files = files[c(13:15, 19:21)], path = getwd(), title = "Project Example")
+sp2 <- newStreamSet(files = files[10:21], path = getwd(), title = "Project Example")
 ```
 
 ```{r newstreamset-object-show}
@@ -643,33 +655,43 @@ Before preforming data processing, the analysis names (i.e., replicate name and 
 
 ### Assign replicate names
 
-An essential aspect of environmental analysis is to operate with sample/analysis replicates. The replicates in _msData_ can be obtained by the `replicateNames` S4 method as shown below. The setter (assignment) for the replicate names is demonstrated below with the method `replicateNames<-` that takes a vector of character strings with the same length as the number of analyses in a _msData_ object. Alternatively, a table with a replicate character column or a character vector can be given in the files or replicates arguments, respectively. Note that _msAnalysis_ doesn't contain information about replicate correspondence. The correspondence between analyses is storage in the _msFeatures_ within the _msData_.
+An essential aspect of environmental analysis is to operate with sample/analysis replicates. The replicates in *msData* can be obtained by the `replicateNames` S4 method as shown below. The setter (assignment) for the replicate names is demonstrated below with the method `replicateNames<-` that takes a vector of character strings with the same length as the number of analyses in a *msData* object. Alternatively, a table with a replicate character column or a character vector can be given in the files or replicates arguments, respectively. Note that *msAnalysis* doesn't contain information about replicate correspondence. The correspondence between analyses is storage in the *msFeatures* within the *msData*.
 
 ```{r assign-replicatenames}
 #getter for replicate names in msData
 replicateNames(sp2)
 
 #setter for replicate names in msData
-replicateNames(sp2) <- c(rep("blank", 3),rep("influent", 3))  
+replicateNames(sp2) <- c(
+  rep("blank_neg", 3),
+  rep("blank_pos", 3),
+  rep("influent_neg", 3),
+  rep("influent_pos", 3)
+)
+
 replicateNames(sp2)
 ```
 
 ### Assign blankReplicateNames
 
-The blank subtraction is another crucial aspect in environmental analysis. The getter and setter for blank subtraction works the same way as replicates. See examples below. The blank analysis replicate is then assign to the respective analysis. In the example, the first replicate group is assign to the influent samples. Note that the blank will also be assigned to itself. Although not shown, different blank analysis replicates can be assigned to different analysis. The blank subtraction (\@ref(filter-functions)) is then applied per analysis replicate considering the assigned blank replicate. For cross project analysis, a subset of the analyses (_msAnalysis_ objects) in a given _msData_ can be concatenated to another _msData_, carrying the assigned blank replicate for each analysis as well as all the other analysis information (see `r # TODO make section cross project analysis``section cross project analysis for more information).
+The blank subtraction is another crucial aspect in environmental analysis. The getter and setter for blank subtraction works the same way as replicates. See examples below. The blank analysis replicate is then assign to the respective analysis. In the example, the first replicate group is assign to the influent samples. Note that the blank will also be assigned to itself. Although not shown, different blank analysis replicates can be assigned to different analysis. The blank subtraction (\@ref(filter-functions)) is then applied per analysis replicate considering the assigned blank replicate. For cross project analysis, a subset of the analyses (*msAnalysis* objects) in a given *msData* can be concatenated to another *msData*, carrying the assigned blank replicate for each analysis as well as all the other analysis information.
 
 ```{r assign-blankreplicatenames}
 #getter for blank replicates in each sample in a msData object
 blankReplicateNames(sp2)
 
 #setter for the blank analysis replicate of msData object
-blankReplicateNames(sp2) <- rep("blank", 6)
+blankReplicateNames(sp2) <- c(
+  rep("blank_neg", 3),
+  rep("blank_pos", 3),
+  rep("blank_neg", 3),
+  rep("blank_pos", 3)
+)
+
 blankReplicateNames(sp2)
 ```
 
 ### Other getter S4 methods
-
-`r # TODO list all S4 methods``
 
 ```{r other-s4methods}
 #getter for the analysis table
@@ -678,14 +700,8 @@ analysisTable(sp2)
 #getter for analysis names in msdata
 analysisNames(sp2)
 
-#getter for analysis name in msAnalysis
-analysisNames(a2)
-
 #getter for polarity of analyses in a msData
-#polarities(sp2)
-
-#getter for polarity of an msAnalysis
-polarities(a2)
+polarities(sp2)
 
 #sub-setting an msData with `[`-method for the blank analyses
 sp2[1:3]
@@ -697,11 +713,11 @@ The initial processing step of the basic workflow is the peak picking. Yet, othe
 
 ### Processing parameters
 
-For each processing steps, parameter settings are often used. In streamFind, the parameters used for a given processing step are added/stored as _settings_ S4 class objects in each _msAnalysis_ (or other class of the same level, such as _uvAnalysis_ or _ramanAnalysis_). Each _settings_ object contains the algorithm and list of parameters with the respective values. The example below demonstrates the workflow to perform peak picking either by adding the parameters during the call for `peakPicking` or by initially add the parameters to each _msAnalysis_ and then run the `peakPicking`, which looks for the parameters in each _msAnalysis_. If different settings are applied among the _msAnalysis_ objects, these are used. This means that different processing parameters can be applied within the same function call. If parameters are added during the function call but they already exist in the _msAnalysis_, these are overwritten by the settings used in the function call.
+For each processing step, settings are often used. In streamFind, the settings used for a given processing step are added/stored as *settings* S4 class objects. Each *settings* object contains the function call name, the algorithm and list of parameters with the respective values. The example below demonstrates the workflow to perform peak picking either by adding the settings during the call for `peakPicking` or by initially add the settings to each *msAnalysis* and then run the `peakPicking`, which looks for the settings in each *msAnalysis*. If different settings are applied among the *msAnalysis* objects, these are used. This means that different algorithms and/or processing parameters can be applied within the same function call. If settings are added during the function call but they already exist in the *msAnalysis*, these are overwritten by the settings used in the function call.
 
 ### Create and add parameters
 
-The function `createSettings` is use to assemble the _settings_ object, as shown below. Then, the `addParameters` method is used to either add parameters to each analysis in a _msData_ object or directly to a _msAnalysis_ object. The `getParameters` can be used to check which exist in the _msData_ and _msAnalysis_.
+The function `createSettings` is use to assemble the *settings* object, as shown below. Then, the `addSettings` method is used to either add parameters to each analysis in a *msData* object or directly to a *msAnalysis* object. The `getSettings` can be used to check which settings exist in the *msData* and/or *msAnalysis*.
 
 ```{r create-processing-parameters}
 sp2_pp <- sp2
@@ -720,7 +736,7 @@ param <- xcms::CentWaveParam(
 settings_pp <- createSettings(
   call = "peakPicking",
   algorithm = "xcms3",
-  settings = param
+  parameters = param
 )
 
 # the class of settings 
@@ -728,16 +744,19 @@ is(settings_pp)
 
 
 # add the settings to all analyses in msData
-sp2_pp <- addParameters(sp2_pp, settings = settings_pp, where = "analyses")
+sp2_pp <- addSettings(sp2_pp, settings = settings_pp, where = "analyses")
 
 # get the parameters in the third analysis of the msData object
-getParameters(sp2_pp, where = "analyses", analyses = 3)
+getSettings(sp2_pp, where = "analyses", analyses = 3)
+
+#get msAnalysis
+a2 <- getAnalyses(sp2, analyses = 4)
 
 # add the settings to the msAnalysis object
-a2 <- addParameters(a2, settings = settings_pp)
+a2 <- addSettings(a2, settings = settings_pp)
 
 # get the parameters of the msAnalysis object
-getParameters(a2, call = "peakPicking")
+getSettings(a2, call = "peakPicking")
 ```
 
 ### Processing peak picking
@@ -759,7 +778,7 @@ sp2_pp_2 <- peakPicking(sp2, settings = settings_pp)
 
 ```{r peakpicking-msdata-show2, }
 # parameters are added to each analysis after running peak picking
-summary(getParameters(sp2_pp_2, where = "analyses", analyses = 1))
+summary(getSettings(sp2_pp_2, where = "analyses", analyses = 1))
 ```
 
 ```{r peakpicking-msdata-show-2}
@@ -778,7 +797,7 @@ a2
 
 ### Using multiple settings
 
-As aforementioned, different settings for the same processing step can exist in a _msData_. Below we add different settings for the influent samples, as an example. The use case for such functionality can be connected to optimization of processing steps, for example.
+As aforementioned, different settings for the same processing step can exist in a *msData*. Below we add different settings for the influent samples, as an example. The use case for such functionality can be connected to optimization of processing steps, for example.
 
 ```{r peakpicking-multiple-settings}
 sp2_pp_3 <- sp2
@@ -787,7 +806,7 @@ sp2_pp_3 <- sp2
 settings_pp_2 <- createSettings(
   call = "peakPicking",
   algorithm = "openms",
-  settings = list(
+  parameters = list(
     noiseThrInt = 500,
     chromSNR = 10,
     chromFWHM = 10,
@@ -805,13 +824,13 @@ settings_pp_2 <- createSettings(
   )
 )
 
-sp2_pp_3 <- addParameters(sp2_pp_3, settings = settings_pp, where = "analyses")
+sp2_pp_3 <- addSettings(sp2_pp_3, settings = settings_pp, where = "analyses")
 
 # adding different settings to analysis 4 to 6
-sp2_pp_3 <- addParameters(sp2_pp_3, settings = settings_pp_2, where = "analyses", analyses = 4:6)
+sp2_pp_3 <- addSettings(sp2_pp_3, settings = settings_pp_2, where = "analyses", analyses = 7:12)
 
 # the algorithm of the influent samples is different
-sapply(analysisNames(sp2_pp_3), function(x) getAlgorithm(getParameters(sp2_pp_3, where = "analyses", analyses = x)[[1]]))
+sapply(analysisNames(sp2_pp_3), function(x) getAlgorithm(getSettings(sp2_pp_3, where = "analyses", analyses = x)[[1]]))
 ```
 
 ```{r peakpicking-multiple-run, results='hide', message=FALSE}
@@ -826,7 +845,7 @@ sp2_pp_3
 
 ### Export and Import settings
 
-The _settings_ object can be exported as a JSON or rds file and then imported for other sets where the same parameter settings are to be applied. The methods `exportSettings` and `importSettings` are used, as shown below.
+The *settings* object can be exported as a JSON or rds file and then imported for other sets where the same parameter settings are to be applied. The methods `exportSettings` and `importSettings` are used, as shown below.
 
 Export settings:
 
@@ -853,31 +872,45 @@ all.equal(settings_pp_2, settings_pp_2_imported)
 
 ### Inspecting peaks
 
-The access and visualization of peaks uses the calculated/estimated time and _m/z_ dimensions for collecting and plotting the correspondent mass traces. Examples are shown below to extract and plot peaks from both _msData_ and _msAnalysis_.
+The access and visualization of peaks uses the calculated/estimated time and *m/z* dimensions as well as the monoisotopic mass for collecting and plotting the correspondent mass traces. Examples are shown below to extract and plot peaks from both *msData* and *msAnalysis*.
 
-For a _msData_ object:
+For a *msData* object:
 
 ```{r inspecting-peaks-msdata, eval=FALSE}
-#access to peaks in msData based on built targets as used for extracting EICs
-peaks(sp2_pp[c(1, 4)], mz = mz1[1], rt = rt1[1], ppm = 10, sec = 30)
+#access to peaks by mz in analyses 4 and 10 of msData based on built targets, as used for extracting EICs
+peaks(sp2_pp, analyses = c(4, 10), mz = mz1[1], rt = rt1[1], ppm = 10, sec = 30)
 ```
 
-```{r inspecting-peaks-msdata-table}
-#access to peaks in msData based on built targets as used for extracting EICs
-peaks(sp2_pp[c(1, 4)], mz = mz1[1], rt = rt1[1], ppm = 10, sec = 30)
+```{r inspecting-peaks-msdata-table, echo=FALSE}
+peaks(sp2_pp[c(4, 10)], mz = mz1[1], rt = rt1[1], ppm = 10, sec = 30)
+```
+
+```{r inspecting-peaks-msdata-both, eval=FALSE}
+#access peaks for Diuron-d6 in both positive and negative influent samples using monoisotopic mass instead of mz
+peaks(sp2_pp,
+      analyses = grep("influent", analysisNames(sp2_pp)),
+      mass = diuron_d6, ppm = 10, sec = 15)
+```
+
+```{r inspecting-peaks-msdata-both-table, echo=FALSE}
+peaks(sp2_pp,
+      analyses = grep("influent", analysisNames(sp2_pp)),
+      mass = diuron_d6, ppm = 10, sec = 15)
 ```
 
 ```{r inspecting-peaks-msdata-plot}
 #plotting peaks in msData
-plotPeaks(sp2_pp, mz = targets4[2, ], interactive = TRUE, colorBy = "analyses")
+plotPeaks(sp2_pp, mass = diuron_d6, interactive = TRUE, colorBy = "analyses")
 ```
 
 ```{r inspecting-peaks-msdata-map}
-#map plot for peak time and m/z dimensions for msData
+#map plot for peak time and m/z dimensions for msData (the shading represents the peak m/z and time deviations)
 mapPeaks(sp2_pp, mz = targets4[2, ], colorBy = "replicates", xlim = 30, ylim = 0.001)
+
+#Note, peaks appear for the negative samples but clearly they are not the corresponding peaks of the given target for Diuron-d6. For instance, the visual evaluation with mapPeaks is useful to define/optimize settings for grouping peaks across samples.
 ```
 
-For a _msAnalysis_ object:
+For a *msAnalysis* object:
 
 ```{r inspecting-peaks-msAnalysis}
 #access to peak in msAnalysis
@@ -894,18 +927,130 @@ plotPeaks(a2, mz = targets4, interactive = FALSE)
 mapPeaks(a2, mz = targets4[1, ], xlim = 30, ylim = 0.001)
 ```
 
-
 ## Alingment and grouping
 
-After peak picking, a common following step is to group the peaks across analyses. A retention time alignment can be applied to correct elution deviations across analyses. The result of peak grouping and alignment is added to the _msFeatures_ S4 class object already present in the _msData_.
+After peak picking, a common following step is to group the peaks across analyses. A retention time alignment can be applied to correct elution deviations across analyses. The result of peak grouping and alignment is added to the *msFeatures* S4 class object already present in the *msData*.
 
 ### Grouping settings
 
-The processing parameters for grouping and alignment are added similarly to the processing settings for peak picking but the argument `where` is set to "features", as shown below.
-The settings are added to the slot parameters of the _msFeatures_ object and can be obtained by the method `getParameters`, as shown below.
+The processing parameters for grouping and alignment are added similarly to the processing settings for peak picking but the argument `where` is set to "features", as shown below. The settings are added to the slot parameters of the *msFeatures* object and can be obtained by the method `getParameters`, as shown below.
 
 ```{r creating-grouping-parameters}
-param_g <- list(
+
+# with xcms3
+settings_pg_xcms <- createSettings(
+  call = "peakGrouping",
+  algorithm = "xcms3",
+  parameters = list(
+    groupParam = xcms::PeakDensityParam(
+      sampleGroups = "holder",
+      bw = 10,
+      minFraction = 0.6,
+      minSamples = 2,
+      binSize = 0.008,
+      maxFeatures = 100
+    )
+  )
+)
+
+# with openms
+settings_pg_openms <- createSettings(
+  call = "peakGrouping",
+  algorithm = "openms",
+  parameters = list(
+    rtalign = FALSE,
+    QT = FALSE,
+    maxAlignRT = 10,
+    maxAlignMZ = 0.01,
+    maxGroupRT = 4,
+    maxGroupMZ = 0.01,
+    extraOptsRT = NULL,
+    extraOptsGroup = NULL
+  )
+)
+
+# add settings for peakGrouping to slot features in the msData
+sp2_pp <- addSettings(sp2_pp, settings = settings_pg_openms, where = "features")
+
+# get the settings applied/to be apliied for peakGrouping
+getSettings(sp2_pp, where = "features")
+```
+
+### Processing grouping and alignment
+
+The data processing for grouping and alignment follows the same principle as peak picking. Either the settings are added as arguments or the added parameters in the *msFeatures* object are used in the function call. Below, both cases are demonstrated below.
+
+```{r processing-grouping-run, results='hide', message=FALSE}
+#using the added parameter settings
+sp2_pg <- peakGrouping(object = sp2_pp)
+```
+
+```{r processing-grouping-show}
+#features added to msData
+sp2_pg
+```
+
+```{r processing_grouping-run2, results='hide', message=FALSE}
+#adding the parameter settings as arguments
+sp2_pg_2 <- peakGrouping(sp2_pp, settings = settings_pg_xcms)
+```
+
+```{r processing-grouping-show2}
+#features added to msData
+sp2_pg_2
+```
+
+### msFeatures class
+
+The structure of the *msFeatures* is shown below. The slot `analyses` is the `data.table` as obtained by the `analysisTable`, containing basic information about the analyses, such as file full path, replicate and associated blank replicates. The intensity slot contains the intensity of the feature in each analysis (i.e., corresponding peak intensity in each analysis). The slot metadata holds additional information about each feature, such as average *m/z*/ neutral mass, retention time and number of corresponding peaks. The slot settings has the list of settings used to build/process features, such as peakGrouping and filterFeatures.
+
+```{r msfeatures-class}
+str(sp2_pg@features, max.level = 2)
+#Note, accessing directly the features slot in a given msData object is not recommended.
+#Access to features should be done with the applied method, as shown below in inspecting features.
+```
+
+### Inspecting features
+
+Features can be accessed via the method `features` applied to a *msData* object. The argument `complete` can be set to `TRUE` for a complete list of features information. Also, the argument `average` can be set to `FALSE` for returning the intensity of the feature in each analysis than the average for each analysis replicate.
+
+```{r inspecting-features}
+#getter for feature intensities correspondent to the mass of Diuron in each sample by setting average to false
+features(sp2_pg, mass = diuron_d6, ppm = 10, sec = 20, average = FALSE)
+
+#getter for features intensities and intensity deviations using m/z; note that mass of targets m/z values will be calculated according to present adducts
+features(sp2_pg, mz = targets4)
+
+#getter for all the feature metadata by setting complete to TRUE
+t(features(sp2_pg, mass = carbamazepin_d10, ppm = 10, complete = TRUE, average = TRUE))
+
+#plotting features
+plotFeatures(sp2_pg,
+  mass = rbind(diuron_d6, carbamazepin_d10),
+  ppm = 10, sec = 10, colorBy = "targets",
+  interactive = FALSE)
+
+#plotting features for replicates and interactive
+plotFeatures(sp2_pg,
+  mass = rbind(diuron_d6, carbamazepin_d10),
+  ppm = 10, sec = 10, colorBy = "replicates",
+  interactive = TRUE)
+
+#plot the individual peaks in features and for each analysis shows the time deviation.
+plotFeaturePeaks(sp2_pg, mz = targets4)
+
+#plotFeaturePeaks(sp2_pg, mass = rbind(diuron_d6, carbamazepin_d10))
+```
+
+### Alignment results
+
+The alignment results can be inspected with the `plotAlignment` function. However, the time adjustment results are only available when using the algorithm "xcms3" for alignment with polarity positive or negative. Mixed positive and negative polarities does not support rt alignment. Below peaks from samples in positive mode only are grouped, including retention time alignment. 
+
+```{r grouping-msdata-only-positive}
+
+sp2_pg_3 <- sp2_pp[c(4:6, 10:12)]
+
+settings_pg_xcms_2 <- list(
   rtalign = TRUE,
   loadRawData = TRUE,
   groupParam = xcms::PeakDensityParam(
@@ -930,91 +1075,29 @@ param_g <- list(
     family = "gaussian")
 )
 
-settings_pg <- createSettings(
+settings_pg_xcms_2 <- createSettings(
   call = "peakGrouping",
   algorithm = "xcms3",
-  settings = param_g
+  parameters = settings_pg_xcms_2
 )
 
-# add processing parameter for peakGrouping to features in the msData
-sp2_pp <- addParameters(sp2_pp, settings = settings_pg, where = "features")
+sp2_pg_3 <- peakGrouping(sp2_pg_3, settings = settings_pg_xcms_2)
 
-# get the processing parameters applied to features
-getParameters(sp2_pp, where = "features")
+peaks(sp2_pg_3)
+
+features(sp2_pg_3, mass = targets4, ppm = 10, sec = 10, complete = TRUE)
+
+plotAlignment(sp2_pg_3)
 ```
-
-### Processing grouping and alignment
-
-The data processing for grouping and alignment follows the same principle as peak picking. Either the settings are added as arguments or the added parameters in the _msFeatures_ object are used in the function call. Below, both cases are demonstrated below.
-
-```{r processing-grouping-run, results='hide', message=FALSE}
-#using the added parameter settings
-sp2_pg <- peakGrouping(sp2_pp)
-```
-
-```{r processing-grouping-show}
-#features added to msData
-sp2_pg
-```
-
-```{r processing_grouping-run2, results='hide', message=FALSE}
-#adding the parameter settings as arguments
-sp2_pg_2 <- peakGrouping(sp2_pp, settings = settings_pg)
-```
-
-```{r processing-grouping-show2}
-#features added to msData
-sp2_pg_2
-```
-
-### msFeatures class
-
-The structure of the _msFeatures_ is shown below. The slot `analyses` is the `data.table` as obtained by the `analysisInfo`, containing basic information about the analyses, such as file, replicate and associeted blank. The intensity slot has the intensity of the feature in each analysis (i.e., peak intensity in each analysis). The slot metadata has other information about each feature, such as average _m/z_ and retention time.
-
-`r # TODO add annotation description`
-
-The slot parameters has the list of settings used to obtain/process the features.
-
-```{r msfeatures-class}
-#accessing directly the msFeatures slot, not recommended
-str(sp2_pg@features, max.level = 2)
-```
-
-### Inspecting features
-
-Features can be accessed via the method `features` applied to a _msData_ object. The argument `complete` can be set to `TRUE` for a complete list of features information. Also, the argument `average` can be set to `FALSE` for returning the intensity of the feature in each analysis.
-
-```{r inspecting-features}
-#getter for feature intensities and intensity deviations
-features(sp2_pg, mz = targets4)
-
-#getter for all the feature metadata by setting complete to TRUE
-t(features(sp2_pg_2, mz = targets4[1, ], complete = TRUE))
-
-#getter for features with intensities for each sample by setting average to FALSE
-features(sp2_pg_2, mz = targets4[1, ], average = FALSE)
-
-#plotting features
-plotFeatures(sp2_pg, mz = targets4, colorBy = "targets", interactive = FALSE)
-
-#plotting features for replicates and interactive
-plotFeatures(sp2_pg, mz = targets4, colorBy = "replicates", interactive = TRUE)
-
-#plot the individual peaks in features and for each analysis shows the time deviation.
-plotFeaturePeaks(sp2_pg, mz = targets4)
-```
-
-### Alignment results
-
-The alignment results can be inspected with the `plotAlignment` function. However, the time adjustment results are only available when using the algorithm "xcms3" for alignment.
 
 ```{r plot-alignment}
-plotAlignment(sp2_pg)
+plotAlignment(sp2_pg_3)
 ```
+
 
 ## Recursive integration
 
-As peak picking can result in false negatives and to ensure that false positives are less likely, a recursive integration is often performed for filling missing peaks in a feature. The recursive integration consists of extracting the mass traces in the feature region from analyses not represented, returning the hipotetical peak intensity. The exact collection of mass traces and calculation of the peak intensity (or height) is dependent on the algorithm applied. Below, an example of the recursive integration workflow using the function [fillChromPeaks](https://rdrr.io/bioc/xcms/man/fillChromPeaks.html) from the package [xcms](https://bioconductor.org/packages/release/bioc/html/xcms.html) is shown. The function `peakFilling` is used for recursive integration and a _settings_ S4 class object is given to define the algorithm and respective parameters. A _settings_ object can be obtained with `fillingSettingsDefaultXCMS` for a default _ChromPeakAreaParam_ from xcms. Note that the peakFilling settings are added to the parameters slot of the _msData_ object.
+As peak picking can result in false negatives and to ensure that false positives are less likely, a recursive integration is often performed for filling missing peaks in a feature. The recursive integration consists of extracting the mass traces in the feature region from analyses not represented, returning the hipotetical peak intensity. The exact collection of mass traces and calculation of the peak intensity (or height) is dependent on the algorithm applied. Below, an example of the recursive integration workflow using the function [fillChromPeaks](https://rdrr.io/bioc/xcms/man/fillChromPeaks.html) from the package [xcms](https://bioconductor.org/packages/release/bioc/html/xcms.html) is shown. The function `peakFilling` is used for recursive integration and a *settings* S4 class object is given to define the algorithm and respective parameters. A *settings* object can be obtained with `fillingSettingsDefaultXCMS` for a default *ChromPeakAreaParam* from xcms. Note that the peakFilling settings are added to the parameters slot of the *msData* object.
 
 ```{r recursive-integration-settings}
 #default settings S4 class with ChromPeakAreaParam from xcms as parameter settings
@@ -1025,7 +1108,7 @@ settings_fl
 
 ```{r recursive-integration-run, results='hide', message=FALSE}
 #filling peaks for msData
-sp2_pg_fl <- peakFilling(sp2_pg, settings = settings_fl)
+sp2_pg_3_fl <- peakFilling(sp2_pg_3, settings = settings_fl)
 ```
 
 ### Inspection of filled peaks
@@ -1036,7 +1119,7 @@ To inspect filled peaks, the function `plotFeaturePeaks` can be used as shown be
 
 ```{r recursive-integration-inspection}
 # inspecting the filled peaks for a given mz and rt target
-plotFeaturePeaks(sp2_pg_fl, mz = 441.1670, rt = 1097, ppm = 20, sec = 60)
+plotFeaturePeaks(sp2_pg_3_fl, mz = 441.1670, rt = 1097, ppm = 20, sec = 60)
 ```
 
 ## Annotation
@@ -1048,7 +1131,7 @@ Annotation of isotopes and adducts is crucial not only to prioritize the relevan
 settings_an <- createSettings(
   call = "peakAnnotation",
   algorithm = "camera",
-  settings = list(
+  parameters = list(
     ionization = NA_character_,
     onlyIsotopes = FALSE,
     minSize = 1,
@@ -1076,24 +1159,22 @@ settings_an <- createSettings(
 ```
 
 ```{r annotation-run, results='hide', message=FALSE}
-sp2_pg_fl_an <- peakAnnotation(sp2_pg_fl, settings = settings_an)
+sp2_pg_3_fl_an <- peakAnnotation(sp2_pg_3_fl, settings = settings_an)
 ```
 
-The results of annotation are stored under annotation of the _msFeatures_ S4 class and matches the [components](https://rickhelmus.github.io/patRoon/reference/components-class.html) S4 class of the [patRoon](https://github.com/rickhelmus/patRoon) package. This means that the feature components can be accessed via the `getAnnotation` method for an _msData_ object and inspected also with native methods from patRoon.
+The results of annotation are stored under annotation of the *msFeatures* S4 class and matches the [components](https://rickhelmus.github.io/patRoon/reference/components-class.html) S4 class of the [patRoon](https://github.com/rickhelmus/patRoon) package. This means that the feature components can be accessed via the `getAnnotation` method for an *msData* object and inspected also with native methods from patRoon.
 
 ### Inspection of annotation
 
-The annotation can be inspected with the `annotation` S4 method for the _msData_ object, as shown below. The method `plotAnnotation` can then be used to visualize the annotation of features, as shown below.
+The annotation can be inspected with the `annotation` S4 method for the *msData* object, as shown below. The method `plotAnnotation` can then be used to visualize the annotation of features, as shown below.
 
 ```{r annotation-results}
 #isotopic and adduct features annotated with a given target mz and rt
-streamFind::annotation(sp2_pg_fl_an, mz = targets4[1, ], ppm = 20, rt = NULL, sec = 60, all = FALSE)
+annotation(sp2_pg_3_fl_an, mz = targets4[1, ], ppm = 20, rt = NULL, sec = 60, all = FALSE)
 
 #plotting the annotation of each feature in a given target
-plotAnnotation(sp2_pg_fl_an, mz = targets4[1, ], ppm = 20, rt = NULL, sec = 60, all = FALSE)
+plotAnnotation(sp2_pg_3_fl_an, mz = targets4, ppm = 20, rt = NULL, sec = 60, all = FALSE, colorBy = "isotopes")
 ```
-
-`r # TODO improve annotation of features/peaks``
 
 ## Filter data
 
@@ -1101,18 +1182,18 @@ Data filtration is crucial for proper prioritization of relevant peaks/features.
 
 ### Sub-seeting with '['
 
-The first is based on data sub-setting using the method `[` and is permanent, meaning that the peaks/features are completely removed from the _msAnalysis_/_msFeatures_. An example is shown below for data filtration using the `[` method for different classes.
+The first is based on data sub-setting using the method `[` and is permanent, meaning that the peaks/features are completely removed from the *msAnalysis*/*msFeatures*. An example is shown below for data filtration using the `[` method for different classes.
 
 ```{r filter-subsetting}
 #sub-setting the msData class on analyses (the 3 first)
 sp2_pg[1:3, ]
 
 #sub-setting the msData class on analyses and features (the 3 last analyses and features annotated with a target)
-target_s <- streamFind::annotation(sp2_pg_fl_an, mz = targets4[1, ], ppm = 20, rt = NULL, sec = 5, all = FALSE)
-sp2_pg_fl_an[4:6, target_s$id]
+target_s <- annotation(sp2_pg_3_fl_an, mz = targets4[1, ], ppm = 20, rt = NULL, sec = 5, all = FALSE)
+sp2_pg_3_fl_an[4:6, target_s$id]
 
 #sub-seeting the msData class on analyses ([i, ]) and features ([, j]) by index
-sp2_pg_fl_an[1:2, 1:5]
+sp2_pg_3_fl_an[1:2, 1:5]
 
 #sub-setting an msAnalysis class on the first 5 peaks
 a2[1:5]
@@ -1120,7 +1201,7 @@ a2[1:5]
 
 ### Filter functions
 
-The second method uses filter functions (i.e., `filterPeaks` and `filterFeatures`) and is conservative, meaning that the data is conserved but tagged as filtered (i.e., the _filtered_ column is changed to `TRUE` and the respective filter tag is added to column _filter_, as shown below). Both filtered peaks and features can be permanently removed by running the methods `removeFilteredPeaks` or `removeFilteredFeatures`, respectively. Note that, removing features permanently does not remove filtered peaks but peaks not represented by features are filtered with "grouping" tag. When removing peaks, the features left without peaks representation are removed as well. Also, the methods `peaks` and `features` have the argument _filtered_ to return filtered peaks/features. The default for the _filtered_ argument is `TRUE`, meaning that filtered peaks/features are returned by default for methods `peaks` and `features`. Simmilarly, to peakPicking, peak Grouping, etc., the filter methods use a _msSettings_ S4 class to store the filtering parameters. Also, the filtering _msSettings_ object when applied is stored in the parameters section opf the respective class (i.e., `filterPeaks` settings are stored in the _msAnalysis_ and `filterFeatures` settings are stored in the _msFeatures_).
+The second method uses filter functions (i.e., `filterPeaks` and `filterFeatures`) and is conservative, meaning that the data is conserved but tagged as filtered (i.e., the *filtered* column is changed to `TRUE` and the respective filter tag is added to column *filter*, as shown below). Both filtered peaks and features can be permanently removed by running the methods `removeFilteredPeaks` or `removeFilteredFeatures`, respectively. Note that, removing features permanently does not remove filtered peaks but peaks not represented by features are filtered with "grouping" tag. When removing peaks, the features left without peaks representation are removed as well. Also, the methods `peaks` and `features` have the argument *filtered* to return filtered peaks/features. The default for the *filtered* argument is `TRUE`, meaning that filtered peaks/features are returned by default for methods `peaks` and `features`. Simmilarly, to peakPicking, peak Grouping, etc., the filter methods use a *msSettings* S4 class to store the filtering parameters. Also, the filtering *msSettings* object when applied is stored in the parameters section opf the respective class (i.e., `filterPeaks` settings are stored in the *msAnalysis* and `filterFeatures` settings are stored in the *msFeatures*).
 
 #### Filter features
 
@@ -1138,23 +1219,23 @@ filters <- list(
 settings_filFeat <- createSettings(
   call = "filterFeatures",
   algorithm = "filter",
-  settings = filters
+  parameters = filters
 )
 
-sp2_pg_fl_an_filFeat <- addParameters(sp2_pg_fl_an, where = "features", settings = settings_filFeat)
+sp2_pg_3_fl_an_filFeat <- addSettings(sp2_pg_3_fl_an, where = "features", settings = settings_filFeat)
 
-sp2_pg_fl_an_filFeat <- filterFeatures(sp2_pg_fl_an_filFeat)
+sp2_pg_3_fl_an_filFeat <- filterFeatures(sp2_pg_3_fl_an_filFeat)
 
 #number of features not filtered
-nrow(features(sp2_pg_fl_an, filtered = FALSE))
+nrow(features(sp2_pg_3_fl_an, filtered = FALSE))
 
 #number of features not filtered after applying the filters
-nrow(features(sp2_pg_fl_an_filFeat, filtered = FALSE))
+nrow(features(sp2_pg_3_fl_an_filFeat, filtered = FALSE))
 
 #remove permanently all filtered features from the msData object
-sp2_pg_fl_an_filFeat_rem <- removeFilteredFeatures(sp2_pg_fl_an_filFeat, which =  "all")
+sp2_pg_3_fl_an_filFeat_rem <- removeFilteredFeatures(sp2_pg_3_fl_an_filFeat, which =  "all")
 
-sp2_pg_fl_an_filFeat_rem
+sp2_pg_3_fl_an_filFeat_rem
 ```
 
 #### Filter peaks
@@ -1185,7 +1266,7 @@ Often MS acquisition includes operation in tandem mode, where fragmentation spec
 
 ## Processing settings
 
-Settings are needed to extract and average the fragmentation data. Below an example of settings used for accessing and averaging MS2 data is given. The resulting _settings_ object is then used further in the call to `MS2s` or `plotMS2s`.
+Settings are needed to extract and average the fragmentation data. Below an example of settings used for accessing and averaging MS2 data is given. The resulting *settings* object is then used further in the call to `MS2s` or `plotMS2s`.
 
 ```{r create-settings-msn}
 #the parameter settings to obtained and process MSn spectra
@@ -1206,7 +1287,7 @@ param_msn <- list(
 settings_msn <- createSettings(
   call = "extractMSn",
   algorithm = "streamFind",
-  settings = param_msn
+  parameters = param_msn
 )
 
 # the class of settings 
@@ -1215,41 +1296,60 @@ is(settings_msn)
 
 ## Access and plot MS2
 
-The method `MS2s` can be used to collect MS2 data from given targets, following the same principle as `makeTargets` within `EICs`. Similarly, `plotMS2s` can be used to access and directly plot MS2 data from targets, as shown below. A more general function for accessing the data is `extractMSn`, where further fragmentation levels can be accessed. When using streamFind basic workflow, the use of `MS2s` and `plotMS2s` is recommended. All the S4 methods/function can be applied for _msAnalysis_ and _msData_ objects.
+The method `MS2s` can be used to collect MS2 data from given targets, following the same principle as `makeTargets` within `EICs`. Similarly, `plotMS2s` can be used to access and directly plot MS2 data from targets, as shown below. A more general function for accessing the data is `extractMSn`, where further fragmentation levels can be accessed. When using streamFind basic workflow, the use of `MS2s` and `plotMS2s` is recommended. All the S4 methods/function can be applied for *msAnalysis* and *msData* objects.
 
 ```{r extract-ms2}
-#head of MS2 data for target 1 in a msAnalysis object
-head(MS2s(a1, mz = targets4[1, ], settings = settings_msn))
-
-#ploting the MS2 data of the first target in a msAnalysis object
-plotMS2s(a1, mz = targets4[1, ], settings = settings_msn, interactive = FALSE)
-
-#most intense MS2 data traces for both targets in a msData object
-s_data_3 <- MS2s(sp1, mz = targets4, settings = settings_msn)
-s_data_3 <- s_data_3[order(intensity, decreasing = TRUE), ]
-head(s_data_3)
-
-#ploting the MS2 data of the first target in a msAnalysis object
-plotMS2s(sp1, mz = targets4, settings = settings_msn, interactive = TRUE, colorBy = "targets")
+# #head of MS2 data for target 1 in a msAnalysis object
+# head(MS2s(a1, mz = targets4[1, ], settings = settings_msn))
+# 
+# #ploting the MS2 data of the first target in a msAnalysis object
+# plotMS2s(a1, mz = targets4[1, ], settings = settings_msn, interactive = FALSE)
+# 
+# #most intense MS2 data traces for both targets in a msData object
+# s_data_3 <- MS2s(sp1, mz = targets4, settings = settings_msn)
+# s_data_3 <- s_data_3[order(intensity, decreasing = TRUE), ]
+# head(s_data_3)
+# 
+# #ploting the MS2 data of the first target in a msAnalysis object
+# plotMS2s(sp1, mz = targets4, settings = settings_msn, interactive = TRUE, colorBy = "targets")
 ```
 
 ## MS2 for features/peaks
 
-` # TODO create function for collecting MS2 data for peaks/features`
+`# TODO create function for collecting MS2 data for peaks/features`
 
 ## patRoon interchangeability
 
-
 # Workflows
-
-
-
-
-
 
 # Miscellaneous
 
 ```{r democode, echo=FALSE, eval=FALSE, include=FALSE}
+
+# param_g <- list(
+#   rtalign = TRUE,
+#   loadRawData = TRUE,
+#   groupParam = xcms::PeakDensityParam(
+#     sampleGroups = "holder",
+#     bw = 3,
+#     minFraction = 0.6,
+#     minSamples = 2,
+#     binSize = 0.008,
+#     maxFeatures = 100),
+#   preGroupParam = xcms::PeakDensityParam(
+#     sampleGroups = "holder",
+#     bw = 5,
+#     minFraction = 1,
+#     minSamples = 3,
+#     binSize = 0.008,
+#     maxFeatures = 100),
+#   retAlignParam = xcms::PeakGroupsParam(
+#     minFraction = 1,
+#     extraPeaks = 0,
+#     smooth = "loess",
+#     span = 0.3,
+#     family = "gaussian")
+# )
 
 # knitr::kable(pks_1, caption = "Peaks data.table from msData using the peaks S4 method.") %>%
 #   kable_styling(font_size = 11, bootstrap_options = c("striped", "hover", "responsive"), fixed_thead = TRUE) %>%
@@ -1325,7 +1425,7 @@ plotMS2s(sp1, mz = targets4, settings = settings_msn, interactive = TRUE, colorB
 
 ```
 
-***
-Insitut für Energie- und Umwelttechnik e.V. (IUTA)  
-<br>
-For further questions, please contact Ricardo Cunha ([cunha@iuta.de](cunha@iuta.de)).  
+------------------------------------------------------------------------
+
+Insitut für Energie- und Umwelttechnik e.V. (IUTA)\
+<br> For further questions, please contact Ricardo Cunha ([cunha\@iuta.de](cunha@iuta.de)).

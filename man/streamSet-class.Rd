@@ -4,31 +4,37 @@
 \name{streamSet-class}
 \alias{streamSet-class}
 \alias{show,streamSet-method}
-\alias{[,streamSet,ANY,missing,missing-method}
-\alias{setInfo,streamSet-method}
-\alias{setInfo,streamSet,streamSet-method}
-\alias{path,streamSet-method}
-\alias{path,streamSet,streamSet-method}
+\alias{setTitle,streamSet-method}
+\alias{setTitle,streamSet,streamSet-method}
+\alias{setTitle<-,streamSet-method}
+\alias{setTitle<-,streamSet,streamSet-method}
+\alias{setDate,streamSet-method}
+\alias{setDate,streamSet,streamSet-method}
 \alias{analysisNames,streamSet-method}
 \alias{analysisNames,streamSet,streamSet-method}
+\alias{[,streamSet,ANY,missing,missing-method}
 \alias{addAnalyses,streamSet-method}
 \alias{addAnalyses,streamSet,streamSet-method}
 \title{streamSet}
 \usage{
 \S4method{show}{streamSet}(object)
 
-\S4method{[}{streamSet,ANY,missing,missing}(x, i, j, ..., drop = TRUE)
+\S4method{setTitle}{streamSet}(object)
 
-\S4method{setInfo}{streamSet}(object, title = NULL, date = NULL)
+\S4method{setTitle}{streamSet}(object) <- value
 
-\S4method{path}{streamSet}(object)
+\S4method{setDate}{streamSet}(object)
 
 \S4method{analysisNames}{streamSet}(object)
+
+\S4method{[}{streamSet,ANY,missing,missing}(x, i, j, ..., drop = TRUE)
 
 \S4method{addAnalyses}{streamSet}(object, analysisList = NULL)
 }
 \arguments{
 \item{object}{An \linkS4class{streamSet} object.}
+
+\item{value}{A method specific string/vector.}
 
 \item{x}{A \linkS4class{streamSet} object.}
 
@@ -40,11 +46,7 @@
 
 \item{drop}{Not applicable to \linkS4class{streamSet}.}
 
-\item{title}{A character string to be used as set title.}
-
-\item{date}{The \link{Date} of the set.}
-
-\item{analysisList}{A list of named analyses paths as character string.}
+\item{analysisList}{A list of strings with analysis file full paths.}
 }
 \description{
 An S4 class object containing the set title, date,
@@ -52,21 +54,22 @@ storage path and a list of analysis files.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{show(streamSet)}: prints the details of an \linkS4class{streamSet} object.
+\item \code{show(streamSet)}: prints the details of
+an \linkS4class{streamSet} object.
 
-\item \code{x[i}: subset on analyses, using analysis index or name.
+\item \code{setTitle(streamSet)}: getter for the title.
 
-\item \code{setInfo(streamSet)}: setter and getter for set title, date and path.
-When the \code{title} and \code{date} arguments
-are missing it returns a list with the set title, date and path.
-If arguments are given, the set title and date are updated
-based on the specified arguments, returning the original class object.
+\item \code{setTitle(streamSet) <- value}: setter for title.
+The \code{value} is a string with the title.
 
-\item \code{path(streamSet)}: getter for set path.
+\item \code{setDate(streamSet)}: getter for the date.
+Note that is not setter for the date.
 
 \item \code{analysisNames(streamSet)}: getter for the analysis names.
 
-\item \code{addAnalyses(streamSet)}: getter for analysis names.
+\item \code{x[i}: subset on analyses, using analysis index or name.
+
+\item \code{addAnalyses(streamSet)}: adds analyses to the \linkS4class{streamSet}.
 
 }}
 \section{Slots}{
@@ -80,6 +83,7 @@ based on the specified arguments, returning the original class object.
 
 \item{\code{analyses}}{A list of analyses added to the project.
 The class of the analysis objects are defined according to the file formats.
-When a class is not possible to be assigned, a list of file paths.}
+When a class is not possible to be assigned, the list contains
+full path string of each file added.}
 }}
 

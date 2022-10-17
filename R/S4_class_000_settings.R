@@ -1,17 +1,17 @@
 
 
-### settings ---------------------------------------------------------------------------------------------
+### settings ------------------------------------------------------------------
 
 #' @title settings
 #'
-#' @description An S4 class object with parameter settings for a given
+#' @description An S4 class object with settings for a given
 #'   data processing step of the basic workflow in \pkg{streamFind}.
-#'   The \code{settings} object contains the algorithm to be used for a given processing step
-#'   and the list of respective parameter settings.
+#'   The \code{settings} object contains the algorithm to be used for
+#'   a given processing step and the list of respective parameter settings.
 #'
-#' @slot call The name of the function where the algorithm and settings are used.
+#' @slot call The name of the function where the algorithm and parameters are used.
 #' @slot algorithm A character string with the name of the algorithm to be used.
-#' @slot settings A list of settings dependent on the algorithm used.
+#' @slot parameters A list of parameters dependent on the algorithm used.
 #'
 #' @export
 #'
@@ -20,42 +20,18 @@ setClass("settings",
   slots = c(
     call = "character",
     algorithm = "character",
-    settings = "list"
+    parameters = "list"
   ),
   prototype = list(
     call = NA_character_,
     algorithm = NA_character_,
-    settings = list()
+    parameters = list()
   )
 )
 
-#### settings-methods ---------------------------------------------------------------------------------------
+### settings-methods ----------------------------------------------------------
 
-##### getAlgorithm -------------------------------------------------------
-
-#' @describeIn settings getter for algorithm.
-#'
-#' @param object A \linkS4class{settings} object.
-#'
-#' @export
-#'
-setMethod("getAlgorithm", "settings", function(object) {
-
-  return(object@algorithm)
-})
-
-##### getSettings --------------------------------------------------------
-
-#' @describeIn settings getter for settings.
-#'
-#' @export
-#'
-setMethod("getSettings", "settings", function(object) {
-
-  return(object@settings)
-})
-
-##### getCall ------------------------------------------------------------
+#### getCall ------------------------------------------------------------------
 
 #' @describeIn settings getter for function call.
 #'
@@ -71,7 +47,34 @@ setMethod("getCall", "settings", function(x) {
 })
 
 
-##### exportSettings -----------------------------------------------------
+
+#### getAlgorithm -------------------------------------------------------------
+
+#' @describeIn settings getter for algorithm.
+#'
+#' @param object A \linkS4class{settings} object.
+#'
+#' @export
+#'
+setMethod("getAlgorithm", "settings", function(object) {
+
+  return(object@algorithm)
+})
+
+#### getParameters ------------------------------------------------------------
+
+#' @describeIn settings getter for parameters.
+#'
+#' @export
+#'
+setMethod("getParameters", "settings", function(object) {
+
+  return(object@parameters)
+})
+
+
+
+#### exportSettings -----------------------------------------------------------
 
 #' @describeIn settings exports the settings as either JSON or rds.
 #'
@@ -96,7 +99,7 @@ setMethod("exportSettings", "settings", function(object,
     object_list <- list(
       call = object@call,
       algorithm = object@algorithm,
-      settings = object@settings
+      parameters = object@parameters
     )
 
     object_list <- toJSON(object_list,
@@ -108,7 +111,37 @@ setMethod("exportSettings", "settings", function(object,
 
 })
 
-##### importSettings -----------------------------------------------------
+
+### functions -----------------------------------------------------------------
+
+#' createSettings
+#'
+#' @description Creates a \linkS4class{settings} object for a given processing step.
+#'
+#' @param call The name of the function where the algorithm and settings are used.
+#' @param algorithm A character string with the name of the algorithm to be used.
+#' @param parameters A list of parameters dependent on the algorithm used.
+#'
+#' @return A \linkS4class{settings} object.
+#'
+#' @export
+#'
+createSettings <- function(call = NA_character_, algorithm = NA_character_, parameters = list()) {
+
+  ns <- new("settings")
+
+  ns@call <- call
+  ns@algorithm <- algorithm
+
+  if (!checkmate::testClass(parameters, "list")) parameters <- list(parameters)
+
+  ns@parameters <- parameters
+
+  return(ns)
+
+}
+
+
 
 #' @title importSettings
 #'
@@ -126,12 +159,12 @@ importSettings <- function(file) {
   if (file_ext(file) %in% "json") {
     object_list <- fromJSON(file)
 
-    #check if settings entries are data.frame
-    if (is.data.frame(object_list$settings)) {
-      object_list$settings <- list(object_list$settings)
+    #check if parameters entries are data.frame
+    if (is.data.frame(object_list$parameters)) {
+      object_list$parameters <- list(object_list$parameters)
     }
 
-    object_list$settings <- lapply(object_list$settings, function(x) {
+    object_list$parameters <- lapply(object_list$parameters, function(x) {
 
       if (is.data.frame(x)) {
         x_t <- as.list(x)
@@ -160,7 +193,7 @@ importSettings <- function(file) {
       createSettings(
         call = object_list$call,
         algorithm = object_list$algorithm,
-        settings = object_list$settings
+        parameters = object_list$parameters
       )
     )
   }

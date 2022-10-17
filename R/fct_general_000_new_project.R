@@ -14,10 +14,6 @@ checkFileValidity <- function(fl = NA_character_) {
 
 
 
-#' @template args-newAnalysis-file
-#' @template args-newAnalysis-replicate-blank
-#'
-#' @noRd
 checkFilesInput <- function(files = NA_character_,
                             replicates = NA_character_,
                             blanks = NA_character_) {
@@ -115,7 +111,7 @@ checkFilesInput <- function(files = NA_character_,
 
 #' @title newAnalysis
 #'
-#' @description Creates a new \pkg{streamFind} analysis object.
+#' @description Creates a \pkg{streamFind} analysis object.
 #'
 #' @template args-newAnalysis-file
 #' @template args-newAnalysis-replicate-blank
@@ -123,12 +119,12 @@ checkFilesInput <- function(files = NA_character_,
 #' @note The format of the file will dictate the resulting S4 class.
 #' For instance, \emph{.mzML} or \emph{.mzXML} files will lead to the class
 #' \linkS4class{msAnalysis}, which will contain the structure for
-#' handling MS data.
-#'
-#' @return An S4 class depending on the added file format.
-#' For instance, an \linkS4class{msAnalysis} is returned for
-#' \emph{mzML} and \emph{mzXML} files.  If more than one file is given as
+#' handling MS data. Also, if more than one file is given as
 #' \code{file}, a \linkS4class{streamSet} object is returned instead.
+#'
+#' @return An analysis object with S4 class dependent on the added file format.
+#' For instance, an \linkS4class{msAnalysis} object is returned for
+#' \emph{mzML} and \emph{mzXML} files.
 #'
 #' @export
 #'
@@ -152,7 +148,6 @@ newAnalysis <- function(file = NA_character_) {
   # such as for ramanAnalysis or uvAnalysis,
   # as well for other MS file formats to implement convert functions
 
-
   return(analysis)
 }
 
@@ -160,7 +155,7 @@ newAnalysis <- function(file = NA_character_) {
 
 #' @title newStreamSet
 #'
-#' @description Creates a new \pkg{streamFind} set of analyses.
+#' @description Creates a \linkS4class{streamSet} with analyses.
 #'
 #' @template args-newStreamSet-files
 #' @template args-newStreamSet-path-title-date
@@ -171,13 +166,13 @@ newAnalysis <- function(file = NA_character_) {
 #' @note The format of the files added will dictate the subclass of
 #' the \linkS4class{streamSet}. For instance, \emph{.mzML} or \emph{.mzXML}
 #' files will lead to the subclass \linkS4class{msData}, which will contain
-#' an \linkS4class{msAnalysis} for each file added.
+#' an \linkS4class{msAnalysis} for each file added. when files from different
+#' types are mixed a subclass is not defined, returning the
+#' \linkS4class{streamSet} object with the list of file paths in the
+#' \code{analyses} slot.
 #'
 #' @return A \linkS4class{streamSet} with a subclass depending on the added
-#' file formats. For instance, an \linkS4class{msData} is returned for
-#' \emph{mzML} and \emph{mzXML} files. when files from different types are mixed
-#' a subclass is not defined, returning the \linkS4class{streamSet} object
-#' with the list of file paths in the \code{analyses} slot.
+#' file formats.
 #'
 #' @export
 #'
@@ -196,7 +191,6 @@ newStreamSet <- function(files = NA_character_,
   object <- new("streamSet")
   object@title <- title
   object@date <- date
-  object@path <- path
 
   if (all(grepl(".mzML|.mzXML", file_df$file))) {
 
@@ -207,6 +201,7 @@ newStreamSet <- function(files = NA_character_,
     if (all(ana_type %in% "msAnalysis")) {
 
       object <- new("msData", object)
+
       object@analyses <- analyses
 
       object@features@analyses <- data.table(
@@ -218,12 +213,13 @@ newStreamSet <- function(files = NA_character_,
         file_df$file %in% filePaths(object)
       ]
 
-
       object@features@analyses$blank <- file_df$blank[
         file_df$file %in% filePaths(object)
       ]
 
       object@features@analyses$class <- ana_type
+
+      object@features@analyses$polarity <- polarities(object)
 
     } else {
 

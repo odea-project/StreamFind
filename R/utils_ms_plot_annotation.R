@@ -21,13 +21,15 @@ plotAnnotationInteractive <- function(object, comps, colorBy = "isotopes") {
   comps[, intSD := round(intSD / intMean * 100, digits = 0)]
 
   if ("isotopes" %in% colorBy) {
-    comps[, intensity := intMean / max(intMean), by = monoiso]
-    vars <- unique(comps$monoiso)
+
+    comps[, intensity := intMean / max(intMean), by = iso_id]
+    vars <- unique(comps$iso_id)
     colorsplot <- getColors(vars)
 
   } else {
-    comps[, intensity := intMean / max(intMean), by = neutralMass]
-    vars <- unique(comps$neutralMass)
+
+    comps[, intensity := intMean / max(intMean), by = mass]
+    vars <- unique(comps$mass)
     colorsplot <- getColors(vars)
 
   }
@@ -51,9 +53,9 @@ plotAnnotationInteractive <- function(object, comps, colorBy = "isotopes") {
   for (nm in vars) {
 
     if ("isotopes" %in% colorBy) {
-      temp <- comps[monoiso %in% nm, ]
+      temp <- comps[iso_id %in% nm, ]
     } else {
-      temp <- comps[neutralMass %in% nm, ]
+      temp <- comps[mass %in% nm, ]
     }
 
     tempCol <- colorsplot[names(colorsplot) %in% nm]
@@ -65,12 +67,12 @@ plotAnnotationInteractive <- function(object, comps, colorBy = "isotopes") {
       marker = list(size = 20 * temp$intensity,
                     opacity = 0.6, color = tempCol,
                     line = list(color = tempCol)),
-      text =  temp$adduct_ion,
+      text =  temp$adduct,
       textposition = "midle right",
       textfont = list(size = 12, color = tempCol),
       hovertext = paste(
-        "</br> neutral mass: ", temp$neutralMass,
-        "</br> annotation: ", temp$adduct_ion,
+        "</br> neutral mass: ", temp$mass,
+        "</br> annotation: ", temp$adduct,
         "</br> feature: ", temp$id,
         "</br> charge: ", temp$charge,
         "</br> rt: ", round(temp$rt, digits = 0),

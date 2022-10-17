@@ -1,5 +1,4 @@
 
-
 #' @title fillingSettingsDefaultXCMS
 #'
 #' @return A \linkS4class{settings} object containing parameters for recursive
@@ -14,12 +13,12 @@ fillingSettingsDefaultXCMS <- function() {
       "settings",
       call = "peakFilling",
       algorithm = "xcms",
-      settings = list(
-        xcms::ChromPeakAreaParam()
-      )
+      parameters = list(xcms::ChromPeakAreaParam())
     )
   )
 }
+
+
 
 #' @title peakFilling
 #'
@@ -65,17 +64,17 @@ peakFilling <- function(object, settings = NULL) {
   pat <- as.featureGroups(object)
 
   if (is.null(settings)) {
-    prs <- getParameters(object, where = "features", call = "peakFilling")
+    prs <- getSettings(object, where = "features", call = "peakFilling")
     if (length(prs) > 0) {
       algorithm = getAlgorithm(prs)
-      settings = getSettings(prs)
+      settings = getParameters(prs)
     } else {
       algorithm <- NA_character_
     }
   } else {
     prs <- fillingSettingsDefaultXCMS()
     algorithm = getAlgorithm(prs)
-    settings = getSettings(prs)
+    settings = getParameters(prs)
   }
 
   if (is.na(algorithm)) {
@@ -131,7 +130,7 @@ peakFilling <- function(object, settings = NULL) {
 
   }
 
-  object <- addParameters(object, where = "features", settings = prs)
+  object <- addSettings(object, where = "features", settings = prs)
 
   validObject(object)
 

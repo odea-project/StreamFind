@@ -18,6 +18,7 @@
 plotFeaturePeaks <- function(object,
                              analyses = NULL,
                              targetsID = NULL,
+                             mass = NULL,
                              mz = NULL, ppm = 20,
                              rt = NULL, sec = 30, id = NULL,
                              heights = c(0.6, 0.4)) {
@@ -27,6 +28,7 @@ plotFeaturePeaks <- function(object,
   fts <- features(
     object = object,
     targetsID = targetsID,
+    mass = mass,
     mz = mz, ppm = ppm,
     rt = rt, sec = sec
   )

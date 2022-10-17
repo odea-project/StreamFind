@@ -36,21 +36,21 @@ peakGrouping <- function(object = NULL, settings = NULL) {
   }
 
   # TODO implement as.featuresSet for multiple polarities
-  # TODO check if all analyses have peaks before grouping
   pat <- as.features(object)
 
   if (is.null(settings)) {
 
-    prs <- getParameters(object, where = "features", call = "peakGrouping")
+    prs <- getSettings(object, where = "features", call = "peakGrouping")
+
     if (length(prs) > 0) {
       algorithm = getAlgorithm(prs)
-      params = getSettings(prs)
+      params = getParameters(prs)
     }
 
   } else if (testClass(settings, "settings")) {
 
     algorithm <- getAlgorithm(settings)
-    params <- getSettings(settings)
+    params <- getParameters(settings)
 
   } else {
 
@@ -66,19 +66,19 @@ peakGrouping <- function(object = NULL, settings = NULL) {
 
   if (algorithm == "xcms3") {
       params$groupParam@sampleGroups <- replicateNames(object)
-    if (params$rtalign) {
+    if ("rtalign" %in% names(params)) if (params$rtalign) {
       params$preGroupParam@sampleGroups <- replicateNames(object)
     }
   }
 
   ag <- list(obj = pat, algorithm = algorithm)
 
-  pat <- do.call(groupFeatures, c(ag, params, verbose = TRUE))
+  pat <- do.call(groupFeatures, c(ag, params))
 
   stgs <- createSettings(call = "peaksGrouping",
-    algorithm = algorithm, settings = params)
+    algorithm = algorithm, parameters = params)
 
-  object <- addParameters(object, settings = stgs, where = "features")
+  object <- addSettings(object, settings = stgs, where = "features")
 
   object <- buildPeaksTable(object, pat)
 
@@ -90,6 +90,8 @@ peakGrouping <- function(object = NULL, settings = NULL) {
 
   return(object)
 }
+
+
 
 #' buildFeatures
 #'
@@ -110,17 +112,19 @@ buildFeatures <- function(object, pat) {
   mtd <- mtd[, .(group, mz, rt)]
 
   pk <- peaks(object)
+
   index <- lapply(mtd$group, function(x, pk) {
     return(which(pk$feature == x))
   }, pk = pk)
 
-  mtd$mzmin <- unlist(lapply(index, function(x) min(pk[x, mz])))
-  mtd$mzmax <- unlist(lapply(index, function(x) max(pk[x, mz])))
-  mtd$rtmin <- unlist(lapply(index, function(x) min(pk[x, rt])))
-  mtd$rtmax <- unlist(lapply(index, function(x) max(pk[x, rt])))
+  mtd$dppm <- unlist(lapply(index, function(x) {
+    return(round(max((pk[x, mzmax] - pk[x, mzmin]) / pk[x, mz] * 1E6),
+                 digits = 1))
+  }))
 
-  mtd$dppm <- round(((mtd$mzmax - mtd$mzmin) / mtd$mz) * 1E6, digits = 1)
-  mtd$drt <- round(mtd$rtmax - mtd$rtmin, digits = 0)
+  mtd$drt <- unlist(lapply(index, function(x) {
+    return(round(max(pk[x, rtmax] - pk[x, rtmin]), digits = 0))
+  }))
 
   pk$replicate <- factor(pk$replicate, levels = unique(replicateNames(object)))
 
@@ -151,29 +155,70 @@ buildFeatures <- function(object, pat) {
     mtd$filter <- NA_character_
   }
 
-  new_id <- paste0(
-    "m",
-    round(mtd$mz, digits = 3),
-    "_d",
-    mtd$dppm,
-    "_r",
-    round(mtd$rt, digits = 0),
-    "_t",
-    mtd$drt,
-    "_f",
-    mtd$index
-  )
+  if (grepl("Set", class(pat))) {
+
+    set <- TRUE
+
+    annot <- pat@annotations
+
+    setnames(mtd, "mz", "mass")
+    mtd$adduct <- feat$adduct
+
+    new_id <- paste0(
+      "m",
+      round(mtd$mass, digits = 3),
+      "_d",
+      mtd$dppm,
+      "_rt",
+      round(mtd$rt, digits = 0),
+      "_t",
+      mtd$drt,
+      "_f",
+      mtd$index
+    )
+
+  } else {
+
+    adduct <- unique(pk$adduct)
+
+    mtd$adduct <- adduct
+
+    if (adduct %in% "[M+H]+") {
+      mtd$mass <- mtd$mz - 1.0073
+    }
+
+    if (adduct %in% "[M-H]-") {
+      mtd$mass <- mtd$mz + 1.0073
+    }
+
+    new_id <- paste0(
+      "mz",
+      round(mtd$mz, digits = 3),
+      "_d",
+      mtd$dppm,
+      "_rt",
+      round(mtd$rt, digits = 0),
+      "_t",
+      mtd$drt,
+      "_f",
+      mtd$index
+    )
+
+  }
 
   new_id <- data.table(group = mtd$group , id = new_id)
 
   mtd <- left_join(mtd, new_id, by = "group")
   mtd[, group := NULL]
-  mtd <- select(
-    mtd, id, index, rt, mz, drt, rtmin, rtmax, dppm, mzmin, mzmax, everything())
+
+  mtd <- select(mtd, id, index, everything())
 
   feat <- left_join(feat, new_id, by = "group")
   feat[, group := NULL]
+  if ("neutralMass" %in% colnames(feat)) feat[, neutralMass := NULL]
+  if ("adduct" %in% colnames(feat)) feat[, adduct := NULL]
   feat <- select(feat, id, everything())
+
 
   #updates feature id in peaks table of each analysis
   setnames(new_id, c("group", "id"), c("feature", "new_feature"))
@@ -184,12 +229,7 @@ buildFeatures <- function(object, pat) {
     return(x)
   }, new_id = new_id)
 
-  # anaInfo <- as.data.table(analysisInfo(object))
-  # anaInfo <- anaInfo[, .(file, analysis, group, blank, class)]
-  # setnames(anaInfo, "group", "replicate")
-  # TODO add set column to define the polarity of each sample
 
-  #object@features@analyses <- anaInfo
   object@features@intensity <- feat
   object@features@metadata <- mtd
 
@@ -197,6 +237,8 @@ buildFeatures <- function(object, pat) {
 
   return(object)
 }
+
+
 
 #' @title addAdjustedRetentionTime
 #'
@@ -211,71 +253,74 @@ addAdjustedRetentionTime <- function(object, pat) {
 
   assertClass(object, "msData")
 
-  if (testClass(pat, "featureGroupsXCMS3") & hasAdjustedRtime(pat@xdata)) {
+  if (testClass(pat, "featureGroupsXCMS3")) {
 
-    cat("Adding adjusted retention time values... ")
+    if (hasAdjustedRtime(pat@xdata)) {
 
-    rtAdj <- adjustedRtime(pat@xdata)
+      cat("Adding adjusted retention time values... ")
 
-    pkAdj <- processHistory(
-      pat@xdata,
-      type = "Retention time correction"
-    )[[1]]
-    pkAdj <- pkAdj@param
+      rtAdj <- adjustedRtime(pat@xdata)
 
-    addAdjPoints <- FALSE
-    if (testClass(pkAdj, "PeakGroupsParam")) {
-      addAdjPoints <- TRUE
-      pkAdj <- peakGroupsMatrix(pkAdj)
+      pkAdj <- processHistory(
+        pat@xdata,
+        type = "Retention time correction"
+      )[[1]]
+      pkAdj <- pkAdj@param
+
+      addAdjPoints <- FALSE
+      if (testClass(pkAdj, "PeakGroupsParam")) {
+        addAdjPoints <- TRUE
+        pkAdj <- peakGroupsMatrix(pkAdj)
+      }
+
+      hasSpectra <- sapply(object@analyses, function(x) nrow(x@spectra))
+      hasSpectra <- hasSpectra > 0
+      names(hasSpectra) <- analysisNames(object)
+
+      object@analyses <- lapply(object@analyses, function(x, hasSpectra) {
+        if (!hasSpectra[analysisNames(x)]) {
+          x <- loadSpectraInfo(x)
+        }
+        return(x)
+      }, hasSpectra = hasSpectra)
+
+      object@analyses <- lapply(object@analyses,
+        function(x, object, rtAdj, addAdjPoints, pkAdj, n_ana) {
+
+        ana_idx <- which(analysisNames(object) %in% analysisNames(x))
+
+        rts <- names(rtAdj)
+        ana_idx_string <- paste0(
+          "F",
+          paste(rep("0", nchar(n_ana) - nchar(ana_idx)), collapse = ""),
+          ana_idx
+        )
+        rts <- str_detect(rts, ana_idx_string)
+        rts <- rtAdj[rts]
+
+        temp <- x@spectra
+        temp$rtAdjusted <- rts
+        temp$adjustment <- temp$rtAdjusted - temp$rt
+
+        if (addAdjPoints) {
+          pk_rts <- unique(pkAdj[, ana_idx])
+          pk_rts <- pk_rts[pk_rts %in% temp$rt]
+          temp[rt %in% pk_rts, adjPoints := pk_rts]
+        }
+
+        x@spectra <- copy(temp)
+
+        return(x)
+      },
+      object = object,
+      rtAdj = rtAdj,
+      addAdjPoints = addAdjPoints,
+      pkAdj = pkAdj,
+      n_ana = length(object@analyses))
+
+      cat("Done! \n")
+      return(object)
     }
-
-    hasSpectra <- sapply(object@analyses, function(x) nrow(x@spectra))
-    hasSpectra <- hasSpectra > 0
-    names(hasSpectra) <- analysisNames(object)
-
-    object@analyses <- lapply(object@analyses, function(x, hasSpectra) {
-      if (!hasSpectra[analysisNames(x)]) {
-        x <- loadSpectraInfo(x)
-      }
-      return(x)
-    }, hasSpectra = hasSpectra)
-
-    object@analyses <- lapply(object@analyses,
-      function(x, object, rtAdj, addAdjPoints, pkAdj, n_ana) {
-
-      ana_idx <- which(analysisNames(object) %in% analysisNames(x))
-
-      rts <- names(rtAdj)
-      ana_idx_string <- paste0(
-        "F",
-        paste(rep("0", nchar(n_ana) - nchar(ana_idx)), collapse = ""),
-        ana_idx
-      )
-      rts <- str_detect(rts, ana_idx_string)
-      rts <- rtAdj[rts]
-
-      temp <- x@spectra
-      temp$rtAdjusted <- rts
-      temp$adjustment <- temp$rtAdjusted - temp$rt
-
-      if (addAdjPoints) {
-        pk_rts <- unique(pkAdj[, ana_idx])
-        pk_rts <- pk_rts[pk_rts %in% temp$rt]
-        temp[rt %in% pk_rts, adjPoints := pk_rts]
-      }
-
-      x@spectra <- copy(temp)
-
-      return(x)
-    },
-    object = object,
-    rtAdj = rtAdj,
-    addAdjPoints = addAdjPoints,
-    pkAdj = pkAdj,
-    n_ana = length(object@analyses))
-
-    cat("Done! \n")
-    return(object)
   }
 
   return(object)

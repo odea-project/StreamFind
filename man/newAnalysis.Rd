@@ -25,17 +25,17 @@ The replicate name can always be edited using the class method.}
 blank analysis replicate group for the file. The default is \code{NULL}.}
 }
 \value{
-An S4 class depending on the added file format.
-For instance, an \linkS4class{msAnalysis} is returned for
-\emph{mzML} and \emph{mzXML} files.  If more than one file is given as
-\code{file}, a \linkS4class{streamSet} object is returned instead.
+An analysis object with S4 class dependent on the added file format.
+For instance, an \linkS4class{msAnalysis} object is returned for
+\emph{mzML} and \emph{mzXML} files.
 }
 \description{
-Creates a new \pkg{streamFind} analysis object.
+Creates a \pkg{streamFind} analysis object.
 }
 \note{
 The format of the file will dictate the resulting S4 class.
 For instance, \emph{.mzML} or \emph{.mzXML} files will lead to the class
 \linkS4class{msAnalysis}, which will contain the structure for
-handling MS data.
+handling MS data. Also, if more than one file is given as
+\code{file}, a \linkS4class{streamSet} object is returned instead.
 }

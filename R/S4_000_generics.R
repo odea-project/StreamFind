@@ -1,14 +1,36 @@
 
 ### Generics -------------------------------------------------------------------
 
-#' @title setInfo
+#' @title setTitle
 #'
-#' @description Generic for getting set information.
+#' @description Generic for getting the title.
 #'
 #' @param object A method specific class object.
 #' @param ... Other method specific arguments.
 #'
-setGeneric("setInfo", function(object, ...) standardGeneric("setInfo"))
+setGeneric("setTitle", function(object, ...) standardGeneric("setTitle"))
+
+
+
+#' @title setTitle<-
+#'
+#' @description Generic for setting the title.
+#'
+#' @param object A method specific class object.
+#' @param value A method specific vector with title/s.
+#'
+setGeneric("setTitle<-", function(object, value) standardGeneric("setTitle<-"))
+
+
+
+#' @title setDate
+#'
+#' @description Generic for getting the date.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
+setGeneric("setDate", function(object, ...) standardGeneric("setDate"))
 
 
 
@@ -356,25 +378,25 @@ setGeneric("plotAnnotation", function(object, ...) standardGeneric("plotAnnotati
 
 
 
-#' @title addParameters
+#' @title addSettings
 #'
-#' @description Generic for adding parameters.
-#'
-#' @param object A method specific class object.
-#' @param ... Other method specific arguments.
-#'
-setGeneric("addParameters", function(object, ...) standardGeneric("addParameters"))
-
-
-
-#' @title getParameters
-#'
-#' @description Generic for getting parameters.
+#' @description Generic for adding settings.
 #'
 #' @param object A method specific class object.
 #' @param ... Other method specific arguments.
 #'
-setGeneric("getParameters", function(object, ...) standardGeneric("getParameters"))
+setGeneric("addSettings", function(object, ...) standardGeneric("addSettings"))
+
+
+
+#' @title getSettings
+#'
+#' @description Generic for getting settings.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
+setGeneric("getSettings", function(object, ...) standardGeneric("getSettings"))
 
 
 
@@ -389,14 +411,14 @@ setGeneric("getAlgorithm", function(object, ...) standardGeneric("getAlgorithm")
 
 
 
-#' @title getSettings
+#' @title getParameters
 #'
-#' @description Generic for getting settings.
+#' @description Generic for getting parameters.
 #'
 #' @param object A method specific class object.
 #' @param ... Other method specific arguments.
 #'
-setGeneric("getSettings", function(object, ...) standardGeneric("getSettings"))
+setGeneric("getParameters", function(object, ...) standardGeneric("getParameters"))
 
 
 

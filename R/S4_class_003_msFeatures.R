@@ -54,14 +54,14 @@ setClass("msFeatures",
            intensity = "data.table",
            metadata = "data.table",
            annotation = "list",
-           parameters = "list"
+           settings = "list"
          ),
          prototype = list(
            analyses = data.table(),
            intensity = data.table(),
            metadata = data.table(),
            annotation = list(),
-           parameters = list()
+           settings = list()
          ),
          validity = msFeatures_validity
 )
@@ -102,17 +102,17 @@ setMethod("replicateNames", "msFeatures", function(object) object@analyses$repli
 setMethod("blankReplicateNames", "msFeatures", function(object) object@analyses$blank)
 
 
-### addParameters ----------------------------------------------------------
+### addSettings ----------------------------------------------------------
 
-#' @describeIn msFeatures adds processing parameters for features.
+#' @describeIn msFeatures adds processing settings for features.
 #'
 #' @template args-single-settings
 #'
 #' @export
 #'
-#' @aliases addParameters,msFeatures,msFeatures-method
+#' @aliases addSettings,msFeatures,msFeatures-method
 #'
-setMethod("addParameters", "msFeatures", function(object, settings) {
+setMethod("addSettings", "msFeatures", function(object, settings) {
 
   valid <- checkmate::testClass(settings, "settings")
 
@@ -121,27 +121,27 @@ setMethod("addParameters", "msFeatures", function(object, settings) {
     return(object)
   }
 
-  object@features@parameters[[getCall(settings)]] <- settings
+  object@features@settings[[getCall(settings)]] <- settings
 
   return(object)
 })
 
-### getParameters ----------------------------------------------------------
+### getSettings ----------------------------------------------------------
 
-#' @describeIn msFeatures gets processing parameters.
+#' @describeIn msFeatures gets processing settings.
 #'
 #' @param call The call name of the settings to retrieve.
 #'
 #' @export
 #'
-#' @aliases getParameters,msFeatures,msFeatures-method
+#' @aliases getSettings,msFeatures,msFeatures-method
 #'
-setMethod("getParameters", "msFeatures", function(object, call = NULL) {
+setMethod("getSettings", "msFeatures", function(object, call = NULL) {
 
   if (is.null(call)) {
-    param <- object@parameters
+    param <- object@settings
   } else {
-    param <- object@parameters[[call]]
+    param <- object@settings[[call]]
   }
 
   return(param)
@@ -166,6 +166,7 @@ setMethod("getParameters", "msFeatures", function(object, call = NULL) {
 #'
 setMethod("features", "msFeatures", function(object,
                                              targetsID = NULL,
+                                             mass = NULL,
                                              mz = NULL, ppm = 20,
                                              rt = NULL, sec = 60, id = NULL,
                                              filtered = TRUE,
@@ -182,21 +183,80 @@ setMethod("features", "msFeatures", function(object,
   }
 
   if (!is.null(targetsID)) {
+
     out_fts <- feats@intensity[id %in% targetsID, ]
-  } else if (!is.null(mz)) {
-    targets <- makeTargets(mz = mz, rt = rt, ppm = ppm, sec = sec)
+
+  } else if (!is.null(mass)) {
+
+    if (is.data.frame(mass)) {
+      colnames(mass) <- gsub("mass", "mz", colnames(mass))
+      colnames(mass) <- gsub("neutralMass", "mz", colnames(mass))
+    }
+
+    targets <- makeTargets(mass, rt, ppm, sec)
     sel <- rep(FALSE, nrow(feats@metadata))
+
     for (i in seq_len(nrow(targets))) {
       if (targets$rtmax[i] > 0) {
-        sel[between(feats@metadata$mz, targets$mzmin[i], targets$mzmax[i]) &
+        sel[between(feats@metadata$mass, targets$mzmin[i], targets$mzmax[i]) &
               between(feats@metadata$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
       } else {
-        sel[between(feats@metadata$mz, targets$mzmin[i], targets$mzmax[i])] <- TRUE
+        sel[between(feats@metadata$mass, targets$mzmin[i], targets$mzmax[i])] <- TRUE
       }
     }
+
     out_fts <- feats@intensity[sel]
+
+  } else if (!is.null(mz)) {
+
+    targets <- makeTargets(mz, rt, ppm, sec)
+    sel <- rep(FALSE, nrow(feats@metadata))
+
+    if (!"mz" %in% colnames(feats@metadata)) {
+
+      adduct <- paste(unique(feats@metadata$adduct), collapse = ",")
+
+      if (grepl("\\[M\\+H\\]\\+", adduct)) {
+        for (i in seq_len(nrow(targets))) {
+          if (targets$rtmax[i] > 0) {
+            sel[between(feats@metadata$mass, targets$mzmin[i] - 1.0073, targets$mzmax[i] - 1.0073) &
+                  between(feats@metadata$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
+          } else {
+            sel[between(feats@metadata$mass, targets$mzmin[i] - 1.0073, targets$mzmax[i] - 1.0073)] <- TRUE
+          }
+        }
+      }
+
+      if (grepl("\\[M-H\\]-", adduct)) {
+        for (i in seq_len(nrow(targets))) {
+          if (targets$rtmax[i] > 0) {
+            sel[between(feats@metadata$mass, targets$mzmin[i] + 1.0073, targets$mzmax[i] + 1.0073) &
+                  between(feats@metadata$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
+          } else {
+            sel[between(feats@metadata$mass, targets$mzmin[i] + 1.0073, targets$mzmax[i] + 1.0073)] <- TRUE
+          }
+        }
+      }
+
+    } else {
+
+      for (i in seq_len(nrow(targets))) {
+        if (targets$rtmax[i] > 0) {
+          sel[between(feats@metadata$mz, targets$mzmin[i], targets$mzmax[i]) &
+                between(feats@metadata$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
+        } else {
+          sel[between(feats@metadata$mz, targets$mzmin[i], targets$mzmax[i])] <- TRUE
+        }
+      }
+
+    }
+
+    out_fts <- feats@intensity[sel]
+
   } else {
+
     out_fts <- feats@intensity
+
   }
 
   if (average) {
@@ -255,7 +315,7 @@ setMethod("[", c("msFeatures", "ANY", "missing", "missing"), function(x, i, ...)
         sname <- x@analyses$analysis[i]
         sidx <- i
       } else {
-        if (FALSE %in% (i %in% x@analyses$analysis[i])) {
+        if (FALSE %in% (i %in% x@analyses$analysis)) {
           warning("Given analysis name/s not found in the msFeatures object.")
           return(x)
         }

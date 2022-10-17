@@ -46,10 +46,10 @@
 \alias{plotMS2s,msAnalysis,msAnalysis-method}
 \alias{hasAdjustedRetentionTime,msAnalysis-method}
 \alias{hasAdjustedRetentionTime,msAnalysis,msAnalysis-method}
-\alias{addParameters,msAnalysis-method}
-\alias{addParameters,msAnalysis,msAnalysis-method}
-\alias{getParameters,msAnalysis-method}
-\alias{getParameters,msAnalysis,msAnalysis-method}
+\alias{addSettings,msAnalysis-method}
+\alias{addSettings,msAnalysis,msAnalysis-method}
+\alias{getSettings,msAnalysis-method}
+\alias{getSettings,msAnalysis,msAnalysis-method}
 \alias{hasPeaks,msAnalysis-method}
 \alias{hasPeaks,msAnalysis,msAnalysis-method}
 \alias{peaks,msAnalysis-method}
@@ -87,7 +87,7 @@
 
 \S4method{spectra}{msAnalysis}(object)
 
-\S4method{EICs}{msAnalysis}(object, mz = NULL, ppm = 20, rt = NULL, sec = 60, id = NULL)
+\S4method{EICs}{msAnalysis}(object, mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL)
 
 \S4method{plotEICs}{msAnalysis}(
   object,
@@ -148,15 +148,16 @@
 
 \S4method{hasAdjustedRetentionTime}{msAnalysis}(object)
 
-\S4method{addParameters}{msAnalysis}(object, settings)
+\S4method{addSettings}{msAnalysis}(object, settings)
 
-\S4method{getParameters}{msAnalysis}(object, call = NULL)
+\S4method{getSettings}{msAnalysis}(object, call = NULL)
 
 \S4method{hasPeaks}{msAnalysis}(object)
 
 \S4method{peaks}{msAnalysis}(
   object,
   targetsID = NULL,
+  mass = NULL,
   mz = NULL,
   ppm = 20,
   rt = NULL,
@@ -167,6 +168,7 @@
 \S4method{plotPeaks}{msAnalysis}(
   object,
   targetsID = NULL,
+  mass = NULL,
   mz = NULL,
   ppm = 20,
   rt = NULL,
@@ -180,6 +182,7 @@
 \S4method{mapPeaks}{msAnalysis}(
   object,
   targetsID = NULL,
+  mass = NULL,
   mz = NULL,
   ppm = 20,
   rt = NULL,
@@ -220,11 +223,11 @@ The same also works for min and max values of \emph{m/z} and retention
 time targets. Note that when mass/time ranges are given, \code{ppm} and
 \code{sec} are not used.}
 
-\item{ppm}{A numeric vector of length one with the mass deviation, in ppm.}
-
 \item{rt}{A vector with target retention time values or
 a two columns \linkS4class{data.table}/data.frame with minimum
 and maximum retention time values.}
+
+\item{ppm}{A numeric vector of length one with the mass deviation, in ppm.}
 
 \item{sec}{A numeric vector of length one with the time deviation, in seconds.}
 
@@ -263,6 +266,8 @@ the number of rows to grid the plots.}
 \item{targetsID}{A character vector with the ID of targets
 (e.g., peaks or features IDs).}
 
+\item{mass}{...}
+
 \item{filtered}{Logical. When \code{TRUE} (the default),
 filtered data is returned. When \code{FALSE}, filtered data is excluded.}
 
@@ -295,7 +300,7 @@ four columns: path, analysis, group and blank. The \link{data.frame}
 can be used as analysisInfo in \pkg{patRoon}.
 
 \item \code{analysisTable(msAnalysis)}: getter for analysis table as \link{data.table} with
-four columns: file, analysis, replicate and blank.
+four columns: file, analysis, replicate, blank and class.
 
 \item \code{analysisNames(msAnalysis)}: getter for analysis name.
 
@@ -398,9 +403,9 @@ each target, sample, replicate or collision energy, respectively.
 \item \code{hasAdjustedRetentionTime(msAnalysis)}: getter for presence of adjusted retention time
 in the \linkS4class{msAnalysis}.
 
-\item \code{addParameters(msAnalysis)}: adds processing parameters to the analysis.
+\item \code{addSettings(msAnalysis)}: adds processing settings to the analysis.
 
-\item \code{getParameters(msAnalysis)}: gets processing parameters in the analysis.
+\item \code{getSettings(msAnalysis)}: gets processing settings in the analysis.
 
 \item \code{hasPeaks(msAnalysis)}: check if the \linkS4class{msAnalysis} has peaks.
 

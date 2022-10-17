@@ -10,7 +10,8 @@
 #' @template slot-streamSet
 #' @slot analyses A list of analyses added to the project.
 #' The class of the analysis objects are defined according to the file formats.
-#' When a class is not possible to be assigned, a list of file paths.
+#' When a class is not possible to be assigned, the list contains
+#' full path string of each file added.
 #'
 #' @export
 #'
@@ -18,24 +19,23 @@
 setClass("streamSet",
   representation(
     analyses = "list",
-    path = "character",
     date = "Date",
     title = "character"
   ),
   prototype = list(
     analyses = list(),
-    path = NA_character_,
     date = Sys.Date(),
     title = NA_character_
   )
 )
 
 
-### S4 methods ----------------------------------------------------------------------------------------------
+### S4 methods ----------------------------------------------------------------
 
-#### show ----------------------------------------------------------------
+#### show ---------------------------------------------------------------------
 
-#' @describeIn streamSet prints the details of an \linkS4class{streamSet} object.
+#' @describeIn streamSet prints the details of
+#' an \linkS4class{streamSet} object.
 #'
 #' @param object An \linkS4class{streamSet} object.
 #'
@@ -43,13 +43,10 @@ setClass("streamSet",
 #'
 setMethod("show", "streamSet", function(object) {
 
-  sInfo <- setInfo(object)
-
   cat(
     "  Class         ", is(object), "\n",
-    "  Title         ", sInfo$title, "\n",
-    "  Date          ", as.character(sInfo$date), "\n",
-    "  Path          ", path(object), "\n",
+    "  Title         ", setTitle(object), "\n",
+    "  Date          ", as.character(setDate(object)), "\n",
     "  ", length(object@analyses) ," analyses:  \n",
     sep = ""
   )
@@ -68,7 +65,76 @@ setMethod("show", "streamSet", function(object) {
 
 })
 
-#### [ sub-setting analyses ----------------------------------------------
+
+
+#### setTitle -----------------------------------------------------------------
+
+#' @describeIn streamSet getter for the title.
+#'
+#' @export
+#'
+#' @aliases setTitle,streamSet,streamSet-method
+#'
+setMethod("setTitle", "streamSet", function(object) {
+  return(object@title)
+})
+
+
+
+#### setTitle<- ---------------------------------------------------------------
+
+#' @describeIn streamSet setter for title.
+#' The \code{value} is a string with the title.
+#'
+#' @param value A method specific string/vector.
+#'
+#' @export
+#'
+#' @aliases setTitle<-,streamSet,streamSet-method
+#'
+setMethod("setTitle<-", signature("streamSet", "ANY"), function(object, value) {
+
+  object@title <- value[1]
+
+  return(object)
+})
+
+
+
+#### setDate ------------------------------------------------------------------
+
+#' @describeIn streamSet getter for the date.
+#' Note that is not setter for the date.
+#'
+#' @export
+#'
+#' @aliases setDate,streamSet,streamSet-method
+#'
+setMethod("setDate", "streamSet", function(object) {
+
+  return(object@date)
+
+})
+
+
+
+#### analysisNames ----------------------------------------------------------------
+
+#' @describeIn streamSet getter for the analysis names.
+#'
+#' @export
+#'
+#' @aliases analysisNames,streamSet,streamSet-method
+#'
+setMethod("analysisNames", "streamSet", function(object) {
+
+  return(names(object@analyses))
+
+})
+
+
+
+#### [ sub-setting analyses ---------------------------------------------------
 
 #' @describeIn streamSet subset on analyses, using analysis index or name.
 #'
@@ -100,69 +166,21 @@ setMethod("[", c("streamSet", "ANY", "missing", "missing"), function(x, i, ...) 
   return(x)
 })
 
-#### setInfo ---------------------------------------------------------
 
-#' @describeIn streamSet setter and getter for set title, date and path.
-#' When the \code{title} and \code{date} arguments
-#' are missing it returns a list with the set title, date and path.
-#' If arguments are given, the set title and date are updated
-#' based on the specified arguments, returning the original class object.
-#'
-#' @param title A character string to be used as set title.
-#' @param date The \link{Date} of the set.
-#'
-#' @export
-#'
-#' @aliases setInfo,streamSet,streamSet-method
-#'
-setMethod("setInfo", "streamSet", function(object, title = NULL, date = NULL) {
-
-  if (missing(title) & missing(date)) {
-    return(list(title = object@title, date = object@date, path = object@path))
-  }
-
-  if (!missing(title) & !is.null(title)) object@project <- title
-  if (!missing(date) & !is.null(date)) object@date <- as.Date(date)
-  return(object)
-})
-
-#### path ----------------------------------------------------------------
-
-#' @describeIn streamSet getter for set path.
-#'
-#' @importMethodsFrom BiocGenerics path
-#'
-#' @export
-#'
-#' @aliases path,streamSet,streamSet-method
-#'
-setMethod("path", "streamSet", function(object) object@path)
-
-#### analysisNames ----------------------------------------------------------------
-
-#' @describeIn streamSet getter for the analysis names.
-#'
-#' @export
-#'
-#' @aliases analysisNames,streamSet,streamSet-method
-#'
-setMethod("analysisNames", "streamSet", function(object) {
-
-  return(names(object@analyses))
-
-})
 
 #### addAnalyses ---------------------------------------------------------
 
-#' @describeIn streamSet getter for analysis names.
+#' @describeIn streamSet adds analyses to the \linkS4class{streamSet}.
 #'
-#' @param analysisList A list of named analyses paths as character string.
+#' @param analysisList A list of strings with analysis file full paths.
 #'
 #' @export
 #'
 #' @aliases addAnalyses,streamSet,streamSet-method
 #'
 setMethod("addAnalyses", "streamSet", function(object, analysisList = NULL) {
+
+  # TODO improve with method for file paths only
 
   if (is.list(analysisList)) {
 

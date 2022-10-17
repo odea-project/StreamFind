@@ -64,7 +64,7 @@ filterFeatures <- function(object, settings = NULL) {
 
 
   if (is.null(settings)) {
-    prs <- getParameters(obj, call = "filterFeatures")
+    prs <- getSettings(obj, call = "filterFeatures")
 
     if (length(prs) > 0) {
       if (length(prs) > 1) {
@@ -72,7 +72,7 @@ filterFeatures <- function(object, settings = NULL) {
       }
 
       algorithm = getAlgorithm(prs)
-      filterList = getSettings(prs)
+      filterList = getParameters(prs)
 
     } else {
 
@@ -82,7 +82,7 @@ filterFeatures <- function(object, settings = NULL) {
   } else if (testClass(settings, "settings")) {
 
     algorithm <- getAlgorithm(settings)
-    filterList <- getSettings(settings)
+    filterList <- getParameters(settings)
 
   } else {
 

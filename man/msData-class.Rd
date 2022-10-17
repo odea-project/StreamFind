@@ -59,9 +59,9 @@
 \alias{spectra,msData,msData-method}
 \alias{hasAdjustedRetentionTime,msData-method}
 \alias{hasAdjustedRetentionTime,msData,msData-method}
-\alias{addParameters,msData-method}
-\alias{addParameters,msData,msData-method}
-\alias{getParameters,msData-method}
+\alias{addSettings,msData-method}
+\alias{addSettings,msData,msData-method}
+\alias{getSettings,msData-method}
 \alias{as.features,msData-method}
 \alias{as.features,msData,msData-method}
 \alias{hasPeaks,msData-method}
@@ -219,9 +219,9 @@
 
 \S4method{hasAdjustedRetentionTime}{msData}(object)
 
-\S4method{addParameters}{msData}(object, settings, where = "analyses", analyses = NULL)
+\S4method{addSettings}{msData}(object, settings, where = "analyses", analyses = NULL)
 
-\S4method{getParameters}{msData}(object, where = "analyses", analyses = NULL, call = NULL)
+\S4method{getSettings}{msData}(object, where = "analyses", analyses = NULL, call = NULL)
 
 \S4method{as.features}{msData}(object)
 
@@ -231,6 +231,7 @@
   object,
   analyses = NULL,
   targetsID = NULL,
+  mass = NULL,
   mz = NULL,
   ppm = 20,
   rt = NULL,
@@ -242,6 +243,7 @@
   object,
   analyses = NULL,
   targetsID = NULL,
+  mass = NULL,
   mz = NULL,
   ppm = 20,
   rt = NULL,
@@ -257,6 +259,7 @@
   object,
   analyses = NULL,
   targetsID = NULL,
+  mass = NULL,
   mz = NULL,
   ppm = 20,
   rt = NULL,
@@ -272,6 +275,7 @@
 \S4method{features}{msData}(
   object,
   targetsID = NULL,
+  mass = NULL,
   mz = NULL,
   ppm = 20,
   rt = NULL,
@@ -285,6 +289,7 @@
   object,
   analyses = NULL,
   targetsID = NULL,
+  mass = NULL,
   mz = NULL,
   ppm = 20,
   rt = NULL,
@@ -301,6 +306,7 @@
 \S4method{annotation}{msData}(
   object,
   targetsID = NULL,
+  mass = NULL,
   mz = NULL,
   ppm = 20,
   rt = NULL,
@@ -312,6 +318,7 @@
 \S4method{plotAnnotation}{msData}(
   object,
   targetsID = NULL,
+  mass = NULL,
   mz = NULL,
   ppm = 20,
   rt = NULL,
@@ -416,6 +423,8 @@ minimum intensity of MS2 level traces.}
 
 \item{targetsID}{A character vector with the ID of targets
 (e.g., peaks or features IDs).}
+
+\item{mass}{...}
 
 \item{filtered}{Logical. When \code{TRUE} (the default),
 filtered data is returned. When \code{FALSE}, filtered data is excluded.}
@@ -570,10 +579,10 @@ the collision energy and precursor scan and \emph{m/z} are also returned.
 \item \code{hasAdjustedRetentionTime(msData)}: getter for presence of adjusted retention time
 in the analyses.
 
-\item \code{addParameters(msData)}: adds processing parameters to analyses or features as defined
+\item \code{addSettings(msData)}: adds processing settings to analyses or features as defined
 by the argument \code{where}. So where can be either "analyses" or "features".
 
-\item \code{getParameters(msData)}: gets processing parameters from analyses or features as defined
+\item \code{getSettings(msData)}: gets processing settings from analyses or features as defined
 by the argument \code{where}. So where can be either "analyses" or "features".
 
 \item \code{as.features(msData)}: converts the \linkS4class{msData}

@@ -72,7 +72,6 @@ setMethod("show", "msData", function(object) {
     "  Class         ", paste(is(object), collapse = "; "), "\n",
     "  Title         ", object@title, "\n",
     "  Date          ", as.character(object@date), "\n",
-    "  Path          ", object@path, "\n",
     sep = ""
   )
   if (length(object@analyses) > 0) {
@@ -80,7 +79,8 @@ setMethod("show", "msData", function(object) {
       analysis = analysisNames(object),
       replicate = replicateNames(object),
       blank = blankReplicateNames(object),
-      class = sapply(object@analyses, function(x) is(x))
+      class = sapply(object@analyses, function(x) is(x)),
+      polarity = polarities(object)
     )
 
     tb$traces <- sapply(object@analyses, function(x) nrow(x@spectra))
@@ -116,16 +116,23 @@ setMethod("show", "msData", function(object) {
 #' @aliases analysisInfo,msData,msData-method
 #'
 setMethod("analysisInfo", "msData", function(obj) {
+
   temp <- data.frame(
     "path" = sapply(obj@analyses, function(x) dirname(x@file)),
     "analysis" = sapply(obj@analyses, function(x) x@analysis),
-    "group" = replicateNames(object),
-    "blank" = blankReplicateNames(object),
-    "class" = sapply(obj@analyses, function(x) is(x)),
-    "file" = filePaths(object)
+    "group" = replicateNames(obj),
+    "blank" = blankReplicateNames(obj)
   )
 
+  if (length(unique(polarities(obj))) > 1) {
+    temp$set = polarities(obj)
+  }
+
+  temp$class = sapply(obj@analyses, function(x) is(x))
+  temp$file = filePaths(obj)
+
   rownames(temp) <- seq_len(nrow(temp))
+
   return(temp)
 })
 
@@ -144,7 +151,8 @@ setMethod("analysisTable", "msData", function(object) {
     "analysis" = sapply(object@analyses, function(x) x@analysis),
     "replicate" = replicateNames(object),
     "blank" = blankReplicateNames(object),
-    "class" = sapply(object@analyses, function(x) is(x))
+    "class" = sapply(object@analyses, function(x) is(x)),
+    "polarity" = polarities(object)
   )
   rownames(temp) <- seq_len(nrow(temp))
   return(temp)
@@ -373,7 +381,7 @@ setMethod("addAnalyses", "msData", function(object,
 
     cls <- NA_character_
 
-    if (length(analysisList) == 1) {
+    if (length(analysisList) == 1 & !(class(analysisList) %in% "list")) {
       cls <- class(analysisList)
     } else {
       cls <- sapply(analysisList, function(x) class(x))
@@ -400,6 +408,7 @@ setMethod("addAnalyses", "msData", function(object,
       )
       file_df$analysis <- sapply(analysisList, function(x) analysisNames(x))
       file_df$class <- cls
+      file_df$polarity <- sapply(analysisList, function(x) polarities(x))
 
       old_file_df <- analysisTable(object)
 
@@ -962,9 +971,9 @@ setMethod("hasAdjustedRetentionTime", "msData", function(object) {
 
 
 
-### addParameters --------------------------------------------------------------
+### addSettings --------------------------------------------------------------
 
-#' @describeIn msData adds processing parameters to analyses or features as defined
+#' @describeIn msData adds processing settings to analyses or features as defined
 #' by the argument \code{where}. So where can be either "analyses" or "features".
 #'
 #' @template args-single-settings
@@ -973,9 +982,9 @@ setMethod("hasAdjustedRetentionTime", "msData", function(object) {
 #'
 #' @export
 #'
-#' @aliases addParameters,msData,msData-method
+#' @aliases addSettings,msData,msData-method
 #'
-setMethod("addParameters", "msData", function(object,
+setMethod("addSettings", "msData", function(object,
                                               settings,
                                               where = "analyses",
                                               analyses = NULL) {
@@ -996,21 +1005,21 @@ setMethod("addParameters", "msData", function(object,
     analyses <- checkAnalysesArgument(object, analyses)
 
     for (ana in analyses) {
-      object@analyses[[ana]]@parameters[[settings@call]] <- settings
+      object@analyses[[ana]]@settings[[settings@call]] <- settings
     }
   }
 
   if (where %in% "features") {
-    object@features@parameters[[getCall(settings)]] <- settings
+    object@features@settings[[getCall(settings)]] <- settings
   }
 
   return(object)
 })
 
 
-### getParameters ----------------------------------------------------------
+### getSettings ----------------------------------------------------------
 
-#' @describeIn msData gets processing parameters from analyses or features as defined
+#' @describeIn msData gets processing settings from analyses or features as defined
 #' by the argument \code{where}. So where can be either "analyses" or "features".
 #'
 #' @param where A character vector defining where to get the \linkS4class{settings}.
@@ -1019,9 +1028,9 @@ setMethod("addParameters", "msData", function(object,
 #'
 #' @export
 #'
-#' @aliases addParameters,msData,msData-method
+#' @aliases addSettings,msData,msData-method
 #'
-setMethod("getParameters", "msData", function(object,
+setMethod("getSettings", "msData", function(object,
                                               where = "analyses",
                                               analyses = NULL,
                                               call = NULL) {
@@ -1040,9 +1049,9 @@ setMethod("getParameters", "msData", function(object,
     param <- sapply(analyses, function(x, object, call) {
 
       if (is.null(call)) {
-        object@analyses[[x]]@parameters
+        object@analyses[[x]]@settings
       } else {
-        object@analyses[[x]]@parameters[[call]]
+        object@analyses[[x]]@settings[[call]]
       }
     }, object = object, call)
 
@@ -1050,9 +1059,9 @@ setMethod("getParameters", "msData", function(object,
 
   if (where %in% "features") {
     if (is.null(call)) {
-      param <- object@features@parameters
+      param <- object@features@settings
     } else {
-      param <- object@features@parameters[[call]]
+      param <- object@features@settings[[call]]
     }
   }
 
@@ -1096,9 +1105,29 @@ setMethod("as.features", "msData", function(object) {
     return(ft)
   })
 
-  # TODO adapt for as.featuresSet when multiple polarities present
+  # change mz to mass for setWorkflows in patRoon
+  if (length(unique(polarities(object))) > 1 | "both" %in% polarities(object)) {
 
-  return(new("featuresOpenMS", features = feat, analysisInfo = anaInfo))
+    feat <- lapply(feat, function(x) {
+
+      x$mzmin <- x$mass - (x$mz - x$mzmin)
+      x$mzmax <- x$mass + (x$mzmax - x$mz)
+      x$mz <- x$mass
+      x$mass <- NULL
+
+      return(x)
+    })
+
+    feat_obj <- new("featuresSet",
+      features = feat, analysisInfo = anaInfo, algorithm = "openms-set")
+
+  } else {
+
+    feat_obj <- new("featuresOpenMS", features = feat, analysisInfo = anaInfo)
+
+  }
+
+  return(feat_obj)
 })
 
 ### hasPeaks -----------------------------------------------------------
@@ -1122,6 +1151,7 @@ setMethod("hasPeaks", "msData", function(object) {
 #' given in the \code{targetsID} argument to select the respective peaks.
 #' Also, analyses can be selected using the \code{analyses} argument.
 #'
+#' @param mass ...
 #' @template args-single-targetsID
 #' @template args-single-filtered
 #'
@@ -1132,35 +1162,41 @@ setMethod("hasPeaks", "msData", function(object) {
 setMethod("peaks", "msData", function(object,
                                       analyses = NULL,
                                       targetsID = NULL,
+                                      mass = NULL,
                                       mz = NULL, ppm = 20,
                                       rt = NULL, sec = 60,
                                       filtered = TRUE) {
 
   analyses <- checkAnalysesArgument(object, analyses)
-  obj <- object
-  obj@analyses <- obj@analyses[analyses]
+  analyses <- object@analyses[analyses]
 
-  pks <- lapply(obj@analyses, function(x, targetsID,
-                                       mz, ppm, rt, sec, filtered) {
+  pks <- lapply(analyses, function(x, targetsID, mass,
+                                   mz, ppm, rt, sec, filtered) {
     pks_a <- peaks(
-      x, targetsID = targetsID,
+      x, targetsID = targetsID, mass = mass,
       mz = mz, ppm = ppm, rt = rt, sec = sec,
       filtered = filtered
     )
+
     return(pks_a)
   },
-    filtered = filtered,
-    targetsID = targetsID,
-    mz = mz,
-    rt = rt,
-    ppm = ppm,
-    sec = sec
+  filtered = filtered,
+  targetsID = targetsID,
+  mass = mass,
+  mz = mz,
+  rt = rt,
+  ppm = ppm,
+  sec = sec
   )
 
   pks <- rbindlist(pks, idcol = "analysis")
-  rpl <- data.table(analysis = analysisNames(obj), replicate = replicateNames(obj))
-  pks <- pks[rpl, on = .(analysis = analysis)]
-  pks <- pks[!is.na(id), ]
+
+  if (nrow(pks) > 0) {
+    rpl <- replicateNames(object)[unique(pks$analysis)]
+    rpl <- data.table("analysis" = names(rpl), "replicate" = rpl)
+    pks <- pks[rpl, on = .(analysis = analysis)]
+    pks <- pks[!is.na(id), ]
+  }
 
   return(pks)
 })
@@ -1187,6 +1223,7 @@ setMethod("peaks", "msData", function(object,
 setMethod("plotPeaks", "msData", function(object,
                                           analyses = NULL,
                                           targetsID = NULL,
+                                          mass = NULL,
                                           mz = NULL, ppm = 20,
                                           rt = NULL, sec = 30,
                                           filtered = TRUE,
@@ -1199,7 +1236,7 @@ setMethod("plotPeaks", "msData", function(object,
   obj <- object
   obj@analyses <- obj@analyses[analyses]
 
-  peaks <- peaks(obj, analyses = NULL, targetsID, mz, ppm, rt, sec, filtered)
+  peaks <- peaks(obj, analyses = NULL, targetsID, mass, mz, ppm, rt, sec, filtered)
 
   pks_tars <- copy(peaks[, .(analysis, replicate, id, mz, rt, mzmin, mzmax, rtmin, rtmax)])
   pks_tars$rtmin <- min(pks_tars$rtmin) - 60
@@ -1248,6 +1285,7 @@ setMethod("plotPeaks", "msData", function(object,
 setMethod("mapPeaks", "msData", function(object,
                                          analyses = NULL,
                                          targetsID = NULL,
+                                         mass = NULL,
                                          mz = NULL, ppm = 20,
                                          rt = NULL, sec = 30,
                                          filtered = TRUE,
@@ -1261,6 +1299,7 @@ setMethod("mapPeaks", "msData", function(object,
     object,
     analyses,
     targetsID,
+    mass,
     mz, ppm,
     rt, sec,
     filtered
@@ -1307,6 +1346,7 @@ setMethod("mapPeaks", "msData", function(object,
 #'
 setMethod("features", "msData", function(object,
                                          targetsID = NULL,
+                                         mass = NULL,
                                          mz = NULL, ppm = 20,
                                          rt = NULL, sec = 60,
                                          filtered = TRUE,
@@ -1317,6 +1357,7 @@ setMethod("features", "msData", function(object,
     features(
       object = object@features,
       targetsID = targetsID,
+      mass = mass,
       mz = mz, ppm = ppm,
       rt = rt, sec = sec,
       filtered = filtered,
@@ -1344,6 +1385,7 @@ setMethod("features", "msData", function(object,
 setMethod("plotFeatures", "msData", function(object,
                                              analyses = NULL,
                                              targetsID = NULL,
+                                             mass = NULL,
                                              mz = NULL, ppm = 20,
                                              rt = NULL, sec = 30,
                                              filtered = TRUE,
@@ -1358,6 +1400,7 @@ setMethod("plotFeatures", "msData", function(object,
   feats <- features(
     object = obj,
     targetsID = targetsID,
+    mass = mass,
     mz = mz,
     ppm = ppm,
     rt = rt,
@@ -1488,28 +1531,24 @@ setMethod("as.featureGroups", "msData", function(object) {
 #'
 setMethod("annotation", "msData", function(object,
                                            targetsID = NULL,
+                                           mass = NULL,
                                            mz = NULL, ppm = 20,
                                            rt = NULL, sec = 60, id = NULL,
                                            all = FALSE) {
 
-  feats <- object@features@metadata
+  feats <- features(
+    object = object@features,
+    targetsID = targetsID,
+    mass = mass,
+    mz = mz, ppm = ppm,
+    rt = rt, sec = sec,
+    filtered = TRUE,
+    complete = TRUE,
+    average = TRUE
+  )
 
   if (!"component" %in% colnames(feats)) {
     return(cat("Annotation seems to not be present in the given object!"))
-  }
-
-  if (!is.null(targetsID)) {
-    feats <- feats[id %in% targetsID, ]
-  } else {
-    targets <- makeTargets(mz = mz, rt = rt, ppm = ppm, sec = sec, id = id)
-
-    sel <- rep(FALSE, nrow(feats))
-    for (i in seq_len(nrow(targets))) {
-      sel[between(feats$mz, targets$mzmin[i], targets$mzmax[i]) &
-            between(feats$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
-    }
-
-    feats <- feats[sel]
   }
 
   all_feats <- features(object, complete = TRUE, average = TRUE)
@@ -1517,7 +1556,7 @@ setMethod("annotation", "msData", function(object,
   if (all) {
     outfeats <- all_feats[component %in% feats$component, ]
   } else {
-    outfeats <- all_feats[(monoiso %in% feats$id | neutralMass %in% feats$neutralMass) & component %in% feats$component, ]
+    outfeats <- all_feats[(iso_id %in% feats$id | mass %in% feats$mass) & component %in% feats$component, ]
   }
 
   return(outfeats)
@@ -1537,6 +1576,7 @@ setMethod("annotation", "msData", function(object,
 #'
 setMethod("plotAnnotation", "msData", function(object,
                                                targetsID = NULL,
+                                               mass = NULL,
                                                mz = NULL, ppm = 20,
                                                rt = NULL, sec = 30, id = NULL,
                                                all = FALSE,
@@ -1545,6 +1585,7 @@ setMethod("plotAnnotation", "msData", function(object,
   comps <- annotation(
     object = object,
     targetsID = targetsID,
+    mass = mass,
     mz = mz,
     ppm = ppm,
     rt = rt,

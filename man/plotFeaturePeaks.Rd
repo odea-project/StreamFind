@@ -8,6 +8,7 @@ plotFeaturePeaks(
   object,
   analyses = NULL,
   targetsID = NULL,
+  mass = NULL,
   mz = NULL,
   ppm = 20,
   rt = NULL,

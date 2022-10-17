@@ -42,13 +42,14 @@ peakPicking <- function(object = NULL, settings = NULL) {
 
   if (is.null(settings)) {
 
-    prs <- getParameters(object, call = "peakPicking")
+    prs <- getSettings(object, call = "peakPicking")
     prs[sapply(prs, is.null)] <- NULL
 
     if (length(unique(prs)) == 1 & length(prs) > 0) {
+
       prs <- unique(prs)
       algorithm <- getAlgorithm(prs[[1]])
-      params <- getSettings(prs[[1]])
+      params <- getParameters(prs[[1]])
 
     } else if (length(prs) > 0) {
 
@@ -71,7 +72,7 @@ peakPicking <- function(object = NULL, settings = NULL) {
   } else if (testClass(settings, "settings")) {
 
     algorithm <- getAlgorithm(settings)
-    params <- getSettings(settings)
+    params <- getParameters(settings)
 
   } else {
 
@@ -98,21 +99,21 @@ peakPicking <- function(object = NULL, settings = NULL) {
     stgs <- createSettings(
       call = "peakPicking",
       algorithm = algorithm,
-      settings = params
+      parameters = params
     )
 
-    object <- addParameters(object, stgs)
+    object <- addSettings(object, stgs)
 
   } else {
 
-    params <- sapply(prs, function(x) getSettings(x))
+    params <- sapply(prs, function(x) getParameters(x))
     sinfo$algorithm <- algorithm
 
     sinfo <- split(sinfo, f = sinfo$algorithm)
 
     #check if parameter settings are different in each algorithm
     sinfo <- lapply(sinfo, function(x, params) {
-      stgs_temp <- unique(settings[x$analysis])
+      stgs_temp <- unique(params[x$analysis])
       if (length(stgs_temp) > 1) x <- split(x, f = x$analysis)
       return(x)
     }, params = params)
@@ -164,6 +165,8 @@ peakPicking <- function(object = NULL, settings = NULL) {
   return(object)
 }
 
+
+
 #' @title buildPeaksTable
 #'
 #' @param object A \linkS4class{msData} or \linkS4class{msAnalysis} object.
@@ -178,9 +181,12 @@ buildPeaksTable <- function(object, pat) {
   cat("Building peaks table... ")
 
   if (testClass(pat, "features")) {
+
     valid <- TRUE
+
     peaks <- pat@features
     anaInfo <- pat@analysisInfo
+
 
     if (testClass(pat, "featuresXCMS3")) {
       if (hasFilledChromPeaks(pat@xdata)) {
@@ -191,13 +197,35 @@ buildPeaksTable <- function(object, pat) {
       } else { extra <- NULL }
     } else { extra <- NULL }
 
-    peaks <- lapply(names(peaks), function(x, extra, peaks) {
+
+    peaks <- lapply(names(peaks), function(x, extra, peaks, object) {
+
       temp <- peaks[[x]]
 
       if (!is.null(extra)) {
         if (temp == nrow(extra[[x]]) & all(temp$mz == extra[[x]]$mz)) {
           temp[, is_filled := extra[[x]]$is_filled]
         }
+      }
+
+      polarity <- polarities(object)[x]
+
+      # TODO make case for polarity switching data analysis
+
+      if (polarity %in% "positive") {
+        adduct <- "[M+H]+"
+        adduct_val <- -1.0073
+      }
+
+      if (polarity %in% "negative") {
+        adduct <- "[M-H]-"
+        adduct_val <- 1.0073
+      }
+
+      if (!"adduct" %in% colnames(temp)) temp$adduct <- adduct
+
+      if (!"mass" %in% colnames(temp)) {
+        temp$mass <- temp$mz + adduct_val
       }
 
       if (!"is_filled" %in% colnames(temp)) temp$is_filled <- 0
@@ -212,13 +240,18 @@ buildPeaksTable <- function(object, pat) {
       setnames(temp, "group", "feature", skip_absent = TRUE)
 
       return(temp)
-    }, extra = extra, peaks = peaks)
+
+    }, extra = extra, peaks = peaks, object = object)
   }
 
+
+
   if (testClass(pat, "featureGroups")) {
+
     valid <- TRUE
-    peaks <- pat@features@features
     anaInfo <- pat@analysisInfo
+    peaks <- copy(pat@features@features)
+
 
     if (testClass(pat, "featureGroupsXCMS3")) {
       if (hasFilledChromPeaks(pat@xdata)) {
@@ -229,7 +262,9 @@ buildPeaksTable <- function(object, pat) {
       } else { extra <- NULL }
     } else { extra <- NULL }
 
+
     peaks <- lapply(analysisNames(object), function(x, extra, peaks) {
+
       temp <- peaks[[x]]
 
       if (!is.null(extra)) {
@@ -246,11 +281,9 @@ buildPeaksTable <- function(object, pat) {
       setnames(temp, "group", "feature", skip_absent = TRUE)
 
       return(temp)
+
     }, extra = extra, peaks = peaks)
-
     names(peaks) <- analysisNames(object)
-
-
 
     peaks_org <- lapply(object@analyses, function(x) x@peaks)
 
@@ -260,6 +293,30 @@ buildPeaksTable <- function(object, pat) {
       temp <- copy(peaks[[x]])
 
       temp_org <- copy(peaks_org[[x]])
+
+      if ("adduct" %in% colnames(temp) & grepl("Set", class(pat))) {
+
+        temp[adduct %in% "[M-H]-", `:=`(
+          mzmin = (mz - 1.0073) - (mz - mzmin),
+          mzmax = (mz - 1.0073) + (mzmax - mz),
+          mz = mz - 1.0073
+        )]
+
+        temp[adduct %in% "[M+H]+", `:=`(
+          mzmin = (mz + 1.0073) - (mz - mzmin),
+          mzmax = (mz + 1.0073) + (mzmax - mz),
+          mz = mz + 1.0073
+        )]
+
+      }
+
+      temp$mz <- round(temp$mz, digits = 5)
+      temp$mzmin <- round(temp$mzmin, digits = 5)
+      temp$mzmax <- round(temp$mzmax, digits = 5)
+
+      temp_org$mz <- round(temp_org$mz, digits = 5)
+      temp_org$mzmin <- round(temp_org$mzmin, digits = 5)
+      temp_org$mzmax <- round(temp_org$mzmax, digits = 5)
 
       temp_rem <- anti_join(
         temp_org, temp, by = c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax"))
@@ -278,9 +335,28 @@ buildPeaksTable <- function(object, pat) {
 
       temp <- rbindlist(temp_list, fill = TRUE)
 
+      polarity <- polarities(object)[x]
+
+      # TODO make case for polarity switching data analysis
+
+      if (polarity %in% "positive") {
+        adduct <- "[M+H]+"
+        adduct_val <- 1.0073
+        temp$adduct <- adduct
+        temp$mass <- temp$mz - adduct_val
+      }
+
+      if (polarity %in% "negative") {
+        adduct <- "[M-H]-"
+        adduct_val <- 1.0073
+        temp$adduct <- adduct
+        temp$mass <- temp$mz + adduct_val
+      }
+
       if (!"is_filled" %in% colnames(temp)) temp$is_filled <- 0
       if (!"filtered" %in% colnames(temp)) temp$filtered <- FALSE
       if (!"filter" %in% colnames(temp)) temp$filter <- NA_character_
+
 
       temp$filtered[is.na(temp$filtered)] <- FALSE
       temp$is_filled[is.na(temp$is_filled)] <- 0
@@ -290,7 +366,9 @@ buildPeaksTable <- function(object, pat) {
     }, peaks = peaks, peaks_org = peaks_org)
   }
 
+
   peaks <- lapply(peaks, function(x, object) {
+
     temp <- copy(x)
 
     if ("feature" %in% colnames(temp)) {
@@ -315,15 +393,19 @@ buildPeaksTable <- function(object, pat) {
       intensity, area,
       drt, rtmin, rtmax,
       dppm, mzmin, mzmax,
+      adduct, mass,
+      is_filled,
+      filtered,
+      filter,
       everything()
     )
 
     temp$id <- paste0(
-      "m",
+      "mz",
       round(temp$mz, digits = 3),
       "_d",
       temp$dppm,
-      "_r",
+      "_rt",
       round(temp$rt, digits = 0),
       "_t",
       temp$drt,
@@ -337,25 +419,18 @@ buildPeaksTable <- function(object, pat) {
   names(peaks) <- analysisNames(object)
 
   if (testClass(object, "msAnalysis")) {
+
     object@peaks <- copy(peaks[[1]])
 
   } else {
+
     object@analyses <- lapply(analysisNames(object), function(x, object, peaks) {
       temp <- object@analyses[[x]]
       temp@peaks <- copy(peaks[[x]])
       return(temp)
     }, object = object, peaks = peaks)
-  }
 
-  # TODO implement multiple polarities to amend the peak id accordingly
-  # pols <- polarities(object)
-  # peaks$adduct <- NA_character_
-  # for (anl in analysisNames(object)) {
-  #   if ("positive" %in% pols[anl]) peaks[analysis %in% anl, adduct := "[M+H]+"]
-  #   if ("negative" %in% pols[anl]) peaks[analysis %in% anl, adduct := "[M-H]-"]
-  #
-  #   #TODO implement polarity switching when both is output of polarities
-  # }
+  }
 
   cat("Done! \n")
 

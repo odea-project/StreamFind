@@ -736,7 +736,7 @@ mzXML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
 
   xml_data <- read_xml(fl)
 
-  # TODO xcms error when removing empty septra
+  # TODO xcms error when removing empty septra, due to different scan numbers
   #scan_n <- xml_find_all(xml_data, xpath = "//d1:scan[@peaksCount>0]")
 
   scan_n <- xml_find_all(xml_data, xpath = "//d1:scan")
@@ -1142,7 +1142,7 @@ extractMSn <- function(
   if (checkmate::testClass(settings, "settings")) {
     call <- getCall(settings)
     algorithm <- getAlgorithm(settings)
-    settings <- getSettings(settings)
+    settings <- getParameters(settings)
 
   } else {
     warning("Invalid settings for getting MSn data!")

@@ -9,10 +9,10 @@
 \alias{replicateNames,msFeatures,msFeatures-method}
 \alias{blankReplicateNames,msFeatures-method}
 \alias{blankReplicateNames,msFeatures,msFeatures-method}
-\alias{addParameters,msFeatures-method}
-\alias{addParameters,msFeatures,msFeatures-method}
-\alias{getParameters,msFeatures-method}
-\alias{getParameters,msFeatures,msFeatures-method}
+\alias{addSettings,msFeatures-method}
+\alias{addSettings,msFeatures,msFeatures-method}
+\alias{getSettings,msFeatures-method}
+\alias{getSettings,msFeatures,msFeatures-method}
 \alias{features,msFeatures-method}
 \alias{features,msFeatures,msFeatures-method}
 \alias{[,msFeatures,ANY,missing,missing-method}
@@ -25,13 +25,14 @@
 
 \S4method{blankReplicateNames}{msFeatures}(object)
 
-\S4method{addParameters}{msFeatures}(object, settings)
+\S4method{addSettings}{msFeatures}(object, settings)
 
-\S4method{getParameters}{msFeatures}(object, call = NULL)
+\S4method{getSettings}{msFeatures}(object, call = NULL)
 
 \S4method{features}{msFeatures}(
   object,
   targetsID = NULL,
+  mass = NULL,
   mz = NULL,
   ppm = 20,
   rt = NULL,
@@ -108,9 +109,9 @@ for inspection, processing and evaluation.
 
 \item \code{blankReplicateNames(msFeatures)}: getter for blank names.
 
-\item \code{addParameters(msFeatures)}: adds processing parameters for features.
+\item \code{addSettings(msFeatures)}: adds processing settings for features.
 
-\item \code{getParameters(msFeatures)}: gets processing parameters.
+\item \code{getSettings(msFeatures)}: gets processing settings.
 
 \item \code{features(msFeatures)}: getter for features (i.e., grouped peaks). When
 complete is set to \code{TRUE}, additional feature metadata is also returned.
@@ -124,8 +125,9 @@ complete is set to \code{TRUE}, additional feature metadata is also returned.
 
 \describe{
 \item{\code{analyses}}{A \linkS4class{data.table} with the information about the
-analyses, analysis file paths and  replicates and associated replicate blanks
-used to created the features.}
+analyses, analysis file paths, class and polarity and replicates and
+associated replicate blanks for correspondence analysis (i.e.,
+grouping of peaks accross samples).}
 
 \item{\code{intensity}}{A \linkS4class{data.table} with the a row for each feature
 with the intensity of each peak in each analyses of the set.}
