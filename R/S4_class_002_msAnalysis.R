@@ -392,6 +392,104 @@ setMethod("spectra", "msAnalysis", function(object) {
   return(object@spectra)
 })
 
+### plotSpectra ---------------------------------------------------------------
+
+#' @describeIn msAnalysis plots spectra in the
+#' \linkS4class{msAnalysis}.
+#'
+#' @export
+#'
+#' @aliases plotSpectra,msAnalysis,msAnalysis-method
+#'
+setMethod("plotSpectra", "msAnalysis", function(object,
+                                                mz = NULL, rt = NULL,
+                                                ppm = 20, sec = 60) {
+
+  if (!hasLoadedSpectra(object)) {
+    warning("Spectra not found, load raw spectra
+            first with loadRawData() method.")
+    return(NULL)
+  }
+
+  targets <- makeTargets(mz, rt, ppm, sec)
+
+  spec <- spectra(object)
+
+  if (TRUE %in% c((targets$mzmax > 0), (targets$rtmax > 0))) {
+
+      if (0 %in% targets$mzmax) targets$mzmax <- max(spec$mz)
+      if (0 %in% targets$rtmax) targets$rtmax <- max(spec$rt)
+
+      spec <- spec[mz >= min(targets$mzmin) & mz <= max(targets$mzmax) &
+                   rt >= min(targets$rtmin) & rt <= max(targets$rtmax), ]
+  }
+
+
+  spec$level <- factor(spec$level)
+
+  fig <- plotly::plot_ly(spec, x = ~rt, y = ~mz, z = ~intensity,
+                 color = ~level, colors = c('#BF382A', '#0C4B8E'))
+  fig <- fig %>% plotly::add_markers(marker = list(size = 1, line = NULL))
+  fig <- fig %>% plotly::layout(scene = list(
+    xaxis = list(title = 'Retention time (seconds)'),
+    yaxis = list(title = 'm/z'),
+    zaxis = list(title = 'Intensity (counts)')))
+
+  return(fig)
+})
+
+
+
+### chromatograms -------------------------------------------------------------
+
+#' @describeIn msAnalysis getter for slot chromatograms in the
+#' \linkS4class{msAnalysis}.
+#'
+#' @export
+#'
+#' @aliases chromatograms,msAnalysis,msAnalysis-method
+#'
+setMethod("chromatograms", "msAnalysis", function(object) {
+
+  return(object@chromatograms)
+})
+
+### plotChromatograms ---------------------------------------------------------
+
+#' @describeIn msAnalysis plots chromatograms in the
+#' \linkS4class{msAnalysis}.
+#'
+#' @export
+#'
+#' @aliases plotChromatograms,msAnalysis,msAnalysis-method
+#'
+setMethod("plotChromatograms", "msAnalysis", function(object,
+                                                      index = NULL,
+                                                      id = NULL,
+                                                      interactive = FALSE) {
+
+  chroms <- chromatograms(object)
+  chroms$analysis <- analysisNames(object)
+
+  if (!is.null(index)) {
+    idx <- index
+    chroms <- chroms[chroms$index %in% idx, ]
+  }
+
+  chroms <- chroms[, .(analysis, id, rt, intensity)]
+
+  chroms$var <- chroms$id
+
+  if (length(unique(chroms$id)) == 1) {
+    title = unique(chroms$id)
+  } else {
+    title = NULL
+  }
+
+  plotEICs(chroms, title = title, interactive = interactive)
+
+})
+
 ### EICs -----------------------------------------------------------------------
 
 #' @describeIn msAnalysis get extracted ion chromatograms (EICs)
@@ -507,9 +605,14 @@ setMethod("TICs", "msAnalysis", function(object) {
 
     if (is.null(tic)) tic = data.table()
 
-  } else {
+  } else if ("TIC" %in% object@chromatograms$id){
 
     tic <- object@chromatograms[id %in% "TIC", ]
+
+  } else {
+
+    # TODO make query of TIC based on xml head nodes
+    tic = data.table()
 
   }
 

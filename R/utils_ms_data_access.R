@@ -460,7 +460,34 @@ mzML_loadRawData <- function(fl, spectra = TRUE, levels = c(1, 2), rtr = NULL,
     chroms_data <- lapply(chroms_n, function(x) {
 
       idx <- as.numeric(xml_attr(x, "index"))
+
       id <- xml_attr(x, "id")
+
+      polarity_pos <- 'd1:cvParam[@accession="MS:1000130"]'
+      polarity_pos <- xml_child(x, polarity_pos)
+
+      polarity_neg <- 'd1:cvParam[@accession="MS:1000129"]'
+      polarity_neg <- xml_child(x, polarity_neg)
+
+      if (length(polarity_pos) > 0 | length(polarity_neg) > 0) {
+
+        polarity <- c(
+          unique(gsub(" scan", "", xml_attr(polarity_pos, "name"))),
+          unique(gsub(" scan", "", xml_attr(polarity_neg, "name")))
+        )
+
+        polarity <- polarity[!is.na(polarity)]
+
+      } else {
+
+        polarity <- NA_character_
+      }
+
+      target_mz_xpath <- 'd1:precursor//d1:cvParam[@name="isolation window target m/z"]'
+      target_mz <- as.numeric(xml_attr(xml_child(x, target_mz_xpath), "value"))
+
+      product_mz_xpath <- 'd1:product//d1:cvParam[@name="isolation window target m/z"]'
+      product_mz <- as.numeric(xml_attr(xml_child(x, product_mz_xpath), "value"))
 
       arrays <- 'd1:binaryDataArrayList/d1:binaryDataArray'
       arrays <- xml_find_all(x, xpath = arrays)
@@ -509,6 +536,9 @@ mzML_loadRawData <- function(fl, spectra = TRUE, levels = c(1, 2), rtr = NULL,
       out_df <- data.table(
         "index" = idx,
         "id" = id,
+        "polarity" = polarity,
+        "target_mz" = target_mz,
+        "product_mz" = product_mz,
         "rt" = rt,
         "intensity" = intensity
       )
@@ -522,6 +552,9 @@ mzML_loadRawData <- function(fl, spectra = TRUE, levels = c(1, 2), rtr = NULL,
       dl[["chroms"]] <- data.table(
         "index" = numeric(),
         "id" = character(),
+        "polarity" = character(),
+        "target_mz" = numeric(),
+        "product_mz" = numeric(),
         "rt" = numeric(),
         "intensity" = numeric()
       )

@@ -1,5 +1,5 @@
 ---
-title: "Handbook streamFind: backend"
+title: "Handbook streamFind: back end"
 author: "Ricardo Cunha"
 output:
   bookdown::html_document2:
@@ -42,7 +42,7 @@ library(patRoon)
 
 # Objective
 
-The streamFind package is a backend (code based) and frontend ([shiny](https://shiny.rstudio.com/) app) platform for assembly of modular workflows to support spectrometric and spectroscopic data processing. The major focus of streamFind is data processing for environmental and quality studies. The streamFind package aims to stimulate the use of advanced data analysis (e.g., non-target screening, statistical analysis, etc.) in routine studies, promoting standardization of data processing and structure and easing the retrospective evaluation of data. The streamFind package can be used by academics but also by technicians due to the comprehensive documentation and well categorized set of integrated functionalities (modules). This handbook focuses on describing and demonstrating the backend of the streamFind package.
+The streamFind package is a back end (code based) and frontend ([shiny](https://shiny.rstudio.com/) app) platform for assembly of modular workflows to support spectrometric and spectroscopic data processing. The major focus of streamFind is data processing for environmental and quality studies. The streamFind package aims to stimulate the use of advanced data analysis (e.g., non-target screening, statistical analysis, etc.) in routine studies, promoting standardization of data processing and structure and easing the retrospective evaluation of data. The streamFind package can be used by academics but also by technicians due to the comprehensive documentation and well categorized set of integrated functionalities (modules). This handbook focuses on describing and demonstrating the back end of the streamFind package.
 
 # Install
 
@@ -129,43 +129,21 @@ To be done.
 
 ## Files
 
-The streamFind package includes example data files via the streamFindData R package. Once installed the full file paths of MS data files can be obtained as shown below. Alternatively, the files can be obtained directly from folder `system.file(package = "streamFindData", dir = "extdata")`. The files available are described in Table \@ref(tab:description-files). Note, the MS files (.mzML) were trimmed with the function `trimSpectraFilesMZR` to reduce their size. The centroided Agilent Q-TOF files were trimmed with retention time between 900 and 1350 seconds, *m/z* for MS1 data between 200 and 450 Da and *m/z* for MS2 between 35 and 450 Da. Additionally, MS1 and MS2 traces below 100 and 50 counts were removed, respectively. The profile Agilent Q-TOF files were trimmed with retention time between 1000 and 1200 seconds, *m/z* for MS1 data between 200 and 300 Da and *m/z* for MS2 between 35 and 300 Da. Additionally, MS1 and MS2 traces below 1 count were removed to exclude empty spectra. The files are used within the document for demonstration of the backend.
+The streamFind package includes example data files via the streamFindData R package. Once installed the full file paths of MS data files can be obtained as shown below. Alternatively, the files can be obtained directly from folder `system.file(package = "streamFindData", dir = "extdata")`. The files available are described in Table \@ref(tab:description-files). Note, the MS files (.mzML) were trimmed with the function `trimSpectraFilesMZR` to reduce their size. The centroided Agilent Q-TOF files were trimmed with retention time between 900 and 1350 seconds, *m/z* for MS1 data between 200 and 450 Da and *m/z* for MS2 between 35 and 450 Da. Additionally, MS1 and MS2 traces below 100 and 50 counts were removed, respectively. The profile Agilent Q-TOF files were trimmed with retention time between 1000 and 1200 seconds, *m/z* for MS1 data between 200 and 300 Da and *m/z* for MS2 between 35 and 300 Da. Additionally, MS1 and MS2 traces below 1 count were removed to exclude empty spectra. The files are used within the document for demonstration of the back end.
 
 ```{r resource-files, cache=FALSE}
-
-r_path <- system.file(package = "streamFindData", dir = "extdata")
-#r_path <- system.file(package = "streamFind", dir = "extdata")
-
-files <- list.files(r_path, pattern = ".mzML|.mzXML", full.names = TRUE)
+# 
+# r_path <- system.file(package = "streamFindData", dir = "extdata")
+# #r_path <- system.file(package = "streamFind", dir = "extdata")
+# 
+# files <- list.files(r_path, pattern = ".mzML|.mzXML", full.names = TRUE)
 
 #list of file full paths from the data package
-#files <- streamFindData::msFilePaths()
+files <- streamFindData::msFilePaths()
 ```
 
 ```{r description-files, echo=FALSE}
-df_files_desc <- data.frame(
-  N. = seq_len(length(files)),
-  file_type = rep("MS", 27),
-  file_name = basename(files),
-  device = c(rep("Agilent Q-TOF", 27)),
-  data_type = c(rep("centroid", 6), rep("profile", 3), rep("centroid", 18)),
-  ac_mode = c(rep("MS/MS", 27)),
-  polarity = c(rep("positive", 9),
-               rep("negative", 3), rep("positive",3),
-               rep("negative", 3), rep("positive",3),
-               rep("negative", 3), rep("positive",3)),
-  description = c(
-    rep("Basic centroided MS data as mzML spiked with chemical 
-        and internal standards (CS and IS, respectively).", 3),
-    rep("Basic centroided MS data as mzXML spiked with chemical 
-        and internal standards (CS and IS, respectively).", 3),
-    rep("Basic profile MS data as mzML spiked with CS and IS.", 3),
-    rep("Blank MS data as mzML spiked with IS.", 6),
-    rep("Wastewater secondary effluent MS data as mzML spiked with IS.", 6),
-    rep("Wastewater secondary effluent treated with ozonated 
-        strong water MS data as mzML spiked with IS.", 6)
-  )
-)
+df_files_desc <- streamFindData::msFilesDescription()
 
 knitr::kable(df_files_desc, caption = "Files included in the streamFind package.") %>%
   column_spec(column = 3, width = "100px") %>%
@@ -179,20 +157,11 @@ knitr::kable(df_files_desc, caption = "Files included in the streamFind package.
 The chemicals spiked in the files are described below in Table \@ref(tab:show-table-chemicals). The internal standards (IS) are spiked to all Agilent Q-TOF files. The chemical standards (S) were only spiked for the first 6 Agilent Q-TOF files not to the blanks nor wastewater analysis files. Note that not all IS and S are visible in the profile Agilent Q-TOF files as a narrower trimming was applied.
 
 ```{r load-table-chemicals}
-db <- paste0(r_path, "/spiked_chemicals_hrms.csv")
-db <- data.table::fread(db)
+db <- streamFindData::msSpikedChemicals()
 ```
 
 ```{r show-table-chemicals, echo=FALSE}
-db$ionization <- "positive"
-db[, `:=`("mz_pos" = mass + 1.0073, "mz_neg" = mass - 1.0073 )]
-db[grepl("neg", db$comment), ionization := "both"]
-data.table::setnames(db, "mix_id", "tag", skip_absent = TRUE)
-db[tag %in% 1, tag := "CS"]
-db[, in_file := "1-6"]
-db[tag %in% "IS", in_file := "1-24"]
-
-knitr::kable(db[, .(name, formula, mass, rt, ionization, tag, in_file)], caption = "Chemical standards spiked.") %>%
+knitr::kable(db[, .(name, CAS, formula, mass, rt, ionization, tag, in_file)], caption = "Chemical standards spiked.") %>%
   kable_styling(font_size = 11, bootstrap_options = c("striped", "hover", "responsive"), fixed_thead = TRUE) %>%
   scroll_box(width = "100%", height = "600px")
 ```
@@ -225,7 +194,7 @@ The nomenclature listed below is consistently applied throughout the objects and
 -   **feature** corresponds to a group of corresponding peaks across analysis files/analyses and can be accessed with the method `features`;
 -   **MS2** corresponds to second order fragmentation data as acquired in tandem MS or MS/MS mode and can be accessed with the method `MS2s`.
 
-(...) `r # TODO add chromatograms entry and make method`
+(...)
 
 ## streamSet class
 
@@ -631,7 +600,7 @@ convertFiles(file, type = "ms", outfile = "mzML", outdir = NULL, opts_list = opt
 
 # Basic workflow
 
-The basic workflow (Figure \@ref(fig:workflow-scheme) left column) includes the following steps: (1) set creation, (2) data conversion (when required/applicable), (3) assignment of analysis replicate names and respective blank analysis replicates, (4) peak finding (or peak picking), (5) peak alignment and grouping into features across analyses, (6) filling of peaks missing in features, (7) annotation of isotopic and adduct features and (8) feature quality evaluation and (9) filtering. The usage of the S4 class objects within the basic workflow (pre-processing) for HRMS data is presented in this section with examples. The right column in Figure \@ref(fig:workflow-scheme illustrates the implementation of modular functionalities for assembly of data processing workflows. The backend for modular assembly and framework of workflows in streamFind is described and demonstrated in section \@ref(workflows).
+The basic workflow (Figure \@ref(fig:workflow-scheme) left column) includes the following steps: (1) set creation, (2) data conversion (when required/applicable), (3) assignment of analysis replicate names and respective blank analysis replicates, (4) peak finding (or peak picking), (5) peak alignment and grouping into features across analyses, (6) filling of peaks missing in features, (7) annotation of isotopic and adduct features and (8) feature quality evaluation and (9) filtering. The usage of the S4 class objects within the basic workflow (pre-processing) for HRMS data is presented in this section with examples. The right column in Figure \@ref(fig:workflow-scheme illustrates the implementation of modular functionalities for assembly of data processing workflows. The back end for modular assembly and framework of workflows in streamFind is described and demonstrated in section \@ref(workflows).
 
 ```{r workflow-scheme, echo=FALSE, fig.cap="Basic workflow scheme."}
 knitr::include_graphics(paste0(getwd(), "/hb_backend_figures/workflow_scheme.png"))

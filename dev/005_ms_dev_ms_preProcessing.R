@@ -10,6 +10,37 @@ files2 <- list.files(dir2, full.names = TRUE)
 fl <- files1[1:3]
 files <- fl
 
+### Test MRM files -------------------------------------------------------------
+
+files <- streamFindData::msFilePaths()
+
+mrm_neg <- newAnalysis(files[29])
+mrm_neg <- loadRawData(mrm_neg)
+
+chromatograms(mrm_neg)[index %in% 3]
+
+
+plotTICs(mrm_neg)
+
+plotChromatograms(mrm_neg, index = c(35), interactive = TRUE)
+
+RaMS::grabMSdata(files[28], grab_what = "TIC")
+
+object <- mrm_neg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### RaMS ---------------------
 

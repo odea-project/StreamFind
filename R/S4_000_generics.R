@@ -203,6 +203,50 @@ setGeneric("hasLoadedChromatograms", function(object, ...) standardGeneric("hasL
 
 
 
+#' @title spectra
+#'
+#' @description Generic for getting spectra.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
+setGeneric("spectra", function(object, ...) standardGeneric("spectra"))
+
+
+
+#' @title plotSpectra
+#'
+#' @description Generic for plotting spectra.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
+setGeneric("plotSpectra", function(object, ...) standardGeneric("plotSpectra"))
+
+
+
+#' @title chromatograms
+#'
+#' @description Generic for getting chromatograms.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
+setGeneric("chromatograms", function(object, ...) standardGeneric("chromatograms"))
+
+
+
+#' @title plotChromatograms
+#'
+#' @description Generic for plotting chromatograms.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
+setGeneric("plotChromatograms", function(object, ...) standardGeneric("plotChromatograms"))
+
+
+
 #' @title EICs
 #'
 #' @description Generic for getting extracted ion chromatograms (EICs).
@@ -310,6 +354,17 @@ setGeneric("hasPeaks", function(object, ...) standardGeneric("hasPeaks"))
 #' @param ... Other method specific arguments.
 #'
 setGeneric("peaks", function(object, ...) standardGeneric("peaks"))
+
+
+
+#' @title plotPeaks
+#'
+#' @description Generic for plotting peaks.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
+setGeneric("plotPeaks", function(object, ...) standardGeneric("plotPeaks"))
 
 
 
@@ -457,25 +512,14 @@ setGeneric("as.featureGroups", function(object, ...) standardGeneric("as.feature
 
 ### External Generics ----------------------------------------------------------
 
-#### ProtGenerics --------------------------------------------------------
-#' @importMethodsFrom ProtGenerics spectra
-#' @noRd
-NULL
-
 #### patRoon -------------------------------------------------------------
 #' @importMethodsFrom patRoon analysisInfo
 #' @export
 #' @noRd
 NULL
 
-#### xcms ----------------------------------------------------------------
-#' @importMethodsFrom xcms plotPeaks
-#' @export
-#' @noRd
-NULL
-
 #### BiocGenerics --------------------------------------------------------
-#' @importMethodsFrom BiocGenerics path annotation
+#' @importMethodsFrom BiocGenerics annotation
 #' @export
 #' @noRd
 NULL

@@ -28,6 +28,12 @@
 \alias{hasLoadedChromatograms,msAnalysis,msAnalysis-method}
 \alias{spectra,msAnalysis-method}
 \alias{spectra,msAnalysis,msAnalysis-method}
+\alias{plotSpectra,msAnalysis-method}
+\alias{plotSpectra,msAnalysis,msAnalysis-method}
+\alias{chromatograms,msAnalysis-method}
+\alias{chromatograms,msAnalysis,msAnalysis-method}
+\alias{plotChromatograms,msAnalysis-method}
+\alias{plotChromatograms,msAnalysis,msAnalysis-method}
 \alias{EICs,msAnalysis-method}
 \alias{EICs,msAnalysis,msAnalysis-method}
 \alias{plotEICs,msAnalysis-method}
@@ -86,6 +92,12 @@
 \S4method{hasLoadedChromatograms}{msAnalysis}(object)
 
 \S4method{spectra}{msAnalysis}(object)
+
+\S4method{plotSpectra}{msAnalysis}(object, mz = NULL, rt = NULL, ppm = 20, sec = 60)
+
+\S4method{chromatograms}{msAnalysis}(object)
+
+\S4method{plotChromatograms}{msAnalysis}(object, index = NULL, id = NULL, interactive = FALSE)
 
 \S4method{EICs}{msAnalysis}(object, mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL)
 
@@ -234,13 +246,13 @@ and maximum retention time values.}
 \item{id}{An id vector with target identifiers. When not given
 is added as a combination of the \emph{m/z} and retention time ranges or values.}
 
+\item{interactive}{Logical value, set to \code{TRUE} to use
+the \pkg{plotly} instead of \pkg{base}. The default is \code{FALSE}.}
+
 \item{legendNames}{A character vector with the same length and order
 as the number and order of targets to be used as plot legend.}
 
 \item{title}{a character string to the define a title.}
-
-\item{interactive}{Logical value, set to \code{TRUE} to use
-the \pkg{plotly} instead of \pkg{base}. The default is \code{FALSE}.}
 
 \item{plotTargetMark}{Logical, set to \code{TRUE} to plot a target mark.}
 
@@ -328,6 +340,15 @@ raw spectra.
 chromatograms.
 
 \item \code{spectra(msAnalysis)}: getter for slot spectra in the
+\linkS4class{msAnalysis}.
+
+\item \code{plotSpectra(msAnalysis)}: plots spectra in the
+\linkS4class{msAnalysis}.
+
+\item \code{chromatograms(msAnalysis)}: getter for slot chromatograms in the
+\linkS4class{msAnalysis}.
+
+\item \code{plotChromatograms(msAnalysis)}: plots chromatograms in the
 \linkS4class{msAnalysis}.
 
 \item \code{EICs(msAnalysis)}: get extracted ion chromatograms (EICs)

@@ -53,7 +53,7 @@
 #' @importFrom tools file_ext file_path_sans_ext
 #'
 #' @importFrom xml2 read_xml xml_find_first xml_attr xml_find_all xml_name
-#' @importFrom xml2 xml_text
+#' @importFrom xml2 xml_text xml_child
 #'
 #'
 #' @noRd
