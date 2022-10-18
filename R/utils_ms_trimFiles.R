@@ -42,6 +42,8 @@ trimSpectraFilesMZR <- function(files, MS1 = TRUE, MS2 = TRUE,
                                 intensityThreshold = NULL, copyMetadata = TRUE,
                                 path = NULL, prefix = "trim_") {
 
+  requireNamespace("mzR")
+
   if (!is.null(rtr) & !is.numeric(rtr)) {
     return(warning("rtr must be numeric!"))
   }
@@ -111,8 +113,8 @@ trimSpectraFilesMZR <- function(files, MS1 = TRUE, MS2 = TRUE,
       next
     }
 
-    msf <- openMSfile(f)
-    hd <- header(msf)
+    msf <- mzR::openMSfile(f)
+    hd <- mzR::header(msf)
 
     if (!is.null(rtr)) {
       hd2 <- hd[hd$retentionTime >= rtr[1] & hd$retentionTime <= rtr[2], ]
@@ -120,7 +122,7 @@ trimSpectraFilesMZR <- function(files, MS1 = TRUE, MS2 = TRUE,
 
     if (!is.null(mzr) | !is.null(mzr_ms2)) {
 
-      spec <- peaks(msf, scans = hd2$seqNum)
+      spec <- mzR::peaks(msf, scans = hd2$seqNum)
 
       for (s in seq_len(length(spec))) {
         altered <- FALSE
@@ -209,7 +211,7 @@ trimSpectraFilesMZR <- function(files, MS1 = TRUE, MS2 = TRUE,
     if (!is.null(path)) savePath <- path
 
     if (copyMetadata) {
-      copyWriteMSData(
+      mzR::copyWriteMSData(
         object = spec,
         file = paste0(savePath, "/", prefix, basename(f)),
         original_file = f,
@@ -219,7 +221,7 @@ trimSpectraFilesMZR <- function(files, MS1 = TRUE, MS2 = TRUE,
           c("mzR", paste0(packageVersion("mzR")), "MS:-1", "Trimmed spectra"))
       )
     } else {
-      writeMSData(
+      mzR::writeMSData(
         object = spec,
         file = paste0(savePath, "/", prefix, basename(f)),
         header = hd2,

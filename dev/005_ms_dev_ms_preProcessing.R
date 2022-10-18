@@ -259,6 +259,68 @@ p_ana <- peaks(ana)
 
 plotPeaks(ana, targetsID = "m329.05_d0_r753_t19_p867")
 
+### test negative XML ----------------------------------------------------------
+
+files <- list.files(choose.dir(), full.names = TRUE)
+
+set <- newStreamSet(files)
+
+
+### test saturation ------------------------------------------------------------
+
+
+files <- list.files(choose.dir(), full.names = TRUE)
+
+set <- newStreamSet(files)
+
+#getMetadata(set, which = "centroided")
+
+#plotEICs(set, analyses = c(16), mz = c(326.232611, 242.1434, 207.1492), ppm = 20, interactive = TRUE)
+
+#plotEICs(set, analyses = c(16), mz = c(267.0698), ppm = 20, interactive = TRUE)
+
+#plotXICs(set, analyses = c(16), mz = c(326.232611, 242.1434, 207.1492), rt = c(956, 1126, 1151), ppm = 20, sec = 30)
+
+plotXICs(set, analyses = c(4, 6, 8), mz = c(242.1434), rt = c(1125), ppm = 200, sec = 30)
+
+#plotEICs(set, analyses = c(16), mz = c(242.1434, 247.1748), ppm = 20, interactive = TRUE)
+
+plotXICs(set, analyses = c(8), mz = c(242.1434, 247.1748), rt = c(1125, 1125), ppm = 150)
+
+### test IM --------------------------------------------------------------------
+
+fl <- file.choose()
+
+init_time <- Sys.time()
+xml <- xml2::read_xml(fl)
+x_path <- '//d1:spectrum/d1:scanList/d1:scan/d1:cvParam[@name="ion mobility drift time"]'
+dt <- xml2::xml_find_all(xml, x_path)
+unit <- xml_attr(dt[[1]], "unitName")
+dt_vals <- as.numeric(xml_attr(dt, "value"))
+rm(xml)
+rm(dt)
+rm(x_path)
+gc()
+final_time <- Sys.time()
+
+
+
+
+xml[4]
+
+
+
+hd <- loadBasicRawSpectraHeaderMZR(fl)
+
+init_time <- Sys.time()
+ms <- mzR::openMSfile(fl)
+dh <- header(ms)
+mzR::close(ms)
+rm(ms)
+gc()
+final_time <- Sys.time()
+
+final_time - init_time
 
 
 
