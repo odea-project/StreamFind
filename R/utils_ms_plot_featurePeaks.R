@@ -20,8 +20,11 @@ plotFeaturePeaks <- function(object,
                              targetsID = NULL,
                              mass = NULL,
                              mz = NULL, ppm = 20,
-                             rt = NULL, sec = 30, id = NULL,
+                             rt = NULL, sec = 30,
+                             id = NULL,
                              heights = c(0.6, 0.4)) {
+
+  id_names <- id
 
   assertClass(object, "msData")
 
@@ -39,33 +42,69 @@ plotFeaturePeaks <- function(object,
     targets = fts$id
   )
 
-  eic <- lapply(split(pks, pks$analysis), function(x, object) {
-    return(
-      EICs(
-        object,
-        analyses = unique(x$analysis),
-        mz = x
+  if (length(unique(pks$analysis)) > 1) {
+
+    handlers(handler_progress(format="[:bar] :percent :eta :message"))
+
+    #workers <- length(availableWorkers()) - 1
+
+    plan("multisession") #, workers = workers
+
+    pks_list <- split(pks, pks$analysis)
+
+    with_progress({
+
+      p <- progressor(along = unique(pks$analysis))
+
+      eic <- future_lapply(pks_list, function(x, object) {
+
+        return(
+          EICs(
+            object,
+            analyses = unique(x$analysis),
+            mz = x
+          )
+        )
+
+      }, object = object, future.seed = TRUE) #, future.chunk.size = 1
+    })
+
+    plan("sequential")
+
+  } else {
+
+    eic <- lapply(split(pks, pks$analysis), function(x, object) {
+      return(
+        EICs(
+          object,
+          analyses = unique(x$analysis),
+          mz = x
+        )
       )
-    )
-  }, object = object)
+    }, object = object)
+
+  }
 
   eic <- rbindlist(eic)
 
   if (nrow(eic) < 1) return(cat("Data was not found for any of the targets!"))
 
   eic$var <- sapply(eic$id, function(x, pks) {
-    pks[id == x, feature]
+    temp <- unique(pks$feature[pks$id %in% x])
+    return(temp)
   }, pks = pks)
 
-  if (!is.null(id) & length(id) == length(unique(eic$var))) {
-    leg <- id
+  if ((!is.null(id_names)) && (length(id_names) == length(unique(eic$var)))) {
+    leg <- id_names
+    leg <- sapply(unique(eic$var), function(x, leg) { return(unname(leg[x])) }, leg = leg)
     names(leg) <- unique(eic$var)
-    eic$var <- sapply(eic$var, function(x) leg[x])
+    eic$var <- sapply(eic$var, function(x, leg) { return(unname(leg[x])) }, leg = leg)
   } else {
     leg <- unique(eic$var)
     names(leg) <- unique(eic$var)
   }
 
+  leg <- unlist(leg)
   colors <- getColors(leg)
 
   showleg <- rep(TRUE, length(leg))
@@ -77,6 +116,8 @@ plotFeaturePeaks <- function(object,
 
     pk_temp <- pks[feature == i, ]
 
+    leg_group <- unname(leg[i])
+
     for (z in pk_temp$id) {
 
       df <- eic[id == z, ]
@@ -86,10 +127,10 @@ plotFeaturePeaks <- function(object,
         y = df$intensity,
         type = "scatter", mode = "lines",
         line = list(width = 0.5,
-                    color = colors[i]),
+                    color = colors[leg_group]),
         connectgaps = TRUE,
-        name = leg[i],
-        legendgroup = leg[i],
+        name = leg_group,
+        legendgroup = leg_group,
         showlegend = FALSE
       )
 
@@ -102,16 +143,16 @@ plotFeaturePeaks <- function(object,
         y = df$intensity,
         type = "scatter", mode =  "lines+markers",
         fill = "tozeroy", connectgaps = TRUE,
-        fillcolor = paste(color = colors[i], 50, sep = ""),
-        line = list(width = 0.1, color = colors[i]),
-        marker = list(size = 3, color = colors[i]),
-        name = leg[i],
-        legendgroup = leg[i],
+        fillcolor = paste(color = colors[leg_group], 50, sep = ""),
+        line = list(width = 0.1, color = colors[leg_group]),
+        marker = list(size = 3, color = colors[leg_group]),
+        name = leg_group,
+        legendgroup = leg_group,
         showlegend = showleg[i],
         hoverinfo = "text",
-        hoverlabel = list(bgcolor = colors[i]),
+        hoverlabel = list(bgcolor = colors[leg_group]),
         text = paste(
-          "</br> name: ", leg[i],
+          "</br> name: ", leg_group,
           "</br> feature: ", i,
           "</br> peak: ", z,
           "</br> analysis: ", pk_temp[id == z, analysis],
@@ -131,6 +172,8 @@ plotFeaturePeaks <- function(object,
 
     df2 <- pks[feature == i, ]
 
+    leg_group <- unname(leg[i])
+
     if (!"is_filled" %in% colnames(df2)) df2$is_filled <- 0
 
     df_p <- df2[is_filled == 0, ]
@@ -141,7 +184,7 @@ plotFeaturePeaks <- function(object,
       type = "scatter",
       mode = "markers",
       marker = list(
-        line = list(color = colors[i], width = 3),
+        line = list(color = colors[leg_group], width = 3),
         color = "#000000", size = 10
       ),
       error_x = list(
@@ -149,16 +192,16 @@ plotFeaturePeaks <- function(object,
         symmetric = FALSE,
         arrayminus = df_p$rt - df_p$rtmin,
         array = df_p$rtmax - df_p$rt,
-        color = colors[i],
+        color = colors[leg_group],
         width = 5
       ),
-      name = leg[i],
-      legendgroup = leg[i],
+      name = leg_group,
+      legendgroup = leg_group,
       showlegend = FALSE,
       hoverinfo = "text",
-      hoverlabel = list(bgcolor = colors[i]),
+      hoverlabel = list(bgcolor = colors[leg_group]),
       text = paste(
-        "</br> name: ", leg[i],
+        "</br> name: ", leg_group,
         "</br> feature: ", i,
         "</br> peak: ", df_p$id,
         "</br> analysis: ", df_p$analysis,
@@ -178,7 +221,7 @@ plotFeaturePeaks <- function(object,
         type = "scatter",
         mode = "markers",
         marker = list(
-          line = list(color = colors[i], width = 3),
+          line = list(color = colors[leg_group], width = 3),
           color = "#f8f8f8",
           size = 10
         ),
@@ -187,16 +230,16 @@ plotFeaturePeaks <- function(object,
           symmetric = FALSE,
           arrayminus = df_f$rt - df_f$rtmin,
           array = df_f$rtmax - df_f$rt,
-          color = colors[i],
+          color = colors[leg_group],
           width = 5
         ),
-        name = leg[i],
-        legendgroup = leg[i],
+        name = leg_group,
+        legendgroup = leg_group,
         showlegend = FALSE,
         hoverinfo = "text",
-        hoverlabel = list(bgcolor = colors[i]),
+        hoverlabel = list(bgcolor = colors[leg_group]),
         text = paste(
-          "</br> name: ", leg[i],
+          "</br> name: ", leg_group,
           "</br> feature: ", i,
           "</br> peak: ", df_f$id,
           "</br> analysis: ", df_f$analysis,

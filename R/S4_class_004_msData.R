@@ -1,6 +1,5 @@
 
-
-#### validity ------------------------------------------------------------
+#### validity -----------------------------------------------------------------
 
 msData_validity <- function(object) {
 
@@ -31,7 +30,9 @@ msData_validity <- function(object) {
   return(valid)
 }
 
-### msData ------------------------------------------------------------------------------------------------
+
+
+### msData --------------------------------------------------------------------
 
 #' @title msData
 #'
@@ -56,9 +57,11 @@ setClass("msData",
   validity = msData_validity
 )
 
-### S4 methods -----------------------------------------------------------------
 
-#### show ----------------------------------------------------------------
+
+### S4 methods ----------------------------------------------------------------
+
+#### show ---------------------------------------------------------------------
 
 #' @describeIn msData prints the details of an \linkS4class{msData} object.
 #'
@@ -103,7 +106,7 @@ setMethod("show", "msData", function(object) {
 
 })
 
-#### analysisInfo -------------------------------------------------------
+#### analysisInfo -------------------------------------------------------------
 
 #' @describeIn msData getter for analysis info as \link{data.frame} with
 #' four columns: path, analysis, group and blank. The \link{data.frame}
@@ -487,7 +490,9 @@ setMethod("[", c("msData", "ANY", "missing", "missing"), function(x, i, ...) {
       f_id <- features(x)[["id"]]
       x@analyses <- lapply(x@analyses, function(z, f_id) {
         temp <- z@peaks
-        temp[!feature %in% f_id, `:=`(feature = NA_character_, filtered = TRUE, filter = "grouping")]
+        temp[!feature %in% f_id, `:=`(feature = NA_character_,
+                                      filtered = TRUE,
+                                      filter = "grouping")]
         z@peaks <- copy(temp)
         return(z)
       }, f_id = f_id)
@@ -575,6 +580,8 @@ setMethod("EICs", "msData", function(object,
 
   return(eics)
 })
+
+
 
 ### plotEICs -------------------------------------------------------------
 
@@ -1200,6 +1207,7 @@ setMethod("peaks", "msData", function(object,
 
   return(pks)
 })
+
 
 
 ### plotPeaks ------------------------------------------------------------------------------------------------

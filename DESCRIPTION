@@ -33,7 +33,6 @@ Imports:
     golem (>= 0.3.2),
     grDevices,
     jsonlite,
-    mzR,
     patRoon,
     plotly,
     plyr,
@@ -52,13 +51,18 @@ Imports:
     Rdpack,
     methods,
     gtools,
-    xml2
+    xml2,
+    future,
+    progressr,
+    future.apply,
+    parallelly
 Suggests: 
     knitr,
     rmarkdown,
     spelling,
     testthat (>= 3.0.0),
-    golem
+    golem,
+    mzR
 VignetteBuilder: 
     knitr
 RdMacros: 

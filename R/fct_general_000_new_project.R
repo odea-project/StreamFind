@@ -57,17 +57,21 @@ checkFilesInput <- function(files = NA_character_,
     }
 
     if ("blank" %in% colnames(files)) {
-        blank <- files$blank
-        blank <- gsub("", NA_character_, blank)
-        names(blank) <- files$file
+        blanks <- files$blank
+        blk_empty <- blanks %in% ""
+        blanks[blk_empty] <- NA_character_
+        names(blanks) <- files$file
 
     }
 
     files_v <- files$file
 
   } else {
+
     files_v <- files
+
   }
+
 
   if ((length(replicates) == 1 & TRUE %in% is.na(replicates)) |
       length(replicates) != length(files_v)) {
@@ -76,16 +80,21 @@ checkFilesInput <- function(files = NA_character_,
     replicates <- gsub( "-", "_", replicates)
     replicates <- sub("_[^_]+$", "", replicates)
     names(replicates) <- files_v
+
   }
 
+
   if (length(blanks) == 1 & TRUE %in% is.na(blanks) |
-      length(blanks) != length(files)) {
+      length(blanks) != length(files_v)) {
 
     blanks <- rep(NA_character_, length(files_v))
     names(blanks) <- files_v
+
   }
 
+
   files_v <- files_v[checkFileValidity(files_v)]
+
 
   if (length(files_v) < 1) {
 
@@ -98,8 +107,8 @@ checkFilesInput <- function(files = NA_character_,
 
     file_df <- data.table(
       "file" = files_v,
-      "replicate" = replicates,
-      "blank" = blanks,
+      "replicate" = replicates[files_v],
+      "blank" = blanks[files_v],
       keep.rownames = FALSE
     )
 
@@ -209,13 +218,15 @@ newStreamSet <- function(files = NA_character_,
         analysis = names(analyses)
       )
 
-      object@features@analyses$replicate <- file_df$replicate[
-        file_df$file %in% filePaths(object)
-      ]
+      object@features@analyses$replicate <- sapply(filePaths(object),
+        function(x, file_df) {
+          file_df$replicate[file_df$file %in% x]
+        }, file_df = file_df)
 
-      object@features@analyses$blank <- file_df$blank[
-        file_df$file %in% filePaths(object)
-      ]
+      object@features@analyses$blank <- sapply(filePaths(object),
+        function(x, file_df) {
+          file_df$blank[file_df$file %in% x]
+        }, file_df = file_df)
 
       object@features@analyses$class <- ana_type
 

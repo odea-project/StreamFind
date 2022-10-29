@@ -158,11 +158,20 @@ peakPicking <- function(object = NULL, settings = NULL) {
     )
   }
 
-  object <- buildPeaksTable(object, pat)
+  object_new <- buildPeaksTable(object, pat)
 
-  validObject(object)
+  if (!identical(lapply(object_new@analyses, function(x) x@peaks),
+                lapply(object@analyses, function(x) x@peaks))) {
 
-  return(object)
+    ana_table <- analysisTable(object_new)
+    object_new@features <- new("msFeatures")
+    object_new@features@analyses <- ana_table
+
+  }
+
+  validObject(object_new)
+
+  return(object_new)
 }
 
 
@@ -369,7 +378,7 @@ buildPeaksTable <- function(object, pat) {
 
   peaks <- lapply(peaks, function(x, object) {
 
-    temp <- copy(x)
+    temp <- x
 
     if ("feature" %in% colnames(temp)) {
       temp[is.na(feature), filter := "grouping"]

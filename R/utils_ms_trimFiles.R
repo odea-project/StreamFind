@@ -43,6 +43,7 @@ trimSpectraFilesMZR <- function(files, MS1 = TRUE, MS2 = TRUE,
                                 path = NULL, prefix = "trim_") {
 
   requireNamespace("mzR")
+  # @importFrom mzR openMSfile header peaks close copyWriteMSData writeMSData
 
   if (!is.null(rtr) & !is.numeric(rtr)) {
     return(warning("rtr must be numeric!"))

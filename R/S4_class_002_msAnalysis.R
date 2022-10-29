@@ -1,5 +1,5 @@
 
-#### validity ------------------------------------------------------------------
+#### validity -----------------------------------------------------------------
 
 msAnalysis_validity <- function(object) {
 
@@ -8,7 +8,7 @@ msAnalysis_validity <- function(object) {
   if (nrow(object@peaks) > 0) {
     must_have_names <- c("id", "rt", "mz", "intensity", "area", "drt",
                          "rtmin", "rtmax", "dppm", "mzmin", "mzmax")
-    valid <- !FALSE %in% must_have_names %in% colnames(object@peaks)
+    valid <- !FALSE %in% (must_have_names %in% colnames(object@peaks))
   }
 
   return(valid)
@@ -16,7 +16,7 @@ msAnalysis_validity <- function(object) {
 
 
 
-### msAnalysis -----------------------------------------------------------------
+### msAnalysis ----------------------------------------------------------------
 
 #' msAnalysis-class
 #'
@@ -69,9 +69,9 @@ setClass("msAnalysis",
 
 
 
-### S4 methods -----------------------------------------------------------------
+### S4 methods ----------------------------------------------------------------
 
-#### show ----------------------------------------------------------------
+#### show ---------------------------------------------------------------------
 
 #' @describeIn msAnalysis shows the details of an \linkS4class{msAnalysis}.
 #'
@@ -111,7 +111,7 @@ setMethod("show", "msAnalysis", function(object) {
 
 
 
-#### filePaths -----------------------------------------------------------------
+#### filePaths ----------------------------------------------------------------
 
 #' @describeIn msAnalysis getter for analysis file path.
 #'
@@ -125,7 +125,9 @@ setMethod("filePaths", "msAnalysis", function(object) {
   return(fl)
 })
 
-#### analysisInfo --------------------------------------------------------------
+
+
+#### analysisInfo -------------------------------------------------------------
 
 #' @describeIn msAnalysis getter for analysis info as \link{data.frame} with
 #' four columns: path, analysis, group and blank. The \link{data.frame}
@@ -147,7 +149,9 @@ setMethod("analysisInfo", "msAnalysis", function(obj) {
   )
 })
 
-#### analysisTable -------------------------------------------------------------
+
+
+#### analysisTable ------------------------------------------------------------
 
 #' @describeIn msAnalysis getter for analysis table as \link{data.table} with
 #' four columns: file, analysis, replicate, blank and class.
@@ -166,7 +170,9 @@ setMethod("analysisTable", "msAnalysis", function(object) {
   )
 })
 
-#### analysisNames -------------------------------------------------------------
+
+
+#### analysisNames ------------------------------------------------------------
 
 #' @describeIn msAnalysis getter for analysis name.
 #'
@@ -181,7 +187,9 @@ setMethod("analysisNames", "msAnalysis", function(object) {
 
 })
 
-#### getMetadata ---------------------------------------------------------------
+
+
+#### getMetadata --------------------------------------------------------------
 
 #' @describeIn msAnalysis getter for analysis metadata.
 #'  Returns a list of metadata entries as defined by \code{which}.
@@ -204,7 +212,9 @@ setMethod("getMetadata", "msAnalysis", function(object, which = NULL) {
   return(mtd_a)
 })
 
-#### addMetadata ---------------------------------------------------------------
+
+
+#### addMetadata --------------------------------------------------------------
 
 #' @describeIn msAnalysis setter for analysis metadata.
 #'
@@ -266,7 +276,9 @@ setMethod("addMetadata", "msAnalysis", function(object,
   return(object)
 })
 
-#### polarities ----------------------------------------------------------------
+
+
+#### polarities ---------------------------------------------------------------
 
 #' @describeIn msAnalysis getter for analyses polarity.
 #'
@@ -285,7 +297,7 @@ setMethod("polarities", "msAnalysis", function(object) {
 
 
 
-### loadSpectraInfo ------------------------------------------------------------
+### loadSpectraInfo -----------------------------------------------------------
 
 #' @describeIn msAnalysis adds raw spectra information (i.e., scan number,
 #'  ms level and retention time of each spectrum) to the slot \code{spectra}
@@ -312,7 +324,7 @@ setMethod("loadSpectraInfo", "msAnalysis", function(object) {
 
 
 
-### loadRawData ----------------------------------------------------------------
+### loadRawData ---------------------------------------------------------------
 
 #' @describeIn msAnalysis adds raw spectra and chromatograms to the respective
 #' slots of an \linkS4class{msAnalysis} object.
@@ -350,7 +362,9 @@ setMethod("loadRawData", "msAnalysis", function(object,
   return(object)
 })
 
-### hasLoadedSpectra -----------------------------------------------------------
+
+
+### hasLoadedSpectra ----------------------------------------------------------
 
 #' @describeIn msAnalysis checks if the \linkS4class{msAnalysis} has loaded
 #' raw spectra.
@@ -364,7 +378,9 @@ setMethod("hasLoadedSpectra", "msAnalysis", function(object) {
   return(nrow(object@spectra) > 0 && "intensity" %in% colnames(object@spectra))
 })
 
-### hasLoadedChromatograms -----------------------------------------------------
+
+
+### hasLoadedChromatograms ----------------------------------------------------
 
 #' @describeIn msAnalysis checks if the \linkS4class{msAnalysis} has loaded raw
 #' chromatograms.
@@ -378,7 +394,9 @@ setMethod("hasLoadedChromatograms", "msAnalysis", function(object) {
   return(nrow(object@chromatograms) > 0)
 })
 
-### spectra --------------------------------------------------------------------
+
+
+### spectra -------------------------------------------------------------------
 
 #' @describeIn msAnalysis getter for slot spectra in the
 #' \linkS4class{msAnalysis}.
@@ -391,6 +409,8 @@ setMethod("spectra", "msAnalysis", function(object) {
 
   return(object@spectra)
 })
+
+
 
 ### plotSpectra ---------------------------------------------------------------
 
@@ -454,6 +474,8 @@ setMethod("chromatograms", "msAnalysis", function(object) {
   return(object@chromatograms)
 })
 
+
+
 ### plotChromatograms ---------------------------------------------------------
 
 #' @describeIn msAnalysis plots chromatograms in the
@@ -490,7 +512,9 @@ setMethod("plotChromatograms", "msAnalysis", function(object,
 
 })
 
-### EICs -----------------------------------------------------------------------
+
+
+### EICs ----------------------------------------------------------------------
 
 #' @describeIn msAnalysis get extracted ion chromatograms (EICs)
 #' for specified \emph{m/z} (Da) and retention time (seconds) targets.
@@ -547,7 +571,9 @@ setMethod("EICs", "msAnalysis", function(object,
   return(eics)
 })
 
-### plotEICs -------------------------------------------------------------------
+
+
+### plotEICs ------------------------------------------------------------------
 
 #' @describeIn msAnalysis A method for plotting extracted ion chromatograms
 #' (EICs) of data in the analysis file.
@@ -585,7 +611,9 @@ setMethod("plotEICs", "msAnalysis", function(object,
   )
 })
 
-### TICs -----------------------------------------------------------------------
+
+
+### TICs ----------------------------------------------------------------------
 
 #' @describeIn msAnalysis extracts the total ion chromatograms (TICs)
 #' of analysis.
@@ -646,7 +674,7 @@ setMethod("TICs", "msAnalysis", function(object) {
 
 
 
-### plotTICs -------------------------------------------------------------------
+### plotTICs ------------------------------------------------------------------
 
 #' @describeIn msAnalysis plots the total ion chromatogram (TIC) in the analysis.
 #'
@@ -670,7 +698,9 @@ setMethod("plotTICs", "msAnalysis", function(object,
   )
 })
 
-### XICs -----------------------------------------------------------------------
+
+
+### XICs ----------------------------------------------------------------------
 
 #' @describeIn msAnalysis get three dimensional (\emph{m/z}, time and intensity)
 #' extracted ion chromatograms (XICs) for specified \emph{m/z} and retention
@@ -720,7 +750,7 @@ setMethod("XICs", "msAnalysis", function(object,
 
 
 
-### plotXICs -------------------------------------------------------------------
+### plotXICs ------------------------------------------------------------------
 
 #' @describeIn msAnalysis plots three dimensional (\emph{m/z}, time and intensity)
 #' extracted ion chromatograms (XICs) for specified \emph{m/z} and retention
@@ -767,7 +797,9 @@ setMethod("plotXICs", "msAnalysis", function(object,
   return(plot)
 })
 
-### MS2s -----------------------------------------------------------------
+
+
+### MS2s ----------------------------------------------------------------------
 
 #' @describeIn msAnalysis get MS2 data for specified \emph{m/z} and retention time (seconds) targets.
 #' The \code{clusteringUnit} defines the method used for clustering.
@@ -801,7 +833,9 @@ setMethod("MS2s", "msAnalysis", function(object = NULL,
   )
 })
 
-### plotMS2s -------------------------------------------------------------
+
+
+### plotMS2s ------------------------------------------------------------------
 
 #' @describeIn msAnalysis plots MS2 data for specified \emph{m/z} and retention time (seconds) targets
 #' in analyses of an \linkS4class{msData} object. The \code{clusteringUnit} defines the method used for clustering.
@@ -849,7 +883,9 @@ setMethod("plotMS2s", "msAnalysis", function(object = NULL,
   )
 })
 
-### hasAdjustedRetentionTime ---------------------------------------------
+
+
+### hasAdjustedRetentionTime --------------------------------------------------
 
 #' @describeIn msAnalysis getter for presence of adjusted retention time
 #' in the \linkS4class{msAnalysis}.
@@ -863,7 +899,9 @@ setMethod("hasAdjustedRetentionTime", "msAnalysis", function(object) {
   return("rtAdjusted" %in% colnames(object@spectra))
 })
 
-### addSettings ----------------------------------------------------------
+
+
+### addSettings ---------------------------------------------------------------
 
 #' @describeIn msAnalysis adds processing settings to the analysis.
 #'
@@ -886,7 +924,8 @@ setMethod("addSettings", "msAnalysis", function(object, settings) {
 })
 
 
-### getSettings ----------------------------------------------------------
+
+### getSettings ---------------------------------------------------------------
 
 #' @describeIn msAnalysis gets processing settings in the analysis.
 #'
@@ -909,7 +948,9 @@ setMethod("getSettings", "msAnalysis", function(object, call = NULL) {
   return(param)
 })
 
-### hasPeaks -----------------------------------------------------
+
+
+### hasPeaks ------------------------------------------------------------------
 
 #' @describeIn msAnalysis check if the \linkS4class{msAnalysis} has peaks.
 #'
@@ -922,7 +963,9 @@ setMethod("hasPeaks", "msAnalysis", function(object) {
   return(nrow(object@peaks) > 0)
 })
 
-### peaks ----------------------------------------------------------------
+
+
+### peaks ---------------------------------------------------------------------
 
 #' @describeIn msAnalysis getter for chromatographic peaks.
 #' The arguments \code{targetID} and \code{mz}/\code{rt} can be used
@@ -993,7 +1036,8 @@ setMethod("peaks", "msAnalysis", function(object,
 })
 
 
-### plotPeaks ------------------------------------------------------------------------------------------------
+
+### plotPeaks -----------------------------------------------------------------
 
 #' @describeIn msAnalysis a method for plotting chromatographic peaks
 #' in an \linkS4class{msAnalysis} object.
@@ -1036,7 +1080,9 @@ setMethod("plotPeaks", "msAnalysis", function(object,
   )
 })
 
-### mapPeaks ------------------------------------------------------------------------------------------------
+
+
+### mapPeaks ------------------------------------------------------------------
 
 #' @describeIn msAnalysis a method for mapping peaks mass and time space.
 #' The \code{legendNames} is a character vector with the same length as targets for plotting and
@@ -1097,7 +1143,7 @@ setMethod("mapPeaks", "msAnalysis", function(object,
 
 
 
-#### [ sub-setting peaks ----------------------------------------------
+#### [ sub-setting peaks ------------------------------------------------------
 
 #' @describeIn msAnalysis subset on peaks, using peak index or name.
 #'
