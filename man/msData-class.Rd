@@ -3,6 +3,7 @@
 \docType{class}
 \name{msData-class}
 \alias{msData-class}
+\alias{initialize,msData-method}
 \alias{show,msData-method}
 \alias{analysisInfo,msData-method}
 \alias{analysisInfo,msData,msData-method}
@@ -86,6 +87,8 @@
 \alias{[,msData,ANY,ANY,ANY-method}
 \title{msData}
 \usage{
+\S4method{initialize}{msData}(.Object, analysisTable = NULL, run_parallel = FALSE, ...)
+
 \S4method{show}{msData}(object)
 
 \S4method{analysisInfo}{msData}(obj)
@@ -333,6 +336,8 @@
 \S4method{[}{msData,ANY,ANY,ANY}(x, i, j, p)
 }
 \arguments{
+\item{...}{Other arguments.}
+
 \item{object}{An \linkS4class{msData} object.}
 
 \item{obj}{A \linkS4class{msData} object.}
@@ -358,8 +363,6 @@ row equal to the number of analyses in the \linkS4class{msData} object.}
 \item{i}{The indice/s or name/s of the analyses to keep in \code{x}.}
 
 \item{j}{The indice/s or \emph{id}/s for of features to keep.}
-
-\item{...}{Other arguments.}
 
 \item{drop}{Not applicable to \linkS4class{msData}.}
 
@@ -449,6 +452,8 @@ structure with type defined as \emph{ms}.
 }
 \section{Methods (by generic)}{
 \itemize{
+\item \code{initialize(msData)}: creates an \linkS4class{msData}.
+
 \item \code{show(msData)}: prints the details of an \linkS4class{msData} object.
 
 \item \code{analysisInfo(msData)}: getter for analysis info as \link{data.frame} with

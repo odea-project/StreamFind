@@ -611,7 +611,7 @@ knitr::include_graphics(paste0(getwd(), "/hb_backend_figures/workflow_scheme.png
 The analysis set creation is demonstrated below for twelve HRMS data files corresponding to blank and wastewater influent samples, both measured in triplicate and in positive and negative modes. The argument `files` is the main input and can either be a vector of full path files, a table with file (i.e., full file path), replicate (i.e., the name of the analysis replicate group for each file) and blank (i.e., the name of the associated blank analysis replicate group for each file), or the `analysisInfo` data.frame from the package [patRoon](https://github.com/rickhelmus/patRoon). The set path can be assign as argument `path` and is the directory where all the set files (i.e., scripts, cache databases, objects and results) will be stored by default.
 
 ```{r newstreamset-basicworkflow, message=FALSE, results='hide'}
-sp2 <- newStreamSet(files = files[10:21], path = getwd(), title = "Project Example")
+sp2 <- newStreamSet(files = files[10:21], title = "Project Example", run_parallel = TRUE)
 ```
 
 ```{r newstreamset-object-show}

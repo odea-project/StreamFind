@@ -12,24 +12,8 @@
 #'
 #' @importFrom checkmate testClass assertClass testChoice
 #'
-#' @importClassesFrom patRoon features featureGroups
-#' @importClassesFrom patRoon featuresOpenMS featureGroupsOpenMS
-#' @importClassesFrom patRoon featureGroupsXCMS3
-#' @importClassesFrom patRoon featuresSIRIUS featureGroupsSIRIUS
-#' @importClassesFrom patRoon components
-#' @importFrom patRoon findFeatures featureTable groupFeatures
-#' @importMethodsFrom patRoon as.data.table groupTable getXCMSnExp
-#' @importMethodsFrom patRoon generateComponents componentTable
-#' @importFrom patRoon importFeatureGroupsXCMS3
-#'
 #' @importFrom dplyr select left_join full_join semi_join anti_join right_join
 #' @importFrom dplyr between everything count
-#'
-#' @importClassesFrom xcms XCMSnExp PeakGroupsParam ChromPeakAreaParam
-#' @importClassesFrom xcms ChromPeakAreaParam FillChromPeaksParam
-#' @importMethodsFrom xcms chromPeaks hasFilledChromPeaks fillChromPeaks
-#' @importMethodsFrom xcms adjustedRtime processHistory
-#' @importMethodsFrom xcms peakGroupsMatrix hasAdjustedRtime
 #'
 #' @importFrom stringr str_detect str_extract str_split
 #'
@@ -54,12 +38,11 @@
 #' @importFrom xml2 xml_text xml_child
 #'
 #' @importFrom future plan
-#'
 #' @importFrom future.apply future_lapply
 #'
 #' @importFrom progressr handlers handler_progress  with_progress progressor
 #'
-#' @importFrom parallelly availableWorkers
+#' @importFrom parallelly availableWorkers availableCores
 #'
 #' @noRd
 NULL

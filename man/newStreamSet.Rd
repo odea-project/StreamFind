@@ -6,12 +6,11 @@
 \usage{
 newStreamSet(
   files = NA_character_,
-  path = getwd(),
   title = NA_character_,
   date = Sys.Date(),
   replicates = NA_character_,
   blanks = NA_character_,
-  makeNewProject = FALSE
+  run_parallel = FALSE
 )
 }
 \arguments{
@@ -22,9 +21,6 @@ corresponding to the file full path, analysis replicate names and
 respective blank analysis replicate name. When a table is given with
 replicates and blanks, the arguments \emph{replicates} and  \emph{blanks} are ignored.
 For files, only formats \emph{mzML} and \emph{mzXML} are currently supported.}
-
-\item{path}{A character string with the directory for the set creation.
-The default is the working directory as defined by \code{getwd()}.}
 
 \item{title}{A character string with the set title.}
 
@@ -40,8 +36,8 @@ be edited using the class method \link{replicateNames<-}.}
 number of files to be added) with the name of the associate blank analysis
 replicate group for each file. The default is \code{NULL}.}
 
-\item{makeNewProject}{Logical, set to \code{TRUE} to create an R project
-in the given \code{path} and open a new R session.}
+\item{path}{A character string with the directory for the set creation.
+The default is the working directory as defined by \code{getwd()}.}
 }
 \value{
 A \linkS4class{streamSet} with a subclass depending on the added

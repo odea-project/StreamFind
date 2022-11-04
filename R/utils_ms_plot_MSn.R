@@ -27,18 +27,23 @@ plotStaticMSn <- function(ms2, title = NULL) {
     yaxs = "i"
   )
 
-  precursors <- ms2[ms2$precursor, ]
+  precursors <- ms2[ms2$isPre, ]
 
   for (s in seq_len(nrow(precursors))) {
+
     lines(
       x = rep(precursors[s, mz], 2),
       y = c(0, precursors[s, intensity]),
       type = "h",
       pch = 19,
-      lwd = 6,
+      lwd = 8,
       cex = 0.5,
       col = precursors[s, color]
     )
+
+    text(x = precursors[s, mz], y = precursors[s, intensity],
+         labels = "P", pos = 3, offset = 0.5, vfont = NULL,
+         cex = 1, col = precursors[s, color], font = NULL)
   }
 
   ticksMin <- round_any(min(ms2$mz, na.rm = TRUE) * 0.9, 10)
@@ -82,7 +87,7 @@ plotInteractiveMSn <- function(ms2, title) {
 
     data <- ms2[var == leg[v], ]
 
-    precursor <- data[data$precursor, ]
+    precursor <- data[data$isPre, ]
 
     plot <- plot %>% add_trace(
       x = data$mz,
@@ -90,7 +95,7 @@ plotInteractiveMSn <- function(ms2, title) {
       type = "bar",
       width = 0.05,
       marker = list(color = cl[v],
-      line = list(color = cl[v], width = 0.05)),
+      line = list(color = cl[v], width = 0.2)),
       name = leg[v],
       legendgroup = leg[v],
       hoverinfo = "text", text = paste(
@@ -103,6 +108,7 @@ plotInteractiveMSn <- function(ms2, title) {
     )
 
     if (nrow(precursor) > 0) {
+
       plot <- plot %>% add_trace(
         x = precursor$mz,
         y = precursor$intensity,
@@ -113,6 +119,12 @@ plotInteractiveMSn <- function(ms2, title) {
         legendgroup = leg[v],
         showlegend = FALSE
       )
+
+      plot <- plot %>% plotly::add_text(x = precursor$mz,
+                                y = precursor$intensity,
+                                text = "P", textposition = "top",
+                                showlegend = FALSE)
+
     }
   }
 

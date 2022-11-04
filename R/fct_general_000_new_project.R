@@ -105,14 +105,17 @@ checkFilesInput <- function(files = NA_character_,
 
   } else {
 
-    file_df <- data.table(
+    analysisTable <- data.table(
       "file" = files_v,
+      "analysis" = tools::file_path_sans_ext(basename(files_v)),
       "replicate" = replicates[files_v],
       "blank" = blanks[files_v],
       keep.rownames = FALSE
     )
 
-    return(file_df)
+    analysisTable <- analysisTable[order(analysis), ]
+
+    return(analysisTable)
   }
 }
 
@@ -120,10 +123,9 @@ checkFilesInput <- function(files = NA_character_,
 
 #' @title newAnalysis
 #'
-#' @description Creates a \pkg{streamFind} analysis object.
+#' @description Creates an analysis class object for the \pkg{streamFind} package.
 #'
 #' @template args-newAnalysis-file
-#' @template args-newAnalysis-replicate-blank
 #'
 #' @note The format of the file will dictate the resulting S4 class.
 #' For instance, \emph{.mzML} or \emph{.mzXML} files will lead to the class
@@ -139,18 +141,19 @@ checkFilesInput <- function(files = NA_character_,
 #'
 newAnalysis <- function(file = NA_character_) {
 
-  file_df <- checkFilesInput(file)
+  file <- checkFilesInput(file)
 
-  if (is.null(file_df)) return(NULL)
+  if (is.null(file)) return(NULL)
 
-  if (nrow(file_df) > 1) {
+  if (nrow(file) > 1) {
     message("More than one file, creating a streamSet instead! \n")
-    return(newStreamProject(files = file_df))
+    return(newStreamProject(files = file))
   }
 
-  if (grepl("mzML", file_df$file) | grepl("mzXML", file_df$file)) {
-    analysis <- msAnalysis_loadMetadata(file_df)
-    if (is.list(analysis)) analysis <- analysis[[1]]
+  file <- file$file
+
+  if (grepl("mzML", file) | grepl("mzXML", file)) {
+    analysis <- new("msAnalysis", file = file)
   }
 
   # TODO implement further file types check-ups,
@@ -169,8 +172,6 @@ newAnalysis <- function(file = NA_character_) {
 #' @template args-newStreamSet-files
 #' @template args-newStreamSet-path-title-date
 #' @template args-newStreamSet-replicates-blanks
-#' @param makeNewProject Logical, set to \code{TRUE} to create an R project
-#' in the given \code{path} and open a new R session.
 #'
 #' @note The format of the files added will dictate the subclass of
 #' the \linkS4class{streamSet}. For instance, \emph{.mzML} or \emph{.mzXML}
@@ -186,63 +187,29 @@ newAnalysis <- function(file = NA_character_) {
 #' @export
 #'
 newStreamSet <- function(files = NA_character_,
-                         path = getwd(),
                          title = NA_character_,
                          date = Sys.Date(),
                          replicates = NA_character_,
                          blanks = NA_character_,
-                         makeNewProject = FALSE) {
+                         run_parallel = FALSE) {
 
-  file_df <- checkFilesInput(files, replicates, blanks)
+  analysisTable <- checkFilesInput(files, replicates, blanks)
 
-  if (is.null(file_df)) return(NULL)
+  if (is.null(analysisTable)) return(NULL)
 
   object <- new("streamSet")
   object@title <- title
   object@date <- date
 
-  if (all(grepl(".mzML|.mzXML", file_df$file))) {
+  if (all(grepl(".mzML|.mzXML", analysisTable$file))) {
 
-    analyses <- msAnalysis_loadMetadata(file_df)
-
-    ana_type <- sapply(analyses, function(x) is(x))
-
-    if (all(ana_type %in% "msAnalysis")) {
-
-      object <- new("msData", object)
-
-      object@analyses <- analyses
-
-      object@features@analyses <- data.table(
-        file = filePaths(object),
-        analysis = names(analyses)
-      )
-
-      object@features@analyses$replicate <- sapply(filePaths(object),
-        function(x, file_df) {
-          file_df$replicate[file_df$file %in% x]
-        }, file_df = file_df)
-
-      object@features@analyses$blank <- sapply(filePaths(object),
-        function(x, file_df) {
-          file_df$blank[file_df$file %in% x]
-        }, file_df = file_df)
-
-      object@features@analyses$class <- ana_type
-
-      object@features@analyses$polarity <- polarities(object)
-
-    } else {
-
-      warning("More than one file type was added!
-              Not possible to assign a set sub-class")
-
-      return(NULL)
-    }
-
-  # TODO add other else if() conditions for other file types
+    object <- new("msData", object,
+                  analysisTable = analysisTable,
+                  run_parallel = run_parallel)
 
   } else {
+
+    # TODO add other else if() conditions for other file types
 
     warning("More than one file type was added!
             Not possible to assign a set sub-class.")

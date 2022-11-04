@@ -61,6 +61,94 @@ setClass("msData",
 
 ### S4 methods ----------------------------------------------------------------
 
+#### _initialize_ -------------------------------------------------------------
+
+#' @describeIn msData creates an \linkS4class{msData}.
+#'
+#' @export
+#'
+setMethod("initialize", "msData", function(.Object,
+                                           analysisTable = NULL,
+                                           run_parallel = FALSE, ...) {
+
+  .Object <- callNextMethod(.Object, ...)
+
+  ms_data <- .Object
+
+  if (!is.null(analysisTable)) {
+
+    files <- analysisTable$file
+
+    analyses <- runParallelLapply(files, run_parallel = TRUE,
+      FUN = function(x) {
+        temp_ana <- streamFind::initialize(new("msAnalysis", file = x))
+        p()
+        return(temp_ana)}
+    )
+
+    # TODO delete when runParallelLapply works with other methods
+    #
+    # handlers(handler_progress(format="[:bar] :percent :eta :message"))
+    #
+    # if (length(files) > 1 & run_parallel) {
+    #
+    #   #workers <- length(availableWorkers()) - 1
+    #   workers <- availableCores() -1
+    #
+    #   plan("multisession", workers = workers)  #also on Windows
+    #   #plan("multicore", workers) #not windows/not RStudio
+    #
+    # } else {
+    #
+    #   plan("sequential")
+    #
+    # }
+    #
+    # with_progress({
+    #
+    #   p <- progressor(along = files)
+    #
+    #   analyses <- future_lapply(files, function(x) {
+    #     temp_ana <- streamFind::initialize(new("msAnalysis", file = x))
+    #     p()
+    #     return(temp_ana)
+    #   }, future.seed = TRUE)
+    #
+    # })
+    #
+    # if (run_parallel)  plan("sequential")
+
+    analyses_class <- sapply(analyses, function(x) is(x))
+
+    if (all(analyses_class %in% "msAnalysis")) {
+
+      analyses_names <- sapply(analyses, function(x) analysisName(x))
+      names(analyses) <- analyses_names
+
+      ms_data@analyses <- analyses
+
+      analysisTable$class <- sapply(analyses, function(x) is(x))
+
+      analysisTable$polarity <- polarities(ms_data)
+
+      rownames(analysisTable) <- seq_len(nrow(analysisTable))
+
+      ms_data@features <- new("msFeatures", analyses = analysisTable)
+
+    } else {
+
+      warning("More than one file type was added!
+                Not possible to assign a set sub-class")
+
+      return(NULL)
+    }
+  }
+
+  return(ms_data)
+})
+
+
+
 #### show ---------------------------------------------------------------------
 
 #' @describeIn msData prints the details of an \linkS4class{msData} object.
@@ -122,7 +210,7 @@ setMethod("analysisInfo", "msData", function(obj) {
 
   temp <- data.frame(
     "path" = sapply(obj@analyses, function(x) dirname(x@file)),
-    "analysis" = sapply(obj@analyses, function(x) x@analysis),
+    "analysis" = sapply(obj@analyses, function(x) x@name),
     "group" = replicateNames(obj),
     "blank" = blankReplicateNames(obj)
   )
@@ -149,17 +237,22 @@ setMethod("analysisInfo", "msData", function(obj) {
 #' @aliases analysisTable,msData,msData-method
 #'
 setMethod("analysisTable", "msData", function(object) {
-  temp <- data.table(
+
+  analyses_table <- data.table(
     "file" = filePaths(object),
-    "analysis" = sapply(object@analyses, function(x) x@analysis),
+    "analysis" = analysisNames(object),
     "replicate" = replicateNames(object),
     "blank" = blankReplicateNames(object),
     "class" = sapply(object@analyses, function(x) is(x)),
     "polarity" = polarities(object)
   )
-  rownames(temp) <- seq_len(nrow(temp))
-  return(temp)
+
+  rownames(analyses_table) <- seq_len(nrow(analyses_table))
+
+  return(analyses_table)
 })
+
+
 
 #### filePaths -----------------------------------------------------------
 
@@ -180,7 +273,7 @@ setMethod("filePaths", "msData", function(object) sapply(object@analyses, functi
 #' @aliases analysisNames,msData,msData-method
 #'
 setMethod("analysisNames", "msData", function(object) {
-  return(sapply(object@analyses, function(x) x@analysis))
+  return(sapply(object@analyses, function(x) x@name))
 })
 
 

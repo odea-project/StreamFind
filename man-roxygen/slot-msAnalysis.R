@@ -1,4 +1,4 @@
-#' @slot analysis A character string with the MS file name without the extension.
+#' @slot name A character string with the MS file name without the extension.
 #' @slot file A character string with the complete path of the MS file.
 #' @slot replicate A character string with the respective analysis
 #' replicate group name.

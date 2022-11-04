@@ -33,7 +33,6 @@ Imports:
     golem (>= 0.3.2),
     grDevices,
     jsonlite,
-    patRoon,
     plotly,
     plyr,
     RColorBrewer,
@@ -42,10 +41,7 @@ Imports:
     stringr,
     tools,
     utils,
-    xcms,
     Rcpp (>= 1.0.8),
-    BiocGenerics,
-    ProtGenerics,
     S4Vectors,
     magrittr,
     Rdpack,
@@ -62,7 +58,10 @@ Suggests:
     spelling,
     testthat (>= 3.0.0),
     golem,
-    mzR
+    mzR,
+    xcms,
+    patRoon,
+    streamFindData
 VignetteBuilder: 
     knitr
 RdMacros: 

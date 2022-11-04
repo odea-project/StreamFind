@@ -15,14 +15,6 @@ respective blank analysis replicate name. When a table is given with
 replicate and blank, the arguments \emph{replicate} and  \emph{blank}
 are ignored. For file, only formats \emph{mzML} and \emph{mzXML} are
 currently supported.}
-
-\item{replicate}{Optional character vector with the name of the
-analysis replicate group. The default is \code{NULL} which attempts  to
-retrieve the analysis replicate group using the name of the file.
-The replicate name can always be edited using the class method.}
-
-\item{blank}{Optional character vector with the name of the associate
-blank analysis replicate group for the file. The default is \code{NULL}.}
 }
 \value{
 An analysis object with S4 class dependent on the added file format.
@@ -30,7 +22,7 @@ For instance, an \linkS4class{msAnalysis} object is returned for
 \emph{mzML} and \emph{mzXML} files.
 }
 \description{
-Creates a \pkg{streamFind} analysis object.
+Creates an analysis class object for the \pkg{streamFind} package.
 }
 \note{
 The format of the file will dictate the resulting S4 class.
