@@ -174,37 +174,37 @@ setMethod("plotXICs", "data.table", function(object,
   }
 
   if (plotTargetMark) {
-    otherTargets <- FALSE
+    plotTargetMark <- FALSE
     if (!is.null(targetsMark)) {
 
-      if ((!is.data.table(targetsMark) | is.data.frame(targetsMark))) {
+      if (is.data.table(targetsMark) | is.data.frame(targetsMark)) {
 
         if (nrow(targetsMark) == length(ids) &
             "mz" %in% colnames(targetsMark) &
             "rt" %in% colnames(targetsMark)) {
 
-          tgmMZ <- targetsMark$mz
+          tgmMZ <- as.numeric(targetsMark$mz)
           names(tgmMZ) <- unique(xic$id)
-          tgmRT <- targetsMark$rt
+          tgmRT <- as.numeric(targetsMark$rt)
           names(tgmRT) <- unique(xic$id)
           xic[, mz_id := tgmMZ[xic$id]]
           xic[, rt_id := tgmRT[xic$id]]
-          otherTargets <- TRUE
 
+          plotTargetMark <- TRUE
         }
       }
     }
 
-    if (!otherTargets & class(xic$mz_id) == "character") {
-
-      tgmMZ <- sapply(xic$mz_id, function(x)
-        mean(as.numeric(str_split(x, "-", simplify = TRUE)[1, ])))
-
-      tgmRT <- sapply(xic$rt_id, function(x)
-        mean(as.numeric(str_split(x, "-", simplify = TRUE)[1, ])))
-      xic[, mz_id := tgmMZ]
-      xic[, rt_id := tgmRT]
-    }
+    # if (!otherTargets) {
+    #
+    #   tgmMZ <- sapply(xic$mz_id, function(x)
+    #     mean(as.numeric(str_split(x, "-", simplify = TRUE)[1, ])))
+    #
+    #   tgmRT <- sapply(xic$rt_id, function(x)
+    #     mean(as.numeric(str_split(x, "-", simplify = TRUE)[1, ])))
+    #   xic[, mz_id := tgmMZ]
+    #   xic[, rt_id := tgmRT]
+    # }
   }
 
   plot <- plotInteractiveXICs(

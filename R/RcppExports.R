@@ -13,8 +13,8 @@ rcpp_ms_extract_eics_from_dataframe <- function(spec, targets) {
     .Call(`_streamFind_rcpp_ms_extract_eics_from_dataframe`, spec, targets)
 }
 
-rcpp_ms_extract_ms2_from_dataframe <- function(spec, targets, mzClust) {
-    .Call(`_streamFind_rcpp_ms_extract_ms2_from_dataframe`, spec, targets, mzClust)
+rcpp_ms_extract_ms2_from_dataframe <- function(spec, targets, mzClust, verbose) {
+    .Call(`_streamFind_rcpp_ms_extract_ms2_from_dataframe`, spec, targets, mzClust, verbose)
 }
 
 rcpp_extract_xics <- function(spec, targets) {

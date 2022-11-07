@@ -613,8 +613,8 @@ mzML_loadRawData <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
         "id" = id,
         "polarity" = polarity,
         "preMZ" = preMZ,
-        "rt" = rt,
         "mz" = product_mz,
+        "rt" = rt,
         "intensity" = intensity
       )
 
@@ -1097,6 +1097,305 @@ mzXML_loadRawData <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
     )
 
   }
+
+  return(dl)
+}
+
+
+
+### parse with mzR ------------------------------------------------------------
+
+#' @title loadMetadataMZR
+#'
+#' @description Parsing metadata from MS files using the package \pkg{mzR}.
+#'
+#' @param fl A full path to an mzML file.
+#'
+#' @references
+#' \insertRef{mzr01}{streamFind}
+#'
+#' \insertRef{mzr02}{streamFind}
+#'
+#' \insertRef{mzr03}{streamFind}
+#'
+#' \insertRef{mzr04}{streamFind}
+#'
+#' @noRd
+loadMetadataMZR <- function(fl) {
+
+  if(FALSE %in% requireNamespace("mzR", quietly = TRUE)) {
+    warning("Package mzR not detected.")
+    return(list())
+  }
+
+  zF <- mzR::openMSfile(fl, backend = "pwiz")
+
+  meta1 <- mzR::instrumentInfo(zF)
+
+  zH <- mzR::header(zF)
+
+  run_info <- suppressWarnings(mzR::runInfo(zF))
+
+  if (is.infinite(run_info$lowMz)) run_info$lowMz <- NA_real_
+  if (is.infinite(run_info$highMz)) run_info$highMz <- NA_real_
+  if (is.infinite(run_info$dStartTime)) run_info$dStartTime <- NA_real_
+  if (is.infinite(run_info$dEndTime)) run_info$dEndTime <- NA_real_
+
+  if (1 %in% zH$polarity) {
+    polarity_pos <- "positive"
+  } else polarity_pos <- NULL
+
+  if (0 %in% zH$polarity) {
+    polarity_neg <- "negative"
+  } else polarity_neg <- NULL
+
+
+  if (length(polarity_pos) > 0 | length(polarity_neg) > 0) {
+    polarities <- c(polarity_pos, polarity_neg)
+  } else {
+    polarities <- NA_character_
+  }
+
+  if (TRUE %in% zH$centroided) {
+    spectrum_mode <- "centroid"
+  } else if (FALSE %in% zH$centroided) {
+    spectrum_mode <- "profile"
+  } else {
+    spectrum_mode <- NA_character_
+  }
+
+  if (!all(is.na(zH$ionMobilityDriftTime))) {
+    ion_mobility <- TRUE
+  } else {
+    ion_mobility <- FALSE
+  }
+
+  if (grepl(".mzML", fl)) {
+    number_chromatograms <- mzR::nChrom(zF)
+  } else {
+    number_chromatograms <- 0
+  }
+
+  meta2 <- list(
+    "time_stamp" = run_info$startTimeStamp,
+    "number_spectra" = run_info$scanCount,
+    "spectrum_mode" = spectrum_mode,
+    "ms_levels" = run_info$msLevels,
+    "mz_low" = run_info$lowMz,
+    "mz_high" = run_info$highMz,
+    "rt_start" = run_info$dStartTime,
+    "rt_end" = run_info$dEndTime,
+    "polarity" = polarities,
+    "number_chromatograms" = number_chromatograms,
+    "ion_mobility" = ion_mobility
+  )
+
+  meta <- c(meta1, meta2)
+
+  suppressWarnings(mzR::close(zF))
+
+  return(meta)
+}
+
+
+
+#' @title loadRawDataMZR
+#'
+#' @description Parsing raw data from MS files using the package \pkg{mzR}.
+#'
+#' @references
+#' \insertRef{mzr01}{streamFind}
+#'
+#' \insertRef{mzr02}{streamFind}
+#'
+#' \insertRef{mzr03}{streamFind}
+#'
+#' \insertRef{mzr04}{streamFind}
+#'
+#' @noRd
+loadRawDataMZR <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
+                           chroms = TRUE, levels = c(1, 2),
+                           rtr = NULL, preMZrange = NULL,
+                           minIntensityMS1 = 0, minIntensityMS2 = 0) {
+
+  if(FALSE %in% requireNamespace("mzR", quietly = TRUE)) {
+    warning("Package mzR not detected.")
+    return(list())
+  }
+
+  dl <- list()
+
+  dl[["chroms"]] <- list()
+
+  dl[["spectra"]] <- list()
+
+  zF <- mzR::openMSfile(fl, backend = "pwiz")
+
+  if (spectra | TIC | BPC) zH <- mzR::header(zF)
+
+  if (nrow(zH) > 0) {
+
+    if (TIC) {
+
+      tic <- data.table::data.table(
+        id = "TIC",
+        rt = zH$retentionTime,
+        intensity = zH$totIonCurrent
+      )
+
+      if (!is.null(rtr)) tic <- tic[rt >= rtr[1] & rt <= rtr[2], ]
+
+      tic <- tic[intensity >= minIntensityMS1, ]
+
+      dl[["chroms"]][["TIC"]] <- tic
+
+    }
+
+    if (BPC) {
+
+      bpc <- data.table::data.table(
+        id = "BPC",
+        rt = zH$retentionTime,
+        mz = zH$basePeakMZ,
+        intensity = zH$basePeakIntensity
+      )
+
+      if (!is.null(rtr)) bpc <- bpc[rt >= rtr[1] & rt <= rtr[2], ]
+
+      bpc <- bpc[intensity >= minIntensityMS1, ]
+
+      dl[["chroms"]][["BPC"]] <- bpc
+
+    }
+  }
+
+  if (chroms) {
+
+    cH <- data.table::as.data.table(suppressWarnings(mzR::chromatogramHeader(zF)))
+
+    if (nrow(cH) > 0) {
+
+      cH$polarity <- as.character(cH$polarity)
+      cH <- cH[polarity == 1, polarity := "positive"]
+      cH <- cH[polarity == 0, polarity := "negative"]
+      cH <- cH[polarity == -1, polarity := NA_character_]
+
+      cC <- mzR::chromatograms(zF, cH$chromatogramIndex)
+
+      if (!is.data.frame(cC)) {
+
+        names(cC) <- as.character(cH$chromatogramIndex)
+        cC <- lapply(cC, function(x) {
+          x <- as.data.frame(x)
+          colnames(x) <- c("rt", "intensity")
+          return(x)
+        })
+        cC <- data.table::rbindlist(cC, idcol = "index", fill = TRUE)
+        cC$index <- as.numeric(cC$index)
+        cH_b <- data.table(
+          index = cH$chromatogramIndex,
+          id = cH$chromatogramId,
+          polarity = cH$polarity,
+          preMZ = cH$precursorIsolationWindowTargetMZ,
+          mz = cH$productIsolationWindowTargetMZ
+        )
+
+        chroms_data <- dplyr::inner_join(cH_b, cC, by = "index")
+
+      } else {
+
+        chroms_data <- data.table(
+          index = cH$chromatogramIndex,
+          id = cH$chromatogramId,
+          polarity = cH$polarity,
+          preMZ = cH$precursorIsolationWindowTargetMZ,
+          mz = cH$productIsolationWindowTargetMZ,
+          rt = cC$rt,
+          intensity = cC$intensity
+        )
+
+      }
+
+      chroms_data <- chroms_data[intensity > minIntensityMS1, ]
+
+      if (nrow(chroms_data) > 0) {
+
+        if ("TIC" %in% names(dl[["chroms"]])) {
+          chroms_data <- chroms_data[!id %in% "TIC", ]
+        }
+
+        dl[["chroms"]][["other_chroms"]] <- chroms_data
+      }
+    }
+  }
+
+  if (TIC | BPC | chroms) {
+    dl[["chroms"]] <-  rbindlist(dl[["chroms"]], fill = TRUE)
+  }
+
+  if (spectra) {
+
+    if (nrow(zH) > 0) {
+
+      if (!is.null(rtr) & length(rtr) == 2) {
+        rtr <- sort(rtr)
+        zH <- zH[zH$retentionTime >= rtr[1] & zH$retentionTime <= rtr[2], ]
+      }
+
+      if (!is.null(levels)) zH <- zH[zH$msLevel %in% levels, ]
+
+      if(!is.null(preMZrange) & length(preMZrange) == 2 & is.numeric(preMZrange)) {
+        preMZrange <- sort(preMZrange)
+        zH <- zH[zH$precursorMZ >= preMZrange[1] & zH$precursorMZ <= preMZrange[2], ]
+      }
+
+      if (nrow(zH) > 0) {
+
+        zD <- mzR::peaks(zF, scans = zH$seqNum)
+        zD <- lapply(zD, as.data.table)
+        names(zD) <- zH$seqNum
+        zD <- data.table::rbindlist(zD, idcol = "index")
+        zD$index <- as.numeric(zD$index)
+
+        if (TRUE %in% (unique(zH$msLevel) == 2)) {
+
+          zH_b <- data.table(
+            index = zH$seqNum,
+            scan = zH$acquisitionNum,
+            level = zH$msLevel,
+            ce = zH$collisionEnergy,
+            preScan = zH$precursorScanNum,
+            preMZ = zH$precursorMZ,
+            rt = zH$retentionTime
+          )
+
+        } else {
+
+          zH_b <- data.table(
+            index = zH$seqNum,
+            scan = zH$acquisitionNum,
+            level = zH$msLevel,
+            rt = zH$retentionTime
+          )
+
+        }
+
+        if (!all(is.na(zH$ionMobilityDriftTime))) {
+          zH_b$drifTime <- zH$ionMobilityDriftTime
+        }
+
+        zH_n <- dplyr::inner_join(zH_b, zD, by = "index")
+
+        zH_n <- zH_n[!(intensity <= minIntensityMS1 & level == 1), ]
+        zH_n <- zH_n[!(intensity <= minIntensityMS2 & level == 2), ]
+
+        dl[["spectra"]] <- zH_n
+
+      }
+    }
+  }
+
+  suppressWarnings(mzR::close(zF))
 
   return(dl)
 }

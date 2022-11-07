@@ -107,8 +107,16 @@ setMethod("initialize", "msAnalysis", function(.Object, file = NA_character_) {
 
   if (inval) return(.Object)
 
-  if (grepl(".mzML", file)) meta <- mzML_loadMetadata(file)
-  if (grepl(".mzXML", file)) meta <- mzXML_loadMetadata(file)
+  if (TRUE %in% requireNamespace("mzR", quietly = TRUE)) {
+
+    meta <- loadMetadataMZR(file)
+
+  } else {
+
+    if (grepl(".mzML", file)) meta <- mzML_loadMetadata(file)
+    if (grepl(".mzXML", file)) meta <- mzXML_loadMetadata(file)
+
+  }
 
   analysis_name <- gsub(".mzML|.mzXML", "", basename(file))
 
@@ -492,22 +500,29 @@ setMethod("getRawData", "msAnalysis", function(object,
 
   if (is.null(levels)) levels <- getMetadata(object, "ms_levels")$ms_levels
 
-  # TODO add option to load via mzR as is faster for larger files
-  # and has other formats
-  #TRUE %in% requireNamespace("mzR", quietly = TRUE)
+  if (TRUE %in% requireNamespace("mzR", quietly = TRUE)) {
 
-  if (grepl(".mzML", fl)) {
-    list_out <- mzML_loadRawData(fl,
+    list_out <- loadRawDataMZR(fl,
       spectra = spectra, TIC = TIC, BPC = BPC, chroms = chroms,
       levels = levels, rtr = rtr, preMZrange = preMZrange,
       minIntensityMS1 = minIntensityMS1, minIntensityMS2 = minIntensityMS2)
-  }
 
-  if (grepl(".mzXML", fl)) {
-    list_out <- mzXML_loadRawData(fl,
-      spectra = spectra, TIC = TIC, BPC = TIC,
-      levels = levels, rtr = rtr, preMZrange = preMZrange,
-      minIntensityMS1 = minIntensityMS1, minIntensityMS2 = minIntensityMS2)
+  } else {
+
+    if (grepl(".mzML", fl)) {
+      list_out <- mzML_loadRawData(fl,
+        spectra = spectra, TIC = TIC, BPC = BPC, chroms = chroms,
+        levels = levels, rtr = rtr, preMZrange = preMZrange,
+        minIntensityMS1 = minIntensityMS1, minIntensityMS2 = minIntensityMS2)
+    }
+
+    if (grepl(".mzXML", fl)) {
+      list_out <- mzXML_loadRawData(fl,
+        spectra = spectra, TIC = TIC, BPC = TIC,
+        levels = levels, rtr = rtr, preMZrange = preMZrange,
+        minIntensityMS1 = minIntensityMS1, minIntensityMS2 = minIntensityMS2)
+    }
+
   }
 
   if (length(list_out$spectra) == 0) {
@@ -1154,7 +1169,7 @@ setMethod("MS2s", "msAnalysis", function(object, mzClust = 0.01,
 
   if (nrow(spec) > 0) {
 
-    ms2 <- rcpp_ms_extract_ms2_from_dataframe(spec, targets, mzClust)
+    ms2 <- rcpp_ms_extract_ms2_from_dataframe(spec, targets, mzClust, verbose = FALSE)
 
     ms2 <- rbindlist(ms2, fill = TRUE)
 

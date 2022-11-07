@@ -166,12 +166,13 @@ test_that("raw data parsing", {
   expect_s3_class(spectra(loadRawData(ana_mzXML_pos)), "data.table")
 
   expect_length(spectra(loadRawData(ana_mzML_pos)), 9)
-  expect_length(spectra(loadRawData(ana_mzXML_pos)), 7)
+  expect_gt(length(spectra(loadRawData(ana_mzXML_pos))), 7)
 
 })
 
 ana_mzML_pos <- loadRawData(ana_mzML_pos)
 ana_mzXML_pos <- loadRawData(ana_mzXML_pos)
+ana_mrm_pos <- loadRawData(ana_mrm_pos)
 
 test_that("raw data checking", {
 
@@ -180,6 +181,7 @@ test_that("raw data checking", {
 
   expect_true(hasLoadedChromatograms(ana_mzML_pos))
   expect_true(hasLoadedChromatograms(ana_mzXML_pos))
+  expect_true(hasLoadedChromatograms(ana_mrm_pos))
 
 })
 
@@ -228,8 +230,6 @@ test_that("settings", {
 
 ana_mzML_pos <- addSettings(ana_mzML_pos, settings = settings_pp)
 
-
-
 # plotSpectra(ana_mzML_pos, mz = 212.1796 + 1.0073, ppm = 20)
 # plotChromatograms(ana_mzML_pos)
 # plotChromatograms(ana_mzML_pos, interactive = TRUE)
@@ -241,4 +241,8 @@ ana_mzML_pos <- addSettings(ana_mzML_pos, settings = settings_pp)
 # plotMS2s(ana_mzML_pos, mz = targets4[2,])
 # plotMS2s(ana_mzML_pos, mz = targets4[2,], interactive = TRUE)
 
-# object <- ana_mzXML_pos
+
+
+
+
+

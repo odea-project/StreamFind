@@ -8,7 +8,10 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-List rcpp_ms_extract_ms2_from_dataframe(DataFrame spec, DataFrame targets, double mzClust) {
+List rcpp_ms_extract_ms2_from_dataframe(DataFrame spec,
+                                        DataFrame targets,
+                                        double mzClust,
+                                        bool verbose) {
 
   const StringVector ids = targets["id"];
 
@@ -156,15 +159,17 @@ List rcpp_ms_extract_ms2_from_dataframe(DataFrame spec, DataFrame targets, doubl
 
         hasFromSameScan[z] = temp_rt_unique.size() < temp_rt.size();
 
-        if (hasFromSameScan[z]) {
+        if (hasFromSameScan[z] & verbose) {
           Rcpp::Rcout << "The m/z " << temp_mz_mean << " of " << target_id[0] <<
             " is present more than once in the same scan!" << "\n";
         }
       }
     }
 
-    Rcpp::Rcout << "Clustering for " << target_id[0] <<
-      " preformed with " << mzClust << " Da" << "\n";
+    if (verbose) {
+      Rcpp::Rcout << "Clustering for " << target_id[0] <<
+        " preformed with " << mzClust << " Da" << "\n";
+    }
 
     double preMZ_mean = sum(preMZ) / preMZ.size();
     double rt_mean = sum(rt) / rt.size();
