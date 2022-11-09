@@ -44,7 +44,7 @@ plotInteractiveXICs <- function(xic,
   xaxis <- list(
     linecolor = toRGB("black"),
     linewidth = 2,
-    title = "Retention time (seconds)",
+    title = "Retention time / seconds",
     titlefont = list(size = 10, color = "black"),
     tickfont = list(size = 10)
   )
@@ -52,7 +52,7 @@ plotInteractiveXICs <- function(xic,
   yaxis1 <- list(
     linecolor = toRGB("black"),
     linewidth = 2,
-    title = "Intensity (counts)",
+    title = "Intensity / counts",
     titlefont = list(size = 10, color = "black"),
     tickfont = list(size = 10)
   )

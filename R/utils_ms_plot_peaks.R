@@ -20,8 +20,8 @@ plotPeaksStatic <- function(eic, peaks, title = NULL) {
 
   plot(eic$rt,
     type = "n",
-    xlab = "Retention time (seconds)",
-    ylab = "Intensity (counts)",
+    xlab = "Retention time / seconds",
+    ylab = "Intensity / counts",
     xlim = c(min(eic$rt), max(eic$rt)),
     ylim = c(0, max(eic$intensity)),
     main = title
@@ -92,12 +92,12 @@ plotPeaksInteractive <- function(eic, peaks, title, colorBy) {
   title <- list(text = title, x = 0.13, y = 0.98, font = list(size = 12, color = "black"))
 
   xaxis <- list(linecolor = toRGB("black"),
-                linewidth = 2, title = "Retention time (seconds)",
+                linewidth = 2, title = "Retention time / seconds",
                 range = c(min(eic$rt), max(eic$rt)),
                 titlefont = list(size = 12, color = "black"))
 
   yaxis <- list(linecolor = toRGB("black"),
-                linewidth = 2, title = "Intensity (counts)",
+                linewidth = 2, title = "Intensity / counts",
                 titlefont = list(size = 12, color = "black"))
 
   plot <- plot_ly()
@@ -256,7 +256,7 @@ mapPeaksInteractive <- function(peaks, xlim = 60, ylim = 5, title, colorBy = "ta
                 font = list(size = 9, color = "black"))
 
   xaxis <- list(linecolor = toRGB("black"),
-                linewidth = 2, title = "Retention time (seconds)",
+                linewidth = 2, title = "Retention time / seconds",
                 titlefont = list(size = 12, color = "black"),
                 range = rtr,
                 autotick = TRUE, ticks = "outside")

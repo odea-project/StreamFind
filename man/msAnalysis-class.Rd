@@ -152,8 +152,8 @@
 \S4method{plotEICs}{msAnalysis}(
   object,
   mz = NULL,
-  ppm = 20,
   rt = NULL,
+  ppm = 20,
   sec = 30,
   id = NULL,
   legendNames = NULL,

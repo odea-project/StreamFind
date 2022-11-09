@@ -19,7 +19,7 @@ plotStaticMSn <- function(ms2, title = NULL) {
   plot(intensity~mz,  ms2,
     type = "h",
     xlab = expression(italic("m/z")),
-    ylab = "Intensity (counts)",
+    ylab = "Intensity / counts",
     col = color,
     lwd = 2,
     ylim = c(0, max(ms2$intensity) * 1.15),
@@ -143,7 +143,7 @@ plotInteractiveMSn <- function(ms2, title) {
   yaxis <- list(
     linecolor = toRGB("black"),
     linewidth = 2,
-    title = "Intensity (counts)",
+    title = "Intensity / counts",
     titlefont = list(size = 12,
     color = "black")
   )

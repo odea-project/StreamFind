@@ -29,13 +29,19 @@
 #'
 peakPicking <- function(object = NULL, settings = NULL) {
 
-  valid <- FALSE
+  valid <- TRUE
 
-  if (testClass(object, "msData") | testClass(object, "msAnalysis"))
-    valid = TRUE
+  if (!(testClass(object, "msData") | testClass(object, "msAnalysis"))) {
+    warning("Invalid class object used as argument!")
+    valid = FALSE
+  }
+
+  if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
+    warning("Install package patRoon for finding peaks!")
+    valid = FALSE
+  }
 
   if (!valid) {
-    warning("Invalid class object used as argument!")
     return(object)
   }
 
@@ -94,7 +100,9 @@ peakPicking <- function(object = NULL, settings = NULL) {
 
     sinfo$algorithm <- algorithm
     ag <- list(analysisInfo = sinfo, algorithm = algorithm)
-    pat <- do.call("findFeatures", c(ag, params, verbose = TRUE))
+
+    pp_fun <- patRoon::findFeatures
+    pat <- do.call(pp_fun, c(ag, params, verbose = TRUE))
 
     stgs <- createSettings(
       call = "peakPicking",
@@ -131,7 +139,8 @@ peakPicking <- function(object = NULL, settings = NULL) {
     pat_list <- lapply(sinfo_new, function(x, params) {
       par_tmp <- unique(params[x$analysis])[[1]]
       ags <- list(analysisInfo = x, algorithm = unique(x$algorithm))
-      pat_temp <- do.call("findFeatures", c(ags, par_tmp, verbose = TRUE))
+      pp_fun <- patRoon::findFeatures
+      pat_temp <- do.call(pp_fun, c(ags, par_tmp, verbose = TRUE))
       return(pat_temp)
     }, params = params)
 
@@ -160,12 +169,16 @@ peakPicking <- function(object = NULL, settings = NULL) {
 
   object_new <- buildPeaksTable(object, pat)
 
-  if (!identical(lapply(object_new@analyses, function(x) x@peaks),
-                lapply(object@analyses, function(x) x@peaks))) {
+  if (testClass(object, "msData")) {
 
-    ana_table <- analysisTable(object_new)
-    object_new@features <- new("msFeatures")
-    object_new@features@analyses <- ana_table
+    if (!identical(lapply(object_new@analyses, function(x) x@peaks),
+                  lapply(object@analyses, function(x) x@peaks))) {
+
+      ana_table <- analysisTable(object_new)
+      object_new@features <- new("msFeatures")
+      object_new@features@analyses <- ana_table
+
+    }
 
   }
 
@@ -198,7 +211,7 @@ buildPeaksTable <- function(object, pat) {
 
 
     if (testClass(pat, "featuresXCMS3")) {
-      if (hasFilledChromPeaks(pat@xdata)) {
+      if (xcms::hasFilledChromPeaks(pat@xdata)) {
         extra <- as.data.table(chromPeaks(pat@xdata, isFilledColumn = TRUE))
         extra[, analysis := anaInfo$analysis[extra$sample]]
         extra[, analysis := factor(analysis, levels = anaInfo$analysis)]
@@ -217,7 +230,7 @@ buildPeaksTable <- function(object, pat) {
         }
       }
 
-      polarity <- polarities(object)[x]
+      polarity <- polarities(object)
 
       # TODO make case for polarity switching data analysis
 

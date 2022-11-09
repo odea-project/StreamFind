@@ -148,6 +148,8 @@ setMethod("show", "msAnalysis", function(object) {
     "  File           ", object@file, "\n",
     "  Levels         ", paste(object@metadata$ms_levels, collapse = ", "), " \n",
     "  Spectrum mode  ", object@metadata$spectrum_mode, "\n",
+    ifelse(TRUE %in% object@metadata[["ion_mobility"]],
+    "  Ion mobility   TRUE\n", ""),
     "  Spectra        ", object@metadata$number_spectra, "\n",
     "  Chromatograms  ", object@metadata$number_chromatograms, "\n",
     "  Loaded traces  ", nrow(object@spectra), "\n",
@@ -643,16 +645,60 @@ setMethod("plotSpectra", "msAnalysis", function(object,
 
   spec_dt$level <- factor(spec_dt$level)
 
-  fig <- plotly::plot_ly(spec_dt, x = ~rt, y = ~mz, z = ~intensity,
-                         color = ~level,
-                         colors = c('#BF382A', '#0C4B8E'))
+  spec_dt_2 <- copy(spec_dt)
+  spec_dt_2$rtmz <- paste(spec_dt_2$mz, spec_dt_2$rt)
+  spec_dt_2_temp <- copy(spec_dt)
+  spec_dt_2_temp$intensity <- 0
+  spec_dt_2_temp$rtmz <- paste(spec_dt_2$mz, spec_dt_2$rt)
+  spec_dt_2 <- rbind(spec_dt_2, spec_dt_2_temp)
 
-  fig <- fig %>% plotly::add_markers(marker = list(size = 1, line = NULL))
+
+  fig <- plotly::plot_ly(spec_dt_2, x = ~rt, y = ~mz, z = ~intensity) %>%
+    plotly::group_by(rtmz) %>%
+    plotly::add_lines(color = ~level, colors = c('#BF382A', '#0C4B8E'))
 
   fig <- fig %>% plotly::layout(scene = list(
     xaxis = list(title = 'Retention time (seconds)'),
     yaxis = list(title = 'm/z'),
     zaxis = list(title = 'Intensity (counts)')))
+
+  # spec_mat <- copy(spec_dt)
+  # spec_mat <- spec_mat[, .(mz, rt, intensity)]
+  # spec_mat$mz <- round(spec_mat$mz, digits = 3)
+  # #spec_mat$intensity <- log(spec_mat$intensity)
+  # spec_mat <- spec_mat[, .(intensity = sum(intensity)), by = c("rt", "mz")]
+  # spec_mat <- tidyr::complete(spec_mat, rt, tidyr::nesting(mz), fill = list(intensity = 0))
+  # spec_mat <- tidyr::pivot_wider(spec_mat, names_from = rt, values_from = intensity)
+  # spec_mat <- as.matrix(spec_mat)
+  # row.names(spec_mat) <- spec_mat[, 1]
+  # spec_mat <- spec_mat[, -1]
+  #
+  # fig <- plotly::plot_ly(x = as.numeric(colnames(spec_mat)),
+  #                        y = as.numeric(rownames(spec_mat)),
+  #                        z = spec_mat) %>%
+  #
+  #   plotly::add_surface(colors = "RdYlBu",
+  #                       reversescale = TRUE,
+  #                       showscale = FALSE)
+  #
+  # fig <- fig %>% layout(
+  #   scene = list(
+  #     xaxis = list(title = 'Retention time / seconds'),
+  #     yaxis = list(title = '<i> m/z </i>'),
+  #     zaxis = list(title = "Intensity / counts")
+  #   )
+  # )
+
+  # fig <- plotly::plot_ly(spec_dt, x = ~rt, y = ~mz, z = ~intensity,
+  #                        color = ~level,
+  #                        colors = c('#BF382A', '#0C4B8E'))
+  #
+  # fig <- fig %>% plotly::add_markers(marker = list(size = 1, line = NULL))
+  #
+  # fig <- fig %>% plotly::layout(scene = list(
+  #   xaxis = list(title = 'Retention time (seconds)'),
+  #   yaxis = list(title = 'm/z'),
+  #   zaxis = list(title = 'Intensity (counts)')))
 
   return(fig)
 })
@@ -758,9 +804,9 @@ setMethod("EICs", "msAnalysis", function(object,
 
     eics <- rbindlist(eics, fill = TRUE)
 
-    eics$mz <- NULL
-
-    eics <- eics[, .(intensity = sum(intensity)), by = c("id", "rt")]
+    if (nrow(eics) > 0) {
+      eics <- eics[, .(intensity = sum(intensity)), by = c("id", "rt")]
+    }
 
   }
 
@@ -789,18 +835,18 @@ setMethod("EICs", "msAnalysis", function(object,
 #' @aliases plotEICs,msAnalysis,msAnalysis-method
 #'
 setMethod("plotEICs", "msAnalysis", function(object,
-                                             mz = NULL, ppm = 20,
-                                             rt = NULL, sec = 30, id = NULL,
+                                             mz = NULL, rt = NULL,
+                                             ppm = 20, sec = 30, id = NULL,
                                              legendNames = NULL,
                                              title = NULL,
                                              interactive = FALSE) {
 
-  eic <- EICs(object, mz, ppm, rt, sec, id)
+  eics <- EICs(object, mz, rt, ppm, sec, id)
 
-  eic$analysis <- analysisName(object)
+  eics$analysis <- analysisName(object)
 
   return(
-    plotEICs(eic,
+    plotEICs(eics,
       analyses = NULL,
       colorBy = "targets",
       legendNames, title, interactive
@@ -931,7 +977,7 @@ setMethod("TIC", "msAnalysis", function(object) {
 
   tic <- chromatograms(object)
 
-  tic <- tic[id %in% "TIC", ]
+  if (nrow(tic) > 0) tic <- tic[id %in% "TIC", ]
 
   if (nrow(tic) == 0) {
 

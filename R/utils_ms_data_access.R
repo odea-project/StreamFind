@@ -1243,12 +1243,15 @@ loadRawDataMZR <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
         intensity = zH$totIonCurrent
       )
 
+      if (max(tic$rt) < 60) tic$rt <- tic$rt * 60
+
       if (!is.null(rtr)) tic <- tic[rt >= rtr[1] & rt <= rtr[2], ]
 
-      tic <- tic[intensity >= minIntensityMS1, ]
+      tic <- tic[tic$intensity >= minIntensityMS1, ]
 
-      dl[["chroms"]][["TIC"]] <- tic
-
+      if (max(tic$intensity) > 0 & !(TRUE %in% duplicated(tic$rt))) {
+        dl[["chroms"]][["TIC"]] <- tic
+      }
     }
 
     if (BPC) {
@@ -1260,12 +1263,15 @@ loadRawDataMZR <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
         intensity = zH$basePeakIntensity
       )
 
+      if (max(bpc$rt) < 60) bpc$rt <- bpc$rt * 60
+
       if (!is.null(rtr)) bpc <- bpc[rt >= rtr[1] & rt <= rtr[2], ]
 
-      bpc <- bpc[intensity >= minIntensityMS1, ]
+      bpc <- bpc[bpc$intensity >= minIntensityMS1, ]
 
-      dl[["chroms"]][["BPC"]] <- bpc
-
+      if (max(tic$intensity) > 0 & !(TRUE %in% duplicated(bpc$rt))) {
+        dl[["chroms"]][["BPC"]] <- bpc
+      }
     }
   }
 
@@ -1288,10 +1294,12 @@ loadRawDataMZR <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
         cC <- lapply(cC, function(x) {
           x <- as.data.frame(x)
           colnames(x) <- c("rt", "intensity")
+          if (max(x$rt) < 60) x$rt <- x$rt * 60
           return(x)
         })
         cC <- data.table::rbindlist(cC, idcol = "index", fill = TRUE)
         cC$index <- as.numeric(cC$index)
+
         cH_b <- data.table(
           index = cH$chromatogramIndex,
           id = cH$chromatogramId,
@@ -1303,6 +1311,9 @@ loadRawDataMZR <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
         chroms_data <- dplyr::inner_join(cH_b, cC, by = "index")
 
       } else {
+
+        colnames(cC) <- c("rt", "intensity")
+        if (max(cC$rt) < 60) cC$rt <- cC$rt * 60
 
         chroms_data <- data.table(
           index = cH$chromatogramIndex,
@@ -1381,7 +1392,11 @@ loadRawDataMZR <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
         }
 
         if (!all(is.na(zH$ionMobilityDriftTime))) {
-          zH_b$drifTime <- zH$ionMobilityDriftTime
+          rt_unique <- unique(zH_b$rt)
+          frame_numbers <- seq_len(length(rt_unique))
+          if ("preMZ" %in% colnames(zH_b)) zH_b$preMZ <- NA_real_
+          zH_b$frame <- factor(zH_b$rt, levels = rt_unique, labels = frame_numbers)
+          zH_b$driftTime <- zH$ionMobilityDriftTime
         }
 
         zH_n <- dplyr::inner_join(zH_b, zD, by = "index")

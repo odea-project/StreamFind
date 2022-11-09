@@ -230,7 +230,16 @@ test_that("settings", {
 
 ana_mzML_pos <- addSettings(ana_mzML_pos, settings = settings_pp)
 
-# plotSpectra(ana_mzML_pos, mz = 212.1796 + 1.0073, ppm = 20)
+
+ana_mzML_pos <- peakPicking(ana_mzML_pos)
+
+
+
+
+
+
+
+# plotSpectra(ana_mzML_pos, mz = diu_pos, ppm = 10000)
 # plotChromatograms(ana_mzML_pos)
 # plotChromatograms(ana_mzML_pos, interactive = TRUE)
 # plotTIC(ana_mzML_pos)

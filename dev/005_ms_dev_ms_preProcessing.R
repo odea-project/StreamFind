@@ -320,12 +320,222 @@ plotXICs(set, analyses = c(8), mz = c(242.1434, 247.1748), rt = c(1125, 1125), p
 
 ### test IM --------------------------------------------------------------------
 
-fl <- file.choose()
+#fl <- file.choose()
+#fl_2 <- file.choose()
+fl_2 <- "G:\\004_RawData\\20221017_ion_mobility_data\\centroid\\WorklistData-0001.mzML"
+
+#a1 <- newAnalysis(fl)
+acent <- newAnalysis(fl_2)
+
+#plotTIC(a1)
+#getMetadata(a1)
+
+#plotTIC(acent)
+getMetadata(acent)
+
+#a1 <- loadRawData(a1)
+acent <- loadRawData(acent)
+
+
+#head(spectra(acent))
+
+
+dt_spec <- data.table::copy(spectra(acent))
+dt_spec <- dt_spec[rt >= 550 & rt <= 650, ] #& mz >= 261.0269 & mz <= 261.0373
+dt_spec <- dt_spec[mz >= 255 & mz <= 270, ]
+dt_spec <- dt_spec[driftTime >= 15 & driftTime <= 20, ]
+
+
+dt_heat <- dt_spec
+dt_heat <- dt_heat[, .(rt, driftTime, intensity)]
+#dt_heat$intensity <- log(dt_heat$intensity)
+dt_heat <- dt_heat[, .(intensity = sum(intensity)), by = c("rt", "driftTime")]
+dt_heat <- tidyr::complete(dt_heat, rt, tidyr::nesting(driftTime), fill = list(intensity = 0))
+dt_heat <- tidyr::pivot_wider(dt_heat, names_from = rt, values_from = intensity)
+dt_heat_mat <- as.matrix(dt_heat)
+row.names(dt_heat_mat) <- dt_heat_mat[, 1]
+dt_heat_mat <- dt_heat_mat[, -1]
+
+plot <- plotly::plot_ly(x = colnames(dt_heat_mat), y = rownames(dt_heat_mat),
+                z = dt_heat_mat, colors = "RdYlBu", type = "heatmap",
+                colorbar = list(title = '<b> Intensity </b>'),
+                reversescale = TRUE)
+
+xaxis <- list(linecolor = toRGB("black"),
+              linewidth = 2, title = "Retention Time / seconds",
+              titlefont = list(size = 12, color = "black"))
+
+yaxis <- list(linecolor = toRGB("black"),
+              linewidth = 2, title = "Drift Time / miliseconds",
+              titlefont = list(size = 12, color = "black"))
+
+plot <- plot %>% layout(
+  xaxis = xaxis,
+  yaxis = yaxis
+)
+
+plot
+
+
+
+dt_heat <- dt_spec
+dt_heat <- dt_heat[, .(mz, driftTime, intensity)]
+#dt_heat$intensity <- log(dt_heat$intensity)
+dt_heat$mz <- round(dt_heat$mz, digits = 1)
+dt_heat <- dt_heat[, .(intensity = sum(intensity)), by = c("mz", "driftTime")]
+dt_heat <- tidyr::complete(dt_heat, mz, tidyr::nesting(driftTime), fill = list(intensity = 0))
+dt_heat <- tidyr::pivot_wider(dt_heat, names_from = mz, values_from = intensity)
+dt_heat_mat <- as.matrix(dt_heat)
+row.names(dt_heat_mat) <- dt_heat_mat[, 1]
+dt_heat_mat <- dt_heat_mat[, -1]
+
+plot <- plotly::plot_ly(x = as.numeric(colnames(dt_heat_mat)), y = as.numeric(rownames(dt_heat_mat)),
+                        z = dt_heat_mat, colors = "RdYlBu", type = "heatmap",
+                        colorbar = list(title = '<b> Intensity </b>'),
+                        reversescale = TRUE)
+
+xaxis <- list(linecolor = toRGB("black"),
+              linewidth = 2, title = '<i> m/z </i>',
+              titlefont = list(size = 12, color = "black"))
+
+yaxis <- list(linecolor = toRGB("black"),
+              linewidth = 2, title = "Drift Time / miliseconds",
+              titlefont = list(size = 12, color = "black"))
+
+plot <- plot %>% layout(
+  #legend = list(title = list(text='<b> Intensity </b>')),
+  xaxis = xaxis,
+  yaxis = yaxis
+)
+
+plot
+
+
+
+plotEICs(a1, mz = 260.0248201 + 1.0073, rt = 600, ppm = 20, sec = 120, interactive = TRUE)
+
+
+#fl_3 <- file.choose()
+fl_3 <- "G:\\004_RawData\\20221017_ion_mobility_data\\centroid\\mix1.mzML"
+
+amix1 <- newAnalysis(fl_3)
+
+getMetadata(amix1)
+
+amix1 <- loadRawData(amix1)
+
+tic_amix1 <- TIC(amix1)
+tic_amix1$rt <- tic_amix1$rt*60
+tic_amix1$analysis <- analysisName(amix1)
+plotTICs(tic_amix1)
+
+chrom <- chromatograms(amix1)
+
+
+plotTIC(amix1)
+head(spectra(amix1))
+
+
+
+dt_spec <- data.table::copy(spectra(amix1))
+dt_spec <- dt_spec[rt >= 190 & rt <= 200, ]
+dt_spec <- dt_spec[driftTime >= 10 & driftTime <= 25, ]
+dt_spec <- dt_spec[ mz >= 0 & mz <= 280, ]
+dt_spec[is.na(ce), ce := 0]
+dt_spec <- dt_spec[ce > 10, ]
+
+# plotSpectra(amix1, mz = data.frame(
+#   mzmin = 0,
+#   mzmax = 280,
+#   rtmin = 190,
+#   rtmax = 200
+# ))
+
+
+
+dt_heat <- dt_spec
+dt_heat <- dt_heat[, .(mz, driftTime, intensity)]
+dt_heat$mz <- round(dt_heat$mz, digits = 4)
+#dt_heat$intensity <- log(dt_heat$intensity)
+dt_heat <- dt_heat[, .(intensity = sum(intensity)), by = c("mz", "driftTime")]
+dt_heat <- tidyr::complete(dt_heat, mz, tidyr::nesting(driftTime), fill = list(intensity = 0))
+dt_heat <- tidyr::pivot_wider(dt_heat, names_from = mz, values_from = intensity)
+dt_heat_mat <- as.matrix(dt_heat)
+row.names(dt_heat_mat) <- dt_heat_mat[, 1]
+dt_heat_mat <- dt_heat_mat[, -1]
+
+fig <- plotly::plot_ly(x = as.numeric(colnames(dt_heat_mat)), y = as.numeric(rownames(dt_heat_mat)),
+                       z = dt_heat_mat) %>% plotly::add_surface(colors = "RdYlBu", reversescale = TRUE, showscale = FALSE,)
+
+xaxis <- list(linecolor = toRGB("black"),
+              linewidth = 2, title = '<i> m/z </i>',
+              titlefont = list(size = 12, color = "black"))
+
+yaxis <- list(linecolor = toRGB("black"),
+              linewidth = 2, title = "Drift Time / miliseconds",
+              titlefont = list(size = 12, color = "black"))
+
+zaxis <- list(linecolor = toRGB("black"),
+              linewidth = 2, title = "Intensity / counts",
+              titlefont = list(size = 12, color = "black"))
+
+fig <- fig %>% layout(
+  scene = list(
+    xaxis = list(title = '<i> m/z </i>'),
+    yaxis = list(title = "Drift Time / miliseconds"),
+    zaxis = list(title = "Intensity / counts")
+  )
+)
+
+fig
+
+
+plot <- plotly::plot_ly(x = as.numeric(colnames(dt_heat_mat)), y = as.numeric(rownames(dt_heat_mat)),
+                        z = dt_heat_mat, colors = "RdYlBu", type = "heatmap",
+                        #colorbar = list(title = '<b> Intensity </b>'),
+                        showscale = FALSE,
+                        reversescale = TRUE)
+
+xaxis <- list(linecolor = toRGB("black"),
+              linewidth = 2, title = '<i> m/z </i>',
+              titlefont = list(size = 12, color = "black"))
+
+yaxis <- list(linecolor = toRGB("black"),
+              linewidth = 2, title = "Drift Time / miliseconds",
+              titlefont = list(size = 12, color = "black"))
+
+plot <- plot %>% layout(
+  #legend = list(title = list(text='<b> Intensity </b>')),
+  xaxis = xaxis,
+  yaxis = yaxis
+)
+
+plot
+
+
+
+
+
+
+
+
+
+
 
 init_time <- Sys.time()
-xml <- xml2::read_xml(fl)
+
+xml <- xml2::read_xml(fl_3)
+
+x_path <- '//d1:spectrum'
+x_path <- '//d1:spectrum/d1:scanList/d1:scan/d1:cvParam'
 x_path <- '//d1:spectrum/d1:scanList/d1:scan/d1:cvParam[@name="ion mobility drift time"]'
 dt <- xml2::xml_find_all(xml, x_path)
+
+x_path_2 <- '//d1:scanList/d1:scan'
+dt_2 <- xml2::xml_find_all(dt[[1]], x_path_2)
+dt_2[[10000]]
+
+
 unit <- xml_attr(dt[[1]], "unitName")
 dt_vals <- as.numeric(xml_attr(dt, "value"))
 rm(xml)
@@ -340,12 +550,23 @@ final_time <- Sys.time()
 xml[4]
 
 
+fl <- fl_3
+
 
 hd <- loadBasicRawSpectraHeaderMZR(fl)
 
 init_time <- Sys.time()
-ms <- mzR::openMSfile(fl)
-dh <- header(ms)
+ms <- mzR::openMSfile(fl_3)
+dh <- mzR::header(ms)
+
+dh <- dh[dh$precursorMZ >= 273.12 & dh$precursorMZ <= 273.13, ]
+
+TRUE %in% (dh$precursorMZ >= 273.12 & dh$precursorMZ <= 273.13)
+
+class(dh$precursorMZ)
+
+
+
 mzR::close(ms)
 rm(ms)
 gc()

@@ -261,12 +261,12 @@ plotFeaturePeaks <- function(object,
   plotList[["plot2"]] <- plot2
 
   xaxis <- list(linecolor = toRGB("black"), linewidth = 2,
-                title = "Retention time (seconds)",
+                title = "Retention time / seconds",
                 titlefont = list(size = 12, color = "black"),
                 range = c(min(eic$rt), max(eic$rt)), autotick = TRUE, ticks = "outside")
 
   yaxis1 <- list(linecolor = toRGB("black"), linewidth = 2,
-                title = "Intensity (counts)",
+                title = "Intensity / counts",
                 titlefont = list(size = 12, color = "black"))
 
   yaxis2 <- list(linecolor = toRGB("black"), linewidth = 2,
