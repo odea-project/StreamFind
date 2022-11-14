@@ -9,6 +9,7 @@ streamFind.Rproj
 /handbooks/Handbook_backend_streamFind.html
 /handbooks/Handbook_backend_streamFind_cache
 /handbooks/Handbook_backend_streamFind_files
+/handbooks/hb_backend_figures
 /handbooks/log
 /handbooks/cache.sqlite
 /handbooks/settings_pp_2.json
@@ -21,3 +22,4 @@ inst/doc
 /doc/
 /Meta/
 /log/
+/dev/template_report.html
