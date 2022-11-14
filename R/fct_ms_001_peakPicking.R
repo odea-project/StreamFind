@@ -83,6 +83,7 @@ peakPicking <- function(object = NULL, settings = NULL) {
   } else {
 
     algorithm <- NA_character_
+
   }
 
 
@@ -204,15 +205,14 @@ buildPeaksTable <- function(object, pat) {
 
   if (testClass(pat, "features")) {
 
-    valid <- TRUE
-
     peaks <- pat@features
     anaInfo <- pat@analysisInfo
 
 
     if (testClass(pat, "featuresXCMS3")) {
       if (xcms::hasFilledChromPeaks(pat@xdata)) {
-        extra <- as.data.table(chromPeaks(pat@xdata, isFilledColumn = TRUE))
+        extra <- as.data.table(xcms::chromPeaks(pat@xdata, isFilledColumn = TRUE))
+        extra$is_filled <- as.logical(extra$is_filled)
         extra[, analysis := anaInfo$analysis[extra$sample]]
         extra[, analysis := factor(analysis, levels = anaInfo$analysis)]
         extra <- split(extra, extra$analysis)
@@ -375,7 +375,7 @@ buildPeaksTable <- function(object, pat) {
         temp$mass <- temp$mz + adduct_val
       }
 
-      if (!"is_filled" %in% colnames(temp)) temp$is_filled <- 0
+      if (!"is_filled" %in% colnames(temp)) temp$is_filled <- FALSE
       if (!"filtered" %in% colnames(temp)) temp$filtered <- FALSE
       if (!"filter" %in% colnames(temp)) temp$filter <- NA_character_
 

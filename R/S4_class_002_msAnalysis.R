@@ -7,8 +7,9 @@ msAnalysis_validity <- function(object) {
   valid <- TRUE
 
   if (nrow(object@peaks) > 0) {
-    must_have_names <- c("id", "rt", "mz", "intensity", "area", "drt",
-                         "rtmin", "rtmax", "dppm", "mzmin", "mzmax")
+    must_have_names <- c("id", "index", "rt", "mz", "intensity", "area",
+                         "drt", "rtmin", "rtmax", "dppm", "mzmin", "mzmax",
+                         "adduct", "mass", "filtered", "filter")
     valid <- !FALSE %in% (must_have_names %in% colnames(object@peaks))
   }
 
@@ -810,6 +811,8 @@ setMethod("EICs", "msAnalysis", function(object,
 
   }
 
+  eics$analysis <- analysisName(object)
+
   return(eics)
 })
 
@@ -1413,7 +1416,7 @@ setMethod("peaks", "msAnalysis", function(object,
 
 ##### plotPeaks ---------------------------------------------------------------
 
-#' @describeIn msAnalysis plots chromatographic peaks in an the analysis.
+#' @describeIn msAnalysis plots chromatographic peaks in the analysis.
 #' The arguments \code{targetID}, \code{mass}, \code{mz} and \code{rt} can
 #' be used to select specific peaks. The \emph{id} of peaks and/or features
 #' can be given in the \code{targetsID} argument to select the respective peaks.
@@ -1503,9 +1506,7 @@ setMethod("mapPeaks", "msAnalysis", function(object,
 
   } else {
 
-    leg <- paste0(peaks$id, " - ", round(peaks$mz, digits = 4), "/", round(peaks$rt, digits = 0))
-    names(leg) <- peaks$id
-    varkey <- sapply(peaks$id, function(x) leg[names(leg) == x])
+    varkey <- peaks$id
 
   }
 
@@ -1568,4 +1569,64 @@ setMethod("[", c("msAnalysis", "ANY", "missing", "missing"), function(x, i, ...)
 #'
 setMethod("hasAdjustedRetentionTime", "msAnalysis", function(object) {
   return("rtAdjusted" %in% colnames(object@spectra))
+})
+
+
+
+### _as.features_ -------------------------------------------------------------
+
+#' @describeIn msAnalysis converts the \linkS4class{msAnalysis}
+#' to a \linkS4class{features} object from the package \pkg{patRoon}.
+#'
+#' @export
+#'
+#' @aliases as.features,msAnalysis,msAnalysis-method
+#'
+setMethod("as.features", "msAnalysis", function(object) {
+
+  anaInfo <- analysisInfo(object)
+
+  feat <- peaks(object)
+
+  if ("filtered" %in% colnames(feat)) feat <- feat[!feat$filtered, ]
+
+  if (nrow(feat) == 0) {
+    warning("Peaks not found to create a patRoon's features S4 object!")
+    return(NULL)
+  }
+
+  setnames(feat,
+           c("id", "rt", "rtmin", "rtmax", "feature"),
+           c("ID", "ret", "retmin", "retmax", "group"),
+           skip_absent = TRUE
+  )
+
+  feat <- select(feat,
+            ID, ret, mz, area, intensity, retmin, retmax, mzmin, mzmax,
+            everything()
+  )
+
+  if (length(unique(polarities(object))) > 1 | "both" %in% polarities(object)) {
+
+    feat$mzmin <- feat$mass - (feat$mz - feat$mzmin)
+    feat$mzmax <- feat$mass + (feat$mzmax - feat$mz)
+    feat$mz <- feat$mass
+    feat$mass <- NULL
+
+    feat <- list(feat)
+    names(feat) <- analysisName(object)
+
+    feat_obj <- new("featuresSet",
+      features = feat, analysisInfo = anaInfo, algorithm = "openms-set")
+
+  } else {
+
+    feat <- list(feat)
+    names(feat) <- analysisName(object)
+
+    feat_obj <- new("featuresOpenMS", features = feat, analysisInfo = anaInfo)
+
+  }
+
+  return(feat_obj)
 })

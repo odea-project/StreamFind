@@ -90,6 +90,8 @@
 \alias{[,msAnalysis,ANY,missing,missing-method}
 \alias{hasAdjustedRetentionTime,msAnalysis-method}
 \alias{hasAdjustedRetentionTime,msAnalysis,msAnalysis-method}
+\alias{as.features,msAnalysis-method}
+\alias{as.features,msAnalysis,msAnalysis-method}
 \title{msAnalysis-class}
 \usage{
 \S4method{initialize}{msAnalysis}(.Object, file = NA_character_)
@@ -268,6 +270,8 @@
 \S4method{[}{msAnalysis,ANY,missing,missing}(x, i, j, ..., drop = TRUE)
 
 \S4method{hasAdjustedRetentionTime}{msAnalysis}(object)
+
+\S4method{as.features}{msAnalysis}(object)
 }
 \arguments{
 \item{object}{An \linkS4class{msAnalysis} object.}
@@ -522,7 +526,7 @@ The arguments \code{targetID}, \code{mass}, \code{mz} and \code{rt} can
 be used to select specific peaks. The \emph{id} of peaks and/or features
 can be given in the \code{targetsID} argument to select the respective peaks.
 
-\item \code{plotPeaks(msAnalysis)}: plots chromatographic peaks in an the analysis.
+\item \code{plotPeaks(msAnalysis)}: plots chromatographic peaks in the analysis.
 The arguments \code{targetID}, \code{mass}, \code{mz} and \code{rt} can
 be used to select specific peaks. The \emph{id} of peaks and/or features
 can be given in the \code{targetsID} argument to select the respective peaks.
@@ -537,6 +541,9 @@ and is used as legend for the plot.
 
 \item \code{hasAdjustedRetentionTime(msAnalysis)}: getter for presence of adjusted retention time
 in the \linkS4class{msAnalysis}.
+
+\item \code{as.features(msAnalysis)}: converts the \linkS4class{msAnalysis}
+to a \linkS4class{features} object from the package \pkg{patRoon}.
 
 }}
 \section{Slots}{

@@ -230,15 +230,22 @@ test_that("settings", {
 
 ana_mzML_pos <- addSettings(ana_mzML_pos, settings = settings_pp)
 
-
 ana_mzML_pos <- peakPicking(ana_mzML_pos)
 
+test_that("test_methods_for_peaks", {
 
+  expect_s3_class(peaks(ana_mzML_pos), "data.table")
+  expect_gt(nrow(peaks(ana_mzML_pos)), 1)
+  expect_true(hasPeaks(ana_mzML_pos))
+  expect_equal(nrow(peaks(ana_mzML_pos[1:5,])), 5)
 
+})
 
-
-
-
+# mapPeaks(ana_mzML_pos, mass = diu_pos, rt = diu_rt)
+# mapPeaks(ana_mzML_pos, mz = targets4)
+# plotPeaks(ana_mzML_pos, mz = targets4)
+# plotPeaks(ana_mzML_pos, mass = diu_pos, rt = diu_rt)
+# plotEICs(EICs(ana_mzML_pos, mz = targets4))
 # plotSpectra(ana_mzML_pos, mz = diu_pos, ppm = 10000)
 # plotChromatograms(ana_mzML_pos)
 # plotChromatograms(ana_mzML_pos, interactive = TRUE)
@@ -249,6 +256,7 @@ ana_mzML_pos <- peakPicking(ana_mzML_pos)
 # plotXICs(ana_mzML_pos, mz = targets4[2, ])
 # plotMS2s(ana_mzML_pos, mz = targets4[2,])
 # plotMS2s(ana_mzML_pos, mz = targets4[2,], interactive = TRUE)
+
 
 
 
