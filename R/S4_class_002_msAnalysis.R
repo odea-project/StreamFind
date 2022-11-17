@@ -41,21 +41,25 @@ msAnalysis_validity <- function(object) {
 #' containing the following mandatory columns:
 #' \enumerate{
 #'  \item \strong{id}: character, the identifier of the peak;
+#'  \item \strong{index}: numeric, the index of the peak;
 #'  \item \strong{rt}: numeric, the retention time (in seconds);
 #'  \item \strong{mz}: numeric, the calculated \emph{m/z} value;
 #'  \item \strong{intensity}: numeric, the intensity or height (in counts);
 #'  \item \strong{area}: numeric, the area of the integrated peak;
+#'  \item \strong{drt}: numeric, the peak width (in seconds);
 #'  \item \strong{rtmin}: numeric, the minimum retention time (in seconds);
 #'  \item \strong{rtmax}: numeric, the maximum retention time, (in seconds);
+#'  \item \strong{dppm}: numeric, the mass width of the peak (in ppm);
 #'  \item \strong{mzmin}: numeric, the minimum \emph{m/z} value;
 #'  \item \strong{mzmax}: numeric, the maximum \emph{m/z} value;
 #'  \item \strong{adduct}: character, the annotated adduct ion of the peak;
 #'  \item \strong{mass}: numeric, the neutral mass of the peak;
 #'  \item \strong{isotope}: numeric, the annotated isotopic number;
 #'  \item \strong{monoIsotope}: character, the id of the mono isotopic ion;
-#'  \item \strong{feature}: character, the identifier of the peaks group
-#'  (i.e., feature) after grouping of corresponding peaks across analyses;
-#'  \item \strong{...} other columns added from various functions/algorithms.
+#'  \item \strong{feature}: character, the identifier of the features (i.e.,
+#'  group of peaks) after grouping of corresponding peaks across analyses;
+#'  \item \strong{...} other optional columns added from various
+#'  functions/algorithms.
 #' }
 #'
 #' @export
@@ -89,7 +93,7 @@ setClass("msAnalysis",
 
 #### _initialize_ -------------------------------------------------------------
 
-#' @describeIn msAnalysis creates an \linkS4class{msAnalysis}.
+#' @describeIn msAnalysis creates an \linkS4class{msAnalysis} from a file.
 #'
 #' @export
 #'
@@ -410,7 +414,7 @@ setMethod("addMetadata", "msAnalysis", function(object,
 #'
 setMethod("polarity", "msAnalysis", function(object) {
   mt <- getMetadata(object, which = "polarity")
-  return(mt$polarity)
+  return(mt)
 })
 
 
@@ -447,11 +451,13 @@ setMethod("loadSpectraInfo", "msAnalysis", function(object) {
 
   fl <- filePath(object)
 
+  xml_data <- xml2::read_xml(fl)
+
   if (grepl(".mzML", fl))
-    spec_info <- mzML_loadSpectraInfo(fl = fl)
+    spec_info <- mzML_loadSpectraInfo(xml_data)
 
   if (grepl(".mzXML", fl))
-    spec_info <- mzXML_loadSpectraInfo(fl = fl)
+    spec_info <- mzXML_loadSpectraInfo(xml_data)
 
   object@spectra <- spec_info
 
@@ -541,7 +547,7 @@ setMethod("getRawData", "msAnalysis", function(object,
 
 
 
-##### loadRawData --------------------------------------------------------------
+##### loadRawData -------------------------------------------------------------
 
 #' @describeIn msAnalysis adds (when available) raw spectra and chromatograms
 #' to the respective slots of an \linkS4class{msAnalysis} object.
@@ -761,7 +767,7 @@ setMethod("plotChromatograms", "msAnalysis", function(object,
 # TODO make method to clear loaded raw data
 
 
-   ##### EICs --------------------------------------------------------------------
+##### EICs --------------------------------------------------------------------
 
 #' @describeIn msAnalysis get extracted ion chromatograms (EICs)
 #' for specified \emph{m/z} (Da) and retention time (seconds) targets.
@@ -811,8 +817,6 @@ setMethod("EICs", "msAnalysis", function(object,
 
   }
 
-  eics$analysis <- analysisName(object)
-
   return(eics)
 })
 
@@ -846,8 +850,6 @@ setMethod("plotEICs", "msAnalysis", function(object,
 
   eics <- EICs(object, mz, rt, ppm, sec, id)
 
-  eics$analysis <- analysisName(object)
-
   return(
     plotEICs(eics,
       analyses = NULL,
@@ -872,7 +874,7 @@ setMethod("BPC", "msAnalysis", function(object) {
 
   bpc <- chromatograms(object)
 
-  bpc <- bpc[id %in% "BPC", ]
+  if (nrow(bpc) > 0) bpc <- bpc[id %in% "BPC", ]
 
   if (nrow(bpc) == 0) {
 
@@ -939,6 +941,7 @@ setMethod("plotBPC", "msAnalysis", function(object,
   bpc <- BPC(object)
 
   bpc$analysis <- analysisName(object)
+  setcolorder(bpc, c("analysis", "id", "rt", "intensity"))
 
   return(
     plotTICs(bpc,
@@ -1060,7 +1063,7 @@ setMethod("plotTIC", "msAnalysis", function(object,
 
 ##### plotTICs ----------------------------------------------------------------
 
-#' @describeIn msAnalysis Plots the total ion chromatogram (TIC) in the analysis.
+#' @describeIn msAnalysis plots the total ion chromatogram (TIC) in the analysis.
 #'
 #' @export
 #'
@@ -1076,7 +1079,7 @@ setMethod("plotTICs", "msAnalysis", function(object,
 
 ##### XICs --------------------------------------------------------------------
 
-#' @describeIn msAnalysis Get three dimensional (\emph{m/z}, time and intensity)
+#' @describeIn msAnalysis gets three dimensional (\emph{m/z}, time and intensity)
 #' extracted ion chromatograms (XICs) for specified \emph{m/z} and retention
 #' time pair targets in analysis. The arguments \code{mz}, \code{ppm},
 #' \code{rt}, \code{sec} and \code{id} are used to construct the targets.
@@ -1125,7 +1128,7 @@ setMethod("XICs", "msAnalysis", function(object,
 
 ##### plotXICs ----------------------------------------------------------------
 
-#' @describeIn msAnalysis Plots three dimensional (\emph{m/z}, time and intensity)
+#' @describeIn msAnalysis plots three dimensional (\emph{m/z}, time and intensity)
 #' extracted ion chromatograms (XICs) for specified \emph{m/z} and retention
 #' time pair targets in analyses of an \linkS4class{msAnalysis} object.
 #' The arguments \code{mz}, \code{ppm}, \code{rt}, \code{sec} and \code{id} are
@@ -1162,8 +1165,6 @@ setMethod("plotXICs", "msAnalysis", function(object,
     targetsMark <- targetsMark[id %in% xic$id, ]
   }
 
-  xic$analysis <- analysisNames(object)
-
   plot <- plotXICs(xic,
     legendNames = legendNames,
     plotTargetMark = plotTargetMark,
@@ -1185,16 +1186,23 @@ setMethod("plotXICs", "msAnalysis", function(object,
 #'
 #' @param mzClust A numeric value defining the \emph{m/z} cutoff (in Da) to
 #' cluster mass traces from different scans.
+#' @param isolationWindow A numeric value defining the isolation window (in Da)
+#' applied to isolate the MS1 precursor.
 #'
 #' @export
 #'
 #' @aliases MS2s,msAnalysis,msAnalysis-method
 #'
-setMethod("MS2s", "msAnalysis", function(object, mzClust = 0.01,
+setMethod("MS2s", "msAnalysis", function(object,
+                                         mzClust = 0.01,
+                                         isolationWindow = 1,
                                          mz = NULL, rt = NULL,
                                          ppm = 20, sec = 60, id = NULL) {
 
   targets <- makeTargets(mz, rt, ppm, sec, id)
+
+  targets$mzmin <- targets$mzmin - (isolationWindow/2)
+  targets$mzmax <- targets$mzmax + (isolationWindow/2)
 
   rtr <- c(min(targets$rtmin) * 0.95, max(targets$rtmax) * 1.05)
   if (rtr[2] == 0) rtr = NULL
@@ -1238,18 +1246,18 @@ setMethod("MS2s", "msAnalysis", function(object, mzClust = 0.01,
 #'
 #' @aliases plotMS2s,msAnalysis,msAnalysis-method
 #'
-setMethod("plotMS2s", "msAnalysis", function(object, mzClust = 0.005,
+setMethod("plotMS2s", "msAnalysis", function(object,
+                                             mzClust = 0.01,
+                                             isolationWindow = 1.3,
                                              mz = NULL, rt = NULL,
                                              ppm = 20,  sec = 60, id = NULL,
                                              legendNames = NULL,
                                              title = NULL,
                                              interactive = FALSE) {
 
-  ms2 <- MS2s(object, mzClust, mz, rt, ppm, sec, id)
+  ms2 <- MS2s(object, mzClust, isolationWindow, mz, rt, ppm, sec, id)
 
   if (nrow(ms2) < 1) return(cat("Data was not found for any of the targets!"))
-
-  ms2$analysis <- analysisName(object)
 
   return(
     plotMS2s(ms2, legendNames = legendNames, title = title,
@@ -1521,7 +1529,7 @@ setMethod("mapPeaks", "msAnalysis", function(object,
 
 #### _sub-setting peaks_ ------------------------------------------------------
 
-#' @describeIn msAnalysis subset on peaks, using peak index or name.
+#' @describeIn msAnalysis subset on peaks, using peak index or id.
 #'
 #' @param x A \linkS4class{msAnalysis} object.
 #' @param i The indice/s or name/s of the peaks to keep in the \code{x} object.

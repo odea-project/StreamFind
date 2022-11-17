@@ -33,7 +33,12 @@ setMethod("plotEICs", "data.table", function(object,
 
   eic <- copy(object)
 
-  if (!is.null(analyses)) {
+  if (!"analysis" %in% colnames(eic)) {
+    eic$analysis <- " "
+    colorBy <- "targets"
+  }
+
+  if ((!is.null(analyses)) & ("analysis" %in% colnames(eic))) {
     if (is.numeric(analyses)) analyses <- unique(eic$analysis)[analyses]
     eic[analysis %in% analyses, ]
   }
@@ -155,7 +160,12 @@ setMethod("plotXICs", "data.table", function(object,
 
   xic <- object
 
-  if (!is.null(analyses)) {
+  if (!"analysis" %in% colnames(xic)) {
+    xic$analysis <- " "
+    colorBy <- "targets"
+  }
+
+  if ((!is.null(analyses)) & ("analysis" %in% colnames(xic))) {
     if (is.numeric(analyses)) {
       analyses <- unique(xic$analysis)[analyses]
     }
@@ -258,12 +268,17 @@ setMethod("plotMS2s", "data.table", function(object = NULL,
 
   ms2 <- copy(object)
 
-  if (!is.null(analyses) & "analysis" %in% colnames(ms2)) {
+  if (!"analysis" %in% colnames(ms2)) {
+    ms2$analysis <- " "
+    colorBy <- "targets"
+  }
+
+  if ((!is.null(analyses)) & ("analysis" %in% colnames(ms2))) {
     if (is.numeric(analyses)) analyses <- unique(ms2$analysis)[analyses]
     ms2[analysis %in% analyses, ]
   }
 
-  if (!is.null(replicates) & "replicate" %in% colnames(ms2)) {
+  if ((!is.null(replicates)) & ("replicate" %in% colnames(ms2))) {
     if (is.numeric(analyses)) replicates <- unique(ms2$replicate)[replicates]
     ms2[replicate %in% replicates, ]
   }
@@ -273,8 +288,8 @@ setMethod("plotMS2s", "data.table", function(object = NULL,
   if (nrow(ms2) < 1) return(cat("Data was not found for any of the targets!"))
 
   if (colorBy == "analyses" & "analysis" %in% colnames(ms2)) {
-    leg <- unique(ms2$sample)
-    varkey <- ms2$sample
+    leg <- unique(ms2$analysis)
+    varkey <- ms2$analysis
   } else if (colorBy == "replicates" & "replicate" %in% colnames(ms2)) {
     leg <- unique(ms2$replicate)
     varkey <- ms2$replicate
@@ -351,7 +366,12 @@ setMethod("plotPeaks", "data.table", function(object,
 
   eic <- copy(object)
 
-  if (!is.null(analyses)) {
+  if (!"analysis" %in% colnames(eic)) {
+    eic$analysis <- " "
+    colorBy <- "targets"
+  }
+
+  if ((!is.null(analyses)) & ("analysis" %in% colnames(eic))) {
     if (is.numeric(analyses)) analyses <- unique(eic$analysis)[analyses]
     eic[analysis %in% analyses, ]
   }

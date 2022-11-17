@@ -199,6 +199,7 @@
 \S4method{MS2s}{msAnalysis}(
   object,
   mzClust = 0.01,
+  isolationWindow = 1,
   mz = NULL,
   rt = NULL,
   ppm = 20,
@@ -208,7 +209,8 @@
 
 \S4method{plotMS2s}{msAnalysis}(
   object,
-  mzClust = 0.005,
+  mzClust = 0.01,
+  isolationWindow = 1.3,
   mz = NULL,
   rt = NULL,
   ppm = 20,
@@ -356,6 +358,9 @@ the number of rows to grid the plots.}
 \item{mzClust}{A numeric value defining the \emph{m/z} cutoff (in Da) to
 cluster mass traces from different scans.}
 
+\item{isolationWindow}{A numeric value defining the isolation window (in Da)
+applied to isolate the MS1 precursor.}
+
 \item{call}{The call name of the settings to retrieve.}
 
 \item{targetsID}{A character vector with the ID of targets
@@ -389,7 +394,7 @@ processing and evaluation of the data.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{initialize(msAnalysis)}: creates an \linkS4class{msAnalysis}.
+\item \code{initialize(msAnalysis)}: creates an \linkS4class{msAnalysis} from a file.
 
 \item \code{show(msAnalysis)}: shows the details of an \linkS4class{msAnalysis}.
 
@@ -484,15 +489,15 @@ of the analysis.
 
 \item \code{plotTIC(msAnalysis)}: plots the total ion chromatogram (TIC) in the analysis.
 
-\item \code{plotTICs(msAnalysis)}: Plots the total ion chromatogram (TIC) in the analysis.
+\item \code{plotTICs(msAnalysis)}: plots the total ion chromatogram (TIC) in the analysis.
 
-\item \code{XICs(msAnalysis)}: Get three dimensional (\emph{m/z}, time and intensity)
+\item \code{XICs(msAnalysis)}: gets three dimensional (\emph{m/z}, time and intensity)
 extracted ion chromatograms (XICs) for specified \emph{m/z} and retention
 time pair targets in analysis. The arguments \code{mz}, \code{ppm},
 \code{rt}, \code{sec} and \code{id} are used to construct the targets.
 See ?\link{makeTargets} for more information.
 
-\item \code{plotXICs(msAnalysis)}: Plots three dimensional (\emph{m/z}, time and intensity)
+\item \code{plotXICs(msAnalysis)}: plots three dimensional (\emph{m/z}, time and intensity)
 extracted ion chromatograms (XICs) for specified \emph{m/z} and retention
 time pair targets in analyses of an \linkS4class{msAnalysis} object.
 The arguments \code{mz}, \code{ppm}, \code{rt}, \code{sec} and \code{id} are
@@ -537,7 +542,7 @@ for plotting and is used as legend for the plot.
 The \code{legendNames} is a character vector with the same length as targets
 and is used as legend for the plot.
 
-\item \code{x[i}: subset on peaks, using peak index or name.
+\item \code{x[i}: subset on peaks, using peak index or id.
 
 \item \code{hasAdjustedRetentionTime(msAnalysis)}: getter for presence of adjusted retention time
 in the \linkS4class{msAnalysis}.
@@ -569,21 +574,25 @@ data processing, such as peak picking.}
 containing the following mandatory columns:
 \enumerate{
 \item \strong{id}: character, the identifier of the peak;
+\item \strong{index}: numeric, the index of the peak;
 \item \strong{rt}: numeric, the retention time (in seconds);
 \item \strong{mz}: numeric, the calculated \emph{m/z} value;
 \item \strong{intensity}: numeric, the intensity or height (in counts);
 \item \strong{area}: numeric, the area of the integrated peak;
+\item \strong{drt}: numeric, the peak width (in seconds);
 \item \strong{rtmin}: numeric, the minimum retention time (in seconds);
 \item \strong{rtmax}: numeric, the maximum retention time, (in seconds);
+\item \strong{dppm}: numeric, the mass width of the peak (in ppm);
 \item \strong{mzmin}: numeric, the minimum \emph{m/z} value;
 \item \strong{mzmax}: numeric, the maximum \emph{m/z} value;
 \item \strong{adduct}: character, the annotated adduct ion of the peak;
 \item \strong{mass}: numeric, the neutral mass of the peak;
 \item \strong{isotope}: numeric, the annotated isotopic number;
 \item \strong{monoIsotope}: character, the id of the mono isotopic ion;
-\item \strong{feature}: character, the identifier of the peaks group
-(i.e., feature) after grouping of corresponding peaks across analyses;
-\item \strong{...} other columns added from various functions/algorithms.
+\item \strong{feature}: character, the identifier of the features (i.e.,
+group of peaks) after grouping of corresponding peaks across analyses;
+\item \strong{...} other optional columns added from various
+functions/algorithms.
 }}
 }}
 

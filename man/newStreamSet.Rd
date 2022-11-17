@@ -7,7 +7,7 @@
 newStreamSet(
   files = NA_character_,
   title = NA_character_,
-  date = Sys.Date(),
+  date = Sys.time(),
   replicates = NA_character_,
   blanks = NA_character_,
   run_parallel = FALSE

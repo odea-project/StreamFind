@@ -1,17 +1,30 @@
 
+### //// validity -------------------------------------------------------------
 
-### streamSet ----------------------------------------------------------------------------------------------
+streamSet_validity <- function(object) {
+
+  valid <- TRUE
+
+  if (!length(object@title) == 1) valid <- FALSE
+
+  return(valid)
+}
+
+
+
+### streamSet -----------------------------------------------------------------
 
 #' @title streamSet
 #'
-#' @description An S4 class object containing the set title, date,
-#' storage path and a list of analysis files.
+#' @description An S4 class object containing the set title, date and a list
+#' of analysis files.
 #'
-#' @template slot-streamSet
+#' @slot title A character string defining the title.
+#' @slot date A \code{POSIXt} class object.
 #' @slot analyses A list of analyses added to the project.
 #' The class of the analysis objects are defined according to the file formats.
-#' When a class is not possible to be assigned, the list contains
-#' full path string of each file added.
+#' When a class is not possible to be assigned, the list will contain the
+#' full path string of each file.
 #'
 #' @export
 #'
@@ -19,14 +32,15 @@
 setClass("streamSet",
   representation(
     analyses = "list",
-    date = "Date",
+    date = "POSIXt",
     title = "character"
   ),
   prototype = list(
     analyses = list(),
-    date = Sys.Date(),
+    date = Sys.time(),
     title = NA_character_
-  )
+  ),
+  validity = streamSet_validity
 )
 
 
@@ -34,8 +48,7 @@ setClass("streamSet",
 
 #### show ---------------------------------------------------------------------
 
-#' @describeIn streamSet prints the details of
-#' an \linkS4class{streamSet} object.
+#' @describeIn streamSet prints a summary of the \linkS4class{streamSet} object.
 #'
 #' @param object An \linkS4class{streamSet} object.
 #'
@@ -83,8 +96,8 @@ setMethod("setTitle", "streamSet", function(object) {
 
 #### setTitle<- ---------------------------------------------------------------
 
-#' @describeIn streamSet setter for title.
-#' The \code{value} is a string with the title.
+#' @describeIn streamSet setter for the title.
+#' The \code{value} must be a string.
 #'
 #' @param value A method specific string/vector.
 #'
@@ -103,8 +116,8 @@ setMethod("setTitle<-", signature("streamSet", "ANY"), function(object, value) {
 
 #### setDate ------------------------------------------------------------------
 
-#' @describeIn streamSet getter for the date.
-#' Note that is not setter for the date.
+#' @describeIn streamSet getter for the date and time of the streamSet object.
+#' Note, there is no setter for the date.
 #'
 #' @export
 #'
@@ -118,7 +131,7 @@ setMethod("setDate", "streamSet", function(object) {
 
 
 
-#### analysisNames ----------------------------------------------------------------
+#### analysisNames ------------------------------------------------------------
 
 #' @describeIn streamSet getter for the analysis names.
 #'
@@ -136,7 +149,7 @@ setMethod("analysisNames", "streamSet", function(object) {
 
 #### [ sub-setting analyses ---------------------------------------------------
 
-#' @describeIn streamSet subset on analyses, using analysis index or name.
+#' @describeIn streamSet subsets on analyses, using analysis index or name.
 #'
 #' @param x A \linkS4class{streamSet} object.
 #' @param i The indice/s or name/s of the analyses to keep in \code{x}.
@@ -168,11 +181,11 @@ setMethod("[", c("streamSet", "ANY", "missing", "missing"), function(x, i, ...) 
 
 
 
-#### addAnalyses ---------------------------------------------------------
+#### addAnalyses --------------------------------------------------------------
 
-#' @describeIn streamSet adds analyses to the \linkS4class{streamSet}.
+#' @describeIn streamSet adds analyses to an existing \linkS4class{streamSet}.
 #'
-#' @param analysisList A list of strings with analysis file full paths.
+#' @param analysisList A list of strings with file full paths.
 #'
 #' @export
 #'

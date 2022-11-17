@@ -1,5 +1,5 @@
 
-#### validity -----------------------------------------------------------------
+### //// validity -------------------------------------------------------------
 
 msData_validity <- function(object) {
 
@@ -7,11 +7,6 @@ msData_validity <- function(object) {
 
   if (!all(sapply(object@analyses, is) %in% "msAnalysis")) {
     warning("Analysis objects must be as msAnalysis S4 class objects!")
-    valid <- FALSE
-  }
-
-  #validates each msAnalysis, if they have peaks data.table
-  if (!all(sapply(object@analyses, function(x) validObject(x)))) {
     valid <- FALSE
   }
 
@@ -32,16 +27,18 @@ msData_validity <- function(object) {
 
 
 
-### msData --------------------------------------------------------------------
+### //// msData ---------------------------------------------------------------
 
 #' @title msData
 #'
-#' @description An S4 class object to store and manage processing of files with
-#' MS data. The \code{msData} object inherits the \linkS4class{streamSet}
-#' structure with type defined as \emph{ms}.
+#' @description An S4 class object to store and manage processing of MS analyses.
+#' The \code{msData} object inherits the \linkS4class{streamSet}  structure plus
+#' the features slot for processing MS data.
 #'
-#' @template slot-streamSet
-#' @template slot-msData
+#' @slot title A character string defining the title.
+#' @slot date A \code{POSIXt} class object.
+#' @slot analyses A list with \linkS4class{msAnalysis} objects.
+#' @slot features  An \linkS4class{msFeatures} class object.
 #'
 #' @export
 #'
@@ -59,64 +56,44 @@ setClass("msData",
 
 
 
-### S4 methods ----------------------------------------------------------------
+### //// S4 methods -----------------------------------------------------------
 
 #### _initialize_ -------------------------------------------------------------
 
-#' @describeIn msData creates an \linkS4class{msData}.
+#' @describeIn msData creates an \linkS4class{msData} object.
+#'
+#' @param run_parallel Logical, set to \code{TRUE} for parallel processing.
 #'
 #' @export
 #'
 setMethod("initialize", "msData", function(.Object,
-                                           analysisTable = NULL,
+                                           files = NA_character_,
+                                           title = NA_character_,
+                                           date = Sys.time(),
+                                           replicates = NA_character_,
+                                           blanks = NA_character_,
                                            run_parallel = FALSE, ...) {
 
   .Object <- callNextMethod(.Object, ...)
 
   ms_data <- .Object
 
+  analysisTable <- checkFilesInput(files, replicates, blanks)
+
   if (!is.null(analysisTable)) {
+
+    ms_data@title <- title
+
+    ms_data@date <- date
 
     files <- analysisTable$file
 
-    analyses <- runParallelLapply(files, run_parallel = TRUE,
-      FUN = function(x) {
+    analyses <- runParallelLapply(files, run_parallel = run_parallel,
+        FUN = function(x) {
         temp_ana <- streamFind::initialize(new("msAnalysis", file = x))
         p()
         return(temp_ana)}
     )
-
-    # TODO delete when runParallelLapply works with other methods
-    #
-    # handlers(handler_progress(format="[:bar] :percent :eta :message"))
-    #
-    # if (length(files) > 1 & run_parallel) {
-    #
-    #   #workers <- length(availableWorkers()) - 1
-    #   workers <- availableCores() -1
-    #
-    #   plan("multisession", workers = workers)  #also on Windows
-    #   #plan("multicore", workers) #not windows/not RStudio
-    #
-    # } else {
-    #
-    #   plan("sequential")
-    #
-    # }
-    #
-    # with_progress({
-    #
-    #   p <- progressor(along = files)
-    #
-    #   analyses <- future_lapply(files, function(x) {
-    #     temp_ana <- streamFind::initialize(new("msAnalysis", file = x))
-    #     p()
-    #     return(temp_ana)
-    #   }, future.seed = TRUE)
-    #
-    # })
-    #
-    # if (run_parallel)  plan("sequential")
 
     analyses_class <- sapply(analyses, function(x) is(x))
 
@@ -137,8 +114,8 @@ setMethod("initialize", "msData", function(.Object,
 
     } else {
 
-      warning("More than one file type was added!
-                Not possible to assign a set sub-class")
+      warning("Not all files deliver an msAnalysis class!
+              Not possible to contruct an msData class.")
 
       return(NULL)
     }
@@ -149,11 +126,11 @@ setMethod("initialize", "msData", function(.Object,
 
 
 
-#### show ---------------------------------------------------------------------
+#### _show_ -------------------------------------------------------------------
 
-#' @describeIn msData prints the details of an \linkS4class{msData} object.
+#' @describeIn msData prints a summary of the \linkS4class{msData}.
 #'
-#' @template args-single-object-msData
+#' @param object An \linkS4class{msData} object.
 #'
 #' @export
 #'
@@ -194,13 +171,17 @@ setMethod("show", "msData", function(object) {
 
 })
 
-#### analysisInfo -------------------------------------------------------------
+
+
+#### names and paths ______ ---------------------------------------------------
+
+##### analysisInfo ------------------------------------------------------------
 
 #' @describeIn msData getter for analysis info as \link{data.frame} with
 #' four columns: path, analysis, group and blank. The \link{data.frame}
 #' can be used as analysisInfo in \pkg{patRoon}.
 #'
-#' @param obj A \linkS4class{msData} object.
+#' @param obj An \linkS4class{msData} object.
 #'
 #' @export
 #'
@@ -227,10 +208,12 @@ setMethod("analysisInfo", "msData", function(obj) {
   return(temp)
 })
 
-#### analysisTable -------------------------------------------------------
+
+
+##### analysisTable -----------------------------------------------------------
 
 #' @describeIn msData getter for analysis table as \link{data.table} with
-#' four columns: file, analysis, replicate and blank.
+#' four columns: file, analysis, replicate, blank, class and polarity.
 #'
 #' @export
 #'
@@ -254,17 +237,19 @@ setMethod("analysisTable", "msData", function(object) {
 
 
 
-#### filePaths -----------------------------------------------------------
+##### filePaths ---------------------------------------------------------------
 
-#' @describeIn msData getter for analysis file paths.
+#' @describeIn msData getter for analysis file full paths.
 #'
 #' @export
 #'
 #' @aliases filePaths,msData,msData-method
 #'
-setMethod("filePaths", "msData", function(object) sapply(object@analyses, function(x) x@file))
+setMethod("filePaths", "msData", function(object) {
+  return(sapply(object@analyses, function(x) x@file))
+})
 
-#### analysisNames ------------------------------------------------------------
+##### analysisNames -----------------------------------------------------------
 
 #' @describeIn msData getter for analysis names.
 #'
@@ -277,7 +262,7 @@ setMethod("analysisNames", "msData", function(object) {
 })
 
 
-#### replicateNames ----------------------------------------------------------
+##### replicateNames ----------------------------------------------------------
 
 #' @describeIn msData getter for replicate names.
 #'
@@ -291,7 +276,7 @@ setMethod("replicateNames", "msData", function(object) {
   return(replicates)
 })
 
-#### replicateNames<- --------------------------------------------------------
+##### replicateNames<- --------------------------------------------------------
 
 #' @describeIn msData setter for analysis replicate names.
 #' The \code{value} is a character vector with the same length as
@@ -317,9 +302,9 @@ setMethod("replicateNames<-", signature("msData", "ANY"), function(object, value
   return(object)
 })
 
-#### blankReplicateNames --------------------------------------------------------------
+##### blankReplicateNames -----------------------------------------------------
 
-#' @describeIn msData getter for blank names.
+#' @describeIn msData getter for blank replicate names.
 #'
 #' @export
 #'
@@ -331,9 +316,9 @@ setMethod("blankReplicateNames", "msData", function(object) {
   return(blanks)
 })
 
-#### blankReplicateNames<- ------------------------------------------------------------
+##### blankReplicateNames<- ---------------------------------------------------
 
-#' @describeIn msData setter for associated blank replicate for each analyses.
+#' @describeIn msData setter for associated blank replicates for each analysis.
 #' The \code{value} is a character vector with the same length as
 #' the number of analyses in the \code{object},
 #' containing the associated blank replicate name of each analysis.
@@ -357,14 +342,50 @@ setMethod("blankReplicateNames<-", signature("msData", "ANY"), function(object, 
   return(object)
 })
 
-#### getMetadata ---------------------------------------------------------------
+
+
+#### metadata ____________ ----------------------------------------------------
+
+##### getMetadataNames --------------------------------------------------------
+
+#' @describeIn msData getter for the names of metadata in each analyses.
+#' When simplify is set to \code{TRUE}, a character vector of unique names for
+#' all analyses is returned instead of a list with metadata names for
+#' each analysis.
+#'
+#' @param simplify Logical, set to \code{TRUE} for simplifying
+#' the returned object.
+#'
+#' @export
+#'
+#' @aliases getMetadataNames,msData,msData-method
+#'
+setMethod("getMetadataNames", "msData", function(object, simplify = FALSE) {
+
+  meta <- lapply(object@analyses, function(x) names(x@metadata))
+
+  if (simplify) {
+    meta <- unique(unname(unlist(meta)))
+  }
+
+  return(meta)
+})
+
+
+
+##### getMetadata -------------------------------------------------------------
 
 #' @describeIn msData getter for analyses metadata.
-#' Returns a nested list for each analysis (as defined by the \code{analyses})
-#' with the list of metadata entries as defined by the \code{which} argument.
-#' When \code{which} is \code{NULL}, all entries are returned.
+#' Returns a \code{data.table} with each metadata entry as a column and each
+#' analysis as a row. The \code{which} argument is used to filter the metadata
+#' entries to be returned. When \code{which} is \code{NULL}, all entries are
+#' returned. Metadata entries with multiple values are returned as list in the
+#' \code{data.table} cell. Metadata not present in a given analysis is assigned
+#' as NA in the returned \code{data.table}.
 #'
-#' @template args-single-which-entry
+#' @param analyses A numeric or character vector with the index or
+#' analysis name/s. When \code{NULL}, all the analyses are used.
+#' @param which A character vector with the entry name/s.
 #'
 #' @export
 #'
@@ -374,22 +395,45 @@ setMethod("getMetadata", "msData", function(object, analyses = NULL, which = NUL
 
   if (!is.null(analyses)) object <- object[analyses]
 
-  mtd <- lapply(object@analyses, function(z, which) {
-    return(getMetadata(z, which))
-  }, which = which)
+  meta_names <- getMetadataNames(object, simplify = TRUE)
+
+  if (!is.null(which)) {
+
+    meta_names <- meta_names[meta_names %in% which]
+
+    if (length(meta_names) < 1) {
+      warning("Metadata defined by which were not found")
+      return(list())
+    }
+  }
+
+  mtd <- lapply(object@analyses, function(x, meta_names) {
+    temp <- getMetadata(x, which = meta_names)
+    temp <- lapply(temp, function(z) {
+      if (length(z) > 1) z <- list(z)
+      return(z)
+    })
+    temp <- as.data.table(temp)
+    return(temp)
+  }, meta_names = meta_names)
+
+  mtd <- rbindlist(mtd, idcol = "analysis", fill = TRUE)
 
   return(mtd)
 })
 
-#### addMetadata ---------------------------------------------------------
+
+
+##### addMetadata -------------------------------------------------------------
 
 #' @describeIn msData setter for analyses metadata.
 #'
 #' @param metadata A list with a named vector of metadata for each analyses
 #' in the \linkS4class{msData} object or a \code{data.frame} or
 #' \code{data.table} with metadata added as columns and with the number of
-#' row equal to the number of analyses in the \linkS4class{msData} object.
-#' @param overwrite Logical, set to \code{TRUE} to overwrite.
+#' rows equal to the number of analyses in the \linkS4class{msData} object.
+#' @param overwrite Logical, set to \code{TRUE} to overwrite existing metadata
+#' entries.
 #'
 #' @export
 #'
@@ -401,64 +445,77 @@ setMethod("addMetadata", "msData", function(object,
 
   if (is.data.frame(metadata) | is.data.table(metadata)) {
 
-    if (!"analysis" %in% colnames(metadata)) metdata$analysis <- analysisNames(object)
+    if (nrow(metadata) != length(object@analyses)) {
+      warning("Number of rows must be the same
+               as the number of analyses!")
+      return(object)
+    }
 
-    name_is_already_there <- lapply(metadata$analysis, function(x, metadata, object) {
-      names(metadata[metadata$analysis %in% x, !colnames(metadata) %in% "analysis"]) %in% names(object@analyses[[x]]@metadata)
-    }, metadata = metadata, object = object)
-    names(name_is_already_there) <- metadata$analysis
+    if (!"analysis" %in% colnames(metadata)) {
+      metdata$analysis <- analysisNames(object)
+    }
 
     metadata <- split(metadata, metadata$analysis)
-    metadata <- lapply(metadata, function(x) return(x[, !colnames(x) %in% "analysis"]))
+
+    metadata <- lapply(metadata, function(x) {
+      x[["analysis"]] <- NULL
+      return(unlist(x))
+    })
 
   } else if (is.list(metadata)) {
 
     if (length(metadata) != length(object@analyses)) {
-      warning("Metadata list must be the same length as the number of analyses!")
+      warning("Metadata list must be the same
+               length as the number of analyses!")
       return(object)
     }
 
     if (all(sapply(metadata, function(x) is.null(names(x))))) {
-      warning("Metadata must be a named vector named!")
+      warning("Metadata must be a named vector!")
       return(object)
     }
 
-    if (TRUE %in% is.null(names(metadata))) names(metadata) <- analysisNames(object)
-
-    name_is_already_there <- lapply(names(metadata), function(x, metadata, object) {
-      names(metadata[[x]]) %in% names(object@analyses[[x]]@metadata)
-    }, metadata = metadata, object = object)
-    names(name_is_already_there) <- names(metadata)
+    if (TRUE %in% is.null(names(metadata))) {
+      names(metadata) <- analysisNames(object)
+    }
 
   }
 
-  if (exists("name_is_already_there")) {
-
-    if (TRUE %in% unlist(name_is_already_there) & !overwrite) {
-      warning("Metadata name/s already exist/s and overwrite is not allowed!")
-      return(object)
-    }
-
-    for (ana in names(metadata)) {
-      if (TRUE %in% name_is_already_there[[ana]]) {
-        mtd <- as.list(metadata[[ana]])
-        object@analyses[[ana]]@metadata[names(object@analyses[[ana]]@metadata) %in% names(mtd)] <- mtd[name_is_already_there[[ana]]]
-        object@analyses[[ana]]@metadata <- c(object@analyses[[ana]]@metadata, mtd[!name_is_already_there[[ana]]])
-      } else {
-        mtd <- as.list(metadata[[ana]])
-        object@analyses[[ana]]@metadata <- c(object@analyses[[ana]]@metadata, mtd)
-      }
-    }
-    return(object)
-  }
+  object@analyses <- lapply(object@analyses, function(x, metadata, overwrite) {
+    x <- addMetadata(x,
+                     metadata = metadata[[analysisName(x)]],
+                     overwrite = overwrite)
+    return(x)
+  }, metadata = metadata, overwrite = overwrite)
 
   return(object)
 })
 
-#### addAnalyses ---------------------------------------------------------
+
+
+##### polarities --------------------------------------------------------------
+
+#' @describeIn msData getter for the polarity of the analyses.
+#'
+#' @export
+#'
+#' @aliases polarities,msData,msData-method
+#'
+setMethod("polarities", "msData", function(object) {
+  mt <- getMetadata(object, which = "polarity")
+  mt_v <- mt$polarity
+  names(mt_v) <- analysisNames(object)
+  return(mt_v)
+})
+
+
+
+#### msAnalysis _______________ -----------------------------------------------
+
+##### addAnalyses -------------------------------------------------------------
 
 #' @describeIn msData adds \linkS4class{msAnalysis} objects to the existing
-#' \linkS4class{msData}.
+#' \linkS4class{msData} object.
 #'
 #' @param analysisList A list of \linkS4class{msAnalysis} objects.
 #'
@@ -498,27 +555,33 @@ setMethod("addAnalyses", "msData", function(object,
         return(object)
       }
 
-      file_df <- checkFilesInput(
-        files = sapply(analysisList, function(x) filePaths(x)),
-        replicates, blanks
+      analysisTable <- checkFilesInput(
+        files = sapply(analysisList, function(x) filePath(x)),
+        replicates = replicates,
+        blanks = blanks
       )
-      file_df$analysis <- sapply(analysisList, function(x) analysisNames(x))
-      file_df$class <- cls
-      file_df$polarity <- sapply(analysisList, function(x) polarities(x))
 
-      old_file_df <- analysisTable(object)
+      analysisTable$analysis <- sapply(analysisList, function(x) analysisNames(x))
 
-      setcolorder(file_df, colnames(old_file_df))
+      analysisTable$class <- cls
 
-      new_file_df <- rbind(old_file_df, file_df)
-      setorder(new_file_df, analysis)
+      analysisTable$polarity <- sapply(analysisList, function(x) polarities(x))
 
+      old_analysisTable <- analysisTable(object)
+
+      setcolorder(analysisTable, colnames(old_analysisTable))
+
+      new_analysisTable <- rbind(old_analysisTable, analysisTable)
+
+      setorder(new_analysisTable, analysis)
 
       object@analyses <- c(object@analyses, analysisList)
+
       object@analyses <-  object@analyses[order(names(object@analyses))]
 
       object@features <- new("msFeatures")
-      object@features@analyses <- copy(new_file_df)
+
+      object@features@analyses <- copy(new_analysisTable)
 
       object@analyses <- lapply(object@analyses, function(x) {
         if (nrow(x@peaks) > 0) {
@@ -533,15 +596,14 @@ setMethod("addAnalyses", "msData", function(object,
     # TODO add possibility to add file paths also in addAnalyses
   }
 
-  warning("No msAnalysis object given to add!")
+  warning("No msAnalysis objects given!")
   return(object)
 })
 
-#### getAnalyses ---------------------------------------------------------
+##### getAnalyses -------------------------------------------------------------
 
-#' @describeIn msData getter for analysis names.
-#'
-#' @template args-single-analyses
+#' @describeIn msData getter for \linkS4class{msAnalysis} objects within the
+#' \linkS4class{msData} object.
 #'
 #' @export
 #'
@@ -562,9 +624,11 @@ setMethod("getAnalyses", "msData", function(object, analyses = NULL) {
   return(list())
 })
 
-#### [ sub-setting analyses ----------------------------------------------
 
-#' @describeIn msData subset on analyses, using index or analyses name.
+
+#### [ sub-setting on analyses ------------------------------------------------
+
+#' @describeIn msData subset on analyses, using indexes or analysis names.
 #'
 #' @template args-single-i-subsetting
 #'
@@ -581,13 +645,18 @@ setMethod("[", c("msData", "ANY", "missing", "missing"), function(x, i, ...) {
     #when has features, updates feature column in peaks slot of each analysis
     if (nrow(x@features@metadata) > 0) {
       f_id <- features(x)[["id"]]
+
       x@analyses <- lapply(x@analyses, function(z, f_id) {
+
         temp <- z@peaks
+
         temp[!feature %in% f_id, `:=`(feature = NA_character_,
                                       filtered = TRUE,
                                       filter = "grouping")]
         z@peaks <- copy(temp)
+
         return(z)
+
       }, f_id = f_id)
     }
     return(x)
@@ -596,21 +665,354 @@ setMethod("[", c("msData", "ANY", "missing", "missing"), function(x, i, ...) {
   return(x)
 })
 
-#### polarities ----------------------------------------------------------
 
-#' @describeIn msData getter for analyses polarity.
+
+#### raw data _____________ ---------------------------------------------------
+
+##### getRawData --------------------------------------------------------------
+
+#' @describeIn msData gets (when available) raw spectra and chromatograms
+#' from each analysis in the \linkS4class{msData} object.
+#'
+#' @param spectra Logical, set to \code{TRUE} for parsing spectra.
+#' @param TIC Logical, set to \code{TRUE} for parsing TIC from xml headings.
+#' @param BPC Logical, set to \code{TRUE} for parsing BPC from xml headings.
+#' @param chroms Logical, set to \code{TRUE} for parsing chromatograms.
+#' @param levels A numeric vector with the MS levels for parsing spectra.
+#' @param rtr A numeric vector of length two with the time range (in seconds)
+#' for parsing spectra, TIC and/or BPC.
+#' @param preMZrange A numeric vector of length two with the \code{m/z} range
+#' of precursor ions for collecting spectra with level higher than 1.
+#' @param minIntensityMS1 Numeric value on length one with the
+#' minimum intensity of MS1 level traces.
+#' @param minIntensityMS2 Numeric value on length one with the
+#' minimum intensity of MS2 level traces.
 #'
 #' @export
 #'
-#' @aliases polarities,msData,msData-method
+#' @aliases getRawData,msData,msData-method
 #'
-setMethod("polarities", "msData", function(object) {
-  mt <- getMetadata(object, which = "polarity")
-  mt_v <- unlist(lapply(mt, function(x) x$polarity))
-  return(mt_v)
+setMethod("getRawData", "msData", function(object,
+                                           analyses = NULL,
+                                           spectra = TRUE,
+                                           TIC = TRUE,
+                                           BPC = TRUE,
+                                           chroms = TRUE,
+                                           levels = NULL,
+                                           rtr = NULL,
+                                           preMZrange = NULL,
+                                           minIntensityMS1 = 0,
+                                           minIntensityMS2 = 0,
+                                           run_parallel = FALSE) {
+
+  analyses <- checkAnalysesArgument(object, analyses)
+
+  analysesList <- object@analyses[analyses]
+
+  list_out <- runParallelLapply(obj_list = analysesList,
+    run_parallel = run_parallel,
+    FUN = function(x, spectra, TIC, BPC, chroms, levels,
+                   rtr, preMZrange, minIntensityMS1, minIntensityMS2) {
+
+      temp_list <- streamFind::getRawData(object = x,
+        spectra = spectra,
+        TIC = TIC,
+        BPC = BPC,
+        chroms = chroms,
+        levels = levels,
+        rtr = rtr,
+        preMZrange = preMZrange,
+        minIntensityMS1 = minIntensityMS1,
+        minIntensityMS2 = minIntensityMS1
+      )
+
+      p()
+
+      return(temp_list)
+
+    }, spectra = spectra, TIC = TIC, BPC = BPC,
+    chroms = chroms, levels = levels, rtr = rtr,
+    preMZrange = preMZrange, minIntensityMS1 = minIntensityMS1,
+    minIntensityMS2 = minIntensityMS1
+  )
+
+  return(list_out)
 })
 
-### EICs -----------------------------------------------------------------
+
+
+##### loadRawData -------------------------------------------------------------
+
+#' @describeIn msData adds raw data to all or defined analyses in the
+#' \linkS4class{msData} object.
+#'
+#' @export
+#'
+#' @aliases loadRawData,msData,msData-method
+#'
+setMethod("loadRawData", "msData", function(object, run_parallel = FALSE) {
+
+  analyses <- analysisNames(object)
+
+  analysisList <- runParallelLapply(obj_list = object@analyses[analyses],
+    run_parallel = run_parallel,
+    FUN = function(x) {
+
+      temp <- streamFind::loadRawData(object = x)
+      p()
+      return(temp)
+    }
+  )
+
+  object@analyses[analyses] <- analysisList
+
+  return(object)
+})
+
+
+
+##### loadSpectraInfo ---------------------------------------------------------
+
+#' @describeIn msData adds raw spectra information (i.e., scan number,
+#'  ms level and retention time of each spectrum) to the slot \code{spectra}
+#'  of each \linkS4class{msAnalysis} in the \linkS4class{msData}.
+#'  If the levels are higher than one, as the case of MS/MS data,
+#'  the collision energy and precursor scan and \emph{m/z} are also returned.
+#'
+#' @export
+#'
+#' @aliases loadSpectraInfo,msData,msData-method
+#'
+setMethod("loadSpectraInfo", "msData", function(object, run_parallel = FALSE) {
+
+  analyses <- analysisNames(object)
+
+  analysisList <- runParallelLapply(obj_list = object@analyses[analyses],
+    run_parallel = run_parallel,
+    FUN = function(x) {
+
+      temp <- streamFind::loadSpectraInfo(object = x)
+      p()
+      return(temp)
+    }
+  )
+
+  object@analyses[analyses] <- analysisList
+
+  return(object)
+})
+
+
+
+##### hasLoadedSpectra --------------------------------------------------------
+
+#' @describeIn msData checks if the analyses in the \linkS4class{msData} have
+#' loaded raw spectra.
+#'
+#' @export
+#'
+#' @aliases hasLoadedSpectra,msData,msData-method
+#'
+setMethod("hasLoadedSpectra", "msData", function(object) {
+  return(sapply(object@analyses, function(x) hasLoadedSpectra(x)))
+})
+
+
+
+##### hasLoadedChromatograms --------------------------------------------------
+
+#' @describeIn msData checks if the analyses in the \linkS4class{msData} have
+#' loaded raw chromatograms.
+#'
+#' @export
+#'
+#' @aliases hasLoadedChromatograms,msData,msData-method
+#'
+setMethod("hasLoadedChromatograms", "msData", function(object) {
+
+  return(sapply(object@analyses, function(x) hasLoadedChromatograms(x)))
+})
+
+
+
+##### spectra -----------------------------------------------------------------
+
+#' @describeIn msData getter for slot spectra from \linkS4class{msAnalysis}
+#' objects of the in the \linkS4class{msData} object.
+#'
+#' @export
+#'
+#' @aliases spectra,msData,msData-method
+#'
+setMethod("spectra", "msData", function(object, analyses = NULL) {
+
+  analyses <- checkAnalysesArgument(object, analyses)
+
+  spec <- lapply(object@analyses[analyses], function(x) {
+    return(x@spectra)
+  })
+
+  spec <- rbindlist(spec, idcol = "analysis")
+
+  return(spec)
+})
+
+
+
+##### plotSpectra -------------------------------------------------------------
+
+#' @describeIn msData plots spectra from \linkS4class{msAnalysis} objects
+#' in the \linkS4class{msData} object in 3D. The arguments \code{mz},
+#' \code{ppm}, \code{rt} and \code{sec} are used to construct the targets.
+#' See ?\link{makeTargets} for more information. The argument \code{colorBy}
+#' can be set to \emph{analyses} or \emph{levels} to color by
+#' \linkS4class{msAnalysis} or MS levels.
+#'
+#' @export
+#'
+#' @aliases plotSpectra,msData,msData-method
+#'
+setMethod("plotSpectra", "msData", function(object,
+                                            analyses = NULL,
+                                            ms_levels = c(1, 2),
+                                            mz = NULL, rt = NULL,
+                                            ppm = 20, sec = 60,
+                                            colorBy = "analyses") {
+
+  spec <- spectra(object, analyses)
+
+  if (nrow(spec) == 0) {
+    warning("Spectra not found, load raw spectra
+            first with loadRawData() method.")
+    return(NULL)
+  }
+
+  targets <- makeTargets(mz, rt, ppm, sec)
+
+  if (TRUE %in% c((targets$mzmax > 0), (targets$rtmax > 0))) {
+
+    if (0 %in% targets$mzmax) targets$mzmax <- max(spec_dt$mz)
+    if (0 %in% targets$rtmax) targets$rtmax <- max(spec_dt$rt)
+
+    spec <- spec[mz >= min(targets$mzmin) & mz <= max(targets$mzmax) &
+                 rt >= min(targets$rtmin) & rt <= max(targets$rtmax), ]
+  }
+
+  spec <- spec[spec$level %in% ms_levels, ]
+
+  if (nrow(spec) == 0) {
+    warning("Spectra not found, load raw spectra
+            first with loadRawData() method.")
+    return(NULL)
+  }
+
+  spec$level <- factor(spec$level)
+  spec$analysis <- factor(spec$analysis)
+
+  spec_2 <- copy(spec)
+  spec_2 <- split(spec_2, spec_2$analysis)
+
+  spec_2 <- lapply(spec_2, function(x) {
+    x$rtmz <- paste(x$mz, x$rt, x$analysis)
+    x_temp <- copy(x)
+    x_temp$intensity <- 0
+    x <- rbind(x, x_temp)
+    return(x)
+  })
+
+  spec_2 <- rbindlist(spec_2)
+
+  spec_2$level <- paste("MS", spec_2$level, sep = "")
+
+  if (colorBy == "levels") {
+    spec_2$var <- spec_2$level
+  } else {
+    spec_2$var <- spec_2$analysis
+  }
+
+  colors_var <- getColors(unique(spec_2$var))
+
+  fig <- plotly::plot_ly(spec_2, x = ~rt, y = ~mz, z = ~intensity) %>%
+    plotly::group_by(rtmz) %>%
+    plotly::add_lines(color = ~var,  colors = colors_var)
+
+  fig <- fig %>% plotly::layout(scene = list(
+    xaxis = list(title = 'Retention time (seconds)'),
+    yaxis = list(title = 'm/z'),
+    zaxis = list(title = 'Intensity (counts)')))
+
+  return(fig)
+})
+
+
+
+##### chromatograms -----------------------------------------------------------
+
+#' @describeIn msData getter for slot chromatograms in the
+#' \linkS4class{msAnalysis} objects of the \linkS4class{msData} object.
+#'
+#' @export
+#'
+#' @aliases chromatograms,msData,msData-method
+#'
+setMethod("chromatograms", "msData", function(object, analyses = NULL) {
+
+  analyses <- checkAnalysesArgument(object, analyses)
+
+  chroms <- lapply(object@analyses[analyses], function(x) {
+    return(x@chromatograms)
+  })
+
+  chroms <- rbindlist(chroms, idcol = "analysis")
+
+  return(chroms)
+})
+
+
+
+##### plotChromatograms -------------------------------------------------------
+
+#' @describeIn msData plots chromatograms from \linkS4class{msAnalysis} in the
+#' \linkS4class{msData} object.
+#'
+#' @export
+#'
+#' @param index A numeric vector with the index(s).
+#'
+#' @aliases plotChromatograms,msAnalysis,msAnalysis-method
+#'
+setMethod("plotChromatograms", "msData", function(object,
+                                                  analyses = NULL,
+                                                  index = NULL,
+                                                  id = NULL,
+                                                  colorBy = "analyses",
+                                                  interactive = FALSE) {
+
+  analyses <- checkAnalysesArgument(object, analyses)
+
+  chroms <- chromatograms(object[analyses])
+
+  chroms$replicate <- replicateNames(object)[chroms$analysis]
+
+  if (!is.null(index)) {
+    idx <- index
+    chroms <- chroms[chroms$index %in% idx, ]
+  }
+
+  if (!is.null(id)) {
+    id_name <- id
+    chroms <- chroms[chroms$id %in% id_name, ]
+  }
+
+  chroms <- chroms[, .(analysis, replicate, id, rt, intensity)]
+
+  plotEICs(chroms, colorBy = colorBy, interactive = interactive)
+
+})
+
+
+
+##### EICs --------------------------------------------------------------------
 
 #' @describeIn msData get extracted ion chromatograms (EICs)
 #' for specified \emph{m/z} (Da) and retention time (seconds) targets
@@ -626,69 +1028,52 @@ setMethod("polarities", "msData", function(object) {
 #'
 setMethod("EICs", "msData", function(object,
                                      analyses = NULL,
-                                     mz = NULL, ppm = 20,
-                                     rt = NULL, sec = 60, id = NULL) {
+                                     mz = NULL, rt = NULL,
+                                     ppm = 20, sec = 60, id = NULL,
+                                     run_parallel = FALSE) {
 
   analyses <- checkAnalysesArgument(object, analyses)
 
   targets <- makeTargets(mz, rt, ppm, sec, id)
 
-  rtr <- c(min(targets$rtmin), max(targets$rtmax))
-  if (rtr[2] == 0) rtr = NULL
+  if (is.null(analyses)) return(data.table())
 
-  spec <- lapply(object@analyses[analyses], function(x, rtr) {
+  eics <- runParallelLapply(obj_list = object@analyses[analyses],
+    run_parallel = run_parallel,
+    FUN = function(x, targets) {
 
-    if (!hasLoadedSpectra(x)) {
-      temp <- msAnalysis_loadRawData(
-        fl = filePaths(x),
-        chroms = FALSE, levels = 1, rtr = rtr
-      )
-      temp <- temp$spectra
-    } else {
-      temp <- spectra(x)
-      temp <- temp[level == 1, ]
-      temp <- temp[, .(index, scan, level, rt, mz, intensity)]
-    }
-    return(temp)
-  }, rtr = rtr)
+      eic <- streamFind::EICs(x, mz = targets)
+      p()
 
-  names(spec) <- analyses
-
-  targets <- full_join(
-    targets,
-    data.table(
-      analysis = analyses,
-      replicate = replicateNames(object)[analyses]
-    ),
-    by = character()
+      return(eic)
+    }, targets = targets
   )
 
-  # TODO add in cpp a check for returning an empty table when no traces are extracted
+  eics <- rbindlist(eics, idcol = "analysis")
 
-  eics <- rcpp_extract_eics(spec = spec, targets = targets)
+  eics$replicate <- replicateNames(object)[eics$analysis]
 
-  eics <- rbindlist(eics)
-
-  eics <- eics[, .(intensity = sum(intensity)), by = c("analysis", "replicate", "id", "rt")]
+  eics <- eics[, .(intensity = sum(intensity)),
+                            by = c("analysis", "replicate", "id", "rt")]
 
   return(eics)
 })
 
 
 
-### plotEICs -------------------------------------------------------------
+##### plotEICs ----------------------------------------------------------------
 
-#' @describeIn msData a method for plotting extracted ion chromatograms (EICs)
+#' @describeIn msData plots extracted ion chromatograms (EICs)
 #' of data in an \linkS4class{msData} object.
 #' The arguments for data collection are the same as the \link{EICs} method.
 #' A \linkS4class{data.table} can be used instead.
-#' The \code{colorBy} argument can be \code{"analyses"}, \code{replicates} or \code{targets}
-#' (the default), for coloring by analyses, replicates or EICs targets, respectively.
-#' The \code{legendNames} is a character vector with the same length as targets for plotting and
-#' can be used to legend the plot. Note that, by setting \code{legendNames} the \code{colorBy}
+#' The \code{colorBy} argument can be \code{"analyses"}, \code{replicates} or
+#' \code{targets} (the default), for coloring by analyses, replicates or targets
+#' of the EICs, respectively.  The \code{legendNames} is a character vector
+#' with the same length as targets for plotting and can be used to legend
+#' the plot. Note that, by setting \code{legendNames} the \code{colorBy}
 #' is set to "targets".
 #'
-#' @template args-makeTargets
 #' @template args_plots_colorby_legendNames_title_interactive
 #'
 #' @export
@@ -697,14 +1082,15 @@ setMethod("EICs", "msData", function(object,
 #'
 setMethod("plotEICs", "msData", function(object,
                                          analyses = NULL,
-                                         mz = NULL, ppm = 20,
-                                         rt = NULL, sec = 30, id = NULL,
+                                         mz = NULL, rt = NULL,
+                                         ppm = 20, sec = 30, id = NULL,
+                                         run_parallel = FALSE,
                                          colorBy = "targets",
                                          legendNames = NULL,
                                          title = NULL,
                                          interactive = FALSE) {
 
-  eic <- EICs(object, analyses, mz, ppm, rt, sec, id)
+  eic <- EICs(object, analyses, mz, rt, ppm, sec, id, run_parallel)
 
   return(
     plotEICs(eic,
@@ -714,16 +1100,18 @@ setMethod("plotEICs", "msData", function(object,
   )
 })
 
-### TICs -----------------------------------------------------------------
+##### TICs --------------------------------------------------------------------
 
 #' @describeIn msData extracts total ion chromatograms (TICs)
-#' for analyses in an \linkS4class{msData} object.
+#' for analyses in the \linkS4class{msData} object.
 #'
 #' @export
 #'
 #' @aliases TICs,msData,msData-method
 #'
-setMethod("TICs", "msData", function(object, analyses = NULL) {
+setMethod("TICs", "msData", function(object,
+                                     analyses = NULL,
+                                     run_parallel = FALSE) {
 
   analysis <- NULL
   replicate <- NULL
@@ -731,25 +1119,38 @@ setMethod("TICs", "msData", function(object, analyses = NULL) {
   analyses <- checkAnalysesArgument(object, analyses)
   if (is.null(analyses)) return(data.table())
 
-  tics <- lapply(object@analyses[analyses], function(x, object) {
-   temp <- TICs(x)
-   if (nrow(temp) > 0) {
-    temp$replicate <- replicateNames(object)[analysisNames(x)]
-    temp <- select(temp, analysis, replicate, everything())
-   }
+  tics <- runParallelLapply(obj_list = object@analyses[analyses],
+    run_parallel = run_parallel,
+    FUN = function(x) {
 
-  }, object = object)
+      tic <- streamFind::TIC(x)
+      p()
 
-  tics <- rbindlist(tics)
+      return(tic)
+    }
+  )
+
+  tics <- rbindlist(tics, fill = TRUE, idcol = "analysis")
+
+  if (nrow(tics) > 0) {
+
+    tics$replicate <- replicateNames(object)[tics$analysis]
+
+    tics <- select(tics, analysis, replicate, everything())
+
+  }
 
   return(tics)
 })
 
-### plotTICs -------------------------------------------------------------
 
-#' @describeIn msData plots a total ion chromatogram (TIC) for abalyses in the object.
-#' The colorBy argument can be "analyses" or "replicates"
-#' to color the plot by analyses or by analysis replicates.
+
+##### plotTICs ----------------------------------------------------------------
+
+#' @describeIn msData plots the total ion chromatogram (TIC) for analyses
+#' in the \linkS4class{msData} object. The \code{colorBy} argument can be
+#' "analyses" or "replicates" to color the plot by analyses or
+#' by analysis replicates.
 #'
 #' @export
 #'
@@ -757,12 +1158,12 @@ setMethod("TICs", "msData", function(object, analyses = NULL) {
 #'
 setMethod("plotTICs", "msData", function(object,
                                          analyses = NULL,
+                                         run_parallel = FALSE,
                                          colorBy = "analyses",
                                          title = NULL,
                                          interactive = FALSE) {
 
-  tics <- TICs(object, analyses = analyses)
-
+  tics <- TICs(object, analyses = analyses, run_parallel = run_parallel)
 
   return(
     plotTICs(tics,
@@ -772,12 +1173,91 @@ setMethod("plotTICs", "msData", function(object,
   )
 })
 
-### XICs -----------------------------------------------------------------
+
+
+##### BPCs --------------------------------------------------------------------
+
+#' @describeIn msData extracts base peak chromatograms (BPCs)
+#' for analyses in the \linkS4class{msData} object.
+#'
+#' @export
+#'
+#' @aliases BPCs,msData,msData-method
+#'
+setMethod("BPCs", "msData", function(object,
+                                     analyses = NULL,
+                                     run_parallel = FALSE) {
+
+  analysis <- NULL
+  replicate <- NULL
+
+  analyses <- checkAnalysesArgument(object, analyses)
+  if (is.null(analyses)) return(data.table())
+
+  bpcs <- runParallelLapply(obj_list = object@analyses[analyses],
+    run_parallel = run_parallel,
+    FUN = function(x) {
+
+      bpc <- streamFind::BPC(x)
+      p()
+
+      return(bpc)
+    }
+  )
+
+  bpcs <- rbindlist(bpcs, fill = TRUE, idcol = "analysis")
+
+  if (nrow(bpcs) > 0) {
+
+    bpcs$replicate <- replicateNames(object)[bpcs$analysis]
+
+    bpcs <- select(bpcs, analysis, replicate, everything())
+
+  }
+
+  return(bpcs)
+})
+
+
+
+##### plotBPCs ----------------------------------------------------------------
+
+#' @describeIn msData plots the base peak chromatogram (BPC) of analyses
+#' in the \linkS4class{msData} object. The \code{colorBy} argument can be
+#' "analyses" or "replicates" to color the plot by analyses or
+#' by analysis replicates.
+#'
+#' @export
+#'
+#' @aliases plotBPCs,msData,msData-method
+#'
+setMethod("plotBPCs", "msData", function(object,
+                                         analyses = NULL,
+                                         run_parallel = FALSE,
+                                         colorBy = "analyses",
+                                         title = NULL,
+                                         interactive = FALSE) {
+
+  bpcs <- BPCs(object, analyses = analyses, run_parallel = run_parallel)
+
+  return(
+    plotTICs(bpcs,
+             analyses = NULL, colorBy = colorBy,
+             title = title, interactive = interactive
+    )
+  )
+})
+
+
+
+##### XICs --------------------------------------------------------------------
 
 #' @describeIn msData get three dimensional (\emph{m/z}, time and intensity)
-#' extracted ion chromatograms (XICs) for specified \emph{m/z} and retention time pair targets
-#' in analyses of an \linkS4class{msData} object. The arguments \code{mz}, \code{ppm}, \code{rt}, \code{sec} and \code{id}
-#' are used to construct the targets. See ?\link{makeTargets} for more information.
+#' extracted ion chromatograms (XICs) for specified \emph{m/z} and retention
+#' time pair targets in analyses of an \linkS4class{msData} object.
+#' The arguments \code{mz}, \code{ppm}, \code{rt}, \code{sec} and \code{id}
+#' are used to construct the targets.
+#' See ?\link{makeTargets} for more information.
 #'
 #' @export
 #'
@@ -785,62 +1265,58 @@ setMethod("plotTICs", "msData", function(object,
 #'
 setMethod("XICs", "msData", function(object,
                                      analyses = NULL,
-                                     mz = NULL, ppm = 20,
-                                     rt = NULL, sec = 60, id = NULL) {
+                                     mz = NULL, rt = NULL,
+                                     ppm = 20, sec = 60, id = NULL,
+                                     run_parallel = FALSE) {
+
+  analysis <- NULL
+  replicate <- NULL
 
   analyses <- checkAnalysesArgument(object, analyses)
 
   targets <- makeTargets(mz, rt, ppm, sec, id)
 
-  rtr <- c(min(targets$rtmin) * 0.8, max(targets$rtmax) * 1.2)
-  if (rtr[2] == 0) rtr = NULL
+  if (is.null(analyses)) return(data.table())
 
-  spec <- lapply(object@analyses[analyses], function(x, rtr) {
+  xics <- runParallelLapply(obj_list = object@analyses[analyses],
+    run_parallel = run_parallel,
+    FUN = function(x, targets) {
 
-    if (!hasLoadedSpectra(x)) {
-      temp <- msAnalysis_loadRawData(
-        fl = filePaths(x),
-        chroms = FALSE, levels = 1, rtr = rtr
-      )
-      temp <- temp$spectra
-    } else {
-      temp <- spectra(x)
-      temp <- temp[level == 1, ]
-      temp <- temp[, .(index, scan, level, rt, mz, intensity)]
-    }
-    return(temp)
-  }, rtr = rtr)
+      xic <- streamFind::EICs(x, mz = targets)
+      p()
 
-  names(spec) <- analyses
-
-  targets <- full_join(
-    targets,
-    data.table(
-      analysis = analyses,
-      replicate = replicateNames(object)[analyses]
-    ),
-    by = character()
+      return(xic)
+    }, targets = targets
   )
 
-  xic <- rcpp_extract_xics(spec = spec, targets = targets)
+  xics <- rbindlist(xics, idcol = "analysis")
 
-  xic <- rbindlist(xic)
+  xics$replicate <- replicateNames(object)[xics$analysis]
 
-  return(xic)
+  xics <- select(xics, analysis, replicate, everything())
+
+  return(xics)
 })
 
-### plotXICs -------------------------------------------------------------
+
+
+##### plotXICs ----------------------------------------------------------------
 
 #' @describeIn msData plots three dimensional (\emph{m/z}, time and intensity)
-#' extracted ion chromatograms (XICs) for specified \emph{m/z} and retention time pair targets
-#' in analyses of an \linkS4class{msData} object. The arguments \code{mz}, \code{ppm}, \code{rt},
-#' \code{sec} and \code{id} are used to construct the targets. See ?\link{makeTargets} for more information.
-#' When \code{plotTargetMark} is \code{TRUE} a target is plotted representing the deviations as defined
-#' by the arguments \code{ppmMark} and \code{secMark} in ppm and seconds, respectively.
-#' When ranges were given to build the XIC, exact \emph{m/z} and time targets can be specified with
-#' the argument \code{targetsMark}. \code{targetsMark} should be a two column table named mz and rt with
-#' exact \emph{m/z} and time targets. Note that the number of rows should be the same as the number of target
-#' in the XIC. The number of rows to plot multiple targets can be defined by the \code{numberRows} argument.
+#' extracted ion chromatograms (XICs) for specified \emph{m/z} and retention
+#' time pair targets in analyses of an \linkS4class{msData} object.
+#' The arguments \code{mz}, \code{ppm}, \code{rt}, \code{sec} and \code{id}
+#' are used to construct the targets.
+#' See ?\link{makeTargets} for more information.
+#' When \code{plotTargetMark} is \code{TRUE} a target is plotted representing
+#' the deviations as defined by the arguments \code{ppmMark} and \code{secMark}
+#' in ppm and seconds, respectively. When ranges were given to build the XIC,
+#' exact \emph{m/z} and time targets can be specified with the argument
+#' \code{targetsMark}. \code{targetsMark} should be a two column table
+#' named mz and rt with exact \emph{m/z} and time targets. Note that the number
+#' of rows should be the same as the number of target in the XIC.
+#' The number of rows to plot multiple targets can be defined by the
+#' \code{numberRows} argument.
 #'
 #' @template args_plots_xics
 #'
@@ -850,8 +1326,9 @@ setMethod("XICs", "msData", function(object,
 #'
 setMethod("plotXICs", "msData", function(object,
                                          analyses = NULL,
-                                         mz = NULL, ppm = 20,
-                                         rt = NULL, sec = 60, id = NULL,
+                                         mz = NULL, rt = NULL,
+                                         ppm = 20, sec = 60, id = NULL,
+                                         run_parallel = FALSE,
                                          legendNames = NULL,
                                          plotTargetMark = TRUE,
                                          targetsMark = NULL,
@@ -859,12 +1336,17 @@ setMethod("plotXICs", "msData", function(object,
                                          secMark = 10,
                                          numberRows = 1) {
 
-  xic <- XICs(object, analyses, mz, ppm, rt, sec, id)
+  xics <- XICs(object, analyses, mz, ppm, rt, sec, id, run_parallel)
 
-  plot <- plotXICs(xic,
+  if (is.null(targetsMark)) {
+    targetsMark <- makeTargets(mz, rt, ppm, sec, id)
+    targetsMark <- targetsMark[id %in% xics$id, ]
+  }
+
+  plot <- plotXICs(xics,
     legendNames = legendNames,
     plotTargetMark = plotTargetMark,
-    targetsMark = targetsMark,
+    targetsMark = targetsMark[, .(id, mz, rt)],
     ppmMark = ppmMark,
     secMark = secMark,
     numberRows = numberRows
@@ -873,23 +1355,20 @@ setMethod("plotXICs", "msData", function(object,
   return(plot)
 })
 
-### MS2s -----------------------------------------------------------------
+##### MS2s --------------------------------------------------------------------
 
-#' @describeIn msData get MS2 data for specified \emph{m/z} and retention time (seconds) targets
-#' in analyses of an \linkS4class{msData} object. The \code{clusteringUnit} defines the method used for clustering.
-#' Possible values are \emph{euclidean} (the default) or \emph{distance}.
-#' The mass (in Da) and time (in seconds) isolation windows to screen for the respective precursors
-#' are defined with the arguments \code{isolationMassWindow} and \code{isolationTimeWindow}, respectively.
-#' The \code{clusteringUnit} and \code{clusteringWindow} define
-#' the mass deviation unit and deviation to cluster mass traces from different spectra, respectively.
-#' For the \code{clusteringUnit}, possible values are \emph{mz} (the default) or \emph{ppm}.
-#' The \code{minIntensityPre} and \code{minIntensityPost}
-#' define the minimum intensity for mass traces before and after clustering, respectively.
-#' Set \code{mergeVoltages} to \code{TRUE} for merging spectra acquired with different collision energies.
-#' The \code{mergeBy} argument is used to merge spectra by "samples" or "replicates".
-#' When \code{NULL}, MS2 is given per target and per sample.
+#' @describeIn msData gets MS2 data for specified \emph{m/z} and retention
+#' time (seconds) targets in analyses of the \linkS4class{msData} object.
+#' The argument \code{isolationWindow} defines the range in Da that was applied
+#' to isolate the MS1 precursor. The argument \code{mzClust} defines the
+#' deviation in Da for merging MS2 spectrum of a given target.
+#' The \code{mzClust} will be reduced when more than one trace is found for the
+#' same retention time value.
 #'
-#' @param settings A \linkS4class{settings} S4 class object with call for \code{extractMSn}.
+#' @param mzClust A numeric value defining the \emph{m/z} cutoff (in Da) to
+#' cluster mass traces from different scans.
+#' @param isolationWindow A numeric value defining the isolation window (in Da)
+#' applied to isolate the MS1 precursor.
 #'
 #' @export
 #'
@@ -897,31 +1376,59 @@ setMethod("plotXICs", "msData", function(object,
 #'
 setMethod("MS2s", "msData", function(object = NULL,
                                      analyses = NULL,
-                                     mz = NULL, ppm = 20,
-                                     rt = NULL, sec = 60, id = NULL,
-                                     settings = NULL) {
+                                     isolationWindow = 1,
+                                     mzClust = 0.01,
+                                     mz = NULL, rt = NULL,
+                                     ppm = 20, sec = 60, id = NULL,
+                                     run_parallel = FALSE) {
 
-  level <- 2
-  return(extractMSn(object, analyses, level, mz, ppm, rt, sec, id, settings))
+  analysis <- NULL
+  replicate <- NULL
+
+  analyses <- checkAnalysesArgument(object, analyses)
+
+  targets <- makeTargets(mz, rt, ppm, sec, id)
+
+  if (is.null(analyses)) return(data.table())
+
+  ms2s <- runParallelLapply(obj_list = object@analyses[analyses],
+    run_parallel = run_parallel,
+    FUN = function(x, targets, mzClust, isolationWindow) {
+
+      ms2 <- streamFind::MS2s(x,
+        mz = targets,
+        mzClust = mzClust,
+        isolationWindow = isolationWindow
+      )
+
+      p()
+
+      return(ms2)
+    }, targets = targets, mzClust = mzClust, isolationWindow = isolationWindow
+  )
+
+  ms2s <- rbindlist(ms2s, idcol = "analysis")
+
+  ms2s$replicate <- replicateNames(object)[ms2s$analysis]
+
+  ms2s <- select(ms2s, analysis, replicate, everything())
+
+  return(ms2s)
 })
 
-### plotMS2s -------------------------------------------------------------
 
-#' @describeIn msData plots MS2 data for specified \emph{m/z} and retention time (seconds) targets
-#' in analyses of an \linkS4class{msData} object. The \code{clusteringUnit} defines the method used for clustering.
-#' Possible values are \emph{euclidean} (the default) or \emph{distance}.
-#' The mass (in Da) and time (in seconds) isolation windows to screen for the respective precursors
-#' are defined with the arguments \code{isolationMassWindow} and \code{isolationTimeWindow}, respectively.
-#' The \code{clusteringUnit} and \code{clusteringWindow} define
-#' the mass deviation unit and deviation to cluster mass traces from different spectra, respectively.
-#' For the \code{clusteringUnit}, possible values are \emph{mz} (the default) or \emph{ppm}.
-#' The \code{minIntensityPre} and \code{minIntensityPost}
-#' define the minimum intensity for mass traces before and after clustering, respectively.
-#' Set \code{mergeVoltages} to \code{TRUE} for merging spectra acquired with different collision energies.
-#' The \code{mergeBy} argument is used to merge spectra by "samples" or "replicates".
-#' When \code{NULL}, MS2 is given per target and per sample. The possible values for the
-#' \code{colorBy} argument are "targets", "samples", "replicates" and "voltages" to colour by
-#' each target, sample, replicate or collision energy, respectively.
+
+##### plotMS2s ----------------------------------------------------------------
+
+#' @describeIn msData plots MS2 data for specified \emph{m/z} and retention
+#' time (seconds) targets in analyses of the \linkS4class{msData} object.
+#' The argument \code{isolationWindow} defines the range in Da that was applied
+#' to isolate the MS1 precursor. The argument \code{mzClust} defines the
+#' deviation in Da for merging MS2 spectrum of a given target.
+#' The \code{mzClust} will be reduced when more than one trace is found for the
+#' same retention time value. The possible values for the \code{colorBy}
+#' argument are "targets", "analyses" and "replicates" to color by
+#' each target, analyses or replicate analysis groups, respectively.
 #'
 #' @export
 #'
@@ -929,19 +1436,23 @@ setMethod("MS2s", "msData", function(object = NULL,
 #'
 setMethod("plotMS2s", "msData", function(object = NULL,
                                          analyses = NULL,
-                                         mz = NULL, ppm = 20,
-                                         rt = NULL, sec = 60, id = NULL,
-                                         settings = NULL,
+                                         isolationWindow = 1,
+                                         mzClust = 0.01,
+                                         mz = NULL, rt = NULL,
+                                         ppm = 20, sec = 60, id = NULL,
+                                         run_parallel = FALSE,
                                          legendNames = NULL,
                                          title = NULL,
                                          colorBy = "targets",
                                          interactive = FALSE) {
 
-  level <- 2
-  ms2 <- extractMSn(object, analyses, level, mz, ppm, rt, sec, id, settings)
-  if (nrow(ms2) < 1) return(cat("Data was not found for any of the targets!"))
+  ms2s <- MS2s(object, analyses, isolationWindow, mzClust,
+               mz, rt, ppm, sec, id, run_parallel)
+
+  if (nrow(ms2s) < 1) return(cat("Data was not found for any of the targets!"))
+
   return(
-    plotMS2s(ms2, legendNames = legendNames, title = title,
+    plotMS2s(ms2s, legendNames = legendNames, title = title,
       colorBy = colorBy, interactive = interactive
     )
   )
@@ -949,132 +1460,13 @@ setMethod("plotMS2s", "msData", function(object = NULL,
 
 
 
-### loadSpectraInfo ----------------------------------------------------------
+#### settings ______________---------------------------------------------------
 
-#' @describeIn msData adds raw spectra information (i.e., scan number,
-#'  ms level and retention time of each spectrum) to the slot \code{spectra}
-#'  of each \linkS4class{msAnalysis} in the \linkS4class{msData}.
-#'  If the levels are higher than one, as the case of MS/MS data,
-#'  the collision energy and precursor scan and \emph{m/z} are also returned.
-#'
-#' @export
-#'
-#' @aliases loadSpectraInfo,msData,msData-method
-#'
-setMethod("loadSpectraInfo", "msData", function(object, analyses = NULL) {
+##### addSettings -------------------------------------------------------------
 
-  analyses <- checkAnalysesArgument(object, analyses)
-
-  temp <- lapply(object@analyses[analyses], function(x) {
-    x <- loadSpectraInfo(x)
-    return(x)
-  })
-
-  object@analyses[analyses] <- temp
-
-  return(object)
-})
-
-
-
-### loadRawData ----------------------------------------------------------
-
-#' @describeIn msData adds raw data to all or defined analyses in the
-#' \linkS4class{msData} object.
-#'
-#' @param minIntensityMS1 Numeric value on length one with the
-#' minimum intensity of MS1 level traces.
-#' @param minIntensityMS2 Numeric value on length one with the
-#' minimum intensity of MS2 level traces.
-#'
-#' @export
-#'
-#' @aliases loadRawData,msData,msData-method
-#'
-setMethod("loadRawData", "msData", function(object,
-                                            analyses = NULL,
-                                            minIntensityMS1 = 0,
-                                            minIntensityMS2 = 0) {
-
-  analyses <- checkAnalysesArgument(object, analyses)
-
-  temp <- lapply(object@analyses[analyses], function(x, minIntensityMS1, minIntensityMS2) {
-    x <- loadRawData(x, minIntensityMS1, minIntensityMS2)
-    return(x)
-  }, minIntensityMS1 = minIntensityMS1, minIntensityMS2 = minIntensityMS2)
-
-  object@analyses[analyses] <- temp
-
-  return(object)
-})
-
-### hasLoadedSpectra -----------------------------------------------------------
-
-#' @describeIn msData check if the analyses in \linkS4class{msData} have loaded raw spectra.
-#'
-#' @export
-#'
-#' @aliases hasLoadedSpectra,msData,msData-method
-#'
-setMethod("hasLoadedSpectra", "msData", function(object) {
-
-  return(sapply(object@analyses, function(x) hasLoadedSpectra(x)))
-})
-
-### hasLoadedChromatograms -----------------------------------------------------------
-
-#' @describeIn msData check if the analyses in \linkS4class{msData} have loaded raw chromatograms.
-#'
-#' @export
-#'
-#' @aliases hasLoadedChromatograms,msData,msData-method
-#'
-setMethod("hasLoadedChromatograms", "msData", function(object) {
-
-  return(sapply(object@analyses, function(x) hasLoadedChromatograms(x)))
-})
-
-### spectra ----------------------------------------------------------
-
-#' @describeIn msData getter for slot spectra in analyses of an \linkS4class{msData} object.
-#'
-#' @export
-#'
-#' @aliases spectra,msData,msData-method
-#'
-setMethod("spectra", "msData", function(object) {
-
-  spec <- lapply(object@analyses, function(x) {
-    return(x@spectra)
-  })
-  spec <- rbindlist(spec, idcol = "analysis")
-
-  return(spec)
-})
-
-
-
-### hasAdjustedRetentionTime ---------------------------------------------------
-
-#' @describeIn msData getter for presence of adjusted retention time
-#' in the analyses.
-#'
-#' @export
-#'
-#' @aliases hasAdjustedRetentionTime,msData,msData-method
-#'
-setMethod("hasAdjustedRetentionTime", "msData", function(object) {
-
-  return(sapply(object@analyses,
-    function(x) "rtAdjusted" %in% colnames(x@spectra)))
-})
-
-
-
-### addSettings --------------------------------------------------------------
-
-#' @describeIn msData adds processing settings to analyses or features as defined
-#' by the argument \code{where}. So where can be either "analyses" or "features".
+#' @describeIn msData adds processing settings to \linkS4class{msAnalysis} or
+#' \linkS4class{msFeatures} objects in the \linkS4class{msData} as defined by
+#' the argument \code{where}. So where can be either "analyses" or "features".
 #'
 #' @template args-single-settings
 #' @param where A character vector defining where to add the \linkS4class{settings}.
@@ -1085,9 +1477,9 @@ setMethod("hasAdjustedRetentionTime", "msData", function(object) {
 #' @aliases addSettings,msData,msData-method
 #'
 setMethod("addSettings", "msData", function(object,
-                                              settings,
-                                              where = "analyses",
-                                              analyses = NULL) {
+                                            settings,
+                                            where = "analyses",
+                                            analyses = NULL) {
 
   valid <- FALSE
 
@@ -1117,10 +1509,36 @@ setMethod("addSettings", "msData", function(object,
 })
 
 
-### getSettings ----------------------------------------------------------
 
-#' @describeIn msData gets processing settings from analyses or features as defined
-#' by the argument \code{where}. So where can be either "analyses" or "features".
+##### getSettingsNames --------------------------------------------------------
+
+#' @describeIn msData gets the call names of processing settings in the
+#' \linkS4class{msData} object for both analyses and features.
+#'
+#' @export
+#'
+#' @aliases getSettingsNames,msData,msData-method
+#'
+setMethod("getSettingsNames", "msData", function(object) {
+
+  stgs <- list(
+    "features" = names(object@features@settings),
+    "analysis" = sapply(object@analyses, function(x) names(x@settings))
+  )
+
+  return(stgs)
+})
+
+
+
+##### getSettings -------------------------------------------------------------
+
+#' @describeIn msData gets processing settings from \linkS4class{msAnalysis} or
+#' \linkS4class{msFeatures} objects in the \linkS4class{msData} as defined by
+#' the argument \code{where}. So where can be either "analyses" or "features".
+#' The argument \code{call} is used to specify which settings are returned
+#' from the object defined in \code{where}. When, \code{call} is \code{NULL}
+#' all the settings are returned.
 #'
 #' @param where A character vector defining where to get the \linkS4class{settings}.
 #' @template args-single-analyses
@@ -1131,9 +1549,9 @@ setMethod("addSettings", "msData", function(object,
 #' @aliases addSettings,msData,msData-method
 #'
 setMethod("getSettings", "msData", function(object,
-                                              where = "analyses",
-                                              analyses = NULL,
-                                              call = NULL) {
+                                            where = "analyses",
+                                            analyses = NULL,
+                                            call = NULL) {
 
   valid <- testChoice(where, c("analyses", "features"))
 
@@ -1170,69 +1588,17 @@ setMethod("getSettings", "msData", function(object,
 })
 
 
-### as.features ----------------------------------------------------------
 
-#' @describeIn msData converts the \linkS4class{msData}
-#' to a \linkS4class{features} object from the package \pkg{patRoon}.
-#'
-#' @export
-#'
-#' @aliases as.features,msData,msData-method
-#'
-setMethod("as.features", "msData", function(object) {
 
-  anaInfo <- analysisInfo(object)
 
-  feat <- lapply(object@analyses, function(x) {
 
-    ft <- copy(x@peaks)
 
-    if ("filtered" %in% colnames(ft)) ft <- ft[!ft$filtered, ]
+#### peak methods _______------------------------------------------------------
 
-    setnames(ft,
-      c("id", "rt", "rtmin", "rtmax", "feature"),
-      c("ID", "ret", "retmin", "retmax", "group"),
-      skip_absent = TRUE
-    )
+##### hasPeaks ----------------------------------------------------------------
 
-    if (nrow(ft) == 0) return(ft)
-
-    ft <- select(ft,
-      ID, ret, mz, area, intensity, retmin, retmax, mzmin, mzmax,
-      everything()
-    )
-
-    return(ft)
-  })
-
-  # change mz to mass for setWorkflows in patRoon
-  if (length(unique(polarities(object))) > 1 | "both" %in% polarities(object)) {
-
-    feat <- lapply(feat, function(x) {
-
-      x$mzmin <- x$mass - (x$mz - x$mzmin)
-      x$mzmax <- x$mass + (x$mzmax - x$mz)
-      x$mz <- x$mass
-      x$mass <- NULL
-
-      return(x)
-    })
-
-    feat_obj <- new("featuresSet",
-      features = feat, analysisInfo = anaInfo, algorithm = "openms-set")
-
-  } else {
-
-    feat_obj <- new("featuresOpenMS", features = feat, analysisInfo = anaInfo)
-
-  }
-
-  return(feat_obj)
-})
-
-### hasPeaks -----------------------------------------------------------
-
-#' @describeIn msData check if the analyses in \linkS4class{msData} have peaks.
+#' @describeIn msData checks if the \linkS4class{msAnalysis} objects in the
+#' \linkS4class{msData} object have peaks.
 #'
 #' @export
 #'
@@ -1243,13 +1609,17 @@ setMethod("hasPeaks", "msData", function(object) {
   return(sapply(object@analyses, function(x) hasPeaks(x)))
 })
 
-### peaks ----------------------------------------------------------------
 
-#' @describeIn msData getter for chromatographic peaks.
-#' The arguments \code{targetID} and \code{mz}/\code{rt} can be used
-#' to select specific peaks. The \emph{id} of peaks and/or features can be
-#' given in the \code{targetsID} argument to select the respective peaks.
-#' Also, analyses can be selected using the \code{analyses} argument.
+
+##### peaks -------------------------------------------------------------------
+
+#' @describeIn msData getter for chromatographic peaks from the
+#' \linkS4class{msAnalysis} objects in the \linkS4class{msData} object.
+#' The arguments \code{targetID} and \code{mass}, \code{mz} and \code{rt}
+#' can be used to select specific peaks. The \emph{id} of peaks and/or
+#' features can be given in the \code{targetsID} argument to select the
+#' respective peaks. Also, analyses can be selected using the \code{analyses}
+#' argument.
 #'
 #' @param mass ...
 #' @template args-single-targetsID
@@ -1783,3 +2153,83 @@ setMethod("[", c("msData", "ANY", "ANY", "ANY"), function(x, i, j, p) {
 
   return(x)
 })
+
+
+
+#### _hasAdjustedRetentionTime_ -----------------------------------------------
+
+#' @describeIn msData getter for presence of adjusted retention time
+#' in the analyses.
+#'
+#' @export
+#'
+#' @aliases hasAdjustedRetentionTime,msData,msData-method
+#'
+setMethod("hasAdjustedRetentionTime", "msData", function(object) {
+
+  return(sapply(object@analyses,
+                function(x) "rtAdjusted" %in% colnames(x@spectra)))
+})
+
+
+
+#### _as.features_ ------------------------------------------------------------
+
+#' @describeIn msData converts the \linkS4class{msData}
+#' to a \linkS4class{features} object from the package \pkg{patRoon}.
+#'
+#' @export
+#'
+#' @aliases as.features,msData,msData-method
+#'
+setMethod("as.features", "msData", function(object) {
+
+  anaInfo <- analysisInfo(object)
+
+  feat <- lapply(object@analyses, function(x) {
+
+    ft <- copy(x@peaks)
+
+    if ("filtered" %in% colnames(ft)) ft <- ft[!ft$filtered, ]
+
+    setnames(ft,
+             c("id", "rt", "rtmin", "rtmax", "feature"),
+             c("ID", "ret", "retmin", "retmax", "group"),
+             skip_absent = TRUE
+    )
+
+    if (nrow(ft) == 0) return(ft)
+
+    ft <- select(ft,
+                 ID, ret, mz, area, intensity, retmin, retmax, mzmin, mzmax,
+                 everything()
+    )
+
+    return(ft)
+  })
+
+  # change mz to mass for setWorkflows in patRoon
+  if (length(unique(polarities(object))) > 1 | "both" %in% polarities(object)) {
+
+    feat <- lapply(feat, function(x) {
+
+      x$mzmin <- x$mass - (x$mz - x$mzmin)
+      x$mzmax <- x$mass + (x$mzmax - x$mz)
+      x$mz <- x$mass
+      x$mass <- NULL
+
+      return(x)
+    })
+
+    feat_obj <- new("featuresSet",
+                    features = feat, analysisInfo = anaInfo, algorithm = "openms-set")
+
+  } else {
+
+    feat_obj <- new("featuresOpenMS", features = feat, analysisInfo = anaInfo)
+
+  }
+
+  return(feat_obj)
+})
+

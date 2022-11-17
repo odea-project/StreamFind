@@ -64,6 +64,9 @@ List rcpp_ms_extract_ms2_from_dataframe(DataFrame spec,
 
   LogicalVector isPre;
 
+  double preMZ_mean = 0;
+  double rt_mean = 0;
+
   List eics(totalTargetsNumber);
 
   for (int i=0; i<totalTargetsNumber; ++i) {
@@ -99,83 +102,87 @@ List rcpp_ms_extract_ms2_from_dataframe(DataFrame spec,
     mz = mz[eval];
     intensity = intensity[eval];
 
-    idx = seq_along(mz) - 1;
-    std::sort(idx.begin(), idx.end(), [&](int i, int j){return mz[i] < mz[j];});
+    if (mz.size() > 0) {
 
-    rt = rt[idx];
-    ce = ce[idx];
-    preMZ = preMZ[idx];
-    mz = mz[idx];
-    intensity = intensity[idx];
+      idx = seq_along(mz) - 1;
+      std::sort(idx.begin(), idx.end(), [&](int i, int j){return mz[i] < mz[j];});
 
-    mz_diff = diff(mz);
+      rt = rt[idx];
+      ce = ce[idx];
+      preMZ = preMZ[idx];
+      mz = mz[idx];
+      intensity = intensity[idx];
 
-    // TODO replace by automated estimation of the width for clustering to
-    // avoid arbitrary "mzClust" value. For now, the while loop checks if
-    // more than one "equal" mass is in the same scan (i.e., rt).
+      mz_diff = diff(mz);
 
-    mzClust = mzClust + (mzClust * 0.1);
+      // TODO replace by automated estimation of the width for clustering to
+      // avoid arbitrary "mzClust" value. For now, the while loop checks if
+      // more than one "equal" mass is in the same scan (i.e., rt).
 
-    while (is_true(any(hasFromSameScan))) {
+      mzClust = mzClust + (mzClust * 0.1);
 
-      mzClust = mzClust - (mzClust * 0.1);
+      while (is_true(any(hasFromSameScan))) {
 
-      log_clusters = mz_diff > mzClust;
+        mzClust = mzClust - (mzClust * 0.1);
 
-      mz_clusters = Rcpp::rep(0, mz_diff.size());
+        log_clusters = mz_diff > mzClust;
 
-      mz_clusters[log_clusters] = 1;
+        mz_clusters = Rcpp::rep(0, mz_diff.size());
 
-      std::partial_sum(mz_clusters.begin(), mz_clusters.end(), mz_clusters.begin());
+        mz_clusters[log_clusters] = 1;
 
-      mz_clusters.push_front(0);
+        std::partial_sum(mz_clusters.begin(), mz_clusters.end(), mz_clusters.begin());
 
-      mz_clusters = mz_clusters + 1;
+        mz_clusters.push_front(0);
 
-      IntegerVector idx_clusters = seq_along(mz_clusters) - 1;
-      IntegerVector unique_clusters = unique(mz_clusters);
-      unique_clusters.sort();
-      int unique_clusters_size = unique_clusters.size();
+        mz_clusters = mz_clusters + 1;
 
-      hasFromSameScan = rep(true, unique_clusters_size);
+        IntegerVector idx_clusters = seq_along(mz_clusters) - 1;
+        IntegerVector unique_clusters = unique(mz_clusters);
+        unique_clusters.sort();
+        int unique_clusters_size = unique_clusters.size();
 
-      new_mz.erase(new_mz.begin(), new_mz.end());
-      new_intensity.erase(new_intensity.begin(), new_intensity.end());
+        hasFromSameScan = rep(true, unique_clusters_size);
 
-      for (int z=0; z<unique_clusters_size; ++z) {
+        new_mz.erase(new_mz.begin(), new_mz.end());
+        new_intensity.erase(new_intensity.begin(), new_intensity.end());
 
-        temp_idx = idx_clusters[mz_clusters == unique_clusters[z]];
+        for (int z=0; z<unique_clusters_size; ++z) {
 
-        temp_mz = mz[temp_idx];
-        temp_mz_mean = sum(temp_mz) / temp_mz.size();
-        new_mz.push_back(temp_mz_mean);
+          temp_idx = idx_clusters[mz_clusters == unique_clusters[z]];
 
-        temp_intensity = intensity[temp_idx];
-        temp_intensity_mean = sum(temp_intensity) / temp_intensity.size();
-        new_intensity.push_back(temp_intensity_mean);
+          temp_mz = mz[temp_idx];
+          temp_mz_mean = sum(temp_mz) / temp_mz.size();
+          new_mz.push_back(temp_mz_mean);
 
-        temp_rt = rt[temp_idx];
-        temp_rt_unique = unique(temp_rt);
+          temp_intensity = intensity[temp_idx];
+          temp_intensity_mean = sum(temp_intensity) / temp_intensity.size();
+          new_intensity.push_back(temp_intensity_mean);
 
-        hasFromSameScan[z] = temp_rt_unique.size() < temp_rt.size();
+          temp_rt = rt[temp_idx];
+          temp_rt_unique = unique(temp_rt);
 
-        if (hasFromSameScan[z] & verbose) {
-          Rcpp::Rcout << "The m/z " << temp_mz_mean << " of " << target_id[0] <<
-            " is present more than once in the same scan!" << "\n";
+          hasFromSameScan[z] = temp_rt_unique.size() < temp_rt.size();
+
+          if (hasFromSameScan[z] & verbose) {
+            Rcpp::Rcout << "The m/z " << temp_mz_mean << " of " << target_id[0] <<
+              " is present more than once in the same scan!" << "\n";
+          }
         }
       }
+
+      if (verbose) {
+        Rcpp::Rcout << "Clustering for " << target_id[0] <<
+          " preformed with " << mzClust << " Da" << "\n";
+      }
+
+      preMZ_mean = sum(preMZ) / preMZ.size();
+      rt_mean = sum(rt) / rt.size();
+
+      isPre = rep(false, new_mz.size());
+      isPre[(new_mz >= mzmin) & (new_mz <= mzmax)] = true;
+
     }
-
-    if (verbose) {
-      Rcpp::Rcout << "Clustering for " << target_id[0] <<
-        " preformed with " << mzClust << " Da" << "\n";
-    }
-
-    double preMZ_mean = sum(preMZ) / preMZ.size();
-    double rt_mean = sum(rt) / rt.size();
-
-    isPre = rep(false, new_mz.size());
-    isPre[(new_mz >= mzmin) & (new_mz <= mzmax)] = true;
 
     if (mz.size() > 0) {
 

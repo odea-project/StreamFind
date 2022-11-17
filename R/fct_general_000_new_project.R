@@ -73,23 +73,27 @@ checkFilesInput <- function(files = NA_character_,
   }
 
 
-  if ((length(replicates) == 1 & TRUE %in% is.na(replicates)) |
-      length(replicates) != length(files_v)) {
+  if (((length(replicates) == 1) & (TRUE %in% is.na(replicates))) |
+      (length(replicates) != length(files_v))) {
 
     replicates <- file_path_sans_ext(basename(files_v))
     replicates <- gsub( "-", "_", replicates)
     replicates <- sub("_[^_]+$", "", replicates)
     names(replicates) <- files_v
 
+  } else {
+    names(replicates) <- files_v
   }
 
 
-  if (length(blanks) == 1 & TRUE %in% is.na(blanks) |
-      length(blanks) != length(files_v)) {
+  if (((length(blanks) == 1) & (TRUE %in% is.na(blanks))) |
+      (length(blanks) != length(files_v))) {
 
     blanks <- rep(NA_character_, length(files_v))
     names(blanks) <- files_v
 
+  } else {
+    names(blanks) <- files_v
   }
 
 
@@ -97,9 +101,6 @@ checkFilesInput <- function(files = NA_character_,
 
 
   if (length(files_v) < 1) {
-
-    warning("A valid file path should be added
-            to create an analysis object!")
 
     return(NULL)
 
@@ -125,7 +126,8 @@ checkFilesInput <- function(files = NA_character_,
 #'
 #' @description Creates an analysis class object for the \pkg{streamFind} package.
 #'
-#' @template args-newAnalysis-file
+#' @param file A character vector with the full path of the file to create
+#' the analysis object.
 #'
 #' @note The format of the file will dictate the resulting S4 class.
 #' For instance, \emph{.mzML} or \emph{.mzXML} files will lead to the class
@@ -188,7 +190,7 @@ newAnalysis <- function(file = NA_character_) {
 #'
 newStreamSet <- function(files = NA_character_,
                          title = NA_character_,
-                         date = Sys.Date(),
+                         date = Sys.time(),
                          replicates = NA_character_,
                          blanks = NA_character_,
                          run_parallel = FALSE) {
@@ -197,14 +199,12 @@ newStreamSet <- function(files = NA_character_,
 
   if (is.null(analysisTable)) return(NULL)
 
-  object <- new("streamSet")
-  object@title <- title
-  object@date <- date
-
   if (all(grepl(".mzML|.mzXML", analysisTable$file))) {
 
-    object <- new("msData", object,
-                  analysisTable = analysisTable,
+    object <- new("msData",
+                  files = analysisTable,
+                  title = title,
+                  date = date,
                   run_parallel = run_parallel)
 
   } else {

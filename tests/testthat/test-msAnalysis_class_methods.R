@@ -35,10 +35,6 @@ ana_mzXML_pos <- newAnalysis(fl_mzXML_pos)
 ana_mrm_pos <- newAnalysis(fl_mrm_pos)
 ana_mrm_neg <- newAnalysis(fl_mrm_neg)
 
-metadata_entry <- "test metadata"
-names(metadata_entry) <- "name test metadata"
-ana_mzML_pos <- addMetadata(ana_mzML_pos, metadata = metadata_entry)
-
 
 
 ### chemical targets ----------------------------------------------------------
@@ -139,12 +135,18 @@ test_that("getter name and filePath", {
 
 })
 
+metadata_entry <- "test metadata"
+names(metadata_entry) <- "name test metadata"
+ana_mzML_pos <- addMetadata(ana_mzML_pos, metadata = metadata_entry)
+
 test_that("metadata", {
 
   expect_type(getMetadataNames(ana_mzML_pos), "character")
 
   expect_equal(getMetadata(ana_mzML_pos, which = "polarity"),
                list("polarity" = "positive"))
+
+  expect_equal(polarity(ana_mzML_pos), "positive")
 
   expect_equal(getMetadata(ana_mzML_neg, which = "polarity"),
                list("polarity" = "negative"))
@@ -156,7 +158,7 @@ test_that("metadata", {
   expect_true("name test metadata" %in% getMetadataNames(ana_mzML_pos))
 
   expect_equal(getMetadata(ana_mzML_pos, which = "name test metadata"),
-               as.list(metadata_entry))
+               list("name test metadata" = "test metadata"))
 
 })
 
@@ -238,8 +240,11 @@ test_that("test_methods_for_peaks", {
   expect_gt(nrow(peaks(ana_mzML_pos)), 1)
   expect_true(hasPeaks(ana_mzML_pos))
   expect_equal(nrow(peaks(ana_mzML_pos[1:5,])), 5)
+  expect_s4_class(as.features(ana_mzML_pos), "features")
 
 })
+
+#file.remove("cache.sqlite")
 
 # mapPeaks(ana_mzML_pos, mass = diu_pos, rt = diu_rt)
 # mapPeaks(ana_mzML_pos, mz = targets4)

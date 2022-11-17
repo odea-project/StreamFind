@@ -46,44 +46,41 @@
 
 \item{drop}{Not applicable to \linkS4class{streamSet}.}
 
-\item{analysisList}{A list of strings with analysis file full paths.}
+\item{analysisList}{A list of strings with file full paths.}
 }
 \description{
-An S4 class object containing the set title, date,
-storage path and a list of analysis files.
+An S4 class object containing the set title, date and a list
+of analysis files.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{show(streamSet)}: prints the details of
-an \linkS4class{streamSet} object.
+\item \code{show(streamSet)}: prints a summary of the \linkS4class{streamSet} object.
 
 \item \code{setTitle(streamSet)}: getter for the title.
 
-\item \code{setTitle(streamSet) <- value}: setter for title.
-The \code{value} is a string with the title.
+\item \code{setTitle(streamSet) <- value}: setter for the title.
+The \code{value} must be a string.
 
-\item \code{setDate(streamSet)}: getter for the date.
-Note that is not setter for the date.
+\item \code{setDate(streamSet)}: getter for the date and time of the streamSet object.
+Note, there is no setter for the date.
 
 \item \code{analysisNames(streamSet)}: getter for the analysis names.
 
-\item \code{x[i}: subset on analyses, using analysis index or name.
+\item \code{x[i}: subsets on analyses, using analysis index or name.
 
-\item \code{addAnalyses(streamSet)}: adds analyses to the \linkS4class{streamSet}.
+\item \code{addAnalyses(streamSet)}: adds analyses to an existing \linkS4class{streamSet}.
 
 }}
 \section{Slots}{
 
 \describe{
-\item{\code{title}}{A character string with the stream set title.}
+\item{\code{title}}{A character string defining the title.}
 
-\item{\code{date}}{The date of the set.}
-
-\item{\code{path}}{A character string with the set path.}
+\item{\code{date}}{A \code{POSIXt} class object.}
 
 \item{\code{analyses}}{A list of analyses added to the project.
 The class of the analysis objects are defined according to the file formats.
-When a class is not possible to be assigned, the list contains
-full path string of each file added.}
+When a class is not possible to be assigned, the list will contain the
+full path string of each file.}
 }}
 

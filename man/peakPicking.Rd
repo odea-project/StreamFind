@@ -22,11 +22,12 @@ The peak picking uses the \pkg{patRoon} package for data processing,
 enabling the use of several algorithms (see details).
 }
 \details{
-See the \pkg{patRoon}'s \code{\link[patRoon]{findFeatures}} or the
-\href{https://rickhelmus.github.io/patRoon/reference/findFeatures.html}{guide}
-for more information. The following algorithms are available via
-\pkg{patRoon}: "xcms3", "xcms", "openms", "envipick", "sirius", "kpic2",
-"safd". The \linkS4class{settings} depend on the algorithm chosen.
+See the \pkg{patRoon}'s \code{\link[patRoon]{findFeatures}} function
+or the \href{https://rickhelmus.github.io/patRoon/reference/findFeatures.html}
+{reference guide} for more information. The following algorithms are available
+ via \pkg{patRoon}: "xcms3", "xcms", "openms", "envipick", "sirius", "kpic2",
+"safd". The \linkS4class{settings} and MS file format and mode depend on
+the algorithm chosen.
 }
 \note{
 The \linkS4class{settings} call must be set to "peakPicking".

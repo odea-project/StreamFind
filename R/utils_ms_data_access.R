@@ -1,157 +1,4 @@
 
-
-#' @title msAnalysis_loadMetadata
-#'
-#' @description Creates an \linkS4class{msAnalysis} for each mzML/mzXML file
-#' in a given data.frame with columns "file", "replicate" and "blank".
-#' The function uses code adapted from the \pkg{RaMS} R package to obtain
-#' file metadata using the \pkg{xml2} R package in the back-end.
-#'
-#' @noRd
-msAnalysis_loadMetadata <- function(file_df) {
-
-  inval <- TRUE
-
-  if (testClass(file_df, c("data.table"))) {
-    n_files <- nrow(file_df)
-    if (n_files > 0) inval <- FALSE
-  }
-
-  if (inval) return(new("msAnalysis"))
-
-  file_df <- split(file_df, factor(file_df$file, levels = file_df$file))
-
-  if (length(file_df) > 1) {
-
-    handlers(handler_progress(format="[:bar] :percent :eta :message"))
-
-    workers <- length(availableWorkers()) - 1
-
-    plan("multisession", workers = workers)
-
-    with_progress({
-
-      p <- progressor(along = file_df)
-
-      analyses <- future_lapply(file_df, function(x) {
-
-        ana <- list()
-
-        fl <- x$file
-
-        if (grepl(".mzML", fl)) meta <- streamFind:::mzML_loadMetadata(fl)
-        if (grepl(".mzXML", fl)) meta <- streamFind:::mzXML_loadMetadata(fl)
-
-        ana$name <- gsub(".mzML|.mzXML", "", basename(fl))
-
-        ana$file <- fl
-
-        ana$metadata <- meta
-
-        p()
-
-        return(ana)
-
-      }, future.chunk.size = 1)
-    })
-
-    plan("sequential")
-
-  } else {
-
-    analyses <- lapply(file_df, function(x) {
-
-      ana <- list()
-
-      fl <- x$file
-
-      if (grepl(".mzML", fl)) meta <- mzML_loadMetadata(fl)
-      if (grepl(".mzXML", fl)) meta <- mzXML_loadMetadata(fl)
-
-      ana$name <- gsub(".mzML|.mzXML", "", basename(fl))
-      ana$file <- fl
-
-      ana$metadata <- meta
-
-      return(ana)
-
-    })
-
-  }
-
-  analyses <- lapply(analyses, function(x) {
-
-    ana <- new("msAnalysis",
-      name = x$name,
-      file = x$file,
-      metadata = x$metadata
-    )
-
-    return(ana)
-  })
-
-  names(analyses) <- sapply(analyses, FUN = function(x) analysisNames(x))
-
-  analyses <- analyses[sort(names(analyses), decreasing = FALSE)]
-
-  cat(" Done! \n")
-
-  return(analyses)
-}
-
-
-
-#' @title msAnalysis_loadSpectraInfo
-#'
-#' @description Creates a \linkS4class{data.table} for a mzML/mzXML file
-#' with the basic info for the spectra.
-#'
-#' @noRd
-msAnalysis_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL) {
-
-  if (grepl(".mzML", fl))
-    spec_info <- mzML_loadSpectraInfo(fl, rtr = rtr, levels = levels)
-
-  if (grepl(".mzXML", fl))
-    spec_info <- mzXML_loadSpectraInfo(fl, rtr = rtr, levels = levels)
-
-  return(spec_info)
-}
-
-
-
-#' @title msAnalysis_loadRawData
-#'
-#' @description Creates a \linkS4class{data.table} for a mzML/mzXML file
-#' with the basic info for the spectra.
-#'
-#' @return A \linkS4class{data.table}.
-#'
-#' @noRd
-msAnalysis_loadRawData <- function(fl,
-                                   spectra = TRUE,
-                                   levels = c(1, 2), rtr = NULL,
-                                   minIntensityMS1 = 0,
-                                   minIntensityMS2 = 0,
-                                   chroms = TRUE) {
-
-  if (grepl(".mzML", fl))
-    dl_out <- mzML_loadRawData(fl,
-      spectra = spectra, levels = levels, rtr = rtr,
-      minIntensityMS1 = minIntensityMS1, minIntensityMS2 = minIntensityMS2,
-      chroms = chroms)
-
-  if (grepl(".mzXML", fl))
-    dl_out <- mzXML_loadRawData(fl,
-      levels = levels, rtr = rtr,
-      minIntensityMS1 = minIntensityMS1, minIntensityMS2 = minIntensityMS2
-    )
-
-  return(dl_out)
-}
-
-
-
 ### parse mzML - xml2 ----------------------------------------------------------
 
 #' @title mzML_loadMetadata
@@ -837,11 +684,9 @@ mzXML_loadMetadata <- function(fl){
 #' to identify the precursor.
 #'
 #' @noRd
-mzXML_loadSpectraInfo <- function(fl, rtr = NULL, levels = NULL, preMZrange = NULL) {
+mzXML_loadSpectraInfo <- function(xml_data, rtr = NULL, levels = NULL, preMZrange = NULL) {
 
   library(xml2)
-
-  xml_data <- read_xml(fl)
 
   # TODO xcms error when removing empty septra, due to different scan numbers
   #scan_n <- xml_find_all(xml_data, xpath = "//d1:scan[@peaksCount>0]")
@@ -1030,7 +875,7 @@ mzXML_loadRawData <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
 
     if (spectra) {
 
-      df_a <- mzXML_loadSpectraInfo(fl, rtr, levels, preMZrange)
+      df_a <- mzXML_loadSpectraInfo(xml_data, rtr, levels, preMZrange)
       scan <- as.numeric(xml_attr(scan_n, "num"))
       scan_check <- scan %in% df_a$scan
       scan <- scan[scan_check]
@@ -1269,7 +1114,7 @@ loadRawDataMZR <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
 
       bpc <- bpc[bpc$intensity >= minIntensityMS1, ]
 
-      if (max(tic$intensity) > 0 & !(TRUE %in% duplicated(bpc$rt))) {
+      if (max(bpc$intensity) > 0 & !(TRUE %in% duplicated(bpc$rt))) {
         dl[["chroms"]][["BPC"]] <- bpc
       }
     }

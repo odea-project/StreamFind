@@ -21,17 +21,37 @@
 \alias{blankReplicateNames,msData,msData-method}
 \alias{blankReplicateNames<-,msData-method}
 \alias{blankReplicateNames<-,msData,msData-method}
+\alias{getMetadataNames,msData-method}
+\alias{getMetadataNames,msData,msData-method}
 \alias{getMetadata,msData-method}
 \alias{getMetadata,msData,msData-method}
 \alias{addMetadata,msData-method}
 \alias{addMetadata,msData,msData-method}
+\alias{polarities,msData-method}
+\alias{polarities,msData,msData-method}
 \alias{addAnalyses,msData-method}
 \alias{addAnalyses,msData,msData-method}
 \alias{getAnalyses,msData-method}
 \alias{getAnalyses,msData,msData-method}
 \alias{[,msData,ANY,missing,missing-method}
-\alias{polarities,msData-method}
-\alias{polarities,msData,msData-method}
+\alias{getRawData,msData-method}
+\alias{getRawData,msData,msData-method}
+\alias{loadRawData,msData-method}
+\alias{loadRawData,msData,msData-method}
+\alias{loadSpectraInfo,msData-method}
+\alias{loadSpectraInfo,msData,msData-method}
+\alias{hasLoadedSpectra,msData-method}
+\alias{hasLoadedSpectra,msData,msData-method}
+\alias{hasLoadedChromatograms,msData-method}
+\alias{hasLoadedChromatograms,msData,msData-method}
+\alias{spectra,msData-method}
+\alias{spectra,msData,msData-method}
+\alias{plotSpectra,msData-method}
+\alias{plotSpectra,msData,msData-method}
+\alias{chromatograms,msData-method}
+\alias{chromatograms,msData,msData-method}
+\alias{plotChromatograms,msData-method}
+\alias{plotChromatograms,msAnalysis,msAnalysis-method}
 \alias{EICs,msData-method}
 \alias{EICs,msData,msData-method}
 \alias{plotEICs,msData-method}
@@ -40,6 +60,10 @@
 \alias{TICs,msData,msData-method}
 \alias{plotTICs,msData-method}
 \alias{plotTICs,msData,msData-method}
+\alias{BPCs,msData-method}
+\alias{BPCs,msData,msData-method}
+\alias{plotBPCs,msData-method}
+\alias{plotBPCs,msData,msData-method}
 \alias{XICs,msData-method}
 \alias{XICs,msData,msData-method}
 \alias{plotXICs,msData-method}
@@ -48,23 +72,11 @@
 \alias{MS2s,msData,msData-method}
 \alias{plotMS2s,msData-method}
 \alias{plotMS2s,msData,msData-method}
-\alias{loadSpectraInfo,msData-method}
-\alias{loadSpectraInfo,msData,msData-method}
-\alias{loadRawData,msData-method}
-\alias{loadRawData,msData,msData-method}
-\alias{hasLoadedSpectra,msData-method}
-\alias{hasLoadedSpectra,msData,msData-method}
-\alias{hasLoadedChromatograms,msData-method}
-\alias{hasLoadedChromatograms,msData,msData-method}
-\alias{spectra,msData-method}
-\alias{spectra,msData,msData-method}
-\alias{hasAdjustedRetentionTime,msData-method}
-\alias{hasAdjustedRetentionTime,msData,msData-method}
 \alias{addSettings,msData-method}
 \alias{addSettings,msData,msData-method}
+\alias{getSettingsNames,msData-method}
+\alias{getSettingsNames,msData,msData-method}
 \alias{getSettings,msData-method}
-\alias{as.features,msData-method}
-\alias{as.features,msData,msData-method}
 \alias{hasPeaks,msData-method}
 \alias{hasPeaks,msData,msData-method}
 \alias{peaks,msData-method}
@@ -85,9 +97,22 @@
 \alias{plotAnnotation,msData,msData-method}
 \alias{[,msData,ANY,ANY,missing-method}
 \alias{[,msData,ANY,ANY,ANY-method}
+\alias{hasAdjustedRetentionTime,msData-method}
+\alias{hasAdjustedRetentionTime,msData,msData-method}
+\alias{as.features,msData-method}
+\alias{as.features,msData,msData-method}
 \title{msData}
 \usage{
-\S4method{initialize}{msData}(.Object, analysisTable = NULL, run_parallel = FALSE, ...)
+\S4method{initialize}{msData}(
+  .Object,
+  files = NA_character_,
+  title = NA_character_,
+  date = Sys.time(),
+  replicates = NA_character_,
+  blanks = NA_character_,
+  run_parallel = FALSE,
+  ...
+)
 
 \S4method{show}{msData}(object)
 
@@ -107,9 +132,13 @@
 
 \S4method{blankReplicateNames}{msData}(object) <- value
 
+\S4method{getMetadataNames}{msData}(object, simplify = FALSE)
+
 \S4method{getMetadata}{msData}(object, analyses = NULL, which = NULL)
 
 \S4method{addMetadata}{msData}(object, metadata = NULL, overwrite = FALSE)
+
+\S4method{polarities}{msData}(object)
 
 \S4method{addAnalyses}{msData}(
   object,
@@ -122,37 +151,96 @@
 
 \S4method{[}{msData,ANY,missing,missing}(x, i, j, ..., drop = TRUE)
 
-\S4method{polarities}{msData}(object)
+\S4method{getRawData}{msData}(
+  object,
+  analyses = NULL,
+  spectra = TRUE,
+  TIC = TRUE,
+  BPC = TRUE,
+  chroms = TRUE,
+  levels = NULL,
+  rtr = NULL,
+  preMZrange = NULL,
+  minIntensityMS1 = 0,
+  minIntensityMS2 = 0,
+  run_parallel = FALSE
+)
+
+\S4method{loadRawData}{msData}(object, run_parallel = FALSE)
+
+\S4method{loadSpectraInfo}{msData}(object, run_parallel = FALSE)
+
+\S4method{hasLoadedSpectra}{msData}(object)
+
+\S4method{hasLoadedChromatograms}{msData}(object)
+
+\S4method{spectra}{msData}(object, analyses = NULL)
+
+\S4method{plotSpectra}{msData}(
+  object,
+  analyses = NULL,
+  ms_levels = c(1, 2),
+  mz = NULL,
+  rt = NULL,
+  ppm = 20,
+  sec = 60,
+  colorBy = "analyses"
+)
+
+\S4method{chromatograms}{msData}(object, analyses = NULL)
+
+\S4method{plotChromatograms}{msData}(
+  object,
+  analyses = NULL,
+  index = NULL,
+  id = NULL,
+  colorBy = "analyses",
+  interactive = FALSE
+)
 
 \S4method{EICs}{msData}(
   object,
   analyses = NULL,
   mz = NULL,
-  ppm = 20,
   rt = NULL,
+  ppm = 20,
   sec = 60,
-  id = NULL
+  id = NULL,
+  run_parallel = FALSE
 )
 
 \S4method{plotEICs}{msData}(
   object,
   analyses = NULL,
   mz = NULL,
-  ppm = 20,
   rt = NULL,
+  ppm = 20,
   sec = 30,
   id = NULL,
+  run_parallel = FALSE,
   colorBy = "targets",
   legendNames = NULL,
   title = NULL,
   interactive = FALSE
 )
 
-\S4method{TICs}{msData}(object, analyses = NULL)
+\S4method{TICs}{msData}(object, analyses = NULL, run_parallel = FALSE)
 
 \S4method{plotTICs}{msData}(
   object,
   analyses = NULL,
+  run_parallel = FALSE,
+  colorBy = "analyses",
+  title = NULL,
+  interactive = FALSE
+)
+
+\S4method{BPCs}{msData}(object, analyses = NULL, run_parallel = FALSE)
+
+\S4method{plotBPCs}{msData}(
+  object,
+  analyses = NULL,
+  run_parallel = FALSE,
   colorBy = "analyses",
   title = NULL,
   interactive = FALSE
@@ -162,20 +250,22 @@
   object,
   analyses = NULL,
   mz = NULL,
-  ppm = 20,
   rt = NULL,
+  ppm = 20,
   sec = 60,
-  id = NULL
+  id = NULL,
+  run_parallel = FALSE
 )
 
 \S4method{plotXICs}{msData}(
   object,
   analyses = NULL,
   mz = NULL,
-  ppm = 20,
   rt = NULL,
+  ppm = 20,
   sec = 60,
   id = NULL,
+  run_parallel = FALSE,
   legendNames = NULL,
   plotTargetMark = TRUE,
   targetsMark = NULL,
@@ -187,46 +277,38 @@
 \S4method{MS2s}{msData}(
   object = NULL,
   analyses = NULL,
+  isolationWindow = 1,
+  mzClust = 0.01,
   mz = NULL,
-  ppm = 20,
   rt = NULL,
+  ppm = 20,
   sec = 60,
   id = NULL,
-  settings = NULL
+  run_parallel = FALSE
 )
 
 \S4method{plotMS2s}{msData}(
   object = NULL,
   analyses = NULL,
+  isolationWindow = 1,
+  mzClust = 0.01,
   mz = NULL,
-  ppm = 20,
   rt = NULL,
+  ppm = 20,
   sec = 60,
   id = NULL,
-  settings = NULL,
+  run_parallel = FALSE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
   interactive = FALSE
 )
 
-\S4method{loadSpectraInfo}{msData}(object, analyses = NULL)
-
-\S4method{loadRawData}{msData}(object, analyses = NULL, minIntensityMS1 = 0, minIntensityMS2 = 0)
-
-\S4method{hasLoadedSpectra}{msData}(object)
-
-\S4method{hasLoadedChromatograms}{msData}(object)
-
-\S4method{spectra}{msData}(object)
-
-\S4method{hasAdjustedRetentionTime}{msData}(object)
-
 \S4method{addSettings}{msData}(object, settings, where = "analyses", analyses = NULL)
 
-\S4method{getSettings}{msData}(object, where = "analyses", analyses = NULL, call = NULL)
+\S4method{getSettingsNames}{msData}(object)
 
-\S4method{as.features}{msData}(object)
+\S4method{getSettings}{msData}(object, where = "analyses", analyses = NULL, call = NULL)
 
 \S4method{hasPeaks}{msData}(object)
 
@@ -334,15 +416,26 @@
 \S4method{[}{msData,ANY,ANY,missing}(x, i, j, ..., drop = TRUE)
 
 \S4method{[}{msData,ANY,ANY,ANY}(x, i, j, p)
+
+\S4method{hasAdjustedRetentionTime}{msData}(object)
+
+\S4method{as.features}{msData}(object)
 }
 \arguments{
+\item{title}{A character string with the plot tile.}
+
+\item{run_parallel}{Logical, set to \code{TRUE} for parallel processing.}
+
 \item{...}{Other arguments.}
 
 \item{object}{An \linkS4class{msData} object.}
 
-\item{obj}{A \linkS4class{msData} object.}
+\item{obj}{An \linkS4class{msData} object.}
 
 \item{value}{A character vector applicable to the respective method.}
+
+\item{simplify}{Logical, set to \code{TRUE} for simplifying
+the returned object.}
 
 \item{analyses}{A numeric or character vector with the index or
 analysis name/s. When \code{NULL}, all the analyses are used.}
@@ -352,9 +445,10 @@ analysis name/s. When \code{NULL}, all the analyses are used.}
 \item{metadata}{A list with a named vector of metadata for each analyses
 in the \linkS4class{msData} object or a \code{data.frame} or
 \code{data.table} with metadata added as columns and with the number of
-row equal to the number of analyses in the \linkS4class{msData} object.}
+rows equal to the number of analyses in the \linkS4class{msData} object.}
 
-\item{overwrite}{Logical, set to \code{TRUE} to overwrite.}
+\item{overwrite}{Logical, set to \code{TRUE} to overwrite existing metadata
+entries.}
 
 \item{analysisList}{A list of \linkS4class{msAnalysis} objects.}
 
@@ -366,6 +460,28 @@ row equal to the number of analyses in the \linkS4class{msData} object.}
 
 \item{drop}{Not applicable to \linkS4class{msData}.}
 
+\item{spectra}{Logical, set to \code{TRUE} for parsing spectra.}
+
+\item{TIC}{Logical, set to \code{TRUE} for parsing TIC from xml headings.}
+
+\item{BPC}{Logical, set to \code{TRUE} for parsing BPC from xml headings.}
+
+\item{chroms}{Logical, set to \code{TRUE} for parsing chromatograms.}
+
+\item{levels}{A numeric vector with the MS levels for parsing spectra.}
+
+\item{rtr}{A numeric vector of length two with the time range (in seconds)
+for parsing spectra, TIC and/or BPC.}
+
+\item{preMZrange}{A numeric vector of length two with the \code{m/z} range
+of precursor ions for collecting spectra with level higher than 1.}
+
+\item{minIntensityMS1}{Numeric value on length one with the
+minimum intensity of MS1 level traces.}
+
+\item{minIntensityMS2}{Numeric value on length one with the
+minimum intensity of MS2 level traces.}
+
 \item{mz}{A vector with target \emph{m/z} values or a two columns
 \linkS4class{data.table} or data.frame with minimum and maximum
 \emph{m/z} values. Alternatively, \emph{m/z} and retention time values
@@ -375,27 +491,27 @@ The same also works for min and max values of \emph{m/z} and retention
 time targets. Note that when mass/time ranges are given, \code{ppm} and
 \code{sec} are not used.}
 
-\item{ppm}{A numeric vector of length one with the mass deviation, in ppm.}
-
 \item{rt}{A vector with target retention time values or
 a two columns \linkS4class{data.table}/data.frame with minimum
 and maximum retention time values.}
 
-\item{sec}{A numeric vector of length one with the time deviation, in seconds.}
+\item{ppm}{A numeric vector of length one with the mass deviation, in ppm.}
 
-\item{id}{An id vector with target identifiers. When not given
-is added as a combination of the \emph{m/z} and retention time ranges or values.}
+\item{sec}{A numeric vector of length one with the time deviation, in seconds.}
 
 \item{colorBy}{A length one character vector applicable to the
 respective method.}
 
-\item{legendNames}{A character vector with the same length and order
-as the number and order of targets to be used as plot legend.}
+\item{index}{A numeric vector with the index(s).}
 
-\item{title}{A character string with the plot tile.}
+\item{id}{An id vector with target identifiers. When not given
+is added as a combination of the \emph{m/z} and retention time ranges or values.}
 
 \item{interactive}{Logical value, set to \code{TRUE} to use
 the \pkg{plotly} instead of \pkg{base}. The default is \code{FALSE}.}
+
+\item{legendNames}{A character vector with the same length and order
+as the number and order of targets to be used as plot legend.}
 
 \item{plotTargetMark}{Logical, set to \code{TRUE} to plot a target mark.}
 
@@ -412,13 +528,13 @@ of the target mark.}
 \item{numberRows}{A numeric vector of length one to define
 the number of rows to grid the plots.}
 
+\item{isolationWindow}{A numeric value defining the isolation window (in Da)
+applied to isolate the MS1 precursor.}
+
+\item{mzClust}{A numeric value defining the \emph{m/z} cutoff (in Da) to
+cluster mass traces from different scans.}
+
 \item{settings}{A \linkS4class{settings} object.}
-
-\item{minIntensityMS1}{Numeric value on length one with the
-minimum intensity of MS1 level traces.}
-
-\item{minIntensityMS2}{Numeric value on length one with the
-minimum intensity of MS2 level traces.}
 
 \item{where}{A character vector defining where to get the \linkS4class{settings}.}
 
@@ -446,24 +562,24 @@ features averaged for each replicate group.}
 \item{p}{The indice/s or \emph{id}/s of peaks to keep.}
 }
 \description{
-An S4 class object to store and manage processing of files with
-MS data. The \code{msData} object inherits the \linkS4class{streamSet}
-structure with type defined as \emph{ms}.
+An S4 class object to store and manage processing of MS analyses.
+The \code{msData} object inherits the \linkS4class{streamSet}  structure plus
+the features slot for processing MS data.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{initialize(msData)}: creates an \linkS4class{msData}.
+\item \code{initialize(msData)}: creates an \linkS4class{msData} object.
 
-\item \code{show(msData)}: prints the details of an \linkS4class{msData} object.
+\item \code{show(msData)}: prints a summary of the \linkS4class{msData}.
 
 \item \code{analysisInfo(msData)}: getter for analysis info as \link{data.frame} with
 four columns: path, analysis, group and blank. The \link{data.frame}
 can be used as analysisInfo in \pkg{patRoon}.
 
 \item \code{analysisTable(msData)}: getter for analysis table as \link{data.table} with
-four columns: file, analysis, replicate and blank.
+four columns: file, analysis, replicate, blank, class and polarity.
 
-\item \code{filePaths(msData)}: getter for analysis file paths.
+\item \code{filePaths(msData)}: getter for analysis file full paths.
 
 \item \code{analysisNames(msData)}: getter for analysis names.
 
@@ -474,97 +590,43 @@ The \code{value} is a character vector with the same length as
 the number of analyses in the \code{object},
 containing analysis replicate name for each analysis.
 
-\item \code{blankReplicateNames(msData)}: getter for blank names.
+\item \code{blankReplicateNames(msData)}: getter for blank replicate names.
 
-\item \code{blankReplicateNames(msData) <- value}: setter for associated blank replicate for each analyses.
+\item \code{blankReplicateNames(msData) <- value}: setter for associated blank replicates for each analysis.
 The \code{value} is a character vector with the same length as
 the number of analyses in the \code{object},
 containing the associated blank replicate name of each analysis.
 
+\item \code{getMetadataNames(msData)}: getter for the names of metadata in each analyses.
+When simplify is set to \code{TRUE}, a character vector of unique names for
+all analyses is returned instead of a list with metadata names for
+each analysis.
+
 \item \code{getMetadata(msData)}: getter for analyses metadata.
-Returns a nested list for each analysis (as defined by the \code{analyses})
-with the list of metadata entries as defined by the \code{which} argument.
-When \code{which} is \code{NULL}, all entries are returned.
+Returns a \code{data.table} with each metadata entry as a column and each
+analysis as a row. The \code{which} argument is used to filter the metadata
+entries to be returned. When \code{which} is \code{NULL}, all entries are
+returned. Metadata entries with multiple values are returned as list in the
+\code{data.table} cell. Metadata not present in a given analysis is assigned
+as NA in the returned \code{data.table}.
 
 \item \code{addMetadata(msData)}: setter for analyses metadata.
 
+\item \code{polarities(msData)}: getter for the polarity of the analyses.
+
 \item \code{addAnalyses(msData)}: adds \linkS4class{msAnalysis} objects to the existing
-\linkS4class{msData}.
+\linkS4class{msData} object.
 
-\item \code{getAnalyses(msData)}: getter for analysis names.
+\item \code{getAnalyses(msData)}: getter for \linkS4class{msAnalysis} objects within the
+\linkS4class{msData} object.
 
-\item \code{x[i}: subset on analyses, using index or analyses name.
+\item \code{x[i}: subset on analyses, using indexes or analysis names.
 
-\item \code{polarities(msData)}: getter for analyses polarity.
+\item \code{getRawData(msData)}: gets (when available) raw spectra and chromatograms
+from each analysis in the \linkS4class{msData} object.
 
-\item \code{EICs(msData)}: get extracted ion chromatograms (EICs)
-for specified \emph{m/z} (Da) and retention time (seconds) targets
-in given analyses. The arguments \code{mz}, \code{ppm}, \code{rt}
-and \code{sec} are used to construct the targets.
-See ?\link{makeTargets} for more information.
-
-\item \code{plotEICs(msData)}: a method for plotting extracted ion chromatograms (EICs)
-of data in an \linkS4class{msData} object.
-The arguments for data collection are the same as the \link{EICs} method.
-A \linkS4class{data.table} can be used instead.
-The \code{colorBy} argument can be \code{"analyses"}, \code{replicates} or \code{targets}
-(the default), for coloring by analyses, replicates or EICs targets, respectively.
-The \code{legendNames} is a character vector with the same length as targets for plotting and
-can be used to legend the plot. Note that, by setting \code{legendNames} the \code{colorBy}
-is set to "targets".
-
-\item \code{TICs(msData)}: extracts total ion chromatograms (TICs)
-for analyses in an \linkS4class{msData} object.
-
-\item \code{plotTICs(msData)}: plots a total ion chromatogram (TIC) for abalyses in the object.
-The colorBy argument can be "analyses" or "replicates"
-to color the plot by analyses or by analysis replicates.
-
-\item \code{XICs(msData)}: get three dimensional (\emph{m/z}, time and intensity)
-extracted ion chromatograms (XICs) for specified \emph{m/z} and retention time pair targets
-in analyses of an \linkS4class{msData} object. The arguments \code{mz}, \code{ppm}, \code{rt}, \code{sec} and \code{id}
-are used to construct the targets. See ?\link{makeTargets} for more information.
-
-\item \code{plotXICs(msData)}: plots three dimensional (\emph{m/z}, time and intensity)
-extracted ion chromatograms (XICs) for specified \emph{m/z} and retention time pair targets
-in analyses of an \linkS4class{msData} object. The arguments \code{mz}, \code{ppm}, \code{rt},
-\code{sec} and \code{id} are used to construct the targets. See ?\link{makeTargets} for more information.
-When \code{plotTargetMark} is \code{TRUE} a target is plotted representing the deviations as defined
-by the arguments \code{ppmMark} and \code{secMark} in ppm and seconds, respectively.
-When ranges were given to build the XIC, exact \emph{m/z} and time targets can be specified with
-the argument \code{targetsMark}. \code{targetsMark} should be a two column table named mz and rt with
-exact \emph{m/z} and time targets. Note that the number of rows should be the same as the number of target
-in the XIC. The number of rows to plot multiple targets can be defined by the \code{numberRows} argument.
-
-\item \code{MS2s(msData)}: get MS2 data for specified \emph{m/z} and retention time (seconds) targets
-in analyses of an \linkS4class{msData} object. The \code{clusteringUnit} defines the method used for clustering.
-Possible values are \emph{euclidean} (the default) or \emph{distance}.
-The mass (in Da) and time (in seconds) isolation windows to screen for the respective precursors
-are defined with the arguments \code{isolationMassWindow} and \code{isolationTimeWindow}, respectively.
-The \code{clusteringUnit} and \code{clusteringWindow} define
-the mass deviation unit and deviation to cluster mass traces from different spectra, respectively.
-For the \code{clusteringUnit}, possible values are \emph{mz} (the default) or \emph{ppm}.
-The \code{minIntensityPre} and \code{minIntensityPost}
-define the minimum intensity for mass traces before and after clustering, respectively.
-Set \code{mergeVoltages} to \code{TRUE} for merging spectra acquired with different collision energies.
-The \code{mergeBy} argument is used to merge spectra by "samples" or "replicates".
-When \code{NULL}, MS2 is given per target and per sample.
-
-\item \code{plotMS2s(msData)}: plots MS2 data for specified \emph{m/z} and retention time (seconds) targets
-in analyses of an \linkS4class{msData} object. The \code{clusteringUnit} defines the method used for clustering.
-Possible values are \emph{euclidean} (the default) or \emph{distance}.
-The mass (in Da) and time (in seconds) isolation windows to screen for the respective precursors
-are defined with the arguments \code{isolationMassWindow} and \code{isolationTimeWindow}, respectively.
-The \code{clusteringUnit} and \code{clusteringWindow} define
-the mass deviation unit and deviation to cluster mass traces from different spectra, respectively.
-For the \code{clusteringUnit}, possible values are \emph{mz} (the default) or \emph{ppm}.
-The \code{minIntensityPre} and \code{minIntensityPost}
-define the minimum intensity for mass traces before and after clustering, respectively.
-Set \code{mergeVoltages} to \code{TRUE} for merging spectra acquired with different collision energies.
-The \code{mergeBy} argument is used to merge spectra by "samples" or "replicates".
-When \code{NULL}, MS2 is given per target and per sample. The possible values for the
-\code{colorBy} argument are "targets", "samples", "replicates" and "voltages" to colour by
-each target, sample, replicate or collision energy, respectively.
+\item \code{loadRawData(msData)}: adds raw data to all or defined analyses in the
+\linkS4class{msData} object.
 
 \item \code{loadSpectraInfo(msData)}: adds raw spectra information (i.e., scan number,
 ms level and retention time of each spectrum) to the slot \code{spectra}
@@ -572,34 +634,126 @@ of each \linkS4class{msAnalysis} in the \linkS4class{msData}.
 If the levels are higher than one, as the case of MS/MS data,
 the collision energy and precursor scan and \emph{m/z} are also returned.
 
-\item \code{loadRawData(msData)}: adds raw data to all or defined analyses in the
+\item \code{hasLoadedSpectra(msData)}: checks if the analyses in the \linkS4class{msData} have
+loaded raw spectra.
+
+\item \code{hasLoadedChromatograms(msData)}: checks if the analyses in the \linkS4class{msData} have
+loaded raw chromatograms.
+
+\item \code{spectra(msData)}: getter for slot spectra from \linkS4class{msAnalysis}
+objects of the in the \linkS4class{msData} object.
+
+\item \code{plotSpectra(msData)}: plots spectra from \linkS4class{msAnalysis} objects
+in the \linkS4class{msData} object in 3D. The arguments \code{mz},
+\code{ppm}, \code{rt} and \code{sec} are used to construct the targets.
+See ?\link{makeTargets} for more information. The argument \code{colorBy}
+can be set to \emph{analyses} or \emph{levels} to color by
+\linkS4class{msAnalysis} or MS levels.
+
+\item \code{chromatograms(msData)}: getter for slot chromatograms in the
+\linkS4class{msAnalysis} objects of the \linkS4class{msData} object.
+
+\item \code{plotChromatograms(msData)}: plots chromatograms from \linkS4class{msAnalysis} in the
 \linkS4class{msData} object.
 
-\item \code{hasLoadedSpectra(msData)}: check if the analyses in \linkS4class{msData} have loaded raw spectra.
+\item \code{EICs(msData)}: get extracted ion chromatograms (EICs)
+for specified \emph{m/z} (Da) and retention time (seconds) targets
+in given analyses. The arguments \code{mz}, \code{ppm}, \code{rt}
+and \code{sec} are used to construct the targets.
+See ?\link{makeTargets} for more information.
 
-\item \code{hasLoadedChromatograms(msData)}: check if the analyses in \linkS4class{msData} have loaded raw chromatograms.
+\item \code{plotEICs(msData)}: plots extracted ion chromatograms (EICs)
+of data in an \linkS4class{msData} object.
+The arguments for data collection are the same as the \link{EICs} method.
+A \linkS4class{data.table} can be used instead.
+The \code{colorBy} argument can be \code{"analyses"}, \code{replicates} or
+\code{targets} (the default), for coloring by analyses, replicates or targets
+of the EICs, respectively.  The \code{legendNames} is a character vector
+with the same length as targets for plotting and can be used to legend
+the plot. Note that, by setting \code{legendNames} the \code{colorBy}
+is set to "targets".
 
-\item \code{spectra(msData)}: getter for slot spectra in analyses of an \linkS4class{msData} object.
+\item \code{TICs(msData)}: extracts total ion chromatograms (TICs)
+for analyses in the \linkS4class{msData} object.
 
-\item \code{hasAdjustedRetentionTime(msData)}: getter for presence of adjusted retention time
-in the analyses.
+\item \code{plotTICs(msData)}: plots the total ion chromatogram (TIC) for analyses
+in the \linkS4class{msData} object. The \code{colorBy} argument can be
+"analyses" or "replicates" to color the plot by analyses or
+by analysis replicates.
 
-\item \code{addSettings(msData)}: adds processing settings to analyses or features as defined
-by the argument \code{where}. So where can be either "analyses" or "features".
+\item \code{BPCs(msData)}: extracts base peak chromatograms (BPCs)
+for analyses in the \linkS4class{msData} object.
 
-\item \code{getSettings(msData)}: gets processing settings from analyses or features as defined
-by the argument \code{where}. So where can be either "analyses" or "features".
+\item \code{plotBPCs(msData)}: plots the base peak chromatogram (BPC) of analyses
+in the \linkS4class{msData} object. The \code{colorBy} argument can be
+"analyses" or "replicates" to color the plot by analyses or
+by analysis replicates.
 
-\item \code{as.features(msData)}: converts the \linkS4class{msData}
-to a \linkS4class{features} object from the package \pkg{patRoon}.
+\item \code{XICs(msData)}: get three dimensional (\emph{m/z}, time and intensity)
+extracted ion chromatograms (XICs) for specified \emph{m/z} and retention
+time pair targets in analyses of an \linkS4class{msData} object.
+The arguments \code{mz}, \code{ppm}, \code{rt}, \code{sec} and \code{id}
+are used to construct the targets.
+See ?\link{makeTargets} for more information.
 
-\item \code{hasPeaks(msData)}: check if the analyses in \linkS4class{msData} have peaks.
+\item \code{plotXICs(msData)}: plots three dimensional (\emph{m/z}, time and intensity)
+extracted ion chromatograms (XICs) for specified \emph{m/z} and retention
+time pair targets in analyses of an \linkS4class{msData} object.
+The arguments \code{mz}, \code{ppm}, \code{rt}, \code{sec} and \code{id}
+are used to construct the targets.
+See ?\link{makeTargets} for more information.
+When \code{plotTargetMark} is \code{TRUE} a target is plotted representing
+the deviations as defined by the arguments \code{ppmMark} and \code{secMark}
+in ppm and seconds, respectively. When ranges were given to build the XIC,
+exact \emph{m/z} and time targets can be specified with the argument
+\code{targetsMark}. \code{targetsMark} should be a two column table
+named mz and rt with exact \emph{m/z} and time targets. Note that the number
+of rows should be the same as the number of target in the XIC.
+The number of rows to plot multiple targets can be defined by the
+\code{numberRows} argument.
 
-\item \code{peaks(msData)}: getter for chromatographic peaks.
-The arguments \code{targetID} and \code{mz}/\code{rt} can be used
-to select specific peaks. The \emph{id} of peaks and/or features can be
-given in the \code{targetsID} argument to select the respective peaks.
-Also, analyses can be selected using the \code{analyses} argument.
+\item \code{MS2s(msData)}: gets MS2 data for specified \emph{m/z} and retention
+time (seconds) targets in analyses of the \linkS4class{msData} object.
+The argument \code{isolationWindow} defines the range in Da that was applied
+to isolate the MS1 precursor. The argument \code{mzClust} defines the
+deviation in Da for merging MS2 spectrum of a given target.
+The \code{mzClust} will be reduced when more than one trace is found for the
+same retention time value.
+
+\item \code{plotMS2s(msData)}: plots MS2 data for specified \emph{m/z} and retention
+time (seconds) targets in analyses of the \linkS4class{msData} object.
+The argument \code{isolationWindow} defines the range in Da that was applied
+to isolate the MS1 precursor. The argument \code{mzClust} defines the
+deviation in Da for merging MS2 spectrum of a given target.
+The \code{mzClust} will be reduced when more than one trace is found for the
+same retention time value. The possible values for the \code{colorBy}
+argument are "targets", "analyses" and "replicates" to color by
+each target, analyses or replicate analysis groups, respectively.
+
+\item \code{addSettings(msData)}: adds processing settings to \linkS4class{msAnalysis} or
+\linkS4class{msFeatures} objects in the \linkS4class{msData} as defined by
+the argument \code{where}. So where can be either "analyses" or "features".
+
+\item \code{getSettingsNames(msData)}: gets the call names of processing settings in the
+\linkS4class{msData} object for both analyses and features.
+
+\item \code{getSettings(msData)}: gets processing settings from \linkS4class{msAnalysis} or
+\linkS4class{msFeatures} objects in the \linkS4class{msData} as defined by
+the argument \code{where}. So where can be either "analyses" or "features".
+The argument \code{call} is used to specify which settings are returned
+from the object defined in \code{where}. When, \code{call} is \code{NULL}
+all the settings are returned.
+
+\item \code{hasPeaks(msData)}: checks if the \linkS4class{msAnalysis} objects in the
+\linkS4class{msData} object have peaks.
+
+\item \code{peaks(msData)}: getter for chromatographic peaks from the
+\linkS4class{msAnalysis} objects in the \linkS4class{msData} object.
+The arguments \code{targetID} and \code{mass}, \code{mz} and \code{rt}
+can be used to select specific peaks. The \emph{id} of peaks and/or
+features can be given in the \code{targetsID} argument to select the
+respective peaks. Also, analyses can be selected using the \code{analyses}
+argument.
 
 \item \code{plotPeaks(msData)}: a method for plotting chromatographic peaks
 in an \linkS4class{msData} object.
@@ -649,18 +803,22 @@ Note that this method is irreversible.
 \item \code{x[i}: subset on analyses, features and peaks, using index or name.
 Note that this method is irreversible.
 
+\item \code{hasAdjustedRetentionTime(msData)}: getter for presence of adjusted retention time
+in the analyses.
+
+\item \code{as.features(msData)}: converts the \linkS4class{msData}
+to a \linkS4class{features} object from the package \pkg{patRoon}.
+
 }}
 \section{Slots}{
 
 \describe{
-\item{\code{title}}{A character string with the stream set title.}
+\item{\code{title}}{A character string defining the title.}
 
-\item{\code{date}}{The date of the set.}
+\item{\code{date}}{A \code{POSIXt} class object.}
 
-\item{\code{path}}{A character string with the set path.}
+\item{\code{analyses}}{A list with \linkS4class{msAnalysis} objects.}
 
-\item{\code{analyses}}{A list with \linkS4class{msAnalysis} objects for each analysis file added to the project.}
-
-\item{\code{features}}{A \code{list} with features grouped across samples in the project.}
+\item{\code{features}}{An \linkS4class{msFeatures} class object.}
 }}
 

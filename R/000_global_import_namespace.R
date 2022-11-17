@@ -37,7 +37,7 @@
 #' @importFrom xml2 read_xml xml_find_first xml_attr xml_find_all xml_name
 #' @importFrom xml2 xml_text xml_child
 #'
-#' @importFrom future plan
+#' @importFrom future plan supportsMulticore
 #' @importFrom future.apply future_lapply
 #'
 #' @importFrom progressr handlers handler_progress  with_progress progressor

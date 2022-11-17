@@ -11,11 +11,12 @@
 #'
 #' @note The \linkS4class{settings} call must be set to "peakPicking".
 #'
-#' @details See the \pkg{patRoon}'s \code{\link[patRoon]{findFeatures}} or the
-#' \href{https://rickhelmus.github.io/patRoon/reference/findFeatures.html}{guide}
-#' for more information. The following algorithms are available via
-#' \pkg{patRoon}: "xcms3", "xcms", "openms", "envipick", "sirius", "kpic2",
-#' "safd". The \linkS4class{settings} depend on the algorithm chosen.
+#' @details See the \pkg{patRoon}'s \code{\link[patRoon]{findFeatures}} function
+#' or the \href{https://rickhelmus.github.io/patRoon/reference/findFeatures.html}
+#' {reference guide} for more information. The following algorithms are available
+#'  via \pkg{patRoon}: "xcms3", "xcms", "openms", "envipick", "sirius", "kpic2",
+#' "safd". The \linkS4class{settings} and MS file format and mode depend on
+#' the algorithm chosen.
 #'
 #' @return An \linkS4class{msAnalysis} or \linkS4class{msData} object
 #' with peaks added to the respective slot.
@@ -230,7 +231,7 @@ buildPeaksTable <- function(object, pat) {
         }
       }
 
-      polarity <- polarities(object)
+      polarity <- polarities(object@analyses[[x]])
 
       # TODO make case for polarity switching data analysis
 
