@@ -43,4 +43,6 @@ remotes::install_github("rickhelmus/patRoon",
 devtools::document()
 devtools::document()
 devtools::install(upgrade = "never")
-library(streamFind)
+
+print("streamFind package installed:")
+print(require(streamFind))
