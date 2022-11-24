@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+  streamfind:
+    build: .
+
+    # for interactive mode e.g. for entrypoint /bin/bash
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    # entrypoint: "/bin/bash"
+
+    environment:
+      - PASSWORD=1234
+    ports:
+      - "8787:8787"

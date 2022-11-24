@@ -1,2 +1,1 @@
-# https://github.com/rstudio/r-docker
-FROM r-base:4.2.2
+FROM  rocker/rstudio:4.2.2
