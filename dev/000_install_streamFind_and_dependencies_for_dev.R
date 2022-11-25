@@ -34,13 +34,13 @@ remotes::install_github("KelseyChetnik/MetaClean")
 remotes::install_github("blosloos/nontargetData")
 remotes::install_github("blosloos/nontarget")
 
-# remotes::install_github("rickhelmus/patRoon", upgrade = "never", dependencies = TRUE)
+remotes::install_github("rickhelmus/patRoon", upgrade = "never", dependencies = TRUE)
+
 ## Install local streamFind  ##
 #updates documentation and installs the package
-# devtools::document()
-# devtools::document()
-# devtools::install(upgrade = "never")
-remotes::install_github("ricardobachertdacunha/streamFind", dependencies = TRUE)
+devtools::document()
+devtools::document()
+devtools::install(upgrade = "never")
 
 print("streamFind package installed:")
 print(require(streamFind))
