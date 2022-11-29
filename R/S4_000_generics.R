@@ -498,6 +498,17 @@ setGeneric("peaks", function(object, ...) standardGeneric("peaks"))
 
 
 
+#' @title peakEICs
+#'
+#' @description Generic for getting peak EICs.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
+setGeneric("peakEICs", function(object, ...) standardGeneric("peakEICs"))
+
+
+
 #' @title plotPeaks
 #'
 #' @description Generic for plotting peaks.

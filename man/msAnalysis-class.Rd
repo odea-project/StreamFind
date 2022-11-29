@@ -83,6 +83,8 @@
 \alias{hasPeaks,msAnalysis,msAnalysis-method}
 \alias{peaks,msAnalysis-method}
 \alias{peaks,msAnalysis,msAnalysis-method}
+\alias{peakEICs,msAnalysis-method}
+\alias{peakEICs,msAnalysis,msAnalysis-method}
 \alias{plotPeaks,msAnalysis-method}
 \alias{plotPeaks,msAnalysis,msAnalysis-method}
 \alias{mapPeaks,msAnalysis-method}
@@ -234,9 +236,20 @@
   targetsID = NULL,
   mass = NULL,
   mz = NULL,
-  ppm = 20,
   rt = NULL,
-  sec = 60,
+  ppm = 20,
+  sec = 30,
+  filtered = TRUE
+)
+
+\S4method{peakEICs}{msAnalysis}(
+  object,
+  targetsID = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  ppm = 20,
+  sec = 30,
   filtered = TRUE
 )
 
@@ -245,8 +258,8 @@
   targetsID = NULL,
   mass = NULL,
   mz = NULL,
-  ppm = 20,
   rt = NULL,
+  ppm = 20,
   sec = 30,
   filtered = TRUE,
   legendNames = NULL,
@@ -259,8 +272,8 @@
   targetsID = NULL,
   mass = NULL,
   mz = NULL,
-  ppm = 20,
   rt = NULL,
+  ppm = 20,
   sec = 30,
   filtered = TRUE,
   legendNames = NULL,
@@ -527,6 +540,13 @@ in the analysis.
 \item \code{hasPeaks(msAnalysis)}: checks if the \linkS4class{msAnalysis} has peaks.
 
 \item \code{peaks(msAnalysis)}: gets chromatographic peaks from the analysis.
+The arguments \code{targetID}, \code{mass}, \code{mz} and \code{rt} can
+be used to select specific peaks. The \emph{id} of peaks and/or features
+can be given in the \code{targetsID} argument to select the respective peaks.
+When the \code{filtered} argument is set to \code{TRUE}, filtered peaks are
+also returned.
+
+\item \code{peakEICs(msAnalysis)}: getter for peak EICs in the analysis object.
 The arguments \code{targetID}, \code{mass}, \code{mz} and \code{rt} can
 be used to select specific peaks. The \emph{id} of peaks and/or features
 can be given in the \code{targetsID} argument to select the respective peaks.

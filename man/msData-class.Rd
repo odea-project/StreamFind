@@ -81,8 +81,9 @@
 \alias{hasPeaks,msData,msData-method}
 \alias{peaks,msData-method}
 \alias{peaks,msData,msData-method}
-\alias{plotPeaks,msData-method}
+\alias{peakEICs,msData-method}
 \alias{plotPeaks,msData,msData-method}
+\alias{plotPeaks,msData-method}
 \alias{mapPeaks,msData-method}
 \alias{mapPeaks,msData,msData-method}
 \alias{features,msData-method}
@@ -318,10 +319,27 @@
   targetsID = NULL,
   mass = NULL,
   mz = NULL,
-  ppm = 20,
   rt = NULL,
+  ppm = 20,
   sec = 60,
   filtered = TRUE
+)
+
+\S4method{peakEICs}{msData}(
+  object,
+  analyses = NULL,
+  targetsID = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  ppm = 20,
+  sec = 30,
+  filtered = TRUE,
+  run_parallel = FALSE,
+  colorBy = "targets",
+  legendNames = NULL,
+  title = NULL,
+  interactive = FALSE
 )
 
 \S4method{plotPeaks}{msData}(
@@ -330,10 +348,11 @@
   targetsID = NULL,
   mass = NULL,
   mz = NULL,
-  ppm = 20,
   rt = NULL,
+  ppm = 20,
   sec = 30,
   filtered = TRUE,
+  run_parallel = FALSE,
   colorBy = "targets",
   legendNames = NULL,
   title = NULL,
@@ -346,8 +365,8 @@
   targetsID = NULL,
   mass = NULL,
   mz = NULL,
-  ppm = 20,
   rt = NULL,
+  ppm = 20,
   sec = 30,
   filtered = TRUE,
   colorBy = "targets",
@@ -548,9 +567,11 @@ cluster mass traces from different scans.}
 \item{filtered}{Logical. When \code{TRUE} (the default),
 filtered data is returned. When \code{FALSE}, filtered data is excluded.}
 
-\item{xlim}{A length one or two numeric vector for setting the \emph{x} limits of a plot.}
+\item{xlim}{A length one or two numeric vector
+for setting the \emph{x} limits of a plot.}
 
-\item{ylim}{A length one or two numeric vector for setting the \emph{y} limits of a plot.}
+\item{ylim}{A length one or two numeric vector
+for setting the \emph{y} limits of a plot.}
 
 \item{complete}{Logical, set to \code{TRUE} for a complete version of the output.}
 
@@ -753,26 +774,40 @@ The arguments \code{targetID} and \code{mass}, \code{mz} and \code{rt}
 can be used to select specific peaks. The \emph{id} of peaks and/or
 features can be given in the \code{targetsID} argument to select the
 respective peaks. Also, analyses can be selected using the \code{analyses}
-argument.
+argument. When the \code{filtered} argument is set to \code{TRUE}, filtered
+peaks are also returned.
 
-\item \code{plotPeaks(msData)}: a method for plotting chromatographic peaks
-in an \linkS4class{msData} object.
-The arguments \code{targetID} and \code{mz}/\code{rt} can be used
-to select specific peaks. The \emph{id} of peaks and/or features can be
-given in the \code{targetsID} argument to select the respective peaks.
-Also, analyses can be selected using the \code{analyses} argument.
-The \code{colorBy} argument can be be \code{"analyses"}, \code{replicates} or \code{targets}
-(the default), for coloring by analyses, replicates or peak targets, respectively.
-The \code{legendNames} is a character vector with the same length as targets for plotting and
-can be used to lengend the plot. Note that, by setting \code{legendNames} the \code{colorBy}
+\item \code{peakEICs(msData)}: getter of peak EICs from \linkS4class{msAnalysis}
+objects in the \linkS4class{msData} object.
+The arguments \code{targetID} and \code{mass}, \code{mz} and \code{rt}
+can be used to select specific peaks. The \emph{id} of peaks and/or
+features can be given in the \code{targetsID} argument to select the
+respective peaks. Also, analyses can be selected using the \code{analyses}
+argument. When the \code{filtered} argument is set to \code{TRUE}, filtered
+peaks are also returned.
+
+\item \code{plotPeaks(msData)}: plots chromatographic peaks from \linkS4class{msAnalysis}
+objects in the \linkS4class{msData} object.
+The arguments \code{targetID} and \code{mass}, \code{mz} and \code{rt}
+can be used to select specific peaks. The \emph{id} of peaks and/or
+features can be given in the \code{targetsID} argument to select the
+respective peaks. Also, analyses can be selected using the \code{analyses}
+argument. When the \code{filtered} argument is set to \code{TRUE}, filtered
+peaks are also returned.
+The \code{colorBy} argument can be be \code{"analyses"}, \code{replicates}
+or \code{targets} (the default), for coloring by analyses, replicates or
+peak targets, respectively. The \code{legendNames} is a character vector
+with the same length as targets for plotting and can be used to legend
+the plot. Note that, by setting \code{legendNames} the \code{colorBy}
 is set to "targets" automatically.
 
-\item \code{mapPeaks(msData)}: a method for mapping peaks mass and time space.
-The \code{colorBy} argument can be be \code{"analyses"}, \code{replicates} or \code{targets}
-(the default), for coloring by analyses, replicates or peak targets, respectively.
-The \code{legendNames} is a character vector with the same length as targets for plotting and
-can be used to legend the plot. Note that, by setting \code{legendNames} the \code{colorBy}
-is set to "targets" automatically.
+\item \code{mapPeaks(msData)}: mapps peaks mass and time space.
+The \code{colorBy} argument can be be \code{"analyses"}, \code{replicates}
+or \code{targets} (the default), for coloring by analyses, replicates or
+peak targets, respectively. The \code{legendNames} is a character vector
+with the same length as targets for plotting and can be used to legend the
+plot. Note that, by setting \code{legendNames} the \code{colorBy} is set to
+"targets" automatically.
 
 \item \code{features(msData)}: getter for features (i.e., grouped peaks). When
 complete is set to \code{TRUE}, additional feature metadata is also returned.

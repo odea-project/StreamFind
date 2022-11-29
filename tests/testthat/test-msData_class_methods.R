@@ -277,11 +277,13 @@ md_set <- addSettings(md_set, settings = settings_pp, where = "analyses")
 
 md_set <- peakPicking(md_set)
 
+test_that("test_methods_for_peaks", {
+  expect_s3_class(peaks(md_set), "data.table")
+  expect_gt(nrow(peaks(md_set)), 1)
+  expect_true(all(hasPeaks(md_set)))
+  expect_s4_class(as.features(md_set), "features")
 
-
-
-
-
+})
 
 
 
@@ -306,7 +308,7 @@ md_set <- peakPicking(md_set)
 #
 #
 # TICs(md_set_2)
-# plotTICs(md_set_2)
+# plotTICs(md_set_2, interactive = TRUE)
 #
 # BPCs(md_set_2)
 # plotBPCs(md_set_2)
@@ -322,6 +324,9 @@ md_set <- peakPicking(md_set)
 #
 # plotSpectra(md_set_2, analyses = 1, mz = targets4, colorBy = "levels")
 # plotChromatograms(md_set_2, id = "TIC", colorBy = "replicates")
+#
+# plotPeaks(md_set, mass = diuron_d6, run_parallel = TRUE, interactive = TRUE)
+# mapPeaks(md_set, mass = diuron_d6)
 
 
 # TODO make a plot of processing time for parallel and sequential

@@ -9,13 +9,15 @@ img <- htmltools::img(
   style =
     paste0("position:absolute;
       top:6%;
-      margin-left:90%;
-      width:", width, "px;
-      height:", height, "px;"
+      margin-left:inherit;
+      padding-right:1020px;
+      width:", 100, "px;
+      height:", 100*(216/207), "px;"
     )
 )
 
 htmlhead <- paste0('<script> document.write(\'<div class = "logo">', img, '</div>\') </script> ')
-projectpath <- "C:\\Users\\MZmine\\Documents\\R Projects\\streamFindData\\inst\\extdata"
-readr::write_lines(htmlhead, file = paste0(projectpath, "\\logo_iuta_template_report.html"))
-readr::write_lines(htmlhead, file = paste0(sourcepath, "\\logo_iuta_template_report.html"))
+#projectpath <- "C:\\Users\\MZmine\\Documents\\R Projects\\streamFindData\\inst\\extdata"
+projectpath <- "/home/ricardo/Documents/Projects_r/streamFindData"
+readr::write_lines(htmlhead, file = paste0(projectpath, "/logo_iuta_template_report.html"))
+readr::write_lines(htmlhead, file = paste0(sourcepath, "/logo_iuta_template_report.html"))

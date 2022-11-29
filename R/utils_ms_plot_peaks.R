@@ -119,7 +119,7 @@ plotPeaksInteractive <- function(eic, peaks, title, colorBy) {
     )
     if (length(y) >= 1) showL[lt] <- FALSE
 
-    pk <- peaks[peaks$id == t, ]
+    pk <- peaks[peaks$id %in% t, ]
     pk_eic <- eic[rt >= pk$rtmin & rt <= pk$rtmax & id == t, ]
 
     hT <- paste(

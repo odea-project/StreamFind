@@ -1605,7 +1605,6 @@ setMethod("getSettings", "msData", function(object,
 #' @aliases hasPeaks,msData,msData-method
 #'
 setMethod("hasPeaks", "msData", function(object) {
-
   return(sapply(object@analyses, function(x) hasPeaks(x)))
 })
 
@@ -1619,7 +1618,8 @@ setMethod("hasPeaks", "msData", function(object) {
 #' can be used to select specific peaks. The \emph{id} of peaks and/or
 #' features can be given in the \code{targetsID} argument to select the
 #' respective peaks. Also, analyses can be selected using the \code{analyses}
-#' argument.
+#' argument. When the \code{filtered} argument is set to \code{TRUE}, filtered
+#' peaks are also returned.
 #'
 #' @param mass ...
 #' @template args-single-targetsID
@@ -1633,20 +1633,18 @@ setMethod("peaks", "msData", function(object,
                                       analyses = NULL,
                                       targetsID = NULL,
                                       mass = NULL,
-                                      mz = NULL, ppm = 20,
-                                      rt = NULL, sec = 60,
+                                      mz = NULL, rt = NULL,
+                                      ppm = 20, sec = 60,
                                       filtered = TRUE) {
 
   analyses <- checkAnalysesArgument(object, analyses)
+
   analyses <- object@analyses[analyses]
 
-  pks <- lapply(analyses, function(x, targetsID, mass,
-                                   mz, ppm, rt, sec, filtered) {
-    pks_a <- peaks(
-      x, targetsID = targetsID, mass = mass,
-      mz = mz, ppm = ppm, rt = rt, sec = sec,
-      filtered = filtered
-    )
+  pks <- lapply(analyses, function(x, targetsID, mass, mz, rt, ppm, sec,
+                                   filtered) {
+
+    pks_a <- peaks(x, targetsID, mass, mz, rt, ppm, sec, filtered)
 
     return(pks_a)
   },
@@ -1661,30 +1659,92 @@ setMethod("peaks", "msData", function(object,
 
   pks <- rbindlist(pks, idcol = "analysis")
 
-  if (nrow(pks) > 0) {
-    rpl <- replicateNames(object)[unique(pks$analysis)]
-    rpl <- data.table("analysis" = names(rpl), "replicate" = rpl)
-    pks <- pks[rpl, on = .(analysis = analysis)]
-    pks <- pks[!is.na(id), ]
-  }
+  if (nrow(pks) > 0) pks$replicate <- replicateNames(object)[pks$analysis]
 
   return(pks)
 })
 
 
 
-### plotPeaks ------------------------------------------------------------------------------------------------
+##### peakEICs ----------------------------------------------------------------
 
-#' @describeIn msData a method for plotting chromatographic peaks
-#' in an \linkS4class{msData} object.
-#' The arguments \code{targetID} and \code{mz}/\code{rt} can be used
-#' to select specific peaks. The \emph{id} of peaks and/or features can be
-#' given in the \code{targetsID} argument to select the respective peaks.
-#' Also, analyses can be selected using the \code{analyses} argument.
-#' The \code{colorBy} argument can be be \code{"analyses"}, \code{replicates} or \code{targets}
-#' (the default), for coloring by analyses, replicates or peak targets, respectively.
-#' The \code{legendNames} is a character vector with the same length as targets for plotting and
-#' can be used to lengend the plot. Note that, by setting \code{legendNames} the \code{colorBy}
+#' @describeIn msData getter of peak EICs from \linkS4class{msAnalysis}
+#' objects in the \linkS4class{msData} object.
+#' The arguments \code{targetID} and \code{mass}, \code{mz} and \code{rt}
+#' can be used to select specific peaks. The \emph{id} of peaks and/or
+#' features can be given in the \code{targetsID} argument to select the
+#' respective peaks. Also, analyses can be selected using the \code{analyses}
+#' argument. When the \code{filtered} argument is set to \code{TRUE}, filtered
+#' peaks are also returned.
+#'
+#' @export
+#'
+#' @aliases plotPeaks,msData,msData-method
+#'
+setMethod("peakEICs", "msData", function(object,
+                                         analyses = NULL,
+                                         targetsID = NULL,
+                                         mass = NULL,
+                                         mz = NULL, rt = NULL,
+                                         ppm = 20, sec = 30,
+                                         filtered = TRUE,
+                                         run_parallel = FALSE,
+                                         colorBy = "targets",
+                                         legendNames = NULL,
+                                         title = NULL,
+                                         interactive = FALSE) {
+
+  pks <- peaks(object, analyses, targetsID, mass, mz, rt, ppm, sec, filtered)
+
+  pks_tars <- copy(pks[, .(analysis, replicate, id, mz, rt, mzmin, mzmax, rtmin, rtmax)])
+  pks_tars$rtmin <- min(pks_tars$rtmin) - 60
+  pks_tars$rtmax <- max(pks_tars$rtmax) + 60
+
+  if (nrow(pks_tars) == 0) {
+    warning("No peaks were found with the defined targets!")
+    return(NULL)
+  }
+
+  analyses <- unique(pks_tars$analysis)
+
+  pks_tars <- split(pks_tars, pks_tars$analysis)
+
+  eics <- runParallelLapply(obj_list = object@analyses[analyses],
+    run_parallel = run_parallel,
+    FUN = function(x, targets) {
+      ana <- analysisName(x)
+      eic <- peakEICs(x, targetsID = targets[[ana]]$id)
+      eic$analysis <- ana
+      p()
+
+      return(eic)
+    }, targets = pks_tars
+  )
+
+  eics <- rbindlist(eics)
+
+  if (nrow(eics) > 0) eics$replicate <- replicateNames(object)[eics$analysis]
+
+  return(eics)
+})
+
+
+
+##### plotPeaks ---------------------------------------------------------------
+
+#' @describeIn msData plots chromatographic peaks from \linkS4class{msAnalysis}
+#' objects in the \linkS4class{msData} object.
+#' The arguments \code{targetID} and \code{mass}, \code{mz} and \code{rt}
+#' can be used to select specific peaks. The \emph{id} of peaks and/or
+#' features can be given in the \code{targetsID} argument to select the
+#' respective peaks. Also, analyses can be selected using the \code{analyses}
+#' argument. When the \code{filtered} argument is set to \code{TRUE}, filtered
+#' peaks are also returned.
+#' The \code{colorBy} argument can be be \code{"analyses"}, \code{replicates}
+#' or \code{targets} (the default), for coloring by analyses, replicates or
+#' peak targets, respectively. The \code{legendNames} is a character vector
+#' with the same length as targets for plotting and can be used to legend
+#' the plot. Note that, by setting \code{legendNames} the \code{colorBy}
 #' is set to "targets" automatically.
 #'
 #' @export
@@ -1695,41 +1755,23 @@ setMethod("plotPeaks", "msData", function(object,
                                           analyses = NULL,
                                           targetsID = NULL,
                                           mass = NULL,
-                                          mz = NULL, ppm = 20,
-                                          rt = NULL, sec = 30,
+                                          mz = NULL, rt = NULL,
+                                          ppm = 20, sec = 30,
                                           filtered = TRUE,
+                                          run_parallel = FALSE,
                                           colorBy = "targets",
                                           legendNames = NULL,
                                           title = NULL,
                                           interactive = FALSE) {
 
-  analyses <- checkAnalysesArgument(object, analyses)
-  obj <- object
-  obj@analyses <- obj@analyses[analyses]
+  peaks <- peaks(object, analyses, targetsID, mass, mz, rt, ppm, sec, filtered)
 
-  peaks <- peaks(obj, analyses = NULL, targetsID, mass, mz, ppm, rt, sec, filtered)
-
-  pks_tars <- copy(peaks[, .(analysis, replicate, id, mz, rt, mzmin, mzmax, rtmin, rtmax)])
-  pks_tars$rtmin <- min(pks_tars$rtmin) - 60
-  pks_tars$rtmax <- max(pks_tars$rtmax) + 60
-
-  if (nrow(pks_tars) == 0) {
-    warning("No peaks were found with the defined targets!")
-    return(NULL)
-  }
-
-  eic <- lapply(obj@analyses, function(x, pks_tars, object) {
-    tar <- pks_tars[analysis %in% analysisNames(x), ]
-    if (nrow(tar) < 1) return(data.table())
-    eic <- EICs(x, mz = tar)
-    eic$replicate <- replicateNames(object)[analysisNames(x)]
-    return(eic)
-  }, pks_tars = pks_tars, object = object)
-
-  eic <- rbindlist(eic)
+  eics <- peakEICs(object, analyses, targetsID, mass, mz, rt, ppm, sec, filtered)
 
   return(
-    plotPeaks(eic, peaks, analyses = NULL, colorBy = colorBy,
+    plotPeaks(eics, peaks,
+              analyses = NULL,
+              colorBy = colorBy,
               legendNames = legendNames,
               title = title,
               interactive = interactive
@@ -1737,17 +1779,22 @@ setMethod("plotPeaks", "msData", function(object,
   )
 })
 
-### mapPeaks ------------------------------------------------------------------------------------------------
 
-#' @describeIn msData a method for mapping peaks mass and time space.
-#' The \code{colorBy} argument can be be \code{"analyses"}, \code{replicates} or \code{targets}
-#' (the default), for coloring by analyses, replicates or peak targets, respectively.
-#' The \code{legendNames} is a character vector with the same length as targets for plotting and
-#' can be used to legend the plot. Note that, by setting \code{legendNames} the \code{colorBy}
-#' is set to "targets" automatically.
+
+##### mapPeaks ----------------------------------------------------------------
+
+#' @describeIn msData mapps peaks mass and time space.
+#' The \code{colorBy} argument can be be \code{"analyses"}, \code{replicates}
+#' or \code{targets} (the default), for coloring by analyses, replicates or
+#' peak targets, respectively. The \code{legendNames} is a character vector
+#' with the same length as targets for plotting and can be used to legend the
+#' plot. Note that, by setting \code{legendNames} the \code{colorBy} is set to
+#' "targets" automatically.
 #'
-#' @param xlim A length one or two numeric vector for setting the \emph{x} limits of a plot.
-#' @param ylim A length one or two numeric vector for setting the \emph{y} limits of a plot.
+#' @param xlim A length one or two numeric vector
+#' for setting the \emph{x} limits of a plot.
+#' @param ylim A length one or two numeric vector
+#' for setting the \emph{y} limits of a plot.
 #'
 #' @export
 #'
@@ -1757,8 +1804,8 @@ setMethod("mapPeaks", "msData", function(object,
                                          analyses = NULL,
                                          targetsID = NULL,
                                          mass = NULL,
-                                         mz = NULL, ppm = 20,
-                                         rt = NULL, sec = 30,
+                                         mz = NULL, rt = NULL,
+                                         ppm = 20, sec = 30,
                                          filtered = TRUE,
                                          colorBy = "targets",
                                          legendNames = NULL,
@@ -1771,8 +1818,8 @@ setMethod("mapPeaks", "msData", function(object,
     analyses,
     targetsID,
     mass,
-    mz, ppm,
-    rt, sec,
+    mz, rt,
+    ppm, sec,
     filtered
   )
 
@@ -1802,7 +1849,9 @@ setMethod("mapPeaks", "msData", function(object,
   return(plot)
 })
 
-### features ------------------------------------------------------------------------------------------------
+
+
+##### features ----------------------------------------------------------------
 
 #' @describeIn msData getter for features (i.e., grouped peaks). When
 #' complete is set to \code{TRUE}, additional feature metadata is also returned.
@@ -2184,6 +2233,8 @@ setMethod("hasAdjustedRetentionTime", "msData", function(object) {
 #'
 setMethod("as.features", "msData", function(object) {
 
+  requireNamespace("patRoon")
+
   anaInfo <- analysisInfo(object)
 
   feat <- lapply(object@analyses, function(x) {
@@ -2222,7 +2273,9 @@ setMethod("as.features", "msData", function(object) {
     })
 
     feat_obj <- new("featuresSet",
-                    features = feat, analysisInfo = anaInfo, algorithm = "openms-set")
+                    features = feat,
+                    analysisInfo = anaInfo,
+                    algorithm = "openms-set")
 
   } else {
 

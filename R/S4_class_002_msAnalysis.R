@@ -1355,6 +1355,8 @@ setMethod("hasPeaks", "msAnalysis", function(object) {
 #' The arguments \code{targetID}, \code{mass}, \code{mz} and \code{rt} can
 #' be used to select specific peaks. The \emph{id} of peaks and/or features
 #' can be given in the \code{targetsID} argument to select the respective peaks.
+#' When the \code{filtered} argument is set to \code{TRUE}, filtered peaks are
+#' also returned.
 #'
 #' @param mass As the argument \code{mz} but specifying the neutral mass
 #' not the mass-to-charge ratio (\emph{m/z}) for building targets.
@@ -1368,8 +1370,8 @@ setMethod("hasPeaks", "msAnalysis", function(object) {
 setMethod("peaks", "msAnalysis", function(object,
                                           targetsID = NULL,
                                           mass = NULL,
-                                          mz = NULL, ppm = 20,
-                                          rt = NULL, sec = 60,
+                                          mz = NULL, rt = NULL,
+                                          ppm = 20, sec = 30,
                                           filtered = TRUE) {
 
   if (!filtered) {
@@ -1422,6 +1424,37 @@ setMethod("peaks", "msAnalysis", function(object,
 
 
 
+##### peakEICs ----------------------------------------------------------------
+
+#' @describeIn msAnalysis getter for peak EICs in the analysis object.
+#' The arguments \code{targetID}, \code{mass}, \code{mz} and \code{rt} can
+#' be used to select specific peaks. The \emph{id} of peaks and/or features
+#' can be given in the \code{targetsID} argument to select the respective peaks.
+#'
+#' @export
+#'
+#' @aliases peakEICs,msAnalysis,msAnalysis-method
+#'
+setMethod("peakEICs", "msAnalysis", function(object,
+                                             targetsID = NULL,
+                                             mass = NULL,
+                                             mz = NULL, rt = NULL,
+                                             ppm = 20, sec = 30,
+                                             filtered = TRUE) {
+
+  peaks <- peaks(object, targetsID, mass, mz, rt, ppm, sec, filtered)
+
+  pks_tars <- copy(peaks[, .(id, mz, rt, mzmin, mzmax, rtmin, rtmax)])
+  pks_tars$rtmin <- min(pks_tars$rtmin) - 60
+  pks_tars$rtmax <- max(pks_tars$rtmax) + 60
+
+  eic <- EICs(object, mz = pks_tars)
+
+  return(eic)
+})
+
+
+
 ##### plotPeaks ---------------------------------------------------------------
 
 #' @describeIn msAnalysis plots chromatographic peaks in the analysis.
@@ -1438,8 +1471,8 @@ setMethod("peaks", "msAnalysis", function(object,
 setMethod("plotPeaks", "msAnalysis", function(object,
                                               targetsID = NULL,
                                               mass = NULL,
-                                              mz = NULL, ppm = 20,
-                                              rt = NULL, sec = 30,
+                                              mz = NULL, rt = NULL,
+                                              ppm = 20, sec = 30,
                                               filtered = TRUE,
                                               legendNames = NULL,
                                               title = NULL,
@@ -1447,7 +1480,7 @@ setMethod("plotPeaks", "msAnalysis", function(object,
 
   colorBy = "targets"
 
-  peaks <- peaks(object, targetsID, mass, mz, ppm, rt, sec, filtered)
+  peaks <- peaks(object, targetsID, mass, mz, rt, ppm, sec, filtered)
 
   pks_tars <- copy(peaks[, .(id, mz, rt, mzmin, mzmax, rtmin, rtmax)])
   pks_tars$rtmin <- min(pks_tars$rtmin) - 60
@@ -1484,8 +1517,8 @@ setMethod("plotPeaks", "msAnalysis", function(object,
 setMethod("mapPeaks", "msAnalysis", function(object,
                                              targetsID = NULL,
                                              mass = NULL,
-                                             mz = NULL, ppm = 20,
-                                             rt = NULL, sec = 30,
+                                             mz = NULL, rt = NULL,
+                                             ppm = 20, sec = 30,
                                              filtered = TRUE,
                                              legendNames = NULL,
                                              xlim = 30,
@@ -1498,8 +1531,8 @@ setMethod("mapPeaks", "msAnalysis", function(object,
     object,
     targetsID,
     mass,
-    mz, ppm,
-    rt, sec,
+    mz, rt,
+    ppm, sec,
     filtered
   )
 
@@ -1591,6 +1624,8 @@ setMethod("hasAdjustedRetentionTime", "msAnalysis", function(object) {
 #' @aliases as.features,msAnalysis,msAnalysis-method
 #'
 setMethod("as.features", "msAnalysis", function(object) {
+
+  requireNamespace("patRoon")
 
   anaInfo <- analysisInfo(object)
 

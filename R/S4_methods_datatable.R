@@ -363,7 +363,6 @@ setMethod("plotPeaks", "data.table", function(object,
                                               title = NULL,
                                               interactive = FALSE) {
 
-
   eic <- copy(object)
 
   if (!"analysis" %in% colnames(eic)) {

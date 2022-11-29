@@ -1,6 +1,9 @@
 ---
 title: "ntsIUTA Report Template"
-author: Ricardo Cunha
+author:
+  name: "Ricardo Cunha"
+  affiliation: "Insitut für Energie- und Umwelttechnik e.V. (IUTA)"
+  email: cunha@iuta.de
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   bookdown::html_document2:
@@ -8,18 +11,36 @@ output:
     toc_float: yes
     theme: paper
     code_folding: hide
-    includes:
-      in_header: !expr noquote(paste0(system.file(package = "streamFindData", dir = "extdata"), "\\logo_iuta_template_report.html"))
 editor_options: 
   chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
 
-knitr::opts_chunk$set(echo = TRUE, fig.align = "center", fig.width = 9, results = "asis")
-path <- getwd()
+path_extdata <- system.file(package = "streamFind", dir = "extdata")
+logo <- file.path(path_extdata, "logo_iuta.png")
 
+knitr::opts_chunk$set(echo = TRUE, fig.align = "center", fig.width = 9, results = "asis")
+
+path_wd <- getwd()
 ```
+
+```{r logo, echo=FALSE}
+htmltools::img(
+  src = knitr::image_uri(logo),
+  alt = "logo",
+  style =
+    paste0("
+      margin-left:inherit;
+      position:absolute;
+      top:60px;
+      left:740px;
+      width:", 100, "px;
+      height:", 100*(216/207), "px;"
+    )
+)
+```
+
 <br> <br>  
 
 ***
@@ -115,14 +136,16 @@ plot_ly(pressure, x = ~temperature, y = ~pressure, type = "scatter", mode = "mar
 
 # Signature
 
-The report was produced on `r Sys.time()`. The data and report are stored in ``r path`` of the workstation *`r Sys.info()["nodename"]`* under the user *`r Sys.info()["user"]`*.  
+The report was produced on `r Sys.time()`. The data and report are stored in ``r path_wd`` of the workstation *`r Sys.info()["nodename"]`* under the user *`r Sys.info()["user"]`*.  
 
 <br>
 
 ***
-Insitut für Energie- und Umwelttechnik e.V. (IUTA)  
+**Insitut für Energie- und Umwelttechnik e.V.**  
+A: Bliersheimer Str. 58 - 60, 47229 Duisburg  
+T: (02065) 418 - 0  
+
 <br>
-For further questions, please contact Ricardo Cunha ([cunha@iuta.de](cunha@iuta.de)).  
 
 
 <style>
