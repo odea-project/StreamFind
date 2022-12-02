@@ -4,7 +4,13 @@
 \alias{calculateSNR}
 \title{calculateSNR}
 \usage{
-calculateSNR(object, targetsID = NULL, rtExpand = 200, filtered = FALSE)
+calculateSNR(
+  object,
+  targetsID = NULL,
+  rtExpand = 200,
+  filtered = FALSE,
+  run_parallel = FALSE
+)
 }
 \arguments{
 \item{object}{An \linkS4class{msData} object.}

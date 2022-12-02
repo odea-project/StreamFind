@@ -25,6 +25,8 @@
 #'
 peakGrouping <- function(object = NULL, settings = NULL) {
 
+  requireNamespace("patRoon")
+
   assertClass(object, "msData")
 
   noPeaks <- sapply(object@analyses, function(x) nrow(x@peaks))
@@ -73,7 +75,9 @@ peakGrouping <- function(object = NULL, settings = NULL) {
 
   ag <- list(obj = pat, algorithm = algorithm)
 
-  pat <- do.call(groupFeatures, c(ag, params))
+  gr_fun <- patRoon::groupFeatures
+
+  pat <- do.call(gr_fun, c(ag, params))
 
   stgs <- createSettings(call = "peaksGrouping",
     algorithm = algorithm, parameters = params)
@@ -255,13 +259,13 @@ addAdjustedRetentionTime <- function(object, pat) {
 
   if (testClass(pat, "featureGroupsXCMS3")) {
 
-    if (hasAdjustedRtime(pat@xdata)) {
+    if (xcms::hasAdjustedRtime(pat@xdata)) {
 
       cat("Adding adjusted retention time values... ")
 
-      rtAdj <- adjustedRtime(pat@xdata)
+      rtAdj <- xcms::adjustedRtime(pat@xdata)
 
-      pkAdj <- processHistory(
+      pkAdj <- xcms::processHistory(
         pat@xdata,
         type = "Retention time correction"
       )[[1]]
@@ -270,7 +274,7 @@ addAdjustedRetentionTime <- function(object, pat) {
       addAdjPoints <- FALSE
       if (testClass(pkAdj, "PeakGroupsParam")) {
         addAdjPoints <- TRUE
-        pkAdj <- peakGroupsMatrix(pkAdj)
+        pkAdj <- xcms::peakGroupsMatrix(pkAdj)
       }
 
       hasSpectra <- sapply(object@analyses, function(x) nrow(x@spectra))

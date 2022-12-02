@@ -250,6 +250,7 @@
   rt = NULL,
   ppm = 20,
   sec = 30,
+  rtExpand = 60,
   filtered = TRUE
 )
 
@@ -261,6 +262,7 @@
   rt = NULL,
   ppm = 20,
   sec = 30,
+  rtExpand = 60,
   filtered = TRUE,
   legendNames = NULL,
   title = NULL,

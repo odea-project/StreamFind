@@ -1049,7 +1049,7 @@ setMethod("EICs", "msData", function(object,
     }, targets = targets
   )
 
-  eics <- rbindlist(eics, idcol = "analysis")
+  eics <- rbindlist(eics)
 
   eics$replicate <- replicateNames(object)[eics$analysis]
 
@@ -1282,14 +1282,14 @@ setMethod("XICs", "msData", function(object,
     run_parallel = run_parallel,
     FUN = function(x, targets) {
 
-      xic <- streamFind::EICs(x, mz = targets)
+      xic <- streamFind::XICs(x, mz = targets)
       p()
 
       return(xic)
     }, targets = targets
   )
 
-  xics <- rbindlist(xics, idcol = "analysis")
+  xics <- rbindlist(xics, fill = TRUE)
 
   xics$replicate <- replicateNames(object)[xics$analysis]
 
@@ -1687,18 +1687,13 @@ setMethod("peakEICs", "msData", function(object,
                                          mass = NULL,
                                          mz = NULL, rt = NULL,
                                          ppm = 20, sec = 30,
+                                         rtExpand = 60,
                                          filtered = TRUE,
-                                         run_parallel = FALSE,
-                                         colorBy = "targets",
-                                         legendNames = NULL,
-                                         title = NULL,
-                                         interactive = FALSE) {
+                                         run_parallel = FALSE) {
 
   pks <- peaks(object, analyses, targetsID, mass, mz, rt, ppm, sec, filtered)
 
-  pks_tars <- copy(pks[, .(analysis, replicate, id, mz, rt, mzmin, mzmax, rtmin, rtmax)])
-  pks_tars$rtmin <- min(pks_tars$rtmin) - 60
-  pks_tars$rtmax <- max(pks_tars$rtmax) + 60
+  pks_tars <- copy(pks[, .(analysis, id, mz, rt, mzmin, mzmax, rtmin, rtmax)])
 
   if (nrow(pks_tars) == 0) {
     warning("No peaks were found with the defined targets!")
@@ -1711,14 +1706,14 @@ setMethod("peakEICs", "msData", function(object,
 
   eics <- runParallelLapply(obj_list = object@analyses[analyses],
     run_parallel = run_parallel,
-    FUN = function(x, targets) {
+    FUN = function(x, targets, rtExpand) {
       ana <- analysisName(x)
-      eic <- peakEICs(x, targetsID = targets[[ana]]$id)
+      eic <- peakEICs(x, targetsID = targets[[ana]]$id, rtExpand = rtExpand)
       eic$analysis <- ana
       p()
 
       return(eic)
-    }, targets = pks_tars
+    }, targets = pks_tars, rtExpand = rtExpand
   )
 
   eics <- rbindlist(eics)
@@ -1757,6 +1752,7 @@ setMethod("plotPeaks", "msData", function(object,
                                           mass = NULL,
                                           mz = NULL, rt = NULL,
                                           ppm = 20, sec = 30,
+                                          rtExpand = 60,
                                           filtered = TRUE,
                                           run_parallel = FALSE,
                                           colorBy = "targets",
@@ -1766,7 +1762,8 @@ setMethod("plotPeaks", "msData", function(object,
 
   peaks <- peaks(object, analyses, targetsID, mass, mz, rt, ppm, sec, filtered)
 
-  eics <- peakEICs(object, analyses, targetsID, mass, mz, rt, ppm, sec, filtered)
+  eics <- peakEICs(object, analyses, targetsID,
+                   mass, mz, rt, ppm, sec, rtExpand, filtered, run_parallel)
 
   return(
     plotPeaks(eics, peaks,
@@ -2153,15 +2150,17 @@ setMethod("[", c("msData", "ANY", "ANY", "missing"), function(x, i, j, ...) {
     x@features@metadata <- x@features@metadata[id %in% j, ]
 
     x@analyses <- lapply(x@analyses, function(z, j) {
-      temp <- z@peaks
-      temp[!feature %in% j, `:=`(feature = NA_character_, filtered = TRUE, filter = "grouping")]
-      z@peaks <- copy(temp)
+      temp <- copy(z@peaks)
+      temp[!(temp$feature %in% j), `:=`(feature = NA_character_, filtered = TRUE, filter = "grouping")]
+      z@peaks <- temp
       return(z)
     }, j = j)
   }
 
   return(x)
 })
+
+
 
 ### [ sub-setting peaks -----------------------------------------------
 
@@ -2183,18 +2182,18 @@ setMethod("[", c("msData", "ANY", "ANY", "ANY"), function(x, i, j, p) {
     if (!is.character(p)) {
       p <- peaks(x)$id[p]
       x@analyses <- lapply(x@analyses, function(z, p) {
-        temp <- z@peaks
+        temp <- copy(z@peaks)
         temp <- temp[id %in% p, ]
-        z@peaks <- copy(temp)
+        z@peaks <- temp
         return(z)
       }, p = p)
 
     #sub-sets the index of each analysis
     } else {
       x@analyses <- lapply(x@analyses, function(z, p) {
-        temp <- z@peaks
+        temp <- copy(z@peaks)
         temp <- temp[p, ]
-        z@peaks <- copy(temp)
+        z@peaks <- temp
         return(z)
       }, p = p)
     }

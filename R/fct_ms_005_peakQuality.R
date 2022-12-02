@@ -36,7 +36,8 @@
 calculateSNR <-  function(object,
                           targetsID = NULL,
                           rtExpand = 200,
-                          filtered = FALSE) {
+                          filtered = FALSE,
+                          run_parallel = FALSE) {
 
   valid <- FALSE
 
@@ -79,6 +80,7 @@ calculateSNR <-  function(object,
   peaks_sn <- copy(peaks_org)
 
   if (!filtered) {
+    TRUE %in% !peaks_sn$filtered
     peaks_sn <- peaks_sn[!peaks_sn$filtered, ]
   }
 
@@ -92,36 +94,39 @@ calculateSNR <-  function(object,
 
   #extract centroids from each peak in each sample, expanding the rt
   ana <- analysisNames(object)
-  pks <- peaks_sn[, .(id, mzmin, mzmax, rtmin, rtmax, analysis)]
-  pks <- pks[, `:=`(rtmin = rtmin - rtExpand, rtmax = rtmax + rtExpand)]
+  pks <- peaks_sn[, .(id, mz, rt, mzmin, mzmax, rtmin, rtmax, analysis)]
 
   cat("Extracting mass traces... ")
-  eic <- lapply(ana, function(x, pks, object) {
-    temp <- extractEICs(
-      object,
-      analyses =  x,
-      mz = pks[analysis %in% x, ]
-    )
-  }, pks = pks, object = object)
-  eic <- rbindlist(eic)
-  ncent <- split(eic, by = "id")
+
+  eic <- peakEICs(object,
+    analyses = ana,
+    targetsID = pks$id,
+    rtExpand = rtExpand,
+    run_parallel = run_parallel
+  )
+
+  ncent <- copy(eic)
+
   cat("Done! \n")
 
   cat(paste0("Calculating signal-to-noise ratio for ",
-             nrow(peak_sn), " peaks... "))
+             nrow(peaks_sn), " peaks... "))
 
-  int <- lapply(peaks_sn$id, function(x) peaks_sn[id == x, intensity])
-  names(int) <- peaks_sn$id
+  peaks_sn$unique_id <- paste0(peaks_sn$id, "/", peaks_sn$analysis)
 
-  noise_data_raw <- lapply(peaks_sn$id, function(x, ncent, peaks_sn) {
+  int <- peaks_sn$intensity
+  names(int) <- peaks_sn$unique_id
 
-    temp <- peaks_sn[id %in% x, ]
-    temp2 <- ncent[[x]]
-    temp2 <- temp2[!(temp2$rt >= temp$rtmin & temp2$rt <= temp$rtmax), ]
+  noise_data_raw <- lapply(peaks_sn$unique_id, function(x, ncent, peaks_sn) {
+
+    temp <- peaks_sn[unique_id %in% x, ]
+    temp2 <- ncent[(analysis %in% temp$analysis) & (id %in% temp$id), ]
+
+    temp2 <- temp2[!((temp2$rt >= temp$rtmin) & (temp2$rt <= temp$rtmax)), ]
 
     if (nrow(temp2) > 1) {
       #remove other peaks within the same mass and time deviation
-      others <- peak_sn[
+      others <- peaks_sn[
         analysis %in% temp$analysis &
           rt >= min(temp2$rt) &
           rt <= max(temp2$rt) &
@@ -142,7 +147,7 @@ calculateSNR <-  function(object,
     return(temp2)
   }, peaks_sn = peaks_sn, ncent = ncent)
 
-  names(noise_data_raw) <- peaks_sn$id
+  names(noise_data_raw) <- peaks_sn$unique_id
 
   noise_data_sd <- lapply(noise_data_raw, function(x) sd(x, na.rm = TRUE))
 
@@ -150,27 +155,35 @@ calculateSNR <-  function(object,
     ifelse(length(x) > 0, max(x, na.rm = TRUE), 0)
   })
 
-  for (pp in peaks_sn$id) {
+  for (pp in peaks_sn$unique_id) {
+
+    ana <- 
 
     if (noise_data[[pp]] != 0) {
-      peaks_sn[id %in% pp, sn_value :=
+      peaks_sn[unique_id %in% pp, sn_value :=
                  round(int[[pp]] / noise_data[[pp]], digits = 0)]
     } else {
-      peaks_sn[id %in% pp, sn_value := NA]
+      peaks_sn[unique_id %in% pp, sn_value := NA]
     }
 
-    peakcentN <- nrow(eic[id %in% pp & rt >= peaks_sn[id %in% pp, rtmin] &
-                            rt <= peaks_sn[id %in% pp, rtmax], ])
+    peakcentN <- nrow(eic[
+      id %in% peaks_sn[unique_id %in% pp, id] &
+      analysis %in% peaks_sn[unique_id %in% pp, analysis] & 
+      rt >= peaks_sn[unique_id %in% pp, rtmin] &
+      rt <= peaks_sn[unique_id %in% pp, rtmax], ])
 
     noisecentN <- sapply(noise_data_raw, function(x) length(x))
-    peaks_sn[id %in% pp, sn_pN := peakcentN]
-    peaks_sn[id %in% pp, sn_nN := noisecentN[pp]]
+    peaks_sn[unique_id %in% pp, sn_pN := peakcentN]
+    peaks_sn[unique_id %in% pp, sn_nN := noisecentN[pp]]
 
-    peaks_sn[id %in% pp, sn_noise_sd := round(noise_data_sd[[pp]], digits = 0)]
-    peaks_sn[id %in% pp, sn_noise := round(noise_data[[pp]], digits = 0)]
+    peaks_sn[unique_id %in% pp, sn_noise_sd := round(noise_data_sd[[pp]], digits = 0)]
+    peaks_sn[unique_id %in% pp, sn_noise := round(noise_data[[pp]], digits = 0)]
   }
 
-  peaks_org[id %in% peaks_sn$id,
+  org_unique_ids <- paste0(peaks_org$id, "/", peaks_org$analysis)
+  peaks_org$unique_id <- org_unique_ids
+
+  peaks_org[unique_id %in% peaks_sn$unique_id,
     c("sn_pN", "sn_nN", "sn_noise", "sn_noise_sd", "sn_value")] <-
     peaks_sn[, .(sn_pN, sn_nN, sn_noise, sn_noise_sd, sn_value)]
 
@@ -178,22 +191,26 @@ calculateSNR <-  function(object,
     object@analyses <- lapply(object@analyses, function(x, peaks_org) {
       ana <- analysisNames(x)
       temp <- peaks_org[analysis %in% ana, ]
-      temp[, `:=`(analysis = NULL, replicate = NULL)]
+      temp[, `:=`(unique_id = NULL, analysis = NULL, replicate = NULL)]
       x@peaks <- copy(temp)
       return(x)
     }, peaks_org = peaks_org)
 
   } else {
     peaks_org[, analysis := NULL]
+    peaks_org[, unique_id := NULL]
     object@peaks <- copy(peaks_org)
   }
 
   cat("Done! \n")
 
   if (with_features) {
-    for (ff in unique(peak_sn$feature)) {
+    
+    feat_org <- copy(object@features@metadata)
 
-      toFeat <- peak_sn[feature %in% ff,
+    for (ff in unique(peaks_sn$feature)) {
+
+      toFeat <- peaks_sn[feature %in% ff,
                         .(sn_pN, sn_nN, sn_noise, sn_noise_sd, sn_value)]
 
       toFeat <- toFeat[sn_value == max(sn_value, na.rm = TRUE), ]

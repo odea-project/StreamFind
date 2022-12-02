@@ -47,7 +47,7 @@ checkFilesInput <- function(files = NA_character_,
     }
 
     if ("replicate" %in% colnames(files)) {
-        replicates <- file$replicate
+        replicates <- files$replicate
         names(replicates) <- files$file
     }
 

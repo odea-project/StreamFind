@@ -334,12 +334,9 @@
   rt = NULL,
   ppm = 20,
   sec = 30,
+  rtExpand = 60,
   filtered = TRUE,
-  run_parallel = FALSE,
-  colorBy = "targets",
-  legendNames = NULL,
-  title = NULL,
-  interactive = FALSE
+  run_parallel = FALSE
 )
 
 \S4method{plotPeaks}{msData}(
@@ -351,6 +348,7 @@
   rt = NULL,
   ppm = 20,
   sec = 30,
+  rtExpand = 60,
   filtered = TRUE,
   run_parallel = FALSE,
   colorBy = "targets",

@@ -1080,12 +1080,14 @@ loadRawDataMZR <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
 
   if (nrow(zH) > 0) {
 
+    zH_ms1 <- zH[zH$msLevel == 1, ]
+
     if (TIC) {
 
       tic <- data.table::data.table(
         id = "TIC",
-        rt = zH$retentionTime,
-        intensity = zH$totIonCurrent
+        rt = zH_ms1$retentionTime,
+        intensity = zH_ms1$totIonCurrent
       )
 
       if (max(tic$rt) < 60) tic$rt <- tic$rt * 60
@@ -1103,9 +1105,9 @@ loadRawDataMZR <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
 
       bpc <- data.table::data.table(
         id = "BPC",
-        rt = zH$retentionTime,
-        mz = zH$basePeakMZ,
-        intensity = zH$basePeakIntensity
+        rt = zH_ms1$retentionTime,
+        mz = zH_ms1$basePeakMZ,
+        intensity = zH_ms1$basePeakIntensity
       )
 
       if (max(bpc$rt) < 60) bpc$rt <- bpc$rt * 60

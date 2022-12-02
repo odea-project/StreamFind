@@ -807,13 +807,22 @@ setMethod("EICs", "msAnalysis", function(object,
 
     spec <- spec[, .(scan, level, rt, mz, intensity)]
 
-    eics <- rcpp_ms_extract_eics_from_dataframe(spec, targets)
+    spec <- list(spec)
+    names(spec) <- analysisName(object)
 
-    eics <- rbindlist(eics, fill = TRUE)
+    targets$analysis <- analysisName(object)
+
+    eics <- rcpp_ms_extract_eics_from_dataframe_2(spec, targets)
+
+    eics <- as.data.table(eics)
 
     if (nrow(eics) > 0) {
-      eics <- eics[, .(intensity = sum(intensity)), by = c("id", "rt")]
+      eics <- eics[, .(intensity = sum(intensity)), by = c("analysis", "id", "rt")]
     }
+
+  } else {
+
+    eics <- data.table()
 
   }
 
@@ -1115,9 +1124,18 @@ setMethod("XICs", "msAnalysis", function(object,
 
     spec <- spec[, .(scan, level, rt, mz, intensity)]
 
-    xics <- rcpp_ms_extract_eics_from_dataframe(spec, targets)
+    spec <- list(spec)
+    names(spec) <- analysisName(object)
 
-    xics <- rbindlist(xics, fill = TRUE)
+    targets$analysis <- analysisName(object)
+
+    xics <- rcpp_ms_extract_eics_from_dataframe_2(spec, targets)
+
+    xics <- as.data.table(xics)
+
+  } else {
+
+    xics <- data.table()
 
   }
 
@@ -1440,13 +1458,14 @@ setMethod("peakEICs", "msAnalysis", function(object,
                                              mass = NULL,
                                              mz = NULL, rt = NULL,
                                              ppm = 20, sec = 30,
+                                             rtExpand = 60,
                                              filtered = TRUE) {
 
   peaks <- peaks(object, targetsID, mass, mz, rt, ppm, sec, filtered)
 
   pks_tars <- copy(peaks[, .(id, mz, rt, mzmin, mzmax, rtmin, rtmax)])
-  pks_tars$rtmin <- min(pks_tars$rtmin) - 60
-  pks_tars$rtmax <- max(pks_tars$rtmax) + 60
+  pks_tars$rtmin <- min(pks_tars$rtmin) - rtExpand
+  pks_tars$rtmax <- max(pks_tars$rtmax) + rtExpand
 
   eic <- EICs(object, mz = pks_tars)
 
@@ -1473,6 +1492,7 @@ setMethod("plotPeaks", "msAnalysis", function(object,
                                               mass = NULL,
                                               mz = NULL, rt = NULL,
                                               ppm = 20, sec = 30,
+                                              rtExpand = 60,
                                               filtered = TRUE,
                                               legendNames = NULL,
                                               title = NULL,
@@ -1483,8 +1503,8 @@ setMethod("plotPeaks", "msAnalysis", function(object,
   peaks <- peaks(object, targetsID, mass, mz, rt, ppm, sec, filtered)
 
   pks_tars <- copy(peaks[, .(id, mz, rt, mzmin, mzmax, rtmin, rtmax)])
-  pks_tars$rtmin <- min(pks_tars$rtmin) - 60
-  pks_tars$rtmax <- max(pks_tars$rtmax) + 60
+  pks_tars$rtmin <- min(pks_tars$rtmin) - rtExpand
+  pks_tars$rtmax <- max(pks_tars$rtmax) + rtExpand
 
   eic <- EICs(object, mz = pks_tars)
 

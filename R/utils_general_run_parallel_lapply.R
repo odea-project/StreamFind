@@ -12,14 +12,15 @@ runParallelLapply <- function(obj_list,
       workers <- availableCores() - 1
     }
 
+    if (length(obj_list) < workers) workers <- length(obj_list)
+
     if (future::supportsMulticore()) {
 
-      plan("multicore", workers = workers)
+      plan("multicore", workers = workers) #not windows/not RStudio
 
     } else {
 
       plan("multisession", workers = workers)  #both Windows and Linux
-     #plan("multicore", workers) #not windows/not RStudio
 
     }
 

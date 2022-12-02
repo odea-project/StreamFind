@@ -231,7 +231,13 @@ buildPeaksTable <- function(object, pat) {
         }
       }
 
-      polarity <- polarities(object@analyses[[x]])
+      if (testClass(object, "msData")) {
+        polarity <- polarities(object@analyses[[x]])
+      }
+
+      if (testClass(object, "msAnalysis")) {
+        polarity <- polarities(object)
+      }
 
       # TODO make case for polarity switching data analysis
 
@@ -277,8 +283,8 @@ buildPeaksTable <- function(object, pat) {
 
 
     if (testClass(pat, "featureGroupsXCMS3")) {
-      if (hasFilledChromPeaks(pat@xdata)) {
-        extra <- as.data.table(chromPeaks(pat@xdata, isFilledColumn = TRUE))
+      if (xcms::hasFilledChromPeaks(pat@xdata)) {
+        extra <- as.data.table(xcms::chromPeaks(pat@xdata, isFilledColumn = TRUE))
         extra[, analysis := anaInfo$analysis[extra$sample]]
         extra[, analysis := factor(analysis, levels = anaInfo$analysis)]
         extra <- split(extra, extra$analysis)

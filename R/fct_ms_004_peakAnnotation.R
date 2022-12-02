@@ -95,6 +95,8 @@ peakAnnotation <- function(object = NULL, settings = NULL) {
 
   assertClass(object, "msData")
 
+  requireNamespace("patRoon")
+
   noPeaks <- sapply(object@analyses, function(x) nrow(x@peaks))
   noPeaks <- TRUE %in% (0 %in% noPeaks)
 
@@ -145,7 +147,9 @@ peakAnnotation <- function(object = NULL, settings = NULL) {
     # TODO implement check for negative and multiple polarities/connect to patRoon sets
   }
 
-  comp <- do.call("generateComponents", c(ag, params))
+  an_fun <- patRoon::generateComponents
+
+  comp <- do.call(an_fun, c(ag, params))
 
   # TODO convert to the simplest structure for components in patRoon
   # TODO sub-setting takes too long. Is it reall nedded or info in features metadata is enough?
@@ -182,7 +186,9 @@ peakAnnotation <- function(object = NULL, settings = NULL) {
 #'
 annotateFeatures <- function(object, pat, comp, prefAdduct = "[M+H]+") {
 
-  feats <- object@features@metadata
+  feats <- copy(object@features@metadata)
+
+  requireNamespace("patRoon")
 
   cat("Annotating features based on components... \n")
 
@@ -210,7 +216,7 @@ annotateFeatures <- function(object, pat, comp, prefAdduct = "[M+H]+") {
     )
   }
 
-  comp_df <- componentTable(comp)
+  comp_df <- patRoon::componentTable(comp)
   comp_df <- rbindlist(comp_df, idcol = "component")
 
   #In cliqueMS colnames are: neutralMass (changes to M_adduct) isonr charge adduct_ion  intensity intensity_rel
@@ -442,12 +448,16 @@ annotateFeatures <- function(object, pat, comp, prefAdduct = "[M+H]+") {
   feats$id <- new_id
 
   object@features@metadata <- feats
-  object@features@intensity$id <- new_id
+  object@features@intensity$id <- new_id[object@features@intensity$id]
 
   #amend msAnalysis feature id
   object@analyses <- lapply(object@analyses, function(x, new_id) {
-    x@peaks[feature %in% names(new_id), feature :=
-              new_id[names(new_id) %in% x@peaks$feature]]
+
+    temp <- copy(x@peaks)
+    which_features <- temp$feature %in% names(new_id)
+    temp$feature[which_features] <- new_id[temp$feature[which_features]]
+    x@peaks <- temp
+
     return(x)
   }, new_id = new_id)
 

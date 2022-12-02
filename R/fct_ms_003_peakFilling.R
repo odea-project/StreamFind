@@ -84,9 +84,12 @@ peakFilling <- function(object, settings = NULL) {
 
   if (algorithm == "xcms") {
 
+    requireNamespace("xcms")
+    requireNamespace("patRoon")
+
     if (testClass(settings, "list")) settings <- settings[[1]]
 
-    Exp <- getXCMSnExp(pat, loadRawData = TRUE)
+    Exp <- patRoon::getXCMSnExp(pat, loadRawData = TRUE)
 
     if (TRUE %in% hasAdjustedRetentionTime(object)) {
       adjRT <- lapply(object@analyses, function(x) {
@@ -117,12 +120,12 @@ peakFilling <- function(object, settings = NULL) {
       Exp@msFeatureData <- xFD
     }
 
-    Exp <- fillChromPeaks(Exp, param = settings)
+    Exp <- xcms::fillChromPeaks(Exp, param = settings)
 
     anaInfo <- analysisInfo(object)
     anaInfo$blank[is.na(anaInfo$blank)] <- ""
 
-    pat <- importFeatureGroupsXCMS3(Exp, analysisInfo(object))
+    pat <- patRoon::importFeatureGroupsXCMS3(Exp, analysisInfo(object))
 
     object <- buildPeaksTable(object, pat)
 
