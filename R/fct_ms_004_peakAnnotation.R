@@ -139,12 +139,12 @@ peakAnnotation <- function(object = NULL, settings = NULL) {
   #check up for polarity
   pola <- polarities(object)
   if (length(unique(pola)) == 1) {
-    if (unique(pola) %in% "positive" &
-        algorithm %in% c("camera", "ramclustr")) {
+    if ((unique(pola) %in% c("positive", "negative")) &
+        (algorithm %in% c("camera", "ramclustr"))) {
 
       params$ionization <- unique(pola)
     }
-    # TODO implement check for negative and multiple polarities/connect to patRoon sets
+    # TODO implement check for multiple polarities/connect to patRoon sets
   }
 
   an_fun <- patRoon::generateComponents
@@ -152,7 +152,7 @@ peakAnnotation <- function(object = NULL, settings = NULL) {
   comp <- do.call(an_fun, c(ag, params))
 
   # TODO convert to the simplest structure for components in patRoon
-  # TODO sub-setting takes too long. Is it reall nedded or info in features metadata is enough?
+  # TODO sub-setting takes too long. Is it really nedded or info in features metadata is enough?
   object@features@annotation <- list(comp)
 
   if (length(unique(pola)) == 1 & "positive" %in% unique(pola)) {

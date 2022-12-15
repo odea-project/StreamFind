@@ -90,8 +90,6 @@
 \alias{features,msData,msData-method}
 \alias{plotFeatures,msData-method}
 \alias{plotFeatures,msData,msData-method}
-\alias{as.featureGroups,msData-method}
-\alias{as.featureGroups,msData,msData-method}
 \alias{annotation,msData-method}
 \alias{annotation,msData,msData-method}
 \alias{plotAnnotation,msData-method}
@@ -102,6 +100,8 @@
 \alias{hasAdjustedRetentionTime,msData,msData-method}
 \alias{as.features,msData-method}
 \alias{as.features,msData,msData-method}
+\alias{as.featureGroups,msData-method}
+\alias{as.featureGroups,msData,msData-method}
 \title{msData}
 \usage{
 \S4method{initialize}{msData}(
@@ -403,8 +403,6 @@
   interactive = FALSE
 )
 
-\S4method{as.featureGroups}{msData}(object)
-
 \S4method{annotation}{msData}(
   object,
   targetsID = NULL,
@@ -437,6 +435,8 @@
 \S4method{hasAdjustedRetentionTime}{msData}(object)
 
 \S4method{as.features}{msData}(object)
+
+\S4method{as.featureGroups}{msData}(object)
 }
 \arguments{
 \item{title}{A character string with the plot tile.}
@@ -818,9 +818,6 @@ The \code{legendNames} is a character vector with the same length as targets for
 can be used to lengend the plot. Note that, by setting \code{legendNames} the \code{colorBy}
 is set to "targets" automatically.
 
-\item \code{as.featureGroups(msData)}: converts the \linkS4class{msData}
-to a \linkS4class{featureGroups} object from the package \pkg{patRoon}.
-
 \item \code{annotation(msData)}: getter for annotation (i.e., isotopes and adducts clusters).
 When giving the argument \code{all} as \code{TRUE},
 all the features within the target feature annotation cluster are included in the output.
@@ -841,6 +838,9 @@ in the analyses.
 
 \item \code{as.features(msData)}: converts the \linkS4class{msData}
 to a \linkS4class{features} object from the package \pkg{patRoon}.
+
+\item \code{as.featureGroups(msData)}: converts the \linkS4class{msData}
+to a \linkS4class{featureGroups} object from the package \pkg{patRoon}.
 
 }}
 \section{Slots}{

@@ -1336,7 +1336,7 @@ setMethod("plotXICs", "msData", function(object,
                                          secMark = 10,
                                          numberRows = 1) {
 
-  xics <- XICs(object, analyses, mz, ppm, rt, sec, id, run_parallel)
+  xics <- XICs(object, analyses, mz, rt, ppm, sec, id, run_parallel)
 
   if (is.null(targetsMark)) {
     targetsMark <- makeTargets(mz, rt, ppm, sec, id)
@@ -1980,59 +1980,6 @@ setMethod("plotFeatures", "msData", function(object,
 })
 
 
-### as.featureGroups ----------------------------------------------------------
-
-#' @describeIn msData converts the \linkS4class{msData}
-#' to a \linkS4class{featureGroups} object from the package \pkg{patRoon}.
-#'
-#' @export
-#'
-#' @aliases as.featureGroups,msData,msData-method
-#'
-setMethod("as.featureGroups", "msData", function(object) {
-
-  anaInfo <- analysisInfo(object)
-
-  feat <- as.features(object)
-
-  if ("filtered" %in% colnames(object@features@metadata)) {
-    feat_id_notFiltered <- object@features@metadata$id[!object@features@metadata$filtered]
-  } else {
-    feat_id_notFiltered <- object@features@metadata$id
-  }
-
-  groups_temp <- features(object, targetsID = feat_id_notFiltered, average = FALSE)
-  groups <- copy(groups_temp)
-  groups <- as.data.table(t(groups[, id := NULL]))
-
-  groupInfo_temp <- object@features@metadata[ id %in% feat_id_notFiltered, ]
-  groupInfo <- copy(groupInfo_temp)
-  groupInfo <- as.data.frame(groupInfo[, .(rt, mz, id)])
-  colnames(groupInfo) <- c("rts", "mzs", "id")
-
-  new_id <- groupInfo_temp$id
-
-  # make group id as patRoon, so far works without it
-  # new_id <- object@features@metadata[, .(index, mz, rt)]
-  # new_id <- paste0("M", round(new_id$mz, digits = 0),
-  #                 "_R", round(new_id$rt, digits = 0),
-  #                 "_", new_id$index)
-
-  colnames(groups) <- new_id
-  rownames(groups) <- seq_len(nrow(groups))
-
-  rownames(groupInfo) <- new_id
-
-  ftindex <- rbindlist(groupInfo_temp$peaks)
-  ftindex <- as.data.table(t(ftindex))
-  colnames(ftindex) <- new_id
-  rownames(ftindex) <- seq_len(nrow(ftindex))
-
-  # TODO adapt for as.featuresSet when multiple polarities present
-
-  return(new("featureGroupsOpenMS", groups = groups, analysisInfo = anaInfo, groupInfo = groupInfo, features = feat, ftindex = ftindex))
-})
-
 
 ### annotation -----------------------------------------------------------
 
@@ -2255,6 +2202,10 @@ setMethod("as.features", "msData", function(object) {
                  everything()
     )
 
+    ft$index <- seq_len(nrow(ft))
+    ft$ID <- gsub("_p.*", "", ft$ID)
+    ft$ID <- paste0(ft$ID, "-p", ft$index)
+
     return(ft)
   })
 
@@ -2285,3 +2236,85 @@ setMethod("as.features", "msData", function(object) {
   return(feat_obj)
 })
 
+
+
+#### _as.featureGroups_ -------------------------------------------------------
+
+#' @describeIn msData converts the \linkS4class{msData}
+#' to a \linkS4class{featureGroups} object from the package \pkg{patRoon}.
+#'
+#' @export
+#'
+#' @aliases as.featureGroups,msData,msData-method
+#'
+setMethod("as.featureGroups", "msData", function(object) {
+
+  anaInfo <- analysisInfo(object)
+
+  feat <- as.features(object)
+
+  if ("filtered" %in% colnames(object@features@metadata)) {
+    feat_id_notFiltered <- object@features@metadata$id[!object@features@metadata$filtered]
+  } else {
+    feat_id_notFiltered <- object@features@metadata$id
+  }
+
+  groups_temp <- features(object, targetsID = feat_id_notFiltered, average = FALSE)
+  groups <- copy(groups_temp)
+  groups <- t(groups[, id := NULL])
+  groups <- as.data.table(groups)
+  #colnames(groups) <- groups_temp$id
+
+  groupInfo_temp <- object@features@metadata[ id %in% feat_id_notFiltered, ]
+  groupInfo <- copy(groupInfo_temp)
+  groupInfo <- as.data.frame(groupInfo[, .(rt, mz, id)])
+  colnames(groupInfo) <- c("rts", "mzs", "id")
+
+  new_id <- groupInfo_temp$id
+
+  # make group id as patRoon, so far works without it
+  # new_id <- object@features@metadata[, .(index, mz, rt)]
+  # new_id <- paste0("M", round(new_id$mz, digits = 0),
+  #                 "_R", round(new_id$rt, digits = 0),
+  #                 "_", new_id$index)
+
+  colnames(groups) <- new_id
+  rownames(groups) <- seq_len(nrow(groups))
+
+  rownames(groupInfo) <- new_id
+  groupInfo[["id"]] <- NULL
+
+
+  tp_pks <- setNames(
+    data.frame(
+      matrix(ncol = length(analysisNames(object)),
+             nrow = 1)), analysisNames(object)
+  )
+
+  tp_pks[1, ] <- 0
+
+  ftindex <- lapply(groups_temp$id, function(x, pk, tp_pks) {
+    idx <- pk[pk$group %in% x, .(analysis, index)]
+    temp <- copy(tp_pks)
+    temp[1, colnames(temp) %in% idx$analysis] <- idx$index
+    return(temp)
+  }, pk = patRoon::as.data.table(feat), tp_pks = tp_pks)
+
+  names(ftindex) <- groups_temp$id
+
+  ftindex <- rbindlist(ftindex)
+  ftindex <- as.data.table(t(ftindex))
+  colnames(ftindex) <- new_id
+  rownames(ftindex) <- seq_len(nrow(ftindex))
+
+  # TODO adapt for as.featuresSet when multiple polarities present
+
+  pat_fg <- new("featureGroupsOpenMS",
+                groups = groups,
+                analysisInfo = anaInfo,
+                groupInfo = groupInfo,
+                features = feat,
+                ftindex = ftindex)
+
+  return(pat_fg)
+})
