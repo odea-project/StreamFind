@@ -8,7 +8,7 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-List rcpp_ms_extract_ms2_from_dataframe(DataFrame spec,
+List rcpp_ms_extract_ms2_for_msAnalysis(DataFrame spec,
                                         DataFrame targets,
                                         double mzClust,
                                         bool verbose) {
@@ -180,7 +180,7 @@ List rcpp_ms_extract_ms2_from_dataframe(DataFrame spec,
       rt_mean = sum(rt) / rt.size();
 
       isPre = rep(false, new_mz.size());
-      isPre[(new_mz >= mzmin) & (new_mz <= mzmax)] = true;
+      isPre[(new_mz >= (preMZ_mean - mzClust)) & (new_mz <= (preMZ_mean + mzClust))] = true;
 
     }
 

@@ -249,6 +249,8 @@ setMethod("filePaths", "msData", function(object) {
   return(sapply(object@analyses, function(x) x@file))
 })
 
+
+
 ##### analysisNames -----------------------------------------------------------
 
 #' @describeIn msData getter for analysis names.
@@ -260,6 +262,7 @@ setMethod("filePaths", "msData", function(object) {
 setMethod("analysisNames", "msData", function(object) {
   return(sapply(object@analyses, function(x) x@name))
 })
+
 
 
 ##### replicateNames ----------------------------------------------------------
@@ -275,6 +278,8 @@ setMethod("replicateNames", "msData", function(object) {
   names(replicates) <- object@features@analyses$analysis
   return(replicates)
 })
+
+
 
 ##### replicateNames<- --------------------------------------------------------
 
@@ -302,6 +307,8 @@ setMethod("replicateNames<-", signature("msData", "ANY"), function(object, value
   return(object)
 })
 
+
+
 ##### blankReplicateNames -----------------------------------------------------
 
 #' @describeIn msData getter for blank replicate names.
@@ -315,6 +322,8 @@ setMethod("blankReplicateNames", "msData", function(object) {
   names(blanks) <- object@features@analyses$analysis
   return(blanks)
 })
+
+
 
 ##### blankReplicateNames<- ---------------------------------------------------
 
@@ -599,6 +608,8 @@ setMethod("addAnalyses", "msData", function(object,
   warning("No msAnalysis objects given!")
   return(object)
 })
+
+
 
 ##### getAnalyses -------------------------------------------------------------
 
@@ -1046,10 +1057,10 @@ setMethod("EICs", "msData", function(object,
       p()
 
       return(eic)
-    }, targets = targets
+    }, targets = targets #, future.packages = c("mzR", "streamFind", "Rcpp")
   )
 
-  eics <- rbindlist(eics)
+  eics <- rbindlist(eics, idcol = "analysis", fill = TRUE)
 
   eics$replicate <- replicateNames(object)[eics$analysis]
 
@@ -1289,11 +1300,11 @@ setMethod("XICs", "msData", function(object,
     }, targets = targets
   )
 
-  xics <- rbindlist(xics, fill = TRUE)
+  xics <- rbindlist(xics, idcol = "analysis", fill = TRUE)
 
   xics$replicate <- replicateNames(object)[xics$analysis]
 
-  xics <- select(xics, analysis, replicate, everything())
+  setcolorder(xics, c("analysis", "replicate", "id", "rt", "mz", "intensity"))
 
   return(xics)
 })

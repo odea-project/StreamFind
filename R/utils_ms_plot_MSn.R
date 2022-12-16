@@ -123,6 +123,8 @@ plotInteractiveMSn <- function(ms2, title) {
       plot <- plot %>% plotly::add_text(x = precursor$mz,
                                 y = precursor$intensity,
                                 text = "P", textposition = "top",
+                                textfont = list(color = rep(cl[v], length(precursor$mz))),
+                                legendgroup = leg[v],
                                 showlegend = FALSE)
 
     }

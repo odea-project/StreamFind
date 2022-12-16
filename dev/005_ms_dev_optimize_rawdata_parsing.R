@@ -1,18 +1,180 @@
 
-### Example file paths --------------------------------------------------------------------------------------
+library(streamFind)
 
-dir1 <- "C:\\Users\\Ricardo\\Documents\\R_NTS_article\\msfiles"
-files1 <- list.files(dir1, full.names = TRUE)
-
-dir2 <- "C:\\Users\\Ricardo\\Documents\\R_DemoProject\\msfiles"
-files2 <- list.files(dir2, full.names = TRUE)
-
-fl <- files1[1:3]
-files <- fl
-
-### Test MRM files -------------------------------------------------------------
+### example files -------------------------------------------------------------
 
 files <- streamFindData::msFilePaths()
+
+fls <- files[c(13:15, 19:21)]
+
+fl <- files[19]
+
+### objects -------------------------------------------------------------------
+
+a1 <- newAnalysis(fl)
+
+set1 <- newStreamSet(fls)
+
+### peak picking --------------------------------------------------------------
+
+settings_pp <- createSettings(
+  call = "peakPicking",
+  algorithm = "xcms3",
+  parameters = xcms::CentWaveParam(
+    ppm = 12, peakwidth = c(5, 30),
+    snthresh = 8, prefilter = c(5, 1000),
+    mzCenterFun = "mean", integrate = 1,
+    mzdiff = -0.0001, fitgauss = TRUE,
+    noise = 250, verboseColumns = TRUE,
+    firstBaselineCheck = FALSE,
+    extendLengthMSW = TRUE
+  )
+)
+
+a1 <- peakPicking(a1, settings = settings_pp)
+
+set1 <- peakPicking(set1, settings = settings_pp)
+
+### dev msAnalysis ------------------------------------------------------------
+
+object <- a1
+
+#### improve parse data -------------------------------------------------------
+
+fl <- filePath(a1)
+zF <- mzR::openMSfile(fl)
+zH <- mzR::header(zF)
+
+system.time(
+  all_peaks <- mzR::peaks(zF)
+)
+
+system.time(
+  some_peaks <- mzR::peaks(zF, c(1:20, 50:100, 200:300))
+)
+
+init <- Sys.time()
+  some_peaks <- mzR::peaks(zF, c(1:20))
+  some_peaks <- mzR::peaks(zF, c(50:100))
+  some_peaks <- mzR::peaks(zF, c(200:300))
+Sys.time() - init
+
+parse_traces_time = microbenchmark::microbenchmark(
+  all = mzR::peaks(zF),
+  some = mzR::peaks(zF, c(1:20, 50:100, 200:300)),
+  times = 2
+)
+
+parse_traces_time
+
+mzR::close(zF)
+rm(zF)
+rm(zH)
+
+# Improved parsing some peaks with more efficient filtering
+# of the required time spaces, instead overall rt range
+
+#### check EICs building ------------------------------------------------------
+
+pks <- peaks(a1)
+# rtr <- pks[, .(rtmin, rtmax)]
+# colnames(rtr) <- c("min", "max")
+
+a2 <- loadRawData(a1)
+
+#raw data not loaded
+a1
+#with loaded raw data
+a2
+
+pks_targets <- pks[c(1:40, 50:60, 200:300), ]
+
+parse_EICs_time = microbenchmark::microbenchmark(
+  loading = EICs(a1, mz = pks_targets),
+  preloaded = EICs(a2, mz = pks_targets),
+  times = 3
+)
+
+parse_EICs_time
+
+# almost the same time when complete loaded raw data table is given for
+# cpp function. Filtering with rtr ranges before gives overhead somehow.
+
+
+EICs(a1, mz = pks[1:5, ])
+plotEICs(a1, mz = pks[1:5, ])
+XICs(a1, mz = pks[1:5, ])
+MS2s(a1, mz = pks[597,])
+plotMS2s(a1, mz = pks[c(49, 597),], interactive = T)
+plotXICs(a1, pks[12])
+plotPeaks(a1, pks[12], interactive = TRUE)
+mapPeaks(a1, mz = pks[c(12, 13)], interactive = F)
+
+as.features(a1)
+hasAdjustedRetentionTime(a1)
+
+
+### dev msData ----------------------------------------------------------------
+
+object <- set1
+
+
+pks <- peaks(object, analyses = 1)
+pks <- pks[c(1:50, 1000:1050), ]
+rtr <- pks[, .(rtmin, rtmax)]
+colnames(rtr) <- c("min", "max")
+
+
+raw_data_set <- getRawData(object,
+  TIC = FALSE, BPC = FALSE, chroms = FALSE,
+  levels = 1, rtr = rtr, run_parallel = FALSE)
+
+
+parse_traces_parallel = microbenchmark::microbenchmark(
+  parallel = getRawData(object,
+                   TIC = FALSE, BPC = FALSE, chroms = FALSE,
+                   levels = 1, rtr = NULL, run_parallel = TRUE),
+  sequential = getRawData(object,
+                    TIC = FALSE, BPC = FALSE, chroms = FALSE,
+                    levels = 1, rtr = NULL, run_parallel = FALSE),
+  times = 3
+)
+
+parse_traces_parallel
+
+parse_EICs_parallel = microbenchmark::microbenchmark(
+  parallel = EICs(object, mz = pks, run_parallel = TRUE),
+  sequential = EICs(object, mz = pks, run_parallel = FALSE),
+  times = 3
+)
+
+parse_EICs_parallel
+
+
+
+
+
+parse_EICs_time = microbenchmark::microbenchmark(
+  pksEICs = peakEICs(object),
+  times = 1
+)
+
+parse_EICs_time
+
+
+MS2s(a1, mz = pks_small)
+
+
+pks <- peaks(a1)
+pks_small <- pks[c(1:50, 1000:1050), ]
+rtr <- pks_small[, .(rtmin, rtmax)]
+colnames(rtr) <- c("min", "max")
+
+
+
+
+TIC(object)
+
 
 mrm_neg <- newAnalysis(files[29])
 mrm_neg <- loadRawData(mrm_neg)
@@ -24,7 +186,7 @@ plotTICs(mrm_neg)
 
 plotChromatograms(mrm_neg, index = c(35), interactive = TRUE)
 
-RaMS::grabMSdata(files[28], grab_what = "TIC")
+RaMS::grabMSdata(filePath(object), grab_what = "TIC")
 
 object <- mrm_neg
 
@@ -268,9 +430,9 @@ plotEICs(ana, mz = target)
 traces <- spectra(ana)
 
 param <- xcms::CentWaveParam(
-  ppm = 500, peakwidth = c(2, 40),
-  snthresh = 3, prefilter = c(4, 800),
-  mzCenterFun = "mean", integrate = 2,
+  ppm = 12, peakwidth = c(5, 30),
+  snthresh = 8, prefilter = c(4, 1000),
+  mzCenterFun = "mean", integrate = 1,
   mzdiff = -0.0001, fitgauss = TRUE,
   noise = 250, verboseColumns = TRUE,
   firstBaselineCheck = FALSE,

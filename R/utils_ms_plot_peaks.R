@@ -40,7 +40,14 @@ plotPeaksStatic <- function(eic, peaks, title = NULL) {
       cex = 0.2,
       col = cl[lt]
     )
-
+    lines(
+      x = pk_eic$rt,
+      y = pk_eic$intensity,
+      type = "l",
+      pch = 19,
+      cex = 0.3,
+      col = cl[lt]
+    )
     polygon(
       c(pk_eic_a$rt, rev(pk_eic_a$rt)),
       c(pk_eic_a$intensity, rep(0, length(pk_eic_a$intensity))),
@@ -54,7 +61,7 @@ plotPeaksStatic <- function(eic, peaks, title = NULL) {
       y = c(0, pk_a$intensity),
       type = "l",
       pch = 19,
-      cex = 0.5,
+      cex = 0.6,
       col = cl[lt]
     )
   }
@@ -110,7 +117,8 @@ plotPeaksInteractive <- function(eic, peaks, title, colorBy) {
     plot <- plot %>% add_trace(
       x = eic[id == t, rt],
       y = y,
-      type = "scatter", mode = "markers",
+      type = "scatter", mode = "lines+markers",
+      line = list(width = 0.3, color = unname(cl[lt])),
       marker = list(size = 2, color = unname(cl[lt])),
       name = lt,
       legendgroup = lt,
@@ -143,7 +151,7 @@ plotPeaksInteractive <- function(eic, peaks, title, colorBy) {
       x = pk_eic$rt,
       y = pk_eic$intensity,
       type = "scatter", mode =  "lines+markers",
-      line = list(width = 0.5, color = unname(cl[lt])),
+      line = list(width = 0.6, color = unname(cl[lt])),
       fill = "tozeroy", connectgaps = TRUE,
       fillcolor = paste(color = unname(cl[lt]), 50, sep = ""),
       marker = list(size = 3, color = unname(cl[lt])),
@@ -177,6 +185,87 @@ plotPeaksInteractive <- function(eic, peaks, title, colorBy) {
   return(plot)
 }
 
+
+
+#' @title mapPeaksStatic
+#'
+#' @description Function for plotting peak spaces.
+#'
+#' @param peaks A data table with the individual peak details to plot.
+#' @param xlim A length one or two numeric vector for setting the \emph{x} limits (in seconds) of the plot.
+#' @param ylim A length one or two numeric vector for setting the \emph{m/z} limits of the plot.
+#' @param title An optional character vector to be used as title.
+#' @param colorBy Possible values are \code{"targets"} (the default),
+#' \code{"analyses"} or \code{replicates},
+#' for coloring by target peaks, analyses or replicates, respectively.
+#' @param showLegend Logical, set to \code{TRUE} to show legend.
+#'
+#' @return A peak/s map plot produced through \pkg{base} plot.
+#'
+mapPeaksStatic <- function(peaks, xlim = 60, ylim = 5,
+                           title, colorBy = "targets",
+                           showLegend = TRUE) {
+
+  if (length(xlim) == 1) {
+    rtr <- c(min(peaks$rtmin) - xlim, max(peaks$rtmax) + xlim)
+  } else if (length(xlim) == 2) {
+    rtr <- xlim
+  } else {
+    rtr <- c(min(peaks$rtmin), max(peaks$rtmax))
+  }
+
+  if (length(ylim) == 1) {
+    mzr <- c(min(peaks$mzmin) - ylim, max(peaks$mzmax) + ylim)
+  } else if (length(ylim) == 2) {
+    mzr <- ylim
+  } else {
+    mzr <- c(min(peaks$mzmin), max(peaks$mzmax))
+  }
+
+  cl <- getColors(unique(peaks$var))
+
+  plot(peaks$rt,
+       peaks$mz,
+       type = "n",
+       xlab = "Retention time / seconds",
+       ylab = expression(italic("m/z")),
+       xlim = rtr,
+       ylim = mzr,
+       main = title
+  )
+
+  rect(
+    xleft = peaks$rtmin,
+    xright = peaks$rtmax,
+    ybottom = peaks$mzmin,
+    ytop = peaks$mzmax,
+    col = paste0(cl[peaks$var], "70"),
+    border = paste0(cl[peaks$var], "70")
+  )
+
+  points(
+    x = peaks$rt,
+    y = peaks$mz,
+    type = "p",
+    pch = 19,
+    cex = 1,
+    col = cl[peaks$var]
+  )
+
+  if (showLegend) {
+    legend(
+      "topright",
+      legend = names(cl),
+      col = cl,
+      pch = 19,
+      lty = 1,
+      cex = 0.8
+    )
+  }
+}
+
+
+
 #' @title mapPeaksInteractive
 #'
 #' @description Function for plotting peak spaces.
@@ -188,10 +277,13 @@ plotPeaksInteractive <- function(eic, peaks, title, colorBy) {
 #' @param colorBy Possible values are \code{"targets"} (the default),
 #' \code{"analyses"} or \code{replicates},
 #' for coloring by target peaks, analyses or replicates, respectively.
+#' @param showLegend Logical, set to \code{TRUE} to show legend.
 #'
 #' @return A peak/s map plot produced through \pkg{plotly}.
 #'
-mapPeaksInteractive <- function(peaks, xlim = 60, ylim = 5, title, colorBy = "targets") {
+mapPeaksInteractive <- function(peaks, xlim = 60, ylim = 5,
+                                title, colorBy = "targets",
+                                showLegend = TRUE) {
 
   if (length(xlim) == 1) {
     rtr <- c(min(peaks$rtmin) - xlim, max(peaks$rtmax) + xlim)
