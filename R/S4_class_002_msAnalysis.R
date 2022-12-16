@@ -114,7 +114,73 @@ setMethod("initialize", "msAnalysis", function(.Object, file = NA_character_) {
 
   if (TRUE %in% requireNamespace("mzR", quietly = TRUE)) {
 
-    meta <- loadMetadataMZR(file)
+    #meta <- loadMetadataMZR(file)
+
+    zF <- mzR::openMSfile(file, backend = "pwiz")
+
+    meta1 <- mzR::instrumentInfo(zF)
+
+    zH <- mzR::header(zF)
+
+    run_info <- suppressWarnings(mzR::runInfo(zF))
+
+    if (is.infinite(run_info$lowMz)) run_info$lowMz <- NA_real_
+    if (is.infinite(run_info$highMz)) run_info$highMz <- NA_real_
+    if (is.infinite(run_info$dStartTime)) run_info$dStartTime <- NA_real_
+    if (is.infinite(run_info$dEndTime)) run_info$dEndTime <- NA_real_
+
+    if (1 %in% zH$polarity) {
+      polarity_pos <- "positive"
+    } else polarity_pos <- NULL
+
+    if (0 %in% zH$polarity) {
+      polarity_neg <- "negative"
+    } else polarity_neg <- NULL
+
+
+    if (length(polarity_pos) > 0 | length(polarity_neg) > 0) {
+      polarities <- c(polarity_pos, polarity_neg)
+    } else {
+      polarities <- NA_character_
+    }
+
+    if (TRUE %in% zH$centroided) {
+      spectrum_mode <- "centroid"
+    } else if (FALSE %in% zH$centroided) {
+      spectrum_mode <- "profile"
+    } else {
+      spectrum_mode <- NA_character_
+    }
+
+    if (!all(is.na(zH$ionMobilityDriftTime))) {
+      ion_mobility <- TRUE
+    } else {
+      ion_mobility <- FALSE
+    }
+
+    if (grepl(".mzML", file)) {
+      number_chromatograms <- mzR::nChrom(zF)
+    } else {
+      number_chromatograms <- 0
+    }
+
+    meta2 <- list(
+      "time_stamp" = run_info$startTimeStamp,
+      "number_spectra" = run_info$scanCount,
+      "spectrum_mode" = spectrum_mode,
+      "ms_levels" = run_info$msLevels,
+      "mz_low" = run_info$lowMz,
+      "mz_high" = run_info$highMz,
+      "rt_start" = run_info$dStartTime,
+      "rt_end" = run_info$dEndTime,
+      "polarity" = polarities,
+      "number_chromatograms" = number_chromatograms,
+      "ion_mobility" = ion_mobility
+    )
+
+    meta <- c(meta1, meta2)
+
+    suppressWarnings(mzR::close(zF))
 
   } else {
 
@@ -348,7 +414,7 @@ setMethod("addMetadata", "msAnalysis", function(object,
     "number_spectra", "spectrum_mode", "ms_levels", "mz_low", "mz_high",
     "rt_start", "rt_end", "polarity", "number_chromatograms")
 
-  if (is.data.frame(metadata) | is.data.table(metadata)) {
+  if (is.data.frame(metadata)) {
 
     name_is_already_there <- colnames(metadata) %in% getMetadataNames(object)
     name_in_const_names <- colnames(metadata) %in% const_names
@@ -414,7 +480,7 @@ setMethod("addMetadata", "msAnalysis", function(object,
 #'
 setMethod("polarity", "msAnalysis", function(object) {
   mt <- getMetadata(object, which = "polarity")
-  return(mt)
+  return(unlist(mt))
 })
 
 
@@ -449,14 +515,14 @@ setMethod("polarities", "msAnalysis", function(object) {
 #'
 setMethod("loadSpectraInfo", "msAnalysis", function(object) {
 
-  fl <- filePath(object)
+  file <- filePath(object)
 
-  xml_data <- xml2::read_xml(fl)
+  xml_data <- xml2::read_xml(file)
 
-  if (grepl(".mzML", fl))
+  if (grepl(".mzML", file))
     spec_info <- mzML_loadSpectraInfo(xml_data)
 
-  if (grepl(".mzXML", fl))
+  if (grepl(".mzXML", file))
     spec_info <- mzXML_loadSpectraInfo(xml_data)
 
   object@spectra <- spec_info
@@ -499,34 +565,224 @@ setMethod("getRawData", "msAnalysis", function(object,
                                                preMZrange = NULL,
                                                minIntensityMS1 = 0,
                                                minIntensityMS2 = 0) {
+  inval <- FALSE
 
-  fl <- filePath(object)
+  list_out <- list()
 
-  if (is.na(fl)) {
-    warning("File not found!")
-    list_out <- list()
+  file <- filePath(object)
+
+  if (!file.exists(file)) {
+    warning(paste0("File ", file ," not found!"))
+    inval <- TRUE
+  }
+
+  # TODO add more validation tests for arguments
+
+  if (inval) {
+    list_out[["chroms"]] <- data.table()
+    list_out[["spectra"]] <- data.table()
+    return(list_out)
   }
 
   if (is.null(levels)) levels <- getMetadata(object, "ms_levels")$ms_levels
 
   if (TRUE %in% requireNamespace("mzR", quietly = TRUE)) {
 
-    list_out <- loadRawDataMZR(fl,
-      spectra = spectra, TIC = TIC, BPC = BPC, chroms = chroms,
-      levels = levels, rtr = rtr, preMZrange = preMZrange,
-      minIntensityMS1 = minIntensityMS1, minIntensityMS2 = minIntensityMS2)
+    list_out[["chroms"]] <- list()
+
+    list_out[["spectra"]] <- list()
+
+    zF <- mzR::openMSfile(file, backend = "pwiz")
+
+    if (spectra | TIC | BPC) {
+
+      zH <- mzR::header(zF)
+
+      if (nrow(zH) > 0) {
+
+        if (max(zH$retentionTime) < 60) zH$retentionTime <- zH$retentionTime * 60
+
+        if (!is.null(levels)) zH <- zH[zH$msLevel %in% levels, ]
+
+        if (!is.null(rtr)) {
+          zH <- zH[streamFind::checkOverlapRanges(zH$retentionTime, rtr), ]
+        }
+
+        if(!is.null(preMZrange)) {
+          zH <- zH[streamFind::checkOverlapRanges(zH$precursorMZ, preMZrange), ]
+        }
+
+        zH_ms1 <- zH[zH$msLevel == 1, ]
+
+        if (TIC) {
+
+          tic <- data.table(
+            "id" = "TIC",
+            "rt" = zH_ms1$retentionTime,
+            "intensity" = zH_ms1$totIonCurrent
+          )
+
+          tic <- tic[tic$intensity >= minIntensityMS1, ]
+
+          if (max(tic$intensity) > 0 & !(TRUE %in% duplicated(tic$rt))) {
+            list_out[["chroms"]][["TIC"]] <- tic
+          }
+        }
+
+        if (BPC) {
+
+          bpc <- data.table(
+            "id" = "BPC",
+            "rt" = zH_ms1$retentionTime,
+            "mz" = zH_ms1$basePeakMZ,
+            "intensity" = zH_ms1$basePeakIntensity
+          )
+
+          bpc <- bpc[bpc$intensity >= minIntensityMS1, ]
+
+          if (max(bpc$intensity) > 0 & !(TRUE %in% duplicated(bpc$rt))) {
+            list_out[["chroms"]][["BPC"]] <- bpc
+          }
+
+        }
+      }
+    }
+
+    if (chroms) {
+
+      cH <- as.data.table(suppressWarnings(mzR::chromatogramHeader(zF)))
+
+      if (nrow(cH) > 0) {
+
+        cH$polarity <- as.character(cH$polarity)
+        cH <- cH[polarity == 1, polarity := "positive"]
+        cH <- cH[polarity == 0, polarity := "negative"]
+        cH <- cH[polarity == -1, polarity := NA_character_]
+
+        cC <- mzR::chromatograms(zF, cH$chromatogramIndex)
+
+        if (!is.data.frame(cC)) {
+
+          names(cC) <- as.character(cH$chromatogramIndex)
+          cC <- lapply(cC, function(x) {
+            x <- as.data.frame(x)
+            colnames(x) <- c("rt", "intensity")
+            if (max(x$rt) < 60) x$rt <- x$rt * 60
+            return(x)
+          })
+
+          cC <- rbindlist(cC, idcol = "index", fill = TRUE)
+          cC$index <- as.numeric(cC$index)
+
+          cH_b <- data.table(
+            "index" = as.numeric(cH$chromatogramIndex),
+            "id" = cH$chromatogramId,
+            "polarity" = cH$polarity,
+            "preMZ" = cH$precursorIsolationWindowTargetMZ,
+            "mz" = cH$productIsolationWindowTargetMZ
+          )
+
+          chroms_data <- cH_b[cC, on = "index"]
+
+        } else {
+
+          colnames(cC) <- c("rt", "intensity")
+          if (max(cC$rt) < 60) cC$rt <- cC$rt * 60
+
+          chroms_data <- data.table(
+            "index" = cH$chromatogramIndex,
+            "id" = cH$chromatogramId,
+            "polarity" = cH$polarity,
+            "preMZ" = cH$precursorIsolationWindowTargetMZ,
+            "mz" = cH$productIsolationWindowTargetMZ,
+            "rt" = cC$rt,
+            "intensity" = cC$intensity
+          )
+
+        }
+
+        chroms_data <- chroms_data[chroms_data$intensity > minIntensityMS1, ]
+
+        if (nrow(chroms_data) > 0) {
+
+          if ("TIC" %in% names(list_out[["chroms"]])) {
+            chroms_data <- chroms_data[!id %in% "TIC", ]
+          }
+
+          list_out[["chroms"]][["other_chroms"]] <- chroms_data
+        }
+      }
+    }
+
+    if (TIC | BPC | chroms) {
+      list_out[["chroms"]] <-  rbindlist(list_out[["chroms"]], fill = TRUE)
+    }
+
+    if (spectra) {
+
+      if (nrow(zH) > 0) {
+
+        if (nrow(zH) > 0) {
+
+          zD <- mzR::peaks(zF, scans = zH$seqNum)
+
+          mat_idx <- rep(zH$seqNum, sapply(zD, nrow))
+          zD <- as.data.table(do.call(rbind, zD))
+          zD$index <- mat_idx
+
+          if (TRUE %in% (unique(zH$msLevel) == 2)) {
+
+            zH_b <- data.table(
+              "index" = zH$seqNum,
+              "scan" = zH$acquisitionNum,
+              "level" = zH$msLevel,
+              "ce" = zH$collisionEnergy,
+              "preScan" = zH$precursorScanNum,
+              "preMZ" = zH$precursorMZ,
+              "rt" = zH$retentionTime
+            )
+
+          } else {
+
+            zH_b <- data.table(
+              "index" = zH$seqNum,
+              "scan" = zH$acquisitionNum,
+              "level" = zH$msLevel,
+              "rt" = zH$retentionTime
+            )
+
+          }
+
+          if (!all(is.na(zH$ionMobilityDriftTime))) {
+            rt_unique <- unique(zH_b$rt)
+            frame_numbers <- seq_len(length(rt_unique))
+            if ("preMZ" %in% colnames(zH_b)) zH_b$preMZ <- NA_real_
+            zH_b$frame <- factor(zH_b$rt, levels = rt_unique, labels = frame_numbers)
+            zH_b$driftTime <- zH$ionMobilityDriftTime
+          }
+
+          zH_n <- zH_b[zD, on = "index"]
+
+          zH_n <- zH_n[!(zH_n$intensity <= minIntensityMS1 & zH_n$level == 1), ]
+          zH_n <- zH_n[!(zH_n$intensity <= minIntensityMS2 & zH_n$level == 2), ]
+
+          list_out[["spectra"]] <- zH_n
+
+        }
+      }
+    }
 
   } else {
 
-    if (grepl(".mzML", fl)) {
-      list_out <- mzML_loadRawData(fl,
+    if (grepl(".mzML", file)) {
+      list_out <- mzML_loadRawData(file,
         spectra = spectra, TIC = TIC, BPC = BPC, chroms = chroms,
         levels = levels, rtr = rtr, preMZrange = preMZrange,
         minIntensityMS1 = minIntensityMS1, minIntensityMS2 = minIntensityMS2)
     }
 
-    if (grepl(".mzXML", fl)) {
-      list_out <- mzXML_loadRawData(fl,
+    if (grepl(".mzXML", file)) {
+      list_out <- mzXML_loadRawData(file,
         spectra = spectra, TIC = TIC, BPC = TIC,
         levels = levels, rtr = rtr, preMZrange = preMZrange,
         minIntensityMS1 = minIntensityMS1, minIntensityMS2 = minIntensityMS2)
@@ -541,6 +797,8 @@ setMethod("getRawData", "msAnalysis", function(object,
   if (length(list_out$chroms) == 0) {
     list_out$chroms <- data.table()
   }
+
+  if (exists("zF")) suppressWarnings(mzR::close(zF))
 
   return(list_out)
 })
@@ -744,9 +1002,15 @@ setMethod("plotChromatograms", "msAnalysis", function(object,
   chroms <- chromatograms(object)
   chroms$analysis <- analysisNames(object)
 
-  if (!is.null(index)) {
+  if (!is.null(index) & nrow(chroms) > 0) {
     idx <- index
     chroms <- chroms[chroms$index %in% idx, ]
+  }
+
+  if (nrow(chroms) == 0) {
+    warning("Chromatogram/s not found, load chromatograms
+            first with loadRawData() method.")
+    return(NULL)
   }
 
   chroms <- chroms[, .(analysis, id, rt, intensity)]
@@ -787,19 +1051,24 @@ setMethod("EICs", "msAnalysis", function(object,
 
   targets <- makeTargets(mz, rt, ppm, sec, id)
 
-  rtr <- c(min(targets$rtmin), max(targets$rtmax))
-  if (rtr[2] == 0) rtr = NULL
+  rtr <- targets[, .(rtmin, rtmax)]
+  colnames(rtr) <- c("min", "max")
+  if ((nrow(rtr) == 1) & TRUE %in% (rtr$max == 0)) rtr = NULL
 
-  if (!hasLoadedSpectra(object)) {
+  if (hasLoadedSpectra(object)) {
+
+    spec <- spectra(object)
+    spec <- spec[level == 1, ]
+
+    # if (!is.null(rtr)) {
+    #   spec <- spec[checkOverlapRanges(spec$rt, rtr), ]
+    # }
+
+  } else {
 
     spec <- getRawData(object,
       TIC = FALSE, BPC = FALSE, chroms = FALSE,
       levels = 1, rtr = rtr)[["spectra"]]
-
-  } else {
-
-    spec <- spectra(object)
-    spec <- spec[level == 1, ]
 
   }
 
@@ -807,17 +1076,12 @@ setMethod("EICs", "msAnalysis", function(object,
 
     spec <- spec[, .(scan, level, rt, mz, intensity)]
 
-    spec <- list(spec)
-    names(spec) <- analysisName(object)
-
-    targets$analysis <- analysisName(object)
-
-    eics <- rcpp_ms_extract_eics_from_dataframe_2(spec, targets)
+    eics <- rcpp_ms_make_eics_for_msAnalysis(spec, targets)
 
     eics <- as.data.table(eics)
 
     if (nrow(eics) > 0) {
-      eics <- eics[, .(intensity = sum(intensity)), by = c("analysis", "id", "rt")]
+      eics <- eics[, .(intensity = sum(intensity)), by = c("id", "rt")]
     }
 
   } else {
@@ -1104,19 +1368,20 @@ setMethod("XICs", "msAnalysis", function(object,
 
   targets <- makeTargets(mz, rt, ppm, sec, id)
 
-  rtr <- c(min(targets$rtmin), max(targets$rtmax))
-  if (rtr[2] == 0) rtr = NULL
+  rtr <- targets[, .(rtmin, rtmax)]
+  colnames(rtr) <- c("min", "max")
+  if ((nrow(rtr) == 1) & TRUE %in% (rtr$max == 0)) rtr = NULL
 
-  if (!hasLoadedSpectra(object)) {
+  if (hasLoadedSpectra(object)) {
+
+    spec <- spectra(object)
+    spec <- spec[level == 1, ]
+
+  } else {
 
     spec <- getRawData(object,
                        TIC = FALSE, BPC = FALSE, chroms = FALSE,
                        levels = 1, rtr = rtr)[["spectra"]]
-
-  } else {
-
-    spec <- spectra(object)
-    spec <- spec[level == 1, ]
 
   }
 
@@ -1124,12 +1389,7 @@ setMethod("XICs", "msAnalysis", function(object,
 
     spec <- spec[, .(scan, level, rt, mz, intensity)]
 
-    spec <- list(spec)
-    names(spec) <- analysisName(object)
-
-    targets$analysis <- analysisName(object)
-
-    xics <- rcpp_ms_extract_eics_from_dataframe_2(spec, targets)
+    xics <- rcpp_ms_make_eics_for_msAnalysis(spec, targets)
 
     xics <- as.data.table(xics)
 
@@ -1222,29 +1482,36 @@ setMethod("MS2s", "msAnalysis", function(object,
   targets$mzmin <- targets$mzmin - (isolationWindow/2)
   targets$mzmax <- targets$mzmax + (isolationWindow/2)
 
-  rtr <- c(min(targets$rtmin) * 0.95, max(targets$rtmax) * 1.05)
-  if (rtr[2] == 0) rtr = NULL
+  rtr <- targets[, .(rtmin, rtmax)]
+  colnames(rtr) <- c("min", "max")
+  rtr$min <- rtr$min * 0.95
+  rtr$max <- rtr$max * 1.05
+  if ((nrow(rtr) == 1) & TRUE %in% (rtr$max == 0)) rtr = NULL
 
-  preMZrange <- c(min(targets$mzmin) * 0.95, max(targets$mzmax) * 1.05)
-  if (preMZrange[2] == 0) preMZrange = NULL
+  preMZrange <- targets[, .(mzmin, mzmax)]
+  colnames(preMZrange) <- c("min", "max")
+  preMZrange$min <- preMZrange$min * 0.95
+  preMZrange$max <- preMZrange$max * 1.05
+  if ((nrow(preMZrange) == 1) & TRUE %in% (preMZrange$max == 0)) rtr = NULL
 
-  if (!hasLoadedSpectra(object)) {
+  if (hasLoadedSpectra(object)) {
+
+    spec <- spectra(object)
+    spec <- spec[level == 2, ]
+
+  } else {
 
     spec <- getRawData(object,
                        TIC = FALSE, BPC = FALSE, chroms = FALSE,
                        levels = 2, rtr = rtr,
                        preMZrange = preMZrange)[["spectra"]]
 
-  } else {
-
-    spec <- spectra(object)
-    spec <- spec[level == 2, ]
-
   }
 
   if (nrow(spec) > 0) {
 
-    ms2 <- rcpp_ms_extract_ms2_from_dataframe(spec, targets, mzClust, verbose = FALSE)
+    ms2 <- rcpp_ms_extract_ms2_for_msAnalysis(spec, targets,
+                                              mzClust, verbose = FALSE)
 
     ms2 <- rbindlist(ms2, fill = TRUE)
 
@@ -1458,14 +1725,17 @@ setMethod("peakEICs", "msAnalysis", function(object,
                                              mass = NULL,
                                              mz = NULL, rt = NULL,
                                              ppm = 20, sec = 30,
-                                             rtExpand = 60,
+                                             rtExpand = 120,
+                                             mzExpand = 0.005,
                                              filtered = TRUE) {
 
   peaks <- peaks(object, targetsID, mass, mz, rt, ppm, sec, filtered)
 
   pks_tars <- copy(peaks[, .(id, mz, rt, mzmin, mzmax, rtmin, rtmax)])
-  pks_tars$rtmin <- min(pks_tars$rtmin) - rtExpand
-  pks_tars$rtmax <- max(pks_tars$rtmax) + rtExpand
+  pks_tars$rtmin <- pks_tars$rtmin - rtExpand
+  pks_tars$rtmax <- pks_tars$rtmax + rtExpand
+  pks_tars$mzmin <- pks_tars$mzmin - mzExpand
+  pks_tars$mzmax <- pks_tars$mzmax + mzExpand
 
   eic <- EICs(object, mz = pks_tars)
 
@@ -1492,7 +1762,8 @@ setMethod("plotPeaks", "msAnalysis", function(object,
                                               mass = NULL,
                                               mz = NULL, rt = NULL,
                                               ppm = 20, sec = 30,
-                                              rtExpand = 60,
+                                              rtExpand = 120,
+                                              mzExpand = 0.005,
                                               filtered = TRUE,
                                               legendNames = NULL,
                                               title = NULL,
@@ -1503,8 +1774,10 @@ setMethod("plotPeaks", "msAnalysis", function(object,
   peaks <- peaks(object, targetsID, mass, mz, rt, ppm, sec, filtered)
 
   pks_tars <- copy(peaks[, .(id, mz, rt, mzmin, mzmax, rtmin, rtmax)])
-  pks_tars$rtmin <- min(pks_tars$rtmin) - rtExpand
-  pks_tars$rtmax <- max(pks_tars$rtmax) + rtExpand
+  pks_tars$rtmin <- pks_tars$rtmin - rtExpand
+  pks_tars$rtmax <- pks_tars$rtmax + rtExpand
+  pks_tars$mzmin <- pks_tars$mzmin - mzExpand
+  pks_tars$mzmax <- pks_tars$mzmax + mzExpand
 
   eic <- EICs(object, mz = pks_tars)
 
@@ -1543,7 +1816,9 @@ setMethod("mapPeaks", "msAnalysis", function(object,
                                              legendNames = NULL,
                                              xlim = 30,
                                              ylim = 0.05,
-                                             title = NULL) {
+                                             title = NULL,
+                                             showLegend = TRUE,
+                                             interactive = FALSE) {
 
   colorBy = "targets"
 
@@ -1573,9 +1848,20 @@ setMethod("mapPeaks", "msAnalysis", function(object,
 
   peaks[, var := varkey][]
 
-  plot <- mapPeaksInteractive(peaks, xlim, ylim, title)
+  if (!interactive) {
 
-  return(plot)
+    return(
+      mapPeaksStatic(peaks, xlim, ylim, title,
+                     showLegend = showLegend)
+    )
+
+  } else {
+
+    plot <- mapPeaksInteractive(peaks, xlim, ylim, title)
+
+    return(plot)
+  }
+
 })
 
 

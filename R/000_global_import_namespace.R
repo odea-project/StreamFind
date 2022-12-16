@@ -9,11 +9,12 @@
 #'
 #' @importFrom data.table is.data.table rbindlist as.data.table setnames
 #' @importFrom data.table setorder copy fread data.table `:=` setcolorder
+#' @importFrom data.table between
 #'
 #' @importFrom checkmate testClass assertClass testChoice
 #'
 #' @importFrom dplyr select left_join full_join semi_join anti_join right_join
-#' @importFrom dplyr between everything count
+#' @importFrom dplyr filter everything count bind_rows
 #'
 #' @importFrom stringr str_detect str_extract str_split
 #'

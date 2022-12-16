@@ -230,11 +230,13 @@ test_that("gets, adds and subsets msAnalysis in msData", {
 
 test_that("raw data parsing", {
 
-  expect_length(spectra(loadRawData(ana_mzML_pos)), 10)
+  expect_length(spectra(loadRawData(md_set_2)), 10)
 
 })
 
+
 md_set_2 <- loadRawData(md_set_2, run_parallel = FALSE)
+
 
 test_that("raw data checking", {
 

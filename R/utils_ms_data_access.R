@@ -185,9 +185,14 @@ mzML_loadSpectraInfo <- function(xml_data, rtr = NULL, levels = NULL, preMZrange
 
     if ("minute" %in% unit) rt = rt * 60
 
-    if (!is.null(rtr) & length(rtr) == 2 & is.numeric(rtr)) {
+    test.overlap = function(vals, df_ranges) {
+      rowSums(mapply(function(a, b) dplyr::between(vals, a, b),
+                     df_ranges$min, df_ranges$max)) > 0
+    }
+
+    if (!is.null(rtr) & is.data.frame(rtr)) {
       rtr <- sort(rtr)
-      check_rt <- rt >= rtr[1] & rt <= rtr[2]
+      check_rt <- test.overlap(rt, rtr)
       rt <- rt[check_rt]
       level <- level[check_rt]
       spectra_n <- spectra_n[check_rt]
@@ -231,9 +236,8 @@ mzML_loadSpectraInfo <- function(xml_data, rtr = NULL, levels = NULL, preMZrange
         preMZ[scan %in% msn_scan] <- preMZ_v[msn_scan %in% scan]
       }
 
-      if (!is.null(preMZrange) & length(preMZrange) == 2 & is.numeric(preMZrange)) {
-        preMZrange <- sort(preMZrange)
-        check_preMZ <- preMZ >= preMZrange[1] & preMZ <= preMZrange[2]
+      if (!is.null(preMZrange)) {
+        check_preMZ <- test.overlap(preMZ, preMZrange)
         index <- index[check_preMZ]
         scan <- scan[check_preMZ]
         level <- level[check_preMZ]
@@ -316,7 +320,6 @@ mzML_loadRawData <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
   xml_data <- read_xml(fl)
 
 
-  ### TIC and BPC ------
   if (TIC | BPC) {
 
     ms1_nodes <- '//d1:spectrum[d1:cvParam[@name="ms level" and @value="1"]]'
@@ -340,7 +343,7 @@ mzML_loadRawData <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
             xpath = 'd1:cvParam[@name="total ion current"]'), "value"))
         )
 
-        if (!is.null(rtr)) tic <- tic[rt >= rtr[1] & rt <= rtr[2], ]
+        if (!is.null(rtr)) tic <- tic[rt >= min(rtr$min) & rt <= max(rtr$max), ]
 
         tic <- tic[intensity >= minIntensityMS1, ]
 
@@ -361,7 +364,7 @@ mzML_loadRawData <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
             xpath = 'd1:cvParam[@name="base peak intensity"]'), "value"))
         )
 
-        if (!is.null(rtr)) bpc <- bpc[rt >= rtr[1] & rt <= rtr[2], ]
+        if (!is.null(rtr)) bpc <- bpc[rt >= min(rtr$min) & rt <= max(rtr$max), ]
 
         bpc <- bpc[intensity >= minIntensityMS1, ]
 
@@ -372,7 +375,7 @@ mzML_loadRawData <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
   }
 
 
-  ### chroms ------
+
   if (chroms) {
 
     chroms_x <- '//d1:chromatogram'
@@ -488,7 +491,6 @@ mzML_loadRawData <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
   }
 
 
-  ### spectra ------
   if (spectra) {
 
     spectra_x <- '//d1:spectrum'
@@ -709,9 +711,13 @@ mzXML_loadSpectraInfo <- function(xml_data, rtr = NULL, levels = NULL, preMZrang
 
     if (max(rt) < 70) rt <- rt * 60
 
-    if (!is.null(rtr) & length(rtr) == 2 & is.numeric(rtr)) {
-      rtr <- sort(rtr)
-      check_rt <- rt >= rtr[1] & rt <= rtr[2]
+    test.overlap = function(vals, df_ranges) {
+      rowSums(mapply(function(a, b) dplyr::between(vals, a, b),
+                     df_ranges$min, df_ranges$max)) > 0
+    }
+
+    if (!is.null(rtr)) {
+      check_rt <- test.overlap(rt, rtr)
       rt <- rt[check_rt]
       level <- level[check_rt]
       scan_n <- scan_n[check_rt]
@@ -747,10 +753,9 @@ mzXML_loadSpectraInfo <- function(xml_data, rtr = NULL, levels = NULL, preMZrang
 
       }
 
-      if (!is.null(preMZrange) & length(preMZrange) == 2 & is.numeric(preMZrange)) {
+      if (!is.null(preMZrange)) {
 
-        preMZrange <- sort(preMZrange)
-        check_preMZ <- preMZ >= preMZrange[1] & preMZ <= preMZrange[2]
+        check_preMZ <- test.overlap(preMZ, preMZrange)
 
         scan <- scan[check_preMZ]
         level <- level[check_preMZ]
@@ -844,7 +849,7 @@ mzXML_loadRawData <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
           intensity = as.numeric(xml_attr(chrom_nodes, "totIonCurrent"))
         )
 
-        if (!is.null(rtr)) tic <- tic[rt >= rtr[1] & rt <= rtr[2], ]
+        if (!is.null(rtr)) tic <- tic[rt >= min(rtr$min) & rt <= max(rtr$max), ]
 
         tic <- tic[intensity >= minIntensityMS1, ]
 
@@ -861,7 +866,7 @@ mzXML_loadRawData <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
           intensity = as.numeric(xml_attr(chrom_nodes, "basePeakIntensity"))
         )
 
-        if (!is.null(rtr)) bpc <- bpc[rt >= rtr[1] & rt <= rtr[2], ]
+        if (!is.null(rtr)) bpc <- bpc[rt >= min(rtr$min) & rt <= max(rtr$max), ]
 
         bpc <- bpc[intensity >= minIntensityMS1, ]
 
@@ -1076,7 +1081,28 @@ loadRawDataMZR <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
 
   zF <- mzR::openMSfile(fl, backend = "pwiz")
 
-  if (spectra | TIC | BPC) zH <- mzR::header(zF)
+  if (spectra | TIC | BPC) {
+
+    zH <- mzR::header(zF)
+
+    if (max(zH$retentionTime) < 60) zH$retentionTime <- zH$retentionTime * 60
+
+    if (!is.null(levels)) zH <- zH[zH$msLevel %in% levels, ]
+
+    test.overlap = function(vals, df_ranges) {
+      rowSums(mapply(function(a, b) dplyr::between(vals, a, b),
+                     df_ranges$min, df_ranges$max)) > 0
+    }
+
+    if (!is.null(rtr) & is.data.frame(rtr)) {
+      zH <- zH %>% dplyr::filter(test.overlap(zH$retentionTime, rtr))
+    }
+
+    if(!is.null(preMZrange) & is.data.frame(preMZrange)) {
+      zH <- zH %>% dplyr::filter(test.overlap(zH$precursorMZ, preMZrange))
+    }
+
+  }
 
   if (nrow(zH) > 0) {
 
@@ -1089,10 +1115,6 @@ loadRawDataMZR <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
         rt = zH_ms1$retentionTime,
         intensity = zH_ms1$totIonCurrent
       )
-
-      if (max(tic$rt) < 60) tic$rt <- tic$rt * 60
-
-      if (!is.null(rtr)) tic <- tic[rt >= rtr[1] & rt <= rtr[2], ]
 
       tic <- tic[tic$intensity >= minIntensityMS1, ]
 
@@ -1109,10 +1131,6 @@ loadRawDataMZR <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
         mz = zH_ms1$basePeakMZ,
         intensity = zH_ms1$basePeakIntensity
       )
-
-      if (max(bpc$rt) < 60) bpc$rt <- bpc$rt * 60
-
-      if (!is.null(rtr)) bpc <- bpc[rt >= rtr[1] & rt <= rtr[2], ]
 
       bpc <- bpc[bpc$intensity >= minIntensityMS1, ]
 
@@ -1194,18 +1212,6 @@ loadRawDataMZR <- function(fl, spectra = TRUE, TIC = TRUE, BPC = TRUE,
   if (spectra) {
 
     if (nrow(zH) > 0) {
-
-      if (!is.null(rtr) & length(rtr) == 2) {
-        rtr <- sort(rtr)
-        zH <- zH[zH$retentionTime >= rtr[1] & zH$retentionTime <= rtr[2], ]
-      }
-
-      if (!is.null(levels)) zH <- zH[zH$msLevel %in% levels, ]
-
-      if(!is.null(preMZrange) & length(preMZrange) == 2 & is.numeric(preMZrange)) {
-        preMZrange <- sort(preMZrange)
-        zH <- zH[zH$precursorMZ >= preMZrange[1] & zH$precursorMZ <= preMZrange[2], ]
-      }
 
       if (nrow(zH) > 0) {
 

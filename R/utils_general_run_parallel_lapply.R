@@ -8,7 +8,6 @@ runParallelLapply <- function(obj_list,
   if (run_parallel & length(obj_list) > 1) {
 
     if (is.null(workers)) {
-      #workers <- length(availableWorkers()) - 1
       workers <- availableCores() - 1
     }
 
@@ -34,7 +33,8 @@ runParallelLapply <- function(obj_list,
 
     p <- progressor(steps = length(obj_list))
 
-    list_out <- future_lapply(obj_list, FUN = FUN, future.seed = TRUE, ...)
+    list_out <- future_lapply(obj_list, FUN = FUN,
+                              future.seed = TRUE, ...)
 
   })
 
