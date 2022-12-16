@@ -146,7 +146,7 @@ test_that("metadata", {
   expect_equal(getMetadata(ana_mzML_pos, which = "polarity"),
                list("polarity" = "positive"))
 
-  expect_equal(polarity(ana_mzML_pos), "positive")
+  expect_equal(unname(polarity(ana_mzML_pos)), "positive")
 
   expect_equal(getMetadata(ana_mzML_neg, which = "polarity"),
                list("polarity" = "negative"))
