@@ -147,6 +147,23 @@ setMethod("getSettings", "msFeatures", function(object, call = NULL) {
   return(param)
 })
 
+
+
+##### hasFeatures -------------------------------------------------------------
+
+#' @describeIn msFeatures checks if the \linkS4class{msFeatures} object
+#' has features.
+#'
+#' @export
+#'
+#' @aliases hasFeatures,msFeatures,msFeatures-method
+#'
+setMethod("hasFeatures", "msFeatures", function(object) {
+  return(nrow(object@intensity) > 0)
+})
+
+
+
 ### features ------------------------------------------------------------------------------------------------
 
 #' @describeIn msFeatures getter for features (i.e., grouped peaks). When

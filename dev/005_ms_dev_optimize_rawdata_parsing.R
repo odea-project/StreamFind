@@ -5,7 +5,8 @@ library(streamFind)
 
 files <- streamFindData::msFilePaths()
 
-fls <- files[c(13:15, 19:21)]
+fls <- files[13:27]
+fls <- fls[grepl("pos", fls)]
 
 fl <- files[19]
 
@@ -22,7 +23,7 @@ settings_pp <- createSettings(
   algorithm = "xcms3",
   parameters = xcms::CentWaveParam(
     ppm = 12, peakwidth = c(5, 30),
-    snthresh = 8, prefilter = c(5, 1000),
+    snthresh = 10, prefilter = c(5, 1000),
     mzCenterFun = "mean", integrate = 1,
     mzdiff = -0.0001, fitgauss = TRUE,
     noise = 250, verboseColumns = TRUE,
@@ -59,7 +60,7 @@ init <- Sys.time()
   some_peaks <- mzR::peaks(zF, c(200:300))
 Sys.time() - init
 
-parse_traces_time = microbenchmark::microbenchmark(
+parse_traces_time <- microbenchmark::microbenchmark(
   all = mzR::peaks(zF),
   some = mzR::peaks(zF, c(1:20, 50:100, 200:300)),
   times = 2
@@ -74,7 +75,7 @@ rm(zH)
 # Improved parsing some peaks with more efficient filtering
 # of the required time spaces, instead overall rt range
 
-#### check EICs building ------------------------------------------------------
+#### check EICs/MS2s building -------------------------------------------------
 
 pks <- peaks(a1)
 # rtr <- pks[, .(rtmin, rtmax)]
@@ -89,7 +90,7 @@ a2
 
 pks_targets <- pks[c(1:40, 50:60, 200:300), ]
 
-parse_EICs_time = microbenchmark::microbenchmark(
+parse_EICs_time <- microbenchmark::microbenchmark(
   loading = EICs(a1, mz = pks_targets),
   preloaded = EICs(a2, mz = pks_targets),
   times = 3
@@ -118,44 +119,105 @@ hasAdjustedRetentionTime(a1)
 
 object <- set1
 
+#### improve parse data -------------------------------------------------------
 
-pks <- peaks(object, analyses = 1)
-pks <- pks[c(1:50, 1000:1050), ]
-rtr <- pks[, .(rtmin, rtmax)]
-colnames(rtr) <- c("min", "max")
+system.time(
+  parallel <- getRawData(set1,
+                        TIC = FALSE, BPC = FALSE, chroms = FALSE,
+                        levels = 1, rtr = NULL, run_parallel = TRUE)
+)
 
+system.time(
+  sequential <- getRawData(set1,
+                          TIC = FALSE, BPC = FALSE, chroms = FALSE,
+                          levels = 1, rtr = NULL, run_parallel = FALSE)
+)
 
-raw_data_set <- getRawData(object,
-  TIC = FALSE, BPC = FALSE, chroms = FALSE,
-  levels = 1, rtr = rtr, run_parallel = FALSE)
-
-
-parse_traces_parallel = microbenchmark::microbenchmark(
-  parallel = getRawData(object,
+parse_traces_parallel <- microbenchmark::microbenchmark(
+  parallel = getRawData(set1,
                    TIC = FALSE, BPC = FALSE, chroms = FALSE,
                    levels = 1, rtr = NULL, run_parallel = TRUE),
-  sequential = getRawData(object,
+  sequential = getRawData(set1,
                     TIC = FALSE, BPC = FALSE, chroms = FALSE,
                     levels = 1, rtr = NULL, run_parallel = FALSE),
-  times = 3
+  times = 3,
+  control = list(order = "inorder")
 )
 
 parse_traces_parallel
 
-parse_EICs_parallel = microbenchmark::microbenchmark(
-  parallel = EICs(object, mz = pks, run_parallel = TRUE),
-  sequential = EICs(object, mz = pks, run_parallel = FALSE),
-  times = 3
+
+set2 <- set1
+set2 <- loadRawData(set2)
+
+hasLoadedChromatograms(set2)
+
+plotChromatograms(set2, colorBy = "targets")
+
+plotSpectra(set2, analyses = 1:2, mz = 247.17, rt = 1120, ppm = 50, sec = 60)
+
+pks <- peaks(set1, analyses = 1)
+#pks <- pks[c(1:50, 1000:1050), ]
+rtr <- pks[, .(rtmin, rtmax)]
+colnames(rtr) <- c("min", "max")
+
+parse_EICs_parallel <- microbenchmark::microbenchmark(
+  parallel = EICs(set1, mz = pks, run_parallel = TRUE),
+  sequential = EICs(set1, mz = pks, run_parallel = FALSE),
+  parallel_loaded = EICs(set2, mz = pks, run_parallel = TRUE),
+  sequential_loaded = EICs(set2, mz = pks, run_parallel = FALSE),
+  times = 3,
+  control = list(order = "inorder")
 )
 
 parse_EICs_parallel
 
+parse_EICs_parallel_Nvar <- microbenchmark::microbenchmark(
+  "10" = EICs(set1, mz = pks[1:10,], run_parallel = TRUE),
+  "100" = EICs(set1, mz = pks[1:100,], run_parallel = TRUE),
+  "250" = EICs(set1, mz = pks[1:250,], run_parallel = TRUE),
+  "500" = EICs(set1, mz = pks[1:500,], run_parallel = TRUE),
+  "1000" = EICs(set1, mz = pks[1:1000,], run_parallel = TRUE),
+  times = 2,
+  control = list(order = "inorder")
+)
+
+parse_EICs_seq_Nvar <- microbenchmark::microbenchmark(
+  "10" = EICs(set1, mz = pks[1:10,], run_parallel = FALSE),
+  "100" = EICs(set1, mz = pks[1:100,], run_parallel = FALSE),
+  "250" = EICs(set1, mz = pks[1:250,], run_parallel = FALSE),
+  "500" = EICs(set1, mz = pks[1:500,], run_parallel = FALSE),
+  "1000" = EICs(set1, mz = pks[1:1000,], run_parallel = FALSE),
+  times = 2
+)
+
+parse_EICs_parallel_Nvar <- as.data.frame(parse_EICs_parallel_Nvar)
+parse_EICs_parallel_Nvar$type <- "parallel"
+parse_EICs_seq_Nvar <- as.data.frame(parse_EICs_seq_Nvar)
+parse_EICs_seq_Nvar$type <- "sequential"
+
+EICs_p_s <- rbind(parse_EICs_parallel_Nvar, parse_EICs_seq_Nvar)
+
+ggplot2::ggplot(EICs_p_s, ggplot2::aes(x = expr, y = time, group = type)) +
+  ggplot2::geom_line(ggplot2::aes(color = type))
 
 
+eics1 <- plotEICs(set1, mz = pks[50, ],
+                  run_parallel = FALSE,
+                  colorBy = "analyses",
+                  interactive = FALSE)
 
 
-parse_EICs_time = microbenchmark::microbenchmark(
-  pksEICs = peakEICs(object),
+q <- peakEICs(set1, mz = pks[1:10, ])
+
+mapPeaks(set1, mz = pks[1:10,], showLegend = FALSE,
+         colorBy = "replicates", interactive = TRUE)
+
+features(set1)
+
+
+parse_EICs_time <- microbenchmark::microbenchmark(
+  pksEICs = peakEICs(set1, mz = pks[1:10, ]),
   times = 1
 )
 
@@ -163,6 +225,8 @@ parse_EICs_time
 
 
 MS2s(a1, mz = pks_small)
+
+plotXICs(set1, analyses = 1:2, mz = pks[597, ])
 
 
 pks <- peaks(a1)

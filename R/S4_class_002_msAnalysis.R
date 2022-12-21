@@ -706,7 +706,7 @@ setMethod("getRawData", "msAnalysis", function(object,
         if (nrow(chroms_data) > 0) {
 
           if ("TIC" %in% names(list_out[["chroms"]])) {
-            chroms_data <- chroms_data[!id %in% "TIC", ]
+            chroms_data <- chroms_data[!chroms_data$id %in% "TIC", ]
           }
 
           list_out[["chroms"]][["other_chroms"]] <- chroms_data
@@ -919,51 +919,13 @@ setMethod("plotSpectra", "msAnalysis", function(object,
 
 
   fig <- plotly::plot_ly(spec_dt_2, x = ~rt, y = ~mz, z = ~intensity) %>%
-    plotly::group_by(rtmz) %>%
-    plotly::add_lines(color = ~level, colors = c('#BF382A', '#0C4B8E'))
+    plotly::group_by(~rtmz) %>%
+    plotly::add_lines(color = ~level, colors = c("#BF382A", "#0C4B8E"))
 
   fig <- fig %>% plotly::layout(scene = list(
-    xaxis = list(title = 'Retention time (seconds)'),
-    yaxis = list(title = 'm/z'),
-    zaxis = list(title = 'Intensity (counts)')))
-
-  # spec_mat <- copy(spec_dt)
-  # spec_mat <- spec_mat[, .(mz, rt, intensity)]
-  # spec_mat$mz <- round(spec_mat$mz, digits = 3)
-  # #spec_mat$intensity <- log(spec_mat$intensity)
-  # spec_mat <- spec_mat[, .(intensity = sum(intensity)), by = c("rt", "mz")]
-  # spec_mat <- tidyr::complete(spec_mat, rt, tidyr::nesting(mz), fill = list(intensity = 0))
-  # spec_mat <- tidyr::pivot_wider(spec_mat, names_from = rt, values_from = intensity)
-  # spec_mat <- as.matrix(spec_mat)
-  # row.names(spec_mat) <- spec_mat[, 1]
-  # spec_mat <- spec_mat[, -1]
-  #
-  # fig <- plotly::plot_ly(x = as.numeric(colnames(spec_mat)),
-  #                        y = as.numeric(rownames(spec_mat)),
-  #                        z = spec_mat) %>%
-  #
-  #   plotly::add_surface(colors = "RdYlBu",
-  #                       reversescale = TRUE,
-  #                       showscale = FALSE)
-  #
-  # fig <- fig %>% layout(
-  #   scene = list(
-  #     xaxis = list(title = 'Retention time / seconds'),
-  #     yaxis = list(title = '<i> m/z </i>'),
-  #     zaxis = list(title = "Intensity / counts")
-  #   )
-  # )
-
-  # fig <- plotly::plot_ly(spec_dt, x = ~rt, y = ~mz, z = ~intensity,
-  #                        color = ~level,
-  #                        colors = c('#BF382A', '#0C4B8E'))
-  #
-  # fig <- fig %>% plotly::add_markers(marker = list(size = 1, line = NULL))
-  #
-  # fig <- fig %>% plotly::layout(scene = list(
-  #   xaxis = list(title = 'Retention time (seconds)'),
-  #   yaxis = list(title = 'm/z'),
-  #   zaxis = list(title = 'Intensity (counts)')))
+    xaxis = list(title = "Retention time (seconds)"),
+    yaxis = list(title = "<i>m/z<i>"),
+    zaxis = list(title = "Intensity (counts)")))
 
   return(fig)
 })
@@ -1013,14 +975,14 @@ setMethod("plotChromatograms", "msAnalysis", function(object,
     return(NULL)
   }
 
-  chroms <- chroms[, .(analysis, id, rt, intensity)]
+  chroms <- chroms[, c("analysis", "id", "rt", "intensity")]
 
   chroms$var <- chroms$id
 
   if (length(unique(chroms$id)) == 1) {
-    title = unique(chroms$id)
+    title <- unique(chroms$id)
   } else {
-    title = NULL
+    title <- NULL
   }
 
   plotEICs(chroms, title = title, interactive = interactive)
@@ -1051,14 +1013,14 @@ setMethod("EICs", "msAnalysis", function(object,
 
   targets <- makeTargets(mz, rt, ppm, sec, id)
 
-  rtr <- targets[, .(rtmin, rtmax)]
+  rtr <- targets[, c("rtmin", "rtmax")]
   colnames(rtr) <- c("min", "max")
-  if ((nrow(rtr) == 1) & TRUE %in% (rtr$max == 0)) rtr = NULL
+  if ((nrow(rtr) == 1) & TRUE %in% (rtr$max == 0)) rtr <- NULL
 
   if (hasLoadedSpectra(object)) {
 
     spec <- spectra(object)
-    spec <- spec[level == 1, ]
+    spec <- spec[spec$level == 1, ]
 
     # if (!is.null(rtr)) {
     #   spec <- spec[checkOverlapRanges(spec$rt, rtr), ]
@@ -1074,14 +1036,16 @@ setMethod("EICs", "msAnalysis", function(object,
 
   if (nrow(spec) > 0) {
 
-    spec <- spec[, .(scan, level, rt, mz, intensity)]
+    spec <- spec[, c("scan", "level", "rt", "mz", "intensity")]
 
     eics <- rcpp_ms_make_eics_for_msAnalysis(spec, targets)
 
     eics <- as.data.table(eics)
 
+    intensity <- NULL
+
     if (nrow(eics) > 0) {
-      eics <- eics[, .(intensity = sum(intensity)), by = c("id", "rt")]
+      eics <- eics[, `:=`(intensity = sum(intensity)), by = c("id", "rt")][]
     }
 
   } else {
@@ -1170,12 +1134,14 @@ setMethod("BPC", "msAnalysis", function(object) {
 
     bpc <- EICs(object, mz = targets)
 
+    intensity <- NULL
+
     bpc[bpc[, rank(intensity, ties.method = "max") != .N, by = rt]$V1, intensity := NA]
     bpc <- bpc[!is.na(intensity), ]
 
   } else {
 
-    bpc <- bpc[, .(id, rt, mz, intensity)]
+    bpc <- bpc[, c("id", "rt", "mz", "intensity")]
 
   }
 

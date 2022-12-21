@@ -531,6 +531,16 @@ setGeneric("mapPeaks", function(object, ...) standardGeneric("mapPeaks"))
 
 
 
+#' @title hasFeatures
+#'
+#' @description Generic for check the presence of features.
+#'
+#' @param object A method specific class object.
+#'
+setGeneric("hasFeatures", function(object) standardGeneric("hasFeatures"))
+
+
+
 #' @title features
 #'
 #' @description Generic for getting features.

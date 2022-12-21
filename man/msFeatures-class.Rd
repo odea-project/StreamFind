@@ -13,6 +13,8 @@
 \alias{addSettings,msFeatures,msFeatures-method}
 \alias{getSettings,msFeatures-method}
 \alias{getSettings,msFeatures,msFeatures-method}
+\alias{hasFeatures,msFeatures-method}
+\alias{hasFeatures,msFeatures,msFeatures-method}
 \alias{features,msFeatures-method}
 \alias{features,msFeatures,msFeatures-method}
 \alias{[,msFeatures,ANY,missing,missing-method}
@@ -28,6 +30,8 @@
 \S4method{addSettings}{msFeatures}(object, settings)
 
 \S4method{getSettings}{msFeatures}(object, call = NULL)
+
+\S4method{hasFeatures}{msFeatures}(object)
 
 \S4method{features}{msFeatures}(
   object,
@@ -112,6 +116,9 @@ for inspection, processing and evaluation.
 \item \code{addSettings(msFeatures)}: adds processing settings for features.
 
 \item \code{getSettings(msFeatures)}: gets processing settings.
+
+\item \code{hasFeatures(msFeatures)}: checks if the \linkS4class{msFeatures} object
+has features.
 
 \item \code{features(msFeatures)}: getter for features (i.e., grouped peaks). When
 complete is set to \code{TRUE}, additional feature metadata is also returned.

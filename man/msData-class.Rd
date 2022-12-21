@@ -334,7 +334,8 @@
   rt = NULL,
   ppm = 20,
   sec = 30,
-  rtExpand = 60,
+  rtExpand = 120,
+  mzExpand = 0.005,
   filtered = TRUE,
   run_parallel = FALSE
 )
@@ -371,7 +372,9 @@
   legendNames = NULL,
   xlim = 30,
   ylim = 0.05,
-  title = NULL
+  title = NULL,
+  showLegend = TRUE,
+  interactive = FALSE
 )
 
 \S4method{features}{msData}(
@@ -571,10 +574,11 @@ for setting the \emph{x} limits of a plot.}
 \item{ylim}{A length one or two numeric vector
 for setting the \emph{y} limits of a plot.}
 
-\item{complete}{Logical, set to \code{TRUE} for a complete version of the output.}
+\item{complete}{Logical, set to \code{TRUE} for a complete version of the
+output.}
 
 \item{average}{Logical, set to \code{TRUE} for returning the intensity of
-features averaged for each replicate group.}
+features averaged for each analysis replicate group.}
 
 \item{all}{Logical, set to \code{TRUE} for displaying all features/peaks.}
 
@@ -807,8 +811,8 @@ with the same length as targets for plotting and can be used to legend the
 plot. Note that, by setting \code{legendNames} the \code{colorBy} is set to
 "targets" automatically.
 
-\item \code{features(msData)}: getter for features (i.e., grouped peaks). When
-complete is set to \code{TRUE}, additional feature metadata is also returned.
+\item \code{features(msData)}: getter for features (i.e., grouped peaks). When complete
+is set to \code{TRUE}, additional feature metadata is also returned.
 
 \item \code{plotFeatures(msData)}: A method for plotting peaks from given features
 in an \linkS4class{msData} object.

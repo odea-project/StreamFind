@@ -10,42 +10,6 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// rcpp_extract_eics
-Rcpp::List rcpp_extract_eics(Rcpp::List spec, Rcpp::DataFrame targets);
-RcppExport SEXP _streamFind_rcpp_extract_eics(SEXP specSEXP, SEXP targetsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List >::type spec(specSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type targets(targetsSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_extract_eics(spec, targets));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpp_ms_extract_eics_from_dataframe
-List rcpp_ms_extract_eics_from_dataframe(DataFrame spec, DataFrame targets);
-RcppExport SEXP _streamFind_rcpp_ms_extract_eics_from_dataframe(SEXP specSEXP, SEXP targetsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< DataFrame >::type spec(specSEXP);
-    Rcpp::traits::input_parameter< DataFrame >::type targets(targetsSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_ms_extract_eics_from_dataframe(spec, targets));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpp_ms_extract_eics_from_dataframe_2
-DataFrame rcpp_ms_extract_eics_from_dataframe_2(List spec, DataFrame targets);
-RcppExport SEXP _streamFind_rcpp_ms_extract_eics_from_dataframe_2(SEXP specSEXP, SEXP targetsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type spec(specSEXP);
-    Rcpp::traits::input_parameter< DataFrame >::type targets(targetsSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_ms_extract_eics_from_dataframe_2(spec, targets));
-    return rcpp_result_gen;
-END_RCPP
-}
 // rcpp_ms_extract_ms2_for_msAnalysis
 List rcpp_ms_extract_ms2_for_msAnalysis(DataFrame spec, DataFrame targets, double mzClust, bool verbose);
 RcppExport SEXP _streamFind_rcpp_ms_extract_ms2_for_msAnalysis(SEXP specSEXP, SEXP targetsSEXP, SEXP mzClustSEXP, SEXP verboseSEXP) {
@@ -57,18 +21,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type mzClust(mzClustSEXP);
     Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
     rcpp_result_gen = Rcpp::wrap(rcpp_ms_extract_ms2_for_msAnalysis(spec, targets, mzClust, verbose));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpp_extract_xics
-Rcpp::List rcpp_extract_xics(Rcpp::List spec, Rcpp::DataFrame targets);
-RcppExport SEXP _streamFind_rcpp_extract_xics(SEXP specSEXP, SEXP targetsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List >::type spec(specSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type targets(targetsSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_extract_xics(spec, targets));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -86,11 +38,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_streamFind_rcpp_extract_eics", (DL_FUNC) &_streamFind_rcpp_extract_eics, 2},
-    {"_streamFind_rcpp_ms_extract_eics_from_dataframe", (DL_FUNC) &_streamFind_rcpp_ms_extract_eics_from_dataframe, 2},
-    {"_streamFind_rcpp_ms_extract_eics_from_dataframe_2", (DL_FUNC) &_streamFind_rcpp_ms_extract_eics_from_dataframe_2, 2},
     {"_streamFind_rcpp_ms_extract_ms2_for_msAnalysis", (DL_FUNC) &_streamFind_rcpp_ms_extract_ms2_for_msAnalysis, 4},
-    {"_streamFind_rcpp_extract_xics", (DL_FUNC) &_streamFind_rcpp_extract_xics, 2},
     {"_streamFind_rcpp_ms_make_eics_for_msAnalysis", (DL_FUNC) &_streamFind_rcpp_ms_make_eics_for_msAnalysis, 2},
     {NULL, NULL, 0}
 };

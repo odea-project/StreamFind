@@ -20,7 +20,8 @@ msData_validity <- function(object) {
     }
   }
 
-  # TODO validation for features classes, including the analysis/replicates and blanks
+  # TODO validation for features classes,
+  # including the analysis/replicates and blanks
 
   return(valid)
 }
@@ -31,9 +32,10 @@ msData_validity <- function(object) {
 
 #' @title msData
 #'
-#' @description An S4 class object to store and manage processing of MS analyses.
-#' The \code{msData} object inherits the \linkS4class{streamSet}  structure plus
-#' the features slot for processing MS data.
+#' @description An S4 class object to store and manage processing of mass
+#' spcetrometric analyses. The \code{msData} object inherits the
+#' \linkS4class{streamSet} structure plus the features slot for
+#' processing MS data.
 #'
 #' @slot title A character string defining the title.
 #' @slot date A \code{POSIXt} class object.
@@ -156,7 +158,7 @@ setMethod("show", "msData", function(object) {
 
     if (nrow(object@features@metadata) > 0) {
       tb$features <- apply(
-        object@features@intensity[, .SD, .SDcols = analysisNames(object)], 2,
+        object@features@intensity[, analysisNames(object), with = FALSE], 2,
         function(x) length(x[x > 0])
       )
     } else {
@@ -661,7 +663,7 @@ setMethod("[", c("msData", "ANY", "missing", "missing"), function(x, i, ...) {
 
         temp <- z@peaks
 
-        temp[!feature %in% f_id, `:=`(feature = NA_character_,
+        temp[!temp$feature %in% f_id, `:=`(feature = NA_character_,
                                       filtered = TRUE,
                                       filter = "grouping")]
         z@peaks <- copy(temp)
@@ -720,12 +722,14 @@ setMethod("getRawData", "msData", function(object,
 
   analysesList <- object@analyses[analyses]
 
-  list_out <- runParallelLapply(obj_list = analysesList,
-    run_parallel = run_parallel,
-    FUN = function(x, spectra, TIC, BPC, chroms, levels,
+  list_out <- runParallelLapply(
+    analysesList,
+    run_parallel,
+    NULL,
+    function(x, spectra, TIC, BPC, chroms, levels,
                    rtr, preMZrange, minIntensityMS1, minIntensityMS2) {
 
-      temp_list <- streamFind::getRawData(object = x,
+      temp_list <- getRawData(object = x,
         spectra = spectra,
         TIC = TIC,
         BPC = BPC,
@@ -765,10 +769,13 @@ setMethod("loadRawData", "msData", function(object, run_parallel = FALSE) {
 
   analyses <- analysisNames(object)
 
-  analysisList <- runParallelLapply(obj_list = object@analyses[analyses],
-    run_parallel = run_parallel,
-    FUN = function(x) {
+  analysesList <- object@analyses[analyses]
 
+  analysisList <- runParallelLapply(
+    analysesList,
+    run_parallel,
+    NULL,
+    function(x) {
       temp <- streamFind::loadRawData(object = x)
       p()
       return(temp)
@@ -798,10 +805,13 @@ setMethod("loadSpectraInfo", "msData", function(object, run_parallel = FALSE) {
 
   analyses <- analysisNames(object)
 
-  analysisList <- runParallelLapply(obj_list = object@analyses[analyses],
-    run_parallel = run_parallel,
-    FUN = function(x) {
+  analysesList <- object@analyses[analyses]
 
+  analysisList <- runParallelLapply(
+    analysesList,
+    run_parallel,
+    NULL,
+    function(x) {
       temp <- streamFind::loadSpectraInfo(object = x)
       p()
       return(temp)
@@ -902,8 +912,8 @@ setMethod("plotSpectra", "msData", function(object,
 
   if (TRUE %in% c((targets$mzmax > 0), (targets$rtmax > 0))) {
 
-    if (0 %in% targets$mzmax) targets$mzmax <- max(spec_dt$mz)
-    if (0 %in% targets$rtmax) targets$rtmax <- max(spec_dt$rt)
+    if (0 %in% targets$mzmax) targets$mzmax <- max(spec$mz)
+    if (0 %in% targets$rtmax) targets$rtmax <- max(spec$rt)
 
     spec <- spec[mz >= min(targets$mzmin) & mz <= max(targets$mzmax) &
                  rt >= min(targets$rtmin) & rt <= max(targets$rtmax), ]
@@ -944,13 +954,13 @@ setMethod("plotSpectra", "msData", function(object,
   colors_var <- getColors(unique(spec_2$var))
 
   fig <- plotly::plot_ly(spec_2, x = ~rt, y = ~mz, z = ~intensity) %>%
-    plotly::group_by(rtmz) %>%
+    plotly::group_by(~rtmz) %>%
     plotly::add_lines(color = ~var,  colors = colors_var)
 
   fig <- fig %>% plotly::layout(scene = list(
-    xaxis = list(title = 'Retention time (seconds)'),
-    yaxis = list(title = 'm/z'),
-    zaxis = list(title = 'Intensity (counts)')))
+    xaxis = list(title = "Retention time (seconds)"),
+    yaxis = list(title = "<i>m/z<i>"),
+    zaxis = list(title = "Intensity (counts)")))
 
   return(fig)
 })
@@ -1015,7 +1025,9 @@ setMethod("plotChromatograms", "msData", function(object,
     chroms <- chroms[chroms$id %in% id_name, ]
   }
 
-  chroms <- chroms[, .(analysis, replicate, id, rt, intensity)]
+  cols_order <- c("analysis", "replicate", "id", "rt", "intensity")
+
+  chroms <- chroms[, cols_order, with = FALSE]
 
   plotEICs(chroms, colorBy = colorBy, interactive = interactive)
 
@@ -1049,23 +1061,27 @@ setMethod("EICs", "msData", function(object,
 
   if (is.null(analyses)) return(data.table())
 
-  eics <- runParallelLapply(obj_list = object@analyses[analyses],
-    run_parallel = run_parallel,
-    FUN = function(x, targets) {
-
+  eics <- runParallelLapply(
+    object@analyses[analyses],
+    run_parallel,
+    NULL,
+    function(x, targets) {
       eic <- streamFind::EICs(x, mz = targets)
       p()
-
       return(eic)
-    }, targets = targets #, future.packages = c("mzR", "streamFind", "Rcpp")
+    }, targets = targets
   )
 
   eics <- rbindlist(eics, idcol = "analysis", fill = TRUE)
 
   eics$replicate <- replicateNames(object)[eics$analysis]
 
-  eics <- eics[, .(intensity = sum(intensity)),
-                            by = c("analysis", "replicate", "id", "rt")]
+  setcolorder(eics, c("replicate", "analysis"))
+
+  intensity <- NULL
+
+  eics <- eics[, `:=`(intensity = sum(intensity)),
+                            by = c("replicate", "analysis", "id", "rt")][]
 
   return(eics)
 })
@@ -1111,6 +1127,8 @@ setMethod("plotEICs", "msData", function(object,
   )
 })
 
+
+
 ##### TICs --------------------------------------------------------------------
 
 #' @describeIn msData extracts total ion chromatograms (TICs)
@@ -1130,13 +1148,13 @@ setMethod("TICs", "msData", function(object,
   analyses <- checkAnalysesArgument(object, analyses)
   if (is.null(analyses)) return(data.table())
 
-  tics <- runParallelLapply(obj_list = object@analyses[analyses],
-    run_parallel = run_parallel,
-    FUN = function(x) {
-
+  tics <- runParallelLapply(
+    object@analyses[analyses],
+    run_parallel,
+    NULL,
+    function(x) {
       tic <- streamFind::TIC(x)
       p()
-
       return(tic)
     }
   )
@@ -1205,13 +1223,13 @@ setMethod("BPCs", "msData", function(object,
   analyses <- checkAnalysesArgument(object, analyses)
   if (is.null(analyses)) return(data.table())
 
-  bpcs <- runParallelLapply(obj_list = object@analyses[analyses],
-    run_parallel = run_parallel,
-    FUN = function(x) {
-
+  bpcs <- runParallelLapply(
+    object@analyses[analyses],
+    run_parallel,
+    NULL,
+    function(x) {
       bpc <- streamFind::BPC(x)
       p()
-
       return(bpc)
     }
   )
@@ -1280,22 +1298,19 @@ setMethod("XICs", "msData", function(object,
                                      ppm = 20, sec = 60, id = NULL,
                                      run_parallel = FALSE) {
 
-  analysis <- NULL
-  replicate <- NULL
-
   analyses <- checkAnalysesArgument(object, analyses)
 
   targets <- makeTargets(mz, rt, ppm, sec, id)
 
   if (is.null(analyses)) return(data.table())
 
-  xics <- runParallelLapply(obj_list = object@analyses[analyses],
-    run_parallel = run_parallel,
-    FUN = function(x, targets) {
-
+  xics <- runParallelLapply(
+    object@analyses[analyses],
+    run_parallel,
+    NULL,
+    function(x, targets) {
       xic <- streamFind::XICs(x, mz = targets)
       p()
-
       return(xic)
     }, targets = targets
   )
@@ -1357,7 +1372,7 @@ setMethod("plotXICs", "msData", function(object,
   plot <- plotXICs(xics,
     legendNames = legendNames,
     plotTargetMark = plotTargetMark,
-    targetsMark = targetsMark[, .(id, mz, rt)],
+    targetsMark = targetsMark[, c("id", "mz", "rt")],
     ppmMark = ppmMark,
     secMark = secMark,
     numberRows = numberRows
@@ -1402,18 +1417,17 @@ setMethod("MS2s", "msData", function(object = NULL,
 
   if (is.null(analyses)) return(data.table())
 
-  ms2s <- runParallelLapply(obj_list = object@analyses[analyses],
-    run_parallel = run_parallel,
-    FUN = function(x, targets, mzClust, isolationWindow) {
-
+  ms2s <- runParallelLapply(
+    object@analyses[analyses],
+    run_parallel,
+    NULL,
+    function(x, targets, mzClust, isolationWindow) {
       ms2 <- streamFind::MS2s(x,
         mz = targets,
         mzClust = mzClust,
         isolationWindow = isolationWindow
       )
-
       p()
-
       return(ms2)
     }, targets = targets, mzClust = mzClust, isolationWindow = isolationWindow
   )
@@ -1600,10 +1614,6 @@ setMethod("getSettings", "msData", function(object,
 
 
 
-
-
-
-
 #### peak methods _______------------------------------------------------------
 
 ##### hasPeaks ----------------------------------------------------------------
@@ -1698,13 +1708,16 @@ setMethod("peakEICs", "msData", function(object,
                                          mass = NULL,
                                          mz = NULL, rt = NULL,
                                          ppm = 20, sec = 30,
-                                         rtExpand = 60,
+                                         rtExpand = 120,
+                                         mzExpand = 0.005,
                                          filtered = TRUE,
                                          run_parallel = FALSE) {
 
   pks <- peaks(object, analyses, targetsID, mass, mz, rt, ppm, sec, filtered)
 
-  pks_tars <- copy(pks[, .(analysis, id, mz, rt, mzmin, mzmax, rtmin, rtmax)])
+  cols_keep <- c("analysis", "id", "mz", "rt", "mzmin", "mzmax", "rtmin", "rtmax")
+
+  pks_tars <- copy(pks[, cols_keep, with = FALSE])
 
   if (nrow(pks_tars) == 0) {
     warning("No peaks were found with the defined targets!")
@@ -1715,21 +1728,28 @@ setMethod("peakEICs", "msData", function(object,
 
   pks_tars <- split(pks_tars, pks_tars$analysis)
 
-  eics <- runParallelLapply(obj_list = object@analyses[analyses],
-    run_parallel = run_parallel,
-    FUN = function(x, targets, rtExpand) {
+  eics <- runParallelLapply(
+    object@analyses[analyses],
+    run_parallel,
+    NULL,
+    function(x, targets, rtExpand) {
       ana <- analysisName(x)
-      eic <- peakEICs(x, targetsID = targets[[ana]]$id, rtExpand = rtExpand)
+      eic <- peakEICs(x,
+                      targetsID = targets[[ana]]$id,
+                      rtExpand = rtExpand,
+                      mzExpand = mzExpand)
       eic$analysis <- ana
       p()
-
       return(eic)
     }, targets = pks_tars, rtExpand = rtExpand
   )
 
   eics <- rbindlist(eics)
 
-  if (nrow(eics) > 0) eics$replicate <- replicateNames(object)[eics$analysis]
+  if (nrow(eics) > 0) {
+    eics$replicate <- replicateNames(object)[eics$analysis]
+    setcolorder(eics, c("replicate", "analysis"))
+  }
 
   return(eics)
 })
@@ -1764,6 +1784,7 @@ setMethod("plotPeaks", "msData", function(object,
                                           mz = NULL, rt = NULL,
                                           ppm = 20, sec = 30,
                                           rtExpand = 60,
+                                          mzExpand = 0.005,
                                           filtered = TRUE,
                                           run_parallel = FALSE,
                                           colorBy = "targets",
@@ -1773,8 +1794,11 @@ setMethod("plotPeaks", "msData", function(object,
 
   peaks <- peaks(object, analyses, targetsID, mass, mz, rt, ppm, sec, filtered)
 
-  eics <- peakEICs(object, analyses, targetsID,
-                   mass, mz, rt, ppm, sec, rtExpand, filtered, run_parallel)
+  eics <- peakEICs(object,
+                   analyses, targetsID,
+                   mass, mz, rt, ppm, sec,
+                   rtExpand, mzExpand,
+                   filtered, run_parallel)
 
   return(
     plotPeaks(eics, peaks,
@@ -1819,7 +1843,9 @@ setMethod("mapPeaks", "msData", function(object,
                                          legendNames = NULL,
                                          xlim = 30,
                                          ylim = 0.05,
-                                         title = NULL) {
+                                         title = NULL,
+                                         showLegend = TRUE,
+                                         interactive = FALSE) {
 
   peaks <- peaks(
     object,
@@ -1837,10 +1863,11 @@ setMethod("mapPeaks", "msData", function(object,
     leg <- unique(peaks$analysis)
     varkey <- peaks$analysis
   } else if (colorBy == "replicates") {
-    leg <- unique(peaks[, .(analysis, replicate)])
+    leg <- unique(peaks[, c("analysis", "replicate")])
     leg <- leg$replicate
     varkey <- peaks$replicate
-  } else if (!is.null(legendNames) & length(legendNames) == length(unique(peaks$id))) {
+  } else if ((!is.null(legendNames)) &
+             (length(legendNames) == length(unique(peaks$id)))) {
     leg <- legendNames
     names(leg) <- unique(peaks$id)
     varkey <- sapply(peaks$id, function(x) leg[x])
@@ -1852,21 +1879,34 @@ setMethod("mapPeaks", "msData", function(object,
 
   peaks[, var := varkey][]
 
-  plot <- mapPeaksInteractive(peaks, xlim, ylim, title)
+  if (!interactive) {
 
-  return(plot)
+    return(
+      mapPeaksStatic(peaks, xlim, ylim, title,
+                     showLegend = showLegend)
+    )
+
+  } else {
+
+    plot <- mapPeaksInteractive(peaks, xlim, ylim, title)
+
+    return(plot)
+  }
 })
 
 
 
+#### feature methods _______---------------------------------------------------
+
 ##### features ----------------------------------------------------------------
 
-#' @describeIn msData getter for features (i.e., grouped peaks). When
-#' complete is set to \code{TRUE}, additional feature metadata is also returned.
+#' @describeIn msData getter for features (i.e., grouped peaks). When complete
+#' is set to \code{TRUE}, additional feature metadata is also returned.
 #'
-#' @param complete Logical, set to \code{TRUE} for a complete version of the output.
+#' @param complete Logical, set to \code{TRUE} for a complete version of the
+#' output.
 #' @param average Logical, set to \code{TRUE} for returning the intensity of
-#' features averaged for each replicate group.
+#' features averaged for each analysis replicate group.
 #'
 #' @export
 #'
@@ -1881,6 +1921,8 @@ setMethod("features", "msData", function(object,
                                          complete = FALSE,
                                          average = TRUE) {
 
+  if (!hasFeatures(object@features)) return(data.table())
+
   return(
     features(
       object = object@features,
@@ -1894,6 +1936,7 @@ setMethod("features", "msData", function(object,
     )
   )
 })
+
 
 
 ### plotFeatures --------------------------------------------------------------------------------------------
@@ -1943,21 +1986,31 @@ setMethod("plotFeatures", "msData", function(object,
     filtered = filtered
   )
 
-  if (!is.null(legendNames) & length(legendNames) == length(unique(peaks$feature))) {
+  if ((!is.null(legendNames)) &
+      (length(legendNames) == length(unique(peaks$feature)))) {
+
     names(legendNames) <- unique(peaks$feature)
     peaks$feature <- sapply(peaks$feature, function(x) legendNames[x])
     names(legendNames) <- peaks$id
+
   } else if (colorBy %in% "targets") {
+
     legendNames <- peaks$feature
     names(legendNames) <- peaks$id
+
   }
 
-  pks_tars <- copy(peaks[, .(analysis, replicate, id, mz, rt, mzmin, mzmax, rtmin, rtmax)])
+  cols_keep <- c(
+    "analysis", "replicate", "id", "mz", "rt",
+    "mzmin", "mzmax", "rtmin", "rtmax"
+  )
+
+  pks_tars <- copy(peaks[, cols_keep, with = FALSE])
   pks_tars$rtmin <- min(pks_tars$rtmin) - 60
   pks_tars$rtmax <- max(pks_tars$rtmax) + 60
 
-  eic <- lapply(object@analyses, function(x, pks_tars,object) {
-    eic <- EICs(x, mz = pks_tars[analysis %in% analysisNames(x), ])
+  eic <- lapply(object@analyses, function(x, pks_tars, object) {
+    eic <- EICs(x, mz = pks_tars[pks_tars$analysis %in% analysisNames(x), ])
     eic$replicate <- replicateNames(object)[analysisNames(x)]
     return(eic)
   }, pks_tars = pks_tars, object = object)
@@ -1967,7 +2020,7 @@ setMethod("plotFeatures", "msData", function(object,
   adj_rt <- hasAdjustedRetentionTime(obj)
   if (TRUE %in% adj_rt) {
     for (i in names(adj_rt)[adj_rt]) {
-      eic[analysis == i, rt := unlist(sapply(rt, function(x, ana) {
+      eic[eic$analysis == i, rt := unlist(sapply(rt, function(x, ana) {
         temp <- copy(ana@spectra[rt == x, ])
         return(temp$rtAdjusted)
       }, ana = getAnalyses(obj, analyses = i)))]
