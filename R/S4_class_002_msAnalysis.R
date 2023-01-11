@@ -69,23 +69,459 @@ setClass("msAnalysis",
   slots = c(
     name = "character",
     file = "character",
-    metadata = "list",
-    spectra = "data.table",
-    chromatograms = "data.table",
+    type = "character",
+    instrument = "list",
+    acquisition = "list",
+    tic = "data.frame",
+    bpc = "data.frame",
+    spectra = "data.frame",
+    chromatograms = "data.frame",
     settings = "list",
-    peaks = "data.table"
+    peaks = "data.frame",
+    metadata = "list"
   ),
   prototype = list(
     name = NA_character_,
     file = NA_character_,
-    metadata = list(),
-    spectra = data.table(),
-    chromatograms = data.table(),
+    type = NA_character_,
+    instrument = list(),
+    acquisition = list(),
+    tic = data.frame(),
+    bpc = data.frame(),
+    spectra = data.frame(),
+    chromatograms = data.frame(),
     settings = list(),
-    peaks = data.table()
+    peaks = data.frame(),
+    metadata = list()
   ),
   validity = msAnalysis_validity
 )
+
+
+
+### //// Auxiliary functions --------------------------------------------------
+
+.get_msAnalysis_emptyList <- function() {
+
+  return(
+    list(
+      name = NA_character_,
+      file = NA_character_,
+      type = NA_character_,
+      instrument = list(),
+      acquisition = list(),
+      tic = data.frame(),
+      bpc = data.frame(),
+      spectra = data.frame(),
+      chromatograms = data.frame(),
+      settings = list(),
+      peaks = data.frame(),
+      metadata = list()
+    )
+  )
+}
+
+
+
+.initialize_msAnalysis <- function(file) {
+
+  inval <- FALSE
+
+  if (!file.exists(file)) inval <- TRUE
+
+  ms_file_formats <- ".mzML|.mzXML"
+  check_file_format <- grepl(ms_file_formats, file)
+
+  if (!check_file_format) inval <- TRUE
+
+  if (inval) return(list())
+
+  if (TRUE %in% requireNamespace("mzR", quietly = TRUE)) {
+
+    zF <- mzR::openMSfile(file, backend = "pwiz")
+    zH <- suppressWarnings(mzR::header(zF))
+    cH <- suppressWarnings(mzR::chromatogramHeader(zF))
+    instrument_info <- mzR::instrumentInfo(zF)
+    run_info <- suppressWarnings(mzR::runInfo(zF))
+
+
+
+    if (1 %in% zH$polarity) {
+      polarity_pos <- "positive"
+    } else polarity_pos <- NULL
+
+    if (0 %in% zH$polarity) {
+      polarity_neg <- "negative"
+    } else polarity_neg <- NULL
+
+    if (nrow(cH) > 0 & ("polarity" %in% colnames(cH))) {
+
+      if (1 %in% cH$polarity) {
+        polarity_pos_chroms <- "positive"
+      } else polarity_pos_chroms <- NULL
+
+      if (0 %in% cH$polarity) {
+        polarity_neg_chroms <- "negative"
+      } else polarity_neg_chroms <- NULL
+
+    } else {
+      polarity_neg_chroms <- NULL
+      polarity_pos_chroms <- NULL
+    }
+
+    polarities <- unique(
+      c(polarity_pos, polarity_neg, polarity_neg_chroms, polarity_pos_chroms)
+    )
+
+    if (is.null(polarities)) polarities <- NA_character_
+
+
+
+    spectra_number <- run_info$scanCount
+
+    if (TRUE %in% zH$centroided) {
+      spectra_mode <- "centroid"
+    } else if (FALSE %in% zH$centroided) {
+      spectra_mode <- "profile"
+    } else {
+      spectra_mode <- NA_character_
+    }
+
+    if (!all(is.na(zH$ionMobilityDriftTime))) {
+      ion_mobility <- TRUE
+    } else {
+      ion_mobility <- FALSE
+    }
+
+    if (grepl(".mzML", file)) {
+      chromatograms_number <- mzR::nChrom(zF)
+    } else {
+      chromatograms_number <- 0
+    }
+
+
+
+    if (spectra_number == 0 & chromatograms_number > 0) {
+
+      if (TRUE %in% grepl("SRM", cH$chromatogramId)) {
+        data_type <- "SRM"
+      }
+
+      tic <- cH[cH$chromatogramId %in% "TIC", ]
+      if (nrow(tic) > 0) {
+        tic <- mzR::chromatograms(zF, tic$chromatogramIndex)
+        colnames(tic) <- c("rt", "intensity")
+        if (max(tic$rt) < 60) tic$rt <- tic$rt * 60
+      } else tic <- data.frame()
+
+      bpc <- cH[cH$chromatogramId %in% "BPC", ]
+
+      if (nrow(bpc) > 0) {
+        bpc <- mzR::chromatograms(zF, bpc$chromatogramIndex)
+        colnames(bpc) <- c("rt", "intensity")
+        if (max(bpc$rt) < 60) bpc$rt <- bpc$rt * 60
+      } else bpc <- data.frame()
+
+    } else if (spectra_number > 0) {
+
+      if (2 %in% run_info$msLevels) {
+        data_type <- "MS/MS"
+      } else {
+        data_type <- "MS"
+      }
+
+      if (max(zH$retentionTime) < 60) zH$retentionTime <- zH$retentionTime * 60
+
+      zH_ms1 <- zH[zH$msLevel == 1, ]
+
+      tic <- data.frame(
+        "rt" = zH_ms1$retentionTime,
+        "intensity" = zH_ms1$totIonCurrent
+      )
+
+      bpc <- data.frame(
+        "rt" = zH_ms1$retentionTime,
+        "mz" = zH_ms1$basePeakMZ,
+        "intensity" = zH_ms1$basePeakIntensity
+      )
+
+    } else {
+
+      data_type <- NA_character_
+    }
+
+
+
+    if (is.infinite(run_info$lowMz)) run_info$lowMz <- NA_real_
+    if (is.infinite(run_info$highMz)) run_info$highMz <- NA_real_
+    if (is.infinite(run_info$dStartTime)) run_info$dStartTime <- min(tic$rt)
+    if (is.infinite(run_info$dEndTime)) run_info$dEndTime <- max(tic$rt)
+    if (data_type %in% "SRM") run_info$msLevels <- NA_integer_
+
+
+
+    acquisition_info <- list(
+      "time_stamp" = run_info$startTimeStamp,
+      "spectra_number" = spectra_number,
+      "spectra_mode" = spectra_mode,
+      "spectra_levels" = run_info$msLevels,
+      "mz_low" = run_info$lowMz,
+      "mz_high" = run_info$highMz,
+      "rt_start" = run_info$dStartTime,
+      "rt_end" = run_info$dEndTime,
+      "polarity" = polarities,
+      "chromatograms_number" = chromatograms_number,
+      "ion_mobility" = ion_mobility
+    )
+
+    suppressWarnings(mzR::close(zF))
+
+  } else {
+
+    return(list())
+
+    # if (grepl(".mzML", file)) meta <- mzML_loadMetadata(file)
+    # if (grepl(".mzXML", file)) meta <- mzXML_loadMetadata(file)
+
+  }
+
+  analysis <- list(
+    name = gsub(".mzML|.mzXML", "", basename(file)),
+    file = file,
+    type = data_type,
+    instrument = instrument_info,
+    acquisition = acquisition_info,
+    tic = tic,
+    bpc = bpc,
+    spectra = data.frame(),
+    chromatograms = data.frame(),
+    settings = list(),
+    peaks = data.frame(),
+    metadata = list()
+  )
+
+  return(analysis)
+}
+
+
+
+as.msAnalysis <- function(object) {
+
+  analysis <- new("msAnalysis")
+
+  analysis@name <- object$name
+  analysis@file <- object$file
+  analysis@type <- object$type
+  analysis@acquisition <- object$acquisition
+  analysis@instrument <- object$instrument
+  analysis@tic <- object$tic
+  analysis@bpc <- object$bpc
+  analysis@metadata <- object$meta
+  analysis@spectra <- object$spectra
+  analysis@chromatograms <- object$chromatograms
+  analysis@settings <- object$settings
+  analysis@peaks <- object$peaks
+
+  return(analysis)
+}
+
+
+
+.get_ms_spectra <- function(file,
+                            levels = NULL,
+                            rtr = NULL,
+                            preMZrange = NULL,
+                            minIntensityMS1 = 0,
+                            minIntensityMS2 = 0) {
+
+  inval <- FALSE
+
+  if (!file.exists(file)) {
+    warning(paste0("File ", file ," not found!"))
+    inval <- TRUE
+  }
+
+  # TODO add more validation tests for arguments
+
+  if (inval) {
+    return(data.frame())
+  }
+
+  if (TRUE %in% requireNamespace("mzR", quietly = TRUE)) {
+
+    zF <- mzR::openMSfile(file, backend = "pwiz")
+
+    zH <- mzR::header(zF)
+
+    if (nrow(zH) > 0) {
+
+      if (max(zH$retentionTime) < 60) zH$retentionTime <- zH$retentionTime * 60
+
+      if (!is.null(levels)) zH <- zH[zH$msLevel %in% levels, ]
+
+      temp_checkOverlapRanges <- function(vals, ranges) {
+        return(rowSums(mapply(function(a, b) between(vals, a, b),
+                              ranges$min, ranges$max)) > 0)
+      }
+
+      if (!is.null(rtr)) {
+        zH <- zH[temp_checkOverlapRanges(zH$retentionTime, rtr), ]
+      }
+
+      if(!is.null(preMZrange)) {
+        zH <- zH[temp_checkOverlapRanges(zH$precursorMZ, preMZrange), ]
+      }
+
+      zD <- mzR::peaks(zF, scans = zH$seqNum)
+
+      mat_idx <- rep(zH$seqNum, sapply(zD, nrow))
+      zD <- as.data.table(do.call(rbind, zD))
+      zD$index <- mat_idx
+
+      if (TRUE %in% (unique(zH$msLevel) == 2)) {
+
+        zH_b <- data.table(
+          "index" = zH$seqNum,
+          "scan" = zH$acquisitionNum,
+          "level" = zH$msLevel,
+          "ce" = zH$collisionEnergy,
+          "preScan" = zH$precursorScanNum,
+          "preMZ" = zH$precursorMZ,
+          "rt" = zH$retentionTime
+        )
+
+      } else {
+
+        zH_b <- data.table(
+          "index" = zH$seqNum,
+          "scan" = zH$acquisitionNum,
+          "level" = zH$msLevel,
+          "rt" = zH$retentionTime
+        )
+
+      }
+
+      if (!all(is.na(zH$ionMobilityDriftTime))) {
+        rt_unique <- unique(zH_b$rt)
+        frame_numbers <- seq_len(length(rt_unique))
+        if ("preMZ" %in% colnames(zH_b)) zH_b$preMZ <- NA_real_
+        zH_b$frame <- factor(zH_b$rt, levels = rt_unique, labels = frame_numbers)
+        zH_b$driftTime <- zH$ionMobilityDriftTime
+      }
+
+      zH_n <- zH_b[zD, on = "index"]
+
+      zH_n <- zH_n[!(zH_n$intensity <= minIntensityMS1 & zH_n$level == 1), ]
+      zH_n <- zH_n[!(zH_n$intensity <= minIntensityMS2 & zH_n$level == 2), ]
+
+      if (exists("zF")) suppressWarnings(mzR::close(zF))
+
+      return(zH_n)
+
+    }
+
+  # } else {
+  #
+  #   if (grepl(".mzML", file)) {
+  #     list_out <- mzML_loadRawData(file,
+  #                                  spectra = spectra, TIC = TIC, BPC = BPC, chroms = chroms,
+  #                                  levels = levels, rtr = rtr, preMZrange = preMZrange,
+  #                                  minIntensityMS1 = minIntensityMS1, minIntensityMS2 = minIntensityMS2)
+  #   }
+  #
+  #   if (grepl(".mzXML", file)) {
+  #     list_out <- mzXML_loadRawData(file,
+  #                                   spectra = spectra, TIC = TIC, BPC = TIC,
+  #                                   levels = levels, rtr = rtr, preMZrange = preMZrange,
+  #                                   minIntensityMS1 = minIntensityMS1, minIntensityMS2 = minIntensityMS2)
+  #   }
+
+  }
+
+  return(data.frame())
+}
+
+
+
+.get_ms_chromatograms <- function(file, minIntensity = 0) {
+
+  inval <- FALSE
+
+  if (!file.exists(file)) {
+    warning(paste0("File ", file ," not found!"))
+    inval <- TRUE
+  }
+
+  # TODO add more validation tests for arguments
+
+  if (inval) {
+    return(data.frame())
+  }
+
+  if (TRUE %in% requireNamespace("mzR", quietly = TRUE)) {
+
+    zF <- mzR::openMSfile(file, backend = "pwiz")
+
+    cH <- as.data.table(suppressWarnings(mzR::chromatogramHeader(zF)))
+
+    if (nrow(cH) > 0) {
+
+      cH$polarity <- as.character(cH$polarity)
+      cH[polarity == 1, polarity := "positive"]
+      cH[polarity == 0, polarity := "negative"]
+      cH[polarity == -1, polarity := NA_character_]
+
+      cC <- mzR::chromatograms(zF, cH$chromatogramIndex)
+
+      if (!is.data.frame(cC)) {
+
+        names(cC) <- as.character(cH$chromatogramIndex)
+        cC <- lapply(cC, function(x) {
+          x <- as.data.frame(x)
+          colnames(x) <- c("rt", "intensity")
+          if (max(x$rt) < 60) x$rt <- x$rt * 60
+          return(x)
+        })
+
+        cC <- rbindlist(cC, idcol = "index", fill = TRUE)
+        cC$index <- as.numeric(cC$index)
+
+        cH_b <- data.table(
+          "index" = as.numeric(cH$chromatogramIndex),
+          "id" = cH$chromatogramId,
+          "polarity" = cH$polarity,
+          "preMZ" = cH$precursorIsolationWindowTargetMZ,
+          "mz" = cH$productIsolationWindowTargetMZ
+        )
+
+        chroms_data <- cH_b[cC, on = "index"]
+
+      } else {
+
+        colnames(cC) <- c("rt", "intensity")
+        if (max(cC$rt) < 60) cC$rt <- cC$rt * 60
+
+        chroms_data <- data.table(
+          "index" = cH$chromatogramIndex,
+          "id" = cH$chromatogramId,
+          "polarity" = cH$polarity,
+          "preMZ" = cH$precursorIsolationWindowTargetMZ,
+          "mz" = cH$productIsolationWindowTargetMZ,
+          "rt" = cC$rt,
+          "intensity" = cC$intensity
+        )
+
+      }
+
+      chroms_data <- chroms_data[chroms_data$intensity > minIntensity, ]
+
+      return(chroms_data)
+
+    }
+  }
+
+  return(data.frame())
+}
 
 
 
@@ -101,103 +537,11 @@ setMethod("initialize", "msAnalysis", function(.Object, file = NA_character_) {
 
   .Object <- callNextMethod()
 
-  inval <- FALSE
+  analysis_list <- .initialize_msAnalysis(file)
 
-  if (!file.exists(file)) inval <- TRUE
+  if (length(analysis_list) > 0) .Object <- as.msAnalysis(analysis_list)
 
-  ms_file_formats <- ".mzML|.mzXML"
-  check_file_format <- grepl(ms_file_formats, file)
-
-  if (!check_file_format) inval <- TRUE
-
-  if (inval) return(.Object)
-
-  if (TRUE %in% requireNamespace("mzR", quietly = TRUE)) {
-
-    #meta <- loadMetadataMZR(file)
-
-    zF <- mzR::openMSfile(file, backend = "pwiz")
-
-    meta1 <- mzR::instrumentInfo(zF)
-
-    zH <- mzR::header(zF)
-
-    run_info <- suppressWarnings(mzR::runInfo(zF))
-
-    if (is.infinite(run_info$lowMz)) run_info$lowMz <- NA_real_
-    if (is.infinite(run_info$highMz)) run_info$highMz <- NA_real_
-    if (is.infinite(run_info$dStartTime)) run_info$dStartTime <- NA_real_
-    if (is.infinite(run_info$dEndTime)) run_info$dEndTime <- NA_real_
-
-    if (1 %in% zH$polarity) {
-      polarity_pos <- "positive"
-    } else polarity_pos <- NULL
-
-    if (0 %in% zH$polarity) {
-      polarity_neg <- "negative"
-    } else polarity_neg <- NULL
-
-
-    if (length(polarity_pos) > 0 | length(polarity_neg) > 0) {
-      polarities <- c(polarity_pos, polarity_neg)
-    } else {
-      polarities <- NA_character_
-    }
-
-    if (TRUE %in% zH$centroided) {
-      spectrum_mode <- "centroid"
-    } else if (FALSE %in% zH$centroided) {
-      spectrum_mode <- "profile"
-    } else {
-      spectrum_mode <- NA_character_
-    }
-
-    if (!all(is.na(zH$ionMobilityDriftTime))) {
-      ion_mobility <- TRUE
-    } else {
-      ion_mobility <- FALSE
-    }
-
-    if (grepl(".mzML", file)) {
-      number_chromatograms <- mzR::nChrom(zF)
-    } else {
-      number_chromatograms <- 0
-    }
-
-    meta2 <- list(
-      "time_stamp" = run_info$startTimeStamp,
-      "number_spectra" = run_info$scanCount,
-      "spectrum_mode" = spectrum_mode,
-      "ms_levels" = run_info$msLevels,
-      "mz_low" = run_info$lowMz,
-      "mz_high" = run_info$highMz,
-      "rt_start" = run_info$dStartTime,
-      "rt_end" = run_info$dEndTime,
-      "polarity" = polarities,
-      "number_chromatograms" = number_chromatograms,
-      "ion_mobility" = ion_mobility
-    )
-
-    meta <- c(meta1, meta2)
-
-    suppressWarnings(mzR::close(zF))
-
-  } else {
-
-    if (grepl(".mzML", file)) meta <- mzML_loadMetadata(file)
-    if (grepl(".mzXML", file)) meta <- mzXML_loadMetadata(file)
-
-  }
-
-  analysis_name <- gsub(".mzML|.mzXML", "", basename(file))
-
-  analysis <- .Object
-
-  analysis@name <- analysis_name
-  analysis@file <- file
-  analysis@metadata <- meta
-
-  return(analysis)
+  return(.Object)
 })
 
 
@@ -215,16 +559,16 @@ setMethod("show", "msAnalysis", function(object) {
   cat(
     "  Class          ", is(object), "\n",
     "  Name           ", object@name, "\n",
-    "  Polarity       ", paste(object@metadata$polarity, collapse = ", "), "\n",
+    "  Type           ", paste(object@type, collapse = ", "), "\n",
+    "  Polarity       ", paste(polarity(object), collapse = ", "), "\n",
     "  File           ", object@file, "\n",
-    "  Levels         ", paste(object@metadata$ms_levels, collapse = ", "), " \n",
-    "  Spectrum mode  ", object@metadata$spectrum_mode, "\n",
-    ifelse(TRUE %in% object@metadata[["ion_mobility"]],
+    "  Spectra mode   ", object@acquisition$spectra_mode, "\n",
+    ifelse(TRUE %in% object@acquisition[["ion_mobility"]],
     "  Ion mobility   TRUE\n", ""),
-    "  Spectra        ", object@metadata$number_spectra, "\n",
-    "  Chromatograms  ", object@metadata$number_chromatograms, "\n",
-    "  Loaded traces  ", nrow(object@spectra), "\n",
-    "  Loaded chroms  ", length(unique(object@chromatograms$id)), "\n",
+    "  Spectra        ", object@acquisition$spectra_number, "\n",
+    "  Chromatograms  ", object@acquisition$chromatograms_number, "\n",
+    "  Loaded spectra ", ifelse(nrow(object@spectra) > 0, TRUE, FALSE), "\n",
+    "  Loaded chroms  ", ifelse(nrow(object@chromatograms) > 0, TRUE, FALSE), "\n",
     "  Picked peaks   ", nrow(object@peaks), "\n",
     "  Settings: \n",
     sep = ""
@@ -244,7 +588,7 @@ setMethod("show", "msAnalysis", function(object) {
 
 
 
-#### name and path ______ -----------------------------------------------------
+#### name and path ____________ -----------------------------------------------
 
 ##### analysisName ------------------------------------------------------------
 
@@ -347,128 +691,7 @@ setMethod("analysisTable", "msAnalysis", function(object) {
 
 
 
-#### metadata ____________ ----------------------------------------------------
-
-##### getMetadataNames --------------------------------------------------------
-
-#' @describeIn msAnalysis getter for the names of metadata in the analysis.
-#'
-#' @export
-#'
-#' @aliases getMetadataNames,msAnalysis,msAnalysis-method
-#'
-setMethod("getMetadataNames", "msAnalysis", function(object) {
-  return(names(object@metadata))
-})
-
-
-
-##### getMetadata -------------------------------------------------------------
-
-#' @describeIn msAnalysis getter for metadata entries in the analysis.
-#' Returns a list of metadata entries as defined by \code{which}. The argument
-#' which is a string or character vector defining the name/s of the desired
-#' metadata. When \code{which} is \code{NULL}, all entries are returned as list.
-#'
-#' @param which A character vector with the entry name/s.
-#'
-#' @export
-#'
-#' @aliases getMetadata,msAnalysis,msAnalysis-method
-#'
-setMethod("getMetadata", "msAnalysis", function(object, which = NULL) {
-
-  if (!is.null(which)) {
-    mtd_a <- object@metadata[which]
-  } else {
-    mtd_a <- object@metadata
-  }
-
-  return(mtd_a)
-})
-
-
-
-##### addMetadata -------------------------------------------------------------
-
-#' @describeIn msAnalysis setter for analysis metadata. When overwrite is
-#' set to \code{TRUE}, metadata entries with the same name are overwritten.
-#' Note, metadata entries parsed from the MS file cannot be overwritten.
-#'
-#' @param metadata A named vector with metadata entries or a one row
-#' \linkS4class{data.frame} or \linkS4class{data.table} with metadata
-#' added as columns.
-#' @param overwrite Logical, set to \code{TRUE} to overwrite.
-#'
-#' @export
-#'
-#' @aliases addMetadata,msAnalysis,msAnalysis-method
-#'
-setMethod("addMetadata", "msAnalysis", function(object,
-                                                metadata = NULL,
-                                                overwrite = FALSE) {
-
-  const_names <- c(
-    "inst_data", "analyzer", "detector", "source", "time_stamp",
-    "msDetector", "msIonisation", "msManufacturer", "msMassAnalyzer", "msModel",
-    "number_spectra", "spectrum_mode", "ms_levels", "mz_low", "mz_high",
-    "rt_start", "rt_end", "polarity", "number_chromatograms")
-
-  if (is.data.frame(metadata)) {
-
-    name_is_already_there <- colnames(metadata) %in% getMetadataNames(object)
-    name_in_const_names <- colnames(metadata) %in% const_names
-    metadata <- metadata[1, ]
-
-  } else if (is.vector(metadata)) {
-
-    if (is.null(names(metadata))) {
-      warning("Metadata must be a named vector!")
-      return(object)
-    }
-
-    name_is_already_there <- names(metadata) %in% getMetadataNames(object)
-    name_in_const_names <- names(metadata) %in% const_names
-
-  }
-
-
-  if (exists("name_is_already_there")) {
-
-    if (TRUE %in% name_is_already_there & !overwrite) {
-      warning("Metadata name/s already exist/s!")
-      return(object)
-    }
-
-    if (TRUE %in% name_in_const_names) {
-      warning("Metadata entries from raw MS file cannot be overwritten!")
-      return(object)
-    }
-
-    if (TRUE %in% name_is_already_there) {
-
-      metadata <- as.list(metadata)
-
-      object@metadata[names(object@metadata) %in%
-                        names(metadata)] <- metadata[name_is_already_there]
-
-      object@metadata <- c(object@metadata, metadata[!name_is_already_there])
-
-      return(object)
-
-    } else {
-
-      metadata <- as.list(metadata)
-      object@metadata <- c(object@metadata, metadata)
-      return(object)
-
-    }
-  }
-
-  return(object)
-})
-
-
+#### basic info ________________ ----------------------------------------------
 
 ##### polarity ----------------------------------------------------------------
 
@@ -479,8 +702,7 @@ setMethod("addMetadata", "msAnalysis", function(object,
 #' @aliases polarity,msAnalysis,msAnalysis-method
 #'
 setMethod("polarity", "msAnalysis", function(object) {
-  mt <- getMetadata(object, which = "polarity")
-  return(unlist(mt))
+  return(object@acquisition$polarity)
 })
 
 
@@ -499,7 +721,7 @@ setMethod("polarities", "msAnalysis", function(object) {
 
 
 
-#### raw data _____________ ---------------------------------------------------
+#### raw data _________________ -----------------------------------------------
 
 ##### loadSpectraInfo ---------------------------------------------------------
 
@@ -826,6 +1048,28 @@ setMethod("loadRawData", "msAnalysis", function(object) {
 
 
 
+#### spectra __________________ -----------------------------------------------
+
+##### loadSpectra -------------------------------------------------------------
+
+#' @describeIn msAnalysis adds (when available) raw spectra and chromatograms
+#' to the respective slots of an \linkS4class{msAnalysis} object.
+#'
+#' @export
+#'
+#' @aliases loadSpectra,msAnalysis,msAnalysis-method
+#'
+setMethod("loadSpectra", "msAnalysis", function(object) {
+
+  spec <- .get_ms_spectra(filePath(object))
+
+  object@spectra <- copy(spec)
+
+  return(object)
+})
+
+
+
 ##### hasLoadedSpectra --------------------------------------------------------
 
 #' @describeIn msAnalysis checks if the \linkS4class{msAnalysis} has loaded
@@ -838,22 +1082,6 @@ setMethod("loadRawData", "msAnalysis", function(object) {
 setMethod("hasLoadedSpectra", "msAnalysis", function(object) {
   return(nrow(object@spectra) > 0 &&
            "intensity" %in% colnames(object@spectra))
-})
-
-
-
-##### hasLoadedChromatograms --------------------------------------------------
-
-#' @describeIn msAnalysis checks if the \linkS4class{msAnalysis} has loaded
-#' chromatograms.
-#'
-#' @export
-#'
-#' @aliases hasLoadedChromatograms,msAnalysis,msAnalysis-method
-#'
-setMethod("hasLoadedChromatograms", "msAnalysis", function(object) {
-  return(nrow(object@chromatograms) > 0 &&
-           "id" %in% colnames(object@chromatograms))
 })
 
 
@@ -889,8 +1117,8 @@ setMethod("plotSpectra", "msAnalysis", function(object,
                                                 ppm = 20, sec = 60) {
 
   if (!hasLoadedSpectra(object)) {
-    warning("Spectra not found, load raw spectra
-            first with loadRawData() method.")
+    message("Spectra not found, load raw spectra
+            first with loadSpectra() method.")
     return(NULL)
   }
 
@@ -911,23 +1139,61 @@ setMethod("plotSpectra", "msAnalysis", function(object,
   spec_dt$level <- factor(spec_dt$level)
 
   spec_dt_2 <- copy(spec_dt)
-  spec_dt_2$rtmz <- paste(spec_dt_2$mz, spec_dt_2$rt)
+  spec_dt_2$rtmz <- paste(spec_dt_2$mz, spec_dt_2$rt, sep = "_")
   spec_dt_2_temp <- copy(spec_dt)
   spec_dt_2_temp$intensity <- 0
-  spec_dt_2_temp$rtmz <- paste(spec_dt_2$mz, spec_dt_2$rt)
+  spec_dt_2_temp$rtmz <- paste(spec_dt_2$mz, spec_dt_2$rt, sep = "_")
   spec_dt_2 <- rbind(spec_dt_2, spec_dt_2_temp)
 
 
-  fig <- plotly::plot_ly(spec_dt_2, x = ~rt, y = ~mz, z = ~intensity) %>%
-    plotly::group_by(~rtmz) %>%
-    plotly::add_lines(color = ~level, colors = c("#BF382A", "#0C4B8E"))
+  fig <- plot_ly(spec_dt_2, x = ~rt, y = ~mz, z = ~intensity) %>%
+    group_by(spec_dt_2$rtmz) %>%
+    add_lines(color = ~level, colors = c("#BF382A", "#0C4B8E"))
 
-  fig <- fig %>% plotly::layout(scene = list(
-    xaxis = list(title = "Retention time (seconds)"),
-    yaxis = list(title = "<i>m/z<i>"),
-    zaxis = list(title = "Intensity (counts)")))
+  fig <- fig %>% layout(scene = list(
+    xaxis = list(title = "Retention time / seconds"),
+    yaxis = list(title = "<i>m/z</i>"),
+    zaxis = list(title = "Intensity / counts")))
 
   return(fig)
+})
+
+
+
+#### chromatograms ___________ ------------------------------------------------
+
+##### loadChromatograms -------------------------------------------------------
+
+#' @describeIn msAnalysis adds (when available) raw spectra and chromatograms
+#' to the respective slots of an \linkS4class{msAnalysis} object.
+#'
+#' @export
+#'
+#' @aliases loadChromatograms,msAnalysis,msAnalysis-method
+#'
+setMethod("loadChromatograms", "msAnalysis", function(object) {
+
+  chroms <- .get_ms_chromatograms(filePath(object))
+
+  object@chromatograms <- copy(chroms)
+
+  return(object)
+})
+
+
+
+##### hasLoadedChromatograms --------------------------------------------------
+
+#' @describeIn msAnalysis checks if the \linkS4class{msAnalysis} has loaded
+#' chromatograms.
+#'
+#' @export
+#'
+#' @aliases hasLoadedChromatograms,msAnalysis,msAnalysis-method
+#'
+setMethod("hasLoadedChromatograms", "msAnalysis", function(object) {
+  return(nrow(object@chromatograms) > 0 &
+           "id" %in% colnames(object@chromatograms))
 })
 
 
@@ -961,6 +1227,12 @@ setMethod("plotChromatograms", "msAnalysis", function(object,
                                                       id = NULL,
                                                       interactive = FALSE) {
 
+  if (!hasLoadedChromatograms(object)) {
+    message("Chromatograms not found, load raw chromatograms
+            first with loadChromatograms() method.")
+    return(NULL)
+  }
+
   chroms <- chromatograms(object)
   chroms$analysis <- analysisNames(object)
 
@@ -970,8 +1242,7 @@ setMethod("plotChromatograms", "msAnalysis", function(object,
   }
 
   if (nrow(chroms) == 0) {
-    warning("Chromatogram/s not found, load chromatograms
-            first with loadRawData() method.")
+    message("Requested chromatogram/s not found.")
     return(NULL)
   }
 
@@ -990,8 +1261,10 @@ setMethod("plotChromatograms", "msAnalysis", function(object,
 })
 
 
-# TODO make method to clear loaded raw data
+# TODO make method to clear loaded data
 
+
+#### parsing data ______________ ----------------------------------------------
 
 ##### EICs --------------------------------------------------------------------
 
@@ -1015,22 +1288,16 @@ setMethod("EICs", "msAnalysis", function(object,
 
   rtr <- targets[, c("rtmin", "rtmax")]
   colnames(rtr) <- c("min", "max")
-  if ((nrow(rtr) == 1) & TRUE %in% (rtr$max == 0)) rtr <- NULL
+  if ((nrow(rtr) == 1) & (TRUE %in% (rtr$max == 0))) rtr <- NULL
 
   if (hasLoadedSpectra(object)) {
 
     spec <- spectra(object)
     spec <- spec[spec$level == 1, ]
 
-    # if (!is.null(rtr)) {
-    #   spec <- spec[checkOverlapRanges(spec$rt, rtr), ]
-    # }
-
   } else {
 
-    spec <- getRawData(object,
-      TIC = FALSE, BPC = FALSE, chroms = FALSE,
-      levels = 1, rtr = rtr)[["spectra"]]
+    spec <- .get_ms_spectra(filePath(object), levels = 1, rtr = rtr)
 
   }
 
@@ -1087,6 +1354,11 @@ setMethod("plotEICs", "msAnalysis", function(object,
 
   eics <- EICs(object, mz, rt, ppm, sec, id)
 
+  if (nrow(eics) == 0) {
+    message("None of the requested MS traces were found!")
+    return(NULL)
+  }
+
   return(
     plotEICs(eics,
       analyses = NULL,
@@ -1109,28 +1381,14 @@ setMethod("plotEICs", "msAnalysis", function(object,
 #'
 setMethod("BPC", "msAnalysis", function(object) {
 
-  bpc <- chromatograms(object)
+  bpc <- as.data.table(object@bpc)
 
-  if (nrow(bpc) > 0) bpc <- bpc[id %in% "BPC", ]
-
-  if (nrow(bpc) == 0) {
-
-    bpc <- getRawData(object, spectra = FALSE,
-                      TIC = FALSE, BPC = TRUE,
-                      chroms = TRUE)[["chroms"]]
-
-    bpc <- bpc[id %in% "BPC", ]
-
-  }
-
-  if (nrow(bpc) == 0) {
+  if (nrow(bpc) == 0 & object@acquisition$spectra_number > 0) {
 
     targets <- makeTargets()
     targets$id <- "BPC"
-    targets$rtmin <- getMetadata(object, which = "rt_start")$rt_start
-    targets$rtmax <- getMetadata(object, which = "rt_end")$rt_end
-    targets$mzmin <- getMetadata(object, which = "mz_low")$mz_low
-    targets$mzmax <- getMetadata(object, which = "mz_high")$mz_high
+    targets$rtmin <- object@acquisition$rt_start
+    targets$rtmax <- object@acquisition$rt_end
 
     bpc <- EICs(object, mz = targets)
 
@@ -1138,10 +1396,7 @@ setMethod("BPC", "msAnalysis", function(object) {
 
     bpc[bpc[, rank(intensity, ties.method = "max") != .N, by = rt]$V1, intensity := NA]
     bpc <- bpc[!is.na(intensity), ]
-
-  } else {
-
-    bpc <- bpc[, c("id", "rt", "mz", "intensity")]
+    bpc[, id := NULL]
 
   }
 
@@ -1179,11 +1434,17 @@ setMethod("plotBPC", "msAnalysis", function(object,
 
   bpc <- BPC(object)
 
+  if (nrow(bpc) == 0) {
+    message("BPC not found!")
+    return(NULL)
+  }
+
+  bpc$id <- "BPC"
   bpc$analysis <- analysisName(object)
-  setcolorder(bpc, c("analysis", "id", "rt", "intensity"))
+  setcolorder(bpc, c("analysis", "id", "rt", "mz", "intensity"))
 
   return(
-    plotTICs(bpc,
+    plotBPCs(bpc,
              analyses = NULL,
              colorBy = "analyses",
              title = title,
@@ -1220,35 +1481,18 @@ setMethod("plotBPCs", "msAnalysis", function(object,
 #'
 setMethod("TIC", "msAnalysis", function(object) {
 
-  tic <- chromatograms(object)
+  tic <- as.data.table(object@tic)
 
-  if (nrow(tic) > 0) tic <- tic[id %in% "TIC", ]
-
-  if (nrow(tic) == 0) {
-
-    tic <- getRawData(object, spectra = FALSE,
-                      TIC = TRUE, BPC = FALSE,
-                      chroms = TRUE)[["chroms"]]
-
-    tic <- tic[id %in% "TIC", ]
-
-  }
-
-  if (nrow(tic) == 0) {
+  if (nrow(tic) == 0 & object@acquisition$spectra_number > 0) {
 
     targets <- makeTargets()
     targets$id <- "TIC"
-    targets$rtmin <- getMetadata(object, which = "rt_start")$rt_start
-    targets$rtmax <- getMetadata(object, which = "rt_end")$rt_end
-    targets$mzmin <- getMetadata(object, which = "mz_low")$mz_low
-    targets$mzmax <- getMetadata(object, which = "mz_high")$mz_high
+    targets$rtmin <- object@acquisition$rt_start
+    targets$rtmax <- object@acquisition$rt_end
 
     tic <- EICs(object, mz = targets)
-    tic <- tic[, .(id = unique(id), intensity = sum(intensity)), by = "rt"]
-
-  } else {
-
-    tic <- tic[, .(id, rt, intensity)]
+    tic <- tic[, .(intensity = sum(intensity)), by = "rt"]
+    bpc[, id := NULL]
 
   }
 
@@ -1286,6 +1530,12 @@ setMethod("plotTIC", "msAnalysis", function(object,
 
   tic <- TIC(object)
 
+  if (nrow(tic) == 0) {
+    message("TIC not found!")
+    return(NULL)
+  }
+
+  tic$id <- "TIC"
   tic$analysis <- analysisName(object)
   setcolorder(tic, c("analysis", "id", "rt", "intensity"))
 
@@ -1404,6 +1654,11 @@ setMethod("plotXICs", "msAnalysis", function(object,
 
   xic <- XICs(object, mz, rt, ppm, sec, id)
 
+  if (nrow(xic) == 0) {
+    message("None of the requested MS traces were found!")
+    return(NULL)
+  }
+
   if (is.null(targetsMark)) {
     targetsMark <- makeTargets(mz, rt, ppm, sec, id)
     targetsMark <- targetsMark[id %in% xic$id, ]
@@ -1504,11 +1759,14 @@ setMethod("plotMS2s", "msAnalysis", function(object,
                                              ppm = 20,  sec = 60, id = NULL,
                                              legendNames = NULL,
                                              title = NULL,
-                                             interactive = FALSE) {
+                                             interactive = TRUE) {
 
   ms2 <- MS2s(object, mzClust, isolationWindow, mz, rt, ppm, sec, id)
 
-  if (nrow(ms2) < 1) return(cat("Data was not found for any of the targets!"))
+  if (nrow(ms2) == 0) {
+    message("Data was not found for any of the targets!")
+    return(NULL)
+  }
 
   return(
     plotMS2s(ms2, legendNames = legendNames, title = title,
@@ -1584,7 +1842,7 @@ setMethod("getSettings", "msAnalysis", function(object, call = NULL) {
 
 
 
-#### peak methods _______------------------------------------------------------
+#### peak methods _________----------------------------------------------------
 
 ##### hasPeaks ----------------------------------------------------------------
 
@@ -1739,6 +1997,11 @@ setMethod("plotPeaks", "msAnalysis", function(object,
 
   peaks <- peaks(object, targetsID, mass, mz, rt, ppm, sec, filtered)
 
+  if (nrow(peaks) == 0) {
+    message("Requested peaks were not found!")
+    return(NULL)
+  }
+
   pks_tars <- copy(peaks[, .(id, mz, rt, mzmin, mzmax, rtmin, rtmax)])
   pks_tars$rtmin <- pks_tars$rtmin - rtExpand
   pks_tars$rtmax <- pks_tars$rtmax + rtExpand
@@ -1746,6 +2009,11 @@ setMethod("plotPeaks", "msAnalysis", function(object,
   pks_tars$mzmax <- pks_tars$mzmax + mzExpand
 
   eic <- EICs(object, mz = pks_tars)
+
+  if (nrow(eic) == 0) {
+    message("Requested peak EICs were not found!")
+    return(NULL)
+  }
 
   return(
     plotPeaks(eic, peaks, analyses = NULL, colorBy = "targets",
@@ -1797,7 +2065,10 @@ setMethod("mapPeaks", "msAnalysis", function(object,
     filtered
   )
 
-  if (nrow(peaks) < 1) return(cat("Requested peaks were not found!"))
+  if (nrow(peaks) == 0) {
+    message("Requested peaks were not found!")
+    return(NULL)
+  }
 
   if (!is.null(legendNames) &
                     length(legendNames) == length(unique(peaks$id))) {
@@ -1832,7 +2103,132 @@ setMethod("mapPeaks", "msAnalysis", function(object,
 
 
 
-#### _sub-setting peaks_ ------------------------------------------------------
+#### metadata _____________ ---------------------------------------------------
+
+##### getMetadataNames --------------------------------------------------------
+
+#' @describeIn msAnalysis getter for the names of metadata in the analysis.
+#'
+#' @export
+#'
+#' @aliases getMetadataNames,msAnalysis,msAnalysis-method
+#'
+setMethod("getMetadataNames", "msAnalysis", function(object) {
+  return(names(object@metadata))
+})
+
+
+
+##### getMetadata -------------------------------------------------------------
+
+#' @describeIn msAnalysis getter for metadata entries in the analysis.
+#' Returns a list of metadata entries as defined by \code{which}. The argument
+#' which is a string or character vector defining the name/s of the desired
+#' metadata. When \code{which} is \code{NULL}, all entries are returned as list.
+#'
+#' @param which A character vector with the entry name/s.
+#'
+#' @export
+#'
+#' @aliases getMetadata,msAnalysis,msAnalysis-method
+#'
+setMethod("getMetadata", "msAnalysis", function(object, which = NULL) {
+
+  if (!is.null(which)) {
+    mtd_a <- object@metadata[which]
+  } else {
+    mtd_a <- object@metadata
+  }
+
+  return(mtd_a)
+})
+
+
+
+##### addMetadata -------------------------------------------------------------
+
+#' @describeIn msAnalysis setter for analysis metadata. When overwrite is
+#' set to \code{TRUE}, metadata entries with the same name are overwritten.
+#' Note, metadata entries parsed from the MS file cannot be overwritten.
+#'
+#' @param metadata A named vector with metadata entries or a one row
+#' \linkS4class{data.frame} or \linkS4class{data.table} with metadata
+#' added as columns.
+#' @param overwrite Logical, set to \code{TRUE} to overwrite.
+#'
+#' @export
+#'
+#' @aliases addMetadata,msAnalysis,msAnalysis-method
+#'
+setMethod("addMetadata", "msAnalysis", function(object,
+                                                metadata = NULL,
+                                                overwrite = FALSE) {
+
+  const_names <- c(
+    "inst_data", "analyzer", "detector", "source", "time_stamp",
+    "msDetector", "msIonisation", "msManufacturer", "msMassAnalyzer", "msModel",
+    "number_spectra", "spectrum_mode", "ms_levels", "mz_low", "mz_high",
+    "rt_start", "rt_end", "polarity", "number_chromatograms")
+
+  if (is.data.frame(metadata)) {
+
+    name_is_already_there <- colnames(metadata) %in% getMetadataNames(object)
+    name_in_const_names <- colnames(metadata) %in% const_names
+    metadata <- metadata[1, ]
+
+  } else if (is.vector(metadata)) {
+
+    if (is.null(names(metadata))) {
+      warning("Metadata must be a named vector!")
+      return(object)
+    }
+
+    name_is_already_there <- names(metadata) %in% getMetadataNames(object)
+    name_in_const_names <- names(metadata) %in% const_names
+
+  }
+
+
+  if (exists("name_is_already_there")) {
+
+    if (TRUE %in% name_is_already_there & !overwrite) {
+      warning("Metadata name/s already exist/s!")
+      return(object)
+    }
+
+    if (TRUE %in% name_in_const_names) {
+      warning("Metadata entries from raw MS file cannot be overwritten!")
+      return(object)
+    }
+
+    if (TRUE %in% name_is_already_there) {
+
+      metadata <- as.list(metadata)
+
+      object@metadata[names(object@metadata) %in%
+                        names(metadata)] <- metadata[name_is_already_there]
+
+      object@metadata <- c(object@metadata, metadata[!name_is_already_there])
+
+      return(object)
+
+    } else {
+
+      metadata <- as.list(metadata)
+      object@metadata <- c(object@metadata, metadata)
+      return(object)
+
+    }
+  }
+
+  return(object)
+})
+
+
+
+#### others _______________ ---------------------------------------------------
+
+##### _sub-setting peaks_ -----------------------------------------------------
 
 #' @describeIn msAnalysis subset on peaks, using peak index or id.
 #'
@@ -1871,7 +2267,7 @@ setMethod("[", c("msAnalysis", "ANY", "missing", "missing"), function(x, i, ...)
 
 
 
-#### _hasAdjustedRetentionTime_ -----------------------------------------------
+##### _hasAdjustedRetentionTime_ ----------------------------------------------
 
 #' @describeIn msAnalysis getter for presence of adjusted retention time
 #' in the \linkS4class{msAnalysis}.
@@ -1886,7 +2282,7 @@ setMethod("hasAdjustedRetentionTime", "msAnalysis", function(object) {
 
 
 
-### _as.features_ -------------------------------------------------------------
+##### _as.features_ -----------------------------------------------------------
 
 #' @describeIn msAnalysis converts the \linkS4class{msAnalysis}
 #' to a \linkS4class{features} object from the package \pkg{patRoon}.

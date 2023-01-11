@@ -17,12 +17,6 @@
 \alias{analysisInfo,msAnalysis,msAnalysis-method}
 \alias{analysisTable,msAnalysis-method}
 \alias{analysisTable,msAnalysis,msAnalysis-method}
-\alias{getMetadataNames,msAnalysis-method}
-\alias{getMetadataNames,msAnalysis,msAnalysis-method}
-\alias{getMetadata,msAnalysis-method}
-\alias{getMetadata,msAnalysis,msAnalysis-method}
-\alias{addMetadata,msAnalysis-method}
-\alias{addMetadata,msAnalysis,msAnalysis-method}
 \alias{polarity,msAnalysis-method}
 \alias{polarity,msAnalysis,msAnalysis-method}
 \alias{polarities,msAnalysis-method}
@@ -33,14 +27,18 @@
 \alias{getRawData,msAnalysis,msAnalysis-method}
 \alias{loadRawData,msAnalysis-method}
 \alias{loadRawData,msAnalysis,msAnalysis-method}
+\alias{loadSpectra,msAnalysis-method}
+\alias{loadSpectra,msAnalysis,msAnalysis-method}
 \alias{hasLoadedSpectra,msAnalysis-method}
 \alias{hasLoadedSpectra,msAnalysis,msAnalysis-method}
-\alias{hasLoadedChromatograms,msAnalysis-method}
-\alias{hasLoadedChromatograms,msAnalysis,msAnalysis-method}
 \alias{spectra,msAnalysis-method}
 \alias{spectra,msAnalysis,msAnalysis-method}
 \alias{plotSpectra,msAnalysis-method}
 \alias{plotSpectra,msAnalysis,msAnalysis-method}
+\alias{loadChromatograms,msAnalysis-method}
+\alias{loadChromatograms,msAnalysis,msAnalysis-method}
+\alias{hasLoadedChromatograms,msAnalysis-method}
+\alias{hasLoadedChromatograms,msAnalysis,msAnalysis-method}
 \alias{chromatograms,msAnalysis-method}
 \alias{chromatograms,msAnalysis,msAnalysis-method}
 \alias{plotChromatograms,msAnalysis-method}
@@ -89,6 +87,12 @@
 \alias{plotPeaks,msAnalysis,msAnalysis-method}
 \alias{mapPeaks,msAnalysis-method}
 \alias{mapPeaks,msAnalysis,msAnalysis-method}
+\alias{getMetadataNames,msAnalysis-method}
+\alias{getMetadataNames,msAnalysis,msAnalysis-method}
+\alias{getMetadata,msAnalysis-method}
+\alias{getMetadata,msAnalysis,msAnalysis-method}
+\alias{addMetadata,msAnalysis-method}
+\alias{addMetadata,msAnalysis,msAnalysis-method}
 \alias{[,msAnalysis,ANY,missing,missing-method}
 \alias{hasAdjustedRetentionTime,msAnalysis-method}
 \alias{hasAdjustedRetentionTime,msAnalysis,msAnalysis-method}
@@ -112,12 +116,6 @@
 
 \S4method{analysisTable}{msAnalysis}(object)
 
-\S4method{getMetadataNames}{msAnalysis}(object)
-
-\S4method{getMetadata}{msAnalysis}(object, which = NULL)
-
-\S4method{addMetadata}{msAnalysis}(object, metadata = NULL, overwrite = FALSE)
-
 \S4method{polarity}{msAnalysis}(object)
 
 \S4method{polarities}{msAnalysis}(object)
@@ -139,13 +137,17 @@
 
 \S4method{loadRawData}{msAnalysis}(object)
 
-\S4method{hasLoadedSpectra}{msAnalysis}(object)
+\S4method{loadSpectra}{msAnalysis}(object)
 
-\S4method{hasLoadedChromatograms}{msAnalysis}(object)
+\S4method{hasLoadedSpectra}{msAnalysis}(object)
 
 \S4method{spectra}{msAnalysis}(object)
 
 \S4method{plotSpectra}{msAnalysis}(object, mz = NULL, rt = NULL, ppm = 20, sec = 60)
+
+\S4method{loadChromatograms}{msAnalysis}(object)
+
+\S4method{hasLoadedChromatograms}{msAnalysis}(object)
 
 \S4method{chromatograms}{msAnalysis}(object)
 
@@ -220,7 +222,7 @@
   id = NULL,
   legendNames = NULL,
   title = NULL,
-  interactive = FALSE
+  interactive = TRUE
 )
 
 \S4method{addSettings}{msAnalysis}(object, settings)
@@ -288,6 +290,12 @@
   interactive = FALSE
 )
 
+\S4method{getMetadataNames}{msAnalysis}(object)
+
+\S4method{getMetadata}{msAnalysis}(object, which = NULL)
+
+\S4method{addMetadata}{msAnalysis}(object, metadata = NULL, overwrite = FALSE)
+
 \S4method{[}{msAnalysis,ANY,missing,missing}(x, i, j, ..., drop = TRUE)
 
 \S4method{hasAdjustedRetentionTime}{msAnalysis}(object)
@@ -298,14 +306,6 @@
 \item{object}{An \linkS4class{msAnalysis} object.}
 
 \item{obj}{A \linkS4class{msAnalysis} object.}
-
-\item{which}{A character vector with the entry name/s.}
-
-\item{metadata}{A named vector with metadata entries or a one row
-\linkS4class{data.frame} or \linkS4class{data.table} with metadata
-added as columns.}
-
-\item{overwrite}{Logical, set to \code{TRUE} to overwrite.}
 
 \item{spectra}{Logical, set to \code{TRUE} for parsing spectra.}
 
@@ -397,6 +397,14 @@ setting the \emph{x} limits of a plot.}
 \item{ylim}{A length one or two numeric vector for
 setting the \emph{y} limits of a plot.}
 
+\item{which}{A character vector with the entry name/s.}
+
+\item{metadata}{A named vector with metadata entries or a one row
+\linkS4class{data.frame} or \linkS4class{data.table} with metadata
+added as columns.}
+
+\item{overwrite}{Logical, set to \code{TRUE} to overwrite.}
+
 \item{x}{A \linkS4class{msAnalysis} object.}
 
 \item{i}{The indice/s or name/s of the peaks to keep in the \code{x} object.}
@@ -432,17 +440,6 @@ can be used as analysisInfo in \pkg{patRoon}.
 \item \code{analysisTable(msAnalysis)}: getter for a \linkS4class{data.table} with
 four columns, containing the analysis file, name, replicate, blank and class.
 
-\item \code{getMetadataNames(msAnalysis)}: getter for the names of metadata in the analysis.
-
-\item \code{getMetadata(msAnalysis)}: getter for metadata entries in the analysis.
-Returns a list of metadata entries as defined by \code{which}. The argument
-which is a string or character vector defining the name/s of the desired
-metadata. When \code{which} is \code{NULL}, all entries are returned as list.
-
-\item \code{addMetadata(msAnalysis)}: setter for analysis metadata. When overwrite is
-set to \code{TRUE}, metadata entries with the same name are overwritten.
-Note, metadata entries parsed from the MS file cannot be overwritten.
-
 \item \code{polarity(msAnalysis)}: getter for analysis polarity.
 
 \item \code{polarities(msAnalysis)}: getter for analysis polarity.
@@ -459,11 +456,11 @@ from the raw file of an \linkS4class{msAnalysis} object.
 \item \code{loadRawData(msAnalysis)}: adds (when available) raw spectra and chromatograms
 to the respective slots of an \linkS4class{msAnalysis} object.
 
+\item \code{loadSpectra(msAnalysis)}: adds (when available) raw spectra and chromatograms
+to the respective slots of an \linkS4class{msAnalysis} object.
+
 \item \code{hasLoadedSpectra(msAnalysis)}: checks if the \linkS4class{msAnalysis} has loaded
 spectra.
-
-\item \code{hasLoadedChromatograms(msAnalysis)}: checks if the \linkS4class{msAnalysis} has loaded
-chromatograms.
 
 \item \code{spectra(msAnalysis)}: getter for slot spectra in the
 \linkS4class{msAnalysis}.
@@ -472,6 +469,12 @@ chromatograms.
 The arguments \code{mz}, \code{ppm}, \code{rt}
 and \code{sec} are used to construct the targets.
 See ?\link{makeTargets} for more information.
+
+\item \code{loadChromatograms(msAnalysis)}: adds (when available) raw spectra and chromatograms
+to the respective slots of an \linkS4class{msAnalysis} object.
+
+\item \code{hasLoadedChromatograms(msAnalysis)}: checks if the \linkS4class{msAnalysis} has loaded
+chromatograms.
 
 \item \code{chromatograms(msAnalysis)}: getter for the chromatograms slot.
 
@@ -567,6 +570,17 @@ for plotting and is used as legend for the plot.
 \item \code{mapPeaks(msAnalysis)}: maps chromatographic peaks in the analysis.
 The \code{legendNames} is a character vector with the same length as targets
 and is used as legend for the plot.
+
+\item \code{getMetadataNames(msAnalysis)}: getter for the names of metadata in the analysis.
+
+\item \code{getMetadata(msAnalysis)}: getter for metadata entries in the analysis.
+Returns a list of metadata entries as defined by \code{which}. The argument
+which is a string or character vector defining the name/s of the desired
+metadata. When \code{which} is \code{NULL}, all entries are returned as list.
+
+\item \code{addMetadata(msAnalysis)}: setter for analysis metadata. When overwrite is
+set to \code{TRUE}, metadata entries with the same name are overwritten.
+Note, metadata entries parsed from the MS file cannot be overwritten.
 
 \item \code{x[i}: subset on peaks, using peak index or id.
 

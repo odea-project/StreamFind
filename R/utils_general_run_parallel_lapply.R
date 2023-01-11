@@ -1,27 +1,27 @@
 
 runParallelLapply <- function(obj_list,
                               run_parallel = FALSE,
-                              workers = NULL, FUN = NULL, ...) {
+                              FUN = NULL, ...) {
 
-  handlers(handler_progress(format="[:bar] :percent :eta :message"))
+  #handlers(handler_progress(format="[:bar] :percent :eta :message"))
 
   if (run_parallel & length(obj_list) > 1) {
 
-    if (is.null(workers)) {
-      workers <- availableCores() - 1
-    }
+    #if (is.null(workers)) workers <- availableWorkers() - 1
 
-    if (length(obj_list) < workers) workers <- length(obj_list)
+    #if (length(obj_list) < workers) workers <- length(obj_list)
 
     if (future::supportsMulticore()) {
 
-      plan("multicore", workers = workers) #not windows/not RStudio
+      plan("multicore") #not windows/not RStudio
 
     } else {
 
-      plan("multisession", workers = workers)  #both Windows and Linux
+      plan("multisession")  #both Windows and Linux
 
     }
+
+    #setDTthreads(1)
 
   } else {
 
@@ -29,16 +29,30 @@ runParallelLapply <- function(obj_list,
 
   }
 
-  with_progress({
+  # with_progress({
+  #
+  #   p <- progressor(steps = length(obj_list))
+  #
+  #   list_out <- future_lapply(obj_list, FUN = FUN,
+  #                             future.seed = NULL,
+  #                             future.scheduling = FALSE,
+  #                             future.chunk.size	= 1,
+  #                             ...)
+  #
+  # })
 
-    p <- progressor(steps = length(obj_list))
+  list_out <- future_lapply(obj_list, FUN = FUN,
+                            future.seed = NULL,
+                            future.scheduling = FALSE,
+                            future.chunk.size	= 1,
+                            ...)
 
-    list_out <- future_lapply(obj_list, FUN = FUN,
-                              future.seed = TRUE, ...)
+  if (run_parallel)  {
 
-  })
+    plan("sequential")
+    #setDTthreads(0)
 
-  if (run_parallel)  plan("sequential")
+  }
 
   return(list_out)
 }

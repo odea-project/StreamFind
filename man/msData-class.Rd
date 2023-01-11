@@ -21,12 +21,6 @@
 \alias{blankReplicateNames,msData,msData-method}
 \alias{blankReplicateNames<-,msData-method}
 \alias{blankReplicateNames<-,msData,msData-method}
-\alias{getMetadataNames,msData-method}
-\alias{getMetadataNames,msData,msData-method}
-\alias{getMetadata,msData-method}
-\alias{getMetadata,msData,msData-method}
-\alias{addMetadata,msData-method}
-\alias{addMetadata,msData,msData-method}
 \alias{polarities,msData-method}
 \alias{polarities,msData,msData-method}
 \alias{addAnalyses,msData-method}
@@ -40,18 +34,26 @@
 \alias{loadRawData,msData,msData-method}
 \alias{loadSpectraInfo,msData-method}
 \alias{loadSpectraInfo,msData,msData-method}
+\alias{getSpectra,msData-method}
+\alias{getSpectra,msData,msData-method}
+\alias{loadSpectra,msData-method}
+\alias{loadSpectra,msData,msData-method}
 \alias{hasLoadedSpectra,msData-method}
 \alias{hasLoadedSpectra,msData,msData-method}
-\alias{hasLoadedChromatograms,msData-method}
-\alias{hasLoadedChromatograms,msData,msData-method}
 \alias{spectra,msData-method}
 \alias{spectra,msData,msData-method}
 \alias{plotSpectra,msData-method}
 \alias{plotSpectra,msData,msData-method}
+\alias{getChromatograms,msData-method}
+\alias{getChromatograms,msData,msData-method}
+\alias{loadChromatograms,msData-method}
+\alias{loadChromatograms,msData,msData-method}
+\alias{hasLoadedChromatograms,msData-method}
+\alias{hasLoadedChromatograms,msData,msData-method}
 \alias{chromatograms,msData-method}
 \alias{chromatograms,msData,msData-method}
 \alias{plotChromatograms,msData-method}
-\alias{plotChromatograms,msAnalysis,msAnalysis-method}
+\alias{plotChromatograms,msData,msData-method}
 \alias{EICs,msData-method}
 \alias{EICs,msData,msData-method}
 \alias{plotEICs,msData-method}
@@ -96,6 +98,12 @@
 \alias{plotAnnotation,msData,msData-method}
 \alias{[,msData,ANY,ANY,missing-method}
 \alias{[,msData,ANY,ANY,ANY-method}
+\alias{getMetadataNames,msData-method}
+\alias{getMetadataNames,msData,msData-method}
+\alias{getMetadata,msData-method}
+\alias{getMetadata,msData,msData-method}
+\alias{addMetadata,msData-method}
+\alias{addMetadata,msData,msData-method}
 \alias{hasAdjustedRetentionTime,msData-method}
 \alias{hasAdjustedRetentionTime,msData,msData-method}
 \alias{as.features,msData-method}
@@ -133,12 +141,6 @@
 
 \S4method{blankReplicateNames}{msData}(object) <- value
 
-\S4method{getMetadataNames}{msData}(object, simplify = FALSE)
-
-\S4method{getMetadata}{msData}(object, analyses = NULL, which = NULL)
-
-\S4method{addMetadata}{msData}(object, metadata = NULL, overwrite = FALSE)
-
 \S4method{polarities}{msData}(object)
 
 \S4method{addAnalyses}{msData}(
@@ -171,9 +173,20 @@
 
 \S4method{loadSpectraInfo}{msData}(object, run_parallel = FALSE)
 
-\S4method{hasLoadedSpectra}{msData}(object)
+\S4method{getSpectra}{msData}(
+  object,
+  analyses = NULL,
+  levels = NULL,
+  rtr = NULL,
+  preMZrange = NULL,
+  minIntensityMS1 = 0,
+  minIntensityMS2 = 0,
+  run_parallel = FALSE
+)
 
-\S4method{hasLoadedChromatograms}{msData}(object)
+\S4method{loadSpectra}{msData}(object, run_parallel = FALSE)
+
+\S4method{hasLoadedSpectra}{msData}(object)
 
 \S4method{spectra}{msData}(object, analyses = NULL)
 
@@ -187,6 +200,17 @@
   sec = 60,
   colorBy = "analyses"
 )
+
+\S4method{getChromatograms}{msData}(
+  object,
+  analyses = NULL,
+  minIntensity = 0,
+  run_parallel = FALSE
+)
+
+\S4method{loadChromatograms}{msData}(object, run_parallel = FALSE)
+
+\S4method{hasLoadedChromatograms}{msData}(object)
 
 \S4method{chromatograms}{msData}(object, analyses = NULL)
 
@@ -350,6 +374,7 @@
   ppm = 20,
   sec = 30,
   rtExpand = 60,
+  mzExpand = 0.005,
   filtered = TRUE,
   run_parallel = FALSE,
   colorBy = "targets",
@@ -435,6 +460,12 @@
 
 \S4method{[}{msData,ANY,ANY,ANY}(x, i, j, p)
 
+\S4method{getMetadataNames}{msData}(object, simplify = FALSE)
+
+\S4method{getMetadata}{msData}(object, analyses = NULL, which = NULL)
+
+\S4method{addMetadata}{msData}(object, metadata = NULL, overwrite = FALSE)
+
 \S4method{hasAdjustedRetentionTime}{msData}(object)
 
 \S4method{as.features}{msData}(object)
@@ -454,23 +485,10 @@
 
 \item{value}{A character vector applicable to the respective method.}
 
-\item{simplify}{Logical, set to \code{TRUE} for simplifying
-the returned object.}
+\item{analysisList}{A list of \linkS4class{msAnalysis} objects.}
 
 \item{analyses}{A numeric or character vector with the index or
 analysis name/s. When \code{NULL}, all the analyses are used.}
-
-\item{which}{A character vector with the entry name/s.}
-
-\item{metadata}{A list with a named vector of metadata for each analyses
-in the \linkS4class{msData} object or a \code{data.frame} or
-\code{data.table} with metadata added as columns and with the number of
-rows equal to the number of analyses in the \linkS4class{msData} object.}
-
-\item{overwrite}{Logical, set to \code{TRUE} to overwrite existing metadata
-entries.}
-
-\item{analysisList}{A list of \linkS4class{msAnalysis} objects.}
 
 \item{x}{An \linkS4class{msData} object.}
 
@@ -583,11 +601,25 @@ features averaged for each analysis replicate group.}
 \item{all}{Logical, set to \code{TRUE} for displaying all features/peaks.}
 
 \item{p}{The indice/s or \emph{id}/s of peaks to keep.}
+
+\item{simplify}{Logical, set to \code{TRUE} for simplifying
+the returned object.}
+
+\item{which}{A character vector with the entry name/s.}
+
+\item{metadata}{A list with a named vector of metadata for each analyses
+in the \linkS4class{msData} object or a \code{data.frame} or
+\code{data.table} with metadata added as columns and with the number of
+rows equal to the number of analyses in the \linkS4class{msData} object.}
+
+\item{overwrite}{Logical, set to \code{TRUE} to overwrite existing metadata
+entries.}
 }
 \description{
-An S4 class object to store and manage processing of MS analyses.
-The \code{msData} object inherits the \linkS4class{streamSet}  structure plus
-the features slot for processing MS data.
+An S4 class object to store and manage processing of mass
+spcetrometric analyses. The \code{msData} object inherits the
+\linkS4class{streamSet} structure plus the features slot for
+processing MS data.
 }
 \section{Methods (by generic)}{
 \itemize{
@@ -620,21 +652,6 @@ The \code{value} is a character vector with the same length as
 the number of analyses in the \code{object},
 containing the associated blank replicate name of each analysis.
 
-\item \code{getMetadataNames(msData)}: getter for the names of metadata in each analyses.
-When simplify is set to \code{TRUE}, a character vector of unique names for
-all analyses is returned instead of a list with metadata names for
-each analysis.
-
-\item \code{getMetadata(msData)}: getter for analyses metadata.
-Returns a \code{data.table} with each metadata entry as a column and each
-analysis as a row. The \code{which} argument is used to filter the metadata
-entries to be returned. When \code{which} is \code{NULL}, all entries are
-returned. Metadata entries with multiple values are returned as list in the
-\code{data.table} cell. Metadata not present in a given analysis is assigned
-as NA in the returned \code{data.table}.
-
-\item \code{addMetadata(msData)}: setter for analyses metadata.
-
 \item \code{polarities(msData)}: getter for the polarity of the analyses.
 
 \item \code{addAnalyses(msData)}: adds \linkS4class{msAnalysis} objects to the existing
@@ -657,11 +674,14 @@ of each \linkS4class{msAnalysis} in the \linkS4class{msData}.
 If the levels are higher than one, as the case of MS/MS data,
 the collision energy and precursor scan and \emph{m/z} are also returned.
 
+\item \code{getSpectra(msData)}: adds (when available) raw spectra to each
+\linkS4class{msAnalysis} of the \linkS4class{msData} object.
+
+\item \code{loadSpectra(msData)}: adds (when available) raw spectra to each
+\linkS4class{msAnalysis} of the \linkS4class{msData} object.
+
 \item \code{hasLoadedSpectra(msData)}: checks if the analyses in the \linkS4class{msData} have
 loaded raw spectra.
-
-\item \code{hasLoadedChromatograms(msData)}: checks if the analyses in the \linkS4class{msData} have
-loaded raw chromatograms.
 
 \item \code{spectra(msData)}: getter for slot spectra from \linkS4class{msAnalysis}
 objects of the in the \linkS4class{msData} object.
@@ -672,6 +692,15 @@ in the \linkS4class{msData} object in 3D. The arguments \code{mz},
 See ?\link{makeTargets} for more information. The argument \code{colorBy}
 can be set to \emph{analyses} or \emph{levels} to color by
 \linkS4class{msAnalysis} or MS levels.
+
+\item \code{getChromatograms(msData)}: adds (when available) raw spectra to each
+\linkS4class{msAnalysis} of the \linkS4class{msData} object.
+
+\item \code{loadChromatograms(msData)}: adds (when available) raw spectra to each
+\linkS4class{msAnalysis} of the \linkS4class{msData} object.
+
+\item \code{hasLoadedChromatograms(msData)}: checks if the analyses in the \linkS4class{msData} have
+loaded raw chromatograms.
 
 \item \code{chromatograms(msData)}: getter for slot chromatograms in the
 \linkS4class{msAnalysis} objects of the \linkS4class{msData} object.
@@ -836,6 +865,21 @@ Note that this method is irreversible.
 
 \item \code{x[i}: subset on analyses, features and peaks, using index or name.
 Note that this method is irreversible.
+
+\item \code{getMetadataNames(msData)}: getter for the names of metadata in each analyses.
+When simplify is set to \code{TRUE}, a character vector of unique names for
+all analyses is returned instead of a list with metadata names for
+each analysis.
+
+\item \code{getMetadata(msData)}: getter for analyses metadata.
+Returns a \code{data.table} with each metadata entry as a column and each
+analysis as a row. The \code{which} argument is used to filter the metadata
+entries to be returned. When \code{which} is \code{NULL}, all entries are
+returned. Metadata entries with multiple values are returned as list in the
+\code{data.table} cell. Metadata not present in a given analysis is assigned
+as NA in the returned \code{data.table}.
+
+\item \code{addMetadata(msData)}: setter for analyses metadata.
 
 \item \code{hasAdjustedRetentionTime(msData)}: getter for presence of adjusted retention time
 in the analyses.

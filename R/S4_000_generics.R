@@ -1,6 +1,7 @@
 
 ### Generics -------------------------------------------------------------------
 
+#### setTitle -----
 
 #' @title setTitle
 #'
@@ -11,7 +12,7 @@
 #'
 setGeneric("setTitle", function(object, ...) standardGeneric("setTitle"))
 
-
+#### setTitle<- -----
 
 #' @title setTitle<-
 #'
@@ -22,7 +23,7 @@ setGeneric("setTitle", function(object, ...) standardGeneric("setTitle"))
 #'
 setGeneric("setTitle<-", function(object, value) standardGeneric("setTitle<-"))
 
-
+#### setDate -----
 
 #' @title setDate
 #'
@@ -33,7 +34,7 @@ setGeneric("setTitle<-", function(object, value) standardGeneric("setTitle<-"))
 #'
 setGeneric("setDate", function(object, ...) standardGeneric("setDate"))
 
-
+#### analysisTable -----
 
 #' @title analysisTable
 #'
@@ -43,7 +44,7 @@ setGeneric("setDate", function(object, ...) standardGeneric("setDate"))
 #'
 setGeneric("analysisTable", function(object) standardGeneric("analysisTable"))
 
-
+#### analysisInfo -----
 
 #' @title analysisInfo
 #'
@@ -53,7 +54,7 @@ setGeneric("analysisTable", function(object) standardGeneric("analysisTable"))
 #'
 setGeneric("analysisInfo", function(obj) standardGeneric("analysisInfo"))
 
-
+#### filePath -----
 
 #' @title filePath
 #'
@@ -63,7 +64,7 @@ setGeneric("analysisInfo", function(obj) standardGeneric("analysisInfo"))
 #'
 setGeneric("filePath", function(object) standardGeneric("filePath"))
 
-
+#### filePaths -----
 
 #' @title filePaths
 #'
@@ -73,7 +74,7 @@ setGeneric("filePath", function(object) standardGeneric("filePath"))
 #'
 setGeneric("filePaths", function(object) standardGeneric("filePaths"))
 
-
+#### analysisName -----
 
 #' @title analysisName
 #'
@@ -83,7 +84,7 @@ setGeneric("filePaths", function(object) standardGeneric("filePaths"))
 #'
 setGeneric("analysisName", function(object) standardGeneric("analysisName"))
 
-
+#### analysisNames -----
 
 #' @title analysisNames
 #'
@@ -93,7 +94,7 @@ setGeneric("analysisName", function(object) standardGeneric("analysisName"))
 #'
 setGeneric("analysisNames", function(object) standardGeneric("analysisNames"))
 
-
+#### replicateNames -----
 
 #' @title replicateNames
 #'
@@ -103,7 +104,7 @@ setGeneric("analysisNames", function(object) standardGeneric("analysisNames"))
 #'
 setGeneric("replicateNames", function(object) standardGeneric("replicateNames"))
 
-
+#### replicateNames<- -----
 
 #' @title replicateNames<-
 #'
@@ -114,7 +115,7 @@ setGeneric("replicateNames", function(object) standardGeneric("replicateNames"))
 #'
 setGeneric("replicateNames<-", function(object, value) standardGeneric("replicateNames<-"))
 
-
+#### blankReplicateNames -----
 
 #' @title blankReplicateNames
 #'
@@ -124,7 +125,7 @@ setGeneric("replicateNames<-", function(object, value) standardGeneric("replicat
 #'
 setGeneric("blankReplicateNames", function(object) standardGeneric("blankReplicateNames"))
 
-
+#### blankReplicateNames<- -----
 
 #' @title blankReplicateNames<-
 #'
@@ -135,6 +136,7 @@ setGeneric("blankReplicateNames", function(object) standardGeneric("blankReplica
 #'
 setGeneric("blankReplicateNames<-", function(object, value) standardGeneric("blankReplicateNames<-"))
 
+#### polarity -----
 
 #' @title polarity
 #'
@@ -145,7 +147,7 @@ setGeneric("blankReplicateNames<-", function(object, value) standardGeneric("bla
 #'
 setGeneric("polarity", function(object, ...) standardGeneric("polarity"))
 
-
+#### polarities -----
 
 #' @title polarities
 #'
@@ -156,7 +158,7 @@ setGeneric("polarity", function(object, ...) standardGeneric("polarity"))
 #'
 setGeneric("polarities", function(object, ...) standardGeneric("polarities"))
 
-
+#### addAnalyses -----
 
 #' @title addAnalyses
 #'
@@ -167,7 +169,7 @@ setGeneric("polarities", function(object, ...) standardGeneric("polarities"))
 #'
 setGeneric("addAnalyses", function(object, ...) standardGeneric("addAnalyses"))
 
-
+#### getAnalyses -----
 
 #' @title getAnalyses
 #'
@@ -178,7 +180,7 @@ setGeneric("addAnalyses", function(object, ...) standardGeneric("addAnalyses"))
 #'
 setGeneric("getAnalyses", function(object, ...) standardGeneric("getAnalyses"))
 
-
+#### getMetadataNames -----
 
 #' @title getMetadataNames
 #'
@@ -189,7 +191,7 @@ setGeneric("getAnalyses", function(object, ...) standardGeneric("getAnalyses"))
 #'
 setGeneric("getMetadataNames", function(object, ...) standardGeneric("getMetadataNames"))
 
-
+#### getMetadata -----
 
 #' @title getMetadata
 #'
@@ -200,6 +202,7 @@ setGeneric("getMetadataNames", function(object, ...) standardGeneric("getMetadat
 #'
 setGeneric("getMetadata", function(object, ...) standardGeneric("getMetadata"))
 
+#### addMetadata -----
 
 #' @title addMetadata
 #'
@@ -210,7 +213,7 @@ setGeneric("getMetadata", function(object, ...) standardGeneric("getMetadata"))
 #'
 setGeneric("addMetadata", function(object, ...) standardGeneric("addMetadata"))
 
-
+#### getSpectraInfo -----
 
 #' @title getSpectraInfo
 #'
@@ -221,7 +224,7 @@ setGeneric("addMetadata", function(object, ...) standardGeneric("addMetadata"))
 #'
 setGeneric("getSpectraInfo", function(object, ...) standardGeneric("getSpectraInfo"))
 
-
+#### getRawData -----
 
 #' @title getRawData
 #'
@@ -232,7 +235,7 @@ setGeneric("getSpectraInfo", function(object, ...) standardGeneric("getSpectraIn
 #'
 setGeneric("getRawData", function(object, ...) standardGeneric("getRawData"))
 
-
+#### loadSpectraInfo -----
 
 #' @title loadSpectraInfo
 #'
@@ -243,7 +246,7 @@ setGeneric("getRawData", function(object, ...) standardGeneric("getRawData"))
 #'
 setGeneric("loadSpectraInfo", function(object, ...) standardGeneric("loadSpectraInfo"))
 
-
+#### loadRawData -----
 
 #' @title loadRawData
 #'
@@ -254,7 +257,29 @@ setGeneric("loadSpectraInfo", function(object, ...) standardGeneric("loadSpectra
 #'
 setGeneric("loadRawData", function(object, ...) standardGeneric("loadRawData"))
 
+#### getSpectra -----
 
+#' @title getSpectra
+#'
+#' @description Generic for getting spectra.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
+setGeneric("getSpectra", function(object, ...) standardGeneric("getSpectra"))
+
+#### loadSpectra -----
+
+#' @title loadSpectra
+#'
+#' @description Generic for loading spectra.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
+setGeneric("loadSpectra", function(object, ...) standardGeneric("loadSpectra"))
+
+#### hasLoadedSpectra -----
 
 #' @title hasLoadedSpectra
 #'
@@ -265,18 +290,7 @@ setGeneric("loadRawData", function(object, ...) standardGeneric("loadRawData"))
 #'
 setGeneric("hasLoadedSpectra", function(object, ...) standardGeneric("hasLoadedSpectra"))
 
-
-
-#' @title hasLoadedChromatograms
-#'
-#' @description Generic for checking if has loaded chromatograms.
-#'
-#' @param object A method specific class object.
-#' @param ... Other method specific arguments.
-#'
-setGeneric("hasLoadedChromatograms", function(object, ...) standardGeneric("hasLoadedChromatograms"))
-
-
+#### spectra -----
 
 #' @title spectra
 #'
@@ -287,7 +301,7 @@ setGeneric("hasLoadedChromatograms", function(object, ...) standardGeneric("hasL
 #'
 setGeneric("spectra", function(object, ...) standardGeneric("spectra"))
 
-
+#### plotSpectra -----
 
 #' @title plotSpectra
 #'
@@ -298,7 +312,40 @@ setGeneric("spectra", function(object, ...) standardGeneric("spectra"))
 #'
 setGeneric("plotSpectra", function(object, ...) standardGeneric("plotSpectra"))
 
+#### getChromatograms -----
 
+#' @title getChromatograms
+#'
+#' @description Generic for loading chromatograms.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
+setGeneric("getChromatograms", function(object, ...) standardGeneric("getChromatograms"))
+
+#### loadChromatograms -----
+
+#' @title loadChromatograms
+#'
+#' @description Generic for loading chromatograms.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
+setGeneric("loadChromatograms", function(object, ...) standardGeneric("loadChromatograms"))
+
+#### hasLoadedChromatograms -----
+
+#' @title hasLoadedChromatograms
+#'
+#' @description Generic for checking if has loaded chromatograms.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
+setGeneric("hasLoadedChromatograms", function(object, ...) standardGeneric("hasLoadedChromatograms"))
+
+#### chromatograms -----
 
 #' @title chromatograms
 #'
@@ -309,7 +356,7 @@ setGeneric("plotSpectra", function(object, ...) standardGeneric("plotSpectra"))
 #'
 setGeneric("chromatograms", function(object, ...) standardGeneric("chromatograms"))
 
-
+#### plotChromatograms -----
 
 #' @title plotChromatograms
 #'
@@ -320,7 +367,7 @@ setGeneric("chromatograms", function(object, ...) standardGeneric("chromatograms
 #'
 setGeneric("plotChromatograms", function(object, ...) standardGeneric("plotChromatograms"))
 
-
+#### EICs -----
 
 #' @title EICs
 #'
@@ -331,7 +378,7 @@ setGeneric("plotChromatograms", function(object, ...) standardGeneric("plotChrom
 #'
 setGeneric("EICs", function(object, ...) standardGeneric("EICs"))
 
-
+#### plotEICs -----
 
 #' @title plotEICs
 #'
@@ -342,7 +389,7 @@ setGeneric("EICs", function(object, ...) standardGeneric("EICs"))
 #'
 setGeneric("plotEICs", function(object, ...) standardGeneric("plotEICs"))
 
-
+#### BPC -----
 
 #' @title BPC
 #'
@@ -353,7 +400,7 @@ setGeneric("plotEICs", function(object, ...) standardGeneric("plotEICs"))
 #'
 setGeneric("BPC", function(object, ...) standardGeneric("BPC"))
 
-
+#### BPCs -----
 
 #' @title BPCs
 #'
@@ -364,7 +411,7 @@ setGeneric("BPC", function(object, ...) standardGeneric("BPC"))
 #'
 setGeneric("BPCs", function(object, ...) standardGeneric("BPCs"))
 
-
+#### plotBPC -----
 
 #' @title plotBPC
 #'
@@ -375,7 +422,7 @@ setGeneric("BPCs", function(object, ...) standardGeneric("BPCs"))
 #'
 setGeneric("plotBPC", function(object, ...) standardGeneric("plotBPC"))
 
-
+#### plotBPCs -----
 
 #' @title plotBPCs
 #'
@@ -386,7 +433,7 @@ setGeneric("plotBPC", function(object, ...) standardGeneric("plotBPC"))
 #'
 setGeneric("plotBPCs", function(object, ...) standardGeneric("plotBPCs"))
 
-
+#### TIC -----
 
 #' @title TIC
 #'
@@ -397,7 +444,7 @@ setGeneric("plotBPCs", function(object, ...) standardGeneric("plotBPCs"))
 #'
 setGeneric("TIC", function(object, ...) standardGeneric("TIC"))
 
-
+#### TICs -----
 
 #' @title TICs
 #'
@@ -408,7 +455,7 @@ setGeneric("TIC", function(object, ...) standardGeneric("TIC"))
 #'
 setGeneric("TICs", function(object, ...) standardGeneric("TICs"))
 
-
+#### plotTIC -----
 
 #' @title plotTIC
 #'
@@ -419,7 +466,7 @@ setGeneric("TICs", function(object, ...) standardGeneric("TICs"))
 #'
 setGeneric("plotTIC", function(object, ...) standardGeneric("plotTIC"))
 
-
+#### plotTICs -----
 
 #' @title plotTICs
 #'
@@ -430,7 +477,7 @@ setGeneric("plotTIC", function(object, ...) standardGeneric("plotTIC"))
 #'
 setGeneric("plotTICs", function(object, ...) standardGeneric("plotTICs"))
 
-
+#### XICs -----
 
 #' @title XICs
 #'
@@ -441,7 +488,7 @@ setGeneric("plotTICs", function(object, ...) standardGeneric("plotTICs"))
 #'
 setGeneric("XICs", function(object, ...) standardGeneric("XICs"))
 
-
+#### plotXICs -----
 
 #' @title plotXICs
 #'
@@ -452,7 +499,7 @@ setGeneric("XICs", function(object, ...) standardGeneric("XICs"))
 #'
 setGeneric("plotXICs", function(object, ...) standardGeneric("plotXICs"))
 
-
+#### MS2s -----
 
 #' @title MS2s
 #'
@@ -463,7 +510,7 @@ setGeneric("plotXICs", function(object, ...) standardGeneric("plotXICs"))
 #'
 setGeneric("MS2s", function(object, ...) standardGeneric("MS2s"))
 
-
+#### plotMS2s -----
 
 #' @title plotMS2s
 #'
@@ -474,7 +521,7 @@ setGeneric("MS2s", function(object, ...) standardGeneric("MS2s"))
 #'
 setGeneric("plotMS2s", function(object, ...) standardGeneric("plotMS2s"))
 
-
+#### hasPeaks -----
 
 #' @title hasPeaks
 #'
@@ -485,7 +532,7 @@ setGeneric("plotMS2s", function(object, ...) standardGeneric("plotMS2s"))
 #'
 setGeneric("hasPeaks", function(object, ...) standardGeneric("hasPeaks"))
 
-
+#### peaks -----
 
 #' @title peaks
 #'
@@ -496,7 +543,7 @@ setGeneric("hasPeaks", function(object, ...) standardGeneric("hasPeaks"))
 #'
 setGeneric("peaks", function(object, ...) standardGeneric("peaks"))
 
-
+#### peakEICs -----
 
 #' @title peakEICs
 #'
@@ -507,7 +554,7 @@ setGeneric("peaks", function(object, ...) standardGeneric("peaks"))
 #'
 setGeneric("peakEICs", function(object, ...) standardGeneric("peakEICs"))
 
-
+#### plotPeaks -----
 
 #' @title plotPeaks
 #'
@@ -518,7 +565,7 @@ setGeneric("peakEICs", function(object, ...) standardGeneric("peakEICs"))
 #'
 setGeneric("plotPeaks", function(object, ...) standardGeneric("plotPeaks"))
 
-
+#### mapPeaks -----
 
 #' @title mapPeaks
 #'
@@ -529,7 +576,7 @@ setGeneric("plotPeaks", function(object, ...) standardGeneric("plotPeaks"))
 #'
 setGeneric("mapPeaks", function(object, ...) standardGeneric("mapPeaks"))
 
-
+#### hasFeatures -----
 
 #' @title hasFeatures
 #'
@@ -539,7 +586,7 @@ setGeneric("mapPeaks", function(object, ...) standardGeneric("mapPeaks"))
 #'
 setGeneric("hasFeatures", function(object) standardGeneric("hasFeatures"))
 
-
+#### features -----
 
 #' @title features
 #'
@@ -550,7 +597,7 @@ setGeneric("hasFeatures", function(object) standardGeneric("hasFeatures"))
 #'
 setGeneric("features", function(object, ...) standardGeneric("features"))
 
-
+#### plotFeatures -----
 
 #' @title plotFeatures
 #'
@@ -561,7 +608,7 @@ setGeneric("features", function(object, ...) standardGeneric("features"))
 #'
 setGeneric("plotFeatures", function(object, ...) standardGeneric("plotFeatures"))
 
-
+#### mapFeatures -----
 
 #' @title mapFeatures
 #'
@@ -572,7 +619,7 @@ setGeneric("plotFeatures", function(object, ...) standardGeneric("plotFeatures")
 #'
 setGeneric("mapFeatures", function(object, ...) standardGeneric("mapFeatures"))
 
-
+#### hasAdjustedRetentionTime -----
 
 #' @title hasAdjustedRetentionTime
 #'
@@ -582,7 +629,7 @@ setGeneric("mapFeatures", function(object, ...) standardGeneric("mapFeatures"))
 #'
 setGeneric("hasAdjustedRetentionTime", function(object) standardGeneric("hasAdjustedRetentionTime"))
 
-
+#### annotation -----
 
 #' @title annotation
 #'
@@ -593,7 +640,7 @@ setGeneric("hasAdjustedRetentionTime", function(object) standardGeneric("hasAdju
 #'
 setGeneric("annotation", function(object, ...) standardGeneric("annotation"))
 
-
+#### plotAnnotation -----
 
 #' @title plotAnnotation
 #'
@@ -604,7 +651,7 @@ setGeneric("annotation", function(object, ...) standardGeneric("annotation"))
 #'
 setGeneric("plotAnnotation", function(object, ...) standardGeneric("plotAnnotation"))
 
-
+#### addSettings -----
 
 #' @title addSettings
 #'
@@ -615,7 +662,7 @@ setGeneric("plotAnnotation", function(object, ...) standardGeneric("plotAnnotati
 #'
 setGeneric("addSettings", function(object, ...) standardGeneric("addSettings"))
 
-
+#### getSettingsNames -----
 
 #' @title getSettingsNames
 #'
@@ -626,7 +673,7 @@ setGeneric("addSettings", function(object, ...) standardGeneric("addSettings"))
 #'
 setGeneric("getSettingsNames", function(object, ...) standardGeneric("getSettingsNames"))
 
-
+#### getSettings -----
 
 #' @title getSettings
 #'
@@ -637,7 +684,7 @@ setGeneric("getSettingsNames", function(object, ...) standardGeneric("getSetting
 #'
 setGeneric("getSettings", function(object, ...) standardGeneric("getSettings"))
 
-
+#### getAlgorithm -----
 
 #' @title getAlgorithm
 #'
@@ -648,7 +695,7 @@ setGeneric("getSettings", function(object, ...) standardGeneric("getSettings"))
 #'
 setGeneric("getAlgorithm", function(object, ...) standardGeneric("getAlgorithm"))
 
-
+#### getParameters -----
 
 #' @title getParameters
 #'
@@ -659,7 +706,7 @@ setGeneric("getAlgorithm", function(object, ...) standardGeneric("getAlgorithm")
 #'
 setGeneric("getParameters", function(object, ...) standardGeneric("getParameters"))
 
-
+#### exportSettings -----
 
 #' @title exportSettings
 #'
@@ -670,7 +717,7 @@ setGeneric("getParameters", function(object, ...) standardGeneric("getParameters
 #'
 setGeneric("exportSettings", function(object, ...) standardGeneric("exportSettings"))
 
-
+#### as.features -----
 
 #' @title as.features
 #'
@@ -681,7 +728,7 @@ setGeneric("exportSettings", function(object, ...) standardGeneric("exportSettin
 #'
 setGeneric("as.features", function(object, ...) standardGeneric("as.features"))
 
-
+#### as.featureGroups -----
 
 #' @title as.featureGroups
 #'

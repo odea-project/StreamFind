@@ -117,6 +117,80 @@ setMethod("plotTICs", "data.table", function(object,
 
 
 
+### plotBPCs-data.table --------------------------------------------------
+
+#' @title plotBPCs-data.table
+#'
+#' @description Plots a total ion chromatogram (TIC) from the
+#' \linkS4class{data.table} obtained by the S4 method \code{\link{TICs}}.
+#' The colorBy argument can be "analyses" or "replicates" to color
+#' the plot by analyses or by analysis replicates.
+#'
+#' @param object A \linkS4class{data.table} as produced by
+#' the method \code{\link{TICs}}.
+#' @template args-single-analyses
+#' @template args_plots_colorby_title_interactive
+#'
+#' @export
+#'
+#' @aliases plotBPCs,data.table-method
+#'
+setMethod("plotBPCs", "data.table", function(object,
+                                             analyses = NULL,
+                                             colorBy = "analyses",
+                                             title = NULL,
+                                             interactive = FALSE) {
+  bpc <- copy(object)
+
+  if (!"analysis" %in% colnames(bpc)) {
+    bpc$analysis <- " "
+    colorBy <- "targets"
+  }
+
+  if ((!is.null(analyses)) & ("analysis" %in% colnames(bpc))) {
+    if (is.numeric(analyses)) analyses <- unique(bpc$analysis)[analyses]
+    bpc[analysis %in% analyses, ]
+  }
+
+  if (nrow(bpc) < 1) return(cat("Data was not found for any of the targets!"))
+
+  if (colorBy == "analyses") {
+    leg <- unique(bpc$analysis)
+    varkey <- bpc$analysis
+  } else if (colorBy == "replicates") {
+    leg <- unique(bpc[, .(analysis, replicate)])
+    leg <- leg$replicate
+    varkey <- bpc$replicate
+  } else if (!is.null(legendNames) & length(legendNames) == length(unique(bpc$id))) {
+    leg <- legendNames
+    names(leg) <- unique(bpc$id)
+    varkey <- sapply(bpc$id, function(x) leg[[x]])
+  } else {
+    leg <- unique(bpc$id)
+    varkey <- bpc$id
+  }
+
+  bpc[, var := varkey][]
+
+  if (!interactive) {
+
+    return(
+      plotStaticEICs(
+        bpc,
+        title
+      )
+    )
+
+  } else {
+
+    plot <- plotInteractiveBPCs(bpc, title, colorBy)
+
+    return(plot)
+  }
+})
+
+
+
 ### plotXICs-data.table --------------------------------------------------
 
 #' @title plotXICs-data.table

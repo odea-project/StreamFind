@@ -14,8 +14,6 @@ test_that("suggested dependencies", {
 files <- streamFindData::msFilePaths()
 db <- streamFindData::msSpikedChemicals()
 
-
-
 ### preparation ---------------------------------------------------------------
 
 file <- files[grepl("00_hrms_s_is_pos_cent-r001.mzML", files)]
@@ -34,8 +32,6 @@ ana_mzML_neg <- newAnalysis(fl_mzML_neg)
 ana_mzXML_pos <- newAnalysis(fl_mzXML_pos)
 ana_mrm_pos <- newAnalysis(fl_mrm_pos)
 ana_mrm_neg <- newAnalysis(fl_mrm_neg)
-
-
 
 ### chemical targets ----------------------------------------------------------
 
@@ -100,8 +96,6 @@ test_that("targets all equal", {
   expect_true(all(round(apply(t2[, 2:7], 2, sd), digits = 4) == 0))
 })
 
-
-
 ### tests ---------------------------------------------------------------------
 
 test_that("create empty msAnalysis", {
@@ -135,55 +129,43 @@ test_that("getter name and filePath", {
 
 })
 
-metadata_entry <- "test metadata"
-names(metadata_entry) <- "name test metadata"
-ana_mzML_pos <- addMetadata(ana_mzML_pos, metadata = metadata_entry)
+test_that("basic information", {
 
-test_that("metadata", {
+  expect_equal(polarity(ana_mzML_pos), "positive")
 
-  expect_type(getMetadataNames(ana_mzML_pos), "character")
+  expect_equal(polarities(ana_mzML_pos), "positive")
 
-  expect_equal(getMetadata(ana_mzML_pos, which = "polarity"),
-               list("polarity" = "positive"))
+  expect_equal(polarity(ana_mzML_neg), "negative")
 
-  expect_equal(unname(polarity(ana_mzML_pos)), "positive")
-
-  expect_equal(getMetadata(ana_mzML_neg, which = "polarity"),
-               list("polarity" = "negative"))
-
-  expect_s4_class(addMetadata(ana_mzML_pos, metadata = metadata_entry,
-                              overwrite = TRUE),
-                  "msAnalysis")
-
-  expect_true("name test metadata" %in% getMetadataNames(ana_mzML_pos))
-
-  expect_equal(getMetadata(ana_mzML_pos, which = "name test metadata"),
-               list("name test metadata" = "test metadata"))
+  expect_equal(polarity(ana_mrm_neg), c("negative", "positive"))
 
 })
 
 test_that("raw data parsing", {
 
-  expect_s3_class(spectra(loadRawData(ana_mzML_pos)), "data.table")
-  expect_s3_class(spectra(loadRawData(ana_mzXML_pos)), "data.table")
+  expect_s3_class(spectra(loadSpectra(ana_mzML_pos)), "data.table")
+  expect_s3_class(spectra(loadSpectra(ana_mzXML_pos)), "data.table")
 
-  expect_length(spectra(loadRawData(ana_mzML_pos)), 9)
-  expect_gt(length(spectra(loadRawData(ana_mzXML_pos))), 7)
+  expect_length(spectra(loadSpectra(ana_mzML_pos)), 9)
+  expect_gt(length(spectra(loadSpectra(ana_mzXML_pos))), 7)
 
 })
 
-ana_mzML_pos <- loadRawData(ana_mzML_pos)
-ana_mzXML_pos <- loadRawData(ana_mzXML_pos)
-ana_mrm_pos <- loadRawData(ana_mrm_pos)
+ana_mzML_pos <- loadSpectra(ana_mzML_pos)
+ana_mzXML_pos <- loadSpectra(ana_mzXML_pos)
+ana_mrm_pos <- loadSpectra(ana_mrm_pos)
+
+ana_mrm_neg <- loadChromatograms(ana_mrm_neg)
+ana_mrm_pos <- loadChromatograms(ana_mrm_pos)
+
 
 test_that("raw data checking", {
 
   expect_true(hasLoadedSpectra(ana_mzML_pos))
   expect_true(hasLoadedSpectra(ana_mzXML_pos))
 
-  expect_true(hasLoadedChromatograms(ana_mzML_pos))
-  expect_true(hasLoadedChromatograms(ana_mzXML_pos))
   expect_true(hasLoadedChromatograms(ana_mrm_pos))
+  expect_true(hasLoadedChromatograms(ana_mrm_neg))
 
 })
 
@@ -200,7 +182,6 @@ test_that("extract data", {
   expect_s3_class(TIC(ana_mzML_pos), "data.table")
 
 })
-
 
 param <- xcms::CentWaveParam(
   ppm = 12, peakwidth = c(5, 40),
@@ -243,6 +224,35 @@ test_that("test_methods_for_peaks", {
   expect_s4_class(as.features(ana_mzML_pos), "features")
 
 })
+
+# metadata_entry <- "test metadata"
+# names(metadata_entry) <- "name test metadata"
+# ana_mzML_pos <- addMetadata(ana_mzML_pos, metadata = metadata_entry)
+#
+# test_that("metadata", {
+#
+#   expect_type(getMetadataNames(ana_mzML_pos), "character")
+#
+#   expect_equal(getMetadata(ana_mzML_pos, which = "polarity"),
+#                list("polarity" = "positive"))
+#
+#   expect_equal(unname(polarity(ana_mzML_pos)), "positive")
+#
+#   expect_equal(getMetadata(ana_mzML_neg, which = "polarity"),
+#                list("polarity" = "negative"))
+#
+#   expect_s4_class(addMetadata(ana_mzML_pos, metadata = metadata_entry,
+#                               overwrite = TRUE),
+#                   "msAnalysis")
+#
+#   expect_true("name test metadata" %in% getMetadataNames(ana_mzML_pos))
+#
+#   expect_equal(getMetadata(ana_mzML_pos, which = "name test metadata"),
+#                list("name test metadata" = "test metadata"))
+#
+# })
+
+
 
 #file.remove("cache.sqlite")
 

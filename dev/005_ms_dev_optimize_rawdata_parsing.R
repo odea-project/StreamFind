@@ -1,20 +1,25 @@
 
 library(streamFind)
 
+library(testthat)
+
 ### example files -------------------------------------------------------------
 
 files <- streamFindData::msFilePaths()
 
 fls <- files[13:27]
 fls <- fls[grepl("pos", fls)]
+fl <- files[13]
 
-fl <- files[19]
+
+fls <- list.files(choose.dir(), full.names = TRUE)
+fl <- fls[1]
 
 ### objects -------------------------------------------------------------------
 
 a1 <- newAnalysis(fl)
 
-set1 <- newStreamSet(fls)
+set1 <- newStreamSet(fls, run_parallel = FALSE)
 
 ### peak picking --------------------------------------------------------------
 
@@ -83,6 +88,17 @@ pks <- peaks(a1)
 
 a2 <- loadRawData(a1)
 
+a2 <- loadSpectra(a1)
+hasLoadedSpectra(a2)
+spectra(a2)
+plotSpectra(a2, mz = 247.17, rt = 1120, ppm = 50, sec = 60)
+
+a2 <- loadChromatograms(a2)
+hasLoadedChromatograms(a2)
+chromatograms(a2)
+plotChromatograms(a2)
+
+
 #raw data not loaded
 a1
 #with loaded raw data
@@ -101,7 +117,11 @@ parse_EICs_time
 # almost the same time when complete loaded raw data table is given for
 # cpp function. Filtering with rtr ranges before gives overhead somehow.
 
+testEICsall <- EICs(a1)
 
+plotTIC(a1)
+plotBPC(a1, interactive = TRUE)
+plotSpectra(a2, mz = 247.17, rt = 1120, ppm = 50, sec = 60)
 EICs(a1, mz = pks[1:5, ])
 plotEICs(a1, mz = pks[1:5, ])
 XICs(a1, mz = pks[1:5, ])
@@ -119,40 +139,82 @@ hasAdjustedRetentionTime(a1)
 
 object <- set1
 
+analysisInfo(set1)
+analysisTable(set1)
+filePaths(set1)
+analysisNames(set1)
+replicateNames(set1)
+blankReplicateNames(set1)
+
+
+
 #### improve parse data -------------------------------------------------------
-
-system.time(
-  parallel <- getRawData(set1,
-                        TIC = FALSE, BPC = FALSE, chroms = FALSE,
-                        levels = 1, rtr = NULL, run_parallel = TRUE)
-)
-
-system.time(
-  sequential <- getRawData(set1,
-                          TIC = FALSE, BPC = FALSE, chroms = FALSE,
-                          levels = 1, rtr = NULL, run_parallel = FALSE)
-)
+#
+# system.time(
+#   parallel <- getRawData(set1,
+#                         TIC = FALSE, BPC = FALSE, chroms = FALSE,
+#                         levels = 1, rtr = NULL, run_parallel = TRUE)
+# )
+#
+# system.time(
+#   sequential <- getRawData(set1,
+#                           TIC = FALSE, BPC = FALSE, chroms = FALSE,
+#                           levels = 1, rtr = NULL, run_parallel = FALSE)
+# )
 
 parse_traces_parallel <- microbenchmark::microbenchmark(
-  parallel = getRawData(set1,
-                   TIC = FALSE, BPC = FALSE, chroms = FALSE,
-                   levels = 1, rtr = NULL, run_parallel = TRUE),
-  sequential = getRawData(set1,
-                    TIC = FALSE, BPC = FALSE, chroms = FALSE,
-                    levels = 1, rtr = NULL, run_parallel = FALSE),
+  parallel = getSpectra(set1, run_parallel = TRUE),
+  times = 3,
+  control = list(order = "inorder")
+)
+
+parse_traces_sequential <- microbenchmark::microbenchmark(
+  sequential = getSpectra(set1, run_parallel = FALSE),
   times = 3,
   control = list(order = "inorder")
 )
 
 parse_traces_parallel
+parse_traces_sequential
+
+
+getSpectra(set1, analyses = 1:3, run_parallel = F)
+
+
+spec_list <- runParallelLapply(
+  1:10,
+  TRUE,
+  search,
+  future.packages = c("base", "mzR", "data.table")
+)
+
+
+
+
+
 
 
 set2 <- set1
-set2 <- loadRawData(set2)
+set2 <- loadSpectra(set2, run_parallel = TRUE)
+set2 <- loadChromatograms(set2, run_parallel = FALSE)
+
+system.time(getSpectra(set2, analyses = 1:5, run_parallel = T))
+system.time(getSpectra(set2, analyses = 1:5, run_parallel = F))
+
+
+system.time(getChromatograms(set2, run_parallel = T))
+
+system.time(getChromatograms(set2, run_parallel = F))
+
+hasLoadedSpectra(set2)
 
 hasLoadedChromatograms(set2)
 
-plotChromatograms(set2, colorBy = "targets")
+spectra(set2)
+
+chromatograms(set2)
+
+plotChromatograms(set2, colorBy = "analyses")
 
 plotSpectra(set2, analyses = 1:2, mz = 247.17, rt = 1120, ppm = 50, sec = 60)
 

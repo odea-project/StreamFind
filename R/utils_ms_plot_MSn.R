@@ -89,6 +89,8 @@ plotInteractiveMSn <- function(ms2, title) {
 
     precursor <- data[data$isPre, ]
 
+    notPrecursor <- data[!data$isPre, ]
+
     plot <- plot %>% add_trace(
       x = data$mz,
       y = data$intensity,
@@ -120,14 +122,35 @@ plotInteractiveMSn <- function(ms2, title) {
         showlegend = FALSE
       )
 
-      plot <- plot %>% plotly::add_text(x = precursor$mz,
+      plot <- plot %>% plotly::add_annotations(x = precursor$mz,
                                 y = precursor$intensity,
-                                text = "P", textposition = "top",
-                                textfont = list(color = rep(cl[v], length(precursor$mz))),
+                                text = sprintf("<b>%s</b>", round(precursor$mz, digits = 4)),
+                                textposition = "top",
+                                textangle = 90,
+                                showarrow = FALSE,
+                                yanchor = "bottom",
+                                textfont = list(
+                                  color = rep(cl[v], length(precursor$mz))
+                                ),
                                 legendgroup = leg[v],
                                 showlegend = FALSE)
 
     }
+
+    plot <- plot %>% plotly::add_annotations(
+      x = notPrecursor$mz,
+      y = notPrecursor$intensity,
+      text = round(notPrecursor$mz, digits = 4),
+      textposition = "top",
+      textangle = 90,
+      showarrow = FALSE,
+      yanchor = "bottom",
+      textfont = list(
+        color = rep(cl[v], length(notPrecursor$mz))
+      ),
+      legendgroup = leg[v],
+      showlegend = FALSE)
+
   }
 
   ticksMin <- round_any(min(ms2$mz, na.rm = TRUE) * 0.9, 10)

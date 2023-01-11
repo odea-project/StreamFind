@@ -9,7 +9,7 @@
 #'
 #' @importFrom data.table is.data.table rbindlist as.data.table setnames
 #' @importFrom data.table setorder copy fread data.table `:=` setcolorder
-#' @importFrom data.table between
+#' @importFrom data.table between setDTthreads
 #'
 #' @importFrom checkmate testClass assertClass testChoice
 #'
@@ -29,7 +29,8 @@
 #' @importFrom grDevices colorRampPalette colorRamp
 #'
 #' @importFrom plotly toRGB plot_ly add_trace layout hide_colorbar subplot
-#' @importFrom plotly add_segments add_annotations hide_legend
+#' @importFrom plotly add_segments add_annotations hide_legend add_lines
+#' @importFrom plotly group_by
 #'
 #' @importFrom plyr round_any
 #'
@@ -44,6 +45,12 @@
 #' @importFrom progressr handlers handler_progress  with_progress progressor
 #'
 #' @importFrom parallelly availableWorkers availableCores
+#'
+#' @importFrom parallel makeCluster clusterExport detectCores stopCluster
+#'
+#' @importFrom doParallel registerDoParallel
+#'
+#' @importFrom foreach foreach
 #'
 #' @noRd
 NULL

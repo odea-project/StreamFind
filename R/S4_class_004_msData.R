@@ -58,6 +58,10 @@ setClass("msData",
 
 
 
+### //// Auxiliary functions --------------------------------------------------
+
+
+
 ### //// S4 methods -----------------------------------------------------------
 
 #### _initialize_ -------------------------------------------------------------
@@ -90,12 +94,15 @@ setMethod("initialize", "msData", function(.Object,
 
     files <- analysisTable$file
 
-    analyses <- runParallelLapply(files, run_parallel = run_parallel,
-        FUN = function(x) {
-        temp_ana <- streamFind::initialize(new("msAnalysis", file = x))
-        p()
-        return(temp_ana)}
+    analyses <- runParallelLapply(
+      files,
+      run_parallel,
+      .initialize_msAnalysis,
+      future.packages = c("base", "mzR"),
+      future.globals = "files"
     )
+
+    analyses <- lapply(analyses, function(x) as.msAnalysis(x))
 
     analyses_class <- sapply(analyses, function(x) is(x))
 
@@ -175,7 +182,7 @@ setMethod("show", "msData", function(object) {
 
 
 
-#### names and paths ______ ---------------------------------------------------
+#### names and paths __________ -----------------------------------------------
 
 ##### analysisInfo ------------------------------------------------------------
 
@@ -355,152 +362,7 @@ setMethod("blankReplicateNames<-", signature("msData", "ANY"), function(object, 
 
 
 
-#### metadata ____________ ----------------------------------------------------
 
-##### getMetadataNames --------------------------------------------------------
-
-#' @describeIn msData getter for the names of metadata in each analyses.
-#' When simplify is set to \code{TRUE}, a character vector of unique names for
-#' all analyses is returned instead of a list with metadata names for
-#' each analysis.
-#'
-#' @param simplify Logical, set to \code{TRUE} for simplifying
-#' the returned object.
-#'
-#' @export
-#'
-#' @aliases getMetadataNames,msData,msData-method
-#'
-setMethod("getMetadataNames", "msData", function(object, simplify = FALSE) {
-
-  meta <- lapply(object@analyses, function(x) names(x@metadata))
-
-  if (simplify) {
-    meta <- unique(unname(unlist(meta)))
-  }
-
-  return(meta)
-})
-
-
-
-##### getMetadata -------------------------------------------------------------
-
-#' @describeIn msData getter for analyses metadata.
-#' Returns a \code{data.table} with each metadata entry as a column and each
-#' analysis as a row. The \code{which} argument is used to filter the metadata
-#' entries to be returned. When \code{which} is \code{NULL}, all entries are
-#' returned. Metadata entries with multiple values are returned as list in the
-#' \code{data.table} cell. Metadata not present in a given analysis is assigned
-#' as NA in the returned \code{data.table}.
-#'
-#' @param analyses A numeric or character vector with the index or
-#' analysis name/s. When \code{NULL}, all the analyses are used.
-#' @param which A character vector with the entry name/s.
-#'
-#' @export
-#'
-#' @aliases getMetadata,msData,msData-method
-#'
-setMethod("getMetadata", "msData", function(object, analyses = NULL, which = NULL) {
-
-  if (!is.null(analyses)) object <- object[analyses]
-
-  meta_names <- getMetadataNames(object, simplify = TRUE)
-
-  if (!is.null(which)) {
-
-    meta_names <- meta_names[meta_names %in% which]
-
-    if (length(meta_names) < 1) {
-      warning("Metadata defined by which were not found")
-      return(list())
-    }
-  }
-
-  mtd <- lapply(object@analyses, function(x, meta_names) {
-    temp <- getMetadata(x, which = meta_names)
-    temp <- lapply(temp, function(z) {
-      if (length(z) > 1) z <- list(z)
-      return(z)
-    })
-    temp <- as.data.table(temp)
-    return(temp)
-  }, meta_names = meta_names)
-
-  mtd <- rbindlist(mtd, idcol = "analysis", fill = TRUE)
-
-  return(mtd)
-})
-
-
-
-##### addMetadata -------------------------------------------------------------
-
-#' @describeIn msData setter for analyses metadata.
-#'
-#' @param metadata A list with a named vector of metadata for each analyses
-#' in the \linkS4class{msData} object or a \code{data.frame} or
-#' \code{data.table} with metadata added as columns and with the number of
-#' rows equal to the number of analyses in the \linkS4class{msData} object.
-#' @param overwrite Logical, set to \code{TRUE} to overwrite existing metadata
-#' entries.
-#'
-#' @export
-#'
-#' @aliases addMetadata,msData,msData-method
-#'
-setMethod("addMetadata", "msData", function(object,
-                                            metadata = NULL,
-                                            overwrite = FALSE) {
-
-  if (is.data.frame(metadata) | is.data.table(metadata)) {
-
-    if (nrow(metadata) != length(object@analyses)) {
-      warning("Number of rows must be the same
-               as the number of analyses!")
-      return(object)
-    }
-
-    if (!"analysis" %in% colnames(metadata)) {
-      metdata$analysis <- analysisNames(object)
-    }
-
-    metadata <- split(metadata, metadata$analysis)
-
-    metadata <- lapply(metadata, function(x) {
-      x[["analysis"]] <- NULL
-      return(unlist(x))
-    })
-
-  } else if (is.list(metadata)) {
-
-    if (length(metadata) != length(object@analyses)) {
-      warning("Metadata list must be the same
-               length as the number of analyses!")
-      return(object)
-    }
-
-    if (all(sapply(metadata, function(x) is.null(names(x))))) {
-      warning("Metadata must be a named vector!")
-      return(object)
-    }
-
-    if (TRUE %in% is.null(names(metadata))) {
-      names(metadata) <- analysisNames(object)
-    }
-
-  }
-
-  object@analyses <- lapply(object@analyses, function(x, metadata, overwrite) {
-    x <- addMetadata(x,
-                     metadata = metadata[[analysisName(x)]],
-                     overwrite = overwrite)
-    return(x)
-  }, metadata = metadata, overwrite = overwrite)
-
-  return(object)
-})
 
 
 
@@ -513,10 +375,9 @@ setMethod("addMetadata", "msData", function(object,
 #' @aliases polarities,msData,msData-method
 #'
 setMethod("polarities", "msData", function(object) {
-  mt <- getMetadata(object, which = "polarity")
-  mt_v <- mt$polarity
-  names(mt_v) <- analysisNames(object)
-  return(mt_v)
+  mt <- unlist(lapply(object@analyses, function(x) polarity(x)))
+  names(mt) <- analysisNames(object)
+  return(mt)
 })
 
 
@@ -680,7 +541,7 @@ setMethod("[", c("msData", "ANY", "missing", "missing"), function(x, i, ...) {
 
 
 
-#### raw data _____________ ---------------------------------------------------
+#### raw data __________________ ----------------------------------------------
 
 ##### getRawData --------------------------------------------------------------
 
@@ -825,6 +686,108 @@ setMethod("loadSpectraInfo", "msData", function(object, run_parallel = FALSE) {
 
 
 
+#### spectra __________________ -----------------------------------------------
+
+##### getSpectra --------------------------------------------------------------
+
+#' @describeIn msData adds (when available) raw spectra to each
+#' \linkS4class{msAnalysis} of the \linkS4class{msData} object.
+#'
+#' @export
+#'
+#' @aliases getSpectra,msData,msData-method
+#'
+setMethod("getSpectra", "msData", function(object,
+                                           analyses = NULL,
+                                           levels = NULL,
+                                           rtr = NULL,
+                                           preMZrange = NULL,
+                                           minIntensityMS1 = 0,
+                                           minIntensityMS2 = 0,
+                                           run_parallel = FALSE) {
+
+  analyses <- checkAnalysesArgument(object, analyses)
+
+  files <- filePaths(object)[analyses]
+
+
+  if (run_parallel) {
+
+    fun_port <- .get_ms_spectra
+
+    ex_packages = c("mzR", "data.table")
+
+    ex_globals = c("levels", "rtr", "preMZrange",
+                   "minIntensityMS1", "minIntensityMS2", "fun_port")
+
+    workers <- detectCores() - 1
+
+    if (length(files) < workers) workers <- length(files)
+
+    par_type <- "PSOCK"
+
+    if (supportsMulticore()) par_type <- "FORK"
+
+    cl <- makeCluster(workers, type = par_type)
+
+    clusterExport(cl, ex_globals, envir = environment())
+
+    registerDoParallel(cl)
+
+    spec_list <- foreach(file = files, .packages = ex_packages) %dopar% {
+
+      setDTthreads(1)
+
+      return(fun_port(file, levels, rtr, preMZrange,
+                      minIntensityMS1, minIntensityMS2))
+
+    }
+
+    stopCluster(cl)
+
+    setDTthreads(0)
+
+  } else {
+
+    spec_list <- foreach(file = files) %do% {
+
+      return(.get_ms_spectra(file, levels, rtr, preMZrange,
+                             minIntensityMS1, minIntensityMS2))
+
+    }
+
+  }
+
+  names(spec_list) <- analyses
+
+  return(spec_list)
+})
+
+
+
+##### loadSpectra -------------------------------------------------------------
+
+#' @describeIn msData adds (when available) raw spectra to each
+#' \linkS4class{msAnalysis} of the \linkS4class{msData} object.
+#'
+#' @export
+#'
+#' @aliases loadSpectra,msData,msData-method
+#'
+setMethod("loadSpectra", "msData", function(object, run_parallel = FALSE) {
+
+  spec_list <- getSpectra(object)
+
+  object@analyses <- lapply(object@analyses, function(x, spec_list) {
+    x@spectra <- spec_list[[analysisName(x)]]
+    return(x)
+  }, spec_list = spec_list)
+
+  return(object)
+})
+
+
+
 ##### hasLoadedSpectra --------------------------------------------------------
 
 #' @describeIn msData checks if the analyses in the \linkS4class{msData} have
@@ -836,22 +799,6 @@ setMethod("loadSpectraInfo", "msData", function(object, run_parallel = FALSE) {
 #'
 setMethod("hasLoadedSpectra", "msData", function(object) {
   return(sapply(object@analyses, function(x) hasLoadedSpectra(x)))
-})
-
-
-
-##### hasLoadedChromatograms --------------------------------------------------
-
-#' @describeIn msData checks if the analyses in the \linkS4class{msData} have
-#' loaded raw chromatograms.
-#'
-#' @export
-#'
-#' @aliases hasLoadedChromatograms,msData,msData-method
-#'
-setMethod("hasLoadedChromatograms", "msData", function(object) {
-
-  return(sapply(object@analyses, function(x) hasLoadedChromatograms(x)))
 })
 
 
@@ -903,8 +850,8 @@ setMethod("plotSpectra", "msData", function(object,
   spec <- spectra(object, analyses)
 
   if (nrow(spec) == 0) {
-    warning("Spectra not found, load raw spectra
-            first with loadRawData() method.")
+    message("Spectra not found, load spectra
+            first with loadSpectra() method.")
     return(NULL)
   }
 
@@ -922,8 +869,7 @@ setMethod("plotSpectra", "msData", function(object,
   spec <- spec[spec$level %in% ms_levels, ]
 
   if (nrow(spec) == 0) {
-    warning("Spectra not found, load raw spectra
-            first with loadRawData() method.")
+    message("Requested MS traces not found.")
     return(NULL)
   }
 
@@ -934,7 +880,7 @@ setMethod("plotSpectra", "msData", function(object,
   spec_2 <- split(spec_2, spec_2$analysis)
 
   spec_2 <- lapply(spec_2, function(x) {
-    x$rtmz <- paste(x$mz, x$rt, x$analysis)
+    x$rtmz <- paste(x$mz, x$rt, x$analysis, sep = "_")
     x_temp <- copy(x)
     x_temp$intensity <- 0
     x <- rbind(x, x_temp)
@@ -954,15 +900,135 @@ setMethod("plotSpectra", "msData", function(object,
   colors_var <- getColors(unique(spec_2$var))
 
   fig <- plotly::plot_ly(spec_2, x = ~rt, y = ~mz, z = ~intensity) %>%
-    plotly::group_by(~rtmz) %>%
+    plotly::group_by(spec_2$rtmz) %>%
     plotly::add_lines(color = ~var,  colors = colors_var)
 
   fig <- fig %>% plotly::layout(scene = list(
-    xaxis = list(title = "Retention time (seconds)"),
-    yaxis = list(title = "<i>m/z<i>"),
-    zaxis = list(title = "Intensity (counts)")))
+    xaxis = list(title = "Retention time / seconds"),
+    yaxis = list(title = "<i>m/z</i>"),
+    zaxis = list(title = "Intensity / counts")))
 
   return(fig)
+})
+
+
+
+#### chromatograms ___________ ------------------------------------------------
+
+##### getChromatograms --------------------------------------------------------
+
+#' @describeIn msData adds (when available) raw spectra to each
+#' \linkS4class{msAnalysis} of the \linkS4class{msData} object.
+#'
+#' @export
+#'
+#' @aliases getChromatograms,msData,msData-method
+#'
+setMethod("getChromatograms", "msData", function(object,
+                                                 analyses = NULL,
+                                                 minIntensity = 0,
+                                                 run_parallel = FALSE) {
+
+  analyses <- checkAnalysesArgument(object, analyses)
+
+  files <- filePaths(object)[analyses]
+
+
+  if (run_parallel) {
+
+    fun_port <- .get_ms_chromatograms
+
+    ex_packages = c("mzR", "data.table")
+
+    ex_globals = c("minIntensity", "fun_port")
+
+    workers <- detectCores() - 1
+
+    if (length(files) < workers) workers <- length(files)
+
+    par_type <- "PSOCK"
+
+    if (supportsMulticore()) par_type <- "FORK"
+
+    cl <- makeCluster(workers, type = par_type)
+
+    clusterExport(cl, ex_globals, envir = environment())
+
+    registerDoParallel(cl)
+
+    chrom_list <- foreach(file = files, .packages = ex_packages) %dopar% {
+
+      setDTthreads(1)
+
+      return(fun_port(file, minIntensity))
+
+    }
+
+    stopCluster(cl)
+
+    setDTthreads(0)
+
+  } else {
+
+    chrom_list <- foreach(file = files) %do% {
+
+      return(.get_ms_chromatograms(file, minIntensity))
+
+    }
+
+  }
+
+  names(chrom_list) <- analyses
+
+  # chrom_list <- runParallelLapply(
+  #   files,
+  #   run_parallel,
+  #   .get_ms_chromatograms,
+  #   minIntensity,
+  #   future.packages = c("base", "mzR", "data.table"),
+  #   future.globals = c("minIntensity")
+  # )
+
+  return(chrom_list)
+})
+
+
+
+##### loadChromatograms -------------------------------------------------------
+
+#' @describeIn msData adds (when available) raw spectra to each
+#' \linkS4class{msAnalysis} of the \linkS4class{msData} object.
+#'
+#' @export
+#'
+#' @aliases loadChromatograms,msData,msData-method
+#'
+setMethod("loadChromatograms", "msData", function(object, run_parallel = FALSE) {
+
+  chrom_list <- getChromatograms(object)
+
+  object@analyses <- lapply(object@analyses, function(x, chrom_list) {
+    x@chromatograms <- chrom_list[[analysisName(x)]]
+    return(x)
+  }, chrom_list = chrom_list)
+
+  return(object)
+})
+
+
+
+##### hasLoadedChromatograms --------------------------------------------------
+
+#' @describeIn msData checks if the analyses in the \linkS4class{msData} have
+#' loaded raw chromatograms.
+#'
+#' @export
+#'
+#' @aliases hasLoadedChromatograms,msData,msData-method
+#'
+setMethod("hasLoadedChromatograms", "msData", function(object) {
+
+  return(sapply(object@analyses, function(x) hasLoadedChromatograms(x)))
 })
 
 
@@ -1000,7 +1066,7 @@ setMethod("chromatograms", "msData", function(object, analyses = NULL) {
 #'
 #' @param index A numeric vector with the index(s).
 #'
-#' @aliases plotChromatograms,msAnalysis,msAnalysis-method
+#' @aliases plotChromatograms,msData,msData-method
 #'
 setMethod("plotChromatograms", "msData", function(object,
                                                   analyses = NULL,
@@ -1012,6 +1078,12 @@ setMethod("plotChromatograms", "msData", function(object,
   analyses <- checkAnalysesArgument(object, analyses)
 
   chroms <- chromatograms(object[analyses])
+
+  if (nrow(chroms ) == 0) {
+    message("Chromatograms not found, load chromatograms
+            first with loadChromatograms() method.")
+    return(NULL)
+  }
 
   chroms$replicate <- replicateNames(object)[chroms$analysis]
 
@@ -1034,6 +1106,8 @@ setMethod("plotChromatograms", "msData", function(object,
 })
 
 
+
+#### parsing data ______________ ----------------------------------------------
 
 ##### EICs --------------------------------------------------------------------
 
@@ -1270,7 +1344,7 @@ setMethod("plotBPCs", "msData", function(object,
   bpcs <- BPCs(object, analyses = analyses, run_parallel = run_parallel)
 
   return(
-    plotTICs(bpcs,
+    plotBPCs(bpcs,
              analyses = NULL, colorBy = colorBy,
              title = title, interactive = interactive
     )
@@ -1485,7 +1559,7 @@ setMethod("plotMS2s", "msData", function(object = NULL,
 
 
 
-#### settings ______________---------------------------------------------------
+#### settings __________________-----------------------------------------------
 
 ##### addSettings -------------------------------------------------------------
 
@@ -1614,7 +1688,7 @@ setMethod("getSettings", "msData", function(object,
 
 
 
-#### peak methods _______------------------------------------------------------
+#### peak methods _____________------------------------------------------------
 
 ##### hasPeaks ----------------------------------------------------------------
 
@@ -1896,7 +1970,7 @@ setMethod("mapPeaks", "msData", function(object,
 
 
 
-#### feature methods _______---------------------------------------------------
+#### feature methods ___________-----------------------------------------------
 
 ##### features ----------------------------------------------------------------
 
@@ -2131,7 +2205,10 @@ setMethod("plotAnnotation", "msData", function(object,
 })
 
 
-### [ sub-setting features -----------------------------------------------
+
+#### sub-setting _______________-----------------------------------------------
+
+##### sub-setting features ----------------------------------------------------
 
 #' @describeIn msData subset on analyses and features, using index or name.
 #' Note that this method is irreversible.
@@ -2173,7 +2250,7 @@ setMethod("[", c("msData", "ANY", "ANY", "missing"), function(x, i, j, ...) {
 
 
 
-### [ sub-setting peaks -----------------------------------------------
+##### sub-setting peaks -------------------------------------------------------
 
 #' @describeIn msData subset on analyses, features and peaks, using index or name.
 #' Note that this method is irreversible.
@@ -2214,6 +2291,157 @@ setMethod("[", c("msData", "ANY", "ANY", "ANY"), function(x, i, j, p) {
 })
 
 
+
+#### metadata _________________ -----------------------------------------------
+
+##### getMetadataNames --------------------------------------------------------
+
+#' @describeIn msData getter for the names of metadata in each analyses.
+#' When simplify is set to \code{TRUE}, a character vector of unique names for
+#' all analyses is returned instead of a list with metadata names for
+#' each analysis.
+#'
+#' @param simplify Logical, set to \code{TRUE} for simplifying
+#' the returned object.
+#'
+#' @export
+#'
+#' @aliases getMetadataNames,msData,msData-method
+#'
+setMethod("getMetadataNames", "msData", function(object, simplify = FALSE) {
+
+  meta <- lapply(object@analyses, function(x) names(x@metadata))
+
+  if (simplify) {
+    meta <- unique(unname(unlist(meta)))
+  }
+
+  return(meta)
+})
+
+
+
+##### getMetadata -------------------------------------------------------------
+
+#' @describeIn msData getter for analyses metadata.
+#' Returns a \code{data.table} with each metadata entry as a column and each
+#' analysis as a row. The \code{which} argument is used to filter the metadata
+#' entries to be returned. When \code{which} is \code{NULL}, all entries are
+#' returned. Metadata entries with multiple values are returned as list in the
+#' \code{data.table} cell. Metadata not present in a given analysis is assigned
+#' as NA in the returned \code{data.table}.
+#'
+#' @param analyses A numeric or character vector with the index or
+#' analysis name/s. When \code{NULL}, all the analyses are used.
+#' @param which A character vector with the entry name/s.
+#'
+#' @export
+#'
+#' @aliases getMetadata,msData,msData-method
+#'
+setMethod("getMetadata", "msData", function(object, analyses = NULL, which = NULL) {
+
+  if (!is.null(analyses)) object <- object[analyses]
+
+  meta_names <- getMetadataNames(object, simplify = TRUE)
+
+  if (!is.null(which)) {
+
+    meta_names <- meta_names[meta_names %in% which]
+
+    if (length(meta_names) < 1) {
+      warning("Metadata defined by which were not found")
+      return(list())
+    }
+  }
+
+  mtd <- lapply(object@analyses, function(x, meta_names) {
+    temp <- getMetadata(x, which = meta_names)
+    temp <- lapply(temp, function(z) {
+      if (length(z) > 1) z <- list(z)
+      return(z)
+    })
+    temp <- as.data.table(temp)
+    return(temp)
+  }, meta_names = meta_names)
+
+  mtd <- rbindlist(mtd, idcol = "analysis", fill = TRUE)
+
+  return(mtd)
+})
+
+
+
+##### addMetadata -------------------------------------------------------------
+
+#' @describeIn msData setter for analyses metadata.
+#'
+#' @param metadata A list with a named vector of metadata for each analyses
+#' in the \linkS4class{msData} object or a \code{data.frame} or
+#' \code{data.table} with metadata added as columns and with the number of
+#' rows equal to the number of analyses in the \linkS4class{msData} object.
+#' @param overwrite Logical, set to \code{TRUE} to overwrite existing metadata
+#' entries.
+#'
+#' @export
+#'
+#' @aliases addMetadata,msData,msData-method
+#'
+setMethod("addMetadata", "msData", function(object,
+                                            metadata = NULL,
+                                            overwrite = FALSE) {
+
+  if (is.data.frame(metadata) | is.data.table(metadata)) {
+
+    if (nrow(metadata) != length(object@analyses)) {
+      warning("Number of rows must be the same
+               as the number of analyses!")
+      return(object)
+    }
+
+    if (!"analysis" %in% colnames(metadata)) {
+      metdata$analysis <- analysisNames(object)
+    }
+
+    metadata <- split(metadata, metadata$analysis)
+
+    metadata <- lapply(metadata, function(x) {
+      x[["analysis"]] <- NULL
+      return(unlist(x))
+    })
+
+  } else if (is.list(metadata)) {
+
+    if (length(metadata) != length(object@analyses)) {
+      warning("Metadata list must be the same
+               length as the number of analyses!")
+      return(object)
+    }
+
+    if (all(sapply(metadata, function(x) is.null(names(x))))) {
+      warning("Metadata must be a named vector!")
+      return(object)
+    }
+
+    if (TRUE %in% is.null(names(metadata))) {
+      names(metadata) <- analysisNames(object)
+    }
+
+  }
+
+  object@analyses <- lapply(object@analyses, function(x, metadata, overwrite) {
+    x <- addMetadata(x,
+                     metadata = metadata[[analysisName(x)]],
+                     overwrite = overwrite)
+    return(x)
+  }, metadata = metadata, overwrite = overwrite)
+
+  return(object)
+})
+
+
+
+#### others ___________________ -----------------------------------------------
 
 #### _hasAdjustedRetentionTime_ -----------------------------------------------
 
