@@ -50,7 +50,7 @@
 #'
 #' @importFrom doParallel registerDoParallel
 #'
-#' @importFrom foreach foreach
+#' @importFrom foreach foreach `%dopar%` `%do%`
 #'
 #' @noRd
 NULL

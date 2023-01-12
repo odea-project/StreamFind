@@ -78,13 +78,14 @@ setMethod("initialize", "msData", function(.Object,
                                            date = Sys.time(),
                                            replicates = NA_character_,
                                            blanks = NA_character_,
-                                           run_parallel = FALSE, ...) {
+                                           run_parallel = TRUE, ...) {
 
   .Object <- callNextMethod(.Object, ...)
 
   ms_data <- .Object
 
   analysisTable <- checkFilesInput(files, replicates, blanks)
+
 
   if (!is.null(analysisTable)) {
 
@@ -94,17 +95,53 @@ setMethod("initialize", "msData", function(.Object,
 
     files <- analysisTable$file
 
-    analyses <- runParallelLapply(
-      files,
-      run_parallel,
-      .initialize_msAnalysis,
-      future.packages = c("base", "mzR"),
-      future.globals = "files"
+    source(
+      system.file("scripts/initialize_msAnalysis_ext.R",
+                  package = "streamFind")
     )
+
+    if (run_parallel) {
+
+      ex_packages = "mzR"
+
+      ex_globals = "initialize_msAnalysis_ext"
+
+      workers <- detectCores() - 1
+
+      if (length(files) < workers) workers <- length(files)
+
+      par_type <- "PSOCK"
+
+      if (supportsMulticore()) par_type <- "FORK"
+
+      cl <- makeCluster(workers, type = par_type)
+
+      clusterExport(cl, ex_globals, envir = environment())
+
+      registerDoParallel(cl)
+
+      analyses <- foreach(file = files, .packages = ex_packages) %dopar% {
+
+        return(initialize_msAnalysis_ext(file))
+
+      }
+
+      stopCluster(cl)
+
+    } else {
+
+      analyses <- foreach(file = files) %do% {
+
+        return(initialize_msAnalysis_ext(file))
+
+      }
+    }
+
 
     analyses <- lapply(analyses, function(x) as.msAnalysis(x))
 
     analyses_class <- sapply(analyses, function(x) is(x))
+
 
     if (all(analyses_class %in% "msAnalysis")) {
 
@@ -500,47 +537,6 @@ setMethod("getAnalyses", "msData", function(object, analyses = NULL) {
 
 
 
-#### [ sub-setting on analyses ------------------------------------------------
-
-#' @describeIn msData subset on analyses, using indexes or analysis names.
-#'
-#' @template args-single-i-subsetting
-#'
-#' @export
-#'
-setMethod("[", c("msData", "ANY", "missing", "missing"), function(x, i, ...) {
-
-  if (!missing(i)) {
-
-    x <- callNextMethod()
-
-    x@features <- x@features[i]
-
-    #when has features, updates feature column in peaks slot of each analysis
-    if (nrow(x@features@metadata) > 0) {
-      f_id <- features(x)[["id"]]
-
-      x@analyses <- lapply(x@analyses, function(z, f_id) {
-
-        temp <- z@peaks
-
-        temp[!temp$feature %in% f_id, `:=`(feature = NA_character_,
-                                      filtered = TRUE,
-                                      filter = "grouping")]
-        z@peaks <- copy(temp)
-
-        return(z)
-
-      }, f_id = f_id)
-    }
-    return(x)
-  }
-
-  return(x)
-})
-
-
-
 #### raw data __________________ ----------------------------------------------
 
 ##### getRawData --------------------------------------------------------------
@@ -710,15 +706,18 @@ setMethod("getSpectra", "msData", function(object,
 
   files <- filePaths(object)[analyses]
 
+  source(
+    system.file("scripts/get_ms_spectra_from_file_ext.R",
+                package = "streamFind")
+  )
 
   if (run_parallel) {
-
-    fun_port <- .get_ms_spectra
 
     ex_packages = c("mzR", "data.table")
 
     ex_globals = c("levels", "rtr", "preMZrange",
-                   "minIntensityMS1", "minIntensityMS2", "fun_port")
+                   "minIntensityMS1", "minIntensityMS2",
+                   "get_ms_spectra_from_file_ext")
 
     workers <- detectCores() - 1
 
@@ -738,8 +737,8 @@ setMethod("getSpectra", "msData", function(object,
 
       setDTthreads(1)
 
-      return(fun_port(file, levels, rtr, preMZrange,
-                      minIntensityMS1, minIntensityMS2))
+      return(get_ms_spectra_from_file_ext(
+        file, levels, rtr, preMZrange, minIntensityMS1, minIntensityMS2))
 
     }
 
@@ -751,8 +750,8 @@ setMethod("getSpectra", "msData", function(object,
 
     spec_list <- foreach(file = files) %do% {
 
-      return(.get_ms_spectra(file, levels, rtr, preMZrange,
-                             minIntensityMS1, minIntensityMS2))
+      return(get_ms_spectra_from_file_ext(
+        file, levels, rtr, preMZrange, minIntensityMS1, minIntensityMS2))
 
     }
 
@@ -933,14 +932,16 @@ setMethod("getChromatograms", "msData", function(object,
 
   files <- filePaths(object)[analyses]
 
+  source(
+    system.file("scripts/get_ms_chromatograms_from_file_ext.R",
+                package = "streamFind")
+  )
 
   if (run_parallel) {
 
-    fun_port <- .get_ms_chromatograms
-
     ex_packages = c("mzR", "data.table")
 
-    ex_globals = c("minIntensity", "fun_port")
+    ex_globals = c("minIntensity", "get_ms_chromatograms_from_file_ext")
 
     workers <- detectCores() - 1
 
@@ -960,7 +961,7 @@ setMethod("getChromatograms", "msData", function(object,
 
       setDTthreads(1)
 
-      return(fun_port(file, minIntensity))
+      return(get_ms_chromatograms_from_file_ext(file, minIntensity))
 
     }
 
@@ -972,22 +973,13 @@ setMethod("getChromatograms", "msData", function(object,
 
     chrom_list <- foreach(file = files) %do% {
 
-      return(.get_ms_chromatograms(file, minIntensity))
+      return(get_ms_chromatograms_from_file_ext(file, minIntensity))
 
     }
 
   }
 
   names(chrom_list) <- analyses
-
-  # chrom_list <- runParallelLapply(
-  #   files,
-  #   run_parallel,
-  #   .get_ms_chromatograms,
-  #   minIntensity,
-  #   future.packages = c("base", "mzR", "data.table"),
-  #   future.globals = c("minIntensity")
-  # )
 
   return(chrom_list)
 })
@@ -2208,7 +2200,48 @@ setMethod("plotAnnotation", "msData", function(object,
 
 #### sub-setting _______________-----------------------------------------------
 
-##### sub-setting features ----------------------------------------------------
+##### on analyses --------------------------------------------------------------
+
+#' @describeIn msData subset on analyses, using indexes or analysis names.
+#'
+#' @template args-single-i-subsetting
+#'
+#' @export
+#'
+setMethod("[", c("msData", "ANY", "missing", "missing"), function(x, i, ...) {
+
+  if (!missing(i)) {
+
+    x <- callNextMethod()
+
+    x@features <- x@features[i]
+
+    #when has features, updates feature column in peaks slot of each analysis
+    if (nrow(x@features@metadata) > 0) {
+      f_id <- features(x)[["id"]]
+
+      x@analyses <- lapply(x@analyses, function(z, f_id) {
+
+        temp <- z@peaks
+
+        temp[!temp$feature %in% f_id, `:=`(feature = NA_character_,
+                                           filtered = TRUE,
+                                           filter = "grouping")]
+        z@peaks <- copy(temp)
+
+        return(z)
+
+      }, f_id = f_id)
+    }
+    return(x)
+  }
+
+  return(x)
+})
+
+
+
+##### on features -------------------------------------------------------------
 
 #' @describeIn msData subset on analyses and features, using index or name.
 #' Note that this method is irreversible.
@@ -2250,7 +2283,7 @@ setMethod("[", c("msData", "ANY", "ANY", "missing"), function(x, i, j, ...) {
 
 
 
-##### sub-setting peaks -------------------------------------------------------
+##### on peaks ----------------------------------------------------------------
 
 #' @describeIn msData subset on analyses, features and peaks, using index or name.
 #' Note that this method is irreversible.

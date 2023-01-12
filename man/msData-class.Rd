@@ -27,7 +27,6 @@
 \alias{addAnalyses,msData,msData-method}
 \alias{getAnalyses,msData-method}
 \alias{getAnalyses,msData,msData-method}
-\alias{[,msData,ANY,missing,missing-method}
 \alias{getRawData,msData-method}
 \alias{getRawData,msData,msData-method}
 \alias{loadRawData,msData-method}
@@ -96,6 +95,7 @@
 \alias{annotation,msData,msData-method}
 \alias{plotAnnotation,msData-method}
 \alias{plotAnnotation,msData,msData-method}
+\alias{[,msData,ANY,missing,missing-method}
 \alias{[,msData,ANY,ANY,missing-method}
 \alias{[,msData,ANY,ANY,ANY-method}
 \alias{getMetadataNames,msData-method}
@@ -119,7 +119,7 @@
   date = Sys.time(),
   replicates = NA_character_,
   blanks = NA_character_,
-  run_parallel = FALSE,
+  run_parallel = TRUE,
   ...
 )
 
@@ -151,8 +151,6 @@
 )
 
 \S4method{getAnalyses}{msData}(object, analyses = NULL)
-
-\S4method{[}{msData,ANY,missing,missing}(x, i, j, ..., drop = TRUE)
 
 \S4method{getRawData}{msData}(
   object,
@@ -456,6 +454,8 @@
   colorBy = "mass"
 )
 
+\S4method{[}{msData,ANY,missing,missing}(x, i, j, ..., drop = TRUE)
+
 \S4method{[}{msData,ANY,ANY,missing}(x, i, j, ..., drop = TRUE)
 
 \S4method{[}{msData,ANY,ANY,ANY}(x, i, j, p)
@@ -489,14 +489,6 @@
 
 \item{analyses}{A numeric or character vector with the index or
 analysis name/s. When \code{NULL}, all the analyses are used.}
-
-\item{x}{An \linkS4class{msData} object.}
-
-\item{i}{The indice/s or name/s of the analyses to keep in \code{x}.}
-
-\item{j}{The indice/s or \emph{id}/s for of features to keep.}
-
-\item{drop}{Not applicable to \linkS4class{msData}.}
 
 \item{spectra}{Logical, set to \code{TRUE} for parsing spectra.}
 
@@ -600,6 +592,14 @@ features averaged for each analysis replicate group.}
 
 \item{all}{Logical, set to \code{TRUE} for displaying all features/peaks.}
 
+\item{x}{An \linkS4class{msData} object.}
+
+\item{i}{The indice/s or name/s of the analyses to keep in \code{x}.}
+
+\item{j}{The indice/s or \emph{id}/s for of features to keep.}
+
+\item{drop}{Not applicable to \linkS4class{msData}.}
+
 \item{p}{The indice/s or \emph{id}/s of peaks to keep.}
 
 \item{simplify}{Logical, set to \code{TRUE} for simplifying
@@ -659,8 +659,6 @@ containing the associated blank replicate name of each analysis.
 
 \item \code{getAnalyses(msData)}: getter for \linkS4class{msAnalysis} objects within the
 \linkS4class{msData} object.
-
-\item \code{x[i}: subset on analyses, using indexes or analysis names.
 
 \item \code{getRawData(msData)}: gets (when available) raw spectra and chromatograms
 from each analysis in the \linkS4class{msData} object.
@@ -859,6 +857,8 @@ all the features within the target feature annotation cluster are included in th
 in the \linkS4class{msData} object. The \code{colorBy} argument can be
 set to \code{"isotopes"} for coloring by monoisotopic mass instead of
 neutral mass of the cluster.
+
+\item \code{x[i}: subset on analyses, using indexes or analysis names.
 
 \item \code{x[i}: subset on analyses and features, using index or name.
 Note that this method is irreversible.

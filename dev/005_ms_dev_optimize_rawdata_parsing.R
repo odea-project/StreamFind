@@ -1,25 +1,37 @@
 
 library(streamFind)
-
 library(testthat)
 
 ### example files -------------------------------------------------------------
 
-files <- streamFindData::msFilePaths()
-
-fls <- files[13:27]
+# trimmed files
+fls <- streamFindData::msFilePaths()
 fls <- fls[grepl("pos", fls)]
 fl <- files[13]
 
-
+# original non-trimmed mzML
 fls <- list.files(choose.dir(), full.names = TRUE)
 fl <- fls[1]
 
 ### objects -------------------------------------------------------------------
 
-a1 <- newAnalysis(fl)
+ana <- newAnalysis(fl)
 
-set1 <- newStreamSet(fls, run_parallel = FALSE)
+init <- Sys.time()
+
+setPar <- newStreamSet(fls, run_parallel = TRUE)
+
+cat("In parallel: ")
+Sys.time() - init
+cat("\n")
+
+init <- Sys.time()
+
+set <- newStreamSet(fls, run_parallel = FALSE)
+
+cat("In sequence: ")
+Sys.time() - init
+cat("\n")
 
 ### peak picking --------------------------------------------------------------
 
@@ -39,7 +51,7 @@ settings_pp <- createSettings(
 
 a1 <- peakPicking(a1, settings = settings_pp)
 
-set1 <- peakPicking(set1, settings = settings_pp)
+set <- peakPicking(set1, settings = settings_pp)
 
 ### dev msAnalysis ------------------------------------------------------------
 
@@ -146,7 +158,7 @@ analysisNames(set1)
 replicateNames(set1)
 blankReplicateNames(set1)
 
-
+head(getSpectra(setPar, run_parallel = TRUE))
 
 #### improve parse data -------------------------------------------------------
 #
@@ -178,7 +190,7 @@ parse_traces_parallel
 parse_traces_sequential
 
 
-getSpectra(set1, analyses = 1:3, run_parallel = F)
+head(getSpectra(set1, analyses = 1:3, run_parallel = T))
 
 
 spec_list <- runParallelLapply(
@@ -861,6 +873,180 @@ gc()
 final_time <- Sys.time()
 
 final_time - init_time
+
+
+### msAnalysis initialization with xml2 ---------------------------------------
+
+# code for msAnalysis initialization with xml2 parsing when mzR is not available
+# for now only works with mzR
+
+if (grepl("mzML", file)) {
+
+  xml_data <- read_xml(file)
+
+  inst_x <- "//d1:referenceableParamGroup/d1:cvParam"
+  inst_n <- xml_find_first(xml_data, xpath = inst_x)
+  if (length(inst_n) > 0) {
+    inst_val <- xml_attr(inst_n, "name")
+  } else {
+    inst_val <- NA_character_
+  }
+
+  config_x <- "//d1:componentList/child::node()"
+  config_n <- xml_find_all(xml_data, xpath = config_x)
+  if (length(config_n) > 0) {
+    config_names <- xml_name(config_n)
+    config_names_n <- xml_find_first(config_n, "d1:cvParam")
+    config_vals <- xml_attr(config_names_n, "name")
+  } else {
+    config_names <- NA_character_
+    config_vals <- NA_character_
+  }
+
+  config <- data.frame(name = config_names, value = config_vals)
+  config <- split(config, config$name)
+  config <- lapply(config, function(x) x$value)
+
+  time_n <- xml_find_first(xml_data, xpath = "//d1:run")
+  time_val <- xml_attr(time_n, "startTimeStamp")
+  if (!is.na(time_val)) {
+    time_stamp <- as.POSIXct(strptime(time_val, "%Y-%m-%dT%H:%M:%SZ"))
+  } else {
+    time_stamp <- as.POSIXct(NA)
+  }
+
+  ms_level_x <- '//d1:spectrum/d1:cvParam[@name="ms level"]'
+  ms_level_n <- xml_find_all(xml_data, xpath = ms_level_x)
+  spectra_number <- length(ms_level_n)
+  if (length(ms_level_n) > 0) {
+    ms_levels <- as.integer(unique(xml_attr(ms_level_n, "value")))
+  } else {
+    ms_levels <- NA_integer_
+  }
+
+  mz_low_x <- '//d1:spectrum/d1:cvParam[@name="lowest observed m/z"]'
+  mz_low_n <- xml_find_all(xml_data, xpath = mz_low_x)
+  if (length(mz_low_n) > 0) {
+    mz_low <- min(as.numeric(xml_attr(mz_low_n, "value")))
+  } else {
+    mz_low <- NA_real_
+  }
+
+  mz_high_x <- '//d1:spectrum/d1:cvParam[@name="highest observed m/z"]'
+  mz_high_n <- xml_find_all(xml_data, xpath = mz_high_x)
+  if (length(mz_high_n) > 0) {
+    mz_high <- max(as.numeric(xml_attr(mz_high_n, "value")))
+  } else {
+    mz_high <- NA_real_
+  }
+
+  centroided_x <- '//d1:spectrum/d1:cvParam[@accession="MS:1000127"]'
+  centroided_n <- xml_find_all(xml_data, xpath = centroided_x)
+  if (length(centroided_n) > 0) {
+    spectra_mode <- "centroid"
+  } else {
+    profile_x <- '//d1:spectrum/d1:cvParam[@accession="MS:1000128"]'
+    profile_n <- xml_find_all(xml_data, xpath = profile_x)
+    if (length(profile_n) > 0) {
+      spectra_mode <- "profile"
+    } else {
+      spectra_mode <- NA_character_
+    }
+  }
+
+  polarity_pos <- '//d1:spectrum/d1:cvParam[@accession="MS:1000130"]'
+  polarity_pos <- xml_find_all(xml_data, polarity_pos)
+
+  polarity_neg <- '//d1:spectrum/d1:cvParam[@accession="MS:1000129"]'
+  polarity_neg <- xml_find_all(xml_data, polarity_neg)
+
+
+  if (length(polarity_pos) > 0 | length(polarity_neg) > 0) {
+    polarities <- c(
+      unique(gsub(" scan", "", xml_attr(polarity_pos, "name"))),
+      unique(gsub(" scan", "", xml_attr(polarity_neg, "name")))
+    )
+  } else {
+    polarities <- NA_character_
+  }
+
+  rt_x <- '//d1:spectrum/d1:scanList/d1:scan/d1:cvParam[@name="scan start time"]'
+  rt <- xml_find_all(xml_data, xpath = rt_x)
+  unit <- unique(xml_attr(rt, "unitName"))
+  rt <- as.numeric(xml_attr(rt, "value"))
+  if ("minute" %in% unit) rt = rt * 60
+
+  if (length(rt) > 0) {
+    rt_start <- min(rt)
+    rt_end <- max(rt)
+  } else {
+    rt_start <- NA_real_
+    rt_end <- NA_real_
+  }
+
+  chrom_x <- '//d1:chromatogram'
+  chrom_n <- xml_find_all(xml_data, chrom_x)
+  chromatograms_number <- length(chrom_n)
+
+  instrument_info <- list("inst_data" = inst_val)
+  instrument_info <- c(instrument_info, config)
+
+  acquisition_info <- list(
+    "time_stamp" = time_stamp,
+    "spectra_number" = spectra_number,
+    "spectra_mode" = spectra_mode,
+    "spectra_levels" = ms_levels,
+    "mz_low" = mz_low,
+    "mz_high" = mz_high,
+    "rt_start" = rt_start,
+    "rt_end" = rt_end,
+    "polarity" = polarities,
+    "chromatograms_number" = chromatograms_number,
+    "ion_mobility" = FALSE
+  )
+
+
+  ms1_nodes <- '//d1:spectrum[d1:cvParam[@name="ms level" and @value="1"]]'
+  ms1_nodes <- xml_find_all(xml_data, ms1_nodes)
+
+  if (length(ms1_nodes) > 0) {
+
+    ms1_rt <- 'd1:scanList/d1:scan/d1:cvParam[@name="scan start time"]'
+    ms1_rt <- xml_find_all(ms1_nodes, xpath = ms1_rt)
+    unit <- unique(xml_attr(ms1_rt, "unitName"))
+    ms1_rt <- as.numeric(xml_attr(ms1_rt, "value"))
+    if ("minute" %in% unit) ms1_rt = ms1_rt * 60
+
+    tic <- data.frame(
+      "rt" = ms1_rt,
+      "intensity" = as.numeric(xml_attr(xml_find_all(
+        ms1_nodes,
+        xpath = 'd1:cvParam[@name="total ion current"]'), "value"))
+    )
+
+    bpc <- data.frame(
+      "rt" = ms1_rt,
+      "mz" = as.numeric(xml_attr(xml_find_all(
+        ms1_nodes,
+        xpath = 'd1:cvParam[@name="base peak m/z"]'), "value")),
+      "intensity" = as.numeric(xml_attr(xml_find_all(
+        ms1_nodes,
+        xpath = 'd1:cvParam[@name="base peak intensity"]'), "value"))
+    )
+
+  } else if (spectra_number == 0 & chromatograms_number > 0) {
+
+
+
+
+  } else {
+
+    tic <- data.frame()
+    bpc <- data.frame()
+
+  }
+}
+
 
 
 
