@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -7,7 +8,7 @@ using namespace std;
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-DataFrame rcpp_ms_make_eics_for_msAnalysis(DataFrame spec, DataFrame targets) {
+DataFrame cpp_build_eics_ext(DataFrame spec, DataFrame targets) {
 
   const vector<double> rtmins = targets["rtmin"];
   const vector<double> rtmaxs = targets["rtmax"];

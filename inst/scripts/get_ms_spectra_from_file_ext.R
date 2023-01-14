@@ -17,12 +17,12 @@ get_ms_spectra_from_file_ext <- function(file,
 
   if (inval) {
     warning("File format not valid!")
-    return(data.frame())
+    return(data.table::data.table())
   }
 
   if (FALSE %in% requireNamespace("mzR", quietly = TRUE)) {
     warning("mzR package not found!")
-    return(data.frame())
+    return(data.table::data.table())
   }
 
 
@@ -38,7 +38,7 @@ get_ms_spectra_from_file_ext <- function(file,
     if (!is.null(levels)) zH <- zH[zH$msLevel %in% levels, ]
 
     temp_checkOverlapRanges <- function(vals, ranges) {
-      return(rowSums(mapply(function(a, b) between(vals, a, b),
+      return(rowSums(mapply(function(a, b) data.table::between(vals, a, b),
                             ranges$min, ranges$max)) > 0)
     }
 
@@ -53,12 +53,12 @@ get_ms_spectra_from_file_ext <- function(file,
     zD <- mzR::peaks(zF, scans = zH$seqNum)
 
     mat_idx <- rep(zH$seqNum, sapply(zD, nrow))
-    zD <- as.data.table(do.call(rbind, zD))
+    zD <- data.table::as.data.table(do.call(rbind, zD))
     zD$index <- mat_idx
 
     if (TRUE %in% (unique(zH$msLevel) == 2)) {
 
-      zH_b <- data.table(
+      zH_b <- data.table::data.table(
         "index" = zH$seqNum,
         "scan" = zH$acquisitionNum,
         "level" = zH$msLevel,
@@ -70,7 +70,7 @@ get_ms_spectra_from_file_ext <- function(file,
 
     } else {
 
-      zH_b <- data.table(
+      zH_b <- data.table::data.table(
         "index" = zH$seqNum,
         "scan" = zH$acquisitionNum,
         "level" = zH$msLevel,
@@ -87,7 +87,7 @@ get_ms_spectra_from_file_ext <- function(file,
       zH_b$driftTime <- zH$ionMobilityDriftTime
     }
 
-    zH_n <- zH_b[zD, on = "index"]
+    zH_n <- data.table::merge.data.table(zH_b, zD, by = "index")
 
     zH_n <- zH_n[!(zH_n$intensity <= minIntensityMS1 & zH_n$level == 1), ]
     zH_n <- zH_n[!(zH_n$intensity <= minIntensityMS2 & zH_n$level == 2), ]
@@ -98,5 +98,5 @@ get_ms_spectra_from_file_ext <- function(file,
 
   }
 
-  return(data.frame())
+  return(data.table::data.table())
 }

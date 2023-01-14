@@ -101,7 +101,7 @@ setClass("msAnalysis",
 
 ### //// Auxiliary functions --------------------------------------------------
 
-get_msAnalysis_emptyList <- function() {
+msAnalysis_emptyList <- function() {
 
   return(
     list(
@@ -159,9 +159,8 @@ setMethod("initialize", "msAnalysis", function(.Object, file = NA_character_) {
 
   if (!is.na(file)) {
 
-    source(
-      system.file("scripts/initialize_msAnalysis_ext.R", package = "streamFind")
-    )
+    source(system.file("scripts/initialize_msAnalysis_ext.R",
+                  package = "streamFind"), local = TRUE)
 
     analysis_list <- initialize_msAnalysis_ext(file)
 
@@ -701,10 +700,8 @@ setMethod("loadRawData", "msAnalysis", function(object) {
 #'
 setMethod("loadSpectra", "msAnalysis", function(object) {
 
-  source(
-    system.file("scripts/get_ms_spectra_from_file_ext.R",
-                package = "streamFind")
-  )
+  source(system.file("scripts/get_ms_spectra_from_file_ext.R",
+                     package = "streamFind"), local = TRUE)
 
   spec <- get_ms_spectra_from_file_ext(filePath(object))
 
@@ -818,10 +815,8 @@ setMethod("plotSpectra", "msAnalysis", function(object,
 #'
 setMethod("loadChromatograms", "msAnalysis", function(object) {
 
-  source(
-    system.file("scripts/get_ms_chromatograms_from_file_ext.R",
-                package = "streamFind")
-  )
+  source(system.file("scripts/get_ms_chromatograms_from_file_ext.R",
+                     package = "streamFind"), local = TRUE)
 
   chroms <- get_ms_chromatograms_from_file_ext(filePath(object))
 
@@ -947,12 +942,12 @@ setMethod("EICs", "msAnalysis", function(object,
 
   } else {
 
-    source(
-      system.file("scripts/get_ms_spectra_from_file_ext.R",
-                  package = "streamFind")
-    )
+    source(system.file("scripts/get_ms_spectra_from_file_ext.R",
+                       package = "streamFind"), local = TRUE)
 
-    spec <- get_ms_spectra_from_file_ext(filePath(object), levels = 1, rtr = rtr)
+    file <- filePath(object)
+
+    spec <- get_ms_spectra_from_file_ext(file, levels = 1, rtr = rtr)
 
   }
 
@@ -1049,7 +1044,8 @@ setMethod("BPC", "msAnalysis", function(object) {
 
     intensity <- NULL
 
-    bpc[bpc[, rank(intensity, ties.method = "max") != .N, by = rt]$V1, intensity := NA]
+    bpc[bpc[, rank(intensity, ties.method = "max") != .N,
+      by = rt]$V1, intensity := NA]
     bpc <- bpc[!is.na(intensity), ]
     bpc[, id := NULL]
 
@@ -1250,12 +1246,12 @@ setMethod("XICs", "msAnalysis", function(object,
 
   } else {
 
-    source(
-      system.file("scripts/get_ms_spectra_from_file_ext.R",
-                  package = "streamFind")
-    )
+    source(system.file("scripts/get_ms_spectra_from_file_ext.R",
+                       package = "streamFind"), local = TRUE)
 
-    spec <- get_ms_spectra_from_file_ext(filePath(object), levels = 1, rtr = rtr)
+    file <- filePath(object)
+
+    spec <- get_ms_spectra_from_file_ext(file, levels = 1, rtr = rtr)
 
   }
 
@@ -1380,12 +1376,12 @@ setMethod("MS2s", "msAnalysis", function(object,
 
   } else {
 
-    source(
-      system.file("scripts/get_ms_spectra_from_file_ext.R",
-                  package = "streamFind")
-    )
+    source(system.file("scripts/get_ms_spectra_from_file_ext.R",
+                       package = "streamFind"), local = TRUE)
 
-    spec <- get_ms_spectra_from_file_ext(filePath(object),
+    file <- filePath(object)
+
+    spec <- get_ms_spectra_from_file_ext(file,
                                          levels = 2,
                                          rtr = rtr,
                                          preMZrange = preMZrange)

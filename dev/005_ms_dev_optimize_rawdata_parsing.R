@@ -1,17 +1,33 @@
 
 library(streamFind)
-library(testthat)
+#library(testthat)
 
 ### example files -------------------------------------------------------------
 
 # trimmed files
 fls <- streamFindData::msFilePaths()
+fls <- fls[10:27]
 fls <- fls[grepl("pos", fls)]
-fl <- files[13]
+files <- fls
+fl <- fls[4]
 
 # original non-trimmed mzML
-fls <- list.files(choose.dir(), full.names = TRUE)
-fl <- fls[1]
+files <- list.files(choose.dir(), full.names = TRUE)
+# fl <- fls[1]
+
+
+### test R6 -------------------------------------------------------------------
+
+test <- r6MS$new(files)
+
+test$size()
+
+test2 <- test$subset(1:5)
+test2$size()
+
+test$getSpectra()
+
+rm(test)
 
 ### objects -------------------------------------------------------------------
 
@@ -27,7 +43,15 @@ cat("\n")
 
 init <- Sys.time()
 
-set <- newStreamSet(fls, run_parallel = FALSE)
+set <- newStreamSet(files, run_parallel = FALSE)
+
+cat("In sequence: ")
+Sys.time() - init
+cat("\n")
+
+init <- Sys.time()
+
+r6Set <- r6MS$new(files, run_parallel = F)
 
 cat("In sequence: ")
 Sys.time() - init
@@ -49,13 +73,74 @@ settings_pp <- createSettings(
   )
 )
 
-a1 <- peakPicking(a1, settings = settings_pp)
+ana <- peakPicking(ana, settings = settings_pp)
 
-set <- peakPicking(set1, settings = settings_pp)
+set <- peakPicking(set, settings = settings_pp)
 
-### dev msAnalysis ------------------------------------------------------------
+### loading spectra -----------------------------------------------------------
 
-object <- a1
+parse_traces_parallel <- microbenchmark::microbenchmark(
+  parallel = getSpectra(set, run_parallel = TRUE),
+  times = 2,
+  control = list(order = "inorder")
+)
+
+parse_traces_sequential <- microbenchmark::microbenchmark(
+  sequential = getSpectra(set, run_parallel = FALSE),
+  times = 2,
+  control = list(order = "inorder")
+)
+
+rbind(parse_traces_parallel, parse_traces_sequential)
+
+### building EICs -------------------------------------------------------------
+
+pks <- peaks(set)
+
+parse_EICs_parallel_Nvar <- microbenchmark::microbenchmark(
+  "10" = EICs(set, mz = pks[1:10,], run_parallel = TRUE),
+  "100" = EICs(set, mz = pks[1:100,], run_parallel = TRUE),
+  "250" = EICs(set, mz = pks[1:250,], run_parallel = TRUE),
+  "500" = EICs(set, mz = pks[1:500,], run_parallel = TRUE),
+  "1000" = EICs(set, mz = pks[1:1000,], run_parallel = TRUE),
+  times = 3,
+  control = list(order = "inorder")
+)
+
+parse_EICs_seq_Nvar <- microbenchmark::microbenchmark(
+  "10" = EICs(set, mz = pks[1:10,], run_parallel = FALSE),
+  "100" = EICs(set, mz = pks[1:100,], run_parallel = FALSE),
+  "250" = EICs(set, mz = pks[1:250,], run_parallel = FALSE),
+  "500" = EICs(set, mz = pks[1:500,], run_parallel = FALSE),
+  "1000" = EICs(set, mz = pks[1:1000,], run_parallel = FALSE),
+  times = 3
+)
+
+parse_EICs_parallel_Nvar <- as.data.frame(parse_EICs_parallel_Nvar)
+parse_EICs_parallel_Nvar$type <- "parallel"
+parse_EICs_seq_Nvar <- as.data.frame(parse_EICs_seq_Nvar)
+parse_EICs_seq_Nvar$type <- "sequential"
+EICs_p_s <- rbind(parse_EICs_parallel_Nvar, parse_EICs_seq_Nvar)
+library(ggplot2)
+ggplot(EICs_p_s, aes(x = expr, y = time, group = type)) +
+  geom_line(aes(color = type))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #### improve parse data -------------------------------------------------------
 
@@ -129,7 +214,7 @@ parse_EICs_time
 # almost the same time when complete loaded raw data table is given for
 # cpp function. Filtering with rtr ranges before gives overhead somehow.
 
-testEICsall <- EICs(a1)
+testEICsall <- EICs(ana, mz = 300)
 
 plotTIC(a1)
 plotBPC(a1, interactive = TRUE)

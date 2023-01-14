@@ -47,10 +47,13 @@
 #' @importFrom parallelly availableWorkers availableCores
 #'
 #' @importFrom parallel makeCluster clusterExport detectCores stopCluster
+#' @importFrom parallel makePSOCKcluster makeForkCluster
 #'
 #' @importFrom doParallel registerDoParallel
 #'
-#' @importFrom foreach foreach `%dopar%` `%do%`
+#' @importFrom foreach foreach `%dopar%`
+#'
+#' @import R6
 #'
 #' @noRd
 NULL

@@ -229,7 +229,7 @@
   ppm = 20,
   sec = 60,
   id = NULL,
-  run_parallel = FALSE
+  run_parallel = TRUE
 )
 
 \S4method{plotEICs}{msData}(

@@ -60,6 +60,143 @@ setClass("msData",
 
 ### //// Auxiliary functions --------------------------------------------------
 
+checkAnalysesArgument <- function(object, analyses = NULL) {
+
+  if (!"msData" %in% class(object)) return(NULL)
+
+  if (is.null(analyses)) return(analysisNames(object))
+
+  if (is.character(analyses)) {
+
+    if (FALSE %in% (unname(analyses) %in% analysisNames(object))) {
+      message("Given analysis names not found in the msData object!")
+      return(NULL)
+    }
+
+    return(analysisNames(object)[analysisNames(object) %in% analyses])
+
+  } else if (is.numeric(analyses)) {
+
+    if (max(analyses) > length(analysisNames(object))) {
+      message("Analyses index not matching the number of analyses in the object!")
+      return(NULL)
+    }
+
+    return(analysisNames(object)[analyses])
+  }
+
+  return(NULL)
+}
+
+
+
+# buildEICs <- function(spec, targets, run_parallel) {
+#
+#   analyses <- names(spec)
+#
+#   chunk_list <- lapply(analyses, function(x, targets, spec) {
+#     return(list(spec = as.data.frame(spec[[x]]), targets = as.data.frame(targets)))
+#   }, spec = spec, targets = targets)
+#
+#   if (run_parallel) {
+#
+#     ex_packages = "Rcpp"
+#
+#     cpp_file <- system.file("scripts/cpp_build_eics_ext.cpp",
+#                             package = "streamFind")
+#
+#     ex_globals = "cpp_file"
+#
+#     workers <- detectCores() - 1
+#
+#     if (length(chunk_list) < workers) workers <- length(chunk_list)
+#
+#     par_type <- "PSOCK"
+#
+#     if (supportsMulticore()) par_type <- "FORK"
+#
+#     cl <- makeCluster(workers, type = par_type)
+#
+#     clusterExport(cl, ex_globals, envir = environment())
+#
+#     registerDoParallel(cl)
+#
+#     eics_list <- foreach(chunk = chunk_list, .packages = ex_packages) %dopar% {
+#       sourceCpp(cpp_file)
+#       return(cpp_build_eics_ext(chunk[[1]], chunk[[2]]))
+#     }
+#
+#     stopCluster(cl)
+#
+#   } else {
+#
+#     eics_list <- lapply(chunk_list, function(chunk) {
+#       return(rcpp_ms_make_eics_for_msAnalysis(chunk[[1]], chunk[[2]]))
+#     })
+#
+#   }
+#
+#   names(eics_list) <- names(chunk_list)
+#
+#   eics <- rbindlist(eics_list, idcol = "analysis", fill = TRUE)
+#
+#   return(eics)
+# }
+#
+#
+#
+# buildEICs2 <- function(spec, targets, run_parallel) {
+#
+#   analyses <- names(spec)
+#
+#   chunk_list <- lapply(analyses, function(x, targets, spec) {
+#     return(list(spec = spec[[x]][, .(rt, mz, intensity)], targets = targets))
+#   }, spec = spec, targets = targets)
+#
+#   if (run_parallel) {
+#
+#     ex_packages = "data.table"
+#
+#     source(system.file("scripts/dt_build_eics_ext.R",
+#                             package = "streamFind"))
+#
+#     ex_globals = c("dt_bluid_eics", "trim_ranges")
+#
+#     workers <- detectCores() - 1
+#
+#     if (length(chunk_list) < workers) workers <- length(chunk_list)
+#
+#     par_type <- "PSOCK"
+#
+#     if (supportsMulticore()) par_type <- "FORK"
+#
+#     cl <- makeCluster(workers, type = par_type)
+#
+#     clusterExport(cl, ex_globals, envir = environment())
+#
+#     registerDoParallel(cl)
+#
+#     eics_list <- foreach(chunk = chunk_list, .packages = ex_packages) %dopar% {
+#       return(dt_bluid_eics(chunk[[1]], chunk[[2]], trim_ranges))
+#     }
+#
+#     stopCluster(cl)
+#
+#   } else {
+#
+#     eics_list <- lapply(chunk_list, function(chunk) {
+#       return(rcpp_ms_make_eics_for_msAnalysis(chunk[[1]], chunk[[2]]))
+#     })
+#
+#   }
+#
+#   names(eics_list) <- names(chunk_list)
+#
+#   eics <- rbindlist(eics_list, idcol = "analysis", fill = TRUE)
+#
+#   return(eics)
+# }
+
 
 
 ### //// S4 methods -----------------------------------------------------------
@@ -86,7 +223,6 @@ setMethod("initialize", "msData", function(.Object,
 
   analysisTable <- checkFilesInput(files, replicates, blanks)
 
-
   if (!is.null(analysisTable)) {
 
     ms_data@title <- title
@@ -95,16 +231,14 @@ setMethod("initialize", "msData", function(.Object,
 
     files <- analysisTable$file
 
-    source(
-      system.file("scripts/initialize_msAnalysis_ext.R",
-                  package = "streamFind")
-    )
+    source(system.file("scripts/initialize_msAnalysis_ext.R",
+                       package = "streamFind"), local = TRUE)
 
     if (run_parallel) {
 
       ex_packages = "mzR"
 
-      ex_globals = "initialize_msAnalysis_ext"
+      #ex_globals = "initialize_msAnalysis_ext"
 
       workers <- detectCores() - 1
 
@@ -116,11 +250,11 @@ setMethod("initialize", "msData", function(.Object,
 
       cl <- makeCluster(workers, type = par_type)
 
-      clusterExport(cl, ex_globals, envir = environment())
+      #clusterExport(cl, ex_globals, envir = environment())
 
       registerDoParallel(cl)
 
-      analyses <- foreach(file = files, .packages = ex_packages) %dopar% {
+      analyses <- foreach(file = files, .packages = ex_packages, .verbose = T) %dopar% {
 
         return(initialize_msAnalysis_ext(file))
 
@@ -128,13 +262,15 @@ setMethod("initialize", "msData", function(.Object,
 
       stopCluster(cl)
 
+
     } else {
 
-      analyses <- foreach(file = files) %do% {
+      analyses <- lapply(files, function(file) {
 
         return(initialize_msAnalysis_ext(file))
 
-      }
+      })
+
     }
 
 
@@ -704,20 +840,22 @@ setMethod("getSpectra", "msData", function(object,
 
   analyses <- checkAnalysesArgument(object, analyses)
 
+  if (is.null(analyses)) return(data.table())
+
   files <- filePaths(object)[analyses]
 
   source(
     system.file("scripts/get_ms_spectra_from_file_ext.R",
-                package = "streamFind")
+                package = "streamFind"), local = TRUE
   )
 
   if (run_parallel) {
 
     ex_packages = c("mzR", "data.table")
 
-    ex_globals = c("levels", "rtr", "preMZrange",
-                   "minIntensityMS1", "minIntensityMS2",
-                   "get_ms_spectra_from_file_ext")
+    # ex_globals = c("levels", "rtr", "preMZrange",
+    #                "minIntensityMS1", "minIntensityMS2",
+    #                "get_ms_spectra_from_file_ext")
 
     workers <- detectCores() - 1
 
@@ -729,31 +867,29 @@ setMethod("getSpectra", "msData", function(object,
 
     cl <- makeCluster(workers, type = par_type)
 
-    clusterExport(cl, ex_globals, envir = environment())
+    #clusterExport(cl, ex_globals, envir = environment())
 
     registerDoParallel(cl)
 
-    spec_list <- foreach(file = files, .packages = ex_packages) %dopar% {
-
-      setDTthreads(1)
+    spec_list <- foreach(i = files, .packages = ex_packages) %dopar% {
 
       return(get_ms_spectra_from_file_ext(
-        file, levels, rtr, preMZrange, minIntensityMS1, minIntensityMS2))
+        file = i , levels, rtr, preMZrange, minIntensityMS1, minIntensityMS2))
 
     }
 
     stopCluster(cl)
 
-    setDTthreads(0)
-
   } else {
 
-    spec_list <- foreach(file = files) %do% {
+    spec_list <- lapply(files, function(file, levels, rtr, preMZrange,
+                                        minIntensityMS1, minIntensityMS2) {
 
       return(get_ms_spectra_from_file_ext(
         file, levels, rtr, preMZrange, minIntensityMS1, minIntensityMS2))
 
-    }
+    }, levels = levels, rtr = rtr, preMZrange = preMZrange,
+    minIntensityMS1 = minIntensityMS1, minIntensityMS2 = minIntensityMS2)
 
   }
 
@@ -814,6 +950,8 @@ setMethod("hasLoadedSpectra", "msData", function(object) {
 setMethod("spectra", "msData", function(object, analyses = NULL) {
 
   analyses <- checkAnalysesArgument(object, analyses)
+
+  if (is.null(analyses)) return(data.table())
 
   spec <- lapply(object@analyses[analyses], function(x) {
     return(x@spectra)
@@ -898,11 +1036,11 @@ setMethod("plotSpectra", "msData", function(object,
 
   colors_var <- getColors(unique(spec_2$var))
 
-  fig <- plotly::plot_ly(spec_2, x = ~rt, y = ~mz, z = ~intensity) %>%
-    plotly::group_by(spec_2$rtmz) %>%
-    plotly::add_lines(color = ~var,  colors = colors_var)
+  fig <- plot_ly(spec_2, x = ~rt, y = ~mz, z = ~intensity) %>%
+    group_by(spec_2$rtmz) %>%
+    add_lines(color = ~var,  colors = colors_var)
 
-  fig <- fig %>% plotly::layout(scene = list(
+  fig <- fig %>% layout(scene = list(
     xaxis = list(title = "Retention time / seconds"),
     yaxis = list(title = "<i>m/z</i>"),
     zaxis = list(title = "Intensity / counts")))
@@ -929,6 +1067,8 @@ setMethod("getChromatograms", "msData", function(object,
                                                  run_parallel = FALSE) {
 
   analyses <- checkAnalysesArgument(object, analyses)
+
+  if (is.null(analyses)) return(data.table())
 
   files <- filePaths(object)[analyses]
 
@@ -971,11 +1111,11 @@ setMethod("getChromatograms", "msData", function(object,
 
   } else {
 
-    chrom_list <- foreach(file = files) %do% {
+    chrom_list <- lapply(files, function(file, minIntensity) {
 
-      return(get_ms_chromatograms_from_file_ext(file, minIntensity))
+      return(get_ms_spectra_from_file_ext(file, minIntensity))
 
-    }
+    }, minIntensity)
 
   }
 
@@ -1038,6 +1178,8 @@ setMethod("chromatograms", "msData", function(object, analyses = NULL) {
 
   analyses <- checkAnalysesArgument(object, analyses)
 
+  if (is.null(analyses)) return(data.table())
+
   chroms <- lapply(object@analyses[analyses], function(x) {
     return(x@chromatograms)
   })
@@ -1068,6 +1210,8 @@ setMethod("plotChromatograms", "msData", function(object,
                                                   interactive = FALSE) {
 
   analyses <- checkAnalysesArgument(object, analyses)
+
+  if (is.null(analyses)) return(data.table())
 
   chroms <- chromatograms(object[analyses])
 
@@ -1119,26 +1263,123 @@ setMethod("EICs", "msData", function(object,
                                      analyses = NULL,
                                      mz = NULL, rt = NULL,
                                      ppm = 20, sec = 60, id = NULL,
-                                     run_parallel = FALSE) {
+                                     run_parallel = TRUE) {
 
   analyses <- checkAnalysesArgument(object, analyses)
+
+  if (is.null(analyses)) return(data.table())
 
   targets <- makeTargets(mz, rt, ppm, sec, id)
 
   if (is.null(analyses)) return(data.table())
 
-  eics <- runParallelLapply(
-    object@analyses[analyses],
-    run_parallel,
-    NULL,
-    function(x, targets) {
-      eic <- streamFind::EICs(x, mz = targets)
-      p()
-      return(eic)
-    }, targets = targets
-  )
+  rtr <- targets[, c("rtmin", "rtmax")]
+  colnames(rtr) <- c("min", "max")
+  if ((nrow(rtr) == 1) & (TRUE %in% (rtr$max == 0))) rtr <- NULL
 
-  eics <- rbindlist(eics, idcol = "analysis", fill = TRUE)
+  specLoaded <- hasLoadedSpectra(object)[analyses]
+
+  if (all(specLoaded)) {
+
+    spec <- spectra(object, analyses)
+
+  } else {
+
+    # spec <- getSpectra(object, analyses, rtr, levels = 1,
+    #                    run_parallel = run_parallel)
+
+    files <- filePaths(object)[analyses]
+
+    source(
+      system.file("scripts/get_ms_spectra_from_file_ext.R",
+                  package = "streamFind"), local = TRUE
+    )
+
+    ex_packages = c("mzR", "data.table")
+
+    ex_globals = c("rtr", "get_ms_spectra_from_file_ext")
+
+    workers <- detectCores() - 1
+
+    if (length(files) < workers) workers <- length(files)
+
+    par_type <- "PSOCK"
+
+    if (supportsMulticore()) par_type <- "FORK"
+
+    cat(Sys.time())
+
+    cl <- makeCluster(workers, type = par_type)
+
+    cat(Sys.time())
+
+    registerDoParallel(cl)
+
+    cat(Sys.time())
+
+    spec_list <- foreach(i = files, .packages = ex_packages, .verbose = T) %dopar% {
+
+      return(get_ms_spectra_from_file_ext(
+        file = i , levels = 1, rtr))
+
+    }
+
+    stopCluster(cl)
+
+    names(spec_list) <- analyses
+
+    spec <- spec_list
+  }
+
+  #eics <- buildEICs2(spec, targets, run_parallel)
+
+  chunk_list <- lapply(analyses, function(x, targets, spec) {
+    return(list(spec = spec[[x]][, .(rt, mz, intensity)], targets = targets))
+  }, spec = spec, targets = targets)
+
+  if (run_parallel) {
+
+    ex_packages = "data.table"
+
+    source(system.file("scripts/dt_build_eics_ext.R",
+                       package = "streamFind"), local = TRUE)
+
+    #ex_globals = c("dt_bluid_eics", "trim_ranges")
+
+    workers <- detectCores() - 1
+
+    if (length(chunk_list) < workers) workers <- length(chunk_list)
+
+    par_type <- "PSOCK"
+
+    if (supportsMulticore()) par_type <- "FORK"
+
+    cl <- makeCluster(workers, type = par_type)
+
+    #clusterExport(cl, ex_globals, envir = environment())
+
+    registerDoParallel(cl)
+
+    eics_list <- foreach(chunk = chunk_list, .packages = ex_packages) %dopar% {
+      return(dt_bluid_eics(chunk[[1]], chunk[[2]], trim_ranges))
+    }
+
+    stopCluster(cl)
+
+  } else {
+
+    eics_list <- lapply(chunk_list, function(chunk) {
+      return(rcpp_ms_make_eics_for_msAnalysis(chunk[[1]], chunk[[2]]))
+    })
+
+  }
+
+  names(eics_list) <- names(chunk_list)
+
+  eics <- rbindlist(eics_list, idcol = "analysis", fill = TRUE)
+
+
+
 
   eics$replicate <- replicateNames(object)[eics$analysis]
 
@@ -1212,6 +1453,7 @@ setMethod("TICs", "msData", function(object,
   replicate <- NULL
 
   analyses <- checkAnalysesArgument(object, analyses)
+
   if (is.null(analyses)) return(data.table())
 
   tics <- runParallelLapply(
@@ -1287,6 +1529,7 @@ setMethod("BPCs", "msData", function(object,
   replicate <- NULL
 
   analyses <- checkAnalysesArgument(object, analyses)
+
   if (is.null(analyses)) return(data.table())
 
   bpcs <- runParallelLapply(
@@ -1366,22 +1609,30 @@ setMethod("XICs", "msData", function(object,
 
   analyses <- checkAnalysesArgument(object, analyses)
 
+  if (is.null(analyses)) return(data.table())
+
   targets <- makeTargets(mz, rt, ppm, sec, id)
 
   if (is.null(analyses)) return(data.table())
 
-  xics <- runParallelLapply(
-    object@analyses[analyses],
-    run_parallel,
-    NULL,
-    function(x, targets) {
-      xic <- streamFind::XICs(x, mz = targets)
-      p()
-      return(xic)
-    }, targets = targets
-  )
+  rtr <- targets[, c("rtmin", "rtmax")]
+  colnames(rtr) <- c("min", "max")
+  if ((nrow(rtr) == 1) & (TRUE %in% (rtr$max == 0))) rtr <- NULL
 
-  xics <- rbindlist(xics, idcol = "analysis", fill = TRUE)
+  specLoaded <- hasLoadedSpectra(object)[analyses]
+
+  if (all(specLoaded)) {
+
+    spec <- spectra(object, analyses)
+
+  } else {
+
+    spec <- getSpectra(object, analyses, rtr, levels = 1,
+                       run_parallel = run_parallel)
+
+  }
+
+  xics <- buildEICs(spec, targets, run_parallel)
 
   xics$replicate <- replicateNames(object)[xics$analysis]
 
@@ -1478,6 +1729,8 @@ setMethod("MS2s", "msData", function(object = NULL,
   replicate <- NULL
 
   analyses <- checkAnalysesArgument(object, analyses)
+
+  if (is.null(analyses)) return(data.table())
 
   targets <- makeTargets(mz, rt, ppm, sec, id)
 
