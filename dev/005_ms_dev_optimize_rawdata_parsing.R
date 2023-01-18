@@ -6,10 +6,10 @@ library(streamFind)
 
 # trimmed files
 fls <- streamFindData::msFilePaths()
-fls <- fls[10:27]
+fls <- fls[10:21] #27
 fls <- fls[grepl("pos", fls)]
 files <- fls
-fl <- fls[4]
+fl <- fls[29]
 
 # original non-trimmed mzML
 files <- list.files(choose.dir(), full.names = TRUE)
@@ -18,20 +18,59 @@ files <- list.files(choose.dir(), full.names = TRUE)
 
 ### test R6 -------------------------------------------------------------------
 
-test <- r6MS$new(files)
+# R6MS documentation
+?R6MS
 
-test$size()
+# new R6MS by files
+test <- R6MS$new(files)
 
-test2 <- test$subset(1:5)
-test2$size()
+# new R6MS by analyses and incomplete header arguments
+test2 <- R6MS$new(header = list(name = "Test project"), analyses = test$get_analyses())
+test2
+all.equal(test$get_analyses(), test2$get_analyses())
 
-test$getSpectra()
+# active bindings
+test$overview
+test$overview$file
 
-rm(test)
+
+# get methods
+test$get_header("path")
+test$get_analyses(2)
+test$get_analysis_names()
+test$get_replicate_names(4)
+test$get_blank_names(6)
+test$get_polarities(3)
+names(test$get_spectra(analyses = 1:2))
+
+# set methods
+test$set_replicate_names(c(rep("Blank", 3), rep("Blank", 3)))
+test$set_blank_names(rep("Blank", 6))
+
+# subset on analysis
+test3 = test$subset_analyses(1:3)
+test3$overview
+
+# add analyses
+test4 <- R6MS$new(files[1:3])
+test5 <- R6MS$new(files[4:6])
+test5$add_analyses(test4$get_analyses())
+all.equal(test5$get_analysis_names(), test$get_analysis_names())
+
+test5$add_analyses(NULL)
+# make finalize function is needed
+rm(test5)
+
+
+
+
+
+
 
 ### objects -------------------------------------------------------------------
 
 ana <- newAnalysis(fl)
+BPC(ana)
 
 init <- Sys.time()
 
@@ -45,13 +84,17 @@ init <- Sys.time()
 
 set <- newStreamSet(files, run_parallel = FALSE)
 
+analysisNames(set)
+
 cat("In sequence: ")
 Sys.time() - init
 cat("\n")
 
 init <- Sys.time()
 
-r6Set <- r6MS$new(files, run_parallel = F)
+r6Set <- R6MS$new(files, run_parallel = F)
+
+r6Set$
 
 cat("In sequence: ")
 Sys.time() - init
@@ -91,7 +134,20 @@ parse_traces_sequential <- microbenchmark::microbenchmark(
   control = list(order = "inorder")
 )
 
-rbind(parse_traces_parallel, parse_traces_sequential)
+parse_traces_sequential_r6 <- microbenchmark::microbenchmark(
+  sequential_r6 = r6Set$getSpectra(run_parallel = FALSE),
+  times = 2,
+  control = list(order = "inorder")
+)
+
+parse_traces_parallel_r6 <- microbenchmark::microbenchmark(
+  parallel_r6 = r6Set$getSpectra(run_parallel = TRUE),
+  times = 2,
+  control = list(order = "inorder")
+)
+
+rbind(parse_traces_parallel, parse_traces_sequential,
+      parse_traces_sequential_r6, parse_traces_parallel_r6)
 
 ### building EICs -------------------------------------------------------------
 
