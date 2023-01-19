@@ -5,8 +5,8 @@ library(streamFind)
 ### example files -------------------------------------------------------------
 
 # trimmed files
-fls <- streamFindData::msFilePaths()
-fls <- fls[10:21] #27
+all_fls <- streamFindData::msFilePaths()
+fls <- all_fls[10:21] #27
 fls <- fls[grepl("pos", fls)]
 files <- fls
 fl <- fls[29]
@@ -15,6 +15,12 @@ fl <- fls[29]
 files <- list.files(choose.dir(), full.names = TRUE)
 # fl <- fls[1]
 
+targets = data.frame(
+  mzmin = c(247.1601, 239.0572),
+  mzmax = c(247.1699, 239.0668),
+  rtmin = c(1045, 1127),
+  rtmax = c(1105, 1187)
+)
 
 ### test R6 -------------------------------------------------------------------
 
@@ -22,7 +28,7 @@ files <- list.files(choose.dir(), full.names = TRUE)
 ?R6MS
 
 # new R6MS by files
-test <- R6MS$new(files)
+test = R6MS$new(files)
 
 # new R6MS by analyses and incomplete header arguments
 test2 <- R6MS$new(header = list(name = "Test project"), analyses = test$get_analyses())
@@ -41,7 +47,14 @@ test$get_analysis_names()
 test$get_replicate_names(4)
 test$get_blank_names(6)
 test$get_polarities(3)
-names(test$get_spectra(analyses = 1:2))
+
+rtr = data.frame(min = c(900, 1200), max = c(950, 1400))
+spc = test$get_spectra(analyses = 1, rtr = rtr)[[1]]
+head(spc)
+
+test_chrom = R6MS$new(files = all_fls[30])
+head(test_chrom$get_chromatograms(analyses = 1)[[1]])
+
 
 # set methods
 test$set_replicate_names(c(rep("Blank", 3), rep("Blank", 3)))
@@ -56,6 +69,15 @@ test4 <- R6MS$new(files[1:3])
 test5 <- R6MS$new(files[4:6])
 test5$add_analyses(test4$get_analyses())
 all.equal(test5$get_analysis_names(), test$get_analysis_names())
+
+# plot methods
+
+spec = test$get_spectra(1, c(1,2), rtr, preMZrange)
+
+test$plot_spectra(analyses = 1, mz = targets,
+                  onlyMS2fromMZ = TRUE, colorBy = "levels")
+
+
 
 test5$add_analyses(NULL)
 # make finalize function is needed

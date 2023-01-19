@@ -979,7 +979,7 @@ setMethod("spectra", "msData", function(object, analyses = NULL) {
 #'
 setMethod("plotSpectra", "msData", function(object,
                                             analyses = NULL,
-                                            ms_levels = c(1, 2),
+                                            levels = c(1, 2),
                                             mz = NULL, rt = NULL,
                                             ppm = 20, sec = 60,
                                             colorBy = "analyses") {
@@ -1003,7 +1003,7 @@ setMethod("plotSpectra", "msData", function(object,
                  rt >= min(targets$rtmin) & rt <= max(targets$rtmax), ]
   }
 
-  spec <- spec[spec$level %in% ms_levels, ]
+  spec <- spec[spec$level %in% levels, ]
 
   if (nrow(spec) == 0) {
     message("Requested MS traces not found.")

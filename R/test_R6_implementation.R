@@ -13,6 +13,7 @@ R6MS = R6::R6Class("R6MS",
   # private fields -----
   private = list(
 
+    ## .header -----
     .header = list(
       name = character(),
       author =  character(),
@@ -24,8 +25,10 @@ R6MS = R6::R6Class("R6MS",
       date = Sys.time()
     ),
 
+    ## .analyses -----
     .analyses = NULL,
 
+    ## .features -----
     .features = NULL
 
   ),
@@ -135,9 +138,9 @@ R6MS = R6::R6Class("R6MS",
           registerDoSEQ()
         }
 
-        analyses = foreach(file = files, .packages = ex_packages) %dopar% {
+        analyses = foreach(i = files, .packages = ex_packages) %dopar% {
 
-          file_link = mzR::openMSfile(file, backend = "pwiz")
+          file_link = mzR::openMSfile(i, backend = "pwiz")
           sH = suppressWarnings(mzR::header(file_link))
           cH = suppressWarnings(mzR::chromatogramHeader(file_link))
           instrument = mzR::instrumentInfo(file_link)
@@ -161,7 +164,7 @@ R6MS = R6::R6Class("R6MS",
           if (!all(is.na(sH$ionMobilityDriftTime))) ion_mobility = TRUE
 
           chromatograms_number = 0
-          if (grepl(".mzML", file))
+          if (grepl(".mzML", i))
             chromatograms_number = mzR::nChrom(file_link)
 
           if (spectra_number == 0 & chromatograms_number > 0) {
@@ -178,8 +181,11 @@ R6MS = R6::R6Class("R6MS",
             bpc = cH[cH$chromatogramId %in% "BPC", ]
             if (nrow(bpc) > 0) {
               bpc = mzR::chromatograms(file_link, bpc$chromatogramIndex)
-              if ("mz" %in% colnames(bpc)) bpc$mz <- NA
-              colnames(bpc) = c("rt", "intensity", "mz")
+              if (!"mz" %in% colnames(bpc)) {
+                bpc$mz <- NA
+                colnames(bpc) = c("rt", "intensity", "mz")
+              } else colnames(bpc) = c("rt", "mz", "intensity")
+
               if (max(bpc$rt) < 60) bpc$rt = bpc$rt * 60
             } else bpc = data.frame("rt" = numeric(),
                                     "mz" = numeric() ,
@@ -214,10 +220,10 @@ R6MS = R6::R6Class("R6MS",
           if (data_type %in% "SRM") run$msLevels = NA_integer_
 
           analysis = list(
-            "name" = gsub(".mzML|.mzXML", "", basename(file)),
+            "name" = gsub(".mzML|.mzXML", "", basename(i)),
             "replicate" = NA_character_,
             "blank" = NA_character_,
-            "file" = file,
+            "file" = i,
             "type" = data_type,
             "instrument" = instrument,
             "time_stamp" = run$startTimeStamp,
@@ -446,7 +452,44 @@ R6MS = R6::R6Class("R6MS",
                            preMZrange = NULL, minIntensityMS1 = 0,
                            minIntensityMS2 = 0, run_parallel = FALSE) {
 
+      temp_checkOverlapRanges = function(vals, ranges)  return(
+        rowSums(
+          mapply(function(a, b) vals >= a & vals <= b,
+                 a = ranges$min, b = ranges$max)) > 0
+      )
+
       if (is.null(analyses)) analyses = self$get_analysis_names
+
+      has_spectra = self$has_loaded_spectra(analyses)
+
+      if (all(has_spectra)) {
+
+        spec_list = lapply(private$.analyses[analyses], function(x) {
+
+          spec = x$spectra
+
+          if (!is.null(levels)) spec = spec[spec$level %in% levels, ]
+
+          if (!is.null(rtr))
+            spec = spec[temp_checkOverlapRanges(spec$rt, rtr), ]
+
+          if(!is.null(preMZrange)) {
+            preMZ_check = temp_checkOverlapRanges(spec$"preMZ", preMZrange)
+            spec = spec[(preMZ_check %in% TRUE) | is.na(preMZ_check), ]
+          }
+
+          spec = spec[!(spec$intensity <= minIntensityMS1 &
+                          spec$level == 1), ]
+
+          spec = spec[!(spec$intensity <= minIntensityMS2 &
+                          spec$level == 2), ]
+
+          return(spec)
+
+        })
+
+        return(spec_list)
+      }
 
       files = self$get_file_paths(analyses)
 
@@ -454,11 +497,7 @@ R6MS = R6::R6Class("R6MS",
 
       if (all(!is.na(files))) {
 
-        ex_packages = c("mzR", "data.table")
-
-        # ex_globals = c("levels", "rtr", "preMZrange",
-        #                "minIntensityMS1", "minIntensityMS2",
-        #                "get_ms_spectra_from_file_ext")
+        ex_packages = c("mzR")
 
         if (run_parallel) {
           workers = parallel::detectCores() - 1
@@ -472,40 +511,35 @@ R6MS = R6::R6Class("R6MS",
           registerDoSEQ()
         }
 
-        spec_list = foreach(i = files, .packages = ex_packages) %dopar% {
+        spec_list = foreach(i = unname(files), .packages = ex_packages) %dopar% {
 
-          file_link <- mzR::openMSfile(i, backend = "pwiz")
+          file_link = mzR::openMSfile(i, backend = "pwiz")
 
-          sH <- mzR::header(file_link)
+          sH = mzR::header(file_link)
 
           if (nrow(sH) > 0) {
 
             if (max(sH$retentionTime) < 60)
               sH$retentionTime <- sH$retentionTime * 60
 
-            if (!is.null(levels)) sH <- sH[sH$msLevel %in% levels, ]
-
-            temp_checkOverlapRanges <- function(vals, ranges) {
-              return(
-                rowSums(
-                  mapply(function(a, b) data.table::between(vals, a, b),
-                    ranges$min, ranges$max)) > 0)
-            }
+            if (!is.null(levels)) sH = sH[sH$msLevel %in% levels, ]
 
             if (!is.null(rtr))
-              sH <- sH[temp_checkOverlapRanges(sH$retentionTime, rtr), ]
+              sH = sH[temp_checkOverlapRanges(sH$retentionTime, rtr), ]
 
-            if(!is.null(preMZrange))
-              sH <- sH[temp_checkOverlapRanges(sH$precursorMZ, preMZrange), ]
+            if(!is.null(preMZrange)) {
+              preMZ_check = temp_checkOverlapRanges(sH$precursorMZ, preMZrange)
+              sH = sH[(preMZ_check %in% TRUE) | is.na(preMZ_check), ]
+            }
 
-            scans <- mzR::peaks(file_link, scans = sH$seqNum)
+            scans = mzR::peaks(file_link, scans = sH$seqNum)
 
-            mat_idx <- rep(sH$seqNum, sapply(scans, nrow))
-            scans <- as.data.frame(do.call(rbind, scans))
-            scans$index <- mat_idx
+            mat_idx = rep(sH$seqNum, sapply(scans, nrow))
+            scans = as.data.frame(do.call(rbind, scans))
+            scans$index = mat_idx
 
             if (TRUE %in% (unique(sH$msLevel) == 2)) {
-              sH_b <- data.frame(
+              sH_b = data.frame(
                 "index" = sH$seqNum,
                 "scan" = sH$acquisitionNum,
                 "level" = sH$msLevel,
@@ -514,7 +548,7 @@ R6MS = R6::R6Class("R6MS",
                 "preMZ" = sH$precursorMZ,
                 "rt" = sH$retentionTime)
             } else {
-              sH_b <- data.frame(
+              sH_b = data.frame(
                 "index" = sH$seqNum,
                 "scan" = sH$acquisitionNum,
                 "level" = sH$msLevel,
@@ -522,20 +556,20 @@ R6MS = R6::R6Class("R6MS",
             }
 
             if (!all(is.na(sH$ionMobilityDriftTime))) {
-              rt_unique <- unique(sH_b$rt)
-              frame_numbers <- seq_len(length(rt_unique))
-              if ("preMZ" %in% colnames(sH_b)) sH_b$preMZ <- NA_real_
-              sH_b$frame <- factor(sH_b$rt,
+              rt_unique = unique(sH_b$rt)
+              frame_numbers = seq_len(length(rt_unique))
+              if ("preMZ" %in% colnames(sH_b)) sH_b$preMZ = NA_real_
+              sH_b$frame = factor(sH_b$rt,
                                    levels = rt_unique, labels = frame_numbers)
-              sH_b$driftTime <- sH$ionMobilityDriftTime
+              sH_b$driftTime = sH$ionMobilityDriftTime
             }
 
-            sH_n <- merge(sH_b, scans, by = "index")
+            sH_n = merge(sH_b, scans, by = "index")
 
-            sH_n <- sH_n[!(sH_n$intensity <= minIntensityMS1 &
+            sH_n = sH_n[!(sH_n$intensity <= minIntensityMS1 &
                              sH_n$level == 1), ]
 
-            sH_n <- sH_n[!(sH_n$intensity <= minIntensityMS2 &
+            sH_n = sH_n[!(sH_n$intensity <= minIntensityMS2 &
                              sH_n$level == 2), ]
 
             if (exists("file_link")) suppressWarnings(mzR::close(file_link))
@@ -554,6 +588,118 @@ R6MS = R6::R6Class("R6MS",
       } else {
           warning("Defined analyses not found!")
           return(list())
+      }
+    },
+
+    #' @description
+    #' Method to get spectra from the MS analyses.
+    #'
+    #' @param analyses X.
+    #' @param levels Name.
+    #' @param rtr Hair color.
+    #' @param preMZrange Hair color.
+    #' @param minIntensityMS1 Hair color.
+    #' @param minIntensityMS2 Hair color.
+    #' @param run_parallel Hair color.
+    #' @return A data.frame with spectra.
+    get_chromatograms = function(analyses = NULL, minIntensity = 0,
+                                 run_parallel = FALSE) {
+
+      if (is.null(analyses)) analyses = self$get_analysis_names
+
+      files = self$get_file_paths(analyses)
+
+      analyses = names(files)
+
+      if (all(!is.na(files))) {
+
+        ex_packages = c("mzR")
+
+        if (run_parallel) {
+          workers = parallel::detectCores() - 1
+          if (length(files) < workers) workers = length(files)
+          par_type = "PSOCK"
+          if (parallelly::supportsMulticore()) par_type = "FORK"
+          cl = parallel::makeCluster(workers, type = par_type)
+          doParallel::registerDoParallel(cl)
+          on.exit(parallel::stopCluster(cl))
+        } else {
+          registerDoSEQ()
+        }
+
+        chrom_list = foreach(i = files, .packages = ex_packages) %dopar% {
+
+          file_link = mzR::openMSfile(i, backend = "pwiz")
+
+          cH <- suppressWarnings(mzR::chromatogramHeader(file_link))
+
+          if (nrow(cH) > 0) {
+
+            cH$polarity = as.character(cH$polarity)
+            cH[cH$polarity == 1, "polarity"] = "positive"
+            cH[cH$polarity == 0, "polarity"] = "negative"
+            cH[cH$polarity == -1, "polarity"] = NA_character_
+
+            chroms <- mzR::chromatograms(file_link, cH$chromatogramIndex)
+
+            if (!is.data.frame(chroms)) {
+
+              chroms = lapply(cH$chromatogramIndex, function(x, chroms) {
+                temp = chroms[[x]]
+                temp = as.data.frame(temp)
+                colnames(temp) = c("rt", "intensity")
+                temp$index = x
+                if (max(temp$rt) < 60) temp$rt = temp$rt * 60
+                return(temp)
+              }, chroms = chroms)
+
+              chroms = do.call("rbind", chroms)
+
+              cH_b <- data.frame(
+                "index" = cH$chromatogramIndex,
+                "id" = cH$chromatogramId,
+                "polarity" = cH$polarity,
+                "preMZ" = cH$precursorIsolationWindowTargetMZ,
+                "mz" = cH$productIsolationWindowTargetMZ
+              )
+
+              chrom_data = merge(cH_b, chroms, by = "index")
+
+            } else {
+
+              colnames(chroms) = c("rt", "intensity")
+              if (max(chroms$rt) < 60) chroms$rt = chroms$rt * 60
+
+              chrom_data = data.frame(
+                "index" = cH$chromatogramIndex,
+                "id" = cH$chromatogramId,
+                "polarity" = cH$polarity,
+                "preMZ" = cH$precursorIsolationWindowTargetMZ,
+                "mz" = cH$productIsolationWindowTargetMZ,
+                "rt" = chroms$rt,
+                "intensity" = chroms$intensity
+              )
+
+            }
+
+            chrom_data = chrom_data[chrom_data$intensity > minIntensity, ]
+
+            if (exists("file_link")) suppressWarnings(mzR::close(file_link))
+
+            return(chrom_data)
+
+          } else return(data.frame())
+        }
+
+        if (run_parallel) parallel::stopCluster(cl)
+
+        names(chrom_list) = analyses
+
+        return(chrom_list)
+
+      } else {
+        warning("Defined analyses not found!")
+        return(list())
       }
     },
 
@@ -603,6 +749,24 @@ R6MS = R6::R6Class("R6MS",
       } else warning("Not done, check the value!")
     },
 
+    ## has -----
+
+    #' @description
+    #' Method to check for loaded spectra in given analyses names/indices.
+    #'
+    #' @param analyses The analyses names/indices to check for loaded spectra.
+    #'
+    #' @return Invisible.
+    has_loaded_spectra = function(analyses) {
+
+      has_spectra = vapply(private$.analyses[analyses],
+                           function(x) nrow(x$spectra) > 0, FALSE)
+
+      names(has_spectra) = self$get_analysis_names(analyses)
+
+      return(has_spectra)
+    },
+
     ## add -----
 
     #' @description
@@ -643,6 +807,138 @@ R6MS = R6::R6Class("R6MS",
       } else  warning("Not done, check the conformity of the analyses list!")
     },
 
+    ## plot -----
+
+    #' @description
+    #' Plots spectra for given MS analyses.
+    #'
+    #' @param analyses X.
+    #' @param levels X.
+    #' @param mz X.
+    #' @param rt X.
+    #' @param ppm X.
+    #' @param sec X.
+    #' @param id X.
+    #' @param onlyMS2fromMZ X.
+    #' @param isolationWindow X.
+    #' @param colorBy X.
+    #' @param run_parallel X.
+    #'
+    #' @return A 3D interactive plot.
+    plot_spectra = function(analyses = NULL, levels = c(1, 2),
+                            mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
+                            onlyMS2fromMZ = FALSE, isolationWindow = 1.3,
+                            colorBy = "analyses", run_parallel = FALSE) {
+
+      targets <- make_targets(mz, rt, ppm, sec, id)
+
+      rtr <- targets[, c("rtmin", "rtmax")]
+      colnames(rtr) = c("min", "max")
+      if ((nrow(rtr) == 1) & (TRUE %in% (rtr$max == 0))) rtr = NULL
+
+      if (onlyMS2fromMZ) {
+        preMZrange <- targets[, c("mzmin", "mzmax")]
+        colnames(preMZrange) = c("min", "max")
+        preMZrange$min = preMZrange$min - (isolationWindow/2)
+        preMZrange$max = preMZrange$max + (isolationWindow/2)
+        if ((nrow(preMZrange) == 1) & (TRUE %in% (rtr$max == 0)))
+          preMZrange = NULL
+      } else {
+        preMZrange = NULL
+      }
+
+      spec <- self$get_spectra(analyses, levels, rtr, preMZrange)
+      spec = rbindlist(spec, idcol = "analysis", fill = TRUE)
+
+      if (nrow(spec) == 0) {
+        warning("Mass MS traces not found!")
+        return(NULL)
+      }
+
+      trim_ranges = function(vals, ranges)  return(
+        rowSums(
+          mapply(function(a, b) vals >= a & vals <= b,
+                 a = ranges[1], b = ranges[2])) > 0
+      )
+
+      spec_tr = lapply(seq_len(nrow(targets)),
+        function(x, spec, trim_ranges, onlyMS2fromMZ, preMZrange) {
+
+          temp = spec
+
+          temp = temp[
+            trim_ranges(temp$rt, c(targets$rtmin[x], targets$rtmax[x])), ]
+
+          if (onlyMS2fromMZ) {
+
+            temp = temp[level == 2 | (level == 1 &
+              trim_ranges(temp$mz, c(targets$mzmin[x], targets$mzmax[x]))), ]
+
+            temp = temp[level == 1 | (level == 2 &
+              trim_ranges(temp$preMZ, c(preMZrange$min[x], preMZrange$max[x]))), ]
+
+          } else {
+
+            temp = temp[
+              trim_ranges(temp$mz, c(targets$mzmin[x], targets$mzmax[x])), ]
+
+          }
+
+          temp$id = targets$id[x]
+
+          temp = temp[, c("id", "analysis", "level", "rt", "mz", "intensity")]
+
+          return(temp)
+
+        },
+        spec = spec,
+        trim_ranges = trim_ranges,
+        onlyMS2fromMZ = onlyMS2fromMZ,
+        preMZrange = preMZrange)
+
+      spec_tr <- rbindlist(spec_tr)
+
+      if (nrow(spec_tr) == 0) {
+        message("Requested MS traces not found.")
+        return(NULL)
+      }
+
+      spec_tr$id = factor(spec_tr$id)
+      spec_2$level = paste("MS", spec_2$level, sep = "")
+      spec_tr$level = factor(spec_tr$level)
+      spec_tr$analysis = factor(spec_tr$analysis)
+
+      spec_2 = copy(spec_tr)
+      spec_2$rtmz = paste(spec_2$id, spec_2$level,
+                          spec_2$mz, spec_2$rt,
+                          spec_2$analysis, sep = "_")
+
+      spec_2_temp = copy(spec_2)
+      spec_2_temp$intensity = 0
+      spec_2 = rbind(spec_2, spec_2_temp)
+
+      if (colorBy == "levels") {
+        spec_2$var = spec_2$level
+      } else if (colorBy == "targets"){
+        spec_2$var = spec_2$id
+      } else {
+        spec_2$var = spec_2$analysis
+      }
+
+      colors_var <- get_colors(unique(spec_2$var))
+
+      fig <- plot_ly(spec_2, x = ~rt, y = ~mz, z = ~intensity) %>%
+        group_by(spec_2$rtmz) %>%
+        add_lines(color = ~var,  colors = colors_var)
+
+      fig <- fig %>% layout(scene = list(
+        xaxis = list(title = "Retention time / seconds"),
+        yaxis = list(title = "<i>m/z</i>"),
+        zaxis = list(title = "Intensity / counts")))
+
+      return(fig)
+    },
+
     ## subset -----
 
     #' @description
@@ -663,7 +959,7 @@ R6MS = R6::R6Class("R6MS",
   )
 )
 
-# Auxiliary functions -----
+# auxiliary functions -----
 
 #' validate_info_list_ms_analysis
 #'
@@ -747,42 +1043,270 @@ validate_list_ms_analysis = function(value) {
   return(valid)
 }
 
-#' make_overview_dataframe
+#' @title make_targets
 #'
-#' @description
-#' Makes an overview `data.frame` of a given list of MS analyses.
+#' @description Helper function to build \emph{m/z} and retention time
+#' target pairs for searching data. Each target is composed of an
+#' id and \emph{m/z} (Da) and time (seconds) ranges. When mass is defined
+#' without time, the time range return 0 and vice versa.
 #'
-#' @param analyses A list of analyses.
+#' @param mz A vector with target \emph{m/z} values or a two columns
+#' \linkS4class{data.table} or data.frame with minimum and maximum
+#' \emph{m/z} values. Alternatively, \emph{m/z} and retention time values
+#' can be given as one \linkS4class{data.table}/data.frame and the deviations
+#' given as \code{ppm} and \code{sec} are used to calculate the ranges.
+#' The same also works for min and max values of \emph{m/z} and retention
+#' time targets. Note that when mass/time ranges are given, \code{ppm} and
+#' \code{sec} are not used.
+#' @param rt A vector with target retention time values or
+#' a two columns \linkS4class{data.table}/data.frame with minimum
+#' and maximum retention time values.
+#' @param ppm A numeric vector of length one with the mass deviation, in ppm.
+#' @param sec A numeric vector of length one with the time deviation, in seconds.
+#' @param id An id vector with target identifiers. When not given is built
+#' as a combination of the \emph{m/z} and retention time ranges or values.
 #'
-#' @return An overview `data.frame` of the analyses in the given list with
-#' columns: type, name, replicate, blank, polarity and file.
+#' @return A data.frame with columns: id, mz, rt, mzmin, mzmax, rtmin, rtmax.
 #'
 #' @export
-make_overview_dataframe = function(analyses, validateAnalysis = TRUE) {
+make_targets <- function(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL) {
 
-  if (validateAnalysis)
-    valid_analyses <- vapply(analyses, validate_list_ms_analysis, FALSE)
-      else valid_analyses = TRUE
+  mzrts <- data.table(
+    id = NA_character_,
+    mz = 0,
+    rt = 0,
+    mzmin = 0,
+    mzmax = 0,
+    rtmin = 0,
+    rtmax = 0
+  )
 
-  if (all(valid_analyses)) {
+  # when only rt is given
+  if (is.null(mz) & !is.null(rt)) {
 
-    overview = data.frame(
-      "type" = vapply(analyses, function(x) x$type, ""),
-      "analysis" = vapply(analyses, function(x) x$name, ""),
-      "replicate" = vapply(analyses, function(x) x$replicate, ""),
-      "blank" = vapply(analyses, function(x) x$blank, ""),
-      "polarity" = vapply(analyses,function(x) {
-        paste(x$polarity, collapse = "; ")
-      }, ""),
-      "file" = vapply(analyses, function(x) x$file, "")
+    # as vector
+    if (length(rt) >= 1 & is.vector(rt)) {
+
+      mzrts <- data.table(
+        id = NA_character_,
+        mz = rt,
+        rt = 0,
+        mzmin = 0,
+        mzmax = 0,
+        rtmin = 0,
+        rtmax = 0
+      )
+      mzrts[, rtmin := rt - sec]
+      mzrts[, rtmax := rt + sec]
+
+      #adds id
+      if (!is.null(id) & length(id) == length(rt)) {
+        mzrts[, id := id][]
+      } else {
+        mzrts[, id := paste(rtmin, "-", rtmax, sep = "")][]
+      }
+
+      # as table
+    } else if (is.data.frame(rt) | is.data.table(rt)) {
+      rt <- as.data.table(rt)
+
+      if ("rt" %in% colnames(rt) & !"rtmin" %in% colnames(mz)) {
+        mzrts <- data.table(
+          id = NA_character_,
+          mz = rt,
+          rt = 0,
+          mzmin = 0,
+          mzmax = 0,
+          rtmin = 0,
+          rtmax = 0
+        )
+        mzrts$rtmin <- rt$rt - sec
+        mzrts$rtmax <- rt$rt + sec
+
+      } else if ("rtmin" %in% colnames(rt) & nrow(rt) == nrow(mz)) {
+        mzrts <- data.table(
+          id = NA_character_,
+          mz = apply(rt[, .(rtmin, rtmax)], 1, mean),
+          rt = 0,
+          mzmin = rt$rtmin,
+          mzmax = rt$rtmax,
+          rtmin = 0,
+          rtmax = 0
+        )
+
+        if ("rt" %in% colnames(rt)) {
+          mzrts$rt <- mz$rt
+        } else {
+          mzrts$rt <-  apply(rt[, .(rtmin, rtmax)], 1, mean)
+        }
+      }
+
+      #adds id
+      if (!is.null(id) %in% length(id) == nrow(mzrts)) {
+        mzrts$id <- id
+      } else if ("id" %in% colnames(rt)) {
+        mzrts$id <- rt$id
+      } else {
+        mzrts[, id := paste(rtmin, "-", rtmax, sep = "")][]
+      }
+    }
+
+    #when mz is vector, expects rt as vector as well and ranges are calculated
+  } else if (length(mz) >= 1 & is.vector(mz)) {
+
+    mzrts <- data.table(
+      id = NA_character_,
+      mz = mz,
+      rt = 0,
+      mzmin = mz - ((ppm / 1E6) * mz),
+      mzmax = mz + ((ppm / 1E6) * mz),
+      rtmin = 0,
+      rtmax = 0
     )
+    #mzrts$mzmin <- mz - ((ppm / 1E6) * mz)
+    #mzrts[, mzmax := mz + ((ppm / 1E6) * mz)]
 
-    row.names(overview) <- seq_len(nrow(overview))
+    if (is.vector(rt) & length(rt) == length(mz)) {
+      mzrts$rt <- rt
+      mzrts$rtmin <- c(rt - sec)
+      mzrts$rtmax <- c(rt + sec)
+    }
 
-    return(overview)
+    if (!is.null(id) & length(id) == nrow(mzrts)) {
+      mzrts$id <- id
+    } else {
+      mzrts[, id := paste(
+        round(mzmin, digits = 4),
+        "-",
+        round(mzmax, digits = 4),
+        "/", rtmin,
+        "-", rtmax,
+        sep = ""
+      )][]
+    }
 
-  } else {
-    warning("Not done, check the conformity of the analyses list!")
-    return(NULL)
+    #when mz is a table, ranges could be already in table
+  } else if (is.data.frame(mz) | is.data.table(mz)) {
+    mz <- as.data.table(mz)
+
+    #when mz is in table but not ranges
+    if ("mz" %in% colnames(mz) & !"mzmin" %in% colnames(mz)) {
+      mzrts <- data.table(
+        id = NA_character_,
+        mz = mz$mz,
+        rt = 0,
+        mzmin = 0,
+        mzmax = 0,
+        rtmin = 0,
+        rtmax = 0
+      )
+      mzrts[, mzmin := mz - ((ppm / 1E6) * mz)]
+      mzrts[, mzmax := mz + ((ppm / 1E6) * mz)]
+
+      #when mzmin is in table
+    } else if ("mzmin" %in% colnames(mz)) {
+      mzrts <- data.table(
+        id = NA_character_,
+        mz = apply(mz[, .(mzmin, mzmax)], 1, mean),
+        rt = 0,
+        mzmin = mz$mzmin,
+        mzmax = mz$mzmax,
+        rtmin = 0,
+        rtmax = 0
+      )
+      if ("mz" %in% colnames(mz)) mzrts$mz <- mz$mz
+    }
+
+    #when rt in also in mz table
+    if ("rt" %in% colnames(mz) & !"rtmin" %in% colnames(mz)) {
+      mzrts$rt <- mz$rt
+      mzrts$rtmin <- mz$rt - sec
+      mzrts$rtmax <- mz$rt + sec
+    } else if ("rtmin" %in% colnames(mz)) {
+      mzrts$rt <-  apply(mz[, .(rtmin, rtmax)], 1, mean)
+      mzrts$rtmin <- mz$rtmin
+      mzrts$rtmax <- mz$rtmax
+      if ("rt" %in% colnames(mz)) mzrts$rt <- mz$rt
+    }
+
+    #when rt is given as a table is rt argument
+    if (is.data.frame(rt) | is.data.table(rt)) {
+      rt <- as.data.table(rt)
+
+      if ("rt" %in% colnames(rt) & nrow(rt) == nrow(mz) & !"rtmin" %in% colnames(mz)) {
+        mzrts$rt <- rt$rt
+        mzrts$rtmin <- rt$rt - sec
+        mzrts$rtmax <- rt$rt + sec
+      } else if ("rtmin" %in% colnames(rt) & nrow(rt) == nrow(mz)) {
+        mzrts$rt <-  apply(rt[, .(rtmin, rtmax)], 1, mean)
+        mzrts$rtmin <- rt$rtmin
+        mzrts$rtmax <- rt$rtmax
+        if ("rt" %in% colnames(rt)) mzrts$rt <- mz$rt
+      }
+    }
+
+    #adds id
+    if (!is.null(id) & length(id) == nrow(mzrts)) {
+      mzrts$id <- id
+    } else if ("id" %in% colnames(mz)) {
+      mzrts$id <- mz$id
+    } else {
+      mzrts[, id := paste(
+        round(mzmin, digits = 4),
+        "-",
+        round(mzmax, digits = 4),
+        "/",
+        rtmin,
+        "-",
+        rtmax,
+        sep = ""
+      )][]
+    }
   }
+
+  return(mzrts)
+}
+
+#' @title get_colors
+#'
+#' @description Function to produce colors for a character vector.
+#'
+#' @param obj A character vector to associate with the colors.
+#'
+#' @return A vector of colors. The vector is named according the \code{obj}.
+#'
+#' @export
+#'
+get_colors <- function(obj) {
+
+  colors <- c(brewer.pal(8, "Greys")[6],
+              brewer.pal(8, "Greens")[6],
+              brewer.pal(8, "Blues")[6],
+              brewer.pal(8, "Oranges")[6],
+              brewer.pal(8, "Purples")[6],
+              brewer.pal(8, "PuRd")[6],
+              brewer.pal(8, "YlOrRd")[6],
+              brewer.pal(8, "PuBuGn")[6],
+              brewer.pal(8, "GnBu")[6],
+              brewer.pal(8, "BuPu")[6],
+              brewer.pal(8, "Dark2"))
+
+  Ncol <- length(unique(obj))
+
+  if (Ncol > 18) {
+    colors <- colorRampPalette(colors)(Ncol)
+  }
+
+  if (length(unique(obj)) < length(obj)) {
+    Vcol <- colors[seq_len(Ncol)]
+    Ncol <- length(obj)
+    count <- dplyr::count(data.frame(n = seq_len(Ncol), char = obj), char)
+    Vcol <- rep(Vcol, times = count[, "n"])
+    names(Vcol) <- obj
+  } else {
+    Vcol <- colors[seq_len(Ncol)]
+    names(Vcol) <- obj
+  }
+
+  return(Vcol)
 }
