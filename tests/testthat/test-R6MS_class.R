@@ -133,6 +133,12 @@ test_that("get EIC and MS2 spectra", {
 
 })
 
+# ms$plot_tic(colorBy = "replicates")
+# ms$plot_bpc(colorBy = "replicates")
+# ms$plot_xic(analyses = 4:5, mz = targets, targetsMark = targets)
+# ms$plot_eic(analyses = 4:5, mz = targets, title = "Test plot!")
+# ms$plot_ms2(analyses = 4:5, mz = targets, minIntensity = 500)
+
 settings_ff <- createSettings(
   call = "find_features",
   algorithm = "xcms3",
@@ -186,14 +192,17 @@ settings_gf <- createSettings(
   )
 )
 
-
-ms <- R6MS$new(files[c(1:2,4:5)], run_parallel = FALSE)
-#ms$add_settings(settings = settings_ff)
-#object = ms$clone(deep = T)
-ms$find_features(settings = settings_ff)
-
 ms$group_features(settings = settings_gf)
-self = ms$clone(deep = T)
+
+test_that("group features", {
+  expect_s3_class(ms$get_feature_groups(mz = targets), "data.table")
+  expect_true("group" %in% colnames(ms$get_feature_groups(mz = targets[1,])))
+  expect_true(all(ms$has_feature_groups()))
+})
+
+
+
+
 
 
 settings_gf_2 <- createSettings(
@@ -231,6 +240,10 @@ ms <- R6MS$new(files[c(4:6, 10:12)], run_parallel = FALSE)
 ms$find_features(settings = settings_ff)
 ms$group_features(settings = settings_gf_2)
 
+ms$plot_feature_groups(mz = targets, colorBy = "analyses", interactive = FALSE)
+ms$get_feature_groups(mass = diuron_d6, onlyIntensities = TRUE, average = TRUE)
+ms$plot_feature_groups(mz = targets, legendNames = c("Tar1", "Tar2"))
+
 ms$plot_alignment()
 self = ms$clone(deep = T)
 
@@ -240,6 +253,7 @@ fts = ms$get_features(mass = diuron_d6)#[7226, ]
 
 ms$plot_eic(analyses = ft$analysis, mz = fts)
 ms$plot_features(analyses = ft$analysis, mz = fts)
+ms$map_features(mz = targets, colorBy = "analyses")
 
 ms$get_features(mass = diuron_d6)
 
@@ -249,11 +263,7 @@ ms$get_settings()
 
 
 
-# ms$plot_tic(colorBy = "replicates")
-# ms$plot_bpc(colorBy = "replicates")
-# ms$plot_xic(analyses = 4:5, mz = targets, targetsMark = targets)
-# ms$plot_eic(analyses = 4:5, mz = targets, title = "Test plot!")
-# ms$plot_ms2(analyses = 4:5, mz = targets, minIntensity = 500)
+
 
 md_set <- peakPicking(md_set)
 

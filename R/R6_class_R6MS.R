@@ -31,8 +31,8 @@ R6MS = R6::R6Class("R6MS",
     ## .analyses -----
     .analyses = list(),
 
-    ## .featureGroups -----
-    .featureGroups = NULL,
+    ## feature_groups -----
+    .feature_groups = NULL,
 
     ## .alignment -----
     .alignment = NULL
@@ -265,7 +265,7 @@ R6MS = R6::R6Class("R6MS",
                 given to create the R6MS!")
       }
 
-      private$.featureGroups = featureGroups
+      private$.feature_groups = featureGroups
 
       if (!is.null(header) & is.list(header)) {
 
@@ -929,10 +929,24 @@ R6MS = R6::R6Class("R6MS",
 
       if (!is.null(id) & "group" %in% colnames(fts)) {
         target_id = id
-        if ("group" %in% colnames(fts)) {
-          fts = fts[fts$id %in% target_id | fts$group %in% target_id, ]
-        } else fts = fts[fts$id %in% targetsID, ]
-        return(pks)
+
+        if (is.character(id)) {
+          if ("group" %in% colnames(fts)) {
+            fts = fts[fts$id %in% target_id | fts$group %in% target_id, ]
+          } else fts = fts[fts$id %in% targetsID, ]
+          return(fts)
+        }
+
+        if (is.data.frame(id)) if ("analysis" %in% colnames(id)) {
+          sel = rep(FALSE, nrow(fts))
+          for (i in seq_len(nrow(target_id))) {
+            sel[(fts$id %in% target_id$id[i] &
+                 fts$analysis %in% target_id$analysis[i])  |
+                 fts$group %in% target_id$id] = TRUE
+          }
+          fts = fts[sel, ]
+          return(fts)
+        }
       }
 
       if (!is.null(mass)) {
@@ -972,6 +986,7 @@ R6MS = R6::R6Class("R6MS",
                                 filtered = FALSE, run_parallel = FALSE) {
 
       fts = self$get_features(analyses, id, mass, mz, rt, ppm, sec, filtered)
+
       fts$rtmin = fts$rtmin - rtExpand
       fts$rtmax = fts$rtmax + rtExpand
       fts$mzmin = fts$mzmin - mzExpand
@@ -980,6 +995,130 @@ R6MS = R6::R6Class("R6MS",
       eic = self$get_eic(analyses, mz = fts, run_parallel = run_parallel)
 
       return(eic)
+    },
+
+    #' @description
+    #' Method to get feature groups from analyses.
+    #'
+    #' @return A data.frame/data.table.
+    get_feature_groups = function(group = NULL, mass = NULL,
+                                  mz = NULL, rt = NULL, ppm = 20, sec = 60,
+                                  filtered = FALSE, onlyIntensities = FALSE,
+                                  average = FALSE) {
+
+      fgroups = copy(private$.feature_groups)
+      if(self$has_feature_groups()) {
+
+        if (!filtered) fgroups = fgroups[!fgroups$filtered, ]
+
+        if (!is.null(id)) {
+          targets_id = id
+          fgroups = fgroups[id %in% targets_id, ]
+
+        } else if (!is.null(mass)) {
+          if (is.data.frame(mass)) {
+            colnames(mass) <- gsub("mass", "mz", colnames(mass))
+            colnames(mass) <- gsub("neutralMass", "mz", colnames(mass))
+          }
+          targets = makeTargets(mass, rt, ppm, sec)
+          sel = rep(FALSE, nrow(fgroups))
+          for (i in seq_len(nrow(targets))) {
+            sel[between(fgroups$mass,
+                        targets$mzmin[i],
+                        targets$mzmax[i]) &
+                  between(fgroups$rt,
+                          targets$rtmin[i],
+                          targets$rtmax[i])] = TRUE
+          }
+          fgroups = fgroups[sel, ]
+
+        } else if (!is.null(mz)) {
+          targets <- makeTargets(mz, rt, ppm, sec)
+          sel = rep(FALSE, nrow(fgroups))
+
+          if (!"mz" %in% colnames(fgroups)) {
+            adduct <- paste(unique(fgroups$adduct), collapse = ",")
+
+            if (grepl("\\[M\\+H\\]\\+", adduct)) {
+              for (i in seq_len(nrow(targets))) {
+                if (targets$rtmax[i] > 0) {
+                  sel[between(fgroups$mass,
+                              targets$mzmin[i] - 1.0073,
+                              targets$mzmax[i] - 1.0073) &
+                        between(fgroups$rt,
+                                targets$rtmin[i],
+                                targets$rtmax[i])] <- TRUE
+                } else sel[between(fgroups$mass,
+                                   targets$mzmin[i] - 1.0073,
+                                   targets$mzmax[i] - 1.0073)] <- TRUE
+              }
+            }
+
+            if (grepl("\\[M-H\\]-", adduct)) {
+              for (i in seq_len(nrow(targets))) {
+                if (targets$rtmax[i] > 0) {
+                  sel[between(fgroups$mass,
+                              targets$mzmin[i] + 1.0073,
+                              targets$mzmax[i] + 1.0073) &
+                        between(fgroups$rt,
+                                targets$rtmin[i],
+                                targets$rtmax[i])] <- TRUE
+                } else sel[between(fgroups$mass,
+                                   targets$mzmin[i] + 1.0073,
+                                   targets$mzmax[i] + 1.0073)] <- TRUE
+              }
+            }
+
+          } else {
+            for (i in seq_len(nrow(targets))) {
+              if (targets$rtmax[i] > 0) {
+                sel[between(fgroups$mz,
+                            targets$mzmin[i],
+                            targets$mzmax[i]) &
+                      between(fgroups$rt,
+                              targets$rtmin[i],
+                              targets$rtmax[i])] <- TRUE
+              } else sel[between(feats@metadata$mz,
+                                 targets$mzmin[i],
+                                 targets$mzmax[i])] <- TRUE
+            }
+          }
+
+          fgroups <- fgroups[sel, ]
+        }
+
+        if (onlyIntensities) {
+          cols_id_ints = unname(c("group", self$get_analysis_names()))
+          fgroups = fgroups[, cols_id_ints, with = FALSE]
+        }
+
+        if (average) {
+          rpl_ana = self$get_overview()[, c("analysis", "replicate")]
+          rpl_ana = split(rpl_ana, rpl_ana$replicate)
+          rpl_ana = lapply(rpl_ana, function(x) x$analysis)
+
+          sd_vals <- lapply(rpl_ana, function(x, fgroups) {
+            temp <- fgroups[, x, with = FALSE]
+            temp <- apply(temp, 1, function(x) sd(x) / mean(x) * 100)
+            temp[is.nan(temp)] <- 0
+            temp <- round(temp, digits = 0)
+            return(temp)
+          }, fgroups = fgroups)
+
+          for (r in names(rpl_ana)) {
+            ana = rpl_ana[[r]]
+            fgroups[[r]] <- apply(fgroups[, ana, with = FALSE], 1, mean)
+          }
+
+          to_keep = colnames(fgroups)
+          to_keep = to_keep[!to_keep %in% self$get_analysis_names()]
+          fgroups = fgroups[, to_keep, with = FALSE]
+
+          names(sd_vals) <- paste0(rpl, "_sd")
+          fgroups <- cbind(fgroups, as.data.table(sd_vals))
+        }
+      }
+      return(fgroups)
     },
 
     ## set -----
@@ -1232,7 +1371,7 @@ R6MS = R6::R6Class("R6MS",
       private$.analyses = Map(function(x, y) { x$features = y; x },
                               private$.analyses, out_list[["features"]])
 
-      private$.featureGroups = out_list[["fgroups"]]
+      private$.feature_groups = out_list[["fgroups"]]
 
       cat("Added featureGroups from correspondence analysis! \n")
 
@@ -1423,6 +1562,15 @@ R6MS = R6::R6Class("R6MS",
     #' @return Invisible.
     has_alignment = function() {
       return(!is.null(private$.alignment))
+    },
+
+    #' @description
+    #' Method to check if there are feature groups from grouping features
+    #' across analyses.
+    #'
+    #' @return Invisible.
+    has_feature_groups = function() {
+      return(!is.null(private$.feature_groups))
     },
 
     ## plot -----
@@ -1845,28 +1993,9 @@ R6MS = R6::R6Class("R6MS",
 
       fts = self$get_features(analyses, id, mass, mz, rt, ppm, sec, filtered)
 
-      # if (self$has_alignment()) {
-      #   alignment = private$.alignment
-      #   for(i in seq_len(nrow(fts))) {
-      #     temp = alignment[[fts$analysis[i]]]
-      #     shift = temp$rt_adjusted >= fts$rtmin[i] &
-      #             temp$rt_adjusted <= fts$rtmax[i]
-      #     shift = mean(temp$adjustment[shift])
-      #     fts$rt[i] = fts$rt[i] + shift
-      #     fts$rtmin[i] = fts$rtmin[i] + shift
-      #     fts$rtmax[i] = fts$rtmax[i] + shift
-      #   }
-      # }
-
-      fts_expanded = fts
-      fts_expanded$rtmin = fts_expanded$rtmin - rtExpand
-      fts_expanded$rtmax = fts_expanded$rtmax + rtExpand
-      fts_expanded$mzmin = fts_expanded$mzmin - mzExpand
-      fts_expanded$mzmax = fts_expanded$mzmax + mzExpand
-
       eic = self$get_features_eic(
-        analyses = unique(fts_expanded$analysis),
-        mz = fts_expanded, run_parallel = run_parallel)
+        analyses = unique(fts_expanded$analysis), id = fts,
+        rtExpand = rtExpand, mzExpand = mzExpand, run_parallel = run_parallel)
 
       if (nrow(eic) < 0) {
         message("Traces not found for the targets!")
@@ -1895,6 +2024,111 @@ R6MS = R6::R6Class("R6MS",
       if (!interactive) {
         return(plot_features_static(eic, fts, title))
       } else return(plot_features_interactive(eic, fts, title, colorBy))
+    },
+
+    #' @description
+    #' Method to map retention time and \emph{m/z} of features from analyses.
+    #'
+    #' @return A plot.
+    map_features = function(analyses = NULL, id = NULL, mass = NULL,
+                            mz = NULL, rt = NULL, ppm = 20, sec = 60,
+                            filtered = FALSE, xlim = 30, ylim = 0.05,
+                            showLegend = TRUE, legendNames = NULL, title = NULL,
+                            colorBy = "targets", interactive = TRUE) {
+
+      fts = self$get_features(analyses, id, mass, mz, rt, ppm, sec, filtered)
+
+      if (nrow(fts) < 0) {
+        message("Features not found for the targets!")
+        return(NULL)
+      }
+
+      if (colorBy == "analyses") {
+        leg = unique(fts$analysis)
+        varkey = fts$analysis
+      } else if (colorBy == "replicates") {
+        fts$replicate = self$get_replicate_names()[fts$analysis]
+        leg = unique(fts$replicate)
+        varkey = fts$replicate
+      } else if (is.character(legendNames) &
+                 length(legendNames) == length(unique(fts$id))) {
+        leg = legendNames
+        names(leg) = unique(fts$id)
+        varkey = leg[fts$id]
+      } else {
+        leg = unique(fts$id)
+        varkey = fts$id
+      }
+
+      fts$var = varkey
+
+      if (!interactive) {
+        return(map_features_static(fts, xlim, ylim, title, showLegend))
+      } else return(map_features_interactive(fts, xlim, ylim, title))
+    },
+
+    #' @description
+    #' Method to plot feature groups EIC.
+    #'
+    #' @return A plot.
+    plot_feature_groups = function(group = NULL, mass = NULL,
+                                   mz = NULL, rt = NULL, ppm = 20, sec = 60,
+                                   rtExpand = 120, mzExpand = 0.005,
+                                   filtered = FALSE, run_parallel = FALSE,
+                                   legendNames = NULL, title = NULL,
+                                   colorBy = "targets", interactive = TRUE) {
+
+      fts = self$get_features(analyses = NULL,
+        group, mass, mz, rt, ppm, sec, filtered)
+
+      if (!is.null(legendNames)) {
+        if (is.character(legendNames) &
+            length(legendNames) == length(unique(fts$group))) {
+          leg = legendNames
+          names(leg) = unique(fts$group)
+          fts$group = leg[fts$group]
+        }
+      }
+
+      return(
+        self$plot_features(id = fts,
+          rtExpand = rtExpand, mzExpand = mzExpand,
+          run_parallel = run_parallel, legendNames = fts$group,
+          title = title, colorBy = colorBy, interactive = interactive))
+    },
+
+    #' @description
+    #' Method to plot EIC from feature groups and map features from each
+    #' analysis.
+    #'
+    #' @return A plot.
+    plot_group_features = function(group = NULL, mass = NULL,
+                                   mz = NULL, rt = NULL, ppm = 20, sec = 60,
+                                   rtExpand = 120, mzExpand = 0.005,
+                                   filtered = FALSE, run_parallel = FALSE,
+                                   legendNames = NULL, title = NULL,
+                                   colorBy = "targets", interactive = TRUE) {
+
+      fgs = self$get_feature_groups(group, mass, mz, rt, ppm, sec, filtered,
+                                    onlyIntensities = FALSE, average = FALSE)
+
+      fts = self$get_features(analyses = NULL, id = fgs$group)
+
+      eic = self$get_features_eic(id = fts, rtExpand = rtExpand,
+                                  mzExpand = mzExpand, filtered = TRUE,
+                                  run_parallel = run_parallel)
+
+      if (!is.null(legendNames)) {
+        if (is.character(legendNames) &
+            length(legendNames) == length(unique(fts$group))) {
+          leg = legendNames
+          names(leg) = unique(fts$group)
+          fts$group = leg[fts$group]
+        }
+      }
+
+
+
     },
 
     ## as -----
@@ -2607,7 +2841,7 @@ build_featureGroups_table_from_patRoon = function(pat, features, self) {
       round(fgroups$rt, digits = 0),
       "_t",
       fgroups$drt,
-      "_f",
+      "_g",
       fgroups$index
     )
 
@@ -2627,7 +2861,7 @@ build_featureGroups_table_from_patRoon = function(pat, features, self) {
       round(fgroups$rt, digits = 0),
       "_t",
       fgroups$drt,
-      "_f",
+      "_g",
       fgroups$index
     )
   }
@@ -2728,4 +2962,286 @@ extract_time_alignment = function(pat, self) {
   }
 
   return(NULL)
+}
+
+#' plot_group_features_aux
+#'
+#' @description Plots features for each feature group.
+#'
+#' @param heights A numeric vector of length two to control the height of
+#' the first and second plot, respectively.
+#'
+plot_group_features_aux <- function(analyses = NULL,
+                                    targetsID = NULL,
+                                    mass = NULL,
+                                    mz = NULL, ppm = 20,
+                                    rt = NULL, sec = 30,
+                                    id = NULL,
+                                    heights = c(0.6, 0.4)) {
+
+  id_names <- id
+
+  assertClass(object, "msData")
+
+  fts <- features(
+    object = object,
+    targetsID = targetsID,
+    mass = mass,
+    mz = mz, ppm = ppm,
+    rt = rt, sec = sec
+  )
+
+  pks <- peaks(
+    object = object,
+    analyses = analyses,
+    targets = fts$id
+  )
+
+  if (length(unique(pks$analysis)) > 1) {
+
+    handlers(handler_progress(format="[:bar] :percent :eta :message"))
+
+    #workers <- length(availableWorkers()) - 1
+
+    plan("multisession") #, workers = workers
+
+    pks_list <- split(pks, pks$analysis)
+
+    with_progress({
+
+      p <- progressor(along = unique(pks$analysis))
+
+      eic <- future_lapply(pks_list, function(x, object) {
+
+        return(
+          EICs(
+            object,
+            analyses = unique(x$analysis),
+            mz = x
+          )
+        )
+
+      }, object = object, future.seed = TRUE) #, future.chunk.size = 1
+    })
+
+    plan("sequential")
+
+  } else {
+
+    eic <- lapply(split(pks, pks$analysis), function(x, object) {
+      return(
+        EICs(
+          object,
+          analyses = unique(x$analysis),
+          mz = x
+        )
+      )
+    }, object = object)
+
+  }
+
+  eic <- rbindlist(eic)
+
+  if (nrow(eic) < 1) return(cat("Data was not found for any of the targets!"))
+
+  eic$var <- sapply(eic$id, function(x, pks) {
+    temp <- unique(pks$feature[pks$id %in% x])
+    return(temp)
+  }, pks = pks)
+
+  if ((!is.null(id_names)) && (length(id_names) == length(unique(eic$var)))) {
+    leg <- id_names
+    leg <- sapply(unique(eic$var), function(x, leg) { return(unname(leg[x])) }, leg = leg)
+    names(leg) <- unique(eic$var)
+    eic$var <- sapply(eic$var, function(x, leg) { return(unname(leg[x])) }, leg = leg)
+  } else {
+    leg <- unique(eic$var)
+    names(leg) <- unique(eic$var)
+  }
+
+  leg <- unlist(leg)
+  colors <- getColors(leg)
+
+  showleg <- rep(TRUE, length(leg))
+  names(showleg) <- names(leg)
+
+  plot <- plot_ly()
+
+  for (i in fts$id) {
+
+    pk_temp <- pks[feature == i, ]
+
+    leg_group <- unname(leg[i])
+
+    for (z in pk_temp$id) {
+
+      df <- eic[id == z, ]
+
+      plot <- plot %>% add_trace(df,
+                                 x = df$rt,
+                                 y = df$intensity,
+                                 type = "scatter", mode = "lines",
+                                 line = list(width = 0.5,
+                                             color = colors[leg_group]),
+                                 connectgaps = TRUE,
+                                 name = leg_group,
+                                 legendgroup = leg_group,
+                                 showlegend = FALSE
+      )
+
+      df <- df[rt >= pk_temp[id == z, rtmin] & rt <= pk_temp[id == z, rtmax], ]
+      df$mz <- as.numeric(df$mz)
+
+      plot <- plot %>%  add_trace(
+        df,
+        x = df$rt,
+        y = df$intensity,
+        type = "scatter", mode =  "lines+markers",
+        fill = "tozeroy", connectgaps = TRUE,
+        fillcolor = paste(color = colors[leg_group], 50, sep = ""),
+        line = list(width = 0.1, color = colors[leg_group]),
+        marker = list(size = 3, color = colors[leg_group]),
+        name = leg_group,
+        legendgroup = leg_group,
+        showlegend = showleg[i],
+        hoverinfo = "text",
+        hoverlabel = list(bgcolor = colors[leg_group]),
+        text = paste(
+          "</br> name: ", leg_group,
+          "</br> feature: ", i,
+          "</br> peak: ", z,
+          "</br> analysis: ", pk_temp[id == z, analysis],
+          "</br> <i>m/z</i>: ", round(df$mz, digits = 4),
+          "</br> rt: ", round(df$rt, digits = 0),
+          "</br> Int: ", round(df$intensity, digits = 0)
+        )
+      )
+
+      showleg[i] <- FALSE
+    }
+  }
+
+  plot2 <- plot_ly()
+
+  for (i in fts$id) {
+
+    df2 <- pks[feature == i, ]
+
+    leg_group <- unname(leg[i])
+
+    if (!"is_filled" %in% colnames(df2)) df2$is_filled <- 0
+
+    df_p <- df2[is_filled == 0, ]
+
+    plot2 <- plot2 %>% add_trace(
+      x = df_p$rt,
+      y = df_p$analysis,
+      type = "scatter",
+      mode = "markers",
+      marker = list(
+        line = list(color = colors[leg_group], width = 3),
+        color = "#000000", size = 10
+      ),
+      error_x = list(
+        type = "data",
+        symmetric = FALSE,
+        arrayminus = df_p$rt - df_p$rtmin,
+        array = df_p$rtmax - df_p$rt,
+        color = colors[leg_group],
+        width = 5
+      ),
+      name = leg_group,
+      legendgroup = leg_group,
+      showlegend = FALSE,
+      hoverinfo = "text",
+      hoverlabel = list(bgcolor = colors[leg_group]),
+      text = paste(
+        "</br> name: ", leg_group,
+        "</br> feature: ", i,
+        "</br> peak: ", df_p$id,
+        "</br> analysis: ", df_p$analysis,
+        "</br> height: ", round(df_p$intensity, digits = 0),
+        "</br> width: ", round(df_p$rtmax - df_p$rtmin, digits = 0),
+        "</br> dppm: ", round(((df_p$mzmax - df_p$mzmin) / df_p$mz) * 1E6, digits = 1),
+        "</br> filled: ", ifelse(df_p$is_filled == 1, "TRUE", "FALSE")
+      )
+    )
+
+    df_f <- df2[is_filled == 1, ]
+
+    if (nrow(df_f) > 0) {
+      plot2 <- plot2 %>% add_trace(
+        x = df_f$rt,
+        y = df_f$analysis,
+        type = "scatter",
+        mode = "markers",
+        marker = list(
+          line = list(color = colors[leg_group], width = 3),
+          color = "#f8f8f8",
+          size = 10
+        ),
+        error_x = list(
+          type = "data",
+          symmetric = FALSE,
+          arrayminus = df_f$rt - df_f$rtmin,
+          array = df_f$rtmax - df_f$rt,
+          color = colors[leg_group],
+          width = 5
+        ),
+        name = leg_group,
+        legendgroup = leg_group,
+        showlegend = FALSE,
+        hoverinfo = "text",
+        hoverlabel = list(bgcolor = colors[leg_group]),
+        text = paste(
+          "</br> name: ", leg_group,
+          "</br> feature: ", i,
+          "</br> peak: ", df_f$id,
+          "</br> analysis: ", df_f$analysis,
+          "</br> height: ", round(df_f$intensity, digits = 0),
+          "</br> width: ", round(df_f$rtmax - df_f$rtmin, digits = 0),
+          "</br> dppm: ", round(((df_f$mzmax - df_f$mzmin) / df_f$mz) * 1E6, digits = 1),
+          "</br> filled: ", ifelse(df_f$is_filled == 1, "TRUE", "FALSE")
+        )
+      )
+    }
+  }
+
+  plot2 <- hide_colorbar(plot2)
+
+  plotList <- list()
+
+  plotList[["plot"]] <- plot
+
+  plotList[["plot2"]] <- plot2
+
+  xaxis <- list(linecolor = toRGB("black"), linewidth = 2,
+                title = "Retention time / seconds",
+                titlefont = list(size = 12, color = "black"),
+                range = c(min(eic$rt), max(eic$rt)), autotick = TRUE, ticks = "outside")
+
+  yaxis1 <- list(linecolor = toRGB("black"), linewidth = 2,
+                 title = "Intensity / counts",
+                 titlefont = list(size = 12, color = "black"))
+
+  yaxis2 <- list(linecolor = toRGB("black"), linewidth = 2,
+                 title = "",
+                 titlefont = list(size = 12, color = "black"),
+                 tick0 = 0, dtick = 1)
+
+  plotf <- subplot(
+    plotList,
+    nrows = 2,
+    heights = heights,
+    margin = 0.01,
+    shareX = TRUE,
+    which_layout = "merge"
+  )
+
+  plotf <- plotf %>% layout(
+    legend = list(title = list(text = paste("<b>", "targets", "</b>"))),
+    xaxis = xaxis, yaxis = yaxis1, yaxis2 = yaxis2
+  )
+
+  return(plotf)
 }

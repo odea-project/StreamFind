@@ -189,7 +189,7 @@ plot_features_interactive <- function(eic, fts, title, colorBy) {
 
 
 
-#' @title mapPeaksStatic
+#' @title map_features_static
 #'
 #' @description Function for plotting peak spaces.
 #'
@@ -204,9 +204,9 @@ plot_features_interactive <- function(eic, fts, title, colorBy) {
 #'
 #' @return A peak/s map plot produced through \pkg{base} plot.
 #'
-mapPeaksStatic <- function(peaks, xlim = 60, ylim = 5,
-                           title, colorBy = "targets",
-                           showLegend = TRUE) {
+map_features_static <- function(peaks, xlim = 60, ylim = 5,
+                                title, colorBy = "targets",
+                                showLegend = TRUE) {
 
   if (length(xlim) == 1) {
     rtr <- c(min(peaks$rtmin) - xlim, max(peaks$rtmax) + xlim)
@@ -224,7 +224,7 @@ mapPeaksStatic <- function(peaks, xlim = 60, ylim = 5,
     mzr <- c(min(peaks$mzmin), max(peaks$mzmax))
   }
 
-  cl <- getColors(unique(peaks$var))
+  cl <- get_colors(unique(peaks$var))
 
   plot(peaks$rt,
        peaks$mz,
@@ -268,7 +268,7 @@ mapPeaksStatic <- function(peaks, xlim = 60, ylim = 5,
 
 
 
-#' @title mapPeaksInteractive
+#' @title map_features_interactive
 #'
 #' @description Function for plotting peak spaces.
 #'
@@ -283,9 +283,9 @@ mapPeaksStatic <- function(peaks, xlim = 60, ylim = 5,
 #'
 #' @return A peak/s map plot produced through \pkg{plotly}.
 #'
-mapPeaksInteractive <- function(peaks, xlim = 60, ylim = 5,
-                                title, colorBy = "targets",
-                                showLegend = TRUE) {
+map_features_interactive <- function(peaks, xlim = 60, ylim = 5,
+                                     title, colorBy = "targets",
+                                     showLegend = TRUE) {
 
   if (length(xlim) == 1) {
     rtr <- c(min(peaks$rtmin) - xlim, max(peaks$rtmax) + xlim)
@@ -303,7 +303,7 @@ mapPeaksInteractive <- function(peaks, xlim = 60, ylim = 5,
     mzr <- c(min(peaks$mzmin), max(peaks$mzmax))
   }
 
-  cl <- getColors(unique(peaks$var))
+  cl <- get_colors(unique(peaks$var))
 
   plot <- plot_ly()
 
