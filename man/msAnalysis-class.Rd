@@ -79,8 +79,8 @@
 \alias{getSettings,msAnalysis,msAnalysis-method}
 \alias{hasPeaks,msAnalysis-method}
 \alias{hasPeaks,msAnalysis,msAnalysis-method}
-\alias{peaks,msAnalysis-method}
-\alias{peaks,msAnalysis,msAnalysis-method}
+\alias{get_peaks,msAnalysis-method}
+\alias{get_peaks,msAnalysis,msAnalysis-method}
 \alias{peakEICs,msAnalysis-method}
 \alias{peakEICs,msAnalysis,msAnalysis-method}
 \alias{plotPeaks,msAnalysis-method}
@@ -233,7 +233,7 @@
 
 \S4method{hasPeaks}{msAnalysis}(object)
 
-\S4method{peaks}{msAnalysis}(
+\S4method{get_peaks}{msAnalysis}(
   object,
   targetsID = NULL,
   mass = NULL,
@@ -548,7 +548,7 @@ in the analysis.
 
 \item \code{hasPeaks(msAnalysis)}: checks if the \linkS4class{msAnalysis} has peaks.
 
-\item \code{peaks(msAnalysis)}: gets chromatographic peaks from the analysis.
+\item \code{get_peaks(msAnalysis)}: gets chromatographic peaks from the analysis.
 The arguments \code{targetID}, \code{mass}, \code{mz} and \code{rt} can
 be used to select specific peaks. The \emph{id} of peaks and/or features
 can be given in the \code{targetsID} argument to select the respective peaks.

@@ -532,16 +532,16 @@ setGeneric("plotMS2s", function(object, ...) standardGeneric("plotMS2s"))
 #'
 setGeneric("hasPeaks", function(object, ...) standardGeneric("hasPeaks"))
 
-#### peaks -----
+#### get_peaks -----
 
-#' @title peaks
+#' @title get_peaks
 #'
 #' @description Generic for getting peaks.
 #'
 #' @param object A method specific class object.
 #' @param ... Other method specific arguments.
 #'
-setGeneric("peaks", function(object, ...) standardGeneric("peaks"))
+setGeneric("get_peaks", function(object, ...) standardGeneric("get_peaks"))
 
 #### peakEICs -----
 

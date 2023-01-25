@@ -5,40 +5,26 @@
 #include <math.h>
 #include <Rcpp.h>
 
+using namespace std;
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-List rcpp_ms_extract_ms2_for_msAnalysis(DataFrame spec,
-                                        DataFrame targets,
-                                        double mzClust,
-                                        bool verbose) {
+List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
 
-  const StringVector ids = targets["id"];
+  StringVector all_ids = ms2["unique_id"];
+  StringVector unique_ids = unique(all_ids);
 
-  const NumericVector rtmins = targets["rtmin"];
-  const NumericVector rtmaxs = targets["rtmax"];
-  const NumericVector mzmins = targets["mzmin"];
-  const NumericVector mzmaxs = targets["mzmax"];
-
-  const int totalTargetsNumber = targets.nrows();
+  int totalNumberIds = unique_ids.size();
 
   StringVector target_id;
 
-  double rtmin;
-  double rtmax;
-  double mzmin;
-  double mzmax;
-
+  StringVector analysis;
+  StringVector id;
   NumericVector rt;
   NumericVector ce;
   NumericVector preMZ;
   NumericVector mz;
   NumericVector intensity;
-
-  LogicalVector eval_rtmin;
-  LogicalVector eval_rtmax;
-  LogicalVector eval_mzmin;
-  LogicalVector eval_mzmax;
 
   LogicalVector eval;
 
@@ -67,35 +53,32 @@ List rcpp_ms_extract_ms2_for_msAnalysis(DataFrame spec,
   double preMZ_mean = 0;
   double rt_mean = 0;
 
-  List eics(totalTargetsNumber);
+  List ms2_out(totalNumberIds);
 
-  for (int i=0; i<totalTargetsNumber; ++i) {
+  for (int i=0; i<totalNumberIds; ++i) {
 
-    target_id = ids(i);
+    target_id = unique_ids(i);
 
-    rtmin = rtmins[i];
-    rtmax = rtmaxs[i];
-    mzmin = mzmins[i];
-    mzmax = mzmaxs[i];
+    analysis = ms2["analysis"];
+    id = ms2["id"];
+    rt = ms2["rt"];
+    ce = ms2["ce"];
+    preMZ= ms2["preMZ"];
+    mz = ms2["mz"];
+    intensity = ms2["intensity"];
 
-    rt = spec["rt"];
-    ce = spec["ce"];
-    preMZ= spec["preMZ"];
-    mz = spec["mz"];
-    intensity = spec["intensity"];
 
-    if (rtmax == 0) rtmax = *std::max_element(rt.begin(), rt.end());
-    if (mzmax == 0) mzmax = *std::max_element(mz.begin(), mz.end());
+    int n = all_ids.size();
+    LogicalVector eval(n);
 
-    eval_rtmin = rt >= rtmin;
-    eval_rtmax = rt <= rtmax;
-    eval_mzmin = preMZ >= mzmin;
-    eval_mzmax = preMZ <= mzmax;
+    for (int z=0; z<n; z++) {
+      eval(z) = (all_ids(z) == target_id(0));
+    }
 
-    eval = eval_rtmin & eval_rtmax;
-    eval = eval & eval_mzmin;
-    eval = eval & eval_mzmax;
-
+    analysis = analysis[eval];
+    analysis = unique(analysis);
+    id = id[eval];
+    id = unique(id);
     rt = rt[eval];
     ce = ce[eval];
     preMZ = preMZ[eval];
@@ -186,8 +169,9 @@ List rcpp_ms_extract_ms2_for_msAnalysis(DataFrame spec,
 
     if (mz.size() > 0) {
 
-      eics[i] = DataFrame::create(
-        Named("id") = target_id,
+      ms2_out[i] = DataFrame::create(
+        Named("analysis") = analysis,
+        Named("id") = id,
         Named("preMZ") = preMZ_mean,
         Named("rt") = rt_mean,
         Named("mz") = new_mz,
@@ -196,7 +180,7 @@ List rcpp_ms_extract_ms2_for_msAnalysis(DataFrame spec,
 
     } else {
 
-      eics[i] = DataFrame::create();
+      ms2_out[i] = DataFrame::create();
 
     }
 
@@ -206,5 +190,5 @@ List rcpp_ms_extract_ms2_for_msAnalysis(DataFrame spec,
 
   }
 
-  return(eics);
+  return(ms2_out);
 }

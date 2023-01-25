@@ -1517,7 +1517,7 @@ setMethod("hasPeaks", "msAnalysis", function(object) {
 
 
 
-##### peaks -------------------------------------------------------------------
+##### get_peaks -------------------------------------------------------------------
 
 #' @describeIn msAnalysis gets chromatographic peaks from the analysis.
 #' The arguments \code{targetID}, \code{mass}, \code{mz} and \code{rt} can
@@ -1533,9 +1533,9 @@ setMethod("hasPeaks", "msAnalysis", function(object) {
 #'
 #' @export
 #'
-#' @aliases peaks,msAnalysis,msAnalysis-method
+#' @aliases get_peaks,msAnalysis,msAnalysis-method
 #'
-setMethod("peaks", "msAnalysis", function(object,
+setMethod("get_peaks", "msAnalysis", function(object,
                                           targetsID = NULL,
                                           mass = NULL,
                                           mz = NULL, rt = NULL,

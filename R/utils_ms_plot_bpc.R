@@ -1,18 +1,16 @@
 
-
-#' @title plotInteractiveBPCs
+#' @title plot_interactive_bpc
 #'
-#' @description Interactive plot of EICs using the \pkg{plotly} package.
+#' @description Interactive plot of BPC using the \pkg{plotly} package.
 #'
-#' @param eic A data table with the analysis, replicate,
-#' id, rt, intensity and var (i.e., the plotting variable for each entry)
-#' as columns.
+#' @param eic A data table with the analysis, id, rt, mz, intensity and var
+#' (i.e., the plotting variable for each entry) as columns.
 #' @param title A character vector to be used as title.
 #' @param colorBy A character vector to name the legend.
 #'
-#' @return A EIC interactive plot.
+#' @return A BPC interactive plot.
 #'
-plotInteractiveBPCs <- function(bpc, title, colorBy) {
+plot_interactive_bpc <- function(bpc, title, colorBy) {
 
   leg <- unique(bpc$var)
   cl <- getColors(leg)
@@ -49,7 +47,7 @@ plotInteractiveBPCs <- function(bpc, title, colorBy) {
         hovertemplate = paste("<br>rt: %{x}<br>",
                               "mz: ",
                               round(bpc[analysis == s & id == t, mz], digits = 4),
-                              "<br>","int: %{y}")
+                              "<br>","intensity: %{y}")
       )
       if (length(y) >= 1) showL[lt] <- FALSE
     }

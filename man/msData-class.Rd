@@ -80,8 +80,8 @@
 \alias{getSettings,msData-method}
 \alias{hasPeaks,msData-method}
 \alias{hasPeaks,msData,msData-method}
-\alias{peaks,msData-method}
-\alias{peaks,msData,msData-method}
+\alias{get_peaks,msData-method}
+\alias{get_peaks,msData,msData-method}
 \alias{peakEICs,msData-method}
 \alias{plotPeaks,msData,msData-method}
 \alias{plotPeaks,msData-method}
@@ -191,7 +191,7 @@
 \S4method{plotSpectra}{msData}(
   object,
   analyses = NULL,
-  ms_levels = c(1, 2),
+  levels = c(1, 2),
   mz = NULL,
   rt = NULL,
   ppm = 20,
@@ -335,7 +335,7 @@
 
 \S4method{hasPeaks}{msData}(object)
 
-\S4method{peaks}{msData}(
+\S4method{get_peaks}{msData}(
   object,
   analyses = NULL,
   targetsID = NULL,
@@ -797,7 +797,7 @@ all the settings are returned.
 \item \code{hasPeaks(msData)}: checks if the \linkS4class{msAnalysis} objects in the
 \linkS4class{msData} object have peaks.
 
-\item \code{peaks(msData)}: getter for chromatographic peaks from the
+\item \code{get_peaks(msData)}: getter for chromatographic peaks from the
 \linkS4class{msAnalysis} objects in the \linkS4class{msData} object.
 The arguments \code{targetID} and \code{mass}, \code{mz} and \code{rt}
 can be used to select specific peaks. The \emph{id} of peaks and/or

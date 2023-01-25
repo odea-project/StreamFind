@@ -1,30 +1,28 @@
 
-#' @title plotInteractiveXICs
+#' @title plot_interactive_xic
 #'
-#' @description Plot traces or profile data for a target compound
-#' using expected \emph{m/z} and retention time pairs, including deviations.
+#' @description Plot traces or profile data for targets using expected
+#' \emph{m/z} and retention time pairs, including deviations.
 #'
 #' @param xic A \linkS4class{data.table} from the method \code{\link{XICs}}.
 #' @param plotTargetMark Logical, set to \code{TRUE} (the default) to plot a
 #' target mark.
-#' @param ppmMark A numeric vector of length one to define the mass deviation, in ppm,
-#' of the target mark. The default is 5 ppm.
-#' @param secMark A numeric vector of length one to define the time deviation, in seconds,
-#' of the target mark. The default is 10 ppm.
-#' @param numberRows A numeric vector of length one to define
-#' the number of rows to grid the plots.
-#' Note that each target is always plotted in one row for all selected analyses.
+#' @param ppmMark A numeric vector of length one to define the mass deviation,
+#' in ppm, of the target mark. The default is 5 ppm.
+#' @param secMark A numeric vector of length one to define the time deviation,
+#' in seconds, of the target mark. The default is 10 ppm.
+#' @param numberRows A numeric vector of length one to define the number of
+#' rows to grid the plots. Note that each target is always plotted in one row
+#' for all selected analyses.
 #'
-#' @return An iterative plot of the traces for the requested
-#' \emph{m/z} and retention time pairs.
+#' @return An iterative plot of the traces for the requested \emph{m/z} and
+#' retention time pairs.
 #'
-#' @export
-#'
-plotInteractiveXICs <- function(xic,
-                                plotTargetMark = TRUE,
-                                ppmMark = 5,
-                                secMark = 10,
-                                numberRows = 1) {
+plot_interactive_xic <- function(xic,
+                                 plotTargetMark = TRUE,
+                                 ppmMark = 5,
+                                 secMark = 10,
+                                 numberRows = 1) {
 
   ids <- unique(xic$id)
 

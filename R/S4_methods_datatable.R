@@ -1,8 +1,7 @@
 
-## S4 methods - data.table -----------------------------------------------------
+## S4 methods - data.table -----
 
-
-### plotEICs-data.table --------------------------------------------------
+### plotEICs-data.table -----
 
 #' @title plotEICs-data.table
 #'
@@ -66,7 +65,7 @@ setMethod("plotEICs", "data.table", function(object,
   if (!interactive) {
 
     return(
-      plotStaticEICs(
+      plot_static_eic(
         eic,
         title
       )
@@ -74,7 +73,7 @@ setMethod("plotEICs", "data.table", function(object,
 
   } else {
 
-    plot <- plotInteractiveEICs(eic, title, colorBy)
+    plot <- plot_interactive_eic(eic, title, colorBy)
 
     return(plot)
   }
@@ -175,7 +174,7 @@ setMethod("plotBPCs", "data.table", function(object,
   if (!interactive) {
 
     return(
-      plotStaticEICs(
+      plot_static_eic(
         bpc,
         title
       )
@@ -183,7 +182,7 @@ setMethod("plotBPCs", "data.table", function(object,
 
   } else {
 
-    plot <- plotInteractiveBPCs(bpc, title, colorBy)
+    plot <- plot_interactive_bpc(bpc, title, colorBy)
 
     return(plot)
   }
@@ -290,7 +289,7 @@ setMethod("plotXICs", "data.table", function(object,
     # }
   }
 
-  plot <- plotInteractiveXICs(
+  plot <- plot_interactive_xic(
     xic,
     plotTargetMark = plotTargetMark,
     ppmMark = ppmMark,
@@ -385,7 +384,7 @@ setMethod("plotMS2s", "data.table", function(object = NULL,
   if (!interactive) {
 
     return(
-      plotStaticMSn(
+      plot_static_ms2(
         ms2,
         title
       )
@@ -395,7 +394,7 @@ setMethod("plotMS2s", "data.table", function(object = NULL,
 
   } else {
 
-    plot <- plotInteractiveMSn(ms2, title)
+    plot <- plot_interactive_ms2(ms2, title)
 
   }
 
@@ -482,7 +481,7 @@ setMethod("plotPeaks", "data.table", function(object,
   if (!interactive) {
 
     return(
-      plotPeaksStatic(
+      plot_features_static(
         eic,
         peaks,
         title
@@ -491,7 +490,7 @@ setMethod("plotPeaks", "data.table", function(object,
 
   } else {
 
-    plot <- plotPeaksInteractive(eic, peaks, title, colorBy)
+    plot <- plot_features_interactive(eic, peaks, title, colorBy)
 
     return(plot)
   }

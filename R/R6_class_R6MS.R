@@ -1,0 +1,2731 @@
+
+#' R6 Class Representing an MS Set of Analysis Files
+#'
+#' @description
+#' A description of the R6 class.
+#'
+#' @details
+#' The details.
+#'
+#' @export
+R6MS = R6::R6Class("R6MS",
+
+  # private fields -----
+  private = list(
+
+    ## .header -----
+    .header = list(
+      name = character(),
+      author =  character(),
+      # user = Sys.info("user"),
+      # system_info = Sys.info("sysname"),
+      # computer = Sys.info("nodename"),
+      description = character(),
+      path = getwd(),
+      date = Sys.time()
+    ),
+
+    ## .processing -----
+    .processing = list(),
+
+    ## .analyses -----
+    .analyses = list(),
+
+    ## .featureGroups -----
+    .featureGroups = NULL,
+
+    ## .alignment -----
+    .alignment = NULL
+
+  ),
+
+  # public fields/methods -----
+
+  public = list(
+
+    ## system -----
+
+    #' @description
+    #' Create a new MS set of analyses.
+    #'
+    #' @param files A character vector with the full file path of MS analyses
+    #' or a data.frame with the columns file, replicate and blank with the
+    #' full file path, the replicate group name (string) and the associated
+    #' blank replicate group (string).
+    #' @param header A list with administrative information.
+    #' @param analyses A list with MS analyses information.
+    #' @param featureGroups A data.frame with `featureGroups` representing
+    #' corresponding features across MS analyses.
+    #' @param run_parallel Logical, set to \code{TRUE} for processing the data
+    #' in parallel.
+    #'
+    #' @return A new `r6MS` object.
+    initialize = function(files = NULL,
+                          header = NULL,
+                          analyses = NULL,
+                          featureGroups = NULL,
+                          run_parallel = FALSE) {
+
+      if (is.null(analyses) & !is.null(files)) {
+
+        if (is.data.frame(files)) {
+          if ("file" %in% colnames(files)) {
+
+            if ("replicate" %in% colnames(files))
+              replicates = as.character(files$replicate)
+                else replicates = rep(NA_character_, nrow(files))
+
+            if ("blank" %in% colnames(files))
+              blanks = as.character(files$blank)
+                else blanks = NULL
+
+            files = files$file
+
+          } else files = ""
+        } else {
+          replicates = rep(NA_character_, length(files))
+          blanks = NULL
+        }
+
+        possible_ms_file_formats = ".mzML|.mzXML"
+
+        valid_files = vapply(files, FUN.VALUE = FALSE,
+          function(x, possible_ms_file_formats) {
+            if (!file.exists(x)) return(FALSE)
+            if (FALSE %in% grepl(possible_ms_file_formats, x)) return(FALSE)
+            return(TRUE)
+        }, possible_ms_file_formats = possible_ms_file_formats)
+
+        if (!all(valid_files)) {
+          warning("File/s not valid!")
+          return(NULL)
+        }
+
+        if (run_parallel & length(files) > 1) {
+          workers = parallel::detectCores() - 1
+          if (length(files) < workers) workers = length(files)
+          par_type = "PSOCK"
+          if (parallelly::supportsMulticore()) par_type = "FORK"
+          cl = parallel::makeCluster(workers, type = par_type)
+          doParallel::registerDoParallel(cl)
+          #on.exit(parallel::stopCluster(cl))
+        } else {
+          registerDoSEQ()
+        }
+
+        analyses = foreach(i = files, .packages = "mzR") %dopar% {
+
+          file_link = mzR::openMSfile(i, backend = "pwiz")
+          sH = suppressWarnings(mzR::header(file_link))
+          cH = suppressWarnings(mzR::chromatogramHeader(file_link))
+          instrument = mzR::instrumentInfo(file_link)
+          run = suppressWarnings(mzR::runInfo(file_link))
+
+          polarities = NULL
+          if (1 %in% sH$polarity) polarities = c(polarities, "positive")
+          if (0 %in% sH$polarity) polarities = c(polarities, "negative")
+          if (nrow(cH) > 0 & ("polarity" %in% colnames(cH))) {
+            if (1 %in% cH$polarity) polarities = c(polarities, "positive")
+            if (0 %in% cH$polarity) polarities = c(polarities, "negative")
+          }
+          if (is.null(polarities)) polarities = NA_character_
+
+          spectra_number = run$scanCount
+          spectra_mode = NA_character_
+          if (TRUE %in% sH$centroided) spectra_mode = "centroid"
+          if (FALSE %in% sH$centroided) spectra_mode = "profile"
+
+          ion_mobility = FALSE
+          if (!all(is.na(sH$ionMobilityDriftTime))) ion_mobility = TRUE
+
+          chromatograms_number = 0
+          if (grepl(".mzML", i))
+            chromatograms_number = mzR::nChrom(file_link)
+
+          if (spectra_number == 0 & chromatograms_number > 0) {
+
+            if (TRUE %in% grepl("SRM", cH$chromatogramId)) data_type = "SRM"
+
+            tic = cH[cH$chromatogramId %in% "TIC", ]
+            if (nrow(tic) > 0) {
+              tic = mzR::chromatograms(file_link, tic$chromatogramIndex)
+              colnames(tic) = c("rt", "intensity")
+              if (max(tic$rt) < 60) tic$rt = tic$rt * 60
+            } else tic = data.frame("rt" = numeric(), "intensity" = numeric())
+
+            bpc = cH[cH$chromatogramId %in% "BPC", ]
+            if (nrow(bpc) > 0) {
+              bpc = mzR::chromatograms(file_link, bpc$chromatogramIndex)
+              if (!"mz" %in% colnames(bpc)) {
+                bpc$mz = NA
+                colnames(bpc) = c("rt", "intensity", "mz")
+              } else colnames(bpc) = c("rt", "mz", "intensity")
+
+              if (max(bpc$rt) < 60) bpc$rt = bpc$rt * 60
+            } else bpc = data.frame("rt" = numeric(),
+                                    "mz" = numeric() ,
+                                    "intensity" = numeric())
+
+          } else if (spectra_number > 0) {
+
+            if (2 %in% run$msLevels) data_type = "MS/MS"
+              else data_type = "MS"
+
+            if (max(sH$retentionTime) < 60)
+              sH$retentionTime = sH$retentionTime * 60
+
+            sH_ms1 = sH[sH$msLevel == 1, ]
+
+            tic = data.frame(
+              "rt" = sH_ms1$retentionTime,
+              "intensity" = sH_ms1$totIonCurrent)
+
+            bpc = data.frame(
+              "rt" = sH_ms1$retentionTime,
+              "mz" = sH_ms1$basePeakMZ,
+              "intensity" = sH_ms1$basePeakIntensity
+            )
+
+          } else data_type = NA_character_
+
+          if (is.infinite(run$lowMz)) run$lowMz = NA_real_
+          if (is.infinite(run$highMz)) run$highMz = NA_real_
+          if (is.infinite(run$dStartTime)) run$dStartTime = min(tic$rt)
+          if (is.infinite(run$dEndTime)) run$dEndTime = max(tic$rt)
+          if (data_type %in% "SRM") run$msLevels = NA_integer_
+
+          analysis = list(
+            "name" = gsub(".mzML|.mzXML", "", basename(i)),
+            "replicate" = NA_character_,
+            "blank" = NA_character_,
+            "file" = i,
+            "type" = data_type,
+            "instrument" = instrument,
+            "time_stamp" = run$startTimeStamp,
+            "spectra_number" = as.integer(spectra_number),
+            "spectra_mode" = spectra_mode,
+            "spectra_levels" = as.integer(run$msLevels),
+            "mz_low" = as.numeric(run$lowMz),
+            "mz_high" = as.numeric(run$highMz),
+            "rt_start" = as.numeric(run$dStartTime),
+            "rt_end" = as.numeric(run$dEndTime),
+            "polarity" = polarities,
+            "chromatograms_number" = as.integer(chromatograms_number),
+            "ion_mobility" = ion_mobility,
+            "tic" = tic,
+            "bpc" = bpc,
+            "spectra" = data.frame(),
+            "chromatograms" = data.frame(),
+            "features" = data.frame(),
+            "metadata" = list()
+          )
+
+          suppressWarnings(mzR::close(file_link))
+          return(analysis)
+        }
+
+        if (run_parallel) parallel::stopCluster(cl)
+
+        if (all(is.na(replicates))) {
+          replicates = vapply(analyses, function(x) x$name, "")
+          replicates = gsub( "-", "_", replicates)
+          replicates = sub("_[^_]+$", "", replicates)
+        }
+
+        analyses = Map(function(x, y) { x$replicate = y; x },
+                       analyses, replicates)
+
+        if (!is.null(blanks) & length(blanks) == length(analyses)) {
+          if (all(blanks %in% replicates)) {
+            analyses = Map(function(x, y) { x$blank = y; x },
+                           analyses, blanks)
+          }
+        }
+
+        names(analyses) = vapply(analyses, function(x) x$name, "")
+        analyses = analyses[order(names(analyses))]
+        private$.analyses = analyses
+
+      } else if (!is.null(analyses)) {
+
+        valid_analyses = vapply(analyses, validate_list_ms_analysis, FALSE)
+
+        if (all(valid_analyses)) {
+
+          names(analyses) = vapply(analyses, function(x) x$name, "")
+          analyses = analyses[order(names(analyses))]
+          private$.analyses = analyses
+
+        } else {
+          warning("No valid files or analyses were
+                given to create the R6MS!")
+        }
+      } else {
+        warning("No valid files or analyses were
+                given to create the R6MS!")
+      }
+
+      private$.featureGroups = featureGroups
+
+      if (!is.null(header) & is.list(header)) {
+
+        if (is.character(header$name) & length(header$name) == 1)
+          private$.header$name = header$name
+
+        if (is.character(header$author) & length(header$author) == 1)
+          private$.header$author = header$author
+
+        if (is.character(header$description) & length(header$description) == 1)
+          private$.header$description = header$description
+
+        if (is.character(header$path) & length(header$path) == 1)
+          if (dir.exists(header$path)) private$.header$path = header$path
+
+        if (all(grepl("POSIXct|POSIXt", class(header$date))) &
+            length(header$date) == 1)
+              private$.header$date = header$date
+
+      }
+    },
+
+    #' @description
+    #' Prints a summary of the `R6MS` object in the console.
+    #' @return Console text.
+    print = function() {
+      cat(
+        "  Class         ", paste(is(self), collapse = "; "), "\n",
+        "  Name         ", private$.header$name, "\n",
+        "  Date          ", as.character(private$.header$date), "\n",
+        sep = ""
+      )
+      if (length(private$.analyses) > 0) {
+        tb = self$get_overview()
+        tb$file = NULL
+
+        tb$traces = vapply(private$.analyses, function(x) x$spectra_number, 0)
+        tb$peaks = vapply(private$.analyses, function(x) nrow(x$features), 0)
+
+        # if (nrow(object@features@metadata) > 0) {
+        #   tb$features = apply(
+        #     object@features@intensity[, analysisNames(object), with = FALSE], 2,
+        #     function(x) length(x[x > 0])
+        #   )
+        # } else {
+        #   tb$features = 0
+        # }
+
+        print(tb)
+
+      } else {
+        cat("     n.a.", "\n", sep = "")
+      }
+    },
+
+    ## get -----
+
+    #' @description
+    #' Method to get the header of the `R6MS` object.
+    #'
+    #' @param value A character vector with the name of the entry.
+    #' Possible values are name, author, description, path and date.
+    #'
+    #' @return The header list as defined by `value`.
+    get_header = function(value) {
+      if (missing(value)) return(private$.header)
+      else return(private$.header[value])
+    },
+
+    #' @description
+    #' Method to get specific analyses from the `R6MS` object.
+    #'
+    #' @param value A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return The list of analyses defined by `value`.
+    get_analyses = function(value) {
+      if (missing(value)) return(private$.analyses)
+        else return(private$.analyses[value])
+    },
+
+    #' @description
+    #' Method to get the number of analysis in the `R6MS` object.
+    #'
+    #' @return An integer value.
+    get_number_analyses = function() {
+      return(length(private$.analyses))
+    },
+
+    #' @description
+    #' Method to get the overview data.frame with all the analysis types,
+    #' names, replicates, associated blank replicates, polarities and full
+    #' file paths.
+    #'
+    #' @return A data.frame with columns type, analysis, replicate, blank
+    #' polarity and file.
+    #'
+    get_overview = function() {
+
+      if (length(private$.analyses) > 0) {
+        df = data.frame(
+          "type" = vapply(private$.analyses, function(x) x$type, ""),
+          "analysis" = vapply(private$.analyses, function(x) x$name, ""),
+          "replicate" = vapply(private$.analyses, function(x) x$replicate, ""),
+          "blank" = vapply(private$.analyses, function(x) x$blank, ""),
+          "polarity" = vapply(private$.analyses,function(x) {
+            paste(x$polarity, collapse = "; ")
+          }, ""),
+          "file" = vapply(private$.analyses, function(x) x$file, "")
+        )
+
+        row.names(df) = seq_len(nrow(df))
+
+        return(df)
+      } else return(data.frame())
+    },
+
+    #' @description
+    #' Method to get the analysis names.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    get_analysis_names = function(analyses = NULL) {
+      ana = vapply(private$.analyses, function(x) x$name, "")
+      names(ana) = vapply(private$.analyses, function(x) x$name, "")
+      if (!is.null(analyses)) return(ana[analyses])
+      return(ana)
+    },
+
+    #' @description
+    #' Method to get the analysis replicate names.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    get_replicate_names = function(analyses = NULL) {
+      rpl = vapply(private$.analyses, function(x) x$replicate, "")
+      names(rpl) = vapply(private$.analyses, function(x) x$name, "")
+      if (!is.null(analyses)) return(rpl[analyses])
+      return(rpl)
+    },
+
+    #' @description
+    #' Method to get the analysis blank replicate names.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    get_blank_names = function(analyses = NULL) {
+      blk = vapply(private$.analyses, function(x) x$blank, "")
+      names(blk) = vapply(private$.analyses, function(x) x$name, "")
+      if (!is.null(analyses)) return(blk[analyses])
+      return(blk)
+    },
+
+    #' @description
+    #' Method to get the polarity of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    get_polarities = function(analyses = NULL) {
+      pol = vapply(private$.analyses,function(x) {
+        paste(x$polarity, collapse = "; ")
+      }, "")
+      names(pol) = vapply(private$.analyses, function(x) x$name, "")
+      if (!missing(analyses)) return(pol[analyses])
+      return(pol)
+    },
+
+    #' @description
+    #' Method to get the polarity of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    get_file_paths = function(analyses = NULL) {
+      fls = vapply(private$.analyses, function(x) x$file, "")
+      names(fls) = vapply(private$.analyses, function(x) x$name, "")
+      if (!is.null(analyses)) return(fls[analyses])
+      return(fls)
+    },
+
+    #' @description
+    #' Method to get spectra from the MS analyses.
+    #'
+    #' @param analyses X.
+    #' @param levels Name.
+    #' @param mz X.
+    #' @param rt X.
+    #' @param ppm X.
+    #' @param sec X.
+    #' @param id X.
+    #' @param allTraces Logical, when \code{TRUE} all level 2 data is returned.
+    #' When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
+    #' are returned, using the `preMZ` value and the `isolationWindow`.
+    #' @param isolationWindow X.
+    #' @param minIntensityMS1 X.
+    #' @param minIntensityMS2 X.
+    #' @param run_parallel X.
+    #'
+    #' @return A data.frame with spectra for each analyses and
+    #' targets when defined.
+    #'
+    get_spectra = function(analyses = NULL,
+                           levels = NULL,
+                           mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
+                           allTraces = TRUE, isolationWindow = 1.3,
+                           minIntensityMS1 = 0, minIntensityMS2 = 0,
+                           run_parallel = FALSE) {
+
+      trim = function(v, a, b)  return(
+        rowSums(mapply(function(a, b) v >= a & v <= b, a = a, b = b)) > 0)
+
+      analyses = self$check_analyses_argument(analyses)
+      if (is.null(analyses)) return(data.frame())
+
+      targets = make_targets(mz, rt, ppm, sec, id)
+
+      with_targets = !(nrow(targets) == 1 &
+        TRUE %in% (targets$mzmax == 0) &
+        TRUE %in% (targets$rtmax == 0))
+
+      if (with_targets) {
+
+        trim_targets = function(traces, targets, preMZr) {
+
+          trim = function(v, a, b)  return(
+            rowSums(mapply(function(a, b) v >= a & v <= b, a = a, b = b)) > 0)
+
+          tg_list = lapply(seq_len(nrow(targets)),
+
+            function(z, traces, targets, trim, preMZr) {
+
+              tg = traces
+
+              cutRt = trim(tg$rt, targets$rtmin[z], targets$rtmax[z])
+              tg = tg[cutRt, ]
+
+              if (!is.null(preMZr)) {
+
+                 cutMZ = trim(tg$mz, targets$mzmin[z], targets$mzmax[z])
+                 tg = tg[tg$level == 2 | (tg$level == 1 & cutMZ), ]
+
+                 cutPreMZ = trim(tg$preMZ, preMZr$mzmin[z], preMZr$mzmax[z])
+                 tg = tg[tg$level == 1 | (tg$level == 2 & cutPreMZ), ]
+
+              } else {
+
+                 cutMZ = trim(tg$mz, targets$mzmin[z], targets$mzmax[z])
+                 tg = tg[cutMZ, ]
+
+              }
+
+              tg$id = targets$id[z]
+
+              return(tg)
+
+            }, traces = traces, preMZr = preMZr, targets = targets, trim = trim)
+
+          tg_df = do.call("rbind", tg_list)
+
+          return(tg_df)
+        }
+      }
+
+      if (!allTraces) {
+        preMZr = targets[, c("mzmin", "mzmax")]
+        preMZr$mzmin = preMZr$mzmin - (isolationWindow/2)
+        preMZr$mzmax = preMZr$mzmax + (isolationWindow/2)
+        if (nrow(preMZr) == 1 & TRUE %in% (targets$mzmax == 0)) preMZr = NULL
+      } else {
+        preMZr = NULL
+      }
+
+      has_spectra = self$has_loaded_spectra(analyses)
+
+      if (all(has_spectra)) {
+
+        spec_list = lapply(private$.analyses[analyses],
+          function(x, levels, with_targets, targets, preMZr) {
+
+            temp = x$spectra
+
+            if (!is.null(levels)) temp = temp[temp$level %in% levels, ]
+
+            if (with_targets) {
+              if ("analysis" %in% colnames(targets)) {
+                temp = trim_targets(temp,
+                  targets[targets$analysis %in% x$name, ], preMZr)
+              } else temp = trim_targets(temp, targets, preMZr)
+            }
+
+            return(temp)
+        },
+        levels = levels,
+        with_targets = with_targets,
+        targets = targets,
+        preMZr = preMZr)
+
+        names(spec_list) = analyses
+
+        spec = rbindlist(spec_list, idcol = "analysis", fill = TRUE)
+
+        spec = spec[!(spec$intensity <= minIntensityMS1 & spec$level == 1), ]
+        spec = spec[!(spec$intensity <= minIntensityMS2 & spec$level == 2), ]
+
+        return(spec)
+      }
+
+      files = unname(self$get_file_paths(analyses))
+
+      if (all(!is.na(files))) {
+
+        # vars = c("with_targets", "levels", "targets", "preMZr", "trim_targets")
+
+        if (run_parallel & length(files) > 1) {
+          workers = parallel::detectCores() - 1
+          if (length(files) < workers) workers = length(files)
+          par_type = "PSOCK"
+          if (parallelly::supportsMulticore()) par_type = "FORK"
+          cl = parallel::makeCluster(workers, type = par_type)
+          doParallel::registerDoParallel(cl)
+          #on.exit(parallel::stopCluster(cl))
+        } else {
+          registerDoSEQ()
+        }
+
+        spec_list = foreach(i = files, .packages = "mzR") %dopar% { #.export = vars
+
+          file_link = mzR::openMSfile(i, backend = "pwiz")
+
+          sH = mzR::header(file_link)
+
+          if (nrow(sH) > 0) {
+
+            if (max(sH$retentionTime) < 60)
+              sH$retentionTime = sH$retentionTime * 60
+
+            if (!is.null(levels)) sH = sH[sH$msLevel %in% levels, ]
+
+            if (with_targets) {
+              if ("analysis" %in% colnames(targets)) {
+                ana_name = gsub(".mzML|.mzXML", "", basename(i))
+                tp_tar = targets[targets$analysis %in% ana_name, ]
+                sH = sH[trim(sH$retentionTime, tp_tar$rtmin, tp_tar$rtmax), ]
+              } else {
+                sH = sH[trim(sH$retentionTime, targets$rtmin, targets$rtmax), ]
+              }
+            }
+
+            if(!is.null(preMZr)) {
+              preMZ_check = trim(sH$precursorMZ, preMZr$mzmin, preMZr$mzmax)
+              sH = sH[(preMZ_check %in% TRUE) | is.na(preMZ_check), ]
+            }
+
+            if (nrow(sH) > 0) {
+
+              scans = mzR::peaks(file_link, scans = sH$seqNum)
+
+              mat_idx = rep(sH$seqNum, sapply(scans, nrow))
+              scans = as.data.frame(do.call(rbind, scans))
+              scans$index = mat_idx
+
+              if (TRUE %in% (unique(sH$msLevel) == 2)) {
+                sH_b = data.frame(
+                  "index" = sH$seqNum,
+                  "scan" = sH$acquisitionNum,
+                  "level" = sH$msLevel,
+                  "ce" = sH$collisionEnergy,
+                  "preScan" = sH$precursorScanNum,
+                  "preMZ" = sH$precursorMZ,
+                  "rt" = sH$retentionTime)
+              } else {
+                sH_b = data.frame(
+                  "index" = sH$seqNum,
+                  "scan" = sH$acquisitionNum,
+                  "level" = sH$msLevel,
+                  "rt" = sH$retentionTime)
+              }
+
+              if (!all(is.na(sH$ionMobilityDriftTime))) {
+                rt_unique = unique(sH_b$rt)
+                frame_numbers = seq_len(length(rt_unique))
+                if ("preMZ" %in% colnames(sH_b)) sH_b$preMZ = NA_real_
+                sH_b$frame = factor(sH_b$rt,
+                  levels = rt_unique, labels = frame_numbers)
+                sH_b$driftTime = sH$ionMobilityDriftTime
+              }
+
+              sH = merge(sH_b, scans, by = "index")
+
+              if (with_targets) {
+                if ("analysis" %in% colnames(targets)) {
+                  ana_name = gsub(".mzML|.mzXML", "", basename(i))
+                  sH = trim_targets(sH,
+                    targets[targets$analysis %in% ana_name, ], preMZr)
+                } else sH = trim_targets(sH, targets, preMZr)
+              }
+
+              if (exists("file_link")) suppressWarnings(mzR::close(file_link))
+
+              return(sH)
+
+            } else return(data.frame())
+
+          } else return(data.frame())
+        }
+
+        if (run_parallel) parallel::stopCluster(cl)
+        # unregister_dopar()
+
+        names(spec_list) = analyses
+
+        spec = rbindlist(spec_list, idcol = "analysis", fill = TRUE)
+
+        spec = spec[!(spec$intensity <= minIntensityMS1 & spec$level == 1), ]
+        spec = spec[!(spec$intensity <= minIntensityMS2 & spec$level == 2), ]
+
+        return(spec)
+
+      } else {
+        warning("Defined analyses not found!")
+        return(list())
+      }
+    },
+
+    #' @description
+    #' Method to get spectra from the MS analyses.
+    #'
+    #' @param analyses X.
+    #' @param minIntensity X.
+    #' @param run_parallel X.
+    #'
+    #' @return A data.frame with spectra.
+    get_chromatograms = function(analyses = NULL, minIntensity = 0,
+                                 run_parallel = FALSE) {
+
+      analyses = self$check_analyses_argument(analyses)
+      if (is.null(analyses)) return(data.frame())
+
+      files = unname(self$get_file_paths(analyses))
+
+      if (all(!is.na(files))) {
+
+        if (run_parallel & length(files) > 1) {
+          workers = parallel::detectCores() - 1
+          if (length(files) < workers) workers = length(files)
+          par_type = "PSOCK"
+          if (parallelly::supportsMulticore()) par_type = "FORK"
+          cl = parallel::makeCluster(workers, type = par_type)
+          doParallel::registerDoParallel(cl)
+          #on.exit(parallel::stopCluster(cl))
+        } else {
+          registerDoSEQ()
+        }
+
+        chrom_list = foreach(i = files, .packages = "mzR") %dopar% {
+
+          file_link = mzR::openMSfile(i, backend = "pwiz")
+
+          cH = suppressWarnings(mzR::chromatogramHeader(file_link))
+
+          if (nrow(cH) > 0) {
+
+            cH$polarity = as.character(cH$polarity)
+            cH[cH$polarity == 1, "polarity"] = "positive"
+            cH[cH$polarity == 0, "polarity"] = "negative"
+            cH[cH$polarity == -1, "polarity"] = NA_character_
+
+            chroms = mzR::chromatograms(file_link, cH$chromatogramIndex)
+
+            if (!is.data.frame(chroms)) {
+
+              chroms = lapply(cH$chromatogramIndex, function(x, chroms) {
+                temp = chroms[[x]]
+                temp = as.data.frame(temp)
+                colnames(temp) = c("rt", "intensity")
+                temp$index = x
+                if (max(temp$rt) < 60) temp$rt = temp$rt * 60
+                return(temp)
+              }, chroms = chroms)
+
+              chroms = do.call("rbind", chroms)
+
+              cH_b = data.frame(
+                "index" = cH$chromatogramIndex,
+                "id" = cH$chromatogramId,
+                "polarity" = cH$polarity,
+                "preMZ" = cH$precursorIsolationWindowTargetMZ,
+                "mz" = cH$productIsolationWindowTargetMZ
+              )
+
+              chrom_data = merge(cH_b, chroms, by = "index")
+
+            } else {
+
+              colnames(chroms) = c("rt", "intensity")
+              if (max(chroms$rt) < 60) chroms$rt = chroms$rt * 60
+
+              chrom_data = data.frame(
+                "index" = cH$chromatogramIndex,
+                "id" = cH$chromatogramId,
+                "polarity" = cH$polarity,
+                "preMZ" = cH$precursorIsolationWindowTargetMZ,
+                "mz" = cH$productIsolationWindowTargetMZ,
+                "rt" = chroms$rt,
+                "intensity" = chroms$intensity
+              )
+            }
+            if (exists("file_link")) suppressWarnings(mzR::close(file_link))
+            return(chrom_data)
+          } else return(data.frame())
+        }
+
+        if (run_parallel) parallel::stopCluster(cl)
+
+        names(chrom_list) = analyses
+        chrom_df = rbindlist(chrom_list, idcol = "analysis", fill = TRUE)
+        chrom_df = chrom_df[chrom_df$intensity > minIntensity, ]
+
+        return(chrom_df)
+      } else {
+        warning("Defined analyses not found!")
+        return(list())
+      }
+    },
+
+    #' @description
+    #' Method to get the total ion chromatograms (TIC) from the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    get_tic = function(analyses = NULL) {
+      analyses = self$check_analyses_argument(analyses)
+      if (is.null(analyses)) return(data.frame())
+      tic = lapply(private$.analyses[analyses], function(x) x$tic)
+      tic = rbindlist(tic, idcol = "analysis", fill = TRUE)
+      return(tic)
+    },
+
+    #' @description
+    #' Method to get the base peak chromatograms (BPC) from the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    get_bpc = function(analyses = NULL) {
+      analyses = self$check_analyses_argument(analyses)
+      if (is.null(analyses)) return(data.frame())
+      bpc = lapply(private$.analyses[analyses], function(x) x$bpc)
+      bpc = rbindlist(bpc, idcol = "analysis", fill = TRUE)
+      return(bpc)
+    },
+
+    #' @description
+    #' Method to get extract ion chromatograms (EIC) from the analyses based
+    #' on targets.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #' @param mz X.
+    #' @param rt X.
+    #' @param ppm X.
+    #' @param sec X.
+    #' @param id X.
+    #' @param run_parallel X.
+    #'
+    #' @return A data.frame.
+    get_eic = function(analyses = NULL,
+                        mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
+                        run_parallel = FALSE) {
+
+      eic = self$get_spectra(
+        analyses, levels = 1, mz, rt, ppm, sec, id, allTraces = TRUE,
+        isolationWindow = 1.3, minIntensityMS1 = 0, minIntensityMS2 = 0,
+        run_parallel = run_parallel
+      )
+
+      if (nrow(eic) > 0) {
+        eic = as.data.table(eic)
+        if (!"id" %in% colnames(eic)) eic$id = NA_character_
+        eic = eic[, `:=`(intensity = sum(intensity)), by = c("analysis", "id", "rt")][]
+        eic = eic[, c("analysis", "id", "rt", "intensity"), with = FALSE]
+      }
+
+      return(eic)
+    },
+
+    #' @description
+    #' Method to get MS2 data from the analyses based on targets.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #' @param mz X.
+    #' @param rt X.
+    #' @param ppm X.
+    #' @param sec X.
+    #' @param id X.
+    #' @param isolationWindow X.
+    #' @param mzClust X.
+    #' @param verbose X.
+    #' @param minIntensity X.
+    #' @param run_parallel X.
+    #'
+    #' @return A data.frame.
+    get_ms2 = function(analyses = NULL,
+                       mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
+                       isolationWindow = 1.3, mzClust = 0.01, verbose = FALSE,
+                       minIntensity = 0, run_parallel = FALSE) {
+
+      ms2 = self$get_spectra(
+        analyses, levels = 2, mz, rt, ppm, sec, id, allTraces = FALSE,
+        isolationWindow, minIntensityMS1 = 0, minIntensityMS2 = minIntensity,
+        run_parallel = run_parallel
+      )
+
+      if (nrow(ms2) == 0) return(ms2)
+
+      ms2$unique_id = paste0(ms2$analysis, "_", ms2$id)
+      ms2_list = rcpp_ms_cluster_ms2(ms2, mzClust, verbose)
+      ms2_df = rbindlist(ms2_list, fill = TRUE)
+
+      return(ms2_df)
+    },
+
+    #' @description
+    #' Method to get settings from analyses.
+    #'
+    #' @param call A string with the name of function call.
+    #'
+    #' @return A data.frame.
+    get_settings = function(call = NULL) {
+      if(is.null(call)) return(private$.processing)
+        else return(private$.processing[[call]])
+    },
+
+    #' @description
+    #' Method to get features from analyses.
+    #'
+    #' @return A data.frame.
+    get_features = function(analyses = NULL, id = NULL, mass = NULL,
+                            mz = NULL, rt = NULL, ppm = 20, sec = 60,
+                            filtered = FALSE) {
+
+      analyses = self$check_analyses_argument(analyses)
+      if (is.null(analyses)) return(data.frame())
+      fts = lapply(private$.analyses[analyses], function(x) x$features)
+      fts = rbindlist(fts, idcol = "analysis", fill = TRUE)
+
+      if (!filtered) fts = fts[!fts$filtered, ]
+
+      if (!is.null(id) & "group" %in% colnames(fts)) {
+        target_id = id
+        if ("group" %in% colnames(fts)) {
+          fts = fts[fts$id %in% target_id | fts$group %in% target_id, ]
+        } else fts = fts[fts$id %in% targetsID, ]
+        return(pks)
+      }
+
+      if (!is.null(mass)) {
+        if (is.data.frame(mass)) {
+          colnames(mass) = gsub("mass", "mz", colnames(mass))
+          colnames(mass) = gsub("neutralMass", "mz", colnames(mass))
+        }
+        targets = makeTargets(mass, rt, ppm, sec)
+        sel = rep(FALSE, nrow(fts))
+        for (i in seq_len(nrow(targets))) {
+          sel[between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
+                between(fts$rt, targets$rtmin[i], targets$rtmax[i])] = TRUE
+        }
+        return(fts[sel])
+      }
+
+      if (!is.null(mz)) {
+        targets = makeTargets(mz, rt, ppm, sec)
+        sel = rep(FALSE, nrow(fts))
+        for (i in seq_len(nrow(targets))) {
+          sel[between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
+                between(fts$rt, targets$rtmin[i], targets$rtmax[i])] = TRUE
+        }
+        return(fts[sel])
+      }
+
+      return(fts)
+    },
+
+    #' @description
+    #' Method to get EIC of features from analyses.
+    #'
+    #' @return A data.frame/data.table.
+    get_features_eic = function(analyses = NULL, id = NULL, mass = NULL,
+                                mz = NULL, rt = NULL, ppm = 20, sec = 60,
+                                rtExpand = 120, mzExpand = 0.005,
+                                filtered = FALSE, run_parallel = FALSE) {
+
+      fts = self$get_features(analyses, id, mass, mz, rt, ppm, sec, filtered)
+      fts$rtmin = fts$rtmin - rtExpand
+      fts$rtmax = fts$rtmax + rtExpand
+      fts$mzmin = fts$mzmin - mzExpand
+      fts$mzmax = fts$mzmax + mzExpand
+
+      eic = self$get_eic(analyses, mz = fts, run_parallel = run_parallel)
+
+      return(eic)
+    },
+
+    ## set -----
+
+    #' @description
+    #' Method to set the analysis replicate names. Changes the `R6MS` object.
+    #'
+    #' @param value A character vector with the analysis replicate names.
+    #' Must be of the same length as the number of analyses.
+    #'
+    #' @return Invisible.
+    set_replicate_names = function(value) {
+
+      if (is.character(value) &
+          length(value) == self$get_number_analyses()) {
+
+        private$.analyses = Map(function(x, y) { x$replicate = y; x },
+                                private$.analyses, value)
+
+        cat("Replicate names added! \n")
+
+      } else warning("Not done, check the value!")
+    },
+
+    #' @description
+    #' Method to set the analysis blank replicate names.
+    #' Changes the `R6MS` object.
+    #'
+    #' @param value A character vector with the analysis blank replicate names.
+    #' Must be of the same length as the number of analyses.
+    #'
+    #' @return Invisible.
+    set_blank_names = function(value) {
+
+      if (is.character(value) &
+          length(value) == self$get_number_analyses()) {
+
+        if (all(value %in% self$get_replicate_names())) {
+
+          private$.analyses = Map(function(x, y) { x$blank = y; x },
+                                  private$.analyses, value)
+
+          cat("Blank names added! \n")
+
+        } else warning("Not done, blank names not among replicate names!")
+      } else warning("Not done, check the value!")
+    },
+
+    ## add -----
+
+    #' @description
+    #' Method to add analyses to the `R6MS` object.
+    #'
+    #' @param analyses A list of analyses.
+    #'
+    #' @return Invisible.
+    add_analyses = function(analyses) {
+
+      if (missing(analyses)) analyses = NULL
+
+      valid_analyses = vapply(analyses, validate_list_ms_analysis, FALSE)
+
+      valid_analyses
+
+      if (all(valid_analyses) & length(valid_analyses) > 0) {
+
+        old_analyses = private$.analyses
+        old_names = vapply(old_analyses, function(x) x$name, "")
+        new_names = c(old_names, vapply(analyses, function(x) x$name, ""))
+
+        if (!any(duplicated(c(new_names)))) {
+
+          new_analyses = c(old_analyses, analyses)
+          names(new_analyses) = new_names
+          new_analyses = new_analyses[order(names(new_analyses))]
+
+          old_size = length(private$.analyses)
+
+          private$.analyses = new_analyses
+
+          if (old_size < length(new_analyses)) cat("New analyses added! \n")
+            else warning("Not done, check the conformity of the analyses list!")
+
+        } else  warning("Not done, duplicated analysis names found!")
+
+      } else  warning("Not done, check the conformity of the analyses list!")
+    },
+
+    #' @description
+    #' Method to add processing settings to the `R6MS` object.
+    #'
+    #' @param settings X.
+    #'
+    #' @return Invisible.
+    add_settings = function(settings = NULL) {
+
+      if (!"settings" %in% class(settings)) {
+        warning("Arguments not correct, settings not added!!")
+      } else {
+        private$.processing[[settings@call]] = settings
+        cat(paste0(settings@call, " processing settings added! \n"))
+      }
+    },
+
+    #' @description Finds features (i.e., chromatographic peaks) from MS data
+    #' in an `R6MS` class object. The function uses the \pkg{patRoon} package
+    #' for peak finding, enabling the use of several algorithms (see details).
+    #'
+    #' @param settings A \linkS4class{settings} object. When not given,
+    #' \emph{find_features} \linkS4class{settings} will be searched within
+    #' the `R6MS` object.
+    #'
+    #' @note The \linkS4class{settings} call must be set to "find_features".
+    #'
+    #' @details See the \link[patRoon]{findFeatures} function from the
+    #' \pkg{patRoon} package or the
+    #' \href{https://rickhelmus.github.io/patRoon/reference/findFeatures.html}
+    #' {reference guide} for more information. The following algorithms are
+    #' available via \pkg{patRoon}: "xcms3", "xcms", "openms", "envipick",
+    #' "sirius", "kpic2", "safd". The algorithm slot in the
+    #' \linkS4class{settings} should be one of the described. The parameters
+    #' are given as a list and should match with algorithm requirements.
+    #' Certain algorithms also require defined MS file formats and data in
+    #' profile mode.
+    #'
+    #' @return X.
+    #'
+    #' @seealso \link[patRoon]{findFeatures}
+    #'
+    #' @references
+    #' \insertRef{patroon01}{streamFind}
+    #'
+    find_features = function(settings = NULL) {
+
+      valid = TRUE
+
+      if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
+        warning("Install package patRoon for finding peaks!")
+        valid = FALSE
+      }
+
+      if (is.null(settings))
+        settings = self$get_settings(call = "find_features")
+
+      if (!"settings" %in% class(settings)) {
+        warning("find_features settings not found!")
+        valid = FALSE
+      }
+
+      if (!valid) return()
+
+      algorithm = getAlgorithm(settings)
+      parameters = getParameters(settings)
+
+      anaInfo = self$get_overview()
+      anaInfo = data.frame(
+        "path" = dirname(anaInfo$file),
+        "analysis" = anaInfo$analysis,
+        "group" = anaInfo$replicate,
+        "blank" = anaInfo$blank)
+
+      anaInfo$blank[is.na(anaInfo$blank)] = ""
+      anaInfo$algorithm = algorithm
+      ag = list(analysisInfo = anaInfo, algorithm = algorithm)
+      pp_fun = patRoon::findFeatures
+      pat = do.call(pp_fun, c(ag, parameters, verbose = TRUE))
+
+      features = build_features_table_from_patRoon(pat, self)
+
+      self$add_settings(settings)
+
+      private$.analyses = Map(function(x, y) { x$features = y; x },
+                              private$.analyses, features)
+
+      cat("Features added to analyses! \n")
+    },
+
+    #' @description Groups and aligns features across analyses in the `R6MS`
+    #' object. The function uses the \pkg{patRoon} package for grouping
+    #' features, enabling the use of several algorithms (see details).
+    #'
+    #' @param settings A \linkS4class{settings} object. When not given,
+    #' \emph{group_features} \linkS4class{settings} will be searched within
+    #' the `R6MS` object.
+    #'
+    #' @note The \linkS4class{settings} call must be set to "group_features".
+    #'
+    #' @return X.
+    #'
+    #' @details See the \link[patRoon]{groupFeatures} function from the
+    #' \pkg{patRoon} package or the
+    #' \href{https://rickhelmus.github.io/patRoon/reference/groupFeatures.html}
+    #' {reference guide} for more information. The following algorithms are
+    #' possible: "xcms3", "xcms", "openms" or "kpic2". The algorithm slot in the
+    #' \linkS4class{settings} should be one of the described. The parameters
+    #' are given as a list and should match with algorithm requirements.
+    #'
+    #' @seealso \code{\link[patRoon]{groupFeatures}}
+    #'
+    #' @references
+    #' \insertRef{patroon01}{streamFind}
+    #'
+    group_features = function(settings = NULL) {
+
+      valid = TRUE
+
+      if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
+        warning("Install package patRoon for finding peaks!")
+        valid = FALSE
+      }
+
+      if (is.null(settings))
+        settings = self$get_settings(call = "group_features")
+
+      if (!"settings" %in% class(settings)) {
+        warning("group_features settings not found!")
+        valid = FALSE
+      }
+
+      pat_features = self$as_features_patRoon()
+
+      if (length(pat) == 0) {
+        warning("Features were not found! Run find_features method first!")
+        valid = FALSE
+      }
+
+      if (!valid) return()
+
+      algorithm = getAlgorithm(settings)
+      parameters = getParameters(settings)
+
+      if (algorithm == "xcms3") {
+        parameters$groupParam@sampleGroups = self$get_replicate_names()
+        if ("rtalign" %in% names(parameters)) if (parameters$rtalign) {
+          parameters$preGroupParam@sampleGroups = self$get_replicate_names()
+        }
+      }
+
+      ag = list(obj = pat_features, algorithm = algorithm)
+      gr_fun = patRoon::groupFeatures
+      pat = do.call(gr_fun, c(ag, parameters))
+
+      features = build_features_table_from_patRoon(pat, self)
+      out_list = build_featureGroups_table_from_patRoon(pat, features, self)
+
+      alignment = extract_time_alignment(pat, self)
+
+      self$add_settings(settings)
+
+      private$.analyses = Map(function(x, y) { x$features = y; x },
+                              private$.analyses, out_list[["features"]])
+
+      private$.featureGroups = out_list[["fgroups"]]
+
+      cat("Added featureGroups from correspondence analysis! \n")
+
+      if (!is.null(alignment)) {
+        private$.alignment = alignment
+        cat("Added alignment of retention time for each analysis! \n")
+      }
+    },
+
+    #' @description
+    #' Method to add features to each analysis in the `R6MS` object.
+    #'
+    #' @param features X.
+    #'
+    #' @return Invisible.
+    add_features = function(features = NULL) {
+
+      valid = FALSE
+
+      if (is.data.frame(features)) {
+
+        must_have_cols = c("analysis", "id", "mz", "rt", "mzmin", "mzmax",
+                           "rtmin", "rtmax", "intensity", "area")
+
+        if (all(must_have_cols %in% colnames(features))) {
+
+          features = features[order(features$analysis),]
+          analysis_names = unique(features$analysis)
+          org_analysis_names = unname(self$get_analysis_names())
+
+          if (identical(analysis_names, org_analysis_names)) {
+            valid = TRUE
+          }
+        }
+      }
+
+      if (valid) {
+        features = split(features, features$analysis)
+        private$.analyses = Map(function(x, y) { x$features = y; x },
+                                private$.analyses, features)
+        cat("features added! \n")
+      }
+    },
+
+    ## load -----
+
+    #' @description
+    #' Method to load all spectra from analyses to the `R6MS` object.
+    #'
+    #' @param run_parallel X.
+    #'
+    #' @return Invisible.
+    load_spectra = function(run_parallel = FALSE) {
+
+      spec = self$get_spectra(
+        analyses = NULL, levels = NULL,
+        mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
+        allTraces = TRUE, isolationWindow = 1.3,
+        minIntensityMS1 = 0, minIntensityMS2 = 0,
+        run_parallel = run_parallel
+      )
+
+      split_vector = spec$analysis
+      spec$analysis = NULL
+      spec$replicate = NULL
+      spec_list = split(spec, split_vector)
+
+      if (length(spec_list) == self$get_number_analyses()) {
+
+        private$.analyses = Map(function(x, y) { x$spectra = y; x },
+                                private$.analyses, spec_list)
+
+        cat("Spectra loaded to all analyses! \n")
+
+      } else warning("Not done, check the MS file paths and formats!")
+    },
+
+    #' @description
+    #' Method to load all chromatograms from analyses to the `R6MS` object.
+    #'
+    #' @param run_parallel X.
+    #'
+    #' @return Invisible.
+    load_chromatograms = function(run_parallel = FALSE) {
+
+      chrom = self$get_chromatograms(analyses = NULL, minIntensity = 0,
+        run_parallel = run_parallel
+      )
+
+      split_vector = chrom$analysis
+      chrom$analysis = NULL
+      chrom$replicate = NULL
+      chrom_list = split(chrom, split_vector)
+
+      if (length(chrom_list) == self$get_number_analyses()) {
+
+        private$.analyses = Map(function(x, y) { x$chromatograms = y; x },
+                                private$.analyses, chrom_list)
+
+        cat("Chromatograms loaded to all analyses! \n")
+
+      } else warning("Not done, check the MS file paths and formats!")
+    },
+
+    ## has -----
+
+    #' @description
+    #' Method to check of the `R6MS` object has analyses.
+    #'
+    #' @return Invisible.
+    has_analyses = function() {
+      return(length(private$.analyses) > 0)
+    },
+
+    #' @description
+    #' Method to check for loaded spectra in given analyses names/indices.
+    #'
+    #' @param analyses The analyses names/indices to check for loaded spectra.
+    #'
+    #' @return Invisible.
+    has_loaded_spectra = function(analyses = NULL) {
+
+      analyses = self$check_analyses_argument(analyses)
+      if (is.null(analyses)) return(FALSE)
+
+      has_spectra = vapply(private$.analyses[analyses],
+                           function(x) nrow(x$spectra) > 0, FALSE)
+
+      names(has_spectra) = self$get_analysis_names(analyses)
+
+      return(has_spectra)
+    },
+
+    #' @description
+    #' Method to check for loaded chromatograms in given analyses names/indices.
+    #'
+    #' @param analyses The analyses names/indices to check for loaded
+    #' chromatograms.
+    #'
+    #' @return Invisible.
+    has_loaded_chromatograms = function(analyses = NULL) {
+
+      analyses = self$check_analyses_argument(analyses)
+      if (is.null(analyses)) return(FALSE)
+
+      has_chromatograms = vapply(private$.analyses[analyses],
+                                 function(x) nrow(x$chromatograms) > 0, FALSE)
+
+      names(has_chromatograms) = self$get_analysis_names(analyses)
+
+      return(has_chromatograms)
+    },
+
+    #' @description
+    #' Method to check if there are processing settings in the `R6MS` object.
+    #'
+    #' @param call A string with the name of function call.
+    #'
+    #' @return Invisible.
+    has_settings = function(call = NULL) {
+      if(is.null(call)) return(length(private$.processing) > 0)
+      else return(length(private$.processing[[call]]) > 0)
+    },
+
+    #' @description
+    #' Method to check if given analyses have features.
+    #'
+    #' @param analyses The analyses names/indices to check for loaded spectra.
+    #'
+    #' @return Invisible.
+    has_features = function(analyses = NULL) {
+
+      analyses = self$check_analyses_argument(analyses)
+      if (is.null(analyses)) return(FALSE)
+
+      has_fts = vapply(private$.analyses[analyses],
+                           function(x) nrow(x$features) > 0, FALSE)
+
+      names(has_fts) = self$get_analysis_names(analyses)
+
+      return(has_fts)
+    },
+
+    #' @description
+    #' Method to check if there is alignment of retention time from grouping
+    #' features across analyses.
+    #'
+    #' @return Invisible.
+    has_alignment = function() {
+      return(!is.null(private$.alignment))
+    },
+
+    ## plot -----
+
+    #' @description
+    #' Plots spectra for given MS analyses.
+    #'
+    #' @param analyses X.
+    #' @param levels Name.
+    #' @param mz X.
+    #' @param rt X.
+    #' @param ppm X.
+    #' @param sec X.
+    #' @param id X.
+    #' @param allTraces Logical, when \code{TRUE} all level 2 data is returned.
+    #' When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
+    #' are returned, using the `preMZ` value and the `isolationWindow`.
+    #' @param isolationWindow X.
+    #' @param minIntensityMS1 X.
+    #' @param minIntensityMS2 X.
+    #' @param run_parallel X.
+    #' @param colorBy X.
+    #'
+    #' @return A 3D interactive plot.
+    plot_spectra = function(analyses = NULL, levels = NULL,
+                            mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
+                            allTraces = FALSE, isolationWindow = 1.3,
+                            minIntensityMS1 = 0, minIntensityMS2 = 0,
+                            run_parallel = FALSE, colorBy = "analyses") {
+
+      spec = self$get_spectra(analyses, levels, mz, rt, ppm, sec, id,
+        allTraces, isolationWindow, minIntensityMS1, minIntensityMS2,
+        run_parallel = FALSE)
+
+      if (!"id" %in% colnames(spec)) spec$id = ""
+
+      spec$id = factor(spec$id)
+      spec$level = paste("MS", spec$level, sep = "")
+      spec$level = factor(spec$level)
+      spec$analysis = factor(spec$analysis)
+
+      spec$rtmz = paste(
+        spec$id, spec$level,
+        spec$mz, spec$rt,
+        spec$analysis, sep = "")
+
+      spec_temp = spec
+      spec_temp$intensity = 0
+      spec = rbind(spec, spec_temp)
+
+      if (colorBy == "levels") {
+        spec$var = spec$level
+      } else if (colorBy == "targets"){
+        spec$var = spec$id
+      } else if (colorBy == "replicates") {
+        spec$replicate = self$get_replicate_names()[spec$analysis]
+        spec$var = spec$replicate
+      } else {
+        spec$var = spec$analysis
+      }
+
+      colors_var = get_colors(unique(spec$var))
+
+      fig = plot_ly(spec, x = ~rt, y = ~mz, z = ~intensity) %>%
+        group_by(spec$rtmz) %>%
+        add_lines(color = ~var,  colors = colors_var)
+
+      fig = fig %>% layout(scene = list(
+        xaxis = list(title = "Retention time / seconds"),
+        yaxis = list(title = "<i>m/z</i>"),
+        zaxis = list(title = "Intensity / counts")))
+
+      return(fig)
+    },
+
+    #' @description
+    #' Method to plot extract ion chromatograms (EIC) and \emph{m/z} vs
+    #' retention time from the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #' @param mz X.
+    #' @param rt X.
+    #' @param ppm X.
+    #' @param sec X.
+    #' @param id X.
+    #' @param run_parallel X.
+    #' @param legendNames x.
+    #' @param plotTargetMark x.
+    #' @param targetsMark x.
+    #' @param ppmMark x.
+    #' @param secMark x.
+    #' @param numberRows x.
+    #'
+    #' @return A data.frame.
+    plot_xic = function(analyses = NULL,
+                        mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
+                        run_parallel = FALSE, legendNames = NULL,
+                        plotTargetMark = TRUE, targetsMark = NULL,
+                        ppmMark = 5, secMark = 10, numberRows = 1) {
+
+      xic = self$get_spectra(
+        analyses, levels = 1, mz, rt, ppm, sec, id, allTraces = TRUE,
+        isolationWindow = 1.3, minIntensityMS1 = 0, minIntensityMS2 = 0,
+        run_parallel = run_parallel
+      )
+
+      if (nrow(xic) < 0) {
+        message("Traces not found for the targets!")
+        return(NULL)
+      }
+
+      if (!"id" %in% colnames(eic)) eic$id = NA_character_
+
+      ids = unique(xic$id)
+      if (is.character(legendNames) & length(legendNames) == length(ids)) {
+        names(legendNames) = ids
+        xic$id = legendNames[xic$id]
+      }
+
+      if (plotTargetMark) {
+        plotTargetMark = FALSE
+        if (is.data.frame(targetsMark)) {
+          if (nrow(targetsMark) == length(ids) &
+              "mz" %in% colnames(targetsMark) &
+              "rt" %in% colnames(targetsMark)) {
+
+            tgmMZ = as.numeric(targetsMark$mz)
+            names(tgmMZ) = ids
+            tgmRT = as.numeric(targetsMark$rt)
+            names(tgmRT) = ids
+            xic$mz_id = tgmMZ[xic$id]
+            xic$rt_id = tgmRT[xic$id]
+
+            plotTargetMark = TRUE
+          }
+        }
+      }
+
+      plot = plot_interactive_xic(
+        xic,
+        plotTargetMark = plotTargetMark,
+        ppmMark = ppmMark,
+        secMark = secMark,
+        numberRows = numberRows
+      )
+
+      return(plot)
+    },
+
+    #' @description
+    #' Method to plot extract ion chromatograms (EIC) from the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #' @param mz X.
+    #' @param rt X.
+    #' @param ppm X.
+    #' @param sec X.
+    #' @param id X.
+    #' @param run_parallel X.
+    #' @param legendNames x.
+    #' @param title x.
+    #' @param colorBy x.
+    #' @param interactive x.
+    #'
+    #' @return A plot.
+    plot_eic = function(analyses = NULL,
+                        mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
+                        run_parallel = FALSE, legendNames = NULL, title = NULL,
+                        colorBy = "targets", interactive = TRUE) {
+
+      eic = self$get_eic(analyses, mz, rt, ppm, sec, id, run_parallel)
+
+      if (nrow(eic) < 0) {
+        message("Traces not found for the targets!")
+        return(NULL)
+      }
+
+      if (colorBy == "analyses") {
+        leg = unique(eic$analysis)
+        varkey = eic$analysis
+      } else if (colorBy == "replicates") {
+        eic$replicate = self$get_replicate_names()[eic$analysis]
+        leg = unique(eic$replicate)
+        varkey = eic$replicate
+      } else if (is.character(legendNames) &
+                 length(legendNames) == length(unique(eic$id))) {
+        leg = legendNames
+        names(leg) = unique(eic$id)
+        varkey = leg[eic$id]
+      } else {
+        leg = unique(eic$id)
+        varkey = eic$id
+      }
+
+      eic$var = varkey
+
+      if (!interactive) {
+        return(plot_static_eic(eic, title))
+      } else return(plot_interactive_eic(eic, title, colorBy))
+    },
+
+    #' @description
+    #' Method to plot total ion chromatograms (TIC) of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #' @param title x.
+    #' @param colorBy x.
+    #' @param interactive x.
+    #'
+    #' @return A plot.
+    plot_tic = function(analyses = NULL, title = NULL,
+                         colorBy = "analyses", interactive = TRUE) {
+
+      tic = self$get_tic(analyses)
+
+      tic$id = "TIC"
+
+      if (nrow(tic) < 0) {
+        message("TIC not found for the analyses!")
+        return(NULL)
+      }
+
+      if (colorBy == "replicates") {
+        tic$replicate = self$get_replicate_names()[tic$analysis]
+        leg = unique(tic$replicate)
+        varkey = tic$replicate
+      } else {
+        leg = unique(tic$analysis)
+        varkey = tic$analysis
+      }
+
+      tic$var = varkey
+
+      if (!interactive) return(plot_static_eic(tic, title))
+      else return(plot_interactive_eic(tic, title, colorBy))
+    },
+
+    #' @description
+    #' Method to plot base peak chromatograms (BPC) of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #' @param title x.
+    #' @param colorBy x.
+    #' @param interactive x.
+    #'
+    #' @return A plot.
+    plot_bpc = function(analyses = NULL, title = NULL,
+                         colorBy = "analyses", interactive = TRUE) {
+
+      bpc = self$get_bpc(analyses)
+
+      bpc$id = "BPC"
+
+      if (nrow(bpc) < 0) {
+        message("BPC not found for the analyses!")
+        return(NULL)
+      }
+
+      if (colorBy == "replicates") {
+        bpc$replicate = self$get_replicate_names()[bpc$analysis]
+        leg = unique(bpc$replicate)
+        varkey = bpc$replicate
+      } else {
+        leg = unique(bpc$analysis)
+        varkey = bpc$analysis
+      }
+
+      bpc$var = varkey
+
+      if (!interactive) return(plot_static_eic(bpc, title))
+      else return(plot_interactive_bpc(bpc, title, colorBy))
+    },
+
+    #' @description
+    #' Method to plot MS2 data from the analyses based on targets.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #' @param mz X.
+    #' @param rt X.
+    #' @param ppm X.
+    #' @param sec X.
+    #' @param id X.
+    #' @param isolationWindow X.
+    #' @param mzClust X.
+    #' @param verbose X.
+    #' @param minIntensity X.
+    #' @param run_parallel X.
+    #' @param legendNames x.
+    #' @param title x.
+    #' @param colorBy x.
+    #' @param interactive x.
+    #'
+    #' @return A plot.
+    plot_ms2 = function(analyses = NULL,
+                        mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
+                        isolationWindow = 1.3, mzClust = 0.01, verbose = FALSE,
+                        minIntensity = 0, run_parallel = FALSE,
+                        legendNames = NULL, title = NULL,
+                        colorBy = "targets", interactive = TRUE) {
+
+      ms2 = self$get_ms2(analyses, mz, rt, ppm, sec, id, isolationWindow,
+                         mzClust, verbose, minIntensity, run_parallel)
+
+      if (nrow(ms2) < 0) {
+        message("MS2 traces not found for the targets!")
+        return(NULL)
+      }
+
+      if (colorBy == "analyses") {
+        leg = unique(ms2$analysis)
+        varkey = ms2$analysis
+      } else if (colorBy == "replicates") {
+        ms2$replicate = self$get_replicate_names()[ms2$analysis]
+        leg = unique(ms2$replicate)
+        varkey = ms2$replicate
+      } else if (is.character(legendNames) &
+                 length(legendNames) == length(unique(ms2$id))) {
+        leg = legendNames
+        names(leg) = unique(ms2$id)
+        varkey = leg[ms2$id]
+      } else {
+        leg = unique(ms2$id)
+        varkey = ms2$id
+      }
+
+      ms2$var = varkey
+
+      if (!interactive) return(plot_static_ms2(ms2, title))
+      else return(plot_interactive_ms2(ms2, title))
+    },
+
+    #' @description
+    #' Plots the results from the retention time alignment across analyses.
+    #'
+    #' @return A plot with the retention time alignment differences
+    #' for each sample.
+    #'
+    plot_alignment = function() {
+
+      if (!self$has_alignment()) {
+        warning("Adjusted retention time not found!")
+        return(NULL)
+      }
+
+      alignment = private$.alignment
+      colors = get_colors(names(alignment))
+
+      xaxis = list(
+        linecolor = toRGB("black"),
+        linewidth = 2,
+        title = "Retention time / seconds",
+        titlefont = list(size = 12, color = "black")
+      )
+      yaxis = list(
+        linecolor = toRGB("black"),
+        linewidth = 2,
+        title = "RT<sub>Raw</sub> - RT<sub>Adjusted</sub> / seconds",
+        titlefont = list(size = 12, color = "black")
+      )
+
+      plot = plot_ly()
+
+      for (i in names(alignment)) {
+
+        df = alignment[[i]]
+
+        plot  = plot %>% add_trace(
+          x = df$rt_original,
+          y = df$adjustment,
+          type = "scatter",
+          mode = "lines",
+          line = list(
+            shape = "spline", width = 0.5,
+            color = colors[i]
+          ),
+          name = i,
+          legendgroup = i,
+          showlegend = TRUE
+        )
+
+        df_pt = df[!is.na(df$adjPoints), ]
+
+        plot = plot %>% add_trace(
+          x = df_pt$adjPoints,
+          y = df_pt$adjustment,
+          type = "scatter",
+          mode = "markers",
+          marker = list(
+            size = 5,
+            color = colors[i]
+          ),
+          name = i,
+          legendgroup = i,
+          showlegend = FALSE
+        )
+      }
+
+      plot = plot %>% layout(
+        legend = list(title = list(text = "<b> Analyses: </b>")),
+        xaxis = xaxis, yaxis = yaxis)
+
+      return(plot)
+    },
+
+    #' @description
+    #' Method to plot features from analyses.
+    #'
+    #' @return A data.frame.
+    plot_features = function(analyses = NULL, id = NULL, mass = NULL,
+                             mz = NULL, rt = NULL, ppm = 20, sec = 60,
+                             rtExpand = 120, mzExpand = 0.005,
+                             filtered = FALSE, run_parallel = FALSE,
+                             legendNames = NULL, title = NULL,
+                             colorBy = "targets", interactive = TRUE) {
+
+      fts = self$get_features(analyses, id, mass, mz, rt, ppm, sec, filtered)
+
+      # if (self$has_alignment()) {
+      #   alignment = private$.alignment
+      #   for(i in seq_len(nrow(fts))) {
+      #     temp = alignment[[fts$analysis[i]]]
+      #     shift = temp$rt_adjusted >= fts$rtmin[i] &
+      #             temp$rt_adjusted <= fts$rtmax[i]
+      #     shift = mean(temp$adjustment[shift])
+      #     fts$rt[i] = fts$rt[i] + shift
+      #     fts$rtmin[i] = fts$rtmin[i] + shift
+      #     fts$rtmax[i] = fts$rtmax[i] + shift
+      #   }
+      # }
+
+      fts_expanded = fts
+      fts_expanded$rtmin = fts_expanded$rtmin - rtExpand
+      fts_expanded$rtmax = fts_expanded$rtmax + rtExpand
+      fts_expanded$mzmin = fts_expanded$mzmin - mzExpand
+      fts_expanded$mzmax = fts_expanded$mzmax + mzExpand
+
+      eic = self$get_features_eic(
+        analyses = unique(fts_expanded$analysis),
+        mz = fts_expanded, run_parallel = run_parallel)
+
+      if (nrow(eic) < 0) {
+        message("Traces not found for the targets!")
+        return(NULL)
+      }
+
+      if (colorBy == "analyses") {
+        leg = unique(eic$analysis)
+        varkey = eic$analysis
+      } else if (colorBy == "replicates") {
+        eic$replicate = self$get_replicate_names()[eic$analysis]
+        leg = unique(eic$replicate)
+        varkey = eic$replicate
+      } else if (is.character(legendNames) &
+                 length(legendNames) == length(unique(eic$id))) {
+        leg = legendNames
+        names(leg) = unique(eic$id)
+        varkey = leg[eic$id]
+      } else {
+        leg = unique(eic$id)
+        varkey = eic$id
+      }
+
+      eic$var = varkey
+
+      if (!interactive) {
+        return(plot_features_static(eic, fts, title))
+      } else return(plot_features_interactive(eic, fts, title, colorBy))
+    },
+
+    ## as -----
+
+    #' @description
+    #' Creates a \linkS4class{features} object from the \pkg{patRoon} package
+    #' with the features in the analyses.
+    #'
+    #' @return A \linkS4class{features} object.
+    #'
+    as_features_patRoon = function() {
+
+      requireNamespace("patRoon")
+
+      anaInfo = self$get_overview()
+      anaInfo = data.frame(
+        "path" = dirname(anaInfo$file),
+        "analysis" = anaInfo$analysis,
+        "group" = anaInfo$replicate,
+        "blank" = anaInfo$blank)
+      anaInfo$blank[is.na(anaInfo$blank)] = ""
+
+      polarities = self$get_polarities()
+      if (length(unique(polarities)) > 1) anaInfo$set = polarities
+
+      anaInfo$file = self$get_file_paths()
+      rownames(anaInfo) = seq_len(nrow(anaInfo))
+
+      features = lapply(self$get_analyses(), function(x) {
+        ft = copy(x$features)
+        if ("filtered" %in% colnames(ft)) ft = ft[!ft$filtered, ]
+
+        if (nrow(ft) == 0) return(ft)
+
+        setnames(ft, c("id", "rt", "rtmin", "rtmax"),
+                     c("ID", "ret", "retmin", "retmax"), skip_absent = TRUE)
+
+        ft = select(ft, ID,
+          mz, mzmin, mzmax, ret, retmin, retmax, intensity, area, everything())
+
+        ft$ID = as.numeric(gsub(".*_f", "", ft$ID))
+
+        return(ft)
+      })
+
+      if (length(unique(polarities)) > 1) {
+        features = lapply(features, function(x) {
+          if (nrow(x) == 0) return(x)
+          x$mzmin = x$mass - (x$mz - x$mzmin)
+          x$mzmax = x$mass + (x$mzmax - x$mz)
+          x$mz = x$mass
+          x$mass = NULL
+          return(x)})
+        features_obj = new("featuresSet",
+          features = features, analysisInfo = anaInfo,
+          algorithm = "openms-set")
+      } else {
+        features_obj = new("featuresOpenMS",
+          features = features, analysisInfo = anaInfo)
+      }
+
+      return(features_obj)
+    },
+
+    ## subset -----
+
+    #' @description
+    #' Creates a new MS set of analyses.
+    #' @param i Name.
+    #' @param ... Hair color.
+    subset_analyses = function(i, ...) {
+
+      new_analyses = private$.analyses[i]
+      new_features = private$.features
+
+      return(R6MS$new(
+        header = private$.header,
+        analyses = new_analyses,
+        features = new_features)
+      )
+    },
+
+    ## checks -----
+
+    #' @description
+    #' Check the analyses argument as a character/integer vector to match
+    #' analyses names or indices from the `R6MS` object.
+    #'
+    #' @param analyses X.
+    #'
+    #' @return A valid character vector with analyses names of `NULL`.
+    check_analyses_argument = function(analyses) {
+
+      if (is.null(analyses)) {
+        return(self$get_analysis_names())
+      } else {
+        analyses = self$get_analysis_names(analyses)
+        if (!all(analyses %in% self$get_analysis_names())) {
+          warning("Defined analyses not found!")
+          return(NULL)
+        } else {
+          return(analyses)
+        }
+      }
+    },
+
+    ## information -----
+
+    #' @description
+    #' Possible processing function calls.
+    #'
+    #' @return A character vector with ordered possible function calls for data
+    #' pre and post-processing.
+    processing_function_calls = function() {
+
+      return(c(
+        "centroidSpectra",
+        #"smoothSpectra",
+        "findFeatures",
+        "groupFeatures",
+        "fillFeatures",
+        "annotateFeatures",
+        "filterFeatures"
+        # "peak"
+      ))
+    }
+
+
+  )
+)
+
+# auxiliary functions -----
+
+#' validate_info_list_ms_analysis
+#'
+#' @description
+#' Validates the list of information parsed from an MS analysis mzML/mzXML file.
+#'
+#' @param value A list of information from an MS analysis mzML/mzXML file.
+#'
+#' @return A logical value of length 1.
+#'
+#' @export
+validate_list_ms_analysis = function(value) {
+
+  valid = FALSE
+
+  if (is.list(value)) {
+
+    valid = TRUE
+
+    if (!is.character(value$name) & length(value$name) != 1) valid = FALSE
+
+    if (!is.character(value$replicate) & length(value$replicate) != 1)
+      valid = FALSE
+
+    if (!is.character(value$blank) & length(value$blank) != 1) valid = FALSE
+
+    if (!is.character(value$file) & length(value$file) != 1) valid = FALSE
+      else if (!file.exists(value$file))
+        warning(paste0(value$file,
+          " does not exist! Update file paths with R6MS$update_files() method"))
+
+    if (length(value$type) != 1) valid = FALSE
+      else if (!(value$type %in% c("MS", "MS/MS", "SMR"))) valid = FALSE
+
+    if (!is.integer(value$spectra_number) &&
+      length(value$spectra_number) != 1)
+        valid = FALSE
+
+    if (!is.integer(value$chromatograms_number) &&
+      length(value$chromatograms_number) != 1)
+        valid = FALSE
+
+    if (!is.character(value$spectra_mode) &
+      length(value$spectra_mode) != 1)
+        valid = FALSE
+
+    if (!is.integer(value$spectra_levels)) valid = FALSE
+
+    if (!is.numeric(value$mz_low) & length(value$mz_low) != 1) valid = FALSE
+
+    if (!is.numeric(value$mz_high) & length(value$mz_high) != 1) valid = FALSE
+
+    if (!is.numeric(value$rt_start) & length(value$rt_end) != 1) valid = FALSE
+
+    if (!is.character(value$polarity)) valid = FALSE
+      else if (FALSE %in%
+        (value$polarity %in% c("positive", "negative", NA_character_)))
+          valid = FALSE
+
+    if (!is.logical(value$ion_mobility) & length(value$ion_mobility) != 1)
+      valid = FALSE
+
+    if(!is.data.frame(value$tic)) valid = FALSE
+      else if (FALSE %in% (c("rt", "intensity") %in% colnames(value$tic)))
+        valid = FALSE
+
+    if(!is.data.frame(value$bpc)) valid = FALSE
+      else if (FALSE %in% (c("rt", "mz", "intensity") %in% colnames(value$bpc)))
+        valid = FALSE
+
+    if(!is.data.frame(value$spectra)) valid = FALSE
+
+    if(!is.data.frame(value$chromatograms)) valid = FALSE
+
+    if(!is.data.frame(value$features)) valid = FALSE
+
+    if(!is.list(value$metadata)) valid = FALSE
+
+  }
+
+  return(valid)
+}
+
+#' @title make_targets
+#'
+#' @description Helper function to build \emph{m/z} and retention time
+#' target pairs for searching data. Each target is composed of an
+#' id and \emph{m/z} (Da) and time (seconds) ranges. When mass is defined
+#' without time, the time range return 0 and vice versa.
+#'
+#' @param mz A vector with target \emph{m/z} values or a two columns
+#' \linkS4class{data.table} or data.frame with minimum and maximum
+#' \emph{m/z} values. Alternatively, \emph{m/z} and retention time values
+#' can be given as one \linkS4class{data.table}/data.frame and the deviations
+#' given as \code{ppm} and \code{sec} are used to calculate the ranges.
+#' The same also works for min and max values of \emph{m/z} and retention
+#' time targets. Note that when mass/time ranges are given, \code{ppm} and
+#' \code{sec} are not used.
+#' @param rt A vector with target retention time values or
+#' a two columns \linkS4class{data.table}/data.frame with minimum
+#' and maximum retention time values.
+#' @param ppm A numeric vector of length one with the mass deviation, in ppm.
+#' @param sec A numeric vector of length one with the time deviation, in seconds.
+#' @param id An id vector with target identifiers. When not given is built
+#' as a combination of the \emph{m/z} and retention time ranges or values.
+#'
+#' @return A data.frame with columns: id, mz, rt, mzmin, mzmax, rtmin, rtmax.
+#'
+#' @export
+make_targets = function(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL) {
+
+  mzrts = data.table(
+    id = NA_character_,
+    mz = 0,
+    rt = 0,
+    mzmin = 0,
+    mzmax = 0,
+    rtmin = 0,
+    rtmax = 0
+  )
+
+  # when only rt is given
+  if (is.null(mz) & !is.null(rt)) {
+
+    # as vector
+    if (length(rt) >= 1 & is.vector(rt)) {
+
+      mzrts = data.table(
+        id = NA_character_,
+        mz = rt,
+        rt = 0,
+        mzmin = 0,
+        mzmax = 0,
+        rtmin = 0,
+        rtmax = 0
+      )
+      mzrts[, rtmin := rt - sec]
+      mzrts[, rtmax := rt + sec]
+
+      #adds id
+      if (!is.null(id) & length(id) == length(rt)) {
+        mzrts[, id := id][]
+      } else {
+        mzrts[, id := paste(rtmin, "-", rtmax, sep = "")][]
+      }
+
+      # as table
+    } else if (is.data.frame(rt) | is.data.table(rt)) {
+      rt = as.data.table(rt)
+
+      if ("rt" %in% colnames(rt) & !"rtmin" %in% colnames(mz)) {
+        mzrts = data.table(
+          id = NA_character_,
+          mz = rt,
+          rt = 0,
+          mzmin = 0,
+          mzmax = 0,
+          rtmin = 0,
+          rtmax = 0
+        )
+        mzrts$rtmin = rt$rt - sec
+        mzrts$rtmax = rt$rt + sec
+
+      } else if ("rtmin" %in% colnames(rt) & nrow(rt) == nrow(mz)) {
+        mzrts = data.table(
+          id = NA_character_,
+          mz = apply(rt[, .(rtmin, rtmax)], 1, mean),
+          rt = 0,
+          mzmin = rt$rtmin,
+          mzmax = rt$rtmax,
+          rtmin = 0,
+          rtmax = 0
+        )
+
+        if ("rt" %in% colnames(rt)) {
+          mzrts$rt = mz$rt
+        } else {
+          mzrts$rt =  apply(rt[, .(rtmin, rtmax)], 1, mean)
+        }
+      }
+
+      #adds id
+      if (!is.null(id) %in% length(id) == nrow(mzrts)) {
+        mzrts$id = id
+      } else if ("id" %in% colnames(rt)) {
+        mzrts$id = rt$id
+      } else {
+        mzrts[, id := paste(rtmin, "-", rtmax, sep = "")][]
+      }
+    }
+
+    #when mz is vector, expects rt as vector as well and ranges are calculated
+  } else if (length(mz) >= 1 & is.vector(mz)) {
+
+    mzrts = data.table(
+      id = NA_character_,
+      mz = mz,
+      rt = 0,
+      mzmin = mz - ((ppm / 1E6) * mz),
+      mzmax = mz + ((ppm / 1E6) * mz),
+      rtmin = 0,
+      rtmax = 0
+    )
+    #mzrts$mzmin = mz - ((ppm / 1E6) * mz)
+    #mzrts[, mzmax := mz + ((ppm / 1E6) * mz)]
+
+    if (is.vector(rt) & length(rt) == length(mz)) {
+      mzrts$rt = rt
+      mzrts$rtmin = c(rt - sec)
+      mzrts$rtmax = c(rt + sec)
+    }
+
+    if (!is.null(id) & length(id) == nrow(mzrts)) {
+      mzrts$id = id
+    } else {
+      mzrts[, id := paste(
+        round(mzmin, digits = 4),
+        "-",
+        round(mzmax, digits = 4),
+        "/", rtmin,
+        "-", rtmax,
+        sep = ""
+      )][]
+    }
+
+    #when mz is a table, ranges could be already in table
+  } else if (is.data.frame(mz) | is.data.table(mz)) {
+    mz = as.data.table(mz)
+
+    #when mz is in table but not ranges
+    if ("mz" %in% colnames(mz) & !"mzmin" %in% colnames(mz)) {
+      mzrts = data.table(
+        id = NA_character_,
+        mz = mz$mz,
+        rt = 0,
+        mzmin = 0,
+        mzmax = 0,
+        rtmin = 0,
+        rtmax = 0
+      )
+      mzrts[, mzmin := mz - ((ppm / 1E6) * mz)]
+      mzrts[, mzmax := mz + ((ppm / 1E6) * mz)]
+
+      #when mzmin is in table
+    } else if ("mzmin" %in% colnames(mz)) {
+      mzrts = data.table(
+        id = NA_character_,
+        mz = apply(mz[, .(mzmin, mzmax)], 1, mean),
+        rt = 0,
+        mzmin = mz$mzmin,
+        mzmax = mz$mzmax,
+        rtmin = 0,
+        rtmax = 0
+      )
+      if ("mz" %in% colnames(mz)) mzrts$mz = mz$mz
+    }
+
+    #when rt in also in mz table
+    if ("rt" %in% colnames(mz) & !"rtmin" %in% colnames(mz)) {
+      mzrts$rt = mz$rt
+      mzrts$rtmin = mz$rt - sec
+      mzrts$rtmax = mz$rt + sec
+    } else if ("rtmin" %in% colnames(mz)) {
+      mzrts$rt =  apply(mz[, .(rtmin, rtmax)], 1, mean)
+      mzrts$rtmin = mz$rtmin
+      mzrts$rtmax = mz$rtmax
+      if ("rt" %in% colnames(mz)) mzrts$rt = mz$rt
+    }
+
+    #when rt is given as a table is rt argument
+    if (is.data.frame(rt) | is.data.table(rt)) {
+      rt = as.data.table(rt)
+
+      if ("rt" %in% colnames(rt) & nrow(rt) == nrow(mz) & !"rtmin" %in% colnames(mz)) {
+        mzrts$rt = rt$rt
+        mzrts$rtmin = rt$rt - sec
+        mzrts$rtmax = rt$rt + sec
+      } else if ("rtmin" %in% colnames(rt) & nrow(rt) == nrow(mz)) {
+        mzrts$rt =  apply(rt[, .(rtmin, rtmax)], 1, mean)
+        mzrts$rtmin = rt$rtmin
+        mzrts$rtmax = rt$rtmax
+        if ("rt" %in% colnames(rt)) mzrts$rt = mz$rt
+      }
+    }
+
+    #adds id
+    if (!is.null(id) & length(id) == nrow(mzrts)) {
+      mzrts$id = id
+    } else if ("id" %in% colnames(mz)) {
+      mzrts$id = mz$id
+    } else {
+      mzrts[, id := paste(
+        round(mzmin, digits = 4),
+        "-",
+        round(mzmax, digits = 4),
+        "/",
+        rtmin,
+        "-",
+        rtmax,
+        sep = ""
+      )][]
+    }
+
+    if ("analysis" %in% colnames(mz)) mzrts$analysis = mz$analysis
+  }
+
+  return(mzrts)
+}
+
+#' @title get_colors
+#'
+#' @description Function to produce colors for a character vector.
+#'
+#' @param obj A character vector to associate with the colors.
+#'
+#' @return A vector of colors. The vector is named according the \code{obj}.
+#'
+#' @export
+#'
+get_colors = function(obj) {
+
+  colors = c(brewer.pal(8, "Greys")[6],
+              brewer.pal(8, "Greens")[6],
+              brewer.pal(8, "Blues")[6],
+              brewer.pal(8, "Oranges")[6],
+              brewer.pal(8, "Purples")[6],
+              brewer.pal(8, "PuRd")[6],
+              brewer.pal(8, "YlOrRd")[6],
+              brewer.pal(8, "PuBuGn")[6],
+              brewer.pal(8, "GnBu")[6],
+              brewer.pal(8, "BuPu")[6],
+              brewer.pal(8, "Dark2"))
+
+  Ncol = length(unique(obj))
+
+  if (Ncol > 18) {
+    colors = colorRampPalette(colors)(Ncol)
+  }
+
+  if (length(unique(obj)) < length(obj)) {
+    Vcol = colors[seq_len(Ncol)]
+    Ncol = length(obj)
+    count = dplyr::count(data.frame(n = seq_len(Ncol), char = obj), char)
+    Vcol = rep(Vcol, times = count[, "n"])
+    names(Vcol) = obj
+  } else {
+    Vcol = colors[seq_len(Ncol)]
+    names(Vcol) = obj
+  }
+
+  return(Vcol)
+}
+
+#' @title unregister_dopar
+#'
+#' @description Function to un-register any `foreach` parallel variables.
+#'
+#' @export
+#'
+unregister_dopar = function() {
+  env = foreach:::.foreachGlobals
+  rm(list=ls(name=env), pos=env)
+}
+
+
+
+#' @title build_features_table_from_patRoon
+#'
+#' @param pat A \linkS4class{features} or \linkS4class{featureGroups} object
+#' from the package \pkg{patRoon}.
+#' @param self An `R6MS` object. When applied within the R6, the self object.
+#'
+#' @return A list of with a features \linkS4class{data.table} for each analysis.
+#'
+build_features_table_from_patRoon = function(pat, self) {
+
+  cat("Building features table for each analysis... ")
+
+  if ("features" %in% is(pat)) {
+    anaInfo = pat@analysisInfo
+    isSet = TRUE %in% grepl("Set", is(pat))
+    features = pat@features
+    if ("featuresXCMS3" %in% is(pat)) {
+      if (xcms::hasFilledChromPeaks(pat@xdata)) {
+        extra = xcms::chromPeaks(pat@xdata, isFilledColumn = TRUE)
+        extra$is_filled = as.logical(extra$is_filled)
+        extra$analysis = anaInfo$analysis[extra$sample]
+        extra = split(extra, extra$analysis)
+      } else { extra = NULL }
+    } else { extra = NULL }
+  }
+
+  if ("featureGroups" %in% is(pat)) {
+    anaInfo = pat@analysisInfo
+    features = copy(pat@features@features)
+    isSet = TRUE %in% grepl("Set", is(pat))
+    if ("featureGroupsXCMS3" %in% is(pat)) {
+      if (xcms::hasFilledChromPeaks(pat@xdata)) {
+        extra = xcms::chromPeaks(pat@xdata, isFilledColumn = TRUE)
+        extra$is_filled = as.logical(extra$is_filled)
+        extra$analysis = anaInfo$analysis[extra$sample]
+        extra = split(extra, extra$analysis)
+      } else { extra = NULL }
+    } else { extra = NULL }
+  }
+
+  features = lapply(names(features), function(x, extra, features, self, isSet) {
+
+    temp = features[[x]]
+
+    if (!is.null(extra)) {
+      if (temp == nrow(extra[[x]]) & all(temp$mz == extra[[x]]$mz)) {
+        temp$is_filled = extra[[x]]$is_filled
+      }
+    }
+
+    polarity = self$get_polarities(x)
+
+    if (polarity %in% "positive") {
+      adduct = "[M+H]+"
+      adduct_val = -1.0073
+    }
+
+    if (polarity %in% "negative") {
+      adduct = "[M-H]-"
+      adduct_val = 1.0073
+    }
+
+    if (isSet) {
+      temp[adduct %in% "[M-H]-", `:=`(
+        mzmin = (mz - 1.0073) - (mz - mzmin),
+        mzmax = (mz - 1.0073) + (mzmax - mz),
+        mz = mz - 1.0073
+      )]
+      temp[adduct %in% "[M+H]+", `:=`(
+        mzmin = (mz + 1.0073) - (mz - mzmin),
+        mzmax = (mz + 1.0073) + (mzmax - mz),
+        mz = mz + 1.0073
+      )]
+    }
+
+    if (!"adduct" %in% colnames(temp)) temp$adduct = adduct
+    if (!"mass" %in% colnames(temp)) temp$mass = temp$mz + adduct_val
+    if (!"is_filled" %in% colnames(temp)) { temp$is_filled = FALSE
+    } else temp$is_filled = as.logical(temp$is_filled)
+    if (!"filtered" %in% colnames(temp)) temp$filtered = FALSE
+    if (!"filter" %in% colnames(temp)) temp$filter = NA_character_
+
+    setnames(temp, c("ID", "ret", "retmin", "retmax"),
+             c("id", "rt", "rtmin", "rtmax"), skip_absent = TRUE)
+
+    temp_org = self$get_features(x)
+    if (nrow(temp_org) > 0) {
+      temp_org$analysis = NULL
+      if (nrow(temp_org) != nrow(temp)) {
+        temp_org_not_grouped = temp_org[!temp_org$index %in% temp$id,  ]
+        temp_list = list(temp, temp_org_not_grouped)
+        temp = rbindlist(temp_list, fill = TRUE)
+      }
+    }
+
+    if ("group" %in% colnames(temp)) {
+      temp$filter[is.na(temp$group)] = "grouping"
+      temp$filtered[is.na(temp$group)] = TRUE
+    }
+
+    dppm = round((temp$mzmax - temp$mzmin) / temp$mzmin * 1E6, digits = 0)
+    drt = round(temp$rtmax - temp$rtmin, digits = 0)
+
+    temp = temp[order(temp$mz), ]
+    temp = temp[order(temp$rt), ]
+    temp = temp[order(temp$filtered), ]
+    temp$index = seq_len(nrow(temp))
+
+    temp = select(
+      temp,
+      id,
+      index,
+      mz, rt,
+      intensity, area,
+      mzmin, mzmax,
+      rtmin, rtmax,
+      adduct, mass,
+      is_filled,
+      filtered,
+      filter,
+      everything()
+    )
+
+    temp$id = paste0(
+      "mz",
+      round(temp$mz, digits = 3),
+      "_d",
+      dppm,
+      "_rt",
+      round(temp$rt, digits = 0),
+      "_t",
+      drt,
+      "_f",
+      temp$index
+    )
+
+    return(temp)
+  }, extra = extra, features = features, self = self, isSet = isSet)
+
+  names(features) = self$get_analysis_names()
+
+  cat("Done! \n")
+
+  return(features)
+}
+
+#' build_featureGroups_table_from_patRoon
+#'
+#' @param pat A \linkS4class{featureGroups} object from the
+#' package \pkg{patRoon}.
+#' @param self An `R6MS` object. When applied within the R6, the self object.
+#'
+#' @return A \linkS4class{data.table} with the featureGroups.
+#'
+build_featureGroups_table_from_patRoon = function(pat, features, self) {
+
+  cat("Building table with features... ")
+
+  fgroups = patRoon::as.data.table(pat, average = FALSE)
+  setnames(fgroups, "ret", "rt")
+
+  fts = features
+  fts = rbindlist(fts, idcol = "analysis")
+
+  fts_ana_index = setNames(data.frame(
+    matrix(ncol = length(features),
+    nrow = 1)), names(features))
+  fts_ana_index[1, ] = 0
+
+  index = lapply(fgroups$group, function(g, fts) {
+    return(which(fts$group == g))
+  }, fts = fts)
+
+  fgroups$dppm = vapply(index, function(x) {
+    return(
+      round(max((fts$mzmax[x] - fts$mzmin[x]) / fts$mz[x] * 1E6), digits = 1))
+  }, 0)
+
+  fgroups$drt = vapply(index, function(x) {
+    return(round(max(fts$rtmax[x] - fts$rtmin[x]), digits = 0))}, 0)
+
+  fgroups$features = lapply(index, function(x, fts, fts_ana_index) {
+    temp = copy(fts_ana_index)
+    temp[1, colnames(temp) %in% fts$analysis[x]] = fts$index[x]
+    return(temp)
+  }, fts = fts, fts_ana_index = fts_ana_index)
+
+  fgroups$index = as.numeric(sub(".*_", "", fgroups$group))
+
+  if ("is_filled" %in% colnames(fts)) {
+    fgroups$hasFilled = vapply(index,
+      function(x) { TRUE %in% fts$is_filled[x] } , FALSE)
+  } else fgroups$hasFilled = FALSE
+
+  if (!"filtered" %in% colnames(fgroups)) {
+    fgroups$filtered = FALSE
+    fgroups$filter = NA_character_
+  }
+
+  if (TRUE %in% grepl("Set", is(pat))) {
+    isSet = TRUE
+    annot = pat@annotations
+    setnames(fgroups, "mz", "mass", skip_absent = TRUE)
+    fgroups$neutralMass = NULL
+
+    new_id = paste0(
+      "m",
+      round(fgroups$mass, digits = 3),
+      "_d",
+      fgroups$dppm,
+      "_rt",
+      round(fgroups$rt, digits = 0),
+      "_t",
+      fgroups$drt,
+      "_f",
+      fgroups$index
+    )
+
+  } else {
+
+    adduct = unique(fts$adduct)
+    fgroups$adduct = adduct
+    if (adduct %in% "[M+H]+")fgroups$mass = fgroups$mz - 1.0073
+    if (adduct %in% "[M-H]-") fgroups$mass = fgroups$mz + 1.0073
+
+    new_id = paste0(
+      "mz",
+      round(fgroups$mz, digits = 3),
+      "_d",
+      fgroups$dppm,
+      "_rt",
+      round(fgroups$rt, digits = 0),
+      "_t",
+      fgroups$drt,
+      "_f",
+      fgroups$index
+    )
+  }
+
+  names(new_id) = fgroups$group
+  fgroups$group = new_id
+
+  features_new_id = lapply(features, function(x, new_id) {
+    x$group = new_id[x$group]
+    return(x)
+  }, new_id = new_id)
+
+  cat("Done! \n")
+  return(list("features" = features_new_id, "fgroups" = fgroups))
+}
+
+#' extract_time_alignment
+#'
+#' @description Function to extract adjusted retention time information from
+#' alignment results when using `xcms3` as algorithm for grouping and retention
+#' time alignment.
+#'
+#' @param pat A \linkS4class{featureGroups} object from \pkg{patRoon}.
+#' @param self An `R6MS` object. When applied within the R6, the self object.
+#'
+extract_time_alignment = function(pat, self) {
+
+  if ("featureGroupsXCMS3" %in% is(pat)) {
+
+    if (xcms::hasAdjustedRtime(pat@xdata)) {
+
+      cat("Gettings adjusted retention time values... ")
+
+      rtAdj = xcms::adjustedRtime(pat@xdata)
+      pkAdj = xcms::processHistory(pat@xdata,
+        type = "Retention time correction")[[1]]
+      pkAdj = pkAdj@param
+
+      addAdjPoints = FALSE
+      if ("PeakGroupsParam" %in% is(pkAdj)) {
+        addAdjPoints = TRUE
+        pkAdj = xcms::peakGroupsMatrix(pkAdj)
+      }
+
+      # hasSpectra = all(self$has_loaded_spectra())
+      hasSpectra = FALSE
+
+      if (!hasSpectra) {
+        rtOrg = lapply(self$get_file_paths(), function(x) {
+          file_link = mzR::openMSfile(x, backend = "pwiz")
+          sH = suppressWarnings(mzR::header(file_link))
+          suppressWarnings(mzR::close(file_link))
+          return(sH$retentionTime)
+        })
+      }
+
+      alignment = lapply(self$get_analysis_names(),
+        function(ana, rtOrg, rtAdj, addAdjPoints, pkAdj, all_ana) {
+
+          ana_idx = which(all_ana %in% ana)
+          n_ana = length(all_ana)
+
+          rts = names(rtAdj)
+          ana_idx_string = paste0(
+            "F",
+            paste(rep("0", nchar(n_ana) - nchar(ana_idx)), collapse = ""),
+            ana_idx
+          )
+          rts = grepl(ana_idx_string, rts)
+          rts = rtAdj[rts]
+
+          temp = data.frame(
+            "rt_original" = rtOrg[[ana]],
+            "rt_adjusted" = rts)
+
+          temp$adjustment = temp$rt_original - temp$rt_adjusted
+
+          if (addAdjPoints) {
+            adjPoints = unique(pkAdj[, ana_idx])
+            adjPoints = adjPoints[adjPoints %in% temp$rt_original]
+            temp$adjPoints[temp$rt_original %in% adjPoints] = adjPoints
+          }
+
+          row.names(temp) = seq_len(nrow(temp))
+
+          return(temp)
+        },
+        rtOrg = rtOrg,
+        rtAdj = rtAdj,
+        addAdjPoints = addAdjPoints,
+        pkAdj = pkAdj,
+        all_ana = self$get_analysis_names())
+
+      cat("Done! \n")
+
+      return(alignment)
+    }
+  }
+
+  return(NULL)
+}

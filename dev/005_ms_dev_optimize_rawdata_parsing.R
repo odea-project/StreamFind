@@ -12,15 +12,23 @@ files <- fls
 fl <- fls[29]
 
 # original non-trimmed mzML
-files <- list.files(choose.dir(), full.names = TRUE)
+#files <- list.files(choose.dir(), full.names = TRUE)
 # fl <- fls[1]
 
 targets = data.frame(
+  id = c("target1", "target2"),
   mzmin = c(247.1601, 239.0572),
   mzmax = c(247.1699, 239.0668),
   rtmin = c(1045, 1127),
   rtmax = c(1105, 1187)
 )
+
+unregister_dopar <- function() {
+  env <- foreach:::.foreachGlobals
+  rm(list=ls(name=env), pos=env)
+}
+
+unregister_dopar()
 
 ### test R6 -------------------------------------------------------------------
 
@@ -29,6 +37,7 @@ targets = data.frame(
 
 # new R6MS by files
 test = R6MS$new(files)
+self = R6MS$new(files)
 
 # new R6MS by analyses and incomplete header arguments
 test2 <- R6MS$new(header = list(name = "Test project"), analyses = test$get_analyses())
@@ -49,11 +58,26 @@ test$get_blank_names(6)
 test$get_polarities(3)
 
 rtr = data.frame(min = c(900, 1200), max = c(950, 1400))
-spc = test$get_spectra(analyses = 1, rtr = rtr)[[1]]
+
+spc = test$get_spectra(
+  analyses = 1, levels = NULL,
+  mz = targets, rt = NULL, ppm = 20, sec = 60, id = NULL,
+  allTraces = FALSE, isolationWindow = 1.3,
+  minIntensityMS1 = 0, minIntensityMS2 = 0,
+  run_parallel = FALSE)
+
 head(spc)
 
+test$load_spectra()
+
+test$has_loaded_spectra()
+
+
+
 test_chrom = R6MS$new(files = all_fls[30])
-head(test_chrom$get_chromatograms(analyses = 1)[[1]])
+head(test_chrom$get_chromatograms(analyses = 1))
+
+
 
 
 # set methods
@@ -71,16 +95,14 @@ test5$add_analyses(test4$get_analyses())
 all.equal(test5$get_analysis_names(), test$get_analysis_names())
 
 # plot methods
-
-spec = test$get_spectra(1, c(1,2), rtr, preMZrange)
-
-test$plot_spectra(analyses = 1, mz = targets,
-                  onlyMS2fromMZ = TRUE, colorBy = "levels")
+test$plot_spectra(analyses = 1, mz = targets, allMS2 = FALSE, colorBy = "levels")
 
 
 
-test5$add_analyses(NULL)
-# make finalize function is needed
+
+
+
+# make finalize function if needed
 rm(test5)
 
 

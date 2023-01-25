@@ -1,19 +1,17 @@
 
-
-#' @title plotStaticEICs
+#' @title plot_static_eic
 #'
-#' @description Static plot of EICs using the \pkg{base} package.
+#' @description Static plot of EIC using the \pkg{base} package.
 #'
-#' @param eic A data table with the analysis, replicate,
-#' id, rt, intensity and var (i.e., the plotting variable for each entry)
-#' as columns.
+#' @param eic A data table with the analysis, id, rt, intensity and var
+#' (i.e., the plotting variable for each entry) as columns.
 #' @param title A character vector to be used as title.
 #'
-#' @return A EIC plot.
+#' @return An EIC static plot.
 #'
-plotStaticEICs <- function(eic, title = NULL) {
+plot_static_eic <- function(eic, title = NULL) {
 
-  cl <- getColors(unique(eic$var))
+  cl <- get_colors(unique(eic$var))
   sp <- unique(eic$analysis)
   ids <- unique(eic$id)
 
@@ -57,29 +55,26 @@ plotStaticEICs <- function(eic, title = NULL) {
   )
 }
 
-
-
-
-#' @title plotInteractiveEICs
+#' plot_interactive_eic
 #'
-#' @description Interactive plot of EICs using the \pkg{plotly} package.
+#' @description Interactive plot of EIC using the \pkg{plotly} package.
 #'
-#' @param eic A data table with the analysis, replicate,
-#' id, rt, intensity and var (i.e., the plotting variable for each entry)
-#' as columns.
+#' @param eic A data table with the analysis, id, rt, intensity and
+#' var (i.e., the plotting variable for each entry) as columns.
 #' @param title A character vector to be used as title.
 #' @param colorBy A character vector to name the legend.
 #'
-#' @return A EIC interactive plot.
+#' @return An EIC interactive plot.
 #'
-plotInteractiveEICs <- function(eic, title, colorBy) {
+plot_interactive_eic <- function(eic, title, colorBy) {
 
   leg <- unique(eic$var)
   cl <- getColors(leg)
   sp <- unique(eic$analysis)
   ids <- unique(eic$id)
 
-  title <- list(text = title, x = 0.13, y = 0.98, font = list(size = 12, color = "black"))
+  title <- list(text = title, x = 0.13, y = 0.98,
+                font = list(size = 12, color = "black"))
 
   xaxis <- list(linecolor = toRGB("black"),
                 linewidth = 2, title = "Retention time / seconds",
@@ -106,7 +101,7 @@ plotInteractiveEICs <- function(eic, title, colorBy) {
         name = lt,
         legendgroup = lt,
         showlegend = showL[lt],
-        hovertemplate = paste("<br>rt: %{x}<br>", "int: %{y}")
+        hovertemplate = paste("<br>rt: %{x}<br>", "intensity: %{y}")
       )
       if (length(y) >= 1) showL[lt] <- FALSE
     }

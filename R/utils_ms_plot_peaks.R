@@ -1,5 +1,5 @@
 
-#' @title plotPeaksStatic
+#' @title plot_features_static
 #'
 #' @description Static plot of chromatographic peaks using the \pkg{base} package.
 #'
@@ -13,9 +13,9 @@
 #'
 #' @return A plot of chromatographic peaks.
 #'
-plotPeaksStatic <- function(eic, peaks, title = NULL) {
+plot_features_static <- function(eic, peaks, title = NULL) {
 
-  cl <- getColors(unique(eic$var))
+  cl <- get_colors(unique(eic$var))
   ids <- unique(eic$id)
 
   plot(eic$rt,
@@ -75,7 +75,7 @@ plotPeaksStatic <- function(eic, peaks, title = NULL) {
   )
 }
 
-#' @title plotPeaksInteractive
+#' @title plot_features_interactive
 #'
 #' @description Plots chromatographic peaks with the package \pkg{plotly}.
 #'
@@ -90,10 +90,10 @@ plotPeaksStatic <- function(eic, peaks, title = NULL) {
 #'
 #' @return A chromatographic peak plot through \pkg{plotly}.
 #'
-plotPeaksInteractive <- function(eic, peaks, title, colorBy) {
+plot_features_interactive <- function(eic, fts, title, colorBy) {
 
   leg <- unique(eic$var)
-  cl <- getColors(leg)
+  cl <- get_colors(leg)
   ids <- unique(eic$id)
 
   title <- list(text = title, x = 0.13, y = 0.98, font = list(size = 12, color = "black"))
@@ -112,10 +112,12 @@ plotPeaksInteractive <- function(eic, peaks, title, colorBy) {
   names(showL) <- leg
 
   for (t in ids) {
-    lt <- unique(eic[id == t, var])
-    y <- eic[id == t, intensity]
+
+    lt <- unique(eic$var[eic$id == t])
+    y <- eic$intensity[eic$id == t]
+
     plot <- plot %>% add_trace(
-      x = eic[id == t, rt],
+      x = eic$rt[eic$id == t],
       y = y,
       type = "scatter", mode = "lines+markers",
       line = list(width = 0.3, color = unname(cl[lt])),
@@ -127,8 +129,8 @@ plotPeaksInteractive <- function(eic, peaks, title, colorBy) {
     )
     if (length(y) >= 1) showL[lt] <- FALSE
 
-    pk <- peaks[peaks$id %in% t, ]
-    pk_eic <- eic[rt >= pk$rtmin & rt <= pk$rtmax & id == t, ]
+    pk <- fts[fts$id %in% t, ]
+    pk_eic <- eic[eic$rt >= pk$rtmin & eic$rt <= pk$rtmax & eic$id == t, ]
 
     hT <- paste(
       "</br> peak: ", pk$id,

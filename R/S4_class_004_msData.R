@@ -1950,7 +1950,7 @@ setMethod("hasPeaks", "msData", function(object) {
 
 
 
-##### peaks -------------------------------------------------------------------
+##### get_peaks -------------------------------------------------------------------
 
 #' @describeIn msData getter for chromatographic peaks from the
 #' \linkS4class{msAnalysis} objects in the \linkS4class{msData} object.
@@ -1967,9 +1967,9 @@ setMethod("hasPeaks", "msData", function(object) {
 #'
 #' @export
 #'
-#' @aliases peaks,msData,msData-method
+#' @aliases get_peaks,msData,msData-method
 #'
-setMethod("peaks", "msData", function(object,
+setMethod("get_peaks", "msData", function(object,
                                       analyses = NULL,
                                       targetsID = NULL,
                                       mass = NULL,

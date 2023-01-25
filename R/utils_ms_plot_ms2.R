@@ -1,16 +1,16 @@
 
-
-#' @title plotStaticMSn
+#' @title plot_static_ms2
 #'
-#' @description Static plot of MSn spectra using the \pkg{base} package.
+#' @description Static plot of MS2 spectra using the \pkg{base} package.
 #'
-#' @param ms2 A data table with the id, mz, intensity, CE, preMZ, precursor and var (i.e., the plotting variable for each entry) as columns.
-#' Optionally, sample and replicate can be in the table.
+#' @param ms2 A data table with the id, mz, intensity, CE, preMZ, precursor
+#' and var (i.e., the plotting variable for each entry) as columns. Optionally,
+#' analysis and replicate can be in the table.
 #' @param title A character vector to be used as title.
 #'
-#' @return A MSn plot.
+#' @return An MSn plot.
 #'
-plotStaticMSn <- function(ms2, title = NULL) {
+plot_static_ms2 <- function(ms2, title = NULL) {
 
   cl <- getColors(unique(ms2$var))
 
@@ -61,25 +61,21 @@ plotStaticMSn <- function(ms2, title = NULL) {
   )
 }
 
-
-
-
-#' @title plotInteractiveMSn
+#' @title plot_interactive_ms2
 #'
-#' @description Interactive plot of EICs using the \pkg{plotly} package.
+#' @description Interactive plot of MS2 using the \pkg{plotly} package.
 #'
-#' @param ms2 A data table with the sample, replicate,
-#' id, rt, intensity and var (i.e., the plotting variable for each entry)
-#' as columns.
+#' @param ms2 A data.table with the analyses, id, preMZ, rt, mz, intensity,
+#' isPre and var (i.e., the plotting variable for each entry) as columns.
 #' @param title A character vector to be used as title.
 #'
-#' @return A EIC interactive plot.
+#' @return An MS2 interactive plot.
 #'
-plotInteractiveMSn <- function(ms2, title) {
+plot_interactive_ms2 <- function(ms2, title) {
 
   leg <- unique(ms2$var)
 
-  cl <- getColors(leg)
+  cl <- get_colors(leg)
 
   plot <- plot_ly()
 
@@ -98,6 +94,13 @@ plotInteractiveMSn <- function(ms2, title) {
       width = 0.05,
       marker = list(color = cl[v],
       line = list(color = cl[v], width = 0.2)),
+      text = round(data$mz, digits = 4),
+      textposition = "outside",
+      textangle = 90,
+      textfont = list(
+        size = 9,
+        color = rep(cl[v], length(data$mz))
+      ),
       name = leg[v],
       legendgroup = leg[v],
       hoverinfo = "text", text = paste(
@@ -117,39 +120,47 @@ plotInteractiveMSn <- function(ms2, title) {
         type = "bar",
         marker = list(color = cl[v],
         line = list(color = cl[v], width = 1)),
+        text = sprintf("<b>%s</b>", round(precursor$mz, digits = 4)),
+        textposition = "outside",
+        textangle = 90,
+        textfont = list(
+          size = 9,
+          color = rep(cl[v], length(data$mz))
+        ),
         name = leg[v],
         legendgroup = leg[v],
         showlegend = FALSE
       )
 
-      plot <- plot %>% plotly::add_annotations(x = precursor$mz,
-                                y = precursor$intensity,
-                                text = sprintf("<b>%s</b>", round(precursor$mz, digits = 4)),
-                                textposition = "top",
-                                textangle = 90,
-                                showarrow = FALSE,
-                                yanchor = "bottom",
-                                textfont = list(
-                                  color = rep(cl[v], length(precursor$mz))
-                                ),
-                                legendgroup = leg[v],
-                                showlegend = FALSE)
+      # plot <- plot %>% plotly::add_annotations(x = precursor$mz,
+      #   y = precursor$intensity,
+      #   text = sprintf("<b>%s</b>", round(precursor$mz, digits = 4)),
+      #   textposition = "top",
+      #   textangle = 90,
+      #   showarrow = FALSE,
+      #   yanchor = "bottom",
+      #   textfont = list(
+      #     color = rep(cl[v], length(precursor$mz))
+      #   ),
+      #   legendgroup = leg[v],
+      #   showlegend = FALSE)
 
     }
 
-    plot <- plot %>% plotly::add_annotations(
-      x = notPrecursor$mz,
-      y = notPrecursor$intensity,
-      text = round(notPrecursor$mz, digits = 4),
-      textposition = "top",
-      textangle = 90,
-      showarrow = FALSE,
-      yanchor = "bottom",
-      textfont = list(
-        color = rep(cl[v], length(notPrecursor$mz))
-      ),
-      legendgroup = leg[v],
-      showlegend = FALSE)
+    # plot <- plot %>% plotly::add_text(
+    #   x = notPrecursor$mz,
+    #   y = notPrecursor$intensity,
+    #   text = round(notPrecursor$mz, digits = 4),
+    #   textposition = "top",
+    #   textangle = 90,
+    #   #showarrow = FALSE,
+    #   #yanchor = "bottom",
+    #   textfont = list(
+    #     size = 9,
+    #     color = rep(cl[v], length(notPrecursor$mz))
+    #   ),
+    #   legendgroup = leg[v],
+    #   showlegend = FALSE)
 
   }
 
@@ -161,7 +172,7 @@ plotInteractiveMSn <- function(ms2, title) {
     linewidth = 2, title = "<i>m/z<i>",
     titlefont = list(size = 12, color = "black"),
     range = c(ticksMin, ticksMax),
-    dtick = 5,
+    dtick = round((max(data$mz)/10), -1),
     ticks = "outside"
   )
 
@@ -173,7 +184,8 @@ plotInteractiveMSn <- function(ms2, title) {
     color = "black")
   )
 
-  plot <- plot %>% plotly::layout(title = title, xaxis = xaxis, yaxis = yaxis, barmode = "overlay")
+  plot <- plot %>% plotly::layout(title = title, xaxis = xaxis, yaxis = yaxis,
+    barmode = "overlay", uniformtext=list(minsize=6, mode='show'))
 
   return(plot)
 }
