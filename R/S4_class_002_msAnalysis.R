@@ -1049,11 +1049,11 @@ setMethod("EICs", "msAnalysis", function(object,
                                          mz = NULL, rt = NULL,
                                          ppm = 20, sec = 60, id = NULL) {
 
-  targets <- makeTargets(mz, rt, ppm, sec, id)
+  targets <- streamFind:::makeTargets(mz, rt, ppm, sec, id)
 
   rtr <- targets[, .(rtmin, rtmax)]
   colnames(rtr) <- c("min", "max")
-  if ((nrow(rtr) == 1) & TRUE %in% (rtr$max == 0)) rtr = NULL
+  if (max(rtr$max) == 0) rtr = NULL
 
   if (hasLoadedSpectra(object)) {
 

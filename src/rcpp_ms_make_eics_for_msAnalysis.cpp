@@ -50,8 +50,8 @@ DataFrame rcpp_ms_make_eics_for_msAnalysis(DataFrame spec, DataFrame targets) {
     mzmin = mzmins[i];
     mzmax = mzmaxs[i];
 
-    if (rtmax == 0) rtmax = *std::max_element(rt.begin(), rt.end());
-    if (mzmax == 0) mzmax = *std::max_element(rt.begin(), rt.end());
+    if (rtmax == 0) rtmax = *std::max_element(spec_rt.begin(), spec_rt.end());
+    if (mzmax == 0) mzmax = *std::max_element(spec_mz.begin(), spec_mz.end());
 
     for (int j=0; j<totalTracesNumber; ++j) {
 

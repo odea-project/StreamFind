@@ -250,7 +250,8 @@
   rt = NULL,
   ppm = 20,
   sec = 30,
-  rtExpand = 60,
+  rtExpand = 120,
+  mzExpand = 0.005,
   filtered = TRUE
 )
 
@@ -262,7 +263,8 @@
   rt = NULL,
   ppm = 20,
   sec = 30,
-  rtExpand = 60,
+  rtExpand = 120,
+  mzExpand = 0.005,
   filtered = TRUE,
   legendNames = NULL,
   title = NULL,
@@ -281,7 +283,9 @@
   legendNames = NULL,
   xlim = 30,
   ylim = 0.05,
-  title = NULL
+  title = NULL,
+  showLegend = TRUE,
+  interactive = FALSE
 )
 
 \S4method{[}{msAnalysis,ANY,missing,missing}(x, i, j, ..., drop = TRUE)
