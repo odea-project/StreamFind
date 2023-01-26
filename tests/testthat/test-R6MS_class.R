@@ -85,13 +85,13 @@ test_that("gets analyses", {
 ms2$add_analyses(ms$get_analyses())
 
 test_that("adds analyses", {
-  expect_equal(ms2$number_analyses, 18)
+  expect_equal(ms2$get_number_analyses(), 18)
 })
 
 ms3 = ms2$subset_analyses(4:6)
 
 test_that("subset analyses", {
-  expect_equal(ms3$number_analyses, 3)
+  expect_equal(ms3$get_number_analyses(), 3)
 })
 
 ms3$load_spectra()
@@ -116,21 +116,18 @@ test_that("get chromatograms", {
   expect_s3_class(ms_mrm$get_chromatograms(analyses = 1),"data.frame")
 })
 
-test_that("get tics and bpcs", {
-  expect_s3_class(ms$get_tics(2),"data.frame")
-  expect_true("intensity" %in% colnames(ms$get_tics(2:3)))
-  expect_s3_class(ms$get_bpcs(2),"data.frame")
-  expect_true("mz" %in% colnames(ms$get_bpcs(2:3)))
+test_that("get tic and bpc", {
+  expect_s3_class(ms$get_tic(2),"data.frame")
+  expect_true("intensity" %in% colnames(ms$get_tic(2:3)))
+  expect_s3_class(ms$get_bpc(2),"data.frame")
+  expect_true("mz" %in% colnames(ms$get_bpc(2:3)))
 })
 
 test_that("get EIC and MS2 spectra", {
-
-  expect_s3_class(ms$get_eics(4, mz = targets), "data.table")
-  expect_true("rt" %in% colnames(ms$get_eics(4, mz = targets)))
-
+  expect_s3_class(ms$get_eic(4, mz = targets), "data.table")
+  expect_true("rt" %in% colnames(ms$get_eic(4, mz = targets)))
   expect_s3_class(ms$get_ms2(4, mz = targets), "data.table")
   expect_true("isPre" %in% colnames(ms$get_ms2(4, mz = targets)))
-
 })
 
 # ms$plot_tic(colorBy = "replicates")
@@ -195,17 +192,15 @@ settings_gf <- createSettings(
 ms$group_features(settings = settings_gf)
 
 test_that("group features", {
-  expect_s3_class(ms$get_feature_groups(mz = targets), "data.table")
+  expect_s3_class(ms$get_feature_groups(mass = targets), "data.table")
   expect_true("group" %in% colnames(ms$get_feature_groups(mz = targets[1,])))
   expect_true(all(ms$has_feature_groups()))
 })
 
+# ms$plot_feature_groups(mass = targets, legendNames = c("Target1", "Target2"))
+# ms$plot_group_features(mass = targets)
 
-
-
-
-
-settings_gf_2 <- createSettings(
+settings_gf_alignment <- createSettings(
   call = "group_features",
   algorithm = "xcms3",
   parameters = list(
@@ -234,89 +229,71 @@ settings_gf_2 <- createSettings(
   )
 )
 
-ms <- R6MS$new(files[c(4:6, 10:12)], run_parallel = FALSE)
-#ms$add_settings(settings = settings_ff)
-#object = ms$clone(deep = T)
-ms$find_features(settings = settings_ff)
-ms$group_features(settings = settings_gf_2)
+ms4 = ms$subset_analyses(4:6)
 
-ms$plot_feature_groups(mz = targets, colorBy = "analyses", interactive = FALSE)
-ms$get_feature_groups(mass = diuron_d6, onlyIntensities = TRUE, average = TRUE)
-ms$plot_feature_groups(mz = targets, legendNames = c("Tar1", "Tar2"))
+ms4$group_features(settings = settings_gf_alignment)
 
-ms$plot_alignment()
-self = ms$clone(deep = T)
-
-View(ms$get_features())
-
-fts = ms$get_features(mass = diuron_d6)#[7226, ]
-
-ms$plot_eic(analyses = ft$analysis, mz = fts)
-ms$plot_features(analyses = ft$analysis, mz = fts)
-ms$map_features(mz = targets, colorBy = "analyses")
-
-ms$get_features(mass = diuron_d6)
-
-
-ms$add_settings(settings = settings_pp)
-ms$get_settings()
-
-
-
-
-
-md_set <- peakPicking(md_set)
-
-test_that("test_methods_for_peaks", {
-  expect_s3_class(peaks(md_set), "data.table")
-  expect_gt(nrow(peaks(md_set)), 1)
-  expect_true(all(hasPeaks(md_set)))
-  expect_s4_class(as.features(md_set), "features")
-
+test_that("alignment of features", {
+  expect_true(all(ms4$has_alignment()))
 })
 
+# ms4$plot_alignment()
 
 
 
 
-# spectra(md_set_2)
-# chromatograms(md_set_2)
-#
-# EICs(md_set_2, mz = targets4)
-#
-# start <- Sys.time()
-#
-# plotEICs(md_set, mz = targets4, run_parallel = TRUE)
-#
-# Sys.time() - start
-#
-# start <- Sys.time()
-#
-# plotEICs(md_set, mz = targets4, run_parallel = FALSE)
-#
-# Sys.time() - start
-#
-#
-# TICs(md_set_2)
-# plotTICs(md_set_2, interactive = TRUE)
-#
-# BPCs(md_set_2)
-# plotBPCs(md_set_2)
-#
-#
-# XICs(md_set_2, mz = targets4)
-# plotXICs(md_set_2[4:5], mz = targets4[1, ])
-#
-# MS2s(md_set[4:5], mz = targets4)
-# plotMS2s(md_set[4:5], mz = targets4[1,], colorBy = "analyses")
-#
-#
-#
-# plotSpectra(md_set_2, analyses = 1, mz = targets4, colorBy = "levels")
-# plotChromatograms(md_set_2, id = "TIC", colorBy = "replicates")
-#
-# plotPeaks(md_set, mass = diuron_d6, run_parallel = TRUE, interactive = TRUE)
-# mapPeaks(md_set, mass = diuron_d6)
+
+
+ms <- R6MS$new(files[4:6], run_parallel = FALSE)
+ms$find_features(settings = settings_ff)
+ms$group_features(settings = settings_gf_alignment)
+# ms
+self = ms$clone(deep = T)
+
+
+ftar = ms$get_features(mz = targets)
+
+ftar_ms2 = ms$get_features_ms2(id = ftar$id)
+
+
+plotMS2s(ftar_ms2, interactive = T)
+
+View(ftar_ms2)
+
+
+
+
+
+
+
+
+
+View(ms$get_ms2(mz = targets))
+ms$plot_ms2(mz = targets, colorBy = "analyses")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

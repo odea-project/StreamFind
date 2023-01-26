@@ -28,7 +28,7 @@ setMethod("plotEICs", "data.table", function(object,
                                              colorBy = "targets",
                                              legendNames = NULL,
                                              title = NULL,
-                                             interactive = FALSE) {
+                                             interactive = TRUE) {
 
   eic <- copy(object)
 
@@ -103,7 +103,7 @@ setMethod("plotTICs", "data.table", function(object,
                                              analyses = NULL,
                                              colorBy = "analyses",
                                              title = NULL,
-                                             interactive = FALSE) {
+                                             interactive = TRUE) {
   return(
     plotEICs(object,
       analyses = analyses,
@@ -138,7 +138,7 @@ setMethod("plotBPCs", "data.table", function(object,
                                              analyses = NULL,
                                              colorBy = "analyses",
                                              title = NULL,
-                                             interactive = FALSE) {
+                                             interactive = TRUE) {
   bpc <- copy(object)
 
   if (!"analysis" %in% colnames(bpc)) {
@@ -337,7 +337,7 @@ setMethod("plotMS2s", "data.table", function(object = NULL,
                                              legendNames = NULL,
                                              title = NULL,
                                              colorBy = "targets",
-                                             interactive = FALSE) {
+                                             interactive = TRUE) {
 
   ms2 <- copy(object)
 
@@ -434,7 +434,7 @@ setMethod("plotPeaks", "data.table", function(object,
                                               colorBy = "targets",
                                               legendNames = NULL,
                                               title = NULL,
-                                              interactive = FALSE) {
+                                              interactive = TRUE) {
 
   eic <- copy(object)
 

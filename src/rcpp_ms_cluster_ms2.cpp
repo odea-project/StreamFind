@@ -176,17 +176,18 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
         Named("rt") = rt_mean,
         Named("mz") = new_mz,
         Named("intensity") = new_intensity,
-        Named("isPre") = isPre);
+        Named("isPre") = isPre
+      );
+
+      new_mz.erase(new_mz.begin(), new_mz.end());
+      new_intensity.erase(new_intensity.begin(), new_intensity.end());
+      hasFromSameScan = true;
 
     } else {
 
       ms2_out[i] = DataFrame::create();
 
     }
-
-    new_mz.erase(new_mz.begin(), new_mz.end());
-    new_intensity.erase(new_intensity.begin(), new_intensity.end());
-    hasFromSameScan = true;
 
   }
 

@@ -120,7 +120,7 @@ plot_interactive_ms2 <- function(ms2, title) {
         type = "bar",
         marker = list(color = cl[v],
         line = list(color = cl[v], width = 1)),
-        text = sprintf("<b>%s</b>", round(precursor$mz, digits = 4)),
+        text = "", #as.character(round(precursor$mz, digits = 4)), #sprintf("<b>%s</b>", round(precursor$mz, digits = 4))
         textposition = "outside",
         textangle = 90,
         textfont = list(
