@@ -9,7 +9,7 @@
   analyses = NULL,
   colorBy = "analyses",
   title = NULL,
-  interactive = FALSE
+  interactive = TRUE
 )
 }
 \arguments{

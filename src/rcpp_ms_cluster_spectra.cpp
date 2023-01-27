@@ -9,9 +9,9 @@ using namespace std;
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
+List rcpp_ms_cluster_spectra(DataFrame spectra, double mzClust, bool verbose) {
 
-  StringVector all_ids = ms2["unique_id"];
+  StringVector all_ids = spectra["unique_id"];
   StringVector unique_ids = unique(all_ids);
   int totalNumberIds = unique_ids.size();
 
@@ -20,7 +20,6 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
   StringVector analysis;
   StringVector id;
   NumericVector rt;
-  NumericVector preMZ;
   NumericVector mz;
   NumericVector intensity;
 
@@ -48,27 +47,22 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
   NumericVector temp_rt;
   NumericVector temp_rt_unique;
 
-  LogicalVector isPre;
-
-  double preMZ_mean = 0;
   double rt_mean = 0;
 
-  List ms2_out(totalNumberIds);
+  List list_out(totalNumberIds);
 
   for (int i=0; i<totalNumberIds; ++i) {
 
     target_id = unique_ids(i);
 
-    analysis = ms2["analysis"];
-    id = ms2["id"];
-    rt = ms2["rt"];
-    preMZ= ms2["preMZ"];
-    mz = ms2["mz"];
-    intensity = ms2["intensity"];
-
+    analysis = spectra["analysis"];
+    id = spectra["id"];
+    rt = spectra["rt"];
+    mz = spectra["mz"];
+    intensity = spectra["intensity"];
 
     int n = all_ids.size();
-    LogicalVector eval(n);
+    LogicalVector eval = rep(false, n);
 
     for (int z=0; z<n; z++) {
       eval(z) = (all_ids(z) == target_id(0));
@@ -79,7 +73,6 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
     id = id[eval];
     id = unique(id);
     rt = rt[eval];
-    preMZ = preMZ[eval];
     mz = mz[eval];
     intensity = intensity[eval];
 
@@ -89,7 +82,6 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
       std::sort(idx.begin(), idx.end(), [&](int i, int j){return mz[i] < mz[j];});
 
       rt = rt[idx];
-      preMZ = preMZ[idx];
       mz = mz[idx];
       intensity = intensity[idx];
 
@@ -122,8 +114,10 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
         mz_clusters = mz_clusters + 1;
 
         IntegerVector idx_clusters = seq_along(mz_clusters) - 1;
+
         IntegerVector unique_clusters = unique(mz_clusters);
         unique_clusters.sort();
+
         int unique_clusters_size = unique_clusters.size();
 
         hasFromSameScan = rep(true, unique_clusters_size);
@@ -140,8 +134,8 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
           new_intensity.push_back(temp_intensity_mean);
 
           temp_mz = mz[temp_idx];
-          temp_mz = temp_mz[temp_intensity == temp_intensity_mean];
-          temp_mz_mean = sum(temp_mz) / temp_mz.size();
+          NumericVector temp_mz_2 = temp_mz[temp_intensity == temp_intensity_mean];
+          temp_mz_mean = sum(temp_mz_2) / temp_mz_2.size();
           new_mz.push_back(temp_mz_mean);
 
           temp_rt = rt[temp_idx];
@@ -165,25 +159,19 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
         }
       }
 
-      preMZ_mean = sum(preMZ) / preMZ.size();
-      rt_mean = sum(rt) / rt.size();
-
-      isPre = rep(false, new_mz.size());
-      isPre[(new_mz >= (preMZ_mean - mzClust)) & (new_mz <= (preMZ_mean + mzClust))] = true;
-
       if (verbose) Rcpp::Rcout << "Done! \n\n";
+
+      rt_mean = sum(rt) / rt.size();
     }
 
     if (mz.size() > 0) {
 
-      ms2_out[i] = DataFrame::create(
+      list_out[i] = DataFrame::create(
         Named("analysis") = analysis,
         Named("id") = id,
-        Named("preMZ") = preMZ_mean,
         Named("rt") = rt_mean,
         Named("mz") = new_mz,
-        Named("intensity") = new_intensity,
-        Named("isPre") = isPre
+        Named("intensity") = new_intensity
       );
 
       new_mz.erase(new_mz.begin(), new_mz.end());
@@ -191,8 +179,8 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
       hasFromSameScan = true;
 
     } else {
-      ms2_out[i] = DataFrame::create();
+      list_out[i] = DataFrame::create();
     }
   }
-  return(ms2_out);
+  return(list_out);
 }

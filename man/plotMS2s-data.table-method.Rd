@@ -12,7 +12,7 @@
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
-  interactive = FALSE
+  interactive = TRUE
 )
 }
 \arguments{

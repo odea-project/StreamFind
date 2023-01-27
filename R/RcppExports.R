@@ -5,6 +5,10 @@ rcpp_ms_cluster_ms2 <- function(ms2, mzClust, verbose) {
     .Call(`_streamFind_rcpp_ms_cluster_ms2`, ms2, mzClust, verbose)
 }
 
+rcpp_ms_cluster_spectra <- function(spectra, mzClust, verbose) {
+    .Call(`_streamFind_rcpp_ms_cluster_spectra`, spectra, mzClust, verbose)
+}
+
 rcpp_ms_extract_ms2_for_msAnalysis <- function(spec, targets, mzClust, verbose) {
     .Call(`_streamFind_rcpp_ms_extract_ms2_for_msAnalysis`, spec, targets, mzClust, verbose)
 }

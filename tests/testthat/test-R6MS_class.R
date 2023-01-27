@@ -30,8 +30,8 @@ diu_pos <- diuron_d6$mass + 1.0073
 diu <- diuron_d6$mass + 1.0073
 diu_rt <- diuron_d6$rt
 
-sec_dev <- 60
-ppm_dev <- 20
+sec_dev <- 15
+ppm_dev <- 10
 
 mz <- data.frame(id = c("tg1", "tg2"),mz = c(carb, diu),rt = c(carb_rt, diu_rt))
 targets <- makeTargets(mz = mz, ppm = ppm_dev, sec = sec_dev)
@@ -123,9 +123,13 @@ test_that("get tic and bpc", {
   expect_true("mz" %in% colnames(ms$get_bpc(2:3)))
 })
 
-test_that("get EIC and MS2 spectra", {
+test_that("get EIC, MS1 and MS2 spectra", {
   expect_s3_class(ms$get_eic(4, mz = targets), "data.table")
   expect_true("rt" %in% colnames(ms$get_eic(4, mz = targets)))
+  expect_s3_class(ms$get_ms1(4,
+    mz = targets, minIntensity = 10000), "data.table")
+  expect_true("mz" %in% colnames(ms$get_ms1(4,
+    mz = targets, minIntensity = 10000)))
   expect_s3_class(ms$get_ms2(4, mz = targets), "data.table")
   expect_true("isPre" %in% colnames(ms$get_ms2(4, mz = targets)))
 })
@@ -248,17 +252,42 @@ ms <- R6MS$new(files[4:6], run_parallel = FALSE)
 ms$find_features(settings = settings_ff)
 ms$group_features(settings = settings_gf_alignment)
 # ms
-self = ms$clone(deep = T)
+# self = ms$clone(deep = T)
+
+
+# TODO Make test for getting features MS1 ans MS1 as well as
+# getting MS1 and MS2 averaged for a feature group
+
+# TODO Implement a field for storing MS lists for each feature/feature groups
+
+# TODO Improve methods for plotting already produced data.frames from
+# class functions, similar to S4 implementation for data.table
+
+# TODO Implement sub-setting for features and feature groups
+
+# TODO Implement self filling function for missing features in groups
+
+# TODO Transfer filters for feature groups from S4 to R6 and add filters for
+# simple groups. Also, add method to filter a specific replicate other than
+# assigned blank
+
+# TODO annotation after feature finding
+
+# TODO improved grouping based on annotation
+
+
+
+#ms$plot_features_ms1(analyses = 1, mz = targets, interactive = T)
+ms$plot_group_features(mz = targets)
+
+ms$plot_ms2(1, mz = targets)
+ms$plot_ms1(1, mz = targets)
+
+ms$get_features_ms2(id = ftar$id)
 
 
 ftar = ms$get_features(mz = targets)
 
-ftar_ms2 = ms$get_features_ms2(id = ftar$id)
-
-
-plotMS2s(ftar_ms2, interactive = T)
-
-View(ftar_ms2)
 
 
 
@@ -268,8 +297,11 @@ View(ftar_ms2)
 
 
 
-View(ms$get_ms2(mz = targets))
-ms$plot_ms2(mz = targets, colorBy = "analyses")
+
+
+
+
+
 
 
 

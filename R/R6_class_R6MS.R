@@ -456,6 +456,34 @@ R6MS = R6::R6Class("R6MS",
     },
 
     #' @description
+    #' Method to get the polarity of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    get_mz_high = function(analyses = NULL) {
+      value = vapply(private$.analyses, function(x) x$mz_high, 0)
+      names(value) = vapply(private$.analyses, function(x) x$name, "")
+      if (!is.null(analyses)) return(value[analyses])
+      return(value)
+    },
+
+    #' @description
+    #' Method to get the polarity of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    get_rt_end = function(analyses = NULL) {
+      value = vapply(private$.analyses, function(x) x$rt_end, 0)
+      names(value) = vapply(private$.analyses, function(x) x$name, "")
+      if (!is.null(analyses)) return(value[analyses])
+      return(value)
+    },
+
+    #' @description
     #' Method to get spectra from the MS analyses.
     #'
     #' @param analyses X.
@@ -494,6 +522,14 @@ R6MS = R6::R6Class("R6MS",
       with_targets = !(nrow(targets) == 1 &
         TRUE %in% (targets$mzmax == 0) &
         TRUE %in% (targets$rtmax == 0))
+
+      if (TRUE %in% (targets$mzmax == 0)) {
+        targets$mzmax[targets$mzmax == 0] = max(self$get_mz_high(analyses))
+      }
+
+      if (TRUE %in% (targets$rtmax == 0)) {
+        targets$rtmax[targets$rtmax == 0] = max(self$get_rt_end(analyses))
+      }
 
       if (with_targets) {
 
@@ -870,6 +906,47 @@ R6MS = R6::R6Class("R6MS",
     },
 
     #' @description
+    #' Method to get MS1 data from the analyses based on targets.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #' @param mz X.
+    #' @param rt X.
+    #' @param ppm X.
+    #' @param sec X.
+    #' @param id X.
+    #' @param mzClust X.
+    #' @param verbose X.
+    #' @param minIntensity X.
+    #' @param run_parallel X.
+    #'
+    #' @return A data.frame.
+    get_ms1 = function(analyses = NULL,
+                       mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
+                       mzClust = 0.001, verbose = FALSE,
+                       minIntensity = 1000, run_parallel = FALSE) {
+
+      ms1 = self$get_spectra(
+        analyses = analyses, levels = 1,
+        mz = mz, rt = rt, ppm = ppm, sec = sec, id = id, allTraces = TRUE,
+        minIntensityMS1 = minIntensity, minIntensityMS2 = 0,
+        run_parallel = run_parallel
+      )
+
+      if (nrow(ms1) == 0) return(ms1)
+
+      ms1$unique_id = paste0(ms1$analysis, "_", ms1$id)
+      ms1_list = rcpp_ms_cluster_spectra(ms1, mzClust, verbose)
+      ms1_df = rbindlist(ms1_list, fill = TRUE)
+
+      ms1_df = ms1_df[order(ms1_df$mz), ]
+      ms1_df = ms1_df[order(ms1_df$id), ]
+      ms1_df = ms1_df[order(ms1_df$analysis), ]
+
+      return(ms1_df)
+    },
+
+    #' @description
     #' Method to get MS2 data from the analyses based on targets.
     #'
     #' @param analyses A numeric/character vector with the number/name
@@ -888,12 +965,13 @@ R6MS = R6::R6Class("R6MS",
     #' @return A data.frame.
     get_ms2 = function(analyses = NULL,
                        mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
-                       isolationWindow = 1.3, mzClust = 0.01, verbose = FALSE,
+                       isolationWindow = 1.3, mzClust = 0.005, verbose = TRUE,
                        minIntensity = 0, run_parallel = FALSE) {
 
       ms2 = self$get_spectra(
-        analyses = analyses, levels = 2, mz = mz, allTraces = FALSE,
-        isolationWindow = isolationWindow,
+        analyses = analyses, levels = 2,
+        mz = mz, rt = rt, ppm = ppm, sec = sec, id = id,
+        isolationWindow = isolationWindow, allTraces = FALSE,
         minIntensityMS1 = 0, minIntensityMS2 = minIntensity,
         run_parallel = run_parallel
       )
@@ -1010,13 +1088,43 @@ R6MS = R6::R6Class("R6MS",
     },
 
     #' @description
+    #' Method to get an averaged MS1 spectrum for features in analyses.
+    #'
+    #' @return A data.frame/data.table.
+    get_features_ms1 = function(analyses = NULL, id = NULL, mass = NULL,
+                                mz = NULL, rt = NULL, ppm = 20, sec = 60,
+                                rtWindow = c(-2, 2), mzWindow = c(-5, 100),
+                                mzClust = 0.001, minIntensity = 1000,
+                                verbose = TRUE, filtered = FALSE,
+                                run_parallel = FALSE) {
+
+      fts = self$get_features(analyses, id, mass, mz, rt, ppm, sec, filtered)
+
+      if (!is.null(rtWindow) & length(rtWindow) == 2 & is.numeric(rtWindow)) {
+        fts$rtmin = fts$rt + rtWindow[1]
+        fts$rtmax = fts$rt + rtWindow[2]
+      }
+
+      if (!is.null(mzWindow) & length(mzWindow) == 2 & is.numeric(mzWindow)) {
+        fts$mzmin = fts$mz + mzWindow[1]
+        fts$mzmax = fts$mz + mzWindow[2]
+      }
+
+      ms1 = self$get_ms1(analyses = unique(fts$analysis), mz = fts,
+                         mzClust = mzClust, minIntensity = minIntensity,
+                         verbose = verbose, run_parallel = run_parallel)
+
+      return(ms1)
+    },
+
+    #' @description
     #' Method to get an averaged MS2 spectrum for features in analyses.
     #'
     #' @return A data.frame/data.table.
     get_features_ms2 = function(analyses = NULL, id = NULL, mass = NULL,
                                 mz = NULL, rt = NULL, ppm = 20, sec = 60,
-                                isolationWindow = 1.3, mzClust = 0.01,
-                                minIntensity = 0, verbose = FALSE,
+                                isolationWindow = 1.3, mzClust = 0.005,
+                                minIntensity = 0, verbose = TRUE,
                                 filtered = FALSE, run_parallel = FALSE) {
 
       fts = self$get_features(analyses, id, mass, mz, rt, ppm, sec, filtered)
@@ -1878,7 +1986,7 @@ R6MS = R6::R6Class("R6MS",
     },
 
     #' @description
-    #' Method to plot MS2 data from the analyses based on targets.
+    #' Method to plot MS2 spectra from the analyses based on targets.
     #'
     #' @param analyses A numeric/character vector with the number/name
     #' of the analyses.
@@ -1900,7 +2008,7 @@ R6MS = R6::R6Class("R6MS",
     #' @return A plot.
     plot_ms2 = function(analyses = NULL,
                         mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
-                        isolationWindow = 1.3, mzClust = 0.01, verbose = FALSE,
+                        isolationWindow = 1.3, mzClust = 0.005, verbose = TRUE,
                         minIntensity = 0, run_parallel = FALSE,
                         legendNames = NULL, title = NULL,
                         colorBy = "targets", interactive = TRUE) {
@@ -1934,6 +2042,125 @@ R6MS = R6::R6Class("R6MS",
 
       if (!interactive) return(plot_static_ms2(ms2, title))
       else return(plot_interactive_ms2(ms2, title))
+    },
+
+    #' @description
+    #' Method to plot MS1 spectra from the analyses based on targets.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #' @param mz X.
+    #' @param rt X.
+    #' @param ppm X.
+    #' @param sec X.
+    #' @param id X.
+    #' @param mzClust X.
+    #' @param verbose X.
+    #' @param minIntensity X.
+    #' @param run_parallel X.
+    #' @param legendNames x.
+    #' @param title x.
+    #' @param colorBy x.
+    #' @param interactive x.
+    #'
+    #' @return A plot.
+    plot_ms1 = function(analyses = NULL,
+                        mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
+                        mzClust = 0.001, verbose = FALSE,
+                        minIntensity = 1000, run_parallel = FALSE,
+                        legendNames = NULL, title = NULL,
+                        colorBy = "targets", interactive = TRUE) {
+
+      ms1 = self$get_ms1(analyses, mz, rt, ppm, sec, id, mzClust,
+                         verbose, minIntensity, run_parallel)
+
+      if (nrow(ms1) < 0) {
+        message("MS1 traces not found for the targets!")
+        return(NULL)
+      }
+
+      if (colorBy == "analyses") {
+        leg = unique(ms1$analysis)
+        varkey = ms1$analysis
+      } else if (colorBy == "replicates") {
+        ms1$replicate = self$get_replicate_names()[ms1$analysis]
+        leg = unique(ms1$replicate)
+        varkey = ms1$replicate
+      } else if (is.character(legendNames) &
+                 length(legendNames) == length(unique(ms1$id))) {
+        leg = legendNames
+        names(leg) = unique(ms1$id)
+        varkey = leg[ms1$id]
+      } else {
+        leg = unique(ms1$id)
+        varkey = ms1$id
+      }
+
+      ms1$var = varkey
+
+      if (!interactive) return(plot_static_spectra(ms1, title))
+      else return(plot_interactive_spectra(ms1, title))
+    },
+
+    #' @description
+    #' Method to plot MS1 spectra from the analyses based on targets.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #' @param mz X.
+    #' @param rt X.
+    #' @param ppm X.
+    #' @param sec X.
+    #' @param id X.
+    #' @param mzClust X.
+    #' @param verbose X.
+    #' @param minIntensity X.
+    #' @param run_parallel X.
+    #' @param legendNames x.
+    #' @param title x.
+    #' @param colorBy x.
+    #' @param interactive x.
+    #'
+    #' @return A plot.
+    plot_features_ms1 = function(analyses = NULL, id = NULL, mass = NULL,
+                                 mz = NULL, rt = NULL, ppm = 20, sec = 60,
+                                 rtWindow = c(-2, 2), mzWindow = c(-5, 100),
+                                 mzClust = 0.001, minIntensity = 1000,
+                                 verbose = TRUE, filtered = FALSE,
+                                 run_parallel = FALSE, legendNames = NULL,
+                                 title = NULL, colorBy = "targets",
+                                 interactive = TRUE) {
+
+      ms1 = self$get_features_ms1(analyses, id, mass, mz, rt, ppm, sec,
+                                  rtWindow, mzWindow, mzClust, minIntensity,
+                                  verbose, filtered, run_parallel)
+
+      if (nrow(ms1) < 0) {
+        message("MS1 traces not found for the targets!")
+        return(NULL)
+      }
+
+      if (colorBy == "analyses") {
+        leg = unique(ms1$analysis)
+        varkey = ms1$analysis
+      } else if (colorBy == "replicates") {
+        ms1$replicate = self$get_replicate_names()[ms1$analysis]
+        leg = unique(ms1$replicate)
+        varkey = ms1$replicate
+      } else if (is.character(legendNames) &
+                 length(legendNames) == length(unique(ms1$id))) {
+        leg = legendNames
+        names(leg) = unique(ms1$id)
+        varkey = leg[ms1$id]
+      } else {
+        leg = unique(ms1$id)
+        varkey = ms1$id
+      }
+
+      ms1$var = varkey
+
+      if (!interactive) return(plot_static_spectra(ms1, title))
+      else return(plot_interactive_spectra(ms1, title))
     },
 
     #' @description
@@ -2461,8 +2688,8 @@ make_targets = function(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL) {
       if ("rt" %in% colnames(rt) & !"rtmin" %in% colnames(mz)) {
         mzrts = data.table(
           id = NA_character_,
-          mz = rt,
-          rt = 0,
+          mz = 0,
+          rt = rt,
           mzmin = 0,
           mzmax = 0,
           rtmin = 0,
@@ -2471,15 +2698,15 @@ make_targets = function(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL) {
         mzrts$rtmin = rt$rt - sec
         mzrts$rtmax = rt$rt + sec
 
-      } else if ("rtmin" %in% colnames(rt) & nrow(rt) == nrow(mz)) {
+      } else if ("rtmin" %in% colnames(rt)) {
         mzrts = data.table(
           id = NA_character_,
-          mz = apply(rt[, .(rtmin, rtmax)], 1, mean),
-          rt = 0,
-          mzmin = rt$rtmin,
-          mzmax = rt$rtmax,
-          rtmin = 0,
-          rtmax = 0
+          mz = 0,
+          rt = apply(rt[, .(rtmin, rtmax)], 1, mean),
+          mzmin = 0,
+          mzmax = 0,
+          rtmin = rt$rtmin,
+          rtmax = rt$rtmax
         )
 
         if ("rt" %in% colnames(rt)) {
@@ -2490,13 +2717,15 @@ make_targets = function(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL) {
       }
 
       #adds id
-      if (!is.null(id) %in% length(id) == nrow(mzrts)) {
+      if (length(id) == nrow(mzrts) & !is.null(id)) {
         mzrts$id = id
       } else if ("id" %in% colnames(rt)) {
         mzrts$id = rt$id
       } else {
-        mzrts[, id := paste(rtmin, "-", rtmax, sep = "")][]
+        mzrts$id = paste(mzrts$rtmin, "-", mzrts$rtmax, sep = "")
       }
+
+      if ("analysis" %in% colnames(rt)) mzrts$analysis = rt$analysis
     }
 
     #when mz is vector, expects rt as vector as well and ranges are calculated
@@ -3215,7 +3444,7 @@ plot_group_features_aux <- function(fts, eic, heights, analyses) {
   yaxis3 <- list(linecolor = toRGB("black"), linewidth = 2,
                  title = "Normalized intensity",
                  titlefont = list(size = 12, color = "black"),
-                 tick0 = 0)
+                 tick0 = 0, range = c(0, 1))
 
   plotList <- list()
 
@@ -3249,11 +3478,6 @@ plot_group_features_aux <- function(fts, eic, heights, analyses) {
 
   plotf_2 <- plotf_2 %>% layout(
     legend = list(title = list(text = paste("<b>", "targets", "</b>"))))
-
-  # plotf <- plotf %>% layout(
-  #   legend = list(title = list(text = paste("<b>", "targets", "</b>"))),
-  #   xaxis = xaxis, yaxis = yaxis1, yaxis2 = yaxis2,  yaxis3 = yaxis3
-  # )
 
   return(plotf_2)
 }

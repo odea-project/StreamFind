@@ -11,7 +11,7 @@
   colorBy = "targets",
   legendNames = NULL,
   title = NULL,
-  interactive = FALSE
+  interactive = TRUE
 )
 }
 \arguments{

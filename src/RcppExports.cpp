@@ -23,6 +23,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rcpp_ms_cluster_spectra
+List rcpp_ms_cluster_spectra(DataFrame spectra, double mzClust, bool verbose);
+RcppExport SEXP _streamFind_rcpp_ms_cluster_spectra(SEXP spectraSEXP, SEXP mzClustSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< DataFrame >::type spectra(spectraSEXP);
+    Rcpp::traits::input_parameter< double >::type mzClust(mzClustSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_ms_cluster_spectra(spectra, mzClust, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpp_ms_extract_ms2_for_msAnalysis
 List rcpp_ms_extract_ms2_for_msAnalysis(DataFrame spec, DataFrame targets, double mzClust, bool verbose);
 RcppExport SEXP _streamFind_rcpp_ms_extract_ms2_for_msAnalysis(SEXP specSEXP, SEXP targetsSEXP, SEXP mzClustSEXP, SEXP verboseSEXP) {
@@ -52,6 +65,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_streamFind_rcpp_ms_cluster_ms2", (DL_FUNC) &_streamFind_rcpp_ms_cluster_ms2, 3},
+    {"_streamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_streamFind_rcpp_ms_cluster_spectra, 3},
     {"_streamFind_rcpp_ms_extract_ms2_for_msAnalysis", (DL_FUNC) &_streamFind_rcpp_ms_extract_ms2_for_msAnalysis, 4},
     {"_streamFind_rcpp_ms_make_eics_for_msAnalysis", (DL_FUNC) &_streamFind_rcpp_ms_make_eics_for_msAnalysis, 2},
     {NULL, NULL, 0}
