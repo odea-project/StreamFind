@@ -25,7 +25,7 @@ to the comprehensive documentation and well categorized set of
 integrated functionalities or modules (see handbooks folder for more
 information).
 
-<img src="inst/extdata/LogoGroup.tif" width="80%" style="display: block; margin: auto;" />
+<img src="inst/extdata/logo_group.png" width="100%" style="display: block; margin: auto;" />
 
 ## Installation
 
