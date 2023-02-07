@@ -130,13 +130,24 @@ List rcpp_ms_cluster_spectra(DataFrame spectra, double mzClust, bool verbose) {
           temp_idx = idx_clusters[mz_clusters == unique_clusters[z]];
 
           temp_intensity = intensity[temp_idx];
-          temp_intensity_mean = max(temp_intensity);
+          temp_intensity_mean = mean(temp_intensity);
           new_intensity.push_back(temp_intensity_mean);
 
           temp_mz = mz[temp_idx];
-          NumericVector temp_mz_2 = temp_mz[temp_intensity == temp_intensity_mean];
-          temp_mz_mean = sum(temp_mz_2) / temp_mz_2.size();
+          // NumericVector temp_mz_2 = temp_mz[temp_intensity == temp_intensity_mean];
+          // temp_mz_mean = sum(temp_mz_2) / temp_mz_2.size();
+          // temp_mz_mean = sum(temp_mz) / temp_mz.size();
+
+          // weighted mean with intensities
+          int size_temp_mz = temp_mz.size();
+          float mz_sum = 0, mz_numWeight = 0;
+          for (int w = 0; w < size_temp_mz; w++) {
+            mz_numWeight = mz_numWeight + temp_mz[w] * temp_intensity[w];
+            mz_sum = mz_sum + temp_intensity[w];
+          }
+          temp_mz_mean = mz_numWeight / mz_sum;
           new_mz.push_back(temp_mz_mean);
+
 
           temp_rt = rt[temp_idx];
           temp_rt_unique = unique(temp_rt);

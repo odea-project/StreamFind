@@ -102,7 +102,10 @@ test_that("loading spectra", {
 
 test_that("getting spectra for targets", {
   expect_s3_class(
-    ms3$get_spectra(analyses = 1, mz = targets, level = 1),"data.frame")
+    ms$get_spectra(analyses = 1, mz = targets, level = 1),"data.frame")
+  expect_equal(nrow(ms$get_spectra(analyses = 1, mz = targets, level = 1)), 0)
+  expect_s3_class(
+    ms3$get_spectra(analyses = 1, mz = targets, level = c(1, 2)),"data.frame")
   expect_true("id" %in%
     colnames(ms3$get_spectra(analyses = 1, mz = targets, level = 1)))
   expect_true(2 %in%
@@ -178,6 +181,23 @@ test_that("find and get features", {
   expect_true(all(ms$has_features()))
 })
 
+ftar = ms$get_features(analyses = 4, mz = targets)
+
+test_that("get MS1 and MS2 for features", {
+  expect_s3_class(ms$get_features_ms1(id = ftar$id), "data.frame")
+  expect_s3_class(ms$get_features_ms2(id = ftar$id), "data.frame")
+  expect_equal(nrow(ms$get_features_ms1(analyses = 1, id = ftar$id)), 0)
+  expect_equal(nrow(ms$get_features_ms1(analyses = 1, mz = ftar)), 0)
+  expect_s3_class(ms$get_features_ms2(id = ftar$id), "data.frame")
+  expect_equal(nrow(ms$get_features_ms2(analyses = 1, id = ftar$id)), 0)
+  expect_equal(nrow(ms$get_features_ms2(analyses = 1, mz = ftar)), 0)
+})
+
+# ms$plot_features_ms1(id = ftar$id)
+# ms$plot_features_ms2(id = ftar$id)
+# ms$plot_features_ms1(id = ftar$id, interactive = FALSE)
+# ms$plot_features_ms2(id = ftar$id, interactive = FALSE)
+
 settings_gf <- createSettings(
   call = "group_features",
   algorithm = "xcms3",
@@ -245,18 +265,8 @@ test_that("alignment of features", {
 
 
 
-
-
-
-ms <- R6MS$new(files[4:6], run_parallel = FALSE)
-ms$find_features(settings = settings_ff)
-ms$group_features(settings = settings_gf_alignment)
-# ms
-# self = ms$clone(deep = T)
-
-
-# TODO Make test for getting features MS1 ans MS1 as well as
-# getting MS1 and MS2 averaged for a feature group
+# TODO Make test for getting features MS1 ans MS2 as well as
+# getting MS1 and MS2 averaged for a feature groups
 
 # TODO Implement a field for storing MS lists for each feature/feature groups
 
@@ -275,6 +285,46 @@ ms$group_features(settings = settings_gf_alignment)
 
 # TODO improved grouping based on annotation
 
+# Work Lines -----
+
+ms <- R6MS$new(files[4:6], run_parallel = FALSE)
+ms$find_features(settings = settings_ff)
+ms$group_features(settings = settings_gf_alignment)
+self = ms$clone(deep = T)
+
+
+gtar = ms$get_feature_groups(mz = targets)
+
+ms$get_feature_groups_ms1(groups = gtar$group)
+
+ms$get_feature_groups_ms1(groups = gtar$group, groupBy = "replicates")
+
+ms$plot_feature_groups_ms1(groups = gtar$group)
+ms$plot_feature_groups_ms1(groups = gtar$group, colorBy = "replicates")
+
+ms$get_feature_groups_ms2(groups = gtar$group)
+
+ms$plot_feature_groups_ms2(groups = gtar$group)
+ms$plot_feature_groups_ms2(groups = gtar$group, colorBy = "replicates")
+
+ms$plot_features_ms2(id = gtar$group[1], colorBy = "analyses")
+
+ms$plot_feature_groups_ms2(group = gtar$group[1])
+
+correlate_spectra(ms$get_features_ms1(id = gtar$group[1]),
+                  decimals = 3,
+                  minIntensity = 1000,
+                  method = "pearson")
+
+correlate_spectra(spectra = ms$get_features_ms2(id = gtar$group[1]),
+                  decimals = 3,
+                  minIntensity = 600,
+                  method = "pearson")
+
+
+ms$plot_features_ms1(mz = targets[1, ], mzClust = 0.001,
+                     rtWindow = c(-2, 2), colorBy = "analyses")
+ms$plot_features_ms2(mz = targets[2, ], mzClust = 0.001, colorBy = "analyses")
 
 
 #ms$plot_features_ms1(analyses = 1, mz = targets, interactive = T)
@@ -283,7 +333,14 @@ ms$plot_group_features(mz = targets)
 ms$plot_ms2(1, mz = targets)
 ms$plot_ms1(1, mz = targets)
 
+ftar = ms$get_features(mz = targets)
+ms$get_features_ms1(id = ftar$id)
 ms$get_features_ms2(id = ftar$id)
+
+ms$plot_features(mz = targets)
+
+
+
 
 
 ftar = ms$get_features(mz = targets)

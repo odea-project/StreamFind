@@ -512,7 +512,7 @@ R6MS = R6::R6Class("R6MS",
                            run_parallel = FALSE) {
 
       trim = function(v, a, b)  return(
-        rowSums(mapply(function(a, b) v >= a & v <= b, a = a, b = b)) > 0)
+          rowSums(mapply(function(a, b) v >= a & v <= b, a = a, b = b)) > 0)
 
       analyses = self$check_analyses_argument(analyses)
       if (is.null(analyses)) return(data.frame())
@@ -562,7 +562,7 @@ R6MS = R6::R6Class("R6MS",
 
               }
 
-              tg$id = targets$id[z]
+              if (nrow(tg) > 0) tg$id = targets$id[z] else tg$id = character()
 
               return(tg)
 
@@ -579,9 +579,7 @@ R6MS = R6::R6Class("R6MS",
         preMZr$mzmin = preMZr$mzmin - (isolationWindow/2)
         preMZr$mzmax = preMZr$mzmax + (isolationWindow/2)
         if (nrow(preMZr) == 1 & TRUE %in% (targets$mzmax == 0)) preMZr = NULL
-      } else {
-        preMZr = NULL
-      }
+      } else preMZr = NULL
 
       has_spectra = self$has_loaded_spectra(analyses)
 
@@ -644,8 +642,9 @@ R6MS = R6::R6Class("R6MS",
 
           if (nrow(sH) > 0) {
 
-            if (max(sH$retentionTime) < 60)
+            if (max(sH$retentionTime) < 60) {
               sH$retentionTime = sH$retentionTime * 60
+            }
 
             if (!is.null(levels)) sH = sH[sH$msLevel %in% levels, ]
 
@@ -900,6 +899,7 @@ R6MS = R6::R6Class("R6MS",
         eic = eic[, `:=`(intensity = sum(intensity)),
           by = c("analysis", "id", "rt")][]
         eic = eic[, c("analysis", "id", "rt", "intensity"), with = FALSE]
+        eic = unique(eic)
       }
 
       return(eic)
@@ -1015,13 +1015,13 @@ R6MS = R6::R6Class("R6MS",
 
       if (!filtered) fts = fts[!fts$filtered, ]
 
-      if (!is.null(id) & "group" %in% colnames(fts)) {
+      if (!is.null(id)) {
         target_id = id
 
         if (is.character(target_id)) {
           if ("group" %in% colnames(fts)) {
             fts = fts[fts$id %in% target_id | fts$group %in% target_id, ]
-          } else fts = fts[fts$id %in% targetsID, ]
+          } else fts = fts[fts$id %in% target_id, ]
           return(fts)
         }
 
@@ -1100,6 +1100,8 @@ R6MS = R6::R6Class("R6MS",
 
       fts = self$get_features(analyses, id, mass, mz, rt, ppm, sec, filtered)
 
+      if (nrow(fts) == 0) return(data.frame())
+
       if (!is.null(rtWindow) & length(rtWindow) == 2 & is.numeric(rtWindow)) {
         fts$rtmin = fts$rt + rtWindow[1]
         fts$rtmax = fts$rt + rtWindow[2]
@@ -1128,6 +1130,8 @@ R6MS = R6::R6Class("R6MS",
                                 filtered = FALSE, run_parallel = FALSE) {
 
       fts = self$get_features(analyses, id, mass, mz, rt, ppm, sec, filtered)
+
+      if (nrow(fts) == 0) return(data.frame())
 
       ms2 = self$get_ms2(analyses = unique(fts$analysis), mz = fts,
                          isolationWindow = isolationWindow, mzClust = mzClust,
@@ -1258,6 +1262,188 @@ R6MS = R6::R6Class("R6MS",
         }
       }
       return(fgroups)
+    },
+
+    #' @description
+    #' Method to get an averaged MS1 spectrum for feature groups in analyses.
+    #'
+    #' @return A data.frame/data.table.
+    get_feature_groups_ms1 = function(groups = NULL, mass = NULL,
+                                      mz = NULL, rt = NULL, ppm = 20, sec = 60,
+                                      rtWindow = c(-2, 2), mzWindow = c(-5, 90),
+                                      mzClustFeatures = 0.001,
+                                      minIntensityFeatures = 1000,
+                                      mzClustGroups = 0.001,
+                                      minIntensityGroups = 1000,
+                                      groupBy = "groups",
+                                      verbose = TRUE, filtered = FALSE,
+                                      run_parallel = FALSE) {
+
+      fgs = self$get_feature_groups(groups, mass, mz, rt, ppm, sec, filtered,
+                                    onlyIntensities = FALSE, average = FALSE)
+
+      if (nrow(fgs) == 0) return(data.frame())
+
+      fts = self$get_features(id = fgs$group)
+
+      if (nrow(fts) == 0) return(data.frame())
+
+      if (!is.null(rtWindow) & length(rtWindow) == 2 & is.numeric(rtWindow)) {
+        fts$rtmin = fts$rt + rtWindow[1]
+        fts$rtmax = fts$rt + rtWindow[2]
+      }
+
+      if (!is.null(mzWindow) & length(mzWindow) == 2 & is.numeric(mzWindow)) {
+        fts$mzmin = fts$mz + mzWindow[1]
+        fts$mzmax = fts$mz + mzWindow[2]
+      }
+
+      fts$id = fts$group
+
+      ms1 = self$get_ms1(analyses = unique(fts$analysis), mz = fts,
+                         mzClust = mzClustFeatures,
+                         minIntensity = minIntensityFeatures,
+                         verbose = verbose, run_parallel = run_parallel)
+
+      ms1 = ms1[ms1$intensity > minIntensityGroups, ]
+
+      if (nrow(ms1) == 0) return(data.frame())
+
+      # cor_list = split(ms1, ms1$id)
+      # cor_list = lapply(cor_list, function(x, decimals, method, minIntensity) {
+      #   temp = copy(x[, c("analysis", "mz", "intensity")])
+      #   temp = temp[temp$intensity >= minIntensity, ]
+      #   temp$mz = round(temp$mz, digits = decimals)
+      #   temp = temp[
+      #     data.table::CJ(analysis = analysis, mz = mz, unique = TRUE),
+      #     on = .(analysis, mz)
+      #   ]
+      #   data.table::setnafill(temp, fill = 0, cols = 'intensity')
+      #   temp = temp[, `:=`(intensity = sum(intensity)),
+      #               by = c("analysis", "mz")][]
+      #   temp = unique(temp)
+      #
+      #   temp = matrix(temp$intensity,
+      #                 nrow = length(unique(temp$mz)),
+      #                 ncol = length(unique(temp$analysis)),
+      #                 dimnames = list(unique(temp$mz),
+      #                                 unique(temp$analysis)))
+      #   temp = cor(temp, method = method)
+      #   return(temp)
+      # }, decimals = 3, minIntensity = 10000, method = "pearson")
+      # cor_list
+
+
+      if ("groups" %in% groupBy) {
+        ms1$unique_id = ms1$id
+        ms1$analysis = NA_character_
+      } else {
+        rpls = self$get_replicate_names()
+        ms1$analysis =  rpls[ms1$analysis]
+        ms1$unique_id = paste0(ms1$analysis, "_", ms1$id)
+      }
+
+      ms1_list = rcpp_ms_cluster_spectra(ms1, mzClustGroups, verbose)
+      ms1_df = rbindlist(ms1_list, fill = TRUE)
+      ms1_df = ms1_df[order(ms1_df$mz), ]
+      ms1_df = ms1_df[order(ms1_df$id), ]
+
+      if ("groups" %in% groupBy) {
+        ms1_df[["analysis"]] = NULL
+        setnames(ms1_df, "id", "group")
+      } else {
+        ms1_df = ms1_df[order(ms1_df$analysis), ]
+        setnames(ms1_df, c("analysis", "id"), c("replicate", "group"))
+      }
+
+      return(ms1_df)
+    },
+
+    #' @description
+    #' Method to get an averaged MS2 spectrum for feature groups in analyses.
+    #'
+    #' @return A data.frame/data.table.
+    get_feature_groups_ms2 = function(groups = NULL, mass = NULL,
+                                      mz = NULL, rt = NULL, ppm = 20, sec = 60,
+                                      isolationWindow = 1.3,
+                                      mzClustFeatures = 0.005,
+                                      minIntensityFeatures = 100,
+                                      mzClustGroups = 0.005,
+                                      minIntensityGroups = 100,
+                                      groupBy = "groups",
+                                      verbose = TRUE, filtered = FALSE,
+                                      run_parallel = FALSE) {
+
+      fgs = self$get_feature_groups(groups, mass, mz, rt, ppm, sec, filtered,
+                                    onlyIntensities = FALSE, average = FALSE)
+
+      if (nrow(fgs) == 0) return(data.frame())
+
+      fts = self$get_features(id = fgs$group)
+
+      if (nrow(fts) == 0) return(data.frame())
+
+      fts$id = fts$group
+
+      ms2 = self$get_ms2(analyses = unique(fts$analysis), mz = fts,
+                         isolationWindow = isolationWindow,
+                         mzClust = mzClustFeatures,
+                         minIntensity = minIntensityFeatures,
+                         verbose = verbose,
+                         run_parallel = run_parallel)
+
+      ms2 = ms2[ms2$intensity > minIntensityGroups, ]
+
+      if (nrow(ms2) == 0) return(data.frame())
+
+      # cor_list = split(ms2, ms2$id)
+      # cor_list = lapply(cor_list, function(x, decimals, method, minIntensity) {
+      #   temp = copy(x[, c("analysis", "mz", "intensity")])
+      #   temp = temp[temp$intensity >= minIntensity, ]
+      #   temp$mz = round(temp$mz, digits = decimals)
+      #   temp = temp[
+      #     data.table::CJ(analysis = analysis, mz = mz, unique = TRUE),
+      #     on = .(analysis, mz)
+      #   ]
+      #   data.table::setnafill(temp, fill = 0, cols = 'intensity')
+      #   temp = temp[, `:=`(intensity = sum(intensity)),
+      #               by = c("analysis", "mz")][]
+      #   temp = unique(temp)
+      #
+      #   temp = matrix(temp$intensity,
+      #                 nrow = length(unique(temp$mz)),
+      #                 ncol = length(unique(temp$analysis)),
+      #                 dimnames = list(unique(temp$mz),
+      #                                 unique(temp$analysis)))
+      #   temp = cor(temp, method = method)
+      #   return(temp)
+      # }, decimals = 3, minIntensity = 50, method = "pearson")
+      # cor_list
+
+
+      if ("groups" %in% groupBy) {
+        ms2$unique_id = ms2$id
+        ms2$analysis = NA_character_
+      } else {
+        rpls = self$get_replicate_names()
+        ms2$analysis =  rpls[ms2$analysis]
+        ms2$unique_id = paste0(ms2$analysis, "_", ms2$id)
+      }
+
+      ms2_list = rcpp_ms_cluster_ms2(ms2, mzClustGroups, verbose)
+      ms2_df = rbindlist(ms2_list, fill = TRUE)
+      ms2_df = ms2_df[order(ms2_df$mz), ]
+      ms2_df = ms2_df[order(ms2_df$id), ]
+
+      if ("groups" %in% groupBy) {
+        ms2_df[["analysis"]] = NULL
+        setnames(ms2_df, "id", "group")
+      } else {
+        ms2_df = ms2_df[order(ms2_df$analysis), ]
+        setnames(ms2_df, c("analysis", "id"), c("replicate", "group"))
+      }
+
+      return(ms2_df)
     },
 
     ## set -----
@@ -1762,7 +1948,7 @@ R6MS = R6::R6Class("R6MS",
         spec$var = spec$level
       } else if (colorBy == "targets"){
         spec$var = spec$id
-      } else if (colorBy == "replicates") {
+      } else if ("replicates" %in% colorBy) {
         spec$replicate = self$get_replicate_names()[spec$analysis]
         spec$var = spec$replicate
       } else {
@@ -1820,7 +2006,7 @@ R6MS = R6::R6Class("R6MS",
         return(NULL)
       }
 
-      if (!"id" %in% colnames(eic)) eic$id = NA_character_
+      if (!"id" %in% colnames(xic)) xic$id = NA_character_
 
       ids = unique(xic$id)
       if (is.character(legendNames) & length(legendNames) == length(ids)) {
@@ -1887,10 +2073,10 @@ R6MS = R6::R6Class("R6MS",
         return(NULL)
       }
 
-      if (colorBy == "analyses") {
+      if ("analyses" %in% colorBy) {
         leg = unique(eic$analysis)
         varkey = eic$analysis
-      } else if (colorBy == "replicates") {
+      } else if ("replicates" %in% colorBy) {
         eic$replicate = self$get_replicate_names()[eic$analysis]
         leg = unique(eic$replicate)
         varkey = eic$replicate
@@ -1933,7 +2119,7 @@ R6MS = R6::R6Class("R6MS",
         return(NULL)
       }
 
-      if (colorBy == "replicates") {
+      if ("replicates" %in% colorBy) {
         tic$replicate = self$get_replicate_names()[tic$analysis]
         leg = unique(tic$replicate)
         varkey = tic$replicate
@@ -1970,7 +2156,7 @@ R6MS = R6::R6Class("R6MS",
         return(NULL)
       }
 
-      if (colorBy == "replicates") {
+      if ("replicates" %in% colorBy) {
         bpc$replicate = self$get_replicate_names()[bpc$analysis]
         leg = unique(bpc$replicate)
         varkey = bpc$replicate
@@ -2021,10 +2207,10 @@ R6MS = R6::R6Class("R6MS",
         return(NULL)
       }
 
-      if (colorBy == "analyses") {
+      if ("analyses" %in% colorBy) {
         leg = unique(ms2$analysis)
         varkey = ms2$analysis
-      } else if (colorBy == "replicates") {
+      } else if ("replicates" %in% colorBy) {
         ms2$replicate = self$get_replicate_names()[ms2$analysis]
         leg = unique(ms2$replicate)
         varkey = ms2$replicate
@@ -2079,71 +2265,10 @@ R6MS = R6::R6Class("R6MS",
         return(NULL)
       }
 
-      if (colorBy == "analyses") {
+      if ("analyses" %in% colorBy) {
         leg = unique(ms1$analysis)
         varkey = ms1$analysis
-      } else if (colorBy == "replicates") {
-        ms1$replicate = self$get_replicate_names()[ms1$analysis]
-        leg = unique(ms1$replicate)
-        varkey = ms1$replicate
-      } else if (is.character(legendNames) &
-                 length(legendNames) == length(unique(ms1$id))) {
-        leg = legendNames
-        names(leg) = unique(ms1$id)
-        varkey = leg[ms1$id]
-      } else {
-        leg = unique(ms1$id)
-        varkey = ms1$id
-      }
-
-      ms1$var = varkey
-
-      if (!interactive) return(plot_static_spectra(ms1, title))
-      else return(plot_interactive_spectra(ms1, title))
-    },
-
-    #' @description
-    #' Method to plot MS1 spectra from the analyses based on targets.
-    #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param id X.
-    #' @param mzClust X.
-    #' @param verbose X.
-    #' @param minIntensity X.
-    #' @param run_parallel X.
-    #' @param legendNames x.
-    #' @param title x.
-    #' @param colorBy x.
-    #' @param interactive x.
-    #'
-    #' @return A plot.
-    plot_features_ms1 = function(analyses = NULL, id = NULL, mass = NULL,
-                                 mz = NULL, rt = NULL, ppm = 20, sec = 60,
-                                 rtWindow = c(-2, 2), mzWindow = c(-5, 100),
-                                 mzClust = 0.001, minIntensity = 1000,
-                                 verbose = TRUE, filtered = FALSE,
-                                 run_parallel = FALSE, legendNames = NULL,
-                                 title = NULL, colorBy = "targets",
-                                 interactive = TRUE) {
-
-      ms1 = self$get_features_ms1(analyses, id, mass, mz, rt, ppm, sec,
-                                  rtWindow, mzWindow, mzClust, minIntensity,
-                                  verbose, filtered, run_parallel)
-
-      if (nrow(ms1) < 0) {
-        message("MS1 traces not found for the targets!")
-        return(NULL)
-      }
-
-      if (colorBy == "analyses") {
-        leg = unique(ms1$analysis)
-        varkey = ms1$analysis
-      } else if (colorBy == "replicates") {
+      } else if ("replicates" %in% colorBy) {
         ms1$replicate = self$get_replicate_names()[ms1$analysis]
         leg = unique(ms1$replicate)
         varkey = ms1$replicate
@@ -2258,10 +2383,10 @@ R6MS = R6::R6Class("R6MS",
         return(NULL)
       }
 
-      if (colorBy == "analyses") {
+      if ("analyses" %in% colorBy) {
         leg = unique(eic$analysis)
         varkey = eic$analysis
-      } else if (colorBy == "replicates") {
+      } else if ("replicates" %in% colorBy) {
         eic$replicate = self$get_replicate_names()[eic$analysis]
         leg = unique(eic$replicate)
         varkey = eic$replicate
@@ -2299,10 +2424,10 @@ R6MS = R6::R6Class("R6MS",
         return(NULL)
       }
 
-      if (colorBy == "analyses") {
+      if ("analyses" %in% colorBy) {
         leg = unique(fts$analysis)
         varkey = fts$analysis
-      } else if (colorBy == "replicates") {
+      } else if ("replicates" %in% colorBy) {
         fts$replicate = self$get_replicate_names()[fts$analysis]
         leg = unique(fts$replicate)
         varkey = fts$replicate
@@ -2321,6 +2446,127 @@ R6MS = R6::R6Class("R6MS",
       if (!interactive) {
         return(map_features_static(fts, xlim, ylim, title, showLegend))
       } else return(map_features_interactive(fts, xlim, ylim, title))
+    },
+
+    #' @description
+    #' Method to plot MS1 spectra from features in the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #' @param mz X.
+    #' @param rt X.
+    #' @param ppm X.
+    #' @param sec X.
+    #' @param id X.
+    #' @param mzClust X.
+    #' @param verbose X.
+    #' @param minIntensity X.
+    #' @param run_parallel X.
+    #' @param legendNames x.
+    #' @param title x.
+    #' @param colorBy x.
+    #' @param interactive x.
+    #'
+    #' @return A plot.
+    plot_features_ms1 = function(analyses = NULL, id = NULL, mass = NULL,
+                                 mz = NULL, rt = NULL, ppm = 20, sec = 60,
+                                 rtWindow = c(-2, 2), mzWindow = c(-5, 100),
+                                 mzClust = 0.001, minIntensity = 1000,
+                                 verbose = TRUE, filtered = FALSE,
+                                 run_parallel = FALSE, legendNames = NULL,
+                                 title = NULL, colorBy = "targets",
+                                 interactive = TRUE) {
+
+      ms1 = self$get_features_ms1(analyses, id, mass, mz, rt, ppm, sec,
+                                  rtWindow, mzWindow, mzClust, minIntensity,
+                                  verbose, filtered, run_parallel)
+
+      if (nrow(ms1) < 0) {
+        message("MS1 traces not found for the targets!")
+        return(NULL)
+      }
+
+      if ("analyses" %in% colorBy) {
+        leg = unique(ms1$analysis)
+        varkey = ms1$analysis
+      } else if ("replicates" %in% colorBy) {
+        ms1$replicate = self$get_replicate_names()[ms1$analysis]
+        leg = unique(ms1$replicate)
+        varkey = ms1$replicate
+      } else if (is.character(legendNames) &
+                 length(legendNames) == length(unique(ms1$id))) {
+        leg = legendNames
+        names(leg) = unique(ms1$id)
+        varkey = leg[ms1$id]
+      } else {
+        leg = unique(ms1$id)
+        varkey = ms1$id
+      }
+
+      ms1$var = varkey
+
+      if (!interactive) return(plot_static_spectra(ms1, title))
+      else return(plot_interactive_spectra(ms1, title))
+    },
+
+    #' @description
+    #' Method to plot MS2 spectra from features in the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #' @param mz X.
+    #' @param rt X.
+    #' @param ppm X.
+    #' @param sec X.
+    #' @param id X.
+    #' @param mzClust X.
+    #' @param verbose X.
+    #' @param minIntensity X.
+    #' @param run_parallel X.
+    #' @param legendNames x.
+    #' @param title x.
+    #' @param colorBy x.
+    #' @param interactive x.
+    #'
+    #' @return A plot.
+    plot_features_ms2 = function(analyses = NULL, id = NULL, mass = NULL,
+                                 mz = NULL, rt = NULL, ppm = 20, sec = 60,
+                                 isolationWindow = 1.3, mzClust = 0.005,
+                                 minIntensity = 0, verbose = TRUE,
+                                 filtered = FALSE, run_parallel = FALSE,
+                                 legendNames = NULL, title = NULL,
+                                 colorBy = "targets", interactive = TRUE) {
+
+      ms2 = self$get_features_ms2(analyses, id, mass, mz, rt, ppm, sec,
+                                  isolationWindow, mzClust, minIntensity,
+                                  verbose, filtered, run_parallel)
+
+      if (nrow(ms2) < 0) {
+        message("MS2 traces not found for the targets!")
+        return(NULL)
+      }
+
+      if ("analyses" %in% colorBy) {
+        leg = unique(ms2$analysis)
+        varkey = ms2$analysis
+      } else if ("replicates" %in% colorBy) {
+        ms2$replicate = self$get_replicate_names()[ms2$analysis]
+        leg = unique(ms2$replicate)
+        varkey = ms2$replicate
+      } else if (is.character(legendNames) &
+                 length(legendNames) == length(unique(ms2$id))) {
+        leg = legendNames
+        names(leg) = unique(ms2$id)
+        varkey = leg[ms2$id]
+      } else {
+        leg = unique(ms2$id)
+        varkey = ms2$id
+      }
+
+      ms2$var = varkey
+
+      if (!interactive) return(plot_static_ms2(ms2, title))
+      else return(plot_interactive_ms2(ms2, title))
     },
 
     #' @description
@@ -2351,6 +2597,146 @@ R6MS = R6::R6Class("R6MS",
           rtExpand = rtExpand, mzExpand = mzExpand,
           run_parallel = run_parallel, legendNames = fts$group,
           title = title, colorBy = colorBy, interactive = interactive))
+    },
+
+    #' @description
+    #' Method to plot MS1 spectra from features in the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #' @param mz X.
+    #' @param rt X.
+    #' @param ppm X.
+    #' @param sec X.
+    #' @param id X.
+    #' @param mzClust X.
+    #' @param verbose X.
+    #' @param minIntensity X.
+    #' @param run_parallel X.
+    #' @param legendNames x.
+    #' @param title x.
+    #' @param colorBy x.
+    #' @param interactive x.
+    #'
+    #' @return A plot.
+    plot_feature_groups_ms1 = function(groups = NULL, mass = NULL,
+                                       mz = NULL, rt = NULL, ppm = 20, sec = 60,
+                                       rtWindow = c(-2, 2), mzWindow = c(-5, 90),
+                                       mzClustFeatures = 0.001,
+                                       minIntensityFeatures = 1000,
+                                       mzClustGroups = 0.001,
+                                       minIntensityGroups = 1000,
+                                       verbose = TRUE, filtered = FALSE,
+                                       run_parallel = FALSE, legendNames = NULL,
+                                       title = NULL, colorBy = "targets",
+                                       interactive = TRUE) {
+
+      if ("groups" %in% colorBy | "targets" %in% colorBy) {
+        groupBy = "groups"
+      } else {
+        groupBy = "replicates"
+      }
+
+      ms1 = self$get_feature_groups_ms1(groups, mass, mz, rt, ppm, sec,
+                                        rtWindow, mzWindow, mzClustFeatures,
+                                        minIntensityFeatures, mzClustGroups,
+                                        minIntensityGroups, verbose,
+                                        filtered, run_parallel)
+
+      if (nrow(ms1) < 0) {
+        message("MS1 traces not found for the targets!")
+        return(NULL)
+      }
+
+      if ("replicates" %in% colorBy | "analyses" %in% colorBy) {
+        leg = unique(ms1$replicate)
+        varkey = ms1$replicate
+      } else if (is.character(legendNames) &
+                 length(legendNames) == length(unique(ms1$group))) {
+        leg = legendNames
+        names(leg) = unique(ms1$group)
+        varkey = leg[ms1$group]
+      } else {
+        leg = unique(ms1$group)
+        varkey = ms1$group
+      }
+
+      ms1$var = varkey
+
+      if (!interactive) {
+        return(plot_static_spectra(ms1, title))
+      } else {
+        return(plot_interactive_spectra(ms1, title))
+      }
+    },
+
+    #' @description
+    #' Method to plot MS1 spectra from features in the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #' @param mz X.
+    #' @param rt X.
+    #' @param ppm X.
+    #' @param sec X.
+    #' @param id X.
+    #' @param mzClust X.
+    #' @param verbose X.
+    #' @param minIntensity X.
+    #' @param run_parallel X.
+    #' @param legendNames x.
+    #' @param title x.
+    #' @param colorBy x.
+    #' @param interactive x.
+    #'
+    #' @return A plot.
+    plot_feature_groups_ms2 = function(groups = NULL, mass = NULL,
+                                       mz = NULL, rt = NULL, ppm = 20, sec = 60,
+                                       isolationWindow = 1.3,
+                                       mzClustFeatures = 0.005,
+                                       minIntensityFeatures = 100,
+                                       mzClustGroups = 0.005,
+                                       minIntensityGroups = 100,
+                                       verbose = TRUE, filtered = FALSE,
+                                       run_parallel = FALSE, legendNames = NULL,
+                                       title = NULL, colorBy = "targets",
+                                       interactive = TRUE) {
+
+      if ("groups" %in% colorBy | "targets" %in% colorBy) {
+        groupBy = "groups"
+      } else {
+        groupBy = "replicates"
+      }
+
+      ms2 = self$get_feature_groups_ms2(groups, mass, mz, rt, ppm, sec,
+                                        isolationWindow, mzClustFeatures,
+                                        minIntensityFeatures,
+                                        mzClustGroups, minIntensityGroups,
+                                        groupBy, verbose, filtered,
+                                        run_parallel)
+
+      if (nrow(ms2) < 0) {
+        message("MS2 traces not found for the targets!")
+        return(NULL)
+      }
+
+      if ("replicates" %in% colorBy | "analyses" %in% colorBy) {
+        leg = unique(ms2$replicate)
+        varkey = ms2$replicate
+      } else if (is.character(legendNames) &
+                 length(legendNames) == length(unique(ms2$group))) {
+        leg = legendNames
+        names(leg) = unique(ms2$group)
+        varkey = leg[ms2$group]
+      } else {
+        leg = unique(ms2$group)
+        varkey = ms2$group
+      }
+
+      ms2$var = varkey
+
+      if (!interactive) return(plot_static_ms2(ms2, title))
+      else return(plot_interactive_ms2(ms2, title))
     },
 
     #' @description
@@ -3480,4 +3866,83 @@ plot_group_features_aux <- function(fts, eic, heights, analyses) {
     legend = list(title = list(text = paste("<b>", "targets", "</b>"))))
 
   return(plotf_2)
+}
+
+#' @title correlate_spectra
+#'
+#' @description Function to correlate spectra.
+#'
+#' @param spectra
+#'
+#' @return X.
+#'
+#' @export
+#'
+correlate_spectra = function(spectra, decimals = 2, minIntensity = 1000,
+                             method = "pearson") {
+
+  spectra$var = "test"
+
+  if ("replicate" %in% colnames(spectra)) {
+    setnames(spectra, "replicate", "analysis", skip_absent = TRUE)
+  }
+
+  if (!all(c("id", "analysis", "mz", "intensity") %in% colnames(spectra))) {
+    return(NULL)
+  }
+
+  cor_list = split(spectra, spectra$var)
+
+  x = cor_list[[1]]
+
+  cor_list = lapply(cor_list, function(x, decimals, method, minIntensity) {
+
+    temp = copy(x[, c("analysis", "mz", "intensity")])
+
+    temp = temp[temp$intensity >= minIntensity, ]
+
+    temp$mz = round(temp$mz, digits = decimals)
+
+    temp = temp[
+      data.table::CJ(analysis = analysis, mz = mz, unique = TRUE),
+      on = .(analysis, mz)
+    ]
+
+    data.table::setnafill(temp, fill = 0, cols = 'intensity')
+
+    temp = temp[, `:=`(intensity = sum(intensity)),
+                by = c("analysis", "mz")][]
+
+    temp = unique(temp)
+
+    max_mzs = length(unique(temp$mz))
+
+    cov_df = data.frame(
+      "analysis" = unique(temp$analysis),
+      "total" = max_mzs,
+      "coverage" = 0
+    )
+
+    for (i in unique(temp$analysis)) {
+      cov_df$coverage[cov_df$analysis %in% i] =
+        nrow(temp[temp$analysis %in% i & temp$intensity > 0, ]) /
+        max_mzs
+    }
+
+
+    # temp = matrix(temp$intensity2,
+    #               nrow = length(unique(temp$mz)),
+    #               ncol = length(unique(temp$analysis)),
+    #               dimnames = list(unique(temp$mz),
+    #                               unique(temp$analysis)))
+    #
+    # temp = cor(temp, method = method)
+
+    return(cov_df)
+
+  }, decimals = decimals, minIntensity = minIntensity, method = method)
+
+  # cor_list = rbindlist(cor_list, idcol = "id")
+
+  return(cor_list)
 }
