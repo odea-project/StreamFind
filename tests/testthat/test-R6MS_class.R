@@ -30,7 +30,7 @@ diu_pos <- diuron_d6$mass + 1.0073
 diu <- diuron_d6$mass + 1.0073
 diu_rt <- diuron_d6$rt
 
-sec_dev <- 15
+sec_dev <- 30
 ppm_dev <- 10
 
 mz <- data.frame(id = c("tg1", "tg2"),mz = c(carb, diu),rt = c(carb_rt, diu_rt))
@@ -43,6 +43,17 @@ ms <- R6MS$new(files, run_parallel = FALSE)
 test_that("create R6MS", {
   expect_equal(class(ms), c("R6MS", "R6"))
 })
+
+test_that("getter for features with empty object", {
+  expect_equal(nrow(ms$get_features()), 0)
+  expect_equal(nrow(ms$get_features_ms1()), 0)
+  expect_equal(nrow(ms$get_features_ms2()), 0)
+  expect_equal(nrow(ms$get_features_eic()), 0)
+  expect_equal(nrow(ms$get_groups()), 0)
+  expect_equal(nrow(ms$get_groups_ms1()), 0)
+  expect_equal(nrow(ms$get_groups_ms2()), 0)
+})
+
 
 test_that("getter for names and filePaths", {
   expect_equal(unname(ms$get_analysis_names()),
@@ -103,7 +114,6 @@ test_that("loading spectra", {
 test_that("getting spectra for targets", {
   expect_s3_class(
     ms$get_spectra(analyses = 1, mz = targets, level = 1),"data.frame")
-  expect_equal(nrow(ms$get_spectra(analyses = 1, mz = targets, level = 1)), 0)
   expect_s3_class(
     ms3$get_spectra(analyses = 1, mz = targets, level = c(1, 2)),"data.frame")
   expect_true("id" %in%
@@ -185,7 +195,9 @@ ftar = ms$get_features(analyses = 4, mz = targets)
 
 test_that("get MS1 and MS2 for features", {
   expect_s3_class(ms$get_features_ms1(id = ftar$id), "data.frame")
+  expect_gt(nrow(ms$get_features_ms1(id = ftar$id)), 0)
   expect_s3_class(ms$get_features_ms2(id = ftar$id), "data.frame")
+  expect_gt(nrow(ms$get_features_ms2(id = ftar$id)), 0)
   expect_equal(nrow(ms$get_features_ms1(analyses = 1, id = ftar$id)), 0)
   expect_equal(nrow(ms$get_features_ms1(analyses = 1, mz = ftar)), 0)
   expect_s3_class(ms$get_features_ms2(id = ftar$id), "data.frame")
@@ -216,13 +228,20 @@ settings_gf <- createSettings(
 ms$group_features(settings = settings_gf)
 
 test_that("group features", {
-  expect_s3_class(ms$get_feature_groups(mass = targets), "data.table")
-  expect_true("group" %in% colnames(ms$get_feature_groups(mz = targets[1,])))
+  expect_s3_class(ms$get_groups(mz = targets), "data.table")
+  expect_true("group" %in% colnames(ms$get_groups(mz = targets[1,])))
   expect_true(all(ms$has_feature_groups()))
 })
 
-# ms$plot_feature_groups(mass = targets, legendNames = c("Target1", "Target2"))
-# ms$plot_group_features(mass = targets)
+test_that("get feature groups MS1 and MS2", {
+  expect_s3_class(ms$get_groups_ms1(mz = targets), "data.table")
+  expect_gt(nrow(ms$get_groups_ms1(mz = targets)), 0)
+  expect_s3_class(ms$get_groups_ms2(mz = targets), "data.table")
+  expect_gt(nrow(ms$get_groups_ms2(mz = targets)), 0)
+})
+
+# ms$plot_groups(mz = targets, legendNames = c("Target1", "Target2"))
+# ms$plot_groups_overview(mz = targets)
 
 settings_gf_alignment <- createSettings(
   call = "group_features",
@@ -258,6 +277,7 @@ ms4 = ms$subset_analyses(4:6)
 ms4$group_features(settings = settings_gf_alignment)
 
 test_that("alignment of features", {
+  expect_gt(length(ms4$get_alignment()), 1)
   expect_true(all(ms4$has_alignment()))
 })
 
@@ -265,8 +285,7 @@ test_that("alignment of features", {
 
 
 
-# TODO Make test for getting features MS1 ans MS2 as well as
-# getting MS1 and MS2 averaged for a feature groups
+# TODO make a json version of the R6 class for export function
 
 # TODO Implement a field for storing MS lists for each feature/feature groups
 
@@ -287,48 +306,140 @@ test_that("alignment of features", {
 
 # Work Lines -----
 
-ms <- R6MS$new(files[4:6], run_parallel = FALSE)
+ms <- R6MS$new(files[c(4:6, 10:12)], run_parallel = FALSE)
 ms$find_features(settings = settings_ff)
 ms$group_features(settings = settings_gf_alignment)
 self = ms$clone(deep = T)
 
 
-gtar = ms$get_feature_groups(mz = targets)
 
-ms$get_feature_groups_ms1(groups = gtar$group)
+export_R6MS(ms)
 
-ms$get_feature_groups_ms1(groups = gtar$group, groupBy = "replicates")
+js_ms = jsonlite::fromJSON(paste0(getwd(), "/ms.json"))
 
-ms$plot_feature_groups_ms1(groups = gtar$group)
-ms$plot_feature_groups_ms1(groups = gtar$group, colorBy = "replicates")
+js_ms$analyses = lapply(js_ms$analyses, function(x) {
+  x$name = as.character(x$name)
+  x$replicate = as.character(x$replicate)
+  x$blank = as.character(x$blank)
+  if (is.na(x$blank)) x$blank = NA_character_
+  x$file = as.character(x$file)
+  x$type = as.character(x$type)
+  x$time_stamp = as.character(x$time_stamp)
+  x$spectra_number = as.integer(x$spectra_number)
+  x$spectra_mode = as.character(x$spectra_mode)
+  x$spectra_levels = as.integer(x$spectra_levels)
+  x$mz_low = as.numeric(x$mz_low)
+  x$mz_high = as.numeric(x$mz_high)
+  x$rt_start = as.numeric(x$rt_start)
+  x$rt_end = as.numeric(x$rt_end)
+  x$polarity = as.character(x$polarity)
+  x$chromatograms_number = as.integer(x$chromatograms_number)
+  x$ion_mobility = as.logical(x$ion_mobility)
+  x$tic = as.data.table(x$tic)
+  x$bpc = as.data.table(x$bpc)
+  x$spectra = as.data.table(x$spectra)
+  x$chromatograms = as.data.table(x$chromatograms)
+  x$features = as.data.table(x$features)
+  return(x)
+})
 
-ms$get_feature_groups_ms2(groups = gtar$group)
+all(unlist(lapply(js_ms$analyses, validate_list_ms_analysis)))
 
-ms$plot_feature_groups_ms2(groups = gtar$group)
-ms$plot_feature_groups_ms2(groups = gtar$group, colorBy = "replicates")
+js_ms$alignment = as.data.table(js_ms$alignment)
+
+js_ms$groups = lapply(js_ms$groups, function(x) {
+  features_temp = as.data.frame(x[["features"]])
+  x[["features"]] = NULL
+  x = as.data.table(x)
+  x$features = list(features_temp)
+  return(x)
+})
+
+js_ms$groups = rbindlist(js_ms$feature_groups)
+
+js_ms$groups = js_ms$feature_groups[order(js_ms$feature_groups$index), ]
+
+head(js_ms$groups)
+
+ms$get_groups()
+
+
+head(ms$get_groups())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ms$plot_spectra(levels = c(1, 2), mz = targets[1, ], minIntensityMS2 = 1000,
+                allTraces = FALSE, colorBy = "levels")
+
+spectra = ms$get_spectra(levels = 2, mz = targets[1, ], allTraces = FALSE)
+# spectra = spectra[spectra$mz > 78 & spectra$mz < 78.1, ]
+# spectra = spectra[spectra$mz > 239 & spectra$mz < 239.5, ]
+# spectra = spectra[spectra$mz > 52 & spectra$mz < 52.3, ]
+# spectra = spectra[spectra$mz > 159.5 & spectra$mz < 160, ]
+spectra = spectra[spectra$mz > 247.15 & spectra$mz < 247.2, ]
+spectra = spectra[spectra$mz > 204.1 & spectra$mz < 204.16, ]
+max(spectra$mz) - min(spectra$mz)
+(max(spectra$mz) - min(spectra$mz))/max(spectra$mz)*1E6
+
+
+
+ms$get_features()
+
+gtar = ms$get_groups(mz = targets)
+
+ms$get_groups_ms1(groups = gtar$group)
+ms$get_groups_ms1(groups = gtar$group, groupBy = "replicates")
+ms$plot_groups_ms1(groups = gtar$group)
+ms$plot_groups_ms1(groups = gtar$group, colorBy = "replicates")
+
+ms$get_groups_ms2(groups = gtar$group)
+ms$plot_groups_ms2(groups = gtar$group)
+ms$plot_groups_ms2(groups = gtar$group, colorBy = "replicates")
 
 ms$plot_features_ms2(id = gtar$group[1], colorBy = "analyses")
 
-ms$plot_feature_groups_ms2(group = gtar$group[1])
+ms$plot_groups_ms2(group = gtar$group[1])
 
 correlate_spectra(ms$get_features_ms1(id = gtar$group[1]),
                   decimals = 3,
                   minIntensity = 1000,
                   method = "pearson")
 
-correlate_spectra(spectra = ms$get_features_ms2(id = gtar$group[1]),
-                  decimals = 3,
-                  minIntensity = 600,
-                  method = "pearson")
+correlate_analysis_spectra(
+  spectra = ms$get_groups_ms2(groups = gtar$group,
+                                      groupBy = "replicates"),
+  splitSpectra = TRUE,
+  byReplicates = TRUE,
+  decimals = 3,
+  minIntensity = 200,
+  method = "pearson"
+)
 
-
-ms$plot_features_ms1(mz = targets[1, ], mzClust = 0.001,
+ms$plot_features_ms1(mz = targets[1, ], mzClust = 0.01,
                      rtWindow = c(-2, 2), colorBy = "analyses")
-ms$plot_features_ms2(mz = targets[2, ], mzClust = 0.001, colorBy = "analyses")
+ms$plot_features_ms2(mz = targets[2, ], mzClust = 0.01, colorBy = "analyses")
 
 
 #ms$plot_features_ms1(analyses = 1, mz = targets, interactive = T)
-ms$plot_group_features(mz = targets)
+ms$plot_groups_overview(mz = targets)
 
 ms$plot_ms2(1, mz = targets)
 ms$plot_ms1(1, mz = targets)
@@ -348,7 +459,7 @@ ftar = ms$get_features(mz = targets)
 
 
 
-
+get_ms1()
 
 
 
