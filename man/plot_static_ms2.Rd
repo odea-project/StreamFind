@@ -7,9 +7,8 @@
 plot_static_ms2(ms2, title = NULL)
 }
 \arguments{
-\item{ms2}{A data table with the id, mz, intensity, CE, preMZ, precursor
-and var (i.e., the plotting variable for each entry) as columns. Optionally,
-analysis and replicate can be in the table.}
+\item{ms2}{A data table with the id, mz, intensity, preMZ, isPre
+and var (i.e., the plotting variable for each entry) as columns.}
 
 \item{title}{A character vector to be used as title.}
 }
@@ -17,5 +16,5 @@ analysis and replicate can be in the table.}
 An MSn plot.
 }
 \description{
-Static plot of MS2 spectra using the \pkg{base} package.
+Static plot of MSn spectra using the \pkg{base} package.
 }

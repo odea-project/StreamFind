@@ -7,14 +7,14 @@
 plot_interactive_ms2(ms2, title)
 }
 \arguments{
-\item{ms2}{A data.table with the analyses, id, preMZ, rt, mz, intensity,
+\item{ms2}{A data.table with the id, preMZ, mz, intensity,
 isPre and var (i.e., the plotting variable for each entry) as columns.}
 
 \item{title}{A character vector to be used as title.}
 }
 \value{
-An MS2 interactive plot.
+An MS2 spectra interactive plot.
 }
 \description{
-Interactive plot of MS2 using the \pkg{plotly} package.
+Interactive plot of MS2 spectra using the \pkg{plotly} package.
 }

@@ -38,26 +38,33 @@ The \linkS4class{settings} call must be set to "group_features".
 \item \href{#method-R6MS-get_blank_names}{\code{R6MS$get_blank_names()}}
 \item \href{#method-R6MS-get_polarities}{\code{R6MS$get_polarities()}}
 \item \href{#method-R6MS-get_file_paths}{\code{R6MS$get_file_paths()}}
+\item \href{#method-R6MS-get_mz_high}{\code{R6MS$get_mz_high()}}
+\item \href{#method-R6MS-get_rt_end}{\code{R6MS$get_rt_end()}}
 \item \href{#method-R6MS-get_spectra}{\code{R6MS$get_spectra()}}
 \item \href{#method-R6MS-get_chromatograms}{\code{R6MS$get_chromatograms()}}
 \item \href{#method-R6MS-get_tic}{\code{R6MS$get_tic()}}
 \item \href{#method-R6MS-get_bpc}{\code{R6MS$get_bpc()}}
 \item \href{#method-R6MS-get_eic}{\code{R6MS$get_eic()}}
+\item \href{#method-R6MS-get_ms1}{\code{R6MS$get_ms1()}}
 \item \href{#method-R6MS-get_ms2}{\code{R6MS$get_ms2()}}
 \item \href{#method-R6MS-get_settings}{\code{R6MS$get_settings()}}
 \item \href{#method-R6MS-get_features}{\code{R6MS$get_features()}}
 \item \href{#method-R6MS-get_features_eic}{\code{R6MS$get_features_eic()}}
+\item \href{#method-R6MS-get_features_ms1}{\code{R6MS$get_features_ms1()}}
 \item \href{#method-R6MS-get_features_ms2}{\code{R6MS$get_features_ms2()}}
-\item \href{#method-R6MS-get_feature_groups}{\code{R6MS$get_feature_groups()}}
+\item \href{#method-R6MS-get_alignment}{\code{R6MS$get_alignment()}}
+\item \href{#method-R6MS-get_groups}{\code{R6MS$get_groups()}}
+\item \href{#method-R6MS-get_groups_ms1}{\code{R6MS$get_groups_ms1()}}
+\item \href{#method-R6MS-get_groups_ms2}{\code{R6MS$get_groups_ms2()}}
 \item \href{#method-R6MS-set_replicate_names}{\code{R6MS$set_replicate_names()}}
 \item \href{#method-R6MS-set_blank_names}{\code{R6MS$set_blank_names()}}
 \item \href{#method-R6MS-add_analyses}{\code{R6MS$add_analyses()}}
 \item \href{#method-R6MS-add_settings}{\code{R6MS$add_settings()}}
-\item \href{#method-R6MS-find_features}{\code{R6MS$find_features()}}
-\item \href{#method-R6MS-group_features}{\code{R6MS$group_features()}}
 \item \href{#method-R6MS-add_features}{\code{R6MS$add_features()}}
 \item \href{#method-R6MS-load_spectra}{\code{R6MS$load_spectra()}}
 \item \href{#method-R6MS-load_chromatograms}{\code{R6MS$load_chromatograms()}}
+\item \href{#method-R6MS-find_features}{\code{R6MS$find_features()}}
+\item \href{#method-R6MS-group_features}{\code{R6MS$group_features()}}
 \item \href{#method-R6MS-has_analyses}{\code{R6MS$has_analyses()}}
 \item \href{#method-R6MS-has_loaded_spectra}{\code{R6MS$has_loaded_spectra()}}
 \item \href{#method-R6MS-has_loaded_chromatograms}{\code{R6MS$has_loaded_chromatograms()}}
@@ -71,11 +78,16 @@ The \linkS4class{settings} call must be set to "group_features".
 \item \href{#method-R6MS-plot_tic}{\code{R6MS$plot_tic()}}
 \item \href{#method-R6MS-plot_bpc}{\code{R6MS$plot_bpc()}}
 \item \href{#method-R6MS-plot_ms2}{\code{R6MS$plot_ms2()}}
-\item \href{#method-R6MS-plot_alignment}{\code{R6MS$plot_alignment()}}
+\item \href{#method-R6MS-plot_ms1}{\code{R6MS$plot_ms1()}}
 \item \href{#method-R6MS-plot_features}{\code{R6MS$plot_features()}}
 \item \href{#method-R6MS-map_features}{\code{R6MS$map_features()}}
-\item \href{#method-R6MS-plot_feature_groups}{\code{R6MS$plot_feature_groups()}}
-\item \href{#method-R6MS-plot_group_features}{\code{R6MS$plot_group_features()}}
+\item \href{#method-R6MS-plot_features_ms1}{\code{R6MS$plot_features_ms1()}}
+\item \href{#method-R6MS-plot_features_ms2}{\code{R6MS$plot_features_ms2()}}
+\item \href{#method-R6MS-plot_alignment}{\code{R6MS$plot_alignment()}}
+\item \href{#method-R6MS-plot_groups}{\code{R6MS$plot_groups()}}
+\item \href{#method-R6MS-plot_groups_ms1}{\code{R6MS$plot_groups_ms1()}}
+\item \href{#method-R6MS-plot_groups_ms2}{\code{R6MS$plot_groups_ms2()}}
+\item \href{#method-R6MS-plot_groups_overview}{\code{R6MS$plot_groups_overview()}}
 \item \href{#method-R6MS-as_features_patRoon}{\code{R6MS$as_features_patRoon()}}
 \item \href{#method-R6MS-subset_analyses}{\code{R6MS$subset_analyses()}}
 \item \href{#method-R6MS-check_analyses_argument}{\code{R6MS$check_analyses_argument()}}
@@ -91,10 +103,12 @@ Create a new MS set of analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{R6MS$new(
   files = NULL,
-  header = NULL,
-  analyses = NULL,
-  feature_groups = NULL,
-  run_parallel = FALSE
+  run_parallel = FALSE,
+  .header = NULL,
+  .settings = NULL,
+  .analyses = NULL,
+  .groups = NULL,
+  .alignment = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -104,17 +118,21 @@ Create a new MS set of analyses.
 \item{\code{files}}{A character vector with the full file path of MS analyses
 or a data.frame with the columns file, replicate and blank with the
 full file path, the replicate group name (string) and the associated
-blank replicate group (string).}
-
-\item{\code{header}}{A list with administrative information.}
-
-\item{\code{analyses}}{A list with MS analyses information.}
-
-\item{\code{feature_groups}}{A data.frame with `feature_groups` representing
-corresponding features across MS analyses.}
-
-\item{\code{run_parallel}}{Logical, set to \code{TRUE} for processing the data
+blank replicate group (string).
+ @param run_parallel Logical, set to \code{TRUE} for processing the data
 in parallel.}
+
+\item{\code{.header}}{A list with administrative information for the header.
+When not given (i.e., \code{NULL}), a default header is generated.}
+
+\item{\code{.settings}}{A list with settings.}
+
+\item{\code{.analyses}}{A list with MS analyses information.}
+
+\item{\code{.groups}}{A data.table with `groups` representing corresponding
+features across MS analyses.}
+
+\item{\code{.alignment}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -312,6 +330,48 @@ A character vector.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-R6MS-get_mz_high"></a>}}
+\if{latex}{\out{\hypertarget{method-R6MS-get_mz_high}{}}}
+\subsection{Method \code{get_mz_high()}}{
+Method to get the polarity of the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{R6MS$get_mz_high(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A character vector.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-R6MS-get_rt_end"></a>}}
+\if{latex}{\out{\hypertarget{method-R6MS-get_rt_end}{}}}
+\subsection{Method \code{get_rt_end()}}{
+Method to get the polarity of the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{R6MS$get_rt_end(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A character vector.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-R6MS-get_spectra"></a>}}
 \if{latex}{\out{\hypertarget{method-R6MS-get_spectra}{}}}
 \subsection{Method \code{get_spectra()}}{
@@ -478,6 +538,56 @@ A data.frame.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-R6MS-get_ms1"></a>}}
+\if{latex}{\out{\hypertarget{method-R6MS-get_ms1}{}}}
+\subsection{Method \code{get_ms1()}}{
+Method to get MS1 data from the analyses based on targets.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{R6MS$get_ms1(
+  analyses = NULL,
+  mz = NULL,
+  rt = NULL,
+  ppm = 20,
+  sec = 60,
+  id = NULL,
+  mzClust = 0.003,
+  verbose = FALSE,
+  minIntensity = 1000,
+  run_parallel = FALSE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{verbose}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{run_parallel}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A data.frame.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-R6MS-get_ms2"></a>}}
 \if{latex}{\out{\hypertarget{method-R6MS-get_ms2}{}}}
 \subsection{Method \code{get_ms2()}}{
@@ -491,8 +601,8 @@ Method to get MS2 data from the analyses based on targets.
   sec = 60,
   id = NULL,
   isolationWindow = 1.3,
-  mzClust = 0.01,
-  verbose = FALSE,
+  mzClust = 0.005,
+  verbose = TRUE,
   minIntensity = 0,
   run_parallel = FALSE
 )}\if{html}{\out{</div>}}
@@ -598,6 +708,34 @@ A data.frame/data.table.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-R6MS-get_features_ms1"></a>}}
+\if{latex}{\out{\hypertarget{method-R6MS-get_features_ms1}{}}}
+\subsection{Method \code{get_features_ms1()}}{
+Method to get an averaged MS1 spectrum for features in analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{R6MS$get_features_ms1(
+  analyses = NULL,
+  id = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  ppm = 20,
+  sec = 60,
+  rtWindow = c(-2, 2),
+  mzWindow = c(-5, 100),
+  mzClust = 0.003,
+  minIntensity = 1000,
+  verbose = TRUE,
+  filtered = FALSE,
+  run_parallel = FALSE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+A data.frame/data.table.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-R6MS-get_features_ms2"></a>}}
 \if{latex}{\out{\hypertarget{method-R6MS-get_features_ms2}{}}}
 \subsection{Method \code{get_features_ms2()}}{
@@ -612,9 +750,9 @@ Method to get an averaged MS2 spectrum for features in analyses.
   ppm = 20,
   sec = 60,
   isolationWindow = 1.3,
-  mzClust = 0.01,
+  mzClust = 0.003,
   minIntensity = 0,
-  verbose = FALSE,
+  verbose = TRUE,
   filtered = FALSE,
   run_parallel = FALSE
 )}\if{html}{\out{</div>}}
@@ -625,12 +763,25 @@ A data.frame/data.table.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-R6MS-get_feature_groups"></a>}}
-\if{latex}{\out{\hypertarget{method-R6MS-get_feature_groups}{}}}
-\subsection{Method \code{get_feature_groups()}}{
+\if{html}{\out{<a id="method-R6MS-get_alignment"></a>}}
+\if{latex}{\out{\hypertarget{method-R6MS-get_alignment}{}}}
+\subsection{Method \code{get_alignment()}}{
+Method to get alignment.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{R6MS$get_alignment()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+A data.frame.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-R6MS-get_groups"></a>}}
+\if{latex}{\out{\hypertarget{method-R6MS-get_groups}{}}}
+\subsection{Method \code{get_groups()}}{
 Method to get feature groups from analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{R6MS$get_feature_groups(
+\if{html}{\out{<div class="r">}}\preformatted{R6MS$get_groups(
   groups = NULL,
   mass = NULL,
   mz = NULL,
@@ -640,6 +791,65 @@ Method to get feature groups from analyses.
   filtered = FALSE,
   onlyIntensities = FALSE,
   average = FALSE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+A data.frame/data.table.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-R6MS-get_groups_ms1"></a>}}
+\if{latex}{\out{\hypertarget{method-R6MS-get_groups_ms1}{}}}
+\subsection{Method \code{get_groups_ms1()}}{
+Method to get an averaged MS1 spectrum for feature groups in analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{R6MS$get_groups_ms1(
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  ppm = 20,
+  sec = 60,
+  rtWindow = c(-2, 2),
+  mzWindow = c(-5, 90),
+  mzClustFeatures = 0.003,
+  minIntensityFeatures = 1000,
+  mzClustGroups = 0.003,
+  minIntensityGroups = 1000,
+  groupBy = "groups",
+  verbose = TRUE,
+  filtered = FALSE,
+  run_parallel = FALSE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+A data.frame/data.table.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-R6MS-get_groups_ms2"></a>}}
+\if{latex}{\out{\hypertarget{method-R6MS-get_groups_ms2}{}}}
+\subsection{Method \code{get_groups_ms2()}}{
+Method to get an averaged MS2 spectrum for feature groups in analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{R6MS$get_groups_ms2(
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  ppm = 20,
+  sec = 60,
+  isolationWindow = 1.3,
+  mzClustFeatures = 0.003,
+  minIntensityFeatures = 100,
+  mzClustGroups = 0.003,
+  minIntensityGroups = 100,
+  groupBy = "groups",
+  verbose = TRUE,
+  filtered = FALSE,
+  run_parallel = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -731,6 +941,66 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-R6MS-add_features"></a>}}
+\if{latex}{\out{\hypertarget{method-R6MS-add_features}{}}}
+\subsection{Method \code{add_features()}}{
+Method to add features to each analysis in the `R6MS` object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{R6MS$add_features(features = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{features}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-R6MS-load_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-R6MS-load_spectra}{}}}
+\subsection{Method \code{load_spectra()}}{
+Method to load all spectra from analyses to the `R6MS` object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{R6MS$load_spectra(run_parallel = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{run_parallel}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-R6MS-load_chromatograms"></a>}}
+\if{latex}{\out{\hypertarget{method-R6MS-load_chromatograms}{}}}
+\subsection{Method \code{load_chromatograms()}}{
+Method to load all chromatograms from analyses to the `R6MS` object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{R6MS$load_chromatograms(run_parallel = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{run_parallel}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-R6MS-find_features"></a>}}
 \if{latex}{\out{\hypertarget{method-R6MS-find_features}{}}}
 \subsection{Method \code{find_features()}}{
@@ -799,66 +1069,6 @@ are given as a list and should match with algorithm requirements.
 
 \subsection{Returns}{
 X.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-R6MS-add_features"></a>}}
-\if{latex}{\out{\hypertarget{method-R6MS-add_features}{}}}
-\subsection{Method \code{add_features()}}{
-Method to add features to each analysis in the `R6MS` object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{R6MS$add_features(features = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{features}}{X.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-R6MS-load_spectra"></a>}}
-\if{latex}{\out{\hypertarget{method-R6MS-load_spectra}{}}}
-\subsection{Method \code{load_spectra()}}{
-Method to load all spectra from analyses to the `R6MS` object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{R6MS$load_spectra(run_parallel = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{run_parallel}}{X.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-R6MS-load_chromatograms"></a>}}
-\if{latex}{\out{\hypertarget{method-R6MS-load_chromatograms}{}}}
-\subsection{Method \code{load_chromatograms()}}{
-Method to load all chromatograms from analyses to the `R6MS` object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{R6MS$load_chromatograms(run_parallel = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{run_parallel}}{X.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
 }
 }
 \if{html}{\out{<hr>}}
@@ -1224,7 +1434,7 @@ A plot.
 \if{html}{\out{<a id="method-R6MS-plot_ms2"></a>}}
 \if{latex}{\out{\hypertarget{method-R6MS-plot_ms2}{}}}
 \subsection{Method \code{plot_ms2()}}{
-Method to plot MS2 data from the analyses based on targets.
+Method to plot MS2 spectra from the analyses based on targets.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{R6MS$plot_ms2(
   analyses = NULL,
@@ -1234,8 +1444,8 @@ Method to plot MS2 data from the analyses based on targets.
   sec = 60,
   id = NULL,
   isolationWindow = 1.3,
-  mzClust = 0.01,
-  verbose = FALSE,
+  mzClust = 0.005,
+  verbose = TRUE,
   minIntensity = 0,
   run_parallel = FALSE,
   legendNames = NULL,
@@ -1286,17 +1496,65 @@ A plot.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-R6MS-plot_alignment"></a>}}
-\if{latex}{\out{\hypertarget{method-R6MS-plot_alignment}{}}}
-\subsection{Method \code{plot_alignment()}}{
-Plots the results from the retention time alignment across analyses.
+\if{html}{\out{<a id="method-R6MS-plot_ms1"></a>}}
+\if{latex}{\out{\hypertarget{method-R6MS-plot_ms1}{}}}
+\subsection{Method \code{plot_ms1()}}{
+Method to plot MS1 spectra from the analyses based on targets.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{R6MS$plot_alignment()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{R6MS$plot_ms1(
+  analyses = NULL,
+  mz = NULL,
+  rt = NULL,
+  ppm = 20,
+  sec = 60,
+  id = NULL,
+  mzClust = 0.001,
+  verbose = FALSE,
+  minIntensity = 1000,
+  run_parallel = FALSE,
+  legendNames = NULL,
+  title = NULL,
+  colorBy = "targets",
+  interactive = TRUE
+)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{verbose}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{run_parallel}}{X.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{colorBy}}{x.}
+
+\item{\code{interactive}}{x.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
-A plot with the retention time alignment differences
-for each sample.
+A plot.
 }
 }
 \if{html}{\out{<hr>}}
@@ -1358,12 +1616,157 @@ A plot.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-R6MS-plot_feature_groups"></a>}}
-\if{latex}{\out{\hypertarget{method-R6MS-plot_feature_groups}{}}}
-\subsection{Method \code{plot_feature_groups()}}{
+\if{html}{\out{<a id="method-R6MS-plot_features_ms1"></a>}}
+\if{latex}{\out{\hypertarget{method-R6MS-plot_features_ms1}{}}}
+\subsection{Method \code{plot_features_ms1()}}{
+Method to plot MS1 spectra from features in the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{R6MS$plot_features_ms1(
+  analyses = NULL,
+  id = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  ppm = 20,
+  sec = 60,
+  rtWindow = c(-2, 2),
+  mzWindow = c(-5, 100),
+  mzClust = 0.003,
+  minIntensity = 1000,
+  verbose = TRUE,
+  filtered = FALSE,
+  run_parallel = FALSE,
+  legendNames = NULL,
+  title = NULL,
+  colorBy = "targets",
+  interactive = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{id}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{verbose}}{X.}
+
+\item{\code{run_parallel}}{X.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{colorBy}}{x.}
+
+\item{\code{interactive}}{x.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A plot.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-R6MS-plot_features_ms2"></a>}}
+\if{latex}{\out{\hypertarget{method-R6MS-plot_features_ms2}{}}}
+\subsection{Method \code{plot_features_ms2()}}{
+Method to plot MS2 spectra from features in the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{R6MS$plot_features_ms2(
+  analyses = NULL,
+  id = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  ppm = 20,
+  sec = 60,
+  isolationWindow = 1.3,
+  mzClust = 0.005,
+  minIntensity = 0,
+  verbose = TRUE,
+  filtered = FALSE,
+  run_parallel = FALSE,
+  legendNames = NULL,
+  title = NULL,
+  colorBy = "targets",
+  interactive = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{id}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{verbose}}{X.}
+
+\item{\code{run_parallel}}{X.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{colorBy}}{x.}
+
+\item{\code{interactive}}{x.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A plot.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-R6MS-plot_alignment"></a>}}
+\if{latex}{\out{\hypertarget{method-R6MS-plot_alignment}{}}}
+\subsection{Method \code{plot_alignment()}}{
+Plots the results from the retention time alignment across analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{R6MS$plot_alignment()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+A plot with the retention time alignment differences
+for each sample.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-R6MS-plot_groups"></a>}}
+\if{latex}{\out{\hypertarget{method-R6MS-plot_groups}{}}}
+\subsection{Method \code{plot_groups()}}{
 Method to plot feature groups EIC.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{R6MS$plot_feature_groups(
+\if{html}{\out{<div class="r">}}\preformatted{R6MS$plot_groups(
   groups = NULL,
   mass = NULL,
   mz = NULL,
@@ -1386,13 +1789,146 @@ A plot.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-R6MS-plot_group_features"></a>}}
-\if{latex}{\out{\hypertarget{method-R6MS-plot_group_features}{}}}
-\subsection{Method \code{plot_group_features()}}{
-Method to plot EIC from feature groups and map features from each
-analysis.
+\if{html}{\out{<a id="method-R6MS-plot_groups_ms1"></a>}}
+\if{latex}{\out{\hypertarget{method-R6MS-plot_groups_ms1}{}}}
+\subsection{Method \code{plot_groups_ms1()}}{
+Method to plot MS1 spectra from features in the analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{R6MS$plot_group_features(
+\if{html}{\out{<div class="r">}}\preformatted{R6MS$plot_groups_ms1(
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  ppm = 20,
+  sec = 60,
+  rtWindow = c(-2, 2),
+  mzWindow = c(-5, 90),
+  mzClustFeatures = 0.005,
+  minIntensityFeatures = 1000,
+  mzClustGroups = 0.005,
+  minIntensityGroups = 1000,
+  verbose = TRUE,
+  filtered = FALSE,
+  run_parallel = FALSE,
+  legendNames = NULL,
+  title = NULL,
+  colorBy = "targets",
+  interactive = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{verbose}}{X.}
+
+\item{\code{run_parallel}}{X.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{colorBy}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{id}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{minIntensity}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A plot.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-R6MS-plot_groups_ms2"></a>}}
+\if{latex}{\out{\hypertarget{method-R6MS-plot_groups_ms2}{}}}
+\subsection{Method \code{plot_groups_ms2()}}{
+Method to plot MS1 spectra from features in the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{R6MS$plot_groups_ms2(
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  ppm = 20,
+  sec = 60,
+  isolationWindow = 1.3,
+  mzClustFeatures = 0.003,
+  minIntensityFeatures = 100,
+  mzClustGroups = 0.003,
+  minIntensityGroups = 100,
+  verbose = TRUE,
+  filtered = FALSE,
+  run_parallel = FALSE,
+  legendNames = NULL,
+  title = NULL,
+  colorBy = "targets",
+  interactive = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{verbose}}{X.}
+
+\item{\code{run_parallel}}{X.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{colorBy}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{id}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{minIntensity}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A plot.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-R6MS-plot_groups_overview"></a>}}
+\if{latex}{\out{\hypertarget{method-R6MS-plot_groups_overview}{}}}
+\subsection{Method \code{plot_groups_overview()}}{
+Method to give an overview of the EIC, alignment and intensity variance
+from features within target feature groups.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{R6MS$plot_groups_overview(
   analyses = NULL,
   groups = NULL,
   mass = NULL,

@@ -38,6 +38,10 @@ targets <- makeTargets(mz = mz, ppm = ppm_dev, sec = sec_dev)
 
 # R6MS class tests -----
 
+test_that("test empty R6MS", {
+  expect_equal(class(R6MS$new()), c("R6MS", "R6"))
+})
+
 ms <- R6MS$new(files, run_parallel = FALSE)
 
 test_that("create R6MS", {
@@ -88,14 +92,14 @@ test_that("test setter and getter for replicates and blanks", {
 
 ms2 <- R6MS$new(files2, run_parallel = TRUE)
 
-test_that("gets analyses", {
+test_that("getter analyses", {
   expect_equal(class(ms2$get_analyses(1:3)), "list")
   expect_equal(length(ms2$get_analyses(1:3)), 3)
 })
 
 ms2$add_analyses(ms$get_analyses())
 
-test_that("adds analyses", {
+test_that("add analyses", {
   expect_equal(ms2$get_number_analyses(), 18)
 })
 
@@ -122,7 +126,7 @@ test_that("getting spectra for targets", {
     ms3$get_spectra(analyses = 1, mz = targets, allTraces = F, level = 2)$level)
 })
 
-ms_mrm <- R6MS$new(files_mrm)
+ms_mrm <- R6MS$new(files = files_mrm)
 ms_mrm$load_chromatograms()
 test_that("get chromatograms", {
   expect_true(all(ms_mrm$has_loaded_chromatograms()))
@@ -153,10 +157,10 @@ test_that("get EIC, MS1 and MS2 spectra", {
 # ms$plot_eic(analyses = 4:5, mz = targets, title = "Test plot!")
 # ms$plot_ms2(analyses = 4:5, mz = targets, minIntensity = 500)
 
-settings_ff <- createSettings(
-  call = "find_features",
-  algorithm = "xcms3",
-  parameters = xcms::CentWaveParam(
+settings_ff <- list(
+  "call" = "find_features",
+  "algorithm" = "xcms3",
+  "parameters" = list(xcms::CentWaveParam(
     ppm = 12, peakwidth = c(5, 40),
     snthresh = 10, prefilter = c(4, 800),
     mzCenterFun = "mean", integrate = 2,
@@ -164,22 +168,13 @@ settings_ff <- createSettings(
     noise = 250, verboseColumns = TRUE,
     firstBaselineCheck = FALSE,
     extendLengthMSW = TRUE
-  )
+  ))
 )
-
-exportSettings(settings_ff, name = "settings", format = "json")
-
-test_that("create settings S4 class", {
-  expect_s4_class(settings_ff, "settings")
-
-  expect_s4_class(importSettings(paste0(getwd(),
-    "/settings.json")), "settings")
-})
 
 ms$add_settings(settings = settings_ff)
 
 test_that("add and get settings", {
-  expect_s4_class(ms$get_settings(call = "find_features"), "settings")
+  expect_true(is.list(ms$get_settings(call = "find_features")))
   expect_true(ms$has_settings("find_features"))
 })
 
@@ -210,10 +205,10 @@ test_that("get MS1 and MS2 for features", {
 # ms$plot_features_ms1(id = ftar$id, interactive = FALSE)
 # ms$plot_features_ms2(id = ftar$id, interactive = FALSE)
 
-settings_gf <- createSettings(
-  call = "group_features",
-  algorithm = "xcms3",
-  parameters = list(
+settings_gf <- list(
+  "call" = "group_features",
+  "algorithm" = "xcms3",
+  "parameters" = list(
     groupParam = xcms::PeakDensityParam(
       sampleGroups = "holder",
       bw = 5,
@@ -243,10 +238,10 @@ test_that("get feature groups MS1 and MS2", {
 # ms$plot_groups(mz = targets, legendNames = c("Target1", "Target2"))
 # ms$plot_groups_overview(mz = targets)
 
-settings_gf_alignment <- createSettings(
-  call = "group_features",
-  algorithm = "xcms3",
-  parameters = list(
+settings_gf_alignment <- list(
+  "call" = "group_features",
+  "algorithm" = "xcms3",
+  "parameters" = list(
     rtalign = TRUE,
     loadRawData = TRUE,
     groupParam = xcms::PeakDensityParam(
@@ -283,9 +278,54 @@ test_that("alignment of features", {
 
 # ms4$plot_alignment()
 
+ms$save_header()
+ms$save_settings()
+ms$save_analyses()
+ms$save_groups()
+ms$save()
+
+test_that("save private fields as json", {
+  expect_true(file.exists("header.json"))
+  expect_true(file.exists("settings.json"))
+  expect_true(file.exists("analyses.json"))
+  expect_true(file.exists("groups.json"))
+  expect_true(file.exists("msData.json"))
+})
+
+file.remove(c("header.json", "analyses.json", "groups.json", "msData.json"))
+
+test_that("import settings from json file", {
+  expect_invisible(ms2$import_settings("settings.json"))
+  expect_equal(ms$get_settings(), ms2$get_settings())
+})
+
+file.remove("settings.json")
 
 
-# TODO make a json version of the R6 class for export function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# TODO make a json version of the R6 class for export/import function
 
 # TODO Implement a field for storing MS lists for each feature/feature groups
 
@@ -307,13 +347,37 @@ test_that("alignment of features", {
 # Work Lines -----
 
 ms <- R6MS$new(files[c(4:6, 10:12)], run_parallel = FALSE)
+ms$import_settings(file)
 ms$find_features(settings = settings_ff)
 ms$group_features(settings = settings_gf_alignment)
 self = ms$clone(deep = T)
 
 
 
-export_R6MS(ms)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ms$save_header()
+ms$save_settings()
+ms$save_analyses()
+ms$save_groups()
+ms$save()
+
+file.remove(c("header.json", "settings.json", "analyses.json", "groups.json", "msData.json"))
+
+
+save_R6MS(ms)
 
 js_ms = jsonlite::fromJSON(paste0(getwd(), "/ms.json"))
 

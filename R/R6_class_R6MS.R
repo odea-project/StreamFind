@@ -26,10 +26,10 @@ R6MS = R6::R6Class("R6MS",
     ),
 
     ## .settings -----
-    .settings = list(),
+    .settings = NULL,
 
     ## .analyses -----
-    .analyses = list(),
+    .analyses = NULL,
 
     ## .groups -----
     .groups = NULL,
@@ -55,9 +55,10 @@ R6MS = R6::R6Class("R6MS",
     #'  @param run_parallel Logical, set to \code{TRUE} for processing the data
     #' in parallel.
     #' @param .header A list with administrative information for the header.
+    #' When not given (i.e., \code{NULL}), a default header is generated.
     #' @param .settings A list with settings.
     #' @param .analyses A list with MS analyses information.
-    #' @param .groups A data.frame with `groups` representing corresponding
+    #' @param .groups A data.table with `groups` representing corresponding
     #' features across MS analyses.
     #' @param .alignment X.
     #'
@@ -73,226 +74,80 @@ R6MS = R6::R6Class("R6MS",
 
       if (is.null(.analyses) & !is.null(files)) {
 
-        if (is.data.frame(files)) {
-          if ("file" %in% colnames(files)) {
+        analyses = make_ms_analysis_list(files, run_parallel)
 
-            if ("replicate" %in% colnames(files))
-              replicates = as.character(files$replicate)
-                else replicates = rep(NA_character_, nrow(files))
-
-            if ("blank" %in% colnames(files))
-              blanks = as.character(files$blank)
-                else blanks = NULL
-
-            files = files$file
-
-          } else files = ""
-        } else {
-          replicates = rep(NA_character_, length(files))
-          blanks = NULL
+        if (is.null(analyses)) {
+          cat(c("No valid files were given! R6MS object is empty. \n",
+                "Use the add_analyses() method to add analyses. \n"), sep = "")
         }
 
-        possible_ms_file_formats = ".mzML|.mzXML"
-
-        valid_files = vapply(files, FUN.VALUE = FALSE,
-          function(x, possible_ms_file_formats) {
-            if (!file.exists(x)) return(FALSE)
-            if (FALSE %in% grepl(possible_ms_file_formats, x)) return(FALSE)
-            return(TRUE)
-        }, possible_ms_file_formats = possible_ms_file_formats)
-
-        if (!all(valid_files)) {
-          warning("File/s not valid!")
-          return(NULL)
-        }
-
-        if (run_parallel & length(files) > 1) {
-          workers = parallel::detectCores() - 1
-          if (length(files) < workers) workers = length(files)
-          par_type = "PSOCK"
-          if (parallelly::supportsMulticore()) par_type = "FORK"
-          cl = parallel::makeCluster(workers, type = par_type)
-          doParallel::registerDoParallel(cl)
-          #on.exit(parallel::stopCluster(cl))
-        } else {
-          registerDoSEQ()
-        }
-
-        analyses = foreach(i = files, .packages = "mzR") %dopar% {
-
-          file_link = mzR::openMSfile(i, backend = "pwiz")
-          sH = suppressWarnings(mzR::header(file_link))
-          cH = suppressWarnings(mzR::chromatogramHeader(file_link))
-          instrument = mzR::instrumentInfo(file_link)
-          run = suppressWarnings(mzR::runInfo(file_link))
-
-          polarities = NULL
-          if (1 %in% sH$polarity) polarities = c(polarities, "positive")
-          if (0 %in% sH$polarity) polarities = c(polarities, "negative")
-          if (nrow(cH) > 0 & ("polarity" %in% colnames(cH))) {
-            if (1 %in% cH$polarity) polarities = c(polarities, "positive")
-            if (0 %in% cH$polarity) polarities = c(polarities, "negative")
-          }
-          if (is.null(polarities)) polarities = NA_character_
-
-          spectra_number = run$scanCount
-          spectra_mode = NA_character_
-          if (TRUE %in% sH$centroided) spectra_mode = "centroid"
-          if (FALSE %in% sH$centroided) spectra_mode = "profile"
-
-          ion_mobility = FALSE
-          if (!all(is.na(sH$ionMobilityDriftTime))) ion_mobility = TRUE
-
-          chromatograms_number = 0
-          if (grepl(".mzML", i))
-            chromatograms_number = mzR::nChrom(file_link)
-
-          if (spectra_number == 0 & chromatograms_number > 0) {
-
-            if (TRUE %in% grepl("SRM", cH$chromatogramId)) data_type = "SRM"
-
-            tic = cH[cH$chromatogramId %in% "TIC", ]
-            if (nrow(tic) > 0) {
-              tic = mzR::chromatograms(file_link, tic$chromatogramIndex)
-              colnames(tic) = c("rt", "intensity")
-              if (max(tic$rt) < 60) tic$rt = tic$rt * 60
-            } else tic = data.frame("rt" = numeric(), "intensity" = numeric())
-
-            bpc = cH[cH$chromatogramId %in% "BPC", ]
-            if (nrow(bpc) > 0) {
-              bpc = mzR::chromatograms(file_link, bpc$chromatogramIndex)
-              if (!"mz" %in% colnames(bpc)) {
-                bpc$mz = NA
-                colnames(bpc) = c("rt", "intensity", "mz")
-              } else colnames(bpc) = c("rt", "mz", "intensity")
-
-              if (max(bpc$rt) < 60) bpc$rt = bpc$rt * 60
-            } else bpc = data.frame("rt" = numeric(),
-                                    "mz" = numeric() ,
-                                    "intensity" = numeric())
-
-          } else if (spectra_number > 0) {
-
-            if (2 %in% run$msLevels) data_type = "MS/MS"
-              else data_type = "MS"
-
-            if (max(sH$retentionTime) < 60)
-              sH$retentionTime = sH$retentionTime * 60
-
-            sH_ms1 = sH[sH$msLevel == 1, ]
-
-            tic = data.frame(
-              "rt" = sH_ms1$retentionTime,
-              "intensity" = sH_ms1$totIonCurrent)
-
-            bpc = data.frame(
-              "rt" = sH_ms1$retentionTime,
-              "mz" = sH_ms1$basePeakMZ,
-              "intensity" = sH_ms1$basePeakIntensity
-            )
-
-          } else data_type = NA_character_
-
-          if (is.infinite(run$lowMz)) run$lowMz = NA_real_
-          if (is.infinite(run$highMz)) run$highMz = NA_real_
-          if (is.infinite(run$dStartTime)) run$dStartTime = min(tic$rt)
-          if (is.infinite(run$dEndTime)) run$dEndTime = max(tic$rt)
-          if (data_type %in% "SRM") run$msLevels = NA_integer_
-
-          analysis = list(
-            "name" = gsub(".mzML|.mzXML", "", basename(i)),
-            "replicate" = NA_character_,
-            "blank" = NA_character_,
-            "file" = i,
-            "type" = data_type,
-            "instrument" = instrument,
-            "time_stamp" = run$startTimeStamp,
-            "spectra_number" = as.integer(spectra_number),
-            "spectra_mode" = spectra_mode,
-            "spectra_levels" = as.integer(run$msLevels),
-            "mz_low" = as.numeric(run$lowMz),
-            "mz_high" = as.numeric(run$highMz),
-            "rt_start" = as.numeric(run$dStartTime),
-            "rt_end" = as.numeric(run$dEndTime),
-            "polarity" = polarities,
-            "chromatograms_number" = as.integer(chromatograms_number),
-            "ion_mobility" = ion_mobility,
-            "tic" = tic,
-            "bpc" = bpc,
-            "spectra" = data.frame(),
-            "chromatograms" = data.frame(),
-            "features" = data.frame(),
-            "metadata" = list()
-          )
-
-          suppressWarnings(mzR::close(file_link))
-          return(analysis)
-        }
-
-        if (run_parallel) parallel::stopCluster(cl)
-
-        if (all(is.na(replicates))) {
-          replicates = vapply(analyses, function(x) x$name, "")
-          replicates = gsub( "-", "_", replicates)
-          replicates = sub("_[^_]+$", "", replicates)
-        }
-
-        analyses = Map(function(x, y) { x$replicate = y; x },
-                       analyses, replicates)
-
-        if (!is.null(blanks) & length(blanks) == length(analyses)) {
-          if (all(blanks %in% replicates)) {
-            analyses = Map(function(x, y) { x$blank = y; x },
-                           analyses, blanks)
-          }
-        }
-
-        names(analyses) = vapply(analyses, function(x) x$name, "")
-        analyses = analyses[order(names(analyses))]
-        private$.analyses = analyses
-
-      } else if (!is.null(.analyses)) {
-
-        valid_analyses = vapply(.analyses, validate_list_ms_analysis, FALSE)
+        valid_analyses = vapply(analyses, validate_ms_analysis_list, FALSE)
 
         if (all(valid_analyses)) {
 
-          names(.analyses) = vapply(.analyses, function(x) x$name, "")
-          .analyses = .analyses[order(names(.analyses))]
-          private$.analyses = .analyses
+          if (TRUE %in% duplicated(names(analyses))) {
+
+            warning("Duplicated file names are not allowed in R6MS!")
+
+          } else {
+
+            private$.analyses = analyses
+
+          }
+
+        } else warning("File/s data not valid!")
+
+      } else if (!is.null(.analyses)) {
+
+        valid_analyses = vapply(.analyses, validate_ms_analysis_list, FALSE)
+
+        if (all(valid_analyses)) {
+
+          if (TRUE %in% duplicated(names(.analyses))) {
+
+            warning("Duplicated file names are not allowed in R6MS!")
+
+          } else {
+
+            names(.analyses) = vapply(.analyses, function(x) x$name, "")
+            .analyses = .analyses[order(names(.analyses))]
+            private$.analyses = .analyses
+
+          }
 
         } else {
-          warning("No valid files or analyses were
-                given to create the R6MS!")
+
+          warning("No valid files or analyses were given to create the R6MS!")
+
         }
+
       } else {
-        warning("No valid files or analyses were
-                given to create the R6MS!")
+
+        cat(c("No files or analyses were given! R6MS object is empty. \n",
+            "Use the add_analyses() method to add analyses. \n"), sep = "")
+
+      }
+
+      if (!is.null(.header) & is.list(.header)) {
+
+        if (validate_header(.header)) {
+
+          if (!"name" %in% names(.header)) .header$name = NA_character_
+
+          if (!"path" %in% names(.header)) .header$path = getwd()
+
+          if (!"date" %in% names(.header)) .header$date = Sys.time()
+
+          private$.header = .header
+
+        }
+
       }
 
       private$.groups = .groups
 
       private$.alignment = .alignment
 
-      if (!is.null(.header) & is.list(.header)) {
-
-        if (is.character(.header$name) & length(.header$name) == 1)
-          private$.header$name = .header$name
-
-        if (is.character(.header$author) & length(.header$author) == 1)
-          private$.header$author = .header$author
-
-        if (is.character(.header$description) & length(.header$description) == 1)
-          private$.header$description = .header$description
-
-        if (is.character(.header$path) & length(.header$path) == 1)
-          if (dir.exists(.header$path)) private$.header$path = .header$path
-
-        if (all(grepl("POSIXct|POSIXt", class(.header$date))) &
-            length(.header$date) == 1)
-              private$.header$date = .header$date
-
-      }
     },
 
     #' @description
@@ -524,7 +379,7 @@ R6MS = R6::R6Class("R6MS",
       analyses = self$check_analyses_argument(analyses)
       if (is.null(analyses)) return(data.frame())
 
-      targets = make_targets(mz, rt, ppm, sec, id)
+      targets = make_ms_targets(mz, rt, ppm, sec, id)
 
       with_targets = !(nrow(targets) == 1 &
         TRUE %in% (targets$mzmax == 0) &
@@ -1030,7 +885,7 @@ R6MS = R6::R6Class("R6MS",
     #' @return A data.frame.
     get_settings = function(call = NULL) {
       if(is.null(call)) return(private$.settings)
-        else return(private$.settings[[call]])
+        else return(private$.settings[call])
     },
 
     #' @description
@@ -1537,7 +1392,7 @@ R6MS = R6::R6Class("R6MS",
 
       if (missing(analyses)) analyses = NULL
 
-      valid_analyses = vapply(analyses, validate_list_ms_analysis, FALSE)
+      valid_analyses = vapply(analyses, validate_ms_analysis_list, FALSE)
 
       valid_analyses
 
@@ -1557,10 +1412,29 @@ R6MS = R6::R6Class("R6MS",
 
           private$.analyses = new_analyses
 
-          if (old_size < length(new_analyses)) cat("New analyses added! \n")
-            else warning("Not done, check the conformity of the analyses list!")
+          if (old_size < length(new_analyses)) {
 
-        } else  warning("Not done, duplicated analysis names found!")
+            if (!is.null(private$.groups)) {
+
+              message("Groups cleared as new analyses were added.")
+
+              private$.analyses = lapply(private$.analyses, function(x) {
+                x$features[["feature"]] = NULL
+                return(x)
+              })
+
+              private$.groups = NULL
+
+              private$.alignment = NULL
+            }
+
+            cat("New analyses added! \n")
+
+          } else {
+            warning("Not done, check the conformity of the analyses list!")
+          }
+
+        } else  warning("Duplicated analysis names not allowed! Not done.")
 
       } else  warning("Not done, check the conformity of the analyses list!")
     },
@@ -1573,11 +1447,17 @@ R6MS = R6::R6Class("R6MS",
     #' @return Invisible.
     add_settings = function(settings = NULL) {
 
-      if (!"settings" %in% class(settings)) {
-        warning("Arguments not correct, settings not added!!")
+      if (validate_ms_settings(settings)) {
+        private$.settings[[settings$call]] = settings
+        cat(paste0(settings$call, " processing settings added! \n"))
+      } else if (all(vapply(settings, validate_ms_settings, FALSE))) {
+        call_names = vapply(settings, function(x) x$call, NA_character_)
+        private$.settings[call_names] = settings
+        cat(paste0("Added settings for: "),
+            paste(call_names, collapse = "; "),
+            ".\n", sep = "")
       } else {
-        private$.settings[[settings@call]] = settings
-        cat(paste0(settings@call, " processing settings added! \n"))
+        warning("Settings content or structure not conform! Not added.")
       }
     },
 
@@ -1613,6 +1493,79 @@ R6MS = R6::R6Class("R6MS",
         private$.analyses = Map(function(x, y) { x$features = y; x },
                                 private$.analyses, features)
         cat("features added! \n")
+      }
+    },
+
+    ## import -----
+
+    #' @description
+    #' Method to import header to the `R6MS` object from a \emph{rds} or
+    #' \emph{json} file.
+    #'
+    #' @param file X.
+    #'
+    #' @return Invisible.
+    import_header = function(file = NA_character_) {
+
+      if (file.exists(file)) {
+
+
+
+
+      } else {
+        warning("File not found in given path!")
+      }
+    },
+
+    #' @description
+    #' Method to import processing settings to the `R6MS` object from a
+    #' \emph{rds} or \emph{json} file.
+    #'
+    #' @param file X.
+    #'
+    #' @return Invisible.
+    import_settings = function(file = NA_character_) {
+
+      if (file.exists(file)) {
+
+        settings = NULL
+
+        if (file_ext(file) %in% "json") {
+
+          settings = fromJSON(file)
+
+          settings = lapply(settings, function(s) {
+            if (is.data.frame(s$parameters)) s$parameters = list(s$parameters)
+            s$parameters = lapply(s$parameters, function(x) {
+              if (is.data.frame(x)) x = as.list(x)
+              if ("class" %in% names(x)) {
+                x[["Class"]] = x$class
+                x[["class"]] = NULL
+                x = lapply(x, function(z) {
+                  if (is.list(z)) return(z[[1]]) else return(z)
+                })
+                if (x$Class %in% "CentWaveParam") x$roiScales <- as.double()
+                return(do.call("new", x))
+              } else return(x)
+            })
+
+            s = list(
+              "call" = s$call,
+              "algorithm" = s$algorithm,
+              "parameters" = s$parameters
+            )
+
+            return(s)
+          })
+
+          names(settings) = vapply(settings, function(x) x$call, NA_character_)
+        }
+
+        if (file_ext(file) %in% "rds") settings = readRDS(file)
+
+        self$add_settings(settings)
+      } else {
+        warning("File not found in given path!")
       }
     },
 
@@ -1713,18 +1666,26 @@ R6MS = R6::R6Class("R6MS",
         valid = FALSE
       }
 
-      if (is.null(settings))
-        settings = self$get_settings(call = "find_features")
+      if (is.null(settings)) {
+        settings = self$get_settings(call = "find_features")[[1]]
+      } else if ("find_features" %in% names(settings)){
+        settings = settings[["find_features"]]
+      }
 
-      if (!"settings" %in% class(settings)) {
-        warning("find_features settings not found!")
+      if (validate_ms_settings(settings)) {
+        if (!"find_features" %in% settings$call) {
+          warning("Settings call must be find_features!")
+          valid = FALSE
+        }
+      } else {
+        warning("Settings content or structure not conform!")
         valid = FALSE
       }
 
       if (!valid) return()
 
-      algorithm = getAlgorithm(settings)
-      parameters = getParameters(settings)
+      algorithm = settings$algorithm
+      parameters = settings$parameters
 
       anaInfo = self$get_overview()
       anaInfo = data.frame(
@@ -1783,11 +1744,19 @@ R6MS = R6::R6Class("R6MS",
         valid = FALSE
       }
 
-      if (is.null(settings))
-        settings = self$get_settings(call = "group_features")
+      if (is.null(settings)) {
+        settings = self$get_settings(call = "group_features")[[1]]
+      } else if ("group_features" %in% names(settings)){
+        settings = settings[["group_features"]]
+      }
 
-      if (!"settings" %in% class(settings)) {
-        warning("group_features settings not found!")
+      if (validate_ms_settings(settings)) {
+        if (!"group_features" %in% settings$call) {
+          warning("Settings call must be group_features!")
+          valid = FALSE
+        }
+      } else {
+        warning("Settings content or structure not conform!")
         valid = FALSE
       }
 
@@ -1800,8 +1769,8 @@ R6MS = R6::R6Class("R6MS",
 
       if (!valid) return()
 
-      algorithm = getAlgorithm(settings)
-      parameters = getParameters(settings)
+      algorithm = settings$algorithm
+      parameters = settings$parameters
 
       if (algorithm == "xcms3") {
         parameters$groupParam@sampleGroups = self$get_replicate_names()
@@ -2948,9 +2917,197 @@ R6MS = R6::R6Class("R6MS",
       }
     },
 
-    ## export -----
+    ## save -----
 
+    #' @description
+    #' Method to save the header list.
+    #'
+    #' @param format X.
+    #' @param name X.
+    #' @param path X.
+    #'
+    #' @return Saves the header list as the defined \code{format} in
+    #' \code{path}.
+    #'
+    save_header = function(format = "json", name = "header", path = getwd()) {
 
+      if (format %in% "json") {
+        js_header <- toJSON(self$get_header(),
+          force = TRUE, auto_unbox = TRUE, pretty = TRUE)
+        write(js_header, file = paste0(path, "/" ,name, ".json"))
+      }
+
+      if (format %in% "rds") {
+        saveRDS(self$get_header(), file = paste0(path, "/" ,name, ".rds"))
+      }
+    },
+
+    #' @description
+    #' Method to save settings list.
+    #'
+    #' @param call x:
+    #' @param format X.
+    #' @param name X.
+    #' @param path X.
+    #'
+    #' @return Saves the settings list as the defined \code{format} in
+    #' \code{path}.
+    #'
+    save_settings = function(call = NULL, format = "json",
+                             name = "settings", path = getwd()) {
+
+      js_settings = self$get_settings(call)
+
+      if (format %in% "json") {
+        js_settings = toJSON(js_settings,
+          force = TRUE, auto_unbox = TRUE, pretty = TRUE)
+        write(js_settings, file = paste0(path, "/" ,name, ".json"))
+      }
+
+      if (format %in% "rds") {
+        saveRDS(self$get_settings(call), file = paste0(path, "/" ,name, ".rds"))
+      }
+    },
+
+    #' @description
+    #' Method to save the list of analyses.
+    #'
+    #' @param format X.
+    #' @param name X.
+    #' @param path X.
+    #'
+    #' @return Saves the list of analyses as the defined \code{format} in
+    #' \code{path}.
+    #'
+    save_analyses = function(format = "json",
+                             name = "analyses", path = getwd()) {
+
+      if (format %in% "json") {
+
+        js_analyses = toJSON(
+          self$get_analyses(),
+          dataframe = "columns",
+          Date = "ISO8601",
+          POSIXt = "ISO8601",
+          factor = "string",
+          complex = "string",
+          null = "null",
+          na = "null",
+          auto_unbox = FALSE,
+          digits = 4,
+          pretty = TRUE,
+          force = TRUE
+        )
+
+        write(js_analyses, file = paste0(path, "/" ,name, ".json"))
+      }
+
+      if (format %in% "rds") {
+        saveRDS(self$get_analyses(), file = paste0(path, "/" ,name, ".rds"))
+      }
+    },
+
+    #' @description
+    #' Method to save the feature groups \code{data.table}.
+    #'
+    #' @param format X.
+    #' @param name X.
+    #' @param path X.
+    #'
+    #' @note When saved as json, the \code{data.table} is split by groups as
+    #' list and the \code{data.table} of each group is converted to a list.
+    #'
+    #' @return Saves the groups \code{data.table} as the defined \code{format}
+    #' in \code{path}.
+    #'
+    save_groups = function(format = "json", name = "groups", path = getwd()) {
+
+      if (format %in% "json") {
+
+        js_groups = self$get_groups()
+        js_groups = split(js_groups, js_groups$group)
+        js_groups = lapply(js_groups, as.list)
+
+        js_groups = toJSON(
+          js_groups,
+          dataframe = "columns",
+          null = "null",
+          na = "null",
+          auto_unbox = FALSE,
+          digits = 4,
+          pretty = TRUE,
+          force = TRUE
+        )
+
+        write(js_groups, file = paste0(path, "/" ,name, ".json"))
+      }
+
+      if (format %in% "rds") {
+        saveRDS(self$get_groups(), file = paste0(path, "/" ,name, ".rds"))
+      }
+    },
+
+    #' @description
+    #' Method to save the private fields (i.e., header, settings, analyses,
+    #' groups and alignment) of the R6MS object.
+    #'
+    #' @param format X.
+    #' @param name X.
+    #' @param path X.
+    #'
+    #' @note When saved as json, the \code{data.table} is split by groups as
+    #' list and the \code{data.table} of each group is converted to a list.
+    #'
+    #' @return Saves the private fields as the defined \code{format} in
+    #' \code{path}.
+    #'
+    save = function(format = "json", name = "msData", path = getwd()) {
+
+      if (format %in% "json") {
+
+        js_groups = ms$get_groups()
+        js_groups = split(js_groups, js_groups$group)
+        js_groups = lapply(js_groups, as.list)
+
+        js_all = list(
+          "header" = self$get_header(),
+          "settings" = self$get_settings(),
+          "analyses" = self$get_analyses(),
+          "groups" = js_groups,
+          "alignment" = self$get_alignment()
+        )
+
+        js_all = toJSON(
+          js_all,
+          dataframe = "columns",
+          Date = "ISO8601",
+          POSIXt = "ISO8601",
+          factor = "string",
+          complex = "string",
+          null = "null",
+          na = "null",
+          auto_unbox = FALSE,
+          digits = 4,
+          pretty = TRUE,
+          force = TRUE
+        )
+
+        write(js_all, file = paste0(path, "/" ,name, ".", "json"))
+      }
+
+      if (format %in% "rds") {
+
+        list_all = list(
+          "header" = self$get_header(),
+          "settings" = self$get_settings(),
+          "analyses" = self$get_analyses(),
+          "groups" = self$get_groups(),
+          "alignment" = self$get_alignment()
+        )
+
+        saveRDS(list_all, file = paste0(path, "/" ,name, ".rds"))
+      }
+    },
 
     ## info -----
 
@@ -2974,9 +3131,210 @@ R6MS = R6::R6Class("R6MS",
   )
 )
 
-# auxiliary functions -----
+# auxiliary ms functions -----
 
-#' validate_info_list_ms_analysis
+#' make_ms_analysis_list
+#'
+#' @description
+#' Reads given mzML/mzXML file/s and makes a named list with a list object for
+#' each file. The file name is used to name the list.
+#'
+#' @param files A character vector with mzML or mzXML file path/s.
+#' Alternatively, a data.frame with the column/s file, replicate and blank
+#' with the full file path/s, the replicate group name/s (string) and the
+#' associated blank replicate group name (string).
+#' @param run_parallel Logical, set to \code{TRUE} for parsing the data from
+#' files in parallel.
+#'
+#' @return A named list with a list object for each file in \code{files}.
+#'
+#' @details Describe the entries for an object list reflecting a file.
+#'
+#' @export
+#'
+make_ms_analysis_list = function(files = NULL, run_parallel = FALSE) {
+
+  if (is.data.frame(files)) {
+    if ("file" %in% colnames(files)) {
+
+      if ("replicate" %in% colnames(files))
+        replicates = as.character(files$replicate)
+      else replicates = rep(NA_character_, nrow(files))
+
+      if ("blank" %in% colnames(files))
+        blanks = as.character(files$blank)
+      else blanks = NULL
+
+      files = files$file
+
+    } else files = ""
+  } else {
+    replicates = rep(NA_character_, length(files))
+    blanks = NULL
+  }
+
+  possible_ms_file_formats = ".mzML|.mzXML"
+
+  valid_files = vapply(files, FUN.VALUE = FALSE,
+    function(x, possible_ms_file_formats) {
+      if (!file.exists(x)) return(FALSE)
+      if (FALSE %in% grepl(possible_ms_file_formats, x)) return(FALSE)
+      return(TRUE)
+    }, possible_ms_file_formats = possible_ms_file_formats)
+
+  if (!all(valid_files)) {
+    warning("File/s not valid!")
+    return(NULL)
+  }
+
+  if (run_parallel & length(files) > 1) {
+    workers = parallel::detectCores() - 1
+    if (length(files) < workers) workers = length(files)
+    par_type = "PSOCK"
+    if (parallelly::supportsMulticore()) par_type = "FORK"
+    cl = parallel::makeCluster(workers, type = par_type)
+    doParallel::registerDoParallel(cl)
+    #on.exit(parallel::stopCluster(cl))
+  } else {
+    registerDoSEQ()
+  }
+
+  analyses = foreach(i = files, .packages = "mzR") %dopar% {
+
+    file_link = mzR::openMSfile(i, backend = "pwiz")
+    sH = suppressWarnings(mzR::header(file_link))
+    cH = suppressWarnings(mzR::chromatogramHeader(file_link))
+    instrument = mzR::instrumentInfo(file_link)
+    run = suppressWarnings(mzR::runInfo(file_link))
+
+    polarities = NULL
+    if (1 %in% sH$polarity) polarities = c(polarities, "positive")
+    if (0 %in% sH$polarity) polarities = c(polarities, "negative")
+    if (nrow(cH) > 0 & ("polarity" %in% colnames(cH))) {
+      if (1 %in% cH$polarity) polarities = c(polarities, "positive")
+      if (0 %in% cH$polarity) polarities = c(polarities, "negative")
+    }
+    if (is.null(polarities)) polarities = NA_character_
+
+    spectra_number = run$scanCount
+    spectra_mode = NA_character_
+    if (TRUE %in% sH$centroided) spectra_mode = "centroid"
+    if (FALSE %in% sH$centroided) spectra_mode = "profile"
+
+    ion_mobility = FALSE
+    if (!all(is.na(sH$ionMobilityDriftTime))) ion_mobility = TRUE
+
+    chromatograms_number = 0
+    if (grepl(".mzML", i))
+      chromatograms_number = mzR::nChrom(file_link)
+
+    if (spectra_number == 0 & chromatograms_number > 0) {
+
+      if (TRUE %in% grepl("SRM", cH$chromatogramId)) data_type = "SRM"
+
+      tic = cH[cH$chromatogramId %in% "TIC", ]
+      if (nrow(tic) > 0) {
+        tic = mzR::chromatograms(file_link, tic$chromatogramIndex)
+        colnames(tic) = c("rt", "intensity")
+        if (max(tic$rt) < 60) tic$rt = tic$rt * 60
+      } else tic = data.frame("rt" = numeric(), "intensity" = numeric())
+
+      bpc = cH[cH$chromatogramId %in% "BPC", ]
+      if (nrow(bpc) > 0) {
+        bpc = mzR::chromatograms(file_link, bpc$chromatogramIndex)
+        if (!"mz" %in% colnames(bpc)) {
+          bpc$mz = NA
+          colnames(bpc) = c("rt", "intensity", "mz")
+        } else colnames(bpc) = c("rt", "mz", "intensity")
+
+        if (max(bpc$rt) < 60) bpc$rt = bpc$rt * 60
+      } else bpc = data.frame("rt" = numeric(),
+                              "mz" = numeric() ,
+                              "intensity" = numeric())
+
+    } else if (spectra_number > 0) {
+
+      if (2 %in% run$msLevels) data_type = "MS/MS"
+      else data_type = "MS"
+
+      if (max(sH$retentionTime) < 60)
+        sH$retentionTime = sH$retentionTime * 60
+
+      sH_ms1 = sH[sH$msLevel == 1, ]
+
+      tic = data.frame(
+        "rt" = sH_ms1$retentionTime,
+        "intensity" = sH_ms1$totIonCurrent)
+
+      bpc = data.frame(
+        "rt" = sH_ms1$retentionTime,
+        "mz" = sH_ms1$basePeakMZ,
+        "intensity" = sH_ms1$basePeakIntensity
+      )
+
+    } else data_type = NA_character_
+
+    if (is.infinite(run$lowMz)) run$lowMz = NA_real_
+    if (is.infinite(run$highMz)) run$highMz = NA_real_
+    if (is.infinite(run$dStartTime)) run$dStartTime = min(tic$rt)
+    if (is.infinite(run$dEndTime)) run$dEndTime = max(tic$rt)
+    if (data_type %in% "SRM") run$msLevels = NA_integer_
+
+    analysis = list(
+      "name" = gsub(".mzML|.mzXML", "", basename(i)),
+      "replicate" = NA_character_,
+      "blank" = NA_character_,
+      "file" = i,
+      "type" = data_type,
+      "instrument" = instrument,
+      "time_stamp" = run$startTimeStamp,
+      "spectra_number" = as.integer(spectra_number),
+      "spectra_mode" = spectra_mode,
+      "spectra_levels" = as.integer(run$msLevels),
+      "mz_low" = as.numeric(run$lowMz),
+      "mz_high" = as.numeric(run$highMz),
+      "rt_start" = as.numeric(run$dStartTime),
+      "rt_end" = as.numeric(run$dEndTime),
+      "polarity" = polarities,
+      "chromatograms_number" = as.integer(chromatograms_number),
+      "ion_mobility" = ion_mobility,
+      "tic" = tic,
+      "bpc" = bpc,
+      "spectra" = data.frame(),
+      "chromatograms" = data.frame(),
+      "features" = data.frame(),
+      "metadata" = list()
+    )
+
+    suppressWarnings(mzR::close(file_link))
+    return(analysis)
+  }
+
+  if (run_parallel) parallel::stopCluster(cl)
+
+  if (all(is.na(replicates))) {
+    replicates = vapply(analyses, function(x) x$name, "")
+    replicates = gsub( "-", "_", replicates)
+    replicates = sub("_[^_]+$", "", replicates)
+  }
+
+  analyses = Map(function(x, y) { x$replicate = y; x },
+                 analyses, replicates)
+
+  if (!is.null(blanks) & length(blanks) == length(analyses)) {
+    if (all(blanks %in% replicates)) {
+      analyses = Map(function(x, y) { x$blank = y; x },
+                     analyses, blanks)
+    }
+  }
+
+  names(analyses) = vapply(analyses, function(x) x$name, "")
+  analyses = analyses[order(names(analyses))]
+
+  return(analyses)
+}
+
+#' validate_ms_analysis_list
 #'
 #' @description
 #' Validates the list of information parsed from an MS analysis mzML/mzXML file.
@@ -2987,7 +3345,7 @@ R6MS = R6::R6Class("R6MS",
 #'
 #' @export
 #'
-validate_list_ms_analysis = function(value) {
+validate_ms_analysis_list = function(value = NULL) {
 
   valid = FALSE
 
@@ -3008,7 +3366,7 @@ validate_list_ms_analysis = function(value) {
           " does not exist! Update file paths with R6MS$update_files() method"))
 
     if (length(value$type) != 1) valid = FALSE
-      else if (!(value$type %in% c("MS", "MS/MS", "SMR"))) valid = FALSE
+      else if (!(value$type %in% c("MS", "MS/MS", "SRM"))) valid = FALSE
 
     if (!is.integer(value$spectra_number) &&
       length(value$spectra_number) != 1)
@@ -3059,7 +3417,68 @@ validate_list_ms_analysis = function(value) {
   return(valid)
 }
 
-#' @title make_targets
+#' validate_ms_settings
+#'
+#' @description
+#' Validates a settings list for data processing within the R6MS object.
+#'
+#' @param value A named settings list with \emph{call}, \emph{algorithm} and
+#' \emph{parameters} entries.
+#'
+#' @return A logical value of length 1.
+#'
+#' @export
+#'
+validate_ms_settings = function(value = NULL) {
+
+  valid = FALSE
+
+  if (is.list(value)) {
+
+    if (all(c("call", "algorithm", "parameters") %in% names(value))) {
+
+      valid = TRUE
+
+      if (!length(value$call) == 1) valid = FALSE
+
+      if (!length(value$algorithm) == 1) valid = FALSE
+
+      if (!is.list(value$parameters)) valid = FALSE
+
+      if (valid) {
+
+        if (!any(c("find_features", "group_features") %in% value$call)) {
+          valid = FALSE
+        }
+
+        if (valid) {
+
+          if ("find_features" %in% value$call) {
+
+            ff_algorithm = c(
+              "openms", "xcms", "xcms3", "envipick",
+              "sirius", "kpic2", "safd"
+            )
+
+            if(!any(ff_algorithm %in% value$algorithm)) valid = FALSE
+          }
+
+          if ("group_features" %in% value$call) {
+
+            fg_algorithm = c("openms", "xcms", "xcms3", "kpic2", "sirius")
+
+            if(!any(fg_algorithm %in% value$algorithm)) valid = FALSE
+
+          }
+        }
+      }
+    }
+  }
+
+  return(valid)
+}
+
+#' @title make_ms_targets
 #'
 #' @description Helper function to build \emph{m/z} and retention time
 #' target pairs for searching data. Each target is composed of an
@@ -3086,7 +3505,7 @@ validate_list_ms_analysis = function(value) {
 #'
 #' @export
 #'
-make_targets = function(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL) {
+make_ms_targets = function(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL) {
 
   mzrts = data.table(
     id = NA_character_,
@@ -3253,8 +3672,8 @@ make_targets = function(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL) {
       rt = as.data.table(rt)
 
       if ("rt" %in% colnames(rt) &
-                    nrow(rt) == nrow(mz) &
-                            !"rtmin" %in% colnames(mz)) {
+          nrow(rt) == nrow(mz) &
+          !"rtmin" %in% colnames(mz)) {
         mzrts$rt = rt$rt
         mzrts$rtmin = rt$rt - sec
         mzrts$rtmax = rt$rt + sec
@@ -3288,6 +3707,47 @@ make_targets = function(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL) {
   }
 
   return(mzrts)
+}
+
+# auxiliary functions -----
+
+#' validate_header
+#'
+#' @description
+#' Validates the header list of information.
+#'
+#' @param value A header list.
+#'
+#' @return A logical value of length 1.
+#'
+#' @export
+#'
+validate_header = function(value = NULL) {
+
+  valid = FALSE
+
+  if (is.list(value)) {
+
+    valid = TRUE
+
+    if (!all(vapply(value, function(x) length(x) == 1, FALSE))) valid = FALSE
+
+    if ("name" %in% names(value)) {
+      if (!is.character(value$name)) valid = FALSE
+    }
+
+    if ("path" %in% names(value)) {
+      if (!dir.exists(value$path)) valid = FALSE
+    }
+
+    if ("date" %in% names(value)) {
+      if (!all(grepl("POSIXct|POSIXt", class(value$date)))) {
+        if (!length(.header$date) == 1) valid = FALSE
+      }
+    }
+  }
+
+  return(valid)
 }
 
 #' @title get_colors
@@ -3451,96 +3911,18 @@ correlate_analysis_spectra = function(spectra,
   return(cor_list)
 }
 
-export_R6MS = function(ms, name = "ms", format = "json", path = getwd()) {
+import_R6MS = function(file) {
 
-  # list
-  js_header <- toJSON(ms$get_header(),
-    force = TRUE, auto_unbox = TRUE, pretty = TRUE)
 
-  # list
-  js_settings = toJSON(ms$get_settings(),
-    force = TRUE, auto_unbox = TRUE, pretty = TRUE)
 
-  # list
-  # js_analyses = toJSON(
-  #   ms$get_analyses(),
-  #   dataframe = "columns",
-  #   # matrix = c("rowmajor", "columnmajor"), # No matrices yet
-  #   Date = "ISO8601",
-  #   POSIXt = "ISO8601",
-  #   factor = "string",
-  #   complex = "string",
-  #   # raw = "js",
-  #   null = "null",
-  #   na = "null",
-  #   auto_unbox = FALSE,
-  #   digits = 4,
-  #   pretty = TRUE,
-  #   force = TRUE
-  # )
 
-  # write(js_analyses, file = paste0(getwd(), "/js_analyses.json"))
 
-  # data.table
-  js_groups = ms$get_groups()
 
-  # to list
-  js_groups = split(js_groups, js_groups$group)
 
-  # as.list data.table
-  js_groups = lapply(js_groups, as.list)
 
-  # js_feature_groups = toJSON(
-  #   js_feature_groups,
-  #   dataframe = "columns",
-  #   null = "null",
-  #   na = "null",
-  #   auto_unbox = FALSE,
-  #   digits = 4,
-  #   pretty = TRUE,
-  #   force = TRUE
-  # )
 
-  # write(js_feature_groups, file = paste0(getwd(), "/js_feature_groups.json"))
 
-  # data.table
-  # js_alignment = toJSON(
-  #   ms$get_alignment(),
-  #   dataframe = "columns",
-  #   null = "null",
-  #   na = "null",
-  #   auto_unbox = FALSE,
-  #   digits = 4,
-  #   pretty = TRUE,
-  #   force = TRUE
-  # )
 
-  js_all = list(
-    "header" = ms$get_header(),
-    "settings" = ms$get_settings(),
-    "analyses" = ms$get_analyses(),
-    "groups" = js_groups,
-    "alignment" = ms$get_alignment()
-  )
-
-  js_all = toJSON(
-    js_all,
-    dataframe = "columns",
-    # matrix = c("rowmajor", "columnmajor"), # No matrices
-    Date = "ISO8601",
-    POSIXt = "ISO8601",
-    factor = "string",
-    complex = "string",
-    # raw = c("base64", "hex", "mongo", "int", "js"), # No raw objects
-    null = "null",
-    na = "null",
-    auto_unbox = FALSE,
-    digits = 4,
-    pretty = TRUE,
-    force = TRUE
-  )
-
-  write(js_all, file = paste0(path, "/" ,name, ".", "json")) #format
 }
 
 

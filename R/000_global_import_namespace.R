@@ -11,7 +11,7 @@
 #'
 #' @importFrom data.table is.data.table rbindlist as.data.table setnames
 #' @importFrom data.table setorder copy fread data.table `:=` setcolorder
-#' @importFrom data.table between setDTthreads CJ setnafill unique
+#' @importFrom data.table between setDTthreads CJ setnafill
 #'
 #' @importFrom parallelly supportsMulticore
 #'
@@ -23,6 +23,8 @@
 #'
 #' @importFrom mzR openMSfile header peaks close chromatogramHeader
 #' @importFrom mzR instrumentInfo runInfo nChrom chromatograms
+#'
+#' @importFrom jsonlite toJSON fromJSON
 #'
 #' @importFrom dplyr select left_join full_join semi_join anti_join right_join
 #' @importFrom dplyr filter everything count bind_rows
