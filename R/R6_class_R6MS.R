@@ -121,11 +121,6 @@ R6MS = R6::R6Class("R6MS",
 
         }
 
-      } else {
-
-        cat(c("No files or analyses were given! R6MS object is empty. \n",
-            "Use the add_analyses() method to add analyses. \n"), sep = "")
-
       }
 
       if (!is.null(.header) & is.list(.header)) {
@@ -1063,7 +1058,7 @@ R6MS = R6::R6Class("R6MS",
                           average = FALSE) {
 
       fgroups = copy(private$.groups)
-      if(self$has_feature_groups()) {
+      if(self$has_groups()) {
 
         if (!filtered) fgroups = fgroups[!fgroups$filtered, ]
 
@@ -1383,6 +1378,48 @@ R6MS = R6::R6Class("R6MS",
     ## add -----
 
     #' @description
+    #' Method to add header information to the `R6MS` object.
+    #'
+    #' @param header X.
+    #'
+    #' @return Invisible.
+    add_header = function(header = NULL) {
+
+      if (validate_header(header)) {
+
+        if (!"name" %in% names(header)) header$name = NA_character_
+        if (!"path" %in% names(header)) header$path = getwd()
+        if (!"date" %in% names(header)) header$date = Sys.time()
+
+        private$.header = header
+        cat("Added header information! \n")
+
+      } else warning("Invalid header content or structure! Not added.")
+    },
+
+    #' @description
+    #' Method to add processing settings to the `R6MS` object.
+    #'
+    #' @param settings X.
+    #'
+    #' @return Invisible.
+    add_settings = function(settings = NULL) {
+
+      if (validate_ms_settings(settings)) {
+        private$.settings[[settings$call]] = settings
+        cat(paste0(settings$call, " processing settings added! \n"))
+      } else if (all(vapply(settings, validate_ms_settings, FALSE))) {
+        call_names = vapply(settings, function(x) x$call, NA_character_)
+        private$.settings[call_names] = settings
+        cat(paste0("Added settings for: "),
+            paste(call_names, collapse = "; "),
+            ".\n", sep = "")
+      } else {
+        warning("Settings content or structure not conform! Not added.")
+      }
+    },
+
+    #' @description
     #' Method to add analyses to the `R6MS` object.
     #'
     #' @param analyses A list of analyses.
@@ -1440,28 +1477,6 @@ R6MS = R6::R6Class("R6MS",
     },
 
     #' @description
-    #' Method to add processing settings to the `R6MS` object.
-    #'
-    #' @param settings X.
-    #'
-    #' @return Invisible.
-    add_settings = function(settings = NULL) {
-
-      if (validate_ms_settings(settings)) {
-        private$.settings[[settings$call]] = settings
-        cat(paste0(settings$call, " processing settings added! \n"))
-      } else if (all(vapply(settings, validate_ms_settings, FALSE))) {
-        call_names = vapply(settings, function(x) x$call, NA_character_)
-        private$.settings[call_names] = settings
-        cat(paste0("Added settings for: "),
-            paste(call_names, collapse = "; "),
-            ".\n", sep = "")
-      } else {
-        warning("Settings content or structure not conform! Not added.")
-      }
-    },
-
-    #' @description
     #' Method to add features to each analysis in the `R6MS` object.
     #'
     #' @param features X.
@@ -1492,8 +1507,75 @@ R6MS = R6::R6Class("R6MS",
         features = split(features, features$analysis)
         private$.analyses = Map(function(x, y) { x$features = y; x },
                                 private$.analyses, features)
-        cat("features added! \n")
-      }
+        cat("Features added! \n")
+      }  else warning("Invalid features content or structure! Not added.")
+    },
+
+    #' @description
+    #' Method to add feature groups in the `R6MS` object.
+    #'
+    #' @param groups data.table.
+    #'
+    #' @return Invisible.
+    add_groups = function(groups = NULL) {
+
+      valid = FALSE
+
+      if (is.data.frame(groups)) {
+
+        must_have_cols = c("group", "rt", unname(self$get_analysis_names()),
+          "dppm", "drt", "features", "index", "hasFilled", "filtered",
+          "filter", "adduct", "mass")
+
+        if (all(must_have_cols %in% colnames(groups))) {
+
+          groups = groups[order(groups$index),]
+
+          old_groups = private$.groups
+
+          private$.groups = groups
+
+          if (!self$check_correspondence()) {
+            if (is.null(old_groups)) {
+              self$remove_groups()
+              warning("Removed groups as correspondence did not match!.")
+            } else {
+              private$.groups = old_groups
+              warning("Correspondence did not match! Groups not added.")
+            }
+          } else {
+            cat("Feature groups added! \n")
+          }
+        } else {
+          warning("Columns of groups data.frame not as required! Not added.")
+        }
+      } else warning("Groups must be a data.frame! Not added.")
+    },
+
+    #' @description
+    #' Method to add time alignment results in the `R6MS` object.
+    #'
+    #' @param alignment list.
+    #'
+    #' @return Invisible.
+    add_alignment = function(alignment = NULL) {
+
+      if (is.list(alignment) &
+          all(unname(self$get_analysis_names()) %in% names(alignment)) &
+          self$has_groups()) {
+
+        must_have_cols = c("rt_original", "rt_adjusted",
+                           "adjustment", "adjPoints")
+
+        valid = vapply(alignment, function(x, must_have_cols) {
+          return(all(must_have_cols %in% colnames(x)))
+        }, FALSE, must_have_cols = must_have_cols)
+
+        if (all(valid)) {
+          private$.alignment = alignment
+          cat("Alignment added! \n")
+        } else warning("Invalid alignment structure or content! Not added.")
+      } else warning("Groups not present or alignment not valid! Not added.")
     },
 
     ## import -----
@@ -1503,18 +1585,25 @@ R6MS = R6::R6Class("R6MS",
     #' \emph{json} file.
     #'
     #' @param file X.
+    #' @param list X.
     #'
     #' @return Invisible.
-    import_header = function(file = NA_character_) {
+    import_header = function(file = NA_character_, list = NULL) {
 
       if (file.exists(file)) {
 
+        header = NULL
 
+        if (file_ext(file) %in% "json") {
+          header = fromJSON(file)
+          header = correct_parsed_json_header(header)
+        }
 
+        if (file_ext(file) %in% "rds") header = readRDS(file)
 
-      } else {
-        warning("File not found in given path!")
-      }
+        self$add_header(header)
+
+      } else warning("File not found in given path!")
     },
 
     #' @description
@@ -1531,42 +1620,65 @@ R6MS = R6::R6Class("R6MS",
         settings = NULL
 
         if (file_ext(file) %in% "json") {
-
           settings = fromJSON(file)
-
-          settings = lapply(settings, function(s) {
-            if (is.data.frame(s$parameters)) s$parameters = list(s$parameters)
-            s$parameters = lapply(s$parameters, function(x) {
-              if (is.data.frame(x)) x = as.list(x)
-              if ("class" %in% names(x)) {
-                x[["Class"]] = x$class
-                x[["class"]] = NULL
-                x = lapply(x, function(z) {
-                  if (is.list(z)) return(z[[1]]) else return(z)
-                })
-                if (x$Class %in% "CentWaveParam") x$roiScales <- as.double()
-                return(do.call("new", x))
-              } else return(x)
-            })
-
-            s = list(
-              "call" = s$call,
-              "algorithm" = s$algorithm,
-              "parameters" = s$parameters
-            )
-
-            return(s)
-          })
-
-          names(settings) = vapply(settings, function(x) x$call, NA_character_)
+          settings = correct_parsed_json_settings(settings)
         }
 
         if (file_ext(file) %in% "rds") settings = readRDS(file)
 
         self$add_settings(settings)
-      } else {
-        warning("File not found in given path!")
-      }
+
+      } else warning("File not found in given path!")
+    },
+
+    #' @description
+    #' Method to import analyses to the `R6MS` object from a \emph{rds} or
+    #' \emph{json} file.
+    #'
+    #' @param file X.
+    #'
+    #' @return Invisible.
+    import_analyses = function(file = NA_character_) {
+
+      if (file.exists(file)) {
+
+        analyses = NULL
+
+        if (file_ext(file) %in% "json") {
+          analyses = fromJSON(file)
+          analyses = correct_ms_parsed_json_analyses(analyses)
+        }
+
+        if (file_ext(file) %in% "rds") analyses = readRDS(file)
+
+        self$add_analyses(analyses)
+
+      } else warning("File not found in given path!")
+    },
+
+    #' @description
+    #' Method to import feature groups to the `R6MS` object from a \emph{rds} or
+    #' \emph{json} file.
+    #'
+    #' @param file X.
+    #'
+    #' @return Invisible.
+    import_groups = function(file = NA_character_) {
+
+      if (file.exists(file)) {
+
+        groups = NULL
+
+        if (file_ext(file) %in% "json") {
+          groups = fromJSON(file)
+          groups = correct_ms_parsed_json_groups(groups)
+        }
+
+        if (file_ext(file) %in% "rds") groups = readRDS(file)
+
+        self$add_groups(groups)
+
+      } else warning("File not found in given path!")
     },
 
     ## load -----
@@ -1898,7 +2010,7 @@ R6MS = R6::R6Class("R6MS",
     #' across analyses.
     #'
     #' @return Invisible.
-    has_feature_groups = function() {
+    has_groups = function() {
       return(!is.null(private$.groups))
     },
 
@@ -2860,6 +2972,20 @@ R6MS = R6::R6Class("R6MS",
       return(features_obj)
     },
 
+    ## remove -----
+
+    #' @description
+    #' Remove feature groups from the `R6MS` object.
+    #'
+    remove_groups = function() {
+      private$.groups = NULL
+      privete$.alignment = NULL
+      private$.analyses = lapply(private$.analyses, function(x) {
+        x$features[["feature"]] = NULL
+        return(x)
+      })
+    },
+
     ## subset -----
 
     #' @description
@@ -2896,12 +3022,13 @@ R6MS = R6::R6Class("R6MS",
     ## checks -----
 
     #' @description
-    #' Check the analyses argument as a character/integer vector to match
+    #' Checks the analyses argument as a character/integer vector to match
     #' analyses names or indices from the `R6MS` object.
     #'
     #' @param analyses X.
     #'
     #' @return A valid character vector with analyses names of `NULL`.
+    #'
     check_analyses_argument = function(analyses) {
 
       if (is.null(analyses)) {
@@ -2915,6 +3042,44 @@ R6MS = R6::R6Class("R6MS",
           return(analyses)
         }
       }
+    },
+
+    #' @description
+    #' Checks the correspondence of features within groups in the `R6MS` object.
+    #'
+    #' @return \code{TRUE} or \code{FALSE}.
+    #'
+    check_correspondence = function() {
+
+      valid = FALSE
+
+      if (all(self$has_features()) & self$has_groups()) {
+
+        gps = self$get_groups()
+        gps = split(gps, gps$group)
+
+        valid = vapply(gps, function(x, fts) {
+          g = x$group
+          gf = unlist(x$features)
+          gf = vapply(seq_along(gf), function(f, fts) {
+            idx = gf[f]
+            ana = names(gf)[f]
+            if (idx > 0) {
+              t = fts$group[fts$analysis %in% ana & fts$index == idx]
+            } else return(NA_character_)
+          }, NA_character_, fts = fts)
+
+          gf = na.omit(unique(gf))
+
+          if (length(gf) == 1 & g %in% gf) {
+            return(TRUE)
+          } else return(FALSE)
+        }, FALSE, fts = self$get_features())
+
+        valid = all(valid)
+      }
+
+      return(valid)
     },
 
     ## save -----
@@ -2933,7 +3098,8 @@ R6MS = R6::R6Class("R6MS",
 
       if (format %in% "json") {
         js_header <- toJSON(self$get_header(),
-          force = TRUE, auto_unbox = TRUE, pretty = TRUE)
+          force = TRUE, auto_unbox = TRUE, pretty = TRUE,
+          Date = "ISO8601", POSIXt = "string")
         write(js_header, file = paste0(path, "/" ,name, ".json"))
       }
 
@@ -2988,7 +3154,7 @@ R6MS = R6::R6Class("R6MS",
           self$get_analyses(),
           dataframe = "columns",
           Date = "ISO8601",
-          POSIXt = "ISO8601",
+          POSIXt = "string",
           factor = "string",
           complex = "string",
           null = "null",
@@ -3063,25 +3229,32 @@ R6MS = R6::R6Class("R6MS",
     #'
     save = function(format = "json", name = "msData", path = getwd()) {
 
+      list_all = list()
+
+      header = self$get_header()
+      settings = self$get_settings()
+      analyses = self$get_analyses()
+      groups = self$get_groups()
+      alignment = self$get_alignment()
+
+      if (length(header) > 0) list_all$header = header
+      if (!is.null(settings)) list_all$settings = settings
+      if (!is.null(analyses)) list_all$analyses = analyses
+      if (!is.null(groups)) list_all$groups = groups
+      if (!is.null(alignment)) list_all$alignment = alignment
+
       if (format %in% "json") {
 
-        js_groups = ms$get_groups()
-        js_groups = split(js_groups, js_groups$group)
-        js_groups = lapply(js_groups, as.list)
-
-        js_all = list(
-          "header" = self$get_header(),
-          "settings" = self$get_settings(),
-          "analyses" = self$get_analyses(),
-          "groups" = js_groups,
-          "alignment" = self$get_alignment()
-        )
+        if ("groups" %in% names(list_all)) {
+          list_all$groups = split(list_all$groups, list_all$groups$group)
+          list_all$groups = lapply(list_all$groups, as.list)
+        }
 
         js_all = toJSON(
-          js_all,
+          list_all,
           dataframe = "columns",
           Date = "ISO8601",
-          POSIXt = "ISO8601",
+          POSIXt = "string",
           factor = "string",
           complex = "string",
           null = "null",
@@ -3096,15 +3269,6 @@ R6MS = R6::R6Class("R6MS",
       }
 
       if (format %in% "rds") {
-
-        list_all = list(
-          "header" = self$get_header(),
-          "settings" = self$get_settings(),
-          "analyses" = self$get_analyses(),
-          "groups" = self$get_groups(),
-          "alignment" = self$get_alignment()
-        )
-
         saveRDS(list_all, file = paste0(path, "/" ,name, ".rds"))
       }
     },
@@ -3741,9 +3905,7 @@ validate_header = function(value = NULL) {
     }
 
     if ("date" %in% names(value)) {
-      if (!all(grepl("POSIXct|POSIXt", class(value$date)))) {
-        if (!length(.header$date) == 1) valid = FALSE
-      }
+      if (!all(grepl("POSIXct|POSIXt", class(value$date)))) valid = FALSE
     }
   }
 
@@ -3911,22 +4073,220 @@ correlate_analysis_spectra = function(spectra,
   return(cor_list)
 }
 
+#' @title import_R6MS
+#'
+#' @description Function to import an `R6MS` object from a saved file.
+#'
+#' @param file X.
+#'
+#' @return An `R6MS` class object.
+#'
+#' @export
+#'
 import_R6MS = function(file) {
 
+  if (file.exists(file)) {
 
+    new_ms = NULL
 
+    if (file_ext(file) %in% "json") {
 
+      js_ms = fromJSON(file)
 
+      fields_present = names(js_ms)
 
+      new_ms = R6MS$new()
 
+      if ("header" %in% fields_present) {
+        js_header = correct_parsed_json_header(js_ms[["header"]])
+        new_ms$add_header(js_header)
+      }
 
+      if ("settings" %in% fields_present) {
+        if (!is.null(js_ms[["settings"]])) {
+          settings = correct_parsed_json_settings(js_ms[["settings"]])
+          new_ms$add_settings(settings)
+        }
+      }
 
+      if ("analyses" %in% fields_present) {
+        if (!is.null(js_ms[["analyses"]])) {
+          analyses = correct_ms_parsed_json_analyses(js_ms[["analyses"]])
+          new_ms$add_analyses(analyses)
+        }
+      }
 
+      if ("groups" %in% fields_present) {
+        if (!is.null(js_ms[["groups"]])) {
+          groups = correct_ms_parsed_json_groups(js_ms[["groups"]])
+          new_ms$add_groups(groups)
+        }
+      }
 
+      if ("alignment" %in% fields_present) {
+        if (!is.null(js_ms[["alignment"]])) {
+          js_alignment = lapply(js_ms[["alignment"]], as.data.table)
+          new_ms$add_alignment(js_alignment)
+        }
+      }
+
+      cat("R6MS imported from json file! \n")
+    }
+
+    if (file_ext(file) %in% "rds") {
+      new_ms = readRDS(file)
+
+      # TODO validate object
+    }
+
+    return(new_ms)
+
+  } else warning("File not found in given path!")
 }
 
+# not-exported functions -----
 
-## not-exported functions -----
+#' correct_parsed_json_header
+#'
+#' @description Function to correct parsed header from json file.
+#'
+#' @param header X.
+#'
+#' @return X.
+#'
+correct_parsed_json_header = function(header = NULL) {
+
+  header = lapply(header, function(h) {
+    if (is.null(h)) h = NA_character_
+    if (is.na(h)) h = NA_character_
+    return(h)
+  })
+
+  if ("date" %in% names(header)) {
+    header$date = as.POSIXct(header$date)
+    attr(header$date, "tzone") = NULL
+  }
+
+  return(header)
+}
+
+#' correct_parsed_json_settings
+#'
+#' @description Function to correct parsed settings from json file.
+#'
+#' @param settings X.
+#'
+#' @return X.
+#'
+correct_parsed_json_settings = function(settings = NULL) {
+
+  settings = lapply(settings, function(s) {
+
+    if (!all(c("call", "algorithm", "parameters") %in% names(s))) {
+      return(NULL)
+    }
+
+    if (is.data.frame(s$parameters)) s$parameters = list(s$parameters)
+    s$parameters = lapply(s$parameters, function(x) {
+      if (is.data.frame(x)) x = as.list(x)
+      if ("class" %in% names(x)) {
+        x[["Class"]] = x$class
+        x[["class"]] = NULL
+        x = lapply(x, function(z) {
+          if (is.list(z) & length(z) > 0) return(z[[1]]) else return(z)
+        })
+        if (x$Class %in% "CentWaveParam") x$roiScales <- as.double()
+        if (x$Class %in% "PeakGroupsParam") {
+          x$peakGroupsMatrix <- as.matrix(x$peakGroupsMatrix)
+        }
+        if (x$Class %in% "PeakGroupsParam") x$subset <- as.integer(x$subset)
+        return(do.call("new", x))
+      } else return(x)
+    })
+
+    s = list(
+      "call" = s$call,
+      "algorithm" = s$algorithm,
+      "parameters" = s$parameters
+    )
+
+    return(s)
+  })
+
+  names(settings) = vapply(settings, function(x) {
+    if (!is.null(x)) return(x$call) else return("not_valid")
+  }, NA_character_)
+
+  return(settings)
+}
+
+# not-exported ms functions -----
+
+#' correct_ms_parsed_json_analyses
+#'
+#' @description Function to correct parsed analyses from json file.
+#'
+#' @param analyses X.
+#'
+#' @return X.
+#'
+correct_ms_parsed_json_analyses = function(analyses = NULL) {
+
+  analyses = lapply(analyses, function(x) {
+    x$name = as.character(x$name)
+    x$replicate = as.character(x$replicate)
+    x$blank = as.character(x$blank)
+    if (is.na(x$blank)) x$blank = NA_character_
+    x$file = as.character(x$file)
+    x$type = as.character(x$type)
+    x$time_stamp = as.character(x$time_stamp)
+    x$spectra_number = as.integer(x$spectra_number)
+    x$spectra_mode = as.character(x$spectra_mode)
+    x$spectra_levels = as.integer(x$spectra_levels)
+    x$mz_low = as.numeric(x$mz_low)
+    x$mz_high = as.numeric(x$mz_high)
+    x$rt_start = as.numeric(x$rt_start)
+    x$rt_end = as.numeric(x$rt_end)
+    x$polarity = as.character(x$polarity)
+    x$chromatograms_number = as.integer(x$chromatograms_number)
+    x$ion_mobility = as.logical(x$ion_mobility)
+    x$tic = as.data.table(x$tic)
+    x$bpc = as.data.table(x$bpc)
+    x$spectra = as.data.table(x$spectra)
+    x$chromatograms = as.data.table(x$chromatograms)
+    x$features = as.data.table(x$features)
+    return(x)
+  })
+
+  names(analyses) = vapply(analyses, function(x) x$name, NA_character_)
+
+  return(analyses)
+}
+
+#' correct_ms_parsed_json_groups
+#'
+#' @description Function to correct parsed feature groups from json file.
+#'
+#' @param groups X.
+#'
+#' @return X.
+#'
+correct_ms_parsed_json_groups = function(groups = NULL) {
+
+  groups = lapply(groups, function(x) {
+    features_temp = as.data.frame(x[["features"]])
+    x[["features"]] = NULL
+    x = as.data.table(x)
+    x$features = list(features_temp)
+    return(x)
+  })
+
+  groups = rbindlist(groups)
+
+  groups = groups[order(groups$index), ]
+
+  return(groups)
+}
 
 #' @title build_features_table_from_patRoon
 #'
@@ -4109,12 +4469,6 @@ build_feature_groups_table_from_patRoon = function(pat, features, self) {
   fgroups$drt = vapply(index, function(x) {
     return(round(max(fts$rtmax[x] - fts$rtmin[x]), digits = 0))}, 0)
 
-  fgroups$features = lapply(index, function(x, fts, fts_ana_index) {
-    temp = copy(fts_ana_index)
-    temp[1, colnames(temp) %in% fts$analysis[x]] = fts$index[x]
-    return(temp)
-  }, fts = fts, fts_ana_index = fts_ana_index)
-
   fgroups$index = as.numeric(sub(".*_", "", fgroups$group))
 
   if ("is_filled" %in% colnames(fts)) {
@@ -4166,6 +4520,12 @@ build_feature_groups_table_from_patRoon = function(pat, features, self) {
       fgroups$index
     )
   }
+
+  fgroups$features = lapply(index, function(x, fts, fts_ana_index) {
+    temp = copy(fts_ana_index)
+    temp[1, colnames(temp) %in% fts$analysis[x]] = fts$index[x]
+    return(temp)
+  }, fts = fts, fts_ana_index = fts_ana_index)
 
   names(new_id) = fgroups$group
   fgroups$group = new_id

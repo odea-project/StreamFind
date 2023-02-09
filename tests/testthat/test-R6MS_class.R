@@ -225,7 +225,7 @@ ms$group_features(settings = settings_gf)
 test_that("group features", {
   expect_s3_class(ms$get_groups(mz = targets), "data.table")
   expect_true("group" %in% colnames(ms$get_groups(mz = targets[1,])))
-  expect_true(all(ms$has_feature_groups()))
+  expect_true(all(ms$has_groups()))
 })
 
 test_that("get feature groups MS1 and MS2", {
@@ -292,13 +292,28 @@ test_that("save private fields as json", {
   expect_true(file.exists("msData.json"))
 })
 
-file.remove(c("header.json", "analyses.json", "groups.json", "msData.json"))
+ms5 = R6MS$new()
 
-test_that("import settings from json file", {
-  expect_invisible(ms2$import_settings("settings.json"))
-  expect_equal(ms$get_settings(), ms2$get_settings())
+test_that("import header and settings from json file", {
+  expect_invisible(ms5$import_header("header.json"))
+  expect_invisible(ms5$import_settings("settings.json"))
+  expect_equal(ms$get_header(), ms5$get_header())
+  expect_equal(ms$get_settings(), ms5$get_settings())
 })
 
+test_that("import analyses and groups from json file", {
+  expect_invisible(ms5$import_analyses("analyses.json"))
+  expect_invisible(ms5$import_groups("groups.json"))
+  expect_equal(ms$get_analysis_names(), ms5$get_analysis_names())
+  expect_equal(ms$get_groups()[["group"]], ms5$get_groups()[["group"]])
+})
+
+test_that("import R6MS object from json file", {
+  expect_equal(ms5, import_R6MS("msData.json"))
+  expect_equal(ms$get_groups()[["group"]], ms5$get_groups()[["group"]])
+})
+
+file.remove(c("header.json", "analyses.json", "groups.json", "msData.json"))
 file.remove("settings.json")
 
 
@@ -314,20 +329,10 @@ file.remove("settings.json")
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-# TODO make a json version of the R6 class for export/import function
-
 # TODO Implement a field for storing MS lists for each feature/feature groups
+
+# TODO Make a validation function for the validity of class content.
+# To be used when importing from rds file.
 
 # TODO Improve methods for plotting already produced data.frames from
 # class functions, similar to S4 implementation for data.table
@@ -347,28 +352,32 @@ file.remove("settings.json")
 # Work Lines -----
 
 ms <- R6MS$new(files[c(4:6, 10:12)], run_parallel = FALSE)
-ms$import_settings(file)
 ms$find_features(settings = settings_ff)
 ms$group_features(settings = settings_gf_alignment)
 self = ms$clone(deep = T)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ms$save()
 ms$save_header()
+
+ms2 = import_R6MS(file = paste0(getwd(), "/msData.json"))
+
+ms2 = import_R6MS(file = paste0(getwd(), "/groups.json"))
+
+ms$import_header(file)
+
+gr = ms$get_groups()[1:100, ]
+gr = gr$group
+test = ms$get_groups_ms1(groups = gr, run_parallel = TRUE, verbose = FALSE)
+
+
+
+
+
+
+
+
+
+
 ms$save_settings()
 ms$save_analyses()
 ms$save_groups()
