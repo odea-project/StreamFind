@@ -3,6 +3,15 @@
 
 ### plotEICs-data.table -----
 
+#' @title plotEICs
+#'
+#' @description Generic for plotting extracted ion chromatograms (EICs).
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
+setGeneric("plotEICs", function(object, ...) standardGeneric("plotEICs"))
+
 #' @title plotEICs-data.table
 #'
 #' @description An S4 method for plotting extracted ion chromatograms (EICs)
@@ -83,6 +92,15 @@ setMethod("plotEICs", "data.table", function(object,
 
 ### plotTICs-data.table --------------------------------------------------
 
+#' @title plotTICs
+#'
+#' @description Generic for plotting total ion chromatograms (EICs).
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
+setGeneric("plotTICs", function(object, ...) standardGeneric("plotTICs"))
+
 #' @title plotTICs-data.table
 #'
 #' @description Plots a total ion chromatogram (TIC) from the
@@ -117,6 +135,15 @@ setMethod("plotTICs", "data.table", function(object,
 
 
 ### plotBPCs-data.table --------------------------------------------------
+
+#' @title plotBPCs
+#'
+#' @description Generic for getting base peak chromatograms (BPCs).
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
+setGeneric("plotBPCs", function(object, ...) standardGeneric("plotBPCs"))
 
 #' @title plotBPCs-data.table
 #'
@@ -191,6 +218,15 @@ setMethod("plotBPCs", "data.table", function(object,
 
 
 ### plotXICs-data.table --------------------------------------------------
+
+#' @title plotXICs
+#'
+#' @description Generic for plotting three dimensional ion chromatograms (XICs).
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
+setGeneric("plotXICs", function(object, ...) standardGeneric("plotXICs"))
 
 #' @title plotXICs-data.table
 #'
@@ -304,6 +340,15 @@ setMethod("plotXICs", "data.table", function(object,
 
 ### plotMS2s-data.table --------------------------------------------------
 
+#' @title plotMS2s
+#'
+#' @description Generic for plotting MS 2 spectra.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
+setGeneric("plotMS2s", function(object, ...) standardGeneric("plotMS2s"))
+
 #' @title plotMS2s-data.table
 #'
 #' @description Plots MS2 data for specified \emph{m/z} and retention time
@@ -404,6 +449,15 @@ setMethod("plotMS2s", "data.table", function(object = NULL,
 
 
 ### plotPeaks-data.table -------------------------------------------------------
+
+#' @title plotPeaks
+#'
+#' @description Generic for plotting peaks.
+#'
+#' @param object A method specific class object.
+#' @param ... Other method specific arguments.
+#'
+setGeneric("plotPeaks", function(object, ...) standardGeneric("plotPeaks"))
 
 #' @title plotPeaks-data.table
 #'

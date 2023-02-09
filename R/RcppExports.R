@@ -9,11 +9,3 @@ rcpp_ms_cluster_spectra <- function(spectra, mzClust, verbose) {
     .Call(`_streamFind_rcpp_ms_cluster_spectra`, spectra, mzClust, verbose)
 }
 
-rcpp_ms_extract_ms2_for_msAnalysis <- function(spec, targets, mzClust, verbose) {
-    .Call(`_streamFind_rcpp_ms_extract_ms2_for_msAnalysis`, spec, targets, mzClust, verbose)
-}
-
-rcpp_ms_make_eics_for_msAnalysis <- function(spec, targets) {
-    .Call(`_streamFind_rcpp_ms_make_eics_for_msAnalysis`, spec, targets)
-}
-
