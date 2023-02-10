@@ -138,8 +138,9 @@ Create a new MS set of analyses.
 \item{\code{files}}{A character vector with the full file path of MS analyses
 or a data.frame with the columns file, replicate and blank with the
 full file path, the replicate group name (string) and the associated
-blank replicate group (string).
- @param run_parallel Logical, set to \code{TRUE} for processing the data
+blank replicate group (string).}
+
+\item{\code{run_parallel}}{Logical, set to \code{TRUE} for processing the data
 in parallel.}
 
 \item{\code{.header}}{A list with administrative information for the header.
@@ -200,13 +201,13 @@ The header list as defined by `value`.
 \subsection{Method \code{get_analyses()}}{
 Method to get specific analyses from the `msData` object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$get_analyses(value)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$get_analyses(analyses)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{value}}{A numeric/character vector with the number/name
+\item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 }
 \if{html}{\out{</div>}}
@@ -702,6 +703,28 @@ Method to get features from analyses.
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{id}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{filtered}}{X.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 A data.frame.
 }
@@ -727,6 +750,34 @@ Method to get EIC of features from analyses.
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{id}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{rtExpand}}{X.}
+
+\item{\code{mzExpand}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{run_parallel}}{X.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 A data.frame/data.table.
 }
@@ -755,6 +806,40 @@ Method to get an averaged MS1 spectrum for features in analyses.
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{id}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{rtWindow}}{X.}
+
+\item{\code{mzWindow}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{verbose}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{run_parallel}}{X.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 A data.frame/data.table.
 }
@@ -782,6 +867,38 @@ Method to get an averaged MS2 spectrum for features in analyses.
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{id}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{verbose}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{run_parallel}}{X.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 A data.frame/data.table.
 }
@@ -818,6 +935,29 @@ Method to get feature groups from analyses.
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{groups}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{onlyIntensities}}{X.}
+
+\item{\code{average}}{X.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 A data.frame/data.table.
 }
@@ -848,6 +988,43 @@ Method to get an averaged MS1 spectrum for feature groups in analyses.
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{groups}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{rtWindow}}{X.}
+
+\item{\code{mzWindow}}{X.}
+
+\item{\code{mzClustFeatures}}{X.}
+
+\item{\code{minIntensityFeatures}}{X.}
+
+\item{\code{mzClustGroups}}{X.}
+
+\item{\code{minIntensityGroups}}{X.}
+
+\item{\code{groupBy}}{X.}
+
+\item{\code{verbose}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{run_parallel}}{X.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 A data.frame/data.table.
 }
@@ -877,6 +1054,41 @@ Method to get an averaged MS2 spectrum for feature groups in analyses.
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{groups}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{mzClustFeatures}}{X.}
+
+\item{\code{minIntensityFeatures}}{X.}
+
+\item{\code{mzClustGroups}}{X.}
+
+\item{\code{minIntensityGroups}}{X.}
+
+\item{\code{groupBy}}{X.}
+
+\item{\code{verbose}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{run_parallel}}{X.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 A data.frame/data.table.
 }
@@ -1193,8 +1405,7 @@ the `msData` object.}
 \subsection{Details}{
 See the \link[patRoon]{findFeatures} function from the
 \pkg{patRoon} package or the
-\href{https://rickhelmus.github.io/patRoon/reference/findFeatures.html}
-{reference guide} for more information. The following algorithms are
+\href{https://rickhelmus.github.io/patRoon/reference/findFeatures.html}{reference guide} for more information. The following algorithms are
 available via \pkg{patRoon}: "xcms3", "xcms", "openms", "envipick",
 "sirius", "kpic2", "safd". The algorithm slot in the
 \linkS4class{settings} should be one of the described. The parameters
@@ -1230,8 +1441,7 @@ the `msData` object.}
 \subsection{Details}{
 See the \link[patRoon]{groupFeatures} function from the
 \pkg{patRoon} package or the
-\href{https://rickhelmus.github.io/patRoon/reference/groupFeatures.html}
-{reference guide} for more information. The following algorithms are
+\href{https://rickhelmus.github.io/patRoon/reference/groupFeatures.html}{reference guide} for more information. The following algorithms are
 possible: "xcms3", "xcms", "openms" or "kpic2". The algorithm slot in the
 \linkS4class{settings} should be one of the described. The parameters
 are given as a list and should match with algorithm requirements.
@@ -1377,7 +1587,7 @@ Plots spectra for given MS analyses.
   ppm = 20,
   sec = 60,
   id = NULL,
-  allTraces = FALSE,
+  allTraces = TRUE,
   isolationWindow = 1.3,
   minIntensityMS1 = 0,
   minIntensityMS2 = 0,
@@ -1752,8 +1962,44 @@ Method to plot features from analyses.
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{id}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{rtExpand}}{X.}
+
+\item{\code{mzExpand}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{run_parallel}}{X.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{colorBy}}{x.}
+
+\item{\code{interactive}}{x.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
-A data.frame.
+plot.
 }
 }
 \if{html}{\out{<hr>}}
@@ -1781,6 +2027,42 @@ Method to map retention time and \emph{m/z} of features from analyses.
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{id}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{xlim}}{X.}
+
+\item{\code{ylim}}{X.}
+
+\item{\code{showLegend}}{X.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{colorBy}}{x.}
+
+\item{\code{interactive}}{x.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 A plot.
 }
@@ -1821,6 +2103,8 @@ of the analyses.}
 
 \item{\code{id}}{X.}
 
+\item{\code{mass}}{X.}
+
 \item{\code{mz}}{X.}
 
 \item{\code{rt}}{X.}
@@ -1829,11 +2113,17 @@ of the analyses.}
 
 \item{\code{sec}}{X.}
 
+\item{\code{rtWindow}}{X.}
+
+\item{\code{mzWindow}}{X.}
+
 \item{\code{mzClust}}{X.}
 
 \item{\code{minIntensity}}{X.}
 
 \item{\code{verbose}}{X.}
+
+\item{\code{filtered}}{X.}
 
 \item{\code{run_parallel}}{X.}
 
@@ -1886,6 +2176,8 @@ of the analyses.}
 
 \item{\code{id}}{X.}
 
+\item{\code{mass}}{X.}
+
 \item{\code{mz}}{X.}
 
 \item{\code{rt}}{X.}
@@ -1894,11 +2186,15 @@ of the analyses.}
 
 \item{\code{sec}}{X.}
 
+\item{\code{isolationWindow}}{X.}
+
 \item{\code{mzClust}}{X.}
 
 \item{\code{minIntensity}}{X.}
 
 \item{\code{verbose}}{X.}
+
+\item{\code{filtered}}{X.}
 
 \item{\code{run_parallel}}{X.}
 
@@ -1954,6 +2250,39 @@ Method to plot feature groups EIC.
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{groups}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{rtExpand}}{X.}
+
+\item{\code{mzExpand}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{run_parallel}}{X.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{colorBy}}{x.}
+
+\item{\code{interactive}}{x.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 A plot.
 }
@@ -1990,6 +2319,10 @@ Method to plot MS1 spectra from features in the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{groups}}{X.}
+
+\item{\code{mass}}{X.}
+
 \item{\code{mz}}{X.}
 
 \item{\code{rt}}{X.}
@@ -1998,7 +2331,21 @@ Method to plot MS1 spectra from features in the analyses.
 
 \item{\code{sec}}{X.}
 
+\item{\code{rtWindow}}{X.}
+
+\item{\code{mzWindow}}{X.}
+
+\item{\code{mzClustFeatures}}{X.}
+
+\item{\code{minIntensityFeatures}}{X.}
+
+\item{\code{mzClustGroups}}{X.}
+
+\item{\code{minIntensityGroups}}{X.}
+
 \item{\code{verbose}}{X.}
+
+\item{\code{filtered}}{X.}
 
 \item{\code{run_parallel}}{X.}
 
@@ -2010,14 +2357,7 @@ Method to plot MS1 spectra from features in the analyses.
 
 \item{\code{interactive}}{x.}
 
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
-
-\item{\code{id}}{X.}
-
-\item{\code{mzClust}}{X.}
-
-\item{\code{minIntensity}}{X.}
+\item{\code{groupBy}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2056,6 +2396,10 @@ Method to plot MS1 spectra from features in the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{groups}}{X.}
+
+\item{\code{mass}}{X.}
+
 \item{\code{mz}}{X.}
 
 \item{\code{rt}}{X.}
@@ -2064,7 +2408,19 @@ Method to plot MS1 spectra from features in the analyses.
 
 \item{\code{sec}}{X.}
 
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{mzClustFeatures}}{X.}
+
+\item{\code{minIntensityFeatures}}{X.}
+
+\item{\code{mzClustGroups}}{X.}
+
+\item{\code{minIntensityGroups}}{X.}
+
 \item{\code{verbose}}{X.}
+
+\item{\code{filtered}}{X.}
 
 \item{\code{run_parallel}}{X.}
 
@@ -2076,14 +2432,7 @@ Method to plot MS1 spectra from features in the analyses.
 
 \item{\code{interactive}}{x.}
 
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
-
-\item{\code{id}}{X.}
-
-\item{\code{mzClust}}{X.}
-
-\item{\code{minIntensity}}{X.}
+\item{\code{groupBy}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2116,6 +2465,39 @@ from features within target feature groups.
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{rtExpand}}{X.}
+
+\item{\code{mzExpand}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{run_parallel}}{X.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{heights}}{x.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 A plot.
 }
@@ -2143,24 +2525,29 @@ Remove feature groups from the `msData` object.
 \if{html}{\out{<div class="r">}}\preformatted{msData$remove_groups()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+Invisible.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-msData-subset_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-subset_analyses}{}}}
 \subsection{Method \code{subset_analyses()}}{
-Creates a new MS set of analyses.
+Subsets an `msData` object on analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$subset_analyses(i, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$subset_analyses(analyses)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{i}}{Name.}
-
-\item{\code{...}}{Hair color.}
+\item{\code{analyses}}{X.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A new cloned `msData` object with only the analyses as defined
+by the `analyses` argument.
 }
 }
 \if{html}{\out{<hr>}}

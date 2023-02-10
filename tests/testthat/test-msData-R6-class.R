@@ -34,7 +34,7 @@ sec_dev <- 30
 ppm_dev <- 10
 
 mz <- data.frame(id = c("tg1", "tg2"),mz = c(carb, diu),rt = c(carb_rt, diu_rt))
-targets <- makeTargets(mz = mz, ppm = ppm_dev, sec = sec_dev)
+targets <- make_ms_targets(mz = mz, ppm = ppm_dev, sec = sec_dev)
 
 # msData class tests -----
 
@@ -355,6 +355,9 @@ ms <- msData$new(files[c(4:6, 10:12)], run_parallel = FALSE)
 ms$find_features(settings = settings_ff)
 ms$group_features(settings = settings_gf_alignment)
 self = ms$clone(deep = T)
+
+
+
 
 ms$save()
 ms$save_header()
