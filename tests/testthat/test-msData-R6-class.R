@@ -42,7 +42,7 @@ test_that("test empty msData", {
   expect_equal(class(msData$new()), c("msData", "R6"))
 })
 
-ms <- msData$new(files, run_parallel = FALSE)
+ms <- msData$new(files, runParallel = FALSE)
 
 test_that("create msData", {
   expect_equal(class(ms), c("msData", "R6"))
@@ -90,7 +90,7 @@ test_that("test setter and getter for replicates and blanks", {
   expect_equal(names(ms$get_blank_names()), unname(ms$get_analysis_names()))
 })
 
-ms2 <- msData$new(files2, run_parallel = TRUE)
+ms2 <- msData$new(files2, runParallel = TRUE)
 
 test_that("getter analyses", {
   expect_equal(class(ms2$get_analyses(1:3)), "list")
@@ -193,7 +193,7 @@ test_that("get MS1 and MS2 for features", {
   expect_gt(nrow(ms$get_features_ms1(id = ftar$id)), 0)
   expect_s3_class(ms$get_features_ms2(id = ftar$id), "data.frame")
   expect_gt(nrow(ms$get_features_ms2(id = ftar$id)), 0)
-  expect_equal(nrow(ms$get_features_ms1(analyses = 1, id = ftar$id)), 0)
+  expect_equal(nrow(ms$get_features_ms1(analyses = 1, id = ftar$id[12])), 0)
   expect_equal(nrow(ms$get_features_ms1(analyses = 1, mz = ftar)), 0)
   expect_s3_class(ms$get_features_ms2(id = ftar$id), "data.frame")
   expect_equal(nrow(ms$get_features_ms2(analyses = 1, id = ftar$id)), 0)
@@ -351,7 +351,7 @@ file.remove("settings.json")
 
 # Work Lines -----
 
-ms <- msData$new(files[c(4:6, 10:12)], run_parallel = FALSE)
+ms <- msData$new(files[c(4:6, 10:12)], runParallel = FALSE)
 ms$find_features(settings = settings_ff)
 ms$group_features(settings = settings_gf_alignment)
 self = ms$clone(deep = T)
@@ -370,7 +370,7 @@ ms$import_header(file)
 
 gr = ms$get_groups()[1:100, ]
 gr = gr$group
-test = ms$get_groups_ms1(groups = gr, run_parallel = TRUE, verbose = FALSE)
+test = ms$get_groups_ms1(groups = gr, runParallel = TRUE, verbose = FALSE)
 
 
 

@@ -9,10 +9,10 @@ extract_time_alignment(pat, self)
 \arguments{
 \item{pat}{A \linkS4class{featureGroups} object from \pkg{patRoon}.}
 
-\item{self}{An `msData` object. When applied within the R6, the self object.}
+\item{self}{An \code{msData} object. When applied within the R6, the self object.}
 }
 \description{
 Function to extract adjusted retention time information from
-alignment results when using `xcms3` as algorithm for grouping and retention
+alignment results when using \code{xcms3} as algorithm for grouping and retention
 time alignment.
 }

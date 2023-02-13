@@ -20,7 +20,7 @@ as columns.}
 \item{features}{A data table with the individual features to plot.}
 
 \item{legendNames}{A character vector with the same length as the unique ids
-in the table given in `eic`.}
+in the table given in \code{eic}.}
 
 \item{colorBy}{A string (length 1). One of "analyses" (the default),
 "levels", "targets" or "replicates". For "replicates", a column with

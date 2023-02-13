@@ -25,6 +25,8 @@ to the comprehensive documentation and well categorized set of
 integrated functionalities or modules (see handbooks folder for more
 information).
 
+<img src="inst/extdata/logo_group.png" width="100%" style="display: block; margin: auto;" />
+
 ## Installation
 
 For installation of the streamFind package, it is recommended to firstly
@@ -41,7 +43,7 @@ processing and can be used interchangeably with streamFind.
 
 [R](https://cran.r-project.org/) and
 [RTools](https://cran.r-project.org/bin/windows/Rtools/) for Windows
-users. The R version 4.2.1 (2022-06-23 ucrt) can be obtained in
+users. The R version 4.2.2 (2022-10-31 ucrt) can be obtained in
 <https://cran.r-project.org/>. The RTools can be downloaded in
 <https://cran.r-project.org/bin/windows/Rtools/>. Make sure to download
 the right version for the R version installed. Installation instructions
@@ -70,7 +72,7 @@ remotes::install_github("ricardobachertdacunha/streamFind", dependencies = TRUE)
 
 Not yet available.
 
-## Back-end usage
+## Backend usage
 
 Consult the Handbook_backend_streamFind.Rmd in the handbooks folder for
 detailed back-end structure and usage documentation.

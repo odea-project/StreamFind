@@ -15,17 +15,17 @@ plot_xic_interactive(
 )
 }
 \arguments{
-\item{xic}{A `data.table` with columns: .}
+\item{xic}{A \code{data.table} with columns: .}
 
 \item{legendNames}{A character vector with the same length as the unique ids
-in the table given in `xic`.}
+in the table given in \code{xic}.}
 
 \item{plotTargetMark}{Logical, set to \code{TRUE} (the default) to plot a
 target mark.}
 
 \item{targetsMark}{A data.frame with columns "mz" and "rt", defining the
 \emph{m/z} and retention time values of each targets (i.e., each unique id
-in the `xic` table). Note that the number of rows should match with the
+in the \code{xic} table). Note that the number of rows should match with the
 number of unique target ids.}
 
 \item{ppmMark}{A numeric vector of length one to define the mass deviation,

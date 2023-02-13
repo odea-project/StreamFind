@@ -10,8 +10,8 @@ import_msData(file)
 \item{file}{X.}
 }
 \value{
-An `msData` class object.
+An \code{msData} class object.
 }
 \description{
-Function to import an `msData` object from a saved file.
+Function to import an \code{msData} object from a saved file.
 }

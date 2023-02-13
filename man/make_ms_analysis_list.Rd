@@ -4,7 +4,7 @@
 \alias{make_ms_analysis_list}
 \title{make_ms_analysis_list}
 \usage{
-make_ms_analysis_list(files = NULL, run_parallel = FALSE)
+make_ms_analysis_list(files = NULL, runParallel = FALSE)
 }
 \arguments{
 \item{files}{A character vector with mzML or mzXML file path/s.
@@ -12,7 +12,7 @@ Alternatively, a data.frame with the column/s file, replicate and blank
 with the full file path/s, the replicate group name/s (string) and the
 associated blank replicate group name (string).}
 
-\item{run_parallel}{Logical, set to \code{TRUE} for parsing the data from
+\item{runParallel}{Logical, set to \code{TRUE} for parsing the data from
 files in parallel.}
 }
 \value{

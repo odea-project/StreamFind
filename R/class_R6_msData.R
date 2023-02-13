@@ -53,30 +53,31 @@ msData = R6::R6Class("msData",
     #' or a data.frame with the columns file, replicate and blank with the
     #' full file path, the replicate group name (string) and the associated
     #' blank replicate group (string).
-    #' @param run_parallel Logical, set to \code{TRUE} for processing the data
+    #' @param runParallel Logical, set to \code{TRUE} for processing the data
     #' in parallel.
-    #' @param .header A list with administrative information for the header.
-    #' When not given (i.e., \code{NULL}), a default header is generated.
-    #' @param .settings A list with settings.
-    #' @param .analyses A list with MS analyses information.
-    #' @param .groups A data.table with `groups` representing corresponding
+    #' @param header A list with administrative information for the header.
+    #' When not given (i.e., \code{NULL}), a default header is generated with
+    #' name, path and date.
+    #' @param settings A list with settings.
+    #' @param analyses A list with MS analyses information.
+    #' @param groups A data.table with `groups` representing corresponding
     #' features across MS analyses.
-    #' @param .alignment X.
+    #' @param alignment X.
     #'
     #'
     #' @return A new `msData` object.
     #'
     initialize = function(files = NULL,
-                          run_parallel = FALSE,
-                          .header = NULL,
-                          .settings = NULL,
-                          .analyses = NULL,
-                          .groups = NULL,
-                          .alignment = NULL) {
+                          runParallel = FALSE,
+                          header = NULL,
+                          settings = NULL,
+                          analyses = NULL,
+                          groups = NULL,
+                          alignment = NULL) {
 
-      if (is.null(.analyses) & !is.null(files)) {
+      if (is.null(analyses) & !is.null(files)) {
 
-        analyses = make_ms_analysis_list(files, run_parallel)
+        analyses = make_ms_analysis_list(files, runParallel)
 
         if (is.null(analyses)) {
           cat(c("No valid files were given! msData object is empty. \n",
@@ -99,21 +100,21 @@ msData = R6::R6Class("msData",
 
         } else warning("File/s data not valid!")
 
-      } else if (!is.null(.analyses)) {
+      } else if (!is.null(analyses)) {
 
-        valid_analyses = vapply(.analyses, validate_ms_analysis_list, FALSE)
+        valid_analyses = vapply(analyses, validate_ms_analysis_list, FALSE)
 
         if (all(valid_analyses)) {
 
-          if (TRUE %in% duplicated(names(.analyses))) {
+          if (TRUE %in% duplicated(names(analyses))) {
 
             warning("Duplicated file names are not allowed in msData!")
 
           } else {
 
-            names(.analyses) = vapply(.analyses, function(x) x$name, "")
-            .analyses = .analyses[order(names(.analyses))]
-            private$.analyses = .analyses
+            names(analyses) = vapply(analyses, function(x) x$name, "")
+            analyses = analyses[order(names(analyses))]
+            private$.analyses = analyses
 
           }
 
@@ -125,25 +126,25 @@ msData = R6::R6Class("msData",
 
       }
 
-      if (!is.null(.header) & is.list(.header)) {
+      if (!is.null(header) & is.list(header)) {
 
-        if (validate_header(.header)) {
+        if (validate_header(header)) {
 
-          if (!"name" %in% names(.header)) .header$name = NA_character_
+          if (!"name" %in% names(header)) header$name = NA_character_
 
-          if (!"path" %in% names(.header)) .header$path = getwd()
+          if (!"path" %in% names(header)) header$path = getwd()
 
-          if (!"date" %in% names(.header)) .header$date = Sys.time()
+          if (!"date" %in% names(header)) header$date = Sys.time()
 
-          private$.header = .header
+          private$.header = header
 
         }
 
       }
 
-      private$.groups = .groups
+      private$.groups = groups
 
-      private$.alignment = .alignment
+      private$.alignment = alignment
 
     },
 
@@ -206,11 +207,12 @@ msData = R6::R6Class("msData",
     #' @return The list of analyses defined by `value`.
     #'
     get_analyses = function(analyses) {
-      if (missing(value)) return(private$.analyses)
-        else {
-          analyses = self$check_analyses_argument(analyses)
-          if (!is.null(analyses)) return(private$.analyses[analyses])
-        }
+      if (missing(analyses)) {
+        return(private$.analyses)
+      } else {
+        analyses = self$check_analyses_argument(analyses)
+        if (!is.null(analyses)) return(private$.analyses[analyses])
+      }
     },
 
     #' @description
@@ -261,7 +263,6 @@ msData = R6::R6Class("msData",
     get_analysis_names = function(analyses = NULL) {
       ana = vapply(private$.analyses, function(x) x$name, "")
       names(ana) = vapply(private$.analyses, function(x) x$name, "")
-      analyses = self$check_analyses_argument(analyses)
       if (!is.null(analyses)) return(ana[analyses])
       return(ana)
     },
@@ -380,7 +381,7 @@ msData = R6::R6Class("msData",
     #' @param isolationWindow X.
     #' @param minIntensityMS1 X.
     #' @param minIntensityMS2 X.
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #'
     #' @return A data.frame with spectra for each analyses and
     #' targets when defined.
@@ -389,7 +390,7 @@ msData = R6::R6Class("msData",
                            mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
                            allTraces = TRUE, isolationWindow = 1.3,
                            minIntensityMS1 = 0, minIntensityMS2 = 0,
-                           run_parallel = FALSE) {
+                           runParallel = FALSE) {
 
       trim = function(v, a, b)  return(
           rowSums(mapply(function(a, b) v >= a & v <= b, a = a, b = b)) > 0)
@@ -504,7 +505,7 @@ msData = R6::R6Class("msData",
 
       if (all(!is.na(files))) {
 
-        if (run_parallel & length(files) > 1) {
+        if (runParallel & length(files) > 1) {
           workers = parallel::detectCores() - 1
           if (length(files) < workers) workers = length(files)
           par_type = "PSOCK"
@@ -602,7 +603,7 @@ msData = R6::R6Class("msData",
           } else return(data.frame())
         }
 
-        if (run_parallel) parallel::stopCluster(cl)
+        if (runParallel) parallel::stopCluster(cl)
         # unregister_dopar()
 
         names(spec_list) = analyses
@@ -625,12 +626,12 @@ msData = R6::R6Class("msData",
     #'
     #' @param analyses X.
     #' @param minIntensity X.
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #'
     #' @return A data.frame with spectra.
     #'
     get_chromatograms = function(analyses = NULL, minIntensity = 0,
-                                 run_parallel = FALSE) {
+                                 runParallel = FALSE) {
 
       analyses = self$check_analyses_argument(analyses)
       if (is.null(analyses)) return(data.frame())
@@ -639,7 +640,7 @@ msData = R6::R6Class("msData",
 
       if (all(!is.na(files))) {
 
-        if (run_parallel & length(files) > 1) {
+        if (runParallel & length(files) > 1) {
           workers = parallel::detectCores() - 1
           if (length(files) < workers) workers = length(files)
           par_type = "PSOCK"
@@ -709,7 +710,7 @@ msData = R6::R6Class("msData",
           } else return(data.frame())
         }
 
-        if (run_parallel) parallel::stopCluster(cl)
+        if (runParallel) parallel::stopCluster(cl)
 
         names(chrom_list) = analyses
         chrom_df = rbindlist(chrom_list, idcol = "analysis", fill = TRUE)
@@ -765,18 +766,18 @@ msData = R6::R6Class("msData",
     #' @param ppm X.
     #' @param sec X.
     #' @param id X.
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #'
     #' @return A data.frame.
     #'
     get_eic = function(analyses = NULL,
                         mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
-                        run_parallel = FALSE) {
+                        runParallel = FALSE) {
 
       eic = self$get_spectra(
         analyses, levels = 1, mz, rt, ppm, sec, id, allTraces = TRUE,
         isolationWindow = 1.3, minIntensityMS1 = 0, minIntensityMS2 = 0,
-        run_parallel = run_parallel
+        runParallel = runParallel
       )
 
       if (nrow(eic) > 0) {
@@ -804,20 +805,20 @@ msData = R6::R6Class("msData",
     #' @param mzClust X.
     #' @param verbose X.
     #' @param minIntensity X.
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #'
     #' @return A data.frame.
     #'
     get_ms1 = function(analyses = NULL,
                        mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
                        mzClust = 0.003, verbose = FALSE,
-                       minIntensity = 1000, run_parallel = FALSE) {
+                       minIntensity = 1000, runParallel = FALSE) {
 
       ms1 = self$get_spectra(
         analyses = analyses, levels = 1,
         mz = mz, rt = rt, ppm = ppm, sec = sec, id = id, allTraces = TRUE,
         minIntensityMS1 = minIntensity, minIntensityMS2 = 0,
-        run_parallel = run_parallel
+        runParallel = runParallel
       )
 
       if (nrow(ms1) == 0) return(ms1)
@@ -860,21 +861,21 @@ msData = R6::R6Class("msData",
     #' @param mzClust X.
     #' @param verbose X.
     #' @param minIntensity X.
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #'
     #' @return A data.frame.
     #'
     get_ms2 = function(analyses = NULL,
                        mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
                        isolationWindow = 1.3, mzClust = 0.005, verbose = TRUE,
-                       minIntensity = 0, run_parallel = FALSE) {
+                       minIntensity = 0, runParallel = FALSE) {
 
       ms2 = self$get_spectra(
         analyses = analyses, levels = 2,
         mz = mz, rt = rt, ppm = ppm, sec = sec, id = id,
         isolationWindow = isolationWindow, allTraces = FALSE,
         minIntensityMS1 = 0, minIntensityMS2 = minIntensity,
-        run_parallel = run_parallel
+        runParallel = runParallel
       )
 
       if (nrow(ms2) == 0) return(ms2)
@@ -1006,14 +1007,14 @@ msData = R6::R6Class("msData",
     #' @param rtExpand X.
     #' @param mzExpand X.
     #' @param filtered X.
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #'
     #' @return A data.frame/data.table.
     #'
     get_features_eic = function(analyses = NULL, id = NULL, mass = NULL,
                                 mz = NULL, rt = NULL, ppm = 20, sec = 60,
                                 rtExpand = 120, mzExpand = 0.005,
-                                filtered = FALSE, run_parallel = FALSE) {
+                                filtered = FALSE, runParallel = FALSE) {
 
       fts = self$get_features(analyses, id, mass, mz, rt, ppm, sec, filtered)
 
@@ -1024,7 +1025,7 @@ msData = R6::R6Class("msData",
       fts$mzmin = fts$mzmin - mzExpand
       fts$mzmax = fts$mzmax + mzExpand
 
-      eic = self$get_eic(analyses, mz = fts, run_parallel = run_parallel)
+      eic = self$get_eic(analyses, mz = fts, runParallel = runParallel)
 
       return(eic)
     },
@@ -1046,7 +1047,7 @@ msData = R6::R6Class("msData",
     #' @param minIntensity X.
     #' @param verbose X.
     #' @param filtered X.
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #'
     #' @return A data.frame/data.table.
     #'
@@ -1055,7 +1056,7 @@ msData = R6::R6Class("msData",
                                 rtWindow = c(-2, 2), mzWindow = c(-5, 100),
                                 mzClust = 0.003, minIntensity = 1000,
                                 verbose = TRUE, filtered = FALSE,
-                                run_parallel = FALSE) {
+                                runParallel = FALSE) {
 
       fts = self$get_features(analyses, id, mass, mz, rt, ppm, sec, filtered)
 
@@ -1073,7 +1074,7 @@ msData = R6::R6Class("msData",
 
       ms1 = self$get_ms1(analyses = unique(fts$analysis), mz = fts,
                          mzClust = mzClust, minIntensity = minIntensity,
-                         verbose = verbose, run_parallel = run_parallel)
+                         verbose = verbose, runParallel = runParallel)
 
       if ("group" %in% colnames(fts)) {
         fgs = fts$group
@@ -1100,7 +1101,7 @@ msData = R6::R6Class("msData",
     #' @param minIntensity X.
     #' @param verbose X.
     #' @param filtered X.
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #'
     #' @return A data.frame/data.table.
     #'
@@ -1108,7 +1109,7 @@ msData = R6::R6Class("msData",
                                 mz = NULL, rt = NULL, ppm = 20, sec = 60,
                                 isolationWindow = 1.3, mzClust = 0.003,
                                 minIntensity = 0, verbose = TRUE,
-                                filtered = FALSE, run_parallel = FALSE) {
+                                filtered = FALSE, runParallel = FALSE) {
 
       fts = self$get_features(analyses, id, mass, mz, rt, ppm, sec, filtered)
 
@@ -1117,7 +1118,7 @@ msData = R6::R6Class("msData",
       ms2 = self$get_ms2(analyses = unique(fts$analysis), mz = fts,
                          isolationWindow = isolationWindow, mzClust = mzClust,
                          minIntensity = minIntensity, verbose = verbose,
-                         run_parallel = run_parallel)
+                         runParallel = runParallel)
 
       if ("group" %in% colnames(fts)) {
         fgs = fts$group
@@ -1292,7 +1293,7 @@ msData = R6::R6Class("msData",
     #' @param groupBy X.
     #' @param verbose X.
     #' @param filtered X.
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #'
     #' @return A data.frame/data.table.
     #'
@@ -1305,7 +1306,7 @@ msData = R6::R6Class("msData",
                               minIntensityGroups = 1000,
                               groupBy = "groups",
                               verbose = TRUE, filtered = FALSE,
-                              run_parallel = FALSE) {
+                              runParallel = FALSE) {
 
       fgs = self$get_groups(groups, mass, mz, rt, ppm, sec, filtered,
                             onlyIntensities = FALSE, average = FALSE)
@@ -1331,7 +1332,7 @@ msData = R6::R6Class("msData",
       ms1 = self$get_ms1(analyses = unique(fts$analysis), mz = fts,
                          mzClust = mzClustFeatures,
                          minIntensity = minIntensityFeatures,
-                         verbose = verbose, run_parallel = run_parallel)
+                         verbose = verbose, runParallel = runParallel)
 
       ms1 = ms1[ms1$intensity > minIntensityGroups, ]
 
@@ -1379,7 +1380,7 @@ msData = R6::R6Class("msData",
     #' @param groupBy X.
     #' @param verbose X.
     #' @param filtered X.
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #'
     #' @return A data.frame/data.table.
     #'
@@ -1392,7 +1393,7 @@ msData = R6::R6Class("msData",
                               minIntensityGroups = 100,
                               groupBy = "groups",
                               verbose = TRUE, filtered = FALSE,
-                              run_parallel = FALSE) {
+                              runParallel = FALSE) {
 
       fgs = self$get_groups(groups, mass, mz, rt, ppm, sec, filtered,
                             onlyIntensities = FALSE, average = FALSE)
@@ -1410,7 +1411,7 @@ msData = R6::R6Class("msData",
                          mzClust = mzClustFeatures,
                          minIntensity = minIntensityFeatures,
                          verbose = verbose,
-                         run_parallel = run_parallel)
+                         runParallel = runParallel)
 
       ms2 = ms2[ms2$intensity > minIntensityGroups, ]
 
@@ -1810,18 +1811,18 @@ msData = R6::R6Class("msData",
     #' @description
     #' Method to load all spectra from analyses to the `msData` object.
     #'
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #'
     #' @return Invisible.
     #'
-    load_spectra = function(run_parallel = FALSE) {
+    load_spectra = function(runParallel = FALSE) {
 
       spec = self$get_spectra(
         analyses = NULL, levels = NULL,
         mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
         allTraces = TRUE, isolationWindow = 1.3,
         minIntensityMS1 = 0, minIntensityMS2 = 0,
-        run_parallel = run_parallel
+        runParallel = runParallel
       )
 
       split_vector = spec$analysis
@@ -1841,14 +1842,14 @@ msData = R6::R6Class("msData",
     #' @description
     #' Method to load all chromatograms from analyses to the `msData` object.
     #'
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #'
     #' @return Invisible.
     #'
-    load_chromatograms = function(run_parallel = FALSE) {
+    load_chromatograms = function(runParallel = FALSE) {
 
       chrom = self$get_chromatograms(analyses = NULL, minIntensity = 0,
-        run_parallel = run_parallel
+        runParallel = runParallel
       )
 
       split_vector = chrom$analysis
@@ -2163,7 +2164,7 @@ msData = R6::R6Class("msData",
     #' @param isolationWindow X.
     #' @param minIntensityMS1 X.
     #' @param minIntensityMS2 X.
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #' @param colorBy X.
     #'
     #' @return A 3D interactive plot.
@@ -2172,12 +2173,12 @@ msData = R6::R6Class("msData",
                             mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
                             allTraces = TRUE, isolationWindow = 1.3,
                             minIntensityMS1 = 0, minIntensityMS2 = 0,
-                            run_parallel = FALSE, colorBy = "analyses") {
+                            runParallel = FALSE, colorBy = "analyses") {
 
       spec = self$get_spectra(analyses, levels, mz, rt, ppm, sec, id,
         allTraces = allTraces, isolationWindow,
         minIntensityMS1, minIntensityMS2,
-        run_parallel)
+        runParallel)
 
       if (nrow(spec) == 0) {
         message("Traces not found for the targets!")
@@ -2204,7 +2205,7 @@ msData = R6::R6Class("msData",
     #' @param ppm X.
     #' @param sec X.
     #' @param id X.
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #' @param legendNames x.
     #' @param plotTargetMark x.
     #' @param targetsMark x.
@@ -2216,14 +2217,14 @@ msData = R6::R6Class("msData",
     #'
     plot_xic = function(analyses = NULL,
                         mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
-                        run_parallel = FALSE, legendNames = NULL,
+                        runParallel = FALSE, legendNames = NULL,
                         plotTargetMark = TRUE, targetsMark = NULL,
                         ppmMark = 5, secMark = 10, numberRows = 1) {
 
       xic = self$get_spectra(
         analyses, levels = 1, mz, rt, ppm, sec, id, allTraces = TRUE,
         isolationWindow = 1.3, minIntensityMS1 = 0, minIntensityMS2 = 0,
-        run_parallel = run_parallel
+        runParallel = runParallel
       )
 
       if (nrow(xic) == 0) {
@@ -2254,7 +2255,7 @@ msData = R6::R6Class("msData",
     #' @param ppm X.
     #' @param sec X.
     #' @param id X.
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #' @param legendNames x.
     #' @param title x.
     #' @param colorBy x.
@@ -2264,10 +2265,10 @@ msData = R6::R6Class("msData",
     #'
     plot_eic = function(analyses = NULL,
                         mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
-                        run_parallel = FALSE, legendNames = NULL, title = NULL,
+                        runParallel = FALSE, legendNames = NULL, title = NULL,
                         colorBy = "targets", interactive = TRUE) {
 
-      eic = self$get_eic(analyses, mz, rt, ppm, sec, id, run_parallel)
+      eic = self$get_eic(analyses, mz, rt, ppm, sec, id, runParallel)
 
       if (nrow(eic) == 0) {
         message("Traces not found for the targets!")
@@ -2365,7 +2366,7 @@ msData = R6::R6Class("msData",
     #' @param mzClust X.
     #' @param verbose X.
     #' @param minIntensity X.
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #' @param legendNames x.
     #' @param title x.
     #' @param colorBy x.
@@ -2376,12 +2377,12 @@ msData = R6::R6Class("msData",
     plot_ms2 = function(analyses = NULL,
                         mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
                         isolationWindow = 1.3, mzClust = 0.005, verbose = TRUE,
-                        minIntensity = 0, run_parallel = FALSE,
+                        minIntensity = 0, runParallel = FALSE,
                         legendNames = NULL, title = NULL,
                         colorBy = "targets", interactive = TRUE) {
 
       ms2 = self$get_ms2(analyses, mz, rt, ppm, sec, id, isolationWindow,
-                         mzClust, verbose, minIntensity, run_parallel)
+                         mzClust, verbose, minIntensity, runParallel)
 
       if (nrow(ms2) == 0) {
         message("MS2 traces not found for the targets!")
@@ -2410,7 +2411,7 @@ msData = R6::R6Class("msData",
     #' @param mzClust X.
     #' @param verbose X.
     #' @param minIntensity X.
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #' @param legendNames x.
     #' @param title x.
     #' @param colorBy x.
@@ -2421,12 +2422,12 @@ msData = R6::R6Class("msData",
     plot_ms1 = function(analyses = NULL,
                         mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
                         mzClust = 0.001, verbose = FALSE,
-                        minIntensity = 1000, run_parallel = FALSE,
+                        minIntensity = 1000, runParallel = FALSE,
                         legendNames = NULL, title = NULL,
                         colorBy = "targets", interactive = TRUE) {
 
       ms1 = self$get_ms1(analyses, mz, rt, ppm, sec, id, mzClust,
-                         verbose, minIntensity, run_parallel)
+                         verbose, minIntensity, runParallel)
 
       if (nrow(ms1) == 0) {
         message("MS1 traces not found for the targets!")
@@ -2456,7 +2457,7 @@ msData = R6::R6Class("msData",
     #' @param rtExpand X.
     #' @param mzExpand X.
     #' @param filtered X.
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #' @param legendNames x.
     #' @param title x.
     #' @param colorBy x.
@@ -2467,7 +2468,7 @@ msData = R6::R6Class("msData",
     plot_features = function(analyses = NULL, id = NULL, mass = NULL,
                              mz = NULL, rt = NULL, ppm = 20, sec = 60,
                              rtExpand = 120, mzExpand = 0.005,
-                             filtered = FALSE, run_parallel = FALSE,
+                             filtered = FALSE, runParallel = FALSE,
                              legendNames = NULL, title = NULL,
                              colorBy = "targets", interactive = TRUE) {
 
@@ -2475,7 +2476,7 @@ msData = R6::R6Class("msData",
 
       eic = self$get_features_eic(
         analyses = unique(fts$analysis), id = fts,
-        rtExpand = rtExpand, mzExpand = mzExpand, run_parallel = run_parallel)
+        rtExpand = rtExpand, mzExpand = mzExpand, runParallel = runParallel)
 
       if (nrow(eic) == 0) {
         message("Traces not found for the targets!")
@@ -2558,7 +2559,7 @@ msData = R6::R6Class("msData",
     #' @param minIntensity X.
     #' @param verbose X.
     #' @param filtered X.
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #' @param legendNames x.
     #' @param title x.
     #' @param colorBy x.
@@ -2571,13 +2572,13 @@ msData = R6::R6Class("msData",
                                  rtWindow = c(-2, 2), mzWindow = c(-5, 100),
                                  mzClust = 0.003, minIntensity = 1000,
                                  verbose = TRUE, filtered = FALSE,
-                                 run_parallel = FALSE, legendNames = NULL,
+                                 runParallel = FALSE, legendNames = NULL,
                                  title = NULL, colorBy = "targets",
                                  interactive = TRUE) {
 
       ms1 = self$get_features_ms1(analyses, id, mass, mz, rt, ppm, sec,
                                   rtWindow, mzWindow, mzClust, minIntensity,
-                                  verbose, filtered, run_parallel)
+                                  verbose, filtered, runParallel)
 
       if (nrow(ms1) == 0) {
         message("MS1 traces not found for the targets!")
@@ -2609,7 +2610,7 @@ msData = R6::R6Class("msData",
     #' @param minIntensity X.
     #' @param verbose X.
     #' @param filtered X.
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #' @param legendNames x.
     #' @param title x.
     #' @param colorBy x.
@@ -2621,13 +2622,13 @@ msData = R6::R6Class("msData",
                                  mz = NULL, rt = NULL, ppm = 20, sec = 60,
                                  isolationWindow = 1.3, mzClust = 0.005,
                                  minIntensity = 0, verbose = TRUE,
-                                 filtered = FALSE, run_parallel = FALSE,
+                                 filtered = FALSE, runParallel = FALSE,
                                  legendNames = NULL, title = NULL,
                                  colorBy = "targets", interactive = TRUE) {
 
       ms2 = self$get_features_ms2(analyses, id, mass, mz, rt, ppm, sec,
                                   isolationWindow, mzClust, minIntensity,
-                                  verbose, filtered, run_parallel)
+                                  verbose, filtered, runParallel)
 
       if (nrow(ms2) == 0) {
         message("MS2 traces not found for the targets!")
@@ -2727,7 +2728,7 @@ msData = R6::R6Class("msData",
     #' @param rtExpand X.
     #' @param mzExpand X.
     #' @param filtered X.
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #' @param legendNames x.
     #' @param title x.
     #' @param colorBy x.
@@ -2738,7 +2739,7 @@ msData = R6::R6Class("msData",
     plot_groups = function(groups = NULL, mass = NULL,
                            mz = NULL, rt = NULL, ppm = 20, sec = 60,
                            rtExpand = 120, mzExpand = 0.005,
-                           filtered = FALSE, run_parallel = FALSE,
+                           filtered = FALSE, runParallel = FALSE,
                            legendNames = NULL, title = NULL,
                            colorBy = "targets", interactive = TRUE) {
 
@@ -2757,7 +2758,7 @@ msData = R6::R6Class("msData",
       return(
         self$plot_features(id = fts,
           rtExpand = rtExpand, mzExpand = mzExpand,
-          run_parallel = run_parallel, legendNames = fts$group,
+          runParallel = runParallel, legendNames = fts$group,
           title = title, colorBy = colorBy, interactive = interactive))
     },
 
@@ -2779,7 +2780,7 @@ msData = R6::R6Class("msData",
     #' @param groupBy X.
     #' @param verbose X.
     #' @param filtered X.
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #' @param legendNames x.
     #' @param title x.
     #' @param colorBy x.
@@ -2795,7 +2796,7 @@ msData = R6::R6Class("msData",
                                mzClustGroups = 0.005,
                                minIntensityGroups = 1000,
                                verbose = TRUE, filtered = FALSE,
-                               run_parallel = FALSE, legendNames = NULL,
+                               runParallel = FALSE, legendNames = NULL,
                                title = NULL, colorBy = "targets",
                                interactive = TRUE) {
 
@@ -2809,7 +2810,7 @@ msData = R6::R6Class("msData",
                                 rtWindow, mzWindow, mzClustFeatures,
                                 minIntensityFeatures, mzClustGroups,
                                 minIntensityGroups, verbose,
-                                filtered, run_parallel)
+                                filtered, runParallel)
 
       if (nrow(ms1) == 0) {
         message("MS1 traces not found for the targets!")
@@ -2842,7 +2843,7 @@ msData = R6::R6Class("msData",
     #' @param groupBy X.
     #' @param verbose X.
     #' @param filtered X.
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #' @param legendNames x.
     #' @param title x.
     #' @param colorBy x.
@@ -2858,7 +2859,7 @@ msData = R6::R6Class("msData",
                                        mzClustGroups = 0.003,
                                        minIntensityGroups = 100,
                                        verbose = TRUE, filtered = FALSE,
-                                       run_parallel = FALSE, legendNames = NULL,
+                                       runParallel = FALSE, legendNames = NULL,
                                        title = NULL, colorBy = "targets",
                                        interactive = TRUE) {
 
@@ -2873,7 +2874,7 @@ msData = R6::R6Class("msData",
                                 minIntensityFeatures,
                                 mzClustGroups, minIntensityGroups,
                                 groupBy, verbose, filtered,
-                                run_parallel)
+                                runParallel)
 
       if (nrow(ms2) == 0) {
         message("MS2 traces not found for the targets!")
@@ -2903,7 +2904,7 @@ msData = R6::R6Class("msData",
     #' @param rtExpand X.
     #' @param mzExpand X.
     #' @param filtered X.
-    #' @param run_parallel X.
+    #' @param runParallel X.
     #' @param legendNames x.
     #' @param title x.
     #' @param heights x.
@@ -2915,7 +2916,7 @@ msData = R6::R6Class("msData",
                                     ppm = 20, sec = 60,
                                     rtExpand = 120, mzExpand = 0.005,
                                     filtered = FALSE,
-                                    run_parallel = FALSE,
+                                    runParallel = FALSE,
                                     legendNames = NULL, title = NULL,
                                     heights = c(0.35, 0.5, 0.15)) {
 
@@ -2926,7 +2927,7 @@ msData = R6::R6Class("msData",
 
       eic = self$get_features_eic(analyses = fts$analysis, id = fts,
                                   rtExpand = rtExpand, mzExpand = mzExpand,
-                                  filtered = TRUE, run_parallel = run_parallel)
+                                  filtered = TRUE, runParallel = runParallel)
 
       if (nrow(eic) == 0) {
         message("Traces and/or features not found for targets!")
@@ -3059,11 +3060,11 @@ msData = R6::R6Class("msData",
       return(
         msData$new(
           files = NULL,
-          .header = private$.header,
-          .settings = private$.settings,
-          .analyses = new_analyses,
-          .groups = new_groups,
-          .alignment = new_alignment
+          header = private$.header,
+          settings = private$.settings,
+          analyses = new_analyses,
+          groups = new_groups,
+          alignment = new_alignment
         )
       )
     },
@@ -3078,7 +3079,7 @@ msData = R6::R6Class("msData",
     #'
     #' @return A valid character vector with analyses names of `NULL`.
     #'
-    check_analyses_argument = function(analyses) {
+    check_analyses_argument = function(analyses = NULL) {
 
       if (is.null(analyses)) {
         return(self$get_analysis_names())
@@ -3357,7 +3358,7 @@ msData = R6::R6Class("msData",
 #' Alternatively, a data.frame with the column/s file, replicate and blank
 #' with the full file path/s, the replicate group name/s (string) and the
 #' associated blank replicate group name (string).
-#' @param run_parallel Logical, set to \code{TRUE} for parsing the data from
+#' @param runParallel Logical, set to \code{TRUE} for parsing the data from
 #' files in parallel.
 #'
 #' @return A named list with a list object for each file in \code{files}.
@@ -3366,7 +3367,7 @@ msData = R6::R6Class("msData",
 #'
 #' @export
 #'
-make_ms_analysis_list = function(files = NULL, run_parallel = FALSE) {
+make_ms_analysis_list = function(files = NULL, runParallel = FALSE) {
 
   if (is.data.frame(files)) {
     if ("file" %in% colnames(files)) {
@@ -3401,7 +3402,7 @@ make_ms_analysis_list = function(files = NULL, run_parallel = FALSE) {
     return(NULL)
   }
 
-  if (run_parallel & length(files) > 1) {
+  if (runParallel & length(files) > 1) {
     workers = parallel::detectCores() - 1
     if (length(files) < workers) workers = length(files)
     par_type = "PSOCK"
@@ -3524,7 +3525,7 @@ make_ms_analysis_list = function(files = NULL, run_parallel = FALSE) {
     return(analysis)
   }
 
-  if (run_parallel) parallel::stopCluster(cl)
+  if (runParallel) parallel::stopCluster(cl)
 
   if (all(is.na(replicates))) {
     replicates = vapply(analyses, function(x) x$name, "")

@@ -7,5 +7,5 @@
 unregister_dopar()
 }
 \description{
-Function to un-register any `foreach` parallel variables.
+Function to un-register any \code{foreach} parallel variables.
 }

@@ -123,12 +123,12 @@ Create a new MS set of analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$new(
   files = NULL,
-  run_parallel = FALSE,
-  .header = NULL,
-  .settings = NULL,
-  .analyses = NULL,
-  .groups = NULL,
-  .alignment = NULL
+  runParallel = FALSE,
+  header = NULL,
+  settings = NULL,
+  analyses = NULL,
+  groups = NULL,
+  alignment = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -140,32 +140,33 @@ or a data.frame with the columns file, replicate and blank with the
 full file path, the replicate group name (string) and the associated
 blank replicate group (string).}
 
-\item{\code{run_parallel}}{Logical, set to \code{TRUE} for processing the data
+\item{\code{runParallel}}{Logical, set to \code{TRUE} for processing the data
 in parallel.}
 
-\item{\code{.header}}{A list with administrative information for the header.
-When not given (i.e., \code{NULL}), a default header is generated.}
+\item{\code{header}}{A list with administrative information for the header.
+When not given (i.e., \code{NULL}), a default header is generated with
+name, path and date.}
 
-\item{\code{.settings}}{A list with settings.}
+\item{\code{settings}}{A list with settings.}
 
-\item{\code{.analyses}}{A list with MS analyses information.}
+\item{\code{analyses}}{A list with MS analyses information.}
 
-\item{\code{.groups}}{A data.table with `groups` representing corresponding
+\item{\code{groups}}{A data.table with \code{groups} representing corresponding
 features across MS analyses.}
 
-\item{\code{.alignment}}{X.}
+\item{\code{alignment}}{X.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A new `msData` object.
+A new \code{msData} object.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-msData-print"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-print}{}}}
 \subsection{Method \code{print()}}{
-Prints a summary of the `msData` object in the console.
+Prints a summary of the \code{msData} object in the console.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$print()}\if{html}{\out{</div>}}
 }
@@ -178,7 +179,7 @@ Console text.
 \if{html}{\out{<a id="method-msData-get_header"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-get_header}{}}}
 \subsection{Method \code{get_header()}}{
-Method to get the header of the `msData` object.
+Method to get the header of the \code{msData} object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$get_header(value)}\if{html}{\out{</div>}}
 }
@@ -192,14 +193,14 @@ Possible values are name, author, description, path and date.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-The header list as defined by `value`.
+The header list as defined by \code{value}.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-msData-get_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-get_analyses}{}}}
 \subsection{Method \code{get_analyses()}}{
-Method to get specific analyses from the `msData` object.
+Method to get specific analyses from the \code{msData} object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$get_analyses(analyses)}\if{html}{\out{</div>}}
 }
@@ -213,14 +214,14 @@ of the analyses.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-The list of analyses defined by `value`.
+The list of analyses defined by \code{value}.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-msData-get_number_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-get_number_analyses}{}}}
 \subsection{Method \code{get_number_analyses()}}{
-Method to get the number of analysis in the `msData` object.
+Method to get the number of analysis in the \code{msData} object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$get_number_analyses()}\if{html}{\out{</div>}}
 }
@@ -410,7 +411,7 @@ Method to get spectra from the MS analyses.
   isolationWindow = 1.3,
   minIntensityMS1 = 0,
   minIntensityMS2 = 0,
-  run_parallel = FALSE
+  runParallel = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -433,7 +434,7 @@ Method to get spectra from the MS analyses.
 
 \item{\code{allTraces}}{Logical, when \code{TRUE} all level 2 data is returned.
 When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
-are returned, using the `preMZ` value and the `isolationWindow`.}
+are returned, using the \code{preMZ} value and the \code{isolationWindow}.}
 
 \item{\code{isolationWindow}}{X.}
 
@@ -441,7 +442,7 @@ are returned, using the `preMZ` value and the `isolationWindow`.}
 
 \item{\code{minIntensityMS2}}{X.}
 
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -459,7 +460,7 @@ Method to get spectra from the MS analyses.
 \if{html}{\out{<div class="r">}}\preformatted{msData$get_chromatograms(
   analyses = NULL,
   minIntensity = 0,
-  run_parallel = FALSE
+  runParallel = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -470,7 +471,7 @@ Method to get spectra from the MS analyses.
 
 \item{\code{minIntensity}}{X.}
 
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -534,7 +535,7 @@ on targets.
   ppm = 20,
   sec = 60,
   id = NULL,
-  run_parallel = FALSE
+  runParallel = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -554,7 +555,7 @@ of the analyses.}
 
 \item{\code{id}}{X.}
 
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -578,7 +579,7 @@ Method to get MS1 data from the analyses based on targets.
   mzClust = 0.003,
   verbose = FALSE,
   minIntensity = 1000,
-  run_parallel = FALSE
+  runParallel = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -604,7 +605,7 @@ of the analyses.}
 
 \item{\code{minIntensity}}{X.}
 
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -629,7 +630,7 @@ Method to get MS2 data from the analyses based on targets.
   mzClust = 0.005,
   verbose = TRUE,
   minIntensity = 0,
-  run_parallel = FALSE
+  runParallel = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -657,7 +658,7 @@ of the analyses.}
 
 \item{\code{minIntensity}}{X.}
 
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -746,7 +747,7 @@ Method to get EIC of features from analyses.
   rtExpand = 120,
   mzExpand = 0.005,
   filtered = FALSE,
-  run_parallel = FALSE
+  runParallel = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -774,7 +775,7 @@ of the analyses.}
 
 \item{\code{filtered}}{X.}
 
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -802,7 +803,7 @@ Method to get an averaged MS1 spectrum for features in analyses.
   minIntensity = 1000,
   verbose = TRUE,
   filtered = FALSE,
-  run_parallel = FALSE
+  runParallel = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -836,7 +837,7 @@ of the analyses.}
 
 \item{\code{filtered}}{X.}
 
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -863,7 +864,7 @@ Method to get an averaged MS2 spectrum for features in analyses.
   minIntensity = 0,
   verbose = TRUE,
   filtered = FALSE,
-  run_parallel = FALSE
+  runParallel = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -895,7 +896,7 @@ of the analyses.}
 
 \item{\code{filtered}}{X.}
 
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -984,7 +985,7 @@ Method to get an averaged MS1 spectrum for feature groups in analyses.
   groupBy = "groups",
   verbose = TRUE,
   filtered = FALSE,
-  run_parallel = FALSE
+  runParallel = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -1021,7 +1022,7 @@ Method to get an averaged MS1 spectrum for feature groups in analyses.
 
 \item{\code{filtered}}{X.}
 
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1050,7 +1051,7 @@ Method to get an averaged MS2 spectrum for feature groups in analyses.
   groupBy = "groups",
   verbose = TRUE,
   filtered = FALSE,
-  run_parallel = FALSE
+  runParallel = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -1085,7 +1086,7 @@ Method to get an averaged MS2 spectrum for feature groups in analyses.
 
 \item{\code{filtered}}{X.}
 
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1097,7 +1098,7 @@ A data.frame/data.table.
 \if{html}{\out{<a id="method-msData-set_replicate_names"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-set_replicate_names}{}}}
 \subsection{Method \code{set_replicate_names()}}{
-Method to set the analysis replicate names. Changes the `msData` object.
+Method to set the analysis replicate names. Changes the \code{msData} object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$set_replicate_names(value)}\if{html}{\out{</div>}}
 }
@@ -1119,7 +1120,7 @@ Invisible.
 \if{latex}{\out{\hypertarget{method-msData-set_blank_names}{}}}
 \subsection{Method \code{set_blank_names()}}{
 Method to set the analysis blank replicate names.
-Changes the `msData` object.
+Changes the \code{msData} object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$set_blank_names(value)}\if{html}{\out{</div>}}
 }
@@ -1140,7 +1141,7 @@ Invisible.
 \if{html}{\out{<a id="method-msData-add_header"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-add_header}{}}}
 \subsection{Method \code{add_header()}}{
-Method to add header information to the `msData` object.
+Method to add header information to the \code{msData} object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$add_header(header = NULL)}\if{html}{\out{</div>}}
 }
@@ -1160,7 +1161,7 @@ Invisible.
 \if{html}{\out{<a id="method-msData-add_settings"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-add_settings}{}}}
 \subsection{Method \code{add_settings()}}{
-Method to add processing settings to the `msData` object.
+Method to add processing settings to the \code{msData} object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$add_settings(settings = NULL)}\if{html}{\out{</div>}}
 }
@@ -1180,7 +1181,7 @@ Invisible.
 \if{html}{\out{<a id="method-msData-add_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-add_analyses}{}}}
 \subsection{Method \code{add_analyses()}}{
-Method to add analyses to the `msData` object.
+Method to add analyses to the \code{msData} object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$add_analyses(analyses)}\if{html}{\out{</div>}}
 }
@@ -1200,7 +1201,7 @@ Invisible.
 \if{html}{\out{<a id="method-msData-add_features"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-add_features}{}}}
 \subsection{Method \code{add_features()}}{
-Method to add features to each analysis in the `msData` object.
+Method to add features to each analysis in the \code{msData} object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$add_features(features = NULL)}\if{html}{\out{</div>}}
 }
@@ -1220,7 +1221,7 @@ Invisible.
 \if{html}{\out{<a id="method-msData-add_groups"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-add_groups}{}}}
 \subsection{Method \code{add_groups()}}{
-Method to add feature groups in the `msData` object.
+Method to add feature groups in the \code{msData} object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$add_groups(groups = NULL)}\if{html}{\out{</div>}}
 }
@@ -1240,7 +1241,7 @@ Invisible.
 \if{html}{\out{<a id="method-msData-add_alignment"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-add_alignment}{}}}
 \subsection{Method \code{add_alignment()}}{
-Method to add time alignment results in the `msData` object.
+Method to add time alignment results in the \code{msData} object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$add_alignment(alignment = NULL)}\if{html}{\out{</div>}}
 }
@@ -1260,7 +1261,7 @@ Invisible.
 \if{html}{\out{<a id="method-msData-import_header"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-import_header}{}}}
 \subsection{Method \code{import_header()}}{
-Method to import header to the `msData` object from a \emph{rds} or
+Method to import header to the \code{msData} object from a \emph{rds} or
 \emph{json} file.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$import_header(file = NA_character_, list = NULL)}\if{html}{\out{</div>}}
@@ -1283,7 +1284,7 @@ Invisible.
 \if{html}{\out{<a id="method-msData-import_settings"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-import_settings}{}}}
 \subsection{Method \code{import_settings()}}{
-Method to import processing settings to the `msData` object from a
+Method to import processing settings to the \code{msData} object from a
 \emph{rds} or \emph{json} file.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$import_settings(file = NA_character_)}\if{html}{\out{</div>}}
@@ -1304,7 +1305,7 @@ Invisible.
 \if{html}{\out{<a id="method-msData-import_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-import_analyses}{}}}
 \subsection{Method \code{import_analyses()}}{
-Method to import analyses to the `msData` object from a \emph{rds} or
+Method to import analyses to the \code{msData} object from a \emph{rds} or
 \emph{json} file.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$import_analyses(file = NA_character_)}\if{html}{\out{</div>}}
@@ -1325,7 +1326,7 @@ Invisible.
 \if{html}{\out{<a id="method-msData-import_groups"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-import_groups}{}}}
 \subsection{Method \code{import_groups()}}{
-Method to import feature groups to the `msData` object from a
+Method to import feature groups to the \code{msData} object from a
 \emph{rds} or \emph{json} file.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$import_groups(file = NA_character_)}\if{html}{\out{</div>}}
@@ -1346,15 +1347,15 @@ Invisible.
 \if{html}{\out{<a id="method-msData-load_spectra"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-load_spectra}{}}}
 \subsection{Method \code{load_spectra()}}{
-Method to load all spectra from analyses to the `msData` object.
+Method to load all spectra from analyses to the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$load_spectra(run_parallel = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$load_spectra(runParallel = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1366,15 +1367,15 @@ Invisible.
 \if{html}{\out{<a id="method-msData-load_chromatograms"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-load_chromatograms}{}}}
 \subsection{Method \code{load_chromatograms()}}{
-Method to load all chromatograms from analyses to the `msData` object.
+Method to load all chromatograms from analyses to the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$load_chromatograms(run_parallel = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$load_chromatograms(runParallel = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1387,7 +1388,7 @@ Invisible.
 \if{latex}{\out{\hypertarget{method-msData-find_features}{}}}
 \subsection{Method \code{find_features()}}{
 Finds features (i.e., chromatographic peaks) from MS data
-in an `msData` class object. The function uses the \pkg{patRoon} package
+in an \code{msData} class object. The function uses the \pkg{patRoon} package
 for peak finding, enabling the use of several algorithms (see details).
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$find_features(settings = NULL)}\if{html}{\out{</div>}}
@@ -1398,7 +1399,7 @@ for peak finding, enabling the use of several algorithms (see details).
 \describe{
 \item{\code{settings}}{A \linkS4class{settings} object. When not given,
 \emph{find_features} \linkS4class{settings} will be searched within
-the `msData` object.}
+the \code{msData} object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1422,7 +1423,7 @@ X.
 \if{html}{\out{<a id="method-msData-group_features"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-group_features}{}}}
 \subsection{Method \code{group_features()}}{
-Groups and aligns features across analyses in the `msData`
+Groups and aligns features across analyses in the \code{msData}
 object. The function uses the \pkg{patRoon} package for grouping
 features, enabling the use of several algorithms (see details).
 \subsection{Usage}{
@@ -1434,7 +1435,7 @@ features, enabling the use of several algorithms (see details).
 \describe{
 \item{\code{settings}}{A \linkS4class{settings} object. When not given,
 \emph{group_features} \linkS4class{settings} will be searched within
-the `msData` object.}
+the \code{msData} object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1455,7 +1456,7 @@ X.
 \if{html}{\out{<a id="method-msData-has_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-has_analyses}{}}}
 \subsection{Method \code{has_analyses()}}{
-Method to check of the `msData` object has analyses.
+Method to check of the \code{msData} object has analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$has_analyses()}\if{html}{\out{</div>}}
 }
@@ -1509,7 +1510,7 @@ Invisible.
 \if{html}{\out{<a id="method-msData-has_settings"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-has_settings}{}}}
 \subsection{Method \code{has_settings()}}{
-Method to check if there are processing settings in the `msData` object.
+Method to check if there are processing settings in the \code{msData} object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$has_settings(call = NULL)}\if{html}{\out{</div>}}
 }
@@ -1591,7 +1592,7 @@ Plots spectra for given MS analyses.
   isolationWindow = 1.3,
   minIntensityMS1 = 0,
   minIntensityMS2 = 0,
-  run_parallel = FALSE,
+  runParallel = FALSE,
   colorBy = "analyses"
 )}\if{html}{\out{</div>}}
 }
@@ -1615,7 +1616,7 @@ Plots spectra for given MS analyses.
 
 \item{\code{allTraces}}{Logical, when \code{TRUE} all level 2 data is returned.
 When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
-are returned, using the `preMZ` value and the `isolationWindow`.}
+are returned, using the \code{preMZ} value and the \code{isolationWindow}.}
 
 \item{\code{isolationWindow}}{X.}
 
@@ -1623,7 +1624,7 @@ are returned, using the `preMZ` value and the `isolationWindow`.}
 
 \item{\code{minIntensityMS2}}{X.}
 
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 
 \item{\code{colorBy}}{X.}
 }
@@ -1647,7 +1648,7 @@ retention time from the analyses.
   ppm = 20,
   sec = 60,
   id = NULL,
-  run_parallel = FALSE,
+  runParallel = FALSE,
   legendNames = NULL,
   plotTargetMark = TRUE,
   targetsMark = NULL,
@@ -1673,7 +1674,7 @@ of the analyses.}
 
 \item{\code{id}}{X.}
 
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 
 \item{\code{legendNames}}{x.}
 
@@ -1706,7 +1707,7 @@ Method to plot extract ion chromatograms (EIC) from the analyses.
   ppm = 20,
   sec = 60,
   id = NULL,
-  run_parallel = FALSE,
+  runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
@@ -1730,7 +1731,7 @@ of the analyses.}
 
 \item{\code{id}}{X.}
 
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 
 \item{\code{legendNames}}{x.}
 
@@ -1827,7 +1828,7 @@ Method to plot MS2 spectra from the analyses based on targets.
   mzClust = 0.005,
   verbose = TRUE,
   minIntensity = 0,
-  run_parallel = FALSE,
+  runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
@@ -1859,7 +1860,7 @@ of the analyses.}
 
 \item{\code{minIntensity}}{X.}
 
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 
 \item{\code{legendNames}}{x.}
 
@@ -1891,7 +1892,7 @@ Method to plot MS1 spectra from the analyses based on targets.
   mzClust = 0.001,
   verbose = FALSE,
   minIntensity = 1000,
-  run_parallel = FALSE,
+  runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
@@ -1921,7 +1922,7 @@ of the analyses.}
 
 \item{\code{minIntensity}}{X.}
 
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 
 \item{\code{legendNames}}{x.}
 
@@ -1954,7 +1955,7 @@ Method to plot features from analyses.
   rtExpand = 120,
   mzExpand = 0.005,
   filtered = FALSE,
-  run_parallel = FALSE,
+  runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
@@ -1986,7 +1987,7 @@ of the analyses.}
 
 \item{\code{filtered}}{X.}
 
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 
 \item{\code{legendNames}}{x.}
 
@@ -2087,7 +2088,7 @@ Method to plot MS1 spectra from features in the analyses.
   minIntensity = 1000,
   verbose = TRUE,
   filtered = FALSE,
-  run_parallel = FALSE,
+  runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
@@ -2125,7 +2126,7 @@ of the analyses.}
 
 \item{\code{filtered}}{X.}
 
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 
 \item{\code{legendNames}}{x.}
 
@@ -2160,7 +2161,7 @@ Method to plot MS2 spectra from features in the analyses.
   minIntensity = 0,
   verbose = TRUE,
   filtered = FALSE,
-  run_parallel = FALSE,
+  runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
@@ -2196,7 +2197,7 @@ of the analyses.}
 
 \item{\code{filtered}}{X.}
 
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 
 \item{\code{legendNames}}{x.}
 
@@ -2242,7 +2243,7 @@ Method to plot feature groups EIC.
   rtExpand = 120,
   mzExpand = 0.005,
   filtered = FALSE,
-  run_parallel = FALSE,
+  runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
@@ -2271,7 +2272,7 @@ Method to plot feature groups EIC.
 
 \item{\code{filtered}}{X.}
 
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 
 \item{\code{legendNames}}{x.}
 
@@ -2308,7 +2309,7 @@ Method to plot MS1 spectra from features in the analyses.
   minIntensityGroups = 1000,
   verbose = TRUE,
   filtered = FALSE,
-  run_parallel = FALSE,
+  runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
@@ -2347,7 +2348,7 @@ Method to plot MS1 spectra from features in the analyses.
 
 \item{\code{filtered}}{X.}
 
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 
 \item{\code{legendNames}}{x.}
 
@@ -2385,7 +2386,7 @@ Method to plot MS1 spectra from features in the analyses.
   minIntensityGroups = 100,
   verbose = TRUE,
   filtered = FALSE,
-  run_parallel = FALSE,
+  runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
@@ -2422,7 +2423,7 @@ Method to plot MS1 spectra from features in the analyses.
 
 \item{\code{filtered}}{X.}
 
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 
 \item{\code{legendNames}}{x.}
 
@@ -2458,7 +2459,7 @@ from features within target feature groups.
   rtExpand = 120,
   mzExpand = 0.005,
   filtered = FALSE,
-  run_parallel = FALSE,
+  runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
   heights = c(0.35, 0.5, 0.15)
@@ -2488,7 +2489,7 @@ from features within target feature groups.
 
 \item{\code{filtered}}{X.}
 
-\item{\code{run_parallel}}{X.}
+\item{\code{runParallel}}{X.}
 
 \item{\code{legendNames}}{x.}
 
@@ -2520,7 +2521,7 @@ A \linkS4class{features} object.
 \if{html}{\out{<a id="method-msData-remove_groups"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-remove_groups}{}}}
 \subsection{Method \code{remove_groups()}}{
-Remove feature groups from the `msData` object.
+Remove feature groups from the \code{msData} object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$remove_groups()}\if{html}{\out{</div>}}
 }
@@ -2533,7 +2534,7 @@ Invisible.
 \if{html}{\out{<a id="method-msData-subset_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-subset_analyses}{}}}
 \subsection{Method \code{subset_analyses()}}{
-Subsets an `msData` object on analyses.
+Subsets an \code{msData} object on analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$subset_analyses(analyses)}\if{html}{\out{</div>}}
 }
@@ -2546,8 +2547,8 @@ Subsets an `msData` object on analyses.
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A new cloned `msData` object with only the analyses as defined
-by the `analyses` argument.
+A new cloned \code{msData} object with only the analyses as defined
+by the \code{analyses} argument.
 }
 }
 \if{html}{\out{<hr>}}
@@ -2555,9 +2556,9 @@ by the `analyses` argument.
 \if{latex}{\out{\hypertarget{method-msData-check_analyses_argument}{}}}
 \subsection{Method \code{check_analyses_argument()}}{
 Checks the analyses argument as a character/integer vector to match
-analyses names or indices from the `msData` object.
+analyses names or indices from the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$check_analyses_argument(analyses)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$check_analyses_argument(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -2568,14 +2569,14 @@ analyses names or indices from the `msData` object.
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A valid character vector with analyses names of `NULL`.
+A valid character vector with analyses names of \code{NULL}.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-msData-check_correspondence"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-check_correspondence}{}}}
 \subsection{Method \code{check_correspondence()}}{
-Checks the correspondence of features within groups in the `msData` object.
+Checks the correspondence of features within groups in the \code{msData} object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$check_correspondence()}\if{html}{\out{</div>}}
 }

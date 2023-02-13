@@ -1,5 +1,5 @@
 ---
-title: "Handbook streamFind: back end"
+title: "Handbook streamFind: backend"
 author: "Ricardo Cunha"
 output:
   bookdown::html_document2:

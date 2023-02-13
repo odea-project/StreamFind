@@ -16,7 +16,7 @@ plot_eic_interactive(
 (i.e., the plotting variable for each entry) as columns.}
 
 \item{legendNames}{A character vector with the same length as the unique ids
-in the table given in `eic`.}
+in the table given in \code{eic}.}
 
 \item{colorBy}{A string (length 1). One of "analyses" (the default),
 "levels", "targets" or "replicates". For "replicates", a column with

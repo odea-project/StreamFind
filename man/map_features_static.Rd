@@ -21,7 +21,7 @@ map_features_static(
 \code{"analyses"} or \code{replicates}.}
 
 \item{legendNames}{A character vector with the same length as the unique ids
-in the table given in `eic`.}
+in the table given in \code{eic}.}
 
 \item{xlim}{A length one or two numeric vector for setting the \emph{x}
 limits (in seconds) of the plot.}
