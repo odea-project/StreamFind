@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
   comment = "#>",
   echo = TRUE,
   fig.align = "center",
-  fig.width = 9,
+  fig.width = 8,
   cache = TRUE
 )
 ```
@@ -62,6 +62,8 @@ knitr::kable(df_files_desc, caption = "Files included in the streamFind R packag
   scroll_box(width = "100%", height = "600px")
 ```
 
+<br>
+
 ## Spiked chemicals
 
 The chemicals spiked in the MS files are described below in Table \@ref(tab:show-table-chemicals). The internal standards (IS) are spiked to all Agilent Q-TOF files. The chemical standards (S) were only spiked for the first 6 Agilent Q-TOF files. Note that not all IS and S are visible in the profile Agilent Q-TOF files as a narrower trimming was applied.
@@ -70,11 +72,15 @@ The chemicals spiked in the MS files are described below in Table \@ref(tab:show
 db <- streamFindData::msSpikedChemicals()
 ```
 
+<br>
+
 ```{r show-table-chemicals, echo=FALSE}
 knitr::kable(db[, .(name, CAS, formula, mass, rt, ionization, tag, in_file)], caption = "Chemical standards spiked.") %>%
   kable_styling(font_size = 11, bootstrap_options = c("striped", "hover", "responsive"), fixed_thead = TRUE) %>%
   scroll_box(width = "100%", height = "600px")
 ```
+
+<br>
 
 # msData
 
@@ -90,41 +96,203 @@ The `print` (or `show`) method is shown below by running the msData object name.
 ms
 ```
 
-## Data fields
+Another option to obtain an overview of the `ms` object is the method `get_overview()` as shown below, returning a data.frame with the analysis details within the msData object.
 
-The msData object contains the following internal fields (or private fields) to store user defined and parsed data: **header**, **settings**, **analyses**, **groups** and **alignment**. The internal fields cannot be directly accessed nor changed. Instead, the user must use the respective get and add methods, as shown in the sections \@ref(get-methods) and \@ref(add-methods), respectively.  
-
-- The **header** is a list of entries with length 1 (e.g., name, path, date, etc.) that characterize the msData object. When not given, name, path and date are automatically generated and included in the list as they are required for workflow purposes.
-- The **settings** is a named `list` of objects used for data processing. Each added object is named according to the function call (or processing name). The settings interface is described in section \@ref(processing-settings).
-- The **analyses** is a named `list` of object representing each file added to the msData. The name of the object is the name of the file. No duplicate file names can exist in the msData. The structure of each object in analyses is shown in section \@ref(analyses). 
-- The **groups** is a `data.table` with the feature groups after correspondence analysis (i.e., grouping of features across analyses).
-- The **alignment** is a `list` with the results of the retention time alignment for each analyses in the msData object.
-
-```{r}
-
-
-
-
+```{r get-overview}
+ms$get_overview()[, 1:5] # only the first 5 columns
 ```
 
+## Internal fields
+
+The msData object contains the following internal fields (or private fields) to store standardized data: **header**, **settings**, **analyses**, **groups** and **alignment**. The internal fields cannot be directly accessed nor changed. Instead, the user must use the respective get and add methods, as shown in the sections \@ref(get-methods) and \@ref(add-methods), respectively. The add methods contain validation and conformity checks to ensure that the structure and semantics of added data are respected.
+
+- The **header** is a list of entries with length 1 (e.g., name, path, date, etc.) that characterize the msData object. When not given, *name*, *path* and *date* are automatically generated (*name* is set to `NA_character_`, *path* is set to `getwd()` and *date* is set to `Sys.time()`) and included in the list, as they are required for workflow purposes. Other entries can be added by the user without type (or class) limitations but should be uniquely named and of length 1.
+- The **settings** is a named `list` of objects used for data processing. Each added object is named according to the function call (or processing name). The settings interface is described in section \@ref(processing-settings).
+- The **analyses** is a named `list` of objects representing each file added to the msData. The name of the object is the name of the file. No duplicate file names (or analyses names) can exist in the msData. The structure of each object in analyses is shown in section \@ref(analyses). 
+- The **groups** is a `data.table` with the feature groups after correspondence analysis (i.e., grouping of features across analyses). More information about **groups** is given in section \@ref(groups).
+- The **alignment** is a `list` with the results of the retention time alignment for each analyses in the msData object. More information about **groups** is given in section \@ref(alignment).
 
 ## Get methods
 
+Several methods are implemented to access data within the msData object, as already demonstrated for the `get_overview()`. The internal fields can be accessed with `get_header()`, `get_settings()`, `get_analyses()`, `get_groups()` and `get_alignment()`. For instance, the get method for the header returns the list of entries. Note that the `path` and `date` were automatically created when the vignette was built.
+
+```{r get-header}
+ms$get_header()
+```
+
+Similarly, the get method for analyses returns the list of analysis objects. Below the `get_analyses()` is used to get the first analysis object (`a1`). Then, the `str()` function is used to show the structure of the `a1` object, which represents the first *.mzML* file parsed to the `ms`. Note that the `get_analyses()` method always returns a list even for only one analysis object. Therefore, we use the `[[` function as `a1[[1]]` to access the analysis object itself. The analysis object contains `r length(ms$get_analyses(1)[[1]])` fields with information and data parsed directly from the *.mzML* file. Variations in the content and structure (i.e., different vendors or data acquired with different conditions or modes) of the *.mzML* or *.mzXML* files added will affect the content of each entry in the analysis object but the structure remains the same. The function `make_ms_analysis_list()` from the streamFind R package is used to create and validate the list of analysis objects from a character vector with *.mzML* or *.mzXML* full file paths (see `?make_ms_analysis_list` for more information). The structure of the analysis object is further described in section \@ref(analyses). By typing `ms$get`, other available get methods are listed. The documentation `?msData` also contains detailed information and usage examples for available get methods. 
+
+```{r get-analyses}
+a1 = ms$get_analyses(analyses = 1)
+
+str(a1[[1]])
+```
 
 ## Add methods
 
+Add methods are used to add data to an existing msData object. For instance, below we add a new name and a description to the `ms` object with the method `add_header()`. Note that the input list must be named and if entry names are already present in the msData object (e.g., *name*), the content of these is overwritten as shown below.
+
+```{r add-header}
+ms$add_header(list(name = "Ex1", description = "An example msData."))
+```
+
+```{r check-add-header}
+ms$get_header()
+```
+
+Similarly, new analyses can be added with `add_analyses()` as shown below. Note that the function `make_ms_analysis_list()` was used to parse data from files 7, 8 and 9, creating a named list of analysis objects. Again the name of each object in the list is the file name without extension. Then, the list is added to the `ms` object with the method `add_analyses()`. By typing `ms$add`, other available add methods are listed. The documentation `?msData` also contains detailed information and usage examples for available add methods.
+
+```{r make-analysis-list}
+a_list = make_ms_analysis_list(files[7:9])
+
+names(a_list)
+```
+
+```{r add-analyses}
+ms$add_analyses(a_list)
+```
+
+```{r check-add-analyses}
+ms
+```
+
+## Remove methods
+
+Complementary to add methods, remove methods are used to remove data from an existing msData object. For instance, in the code chunk below the *name* and *description* are removed from the header of the `ms` object. However, *name*, *path* and *date* cannot be removed. Even when on of these are specified, they are not removed. Yet, they can be changed with `add_header()` method.
+
+```{r remove-header}
+ms$remove_header(c("name", "description"))
+```
+
+```{r check-remove-header}
+ms$get_header()
+```
+
+Also, analyses can be removed with `remove_analyses()` method as shown below. When removing analyses, correspondence feature groups that were unique to those analyses are also removed from the msData object. By typing `ms$remove`, other available remove methods are listed. The documentation `?msData` also contains detailed information and usage examples for available remove methods.
+
+```{r remove-analyses}
+ms$remove_analyses(4:6)
+```
+
+```{r check-remove-analyses}
+ms
+```
+
+## Has methods
+
+There are methods to simply check if data is present in the msData. These are has methods. For instance below we use some has methods to check if data is present in the `ms` object. Also, by typing `ms$has`, other available has methods are listed. The documentation `?msData` also contains detailed information and usage examples for available has methods.
+
+```{r has-methods}
+ms$has_settings()
+
+ms$has_analyses()
+
+ms$has_features()
+
+ms$has_loaded_spectra()
+```
+
+## Plot methods
+
+Within the msData class object, standardized methods for plotting data are also available. All plot methods use data that can be obtained with get methods, meaning that the user is able to re-plot the data with a different approach. For instance, the `get_tic()` method can be used to obtain the total ion chromatogram (TIC) as a `data.table` with columns *analysis*, *rt* and *intensity*, as shown below for the first analysis. The same TIC data can be directly plotted using the `plot_tic()` method, as shown below.
+
+```{r get-tic-first-analysis}
+ms$get_tic(analyses = 1)
+```
+
+```{r plot-tic} 
+ms$plot_tic(analyses = 1)
+```
+
+<br>
+
+Note that plotting data which is not available (e.g., features in the current `ms` object as feature finding was not yet applied) returns `NULL` (demonstrated below).
+
+```{r plot-not-present-data}
+ms$plot_features()
+```
+ 
+<br>
+
+Most plot methods have the *interactive* argument which is set to `TRUE` by default for using the [plotly](https://plotly.com/r/) package to plot the data. A static version of the plot using the base `plot()` function can be obtained by setting interactive to `FALSE`, as shown below for the base peak chromatogram (BPC) of all analyses in the `ms` object. By typing `ms$plot`, other available plot methods are listed. The documentation `?msData` also contains detailed information and usage examples for available plot methods.
+ 
+```{r plot-bpc-static}
+ms$plot_bpc(interactive = FALSE)
+```
+
+## Save methods
+
+The msData object is stored by default in the environment of an R session and will be save within the *.RData* when `save.image()` function is used (by default save current environment is asked when an R session ends or is terminated). However, save methods are also available to save data within the internal fields in other formats. Currently only *.rds* and *.json* are possible. Below, the `save_header()` method is used to save the header as *.json*.
+
+```{r save-header-json}
+ms$save_header(format = "json", path = getwd())
+```
+
+```{r show-header-json}
+# the prettify function is applied for simplifying the json string output
+jsonlite::prettify(readLines("header.json"))
+```
+
+Similarly, `save_analyses()` method can be applied to export all or specific analysis objects to *.rds* or *.json*. Below, the first analyses is exported as *.json* and named *a1*. In section, \@ref(import-methods) the exported analysis as *a1.json* is imported to the `ms` object. Note that the *.json* file is human readable but due to the length of the TIC and BPC it is not fully printed in the console.
+
+```{r}
+ms$save_analyses(analyses = 1, format = "json", name = "a1")
+```
+
+Furthermore, the entire `ms` object can be saved using the `save()` method as shown below. Other save methods are listed by typing `ms$save`. Again, the documentation `?msData` contains detailed information and usage examples for available save methods.
+
+```{r save-entire-msData}
+ms$save(format = "json", name = "ms", path = getwd())
+```
+
+## Import methods
+
+Complementary to save methods, the *.json* or *.rds* files can be imported to the msData using the import methods. For instance, below the previously saved *header.json* is imported back to the `ms` object. As in `add_header()`, if entry names are already present, their content is overwritten.
+
+```{r import-header}
+ms$import_header("header.json")
+```
+
+Also, the saved *a1.json* analysis object can be imported with `import_analyses()` method. However, because the analysis name is already present in the `ms` object, an warning is printed and the operation not done (as shown below). The other internal fields (i.e., **settings**, **groups** and **alignment**) can be similarly imported. Validation and conformity tests are applied to ensure that the data has the required structure.
+
+```{r import-analyses}
+ms$import_analyses("a1.json")
+```
+
+Furthermore, a saved msData object can be imported from *.json* or *.rds* using the `import_msData()` function from streamFind R package. Below, the previously saved *ms.json* is imported and compared to the `ms`.
+
+```{r import-msData}
+ms_imported = import_msData("ms.json")
+```
+
+```{r check-import-msData}
+all.equal(ms, ms_imported)
+```
+
+```{r remove-files-json-from-wd, include=FALSE}
+file.remove(paste0(getwd(), "/header.json"))
+file.remove(paste0(getwd(), "/a1.json"))
+file.remove(paste0(getwd(), "/ms.json"))
+```
 
 
-# Analyses
+
+
 
 
 
 # Processing settings
 
+# Analyses
+
+# Groups
 
 
+## Alignment
 
+### Public
 
+Not yet implemented. Public fields are expected to contain results from specific workflow modules.
 
 
 

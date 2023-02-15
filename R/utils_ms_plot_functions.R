@@ -431,7 +431,7 @@ plot_eic_interactive <- function(eic = NULL, legendNames = NULL,
   eic$var = varkey
 
   leg <- unique(eic$var)
-  cl <- getColors(leg)
+  cl <- get_colors(leg)
   sp <- unique(eic$analysis)
   ids <- unique(eic$id)
 
@@ -520,7 +520,7 @@ plot_bpc_interactive <- function(bpc = NULL, legendNames = NULL,
   bpc$var = varkey
 
   leg <- unique(bpc$var)
-  cl <- getColors(leg)
+  cl <- get_colors(leg)
   sp <- unique(bpc$analysis)
   ids <- unique(bpc$id)
 

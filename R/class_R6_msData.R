@@ -15,16 +15,7 @@ msData = R6::R6Class("msData",
   private = list(
 
     ## .header -----
-    .header = list(
-      name = NA_character_,
-      author =  NA_character_,
-      # user = Sys.info("user"),
-      # system_info = Sys.info("sysname"),
-      # computer = Sys.info("nodename"),
-      description = NA_character_,
-      path = getwd(),
-      date = Sys.time()
-    ),
+    .header = NULL,
 
     ## .settings -----
     .settings = NULL,
@@ -76,75 +67,30 @@ msData = R6::R6Class("msData",
                           alignment = NULL) {
 
       if (is.null(analyses) & !is.null(files)) {
-
         analyses = make_ms_analysis_list(files, runParallel)
-
         if (is.null(analyses)) {
-          cat(c("No valid files were given! msData object is empty. \n",
-                "Use the add_analyses() method to add analyses. \n"), sep = "")
+          warning("No valid files were given! msData object is empty. \n")
         }
-
-        valid_analyses = vapply(analyses, validate_ms_analysis_list, FALSE)
-
-        if (all(valid_analyses)) {
-
-          if (TRUE %in% duplicated(names(analyses))) {
-
-            warning("Duplicated file names are not allowed in msData!")
-
-          } else {
-
-            private$.analyses = analyses
-
-          }
-
-        } else warning("File/s data not valid!")
-
-      } else if (!is.null(analyses)) {
-
-        valid_analyses = vapply(analyses, validate_ms_analysis_list, FALSE)
-
-        if (all(valid_analyses)) {
-
-          if (TRUE %in% duplicated(names(analyses))) {
-
-            warning("Duplicated file names are not allowed in msData!")
-
-          } else {
-
-            names(analyses) = vapply(analyses, function(x) x$name, "")
-            analyses = analyses[order(names(analyses))]
-            private$.analyses = analyses
-
-          }
-
-        } else {
-
-          warning("No valid files or analyses were given to create the msData!")
-
-        }
-
       }
+
+      if (is.null(analyses)) {
+        cat("Use the add_analyses() method to add analyses! \n")
+      } else self$add_analyses(analyses, verbose = FALSE)
+
 
       if (!is.null(header) & is.list(header)) {
-
-        if (validate_header(header)) {
-
-          if (!"name" %in% names(header)) header$name = NA_character_
-
-          if (!"path" %in% names(header)) header$path = getwd()
-
-          if (!"date" %in% names(header)) header$date = Sys.time()
-
-          private$.header = header
-
-        }
-
+        self$add_header(header, verbose = FALSE)
+      } else {
+        private$.header = list(
+          name = NA_character_,
+          path = getwd(),
+          date = Sys.time()
+        )
       }
 
-      private$.groups = groups
+      if (!is.null(groups)) self$add_groups(groups)
 
-      private$.alignment = alignment
+      if (!is.null(alignment)) self$add_alignment(alignment)
 
     },
 
@@ -156,7 +102,7 @@ msData = R6::R6Class("msData",
     print = function() {
       cat(
         "  Class         ", paste(is(self), collapse = "; "), "\n",
-        "  Name         ", private$.header$name, "\n",
+        "  Name          ", private$.header$name, "\n",
         "  Date          ", as.character(private$.header$date), "\n",
         sep = ""
       )
@@ -1442,73 +1388,44 @@ msData = R6::R6Class("msData",
       return(ms2_df)
     },
 
-    ## set -----
-
-    #' @description
-    #' Method to set the analysis replicate names. Changes the `msData` object.
-    #'
-    #' @param value A character vector with the analysis replicate names.
-    #' Must be of the same length as the number of analyses.
-    #'
-    #' @return Invisible.
-    #'
-    set_replicate_names = function(value) {
-
-      if (is.character(value) &
-          length(value) == self$get_number_analyses()) {
-
-        private$.analyses = Map(function(x, y) { x$replicate = y; x },
-                                private$.analyses, value)
-
-        cat("Replicate names added! \n")
-
-      } else warning("Not done, check the value!")
-    },
-
-    #' @description
-    #' Method to set the analysis blank replicate names.
-    #' Changes the `msData` object.
-    #'
-    #' @param value A character vector with the analysis blank replicate names.
-    #' Must be of the same length as the number of analyses.
-    #'
-    #' @return Invisible.
-    #'
-    set_blank_names = function(value) {
-
-      if (is.character(value) &
-          length(value) == self$get_number_analyses()) {
-
-        if (all(value %in% self$get_replicate_names())) {
-
-          private$.analyses = Map(function(x, y) { x$blank = y; x },
-                                  private$.analyses, value)
-
-          cat("Blank names added! \n")
-
-        } else warning("Not done, blank names not among replicate names!")
-      } else warning("Not done, check the value!")
-    },
-
     ## add -----
 
     #' @description
     #' Method to add header information to the `msData` object.
     #'
     #' @param header X.
+    #' @param verbose X.
     #'
     #' @return Invisible.
     #'
-    add_header = function(header = NULL) {
+    add_header = function(header = NULL, verbose = TRUE) {
 
       if (validate_header(header)) {
 
-        if (!"name" %in% names(header)) header$name = NA_character_
-        if (!"path" %in% names(header)) header$path = getwd()
-        if (!"date" %in% names(header)) header$date = Sys.time()
+        old_names = names(header)[names(header) %in% names(private$.header)]
+        if (length(old_names) > 0) {
+          overwrite = TRUE
+          private$.header[old_names] = header[old_names]
+          if (length(old_names) == 1) {
+            message(paste0(old_names, " was overwritten!"))
+          } else {
+            message(paste0(old_names, "were overwritten!"))
+          }
+        } else old_names = NULL
 
-        private$.header = header
-        cat("Added header information! \n")
+        new_names = names(header)[!(names(header) %in% old_names)]
+
+        if (is.null(old_names)) {
+          if (!"name" %in% new_names) header$name = NA_character_
+          if (!"path" %in% new_names) header$path = getwd()
+          if (!"date" %in% new_names) header$date = Sys.time()
+        }
+
+        new_names = names(header)[!(names(header) %in% old_names)]
+
+        private$.header = c(private$.header, header[new_names])
+
+        if (verbose) cat("Added header information! \n")
 
       } else warning("Invalid header content or structure! Not added.")
     },
@@ -1540,10 +1457,11 @@ msData = R6::R6Class("msData",
     #' Method to add analyses to the `msData` object.
     #'
     #' @param analyses A list of analyses.
+    #' @param verbose X.
     #'
     #' @return Invisible.
     #'
-    add_analyses = function(analyses) {
+    add_analyses = function(analyses, verbose = TRUE) {
 
       if (missing(analyses)) analyses = NULL
 
@@ -1554,7 +1472,13 @@ msData = R6::R6Class("msData",
       if (all(valid_analyses) & length(valid_analyses) > 0) {
 
         old_analyses = private$.analyses
-        old_names = vapply(old_analyses, function(x) x$name, "")
+
+        old_names = NULL
+
+        if (length(old_analyses) > 0) {
+          old_names = vapply(old_analyses, function(x) x$name, "")
+        }
+
         new_names = c(old_names, vapply(analyses, function(x) x$name, ""))
 
         if (!any(duplicated(c(new_names)))) {
@@ -1583,7 +1507,7 @@ msData = R6::R6Class("msData",
               private$.alignment = NULL
             }
 
-            cat("New analyses added! \n")
+            if (verbose) cat("New analyses added! \n")
 
           } else {
             warning("Not done, check the conformity of the analyses list!")
@@ -1592,6 +1516,53 @@ msData = R6::R6Class("msData",
         } else  warning("Duplicated analysis names not allowed! Not done.")
 
       } else  warning("Not done, check the conformity of the analyses list!")
+    },
+
+    #' @description
+    #' Method to add or redefine the analysis replicate names. Changes the
+    #' `msData` object.
+    #'
+    #' @param value A character vector with the analysis replicate names.
+    #' Must be of the same length as the number of analyses.
+    #'
+    #' @return Invisible.
+    #'
+    add_replicate_names = function(value) {
+
+      if (is.character(value) &
+          length(value) == self$get_number_analyses()) {
+
+        private$.analyses = Map(function(x, y) { x$replicate = y; x },
+                                private$.analyses, value)
+
+        cat("Replicate names added! \n")
+
+      } else warning("Not done, check the value!")
+    },
+
+    #' @description
+    #' Method to add or redefine the analysis blank replicate names.
+    #' Changes the `msData` object.
+    #'
+    #' @param value A character vector with the analysis blank replicate names.
+    #' Must be of the same length as the number of analyses.
+    #'
+    #' @return Invisible.
+    #'
+    add_blank_names = function(value) {
+
+      if (is.character(value) &
+          length(value) == self$get_number_analyses()) {
+
+        if (all(value %in% self$get_replicate_names())) {
+
+          private$.analyses = Map(function(x, y) { x$blank = y; x },
+                                  private$.analyses, value)
+
+          cat("Blank names added! \n")
+
+        } else warning("Not done, blank names not among replicate names!")
+      } else warning("Not done, check the value!")
     },
 
     #' @description
@@ -1699,348 +1670,81 @@ msData = R6::R6Class("msData",
       } else warning("Groups not present or alignment not valid! Not added.")
     },
 
-    ## import -----
+    ## remove -----
 
     #' @description
-    #' Method to import header to the `msData` object from a \emph{rds} or
-    #' \emph{json} file.
+    #' Removes header entries from the `msData` object.
     #'
-    #' @param file X.
-    #' @param list X.
+    #' @param value A character vector with the names of the header entries
+    #' to be removed.
+    #'
+    #' @note Name, path and date cannot be removed.
     #'
     #' @return Invisible.
     #'
-    import_header = function(file = NA_character_, list = NULL) {
-
-      if (file.exists(file)) {
-
-        header = NULL
-
-        if (file_ext(file) %in% "json") {
-          header = fromJSON(file)
-          header = correct_parsed_json_header(header)
-        }
-
-        if (file_ext(file) %in% "rds") header = readRDS(file)
-
-        self$add_header(header)
-
-      } else warning("File not found in given path!")
-    },
-
-    #' @description
-    #' Method to import processing settings to the `msData` object from a
-    #' \emph{rds} or \emph{json} file.
-    #'
-    #' @param file X.
-    #'
-    #' @return Invisible.
-    #'
-    import_settings = function(file = NA_character_) {
-
-      if (file.exists(file)) {
-
-        settings = NULL
-
-        if (file_ext(file) %in% "json") {
-          settings = fromJSON(file)
-          settings = correct_parsed_json_settings(settings)
-        }
-
-        if (file_ext(file) %in% "rds") settings = readRDS(file)
-
-        self$add_settings(settings)
-
-      } else warning("File not found in given path!")
-    },
-
-    #' @description
-    #' Method to import analyses to the `msData` object from a \emph{rds} or
-    #' \emph{json} file.
-    #'
-    #' @param file X.
-    #'
-    #' @return Invisible.
-    #'
-    import_analyses = function(file = NA_character_) {
-
-      if (file.exists(file)) {
-
-        analyses = NULL
-
-        if (file_ext(file) %in% "json") {
-          analyses = fromJSON(file)
-          analyses = correct_ms_parsed_json_analyses(analyses)
-        }
-
-        if (file_ext(file) %in% "rds") analyses = readRDS(file)
-
-        self$add_analyses(analyses)
-
-      } else warning("File not found in given path!")
-    },
-
-    #' @description
-    #' Method to import feature groups to the `msData` object from a
-    #' \emph{rds} or \emph{json} file.
-    #'
-    #' @param file X.
-    #'
-    #' @return Invisible.
-    #'
-    import_groups = function(file = NA_character_) {
-
-      if (file.exists(file)) {
-
-        groups = NULL
-
-        if (file_ext(file) %in% "json") {
-          groups = fromJSON(file)
-          groups = correct_ms_parsed_json_groups(groups)
-        }
-
-        if (file_ext(file) %in% "rds") groups = readRDS(file)
-
-        self$add_groups(groups)
-
-      } else warning("File not found in given path!")
-    },
-
-    ## load -----
-
-    #' @description
-    #' Method to load all spectra from analyses to the `msData` object.
-    #'
-    #' @param runParallel X.
-    #'
-    #' @return Invisible.
-    #'
-    load_spectra = function(runParallel = FALSE) {
-
-      spec = self$get_spectra(
-        analyses = NULL, levels = NULL,
-        mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
-        allTraces = TRUE, isolationWindow = 1.3,
-        minIntensityMS1 = 0, minIntensityMS2 = 0,
-        runParallel = runParallel
-      )
-
-      split_vector = spec$analysis
-      spec$analysis = NULL
-      spec_list = split(spec, split_vector)
-
-      if (length(spec_list) == self$get_number_analyses()) {
-
-        private$.analyses = Map(function(x, y) { x$spectra = y; x },
-                                private$.analyses, spec_list)
-
-        cat("Spectra loaded to all analyses! \n")
-
-      } else warning("Not done, check the MS file paths and formats!")
-    },
-
-    #' @description
-    #' Method to load all chromatograms from analyses to the `msData` object.
-    #'
-    #' @param runParallel X.
-    #'
-    #' @return Invisible.
-    #'
-    load_chromatograms = function(runParallel = FALSE) {
-
-      chrom = self$get_chromatograms(analyses = NULL, minIntensity = 0,
-        runParallel = runParallel
-      )
-
-      split_vector = chrom$analysis
-      chrom$analysis = NULL
-      chrom_list = split(chrom, split_vector)
-
-      if (length(chrom_list) == self$get_number_analyses()) {
-
-        private$.analyses = Map(function(x, y) { x$chromatograms = y; x },
-                                private$.analyses, chrom_list)
-
-        cat("Chromatograms loaded to all analyses! \n")
-
-      } else warning("Not done, check the MS file paths and formats!")
-    },
-
-    ## processing -----
-
-    #' @description Finds features (i.e., chromatographic peaks) from MS data
-    #' in an `msData` class object. The function uses the \pkg{patRoon} package
-    #' for peak finding, enabling the use of several algorithms (see details).
-    #'
-    #' @param settings A \linkS4class{settings} object. When not given,
-    #' \emph{find_features} \linkS4class{settings} will be searched within
-    #' the `msData` object.
-    #'
-    #' @note The \linkS4class{settings} call must be set to "find_features".
-    #'
-    #' @details See the \link[patRoon]{findFeatures} function from the
-    #' \pkg{patRoon} package or the
-    #' \href{https://rickhelmus.github.io/patRoon/reference/findFeatures.html}{reference guide} for more information. The following algorithms are
-    #' available via \pkg{patRoon}: "xcms3", "xcms", "openms", "envipick",
-    #' "sirius", "kpic2", "safd". The algorithm slot in the
-    #' \linkS4class{settings} should be one of the described. The parameters
-    #' are given as a list and should match with algorithm requirements.
-    #' Certain algorithms also require defined MS file formats and data in
-    #' profile mode.
-    #'
-    #' @return X.
-    #'
-    #' @seealso \link[patRoon]{findFeatures}
-    #'
-    #' @references
-    #' \insertRef{patroon01}{streamFind}
-    #'
-    find_features = function(settings = NULL) {
-
-      valid = TRUE
-
-      if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
-        warning("Install package patRoon for finding peaks!")
-        valid = FALSE
-      }
-
-      if (is.null(settings)) {
-        settings = self$get_settings(call = "find_features")[[1]]
-      } else if ("find_features" %in% names(settings)){
-        settings = settings[["find_features"]]
-      }
-
-      if (validate_ms_settings(settings)) {
-        if (!"find_features" %in% settings$call) {
-          warning("Settings call must be find_features!")
-          valid = FALSE
+    remove_header = function(value = NULL) {
+      if (!is.null(value)) {
+        value = value[!(value %in% c("name", "path", "date"))]
+        if (value %in% names(private$.header)) {
+          private$.header[value] = NULL
+          cat("Removed", value, "in header \n", sep = " ")
         }
       } else {
-        warning("Settings content or structure not conform!")
-        valid = FALSE
-      }
-
-      if (!valid) return()
-
-      algorithm = settings$algorithm
-      parameters = settings$parameters
-
-      anaInfo = self$get_overview()
-      anaInfo = data.frame(
-        "path" = dirname(anaInfo$file),
-        "analysis" = anaInfo$analysis,
-        "group" = anaInfo$replicate,
-        "blank" = anaInfo$blank)
-
-      anaInfo$blank[is.na(anaInfo$blank)] = ""
-      anaInfo$algorithm = algorithm
-      ag = list(analysisInfo = anaInfo, algorithm = algorithm)
-      pp_fun = patRoon::findFeatures
-      pat = do.call(pp_fun, c(ag, parameters, verbose = TRUE))
-
-      features = build_features_table_from_patRoon(pat, self)
-
-      self$add_settings(settings)
-
-      private$.analyses = Map(function(x, y) { x$features = y; x },
-                              private$.analyses, features)
-
-      cat("Features added to analyses! \n")
-    },
-
-    #' @description Groups and aligns features across analyses in the `msData`
-    #' object. The function uses the \pkg{patRoon} package for grouping
-    #' features, enabling the use of several algorithms (see details).
-    #'
-    #' @param settings A \linkS4class{settings} object. When not given,
-    #' \emph{group_features} \linkS4class{settings} will be searched within
-    #' the `msData` object.
-    #'
-    #' @note The \linkS4class{settings} call must be set to "group_features".
-    #'
-    #' @return X.
-    #'
-    #' @details See the \link[patRoon]{groupFeatures} function from the
-    #' \pkg{patRoon} package or the
-    #' \href{https://rickhelmus.github.io/patRoon/reference/groupFeatures.html}{reference guide} for more information. The following algorithms are
-    #' possible: "xcms3", "xcms", "openms" or "kpic2". The algorithm slot in the
-    #' \linkS4class{settings} should be one of the described. The parameters
-    #' are given as a list and should match with algorithm requirements.
-    #'
-    #' @seealso \code{\link[patRoon]{groupFeatures}}
-    #'
-    #' @references
-    #' \insertRef{patroon01}{streamFind}
-    #'
-    group_features = function(settings = NULL) {
-
-      valid = TRUE
-
-      if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
-        warning("Install package patRoon for finding peaks!")
-        valid = FALSE
-      }
-
-      if (is.null(settings)) {
-        settings = self$get_settings(call = "group_features")[[1]]
-      } else if ("group_features" %in% names(settings)){
-        settings = settings[["group_features"]]
-      }
-
-      if (validate_ms_settings(settings)) {
-        if (!"group_features" %in% settings$call) {
-          warning("Settings call must be group_features!")
-          valid = FALSE
-        }
-      } else {
-        warning("Settings content or structure not conform!")
-        valid = FALSE
-      }
-
-      pat_features = self$as_features_patRoon()
-
-      if (length(pat_features) == 0) {
-        warning("Features were not found! Run find_features method first!")
-        valid = FALSE
-      }
-
-      if (!valid) return()
-
-      algorithm = settings$algorithm
-      parameters = settings$parameters
-
-      if (algorithm == "xcms3") {
-        parameters$groupParam@sampleGroups = self$get_replicate_names()
-        if ("rtalign" %in% names(parameters)) if (parameters$rtalign) {
-          parameters$preGroupParam@sampleGroups = self$get_replicate_names()
-        }
-      }
-
-      ag = list(obj = pat_features, algorithm = algorithm)
-      gr_fun = patRoon::groupFeatures
-      pat = do.call(gr_fun, c(ag, parameters))
-
-      features = build_features_table_from_patRoon(pat, self)
-      out_list = build_feature_groups_table_from_patRoon(pat, features, self)
-
-      alignment = extract_time_alignment(pat, self)
-
-      self$add_settings(settings)
-
-      private$.analyses = Map(function(x, y) { x$features = y; x },
-                              private$.analyses, out_list[["features"]])
-
-      private$.groups = out_list[["fgroups"]]
-
-      cat("Added feature groups from correspondence analysis! \n")
-
-      if (!is.null(alignment)) {
-        private$.alignment = alignment
-        cat("Added alignment of retention time for each analysis! \n")
+        to_remove = names(private$.header) %in% c("name", "path", "date")
+        to_remove = names(private$.header)[!to_remove]
+        private$.header[to_remove] = NULL
+        cat("Removed", to_remove, "in header \n", sep = " ")
       }
     },
 
+    #' @description
+    #' Removes analyses from the `msData` object.
+    #'
+    #' @param analyses A character vector with the names or indices of the
+    #' analyses to be removed.
+    #'
+    #' @note Unique feature groups from the removed analyses are also removed.
+    #'
+    #' @return Invisible.
+    #'
+    remove_analyses = function(analyses = NULL) {
 
+      analyses = self$check_analyses_argument(analyses)
+
+      if (!is.null(analyses)) {
+
+        keep_analyses = !(names(private$.analyses) %in% analyses)
+
+        analyses_left = private$.analyses[keep_analyses]
+
+        groups_left = private$.groups
+        fgs_remaining = lapply(analyses_left, function(x) x$features$group)
+        fgs_remaining = unique(unlist(fgs_remaining))
+        if (!is.null(fgs_remaining)) {
+          groups_left = groups_left[groups_left$group %in% fgs_remaining, ]
+        }
+
+        private$.analyses = analyses_left
+        private$.groups = groups_left
+        private$.alignment = private$.alignment[keep_analyses]
+
+        cat("Removed", analyses, "from analyses! \n", sep = " ")
+      }
+    },
+
+    #' @description
+    #' Remove feature groups from the `msData` object.
+    #'
+    #' @return Invisible.
+    #'
+    remove_groups = function() {
+      private$.groups = NULL
+      privete$.alignment = NULL
+      private$.analyses = lapply(private$.analyses, function(x) {
+        x$features[["feature"]] = NULL
+        return(x)
+      })
+    },
 
     ## has -----
 
@@ -2119,7 +1823,7 @@ msData = R6::R6Class("msData",
       if (is.null(analyses)) return(FALSE)
 
       has_fts = vapply(private$.analyses[analyses],
-                           function(x) nrow(x$features) > 0, FALSE)
+                       function(x) nrow(x$features) > 0, FALSE)
 
       names(has_fts) = self$get_analysis_names(analyses)
 
@@ -2954,6 +2658,240 @@ msData = R6::R6Class("msData",
       return(plot_groups_overview_aux(fts, eic, heights, analyses))
     },
 
+    ## load -----
+
+    #' @description
+    #' Method to load all spectra from analyses to the `msData` object.
+    #'
+    #' @param runParallel X.
+    #'
+    #' @return Invisible.
+    #'
+    load_spectra = function(runParallel = FALSE) {
+
+      spec = self$get_spectra(
+        analyses = NULL, levels = NULL,
+        mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
+        allTraces = TRUE, isolationWindow = 1.3,
+        minIntensityMS1 = 0, minIntensityMS2 = 0,
+        runParallel = runParallel
+      )
+
+      split_vector = spec$analysis
+      spec$analysis = NULL
+      spec_list = split(spec, split_vector)
+
+      if (length(spec_list) == self$get_number_analyses()) {
+
+        private$.analyses = Map(function(x, y) { x$spectra = y; x },
+                                private$.analyses, spec_list)
+
+        cat("Spectra loaded to all analyses! \n")
+
+      } else warning("Not done, check the MS file paths and formats!")
+    },
+
+    #' @description
+    #' Method to load all chromatograms from analyses to the `msData` object.
+    #'
+    #' @param runParallel X.
+    #'
+    #' @return Invisible.
+    #'
+    load_chromatograms = function(runParallel = FALSE) {
+
+      chrom = self$get_chromatograms(analyses = NULL, minIntensity = 0,
+                                     runParallel = runParallel
+      )
+
+      split_vector = chrom$analysis
+      chrom$analysis = NULL
+      chrom_list = split(chrom, split_vector)
+
+      if (length(chrom_list) == self$get_number_analyses()) {
+
+        private$.analyses = Map(function(x, y) { x$chromatograms = y; x },
+                                private$.analyses, chrom_list)
+
+        cat("Chromatograms loaded to all analyses! \n")
+
+      } else warning("Not done, check the MS file paths and formats!")
+    },
+
+    ## processing -----
+
+    #' @description Finds features (i.e., chromatographic peaks) from MS data
+    #' in an `msData` class object. The function uses the \pkg{patRoon} package
+    #' for peak finding, enabling the use of several algorithms (see details).
+    #'
+    #' @param settings A \linkS4class{settings} object. When not given,
+    #' \emph{find_features} \linkS4class{settings} will be searched within
+    #' the `msData` object.
+    #'
+    #' @note The \linkS4class{settings} call must be set to "find_features".
+    #'
+    #' @details See the \link[patRoon]{findFeatures} function from the
+    #' \pkg{patRoon} package or the
+    #' \href{https://rickhelmus.github.io/patRoon/reference/findFeatures.html}{reference guide} for more information. The following algorithms are
+    #' available via \pkg{patRoon}: "xcms3", "xcms", "openms", "envipick",
+    #' "sirius", "kpic2", "safd". The algorithm slot in the
+    #' \linkS4class{settings} should be one of the described. The parameters
+    #' are given as a list and should match with algorithm requirements.
+    #' Certain algorithms also require defined MS file formats and data in
+    #' profile mode.
+    #'
+    #' @return X.
+    #'
+    #' @seealso \link[patRoon]{findFeatures}
+    #'
+    #' @references
+    #' \insertRef{patroon01}{streamFind}
+    #'
+    find_features = function(settings = NULL) {
+
+      valid = TRUE
+
+      if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
+        warning("Install package patRoon for finding peaks!")
+        valid = FALSE
+      }
+
+      if (is.null(settings)) {
+        settings = self$get_settings(call = "find_features")[[1]]
+      } else if ("find_features" %in% names(settings)){
+        settings = settings[["find_features"]]
+      }
+
+      if (validate_ms_settings(settings)) {
+        if (!"find_features" %in% settings$call) {
+          warning("Settings call must be find_features!")
+          valid = FALSE
+        }
+      } else {
+        warning("Settings content or structure not conform!")
+        valid = FALSE
+      }
+
+      if (!valid) return()
+
+      algorithm = settings$algorithm
+      parameters = settings$parameters
+
+      anaInfo = self$get_overview()
+      anaInfo = data.frame(
+        "path" = dirname(anaInfo$file),
+        "analysis" = anaInfo$analysis,
+        "group" = anaInfo$replicate,
+        "blank" = anaInfo$blank)
+
+      anaInfo$blank[is.na(anaInfo$blank)] = ""
+      anaInfo$algorithm = algorithm
+      ag = list(analysisInfo = anaInfo, algorithm = algorithm)
+      pp_fun = patRoon::findFeatures
+      pat = do.call(pp_fun, c(ag, parameters, verbose = TRUE))
+
+      features = build_features_table_from_patRoon(pat, self)
+
+      self$add_settings(settings)
+
+      private$.analyses = Map(function(x, y) { x$features = y; x },
+                              private$.analyses, features)
+
+      cat("Features added to analyses! \n")
+    },
+
+    #' @description Groups and aligns features across analyses in the `msData`
+    #' object. The function uses the \pkg{patRoon} package for grouping
+    #' features, enabling the use of several algorithms (see details).
+    #'
+    #' @param settings A \linkS4class{settings} object. When not given,
+    #' \emph{group_features} \linkS4class{settings} will be searched within
+    #' the `msData` object.
+    #'
+    #' @note The \linkS4class{settings} call must be set to "group_features".
+    #'
+    #' @return X.
+    #'
+    #' @details See the \link[patRoon]{groupFeatures} function from the
+    #' \pkg{patRoon} package or the
+    #' \href{https://rickhelmus.github.io/patRoon/reference/groupFeatures.html}{reference guide} for more information. The following algorithms are
+    #' possible: "xcms3", "xcms", "openms" or "kpic2". The algorithm slot in the
+    #' \linkS4class{settings} should be one of the described. The parameters
+    #' are given as a list and should match with algorithm requirements.
+    #'
+    #' @seealso \code{\link[patRoon]{groupFeatures}}
+    #'
+    #' @references
+    #' \insertRef{patroon01}{streamFind}
+    #'
+    group_features = function(settings = NULL) {
+
+      valid = TRUE
+
+      if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
+        warning("Install package patRoon for finding peaks!")
+        valid = FALSE
+      }
+
+      if (is.null(settings)) {
+        settings = self$get_settings(call = "group_features")[[1]]
+      } else if ("group_features" %in% names(settings)){
+        settings = settings[["group_features"]]
+      }
+
+      if (validate_ms_settings(settings)) {
+        if (!"group_features" %in% settings$call) {
+          warning("Settings call must be group_features!")
+          valid = FALSE
+        }
+      } else {
+        warning("Settings content or structure not conform!")
+        valid = FALSE
+      }
+
+      pat_features = self$as_features_patRoon()
+
+      if (length(pat_features) == 0) {
+        warning("Features were not found! Run find_features method first!")
+        valid = FALSE
+      }
+
+      if (!valid) return()
+
+      algorithm = settings$algorithm
+      parameters = settings$parameters
+
+      if (algorithm == "xcms3") {
+        parameters$groupParam@sampleGroups = self$get_replicate_names()
+        if ("rtalign" %in% names(parameters)) if (parameters$rtalign) {
+          parameters$preGroupParam@sampleGroups = self$get_replicate_names()
+        }
+      }
+
+      ag = list(obj = pat_features, algorithm = algorithm)
+      gr_fun = patRoon::groupFeatures
+      pat = do.call(gr_fun, c(ag, parameters))
+
+      features = build_features_table_from_patRoon(pat, self)
+      out_list = build_feature_groups_table_from_patRoon(pat, features, self)
+
+      alignment = extract_time_alignment(pat, self)
+
+      self$add_settings(settings)
+
+      private$.analyses = Map(function(x, y) { x$features = y; x },
+                              private$.analyses, out_list[["features"]])
+
+      private$.groups = out_list[["fgroups"]]
+
+      cat("Added feature groups from correspondence analysis! \n")
+
+      if (!is.null(alignment)) {
+        private$.alignment = alignment
+        cat("Added alignment of retention time for each analysis! \n")
+      }
+    },
+
     ## as -----
 
     #' @description
@@ -3016,22 +2954,6 @@ msData = R6::R6Class("msData",
       return(features_obj)
     },
 
-    ## remove -----
-
-    #' @description
-    #' Remove feature groups from the `msData` object.
-    #'
-    #' @return Invisible.
-    #'
-    remove_groups = function() {
-      private$.groups = NULL
-      privete$.alignment = NULL
-      private$.analyses = lapply(private$.analyses, function(x) {
-        x$features[["feature"]] = NULL
-        return(x)
-      })
-    },
-
     ## subset -----
 
     #' @description
@@ -3049,10 +2971,13 @@ msData = R6::R6Class("msData",
       new_analyses = private$.analyses[analyses]
 
       new_groups = private$.groups
-      fgs_remaining = lapply(new_analyses, function(x) x$features$group)
-      fgs_remaining = unique(unlist(fgs_remaining))
-      if (!is.null(fgs_remaining)) {
-        new_groups = new_groups[new_groups$group %in% fgs_remaining, ]
+
+      if (self$has_groups()) {
+        fgs_remaining = lapply(new_analyses, function(x) x$features$group)
+        fgs_remaining = unique(unlist(fgs_remaining))
+        if (!is.null(fgs_remaining)) {
+          new_groups = new_groups[new_groups$group %in% fgs_remaining, ]
+        }
       }
 
       new_alignment = private$.alignment[analyses]
@@ -3188,6 +3113,7 @@ msData = R6::R6Class("msData",
     #' @description
     #' Method to save the list of analyses.
     #'
+    #' @param analyses X.
     #' @param format X.
     #' @param name X.
     #' @param path X.
@@ -3195,13 +3121,15 @@ msData = R6::R6Class("msData",
     #' @return Saves the list of analyses as the defined \code{format} in
     #' \code{path}.
     #'
-    save_analyses = function(format = "json",
+    save_analyses = function(analyses = NULL, format = "json",
                              name = "analyses", path = getwd()) {
+
+      analyses = self$get_analyses(analyses)
 
       if (format %in% "json") {
 
         js_analyses = toJSON(
-          self$get_analyses(),
+          analyses,
           dataframe = "columns",
           Date = "ISO8601",
           POSIXt = "string",
@@ -3210,7 +3138,7 @@ msData = R6::R6Class("msData",
           null = "null",
           na = "null",
           auto_unbox = FALSE,
-          digits = 4,
+          digits = 6,
           pretty = TRUE,
           force = TRUE
         )
@@ -3219,7 +3147,7 @@ msData = R6::R6Class("msData",
       }
 
       if (format %in% "rds") {
-        saveRDS(self$get_analyses(), file = paste0(path, "/" ,name, ".rds"))
+        saveRDS(analyses, file = paste0(path, "/" ,name, ".rds"))
       }
     },
 
@@ -3250,7 +3178,7 @@ msData = R6::R6Class("msData",
           null = "null",
           na = "null",
           auto_unbox = FALSE,
-          digits = 4,
+          digits = 6,
           pretty = TRUE,
           force = TRUE
         )
@@ -3310,7 +3238,7 @@ msData = R6::R6Class("msData",
           null = "null",
           na = "null",
           auto_unbox = FALSE,
-          digits = 4,
+          digits = 6,
           pretty = TRUE,
           force = TRUE
         )
@@ -3321,6 +3249,113 @@ msData = R6::R6Class("msData",
       if (format %in% "rds") {
         saveRDS(list_all, file = paste0(path, "/" ,name, ".rds"))
       }
+    },
+
+    ## import -----
+
+    #' @description
+    #' Method to import header to the `msData` object from a \emph{rds} or
+    #' \emph{json} file.
+    #'
+    #' @param file X.
+    #' @param list X.
+    #'
+    #' @return Invisible.
+    #'
+    import_header = function(file = NA_character_, list = NULL) {
+
+      if (file.exists(file)) {
+
+        header = NULL
+
+        if (file_ext(file) %in% "json") {
+          header = fromJSON(file)
+          header = correct_parsed_json_header(header)
+        }
+
+        if (file_ext(file) %in% "rds") header = readRDS(file)
+
+        self$add_header(header)
+
+      } else warning("File not found in given path!")
+    },
+
+    #' @description
+    #' Method to import processing settings to the `msData` object from a
+    #' \emph{rds} or \emph{json} file.
+    #'
+    #' @param file X.
+    #'
+    #' @return Invisible.
+    #'
+    import_settings = function(file = NA_character_) {
+
+      if (file.exists(file)) {
+
+        settings = NULL
+
+        if (file_ext(file) %in% "json") {
+          settings = fromJSON(file)
+          settings = correct_parsed_json_settings(settings)
+        }
+
+        if (file_ext(file) %in% "rds") settings = readRDS(file)
+
+        self$add_settings(settings)
+
+      } else warning("File not found in given path!")
+    },
+
+    #' @description
+    #' Method to import analyses to the `msData` object from a \emph{rds} or
+    #' \emph{json} file.
+    #'
+    #' @param file X.
+    #'
+    #' @return Invisible.
+    #'
+    import_analyses = function(file = NA_character_) {
+
+      if (file.exists(file)) {
+
+        analyses = NULL
+
+        if (file_ext(file) %in% "json") {
+          analyses = fromJSON(file)
+          analyses = correct_ms_parsed_json_analyses(analyses)
+        }
+
+        if (file_ext(file) %in% "rds") analyses = readRDS(file)
+
+        self$add_analyses(analyses)
+
+      } else warning("File not found in given path!")
+    },
+
+    #' @description
+    #' Method to import feature groups to the `msData` object from a
+    #' \emph{rds} or \emph{json} file.
+    #'
+    #' @param file X.
+    #'
+    #' @return Invisible.
+    #'
+    import_groups = function(file = NA_character_) {
+
+      if (file.exists(file)) {
+
+        groups = NULL
+
+        if (file_ext(file) %in% "json") {
+          groups = fromJSON(file)
+          groups = correct_ms_parsed_json_groups(groups)
+        }
+
+        if (file_ext(file) %in% "rds") groups = readRDS(file)
+
+        self$add_groups(groups)
+
+      } else warning("File not found in given path!")
     },
 
     ## info -----
@@ -3542,6 +3577,15 @@ make_ms_analysis_list = function(files = NULL, runParallel = FALSE) {
                      analyses, blanks)
     }
   }
+
+  analyses = lapply(analyses, function(x) {
+    x$tic = as.data.table(x$tic)
+    x$bpc = as.data.table(x$bpc)
+    x$spectra = as.data.table(x$spectra)
+    x$chromatograms = as.data.table(x$chromatograms)
+    x$features = as.data.table(x$features)
+    return(x)
+  })
 
   names(analyses) = vapply(analyses, function(x) x$name, "")
   analyses = analyses[order(names(analyses))]
@@ -3947,6 +3991,8 @@ validate_header = function(value = NULL) {
 
     if (!all(vapply(value, function(x) length(x) == 1, FALSE))) valid = FALSE
 
+    if (length(unique(names(value))) != length(value)) valid = FALSE
+
     if ("name" %in% names(value)) {
       if (!is.character(value$name)) valid = FALSE
     }
@@ -4170,7 +4216,7 @@ import_msData = function(file) {
       if ("groups" %in% fields_present) {
         if (!is.null(js_ms[["groups"]])) {
           groups = correct_ms_parsed_json_groups(js_ms[["groups"]])
-          new_ms$add_groups(groups)
+          if (nrow(groups) > 0) new_ms$add_groups(groups)
         }
       }
 
@@ -4188,6 +4234,7 @@ import_msData = function(file) {
       new_ms = readRDS(file)
 
       # TODO validate object
+      cat("msData imported from rds file! \n")
     }
 
     return(new_ms)

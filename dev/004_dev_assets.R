@@ -4,7 +4,7 @@
 #updates documentation and installs the package
 devtools::document()
 devtools::document()
-devtools::install(upgrade = "never")
+devtools::install(upgrade = "never", dependencies = TRUE, build_vignettes = TRUE)
 library(streamFind)
 
 #check the package

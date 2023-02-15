@@ -80,8 +80,8 @@ blk <- c(
   rep("blank_pos", 3)
 )
 
-ms$set_replicate_names(rpl)
-ms$set_blank_names(blk)
+ms$add_replicate_names(rpl)
+ms$add_blank_names(blk)
 
 test_that("test setter and getter for replicates and blanks", {
   expect_equal(unname(ms$get_replicate_names()), rpl)
@@ -267,7 +267,7 @@ settings_gf_alignment <- list(
   )
 )
 
-ms4 = ms$subset_analyses(4:6)
+ms4 = ms$subset_analyses(analyses = 4:6)
 
 ms4$group_features(settings = settings_gf_alignment)
 

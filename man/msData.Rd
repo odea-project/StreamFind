@@ -14,6 +14,10 @@ The \linkS4class{settings} call must be set to "find_features".
 
 The \linkS4class{settings} call must be set to "group_features".
 
+Name, path and date cannot be removed.
+
+Unique feature groups from the removed analyses are also removed.
+
 When saved as json, the \code{data.table} is split by groups as
 list and the \code{data.table} of each group is converted to a list.
 
@@ -62,11 +66,11 @@ list and the \code{data.table} of each group is converted to a list.
 \item \href{#method-msData-get_groups}{\code{msData$get_groups()}}
 \item \href{#method-msData-get_groups_ms1}{\code{msData$get_groups_ms1()}}
 \item \href{#method-msData-get_groups_ms2}{\code{msData$get_groups_ms2()}}
-\item \href{#method-msData-set_replicate_names}{\code{msData$set_replicate_names()}}
-\item \href{#method-msData-set_blank_names}{\code{msData$set_blank_names()}}
 \item \href{#method-msData-add_header}{\code{msData$add_header()}}
 \item \href{#method-msData-add_settings}{\code{msData$add_settings()}}
 \item \href{#method-msData-add_analyses}{\code{msData$add_analyses()}}
+\item \href{#method-msData-add_replicate_names}{\code{msData$add_replicate_names()}}
+\item \href{#method-msData-add_blank_names}{\code{msData$add_blank_names()}}
 \item \href{#method-msData-add_features}{\code{msData$add_features()}}
 \item \href{#method-msData-add_groups}{\code{msData$add_groups()}}
 \item \href{#method-msData-add_alignment}{\code{msData$add_alignment()}}
@@ -102,6 +106,8 @@ list and the \code{data.table} of each group is converted to a list.
 \item \href{#method-msData-plot_groups_ms2}{\code{msData$plot_groups_ms2()}}
 \item \href{#method-msData-plot_groups_overview}{\code{msData$plot_groups_overview()}}
 \item \href{#method-msData-as_features_patRoon}{\code{msData$as_features_patRoon()}}
+\item \href{#method-msData-remove_header}{\code{msData$remove_header()}}
+\item \href{#method-msData-remove_analyses}{\code{msData$remove_analyses()}}
 \item \href{#method-msData-remove_groups}{\code{msData$remove_groups()}}
 \item \href{#method-msData-subset_analyses}{\code{msData$subset_analyses()}}
 \item \href{#method-msData-check_analyses_argument}{\code{msData$check_analyses_argument()}}
@@ -1095,49 +1101,6 @@ A data.frame/data.table.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-set_replicate_names"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-set_replicate_names}{}}}
-\subsection{Method \code{set_replicate_names()}}{
-Method to set the analysis replicate names. Changes the \code{msData} object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$set_replicate_names(value)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A character vector with the analysis replicate names.
-Must be of the same length as the number of analyses.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-set_blank_names"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-set_blank_names}{}}}
-\subsection{Method \code{set_blank_names()}}{
-Method to set the analysis blank replicate names.
-Changes the \code{msData} object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$set_blank_names(value)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A character vector with the analysis blank replicate names.
-Must be of the same length as the number of analyses.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-msData-add_header"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-add_header}{}}}
 \subsection{Method \code{add_header()}}{
@@ -1190,6 +1153,50 @@ Method to add analyses to the \code{msData} object.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{analyses}}{A list of analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-add_replicate_names"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-add_replicate_names}{}}}
+\subsection{Method \code{add_replicate_names()}}{
+Method to add or redefine the analysis replicate names. Changes the
+\code{msData} object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$add_replicate_names(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{A character vector with the analysis replicate names.
+Must be of the same length as the number of analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-add_blank_names"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-add_blank_names}{}}}
+\subsection{Method \code{add_blank_names()}}{
+Method to add or redefine the analysis blank replicate names.
+Changes the \code{msData} object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$add_blank_names(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{A character vector with the analysis blank replicate names.
+Must be of the same length as the number of analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2515,6 +2522,48 @@ with the features in the analyses.
 
 \subsection{Returns}{
 A \linkS4class{features} object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-remove_header"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-remove_header}{}}}
+\subsection{Method \code{remove_header()}}{
+Removes header entries from the \code{msData} object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$remove_header(value = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{A character vector with the names of the header entries
+to be removed.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-remove_analyses"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-remove_analyses}{}}}
+\subsection{Method \code{remove_analyses()}}{
+Removes analyses from the \code{msData} object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$remove_analyses(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A character vector with the names or indices of the
+analyses to be removed.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
 }
 }
 \if{html}{\out{<hr>}}
