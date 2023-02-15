@@ -88,7 +88,7 @@ msData = R6::R6Class("msData",
         )
       }
 
-      if (!is.null(groups)) self$add_groups(groups)
+      if (!is.null(groups)) self$add_groups(groups, verbose = FALSE)
 
       if (!is.null(alignment)) self$add_alignment(alignment)
 
@@ -1142,14 +1142,14 @@ msData = R6::R6Class("msData",
               for (i in seq_len(nrow(targets))) {
                 if (targets$rtmax[i] > 0) {
                   sel[between(fgroups$mass,
-                              targets$mzmin[i] - 1.0073,
-                              targets$mzmax[i] - 1.0073) &
+                              targets$mzmin[i] - 1.007276,
+                              targets$mzmax[i] - 1.007276) &
                         between(fgroups$rt,
                                 targets$rtmin[i],
                                 targets$rtmax[i])] <- TRUE
                 } else sel[between(fgroups$mass,
-                                   targets$mzmin[i] - 1.0073,
-                                   targets$mzmax[i] - 1.0073)] <- TRUE
+                                   targets$mzmin[i] - 1.007276,
+                                   targets$mzmax[i] - 1.007276)] <- TRUE
               }
             }
 
@@ -1157,14 +1157,14 @@ msData = R6::R6Class("msData",
               for (i in seq_len(nrow(targets))) {
                 if (targets$rtmax[i] > 0) {
                   sel[between(fgroups$mass,
-                              targets$mzmin[i] + 1.0073,
-                              targets$mzmax[i] + 1.0073) &
+                              targets$mzmin[i] + 1.007276,
+                              targets$mzmax[i] + 1.007276) &
                         between(fgroups$rt,
                                 targets$rtmin[i],
                                 targets$rtmax[i])] <- TRUE
                 } else sel[between(fgroups$mass,
-                                   targets$mzmin[i] + 1.0073,
-                                   targets$mzmax[i] + 1.0073)] <- TRUE
+                                   targets$mzmin[i] + 1.007276,
+                                   targets$mzmax[i] + 1.007276)] <- TRUE
               }
             }
 
@@ -1403,14 +1403,11 @@ msData = R6::R6Class("msData",
       if (validate_header(header)) {
 
         old_names = names(header)[names(header) %in% names(private$.header)]
+
         if (length(old_names) > 0) {
           overwrite = TRUE
           private$.header[old_names] = header[old_names]
-          if (length(old_names) == 1) {
-            message(paste0(old_names, " was overwritten!"))
-          } else {
-            message(paste0(old_names, "were overwritten!"))
-          }
+          message(paste0(old_names, " was overwritten! "))
         } else old_names = NULL
 
         new_names = names(header)[!(names(header) %in% old_names)]
@@ -1605,26 +1602,25 @@ msData = R6::R6Class("msData",
     #' Method to add feature groups in the `msData` object.
     #'
     #' @param groups data.table.
+    #' @param verbose X.
     #'
     #' @return Invisible.
     #'
-    add_groups = function(groups = NULL) {
+    add_groups = function(groups = NULL, verbose = TRUE) {
 
       valid = FALSE
 
       if (is.data.frame(groups)) {
 
         must_have_cols = c("group", "rt", unname(self$get_analysis_names()),
-          "dppm", "drt", "features", "index", "hasFilled", "filtered",
-          "filter", "adduct", "mass")
+          "dppm", "drt", "index", "hasFilled", "filtered", "filter",
+          "adduct", "mass")
 
         if (all(must_have_cols %in% colnames(groups))) {
 
           groups = groups[order(groups$index),]
-
           old_groups = private$.groups
-
-          private$.groups = groups
+          private$.groups = copy(groups)
 
           if (!self$check_correspondence()) {
             if (is.null(old_groups)) {
@@ -1634,9 +1630,7 @@ msData = R6::R6Class("msData",
               private$.groups = old_groups
               warning("Correspondence did not match! Groups not added.")
             }
-          } else {
-            cat("Feature groups added! \n")
-          }
+          } else if (verbose) cat("Feature groups added! \n")
         } else {
           warning("Columns of groups data.frame not as required! Not added.")
         }
@@ -1713,20 +1707,29 @@ msData = R6::R6Class("msData",
 
       if (!is.null(analyses)) {
 
-        keep_analyses = !(names(private$.analyses) %in% analyses)
+        allNames = self$get_analysis_names()
+        keepAnalyses = unname(allNames[!(allNames %in% analyses)])
+        removeAnalyses = unname(allNames[allNames %in% analyses])
 
-        analyses_left = private$.analyses[keep_analyses]
+        analysesLeft = self$get_analyses(keepAnalyses)
 
-        groups_left = private$.groups
-        fgs_remaining = lapply(analyses_left, function(x) x$features$group)
-        fgs_remaining = unique(unlist(fgs_remaining))
-        if (!is.null(fgs_remaining)) {
-          groups_left = groups_left[groups_left$group %in% fgs_remaining, ]
-        }
+        if (self$has_groups()) {
+          newGroups = copy(self$get_groups())
+          newGroups[, (removeAnalyses) := NULL]
+          newFeatures = lapply(analysesLeft, function(x) x$features)
 
-        private$.analyses = analyses_left
-        private$.groups = groups_left
-        private$.alignment = private$.alignment[keep_analyses]
+          out_list = update_subset_features_and_groups(newGroups, newFeatures)
+
+          analysesLeft = Map(function(x, y) { x$features = y; x },
+                             analysesLeft, out_list[["features"]])
+
+          newGroups = out_list[["groups"]]
+
+        } else newGroups = NULL
+
+        private$.analyses = analysesLeft
+        if (!is.null(newGroups)) self$add_groups(newGroups, verbose = FALSE)
+        private$.alignment = private$.alignment[keepAnalyses]
 
         cat("Removed", analyses, "from analyses! \n", sep = " ")
       }
@@ -1739,7 +1742,7 @@ msData = R6::R6Class("msData",
     #'
     remove_groups = function() {
       private$.groups = NULL
-      privete$.alignment = NULL
+      private$.alignment = NULL
       private$.analyses = lapply(private$.analyses, function(x) {
         x$features[["feature"]] = NULL
         return(x)
@@ -2882,7 +2885,7 @@ msData = R6::R6Class("msData",
       private$.analyses = Map(function(x, y) { x$features = y; x },
                               private$.analyses, out_list[["features"]])
 
-      private$.groups = out_list[["fgroups"]]
+      private$.groups = out_list[["groups"]]
 
       cat("Added feature groups from correspondence analysis! \n")
 
@@ -2927,8 +2930,10 @@ msData = R6::R6Class("msData",
         setnames(ft, c("id", "rt", "rtmin", "rtmax"),
                      c("ID", "ret", "retmin", "retmax"), skip_absent = TRUE)
 
-        ft = select(ft, ID,
-          mz, mzmin, mzmax, ret, retmin, retmax, intensity, area, everything())
+        setcolorder(ft,
+          c("ID", "mz", "mzmin", "mzmax", "ret", "retmin", "retmax",
+            "intensity", "area")
+        )
 
         ft$ID = as.numeric(gsub(".*_f", "", ft$ID))
 
@@ -2964,34 +2969,45 @@ msData = R6::R6Class("msData",
     #' @return A new cloned `msData` object with only the analyses as defined
     #' by the `analyses` argument.
     #'
-    subset_analyses = function(analyses) {
+    subset_analyses = function(analyses = NULL) {
 
       analyses = self$check_analyses_argument(analyses)
 
-      new_analyses = private$.analyses[analyses]
+      if (!is.null(analyses)) {
 
-      new_groups = private$.groups
+        allNames = self$get_analysis_names()
+        removeAnalyses = unname(allNames[!(allNames %in% analyses)])
+        keepAnalyses = unname(allNames[allNames %in% analyses])
 
-      if (self$has_groups()) {
-        fgs_remaining = lapply(new_analyses, function(x) x$features$group)
-        fgs_remaining = unique(unlist(fgs_remaining))
-        if (!is.null(fgs_remaining)) {
-          new_groups = new_groups[new_groups$group %in% fgs_remaining, ]
-        }
-      }
+        newAnalyses = self$get_analyses(keepAnalyses)
 
-      new_alignment = private$.alignment[analyses]
+        if (self$has_groups()) {
+          newGroups = copy(self$get_groups())
+          newGroups[, (removeAnalyses) := NULL]
+          newFeatures = lapply(newAnalyses, function(x) x$features)
+          out_list = update_subset_features_and_groups(newGroups, newFeatures)
 
-      return(
-        msData$new(
-          files = NULL,
-          header = private$.header,
-          settings = private$.settings,
-          analyses = new_analyses,
-          groups = new_groups,
-          alignment = new_alignment
+          newAnalyses = Map(function(x, y) { x$features = y; x },
+                            newAnalyses, out_list[["features"]])
+
+          newGroups = out_list[["groups"]]
+
+        } else newGroups = NULL
+
+        newAlignment = private$.alignment[keepAnalyses]
+
+        return(
+          msData$new(
+            files = NULL,
+            header = private$.header,
+            settings = private$.settings,
+            analyses = newAnalyses,
+            groups = newGroups,
+            alignment = newAlignment
+          )
         )
-      )
+
+      } else return(self$clone(deep = TRUE))
     },
 
     ## checks -----
@@ -3020,7 +3036,8 @@ msData = R6::R6Class("msData",
     },
 
     #' @description
-    #' Checks the correspondence of features within groups in the `msData` object.
+    #' Checks the correspondence of features within feature groups in
+    #' the `msData` object.
     #'
     #' @return \code{TRUE} or \code{FALSE}.
     #'
@@ -3033,25 +3050,42 @@ msData = R6::R6Class("msData",
         gps = self$get_groups()
         gps = split(gps, gps$group)
 
+        fts = self$get_features()
+
         valid = vapply(gps, function(x, fts) {
+
           g = x$group
-          gf = unlist(x$features)
-          gf = vapply(seq_along(gf), function(f, fts) {
-            idx = gf[f]
-            ana = names(gf)[f]
-            if (idx > 0) {
-              t = fts$group[fts$analysis %in% ana & fts$index == idx]
-            } else return(NA_character_)
-          }, NA_character_, fts = fts)
+          gf = fts[fts$group %in% g, ]
 
-          gf = na.omit(unique(gf))
+          rt_check = max(gf$rtmax) >= x$rt & min(gf$rtmin) <= x$rt
 
-          if (length(gf) == 1 & g %in% gf) {
-            return(TRUE)
-          } else return(FALSE)
-        }, FALSE, fts = self$get_features())
+          # drt = max(gf$rtmax) - min(gf$rtmin)
+          # drt_check = round(drt, 0) == round(x$drt, 0)
+
+          max_ppm = max((gf$mzmax - gf$mz) / gf$mzmax * 1E6)
+          min_ppm = min((gf$mzmin - gf$mz) / gf$mzmin * 1E6)
+
+          # dppm_check = round(max_ppm - min_ppm, 0)
+          # dppm_check = dppm_check == round(x$dppm, 0)
+          f_mass_mean = mean(gf$mass)
+          mass_min = round(min_ppm / 1E6 * f_mass_mean + f_mass_mean, 4)
+          mass_max = round(max_ppm / 1E6 * f_mass_mean + f_mass_mean, 4)
+          g_max = round(x$mass, 4)
+
+          mass_check = mass_max >= g_max & mass_min <= g_max
+
+          ana = gf$analysis
+          ints = round(gf$intensity, 0)
+          int_check = all(ints == round(x[, ana, with = FALSE], 0))
+
+          return(all(c(rt_check, mass_check, int_check)))
+
+        }, FALSE, fts = fts)
 
         valid = all(valid)
+
+        if (!valid) browser()
+
       }
 
       return(valid)
@@ -3138,7 +3172,7 @@ msData = R6::R6Class("msData",
           null = "null",
           na = "null",
           auto_unbox = FALSE,
-          digits = 6,
+          digits = 8,
           pretty = TRUE,
           force = TRUE
         )
@@ -3178,7 +3212,7 @@ msData = R6::R6Class("msData",
           null = "null",
           na = "null",
           auto_unbox = FALSE,
-          digits = 6,
+          digits = 8,
           pretty = TRUE,
           force = TRUE
         )
@@ -3238,7 +3272,7 @@ msData = R6::R6Class("msData",
           null = "null",
           na = "null",
           auto_unbox = FALSE,
-          digits = 6,
+          digits = 8,
           pretty = TRUE,
           force = TRUE
         )
@@ -4371,13 +4405,7 @@ correct_ms_parsed_json_analyses = function(analyses = NULL) {
 #'
 correct_ms_parsed_json_groups = function(groups = NULL) {
 
-  groups = lapply(groups, function(x) {
-    features_temp = as.data.frame(x[["features"]])
-    x[["features"]] = NULL
-    x = as.data.table(x)
-    x$features = list(features_temp)
-    return(x)
-  })
+  groups = lapply(groups, as.data.table)
 
   groups = rbindlist(groups)
 
@@ -4426,7 +4454,9 @@ build_features_table_from_patRoon = function(pat, self) {
     } else { extra = NULL }
   }
 
-  features = lapply(names(features), function(x, extra, features, self, isSet) {
+  analyses = names(features)
+
+  features = lapply(analyses, function(x, extra, features, self, isSet) {
 
     temp = features[[x]]
 
@@ -4440,24 +4470,25 @@ build_features_table_from_patRoon = function(pat, self) {
 
     if (polarity %in% "positive") {
       adduct = "[M+H]+"
-      adduct_val = -1.0073
+      adduct_val = -1.007276
     }
 
     if (polarity %in% "negative") {
       adduct = "[M-H]-"
-      adduct_val = 1.0073
+      adduct_val = 1.007276
     }
 
+    # required as when is set the mz value is neutralized from patRoon
     if (isSet) {
       temp[adduct %in% "[M-H]-", `:=`(
-        mzmin = (mz - 1.0073) - (mz - mzmin),
-        mzmax = (mz - 1.0073) + (mzmax - mz),
-        mz = mz - 1.0073
+        mzmin = (mz - 1.007276) - (mz - mzmin),
+        mzmax = (mz - 1.007276) + (mzmax - mz),
+        mz = mz - 1.007276
       )]
       temp[adduct %in% "[M+H]+", `:=`(
-        mzmin = (mz + 1.0073) - (mz - mzmin),
-        mzmax = (mz + 1.0073) + (mzmax - mz),
-        mz = mz + 1.0073
+        mzmin = (mz + 1.007276) - (mz - mzmin),
+        mzmax = (mz + 1.007276) + (mzmax - mz),
+        mz = mz + 1.007276
       )]
     }
 
@@ -4468,9 +4499,14 @@ build_features_table_from_patRoon = function(pat, self) {
     if (!"filtered" %in% colnames(temp)) temp$filtered = FALSE
     if (!"filter" %in% colnames(temp)) temp$filter = NA_character_
 
-    setnames(temp, c("ID", "ret", "retmin", "retmax"),
-             c("id", "rt", "rtmin", "rtmax"), skip_absent = TRUE)
+    setnames(temp,
+      c("ID", "ret", "retmin", "retmax"),
+      c("id", "rt", "rtmin", "rtmax"),
+      skip_absent = TRUE
+    )
 
+    # when grouping features are removed from grouping conditions in patRoon
+    # therefore, old features are retained and tagged with filter "grouping"
     temp_org = self$get_features(x)
     if (nrow(temp_org) > 0) {
       temp_org$analysis = NULL
@@ -4486,27 +4522,18 @@ build_features_table_from_patRoon = function(pat, self) {
       temp$filtered[is.na(temp$group)] = TRUE
     }
 
-    dppm = round((temp$mzmax - temp$mzmin) / temp$mzmin * 1E6, digits = 0)
-    drt = round(temp$rtmax - temp$rtmin, digits = 0)
+    dppm = round((temp$mzmax - temp$mzmin) / temp$mzmin * 1E6, 0)
+    drt = round(temp$rtmax - temp$rtmin, 0)
 
     temp = temp[order(temp$mz), ]
     temp = temp[order(temp$rt), ]
     temp = temp[order(temp$filtered), ]
     temp$index = seq_len(nrow(temp))
 
-    temp = select(
-      temp,
-      id,
-      index,
-      mz, rt,
-      intensity, area,
-      mzmin, mzmax,
-      rtmin, rtmax,
-      adduct, mass,
-      is_filled,
-      filtered,
-      filter,
-      everything()
+    setcolorder(temp,
+      c("id", "index", "rt", "mz", "intensity", "area",
+        "rtmin", "rtmax", "mzmin", "mzmax", "adduct", "mass",
+        "is_filled", "filtered", "filter")
     )
 
     temp$id = paste0(
@@ -4522,10 +4549,18 @@ build_features_table_from_patRoon = function(pat, self) {
       temp$index
     )
 
+    temp$rt = round(temp$rt, 3)
+    temp$rtmin = round(temp$rtmin, 3)
+    temp$rtmax = round(temp$rtmax, 3)
+
+    temp$mz = round(temp$mz, 5)
+    temp$mzmin = round(temp$mzmin, 5)
+    temp$mzmax = round(temp$mzmax, 5)
+
     return(temp)
   }, extra = extra, features = features, self = self, isSet = isSet)
 
-  names(features) = self$get_analysis_names()
+  names(features) = analyses
 
   cat("Done! \n")
 
@@ -4547,25 +4582,24 @@ build_feature_groups_table_from_patRoon = function(pat, features, self) {
   fgroups = patRoon::as.data.table(pat, average = FALSE)
   setnames(fgroups, "ret", "rt")
 
-  fts = features
+  fts = copy(features)
   fts = rbindlist(fts, idcol = "analysis")
-
-  fts_ana_index = setNames(data.frame(
-    matrix(ncol = length(features),
-    nrow = 1)), names(features))
-  fts_ana_index[1, ] = 0
 
   index = lapply(fgroups$group, function(g, fts) {
     return(which(fts$group == g))
   }, fts = fts)
 
-  fgroups$dppm = vapply(index, function(x) {
-    return(
-      round(max((fts$mzmax[x] - fts$mzmin[x]) / fts$mz[x] * 1E6), digits = 1))
-  }, 0)
+  fgroups$rt = vapply(index, function(x) {
+    return(round(mean(fts$rt[x]), 3))}, 0)
 
   fgroups$drt = vapply(index, function(x) {
-    return(round(max(fts$rtmax[x] - fts$rtmin[x]), digits = 0))}, 0)
+    return(round(max(fts$rtmax[x]) - min(fts$rtmin[x]), 0))}, 0)
+
+  fgroups$dppm = vapply(index, function(x) {
+    max_ppm = max((fts$mzmax[x] - fts$mz[x]) / fts$mz[x] * 1E6)
+    min_ppm = min((fts$mzmin[x] - fts$mz[x]) / fts$mz[x] * 1E6)
+    return(round(max_ppm - min_ppm, 0))
+  }, 0)
 
   fgroups$index = as.numeric(sub(".*_", "", fgroups$group))
 
@@ -4580,30 +4614,35 @@ build_feature_groups_table_from_patRoon = function(pat, features, self) {
   }
 
   if (TRUE %in% grepl("Set", is(pat))) {
-    isSet = TRUE
-    annot = pat@annotations
+
     setnames(fgroups, "mz", "mass", skip_absent = TRUE)
     fgroups$neutralMass = NULL
 
+    fgroups$mass = vapply(index, function(x) {
+      return(round(mean(fts$mass[x]), 6))}, 0)
+
     new_id = paste0(
       "m",
-      round(fgroups$mass, digits = 3),
+      round(fgroups$mass, 3),
       "_d",
       fgroups$dppm,
       "_rt",
-      round(fgroups$rt, digits = 0),
+      round(fgroups$rt, 0),
       "_t",
-      fgroups$drt,
+      round(fgroups$drt, 0),
       "_g",
       fgroups$index
     )
 
   } else {
 
+    fgroups$mz = vapply(index, function(x) {
+      return(round(mean(fts$mz[x]), 6))}, 0)
+
     adduct = unique(fts$adduct)
     fgroups$adduct = adduct
-    if (adduct %in% "[M+H]+")fgroups$mass = fgroups$mz - 1.0073
-    if (adduct %in% "[M-H]-") fgroups$mass = fgroups$mz + 1.0073
+    if (adduct %in% "[M+H]+") fgroups$mass = fgroups$mz - 1.007276
+    if (adduct %in% "[M-H]-") fgroups$mass = fgroups$mz + 1.007276
 
     new_id = paste0(
       "mz",
@@ -4619,12 +4658,6 @@ build_feature_groups_table_from_patRoon = function(pat, features, self) {
     )
   }
 
-  fgroups$features = lapply(index, function(x, fts, fts_ana_index) {
-    temp = copy(fts_ana_index)
-    temp[1, colnames(temp) %in% fts$analysis[x]] = fts$index[x]
-    return(temp)
-  }, fts = fts, fts_ana_index = fts_ana_index)
-
   names(new_id) = fgroups$group
   fgroups$group = new_id
 
@@ -4634,7 +4667,97 @@ build_feature_groups_table_from_patRoon = function(pat, features, self) {
   }, new_id = new_id)
 
   cat("Done! \n")
-  return(list("features" = features_new_id, "fgroups" = fgroups))
+
+  return(list("features" = features_new_id, "groups" = fgroups))
+}
+
+update_subset_features_and_groups = function(newGroups, newFeatures) {
+
+  fts = rbindlist(newFeatures, idcol = "analysis")
+
+  fgs_remaining = unique(unlist(fts$group))
+  if (!is.null(fgs_remaining)) {
+    newGroups = newGroups[newGroups$group %in% fgs_remaining, ]
+  }
+
+  index = lapply(newGroups$group, function(g, fts) {
+    return(which(fts$group == g))
+  }, fts = fts)
+
+  newGroups$rt = vapply(index, function(x) {
+    return(round(mean(fts$rt[x]), digits = 3))}, 0)
+
+  newGroups$mass = vapply(index, function(x) {
+    return(round(mean(fts$mass[x]), digits = 6))}, 0)
+
+  newGroups$adduct = vapply(index, function(x) {
+    return(paste(unique(fts$adduct[x]), collapse = "; "))}, NA_character_)
+
+  newGroups$drt = vapply(index, function(x) {
+    return(round(max(fts$rtmax[x]) - min(fts$rtmin[x]), 0))}, 0)
+
+  newGroups$dppm = vapply(index, function(x) {
+    max_ppm = max((fts$mzmax[x] - fts$mz[x]) / fts$mz[x] * 1E6)
+    min_ppm = min((fts$mzmin[x] - fts$mz[x]) / fts$mz[x] * 1E6)
+    return(round(max_ppm - min_ppm, 0))
+  }, 0)
+
+  newGroups$index = seq_len(length(newGroups$group))
+
+  if ("is_filled" %in% colnames(fts)) {
+    newGroups$hasFilled = vapply(index, function(x) {
+      TRUE %in% fts$is_filled[x]
+    } , FALSE)
+  } else newGroups$hasFilled = FALSE
+
+  if (!"filtered" %in% colnames(newGroups)) {
+    newGroups$filtered = FALSE
+    newGroups$filter = NA_character_
+  }
+
+  if (!"mz" %in% colnames(newGroups)) {
+
+    new_id = paste0(
+      "m",
+      round(newGroups$mass, digits = 3),
+      "_d",
+      newGroups$dppm,
+      "_rt",
+      round(newGroups$rt, digits = 0),
+      "_t",
+      newGroups$drt,
+      "_g",
+      newGroups$index
+    )
+
+  } else {
+
+    newGroups$mz = vapply(index, function(x) {
+      return(round(mean(fts$mz[x]), digits = 6))}, 0)
+
+    new_id = paste0(
+      "mz",
+      round(newGroups$mz, digits = 3),
+      "_d",
+      newGroups$dppm,
+      "_rt",
+      round(newGroups$rt, digits = 0),
+      "_t",
+      newGroups$drt,
+      "_g",
+      newGroups$index
+    )
+  }
+
+  names(new_id) = newGroups$group
+  newGroups$group = new_id
+
+  newFeatures_new_id = lapply(newFeatures, function(x, new_id) {
+    x$group = new_id[x$group]
+    return(x)
+  }, new_id = new_id)
+
+  return(list("features" = newFeatures_new_id, "groups" = newGroups))
 }
 
 #' extract_time_alignment

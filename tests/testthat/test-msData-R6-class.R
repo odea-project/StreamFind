@@ -22,12 +22,12 @@ carbamazepin_d10 <- db[name %in% "Carbamazepin-d10", .(name, mass, rt)]
 #Diuron-d6 is ionized in both positive and negative modes
 diuron_d6 <- db[name %in% "Diuron-d6", .(name, mass, rt)]
 
-carb_pos <- carbamazepin_d10$mass + 1.0073
-carb <- carbamazepin_d10$mass + 1.0073
+carb_pos <- carbamazepin_d10$mass + 1.007276
+carb <- carbamazepin_d10$mass + 1.007276
 carb_rt <- carbamazepin_d10$rt
 
-diu_pos <- diuron_d6$mass + 1.0073
-diu <- diuron_d6$mass + 1.0073
+diu_pos <- diuron_d6$mass + 1.007276
+diu <- diuron_d6$mass + 1.007276
 diu_rt <- diuron_d6$rt
 
 sec_dev <- 30
@@ -351,11 +351,53 @@ file.remove("settings.json")
 
 # Work Lines -----
 
-ms <- msData$new(files[c(4:6, 10:12)], runParallel = FALSE)
+ms <- msData$new(files, runParallel = FALSE)
+rpl <- c(rep("blank_neg", 3),rep("blank_pos", 3),rep("influent_neg", 3),rep("influent_pos", 3))
+blk <- c(rep("blank_neg", 3),rep("blank_pos", 3),rep("blank_neg", 3),rep("blank_pos", 3))
+ms$add_replicate_names(rpl)
+ms$add_blank_names(blk)
+settings_ff <- list(
+  "call" = "find_features",
+  "algorithm" = "xcms3",
+  "parameters" = list(xcms::CentWaveParam(
+    ppm = 12, peakwidth = c(5, 40),
+    snthresh = 10, prefilter = c(4, 800),
+    mzCenterFun = "mean", integrate = 2,
+    mzdiff = -0.0001, fitgauss = TRUE,
+    noise = 250, verboseColumns = TRUE,
+    firstBaselineCheck = FALSE,
+    extendLengthMSW = TRUE
+  ))
+)
+settings_gf <- list(
+  "call" = "group_features",
+  "algorithm" = "xcms3",
+  "parameters" = list(
+    groupParam = xcms::PeakDensityParam(
+      sampleGroups = "holder",
+      bw = 5,
+      minFraction = 0.5,
+      minSamples = 1,
+      binSize = 0.008,
+      maxFeatures = 100
+    )
+  )
+)
+# ms <- msData$new(files[c(4:6, 10:12)], runParallel = FALSE)
 ms$find_features(settings = settings_ff)
-ms$group_features(settings = settings_gf_alignment)
+ms$group_features(settings = settings_gf)
+# ms$group_features(settings = settings_gf_alignment)
+
+
+ms4 = ms$subset_analyses(analyses = 4:6)
+
+ms$remove_analyses(1:2)
+
+
+
 self = ms$clone(deep = T)
 
+self$check_correspondence()
 
 
 

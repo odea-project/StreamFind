@@ -10,13 +10,13 @@ A description of the R6 class.
 The details.
 }
 \note{
-The \linkS4class{settings} call must be set to "find_features".
-
-The \linkS4class{settings} call must be set to "group_features".
-
 Name, path and date cannot be removed.
 
 Unique feature groups from the removed analyses are also removed.
+
+The \linkS4class{settings} call must be set to "find_features".
+
+The \linkS4class{settings} call must be set to "group_features".
 
 When saved as json, the \code{data.table} is split by groups as
 list and the \code{data.table} of each group is converted to a list.
@@ -74,14 +74,9 @@ list and the \code{data.table} of each group is converted to a list.
 \item \href{#method-msData-add_features}{\code{msData$add_features()}}
 \item \href{#method-msData-add_groups}{\code{msData$add_groups()}}
 \item \href{#method-msData-add_alignment}{\code{msData$add_alignment()}}
-\item \href{#method-msData-import_header}{\code{msData$import_header()}}
-\item \href{#method-msData-import_settings}{\code{msData$import_settings()}}
-\item \href{#method-msData-import_analyses}{\code{msData$import_analyses()}}
-\item \href{#method-msData-import_groups}{\code{msData$import_groups()}}
-\item \href{#method-msData-load_spectra}{\code{msData$load_spectra()}}
-\item \href{#method-msData-load_chromatograms}{\code{msData$load_chromatograms()}}
-\item \href{#method-msData-find_features}{\code{msData$find_features()}}
-\item \href{#method-msData-group_features}{\code{msData$group_features()}}
+\item \href{#method-msData-remove_header}{\code{msData$remove_header()}}
+\item \href{#method-msData-remove_analyses}{\code{msData$remove_analyses()}}
+\item \href{#method-msData-remove_groups}{\code{msData$remove_groups()}}
 \item \href{#method-msData-has_analyses}{\code{msData$has_analyses()}}
 \item \href{#method-msData-has_loaded_spectra}{\code{msData$has_loaded_spectra()}}
 \item \href{#method-msData-has_loaded_chromatograms}{\code{msData$has_loaded_chromatograms()}}
@@ -105,10 +100,11 @@ list and the \code{data.table} of each group is converted to a list.
 \item \href{#method-msData-plot_groups_ms1}{\code{msData$plot_groups_ms1()}}
 \item \href{#method-msData-plot_groups_ms2}{\code{msData$plot_groups_ms2()}}
 \item \href{#method-msData-plot_groups_overview}{\code{msData$plot_groups_overview()}}
+\item \href{#method-msData-load_spectra}{\code{msData$load_spectra()}}
+\item \href{#method-msData-load_chromatograms}{\code{msData$load_chromatograms()}}
+\item \href{#method-msData-find_features}{\code{msData$find_features()}}
+\item \href{#method-msData-group_features}{\code{msData$group_features()}}
 \item \href{#method-msData-as_features_patRoon}{\code{msData$as_features_patRoon()}}
-\item \href{#method-msData-remove_header}{\code{msData$remove_header()}}
-\item \href{#method-msData-remove_analyses}{\code{msData$remove_analyses()}}
-\item \href{#method-msData-remove_groups}{\code{msData$remove_groups()}}
 \item \href{#method-msData-subset_analyses}{\code{msData$subset_analyses()}}
 \item \href{#method-msData-check_analyses_argument}{\code{msData$check_analyses_argument()}}
 \item \href{#method-msData-check_correspondence}{\code{msData$check_correspondence()}}
@@ -117,6 +113,10 @@ list and the \code{data.table} of each group is converted to a list.
 \item \href{#method-msData-save_analyses}{\code{msData$save_analyses()}}
 \item \href{#method-msData-save_groups}{\code{msData$save_groups()}}
 \item \href{#method-msData-save}{\code{msData$save()}}
+\item \href{#method-msData-import_header}{\code{msData$import_header()}}
+\item \href{#method-msData-import_settings}{\code{msData$import_settings()}}
+\item \href{#method-msData-import_analyses}{\code{msData$import_analyses()}}
+\item \href{#method-msData-import_groups}{\code{msData$import_groups()}}
 \item \href{#method-msData-processing_function_calls}{\code{msData$processing_function_calls()}}
 \item \href{#method-msData-clone}{\code{msData$clone()}}
 }
@@ -1106,13 +1106,15 @@ A data.frame/data.table.
 \subsection{Method \code{add_header()}}{
 Method to add header information to the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$add_header(header = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$add_header(header = NULL, verbose = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{header}}{X.}
+
+\item{\code{verbose}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1146,13 +1148,15 @@ Invisible.
 \subsection{Method \code{add_analyses()}}{
 Method to add analyses to the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$add_analyses(analyses)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$add_analyses(analyses, verbose = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{analyses}}{A list of analyses.}
+
+\item{\code{verbose}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1230,13 +1234,15 @@ Invisible.
 \subsection{Method \code{add_groups()}}{
 Method to add feature groups in the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$add_groups(groups = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$add_groups(groups = NULL, verbose = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{groups}}{data.table.}
+
+\item{\code{verbose}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1265,21 +1271,19 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-import_header"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-import_header}{}}}
-\subsection{Method \code{import_header()}}{
-Method to import header to the \code{msData} object from a \emph{rds} or
-\emph{json} file.
+\if{html}{\out{<a id="method-msData-remove_header"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-remove_header}{}}}
+\subsection{Method \code{remove_header()}}{
+Removes header entries from the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$import_header(file = NA_character_, list = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$remove_header(value = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{X.}
-
-\item{\code{list}}{X.}
+\item{\code{value}}{A character vector with the names of the header entries
+to be removed.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1288,19 +1292,19 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-import_settings"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-import_settings}{}}}
-\subsection{Method \code{import_settings()}}{
-Method to import processing settings to the \code{msData} object from a
-\emph{rds} or \emph{json} file.
+\if{html}{\out{<a id="method-msData-remove_analyses"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-remove_analyses}{}}}
+\subsection{Method \code{remove_analyses()}}{
+Removes analyses from the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$import_settings(file = NA_character_)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$remove_analyses(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{X.}
+\item{\code{analyses}}{A character vector with the names or indices of the
+analyses to be removed.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1309,154 +1313,16 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-import_analyses"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-import_analyses}{}}}
-\subsection{Method \code{import_analyses()}}{
-Method to import analyses to the \code{msData} object from a \emph{rds} or
-\emph{json} file.
+\if{html}{\out{<a id="method-msData-remove_groups"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-remove_groups}{}}}
+\subsection{Method \code{remove_groups()}}{
+Remove feature groups from the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$import_analyses(file = NA_character_)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{file}}{X.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-import_groups"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-import_groups}{}}}
-\subsection{Method \code{import_groups()}}{
-Method to import feature groups to the \code{msData} object from a
-\emph{rds} or \emph{json} file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$import_groups(file = NA_character_)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{file}}{X.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-load_spectra"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-load_spectra}{}}}
-\subsection{Method \code{load_spectra()}}{
-Method to load all spectra from analyses to the \code{msData} object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$load_spectra(runParallel = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{runParallel}}{X.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-load_chromatograms"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-load_chromatograms}{}}}
-\subsection{Method \code{load_chromatograms()}}{
-Method to load all chromatograms from analyses to the \code{msData} object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$load_chromatograms(runParallel = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{runParallel}}{X.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-find_features"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-find_features}{}}}
-\subsection{Method \code{find_features()}}{
-Finds features (i.e., chromatographic peaks) from MS data
-in an \code{msData} class object. The function uses the \pkg{patRoon} package
-for peak finding, enabling the use of several algorithms (see details).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$find_features(settings = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{settings}}{A \linkS4class{settings} object. When not given,
-\emph{find_features} \linkS4class{settings} will be searched within
-the \code{msData} object.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-See the \link[patRoon]{findFeatures} function from the
-\pkg{patRoon} package or the
-\href{https://rickhelmus.github.io/patRoon/reference/findFeatures.html}{reference guide} for more information. The following algorithms are
-available via \pkg{patRoon}: "xcms3", "xcms", "openms", "envipick",
-"sirius", "kpic2", "safd". The algorithm slot in the
-\linkS4class{settings} should be one of the described. The parameters
-are given as a list and should match with algorithm requirements.
-Certain algorithms also require defined MS file formats and data in
-profile mode.
+\if{html}{\out{<div class="r">}}\preformatted{msData$remove_groups()}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{
-X.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-group_features"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-group_features}{}}}
-\subsection{Method \code{group_features()}}{
-Groups and aligns features across analyses in the \code{msData}
-object. The function uses the \pkg{patRoon} package for grouping
-features, enabling the use of several algorithms (see details).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$group_features(settings = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{settings}}{A \linkS4class{settings} object. When not given,
-\emph{group_features} \linkS4class{settings} will be searched within
-the \code{msData} object.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-See the \link[patRoon]{groupFeatures} function from the
-\pkg{patRoon} package or the
-\href{https://rickhelmus.github.io/patRoon/reference/groupFeatures.html}{reference guide} for more information. The following algorithms are
-possible: "xcms3", "xcms", "openms" or "kpic2". The algorithm slot in the
-\linkS4class{settings} should be one of the described. The parameters
-are given as a list and should match with algorithm requirements.
-}
-
-\subsection{Returns}{
-X.
+Invisible.
 }
 }
 \if{html}{\out{<hr>}}
@@ -2511,6 +2377,115 @@ A plot.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-load_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-load_spectra}{}}}
+\subsection{Method \code{load_spectra()}}{
+Method to load all spectra from analyses to the \code{msData} object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$load_spectra(runParallel = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{runParallel}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-load_chromatograms"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-load_chromatograms}{}}}
+\subsection{Method \code{load_chromatograms()}}{
+Method to load all chromatograms from analyses to the \code{msData} object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$load_chromatograms(runParallel = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{runParallel}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-find_features"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-find_features}{}}}
+\subsection{Method \code{find_features()}}{
+Finds features (i.e., chromatographic peaks) from MS data
+in an \code{msData} class object. The function uses the \pkg{patRoon} package
+for peak finding, enabling the use of several algorithms (see details).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$find_features(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A \linkS4class{settings} object. When not given,
+\emph{find_features} \linkS4class{settings} will be searched within
+the \code{msData} object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+See the \link[patRoon]{findFeatures} function from the
+\pkg{patRoon} package or the
+\href{https://rickhelmus.github.io/patRoon/reference/findFeatures.html}{reference guide} for more information. The following algorithms are
+available via \pkg{patRoon}: "xcms3", "xcms", "openms", "envipick",
+"sirius", "kpic2", "safd". The algorithm slot in the
+\linkS4class{settings} should be one of the described. The parameters
+are given as a list and should match with algorithm requirements.
+Certain algorithms also require defined MS file formats and data in
+profile mode.
+}
+
+\subsection{Returns}{
+X.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-group_features"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-group_features}{}}}
+\subsection{Method \code{group_features()}}{
+Groups and aligns features across analyses in the \code{msData}
+object. The function uses the \pkg{patRoon} package for grouping
+features, enabling the use of several algorithms (see details).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$group_features(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A \linkS4class{settings} object. When not given,
+\emph{group_features} \linkS4class{settings} will be searched within
+the \code{msData} object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+See the \link[patRoon]{groupFeatures} function from the
+\pkg{patRoon} package or the
+\href{https://rickhelmus.github.io/patRoon/reference/groupFeatures.html}{reference guide} for more information. The following algorithms are
+possible: "xcms3", "xcms", "openms" or "kpic2". The algorithm slot in the
+\linkS4class{settings} should be one of the described. The parameters
+are given as a list and should match with algorithm requirements.
+}
+
+\subsection{Returns}{
+X.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-msData-as_features_patRoon"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-as_features_patRoon}{}}}
 \subsection{Method \code{as_features_patRoon()}}{
@@ -2525,67 +2500,12 @@ A \linkS4class{features} object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-remove_header"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-remove_header}{}}}
-\subsection{Method \code{remove_header()}}{
-Removes header entries from the \code{msData} object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$remove_header(value = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A character vector with the names of the header entries
-to be removed.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-remove_analyses"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-remove_analyses}{}}}
-\subsection{Method \code{remove_analyses()}}{
-Removes analyses from the \code{msData} object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$remove_analyses(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A character vector with the names or indices of the
-analyses to be removed.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-remove_groups"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-remove_groups}{}}}
-\subsection{Method \code{remove_groups()}}{
-Remove feature groups from the \code{msData} object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$remove_groups()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-msData-subset_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-subset_analyses}{}}}
 \subsection{Method \code{subset_analyses()}}{
 Subsets an \code{msData} object on analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$subset_analyses(analyses)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$subset_analyses(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -2625,7 +2545,8 @@ A valid character vector with analyses names of \code{NULL}.
 \if{html}{\out{<a id="method-msData-check_correspondence"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-check_correspondence}{}}}
 \subsection{Method \code{check_correspondence()}}{
-Checks the correspondence of features within groups in the \code{msData} object.
+Checks the correspondence of features within feature groups in
+the \code{msData} object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$check_correspondence()}\if{html}{\out{</div>}}
 }
@@ -2697,12 +2618,19 @@ Saves the settings list as the defined \code{format} in
 \subsection{Method \code{save_analyses()}}{
 Method to save the list of analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$save_analyses(format = "json", name = "analyses", path = getwd())}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$save_analyses(
+  analyses = NULL,
+  format = "json",
+  name = "analyses",
+  path = getwd()
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{analyses}}{X.}
+
 \item{\code{format}}{X.}
 
 \item{\code{name}}{X.}
@@ -2765,6 +2693,92 @@ groups and alignment) of the msData object.
 \subsection{Returns}{
 Saves the private fields as the defined \code{format} in
 \code{path}.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-import_header"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-import_header}{}}}
+\subsection{Method \code{import_header()}}{
+Method to import header to the \code{msData} object from a \emph{rds} or
+\emph{json} file.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$import_header(file = NA_character_, list = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file}}{X.}
+
+\item{\code{list}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-import_settings"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-import_settings}{}}}
+\subsection{Method \code{import_settings()}}{
+Method to import processing settings to the \code{msData} object from a
+\emph{rds} or \emph{json} file.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$import_settings(file = NA_character_)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-import_analyses"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-import_analyses}{}}}
+\subsection{Method \code{import_analyses()}}{
+Method to import analyses to the \code{msData} object from a \emph{rds} or
+\emph{json} file.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$import_analyses(file = NA_character_)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-import_groups"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-import_groups}{}}}
+\subsection{Method \code{import_groups()}}{
+Method to import feature groups to the \code{msData} object from a
+\emph{rds} or \emph{json} file.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$import_groups(file = NA_character_)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
 }
 }
 \if{html}{\out{<hr>}}
