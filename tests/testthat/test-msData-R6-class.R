@@ -1,4 +1,3 @@
-
 library(streamFind)
 library(testthat)
 
@@ -16,10 +15,10 @@ files_mrm <- all_files[grepl("mrm", all_files)]
 files <- all_files[grepl("influent|blank", all_files)]
 files2 <- all_files[grepl("o3sw", all_files)]
 
-#Carbamazepin-d10 is ionized only in positive mode
+# Carbamazepin-d10 is ionized only in positive mode
 carbamazepin_d10 <- db[name %in% "Carbamazepin-d10", .(name, mass, rt)]
 
-#Diuron-d6 is ionized in both positive and negative modes
+# Diuron-d6 is ionized in both positive and negative modes
 diuron_d6 <- db[name %in% "Diuron-d6", .(name, mass, rt)]
 
 carb_pos <- carbamazepin_d10$mass + 1.007276
@@ -33,8 +32,8 @@ diu_rt <- diuron_d6$rt
 sec_dev <- 30
 ppm_dev <- 10
 
-mz <- data.frame(id = c("tg1", "tg2"),mz = c(carb, diu),rt = c(carb_rt, diu_rt))
-targets <- makeMsTargets(mz = mz, ppm = ppm_dev, sec = sec_dev)
+mz <- data.frame(id = c("tg1", "tg2"), mz = c(carb, diu), rt = c(carb_rt, diu_rt))
+targets <- make_ms_targets(mz = mz, ppm = ppm_dev, sec = sec_dev)
 
 # msData class tests -----
 
@@ -60,8 +59,10 @@ test_that("getter for features with empty object", {
 
 
 test_that("getter for names and filePaths", {
-  expect_equal(unname(ms$get_analysis_names()),
-    gsub(".mzML|.mzXML", "", basename(files)))
+  expect_equal(
+    unname(ms$get_analysis_names()),
+    gsub(".mzML|.mzXML", "", basename(files))
+  )
   expect_equal(unname(ms$get_file_paths()), files)
   expect_s3_class(ms$get_overview(), "data.frame")
 })
@@ -103,7 +104,7 @@ test_that("add analyses", {
   expect_equal(ms2$get_number_analyses(), 18)
 })
 
-ms3 = ms2$subset_analyses(4:6)
+ms3 <- ms2$subset_analyses(4:6)
 
 test_that("subset analyses", {
   expect_equal(ms3$get_number_analyses(), 3)
@@ -117,9 +118,11 @@ test_that("loading spectra", {
 
 test_that("getting spectra for targets", {
   expect_s3_class(
-    ms$get_spectra(analyses = 1, mz = targets, level = 1),"data.frame")
+    ms$get_spectra(analyses = 1, mz = targets, level = 1), "data.frame"
+  )
   expect_s3_class(
-    ms3$get_spectra(analyses = 1, mz = targets, level = c(1, 2)),"data.frame")
+    ms3$get_spectra(analyses = 1, mz = targets, level = c(1, 2)), "data.frame"
+  )
   expect_true("id" %in%
     colnames(ms3$get_spectra(analyses = 1, mz = targets, level = 1)))
   expect_true(2 %in%
@@ -130,13 +133,13 @@ ms_mrm <- msData$new(files = files_mrm)
 ms_mrm$load_chromatograms()
 test_that("get chromatograms", {
   expect_true(all(ms_mrm$has_loaded_chromatograms()))
-  expect_s3_class(ms_mrm$get_chromatograms(analyses = 1),"data.frame")
+  expect_s3_class(ms_mrm$get_chromatograms(analyses = 1), "data.frame")
 })
 
 test_that("get tic and bpc", {
-  expect_s3_class(ms$get_tic(2),"data.frame")
+  expect_s3_class(ms$get_tic(2), "data.frame")
   expect_true("intensity" %in% colnames(ms$get_tic(2:3)))
-  expect_s3_class(ms$get_bpc(2),"data.frame")
+  expect_s3_class(ms$get_bpc(2), "data.frame")
   expect_true("mz" %in% colnames(ms$get_bpc(2:3)))
 })
 
@@ -144,9 +147,11 @@ test_that("get EIC, MS1 and MS2 spectra", {
   expect_s3_class(ms$get_eic(4, mz = targets), "data.table")
   expect_true("rt" %in% colnames(ms$get_eic(4, mz = targets)))
   expect_s3_class(ms$get_ms1(4,
-    mz = targets, minIntensity = 10000), "data.table")
+    mz = targets, minIntensity = 10000
+  ), "data.table")
   expect_true("mz" %in% colnames(ms$get_ms1(4,
-    mz = targets, minIntensity = 10000)))
+    mz = targets, minIntensity = 10000
+  )))
   expect_s3_class(ms$get_ms2(4, mz = targets), "data.table")
   expect_true("isPre" %in% colnames(ms$get_ms2(4, mz = targets)))
 })
@@ -182,11 +187,11 @@ ms$find_features(settings = settings_ff)
 
 test_that("find and get features", {
   expect_s3_class(ms$get_features(mz = targets), "data.table")
-  expect_true("mz" %in% colnames(ms$get_features(mz = targets[1,])))
+  expect_true("mz" %in% colnames(ms$get_features(mz = targets[1, ])))
   expect_true(all(ms$has_features()))
 })
 
-ftar = ms$get_features(analyses = 4, mz = targets)
+ftar <- ms$get_features(analyses = 4, mz = targets)
 
 test_that("get MS1 and MS2 for features", {
   expect_s3_class(ms$get_features_ms1(id = ftar$id), "data.frame")
@@ -224,7 +229,7 @@ ms$group_features(settings = settings_gf)
 
 test_that("group features", {
   expect_s3_class(ms$get_groups(mz = targets), "data.table")
-  expect_true("group" %in% colnames(ms$get_groups(mz = targets[1,])))
+  expect_true("group" %in% colnames(ms$get_groups(mz = targets[1, ])))
   expect_true(all(ms$has_groups()))
 })
 
@@ -250,24 +255,27 @@ settings_gf_alignment <- list(
       minFraction = 0.6,
       minSamples = 2,
       binSize = 0.008,
-      maxFeatures = 100),
+      maxFeatures = 100
+    ),
     preGroupParam = xcms::PeakDensityParam(
       sampleGroups = "holder",
       bw = 5,
       minFraction = 1,
       minSamples = 3,
       binSize = 0.008,
-      maxFeatures = 100),
+      maxFeatures = 100
+    ),
     retAlignParam = xcms::PeakGroupsParam(
       minFraction = 1,
       extraPeaks = 0,
       smooth = "loess",
       span = 0.3,
-      family = "gaussian")
+      family = "gaussian"
+    )
   )
 )
 
-ms4 = ms$subset_analyses(analyses = 4:6)
+ms4 <- ms$subset_analyses(analyses = 4:6)
 
 ms4$group_features(settings = settings_gf_alignment)
 
@@ -292,7 +300,7 @@ test_that("save private fields as json", {
   expect_true(file.exists("msData.json"))
 })
 
-ms5 = msData$new()
+ms5 <- msData$new()
 
 test_that("import header and settings from json file", {
   expect_invisible(ms5$import_header("header.json"))
@@ -320,7 +328,7 @@ test_that("remove analyses", {
   expect_lt(nrow(ms5$get_groups()), nrow(ms$get_groups()))
 })
 
-org_g_number = nrow(ms5$get_groups())
+org_g_number <- nrow(ms5$get_groups())
 ms5$remove_groups("not_a_group_name")
 
 test_that("remove 0 groups (wrong name)", {
@@ -426,20 +434,23 @@ settings_gf_alignment <- list(
       minFraction = 0.6,
       minSamples = 2,
       binSize = 0.008,
-      maxFeatures = 100),
+      maxFeatures = 100
+    ),
     preGroupParam = xcms::PeakDensityParam(
       sampleGroups = "holder",
       bw = 5,
       minFraction = 1,
       minSamples = 3,
       binSize = 0.008,
-      maxFeatures = 100),
+      maxFeatures = 100
+    ),
     retAlignParam = xcms::PeakGroupsParam(
       minFraction = 1,
       extraPeaks = 0,
       smooth = "loess",
       span = 0.3,
-      family = "gaussian")
+      family = "gaussian"
+    )
   )
 )
 
@@ -447,19 +458,19 @@ ms <- msData$new(files[c(4:6, 10:12)], runParallel = FALSE)
 ms$find_features(settings = settings_ff)
 # ms$group_features(settings = settings_gf)
 ms$group_features(settings = settings_gf_alignment)
-self = ms$clone(deep = T)
+self <- ms$clone(deep = T)
 
 # file.remove(c("header.json", "settings.json",
 #   "analyses.json", "groups.json", "msData.json"))
 
 
 
-ms2 = ms$get_groups_ms2(runParallel = TRUE, groupBy = "replicates")
+ms2 <- ms$get_groups_ms2(runParallel = TRUE, groupBy = "replicates")
 
 
 
 
-test = ms2[ms2$group %in% "mz200.202_d7_rt1325_t28_g4", ]
+test <- ms2[ms2$group %in% "mz200.202_d7_rt1325_t28_g4", ]
 
 correlate_analysis_spectra(test, byReplicates = TRUE, minIntensity = 250)
 plot_ms2_interactive(test, colorBy = "replicates")
@@ -539,36 +550,40 @@ ms$get_groups()
 
 
 
-# makeMsTargets test -----
+# make_ms_targets test -----
 
-#case 1
+# case 1
 mz1 <- c(carb_pos, diu_pos)
 rt1 <- c(carb_rt, diu_rt)
 id1 <- c("target1", "target2")
-targets1 <- makeMsTargets(mz = mz1, rt = rt1, ppm = ppm_dev, sec = sec_dev, id = id1)
+targets1 <- make_ms_targets(mz = mz1, rt = rt1, ppm = ppm_dev, sec = sec_dev, id = id1)
 
-#case 2
+# case 2
 ppm_carb <- ppm_dev / 1E6 * carb_pos
 ppm_diu <- ppm_dev / 1E6 * diu_pos
 
-mz2 <- data.frame(mzmin = c(carb_pos - ppm_carb, diu_pos - ppm_diu),
-                  mzmax = c(carb_pos + ppm_carb, diu_pos + ppm_diu))
+mz2 <- data.frame(
+  mzmin = c(carb_pos - ppm_carb, diu_pos - ppm_diu),
+  mzmax = c(carb_pos + ppm_carb, diu_pos + ppm_diu)
+)
 
-rt2 <- data.frame(rtmin = c(carb_rt - sec_dev, diu_rt - sec_dev),
-                  rtmax = c(carb_rt + sec_dev, diu_rt + sec_dev))
+rt2 <- data.frame(
+  rtmin = c(carb_rt - sec_dev, diu_rt - sec_dev),
+  rtmax = c(carb_rt + sec_dev, diu_rt + sec_dev)
+)
 
-targets2 <- makeMsTargets(mz = mz2, rt = rt2)
+targets2 <- make_ms_targets(mz = mz2, rt = rt2)
 
-#case 3
+# case 3
 mz3 <- data.frame(
   id = c("target1", "target2"),
   mz = c(carb_pos, diu_pos),
   rt = c(carb_rt, diu_rt)
 )
 
-targets3 <- makeMsTargets(mz = mz3, ppm = ppm_dev, sec = sec_dev)
+targets3 <- make_ms_targets(mz = mz3, ppm = ppm_dev, sec = sec_dev)
 
-#case 4
+# case 4
 mz4 <- data.frame(
   id = c("target1", "target2"),
   mzmin = c(carb_pos - ppm_carb, diu_pos - ppm_diu),
@@ -577,10 +592,10 @@ mz4 <- data.frame(
   rtmax = c(carb_rt + sec_dev, diu_rt + sec_dev)
 )
 
-targets4 <- makeMsTargets(mz = mz4)
+targets4 <- make_ms_targets(mz = mz4)
 
-t1 <- rbind(targets1[1, ], targets2[1,], targets3[1, ], targets4[1, ])
-t2 <- rbind(targets1[2, ], targets2[2,], targets3[2, ], targets4[2, ])
+t1 <- rbind(targets1[1, ], targets2[1, ], targets3[1, ], targets4[1, ])
+t2 <- rbind(targets1[2, ], targets2[2, ], targets3[2, ], targets4[2, ])
 
 test_that("targets all equal", {
   expect_true(all(round(apply(t1[, 2:7], 2, sd), digits = 4) == 0))

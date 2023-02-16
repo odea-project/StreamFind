@@ -14,14 +14,17 @@
 #'
 #' @return A `data.frame` with the formats compatible for conversion.
 #'
-check_compatible_ms_formats_for_conversion = function() {
-
-  df_formats = data.frame(
+check_compatible_ms_formats_for_conversion <- function() {
+  df_formats <- data.frame(
     type = c(rep("ms", 11)),
-    vendor = c("agilent", rep("bruker", 5), "sciex", "shimadzu",
-      "thermo scientific", rep("waters",2)),
-    format = c(".d", ".d", ".yep",  ".baf", ".fid", ".tdf",
-      ".wiff", ".lcd", ".RAW", ".RAW", "UNIFI")
+    vendor = c(
+      "agilent", rep("bruker", 5), "sciex", "shimadzu",
+      "thermo scientific", rep("waters", 2)
+    ),
+    format = c(
+      ".d", ".d", ".yep", ".baf", ".fid", ".tdf",
+      ".wiff", ".lcd", ".RAW", ".RAW", "UNIFI"
+    )
   )
 
   return(df_formats)
@@ -67,30 +70,27 @@ check_compatible_ms_formats_for_conversion = function() {
 #' convert_ms_files(file, outfile = "mzML", optList = optList)
 #' }
 #'
-convert_ms_files = function(files = NULL, outputFormat = "mzML",
-                            outputPath = NULL, optList = NULL) {
+convert_ms_files <- function(files = NULL, outputFormat = "mzML",
+                             outputPath = NULL, optList = NULL) {
+  # files = "E:\\02_QC_pos-r001.d"
 
+  files <- gsub("\\\\", "/", files)
 
-  files = "E:\\02_QC_pos-r001.d"
-
-  files = gsub("\\\\", "/", files)
-
-  #check if files are compatible
-  files_check =  lapply(files, function(x, comfor) {
-    temp = comfor[grepl(paste0(".", tools::file_ext(x)), comfor$format, fixed = TRUE), ]
-    temp$file = x
+  # check if files are compatible
+  files_check <- lapply(files, function(x, comfor) {
+    temp <- comfor[grepl(paste0(".", tools::file_ext(x)), comfor$format, fixed = TRUE), ]
+    temp$file <- x
     return(copy(temp))
   }, comfor = check_compatible_ms_formats_for_conversion())
 
-  files_check = rbindlist(files_check)
+  files_check <- rbindlist(files_check)
 
-  files_check = unique(files_check, by = c("format", "file"))
+  files_check <- unique(files_check, by = c("format", "file"))
 
   if (nrow(files_check) > 0) {
+    files_ms <- files_check$file
 
-    files_ms = files_check$file
-
-    outputFormats_pwiz = c(
+    outputFormats_pwiz <- c(
       "mzML", "mzXML", "mz5", "mgf", "text",
       "ms1", "cms1", "ms2", "cms2"
     )
@@ -101,38 +101,36 @@ convert_ms_files = function(files = NULL, outputFormat = "mzML",
     }
 
     # check if MSConvert is installed and configured
-    version = system("msconvert --help", intern = TRUE)
+    version <- system("msconvert --help", intern = TRUE)
     if (!(TRUE %in% grepl("ProteoWizard release:", version))) {
       warning("msConvert from ProteoWizard not found!")
       return()
     }
 
-    version = version[grepl("ProteoWizard release:", version)]
-    version = sub(".*: ", "", version)
-    version = sub(" \\(.*", "", version)
-    version = gsub("\\.", "", version)
+    version <- version[grepl("ProteoWizard release:", version)]
+    version <- sub(".*: ", "", version)
+    version <- sub(" \\(.*", "", version)
+    version <- gsub("\\.", "", version)
 
     lapply(files_ms, function(f) {
-
-      cmd_tx = paste0("msconvert ", f)
+      cmd_tx <- paste0("msconvert ", f)
 
       if (!is.null(outputPath)) {
-        cmd_tx = paste0(cmd_tx, " -o ", outputPath)
+        cmd_tx <- paste0(cmd_tx, " -o ", outputPath)
       } else {
-        cmd_tx = paste0(cmd_tx, " -o ", dirname(f))
+        cmd_tx <- paste0(cmd_tx, " -o ", dirname(f))
       }
 
-      cmd_tx = paste0(cmd_tx, " --", outputFormat)
+      cmd_tx <- paste0(cmd_tx, " --", outputFormat)
 
       if (!is.null(optList)) {
         for (i in seq_len(length(optList))) {
-          cmd_tx = paste0(cmd_tx, " --", names(optList[i]))
-          cmd_tx = paste0(cmd_tx, ' "',optList[[i]], '"')
+          cmd_tx <- paste0(cmd_tx, " --", names(optList[i]))
+          cmd_tx <- paste0(cmd_tx, ' "', optList[[i]], '"')
         }
       }
 
       system(cmd_tx, intern = FALSE)
-
     })
 
     cat("Files converted! \n")
@@ -182,12 +180,11 @@ convert_ms_files = function(files = NULL, outputFormat = "mzML",
 #'
 #' \insertRef{mzr04}{streamFind}
 #'
-trim_ms_files_spectra = function(files, MS1 = TRUE, MS2 = TRUE,
-                                 rtWindow = NULL, mzWindow = NULL,
-                                 mzWindow_ms2 = NULL,
-                                 intensityThreshold = NULL, copyMetadata = TRUE,
-                                 path = NULL, prefix = "trim_") {
-
+trim_ms_files_spectra <- function(files, MS1 = TRUE, MS2 = TRUE,
+                                  rtWindow = NULL, mzWindow = NULL,
+                                  mzWindow_ms2 = NULL,
+                                  intensityThreshold = NULL, copyMetadata = TRUE,
+                                  path = NULL, prefix = "trim_") {
   requireNamespace("mzR")
 
   if (!is.null(rtWindow) & !is.numeric(rtWindow)) {
@@ -209,7 +206,6 @@ trim_ms_files_spectra = function(files, MS1 = TRUE, MS2 = TRUE,
   }
 
   if (!is.null(mzWindow_ms2)) {
-
     if (!is.numeric(mzWindow_ms2)) {
       return(warning("mzWindow_ms2 must be numeric!"))
     }
@@ -220,10 +216,9 @@ trim_ms_files_spectra = function(files, MS1 = TRUE, MS2 = TRUE,
     }
   }
 
-  if (MS2 & is.null(mzWindow_ms2)) mzWindow_ms2 = mzWindow
+  if (MS2 & is.null(mzWindow_ms2)) mzWindow_ms2 <- mzWindow
 
   if (!is.null(intensityThreshold)) {
-
     if (!is.numeric(intensityThreshold)) {
       return(warning("Intensity threshold must be numeric!"))
     }
@@ -233,16 +228,16 @@ trim_ms_files_spectra = function(files, MS1 = TRUE, MS2 = TRUE,
     }
 
     if (length(intensityThreshold) == 2) {
-      intThresMS1 = intensityThreshold[1]
-      intThresMS2 = intensityThreshold[2]
+      intThresMS1 <- intensityThreshold[1]
+      intThresMS2 <- intensityThreshold[2]
     } else {
-      intThresMS1 = intensityThreshold[1]
-      intThresMS2 = intensityThreshold[1]
+      intThresMS1 <- intensityThreshold[1]
+      intThresMS2 <- intensityThreshold[1]
     }
   }
 
   cat("Trimming files... \n")
-  pb = txtProgressBar(
+  pb <- txtProgressBar(
     min = 0,
     max = length(files),
     style = 3,
@@ -251,109 +246,112 @@ trim_ms_files_spectra = function(files, MS1 = TRUE, MS2 = TRUE,
   )
 
   for (f in files) {
-
     if (!file_ext(f) %in% c("mzML", "mzXML")) {
       warning(paste0("File ", basename(f), " not as mzML or mzXML. Skipped!"))
       next
     }
 
-    msf = mzR::openMSfile(f)
-    hd = mzR::header(msf)
+    msf <- mzR::openMSfile(f)
+    hd <- mzR::header(msf)
 
     if (!is.null(rtWindow)) {
-      hd2 = hd[hd$retentionTime >= rtWindow[1] &
-                            hd$retentionTime <= rtWindow[2], ]
+      hd2 <- hd[hd$retentionTime >= rtWindow[1] &
+        hd$retentionTime <= rtWindow[2], ]
     }
 
     if (!is.null(mzWindow) | !is.null(mzWindow_ms2)) {
-
-      spec = mzR::peaks(msf, scans = hd2$seqNum)
+      spec <- mzR::peaks(msf, scans = hd2$seqNum)
 
       for (s in seq_len(length(spec))) {
-        altered = FALSE
+        altered <- FALSE
 
         if (!is.matrix(spec[[s]])) {
-          spec[[s]] = matrix(spec[[s]],
-                              ncol = 2,
-                              dimnames = list(1, c("mz", "intensity")))
+          spec[[s]] <- matrix(spec[[s]],
+            ncol = 2,
+            dimnames = list(1, c("mz", "intensity"))
+          )
         }
 
         if (MS1 & hd2$msLevel[s] == 1 & !is.null(mzWindow)) {
-          altered = TRUE
-          spec[[s]] = spec[[s]][spec[[s]][, 1] >= mzWindow[1] &
-                                   spec[[s]][, 1] <= mzWindow[2], ]
+          altered <- TRUE
+          spec[[s]] <- spec[[s]][spec[[s]][, 1] >= mzWindow[1] &
+            spec[[s]][, 1] <= mzWindow[2], ]
 
           if (!is.matrix(spec[[s]])) {
-            spec[[s]] = matrix(spec[[s]], ncol = 2,
-                                dimnames = list(1, c("mz", "intensity")))
+            spec[[s]] <- matrix(spec[[s]],
+              ncol = 2,
+              dimnames = list(1, c("mz", "intensity"))
+            )
           }
 
           if (!is.null(intensityThreshold)) {
-            spec[[s]] = spec[[s]][spec[[s]][, 2] >= intThresMS1, ]
+            spec[[s]] <- spec[[s]][spec[[s]][, 2] >= intThresMS1, ]
           }
         }
 
         if (MS2 & hd2$msLevel[s] == 2 & !is.null(mzWindow_ms2)) {
-          altered = TRUE
+          altered <- TRUE
 
-          spec[[s]] = spec[[s]][spec[[s]][, 1] >= mzWindow_ms2[1] &
-                                   spec[[s]][, 1] <= mzWindow_ms2[2], ]
+          spec[[s]] <- spec[[s]][spec[[s]][, 1] >= mzWindow_ms2[1] &
+            spec[[s]][, 1] <= mzWindow_ms2[2], ]
 
           if (!is.matrix(spec[[s]])) {
-            spec[[s]] = matrix(spec[[s]], ncol = 2,
-                                dimnames = list(1, c("mz", "intensity")))
+            spec[[s]] <- matrix(spec[[s]],
+              ncol = 2,
+              dimnames = list(1, c("mz", "intensity"))
+            )
           }
 
           if (!is.null(intensityThreshold)) {
-            spec[[s]] = spec[[s]][spec[[s]][, 2] >= intThresMS2, ]
+            spec[[s]] <- spec[[s]][spec[[s]][, 2] >= intThresMS2, ]
           }
         }
 
         # if altered update hd2
         if (altered) {
-
           if (!is.matrix(spec[[s]])) {
-            spec[[s]] = matrix(spec[[s]], ncol = 2,
-                                dimnames = list(1, c("mz", "intensity")))
+            spec[[s]] <- matrix(spec[[s]],
+              ncol = 2,
+              dimnames = list(1, c("mz", "intensity"))
+            )
           }
 
-          hd2$peaksCount[s] = nrow(spec[[s]])
-          hd2$totIonCurrent[s] = sum(spec[[s]][, 2])
+          hd2$peaksCount[s] <- nrow(spec[[s]])
+          hd2$totIonCurrent[s] <- sum(spec[[s]][, 2])
 
           if (nrow(spec[[s]]) > 0) {
-            hd2$basePeakMZ[s] =
+            hd2$basePeakMZ[s] <-
               spec[[s]][spec[[s]][, 2] == max(spec[[s]][, 2]), 1][1]
-            hd2$basePeakIntensity[s] =
+            hd2$basePeakIntensity[s] <-
               spec[[s]][spec[[s]][, 2] == max(spec[[s]][, 2]), 2][1]
-            hd2$lowMZ[s] = min(spec[[s]][, 1])[1]
-            hd2$highMZ[s] = max(spec[[s]][, 1])[1]
-            hd2$scanWindowLowerLimit[s] = min(spec[[s]][, 1])[1]
-            hd2$scanWindowUpperLimit[s] = max(spec[[s]][, 1])[1]
-
+            hd2$lowMZ[s] <- min(spec[[s]][, 1])[1]
+            hd2$highMZ[s] <- max(spec[[s]][, 1])[1]
+            hd2$scanWindowLowerLimit[s] <- min(spec[[s]][, 1])[1]
+            hd2$scanWindowUpperLimit[s] <- max(spec[[s]][, 1])[1]
           } else {
-            hd2$basePeakMZ[s] = 0
-            hd2$basePeakIntensity[s] = 0
-            hd2$lowMZ[s] = 0
-            hd2$highMZ[s] = 0
-            hd2$scanWindowLowerLimit[s] = 0
-            hd2$scanWindowUpperLimit[s] = 0
+            hd2$basePeakMZ[s] <- 0
+            hd2$basePeakIntensity[s] <- 0
+            hd2$lowMZ[s] <- 0
+            hd2$highMZ[s] <- 0
+            hd2$scanWindowLowerLimit[s] <- 0
+            hd2$scanWindowUpperLimit[s] <- 0
           }
         }
       }
     }
 
-    hd2$seqNum = seq_len(nrow(hd2))
-    rownames(hd2) = seq_len(nrow(hd2))
+    hd2$seqNum <- seq_len(nrow(hd2))
+    rownames(hd2) <- seq_len(nrow(hd2))
     mzR::close(msf)
 
 
-    format_tag = "mzml"
+    format_tag <- "mzml"
     if (grepl("XML", f)) {
-      format_tag = "mzxml"
+      format_tag <- "mzxml"
     }
 
-    savePath = dirname(f)
-    if (!is.null(path)) savePath = path
+    savePath <- dirname(f)
+    if (!is.null(path)) savePath <- path
 
     if (copyMetadata) {
       mzR::copyWriteMSData(
@@ -363,7 +361,8 @@ trim_ms_files_spectra = function(files, MS1 = TRUE, MS2 = TRUE,
         header = hd2,
         outformat = format_tag,
         software_processing = unlist(
-          c("mzR", paste0(packageVersion("mzR")), "MS:-1", "Trimmed spectra"))
+          c("mzR", paste0(packageVersion("mzR")), "MS:-1", "Trimmed spectra")
+        )
       )
     } else {
       mzR::writeMSData(
@@ -372,7 +371,8 @@ trim_ms_files_spectra = function(files, MS1 = TRUE, MS2 = TRUE,
         header = hd2,
         outformat = format_tag,
         software_processing = unlist(
-          c("mzR", paste0(packageVersion("mzR")), "MS:-1", "Trimmed spectra"))
+          c("mzR", paste0(packageVersion("mzR")), "MS:-1", "Trimmed spectra")
+        )
       )
     }
     setTxtProgressBar(pb, which(f == files))
