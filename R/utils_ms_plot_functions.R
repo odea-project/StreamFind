@@ -648,8 +648,8 @@ plot_ms2_static <- function(ms2 = NULL, legendNames = NULL,
          cex = 1, col = precursors[s, color], font = NULL)
   }
 
-  ticksMin <- round_any(min(ms2$mz, na.rm = TRUE) * 0.9, 10)
-  ticksMax <- round_any(max(ms2$mz, na.rm = TRUE) * 1.1, 10)
+  ticksMin <- plyr::round_any(min(ms2$mz, na.rm = TRUE) * 0.9, 10)
+  ticksMax <- plyr::round_any(max(ms2$mz, na.rm = TRUE) * 1.1, 10)
 
   axis(1, seq(ticksMin, ticksMax, 10), lwd = 1.5, cex.axis = 0.8)
   axis(1, seq(ticksMin, ticksMax, 5), labels = FALSE, lwd = 1, col = "darkgray")
@@ -681,7 +681,7 @@ plot_ms2_static <- function(ms2 = NULL, legendNames = NULL,
 #'
 #' @export
 #'
-plot_ms2_interactive <- function(ms2= NULL, legendNames = NULL,
+plot_ms2_interactive <- function(ms2 = NULL, legendNames = NULL,
                                  colorBy = "targets", title = NULL) {
 
   if ("analyses" %in% colorBy) {
@@ -746,8 +746,8 @@ plot_ms2_interactive <- function(ms2= NULL, legendNames = NULL,
     )
   }
 
-  ticksMin <- round_any(min(ms2$mz, na.rm = TRUE) * 0.9, 10)
-  ticksMax <- round_any(max(ms2$mz, na.rm = TRUE) * 1.1, 10)
+  ticksMin <- plyr::round_any(min(ms2$mz, na.rm = TRUE) * 0.9, 10)
+  ticksMax <- plyr::round_any(max(ms2$mz, na.rm = TRUE) * 1.1, 10)
 
   xaxis <- list(
     linecolor = toRGB("black"),
@@ -829,9 +829,8 @@ plot_ms1_static <- function(ms1 = NULL, legendNames = NULL,
        xaxt = "n"
   )
 
-  ticksMin <- round_any(min(ms1$mz, na.rm = TRUE) * 0.9, 10)
-
-  ticksMax <- round_any(max(ms1$mz, na.rm = TRUE) * 1.1, 10)
+  ticksMin <- plyr::round_any(min(ms1$mz, na.rm = TRUE) * 0.9, 10)
+  ticksMax <- plyr::round_any(max(ms1$mz, na.rm = TRUE) * 1.1, 10)
 
   axis(1, seq(ticksMin, ticksMax, 10),
     lwd = 1.5, cex.axis = 0.8)
@@ -923,8 +922,8 @@ plot_ms1_interactive <- function(ms1 = NULL, legendNames = NULL,
     )
   }
 
-  ticksMin <- round_any(min(ms1$mz, na.rm = TRUE) * 0.9, 10)
-  ticksMax <- round_any(max(ms1$mz, na.rm = TRUE) * 1.1, 10)
+  ticksMin <- plyr::round_any(min(ms1$mz, na.rm = TRUE) * 0.9, 10)
+  ticksMax <- plyr::round_any(max(ms1$mz, na.rm = TRUE) * 1.1, 10)
 
   xaxis <- list(
     linecolor = toRGB("black"),

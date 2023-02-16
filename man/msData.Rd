@@ -12,6 +12,8 @@ The details.
 \note{
 Name, path and date cannot be removed.
 
+When \code{call} is \code{NULL} all settings are removed.
+
 Unique feature groups from the removed analyses are also removed.
 
 The \linkS4class{settings} call must be set to "find_features".
@@ -75,8 +77,10 @@ list and the \code{data.table} of each group is converted to a list.
 \item \href{#method-msData-add_groups}{\code{msData$add_groups()}}
 \item \href{#method-msData-add_alignment}{\code{msData$add_alignment()}}
 \item \href{#method-msData-remove_header}{\code{msData$remove_header()}}
+\item \href{#method-msData-remove_settings}{\code{msData$remove_settings()}}
 \item \href{#method-msData-remove_analyses}{\code{msData$remove_analyses()}}
 \item \href{#method-msData-remove_groups}{\code{msData$remove_groups()}}
+\item \href{#method-msData-remove_alignment}{\code{msData$remove_alignment()}}
 \item \href{#method-msData-has_analyses}{\code{msData$has_analyses()}}
 \item \href{#method-msData-has_loaded_spectra}{\code{msData$has_loaded_spectra()}}
 \item \href{#method-msData-has_loaded_chromatograms}{\code{msData$has_loaded_chromatograms()}}
@@ -134,7 +138,8 @@ Create a new MS set of analyses.
   settings = NULL,
   analyses = NULL,
   groups = NULL,
-  alignment = NULL
+  alignment = NULL,
+  verbose = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -161,6 +166,8 @@ name, path and date.}
 features across MS analyses.}
 
 \item{\code{alignment}}{X.}
+
+\item{\code{verbose}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1128,13 +1135,15 @@ Invisible.
 \subsection{Method \code{add_settings()}}{
 Method to add processing settings to the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$add_settings(settings = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$add_settings(settings = NULL, verbose = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{settings}}{X.}
+
+\item{\code{verbose}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1171,7 +1180,7 @@ Invisible.
 Method to add or redefine the analysis replicate names. Changes the
 \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$add_replicate_names(value)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$add_replicate_names(value = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -1193,7 +1202,7 @@ Invisible.
 Method to add or redefine the analysis blank replicate names.
 Changes the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$add_blank_names(value)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$add_blank_names(value = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -1256,13 +1265,15 @@ Invisible.
 \subsection{Method \code{add_alignment()}}{
 Method to add time alignment results in the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$add_alignment(alignment = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$add_alignment(alignment = NULL, verbose = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{alignment}}{list.}
+
+\item{\code{verbose}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1284,6 +1295,26 @@ Removes header entries from the \code{msData} object.
 \describe{
 \item{\code{value}}{A character vector with the names of the header entries
 to be removed.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-remove_settings"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-remove_settings}{}}}
+\subsection{Method \code{remove_settings()}}{
+Removes settings from the \code{msData} object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$remove_settings(call = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{call}}{A character vector with the settings call name.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1318,7 +1349,27 @@ Invisible.
 \subsection{Method \code{remove_groups()}}{
 Remove feature groups from the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$remove_groups()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$remove_groups(groups = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{groups}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-remove_alignment"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-remove_alignment}{}}}
+\subsection{Method \code{remove_alignment()}}{
+Removes alignment results from the \code{msData} object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$remove_alignment()}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{

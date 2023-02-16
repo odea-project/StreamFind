@@ -26,6 +26,8 @@
 #'
 #' @importFrom tools file_ext
 #'
+#' @importFrom plyr round_any
+#'
 #' @importFrom jsonlite toJSON fromJSON
 #'
 #' @importFrom stats sd

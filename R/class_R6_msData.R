@@ -54,6 +54,7 @@ msData = R6::R6Class("msData",
     #' @param groups A data.table with `groups` representing corresponding
     #' features across MS analyses.
     #' @param alignment X.
+    #' @param verbose X.
     #'
     #'
     #' @return A new `msData` object.
@@ -64,22 +65,23 @@ msData = R6::R6Class("msData",
                           settings = NULL,
                           analyses = NULL,
                           groups = NULL,
-                          alignment = NULL) {
+                          alignment = NULL,
+                          verbose = TRUE) {
 
       if (is.null(analyses) & !is.null(files)) {
-        analyses = make_ms_analysis_list(files, runParallel)
+        analyses = makeMsAnalyses(files, runParallel)
         if (is.null(analyses)) {
           warning("No valid files were given! msData object is empty. \n")
         }
       }
 
       if (is.null(analyses)) {
-        cat("Use the add_analyses() method to add analyses! \n")
-      } else self$add_analyses(analyses, verbose = FALSE)
+        if (verbose) cat("Use the add_analyses() method to add analyses! \n")
+      } else self$add_analyses(analyses, verbose)
 
 
       if (!is.null(header) & is.list(header)) {
-        self$add_header(header, verbose = FALSE)
+        self$add_header(header, verbose)
       } else {
         private$.header = list(
           name = NA_character_,
@@ -88,9 +90,11 @@ msData = R6::R6Class("msData",
         )
       }
 
-      if (!is.null(groups)) self$add_groups(groups, verbose = FALSE)
+      if (!is.null(groups)) self$add_groups(groups, verbose)
 
-      if (!is.null(alignment)) self$add_alignment(alignment)
+      if (!is.null(alignment)) self$add_alignment(alignment, verbose)
+
+      if (verbose) cat("msData class object created! \n")
 
     },
 
@@ -344,7 +348,7 @@ msData = R6::R6Class("msData",
       analyses = self$check_analyses_argument(analyses)
       if (is.null(analyses)) return(data.frame())
 
-      targets = make_ms_targets(mz, rt, ppm, sec, id)
+      targets = makeMsTargets(mz, rt, ppm, sec, id)
 
       with_targets = !(nrow(targets) == 1 &
         TRUE %in% (targets$mzmax == 0) &
@@ -370,23 +374,20 @@ msData = R6::R6Class("msData",
             function(z, traces, targets, trim, preMZr) {
 
               tg = traces
-
               cutRt = trim(tg$rt, targets$rtmin[z], targets$rtmax[z])
               tg = tg[cutRt, ]
-
-              if (!is.null(preMZr)) {
-
-                 cutMZ = trim(tg$mz, targets$mzmin[z], targets$mzmax[z])
-                 tg = tg[tg$level == 2 | (tg$level == 1 & cutMZ), ]
-
-                 cutPreMZ = trim(tg$preMZ, preMZr$mzmin[z], preMZr$mzmax[z])
-                 tg = tg[tg$level == 1 | (tg$level == 2 & cutPreMZ), ]
-
-              } else {
-
-                 cutMZ = trim(tg$mz, targets$mzmin[z], targets$mzmax[z])
-                 tg = tg[cutMZ, ]
-
+              if (nrow(tg) > 0) {
+                if (!is.null(preMZr)) {
+                  cutMZ = trim(tg$mz, targets$mzmin[z], targets$mzmax[z])
+                  tg = tg[tg$level == 2 | (tg$level == 1 & cutMZ), ]
+                  if (nrow(tg) > 0) {
+                    cutPreMZ = trim(tg$preMZ, preMZr$mzmin[z], preMZr$mzmax[z])
+                    tg = tg[tg$level == 1 | (tg$level == 2 & cutPreMZ), ]
+                  }
+                } else {
+                   cutMZ = trim(tg$mz, targets$mzmin[z], targets$mzmax[z])
+                   tg = tg[cutMZ, ]
+                }
               }
 
               if (nrow(tg) > 0) tg$id = targets$id[z] else tg$id = character()
@@ -490,8 +491,15 @@ msData = R6::R6Class("msData",
             }
 
             if(!is.null(preMZr)) {
-              preMZ_check = trim(sH$precursorMZ, preMZr$mzmin, preMZr$mzmax)
-              sH = sH[(preMZ_check %in% TRUE) | is.na(preMZ_check), ]
+              if (with_targets) if ("analysis" %in% colnames(targets)) {
+                ana_name = gsub(".mzML|.mzXML", "", basename(i))
+                pre_tar = preMZr[targets$analysis %in% ana_name, ]
+                preMZ_check = trim(sH$precursorMZ, pre_tar$mzmin, pre_tar$mzmax)
+                sH = sH[(preMZ_check %in% TRUE) | is.na(preMZ_check), ]
+              } else {
+                preMZ_check = trim(sH$precursorMZ, preMZr$mzmin, preMZr$mzmax)
+                sH = sH[(preMZ_check %in% TRUE) | is.na(preMZ_check), ]
+              }
             }
 
             if (nrow(sH) > 0) {
@@ -534,8 +542,11 @@ msData = R6::R6Class("msData",
                 if ("analysis" %in% colnames(targets)) {
                   ana_name = gsub(".mzML|.mzXML", "", basename(i))
                   tp_tar = targets[targets$analysis %in% ana_name, ]
+                  if(!is.null(preMZr)) {
+                    pre_tar = preMZr[targets$analysis %in% ana_name, ]
+                  } else pre_tar = NULL
                   if (nrow(tp_tar) > 0) {
-                    sH = trim_targets(sH, tp_tar, preMZr)
+                    sH = trim_targets(sH, tp_tar, pre_tar)
                   } else sH = data.frame()
                 } else sH = trim_targets(sH, targets, preMZr)
               }
@@ -917,7 +928,7 @@ msData = R6::R6Class("msData",
           colnames(mass) = gsub("mass", "mz", colnames(mass))
           colnames(mass) = gsub("neutralMass", "mz", colnames(mass))
         }
-        targets = make_ms_targets(mass, rt, ppm, sec)
+        targets = makeMsTargets(mass, rt, ppm, sec)
         sel = rep(FALSE, nrow(fts))
         for (i in seq_len(nrow(targets))) {
           sel[between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
@@ -927,7 +938,7 @@ msData = R6::R6Class("msData",
       }
 
       if (!is.null(mz)) {
-        targets = make_ms_targets(mz, rt, ppm, sec)
+        targets = makeMsTargets(mz, rt, ppm, sec)
         sel = rep(FALSE, nrow(fts))
         for (i in seq_len(nrow(targets))) {
           sel[between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
@@ -1119,7 +1130,7 @@ msData = R6::R6Class("msData",
             colnames(mass) <- gsub("mass", "mz", colnames(mass))
             colnames(mass) <- gsub("neutralMass", "mz", colnames(mass))
           }
-          targets = make_ms_targets(mass, rt, ppm, sec)
+          targets = makeMsTargets(mass, rt, ppm, sec)
           sel = rep(FALSE, nrow(fgroups))
           for (i in seq_len(nrow(targets))) {
             sel[between(fgroups$mass,
@@ -1132,7 +1143,7 @@ msData = R6::R6Class("msData",
           fgroups = fgroups[sel, ]
 
         } else if (!is.null(mz)) {
-          targets <- make_ms_targets(mz, rt, ppm, sec)
+          targets <- makeMsTargets(mz, rt, ppm, sec)
           sel = rep(FALSE, nrow(fgroups))
 
           if (!"mz" %in% colnames(fgroups)) {
@@ -1407,7 +1418,7 @@ msData = R6::R6Class("msData",
         if (length(old_names) > 0) {
           overwrite = TRUE
           private$.header[old_names] = header[old_names]
-          message(paste0(old_names, " was overwritten! "))
+          # message(paste0(old_names, " was overwritten! "))
         } else old_names = NULL
 
         new_names = names(header)[!(names(header) %in% old_names)]
@@ -1431,20 +1442,25 @@ msData = R6::R6Class("msData",
     #' Method to add processing settings to the `msData` object.
     #'
     #' @param settings X.
+    #' @param verbose X.
     #'
     #' @return Invisible.
     #'
-    add_settings = function(settings = NULL) {
+    add_settings = function(settings = NULL, verbose = TRUE) {
 
       if (validate_ms_settings(settings)) {
         private$.settings[[settings$call]] = settings
-        cat(paste0(settings$call, " processing settings added! \n"))
+        if (verbose) {
+          cat(paste0(settings$call, " processing settings added! \n"))
+        }
       } else if (all(vapply(settings, validate_ms_settings, FALSE))) {
         call_names = vapply(settings, function(x) x$call, NA_character_)
         private$.settings[call_names] = settings
-        cat(paste0("Added settings for: "),
-            paste(call_names, collapse = "; "),
-            ".\n", sep = "")
+        if (verbose) {
+          cat(paste0("Added settings for: "),
+              paste(call_names, collapse = "; "),
+              ".\n", sep = "")
+        }
       } else {
         warning("Settings content or structure not conform! Not added.")
       }
@@ -1504,7 +1520,8 @@ msData = R6::R6Class("msData",
               private$.alignment = NULL
             }
 
-            if (verbose) cat("New analyses added! \n")
+            if (verbose) cat(
+              paste0(length(new_analyses) - old_size, " analyses added! \n"))
 
           } else {
             warning("Not done, check the conformity of the analyses list!")
@@ -1524,7 +1541,7 @@ msData = R6::R6Class("msData",
     #'
     #' @return Invisible.
     #'
-    add_replicate_names = function(value) {
+    add_replicate_names = function(value = NULL) {
 
       if (is.character(value) &
           length(value) == self$get_number_analyses()) {
@@ -1546,7 +1563,7 @@ msData = R6::R6Class("msData",
     #'
     #' @return Invisible.
     #'
-    add_blank_names = function(value) {
+    add_blank_names = function(value = NULL) {
 
       if (is.character(value) &
           length(value) == self$get_number_analyses()) {
@@ -1630,7 +1647,9 @@ msData = R6::R6Class("msData",
               private$.groups = old_groups
               warning("Correspondence did not match! Groups not added.")
             }
-          } else if (verbose) cat("Feature groups added! \n")
+          } else if (verbose) {
+            cat(nrow(groups), " feature groups added! \n", sep = "")
+          }
         } else {
           warning("Columns of groups data.frame not as required! Not added.")
         }
@@ -1641,10 +1660,11 @@ msData = R6::R6Class("msData",
     #' Method to add time alignment results in the `msData` object.
     #'
     #' @param alignment list.
+    #' @param verbose X.
     #'
     #' @return Invisible.
     #'
-    add_alignment = function(alignment = NULL) {
+    add_alignment = function(alignment = NULL, verbose = TRUE) {
 
       if (is.list(alignment) &
           all(unname(self$get_analysis_names()) %in% names(alignment)) &
@@ -1659,7 +1679,7 @@ msData = R6::R6Class("msData",
 
         if (all(valid)) {
           private$.alignment = alignment
-          cat("Alignment added! \n")
+          if (verbose) cat("Alignment added! \n")
         } else warning("Invalid alignment structure or content! Not added.")
       } else warning("Groups not present or alignment not valid! Not added.")
     },
@@ -1688,6 +1708,30 @@ msData = R6::R6Class("msData",
         to_remove = names(private$.header)[!to_remove]
         private$.header[to_remove] = NULL
         cat("Removed", to_remove, "in header \n", sep = " ")
+      }
+    },
+
+    #' @description
+    #' Removes settings from the `msData` object.
+    #'
+    #' @param call A character vector with the settings call name.
+    #'
+    #' @note When `call` is \code{NULL} all settings are removed.
+    #'
+    #' @return Invisible.
+    #'
+    remove_settings = function(call = NULL) {
+      if (is.null(call)) {
+        private$.settings = NULL
+        cat("Removed settings! \n")
+      } else {
+        all_calls = names(private$.settings)
+        to_remove = call %in% all_calls
+        call = call[to_remove]
+        if (length(call) > 0) {
+          private$.settings[all_calls %in% call] = NULL
+          cat("Removed", call, "in settings \n", sep = " ")
+        }
       }
     },
 
@@ -1738,15 +1782,44 @@ msData = R6::R6Class("msData",
     #' @description
     #' Remove feature groups from the `msData` object.
     #'
+    #' @param groups X.
+    #'
     #' @return Invisible.
     #'
-    remove_groups = function() {
-      private$.groups = NULL
+    remove_groups = function(groups = NULL) {
+      if (is.null(groups)) {
+        private$.groups = NULL
+        private$.alignment = NULL
+        private$.analyses = lapply(private$.analyses, function(x) {
+          x$features[["group"]] = NULL
+          return(x)
+        })
+      }
+
+      if (is.numeric(groups) & self$has_groups()) {
+        groups = self$get_groups()$group[groups]
+      }
+
+      if (is.character(groups) & length(groups) > 0 & self$has_groups()) {
+        n_org_g = nrow(private$.groups)
+        private$.groups = private$.groups[!private$.groups$group %in% groups, ]
+        private$.analyses = lapply(private$.analyses, function(x, groups) {
+          x$features = x$features[!x$features$group %in% groups, ]
+          return(x)
+        }, groups = groups)
+        n_g = nrow(private$.groups)
+        cat(paste0("Removed ", n_org_g - n_g, " groups!  \n"))
+      }
+    },
+
+    #' @description
+    #' Removes alignment results from the `msData` object.
+    #'
+    #' @return Invisible.
+    #'
+    remove_alignment = function() {
       private$.alignment = NULL
-      private$.analyses = lapply(private$.analyses, function(x) {
-        x$features[["feature"]] = NULL
-        return(x)
-      })
+      cat("Removed alignment! \n")
     },
 
     ## has -----
@@ -3059,14 +3132,9 @@ msData = R6::R6Class("msData",
 
           rt_check = max(gf$rtmax) >= x$rt & min(gf$rtmin) <= x$rt
 
-          # drt = max(gf$rtmax) - min(gf$rtmin)
-          # drt_check = round(drt, 0) == round(x$drt, 0)
-
           max_ppm = max((gf$mzmax - gf$mz) / gf$mzmax * 1E6)
           min_ppm = min((gf$mzmin - gf$mz) / gf$mzmin * 1E6)
 
-          # dppm_check = round(max_ppm - min_ppm, 0)
-          # dppm_check = dppm_check == round(x$dppm, 0)
           f_mass_mean = mean(gf$mass)
           mass_min = round(min_ppm / 1E6 * f_mass_mean + f_mass_mean, 4)
           mass_max = round(max_ppm / 1E6 * f_mass_mean + f_mass_mean, 4)
@@ -3417,7 +3485,7 @@ msData = R6::R6Class("msData",
 
 # auxiliary ms functions -----
 
-#' make_ms_analysis_list
+#' makeMsAnalyses
 #'
 #' @description
 #' Reads given mzML/mzXML file/s and makes a named list with a list object for
@@ -3436,7 +3504,7 @@ msData = R6::R6Class("msData",
 #'
 #' @export
 #'
-make_ms_analysis_list = function(files = NULL, runParallel = FALSE) {
+makeMsAnalyses = function(files = NULL, runParallel = FALSE) {
 
   if (is.data.frame(files)) {
     if ("file" %in% colnames(files)) {
@@ -3483,115 +3551,144 @@ make_ms_analysis_list = function(files = NULL, runParallel = FALSE) {
     registerDoSEQ()
   }
 
-  analyses = foreach(i = files, .packages = "mzR") %dopar% {
+  if (requireNamespace("mzR")) {
 
-    file_link = mzR::openMSfile(i, backend = "pwiz")
-    sH = suppressWarnings(mzR::header(file_link))
-    cH = suppressWarnings(mzR::chromatogramHeader(file_link))
-    instrument = mzR::instrumentInfo(file_link)
-    run = suppressWarnings(mzR::runInfo(file_link))
+    analyses = foreach(i = files, .packages = "mzR") %dopar% {
 
-    polarities = NULL
-    if (1 %in% sH$polarity) polarities = c(polarities, "positive")
-    if (0 %in% sH$polarity) polarities = c(polarities, "negative")
-    if (nrow(cH) > 0 & ("polarity" %in% colnames(cH))) {
-      if (1 %in% cH$polarity) polarities = c(polarities, "positive")
-      if (0 %in% cH$polarity) polarities = c(polarities, "negative")
-    }
-    if (is.null(polarities)) polarities = NA_character_
+      file_link = mzR::openMSfile(i, backend = "pwiz")
+      sH = suppressWarnings(mzR::header(file_link))
+      cH = suppressWarnings(mzR::chromatogramHeader(file_link))
+      instrument = mzR::instrumentInfo(file_link)
+      run = suppressWarnings(mzR::runInfo(file_link))
 
-    spectra_number = run$scanCount
-    spectra_mode = NA_character_
-    if (TRUE %in% sH$centroided) spectra_mode = "centroid"
-    if (FALSE %in% sH$centroided) spectra_mode = "profile"
+      polarities = NULL
+      if (1 %in% sH$polarity) polarities = c(polarities, "positive")
+      if (0 %in% sH$polarity) polarities = c(polarities, "negative")
+      if (nrow(cH) > 0 & ("polarity" %in% colnames(cH))) {
+        if (1 %in% cH$polarity) polarities = c(polarities, "positive")
+        if (0 %in% cH$polarity) polarities = c(polarities, "negative")
+      }
+      if (is.null(polarities)) polarities = NA_character_
 
-    ion_mobility = FALSE
-    if (!all(is.na(sH$ionMobilityDriftTime))) ion_mobility = TRUE
+      spectra_number = run$scanCount
+      spectra_mode = NA_character_
+      if (TRUE %in% sH$centroided) spectra_mode = "centroid"
+      if (FALSE %in% sH$centroided) spectra_mode = "profile"
 
-    chromatograms_number = 0
-    if (grepl(".mzML", i))
-      chromatograms_number = mzR::nChrom(file_link)
+      ion_mobility = FALSE
+      if (!all(is.na(sH$ionMobilityDriftTime))) ion_mobility = TRUE
 
-    if (spectra_number == 0 & chromatograms_number > 0) {
+      chromatograms_number = 0
+      if (grepl(".mzML", i))
+        chromatograms_number = mzR::nChrom(file_link)
 
-      if (TRUE %in% grepl("SRM", cH$chromatogramId)) data_type = "SRM"
+      if (spectra_number == 0 & chromatograms_number > 0) {
 
-      tic = cH[cH$chromatogramId %in% "TIC", ]
-      if (nrow(tic) > 0) {
-        tic = mzR::chromatograms(file_link, tic$chromatogramIndex)
-        colnames(tic) = c("rt", "intensity")
-        if (max(tic$rt) < 60) tic$rt = tic$rt * 60
-      } else tic = data.frame("rt" = numeric(), "intensity" = numeric())
+        if (TRUE %in% grepl("SRM", cH$chromatogramId)) data_type = "SRM"
 
-      bpc = cH[cH$chromatogramId %in% "BPC", ]
-      if (nrow(bpc) > 0) {
-        bpc = mzR::chromatograms(file_link, bpc$chromatogramIndex)
-        if (!"mz" %in% colnames(bpc)) {
-          bpc$mz = NA
-          colnames(bpc) = c("rt", "intensity", "mz")
-        } else colnames(bpc) = c("rt", "mz", "intensity")
+        tic = cH[cH$chromatogramId %in% "TIC", ]
+        if (nrow(tic) > 0) {
+          tic = mzR::chromatograms(file_link, tic$chromatogramIndex)
+          colnames(tic) = c("rt", "intensity")
+          if (max(tic$rt) < 60) tic$rt = tic$rt * 60
+        } else tic = data.frame("rt" = numeric(), "intensity" = numeric())
 
-        if (max(bpc$rt) < 60) bpc$rt = bpc$rt * 60
-      } else bpc = data.frame("rt" = numeric(),
-                              "mz" = numeric() ,
-                              "intensity" = numeric())
+        bpc = cH[cH$chromatogramId %in% "BPC", ]
+        if (nrow(bpc) > 0) {
+          bpc = mzR::chromatograms(file_link, bpc$chromatogramIndex)
+          if (!"mz" %in% colnames(bpc)) {
+            bpc$mz = NA
+            colnames(bpc) = c("rt", "intensity", "mz")
+          } else colnames(bpc) = c("rt", "mz", "intensity")
 
-    } else if (spectra_number > 0) {
+          if (max(bpc$rt) < 60) bpc$rt = bpc$rt * 60
+        } else bpc = data.frame("rt" = numeric(),
+                                "mz" = numeric() ,
+                                "intensity" = numeric())
 
-      if (2 %in% run$msLevels) data_type = "MS/MS"
-      else data_type = "MS"
+      } else if (spectra_number > 0) {
 
-      if (max(sH$retentionTime) < 60)
-        sH$retentionTime = sH$retentionTime * 60
+        if (2 %in% run$msLevels) data_type = "MS/MS"
+        else data_type = "MS"
 
-      sH_ms1 = sH[sH$msLevel == 1, ]
+        if (max(sH$retentionTime) < 60)
+          sH$retentionTime = sH$retentionTime * 60
 
-      tic = data.frame(
-        "rt" = sH_ms1$retentionTime,
-        "intensity" = sH_ms1$totIonCurrent)
+        sH_ms1 = sH[sH$msLevel == 1, ]
 
-      bpc = data.frame(
-        "rt" = sH_ms1$retentionTime,
-        "mz" = sH_ms1$basePeakMZ,
-        "intensity" = sH_ms1$basePeakIntensity
+        tic = data.frame(
+          "rt" = sH_ms1$retentionTime,
+          "intensity" = sH_ms1$totIonCurrent)
+
+        bpc = data.frame(
+          "rt" = sH_ms1$retentionTime,
+          "mz" = sH_ms1$basePeakMZ,
+          "intensity" = sH_ms1$basePeakIntensity
+        )
+
+      } else data_type = NA_character_
+
+      if (is.infinite(run$lowMz)) run$lowMz = NA_real_
+      if (is.infinite(run$highMz)) run$highMz = NA_real_
+      if (is.infinite(run$dStartTime)) run$dStartTime = min(tic$rt)
+      if (is.infinite(run$dEndTime)) run$dEndTime = max(tic$rt)
+      if (data_type %in% "SRM") run$msLevels = NA_integer_
+
+      analysis = list(
+        "name" = gsub(".mzML|.mzXML", "", basename(i)),
+        "replicate" = NA_character_,
+        "blank" = NA_character_,
+        "file" = i,
+        "type" = data_type,
+        "instrument" = instrument,
+        "time_stamp" = run$startTimeStamp,
+        "spectra_number" = as.integer(spectra_number),
+        "spectra_mode" = spectra_mode,
+        "spectra_levels" = as.integer(run$msLevels),
+        "mz_low" = as.numeric(run$lowMz),
+        "mz_high" = as.numeric(run$highMz),
+        "rt_start" = as.numeric(run$dStartTime),
+        "rt_end" = as.numeric(run$dEndTime),
+        "polarity" = polarities,
+        "chromatograms_number" = as.integer(chromatograms_number),
+        "ion_mobility" = ion_mobility,
+        "tic" = tic,
+        "bpc" = bpc,
+        "spectra" = data.frame(),
+        "chromatograms" = data.frame(),
+        "features" = data.frame(),
+        "metadata" = list()
       )
 
-    } else data_type = NA_character_
+      suppressWarnings(mzR::close(file_link))
+      return(analysis)
+    }
+  } else if (requireNamespace("xml2")) {
 
-    if (is.infinite(run$lowMz)) run$lowMz = NA_real_
-    if (is.infinite(run$highMz)) run$highMz = NA_real_
-    if (is.infinite(run$dStartTime)) run$dStartTime = min(tic$rt)
-    if (is.infinite(run$dEndTime)) run$dEndTime = max(tic$rt)
-    if (data_type %in% "SRM") run$msLevels = NA_integer_
 
-    analysis = list(
-      "name" = gsub(".mzML|.mzXML", "", basename(i)),
-      "replicate" = NA_character_,
-      "blank" = NA_character_,
-      "file" = i,
-      "type" = data_type,
-      "instrument" = instrument,
-      "time_stamp" = run$startTimeStamp,
-      "spectra_number" = as.integer(spectra_number),
-      "spectra_mode" = spectra_mode,
-      "spectra_levels" = as.integer(run$msLevels),
-      "mz_low" = as.numeric(run$lowMz),
-      "mz_high" = as.numeric(run$highMz),
-      "rt_start" = as.numeric(run$dStartTime),
-      "rt_end" = as.numeric(run$dEndTime),
-      "polarity" = polarities,
-      "chromatograms_number" = as.integer(chromatograms_number),
-      "ion_mobility" = ion_mobility,
-      "tic" = tic,
-      "bpc" = bpc,
-      "spectra" = data.frame(),
-      "chromatograms" = data.frame(),
-      "features" = data.frame(),
-      "metadata" = list()
-    )
 
-    suppressWarnings(mzR::close(file_link))
-    return(analysis)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    print("a")
+    # TODO implement creation with xml2 package
+
   }
 
   if (runParallel) parallel::stopCluster(cl)
@@ -3771,7 +3868,7 @@ validate_ms_settings = function(value = NULL) {
   return(valid)
 }
 
-#' @title make_ms_targets
+#' @title makeMsTargets
 #'
 #' @description Helper function to build \emph{m/z} and retention time
 #' target pairs for searching data. Each target is composed of an
@@ -3798,7 +3895,7 @@ validate_ms_settings = function(value = NULL) {
 #'
 #' @export
 #'
-make_ms_targets = function(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL) {
+makeMsTargets = function(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL) {
 
   mzrts = data.table(
     id = NA_character_,
@@ -4087,17 +4184,6 @@ get_colors = function(obj) {
   return(Vcol)
 }
 
-#' @title unregister_dopar
-#'
-#' @description Function to un-register any `foreach` parallel variables.
-#'
-#' @export
-#'
-unregister_dopar = function() {
-  env = foreach:::.foreachGlobals
-  rm(list=ls(name=env), pos=env)
-}
-
 #' @title correlate_analysis_spectra
 #'
 #' @description Function to correlate MS spectra from analyses.
@@ -4226,38 +4312,38 @@ import_msData = function(file) {
 
       fields_present = names(js_ms)
 
-      new_ms = msData$new()
+      new_ms = msData$new(verbose = FALSE)
 
       if ("header" %in% fields_present) {
         js_header = correct_parsed_json_header(js_ms[["header"]])
-        new_ms$add_header(js_header)
+        new_ms$add_header(js_header, verbose = TRUE)
       }
 
       if ("settings" %in% fields_present) {
         if (!is.null(js_ms[["settings"]])) {
           settings = correct_parsed_json_settings(js_ms[["settings"]])
-          new_ms$add_settings(settings)
+          new_ms$add_settings(settings, verbose = TRUE)
         }
       }
 
       if ("analyses" %in% fields_present) {
         if (!is.null(js_ms[["analyses"]])) {
           analyses = correct_ms_parsed_json_analyses(js_ms[["analyses"]])
-          new_ms$add_analyses(analyses)
+          new_ms$add_analyses(analyses, verbose = TRUE)
         }
       }
 
       if ("groups" %in% fields_present) {
         if (!is.null(js_ms[["groups"]])) {
           groups = correct_ms_parsed_json_groups(js_ms[["groups"]])
-          if (nrow(groups) > 0) new_ms$add_groups(groups)
+          if (nrow(groups) > 0) new_ms$add_groups(groups, verbose = TRUE)
         }
       }
 
       if ("alignment" %in% fields_present) {
         if (!is.null(js_ms[["alignment"]])) {
           js_alignment = lapply(js_ms[["alignment"]], as.data.table)
-          new_ms$add_alignment(js_alignment)
+          new_ms$add_alignment(js_alignment, verbose = TRUE)
         }
       }
 
@@ -4277,6 +4363,8 @@ import_msData = function(file) {
 }
 
 # not-exported functions -----
+
+## correct from json -----
 
 #' correct_parsed_json_header
 #'
@@ -4352,8 +4440,6 @@ correct_parsed_json_settings = function(settings = NULL) {
   return(settings)
 }
 
-# not-exported ms functions -----
-
 #' correct_ms_parsed_json_analyses
 #'
 #' @description Function to correct parsed analyses from json file.
@@ -4413,6 +4499,8 @@ correct_ms_parsed_json_groups = function(groups = NULL) {
 
   return(groups)
 }
+
+## features and groups -----
 
 #' @title build_features_table_from_patRoon
 #'

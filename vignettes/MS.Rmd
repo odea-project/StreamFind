@@ -106,26 +106,26 @@ ms$get_overview()[, 1:5] # only the first 5 columns
 
 The msData object contains the following internal fields (or private fields) to store standardized data: **header**, **settings**, **analyses**, **groups** and **alignment**. The internal fields cannot be directly accessed nor changed. Instead, the user must use the respective get and add methods, as shown in the sections \@ref(get-methods) and \@ref(add-methods), respectively. The add methods contain validation and conformity checks to ensure that the structure and semantics of added data are respected.
 
-- The **header** is a list of entries with length 1 (e.g., name, path, date, etc.) that characterize the msData object. When not given, *name*, *path* and *date* are automatically generated (*name* is set to `NA_character_`, *path* is set to `getwd()` and *date* is set to `Sys.time()`) and included in the list, as they are required for workflow purposes. Other entries can be added by the user without type (or class) limitations but should be uniquely named and of length 1.
-- The **settings** is a named `list` of objects used for data processing. Each added object is named according to the function call (or processing name). The settings interface is described in section \@ref(processing-settings).
-- The **analyses** is a named `list` of objects representing each file added to the msData. The name of the object is the name of the file. No duplicate file names (or analyses names) can exist in the msData. The structure of each object in analyses is shown in section \@ref(analyses). 
-- The **groups** is a `data.table` with the feature groups after correspondence analysis (i.e., grouping of features across analyses). More information about **groups** is given in section \@ref(groups).
+- The **header** is a list of entries with length 1 (e.g., name, path, date, etc.) that characterize the msData object. When not given, *name*, *path* and *date* are automatically generated (*name* is set to `NA_character_`, *path* is set to `getwd()` and *date* is set to `Sys.time()`) and included in the list, as they are required for workflow purposes. Other entries can be added by the user without type (or class) limitations but should be uniquely named and of length 1;
+- The **settings** is a named `list` of objects used for data processing. Each added object is named according to the function call (or processing name). The settings interface is described in section \@ref(processing-settings);
+- The **analyses** is a named `list` of objects representing each file added to the msData. The name of the object is the name of the file. No duplicate file names (or analyses names) can exist in the msData. The structure of each object in analyses is shown in section \@ref(analyses); 
+- The **groups** is a `data.table` with the feature groups after correspondence analysis (i.e., grouping of features across analyses). More information about **groups** is given in section \@ref(groups);
 - The **alignment** is a `list` with the results of the retention time alignment for each analyses in the msData object. More information about **groups** is given in section \@ref(alignment).
 
 ## Get methods
 
-Several methods are implemented to access data within the msData object, as already demonstrated for the `get_overview()`. The internal fields can be accessed with `get_header()`, `get_settings()`, `get_analyses()`, `get_groups()` and `get_alignment()`. For instance, the get method for the header returns the list of entries. Note that the `path` and `date` were automatically created when the vignette was built.
+Several methods are implemented to access data within the msData object, as already demonstrated for the `get_overview()`. A method is always used by writing the name of the msData object followed by a `$` and then the method call (e.g., `ms$get_overview()`). The internal fields can be accessed with `get_header()`, `get_settings()`, `get_analyses()`, `get_groups()` and `get_alignment()`. For instance, the get method for the header returns the list of entries. Note that the `path` and `date` were automatically created when the vignette was built.
 
 ```{r get-header}
 ms$get_header()
 ```
 
-Similarly, the get method for analyses returns the list of analysis objects. Below the `get_analyses()` is used to get the first analysis object (`a1`). Then, the `str()` function is used to show the structure of the `a1` object, which represents the first *.mzML* file parsed to the `ms`. Note that the `get_analyses()` method always returns a list even for only one analysis object. Therefore, we use the `[[` function as `a1[[1]]` to access the analysis object itself. The analysis object contains `r length(ms$get_analyses(1)[[1]])` fields with information and data parsed directly from the *.mzML* file. Variations in the content and structure (i.e., different vendors or data acquired with different conditions or modes) of the *.mzML* or *.mzXML* files added will affect the content of each entry in the analysis object but the structure remains the same. The function `make_ms_analysis_list()` from the streamFind R package is used to create and validate the list of analysis objects from a character vector with *.mzML* or *.mzXML* full file paths (see `?make_ms_analysis_list` for more information). The structure of the analysis object is further described in section \@ref(analyses). By typing `ms$get`, other available get methods are listed. The documentation `?msData` also contains detailed information and usage examples for available get methods. 
+Similarly, the get method for analyses returns the list of analysis objects. Below the `get_analyses()` is used to get the first analysis object (`a1`). Then, the `str()` function is used to show the structure of the `a1` object, which represents the first *.mzML* file parsed to the `ms`. Note that the `get_analyses()` method always returns a list even for only one analysis object. Therefore, we use the `[[` function as `a1[[1]]` to access the analysis object itself. The analysis object contains `r length(ms$get_analyses(1)[[1]])` fields (listed below) with information and data parsed directly from the *.mzML* file. Variations in the content and structure (i.e., different vendors or data acquired with different conditions or modes) of the *.mzML* or *.mzXML* files added will affect the content of each entry in the analysis object but the structure remains the same. The function `makeMsAnalyses()` from the streamFind R package is used to create and validate the list of analysis objects from a character vector with *.mzML* or *.mzXML* full file paths (see `?makeMsAnalyses` for more information). The structure of the analysis object is further described in section \@ref(analyses). By typing `ms$get`, other available get methods are listed. The documentation `?msData` also contains detailed information and usage examples for available get methods.
 
 ```{r get-analyses}
 a1 = ms$get_analyses(analyses = 1)
 
-str(a1[[1]])
+names(a1[[1]])
 ```
 
 ## Add methods
@@ -140,10 +140,10 @@ ms$add_header(list(name = "Ex1", description = "An example msData."))
 ms$get_header()
 ```
 
-Similarly, new analyses can be added with `add_analyses()` as shown below. Note that the function `make_ms_analysis_list()` was used to parse data from files 7, 8 and 9, creating a named list of analysis objects. Again the name of each object in the list is the file name without extension. Then, the list is added to the `ms` object with the method `add_analyses()`. By typing `ms$add`, other available add methods are listed. The documentation `?msData` also contains detailed information and usage examples for available add methods.
+Similarly, new analyses can be added with `add_analyses()` as shown below. Note that the function `makeMsAnalyses()` was used to parse data from files 7, 8 and 9, creating a named list of analysis objects. Again the name of each object in the list is the file name without extension. Then, the list is added to the `ms` object with the method `add_analyses()`. By typing `ms$add`, other available add methods are listed. The documentation `?msData` also contains detailed information and usage examples for available add methods.
 
 ```{r make-analysis-list}
-a_list = make_ms_analysis_list(files[7:9])
+a_list = makeMsAnalyses(files[7:9])
 
 names(a_list)
 ```
@@ -275,6 +275,40 @@ file.remove(paste0(getwd(), "/a1.json"))
 file.remove(paste0(getwd(), "/ms.json"))
 ```
 
+# Analyses
+
+Within the msData object, the internal field analyses is a list representing MS files on disk. As shown above, the msData can be initiated with the `files` argument using a character vector of full file path/s to *.mzML* or *.mzXML* files. Alternatively, the function `makeMsAnalyses()` can be used. The package [mzR](https://bioconductor.org/packages/release/bioc/html/mzR.html) from [Bioconductor](https://bioconductor.org/) is used to parse the data. When the [mzR](https://bioconductor.org/packages/release/bioc/html/mzR.html) package is not available (i.e., installed), the [xml2](https://cran.r-project.org/web/packages/xml2/index.html) package from CRAN is used instead but is much slower. Specially for large MS files (e.g., high resolution MS files with ion mobility), the [mzR](https://bioconductor.org/packages/release/bioc/html/mzR.html) package is recommended. The data parsed is the same independently of the package used. The structure of an example analysis object (i.e., an element of the analyses field) is shown below and consists of 23 entries.
+
+- **name** is the file name without extension;
+- **replicate** is the analysis replicate group name; 
+- **blank** is the associated blank replicate group name;
+- **file** is the full file path;
+- **type** is either "MS" for only MS1 spectral data, "MS/MS" for tandem spectral data (i.e., MS1 and MS2) or "SRM" for selected reaction monitoring data (i.e., no spectra only chromatograms);
+- **instrument** is a list with metadata from the instrument used to acquire the data (highly vendor dependent);
+- **time_stamp** is the start time and date of the data acquisition;
+- **spectra_number** is the number of spectra in the file;
+- **spectra_mode** is one of *centroid*, *profile* or `NA` for centroided data, data still in profile mode or mode not defined or absence spectra, respectively.
+- **spectra_levels** is the number of levels in the spectra (i.e., 1 or 1 and 2);
+- **mz_low** is the lowest \emph{m/z} value detected in the spectra, in Da;
+- **mz_high** is the highest \emph{m/z} value detected in the spectra, in Da;
+- **rt_start** is the run start time, in seconds;
+- **rt_end** is the run end time, in seconds;
+- **polarity** is the polarity mode: *positive*, *negative* or *both*;
+- **chromatograms_number** is the number of chromatograms (only applicable for *.mzML* files);
+- **ion_mobility** `TRUE` or `FALSE` for presence or absence of drift separation from ion mobility;
+- **tic** is a `data.table` with the total ion chromatogram;
+- **bpc** is a `data.table` with the base peak chromatogram;
+- **spectra** is a `data.table` with the raw spectra (only present if loaded with `load_spectra()` method);
+- **chromatograms** is a `data.table` with the raw chromatograms (only present if loaded with `load_chromatograms()` method);
+- **features** is a `data.table` with the features obtained from data processing (e.g., find_features() method);
+- **metadata** is a `list` with flexible storage for experimental metadata (e.g., concentration, location, etc.);
+
+```{r}
+str(a1[[1]])
+```
+
+
+
 
 
 
@@ -283,12 +317,28 @@ file.remove(paste0(getwd(), "/ms.json"))
 
 # Processing settings
 
-# Analyses
+
+
+
+
+
+
+
+
+
 
 # Groups
 
 
+
+
 ## Alignment
+
+
+
+
+
+
 
 ### Public
 

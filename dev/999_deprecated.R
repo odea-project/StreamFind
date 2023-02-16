@@ -1,4 +1,14 @@
 
+#' @title unregister_dopar
+#'
+#' @description Function to un-register any `foreach` parallel variables.
+#'
+#' @export
+#'
+unregister_dopar = function() {
+  env = foreach:::.foreachGlobals
+  rm(list=ls(name=env), pos=env)
+}
 
 #' @title extractMSn
 #'
