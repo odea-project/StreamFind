@@ -14,25 +14,22 @@ db <- streamFindData::msSpikedChemicals()
 files_mrm <- all_files[grepl("mrm", all_files)]
 files <- all_files[grepl("influent|blank", all_files)]
 files2 <- all_files[grepl("o3sw", all_files)]
-
-# Carbamazepin-d10 is ionized only in positive mode
-carbamazepin_d10 <- db[name %in% "Carbamazepin-d10", .(name, mass, rt)]
-
-# Diuron-d6 is ionized in both positive and negative modes
-diuron_d6 <- db[name %in% "Diuron-d6", .(name, mass, rt)]
-
+db_cols <- c("name", "mass", "rt")
+carbamazepin_d10 <- db[name %in% "Carbamazepin-d10", db_cols, with = FALSE]
+diuron_d6 <- db[name %in% "Diuron-d6", db_cols, with = FALSE]
 carb_pos <- carbamazepin_d10$mass + 1.007276
 carb <- carbamazepin_d10$mass + 1.007276
 carb_rt <- carbamazepin_d10$rt
-
 diu_pos <- diuron_d6$mass + 1.007276
 diu <- diuron_d6$mass + 1.007276
 diu_rt <- diuron_d6$rt
-
 sec_dev <- 30
 ppm_dev <- 10
-
-mz <- data.frame(id = c("tg1", "tg2"), mz = c(carb, diu), rt = c(carb_rt, diu_rt))
+mz <- data.frame(
+  id = c("tg1", "tg2"),
+  mz = c(carb, diu),
+  rt = c(carb_rt, diu_rt)
+)
 targets <- make_ms_targets(mz = mz, ppm = ppm_dev, sec = sec_dev)
 
 # msData class tests -----
@@ -118,15 +115,15 @@ test_that("loading spectra", {
 
 test_that("getting spectra for targets", {
   expect_s3_class(
-    ms$get_spectra(analyses = 1, mz = targets, level = 1), "data.frame"
+    ms$get_spectra(analyses = 1, mz = targets, levels = 1), "data.frame"
   )
   expect_s3_class(
-    ms3$get_spectra(analyses = 1, mz = targets, level = c(1, 2)), "data.frame"
+    ms3$get_spectra(analyses = 1, mz = targets, levels = c(1, 2)), "data.frame"
   )
   expect_true("id" %in%
-    colnames(ms3$get_spectra(analyses = 1, mz = targets, level = 1)))
+    colnames(ms3$get_spectra(analyses = 1, mz = targets, levels = 1)))
   expect_true(2 %in%
-    ms3$get_spectra(analyses = 1, mz = targets, allTraces = F, level = 2)$level)
+    ms3$get_spectra(analyses = 1, mz = targets, allTraces = F, levels = 2)$level)
 })
 
 ms_mrm <- msData$new(files = files_mrm)
@@ -463,11 +460,30 @@ self <- ms$clone(deep = T)
 # file.remove(c("header.json", "settings.json",
 #   "analyses.json", "groups.json", "msData.json"))
 
+ms <- msData$new(all_files[c(4:6)], runParallel = FALSE)
+
+ms$get_ms2(analyses = 1, mz = targets[2, ])
+
+parse_ms_spectra(all_files[4])
+
+ms$load_chromatograms()
+
+ms$get_spectra(analyses = 1:2, mz = targets, levels = 2)
+ms$get_features_ms2(analyses = 1, mz = targets[2, ])
+
+ms$get_spectra_levels(1)
+
+test <- make_ms_analyses(files[1])
+
+ms$get_analyses(1:2)
+
+ms$check_analyses_argument(NULL)
 
 
 ms2 <- ms$get_groups_ms2(runParallel = TRUE, groupBy = "replicates")
 
 
+test <- ms$get_overview()
 
 
 test <- ms2[ms2$group %in% "mz200.202_d7_rt1325_t28_g4", ]
@@ -487,8 +503,8 @@ ms$get_groups()
 
 
 
-
-
+test <- make_ms_analyses(files = all_files[29], runParallel = FALSE)
+View(test)
 
 
 

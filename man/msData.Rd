@@ -52,6 +52,7 @@ list and the \code{data.table} of each group is converted to a list.
 \item \href{#method-msData-get_file_paths}{\code{msData$get_file_paths()}}
 \item \href{#method-msData-get_mz_high}{\code{msData$get_mz_high()}}
 \item \href{#method-msData-get_rt_end}{\code{msData$get_rt_end()}}
+\item \href{#method-msData-get_spectra_levels}{\code{msData$get_spectra_levels()}}
 \item \href{#method-msData-get_spectra}{\code{msData$get_spectra()}}
 \item \href{#method-msData-get_chromatograms}{\code{msData$get_chromatograms()}}
 \item \href{#method-msData-get_tic}{\code{msData$get_tic()}}
@@ -146,10 +147,11 @@ Create a new MS set of analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{files}}{A character vector with the full file path of MS analyses
-or a data.frame with the columns file, replicate and blank with the
-full file path, the replicate group name (string) and the associated
-blank replicate group (string).}
+\item{\code{files}}{A character vector with the full file path of \emph{mzML}
+or \emph{mzXML} file/s or a data.frame with the columns file, replicate
+and blank with the full file path of \emph{mzML} or \emph{mzXML} file/s,
+the replicate group name (string) and the associated blank replicate
+group (string).}
 
 \item{\code{runParallel}}{Logical, set to \code{TRUE} for processing the data
 in parallel.}
@@ -194,7 +196,7 @@ Console text.
 \subsection{Method \code{get_header()}}{
 Method to get the header of the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$get_header(value)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$get_header(value = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -215,7 +217,7 @@ The header list as defined by \code{value}.
 \subsection{Method \code{get_analyses()}}{
 Method to get specific analyses from the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$get_analyses(analyses)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$get_analyses(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -404,6 +406,27 @@ of the analyses.}
 }
 \subsection{Returns}{
 A character vector.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-get_spectra_levels"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-get_spectra_levels}{}}}
+\subsection{Method \code{get_spectra_levels()}}{
+Method to get the spectra levels of the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$get_spectra_levels(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A list for each analysis with an integer vector.
 }
 }
 \if{html}{\out{<hr>}}
@@ -1223,13 +1246,15 @@ Invisible.
 \subsection{Method \code{add_features()}}{
 Method to add features to each analysis in the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$add_features(features = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$add_features(features = NULL, verbose = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{features}}{X.}
+
+\item{\code{verbose}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1386,7 +1411,7 @@ Method to check of the \code{msData} object has analyses.
 }
 
 \subsection{Returns}{
-Invisible.
+Logical value.
 }
 }
 \if{html}{\out{<hr>}}
@@ -1406,7 +1431,7 @@ Method to check for loaded spectra in given analyses names/indices.
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-Invisible.
+Logical value.
 }
 }
 \if{html}{\out{<hr>}}
@@ -1427,7 +1452,7 @@ chromatograms.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-Invisible.
+Logical value.
 }
 }
 \if{html}{\out{<hr>}}
@@ -1447,7 +1472,7 @@ Method to check if there are processing settings in the \code{msData} object.
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-Invisible.
+Logical value.
 }
 }
 \if{html}{\out{<hr>}}
@@ -1467,7 +1492,7 @@ Method to check if given analyses have features.
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-Invisible.
+Logical value.
 }
 }
 \if{html}{\out{<hr>}}
@@ -1481,7 +1506,7 @@ features across analyses.
 }
 
 \subsection{Returns}{
-Invisible.
+Logical value.
 }
 }
 \if{html}{\out{<hr>}}
@@ -1495,7 +1520,7 @@ across analyses.
 }
 
 \subsection{Returns}{
-Invisible.
+Logical value.
 }
 }
 \if{html}{\out{<hr>}}
@@ -2500,7 +2525,7 @@ profile mode.
 }
 
 \subsection{Returns}{
-X.
+Invisible.
 }
 }
 \if{html}{\out{<hr>}}
@@ -2533,7 +2558,7 @@ are given as a list and should match with algorithm requirements.
 }
 
 \subsection{Returns}{
-X.
+Invisible.
 }
 }
 \if{html}{\out{<hr>}}
@@ -2628,7 +2653,7 @@ Method to save the header list.
 }
 \subsection{Returns}{
 Saves the header list as the defined \code{format} in
-\code{path}.
+\code{path} and returns invisible.
 }
 }
 \if{html}{\out{<hr>}}
@@ -2660,7 +2685,7 @@ Method to save settings list.
 }
 \subsection{Returns}{
 Saves the settings list as the defined \code{format} in
-\code{path}.
+\code{path} and returns invisible.
 }
 }
 \if{html}{\out{<hr>}}
@@ -2692,7 +2717,7 @@ Method to save the list of analyses.
 }
 \subsection{Returns}{
 Saves the list of analyses as the defined \code{format} in
-\code{path}.
+\code{path} and returns invisible.
 }
 }
 \if{html}{\out{<hr>}}
@@ -2717,7 +2742,7 @@ Method to save the feature groups \code{data.table}.
 }
 \subsection{Returns}{
 Saves the groups \code{data.table} as the defined \code{format}
-in \code{path}.
+in \code{path} and returns invisible.
 }
 }
 \if{html}{\out{<hr>}}
@@ -2743,7 +2768,7 @@ groups and alignment) of the msData object.
 }
 \subsection{Returns}{
 Saves the private fields as the defined \code{format} in
-\code{path}.
+\code{path} and returns invisible.
 }
 }
 \if{html}{\out{<hr>}}

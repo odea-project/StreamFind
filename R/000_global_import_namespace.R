@@ -26,6 +26,8 @@
 #'
 #' @importFrom tools file_ext
 #'
+#' @importFrom dplyr count
+#'
 #' @importFrom plyr round_any
 #'
 #' @importFrom jsonlite toJSON fromJSON

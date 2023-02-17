@@ -43,6 +43,8 @@ Imports:
     methods,
     gtools,
     xml2,
+    dplyr,
+    plyr,
     parallelly,
     doParallel,
     parallel,
