@@ -14,6 +14,7 @@
 #' @details Describe the entries for an object list reflecting a file.
 #'
 #' @return A named list with a list object for each file in \code{files}.
+#' On error, returns \code{NULL}.
 #'
 #' @export
 #'
@@ -74,6 +75,7 @@ make_ms_analyses <- function(files = NULL, runParallel = FALSE) {
   }
 
   i = NULL
+  analyses = NULL
 
   # with mzR -----
   if (requireNamespace("mzR")) {
@@ -211,7 +213,7 @@ make_ms_analyses <- function(files = NULL, runParallel = FALSE) {
 
       xml_data <- read_xml(i)
 
-      ### for mzML ----
+      ### for mzML -----
       if (grepl("mzML", i)) {
 
         data_type <- NA_character_
@@ -418,8 +420,6 @@ make_ms_analyses <- function(files = NULL, runParallel = FALSE) {
               )
             )
           }
-        } else {
-          data_type <- NA_character_
         }
 
         analysis <- list(
@@ -449,7 +449,7 @@ make_ms_analyses <- function(files = NULL, runParallel = FALSE) {
         )
 
       ### for mzXML ----
-      } else {
+      } else if (grepl("mzXML", i)) {
 
         data_type <- NA_character_
         tic <- data.frame("rt" = numeric(), "intensity" = numeric())
@@ -557,7 +557,8 @@ make_ms_analyses <- function(files = NULL, runParallel = FALSE) {
           "features" = data.frame(),
           "metadata" = list()
         )
-
+      } else {
+         stop("File format must be either mzML or mzXML!")
       }
       analysis
     }
@@ -570,43 +571,45 @@ make_ms_analyses <- function(files = NULL, runParallel = FALSE) {
 
   # finishing ----
 
-  if (all(is.na(replicates))) {
-    replicates <- vapply(analyses, function(x) x$name, "")
-    replicates <- gsub("-", "_", replicates)
-    replicates <- sub("_[^_]+$", "", replicates)
-  }
-
-  analyses <- Map(
-    function(x, y) {
-      x$replicate <- y
-      x
-    },
-    analyses, replicates
-  )
-
-  if (!is.null(blanks) & length(blanks) == length(analyses)) {
-    if (all(blanks %in% replicates)) {
-      analyses <- Map(
-        function(x, y) {
-          x$blank <- y
-          x
-        },
-        analyses, blanks
-      )
+  if (!is.null(analyses)) {
+    if (all(is.na(replicates))) {
+      replicates <- vapply(analyses, function(x) x$name, "")
+      replicates <- gsub("-", "_", replicates)
+      replicates <- sub("_[^_]+$", "", replicates)
     }
+
+    analyses <- Map(
+      function(x, y) {
+        x$replicate <- y
+        x
+      },
+      analyses, replicates
+    )
+
+    if (!is.null(blanks) & length(blanks) == length(analyses)) {
+      if (all(blanks %in% replicates)) {
+        analyses <- Map(
+          function(x, y) {
+            x$blank <- y
+            x
+          },
+          analyses, blanks
+        )
+      }
+    }
+
+    analyses <- lapply(analyses, function(x) {
+      x$tic <- as.data.table(x$tic)
+      x$bpc <- as.data.table(x$bpc)
+      x$spectra <- as.data.table(x$spectra)
+      x$chromatograms <- as.data.table(x$chromatograms)
+      x$features <- as.data.table(x$features)
+      x
+    })
+
+    names(analyses) <- vapply(analyses, function(x) x$name, "")
+    analyses <- analyses[order(names(analyses))]
   }
-
-  analyses <- lapply(analyses, function(x) {
-    x$tic <- as.data.table(x$tic)
-    x$bpc <- as.data.table(x$bpc)
-    x$spectra <- as.data.table(x$spectra)
-    x$chromatograms <- as.data.table(x$chromatograms)
-    x$features <- as.data.table(x$features)
-    x
-  })
-
-  names(analyses) <- vapply(analyses, function(x) x$name, "")
-  analyses <- analyses[order(names(analyses))]
 
   # end -----
   analyses
@@ -614,23 +617,59 @@ make_ms_analyses <- function(files = NULL, runParallel = FALSE) {
 
 #' parse_ms_spectra
 #'
+#' @description Parses spectra from mzML or mzXML files.
+#'
 #' @param files X.
 #' @param levels X.
 #' @param targets X.
-#' @param preMZr X.
+#' @param allTraces X.
+#' @param isolationWindow X.
 #' @param runParallel X.
+#' @param minIntensityMS1 X.
+#' @param minIntensityMS2 X.
 #'
-#' @return
+#' @return A list with a spectra `data.frame` for each file in `files`.
+#' On error, returns \code{NULL}.
+#'
+#' @export
 #'
 parse_ms_spectra <- function(files = NA_character_, levels = c(1, 2),
-                             targets = NULL, preMZr = NULL,
-                             runParallel = FALSE) {
+                             targets = NULL, allTraces = TRUE,
+                             isolationWindow = 1.3, runParallel = FALSE,
+                             minIntensityMS1 = 0, minIntensityMS2 = 0) {
 
   i = NULL
-  spec_list = list()
+  spec_list = NULL
   with_targets <- FALSE
 
-  if (all(!is.na(files))) {
+  possible_ms_file_formats <- ".mzML|.mzXML"
+  valid_files <- vapply(files,
+    FUN.VALUE = FALSE,
+    function(x, possible_ms_file_formats) {
+      if (!file.exists(x)) {
+        return(FALSE)
+      }
+      if (FALSE %in% grepl(possible_ms_file_formats, x)) {
+        return(FALSE)
+      }
+      TRUE
+    }, possible_ms_file_formats = possible_ms_file_formats
+  )
+
+  if (all(valid_files)) {
+
+    if (!2 %in% levels) allTraces <- TRUE
+
+    if (!allTraces) {
+      preMZr <- targets[, c("mzmin", "mzmax")]
+      preMZr$mzmin <- preMZr$mzmin - (isolationWindow / 2)
+      preMZr$mzmax <- preMZr$mzmax + (isolationWindow / 2)
+      if (nrow(preMZr) == 1 & TRUE %in% (targets$mzmax == 0)) {
+        preMZr <- NULL
+      }
+    } else {
+      preMZr <- NULL
+    }
 
     if (runParallel & length(files) > 1) {
       workers <- parallel::detectCores() - 1
@@ -1038,7 +1077,7 @@ parse_ms_spectra <- function(files = NA_character_, levels = c(1, 2),
           }
 
         ### for mzXML ----
-        } else {
+        } else if (grepl("mzXML", i)) {
 
           scan_n <- xml_find_all(xml_data, xpath = "//d1:scan")
           if (length(scan_n) > 0) {
@@ -1192,6 +1231,9 @@ parse_ms_spectra <- function(files = NA_character_, levels = c(1, 2),
           } else {
             data.frame()
           }
+        } else {
+          warning("File format must be either mzML or mzXML!")
+          data.frame()
         }
       }
     } else {
@@ -1200,8 +1242,15 @@ parse_ms_spectra <- function(files = NA_character_, levels = c(1, 2),
     if (runParallel) parallel::stopCluster(cl)
 
     if (length(spec_list) == length(files)) {
+      spec_list <- lapply(spec_list, function(x, minMS1, minMS2) {
+        x <- x[!(x$intensity <= minMS1 & x$level == 1), ]
+        x <- x[!(x$intensity <= minMS2 & x$level == 2), ]
+        x
+      }, minMS1 = minIntensityMS1, minMS2 = minIntensityMS2)
       names(spec_list) = files
     }
+  } else {
+    warning("File/s not valid!")
   }
   # end -----
   spec_list

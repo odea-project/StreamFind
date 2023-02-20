@@ -301,6 +301,22 @@ msData <- R6::R6Class("msData",
     #'
     #' @return A character vector.
     #'
+    get_mz_low = function(analyses = NULL) {
+      analyses <- self$check_analyses_argument(analyses)
+      if (is.null(analyses)) return(NULL)
+      value <- vapply(private$.analyses, function(x) x$mz_low, 0)
+      names(value) <- vapply(private$.analyses, function(x) x$name, "")
+      value[analyses]
+    },
+
+    #' @description
+    #' Method to get the polarity of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
     get_mz_high = function(analyses = NULL) {
       analyses <- self$check_analyses_argument(analyses)
       if (is.null(analyses)) return(NULL)
@@ -317,10 +333,42 @@ msData <- R6::R6Class("msData",
     #'
     #' @return A character vector.
     #'
+    get_rt_start = function(analyses = NULL) {
+      analyses <- self$check_analyses_argument(analyses)
+      if (is.null(analyses)) return(NULL)
+      value <- vapply(private$.analyses, function(x) x$rt_start, 0)
+      names(value) <- vapply(private$.analyses, function(x) x$name, "")
+      value[analyses]
+    },
+
+    #' @description
+    #' Method to get the polarity of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
     get_rt_end = function(analyses = NULL) {
       analyses <- self$check_analyses_argument(analyses)
       if (is.null(analyses)) return(NULL)
       value <- vapply(private$.analyses, function(x) x$rt_end, 0)
+      names(value) <- vapply(private$.analyses, function(x) x$name, "")
+      value[analyses]
+    },
+
+    #' @description
+    #' Method to get the polarity of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_spectra_mode = function(analyses = NULL) {
+      analyses <- self$check_analyses_argument(analyses)
+      if (is.null(analyses)) return(NULL)
+      value <- vapply(private$.analyses, function(x) x$spectra_mode, "")
       names(value) <- vapply(private$.analyses, function(x) x$name, "")
       value[analyses]
     },
@@ -353,7 +401,7 @@ msData <- R6::R6Class("msData",
     #' @param id X.
     #' @param allTraces Logical, when \code{TRUE} all level 2 data is returned.
     #' When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
-    #' are returned, using the `preMZ` value and the `isolationWindow`.
+    #' are returned, using the `isolationWindow` to calculate the mass window.
     #' @param isolationWindow X.
     #' @param minIntensityMS1 X.
     #' @param minIntensityMS2 X.
@@ -385,24 +433,24 @@ msData <- R6::R6Class("msData",
         targets$rtmax[targets$rtmax == 0] <- max(self$get_rt_end(analyses))
       }
 
-      if (!2 %in% levels) allTraces <- TRUE
-
-      if (!allTraces) {
-        preMZr <- targets[, c("mzmin", "mzmax")]
-        preMZr$mzmin <- preMZr$mzmin - (isolationWindow / 2)
-        preMZr$mzmax <- preMZr$mzmax + (isolationWindow / 2)
-        if (nrow(preMZr) == 1 & TRUE %in% (targets$mzmax == 0)) {
-          preMZr <- NULL
-        }
-      } else {
-        preMZr <- NULL
-      }
-
       has_spectra <- self$has_loaded_spectra(analyses)
 
       if (all(has_spectra)) {
-        spec_list <- lapply(analysisList,
-          function(x, levels, targets, preMZr) {
+        if (!2 %in% levels) allTraces <- TRUE
+
+        if (!allTraces) {
+          preMZr <- targets[, c("mzmin", "mzmax")]
+          preMZr$mzmin <- preMZr$mzmin - (isolationWindow / 2)
+          preMZr$mzmax <- preMZr$mzmax + (isolationWindow / 2)
+          if (nrow(preMZr) == 1 & TRUE %in% (targets$mzmax == 0)) {
+            preMZr <- NULL
+          }
+        } else {
+          preMZr <- NULL
+        }
+
+        spec_list <- lapply(self$get_analyses(analyses),
+          function(x, levels, targets, preMZr, minMS1, minMS2) {
             temp <- x$spectra
             if (!is.null(levels)) temp <- temp[temp$level %in% levels, ]
             if (!is.null(targets)) {
@@ -422,25 +470,28 @@ msData <- R6::R6Class("msData",
                 temp <- trim_spectra_targets(temp, targets, preMZr)
               }
             }
+            temp <- temp[!(temp$intensity <= minMS1 & temp$level == 1), ]
+            temp <- temp[!(temp$intensity <= minMS2 & temp$level == 2), ]
             temp
           },
           levels = levels,
           targets = targets,
-          preMZr = preMZr
+          preMZr = preMZr,
+          minMS1 = minIntensityMS1,
+          minMS2 = minIntensityMS2
         )
+
       } else {
         files <- unname(self$get_file_paths(analyses))
         spec_list <- parse_ms_spectra(
-          files, levels, targets,
-          preMZr, runParallel
+          files, levels, targets, allTraces, isolationWindow, runParallel,
+          minIntensityMS1, minIntensityMS2
         )
       }
 
       if (length(spec_list) == length(analyses)) {
         names(spec_list) <- analyses
         spec <- rbindlist(spec_list, idcol = "analysis", fill = TRUE)
-        spec <- spec[!(spec$intensity <= minIntensityMS1 & spec$level == 1), ]
-        spec <- spec[!(spec$intensity <= minIntensityMS2 & spec$level == 2), ]
         spec
       } else {
         warning("Defined analyses not found!")

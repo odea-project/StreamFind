@@ -392,19 +392,19 @@ file.remove("settings.json")
 # blk <- c(rep("blank_neg", 3),rep("blank_pos", 3),rep("blank_neg", 3),rep("blank_pos", 3))
 # ms$add_replicate_names(rpl)
 # ms$add_blank_names(blk)
-settings_ff <- list(
-  "call" = "find_features",
-  "algorithm" = "xcms3",
-  "parameters" = list(xcms::CentWaveParam(
-    ppm = 12, peakwidth = c(5, 40),
-    snthresh = 10, prefilter = c(4, 800),
-    mzCenterFun = "mean", integrate = 2,
-    mzdiff = -0.0001, fitgauss = TRUE,
-    noise = 250, verboseColumns = TRUE,
-    firstBaselineCheck = FALSE,
-    extendLengthMSW = TRUE
-  ))
-)
+# settings_ff <- list(
+#   "call" = "find_features",
+#   "algorithm" = "xcms3",
+#   "parameters" = list(xcms::CentWaveParam(
+#     ppm = 12, peakwidth = c(5, 40),
+#     snthresh = 10, prefilter = c(4, 800),
+#     mzCenterFun = "mean", integrate = 2,
+#     mzdiff = -0.0001, fitgauss = TRUE,
+#     noise = 250, verboseColumns = TRUE,
+#     firstBaselineCheck = FALSE,
+#     extendLengthMSW = TRUE
+#   ))
+# )
 # settings_gf <- list(
 #   "call" = "group_features",
 #   "algorithm" = "xcms3",
@@ -419,92 +419,45 @@ settings_ff <- list(
 #     )
 #   )
 # )
-settings_gf_alignment <- list(
-  "call" = "group_features",
-  "algorithm" = "xcms3",
-  "parameters" = list(
-    rtalign = TRUE,
-    loadRawData = TRUE,
-    groupParam = xcms::PeakDensityParam(
-      sampleGroups = "holder",
-      bw = 3,
-      minFraction = 0.6,
-      minSamples = 2,
-      binSize = 0.008,
-      maxFeatures = 100
-    ),
-    preGroupParam = xcms::PeakDensityParam(
-      sampleGroups = "holder",
-      bw = 5,
-      minFraction = 1,
-      minSamples = 3,
-      binSize = 0.008,
-      maxFeatures = 100
-    ),
-    retAlignParam = xcms::PeakGroupsParam(
-      minFraction = 1,
-      extraPeaks = 0,
-      smooth = "loess",
-      span = 0.3,
-      family = "gaussian"
-    )
-  )
-)
+# settings_gf_alignment <- list(
+#   "call" = "group_features",
+#   "algorithm" = "xcms3",
+#   "parameters" = list(
+#     rtalign = TRUE,
+#     loadRawData = TRUE,
+#     groupParam = xcms::PeakDensityParam(
+#       sampleGroups = "holder",
+#       bw = 3,
+#       minFraction = 0.6,
+#       minSamples = 2,
+#       binSize = 0.008,
+#       maxFeatures = 100
+#     ),
+#     preGroupParam = xcms::PeakDensityParam(
+#       sampleGroups = "holder",
+#       bw = 5,
+#       minFraction = 1,
+#       minSamples = 3,
+#       binSize = 0.008,
+#       maxFeatures = 100
+#     ),
+#     retAlignParam = xcms::PeakGroupsParam(
+#       minFraction = 1,
+#       extraPeaks = 0,
+#       smooth = "loess",
+#       span = 0.3,
+#       family = "gaussian"
+#     )
+#   )
+# )
 
-ms <- msData$new(files[c(4:6, 10:12)], runParallel = FALSE)
-ms$find_features(settings = settings_ff)
+# ms <- msData$new(files[c(4:6, 10:12)], runParallel = FALSE)
+# ms$find_features(settings = settings_ff)
 # ms$group_features(settings = settings_gf)
-ms$group_features(settings = settings_gf_alignment)
-self <- ms$clone(deep = T)
-
-# file.remove(c("header.json", "settings.json",
-#   "analyses.json", "groups.json", "msData.json"))
-
-ms <- msData$new(all_files[c(4:6)], runParallel = FALSE)
-
-ms$get_ms2(analyses = 1, mz = targets[2, ])
-
-parse_ms_spectra(all_files[4])
-
-ms$load_chromatograms()
-
-ms$get_spectra(analyses = 1:2, mz = targets, levels = 2)
-ms$get_features_ms2(analyses = 1, mz = targets[2, ])
-
-ms$get_spectra_levels(1)
-
-test <- make_ms_analyses(files[1])
-
-ms$get_analyses(1:2)
-
-ms$check_analyses_argument(NULL)
+# ms$group_features(settings = settings_gf_alignment)
+# self <- ms$clone(deep = T)
 
 
-ms2 <- ms$get_groups_ms2(runParallel = TRUE, groupBy = "replicates")
-
-
-test <- ms$get_overview()
-
-
-test <- ms2[ms2$group %in% "mz200.202_d7_rt1325_t28_g4", ]
-
-correlate_analysis_spectra(test, byReplicates = TRUE, minIntensity = 250)
-plot_ms2_interactive(test, colorBy = "replicates")
-
-
-length(unique(ms2$group))
-
-ms$get_groups()
-
-
-
-
-
-
-
-
-test <- make_ms_analyses(files = all_files[29], runParallel = FALSE)
-View(test)
 
 
 

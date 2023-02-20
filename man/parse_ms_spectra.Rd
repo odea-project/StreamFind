@@ -8,8 +8,11 @@ parse_ms_spectra(
   files = NA_character_,
   levels = c(1, 2),
   targets = NULL,
-  preMZr = NULL,
-  runParallel = FALSE
+  allTraces = TRUE,
+  isolationWindow = 1.3,
+  runParallel = FALSE,
+  minIntensityMS1 = 0,
+  minIntensityMS2 = 0
 )
 }
 \arguments{
@@ -19,10 +22,20 @@ parse_ms_spectra(
 
 \item{targets}{X.}
 
-\item{preMZr}{X.}
+\item{allTraces}{X.}
+
+\item{isolationWindow}{X.}
 
 \item{runParallel}{X.}
+
+\item{minIntensityMS1}{X.}
+
+\item{minIntensityMS2}{X.}
+}
+\value{
+A list with a spectra \code{data.frame} for each file in \code{files}.
+On error, returns \code{NULL}.
 }
 \description{
-parse_ms_spectra
+Parses spectra from mzML or mzXML files.
 }

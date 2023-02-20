@@ -17,6 +17,7 @@ files in parallel.}
 }
 \value{
 A named list with a list object for each file in \code{files}.
+On error, returns \code{NULL}.
 }
 \description{
 Reads given mzML/mzXML file/s and makes a named list with a list object for

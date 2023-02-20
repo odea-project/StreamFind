@@ -470,7 +470,7 @@ Method to get spectra from the MS analyses.
 
 \item{\code{allTraces}}{Logical, when \code{TRUE} all level 2 data is returned.
 When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
-are returned, using the \code{preMZ} value and the \code{isolationWindow}.}
+are returned, using the \code{isolationWindow} to calculate the mass window.}
 
 \item{\code{isolationWindow}}{X.}
 
