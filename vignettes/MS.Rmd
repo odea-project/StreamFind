@@ -563,7 +563,45 @@ ms$plot_ms2(analyses = 3, mz = targets1,
 
 # Processing settings
 
+Data processing steps often require settings with parameters to support the application of a given function to the data. In the msData object, methods that require settings have the `settings` argument (e.g., the method `find_features()`). In the streamFind package, the `settings` argument takes a list with three mandatory entries: *call*, *algorithm* and *parameters*. The *call* defined the name of the method (or processing step to be applied), such as "find_features" or "group_features". The *algorithm* defines the algorithm to be used for the processing step (e.g., "xcms", "openms"). Finally, the *parameters* are a list of algorithm dependent entries that define the settings to be applied during data processing. An example for "find_features" settings using the algorithm "xcms" is given below. Most of the data processing methods in streamFind uses the package [patRoon](https://github.com/rickhelmus/patRoon). The interface is therefore the same. The algorithm and parameters (named "param" in [patRoon](https://github.com/rickhelmus/patRoon)) can be taken from the respective documentation of the equivalent function. For instance, the `find_features()` method in streamFind uses the [findFeatures()](https://rickhelmus.github.io/patRoon/reference/findFeatures.html) function in [patRoon](https://github.com/rickhelmus/patRoon). The documentation of each data processing method in `?msData` explains and exemplifies the usage and where the required settings can be acquired in [patRoon](https://github.com/rickhelmus/patRoon).
 
+```{r find-features-settings-xcms}
+settingsFindFeatures <- list(
+  "call" = "find_features",
+  "algorithm" = "xcms3",
+  "parameters" = list(
+    xcms::CentWaveParam(
+      ppm = 12,
+      peakwidth = c(5, 40),
+      snthresh = 10,
+      prefilter = c(4, 800),
+      mzCenterFun = "mean",
+      integrate = 2,
+      mzdiff = -0.0001,
+      fitgauss = TRUE,
+      noise = 250,
+      verboseColumns = TRUE,
+      firstBaselineCheck = FALSE,
+      extendLengthMSW = TRUE
+    )
+  )
+)
+
+settings_ff
+```
+
+The settings object can be added to the msData object with the `add_settings()` method as shown below. Similarly, it can be obtained with the `get_settings()` method using the call name as also shown below.
+
+```{r add-find-features-settings-xcms}
+ms$add_settings(settings = settingsFindFeatures)
+```
+
+```{r get-find-features-settings-xcms}
+# Note that it returns a named list, therefore we access it with the [[ method
+ms$get_settings(call = "find_features")[["find_features"]]
+```
+
+# Features
 
 
 

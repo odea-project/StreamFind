@@ -353,10 +353,6 @@ test_that("remove settings", {
 file.remove(c("header.json", "analyses.json", "groups.json", "msData.json"))
 file.remove("settings.json")
 
-
-
-
-
 # todos -----
 
 # TODO Implement a field for storing MS lists for each feature/feature groups
@@ -380,10 +376,6 @@ file.remove("settings.json")
 # TODO annotation after feature finding
 
 # TODO improved grouping based on annotation
-
-
-
-
 
 # work Lines -----
 
@@ -456,8 +448,6 @@ file.remove("settings.json")
 # ms$group_features(settings = settings_gf)
 # ms$group_features(settings = settings_gf_alignment)
 # self <- ms$clone(deep = T)
-
-
 
 
 
