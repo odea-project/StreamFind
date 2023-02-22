@@ -15,8 +15,8 @@ files_mrm <- all_files[grepl("mrm", all_files)]
 files <- all_files[grepl("influent|blank", all_files)]
 files2 <- all_files[grepl("o3sw", all_files)]
 db_cols <- c("name", "mass", "rt")
-carbamazepin_d10 <- db[name %in% "Carbamazepin-d10", db_cols, with = FALSE]
-diuron_d6 <- db[name %in% "Diuron-d6", db_cols, with = FALSE]
+carbamazepin_d10 <- db[db$name %in% "Carbamazepin-d10", db_cols, with = FALSE]
+diuron_d6 <- db[db$name %in% "Diuron-d6", db_cols, with = FALSE]
 carb_pos <- carbamazepin_d10$mass + 1.007276
 carb <- carbamazepin_d10$mass + 1.007276
 carb_rt <- carbamazepin_d10$rt
@@ -163,11 +163,11 @@ settings_ff <- list(
   "call" = "find_features",
   "algorithm" = "xcms3",
   "parameters" = list(xcms::CentWaveParam(
-    ppm = 12, peakwidth = c(5, 40),
-    snthresh = 10, prefilter = c(4, 800),
+    ppm = 12, peakwidth = c(5, 30),
+    snthresh = 10, prefilter = c(5, 1500),
     mzCenterFun = "mean", integrate = 2,
     mzdiff = -0.0001, fitgauss = TRUE,
-    noise = 250, verboseColumns = TRUE,
+    noise = 500, verboseColumns = TRUE,
     firstBaselineCheck = FALSE,
     extendLengthMSW = TRUE
   ))
@@ -332,16 +332,35 @@ test_that("remove 0 groups (wrong name)", {
   expect_equal(nrow(ms5$get_groups()), org_g_number)
 })
 
+n_fts <- nrow(ms5$get_features(filtered = FALSE))
+n_fts_total <- nrow(ms5$get_features(filtered = TRUE))
 ms5$remove_groups(1:2)
 
 test_that("remove 2 groups", {
   expect_lt(nrow(ms5$get_groups()), org_g_number)
+  expect_equal(nrow(ms5$get_features(filtered = TRUE)), n_fts_total)
+  expect_lt(nrow(ms5$get_features()), n_fts)
 })
 
 ms5$remove_groups()
 
 test_that("remove groups completely", {
   expect_false(ms5$has_groups())
+  expect_false(any(ms5$get_features()[["filtered"]]))
+})
+
+fts_to_rem <- ms5$get_features(mz = targets)
+ms5$remove_features(fts_to_rem)
+
+test_that("remove featrues", {
+  expect_lt(nrow(ms5$get_features()), n_fts_total)
+  expect_equal(nrow(ms5$get_features(mz = targets)), 0)
+})
+
+ms5$remove_features()
+
+test_that("remove features completely", {
+  expect_false(any(ms5$has_features()))
 })
 
 ms5$remove_settings("group_features")
@@ -353,6 +372,24 @@ test_that("remove settings", {
 file.remove(c("header.json", "analyses.json", "groups.json", "msData.json"))
 file.remove("settings.json")
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # todos -----
 
 # TODO Implement a field for storing MS lists for each feature/feature groups
@@ -361,6 +398,8 @@ file.remove("settings.json")
 # To be used when importing from rds file.
 
 # TODO Make check for single polarity when removing or sub-setting analyses
+
+# TODO check for features with mzmax - mzmin = 0, why?
 
 # TODO Improve methods for plotting already produced data.frames from
 # class functions, similar to S4 implementation for data.table
@@ -384,19 +423,19 @@ file.remove("settings.json")
 # blk <- c(rep("blank_neg", 3),rep("blank_pos", 3),rep("blank_neg", 3),rep("blank_pos", 3))
 # ms$add_replicate_names(rpl)
 # ms$add_blank_names(blk)
-# settings_ff <- list(
-#   "call" = "find_features",
-#   "algorithm" = "xcms3",
-#   "parameters" = list(xcms::CentWaveParam(
-#     ppm = 12, peakwidth = c(5, 40),
-#     snthresh = 10, prefilter = c(4, 800),
-#     mzCenterFun = "mean", integrate = 2,
-#     mzdiff = -0.0001, fitgauss = TRUE,
-#     noise = 250, verboseColumns = TRUE,
-#     firstBaselineCheck = FALSE,
-#     extendLengthMSW = TRUE
-#   ))
-# )
+settings_ff <- list(
+  "call" = "find_features",
+  "algorithm" = "xcms3",
+  "parameters" = list(xcms::CentWaveParam(
+    ppm = 12, peakwidth = c(5, 30),
+    snthresh = 10, prefilter = c(5, 3000),
+    mzCenterFun = "mean", integrate = 2,
+    mzdiff = -0.0005, fitgauss = TRUE,
+    noise = 1000, verboseColumns = TRUE,
+    firstBaselineCheck = FALSE,
+    extendLengthMSW = TRUE
+  ))
+)
 # settings_gf <- list(
 #   "call" = "group_features",
 #   "algorithm" = "xcms3",
@@ -443,26 +482,80 @@ file.remove("settings.json")
 #   )
 # )
 
-# ms <- msData$new(files[c(4:6, 10:12)], runParallel = FALSE)
-# ms$find_features(settings = settings_ff)
+ms <- msData$new(files[c(4:5)], runParallel = FALSE) #, 10:12
+ms$find_features(settings = settings_ff)
 # ms$group_features(settings = settings_gf)
 # ms$group_features(settings = settings_gf_alignment)
-# self <- ms$clone(deep = T)
 
 
 
+# settingsLoadFeaturesMS1 <- list(
+#   "call" = "load_features_ms1",
+#   "algorithm" = "streamFind",
+#   "parameters" = list(
+#     rtWindow = c(-2, 2),
+#     mzWindow = c(-1, 6),
+#     mzClust = 0.001,
+#     minIntensity = 250,
+#     filtered = FALSE,
+#     runParallel = FALSE,
+#     verbose = FALSE
+#   )
+# )
+
+settingsLoadFeaturesMS2 <- list(
+  "call" = "load_features_ms2",
+  "algorithm" = "streamFind",
+  "parameters" = list(
+    isolationWindow = 1.3,
+    mzClust = 0.001,
+    minIntensity = 250,
+    filtered = FALSE,
+    runParallel = FALSE,
+    verbose = FALSE
+  )
+)
+
+ms$add_settings(settingsLoadFeaturesMS2)
+ms$get_settings("load_features_ms2")
+
+# ms$load_features_ms1()
+
+self <- ms$clone(deep = T)
+
+# ms$load_features_ms1()
+
+ms$load_features_ms2()
+ms$has_loaded_features_ms2()
 
 
 
+test <- ms$get_features()[1:5, ]
+test2 <- ms$get_features()[1:5, ][["ms2"]]
+names(test2) <- test$id
+test2 <- rbindlist(test2, idcol = "id", fill = TRUE)
+
+
+ms$get_features_ms2(analyses = 1, mz = targets)
+
+
+ms$get_features_ms1(analyses = 1, id = "mz333.203_d2_rt1295_t20_f879",
+  mzWindow = c(-0.1, 0.005), rtWindow = NULL, minIntensity = 0,
+  mzClust = 0.00005)
+
+
+ms$get_spectra(analyses = 1, mz = test$mz, rt = test$rt, ppm = 5, sec = 5)
 
 
 
+test <- ms$get_features(id = "mz333.203_d3_rt1294_t9_f598")
+
+ms$plot_features(id = "mz333.203_d3_rt1294_t9_f598")
 
 
+test$mzmax - test$mzmin
 
-
-
-
+ms$get_features()
 
 
 

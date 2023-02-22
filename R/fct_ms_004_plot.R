@@ -621,15 +621,17 @@ plot_ms2_static <- function(ms2 = NULL, legendNames = NULL,
 
   ms2$var <- as.factor(ms2$var)
 
-  ms2[, color := cl[var]]
+  ms2$color <- cl[ms2$var]
+
+  ms2$text = paste0(round(ms2$mz, 4))
 
   plot(intensity ~ mz, ms2,
     type = "h",
     xlab = expression(italic("m/z")),
     ylab = "Intensity / counts",
-    col = color,
+    col = ms2$color,
     lwd = 2,
-    ylim = c(0, max(ms2$intensity) * 1.15),
+    ylim = c(0, max(ms2$intensity) * 1.5),
     main = title,
     yaxs = "i",
     xaxt = "n"
@@ -639,21 +641,21 @@ plot_ms2_static <- function(ms2 = NULL, legendNames = NULL,
 
   for (s in seq_len(nrow(precursors))) {
     lines(
-      x = rep(precursors[s, mz], 2),
-      y = c(0, precursors[s, intensity]),
+      x = rep(precursors$mz[s], 2),
+      y = c(0, precursors$intensity[s]),
       type = "h",
       pch = 19,
-      lwd = 8,
+      lwd = 5,
       cex = 0.5,
-      col = precursors[s, color]
-    )
-
-    text(
-      x = precursors[s, mz], y = precursors[s, intensity],
-      labels = "P", pos = 3, offset = 0.5, vfont = NULL,
-      cex = 1, col = precursors[s, color], font = NULL
+      col = precursors$color[s]
     )
   }
+
+  text(
+    x = ms2$mz, y = ms2$intensity, adj = c(-0.1, 0.25),
+    labels = ms2$text, vfont = NULL,
+    cex = 0.6, col = ms2$color, font = NULL, srt = 90
+  )
 
   ticksMin <- plyr::round_any(min(ms2$mz, na.rm = TRUE) * 0.9, 10)
   ticksMax <- plyr::round_any(max(ms2$mz, na.rm = TRUE) * 1.1, 10)
@@ -721,14 +723,10 @@ plot_ms2_interactive <- function(ms2 = NULL, legendNames = NULL,
 
     mz_text <- paste0(round(data$mz, digits = 4), "  ")
 
-    precursor <- data[data$isPre, ]
-
     if (TRUE %in% data$isPre) {
       mz_text[data$isPre] <- paste0("Pre ", mz_text[data$isPre])
-      bar_widths[data$isPre] <- 2
+      bar_widths[data$isPre] <- 4
     }
-
-    notPrecursor <- data[!data$isPre, ]
 
     plot <- plot %>% add_trace(
       data = data,
@@ -769,10 +767,11 @@ plot_ms2_interactive <- function(ms2 = NULL, legendNames = NULL,
     linecolor = toRGB("black"),
     linewidth = 2,
     title = "Intensity / counts",
-    titlefont = list(size = 12, color = "black")
+    titlefont = list(size = 12, color = "black"),
+    range = c(0, max(ms2$intensity) * 1.5)
   )
 
-  plot <- plot %>% plotly::layout(
+  plot <- plot %>% plotly::layout(bargap = 1,
     title = title, xaxis = xaxis, yaxis = yaxis,
     barmode = "overlay", uniformtext = list(minsize = 6, mode = "show")
   )
@@ -821,18 +820,26 @@ plot_ms1_static <- function(ms1 = NULL, legendNames = NULL,
 
   ms1$var <- as.factor(ms1$var)
 
-  ms1[, color := cl[var]]
+  ms1$color <- cl[ms1$var]
+
+  ms1$text = paste0(round(ms1$mz, 4))
 
   plot(intensity ~ mz, ms1,
     type = "h",
     xlab = expression(italic("m/z")),
     ylab = "Intensity / counts",
-    col = color,
+    col = ms1$color,
     lwd = 2,
-    ylim = c(0, max(ms1$intensity) * 1.15),
+    ylim = c(0, max(ms1$intensity) * 1.5),
     main = title,
     yaxs = "i",
     xaxt = "n"
+  )
+
+  text(
+    x = ms1$mz, y = ms1$intensity, adj = c(-0.1, 0.25),
+    labels = ms1$text, vfont = NULL,
+    cex = 0.6, col = ms1$color, font = NULL, srt = 90
   )
 
   ticksMin <- plyr::round_any(min(ms1$mz, na.rm = TRUE) * 0.9, 10)
@@ -905,18 +912,15 @@ plot_ms1_interactive <- function(ms1 = NULL, legendNames = NULL,
   for (v in leg) {
     data <- ms1[ms1$var == v, ]
 
-    bar_widths <- rep(0.0001, nrow(data))
-
     mz_text <- paste0(round(data$mz, digits = 4), "  ")
 
     plot <- plot %>% add_trace(
       x = data$mz,
       y = data$intensity,
       type = "bar",
-      # width = 0.05,
       marker = list(
         color = cl[v],
-        line = list(color = cl[v], width = bar_widths)
+        line = list(color = cl[v], width = 0.01)
       ),
       text = mz_text,
       textposition = "outside",
@@ -947,10 +951,11 @@ plot_ms1_interactive <- function(ms1 = NULL, legendNames = NULL,
     linecolor = toRGB("black"),
     linewidth = 2,
     title = "Intensity / counts",
-    titlefont = list(size = 12, color = "black")
+    titlefont = list(size = 12, color = "black"),
+    range = c(0, max(ms1$intensity) * 1.5)
   )
 
-  plot <- plot %>% plotly::layout(
+  plot <- plot %>% plotly::layout(bargap = 1,
     title = title, xaxis = xaxis, yaxis = yaxis,
     barmode = "overlay", uniformtext = list(minsize = 6, mode = "show")
   )

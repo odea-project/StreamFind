@@ -565,7 +565,7 @@ ms$plot_ms2(analyses = 3, mz = targets1,
 
 Data processing steps often require settings with parameters to support the application of a given function to the data. In the msData object, methods that require settings have the `settings` argument (e.g., the method `find_features()`). In the streamFind package, the `settings` argument takes a list with three mandatory entries: *call*, *algorithm* and *parameters*. The *call* defined the name of the method (or processing step to be applied), such as "find_features" or "group_features". The *algorithm* defines the algorithm to be used for the processing step (e.g., "xcms", "openms"). Finally, the *parameters* are a list of algorithm dependent entries that define the settings to be applied during data processing. An example for "find_features" settings using the algorithm "xcms" is given below. Most of the data processing methods in streamFind uses the package [patRoon](https://github.com/rickhelmus/patRoon). The interface is therefore the same. The algorithm and parameters (named "param" in [patRoon](https://github.com/rickhelmus/patRoon)) can be taken from the respective documentation of the equivalent function. For instance, the `find_features()` method in streamFind uses the [findFeatures()](https://rickhelmus.github.io/patRoon/reference/findFeatures.html) function in [patRoon](https://github.com/rickhelmus/patRoon). The documentation of each data processing method in `?msData` explains and exemplifies the usage and where the required settings can be acquired in [patRoon](https://github.com/rickhelmus/patRoon).
 
-```{r find-features-settings-xcms}
+```{r ff-settings-xcms}
 settingsFindFeatures <- list(
   "call" = "find_features",
   "algorithm" = "xcms3",
@@ -587,26 +587,177 @@ settingsFindFeatures <- list(
   )
 )
 
-settings_ff
+settingsFindFeatures
 ```
 
 The settings object can be added to the msData object with the `add_settings()` method as shown below. Similarly, it can be obtained with the `get_settings()` method using the call name as also shown below.
 
-```{r add-find-features-settings-xcms}
+```{r add-ff-xcms}
 ms$add_settings(settings = settingsFindFeatures)
 ```
 
-```{r get-find-features-settings-xcms}
+```{r get-ff-xcms}
 # Note that it returns a named list, therefore we access it with the [[ method
 ms$get_settings(call = "find_features")[["find_features"]]
 ```
 
+# Centroiding
+
+To be implemented with algorithm from DUE (Gerrit and Max).
+
 # Features
 
+Extraction of features from raw MS data is a frequent step applied during data processing for easing prioritization and identification of chemicals in a given analysis (i.e., sample). A feature in essence describes a chromatographic peak composed fundamentally of three values: mass-to-charge ratio (*m/z*), retention time (rt) and intensity. The method `find_features()` from a msData object can be used to extract features from files represented by the analysis objects. Several algorithms (i.e., software) are available for finding features through the [patRoon](https://github.com/rickhelmus/patRoon) package as above mentioned. Some algorithms require spectral data in profile mode but most use centroided data (see \@ref(centroiding) for more information about centroid vs profile mode). Below, we use the added settings to find features from the analyses in the object `ms`. Note that the argument `settings` was not used (`NULL` is the default value) as the settings were already added to the object. Adding settings via the argument `settings` during call for method `find_features()` replaces any existing settings in the msData objects with call name "find_features". If settings with call name "find_features" are not available or given, features are not extracted.
+
+```{r ff-01, warning=FALSE, message=FALSE}
+ms$find_features(settings = NULL)
+```
+
+```{r print-ms-after-ff}
+# check for presence of features in analyses
+ms$has_features()
+
+# show method giving the number of features
+ms
+```
+
+## Get features
+
+As above described, there are get methods to parse data from a msData class object. For features, the method `get_features()` can be used as shown below. When no arguments are given, the features `data.table` in each analysis is collated without filtering and a column analysis is given to make reference for the analysis that the corresponding features belong to.
+
+```{r get-all-features}
+head(ms$get_features())
+```
+
+The same arguments from `make_ms_targets()` are available. Below the corresponding features of Carbamazepin-d10 are extracted using the `mz` and `rt` arguments.
+
+```{r get-features-targets-01}
+ms$get_features(mz = carb_mz_pos, rt = carb_rt, ppm = 5, sec = 10)
+```
+
+The features `data.table` contain the following mandatory columns:
+
+ - **analysis**: (character) The file name without extension;
+ - **id**: (character) The unique identifier of the feature in the analysis;
+ - **index**: (numeric) The index of the feature in the analysis;
+ - **mz**: (numeric) The calculated *m/z* from feature mass traces (i.e., centroids), in Da;
+ - **rt*"**: (numeric) The calculated retention time from feature mass traces, in seconds;
+ - **mzmin**: (numeric) The minimum *m/z* value of the feature mass traces, in Da;
+ - **mzmax**: (numeric) The maximum *m/z* value of the feature mass traces, in Da;
+ - **rtmin**: (numeric) The minimum retention time value of the feature mass traces, in seconds;
+ - **rtmax**: (numeric) The maximum retention time value of the feature mass traces, in seconds;
+ - **intensity**: (numeric) The calculated height of the features, in counts; 
+ - **area**: (numeric) The calculated area of the integrated feature;
+ 
+Other columns added from specific algorithms or added by streamFind after feature extraction are:
+
+ - **adduct**: (character) The adduct label of the feature (e.g., [M+H]+, [M-H]-, [M+Na]+), see \@ref(isotopes-and-adducts) for more information;
+ - **mass**: (numeric) The calculated neutral mass of the feature based on the polarity of the analysis;
+ - **is_filled**: (logical) `TRUE` means that the feature was built with recursive integration (i.e., integrated after correspondence analysis, see \@ref(groups) for more information);
+ - **filtered**: (logical) `TRUE` means that the feature was filtered out from the set but still remained in the data set (see \@ref(filters) for more information);
+ - **sn**: (numeric) The calculated signal-to-noise ratio of the feature;
+
+## Plot features
+
+There are two methods to plot features: `plot_features()` and `map_features()`. Both methods are demonstrated below for the features correspondent of the target chemicals. While the `plot_features()` method plots the chromatogram to inspect intensity, shape and other fitting aspects the `map_features()` method plots the time and mass space (shaded area) of the features as well as the calculate *m/z* and retention time values (dots). For instance, when applying correspondence analysis (\@ref(groups)), these plots can be used to evaluate the most appropriate mass and time deviations to consider in the processing settings.
+
+```{r plot-features-targets-01}
+ms$plot_features(analyses = 1, mz = targets1, colorBy = "targets", interactive = FALSE)
+```
+
+```{r plot-features-targets-02}
+ms$plot_features(mz = targets1, colorBy = "analyses", interactive = TRUE)
+```
+
+```{r map-features-targets-01}
+ms$map_features(mz = targets1, colorBy = "analyses", interactive = TRUE)
+```
+
+## Get MS1 and MS2
+
+As mentioned, each feature represents an MS1 level chromatographic peak. The averaged MS1 spectrum can be obtained with the method `get_features_ms1()`. Spectra within the feature mass and time space are collected and clustered according to a `mzClust` argument (in Da), as shown below.  The arguments `rtWindow` and `mzWindow` can be used to narrow or extend the space for collection of mass traces. In the example below, the time window for collection of mass traces will be plus/minus 2 seconds the calculated retention time of the feature found by the `mz` and `rt` arguments; In the example, it is the feature correspondent to Carbamazepin-d10. The mass window will be -1 Da and +6 Da the calculated *m/z*. When both `rtWindow` and `mzWindow` are `NULL`, the integrated feature space (as plotted by the `map_features()` method) will be used. A `minIntensity` argument is used to filter mass traces below an intensity threshold. In the example below it was set to 1000 counts, to exclude low intensity mass traces. The `data.table` obtained can be plotted directly with the `plot_features_ms1()` method as shown below.
+
+```{r get-features-ms1}
+ms$get_features_ms1(analyses = 2, mz = carb_mz_pos, rt = carb_rt,
+  ppm = 20, sec = 30, rtWindow = c(-2, 2), mzWindow = c(-1, 6),
+  mzClust = 0.003, minIntensity = 1000
+)
+```
+
+```{r plot-features-ms1}
+# plotting the MS1 spectrum of both Carbamazepin-d10 and Diuron-d6 in analyses 2
+ms$plot_features_ms1(analyses = 2, verbose = FALSE,
+  mz = targets1, rtWindow = c(-2, 2), mzWindow = c(-1, 6),
+  mzClust = 0.003, minIntensity = 1000, colorBy = "targets"
+)
+```
+
+MS2 data from features is obtained with the `get_features_ms2()` method, as shown below. For MS2, the arguments `mzClust` and `minIntensity` are applied the same way as for MS1. However, when extracting traces an isolation window (in Da) should be set using the argument `isolationWindow`. The isolation windows should match with the settings used to isolate precursors ions during fragmentation from tandem MS. Below we set the `isolationWindow` to 1.3 Da, which extends the *mzmin* to *mzmax* range of the feature by $-\frac{1.3}{2}$ and $+\frac{1.3}{2}$, respectively. Plotting the `data.table` can also be directly performed with the `plot_features_ms2()` method as shown below.
+
+```{r get-features-ms2}
+ms$get_features_ms2(analyses = 3, mz = carb_mz_pos, rt = carb_rt,
+  ppm = 20, sec = 30, isolationWindow = 1.3, mzClust = 0.003,
+  minIntensity = 500, verbose = FALSE
+)
+```
+
+```{r plot-features-ms2}
+ms$plot_features_ms2(mz = carb_mz_pos, rt = carb_rt,
+  ppm = 20, sec = 30, isolationWindow = 1.3, mzClust = 0.003,
+  minIntensity = 500, colorBy = "analyses", verbose = FALSE
+)
+```
+
+```{r plot-features-ms2-2}
+ms$plot_features_ms2(analyses = 1, mz = targets1,
+  isolationWindow = 1.3, mzClust = 0.003,
+  minIntensity = 500, colorBy = "targets",
+  interactive = FALSE, verbose = FALSE
+)
+```
+
+## Load MS1 and MS2
+
+Both MS1 and MS2 spectra can support identification processing steps by giving additional information from isotopic and specific fragmentation patterns, respectively. The methods `load_features_ms1()` and `load_features_ms2()` are used for systematically load averaged MS1 and MS2 spectra for features in a msData class object. Both methods have a `settings` argument which takes a settings object similar to "find_features" settings but with the specific call name, which is the method name, as shown below. The parameters are the same as the arguments of the respective get methods. The settings can be also added to the settings internal field as explained above. This allows for internal data re-processing, inspection and retrospective evaluation.
+
+```{r}
+# settings for loading features MS1 spectra
+settingsLoadFeaturesMS1 <- list(
+  "call" = "load_features_ms1",
+  "algorithm" = "streamFind",
+  "parameters" = list(
+    rtWindow = c(-2, 2),
+    mzWindow = NULL,
+    mzClust = 0.003,
+    minIntensity = 250,
+    filtered = FALSE,
+    runParallel = FALSE,
+    verbose = FALSE
+  )
+)
+
+# settings for loading features MS2 spectra
+settingsLoadFeaturesMS2 <- list(
+  "call" = "load_features_ms2",
+  "algorithm" = "streamFind",
+  "parameters" = list(
+    isolationWindow = 1.3,
+    mzClust = 0.003,
+    minIntensity = 0,
+    filtered = FALSE,
+    runParallel = FALSE,
+    verbose = FALSE
+  )
+)
+```
 
 
 
 
+
+When MS2 data is not available for a given isolation window (i.e., the feature *m/z* at the retention time window was not fragmented), a `NULL` value is returned.
+
+# Isotopes and adducts
 
 
 
@@ -620,7 +771,7 @@ ms$get_settings(call = "find_features")[["find_features"]]
 
 
 
-
+# Filters
 
 
 

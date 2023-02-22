@@ -658,9 +658,22 @@ parse_ms_spectra <- function(files = NA_character_, levels = c(1, 2),
 
   if (all(valid_files)) {
 
+    if (!any(is.numeric(minIntensityMS1) | is.integer(minIntensityMS1))) {
+      minIntensityMS1 <- 0
+    }
+
+    if (!any(is.numeric(minIntensityMS2) | is.integer(minIntensityMS2))) {
+      minIntensityMS1 <- 0
+    }
+
     if (!2 %in% levels) allTraces <- TRUE
 
+    if (!is.logical(allTraces)) allTraces <- TRUE
+
     if (!allTraces) {
+      if (!any(is.numeric(isolationWindow) | is.integer(isolationWindow))) {
+        isolationWindow <- 0
+      }
       preMZr <- targets[, c("mzmin", "mzmax")]
       preMZr$mzmin <- preMZr$mzmin - (isolationWindow / 2)
       preMZr$mzmax <- preMZr$mzmax + (isolationWindow / 2)
@@ -670,6 +683,8 @@ parse_ms_spectra <- function(files = NA_character_, levels = c(1, 2),
     } else {
       preMZr <- NULL
     }
+
+    if (!is.logical(runParallel)) runParallel <- FALSE
 
     if (runParallel & length(files) > 1) {
       workers <- parallel::detectCores() - 1
