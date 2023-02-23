@@ -342,19 +342,20 @@ test_that("remove 2 groups", {
   expect_lt(nrow(ms5$get_features()), n_fts)
 })
 
+fts_to_rem <- ms5$get_features(mz = targets)
+ms5$remove_features(fts_to_rem)
+
+test_that("remove 12 featrues from targets", {
+  expect_lt(nrow(ms5$get_features()), n_fts_total)
+  expect_equal(nrow(ms5$get_groups(groups = unique(fts_to_rem$group))), 0)
+  expect_equal(nrow(ms5$get_features(mz = targets)), 0)
+})
+
 ms5$remove_groups()
 
 test_that("remove groups completely", {
   expect_false(ms5$has_groups())
   expect_false(any(ms5$get_features()[["filtered"]]))
-})
-
-fts_to_rem <- ms5$get_features(mz = targets)
-ms5$remove_features(fts_to_rem)
-
-test_that("remove featrues", {
-  expect_lt(nrow(ms5$get_features()), n_fts_total)
-  expect_equal(nrow(ms5$get_features(mz = targets)), 0)
 })
 
 ms5$remove_features()
