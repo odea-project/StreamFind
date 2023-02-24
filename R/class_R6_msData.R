@@ -3438,6 +3438,64 @@ msData <- R6::R6Class("msData",
       }
     },
 
+    #' @description
+    #' Subsets an `msData` object on features from analyses.
+    #'
+    #' @param features A data.frame with columns \emph{analysis} and \emph{id}
+    #' representing the analysis name and the id of the features to keep in the
+    #' new `msData` object, respectively.
+    #'
+    #' @return A new cloned `msData` object with only the features as defined
+    #' by the `groups` argument.
+    #'
+    subset_features = function(features = NULL) {
+      if (is.data.frame(features)) {
+        cols_must_have <- c("analysis", "id")
+        if (all(cols_must_have %in% colnames(features))) {
+          all_fts <- self$get_features()
+          n_all <- nrow(all_fts)
+
+          if (n_all > 0) {
+            unique_fts_ids <- paste0(all_fts$analysis, all_fts$id)
+            keep_fts <- paste0(features$analysis, features$id)
+            rem_fts <- !(unique_fts_ids %in% keep_fts)
+            rem_fts <- rem_fts[rem_fts, cols_must_have, with = FALSE]
+
+            if (nrow(rem_fts) > 0) {
+              new_msData <- self$clone(deep = TRUE)
+              new_msData <- self$remove_features(rem_fts)
+              return(new_msData)
+            }
+          }
+        }
+      }
+      self$clone(deep = TRUE)
+    },
+
+    #' @description
+    #' Subsets an `msData` object on groups from correspondence of features
+    #' across analyses.
+    #'
+    #' @param groups X.
+    #'
+    #' @return A new cloned `msData` object with only the groups as defined
+    #' by the `groups` argument.
+    #'
+    subset_groups = function(groups = NULL) {
+      if (self$has_groups() & !is.null(groups)) {
+        all_groups <- self$get_groups()
+        all_groups <- all_groups$group
+        groups_rem <- all_groups[!all_groups %in% groups]
+
+        if (length(groups_rem) > 0) {
+          new_msData <- self$clone(deep = TRUE)
+          new_msData <- self$remove_groups(groups_rem)
+          return(new_msData)
+        }
+      }
+      self$clone(deep = TRUE)
+    },
+
     ## checks -----
 
     #' @description

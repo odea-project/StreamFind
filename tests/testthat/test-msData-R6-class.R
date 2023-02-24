@@ -370,11 +370,14 @@ test_that("remove settings", {
   expect_null(ms5$get_settings("group_features")[[1]])
 })
 
-file.remove(c("header.json", "analyses.json", "groups.json", "msData.json"))
-file.remove("settings.json")
+file.remove(c("header.json", "analyses.json", "groups.json", "settings.json"))
+
+ms5 <- import_msData("msData.json")
 
 
 
+
+file.remove("msData.json")
 
 
 
