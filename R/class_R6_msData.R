@@ -1849,6 +1849,124 @@ msData <- R6::R6Class("msData",
       invisible(self)
     },
 
+    ## subset -----
+
+    #' @description
+    #' Subsets an `msData` object on analyses.
+    #'
+    #' @param analyses X.
+    #'
+    #' @return A new cloned `msData` object with only the analyses as defined
+    #' by the `analyses` argument.
+    #'
+    subset_analyses = function(analyses = NULL) {
+      analyses <- self$check_analyses_argument(analyses)
+
+      if (!is.null(analyses)) {
+        allNames <- self$get_analysis_names()
+        removeAnalyses <- unname(allNames[!(allNames %in% analyses)])
+        keepAnalyses <- unname(allNames[allNames %in% analyses])
+
+        newAnalyses <- self$get_analyses(keepAnalyses)
+
+        if (self$has_groups()) {
+          newGroups <- copy(self$get_groups())
+          newGroups[, (removeAnalyses) := NULL]
+          newFeatures <- lapply(newAnalyses, function(x) x$features)
+          out_list <- update_subset_features_and_groups(newGroups, newFeatures)
+
+          newAnalyses <- Map(
+            function(x, y) {
+              x$features <- y
+              x
+            },
+            newAnalyses, out_list[["features"]]
+          )
+
+          newGroups <- out_list[["groups"]]
+        } else {
+          newGroups <- NULL
+        }
+
+        newAlignment <- private$.alignment[keepAnalyses]
+
+        msData$new(
+          files = NULL,
+          header = private$.header,
+          settings = private$.settings,
+          analyses = newAnalyses,
+          groups = newGroups,
+          alignment = newAlignment
+        )
+
+      } else {
+        self$clone(deep = TRUE)
+      }
+    },
+
+    #' @description
+    #' Subsets an `msData` object on features from analyses.
+    #'
+    #' @param features A data.frame with columns \emph{analysis} and \emph{id}
+    #' representing the analysis name and the id of the features to keep in the
+    #' new `msData` object, respectively.
+    #'
+    #' @return A new cloned `msData` object with only the features as defined
+    #' by the `groups` argument.
+    #'
+    subset_features = function(features = NULL) {
+      if (is.data.frame(features)) {
+        cols_must_have <- c("analysis", "id")
+        if (all(cols_must_have %in% colnames(features))) {
+          all_fts <- self$get_features()
+          n_all <- nrow(all_fts)
+
+          if (n_all > 0) {
+            unique_fts_ids <- paste0(all_fts$analysis, all_fts$id)
+            keep_fts <- paste0(features$analysis, features$id)
+            rem_fts <- !(unique_fts_ids %in% keep_fts)
+            rem_fts <- all_fts[rem_fts, cols_must_have, with = FALSE]
+
+            if (nrow(rem_fts) > 0) {
+              new_msData <- self$clone(deep = TRUE)
+              new_msData <- self$remove_features(rem_fts)
+              return(new_msData)
+            }
+          }
+        }
+      }
+      self$clone(deep = TRUE)
+    },
+
+    #' @description
+    #' Subsets an `msData` object on groups from correspondence of features
+    #' across analyses.
+    #'
+    #' @param groups X.
+    #'
+    #' @note When sub-setting groups, features that lose correspondence are not
+    #' removed but filtered with "grouping" added as filter category. Filtered
+    #' features can be removed with the method
+    #' `msData$remove_features(filtered = TRUE)`.
+    #'
+    #' @return A new cloned `msData` object with only the groups as defined
+    #' by the `groups` argument.
+    #'
+    subset_groups = function(groups = NULL) {
+      if (self$has_groups() & !is.null(groups)) {
+        all_groups <- self$get_groups()
+        all_groups <- all_groups$group
+        groups_rem <- all_groups[!all_groups %in% groups]
+
+        if (length(groups_rem) > 0) {
+          new_msData <- self$clone(deep = TRUE)
+          new_msData <- self$remove_groups(groups_rem)
+          return(new_msData)
+        }
+      }
+      self$clone(deep = TRUE)
+    },
+
     ## has -----
 
     #' @description
@@ -3381,119 +3499,6 @@ msData <- R6::R6Class("msData",
       }
 
       return(features_obj)
-    },
-
-    ## subset -----
-
-    #' @description
-    #' Subsets an `msData` object on analyses.
-    #'
-    #' @param analyses X.
-    #'
-    #' @return A new cloned `msData` object with only the analyses as defined
-    #' by the `analyses` argument.
-    #'
-    subset_analyses = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
-
-      if (!is.null(analyses)) {
-        allNames <- self$get_analysis_names()
-        removeAnalyses <- unname(allNames[!(allNames %in% analyses)])
-        keepAnalyses <- unname(allNames[allNames %in% analyses])
-
-        newAnalyses <- self$get_analyses(keepAnalyses)
-
-        if (self$has_groups()) {
-          newGroups <- copy(self$get_groups())
-          newGroups[, (removeAnalyses) := NULL]
-          newFeatures <- lapply(newAnalyses, function(x) x$features)
-          out_list <- update_subset_features_and_groups(newGroups, newFeatures)
-
-          newAnalyses <- Map(
-            function(x, y) {
-              x$features <- y
-              x
-            },
-            newAnalyses, out_list[["features"]]
-          )
-
-          newGroups <- out_list[["groups"]]
-        } else {
-          newGroups <- NULL
-        }
-
-        newAlignment <- private$.alignment[keepAnalyses]
-
-        msData$new(
-          files = NULL,
-          header = private$.header,
-          settings = private$.settings,
-          analyses = newAnalyses,
-          groups = newGroups,
-          alignment = newAlignment
-        )
-
-      } else {
-        self$clone(deep = TRUE)
-      }
-    },
-
-    #' @description
-    #' Subsets an `msData` object on features from analyses.
-    #'
-    #' @param features A data.frame with columns \emph{analysis} and \emph{id}
-    #' representing the analysis name and the id of the features to keep in the
-    #' new `msData` object, respectively.
-    #'
-    #' @return A new cloned `msData` object with only the features as defined
-    #' by the `groups` argument.
-    #'
-    subset_features = function(features = NULL) {
-      if (is.data.frame(features)) {
-        cols_must_have <- c("analysis", "id")
-        if (all(cols_must_have %in% colnames(features))) {
-          all_fts <- self$get_features()
-          n_all <- nrow(all_fts)
-
-          if (n_all > 0) {
-            unique_fts_ids <- paste0(all_fts$analysis, all_fts$id)
-            keep_fts <- paste0(features$analysis, features$id)
-            rem_fts <- !(unique_fts_ids %in% keep_fts)
-            rem_fts <- rem_fts[rem_fts, cols_must_have, with = FALSE]
-
-            if (nrow(rem_fts) > 0) {
-              new_msData <- self$clone(deep = TRUE)
-              new_msData <- self$remove_features(rem_fts)
-              return(new_msData)
-            }
-          }
-        }
-      }
-      self$clone(deep = TRUE)
-    },
-
-    #' @description
-    #' Subsets an `msData` object on groups from correspondence of features
-    #' across analyses.
-    #'
-    #' @param groups X.
-    #'
-    #' @return A new cloned `msData` object with only the groups as defined
-    #' by the `groups` argument.
-    #'
-    subset_groups = function(groups = NULL) {
-      if (self$has_groups() & !is.null(groups)) {
-        all_groups <- self$get_groups()
-        all_groups <- all_groups$group
-        groups_rem <- all_groups[!all_groups %in% groups]
-
-        if (length(groups_rem) > 0) {
-          new_msData <- self$clone(deep = TRUE)
-          new_msData <- self$remove_groups(groups_rem)
-          return(new_msData)
-        }
-      }
-      self$clone(deep = TRUE)
     },
 
     ## checks -----

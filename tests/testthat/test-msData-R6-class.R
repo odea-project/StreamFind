@@ -373,9 +373,26 @@ test_that("remove settings", {
 file.remove(c("header.json", "analyses.json", "groups.json", "settings.json"))
 
 ms5 <- import_msData("msData.json")
+fts_to_subset <- ms5$get_features(mz = targets)
+ms5 <- ms5$subset_features(features = fts_to_subset)
 
+test_that("subset features", {
+  expect_equal(nrow(ms5$get_features()), 12)
+  expect_equal(nrow(ms5$get_groups()), 2)
+})
 
+ms5 <- import_msData("msData.json")
+groups_to_subset <- ms5$get_groups(mz = targets)
+ms5 <- ms5$subset_groups(groups = groups_to_subset$group)
 
+test_that("subset groups", {
+  expect_equal(nrow(ms5$get_features()), 18)
+  expect_equal(
+    nrow(ms5$get_features(filtered = TRUE)),
+    nrow(ms$get_features(filtered = TRUE))
+  )
+  expect_equal(nrow(ms5$get_groups()), 2)
+})
 
 file.remove("msData.json")
 
