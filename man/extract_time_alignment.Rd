@@ -7,7 +7,7 @@
 extract_time_alignment(pat, self)
 }
 \arguments{
-\item{pat}{A \linkS4class{featureGroups} object from \pkg{patRoon}.}
+\item{pat}{An object with class \code{featureGroups} from \pkg{patRoon}.}
 
 \item{self}{An \code{msData} object. When applied within the R6, the self object.}
 }

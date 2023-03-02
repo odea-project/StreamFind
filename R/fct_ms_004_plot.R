@@ -2,8 +2,8 @@
 #'
 #' @description 3D interactive plot for spectra using the \pkg{plotly} package.
 #'
-#' @param spectra A \code{data.table} with the analysis, level, rt, mz and
-#' intensity.
+#' @param spectra A `data.table` with the at least columns *analysis*, *level*,
+#' *rt*, *mz* and *intensity*.
 #' @param colorBy A string (length 1). One of "analyses" (the default),
 #' "levels", "targets" or "replicates". For "replicates", a column with
 #' replicate names should be given.
@@ -12,39 +12,39 @@
 #'
 #' @export
 #'
-plot_spectra_interactive <- function(spec = NULL, colorBy = "analyses") {
-  if (!"id" %in% colnames(spec)) spec$id <- ""
+plot_spectra_interactive <- function(spectra = NULL, colorBy = "analyses") {
+  if (!"id" %in% colnames(spectra)) spectra$id <- ""
 
-  spec$id <- factor(spec$id)
-  spec$level <- paste("MS", spec$level, sep = "")
-  spec$level <- factor(spec$level)
-  spec$analysis <- factor(spec$analysis)
+  spectra$id <- factor(spectra$id)
+  spectra$level <- paste("MS", spectra$level, sep = "")
+  spectra$level <- factor(spectra$level)
+  spectra$analysis <- factor(spectra$analysis)
 
-  spec$rtmz <- paste(
-    spec$id, spec$level,
-    spec$mz, spec$rt,
-    spec$analysis,
+  spectra$rtmz <- paste(
+    spectra$id, spectra$level,
+    spectra$mz, spectra$rt,
+    spectra$analysis,
     sep = ""
   )
 
-  spec_temp <- spec
+  spec_temp <- spectra
   spec_temp$intensity <- 0
-  spec <- rbind(spec, spec_temp)
+  spectra <- rbind(spectra, spec_temp)
 
   if (colorBy == "levels") {
-    spec$var <- spec$level
+    spectra$var <- spectra$level
   } else if (colorBy == "targets") {
-    spec$var <- spec$id
-  } else if ("replicates" %in% colorBy & "replicate" %in% colnames(spec)) {
-    spec$var <- spec$replicate
+    spectra$var <- spectra$id
+  } else if ("replicates" %in% colorBy & "replicate" %in% colnames(spectra)) {
+    spectra$var <- spectra$replicate
   } else {
-    spec$var <- spec$analysis
+    spectra$var <- spectra$analysis
   }
 
-  colors_var <- get_colors(unique(spec$var))
+  colors_var <- get_colors(unique(spectra$var))
 
-  fig <- plot_ly(spec, x = ~rt, y = ~mz, z = ~intensity) %>%
-    group_by(spec$rtmz) %>%
+  fig <- plot_ly(spectra, x = ~rt, y = ~mz, z = ~intensity) %>%
+    group_by(spectra$rtmz) %>%
     add_lines(color = ~var, colors = colors_var)
 
   fig <- fig %>% plotly::layout(scene = list(
@@ -186,9 +186,7 @@ plot_xic_interactive <- function(xic,
     for (s in seq_len(length(xic_s))) {
       temp <- xic_s[[s]]
 
-      if (plotTargetMark &
-        class(temp$mz_id) == "numeric" &
-        class(temp$rt_id) == "numeric") {
+      if (plotTargetMark & is.numeric(temp$mz_id) & is.numeric(temp$rt_id)) {
         plotTargetMark_loop <- TRUE
 
         vline1 <- list(
@@ -358,18 +356,19 @@ plot_eic_static <- function(eic = NULL, legendNames = NULL, colorBy = "targets",
 
   for (s in sp) {
     for (t in ids) {
-      lt <- unique(eic[analysis == s & id == t, var])
+      select_vector <- eic$analysis == s & eic$id == t
+      lt <- unique(eic$var[select_vector])
       lines(
-        x = eic[analysis == s & id == t, rt],
-        y = eic[analysis == s & id == t, intensity],
+        x = eic$rt[select_vector],
+        y = eic$intensity[select_vector],
         type = "l",
         pch = 19,
         cex = 0.5,
         col = cl[lt]
       )
       points(
-        x = eic[analysis == s & id == t, rt],
-        y = eic[analysis == s & id == t, intensity],
+        x = eic$rt[select_vector],
+        y = eic$intensity[select_vector],
         type = "p",
         pch = 19,
         cex = 0.2,
@@ -454,10 +453,11 @@ plot_eic_interactive <- function(eic = NULL, legendNames = NULL,
 
   for (s in sp) {
     for (t in ids) {
-      lt <- unique(eic[analysis == s & id == t, var])
-      y <- eic[analysis == s & id == t, intensity]
+      select_vector <- eic$analysis == s & eic$id == t
+      lt <- unique(eic$var[select_vector])
+      y <- eic$intensity[select_vector]
       plot <- plot %>% add_trace(
-        x = eic[analysis == s & id == t, rt],
+        x = eic$rt[select_vector],
         y = y,
         type = "scatter", mode = "lines+markers",
         line = list(width = 0.5, color = unname(cl[lt])),
@@ -548,10 +548,11 @@ plot_bpc_interactive <- function(bpc = NULL, legendNames = NULL,
 
   for (s in sp) {
     for (t in ids) {
-      lt <- unique(bpc[analysis == s & id == t, var])
-      y <- bpc[analysis == s & id == t, intensity]
+      select_vector <- bpc$analysis == s & bpc$id == t
+      lt <- unique(bpc$var[select_vector])
+      y <- bpc$intensity[select_vector]
       plot <- plot %>% add_trace(
-        x = bpc[analysis == s & id == t, rt],
+        x = bpc$rt[select_vector],
         y = y,
         type = "scatter", mode = "lines+markers",
         line = list(width = 0.5, color = unname(cl[lt])),
@@ -562,7 +563,7 @@ plot_bpc_interactive <- function(bpc = NULL, legendNames = NULL,
         hovertemplate = paste(
           "<br>rt: %{x}<br>",
           "mz: ",
-          round(bpc[analysis == s & id == t, mz], digits = 4),
+          round(bpc$mz[select_vector], digits = 4),
           "<br>", "intensity: %{y}"
         )
       )
@@ -717,7 +718,7 @@ plot_ms2_interactive <- function(ms2 = NULL, legendNames = NULL,
   plot <- plot_ly()
 
   for (v in leg) {
-    data <- ms2[var == v, ]
+    data <- ms2[ms2$var == v, ]
 
     bar_widths <- rep(0.2, nrow(data))
 
@@ -1019,10 +1020,15 @@ plot_features_static <- function(eic = NULL, features = NULL,
   )
 
   for (t in ids) {
-    lt <- unique(eic[id == t, var])
-    pk_eic <- eic[id == t, ]
+    select_vector <- eic$id == t
+    lt <- unique(eic$var[select_vector])
+    pk_eic <- eic[select_vector, ]
     pk_a <- features[features$feature == t, ]
-    pk_eic_a <- pk_eic[rt >= pk_a$rtmin & rt <= pk_a$rtmax & id == t, ]
+    pk_eic_a <- pk_eic[
+      pk_eic$rt >= pk_a$rtmin &
+      pk_eic$rt <= pk_a$rtmax &
+      pk_eic$id == t,
+    ]
     points(
       x = pk_eic$rt,
       y = pk_eic$intensity,
@@ -1042,8 +1048,6 @@ plot_features_static <- function(eic = NULL, features = NULL,
     polygon(
       c(pk_eic_a$rt, rev(pk_eic_a$rt)),
       c(pk_eic_a$intensity, rep(0, length(pk_eic_a$intensity))),
-      # pk_eic_a$rt[pk_eic_a$intensity > 0],
-      # y = pk_eic_a$intensity[pk_eic_a$intensity > 0],
       col = paste(color = unname(cl[lt]), 50, sep = ""),
       border = F
     )
@@ -1486,7 +1490,7 @@ plot_groups_overview_aux <- function(features, eic, heights, analyses) {
         showlegend = FALSE
       )
 
-      df <- df[rt >= ft$rtmin & rt <= ft$rtmax, ]
+      df <- df[df$rt >= ft$rtmin & df$rt <= ft$rtmax, ]
       df$mz <- as.numeric(df$mz)
 
       plot <- plot %>% add_trace(df,

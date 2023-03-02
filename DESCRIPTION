@@ -25,22 +25,18 @@ URL: https://github.com/ricardobachertdacunha/streamFind
 BugReports: https://github.com/ricardobachertdacunha/streamFind/issues
 Depends: R (>= 4.2.0)
 Imports: 
-    config (>= 0.3.1),
     data.table,
     R6,
-    golem (>= 0.3.2),
     grDevices,
     jsonlite,
     plotly,
     RColorBrewer,
-    shiny (>= 1.7.1),
     stats,
     tools,
     utils,
     Rcpp (>= 1.0.8),
     magrittr,
     Rdpack,
-    methods,
     gtools,
     xml2,
     dplyr,
@@ -49,13 +45,14 @@ Imports:
     doParallel,
     parallel,
     foreach,
-    mzR
+    mzR,
+    base64enc
 Suggests: 
     knitr,
+    kableExtra,
     rmarkdown,
     spelling,
     testthat (>= 3.0.0),
-    golem,
     xcms,
     patRoon,
     streamFindData

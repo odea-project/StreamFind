@@ -32,9 +32,9 @@
 #'
 #' @importFrom jsonlite toJSON fromJSON
 #'
-#' @importFrom stats sd
+#' @importFrom stats sd cor
 #'
-#' @importFrom graphics axis legend lines points polygon
+#' @importFrom graphics axis legend lines points polygon rect text
 #'
 #' @importFrom RColorBrewer brewer.pal
 #'
@@ -46,6 +46,10 @@
 #'
 #' @importFrom xml2 read_xml xml_find_first xml_attr xml_find_all xml_name
 #' @importFrom xml2 xml_text xml_child
+#'
+#' @importFrom base64enc base64decode
+#'
+#' @importFrom utils txtProgressBar setTxtProgressBar
 #'
 #' @noRd
 NULL

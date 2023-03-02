@@ -1,8 +1,8 @@
 {
   "header": {
     "name": [null],
-    "path": ["C:/Users/Ricardo Cunha/Documents/GitHub/streamFind"],
-    "date": ["2023-03-01 16:44:35"]
+    "path": ["C:/Users/cunha/Documents/007_CodeProjects/streamFind/tests/testthat"],
+    "date": ["2023-03-02 14:29:11"]
   },
   "settings": {
     "find_features": {
@@ -49,7 +49,7 @@
       "name": ["01_ww_is_neg_blank-r001"],
       "replicate": ["blank_neg"],
       "blank": ["blank_neg"],
-      "file": ["C:/Users/Ricardo Cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/01_ww_is_neg_blank-r001.mzML"],
+      "file": ["C:/Users/cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/01_ww_is_neg_blank-r001.mzML"],
       "type": ["MS/MS"],
       "instrument": {
         "manufacturer": ["instrument model"],
@@ -108,7 +108,7 @@
       "name": ["01_ww_is_neg_blank-r002"],
       "replicate": ["blank_neg"],
       "blank": ["blank_neg"],
-      "file": ["C:/Users/Ricardo Cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/01_ww_is_neg_blank-r002.mzML"],
+      "file": ["C:/Users/cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/01_ww_is_neg_blank-r002.mzML"],
       "type": ["MS/MS"],
       "instrument": {
         "manufacturer": ["instrument model"],
@@ -167,7 +167,7 @@
       "name": ["01_ww_is_neg_blank-r003"],
       "replicate": ["blank_neg"],
       "blank": ["blank_neg"],
-      "file": ["C:/Users/Ricardo Cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/01_ww_is_neg_blank-r003.mzML"],
+      "file": ["C:/Users/cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/01_ww_is_neg_blank-r003.mzML"],
       "type": ["MS/MS"],
       "instrument": {
         "manufacturer": ["instrument model"],
@@ -226,7 +226,7 @@
       "name": ["01_ww_is_pos_blank-r001"],
       "replicate": ["blank_pos"],
       "blank": ["blank_pos"],
-      "file": ["C:/Users/Ricardo Cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/01_ww_is_pos_blank-r001.mzML"],
+      "file": ["C:/Users/cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/01_ww_is_pos_blank-r001.mzML"],
       "type": ["MS/MS"],
       "instrument": {
         "manufacturer": ["instrument model"],
@@ -285,7 +285,7 @@
       "name": ["01_ww_is_pos_blank-r002"],
       "replicate": ["blank_pos"],
       "blank": ["blank_pos"],
-      "file": ["C:/Users/Ricardo Cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/01_ww_is_pos_blank-r002.mzML"],
+      "file": ["C:/Users/cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/01_ww_is_pos_blank-r002.mzML"],
       "type": ["MS/MS"],
       "instrument": {
         "manufacturer": ["instrument model"],
@@ -344,7 +344,7 @@
       "name": ["01_ww_is_pos_blank-r003"],
       "replicate": ["blank_pos"],
       "blank": ["blank_pos"],
-      "file": ["C:/Users/Ricardo Cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/01_ww_is_pos_blank-r003.mzML"],
+      "file": ["C:/Users/cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/01_ww_is_pos_blank-r003.mzML"],
       "type": ["MS/MS"],
       "instrument": {
         "manufacturer": ["instrument model"],
@@ -403,7 +403,7 @@
       "name": ["02_ww_is_neg_influent-r001"],
       "replicate": ["influent_neg"],
       "blank": ["blank_neg"],
-      "file": ["C:/Users/Ricardo Cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/02_ww_is_neg_influent-r001.mzML"],
+      "file": ["C:/Users/cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/02_ww_is_neg_influent-r001.mzML"],
       "type": ["MS/MS"],
       "instrument": {
         "manufacturer": ["instrument model"],
@@ -462,7 +462,7 @@
       "name": ["02_ww_is_neg_influent-r002"],
       "replicate": ["influent_neg"],
       "blank": ["blank_neg"],
-      "file": ["C:/Users/Ricardo Cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/02_ww_is_neg_influent-r002.mzML"],
+      "file": ["C:/Users/cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/02_ww_is_neg_influent-r002.mzML"],
       "type": ["MS/MS"],
       "instrument": {
         "manufacturer": ["instrument model"],
@@ -521,7 +521,7 @@
       "name": ["02_ww_is_neg_influent-r003"],
       "replicate": ["influent_neg"],
       "blank": ["blank_neg"],
-      "file": ["C:/Users/Ricardo Cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/02_ww_is_neg_influent-r003.mzML"],
+      "file": ["C:/Users/cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/02_ww_is_neg_influent-r003.mzML"],
       "type": ["MS/MS"],
       "instrument": {
         "manufacturer": ["instrument model"],
@@ -580,7 +580,7 @@
       "name": ["02_ww_is_pos_influent-r001"],
       "replicate": ["influent_pos"],
       "blank": ["blank_pos"],
-      "file": ["C:/Users/Ricardo Cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/02_ww_is_pos_influent-r001.mzML"],
+      "file": ["C:/Users/cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/02_ww_is_pos_influent-r001.mzML"],
       "type": ["MS/MS"],
       "instrument": {
         "manufacturer": ["instrument model"],
@@ -639,7 +639,7 @@
       "name": ["02_ww_is_pos_influent-r002"],
       "replicate": ["influent_pos"],
       "blank": ["blank_pos"],
-      "file": ["C:/Users/Ricardo Cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/02_ww_is_pos_influent-r002.mzML"],
+      "file": ["C:/Users/cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/02_ww_is_pos_influent-r002.mzML"],
       "type": ["MS/MS"],
       "instrument": {
         "manufacturer": ["instrument model"],
@@ -698,7 +698,7 @@
       "name": ["02_ww_is_pos_influent-r003"],
       "replicate": ["influent_pos"],
       "blank": ["blank_pos"],
-      "file": ["C:/Users/Ricardo Cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/02_ww_is_pos_influent-r003.mzML"],
+      "file": ["C:/Users/cunha/AppData/Local/R/win-library/4.2/streamFindData/extdata/02_ww_is_pos_influent-r003.mzML"],
       "type": ["MS/MS"],
       "instrument": {
         "manufacturer": ["instrument model"],

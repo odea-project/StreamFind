@@ -21,9 +21,9 @@ removed but filtered with "grouping" added as filter category. Filtered
 features can be removed with the method
 \code{msData$remove_features(filtered = TRUE)}.
 
-The \linkS4class{settings} call must be set to "find_features".
+The settings call must be set to "find_features".
 
-The \linkS4class{settings} call must be set to "group_features".
+The settings call must be set to "group_features".
 
 When saved as json, the \code{data.table} is split by groups as
 list and the \code{data.table} of each group is converted to a list.
@@ -85,11 +85,21 @@ list and the \code{data.table} of each group is converted to a list.
 \item \href{#method-msData-add_features}{\code{msData$add_features()}}
 \item \href{#method-msData-add_groups}{\code{msData$add_groups()}}
 \item \href{#method-msData-add_alignment}{\code{msData$add_alignment()}}
+\item \href{#method-msData-load_spectra}{\code{msData$load_spectra()}}
+\item \href{#method-msData-load_chromatograms}{\code{msData$load_chromatograms()}}
+\item \href{#method-msData-load_features_ms1}{\code{msData$load_features_ms1()}}
+\item \href{#method-msData-load_features_ms2}{\code{msData$load_features_ms2()}}
+\item \href{#method-msData-load_groups_ms1}{\code{msData$load_groups_ms1()}}
+\item \href{#method-msData-load_groups_ms2}{\code{msData$load_groups_ms2()}}
 \item \href{#method-msData-remove_header}{\code{msData$remove_header()}}
 \item \href{#method-msData-remove_settings}{\code{msData$remove_settings()}}
 \item \href{#method-msData-remove_analyses}{\code{msData$remove_analyses()}}
 \item \href{#method-msData-remove_features}{\code{msData$remove_features()}}
+\item \href{#method-msData-remove_features_ms1}{\code{msData$remove_features_ms1()}}
+\item \href{#method-msData-remove_features_ms2}{\code{msData$remove_features_ms2()}}
 \item \href{#method-msData-remove_groups}{\code{msData$remove_groups()}}
+\item \href{#method-msData-remove_groups_ms1}{\code{msData$remove_groups_ms1()}}
+\item \href{#method-msData-remove_groups_ms2}{\code{msData$remove_groups_ms2()}}
 \item \href{#method-msData-remove_alignment}{\code{msData$remove_alignment()}}
 \item \href{#method-msData-subset_analyses}{\code{msData$subset_analyses()}}
 \item \href{#method-msData-subset_features}{\code{msData$subset_features()}}
@@ -99,6 +109,8 @@ list and the \code{data.table} of each group is converted to a list.
 \item \href{#method-msData-has_loaded_chromatograms}{\code{msData$has_loaded_chromatograms()}}
 \item \href{#method-msData-has_loaded_features_ms1}{\code{msData$has_loaded_features_ms1()}}
 \item \href{#method-msData-has_loaded_features_ms2}{\code{msData$has_loaded_features_ms2()}}
+\item \href{#method-msData-has_loaded_groups_ms1}{\code{msData$has_loaded_groups_ms1()}}
+\item \href{#method-msData-has_loaded_groups_ms2}{\code{msData$has_loaded_groups_ms2()}}
 \item \href{#method-msData-has_settings}{\code{msData$has_settings()}}
 \item \href{#method-msData-has_features}{\code{msData$has_features()}}
 \item \href{#method-msData-has_alignment}{\code{msData$has_alignment()}}
@@ -119,10 +131,6 @@ list and the \code{data.table} of each group is converted to a list.
 \item \href{#method-msData-plot_groups_ms1}{\code{msData$plot_groups_ms1()}}
 \item \href{#method-msData-plot_groups_ms2}{\code{msData$plot_groups_ms2()}}
 \item \href{#method-msData-plot_groups_overview}{\code{msData$plot_groups_overview()}}
-\item \href{#method-msData-load_spectra}{\code{msData$load_spectra()}}
-\item \href{#method-msData-load_chromatograms}{\code{msData$load_chromatograms()}}
-\item \href{#method-msData-load_features_ms1}{\code{msData$load_features_ms1()}}
-\item \href{#method-msData-load_features_ms2}{\code{msData$load_features_ms2()}}
 \item \href{#method-msData-find_features}{\code{msData$find_features()}}
 \item \href{#method-msData-group_features}{\code{msData$group_features()}}
 \item \href{#method-msData-as_features_patRoon}{\code{msData$as_features_patRoon()}}
@@ -742,7 +750,7 @@ Method to get MS2 data from the analyses based on targets.
   id = NULL,
   isolationWindow = 1.3,
   mzClust = 0.005,
-  verbose = TRUE,
+  verbose = FALSE,
   minIntensity = 0,
   runParallel = FALSE
 )}\if{html}{\out{</div>}}
@@ -808,7 +816,7 @@ Method to get features from analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$get_features(
   analyses = NULL,
-  id = NULL,
+  features = NULL,
   mass = NULL,
   mz = NULL,
   rt = NULL,
@@ -824,7 +832,7 @@ Method to get features from analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
-\item{\code{id}}{X.}
+\item{\code{features}}{X.}
 
 \item{\code{mass}}{X.}
 
@@ -852,7 +860,7 @@ Method to get EIC of features from analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$get_features_eic(
   analyses = NULL,
-  id = NULL,
+  features = NULL,
   mass = NULL,
   mz = NULL,
   rt = NULL,
@@ -871,7 +879,7 @@ Method to get EIC of features from analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
-\item{\code{id}}{X.}
+\item{\code{features}}{X.}
 
 \item{\code{mass}}{X.}
 
@@ -905,7 +913,7 @@ Method to get an averaged MS1 spectrum for features in analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$get_features_ms1(
   analyses = NULL,
-  id = NULL,
+  features = NULL,
   mass = NULL,
   mz = NULL,
   rt = NULL,
@@ -915,8 +923,9 @@ Method to get an averaged MS1 spectrum for features in analyses.
   mzWindow = c(-5, 100),
   mzClust = 0.003,
   minIntensity = 1000,
-  verbose = TRUE,
+  verbose = FALSE,
   filtered = FALSE,
+  loadedMS1 = TRUE,
   runParallel = FALSE
 )}\if{html}{\out{</div>}}
 }
@@ -927,7 +936,7 @@ Method to get an averaged MS1 spectrum for features in analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
-\item{\code{id}}{X.}
+\item{\code{features}}{X.}
 
 \item{\code{mass}}{X.}
 
@@ -951,6 +960,8 @@ of the analyses.}
 
 \item{\code{filtered}}{X.}
 
+\item{\code{loadedMS1}}{X.}
+
 \item{\code{runParallel}}{X.}
 }
 \if{html}{\out{</div>}}
@@ -967,7 +978,7 @@ Method to get an averaged MS2 spectrum for features in analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$get_features_ms2(
   analyses = NULL,
-  id = NULL,
+  features = NULL,
   mass = NULL,
   mz = NULL,
   rt = NULL,
@@ -976,8 +987,9 @@ Method to get an averaged MS2 spectrum for features in analyses.
   isolationWindow = 1.3,
   mzClust = 0.003,
   minIntensity = 0,
-  verbose = TRUE,
+  verbose = FALSE,
   filtered = FALSE,
+  loadedMS2 = TRUE,
   runParallel = FALSE
 )}\if{html}{\out{</div>}}
 }
@@ -988,7 +1000,7 @@ Method to get an averaged MS2 spectrum for features in analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
-\item{\code{id}}{X.}
+\item{\code{features}}{X.}
 
 \item{\code{mass}}{X.}
 
@@ -1009,6 +1021,8 @@ of the analyses.}
 \item{\code{verbose}}{X.}
 
 \item{\code{filtered}}{X.}
+
+\item{\code{loadedMS2}}{X.}
 
 \item{\code{runParallel}}{X.}
 }
@@ -1094,11 +1108,13 @@ Method to get an averaged MS1 spectrum for feature groups in analyses.
   mzWindow = c(-5, 90),
   mzClustFeatures = 0.003,
   minIntensityFeatures = 1000,
+  loadedFeaturesMS1 = TRUE,
   mzClustGroups = 0.003,
   minIntensityGroups = 1000,
   groupBy = "groups",
-  verbose = TRUE,
+  verbose = FALSE,
   filtered = FALSE,
+  loadedGroupsMS1 = TRUE,
   runParallel = FALSE
 )}\if{html}{\out{</div>}}
 }
@@ -1126,6 +1142,8 @@ Method to get an averaged MS1 spectrum for feature groups in analyses.
 
 \item{\code{minIntensityFeatures}}{X.}
 
+\item{\code{loadedFeaturesMS1}}{X.}
+
 \item{\code{mzClustGroups}}{X.}
 
 \item{\code{minIntensityGroups}}{X.}
@@ -1135,6 +1153,8 @@ Method to get an averaged MS1 spectrum for feature groups in analyses.
 \item{\code{verbose}}{X.}
 
 \item{\code{filtered}}{X.}
+
+\item{\code{loadedGroupsMS1}}{X.}
 
 \item{\code{runParallel}}{X.}
 }
@@ -1160,11 +1180,13 @@ Method to get an averaged MS2 spectrum for feature groups in analyses.
   isolationWindow = 1.3,
   mzClustFeatures = 0.003,
   minIntensityFeatures = 100,
+  loadedFeaturesMS2 = TRUE,
   mzClustGroups = 0.003,
   minIntensityGroups = 100,
   groupBy = "groups",
-  verbose = TRUE,
+  verbose = FALSE,
   filtered = FALSE,
+  loadedGroupsMS2 = TRUE,
   runParallel = FALSE
 )}\if{html}{\out{</div>}}
 }
@@ -1190,6 +1212,8 @@ Method to get an averaged MS2 spectrum for feature groups in analyses.
 
 \item{\code{minIntensityFeatures}}{X.}
 
+\item{\code{loadedFeaturesMS2}}{X.}
+
 \item{\code{mzClustGroups}}{X.}
 
 \item{\code{minIntensityGroups}}{X.}
@@ -1199,6 +1223,8 @@ Method to get an averaged MS2 spectrum for feature groups in analyses.
 \item{\code{verbose}}{X.}
 
 \item{\code{filtered}}{X.}
+
+\item{\code{loadedGroupsMS2}}{X.}
 
 \item{\code{runParallel}}{X.}
 }
@@ -1385,6 +1411,136 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-load_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-load_spectra}{}}}
+\subsection{Method \code{load_spectra()}}{
+Method to load all spectra from analyses to the \code{msData} object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$load_spectra(runParallel = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{runParallel}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-load_chromatograms"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-load_chromatograms}{}}}
+\subsection{Method \code{load_chromatograms()}}{
+Method to load all chromatograms from analyses to the \code{msData} object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$load_chromatograms(runParallel = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{runParallel}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-load_features_ms1"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-load_features_ms1}{}}}
+\subsection{Method \code{load_features_ms1()}}{
+Method to load and average MS1 spectra from features in the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$load_features_ms1(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-load_features_ms2"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-load_features_ms2}{}}}
+\subsection{Method \code{load_features_ms2()}}{
+Method to load and average MS2 spectra from features in the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$load_features_ms2(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-load_groups_ms1"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-load_groups_ms1}{}}}
+\subsection{Method \code{load_groups_ms1()}}{
+Method to load and average MS1 spectra from feature groups. If MS1
+spectra from features are already loaded, the feature MS1 spectra is
+used for averaging into the respective feature group. If features MS1
+are not present, settings for loading and averaging features MS1
+spectra (i.e., settings with call name "load_features_ms1") must
+be given in the \code{settingsFeatures} argument or added beforehand to the
+msData object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$load_groups_ms1(settings = NULL, settingsFeatures = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{X.}
+
+\item{\code{settingsFeatures}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-load_groups_ms2"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-load_groups_ms2}{}}}
+\subsection{Method \code{load_groups_ms2()}}{
+Method to load and average MS2 spectra from feature groups.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$load_groups_ms2(settings = NULL, settingsFeatures = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{X.}
+
+\item{\code{settingsFeatures}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-msData-remove_header"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-remove_header}{}}}
 \subsection{Method \code{remove_header()}}{
@@ -1458,7 +1614,7 @@ Remove feature from the \code{msData} object.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{id}
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
 representing the analysis name and the id of the features to remove,
 respectively.}
 
@@ -1466,6 +1622,36 @@ respectively.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-remove_features_ms1"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-remove_features_ms1}{}}}
+\subsection{Method \code{remove_features_ms1()}}{
+Removes loaded MS1 spectra from features in the analyses of
+the \code{msData} object. In practice, the column \emph{ms1} in the features
+data.table of each analysis object is removed.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$remove_features_ms1()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-remove_features_ms2"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-remove_features_ms2}{}}}
+\subsection{Method \code{remove_features_ms2()}}{
+Removes loaded MS2 spectra from features in the analyses of
+the \code{msData} object. In practice, the column \emph{ms2} in the features
+data.table of each analysis object is removed.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$remove_features_ms2()}\if{html}{\out{</div>}}
+}
+
 \subsection{Returns}{
 Invisible.
 }
@@ -1488,6 +1674,34 @@ Remove feature groups from the \code{msData} object.
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-remove_groups_ms1"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-remove_groups_ms1}{}}}
+\subsection{Method \code{remove_groups_ms1()}}{
+Removes loaded MS1 spectra from feature groups in the \code{msData} object.
+In practice, the column \emph{ms1} in the groups data.table is removed.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$remove_groups_ms1()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-remove_groups_ms2"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-remove_groups_ms2}{}}}
+\subsection{Method \code{remove_groups_ms2()}}{
+Removes loaded MS2 spectra from feature groups in the \code{msData} object.
+In practice, the column \emph{ms2} in the groups data.table is removed.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$remove_groups_ms2()}\if{html}{\out{</div>}}
+}
+
 \subsection{Returns}{
 Invisible.
 }
@@ -1538,7 +1752,7 @@ Subsets an \code{msData} object on features from analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{id}
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
 representing the analysis name and the id of the features to keep in the
 new \code{msData} object, respectively.}
 }
@@ -1629,7 +1843,7 @@ Logical value.
 \if{html}{\out{<a id="method-msData-has_loaded_features_ms1"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-has_loaded_features_ms1}{}}}
 \subsection{Method \code{has_loaded_features_ms1()}}{
-Method to check for loaded features ms1 in given analyses names/indices.
+Method to check for loaded features MS1 in given analyses names/indices.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$has_loaded_features_ms1(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -1650,7 +1864,7 @@ Logical value.
 \if{html}{\out{<a id="method-msData-has_loaded_features_ms2"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-has_loaded_features_ms2}{}}}
 \subsection{Method \code{has_loaded_features_ms2()}}{
-Method to check for loaded features ms2 in given analyses names/indices.
+Method to check for loaded features MS2 in given analyses names/indices.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$has_loaded_features_ms2(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -1663,6 +1877,32 @@ chromatograms.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+Logical value.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-has_loaded_groups_ms1"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-has_loaded_groups_ms1}{}}}
+\subsection{Method \code{has_loaded_groups_ms1()}}{
+Method to check for loaded feature groups MS1.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$has_loaded_groups_ms1()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+Logical value.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-has_loaded_groups_ms2"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-has_loaded_groups_ms2}{}}}
+\subsection{Method \code{has_loaded_groups_ms2()}}{
+Method to check for loaded feature groups MS2.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$has_loaded_groups_ms2()}\if{html}{\out{</div>}}
+}
+
 \subsection{Returns}{
 Logical value.
 }
@@ -1987,7 +2227,7 @@ Method to plot MS2 spectra from the analyses based on targets.
   id = NULL,
   isolationWindow = 1.3,
   mzClust = 0.005,
-  verbose = TRUE,
+  verbose = FALSE,
   minIntensity = 0,
   runParallel = FALSE,
   legendNames = NULL,
@@ -2107,7 +2347,7 @@ Method to plot features from analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$plot_features(
   analyses = NULL,
-  id = NULL,
+  features = NULL,
   mass = NULL,
   mz = NULL,
   rt = NULL,
@@ -2130,7 +2370,7 @@ Method to plot features from analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
-\item{\code{id}}{X.}
+\item{\code{features}}{X.}
 
 \item{\code{mass}}{X.}
 
@@ -2172,7 +2412,7 @@ Method to map retention time and \emph{m/z} of features from analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$map_features(
   analyses = NULL,
-  id = NULL,
+  features = NULL,
   mass = NULL,
   mz = NULL,
   rt = NULL,
@@ -2195,7 +2435,7 @@ Method to map retention time and \emph{m/z} of features from analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
-\item{\code{id}}{X.}
+\item{\code{features}}{X.}
 
 \item{\code{mass}}{X.}
 
@@ -2237,7 +2477,7 @@ Method to plot MS1 spectra from features in the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$plot_features_ms1(
   analyses = NULL,
-  id = NULL,
+  features = NULL,
   mass = NULL,
   mz = NULL,
   rt = NULL,
@@ -2247,8 +2487,9 @@ Method to plot MS1 spectra from features in the analyses.
   mzWindow = c(-5, 100),
   mzClust = 0.003,
   minIntensity = 1000,
-  verbose = TRUE,
+  verbose = FALSE,
   filtered = FALSE,
+  loadedMS1 = TRUE,
   runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
@@ -2263,7 +2504,7 @@ Method to plot MS1 spectra from features in the analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
-\item{\code{id}}{X.}
+\item{\code{features}}{X.}
 
 \item{\code{mass}}{X.}
 
@@ -2286,6 +2527,8 @@ of the analyses.}
 \item{\code{verbose}}{X.}
 
 \item{\code{filtered}}{X.}
+
+\item{\code{loadedMS1}}{X.}
 
 \item{\code{runParallel}}{X.}
 
@@ -2311,7 +2554,7 @@ Method to plot MS2 spectra from features in the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$plot_features_ms2(
   analyses = NULL,
-  id = NULL,
+  features = NULL,
   mass = NULL,
   mz = NULL,
   rt = NULL,
@@ -2320,8 +2563,9 @@ Method to plot MS2 spectra from features in the analyses.
   isolationWindow = 1.3,
   mzClust = 0.005,
   minIntensity = 0,
-  verbose = TRUE,
+  verbose = FALSE,
   filtered = FALSE,
+  loadedMS2 = TRUE,
   runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
@@ -2336,7 +2580,7 @@ Method to plot MS2 spectra from features in the analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
-\item{\code{id}}{X.}
+\item{\code{features}}{X.}
 
 \item{\code{mass}}{X.}
 
@@ -2357,6 +2601,8 @@ of the analyses.}
 \item{\code{verbose}}{X.}
 
 \item{\code{filtered}}{X.}
+
+\item{\code{loadedMS2}}{X.}
 
 \item{\code{runParallel}}{X.}
 
@@ -2466,10 +2712,12 @@ Method to plot MS1 spectra from features in the analyses.
   mzWindow = c(-5, 90),
   mzClustFeatures = 0.005,
   minIntensityFeatures = 1000,
+  loadedFeaturesMS1 = TRUE,
   mzClustGroups = 0.005,
   minIntensityGroups = 1000,
-  verbose = TRUE,
+  verbose = FALSE,
   filtered = FALSE,
+  loadedGroupsMS1 = TRUE,
   runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
@@ -2501,6 +2749,8 @@ Method to plot MS1 spectra from features in the analyses.
 
 \item{\code{minIntensityFeatures}}{X.}
 
+\item{\code{loadedFeaturesMS1}}{X.}
+
 \item{\code{mzClustGroups}}{X.}
 
 \item{\code{minIntensityGroups}}{X.}
@@ -2508,6 +2758,8 @@ Method to plot MS1 spectra from features in the analyses.
 \item{\code{verbose}}{X.}
 
 \item{\code{filtered}}{X.}
+
+\item{\code{loadedGroupsMS1}}{X.}
 
 \item{\code{runParallel}}{X.}
 
@@ -2543,10 +2795,12 @@ Method to plot MS1 spectra from features in the analyses.
   isolationWindow = 1.3,
   mzClustFeatures = 0.003,
   minIntensityFeatures = 100,
+  loadedFeaturesMS2 = TRUE,
   mzClustGroups = 0.003,
   minIntensityGroups = 100,
-  verbose = TRUE,
+  verbose = FALSE,
   filtered = FALSE,
+  loadedGroupsMS2 = TRUE,
   runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
@@ -2576,6 +2830,8 @@ Method to plot MS1 spectra from features in the analyses.
 
 \item{\code{minIntensityFeatures}}{X.}
 
+\item{\code{loadedFeaturesMS2}}{X.}
+
 \item{\code{mzClustGroups}}{X.}
 
 \item{\code{minIntensityGroups}}{X.}
@@ -2583,6 +2839,8 @@ Method to plot MS1 spectra from features in the analyses.
 \item{\code{verbose}}{X.}
 
 \item{\code{filtered}}{X.}
+
+\item{\code{loadedGroupsMS2}}{X.}
 
 \item{\code{runParallel}}{X.}
 
@@ -2665,86 +2923,6 @@ A plot.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-load_spectra"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-load_spectra}{}}}
-\subsection{Method \code{load_spectra()}}{
-Method to load all spectra from analyses to the \code{msData} object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$load_spectra(runParallel = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{runParallel}}{X.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-load_chromatograms"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-load_chromatograms}{}}}
-\subsection{Method \code{load_chromatograms()}}{
-Method to load all chromatograms from analyses to the \code{msData} object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$load_chromatograms(runParallel = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{runParallel}}{X.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-load_features_ms1"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-load_features_ms1}{}}}
-\subsection{Method \code{load_features_ms1()}}{
-Method to load and average MS1 spectra from features in the analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$load_features_ms1(settings = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{settings}}{X.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-load_features_ms2"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-load_features_ms2}{}}}
-\subsection{Method \code{load_features_ms2()}}{
-Method to load and average MS2 spectra from features in the analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$load_features_ms2(settings = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{settings}}{X.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-msData-find_features"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-find_features}{}}}
 \subsection{Method \code{find_features()}}{
@@ -2758,9 +2936,8 @@ for peak finding, enabling the use of several algorithms (see details).
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{settings}}{A \linkS4class{settings} object. When not given,
-\emph{find_features} \linkS4class{settings} will be searched within
-the \code{msData} object.}
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the \code{msData} object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2769,11 +2946,10 @@ See the \link[patRoon]{findFeatures} function from the
 \pkg{patRoon} package or the
 \href{https://rickhelmus.github.io/patRoon/reference/findFeatures.html}{reference guide} for more information. The following algorithms are
 available via \pkg{patRoon}: "xcms3", "xcms", "openms", "envipick",
-"sirius", "kpic2", "safd". The algorithm slot in the
-\linkS4class{settings} should be one of the described. The parameters
-are given as a list and should match with algorithm requirements.
-Certain algorithms also require defined MS file formats and data in
-profile mode.
+"sirius", "kpic2", "safd". The algorithm in the  settings should be
+one of the described. The parameters are given as a list and should
+match with algorithm requirements. Certain algorithms also require
+defined MS file formats and data in profile mode.
 }
 
 \subsection{Returns}{
@@ -2794,18 +2970,18 @@ features, enabling the use of several algorithms (see details).
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{settings}}{A \linkS4class{settings} object. When not given,
-\emph{group_features} \linkS4class{settings} will be searched within
-the \code{msData} object.}
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the \code{msData} object.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
 See the \link[patRoon]{groupFeatures} function from the
 \pkg{patRoon} package or the
-\href{https://rickhelmus.github.io/patRoon/reference/groupFeatures.html}{reference guide} for more information. The following algorithms are
+\href{https://rickhelmus.github.io/patRoon/reference/groupFeatures.html}{reference guide}
+for more information. The following algorithms are
 possible: "xcms3", "xcms", "openms" or "kpic2". The algorithm slot in the
-\linkS4class{settings} should be one of the described. The parameters
+settings should be one of the described. The parameters
 are given as a list and should match with algorithm requirements.
 }
 
@@ -2817,14 +2993,14 @@ Invisible.
 \if{html}{\out{<a id="method-msData-as_features_patRoon"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-as_features_patRoon}{}}}
 \subsection{Method \code{as_features_patRoon()}}{
-Creates a \linkS4class{features} object from the \pkg{patRoon} package
-with the features in the analyses.
+Creates an object with S4 class \code{features} from the package \pkg{patRoon}
+with the features in the analyses of the msData object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$as_features_patRoon()}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{
-A \linkS4class{features} object.
+An object with S4 class \code{features}.
 }
 }
 \if{html}{\out{<hr>}}

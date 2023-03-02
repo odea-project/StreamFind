@@ -88,7 +88,7 @@ test_that("test setter and getter for replicates and blanks", {
   expect_equal(names(ms$get_blank_names()), unname(ms$get_analysis_names()))
 })
 
-ms2 <- msData$new(files2, runParallel = TRUE)
+ms2 <- msData$new(files2, runParallel = FALSE)
 
 test_that("getter analyses", {
   expect_equal(class(ms2$get_analyses(1:3)), "list")
@@ -429,7 +429,7 @@ ms5$load_features_ms2(settings = settingsLoadFeaturesMS2)
 test_that("load MS2 features", {
   expect_true(any(ms5$has_loaded_features_ms2()))
   expect_equal(
-      unique(ms5$get_features_ms2(loadedMS1 = TRUE)[["id"]]),
+      unique(ms5$get_features_ms2(loadedMS2 = TRUE)[["id"]]),
       fts_to_subset$feature
   )
 })
@@ -472,7 +472,7 @@ settingsLoadGroupsMS1 <- list(
   "parameters" = list(
     mzClust = 0.003,
     minIntensity = 1000,
-    verbose = TRUE,
+    verbose = FALSE,
     filtered = FALSE,
     runParallel = FALSE
   )
@@ -482,9 +482,8 @@ settingsLoadGroupsMS2 <- list(
   "call" = "load_groups_ms2",
   "algorithm" = "streamFind",
   "parameters" = list(
-    isolationWindow = 1.3,
     mzClust = 0.003,
-    minIntensity = 0,
+    minIntensity = 250,
     filtered = FALSE,
     runParallel = FALSE,
     verbose = FALSE
@@ -501,31 +500,27 @@ test_that("load MS1 groups", {
   )
 })
 
+ms5$remove_groups_ms1()
 
+test_that("remove loaded MS1 groups", {
+  expect_false(ms5$has_loaded_groups_ms1())
+})
 
+ms5$load_groups_ms2(settings = settingsLoadGroupsMS2)
 
+test_that("load MS2 groups", {
+  expect_true(any(ms5$has_loaded_groups_ms2()))
+  expect_equal(
+    unique(ms5$get_groups_ms2()[["id"]]),
+    groups_to_subset$group
+  )
+})
 
-settings <- settingsLoadGroupsMS1
-self <- ms5$clone()
+ms5$remove_groups_ms2()
 
-self$has_loaded_groups_ms1()
-
-ms5$get_groups(mz = targets)
-
-
-ms5$get_features_ms1(mz = targets, loadedMS1 = FALSE)
-
-ms5$get_groups_ms1(mz = targets, loadedFeaturesMS1 = FALSE, loadedGroupsMS1 = FALSE)
-ms5$plot_groups_ms1(mz = targets, loadedFeaturesMS1 = TRUE, loadedGroupsMS1 = TRUE)
-
-
-names(self$get_settings())
-
-
-
-
-
-
+test_that("remove loaded MS2 groups", {
+  expect_false(ms5$has_loaded_groups_ms2())
+})
 
 file.remove("msData.json")
 
@@ -533,20 +528,7 @@ file.remove("msData.json")
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 # todos -----
-
-# TODO Implement a field for storing MS lists for each feature/feature groups
 
 # TODO Make a validation function for the validity of class content.
 # To be used when importing from rds file.
@@ -557,8 +539,6 @@ file.remove("msData.json")
 
 # TODO Improve methods for plotting already produced data.frames from
 # class functions, similar to S4 implementation for data.table
-
-# TODO Implement sub-setting for features and feature groups
 
 # TODO Implement self filling function for missing features in groups
 
@@ -577,19 +557,19 @@ file.remove("msData.json")
 # blk <- c(rep("blank_neg", 3),rep("blank_pos", 3),rep("blank_neg", 3),rep("blank_pos", 3))
 # ms$add_replicate_names(rpl)
 # ms$add_blank_names(blk)
-settings_ff <- list(
-  "call" = "find_features",
-  "algorithm" = "xcms3",
-  "parameters" = list(xcms::CentWaveParam(
-    ppm = 12, peakwidth = c(5, 30),
-    snthresh = 10, prefilter = c(5, 3000),
-    mzCenterFun = "mean", integrate = 2,
-    mzdiff = -0.0005, fitgauss = TRUE,
-    noise = 1000, verboseColumns = TRUE,
-    firstBaselineCheck = FALSE,
-    extendLengthMSW = TRUE
-  ))
-)
+# settings_ff <- list(
+#   "call" = "find_features",
+#   "algorithm" = "xcms3",
+#   "parameters" = list(xcms::CentWaveParam(
+#     ppm = 12, peakwidth = c(5, 30),
+#     snthresh = 10, prefilter = c(5, 3000),
+#     mzCenterFun = "mean", integrate = 2,
+#     mzdiff = -0.0005, fitgauss = TRUE,
+#     noise = 1000, verboseColumns = TRUE,
+#     firstBaselineCheck = FALSE,
+#     extendLengthMSW = TRUE
+#   ))
+# )
 # settings_gf <- list(
 #   "call" = "group_features",
 #   "algorithm" = "xcms3",
@@ -636,8 +616,8 @@ settings_ff <- list(
 #   )
 # )
 
-ms <- msData$new(files[c(4:5)], runParallel = FALSE) #, 10:12
-ms$find_features(settings = settings_ff)
+# ms <- msData$new(files[c(4:5)], runParallel = FALSE) #, 10:12
+# ms$find_features(settings = settings_ff)
 # ms$group_features(settings = settings_gf)
 # ms$group_features(settings = settings_gf_alignment)
 
@@ -657,98 +637,23 @@ ms$find_features(settings = settings_ff)
 #   )
 # )
 
-settingsLoadFeaturesMS2 <- list(
-  "call" = "load_features_ms2",
-  "algorithm" = "streamFind",
-  "parameters" = list(
-    isolationWindow = 1.3,
-    mzClust = 0.001,
-    minIntensity = 250,
-    filtered = FALSE,
-    runParallel = FALSE,
-    verbose = FALSE
-  )
-)
+# settingsLoadFeaturesMS2 <- list(
+#   "call" = "load_features_ms2",
+#   "algorithm" = "streamFind",
+#   "parameters" = list(
+#     isolationWindow = 1.3,
+#     mzClust = 0.001,
+#     minIntensity = 250,
+#     filtered = FALSE,
+#     runParallel = FALSE,
+#     verbose = FALSE
+#   )
+# )
 
-ms$add_settings(settingsLoadFeaturesMS2)
-ms$get_settings("load_features_ms2")
-
-# ms$load_features_ms1()
-
-self <- ms$clone(deep = T)
+# ms$add_settings(settingsLoadFeaturesMS2)
+# ms$get_settings("load_features_ms2")
 
 # ms$load_features_ms1()
-
-ms$load_features_ms2()
-ms$has_loaded_features_ms2()
-
-
-
-test <- ms$get_features()[1:5, ]
-test2 <- ms$get_features()[1:5, ][["ms2"]]
-names(test2) <- test$feature
-test2 <- rbindlist(test2, idcol = "feature", fill = TRUE)
-
-
-ms$get_features_ms2(analyses = 1, mz = targets)
-
-
-ms$get_features_ms1(analyses = 1, features = "mz333.203_d2_rt1295_t20_f879",
-  mzWindow = c(-0.1, 0.005), rtWindow = NULL, minIntensity = 0,
-  mzClust = 0.00005)
-
-
-ms$get_spectra(analyses = 1, mz = test$mz, rt = test$rt, ppm = 5, sec = 5)
-
-
-
-test <- ms$get_features(features = "mz333.203_d3_rt1294_t9_f598")
-
-ms$plot_features(features = "mz333.203_d3_rt1294_t9_f598")
-
-
-test$mzmax - test$mzmin
-
-ms$get_features()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

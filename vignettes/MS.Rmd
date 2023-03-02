@@ -28,8 +28,6 @@ knitr::opts_chunk$set(
 library(knitr)
 library(kableExtra)
 library(magrittr)
-library(ggplot2)
-library(plotly)
 ```
 
 # Introduction
@@ -643,7 +641,7 @@ ms$get_features(mz = carb_mz_pos, rt = carb_rt, ppm = 5, sec = 10)
 The features `data.table` contain the following mandatory columns:
 
  - **analysis**: (character) The file name without extension;
- - **id**: (character) The unique identifier of the feature in the analysis;
+ - **feature**: (character) The unique identifier of the feature in the analysis;
  - **index**: (numeric) The index of the feature in the analysis;
  - **mz**: (numeric) The calculated *m/z* from feature mass traces (i.e., centroids), in Da;
  - **rt**: (numeric) The calculated retention time from feature mass traces, in seconds;
@@ -766,7 +764,7 @@ names(ms$get_settings())
 ```{r subset-ms-target-features}
 # The ms object is first reduced in size to ease computation for this example
 targetFeatures <- ms$get_features(mz = targets1)
-targetFeatures <- targetFeatures[, c("analysis", "id"), with = FALSE]
+targetFeatures <- targetFeatures[, c("analysis", "feature"), with = FALSE]
 targetFeatures
 
 # Only the features from targets are kept in the msData object

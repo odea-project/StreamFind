@@ -4,15 +4,15 @@
 \alias{plot_spectra_interactive}
 \title{plot_spectra_interactive}
 \usage{
-plot_spectra_interactive(spec = NULL, colorBy = "analyses")
+plot_spectra_interactive(spectra = NULL, colorBy = "analyses")
 }
 \arguments{
+\item{spectra}{A \code{data.table} with the at least columns \emph{analysis}, \emph{level},
+\emph{rt}, \emph{mz} and \emph{intensity}.}
+
 \item{colorBy}{A string (length 1). One of "analyses" (the default),
 "levels", "targets" or "replicates". For "replicates", a column with
 replicate names should be given.}
-
-\item{spectra}{A \code{data.table} with the analysis, level, rt, mz and
-intensity.}
 }
 \value{
 A 3D interactive plot.

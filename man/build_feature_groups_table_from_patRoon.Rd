@@ -7,8 +7,9 @@
 build_feature_groups_table_from_patRoon(pat, features, self)
 }
 \arguments{
-\item{pat}{A \linkS4class{featureGroups} object from the
-package \pkg{patRoon}.}
+\item{pat}{An object with class \code{featureGroups} from the package \pkg{patRoon}.}
+
+\item{features}{X.}
 
 \item{self}{An \code{msData} object. When applied within the R6, the self object.}
 }
