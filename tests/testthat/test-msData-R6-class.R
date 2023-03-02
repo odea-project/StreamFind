@@ -191,21 +191,21 @@ test_that("find and get features", {
 ftar <- ms$get_features(analyses = 4, mz = targets)
 
 test_that("get MS1 and MS2 for features", {
-  expect_s3_class(ms$get_features_ms1(id = ftar$id), "data.frame")
-  expect_gt(nrow(ms$get_features_ms1(id = ftar$id)), 0)
-  expect_s3_class(ms$get_features_ms2(id = ftar$id), "data.frame")
-  expect_gt(nrow(ms$get_features_ms2(id = ftar$id)), 0)
-  expect_equal(nrow(ms$get_features_ms1(analyses = 1, id = ftar$id[12])), 0)
+  expect_s3_class(ms$get_features_ms1(features = ftar$feature), "data.frame")
+  expect_gt(nrow(ms$get_features_ms1(features = ftar$feature)), 0)
+  expect_s3_class(ms$get_features_ms2(features = ftar$feature), "data.frame")
+  expect_gt(nrow(ms$get_features_ms2(features = ftar$feature)), 0)
+  expect_equal(nrow(ms$get_features_ms1(analyses = 1, features = ftar$feature[12])), 0)
   expect_equal(nrow(ms$get_features_ms1(analyses = 1, mz = ftar)), 0)
-  expect_s3_class(ms$get_features_ms2(id = ftar$id), "data.frame")
-  expect_equal(nrow(ms$get_features_ms2(analyses = 1, id = ftar$id)), 0)
+  expect_s3_class(ms$get_features_ms2(features = ftar$feature), "data.frame")
+  expect_equal(nrow(ms$get_features_ms2(analyses = 1, features = ftar$feature)), 0)
   expect_equal(nrow(ms$get_features_ms2(analyses = 1, mz = ftar)), 0)
 })
 
-# ms$plot_features_ms1(id = ftar$id)
-# ms$plot_features_ms2(id = ftar$id)
-# ms$plot_features_ms1(id = ftar$id, interactive = FALSE)
-# ms$plot_features_ms2(id = ftar$id, interactive = FALSE)
+# ms$plot_features_ms1(features = ftar$feature)
+# ms$plot_features_ms2(features = ftar$feature)
+# ms$plot_features_ms1(features = ftar$feature, interactive = FALSE)
+# ms$plot_features_ms2(features = ftar$feature, interactive = FALSE)
 
 settings_gf <- list(
   "call" = "group_features",
@@ -381,6 +381,65 @@ test_that("subset features", {
   expect_equal(nrow(ms5$get_groups()), 2)
 })
 
+settingsLoadFeaturesMS1 <- list(
+  "call" = "load_features_ms1",
+  "algorithm" = "streamFind",
+  "parameters" = list(
+    rtWindow = c(-2, 2),
+    mzWindow = c(-1, 6),
+    mzClust = 0.003,
+    minIntensity = 250,
+    filtered = FALSE,
+    runParallel = FALSE,
+    verbose = FALSE
+  )
+)
+
+settingsLoadFeaturesMS2 <- list(
+  "call" = "load_features_ms2",
+  "algorithm" = "streamFind",
+  "parameters" = list(
+    isolationWindow = 1.3,
+    mzClust = 0.003,
+    minIntensity = 0,
+    filtered = FALSE,
+    runParallel = FALSE,
+    verbose = FALSE
+  )
+)
+
+ms5$load_features_ms1(settings = settingsLoadFeaturesMS1)
+
+test_that("load MS1 features", {
+  expect_true(any(ms5$has_loaded_features_ms1()))
+  expect_equal(
+    unique(ms5$get_features_ms1(loadedMS1 = TRUE)[["id"]]),
+    fts_to_subset$feature
+  )
+})
+
+ms5$remove_features_ms1()
+
+test_that("remove loaded MS1 features", {
+  expect_true(!any(ms5$has_loaded_features_ms1()))
+})
+
+ms5$load_features_ms2(settings = settingsLoadFeaturesMS2)
+
+test_that("load MS2 features", {
+  expect_true(any(ms5$has_loaded_features_ms2()))
+  expect_equal(
+      unique(ms5$get_features_ms2(loadedMS1 = TRUE)[["id"]]),
+      fts_to_subset$feature
+  )
+})
+
+ms5$remove_features_ms2()
+
+test_that("remove loaded MS2 features", {
+  expect_true(!any(ms5$has_loaded_features_ms2()))
+})
+
 ms5 <- import_msData("msData.json")
 groups_to_subset <- ms5$get_groups(mz = targets)
 ms5 <- ms5$subset_groups(groups = groups_to_subset$group)
@@ -393,6 +452,80 @@ test_that("subset groups", {
   )
   expect_equal(nrow(ms5$get_groups()), 2)
 })
+
+ms5$remove_features(filtered = TRUE)
+
+test_that("remove filtered features", {
+  expect_equal(
+    nrow(ms5$get_features(filtered = TRUE)),
+    nrow(ms5$get_features(filtered = FALSE))
+  )
+  expect_equal(nrow(ms5$get_groups()), 2)
+})
+
+ms5$load_features_ms1(settings = settingsLoadFeaturesMS1)
+ms5$load_features_ms2(settings = settingsLoadFeaturesMS2)
+
+settingsLoadGroupsMS1 <- list(
+  "call" = "load_groups_ms1",
+  "algorithm" = "streamFind",
+  "parameters" = list(
+    mzClust = 0.003,
+    minIntensity = 1000,
+    verbose = TRUE,
+    filtered = FALSE,
+    runParallel = FALSE
+  )
+)
+
+settingsLoadGroupsMS2 <- list(
+  "call" = "load_groups_ms2",
+  "algorithm" = "streamFind",
+  "parameters" = list(
+    isolationWindow = 1.3,
+    mzClust = 0.003,
+    minIntensity = 0,
+    filtered = FALSE,
+    runParallel = FALSE,
+    verbose = FALSE
+  )
+)
+
+ms5$load_groups_ms1(settings = settingsLoadGroupsMS1)
+
+test_that("load MS1 groups", {
+  expect_true(any(ms5$has_loaded_groups_ms1()))
+  expect_equal(
+    unique(ms5$get_groups_ms1()[["id"]]),
+    groups_to_subset$group
+  )
+})
+
+
+
+
+
+settings <- settingsLoadGroupsMS1
+self <- ms5$clone()
+
+self$has_loaded_groups_ms1()
+
+ms5$get_groups(mz = targets)
+
+
+ms5$get_features_ms1(mz = targets, loadedMS1 = FALSE)
+
+ms5$get_groups_ms1(mz = targets, loadedFeaturesMS1 = FALSE, loadedGroupsMS1 = FALSE)
+ms5$plot_groups_ms1(mz = targets, loadedFeaturesMS1 = TRUE, loadedGroupsMS1 = TRUE)
+
+
+names(self$get_settings())
+
+
+
+
+
+
 
 file.remove("msData.json")
 
@@ -553,14 +686,14 @@ ms$has_loaded_features_ms2()
 
 test <- ms$get_features()[1:5, ]
 test2 <- ms$get_features()[1:5, ][["ms2"]]
-names(test2) <- test$id
-test2 <- rbindlist(test2, idcol = "id", fill = TRUE)
+names(test2) <- test$feature
+test2 <- rbindlist(test2, idcol = "feature", fill = TRUE)
 
 
 ms$get_features_ms2(analyses = 1, mz = targets)
 
 
-ms$get_features_ms1(analyses = 1, id = "mz333.203_d2_rt1295_t20_f879",
+ms$get_features_ms1(analyses = 1, features = "mz333.203_d2_rt1295_t20_f879",
   mzWindow = c(-0.1, 0.005), rtWindow = NULL, minIntensity = 0,
   mzClust = 0.00005)
 
@@ -569,9 +702,9 @@ ms$get_spectra(analyses = 1, mz = test$mz, rt = test$rt, ppm = 5, sec = 5)
 
 
 
-test <- ms$get_features(id = "mz333.203_d3_rt1294_t9_f598")
+test <- ms$get_features(features = "mz333.203_d3_rt1294_t9_f598")
 
-ms$plot_features(id = "mz333.203_d3_rt1294_t9_f598")
+ms$plot_features(features = "mz333.203_d3_rt1294_t9_f598")
 
 
 test$mzmax - test$mzmin

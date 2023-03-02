@@ -1021,7 +1021,7 @@ plot_features_static <- function(eic = NULL, features = NULL,
   for (t in ids) {
     lt <- unique(eic[id == t, var])
     pk_eic <- eic[id == t, ]
-    pk_a <- features[features$id == t, ]
+    pk_a <- features[features$feature == t, ]
     pk_eic_a <- pk_eic[rt >= pk_a$rtmin & rt <= pk_a$rtmax & id == t, ]
     points(
       x = pk_eic$rt,
@@ -1151,7 +1151,7 @@ plot_features_interactive <- function(eic = NULL, features = NULL,
     )
     if (length(y) >= 1) showL[lt] <- FALSE
 
-    pk <- features[features$id %in% t, ]
+    pk <- features[features$feature %in% t, ]
     pk_eic <- eic[eic$rt >= pk$rtmin & eic$rt <= pk$rtmax & eic$id == t, ]
 
     hT <- paste(
@@ -1243,13 +1243,13 @@ map_features_static <- function(features, colorBy = "targets",
     leg <- unique(features$replicate)
     varkey <- features$replicate
   } else if (is.character(legendNames) &
-    length(legendNames) == length(unique(features$id))) {
+    length(legendNames) == length(unique(features$feature))) {
     leg <- legendNames
-    names(leg) <- unique(features$id)
-    varkey <- leg[features$id]
+    names(leg) <- unique(features$feature)
+    varkey <- leg[features$feature]
   } else {
-    leg <- unique(features$id)
-    varkey <- features$id
+    leg <- unique(features$feature)
+    varkey <- features$feature
   }
 
   features$var <- varkey
@@ -1343,13 +1343,13 @@ map_features_interactive <- function(features, colorBy = "targets",
     leg <- unique(features$replicate)
     varkey <- features$replicate
   } else if (is.character(legendNames) &
-    length(legendNames) == length(unique(features$id))) {
+    length(legendNames) == length(unique(features$feature))) {
     leg <- legendNames
-    names(leg) <- unique(features$id)
-    varkey <- leg[features$id]
+    names(leg) <- unique(features$feature)
+    varkey <- leg[features$feature]
   } else {
-    leg <- unique(features$id)
-    varkey <- features$id
+    leg <- unique(features$feature)
+    varkey <- features$feature
   }
 
   features$var <- varkey
@@ -1380,15 +1380,15 @@ map_features_interactive <- function(features, colorBy = "targets",
     marker = list(size = 8),
     hoverinfo = "text",
     text = paste(
-      "</br> peak: ", features$id,
+      "</br> feature: ", features$feature,
       "</br> analysis: ", features$analysis,
       "</br> <i>m/z</i>: ", round(features$mz, digits = 4),
       "</br> dppm: ", round(((features$mzmax - features$mzmin) /
         features$mz) * 1E6, digits = 0),
       "</br> rt: ", round(features$rt, digits = 0),
       "</br> drt: ", round(features$rtmax - features$rtmin, digits = 0),
-      "</br> Int: ", round(features$intensity, digits = 0),
-      "</br> Filled: ",
+      "</br> intensity: ", round(features$intensity, digits = 0),
+      "</br> filled: ",
       if ("is_filled" %in% colnames(features)) {
         ifelse(features$is_filled == 1, TRUE, FALSE)
       } else {
@@ -1505,7 +1505,7 @@ plot_groups_overview_aux <- function(features, eic, heights, analyses) {
         text = paste(
           "</br> name: ", g,
           "</br> group: ", ft$group,
-          "</br> feature: ", ft$id,
+          "</br> feature: ", ft$feature,
           "</br> analysis: ", ft$analysis,
           "</br> <i>m/z</i>: ", round(ft$mz, digits = 4),
           "</br> rt: ", round(df$rt, digits = 0),
@@ -1551,7 +1551,7 @@ plot_groups_overview_aux <- function(features, eic, heights, analyses) {
       text = paste(
         "</br> name: ", g,
         "</br> group: ", ft_nf$group,
-        "</br> feature: ", ft_nf$id,
+        "</br> feature: ", ft_nf$feature,
         "</br> analysis: ", ft_nf$analysis,
         "</br> intensity: ", round(ft_nf$intensity, digits = 0),
         "</br> width: ", round(ft_nf$rtmax - ft_nf$rtmin, digits = 0),
@@ -1590,7 +1590,7 @@ plot_groups_overview_aux <- function(features, eic, heights, analyses) {
         text = paste(
           "</br> name: ", g,
           "</br> group: ", ft_f$group,
-          "</br> feature: ", ft_f$id,
+          "</br> feature: ", ft_f$feature,
           "</br> analysis: ", ft_f$analysis,
           "</br> intensity: ", round(ft_f$intensity, digits = 0),
           "</br> width: ", round(ft_f$rtmax - ft_f$rtmin, digits = 0),

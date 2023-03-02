@@ -178,6 +178,10 @@ ms$remove_analyses(4:6)
 ms
 ```
 
+## Subset methods
+
+To be written.
+
 ## Has methods
 
 There are methods to simply check if data is present in the msData. These are has methods. For instance below we use some has methods to check if data is present in the `ms` object. Also, by typing `ms$has`, other available has methods are listed. The documentation `?msData` also contains detailed information and usage examples for available has methods.
@@ -465,7 +469,7 @@ t2 <- rbind(targets1[2, ], targets2[2,], targets3[2, ], targets4[2, ])
 all(round(apply(t2[, 2:7], 2, sd), digits = 4) == 0)
 ```
 
-## Get and see spectra
+## Get and plot spectra
 
 Besides the `get_tic()` and `get_bpc()` methods (shown above). There are four methods to get low level spectra from analysis objects: `get_spectra()`, `get_eic()`, `get_ms1()` and `get_ms2()`. All methods use the same arguments as the function `make_ms_targets()` to make targets and the *analyses* argument to specify which analysis object to query the data. All methods return a `data.table`. The documentation in `?msData` has detailed information about the use of each method. Show cases for each method are shown below. For each get method, a plot method is available with similar interface. Below each get and plot method is demonstrated for the defined targets.
 
@@ -556,10 +560,15 @@ ms$plot_ms2(mz = targets1[2 ,],
 
 ```{r plot-ms2-02}
 # MS2 data plot of both targets in analyses 3
+# Note that "minIntensity" argument was increased to 500 counts, resulting in a cleaner averaged spectrum
 ms$plot_ms2(analyses = 3, mz = targets1, 
   mzClust = 0.005, minIntensity = 500,
   colorBy = "targets", verbose = FALSE)
 ```
+
+# Centroiding
+
+Possible using the function `convert_ms_files()` which utilizes the [msConvert](https://proteowizard.sourceforge.io/download.html) command line. See `help(convert_ms_files)` for more information. Alternative centroiding to be implemented with algorithm from DUE (Gerrit and Max).
 
 # Processing settings
 
@@ -601,29 +610,25 @@ ms$add_settings(settings = settingsFindFeatures)
 ms$get_settings(call = "find_features")[["find_features"]]
 ```
 
-# Centroiding
-
-To be implemented with algorithm from DUE (Gerrit and Max).
-
 # Features
 
-Extraction of features from raw MS data is a frequent step applied during data processing for easing prioritization and identification of chemicals in a given analysis (i.e., sample). A feature in essence describes a chromatographic peak composed fundamentally of three values: mass-to-charge ratio (*m/z*), retention time (rt) and intensity. The method `find_features()` from a msData object can be used to extract features from files represented by the analysis objects. Several algorithms (i.e., software) are available for finding features through the [patRoon](https://github.com/rickhelmus/patRoon) package as above mentioned. Some algorithms require spectral data in profile mode but most use centroided data (see \@ref(centroiding) for more information about centroid vs profile mode). Below, we use the added settings to find features from the analyses in the object `ms`. Note that the argument `settings` was not used (`NULL` is the default value) as the settings were already added to the object. Adding settings via the argument `settings` during call for method `find_features()` replaces any existing settings in the msData objects with call name "find_features". If settings with call name "find_features" are not available or given, features are not extracted.
+Extraction of features from raw MS data is a frequent step applied during data processing for easing prioritization and identification of chemicals in a given analysis (i.e., sample). A feature in essence describes a chromatographic peak composed fundamentally of three values: mass-to-charge ratio (*m/z*), retention time (rt) and intensity. The method `find_features()` from an msData object can be used to extract features from files represented by the analysis objects. Several algorithms (i.e., software) are available for finding features through the [patRoon](https://github.com/rickhelmus/patRoon) package as above mentioned. Some algorithms require spectral data in profile mode but most use centroided data (see \@ref(centroiding) for more information about centroid vs profile mode). Below, we use the added settings to find features from the analyses in the object `ms`. Note that the argument `settings` was not used (`NULL` is the default value) as the settings were already added to the object. Adding settings via the argument `settings` during call for method `find_features()` replaces any existing settings in the msData objects with call name "find_features". If settings with call name "find_features" are not available or given, features are not extracted.
 
 ```{r ff-01, warning=FALSE, message=FALSE}
 ms$find_features(settings = NULL)
 ```
 
 ```{r print-ms-after-ff}
-# check for presence of features in analyses
+# Check for presence of features in analyses
 ms$has_features()
 
-# show method giving the number of features
+# Show method giving the number of features
 ms
 ```
 
 ## Get features
 
-As above described, there are get methods to parse data from a msData class object. For features, the method `get_features()` can be used as shown below. When no arguments are given, the features `data.table` in each analysis is collated without filtering and a column analysis is given to make reference for the analysis that the corresponding features belong to.
+As above described, there are get methods to parse data from an msData class object. For features, the method `get_features()` can be used as shown below. When no arguments are given, the features `data.table` in each analysis object is collated without filtering and a column analysis is given to make reference for the analysis that the corresponding features belong to.
 
 ```{r get-all-features}
 head(ms$get_features())
@@ -641,7 +646,7 @@ The features `data.table` contain the following mandatory columns:
  - **id**: (character) The unique identifier of the feature in the analysis;
  - **index**: (numeric) The index of the feature in the analysis;
  - **mz**: (numeric) The calculated *m/z* from feature mass traces (i.e., centroids), in Da;
- - **rt*"**: (numeric) The calculated retention time from feature mass traces, in seconds;
+ - **rt**: (numeric) The calculated retention time from feature mass traces, in seconds;
  - **mzmin**: (numeric) The minimum *m/z* value of the feature mass traces, in Da;
  - **mzmax**: (numeric) The maximum *m/z* value of the feature mass traces, in Da;
  - **rtmin**: (numeric) The minimum retention time value of the feature mass traces, in seconds;
@@ -675,7 +680,7 @@ ms$map_features(mz = targets1, colorBy = "analyses", interactive = TRUE)
 
 ## Get MS1 and MS2
 
-As mentioned, each feature represents an MS1 level chromatographic peak. The averaged MS1 spectrum can be obtained with the method `get_features_ms1()`. Spectra within the feature mass and time space are collected and clustered according to a `mzClust` argument (in Da), as shown below.  The arguments `rtWindow` and `mzWindow` can be used to narrow or extend the space for collection of mass traces. In the example below, the time window for collection of mass traces will be plus/minus 2 seconds the calculated retention time of the feature found by the `mz` and `rt` arguments; In the example, it is the feature correspondent to Carbamazepin-d10. The mass window will be -1 Da and +6 Da the calculated *m/z*. When both `rtWindow` and `mzWindow` are `NULL`, the integrated feature space (as plotted by the `map_features()` method) will be used. A `minIntensity` argument is used to filter mass traces below an intensity threshold. In the example below it was set to 1000 counts, to exclude low intensity mass traces. The `data.table` obtained can be plotted directly with the `plot_features_ms1()` method as shown below.
+As mentioned, each feature represents an MS1 level chromatographic peak. The averaged MS1 spectrum can be obtained with the method `get_features_ms1()`. Spectra within the feature mass and time space are collected and clustered according to a `mzClust` argument (in Da), as shown below.  The arguments `rtWindow` and `mzWindow` can be used to narrow or extend the space for collection of mass traces. In the example below, the time window for collection of mass traces will be plus/minus 2 seconds the calculated retention time of the feature found by the `mz` and `rt` arguments; In the example, it is the feature correspondent to Carbamazepin-d10. The mass window will be -1 Da and +6 Da the calculated *m/z*. When both `rtWindow` and `mzWindow` are `NULL`, the integrated feature space (as plotted by the `map_features()` method) will be used. A `minIntensity` argument is used to filter mass traces below an intensity threshold. In the example below, it was set to 1000 counts, to exclude low intensity mass traces. The `data.table` obtained can be plotted directly with the `plot_features_ms1()` method as shown below.
 
 ```{r get-features-ms1}
 ms$get_features_ms1(analyses = 2, mz = carb_mz_pos, rt = carb_rt,
@@ -685,14 +690,14 @@ ms$get_features_ms1(analyses = 2, mz = carb_mz_pos, rt = carb_rt,
 ```
 
 ```{r plot-features-ms1}
-# plotting the MS1 spectrum of both Carbamazepin-d10 and Diuron-d6 in analyses 2
+# Plotting the MS1 spectrum of both Carbamazepin-d10 and Diuron-d6 in analyses 2
 ms$plot_features_ms1(analyses = 2, verbose = FALSE,
   mz = targets1, rtWindow = c(-2, 2), mzWindow = c(-1, 6),
   mzClust = 0.003, minIntensity = 1000, colorBy = "targets"
 )
 ```
 
-MS2 data from features is obtained with the `get_features_ms2()` method, as shown below. For MS2, the arguments `mzClust` and `minIntensity` are applied the same way as for MS1. However, when extracting traces an isolation window (in Da) should be set using the argument `isolationWindow`. The isolation windows should match with the settings used to isolate precursors ions during fragmentation from tandem MS. Below we set the `isolationWindow` to 1.3 Da, which extends the *mzmin* to *mzmax* range of the feature by $-\frac{1.3}{2}$ and $+\frac{1.3}{2}$, respectively. Plotting the `data.table` can also be directly performed with the `plot_features_ms2()` method as shown below.
+MS2 data from features is obtained with the `get_features_ms2()` method, as shown below. For MS2, the arguments `mzClust` and `minIntensity` are applied the same way as for MS1. However, when extracting traces an isolation window (in Da) should be set using the argument `isolationWindow`. The isolation window should match with the settings used to isolate precursor ions during fragmentation from tandem MS. Below we set the `isolationWindow` to 1.3 Da, which extends the *mzmin* to *mzmax* range of the feature by $-\frac{1.3}{2}$ and $+\frac{1.3}{2}$, respectively. Plotting the `data.table` can also be directly performed with the `plot_features_ms2()` method as shown below.
 
 ```{r get-features-ms2}
 ms$get_features_ms2(analyses = 3, mz = carb_mz_pos, rt = carb_rt,
@@ -718,16 +723,16 @@ ms$plot_features_ms2(analyses = 1, mz = targets1,
 
 ## Load MS1 and MS2
 
-Both MS1 and MS2 spectra can support identification processing steps by giving additional information from isotopic and specific fragmentation patterns, respectively. The methods `load_features_ms1()` and `load_features_ms2()` are used for systematically load averaged MS1 and MS2 spectra for features in a msData class object. Both methods have a `settings` argument which takes a settings object similar to "find_features" settings but with the specific call name, which is the method name, as shown below. The parameters are the same as the arguments of the respective get methods. The settings can be also added to the settings internal field as explained above. This allows for internal data re-processing, inspection and retrospective evaluation.
+MS1 and MS2 spectra can support identification processing steps by giving additional information from isotopic and specific fragmentation patterns, respectively. The methods `load_features_ms1()` and `load_features_ms2()` are used for systematically load averaged MS1 and MS2 spectra for features in an msData class object. Both methods have a `settings` argument which takes a settings object similar to "find_features" settings but with the specific call name, which is the method name, as shown below. The parameters are the same as the arguments of the respective get methods (see above in \@ref(get-ms1-and-ms2)). The settings can be also added to the settings internal field as explained above in \@ref(processing-settings). This allows for internal data re-processing, inspection and retrospective evaluation.
 
-```{r}
-# settings for loading features MS1 spectra
+```{r features-ms1-ms2-settings}
+# Settings for loading features MS1 spectra
 settingsLoadFeaturesMS1 <- list(
   "call" = "load_features_ms1",
   "algorithm" = "streamFind",
   "parameters" = list(
     rtWindow = c(-2, 2),
-    mzWindow = NULL,
+    mzWindow = c(-1, 6),
     mzClust = 0.003,
     minIntensity = 250,
     filtered = FALSE,
@@ -736,7 +741,7 @@ settingsLoadFeaturesMS1 <- list(
   )
 )
 
-# settings for loading features MS2 spectra
+# Settings for loading features MS2 spectra
 settingsLoadFeaturesMS2 <- list(
   "call" = "load_features_ms2",
   "algorithm" = "streamFind",
@@ -749,20 +754,106 @@ settingsLoadFeaturesMS2 <- list(
     verbose = FALSE
   )
 )
+
+ms$add_settings(settings = settingsLoadFeaturesMS1)
+
+ms$add_settings(settings = settingsLoadFeaturesMS2)
+
+# Returns the names of the settings list, which is also the call or method name
+names(ms$get_settings())
 ```
 
+```{r subset-ms-target-features}
+# The ms object is first reduced in size to ease computation for this example
+targetFeatures <- ms$get_features(mz = targets1)
+targetFeatures <- targetFeatures[, c("analysis", "id"), with = FALSE]
+targetFeatures
 
+# Only the features from targets are kept in the msData object
+msTargets <- ms$subset_features(features = targetFeatures)
 
+# Only 2 features in each analysis object
+msTargets
+```
 
+### MS1
 
-When MS2 data is not available for a given isolation window (i.e., the feature *m/z* at the retention time window was not fragmented), a `NULL` value is returned.
+As the settings were already added to `ms`, the settings are also in `msTargets`. In general, the sub-setting methods transfer everything by the new msData object except what is to be excluded (see \@ref(subset-methods) for more information). Below, the MS1 spectra for the targets (i.e., Carbamazepin-d10 and Diuron-d6) are loaded to the `msTargets`.
+
+```{r load-ms1-targets}
+msTargets$load_features_ms1()
+
+msTargets$has_loaded_features_ms1()
+```
+
+When loaded, the MS1 data is added as a new column in the features `data.table` of each analysis object. Therefore, there are two ways of getting the MS1 spectra as demonstrated below. The use of `get_features_ms1()` method is recommended over accessing directly from the features `data.table`. The method `get_features_ms1()` has the argument loaded set to `TRUE` by default for when loaded MS1 are present, data is queried from the loaded spectra rather then extracting from raw data. Note that when loaded is `TRUE`, averaging settings are ignored as the spectra were already averaged during loading of MS1 data. If loaded is set to `FALSE`, data is extracted from raw data even if loaded spectra are present in the features table.
+
+```{r get-loaded-ms1-1}
+msTargets$get_features_ms1(analyses = 1, mz = targets1, loaded = TRUE)
+```
+
+```{r plot-loaded-ms1-1}
+# Plotting all loaded MS1 spectra by feature id
+msTargets$plot_features_ms1(loaded = TRUE)
+```
+
+As an alternative, MS1 spectra can be obtained directly from the features `data.table` as shown below but it is not recommended.
+
+```{r get-loaded-ms1-2}
+# Get MS1 spectra from features data.table
+ms1FromFeaturesDataTable <- msTargets$get_features()
+head(ms1FromFeaturesDataTable)
+
+# Column ms1 is a list of data.table objects with the spectrum of each feature or NULL when a given feature does not have mass traces
+class(ms1FromFeaturesDataTable$ms1)
+
+# Extract the first spectrum with the "[[" method
+ms1FromFeaturesDataTable$ms1[[1]]
+```
+
+### MS2
+
+Similarly to MS1, MS2 data can be loaded as shown below. Note the settings were already added to the former `ms` object. Still, one can add the settings again in the method call. The previously stored settings will then be overwritten. In this case, there is no change as the settings are the same.
+
+```{r load-ms1-ms2-targets}
+msTargets$load_features_ms2(settings = settingsLoadFeaturesMS2)
+msTargets$has_loaded_features_ms2()
+```
+
+The MS2 spectra can be obtained with the method `get_features_ms2()` with the argument loaded set to `TRUE` (the default value). Alternatively, but not recommended, the MS2 spectra can be obtained directly from the features `data.table` as for MS1 spectra (shown above).
+
+```{r get-loaded-ms2-1}
+# The first 6 lines of the MS2 spectra
+head(msTargets$get_features_ms2(analyses = 1, mz = targets1, loaded = TRUE))
+```
+
+```{r plot-loaded-ms2-1}
+# Plotting all loaded MS2 spectra by feature id
+msTargets$plot_features_ms2(loaded = TRUE)
+```
+
+### When not present
+
+When MS1 or MS2 data is not available for a given feature (i.e., within the feature *m/z* and retention time window there is not mass traces or the MS1 traces were not fragmented, respectively), a `NULL` value is given. So, in the *ms1* and *ms2* columns of the features `data.table` a `NULL` entry is present if the spectrum is absent. When returning bulk MS1 and MS2 spectra with `get_features_ms1()` and `get_features_ms2()`, respectively, the features with `NULL` (no spectra) are not listed in the returned `data.table`.
+
+## Remove MS1 and MS2
+
+Loaded MS1 and MS2 feature spectra can be removed using the `remove_features_ms1()` and `remove_features_ms2()`. Note that all the loaded spectra are removed as no argument can be given to remove only certain spectra.
+
+```{r remove-features-ms1-ms2}
+msTargets$remove_features_ms1()
+msTargets$has_loaded_features_ms1()
+
+msTargets$remove_features_ms2()
+msTargets$has_loaded_features_ms2()
+```
 
 # Isotopes and adducts
 
-
-
+To be implemented.
 
 # Groups
+
 
 
 

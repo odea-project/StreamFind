@@ -5,7 +5,6 @@
 #' `mzML` or `mzXML`.
 #'
 #' @references
-#'
 #' \insertRef{proteo01}{streamFind}
 #'
 #' \insertRef{proteo02}{streamFind}
@@ -50,7 +49,6 @@ check_compatible_ms_formats_for_conversion <- function() {
 #' double backslash of to single forward slash.
 #'
 #' @references
-#'
 #' \insertRef{proteo01}{streamFind}
 #'
 #' \insertRef{proteo02}{streamFind}
@@ -171,7 +169,6 @@ convert_ms_files <- function(files = NULL, outputFormat = "mzML",
 #' @export
 #'
 #' @references
-#'
 #' \insertRef{mzr01}{streamFind}
 #'
 #' \insertRef{mzr02}{streamFind}

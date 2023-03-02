@@ -16,6 +16,11 @@ When \code{call} is \code{NULL} all settings are removed.
 
 Unique feature groups from the removed analyses are also removed.
 
+When sub-setting groups, features that lose correspondence are not
+removed but filtered with "grouping" added as filter category. Filtered
+features can be removed with the method
+\code{msData$remove_features(filtered = TRUE)}.
+
 The \linkS4class{settings} call must be set to "find_features".
 
 The \linkS4class{settings} call must be set to "group_features".
@@ -50,8 +55,11 @@ list and the \code{data.table} of each group is converted to a list.
 \item \href{#method-msData-get_blank_names}{\code{msData$get_blank_names()}}
 \item \href{#method-msData-get_polarities}{\code{msData$get_polarities()}}
 \item \href{#method-msData-get_file_paths}{\code{msData$get_file_paths()}}
+\item \href{#method-msData-get_mz_low}{\code{msData$get_mz_low()}}
 \item \href{#method-msData-get_mz_high}{\code{msData$get_mz_high()}}
+\item \href{#method-msData-get_rt_start}{\code{msData$get_rt_start()}}
 \item \href{#method-msData-get_rt_end}{\code{msData$get_rt_end()}}
+\item \href{#method-msData-get_spectra_mode}{\code{msData$get_spectra_mode()}}
 \item \href{#method-msData-get_spectra_levels}{\code{msData$get_spectra_levels()}}
 \item \href{#method-msData-get_spectra}{\code{msData$get_spectra()}}
 \item \href{#method-msData-get_chromatograms}{\code{msData$get_chromatograms()}}
@@ -80,11 +88,17 @@ list and the \code{data.table} of each group is converted to a list.
 \item \href{#method-msData-remove_header}{\code{msData$remove_header()}}
 \item \href{#method-msData-remove_settings}{\code{msData$remove_settings()}}
 \item \href{#method-msData-remove_analyses}{\code{msData$remove_analyses()}}
+\item \href{#method-msData-remove_features}{\code{msData$remove_features()}}
 \item \href{#method-msData-remove_groups}{\code{msData$remove_groups()}}
 \item \href{#method-msData-remove_alignment}{\code{msData$remove_alignment()}}
+\item \href{#method-msData-subset_analyses}{\code{msData$subset_analyses()}}
+\item \href{#method-msData-subset_features}{\code{msData$subset_features()}}
+\item \href{#method-msData-subset_groups}{\code{msData$subset_groups()}}
 \item \href{#method-msData-has_analyses}{\code{msData$has_analyses()}}
 \item \href{#method-msData-has_loaded_spectra}{\code{msData$has_loaded_spectra()}}
 \item \href{#method-msData-has_loaded_chromatograms}{\code{msData$has_loaded_chromatograms()}}
+\item \href{#method-msData-has_loaded_features_ms1}{\code{msData$has_loaded_features_ms1()}}
+\item \href{#method-msData-has_loaded_features_ms2}{\code{msData$has_loaded_features_ms2()}}
 \item \href{#method-msData-has_settings}{\code{msData$has_settings()}}
 \item \href{#method-msData-has_features}{\code{msData$has_features()}}
 \item \href{#method-msData-has_alignment}{\code{msData$has_alignment()}}
@@ -107,10 +121,11 @@ list and the \code{data.table} of each group is converted to a list.
 \item \href{#method-msData-plot_groups_overview}{\code{msData$plot_groups_overview()}}
 \item \href{#method-msData-load_spectra}{\code{msData$load_spectra()}}
 \item \href{#method-msData-load_chromatograms}{\code{msData$load_chromatograms()}}
+\item \href{#method-msData-load_features_ms1}{\code{msData$load_features_ms1()}}
+\item \href{#method-msData-load_features_ms2}{\code{msData$load_features_ms2()}}
 \item \href{#method-msData-find_features}{\code{msData$find_features()}}
 \item \href{#method-msData-group_features}{\code{msData$group_features()}}
 \item \href{#method-msData-as_features_patRoon}{\code{msData$as_features_patRoon()}}
-\item \href{#method-msData-subset_analyses}{\code{msData$subset_analyses()}}
 \item \href{#method-msData-check_analyses_argument}{\code{msData$check_analyses_argument()}}
 \item \href{#method-msData-check_correspondence}{\code{msData$check_correspondence()}}
 \item \href{#method-msData-save_header}{\code{msData$save_header()}}
@@ -367,6 +382,27 @@ A character vector.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-get_mz_low"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-get_mz_low}{}}}
+\subsection{Method \code{get_mz_low()}}{
+Method to get the polarity of the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$get_mz_low(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A character vector.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-msData-get_mz_high"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-get_mz_high}{}}}
 \subsection{Method \code{get_mz_high()}}{
@@ -388,12 +424,54 @@ A character vector.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-get_rt_start"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-get_rt_start}{}}}
+\subsection{Method \code{get_rt_start()}}{
+Method to get the polarity of the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$get_rt_start(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A character vector.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-msData-get_rt_end"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-get_rt_end}{}}}
 \subsection{Method \code{get_rt_end()}}{
 Method to get the polarity of the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$get_rt_end(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A character vector.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-get_spectra_mode"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-get_spectra_mode}{}}}
+\subsection{Method \code{get_spectra_mode()}}{
+Method to get the polarity of the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$get_spectra_mode(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -1369,18 +1447,44 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-remove_features"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-remove_features}{}}}
+\subsection{Method \code{remove_features()}}{
+Remove feature from the \code{msData} object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$remove_features(features = NULL, filtered = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{id}
+representing the analysis name and the id of the features to remove,
+respectively.}
+
+\item{\code{filtered}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-msData-remove_groups"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-remove_groups}{}}}
 \subsection{Method \code{remove_groups()}}{
 Remove feature groups from the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$remove_groups(groups = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$remove_groups(groups = NULL, filtered = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{groups}}{X.}
+
+\item{\code{filtered}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1399,6 +1503,72 @@ Removes alignment results from the \code{msData} object.
 
 \subsection{Returns}{
 Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-subset_analyses"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-subset_analyses}{}}}
+\subsection{Method \code{subset_analyses()}}{
+Subsets an \code{msData} object on analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$subset_analyses(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A new cloned \code{msData} object with only the analyses as defined
+by the \code{analyses} argument.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-subset_features"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-subset_features}{}}}
+\subsection{Method \code{subset_features()}}{
+Subsets an \code{msData} object on features from analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$subset_features(features = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{id}
+representing the analysis name and the id of the features to keep in the
+new \code{msData} object, respectively.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A new cloned \code{msData} object with only the features as defined
+by the \code{features} argument.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-subset_groups"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-subset_groups}{}}}
+\subsection{Method \code{subset_groups()}}{
+Subsets an \code{msData} object on groups from correspondence of features
+across analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$subset_groups(groups = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{groups}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A new cloned \code{msData} object with only the groups as defined
+by the \code{groups} argument.
 }
 }
 \if{html}{\out{<hr>}}
@@ -1441,6 +1611,48 @@ Logical value.
 Method to check for loaded chromatograms in given analyses names/indices.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$has_loaded_chromatograms(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{The analyses names/indices to check for loaded
+chromatograms.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Logical value.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-has_loaded_features_ms1"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-has_loaded_features_ms1}{}}}
+\subsection{Method \code{has_loaded_features_ms1()}}{
+Method to check for loaded features ms1 in given analyses names/indices.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$has_loaded_features_ms1(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{The analyses names/indices to check for loaded
+chromatograms.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Logical value.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-has_loaded_features_ms2"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-has_loaded_features_ms2}{}}}
+\subsection{Method \code{has_loaded_features_ms2()}}{
+Method to check for loaded features ms2 in given analyses names/indices.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$has_loaded_features_ms2(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -2493,6 +2705,46 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-load_features_ms1"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-load_features_ms1}{}}}
+\subsection{Method \code{load_features_ms1()}}{
+Method to load and average MS1 spectra from features in the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$load_features_ms1(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-load_features_ms2"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-load_features_ms2}{}}}
+\subsection{Method \code{load_features_ms2()}}{
+Method to load and average MS2 spectra from features in the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$load_features_ms2(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-msData-find_features"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-find_features}{}}}
 \subsection{Method \code{find_features()}}{
@@ -2573,27 +2825,6 @@ with the features in the analyses.
 
 \subsection{Returns}{
 A \linkS4class{features} object.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-subset_analyses"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-subset_analyses}{}}}
-\subsection{Method \code{subset_analyses()}}{
-Subsets an \code{msData} object on analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$subset_analyses(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{X.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A new cloned \code{msData} object with only the analyses as defined
-by the \code{analyses} argument.
 }
 }
 \if{html}{\out{<hr>}}
