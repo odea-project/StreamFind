@@ -46,11 +46,3 @@ The [streamFind](https://github.com/ricardobachertdacunha/streamFind) R package 
 ```{r install-streamfind, eval=FALSE}
 remotes::install_github("ricardobachertdacunha/streamFind", dependencies = TRUE)
 ```
- 
-## Docker image
-
-Not yet available.
-
-## Backend usage
-
-Consult the Handbook_backend_streamFind.Rmd in the handbooks folder for detailed back-end structure and usage documentation.

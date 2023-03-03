@@ -2,14 +2,16 @@
 % Please edit documentation in R/class_R6_msData.R
 \name{msData}
 \alias{msData}
-\title{msData: R6 Class Representing an MS Set of Analysis Files}
+\title{msData - R6 Class}
 \description{
-A description of the R6 class.
-}
-\details{
-The details.
+The msData R6 class is a framework with methods for parsing, processing,
+visualizing and storing MS data.
 }
 \note{
+When \code{headers} is not given (i.e., \code{NULL}), default headers are
+generated with name as \code{NA_character}, path as \code{get_wd()} and date
+as \code{Sys.time()}.
+
 Name, path and date cannot be removed.
 
 When \code{call} is \code{NULL} all settings are removed.
@@ -46,7 +48,7 @@ list and the \code{data.table} of each group is converted to a list.
 \itemize{
 \item \href{#method-msData-new}{\code{msData$new()}}
 \item \href{#method-msData-print}{\code{msData$print()}}
-\item \href{#method-msData-get_header}{\code{msData$get_header()}}
+\item \href{#method-msData-get_headers}{\code{msData$get_headers()}}
 \item \href{#method-msData-get_analyses}{\code{msData$get_analyses()}}
 \item \href{#method-msData-get_number_analyses}{\code{msData$get_number_analyses()}}
 \item \href{#method-msData-get_overview}{\code{msData$get_overview()}}
@@ -77,7 +79,7 @@ list and the \code{data.table} of each group is converted to a list.
 \item \href{#method-msData-get_groups}{\code{msData$get_groups()}}
 \item \href{#method-msData-get_groups_ms1}{\code{msData$get_groups_ms1()}}
 \item \href{#method-msData-get_groups_ms2}{\code{msData$get_groups_ms2()}}
-\item \href{#method-msData-add_header}{\code{msData$add_header()}}
+\item \href{#method-msData-add_headers}{\code{msData$add_headers()}}
 \item \href{#method-msData-add_settings}{\code{msData$add_settings()}}
 \item \href{#method-msData-add_analyses}{\code{msData$add_analyses()}}
 \item \href{#method-msData-add_replicate_names}{\code{msData$add_replicate_names()}}
@@ -91,7 +93,7 @@ list and the \code{data.table} of each group is converted to a list.
 \item \href{#method-msData-load_features_ms2}{\code{msData$load_features_ms2()}}
 \item \href{#method-msData-load_groups_ms1}{\code{msData$load_groups_ms1()}}
 \item \href{#method-msData-load_groups_ms2}{\code{msData$load_groups_ms2()}}
-\item \href{#method-msData-remove_header}{\code{msData$remove_header()}}
+\item \href{#method-msData-remove_headers}{\code{msData$remove_headers()}}
 \item \href{#method-msData-remove_settings}{\code{msData$remove_settings()}}
 \item \href{#method-msData-remove_analyses}{\code{msData$remove_analyses()}}
 \item \href{#method-msData-remove_features}{\code{msData$remove_features()}}
@@ -136,12 +138,12 @@ list and the \code{data.table} of each group is converted to a list.
 \item \href{#method-msData-as_features_patRoon}{\code{msData$as_features_patRoon()}}
 \item \href{#method-msData-check_analyses_argument}{\code{msData$check_analyses_argument()}}
 \item \href{#method-msData-check_correspondence}{\code{msData$check_correspondence()}}
-\item \href{#method-msData-save_header}{\code{msData$save_header()}}
+\item \href{#method-msData-save_headers}{\code{msData$save_headers()}}
 \item \href{#method-msData-save_settings}{\code{msData$save_settings()}}
 \item \href{#method-msData-save_analyses}{\code{msData$save_analyses()}}
 \item \href{#method-msData-save_groups}{\code{msData$save_groups()}}
 \item \href{#method-msData-save}{\code{msData$save()}}
-\item \href{#method-msData-import_header}{\code{msData$import_header()}}
+\item \href{#method-msData-import_headers}{\code{msData$import_headers()}}
 \item \href{#method-msData-import_settings}{\code{msData$import_settings()}}
 \item \href{#method-msData-import_analyses}{\code{msData$import_analyses()}}
 \item \href{#method-msData-import_groups}{\code{msData$import_groups()}}
@@ -153,12 +155,12 @@ list and the \code{data.table} of each group is converted to a list.
 \if{html}{\out{<a id="method-msData-new"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-new}{}}}
 \subsection{Method \code{new()}}{
-Create a new MS set of analyses.
+Creates an msData class object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$new(
   files = NULL,
   runParallel = FALSE,
-  header = NULL,
+  headers = NULL,
   settings = NULL,
   analyses = NULL,
   groups = NULL,
@@ -170,29 +172,37 @@ Create a new MS set of analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{files}}{A character vector with the full file path of \emph{mzML}
-or \emph{mzXML} file/s or a data.frame with the columns file, replicate
-and blank with the full file path of \emph{mzML} or \emph{mzXML} file/s,
-the replicate group name (string) and the associated blank replicate
-group (string).}
+\item{\code{files}}{A character vector with full file path/s of \emph{mzML}
+or \emph{mzXML} file/s or a data.frame with the columns \emph{file}, \emph{replicate}
+and \emph{blank} with the full file path of \emph{mzML} or \emph{mzXML} file/s
+(character), the replicate group name (character) and the associated blank
+replicate group name (character). Note the file paths must have the extension
+\emph{.mzML} or \emph{.mzXML}.}
 
-\item{\code{runParallel}}{Logical, set to \code{TRUE} for processing the data
-in parallel.}
+\item{\code{runParallel}}{Logical length 1, set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
 
-\item{\code{header}}{A list with administrative information for the header.
-When not given (i.e., \code{NULL}), a default header is generated with
-name, path and date.}
+\item{\code{headers}}{A named list with header information. Each list element must
+have length 1. There is not type restrictions except for name (must be type
+character), path (must be type character) and date (must be class POSIXct or
+class POSIXt).}
 
-\item{\code{settings}}{A list with settings.}
+\item{\code{settings}}{A named list with settings S3 class objects as elements
+(see \code{?settings} for more information). Note that the list names should
+match the call name of each settings object.}
 
-\item{\code{analyses}}{A list with MS analyses information.}
+\item{\code{analyses}}{A named list with msAnalysis S3 class objects as elements
+(see \code{?msAnalysis} for more information). Note that the list names should
+match the mzML/mzXML file name without extension of each msAnalysis object.}
 
 \item{\code{groups}}{A data.table with \code{groups} representing corresponding
 features across MS analyses.}
 
 \item{\code{alignment}}{X.}
 
-\item{\code{verbose}}{X.}
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
 }
 \if{html}{\out{</div>}}
 }
@@ -214,12 +224,12 @@ Console text.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-get_header"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-get_header}{}}}
-\subsection{Method \code{get_header()}}{
-Method to get the header of the \code{msData} object.
+\if{html}{\out{<a id="method-msData-get_headers"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-get_headers}{}}}
+\subsection{Method \code{get_headers()}}{
+Method to get the headers of the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$get_header(value = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$get_headers(value = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -231,7 +241,7 @@ Possible values are name, author, description, path and date.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-The header list as defined by \code{value}.
+The headers list as defined by \code{value}.
 }
 }
 \if{html}{\out{<hr>}}
@@ -1235,18 +1245,18 @@ A data.frame/data.table.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-add_header"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-add_header}{}}}
-\subsection{Method \code{add_header()}}{
-Method to add header information to the \code{msData} object.
+\if{html}{\out{<a id="method-msData-add_headers"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-add_headers}{}}}
+\subsection{Method \code{add_headers()}}{
+Method to add headers information to the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$add_header(header = NULL, verbose = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$add_headers(headers = NULL, verbose = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{header}}{X.}
+\item{\code{headers}}{X.}
 
 \item{\code{verbose}}{X.}
 }
@@ -1541,18 +1551,18 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-remove_header"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-remove_header}{}}}
-\subsection{Method \code{remove_header()}}{
-Removes header entries from the \code{msData} object.
+\if{html}{\out{<a id="method-msData-remove_headers"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-remove_headers}{}}}
+\subsection{Method \code{remove_headers()}}{
+Removes headers entries from the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$remove_header(value = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$remove_headers(value = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{value}}{A character vector with the names of the header entries
+\item{\code{value}}{A character vector with the names of the headers entries
 to be removed.}
 }
 \if{html}{\out{</div>}}
@@ -3039,12 +3049,12 @@ the \code{msData} object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-save_header"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-save_header}{}}}
-\subsection{Method \code{save_header()}}{
-Method to save the header list.
+\if{html}{\out{<a id="method-msData-save_headers"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-save_headers}{}}}
+\subsection{Method \code{save_headers()}}{
+Method to save the headers list.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$save_header(format = "json", name = "header", path = getwd())}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$save_headers(format = "json", name = "headers", path = getwd())}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -3059,7 +3069,7 @@ Method to save the header list.
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-Saves the header list as the defined \code{format} in
+Saves the headers list as the defined \code{format} in
 \code{path} and returns invisible.
 }
 }
@@ -3156,7 +3166,7 @@ in \code{path} and returns invisible.
 \if{html}{\out{<a id="method-msData-save"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-save}{}}}
 \subsection{Method \code{save()}}{
-Method to save the private fields (i.e., header, settings, analyses,
+Method to save the private fields (i.e., headers, settings, analyses,
 groups and alignment) of the msData object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$save(format = "json", name = "msData", path = getwd())}\if{html}{\out{</div>}}
@@ -3179,13 +3189,13 @@ Saves the private fields as the defined \code{format} in
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-import_header"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-import_header}{}}}
-\subsection{Method \code{import_header()}}{
-Method to import header to the \code{msData} object from a \emph{rds} or
+\if{html}{\out{<a id="method-msData-import_headers"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-import_headers}{}}}
+\subsection{Method \code{import_headers()}}{
+Method to import headers to the \code{msData} object from a \emph{rds} or
 \emph{json} file.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$import_header(file = NA_character_, list = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$import_headers(file = NA_character_, list = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

@@ -612,6 +612,8 @@ make_ms_analyses <- function(files = NULL, runParallel = FALSE) {
   }
 
   # end -----
+  analyses <- lapply(analyses, function(x) as.msAnalysis(x))
+
   analyses
 }
 

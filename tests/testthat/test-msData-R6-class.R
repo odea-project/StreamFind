@@ -283,14 +283,14 @@ test_that("alignment of features", {
 
 # ms4$plot_alignment()
 
-ms$save_header()
+ms$save_headers()
 ms$save_settings()
 ms$save_analyses()
 ms$save_groups()
 ms$save()
 
 test_that("save private fields as json", {
-  expect_true(file.exists("header.json"))
+  expect_true(file.exists("headers.json"))
   expect_true(file.exists("settings.json"))
   expect_true(file.exists("analyses.json"))
   expect_true(file.exists("groups.json"))
@@ -299,10 +299,10 @@ test_that("save private fields as json", {
 
 ms5 <- msData$new()
 
-test_that("import header and settings from json file", {
-  expect_invisible(ms5$import_header("header.json"))
+test_that("import headers and settings from json file", {
+  expect_invisible(ms5$import_headers("headers.json"))
   expect_invisible(ms5$import_settings("settings.json"))
-  expect_equal(ms$get_header(), ms5$get_header())
+  expect_equal(ms$get_headers(), ms5$get_headers())
   expect_equal(ms$get_settings(), ms5$get_settings())
 })
 
@@ -370,7 +370,7 @@ test_that("remove settings", {
   expect_null(ms5$get_settings("group_features")[[1]])
 })
 
-file.remove(c("header.json", "analyses.json", "groups.json", "settings.json"))
+file.remove(c("headers.json", "analyses.json", "groups.json", "settings.json"))
 
 ms5 <- import_msData("msData.json")
 fts_to_subset <- ms5$get_features(mz = targets)

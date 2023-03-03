@@ -14,5 +14,5 @@ centroidSpectra = function(object) {
 
 
 
-  return()
+  return(NULL)
 }
