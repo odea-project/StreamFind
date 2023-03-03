@@ -15,10 +15,10 @@ plot_xic_interactive(
 )
 }
 \arguments{
-\item{xic}{A \code{data.table} with columns: .}
+\item{xic}{A data.table with at least columns: \emph{mz}, \emph{rt} and \emph{intensity}.}
 
 \item{legendNames}{A character vector with the same length as the unique ids
-in the table given in \code{xic}.}
+in the column \emph{id} of the data.table \code{xic}.}
 
 \item{plotTargetMark}{Logical, set to \code{TRUE} (the default) to plot a
 target mark.}

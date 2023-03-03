@@ -197,7 +197,7 @@ features across MS analyses.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A new \code{msData} object.
+A new \code{msData} class object.
 }
 }
 \if{html}{\out{<hr>}}

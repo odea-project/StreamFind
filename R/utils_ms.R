@@ -330,3 +330,119 @@ get_colors <- function(obj) {
 
   Vcol
 }
+
+#' @title correlate_analysis_spectra
+#'
+#' @description Function to correlate MS spectra from analyses.
+#'
+#' @param spectra A data.table with columns "analysis", "mz" and "intensity".
+#' Optionally, a column named "id" or "group" can be given to split the
+#' data.table before correlation analysis by setting the argument
+#' \code{splitSpectra} to \code{TRUE}. Note that when both "id" and "group"
+#' columns are present "group" is used for splitting the data.table not "id".
+#' If a column "replicate" is present and the argument \code{byReplicates}
+#' is set to \code{TRUE}, the correlation is performed by replicate analysis
+#' groups.
+#' @param splitSpectra X.
+#' @param byReplicates X.
+#' @param decimals X.
+#' @param minIntensity X.
+#' @param method X.
+#'
+#' @return X.
+#'
+#' @export
+#'
+correlate_analysis_spectra <- function(spectra,
+                                       splitSpectra = FALSE,
+                                       byReplicates = FALSE,
+                                       decimals = 2,
+                                       minIntensity = 1000,
+                                       method = "pearson") {
+
+  analysis <- NULL
+  intensity <- NULL
+
+  if (!is.data.table(spectra)) {
+    warning("Spectra must be a data.table!")
+    return(data.table())
+  }
+
+  if ("replicate" %in% colnames(spectra) & byReplicates) {
+    spectra$analysis <- spectra$replicate
+  } else {
+    byReplicates <- FALSE
+  }
+
+  if (!"id" %in% colnames(spectra)) spectra$id <- NA_character_
+
+  if ("group" %in% colnames(spectra)) spectra$id <- spectra$group
+
+  if (!all(c("id", "analysis", "mz", "intensity") %in% colnames(spectra))) {
+    warning("Spectra data.table does not containg mandatory columns!")
+    return(data.table())
+  }
+
+  if (splitSpectra) {
+    cor_list <- split(spectra, spectra$id)
+  } else {
+    cor_list <- list(spectra)
+  }
+
+  cor_list <- lapply(cor_list, function(x, minIntensity, decimals, method) {
+    temp <- copy(x[, c("analysis", "mz", "intensity")])
+
+    temp <- temp[temp$intensity >= minIntensity, ]
+
+    for (i in unique(temp$analysis)) {
+      temp$intensity[temp$analysis %in% i] <-
+        temp$intensity[temp$analysis %in% i] /
+        max(temp$intensity[temp$analysis %in% i])
+    }
+
+    temp$mz <- round(temp$mz, digits = decimals)
+
+    mz <- NULL
+    analysis <- NULL
+
+    temp <- temp[
+      data.table::CJ(analysis = analysis, mz = mz, unique = TRUE),
+      on = list(analysis, mz)
+    ]
+
+    data.table::setnafill(temp, fill = 0, cols = "intensity")
+
+    temp <- temp[, `:=`(intensity = sum(intensity)),
+                 by = c("analysis", "mz")
+    ][]
+
+    temp <- unique(temp)
+
+    temp <- matrix(temp$intensity,
+                   nrow = length(unique(temp$mz)),
+                   ncol = length(unique(temp$analysis)),
+                   dimnames = list(
+                     unique(temp$mz),
+                     unique(temp$analysis)
+                   )
+    )
+
+    temp <- cor(temp, method = method)
+
+    temp <- as.data.table(temp, keep.rownames = "analysis")
+
+    return(temp)
+  }, decimals = decimals, minIntensity = minIntensity, method = method)
+
+  id_col <- "id"
+
+  if ("group" %in% colnames(spectra)) id_col <- "group"
+
+  cor_list <- rbindlist(cor_list, idcol = "id")
+
+  if (byReplicates) {
+    setnames(cor_list, "analysis", "replicate")
+  }
+
+  cor_list
+}

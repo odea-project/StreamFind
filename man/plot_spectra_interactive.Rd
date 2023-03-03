@@ -15,7 +15,7 @@ plot_spectra_interactive(spectra = NULL, colorBy = "analyses")
 replicate names should be given.}
 }
 \value{
-A 3D interactive plot.
+An interactive 3D plot.
 }
 \description{
 3D interactive plot for spectra using the \pkg{plotly} package.

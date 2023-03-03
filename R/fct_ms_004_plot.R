@@ -8,7 +8,7 @@
 #' "levels", "targets" or "replicates". For "replicates", a column with
 #' replicate names should be given.
 #'
-#' @return A 3D interactive plot.
+#' @return An interactive 3D plot.
 #'
 #' @export
 #'
@@ -61,9 +61,9 @@ plot_spectra_interactive <- function(spectra = NULL, colorBy = "analyses") {
 #' @description Plot traces or profile data for targets using expected
 #' \emph{m/z} and retention time pairs, including deviations.
 #'
-#' @param xic A `data.table` with columns: .
+#' @param xic A data.table with at least columns: *mz*, *rt* and *intensity*.
 #' @param legendNames A character vector with the same length as the unique ids
-#' in the table given in `xic`.
+#' in the column *id* of the data.table `xic`.
 #' @param plotTargetMark Logical, set to \code{TRUE} (the default) to plot a
 #' target mark.
 #' @param targetsMark A data.frame with columns "mz" and "rt", defining the
@@ -117,8 +117,6 @@ plot_xic_interactive <- function(xic,
   }
 
   ids <- unique(xic$id)
-
-  sNames <- unique(xic$analysis)
 
   xic <- split(xic, by = "id")
 
@@ -235,7 +233,7 @@ plot_xic_interactive <- function(xic,
       )
 
       if (plotTargetMark_loop) {
-        p1 <- p1 %>% layout(shapes = c(vline1, line))
+        p1 <- p1 %>% plotly::layout(shapes = c(vline1, line))
       }
 
       p1 <- p1 %>% add_annotations(
@@ -255,13 +253,13 @@ plot_xic_interactive <- function(xic,
       )
 
       if (plotTargetMark_loop) {
-        p2 <- p2 %>% layout(
+        p2 <- p2 %>% plotly::layout(
           shapes = list(c(vline2, line), c(hline, line), rect)
         )
       }
 
-      p1 <- p1 %>% layout(xaxis = xaxis, yaxis = yaxis1)
-      p2 <- p2 %>% layout(xaxis = xaxis, yaxis = yaxis2)
+      p1 <- p1 %>% plotly::layout(xaxis = xaxis, yaxis = yaxis1)
+      p2 <- p2 %>% plotly::layout(xaxis = xaxis, yaxis = yaxis2)
 
       plotList[[paste0("p1", s)]] <- p1
       plotList[[paste0("p2", s)]] <- p2
@@ -471,7 +469,7 @@ plot_eic_interactive <- function(eic = NULL, legendNames = NULL,
     }
   }
 
-  plot <- plot %>% layout(
+  plot <- plot %>% plotly::layout(
     legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
     xaxis = xaxis,
     yaxis = yaxis,
@@ -571,7 +569,7 @@ plot_bpc_interactive <- function(bpc = NULL, legendNames = NULL,
     }
   }
 
-  plot <- plot %>% layout(
+  plot <- plot %>% plotly::layout(
     legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
     xaxis = xaxis,
     yaxis = yaxis,
@@ -1159,9 +1157,9 @@ plot_features_interactive <- function(eic = NULL, features = NULL,
     pk_eic <- eic[eic$rt >= pk$rtmin & eic$rt <= pk$rtmax & eic$id == t, ]
 
     hT <- paste(
-      "</br> peak: ", pk$id,
-      ifelse("feature" %in% colnames(pk),
-        paste("</br> feature: ", pk$feature), ""
+      "</br> feature: ", pk$feature,
+      ifelse("group" %in% colnames(pk),
+        paste("</br> group: ", pk$group), ""
       ),
       "</br> analysis: ", pk$analysis,
       "</br> <i>m/z</i>: ", round(pk$mz, digits = 4),
@@ -1205,7 +1203,7 @@ plot_features_interactive <- function(eic = NULL, features = NULL,
     )
   }
 
-  plot <- plot %>% layout(
+  plot <- plot %>% plotly::layout(
     legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
     xaxis = xaxis,
     yaxis = yaxis,
@@ -1661,18 +1659,18 @@ plot_groups_overview_aux <- function(features, eic, heights, analyses) {
     linecolor = toRGB("black"), linewidth = 2,
     title = "Normalized intensity",
     titlefont = list(size = 12, color = "black"),
-    tick0 = 0, range = c(0, 1)
+    tick0 = 0, dtick = 0.25, range = c(0, 1.2)
   )
 
   plotList <- list()
 
-  plot <- plot %>% layout(xaxis = xaxis3, yaxis = yaxis1)
+  plot <- plot %>% plotly::layout(xaxis = xaxis3, yaxis = yaxis1)
   plotList[["plot"]] <- plot
 
-  plot2 <- plot2 %>% layout(xaxis = xaxis, yaxis = yaxis2)
+  plot2 <- plot2 %>% plotly::layout(xaxis = xaxis, yaxis = yaxis2)
   plotList[["plot2"]] <- plot2
 
-  plot3 <- plot3 %>% layout(xaxis = xaxis3, yaxis = yaxis3)
+  plot3 <- plot3 %>% plotly::layout(xaxis = xaxis3, yaxis = yaxis3)
 
   plotf <- subplot(
     plotList,
@@ -1694,7 +1692,7 @@ plot_groups_overview_aux <- function(features, eic, heights, analyses) {
     which_layout = "merge"
   )
 
-  plotf_2 <- plotf_2 %>% layout(
+  plotf_2 <- plotf_2 %>% plotly::layout(
     legend = list(title = list(text = paste("<b>", "targets", "</b>")))
   )
 

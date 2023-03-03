@@ -56,7 +56,7 @@ msData <- R6::R6Class("msData",
     #' @param alignment X.
     #' @param verbose X.
     #'
-    #' @return A new `msData` object.
+    #' @return A new `msData` class object.
     #'
     initialize = function(files = NULL,
                           runParallel = FALSE,
@@ -923,7 +923,9 @@ msData <- R6::R6Class("msData",
         fts$mzmax <- fts$mz + mzWindow[2]
       }
 
-      if (loadedMS1 & all(self$has_loaded_features_ms1(analyses = fts$analysis))) {
+      analysis_names <- unique(fts$analysis)
+
+      if (loadedMS1 & any(self$has_loaded_features_ms1(analysis_names))) {
         ms1 <- fts$ms1
         unique_ids <- paste0(fts$analysis, fts$index)
         names(ms1) <- unique_ids
@@ -987,9 +989,12 @@ msData <- R6::R6Class("msData",
                                 runParallel = FALSE) {
 
       fts <- self$get_features(analyses, features, mass, mz, rt, ppm, sec, filtered)
+
       if (nrow(fts) == 0) return(data.frame())
 
-      if (loadedMS2 & all(self$has_loaded_features_ms2(analyses = fts$analysis))) {
+      analysis_names <- unique(fts$analysis)
+
+      if (loadedMS2 & any(self$has_loaded_features_ms2(analysis_names))) {
         ms2 <- fts$ms2
         unique_ids <- paste0(fts$analysis, fts$index)
         names(ms2) <- unique_ids
@@ -1423,9 +1428,9 @@ msData <- R6::R6Class("msData",
         new_header <- old_header[!names(header) %in% names(old_header)]
         new_header[names(header)] <- header
         new_names <- names(new_header)
-        if (!"name" %in% new_names) header$name <- NA_character_
-        if (!"path" %in% new_names) header$path <- getwd()
-        if (!"date" %in% new_names) header$date <- Sys.time()
+        if (!"name" %in% new_names) new_header$name <- NA_character_
+        if (!"path" %in% new_names) new_header$path <- getwd()
+        if (!"date" %in% new_names) new_header$date <- Sys.time()
 
         private$.header <- new_header
 
@@ -1478,7 +1483,7 @@ msData <- R6::R6Class("msData",
     add_analyses = function(analyses, verbose = TRUE) {
       if (missing(analyses)) analyses <- NULL
 
-      valid_analyses <- vapply(analyses, validate_ms_analysis_list, FALSE)
+      valid_analyses <- vapply(analyses, validate_ms_analysis, FALSE)
 
       valid_analyses
 
@@ -1839,13 +1844,12 @@ msData <- R6::R6Class("msData",
       if ("streamFind" %in% algorithm) {
 
         if (requireNamespace("patRoon")) {
-          hash <- patRoon:::makeHash(self$get_overview(), parameters)
+          ana_feats <- self$get_features()
+          ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
+          hash <- patRoon:::makeHash(ana_feats, parameters)
           ms1 <- patRoon:::loadCacheData("loadFeaturesMS1", hash)
-          if (!is.null(ms1)) {
-            ms1_from_cache <- TRUE
-          } else {
-            ms1_from_cache <- FALSE
-          }
+          if (!all(ms1$id %in% ana_feats$feature)) ms1 <- NULL
+
         } else {
           hash <- NULL
           ms1 <- NULL
@@ -1862,10 +1866,10 @@ msData <- R6::R6Class("msData",
             loadedMS1 = FALSE,
             runParallel = parameters$runParallel
           )
-        }
 
-        if (!is.null(hash) & !ms1_from_cache) {
-          patRoon:::saveCacheData("loadFeaturesMS1", ms1, hash)
+          if (!is.null(hash)) {
+            patRoon:::saveCacheData("loadFeaturesMS1", ms1, hash)
+          }
         }
 
         analyses <- self$get_analyses()
@@ -1873,7 +1877,6 @@ msData <- R6::R6Class("msData",
         analyses <- lapply(analyses, function(x, ms1) {
           ana <- x$name
           ana_ms1 <- ms1[ms1$analysis %in% ana, ]
-
           fts_all <- x$features$feature
           fts_ms1 <- lapply(fts_all, function(x2, ana_ms1) {
             ft_ms1 <- ana_ms1[ana_ms1$id %in% x2, ]
@@ -1938,13 +1941,12 @@ msData <- R6::R6Class("msData",
       if ("streamFind" %in% algorithm) {
 
         if (requireNamespace("patRoon")) {
-          hash <- patRoon:::makeHash(self$get_overview(), parameters)
+          ana_feats <- self$get_features()
+          ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
+          hash <- patRoon:::makeHash(ana_feats, parameters)
           ms2 <- patRoon:::loadCacheData("loadFeaturesMS2", hash)
-          if (!is.null(ms2)) {
-            ms2_from_cache <- TRUE
-          } else {
-            ms2_from_cache <- FALSE
-          }
+          if (!all(ms2$id %in% ana_feats$feature)) ms2 <- NULL
+
         } else {
           hash <- NULL
           ms2 <- NULL
@@ -1960,10 +1962,10 @@ msData <- R6::R6Class("msData",
             loadedMS2 = FALSE,
             runParallel = parameters$runParallel
           )
-        }
 
-        if (!is.null(hash) & !ms2_from_cache) {
-          patRoon:::saveCacheData("loadFeaturesMS2", ms2, hash)
+          if (!is.null(hash)) {
+            patRoon:::saveCacheData("loadFeaturesMS2", ms2, hash)
+          }
         }
 
         analyses <- self$get_analyses()
@@ -2045,13 +2047,13 @@ msData <- R6::R6Class("msData",
       if ("streamFind" %in% algorithm) {
 
         if (requireNamespace("patRoon")) {
-          hash <- patRoon:::makeHash(self$get_overview(), parameters)
+          ana_feats <- self$get_features()
+          ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
+          group_ids <- self$get_groups()[["groups"]]
+          hash <- patRoon:::makeHash(ana_feats, group_ids,  parameters)
           ms1 <- patRoon:::loadCacheData("loadGroupsMS1", hash)
-          if (!is.null(ms1)) {
-            ms1_from_cache <- TRUE
-          } else {
-            ms1_from_cache <- FALSE
-          }
+          if (!all(ms1$id %in% group_ids)) ms1 <- NULL
+
         } else {
           hash <- NULL
           ms1 <- NULL
@@ -2059,29 +2061,30 @@ msData <- R6::R6Class("msData",
 
         if (is.null(ms1)) {
 
-          if (!all(self$has_loaded_features_ms1())) {
+          if (!any(self$has_loaded_features_ms1())) {
             self$load_features_ms1(settings = settingsFeatures)
           }
 
-          if (all(self$has_loaded_features_ms1())) {
+          if (any(self$has_loaded_features_ms1())) {
             ms1 <- self$get_groups_ms1(
               rtWindow = NULL, mzWindow = NULL, mzClustFeatures = NULL,
               minIntensityFeatures = NULL, loadedFeaturesMS1 = TRUE,
-              mzClustGroups = parameters$mzClust,
               groupBy = "groups",
               loadedGroupsMS1 = FALSE,
+              mzClustGroups = parameters$mzClust,
               minIntensityGroups = parameters$minIntensity,
               verbose = parameters$verbose,
               filtered = parameters$filtered,
               runParallel = parameters$runParallel
             )
+
+            if (!is.null(hash)) {
+              patRoon:::saveCacheData("loadGroupsMS1", ms1, hash)
+            }
+
           } else {
             warning("Features MS1 are not presensent and could not be loaded!")
           }
-        }
-
-        if (!is.null(hash) & !ms1_from_cache) {
-          patRoon:::saveCacheData("loadGroupsMS1", ms1, hash)
         }
 
         if (nrow(ms1) > 0) {
@@ -2141,13 +2144,13 @@ msData <- R6::R6Class("msData",
       if ("streamFind" %in% algorithm) {
 
         if (requireNamespace("patRoon")) {
-          hash <- patRoon:::makeHash(self$get_overview(), parameters)
+          ana_feats <- self$get_features()
+          ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
+          group_ids <- self$get_groups()[["groups"]]
+          hash <- patRoon:::makeHash(ana_feats, group_ids,  parameters)
           ms2 <- patRoon:::loadCacheData("loadgroupsMS2", hash)
-          if (!is.null(ms2)) {
-            ms2_from_cache <- TRUE
-          } else {
-            ms2_from_cache <- FALSE
-          }
+          if (!all(ms2$id %in% group_ids)) ms2 <- NULL
+
         } else {
           hash <- NULL
           ms2 <- NULL
@@ -2171,13 +2174,14 @@ msData <- R6::R6Class("msData",
               filtered = parameters$filtered,
               runParallel = parameters$runParallel
             )
+
+            if (!is.null(hash)) {
+              patRoon:::saveCacheData("loadGroupsMS2", ms2, hash)
+            }
+
           } else {
             warning("Features MS2 are not presensent and could not be loaded!")
           }
-        }
-
-        if (!is.null(hash) & !ms2_from_cache) {
-          patRoon:::saveCacheData("loadGroupsMS2", ms2, hash)
         }
 
         if (nrow(ms2) > 0) {
@@ -2411,7 +2415,7 @@ msData <- R6::R6Class("msData",
             x$features$ms2 <- NULL
             x
           })
-          message("\U2713 Removed all MS2 spectra from features!  \n")
+          message("\U2713 Removed all MS2 spectra from features!")
         }
       }
       invisible(self)
@@ -4343,9 +4347,61 @@ msData <- R6::R6Class("msData",
   )
 )
 
-# auxiliary ms functions -----
+# validation functions -----
 
-#' validate_ms_analysis_list
+#' validate_header
+#'
+#' @description
+#' Validates the header list of information.
+#'
+#' @param value A header list.
+#'
+#' @return A logical value of length 1.
+#'
+#' @export
+#'
+validate_header <- function(value = NULL) {
+  valid <- FALSE
+
+  if (is.list(value)) {
+    valid <- TRUE
+
+    if (!all(vapply(value, function(x) length(x) == 1, FALSE))) {
+      warning("All header list entries must be of length 1!")
+      valid <- FALSE
+    }
+
+    if (length(unique(names(value))) != length(value)) {
+      warning("Header list must have names and not permitted duplicated names!")
+      valid <- FALSE
+    }
+
+    if ("name" %in% names(value)) {
+      if (!is.character(value$name)) {
+        warning("Header list entry name must be character!")
+        valid <- FALSE
+      }
+    }
+
+    if ("path" %in% names(value)) {
+      if (!dir.exists(value$path)) {
+        warning("Header list entry path must exist!")
+        valid <- FALSE
+      }
+    }
+
+    if ("date" %in% names(value)) {
+      if (!all(grepl("POSIXct|POSIXt", class(value$date)))) {
+        warning("Header list entry date class must be POSIXct or POSIXt!")
+        valid <- FALSE
+      }
+    }
+  }
+
+  valid
+}
+
+#' validate_ms_analysis
 #'
 #' @description
 #' Validates the list of information parsed from an MS analysis mzML/mzXML file.
@@ -4356,90 +4412,145 @@ msData <- R6::R6Class("msData",
 #'
 #' @export
 #'
-validate_ms_analysis_list <- function(value = NULL) {
+validate_ms_analysis <- function(value = NULL) {
   valid <- FALSE
+  name <- NA_character_
 
   if (is.list(value)) {
     valid <- TRUE
 
-    if (!is.character(value$name) & length(value$name) != 1) valid <- FALSE
+    if (length(value$name) != 1 & !is.character(value$name)) {
+      warning("Analysis name not conform!")
+      valid <- FALSE
+    } else {
+      name <- value$name
+    }
 
-    if (!is.character(value$replicate) & length(value$replicate) != 1) {
+    if (length(value$replicate) != 1 & !is.character(value$replicate)) {
+      warning("Analysis replicate name not conform!")
       valid <- FALSE
     }
 
-    if (!is.character(value$blank) & length(value$blank) != 1) valid <- FALSE
+    if (length(value$blank) != 1 & !is.character(value$blank)) {
+      warning("Analysis blank name not conform!")
+      valid <- FALSE
+    }
 
-    if (!is.character(value$file) & length(value$file) != 1) {
+    if (length(value$file) != 1 & !is.character(value$file)) {
+      warning("Analysis file path entry not conform!")
       valid <- FALSE
     } else if (!file.exists(value$file)) {
       warning(paste0(
         value$file,
         " does not exist! Update file paths with msData$update_files() method"
       ))
+      valid <- FALSE
     }
 
     if (length(value$type) != 1) {
+      warning("Analysis type entry not conform!")
       valid <- FALSE
     } else if (!(value$type %in% c("MS", "MS/MS", "SRM"))) {
+      warning("Analysis type must be 'MS', 'MS/MS' or 'SRM'!")
       valid <- FALSE
     }
 
     if (!is.integer(value$spectra_number) &&
       length(value$spectra_number) != 1) {
+      warning("Analysis spectra_numebr entry not conform!")
       valid <- FALSE
     }
 
     if (!is.integer(value$chromatograms_number) &&
       length(value$chromatograms_number) != 1) {
+      warning("Analysis chromatograms_number entry not conform!")
       valid <- FALSE
     }
 
     if (!is.character(value$spectra_mode) &
       length(value$spectra_mode) != 1) {
+      warning("Analysis spectra_mode entry not conform!")
       valid <- FALSE
     }
 
-    if (!is.integer(value$spectra_levels)) valid <- FALSE
+    if (!is.integer(value$spectra_levels)) {
+      warning("Analysis spectra_levels entry not conform!")
+      valid <- FALSE
+    }
 
-    if (!is.numeric(value$mz_low) & length(value$mz_low) != 1) valid <- FALSE
+    if (length(value$mz_low) != 1 & !is.numeric(value$mz_low)) {
+      warning("Analysis mz_low entry not conform!")
+      valid <- FALSE
+    }
 
-    if (!is.numeric(value$mz_high) & length(value$mz_high) != 1) valid <- FALSE
+    if (length(value$mz_high) != 1 & !is.numeric(value$mz_high)) {
+      warning("Analysis mz_high entry not conform!")
+      valid <- FALSE
+    }
 
-    if (!is.numeric(value$rt_start) & length(value$rt_end) != 1) valid <- FALSE
+    if (length(value$rt_start) != 1 & !is.numeric(value$rt_start)) {
+      warning("Analysis rt_start entry not conform!")
+      valid <- FALSE
+    }
+
+    if (length(value$rt_end) != 1 & !is.numeric(value$rt_end)) {
+      warning("Analysis rt_end entry not conform!")
+      valid <- FALSE
+    }
 
     if (!is.character(value$polarity)) {
+      warning("Analysis polarity entry not conform!")
       valid <- FALSE
     } else if (FALSE %in%
       (value$polarity %in% c("positive", "negative", NA_character_))) {
+      warning("Analysis polarity entry not conform!")
       valid <- FALSE
     }
 
-    if (!is.logical(value$ion_mobility) & length(value$ion_mobility) != 1) {
+    if (length(value$ion_mobility) != 1 & !is.logical(value$ion_mobility)) {
+      warning("Analysis ion_mobility entry not conform!")
       valid <- FALSE
     }
 
     if (!is.data.frame(value$tic)) {
+      warning("Analysis tic entry not conform!")
       valid <- FALSE
     } else if (FALSE %in% (c("rt", "intensity") %in% colnames(value$tic))) {
+      warning("Analysis tic data.table must have columns rt and intensity!")
       valid <- FALSE
     }
 
     if (!is.data.frame(value$bpc)) {
+      warning("Analysis bpc entry not conform!")
       valid <- FALSE
     } else if (FALSE %in%
       (c("rt", "mz", "intensity") %in% colnames(value$bpc))) {
+      warning("Analysis bpc data.table must have columns mz, rt and intensity!")
       valid <- FALSE
     }
 
-    if (!is.data.frame(value$spectra)) valid <- FALSE
+    if (!is.data.frame(value$spectra)) {
+      warning("Analysis spectra entry not conform!")
+      valid <- FALSE
+    }
 
-    if (!is.data.frame(value$chromatograms)) valid <- FALSE
+    if (!is.data.frame(value$chromatograms)) {
+      warning("Analysis chromatograms entry not conform!")
+      valid <- FALSE
+    }
 
-    if (!is.data.frame(value$features)) valid <- FALSE
+    if (!is.data.frame(value$features)) {
+      warning("Analysis features entry not conform!")
+      valid <- FALSE
+    }
 
-    if (!is.list(value$metadata)) valid <- FALSE
+    if (!is.list(value$metadata)) {
+      warning("Analysis netadata entry not conform!")
+      valid <- FALSE
+    }
   }
+
+  if (!valid) warning("Issue/s found with analysis ", value$name, "!")
 
   valid
 }
@@ -4463,11 +4574,20 @@ validate_ms_settings <- function(value = NULL) {
     if (all(c("call", "algorithm", "parameters") %in% names(value))) {
       valid <- TRUE
 
-      if (!length(value$call) == 1) valid <- FALSE
+      if (!length(value$call) == 1) {
+        warning("Call entry must be of length 1!")
+        valid <- FALSE
+      }
 
-      if (!length(value$algorithm) == 1) valid <- FALSE
+      if (length(value$algorithm) != 1 & !is.character(value$algorithm)) {
+        warning("Algorithm entry must be of length 1 and type character!")
+        valid <- FALSE
+      }
 
-      if (!is.list(value$parameters)) valid <- FALSE
+      if (!is.list(value$parameters)) {
+        warning("Parameters entry must be a list!")
+        valid <- FALSE
+      }
 
       if (valid) {
 
@@ -4480,6 +4600,7 @@ validate_ms_settings <- function(value = NULL) {
         )
 
         if (!any(processingFunctionCalls %in% value$call)) {
+          warning("Call name not present in msData class processing methods!")
           valid <- FALSE
         }
 
@@ -4490,176 +4611,28 @@ validate_ms_settings <- function(value = NULL) {
               "sirius", "kpic2", "safd"
             )
 
-            if (!any(ff_algorithm %in% value$algorithm)) valid <- FALSE
+            if (!any(ff_algorithm %in% value$algorithm)) {
+              warning("Algorithm not viable for find_feature call!")
+              valid <- FALSE
+            }
           }
 
           if ("group_features" %in% value$call) {
             fg_algorithm <- c("openms", "xcms", "xcms3", "kpic2", "sirius")
 
-            if (!any(fg_algorithm %in% value$algorithm)) valid <- FALSE
+            if (!any(fg_algorithm %in% value$algorithm)) {
+              warning("Algorithm not viable for group_feature call!")
+              valid <- FALSE
+            }
           }
         }
       }
     }
   }
-
   valid
 }
 
-# auxiliary functions -----
-
-#' validate_header
-#'
-#' @description
-#' Validates the header list of information.
-#'
-#' @param value A header list.
-#'
-#' @return A logical value of length 1.
-#'
-#' @export
-#'
-validate_header <- function(value = NULL) {
-  valid <- FALSE
-
-  if (is.list(value)) {
-    valid <- TRUE
-
-    if (!all(vapply(value, function(x) length(x) == 1, FALSE))) valid <- FALSE
-
-    if (length(unique(names(value))) != length(value)) valid <- FALSE
-
-    if ("name" %in% names(value)) {
-      if (!is.character(value$name)) valid <- FALSE
-    }
-
-    if ("path" %in% names(value)) {
-      if (!dir.exists(value$path)) valid <- FALSE
-    }
-
-    if ("date" %in% names(value)) {
-      if (!all(grepl("POSIXct|POSIXt", class(value$date)))) valid <- FALSE
-    }
-  }
-
-  valid
-}
-
-#' @title correlate_analysis_spectra
-#'
-#' @description Function to correlate MS spectra from analyses.
-#'
-#' @param spectra A data.table with columns "analysis", "mz" and "intensity".
-#' Optionally, a column named "id" or "group" can be given to split the
-#' data.table before correlation analysis by setting the argument
-#' \code{splitSpectra} to \code{TRUE}. Note that when both "id" and "group"
-#' columns are present "group" is used for splitting the data.table not "id".
-#' If a column "replicate" is present and the argument \code{byReplicates}
-#' is set to \code{TRUE}, the correlation is performed by replicate analysis
-#' groups.
-#' @param splitSpectra X.
-#' @param byReplicates X.
-#' @param decimals X.
-#' @param minIntensity X.
-#' @param method X.
-#'
-#' @return X.
-#'
-#' @export
-#'
-correlate_analysis_spectra <- function(spectra,
-                                       splitSpectra = FALSE,
-                                       byReplicates = FALSE,
-                                       decimals = 2,
-                                       minIntensity = 1000,
-                                       method = "pearson") {
-
-  analysis <- NULL
-  intensity <- NULL
-
-  if (!is.data.table(spectra)) {
-    warning("Spectra must be a data.table!")
-    return(data.table())
-  }
-
-  if ("replicate" %in% colnames(spectra) & byReplicates) {
-    spectra$analysis <- spectra$replicate
-  } else {
-    byReplicates <- FALSE
-  }
-
-  if (!"id" %in% colnames(spectra)) spectra$id <- NA_character_
-
-  if ("group" %in% colnames(spectra)) spectra$id <- spectra$group
-
-  if (!all(c("id", "analysis", "mz", "intensity") %in% colnames(spectra))) {
-    warning("Spectra data.table does not containg mandatory columns!")
-    return(data.table())
-  }
-
-  if (splitSpectra) {
-    cor_list <- split(spectra, spectra$id)
-  } else {
-    cor_list <- list(spectra)
-  }
-
-  cor_list <- lapply(cor_list, function(x, minIntensity, decimals, method) {
-    temp <- copy(x[, c("analysis", "mz", "intensity")])
-
-    temp <- temp[temp$intensity >= minIntensity, ]
-
-    for (i in unique(temp$analysis)) {
-      temp$intensity[temp$analysis %in% i] <-
-        temp$intensity[temp$analysis %in% i] /
-          max(temp$intensity[temp$analysis %in% i])
-    }
-
-    temp$mz <- round(temp$mz, digits = decimals)
-
-    mz <- NULL
-    analysis <- NULL
-
-    temp <- temp[
-      data.table::CJ(analysis = analysis, mz = mz, unique = TRUE),
-      on = list(analysis, mz)
-    ]
-
-    data.table::setnafill(temp, fill = 0, cols = "intensity")
-
-    temp <- temp[, `:=`(intensity = sum(intensity)),
-      by = c("analysis", "mz")
-    ][]
-
-    temp <- unique(temp)
-
-    temp <- matrix(temp$intensity,
-      nrow = length(unique(temp$mz)),
-      ncol = length(unique(temp$analysis)),
-      dimnames = list(
-        unique(temp$mz),
-        unique(temp$analysis)
-      )
-    )
-
-    temp <- cor(temp, method = method)
-
-    temp <- as.data.table(temp, keep.rownames = "analysis")
-
-    return(temp)
-  }, decimals = decimals, minIntensity = minIntensity, method = method)
-
-  id_col <- "id"
-
-  if ("group" %in% colnames(spectra)) id_col <- "group"
-
-  cor_list <- rbindlist(cor_list, idcol = "id")
-
-  if (byReplicates) {
-    setnames(cor_list, "analysis", "replicate")
-  }
-
-  cor_list
-}
+# import msData class -----
 
 #' @title import_msData
 #'
@@ -4870,7 +4843,7 @@ correct_ms_parsed_json_groups <- function(groups = NULL) {
   groups
 }
 
-## features and groups -----
+## amend from patRoon -----
 
 #' @title build_features_table_from_patRoon
 #'
