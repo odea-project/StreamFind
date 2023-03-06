@@ -27,6 +27,8 @@ integrated functions or modules (see vignettes for more information).
 
 <img src="inst/extdata/logo_group.png" width="100%" style="display: block; margin: auto;" />
 
+<img src="inst/extdata/logo_group.png" width="100%" style="display: block; margin: auto;" />
+
 ## Installation
 
 For installation of the `streamFind` R package, it is recommended to
