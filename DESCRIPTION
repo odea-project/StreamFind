@@ -25,40 +25,34 @@ URL: https://github.com/ricardobachertdacunha/streamFind
 BugReports: https://github.com/ricardobachertdacunha/streamFind/issues
 Depends: R (>= 4.2.0)
 Imports: 
-    checkmate,
-    config (>= 0.3.1),
     data.table,
-    dplyr,
-    fastcluster,
-    golem (>= 0.3.2),
+    R6,
     grDevices,
     jsonlite,
     plotly,
-    plyr,
     RColorBrewer,
-    shiny (>= 1.7.1),
     stats,
-    stringr,
     tools,
     utils,
     Rcpp (>= 1.0.8),
-    S4Vectors,
     magrittr,
     Rdpack,
-    methods,
     gtools,
     xml2,
-    future,
-    progressr,
-    future.apply,
-    parallelly
+    dplyr,
+    plyr,
+    parallelly,
+    doParallel,
+    parallel,
+    foreach,
+    mzR,
+    base64enc
 Suggests: 
     knitr,
+    kableExtra,
     rmarkdown,
     spelling,
     testthat (>= 3.0.0),
-    golem,
-    mzR,
     xcms,
     patRoon,
     streamFindData
@@ -70,4 +64,5 @@ Config/testthat/edition: 3
 Encoding: UTF-8
 Language: en-US
 RoxygenNote: 7.2.3
+Roxygen: list(markdown = TRUE, r6 = TRUE)
 LinkingTo: Rcpp

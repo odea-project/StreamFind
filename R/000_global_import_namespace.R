@@ -7,43 +7,49 @@
 #'
 #' @importFrom gtools getDependencies
 #'
+#' @import R6
+#'
 #' @importFrom data.table is.data.table rbindlist as.data.table setnames
 #' @importFrom data.table setorder copy fread data.table `:=` setcolorder
-#' @importFrom data.table between
+#' @importFrom data.table between setDTthreads CJ setnafill
 #'
-#' @importFrom checkmate testClass assertClass testChoice
+#' @importFrom parallelly supportsMulticore
 #'
-#' @importFrom dplyr select left_join full_join semi_join anti_join right_join
-#' @importFrom dplyr filter everything count bind_rows
+#' @importFrom parallel makeCluster clusterExport detectCores stopCluster
 #'
-#' @importFrom stringr str_detect str_extract str_split
+#' @importFrom doParallel registerDoParallel
 #'
-#' @importFrom utils setTxtProgressBar txtProgressBar
+#' @importFrom foreach foreach `%dopar%` registerDoSEQ
 #'
-#' @importFrom stats sd
+#' @importFrom mzR openMSfile header peaks close chromatogramHeader
+#' @importFrom mzR instrumentInfo runInfo nChrom chromatograms
 #'
-#' @importFrom graphics axis legend lines points polygon
+#' @importFrom tools file_ext
+#'
+#' @importFrom dplyr count
+#'
+#' @importFrom plyr round_any
+#'
+#' @importFrom jsonlite toJSON fromJSON
+#'
+#' @importFrom stats sd cor
+#'
+#' @importFrom graphics axis legend lines points polygon rect text
 #'
 #' @importFrom RColorBrewer brewer.pal
 #'
 #' @importFrom grDevices colorRampPalette colorRamp
 #'
 #' @importFrom plotly toRGB plot_ly add_trace layout hide_colorbar subplot
-#' @importFrom plotly add_segments add_annotations hide_legend
-#'
-#' @importFrom plyr round_any
-#'
-#' @importFrom tools file_ext file_path_sans_ext
+#' @importFrom plotly add_segments add_annotations hide_legend add_lines
+#' @importFrom plotly group_by
 #'
 #' @importFrom xml2 read_xml xml_find_first xml_attr xml_find_all xml_name
 #' @importFrom xml2 xml_text xml_child
 #'
-#' @importFrom future plan supportsMulticore
-#' @importFrom future.apply future_lapply
+#' @importFrom base64enc base64decode
 #'
-#' @importFrom progressr handlers handler_progress  with_progress progressor
-#'
-#' @importFrom parallelly availableWorkers availableCores
+#' @importFrom utils txtProgressBar setTxtProgressBar
 #'
 #' @noRd
 NULL
