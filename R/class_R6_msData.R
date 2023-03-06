@@ -35,21 +35,18 @@ msData <- R6::R6Class("msData",
     ## system -----
 
     #' @description
-    #' Creates an msData class object.
+    #' Creates an msData class object. When `headers` are not given (i.e.,
+    #' `NULL`), a default headers S3 class object is generated with name as
+    #' `NA_character`, path as `get_wd()` and date as `Sys.time()`.
+    #' See `?headers` for more information.
     #'
     #' @template arg-ms-files
     #' @template arg-runParallel
     #' @template arg-headers-list
     #' @template arg-settings-list
     #' @template arg-ms-analyses-list
-    #' @param groups A data.table with `groups` representing corresponding
-    #' features across MS analyses.
+    #' @template arg-ms-groups
     #' @param alignment X.
-    #' @template arg-verbose
-    #'
-    #' @note When `headers` are not given (i.e., `NULL`), default headers are
-    #' generated: name as `NA_character`, path as `get_wd()` and date
-    #' as `Sys.time()`.
     #'
     #' @return A new `msData` class object.
     #'
@@ -59,35 +56,34 @@ msData <- R6::R6Class("msData",
                           settings = NULL,
                           analyses = NULL,
                           groups = NULL,
-                          alignment = NULL,
-                          verbose = TRUE) {
+                          alignment = NULL) {
 
-      if (is.null(analyses) & !is.null(files)) {
-        analyses <- make_ms_analyses(files, runParallel)
-        if (is.null(analyses)) {
-          warning("No valid files were given! msData object is empty. \n")
-        }
-      }
+      if (!is.null(headers)) self$add_headers(headers)
 
-      if (!is.null(analyses)) self$add_analyses(analyses, verbose)
-
-      if (!is.null(headers) & is.list(headers)) {
-        self$add_headers(headers, verbose)
-      } else {
-        private$.headers <- list(
+      if (is.null(private$.headers)) {
+        private$.headers <- headers(
           name = NA_character_,
           path = getwd(),
           date = Sys.time()
         )
       }
 
-      if (!is.null(settings)) self$add_settings(settings, verbose)
+      if (!is.null(settings)) self$add_settings(settings)
 
-      if (!is.null(groups)) self$add_groups(groups, verbose)
+      if (is.null(analyses) & !is.null(files)) {
+        analyses <- parse.msAnalysis(files, runParallel)
+        if (is.null(analyses)) {
+          warning("No valid files were given! msData object is empty. \n")
+        }
+      }
 
-      if (!is.null(alignment)) self$add_alignment(alignment, verbose)
+      if (!is.null(analyses)) self$add_analyses(analyses)
 
-      if (verbose) message("\U2713 msData class object created!")
+      if (!is.null(groups)) self$add_groups(groups)
+
+      if (!is.null(alignment)) self$add_alignment(alignment)
+
+      message("\U2713 msData class object created!")
     },
 
     #' @description
@@ -97,38 +93,34 @@ msData <- R6::R6Class("msData",
     #'
     print = function() {
       cat(
-        "  Class         ", paste(is(self), collapse = "; "), "\n",
-        "  Name          ", private$.headers$name, "\n",
-        "  Date          ", as.character(private$.headers$date), "\n",
+        "Class         ", paste(is(self), collapse = "; "), "\n",
+        "Name          ", private$.headers$name, "\n",
+        "Date          ", as.character(private$.headers$date), "\n",
         sep = ""
       )
+
+      cat("\n")
+
+      if (self$has_settings()) {
+        cat("Settings: \n")
+        names_settings <- names(private$.settings)
+        cat(
+          paste0(" ", seq_len(length(names_settings)), ": ", names_settings),
+          sep = "\n"
+        )
+        cat("\n")
+      }
+
       if (length(private$.analyses) > 0) {
         overview <- self$get_overview()
         overview$file <- NULL
-
-        overview$traces <- vapply(private$.analyses, function(x) {
-          x$spectra_number
-        }, 0)
-
-        overview$features <- vapply(private$.analyses, function(x) {
-          nrow(x$features)
-        }, 0)
-
-        if (!is.null(private$.groups)) {
-          overview$groups <- apply(
-            private$.groups[, self$get_analysis_names(), with = FALSE],
-            2, function(x) {
-              length(x[x > 0])
-            }
-          )
-        } else {
-          overview$groups <- 0
-        }
-
+        row.names(overview) <- paste0("Analyses ", seq_len(nrow(overview)), ":")
         print(overview)
+
       } else {
-        cat("     n.a.", "\n", sep = "")
+        cat("Analyses      ", 0, "\n", sep = "")
       }
+      cat("\n")
     },
 
     ## get -----
@@ -1409,29 +1401,38 @@ msData <- R6::R6Class("msData",
     ## add -----
 
     #' @description
-    #' Method to add headers information to the `msData` object.
+    #' Method to add headers information to the `msData` object. If an argument
+    #' or element name is given, it must be type character. If an argument or
+    #' element path is given, it must be type character and exist. If an
+    #' argument or element date is given, it must be class POSIXct or POSIXt.
+    #' If given date is character, conversion to class POSIXct or POSIXt is
+    #' attempted. See `?headers` for more information.
     #'
-    #' @param headers X.
-    #' @param verbose X.
+    #' @template arg-headers-ellipsis
     #'
     #' @return Invisible.
     #'
-    add_headers = function(headers = NULL, verbose = TRUE) {
-      if (validate_headers(headers)) {
-        old_headers <- private$.headers
+    add_headers = function(...) {
 
+      headers <- headers(...)
+
+      if (is(headers, "headers")) {
+        old_headers <- private$.headers
         if (is.null(old_headers)) old_headers <- list()
 
-        new_headers <- old_headers[!names(headers) %in% names(old_headers)]
-        new_headers[names(headers)] <- headers
-        new_names <- names(new_headers)
-        if (!"name" %in% new_names) new_headers$name <- NA_character_
-        if (!"path" %in% new_names) new_headers$path <- getwd()
-        if (!"date" %in% new_names) new_headers$date <- Sys.time()
+        if (length(old_headers) > 0) {
+          new_headers <- old_headers[!names(old_headers) %in% names(headers)]
+          new_headers[names(headers)] <- headers
+        } else {
+          new_headers <- headers
+        }
 
-        private$.headers <- new_headers
+        new_headers <- as.headers(new_headers)
 
-        if (verbose) message("\U2713 Added headers!")
+        if (!identical(new_headers, old_headers) & is(new_headers, "headers")) {
+          private$.headers <- new_headers
+          message("\U2713 Added headers!")
+        }
 
       } else {
         warning("Invalid headers content or structure! Not added.")
@@ -1442,26 +1443,33 @@ msData <- R6::R6Class("msData",
     #' @description
     #' Method to add processing settings to the `msData` object.
     #'
-    #' @param settings X.
-    #' @param verbose X.
+    #' @template arg-settings-list
     #'
     #' @return Invisible.
     #'
-    add_settings = function(settings = NULL, verbose = TRUE) {
-      if (validate_settings(settings)) {
-        private$.settings[[settings$call]] <- settings
-        if (verbose) {
-          message(
-            paste0("\U2713 ", settings$call, " processing settings added!")
-          )
-        }
-      } else if (all(vapply(settings, validate_settings, FALSE))) {
-        call_names <- vapply(settings, function(x) x$call, NA_character_)
-        private$.settings[call_names] <- settings
-        if (verbose) {
+    add_settings = function(settings = NULL) {
+      if (is.list(settings)) {
+
+        if (all(c("call", "algorithm", "parameters") %in% names(settings))) {
+          settings <- as.settings(settings)
+
+          if (!is.null(settings)) {
+            private$.settings[[settings$call]] <- settings
+            message(
+              paste0("\U2713 ", settings$call, " processing settings added!")
+            )
+          }
+
+        } else if (all(vapply(settings, validate.settings, FALSE))) {
+          settings <- lapply(settings, as.settings)
+          call_names <- vapply(settings, function(x) x$call, NA_character_)
+          private$.settings[call_names] <- settings
           message(paste0("\U2713 Added settings for:\n",
             paste(call_names, collapse = "\n"))
           )
+
+        } else {
+          warning("Settings content or structure not conform! Not added.")
         }
       } else {
         warning("Settings content or structure not conform! Not added.")
@@ -1472,21 +1480,46 @@ msData <- R6::R6Class("msData",
     #' @description
     #' Method to add analyses to the `msData` object.
     #'
-    #' @param analyses A list of analyses.
-    #' @param verbose X.
+    #' @template arg-ms-analyses-list
     #'
     #' @return Invisible.
     #'
-    add_analyses = function(analyses, verbose = TRUE) {
-      if (missing(analyses)) analyses <- NULL
+    add_analyses = function(analyses = NULL) {
 
-      valid_analyses <- vapply(analyses, validate_ms_analysis, FALSE)
+      if (is.list(analyses)) {
+        if (all(c("name", "file") %in% names(analyses))) {
+          analyses <- as.msAnalysis(analyses)
 
-      valid_analyses
+          if (is(analyses, "msAnalysis")) {
+            ana_name <- analyses$name
+            analyses <- list(analyses)
+            names(analyses) <- ana_name
 
-      if (all(valid_analyses) & length(valid_analyses) > 0) {
-        old_analyses <- private$.analyses
+          } else {
+            warning("Not done, check the conformity of the analyses list!")
+            analyses <- NULL
+          }
 
+        } else {
+          analyses <- lapply(analyses, as.msAnalysis)
+
+          if (all(vapply(analyses, function(x) is(x, "msAnalysis"), FALSE))) {
+            ana_names <- vapply(analyses, function(x) x$name, "")
+            names(analyses) <- ana_names
+
+          } else {
+            warning("Not done, check the conformity of the analyses list!")
+            analyses <- NULL
+          }
+        }
+
+      } else {
+        warning("Not done, check the conformity of the analyses list!")
+        analyses <- NULL
+      }
+
+      if (!is.null(analyses)) {
+        old_analyses <- self$get_analyses()
         old_names <- NULL
 
         if (length(old_analyses) > 0) {
@@ -1499,15 +1532,20 @@ msData <- R6::R6Class("msData",
           new_analyses <- c(old_analyses, analyses)
           names(new_analyses) <- new_names
           new_analyses <- new_analyses[order(names(new_analyses))]
-
           old_size <- length(private$.analyses)
 
           private$.analyses <- new_analyses
+          message(
+            paste0(
+              "\U2713 ",
+              length(new_analyses) - old_size,
+              " analyses added!"
+            )
+          )
 
           if (old_size < length(new_analyses)) {
-
-            if (!is.null(private$.groups)) {
-              message("Groups cleared as new analyses were added!")
+            if (self$has_groups()) {
+              warning("Feature groups cleared as new analyses were added!")
               private$.analyses <- lapply(private$.analyses, function(x) {
                 x$features[["feature"]] <- NULL
                 x
@@ -1515,27 +1553,11 @@ msData <- R6::R6Class("msData",
               private$.groups <- NULL
               private$.alignment <- NULL
             }
-
-            if (verbose) {
-              message(
-                paste0(
-                  "\U2713 ",
-                  length(new_analyses) - old_size,
-                  " analyses added!"
-                )
-              )
-            }
-
-          } else {
-            warning("Not done, check the conformity of the analyses list!")
           }
 
         } else {
           warning("Duplicated analysis names not allowed! Not done.")
         }
-
-      } else {
-        warning("Not done, check the conformity of the analyses list!")
       }
       invisible(self)
     },
@@ -1604,11 +1626,10 @@ msData <- R6::R6Class("msData",
     #' Method to add features to each analysis in the `msData` object.
     #'
     #' @param features X.
-    #' @param verbose X.
     #'
     #' @return Invisible.
     #'
-    add_features = function(features = NULL, verbose = TRUE) {
+    add_features = function(features = NULL) {
       valid <- FALSE
 
       if (is.data.frame(features)) {
@@ -1637,7 +1658,7 @@ msData <- R6::R6Class("msData",
           },
           private$.analyses, features
         )
-        if (verbose) message("\U2713 Features added!")
+        message("\U2713 Features added!")
 
       } else {
         warning("Invalid features content or structure! Not added.")
@@ -1648,13 +1669,35 @@ msData <- R6::R6Class("msData",
     #' @description
     #' Method to add feature groups in the `msData` object.
     #'
-    #' @param groups data.table.
-    #' @param verbose X.
+    #' @template arg-ms-groups
     #'
     #' @return Invisible.
     #'
-    add_groups = function(groups = NULL, verbose = TRUE) {
-      if (is.data.frame(groups)) {
+    add_groups = function(groups = NULL) {
+
+      if (is.list(groups)) {
+        if ("ms1" %in% names(groups)) {
+          groups$ms1 <- lapply(groups$ms1, as.data.table)
+        }
+
+        if ("ms2" %in% names(groups)) {
+          groups$ms2 <- lapply(groups$ms2, as.data.table)
+        }
+
+        groups <- as.data.table(groups)
+
+      } else if (is.data.frame(groups)) {
+
+        if ("ms1" %in% colnames(groups)) {
+          groups$ms1 <- lapply(groups$ms1, as.data.table)
+        }
+
+        if ("ms2" %in% colnames(groups)) {
+          groups$ms2 <- lapply(groups$ms2, as.data.table)
+        }
+      }
+
+      if (is.data.table(groups)) {
         must_have_cols <- c(
           "group", "rt", unname(self$get_analysis_names()),
           "dppm", "drt", "index", "hasFilled", "filtered", "filter",
@@ -1677,7 +1720,7 @@ msData <- R6::R6Class("msData",
               warning("Correspondence did not match! Groups not added.")
             }
 
-          } else if (verbose) {
+          } else {
             message(paste0("\U2713 ", nrow(groups), " feature groups added!"))
           }
 
@@ -1695,11 +1738,10 @@ msData <- R6::R6Class("msData",
     #' Method to add time alignment results in the `msData` object.
     #'
     #' @param alignment list.
-    #' @param verbose X.
     #'
     #' @return Invisible.
     #'
-    add_alignment = function(alignment = NULL, verbose = TRUE) {
+    add_alignment = function(alignment = NULL) {
       if (is.list(alignment) &
         all(unname(self$get_analysis_names()) %in% names(alignment)) &
         self$has_groups()) {
@@ -1708,13 +1750,15 @@ msData <- R6::R6Class("msData",
           "adjustment", "adjPoints"
         )
 
+        alignment <- lapply(alignment, as.data.table)
+
         valid <- vapply(alignment, function(x, must_have_cols) {
           all(must_have_cols %in% colnames(x))
         }, FALSE, must_have_cols = must_have_cols)
 
         if (all(valid)) {
           private$.alignment <- alignment
-          if (verbose) message("\U2713 Alignment added!")
+          message("\U2713 Alignment added!")
 
         } else {
           warning("Invalid alignment structure or content! Not added.")
@@ -1821,7 +1865,7 @@ msData <- R6::R6Class("msData",
         settings <- settings[["load_features_ms1"]]
       }
 
-      if (validate_settings(settings)) {
+      if (validate.settings(settings)) {
         if (!"load_features_ms1" %in% settings$call) {
           warning("Settings call must be load_features_ms1!")
           valid <- FALSE
@@ -1918,7 +1962,7 @@ msData <- R6::R6Class("msData",
         settings <- settings[["load_features_ms2"]]
       }
 
-      if (validate_settings(settings)) {
+      if (validate.settings(settings)) {
         if (!"load_features_ms2" %in% settings$call) {
           warning("Settings call must be 'load_features_ms2'!")
           valid <- FALSE
@@ -2024,7 +2068,7 @@ msData <- R6::R6Class("msData",
         settings <- settings[["load_groups_ms1"]]
       }
 
-      if (validate_settings(settings)) {
+      if (validate.settings(settings)) {
         if (!"load_groups_ms1" %in% settings$call) {
           warning("Settings call must be 'load_groups_ms1'!")
           valid <- FALSE
@@ -2121,7 +2165,7 @@ msData <- R6::R6Class("msData",
         settings <- settings[["load_groups_ms2"]]
       }
 
-      if (validate_settings(settings)) {
+      if (validate.settings(settings)) {
         if (!"load_groups_ms2" %in% settings$call) {
           warning("Settings call must be 'load_groups_ms2'!")
           valid <- FALSE
@@ -2286,7 +2330,7 @@ msData <- R6::R6Class("msData",
 
         analysesLeft <- self$get_analyses(keepAnalyses)
 
-        if (self$has_groups()) {
+        if (self$has_groups() & length(analysesLeft) > 0) {
           newGroups <- copy(self$get_groups())
           newGroups[, (removeAnalyses) := NULL]
           newFeatures <- lapply(analysesLeft, function(x) x$features)
@@ -2302,12 +2346,19 @@ msData <- R6::R6Class("msData",
           )
 
           newGroups <- out_list[["groups"]]
+
         } else {
           newGroups <- NULL
         }
 
         private$.analyses <- analysesLeft
-        if (!is.null(newGroups)) self$add_groups(newGroups, verbose = FALSE)
+
+        if (!is.null(newGroups)) {
+          self$add_groups(newGroups)
+        } else {
+          private$.groups <- NULL
+        }
+
         private$.alignment <- private$.alignment[keepAnalyses]
 
         message("\U2713 Removed analyses:\n", paste(analyses, collapse = "\n"))
@@ -3727,7 +3778,7 @@ msData <- R6::R6Class("msData",
         settings <- settings[["find_features"]]
       }
 
-      if (validate_settings(settings)) {
+      if (validate.settings(settings)) {
         if (!"find_features" %in% settings$call) {
           warning("Settings call must be find_features!")
           valid <- FALSE
@@ -3812,7 +3863,7 @@ msData <- R6::R6Class("msData",
         settings <- settings[["group_features"]]
       }
 
-      if (validate_settings(settings)) {
+      if (validate.settings(settings)) {
         if (!"group_features" %in% settings$call) {
           warning("Settings call must be group_features!")
           valid <- FALSE
@@ -4034,9 +4085,19 @@ msData <- R6::R6Class("msData",
     #'
     save_headers = function(format = "json", name = "headers", path = getwd()) {
       if (format %in% "json") {
-        js_headers <- toJSON(self$get_headers(),
-          force = TRUE, auto_unbox = TRUE, pretty = TRUE,
-          Date = "ISO8601", POSIXt = "string"
+        js_headers <- toJSON(
+          self$get_headers(),
+          dataframe = "columns",
+          Date = "ISO8601",
+          POSIXt = "string",
+          factor = "string",
+          complex = "string",
+          null = "null",
+          na = "null",
+          auto_unbox = FALSE,
+          digits = 8,
+          pretty = TRUE,
+          force = TRUE
         )
         write(js_headers, file = paste0(path, "/", name, ".json"))
       }
@@ -4063,8 +4124,19 @@ msData <- R6::R6Class("msData",
       js_settings <- self$get_settings(call)
 
       if (format %in% "json") {
-        js_settings <- toJSON(js_settings,
-          force = TRUE, auto_unbox = TRUE, pretty = TRUE
+        js_settings <- toJSON(
+          js_settings,
+          dataframe = "columns",
+          Date = "ISO8601",
+          POSIXt = "string",
+          factor = "string",
+          complex = "string",
+          null = "null",
+          na = "null",
+          auto_unbox = FALSE,
+          digits = 8,
+          pretty = TRUE,
+          force = TRUE
         )
         write(js_settings, file = paste0(path, "/", name, ".json"))
       }
@@ -4131,12 +4203,14 @@ msData <- R6::R6Class("msData",
     save_groups = function(format = "json", name = "groups", path = getwd()) {
       if (format %in% "json") {
         js_groups <- self$get_groups()
-        js_groups <- split(js_groups, js_groups$group)
-        js_groups <- lapply(js_groups, as.list)
 
         js_groups <- toJSON(
           js_groups,
           dataframe = "columns",
+          Date = "ISO8601",
+          POSIXt = "string",
+          factor = "string",
+          complex = "string",
           null = "null",
           na = "null",
           auto_unbox = FALSE,
@@ -4184,11 +4258,6 @@ msData <- R6::R6Class("msData",
       if (!is.null(alignment)) list_all$alignment <- alignment
 
       if (format %in% "json") {
-        if ("groups" %in% names(list_all)) {
-          list_all$groups <- split(list_all$groups, list_all$groups$group)
-          list_all$groups <- lapply(list_all$groups, as.list)
-        }
-
         js_all <- toJSON(
           list_all,
           dataframe = "columns",
@@ -4227,15 +4296,10 @@ msData <- R6::R6Class("msData",
     import_headers = function(file = NA_character_, list = NULL) {
       if (file.exists(file)) {
         headers <- NULL
-
-        if (file_ext(file) %in% "json") {
-          headers <- fromJSON(file)
-          headers <- correct_parsed_json_headers(headers)
-        }
-
+        if (file_ext(file) %in% "json") headers <- fromJSON(file)
         if (file_ext(file) %in% "rds") headers <- readRDS(file)
-
         self$add_headers(headers)
+
       } else {
         warning("File not found in given path!")
       }
@@ -4253,15 +4317,10 @@ msData <- R6::R6Class("msData",
     import_settings = function(file = NA_character_) {
       if (file.exists(file)) {
         settings <- NULL
-
-        if (file_ext(file) %in% "json") {
-          settings <- fromJSON(file)
-          settings <- correct_parsed_json_settings(settings)
-        }
-
+        if (file_ext(file) %in% "json") settings <- fromJSON(file)
         if (file_ext(file) %in% "rds") settings <- readRDS(file)
-
         self$add_settings(settings)
+
       } else {
         warning("File not found in given path!")
       }
@@ -4279,14 +4338,10 @@ msData <- R6::R6Class("msData",
     import_analyses = function(file = NA_character_) {
       if (file.exists(file)) {
         analyses <- NULL
-
         if (file_ext(file) %in% "json") {
-          analyses <- fromJSON(file)
-          analyses <- correct_ms_parsed_json_analyses(analyses)
+          analyses <- fromJSON(file, simplifyDataFrame = FALSE)
         }
-
         if (file_ext(file) %in% "rds") analyses <- readRDS(file)
-
         self$add_analyses(analyses)
       } else {
         warning("File not found in given path!")
@@ -4305,14 +4360,10 @@ msData <- R6::R6Class("msData",
     import_groups = function(file = NA_character_) {
       if (file.exists(file)) {
         groups <- NULL
-
         if (file_ext(file) %in% "json") {
-          groups <- fromJSON(file)
-          groups <- correct_ms_parsed_json_groups(groups)
+          groups <- fromJSON(file, simplifyDataFrame = FALSE)
         }
-
         if (file_ext(file) %in% "rds") groups <- readRDS(file)
-
         self$add_groups(groups)
       } else {
         warning("File not found in given path!")
@@ -4344,60 +4395,6 @@ msData <- R6::R6Class("msData",
   )
 )
 
-# validation functions -----
-
-#' validate_headers
-#'
-#' @description
-#' Validates the headers list.
-#'
-#' @param value A headers list.
-#'
-#' @return A logical value of length 1.
-#'
-#' @export
-#'
-validate_headers <- function(value = NULL) {
-  valid <- FALSE
-
-  if (is.list(value)) {
-    valid <- TRUE
-
-    if (!all(vapply(value, function(x) length(x) == 1, FALSE))) {
-      warning("All headers must be of length 1!")
-      valid <- FALSE
-    }
-
-    if (length(unique(names(value))) != length(value)) {
-      warning("Headers must have names and not permitted duplicated names!")
-      valid <- FALSE
-    }
-
-    if ("name" %in% names(value)) {
-      if (!is.character(value$name)) {
-        warning("Header list entry name must be character!")
-        valid <- FALSE
-      }
-    }
-
-    if ("path" %in% names(value)) {
-      if (!dir.exists(value$path)) {
-        warning("Header list entry path must exist!")
-        valid <- FALSE
-      }
-    }
-
-    if ("date" %in% names(value)) {
-      if (!all(grepl("POSIXct|POSIXt", class(value$date)))) {
-        warning("Header list entry date class must be POSIXct or POSIXt!")
-        valid <- FALSE
-      }
-    }
-  }
-
-  valid
-}
-
 # import msData class -----
 
 #' @title import_msData
@@ -4415,56 +4412,50 @@ import_msData <- function(file) {
     new_ms <- NULL
 
     if (file_ext(file) %in% "json") {
-      js_ms <- fromJSON(file)
+      js_ms <- fromJSON(file, simplifyDataFrame = FALSE)
 
       fields_present <- names(js_ms)
 
-      new_ms <- msData$new(verbose = FALSE)
+      new_ms <- msData$new()
 
-      if ("headers" %in% fields_present) {
-        js_headers <- correct_parsed_json_headers(js_ms[["headers"]])
-        new_ms$add_headers(js_headers, verbose = TRUE)
-      }
+      if ("headers" %in% fields_present) new_ms$add_headers(js_ms[["headers"]])
 
       if ("settings" %in% fields_present) {
         if (!is.null(js_ms[["settings"]])) {
-          settings <- correct_parsed_json_settings(js_ms[["settings"]])
-          new_ms$add_settings(settings, verbose = TRUE)
+          new_ms$add_settings(js_ms[["settings"]])
         }
       }
 
       if ("analyses" %in% fields_present) {
         if (!is.null(js_ms[["analyses"]])) {
-          analyses <- correct_ms_parsed_json_analyses(js_ms[["analyses"]])
-          new_ms$add_analyses(analyses, verbose = TRUE)
+          new_ms$add_analyses(js_ms[["analyses"]])
         }
       }
 
       if ("groups" %in% fields_present) {
-        if (!is.null(js_ms[["groups"]])) {
-          groups <- correct_ms_parsed_json_groups(js_ms[["groups"]])
-          if (nrow(groups) > 0) new_ms$add_groups(groups, verbose = TRUE)
+        if (!is.null(js_ms[["groups"]]) & length(js_ms[["groups"]]) > 0) {
+          new_ms$add_groups(js_ms[["groups"]])
         }
       }
 
       if ("alignment" %in% fields_present) {
         if (!is.null(js_ms[["alignment"]])) {
-          js_alignment <- lapply(js_ms[["alignment"]], as.data.table)
-          new_ms$add_alignment(js_alignment, verbose = TRUE)
+          new_ms$add_alignment(js_ms[["alignment"]])
         }
       }
 
-      message("\U2713 msData imported from json file! \n")
+      message("\U2713 msData class object imported from json file!")
     }
 
     if (file_ext(file) %in% "rds") {
       new_ms <- readRDS(file)
 
       # TODO validate object
-      cat("msData imported from rds file! \n")
+      message("\U2713 msData class object imported from rds file!")
     }
 
     new_ms
+
   } else {
     warning("File not found in given path!")
     NULL
@@ -4472,142 +4463,6 @@ import_msData <- function(file) {
 }
 
 # not-exported functions -----
-
-## correct from json -----
-
-#' correct_parsed_json_headers
-#'
-#' @description Function to correct parsed headers from json file.
-#'
-#' @param headers X.
-#'
-#' @return X.
-#'
-correct_parsed_json_headers <- function(headers = NULL) {
-  headers <- lapply(headers, function(h) {
-    if (is.null(h)) h <- NA_character_
-    if (is.na(h)) h <- NA_character_
-    return(h)
-  })
-
-  if ("date" %in% names(headers)) {
-    headers$date <- as.POSIXct(headers$date)
-    attr(headers$date, "tzone") <- NULL
-  }
-
-  return(headers)
-}
-
-#' correct_parsed_json_settings
-#'
-#' @description Function to correct parsed settings from json file.
-#'
-#' @param settings X.
-#'
-#' @return X.
-#'
-correct_parsed_json_settings <- function(settings = NULL) {
-  settings <- lapply(settings, function(s) {
-    if (!all(c("call", "algorithm", "parameters") %in% names(s))) {
-      return(NULL)
-    }
-
-    if (is.data.frame(s$parameters)) s$parameters <- list(s$parameters)
-    s$parameters <- lapply(s$parameters, function(x) {
-      if (is.data.frame(x)) x <- as.list(x)
-      if ("class" %in% names(x)) {
-        x[["Class"]] <- x$class
-        x[["class"]] <- NULL
-        x <- lapply(x, function(z) {
-          if (is.list(z) & length(z) > 0) {
-            return(z[[1]])
-          } else {
-            return(z)
-          }
-        })
-        if (x$Class %in% "CentWaveParam") x$roiScales <- as.double()
-        if (x$Class %in% "PeakGroupsParam") {
-          x$peakGroupsMatrix <- as.matrix(x$peakGroupsMatrix)
-        }
-        if (x$Class %in% "PeakGroupsParam") x$subset <- as.integer(x$subset)
-        return(do.call("new", x))
-      } else {
-        return(x)
-      }
-    })
-
-    s <- list(
-      "call" = s$call,
-      "algorithm" = s$algorithm,
-      "parameters" = s$parameters
-    )
-
-    return(s)
-  })
-
-  names(settings) <- vapply(settings, function(x) {
-    if (!is.null(x)) {
-      return(x$call)
-    } else {
-      return("not_valid")
-    }
-  }, NA_character_)
-
-  return(settings)
-}
-
-#' correct_ms_parsed_json_analyses
-#'
-#' @description Function to correct parsed analyses from json file.
-#'
-#' @param analyses X.
-#'
-#' @return X.
-#'
-correct_ms_parsed_json_analyses <- function(analyses = NULL) {
-  analyses <- lapply(analyses, function(x) {
-    x$name <- as.character(x$name)
-    x$replicate <- as.character(x$replicate)
-    x$blank <- as.character(x$blank)
-    if (is.na(x$blank)) x$blank <- NA_character_
-    x$file <- as.character(x$file)
-    x$type <- as.character(x$type)
-    x$time_stamp <- as.character(x$time_stamp)
-    x$spectra_number <- as.integer(x$spectra_number)
-    x$spectra_mode <- as.character(x$spectra_mode)
-    x$spectra_levels <- as.integer(x$spectra_levels)
-    x$mz_low <- as.numeric(x$mz_low)
-    x$mz_high <- as.numeric(x$mz_high)
-    x$rt_start <- as.numeric(x$rt_start)
-    x$rt_end <- as.numeric(x$rt_end)
-    x$polarity <- as.character(x$polarity)
-    x$chromatograms_number <- as.integer(x$chromatograms_number)
-    x$ion_mobility <- as.logical(x$ion_mobility)
-    x$tic <- as.data.table(x$tic)
-    x$bpc <- as.data.table(x$bpc)
-    x$spectra <- as.data.table(x$spectra)
-    x$chromatograms <- as.data.table(x$chromatograms)
-    x$features <- as.data.table(x$features)
-    return(x)
-  })
-  names(analyses) <- vapply(analyses, function(x) x$name, NA_character_)
-  analyses
-}
-
-#' correct_ms_parsed_json_groups
-#'
-#' @description Function to correct parsed feature groups from json file.
-#'
-#' @param groups X.
-#'
-#' @return X.
-#'
-correct_ms_parsed_json_groups <- function(groups = NULL) {
-  groups <- lapply(groups, as.data.table)
-  groups <- rbindlist(groups)
-  groups <- groups[order(groups$index), ]
-  groups
-}
 
 ## amend from patRoon -----
 

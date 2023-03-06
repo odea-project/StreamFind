@@ -40,6 +40,10 @@ system.file(package = "streamFind", dir = "extdata")
 usethis::use_build_ignore("man-roxygen")
 
 
+
+
+
+
 ### Code lines strings --------------------------------------------------------------------------------------
 
 #gsub(".*M(.*)\\].*", "\\1", adduct_ion)

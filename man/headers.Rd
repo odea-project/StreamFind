@@ -2,27 +2,46 @@
 % Please edit documentation in R/class_S3_headers.R
 \name{headers}
 \alias{headers}
+\alias{validate.headers}
+\alias{as.headers}
 \title{Headers S3 Class Constructor}
 \usage{
-headers(name = NA_character_, path = NA_character_, date = NULL, ...)
+headers(...)
+
+\method{validate}{headers}(headers)
+
+as.headers(value)
 }
 \arguments{
-\item{call}{Character of length one with the name of the method where the
-settings are to be applied.}
+\item{...}{Arguments to be added as headers. Note that all given arguments
+must be of length one. There is not type limitation. The name of the argument
+becomes the name of the header entry. Alternatively, a single list argument
+with the headers (all length one) can be given.}
 
-\item{algorithm}{Character of length one with the name of the algorithm to
-be used.}
+\item{headers}{A headers S3 class object.}
 
-\item{parameters}{A list with parameter settings specific for the \code{call}
-method and used \code{algorithm}.}
+\item{value}{List to be checked and converted to headers S3 class.}
 }
 \value{
-A settings S3 class
+A headers S3 class object.
 }
 \description{
 Creates a headers S3 class object.
 }
-\details{
-See the method documentation for more information about possible
-algorithms and parameters to be used.
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate(headers)}: Validates a headers S3 class object, returning a logical value of length one.
+
+}}
+\section{Functions}{
+\itemize{
+\item \code{as.headers()}: Converts the argument value into a headers S3 class object.
+
+}}
+\note{
+If an argument or element name is given, it must be type character.
+If an argument or element path is given, it must be type character and exist.
+If an argument or element date is given, it must be class POSIXct or POSIXt.
+If given date is character, conversion to class POSIXct or POSIXt is
+attempted.
 }

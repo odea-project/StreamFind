@@ -8,10 +8,6 @@ The msData R6 class is a framework with methods for parsing, processing,
 visualizing and storing MS data.
 }
 \note{
-When \code{headers} is not given (i.e., \code{NULL}), default headers are
-generated with name as \code{NA_character}, path as \code{get_wd()} and date
-as \code{Sys.time()}.
-
 Name, path and date cannot be removed.
 
 When \code{call} is \code{NULL} all settings are removed.
@@ -155,7 +151,10 @@ list and the \code{data.table} of each group is converted to a list.
 \if{html}{\out{<a id="method-msData-new"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-new}{}}}
 \subsection{Method \code{new()}}{
-Creates an msData class object.
+Creates an msData class object. When \code{headers} are not given (i.e.,
+\code{NULL}), a default headers S3 class object is generated with name as
+\code{NA_character}, path as \code{get_wd()} and date as \code{Sys.time()}.
+See \code{?headers} for more information.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$new(
   files = NULL,
@@ -164,8 +163,7 @@ Creates an msData class object.
   settings = NULL,
   analyses = NULL,
   groups = NULL,
-  alignment = NULL,
-  verbose = TRUE
+  alignment = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -179,30 +177,39 @@ and \emph{blank} with the full file path of \emph{mzML} or \emph{mzXML} file/s
 replicate group name (character). Note the file paths must have the extension
 \emph{.mzML} or \emph{.mzXML}.}
 
-\item{\code{runParallel}}{Logical length 1, set to \code{TRUE} for parallel
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
 processing. Note that parallel processing is not always faster due to
 overhead.}
 
-\item{\code{headers}}{A named list with header information. Each list element must
-have length 1. There is not type restrictions except for name (must be type
-character), path (must be type character) and date (must be class POSIXct or
-class POSIXt).}
+\item{\code{headers}}{A named list with headers or a headers S3 class object.
+Each list element must have length one. There is not type
+restrictions except for name (must be type character), path (must be type
+character) and date (must be class POSIXct or class POSIXt). See more
+information in \code{?headers}.}
 
-\item{\code{settings}}{A named list with settings S3 class objects as elements
-(see \code{?settings} for more information). Note that the list names should
-match the call name of each settings object.}
+\item{\code{settings}}{A settings S3 class object or a list with settings S3 class
+objects as elements (see \code{?settings} for more information).}
 
-\item{\code{analyses}}{A named list with msAnalysis S3 class objects as elements
-(see \code{?msAnalysis} for more information). Note that the list names should
-match the mzML/mzXML file name without extension of each msAnalysis object.}
+\item{\code{settings}}{A settings S3 class object or a list with settings S3 class
+objects as elements (see \code{?settings} for more information).}
 
-\item{\code{groups}}{A data.table with \code{groups} representing corresponding
-features across MS analyses.}
+\item{\code{analyses}}{An msAnalysis S3 class object or a list with msAnalysis S3
+class objects as elements (see \code{?msAnalysis} for more information).}
+
+\item{\code{analyses}}{An msAnalysis S3 class object or a list with msAnalysis S3
+class objects as elements (see \code{?msAnalysis} for more information).}
+
+\item{\code{groups}}{data.table with feature groups from correspondence across MS
+analyses as obtained by the msData method \code{get_groups()}. Note that
+correspondence of features across MS analyses is performed with the method
+\code{group_features()} from the msData class.}
+
+\item{\code{groups}}{data.table with feature groups from correspondence across MS
+analyses as obtained by the msData method \code{get_groups()}. Note that
+correspondence of features across MS analyses is performed with the method
+\code{group_features()} from the msData class.}
 
 \item{\code{alignment}}{X.}
-
-\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
-result messages. When \code{FALSE}, some messages are omitted.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1248,17 +1255,23 @@ A data.frame/data.table.
 \if{html}{\out{<a id="method-msData-add_headers"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-add_headers}{}}}
 \subsection{Method \code{add_headers()}}{
-Method to add headers information to the \code{msData} object.
+Method to add headers information to the \code{msData} object. If an argument
+or element name is given, it must be type character. If an argument or
+element path is given, it must be type character and exist. If an
+argument or element date is given, it must be class POSIXct or POSIXt.
+If given date is character, conversion to class POSIXct or POSIXt is
+attempted. See \code{?headers} for more information.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$add_headers(headers = NULL, verbose = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$add_headers(...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{headers}}{X.}
-
-\item{\code{verbose}}{X.}
+\item{\code{...}}{Arguments to be added as headers. Note that all given arguments
+must be of length one. There is not type limitation. The name of the argument
+becomes the name of the header entry. Alternatively, a single list argument
+with the headers (all length one) can be given.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1272,15 +1285,17 @@ Invisible.
 \subsection{Method \code{add_settings()}}{
 Method to add processing settings to the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$add_settings(settings = NULL, verbose = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$add_settings(settings = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{settings}}{X.}
+\item{\code{settings}}{A settings S3 class object or a list with settings S3 class
+objects as elements (see \code{?settings} for more information).}
 
-\item{\code{verbose}}{X.}
+\item{\code{settings}}{A settings S3 class object or a list with settings S3 class
+objects as elements (see \code{?settings} for more information).}
 }
 \if{html}{\out{</div>}}
 }
@@ -1294,15 +1309,17 @@ Invisible.
 \subsection{Method \code{add_analyses()}}{
 Method to add analyses to the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$add_analyses(analyses, verbose = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$add_analyses(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A list of analyses.}
+\item{\code{analyses}}{An msAnalysis S3 class object or a list with msAnalysis S3
+class objects as elements (see \code{?msAnalysis} for more information).}
 
-\item{\code{verbose}}{X.}
+\item{\code{analyses}}{An msAnalysis S3 class object or a list with msAnalysis S3
+class objects as elements (see \code{?msAnalysis} for more information).}
 }
 \if{html}{\out{</div>}}
 }
@@ -1360,15 +1377,13 @@ Invisible.
 \subsection{Method \code{add_features()}}{
 Method to add features to each analysis in the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$add_features(features = NULL, verbose = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$add_features(features = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{features}}{X.}
-
-\item{\code{verbose}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1382,15 +1397,21 @@ Invisible.
 \subsection{Method \code{add_groups()}}{
 Method to add feature groups in the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$add_groups(groups = NULL, verbose = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$add_groups(groups = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{groups}}{data.table.}
+\item{\code{groups}}{data.table with feature groups from correspondence across MS
+analyses as obtained by the msData method \code{get_groups()}. Note that
+correspondence of features across MS analyses is performed with the method
+\code{group_features()} from the msData class.}
 
-\item{\code{verbose}}{X.}
+\item{\code{groups}}{data.table with feature groups from correspondence across MS
+analyses as obtained by the msData method \code{get_groups()}. Note that
+correspondence of features across MS analyses is performed with the method
+\code{group_features()} from the msData class.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1404,15 +1425,13 @@ Invisible.
 \subsection{Method \code{add_alignment()}}{
 Method to add time alignment results in the \code{msData} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$add_alignment(alignment = NULL, verbose = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$add_alignment(alignment = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{alignment}}{list.}
-
-\item{\code{verbose}}{X.}
 }
 \if{html}{\out{</div>}}
 }

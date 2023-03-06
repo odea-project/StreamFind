@@ -2,7 +2,9 @@
 % Please edit documentation in R/class_S3_msAnalysis.R
 \name{msAnalysis}
 \alias{msAnalysis}
+\alias{validate.msAnalysis}
 \alias{as.msAnalysis}
+\alias{parse.msAnalysis}
 \title{msAnalysis S3 Class Constructor}
 \usage{
 msAnalysis(
@@ -31,54 +33,87 @@ msAnalysis(
   metadata = list()
 )
 
-as.msAnalysis(analysis)
+\method{validate}{msAnalysis}(msAnalysis = NULL)
+
+as.msAnalysis(value)
+
+parse.msAnalysis(files = NULL, runParallel = FALSE)
 }
 \arguments{
-\item{name}{X.}
+\item{name}{\emph{mzML} or \emph{mzXML} file name without extension.}
 
-\item{replicate}{X.}
+\item{replicate}{Character with length one, representing the analysis
+replicate group name.}
 
-\item{blank}{X.}
+\item{blank}{Character with length one, representing the associated blank
+replicate group name.}
 
-\item{file}{X.}
+\item{file}{\emph{mzML} or \emph{mzXML} full file path (with extension).}
 
-\item{type}{X.}
+\item{type}{Character with length one. Possible values as "MS" for only MS1
+spectral data, "MS/MS" for tandem spectral data (i.e., MS1 and MS2) or "SRM"
+for selected reaction monitoring data (i.e., no spectra only chromatograms).}
 
-\item{instrument}{X.}
+\item{instrument}{List with metadata from the instrument used to acquire the
+data (content is highly vendor dependent).}
 
-\item{time_stamp}{X.}
+\item{time_stamp}{Character with length one, representing the start time and
+date of the data acquisition.}
 
-\item{spectra_number}{X.}
+\item{spectra_number}{Integer with the number of spectra in the file.}
 
-\item{spectra_mode}{X.}
+\item{spectra_mode}{Character with length one. Possible values are \emph{centroid}
+, \emph{profile} or \code{NA} for centroided data, data in profile mode or mode not
+defined or absence spectra, respectively.}
 
-\item{spectra_levels}{X.}
+\item{spectra_levels}{Integer vector with the number of levels in the
+spectra (i.e., 1 or 1 and 2).}
 
-\item{mz_low}{X.}
+\item{mz_low}{Numeric length one with the lowest \emph{m/z} value detected
+in the spectra, in Da.}
 
-\item{mz_high}{X.}
+\item{mz_high}{Numeric length one with the highest \emph{m/z} value detected
+in the spectra, in Da.}
 
-\item{rt_start}{X.}
+\item{rt_start}{Numeric length one with the run start time, in seconds.}
 
-\item{rt_end}{X.}
+\item{rt_end}{Numeric length one with the run end time, in seconds.}
 
-\item{polarity}{X.}
+\item{polarity}{Character length one. Possible values are \emph{positive},
+\emph{negative} or \emph{both} (the latter refers to polarity switching acquisition).}
 
-\item{chromatograms_number}{X.}
+\item{chromatograms_number}{Integer with the number of chromatograms in the
+file.}
 
-\item{ion_mobility}{X.}
+\item{ion_mobility}{Logical length one for presence or absence of drift
+separation from ion mobility.}
 
-\item{tic}{X.}
+\item{tic}{data.table with the total ion chromatogram.}
 
-\item{bpc}{X.}
+\item{bpc}{data.table with the base peak chromatogram.}
 
-\item{spectra}{X.}
+\item{spectra}{data.table with the raw spectra (only present if loaded).}
 
-\item{chromatograms}{X.}
+\item{chromatograms}{data.table with the raw chromatograms (only present
+if loaded).}
 
-\item{features}{X.}
+\item{features}{data.table with the features from data processing.}
 
-\item{metadata}{X.}
+\item{metadata}{List with flexible storage for experimental metadata
+(e.g., concentration, location, etc.).}
+
+\item{msAnalysis}{A msAnalysis S3 class object.}
+
+\item{value}{A list to be checked and/or converted to msAnalysis S3 class.}
+
+\item{files}{A character vector with \emph{mzML} or \emph{mzXML} full file path/s.
+Alternatively, a data.frame with the column/s file, replicate and blank
+with the full file path/s, the replicate group name/s (string) and the
+associated blank replicate group name (string).}
+
+\item{runParallel}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
 }
 \value{
 An msAnalysis S3 class object.
@@ -86,3 +121,17 @@ An msAnalysis S3 class object.
 \description{
 Creates an msAnalysis S3 class object.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate(msAnalysis)}: Validates an msAnalysis S3 class object, returning a logical value of length
+one.
+
+}}
+\section{Functions}{
+\itemize{
+\item \code{as.msAnalysis()}: Converts the argument in an msAnalysis S3 class object.
+
+\item \code{parse.msAnalysis()}: Parses information from \emph{mzML} or \emph{mzXML} file/s and returns a list with
+msAnalysis S3 class object/s. On error, returns \code{NULL}.
+
+}}
