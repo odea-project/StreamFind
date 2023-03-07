@@ -11,9 +11,9 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 
 The R package
 [streamFind](https://github.com/ricardobachertdacunha/streamFind) (this
-repository) is the back-end platform for the streamFind project entitled
-“Flexible data analysis and workflow designer to identify chemicals in
-the water cycle”. The streamFind project is funded by the
+repository) is the back-end framework for the streamFind project
+entitled “Flexible data analysis and workflow designer to identify
+chemicals in the water cycle”. The streamFind project is funded by the
 [Bundesministerium für Bildung und Forschung
 (BMBF)](https://www.bmbf.de) and is a cooperation between the [Institut
 für Energie- und Umwelttechnik e. V. (IUTA)](https://www.iuta.de) and
@@ -44,25 +44,17 @@ used interchangeably with streamFind.
 ### Install dependencies
 
 [R](https://cran.r-project.org/) and
-[RTools](https://cran.r-project.org/bin/windows/Rtools/) for Windows
-users. The R version 4.2.2 (2022-10-31 ucrt) can be obtained in
-<https://cran.r-project.org/>. The RTools can be downloaded in
-<https://cran.r-project.org/bin/windows/Rtools/>. Make sure to download
-the right version for the R version installed. Installation instructions
-are given in both sources.
-
-The patRoon’s
+[RTools](https://cran.r-project.org/bin/windows/Rtools/) (the latter is
+only recommended for Windows users). The
 [handbook](https://rickhelmus.github.io/patRoon/handbook_bd/manual-installation.html#r-prerequisites)
-offers detailed information on how to install the
-[patRoon](https://github.com/rickhelmus/patRoon) R package and the
-required
+of the [patRoon](https://github.com/rickhelmus/patRoon) R package offers
+detailed installation instructions, including the required
 [dependencies](https://rickhelmus.github.io/patRoon/handbook_bd/manual-installation.html#other-dependencies).
 
 ### Install streamFind
 
 The [streamFind](https://github.com/ricardobachertdacunha/streamFind) R
-package can be installed from the GitHub repository with the following
-code line.
+package can be installed from the GitHub repository.
 
 ``` r
 remotes::install_github("ricardobachertdacunha/streamFind", dependencies = TRUE)
@@ -72,7 +64,7 @@ The
 [streamFindData](https://github.com/ricardobachertdacunha/streamFindData)
 R package holds the data used in examples and other documentation assets
 of the streamFind R package and can be installed from the GitHub
-repository with the following code line.
+repository.
 
 ``` r
 remotes::install_github("ricardobachertdacunha/streamFindData")

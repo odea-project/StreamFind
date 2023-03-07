@@ -17,4 +17,4 @@ sudo add-apt-repository -y ppa:c2d4u.team/c2d4u4.0+
 
 
 ## Install streamFind and dependencies ##
-R < ./dev/000_install_streamFind_and_dependencies.R --no-save
+R < ./dev/install_streamFind_and_dependencies.R --no-save

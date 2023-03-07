@@ -1,6 +1,6 @@
 
 # resources --------------------------------------------------------------------
-# ------------------------------------------------------------------------------
+
 all_files <- streamFindData::msFilePaths()
 db <- streamFindData::msSpikedChemicals()
 files_mrm <- all_files[grepl("mrm", all_files)]
@@ -82,7 +82,6 @@ settingsLoadGroupsMS1 <- list(
 )
 
 # code -------------------------------------------------------------------------
-# ------------------------------------------------------------------------------
 
 ms <- msData$new(files = all_files[10:21],
   headers = list(name = "Example 1"),

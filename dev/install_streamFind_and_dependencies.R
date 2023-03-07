@@ -4,15 +4,15 @@
 
 ### CRAN pkgs -----
 install.packages(c(
-    "bookdown",
-    "kableExtra",
-    "plotly",
-    "cli", #needed for tests
-    "shiny",
-    "golem",
-    "RaMS",
-    "rJava",
-    "igraph" #needed for annotation
+  "bookdown",
+  "kableExtra",
+  "plotly",
+  "cli", #needed for tests
+  "shiny",
+  "golem",
+  "RaMS",
+  "rJava",
+  "igraph" #needed for annotation
 ))
 # rJava needed for patRoon
 
@@ -20,8 +20,8 @@ install.packages(c(
 ### bioconductor pkgs -----
 install.packages(c("BiocManager", "remotes"))
 BiocManager::install(c(
-    "mzR", "xcms", "CAMERA", "ropls",
-    "InterpretMSSpectrum", "BiocStyle", "Rgraphviz"
+  "mzR", "xcms", "CAMERA", "ropls",
+  "InterpretMSSpectrum", "BiocStyle", "Rgraphviz"
 ))
 
 
@@ -35,7 +35,7 @@ remotes::install_github("blosloos/nontargetData")
 remotes::install_github("blosloos/nontarget")
 
 remotes::install_github("rickhelmus/patRoon",
-    upgrade = "never", dependencies = TRUE
+  upgrade = "never", dependencies = TRUE
 )
 
 ## Install local streamFind  ##
