@@ -4,14 +4,15 @@
 \name{streamFind-package}
 \alias{streamFind}
 \alias{streamFind-package}
-\title{streamFind: Flexible data analysis and workflow designer to identify chemicals in the water cycle}
+\title{streamFind: Framework and Workflows for Mass Spectrometry and Spectroscopy Data Analysis in the Water Cycle}
 \description{
-The streamFind package consists of a backend and frontend platform for assembly of modular functionalities to support spectrometric and spectroscopic data processing for environmental and quality studies of the water cycle. The streamFind package is a data processing workflow designer to stimulate the use of advanced data analysis (e.g., non-target screening, statistical analysis, etc.) in routine studies, promoting standardization of data processing and easing the retrospective inclusion of data. With an open-source character, the streamFind package aims to enhance the use and faster adoption of functionalities from the scientific community. The package can be used by academics but also by technicians due to the comprehensive documentation and well categorized set of functionalities (modules) integrated. The comprehensiveness of streamFind also eases and aims the implementation of new functionalities by skilled users, following the defined implementation rules.
+The streamFind R package is a framework for spectrometric and spectroscopic data processing with focus on environmental and quality studies of the water cycle. The streamFind R package aims to stimulate the use of advanced data analysis (e.g., non-target screening (NTS) and statistical analysis) in routine studies, promoting standardization of data processing and easing the retrospective inclusion of data.
 }
 \seealso{
 Useful links:
 \itemize{
   \item \url{https://github.com/ricardobachertdacunha/streamFind}
+  \item \url{https://ricardobachertdacunha.github.io/streamFind/}
   \item Report bugs at \url{https://github.com/ricardobachertdacunha/streamFind/issues}
 }
 

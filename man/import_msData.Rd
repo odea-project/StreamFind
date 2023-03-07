@@ -2,16 +2,17 @@
 % Please edit documentation in R/class_R6_msData.R
 \name{import_msData}
 \alias{import_msData}
-\title{import_msData}
+\title{Function to import an msData class object from a \emph{json} or \emph{rds} file}
 \usage{
 import_msData(file)
 }
 \arguments{
-\item{file}{X.}
+\item{file}{A \emph{json} or \emph{rds} file as obtained by the msData method \code{save()}.}
 }
 \value{
 An \code{msData} class object.
 }
 \description{
-Function to import an \code{msData} object from a saved file.
+Function to import an \code{msData} class object from a saved \emph{json}
+or \emph{rds} file.
 }

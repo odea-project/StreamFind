@@ -1,4 +1,4 @@
-#' msAnalysis S3 Class Constructor
+#' **msAnalysis** S3 class constructor and methods
 #'
 #' @description
 #' Creates an msAnalysis S3 class object.
@@ -727,17 +727,17 @@ parse.msAnalysis <- function(files = NULL, runParallel = FALSE) {
             tic <- data.frame(
               "rt" = ms1_rt,
               "intensity" = as.numeric(xml_attr(xml_find_all(ms1_nodes,
-                                                             xpath = 'd1:cvParam[@name="total ion current"]'), "value")
+                xpath = 'd1:cvParam[@name="total ion current"]'), "value")
               )
             )
 
             bpc <- data.frame(
               "rt" = ms1_rt,
               "mz" = as.numeric(xml_attr(xml_find_all(ms1_nodes,
-                                                      xpath = 'd1:cvParam[@name="base peak m/z"]'), "value")
+                xpath = 'd1:cvParam[@name="base peak m/z"]'), "value")
               ),
               "intensity" = as.numeric(xml_attr(xml_find_all(ms1_nodes,
-                                                             xpath = 'd1:cvParam[@name="base peak intensity"]'), "value")
+                xpath = 'd1:cvParam[@name="base peak intensity"]'), "value")
               )
             )
           }

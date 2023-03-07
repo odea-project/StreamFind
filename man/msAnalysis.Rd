@@ -5,7 +5,7 @@
 \alias{validate.msAnalysis}
 \alias{as.msAnalysis}
 \alias{parse.msAnalysis}
-\title{msAnalysis S3 Class Constructor}
+\title{\strong{msAnalysis} S3 class constructor and methods}
 \usage{
 msAnalysis(
   name = NA_character_,

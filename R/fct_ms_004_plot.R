@@ -12,6 +12,8 @@
 #'
 #' @export
 #'
+#' @noRd
+#'
 plot_spectra_interactive <- function(spectra = NULL, colorBy = "analyses") {
   if (!"id" %in% colnames(spectra)) spectra$id <- ""
 
@@ -82,6 +84,8 @@ plot_spectra_interactive <- function(spectra = NULL, colorBy = "analyses") {
 #' retention time pairs.
 #'
 #' @export
+#'
+#' @noRd
 #'
 plot_xic_interactive <- function(xic,
                                  legendNames = NULL,
@@ -317,6 +321,8 @@ plot_xic_interactive <- function(xic,
 #'
 #' @export
 #'
+#' @noRd
+#'
 plot_eic_static <- function(eic = NULL, legendNames = NULL, colorBy = "targets",
                             title = NULL) {
   if (!"id" %in% colnames(eic)) eic$id <- NA_character_
@@ -400,6 +406,8 @@ plot_eic_static <- function(eic = NULL, legendNames = NULL, colorBy = "targets",
 #' @return An EIC interactive plot.
 #'
 #' @export
+#'
+#' @noRd
 #'
 plot_eic_interactive <- function(eic = NULL, legendNames = NULL,
                                  colorBy = "targets", title = NULL) {
@@ -495,6 +503,8 @@ plot_eic_interactive <- function(eic = NULL, legendNames = NULL,
 #' @return A BPC interactive plot.
 #'
 #' @export
+#'
+#' @noRd
 #'
 plot_bpc_interactive <- function(bpc = NULL, legendNames = NULL,
                                  colorBy = "targets", title = NULL) {
@@ -596,6 +606,8 @@ plot_bpc_interactive <- function(bpc = NULL, legendNames = NULL,
 #'
 #' @export
 #'
+#' @noRd
+#'
 plot_ms2_static <- function(ms2 = NULL, legendNames = NULL,
                             colorBy = "targets", title = NULL) {
   if ("analyses" %in% colorBy) {
@@ -688,6 +700,8 @@ plot_ms2_static <- function(ms2 = NULL, legendNames = NULL,
 #' @return An MS2 spectra interactive plot.
 #'
 #' @export
+#'
+#' @noRd
 #'
 plot_ms2_interactive <- function(ms2 = NULL, legendNames = NULL,
                                  colorBy = "targets", title = NULL) {
@@ -795,6 +809,8 @@ plot_ms2_interactive <- function(ms2 = NULL, legendNames = NULL,
 #'
 #' @export
 #'
+#' @noRd
+#'
 plot_ms1_static <- function(ms1 = NULL, legendNames = NULL,
                             colorBy = "targets", title = NULL) {
   if ("analyses" %in% colorBy) {
@@ -881,6 +897,8 @@ plot_ms1_static <- function(ms1 = NULL, legendNames = NULL,
 #' @return An ms1 interactive plot.
 #'
 #' @export
+#'
+#' @noRd
 #'
 plot_ms1_interactive <- function(ms1 = NULL, legendNames = NULL,
                                  colorBy = "targets", title = NULL) {
@@ -982,6 +1000,8 @@ plot_ms1_interactive <- function(ms1 = NULL, legendNames = NULL,
 #' @return A plot of chromatographic peaks.
 #'
 #' @export
+#'
+#' @noRd
 #'
 plot_features_static <- function(eic = NULL, features = NULL,
                                  legendNames = NULL, colorBy = "targets",
@@ -1086,6 +1106,8 @@ plot_features_static <- function(eic = NULL, features = NULL,
 #' @return A chromatographic peak plot through \pkg{plotly}.
 #'
 #' @export
+#'
+#' @noRd
 #'
 plot_features_interactive <- function(eic = NULL, features = NULL,
                                       legendNames = NULL, colorBy = "targets",
@@ -1234,6 +1256,8 @@ plot_features_interactive <- function(eic = NULL, features = NULL,
 #'
 #' @export
 #'
+#' @noRd
+#'
 map_features_static <- function(features, colorBy = "targets",
                                 legendNames = NULL,
                                 xlim = 60, ylim = 5,
@@ -1333,6 +1357,8 @@ map_features_static <- function(features, colorBy = "targets",
 #' @return A peak/s map plot produced through \pkg{plotly}.
 #'
 #' @export
+#'
+#' @noRd
 #'
 map_features_interactive <- function(features, colorBy = "targets",
                                      legendNames = NULL,
@@ -1461,6 +1487,8 @@ map_features_interactive <- function(features, colorBy = "targets",
 #' @return plot.
 #'
 #' @export
+#'
+#' @noRd
 #'
 plot_groups_overview_aux <- function(features, eic, heights, analyses) {
   leg <- unique(eic$var)
@@ -1659,7 +1687,7 @@ plot_groups_overview_aux <- function(features, eic, heights, analyses) {
     linecolor = toRGB("black"), linewidth = 2,
     title = "Normalized intensity",
     titlefont = list(size = 12, color = "black"),
-    tick0 = 0, dtick = 0.25, range = c(0, 1.2)
+    tick0 = 0, dtick = 0.25, range = c(0, 1.5)
   )
 
   plotList <- list()

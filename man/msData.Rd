@@ -2,42 +2,13 @@
 % Please edit documentation in R/class_R6_msData.R
 \name{msData}
 \alias{msData}
-\title{msData - R6 Class}
+\title{\strong{msData} R6 class and methods}
 \description{
 The msData R6 class is a framework with methods for parsing, processing,
 visualizing and storing MS data.
 }
-\note{
-Name, path and date cannot be removed.
-
-When \code{call} is \code{NULL} all settings are removed.
-
-Unique feature groups from the removed analyses are also removed.
-
-When sub-setting groups, features that lose correspondence are not
-removed but filtered with "grouping" added as filter category. Filtered
-features can be removed with the method
-\code{msData$remove_features(filtered = TRUE)}.
-
-The settings call must be set to "find_features".
-
-The settings call must be set to "group_features".
-
-When saved as json, the \code{data.table} is split by groups as
-list and the \code{data.table} of each group is converted to a list.
-
-When saved as json, the \code{data.table} is split by groups as
-list and the \code{data.table} of each group is converted to a list.
-}
 \references{
 \insertRef{patroon01}{streamFind}
-
-\insertRef{patroon01}{streamFind}
-}
-\seealso{
-\link[patRoon]{findFeatures}
-
-\code{\link[patRoon]{groupFeatures}}
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -1573,7 +1544,8 @@ Invisible.
 \if{html}{\out{<a id="method-msData-remove_headers"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-remove_headers}{}}}
 \subsection{Method \code{remove_headers()}}{
-Removes headers entries from the \code{msData} object.
+Removes headers entries from the \code{msData} object. Note that the name,
+path and date headers cannot be removed.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$remove_headers(value = NULL)}\if{html}{\out{</div>}}
 }
@@ -1602,7 +1574,8 @@ Removes settings from the \code{msData} object.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{call}}{A character vector with the settings call name.}
+\item{\code{call}}{A character vector with the settings call name. When \code{call}
+is \code{NULL} all settings are removed.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1614,7 +1587,8 @@ Invisible.
 \if{html}{\out{<a id="method-msData-remove_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-remove_analyses}{}}}
 \subsection{Method \code{remove_analyses()}}{
-Removes analyses from the \code{msData} object.
+Removes analyses from the \code{msData} object. Note that unique feature
+groups from the removed analyses are also removed.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$remove_analyses(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -1797,7 +1771,10 @@ by the \code{features} argument.
 \if{latex}{\out{\hypertarget{method-msData-subset_groups}{}}}
 \subsection{Method \code{subset_groups()}}{
 Subsets an \code{msData} object on groups from correspondence of features
-across analyses.
+across analyses. Note that when sub-setting groups, features that lose
+correspondence are not removed but filtered with "grouping" added as
+filter category/tag. Filtered features can be removed with the method
+\code{msData$remove_features(filtered = TRUE)}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$subset_groups(groups = NULL)}\if{html}{\out{</div>}}
 }
@@ -2958,6 +2935,7 @@ A plot.
 Finds features (i.e., chromatographic peaks) from MS data
 in an \code{msData} class object. The function uses the \pkg{patRoon} package
 for peak finding, enabling the use of several algorithms (see details).
+Note that the settings call name must be "find_features".
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$find_features(settings = NULL)}\if{html}{\out{</div>}}
 }
@@ -2992,6 +2970,7 @@ Invisible.
 Groups and aligns features across analyses in the \code{msData}
 object. The function uses the \pkg{patRoon} package for grouping
 features, enabling the use of several algorithms (see details).
+Note that the settings call name must be "group_features".
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$group_features(settings = NULL)}\if{html}{\out{</div>}}
 }
@@ -3178,7 +3157,7 @@ Method to save the feature groups \code{data.table}.
 }
 \subsection{Returns}{
 Saves the groups \code{data.table} as the defined \code{format}
-in \code{path} and returns invisible.
+in the \code{path} and returns invisible.
 }
 }
 \if{html}{\out{<hr>}}
@@ -3203,8 +3182,8 @@ groups and alignment) of the msData object.
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-Saves the private fields as the defined \code{format} in
-\code{path} and returns invisible.
+Saves the private fields of the msdata as the defined \code{format}
+in the \code{path} and returns invisible.
 }
 }
 \if{html}{\out{<hr>}}

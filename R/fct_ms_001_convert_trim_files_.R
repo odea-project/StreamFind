@@ -9,9 +9,9 @@
 #'
 #' \insertRef{proteo02}{streamFind}
 #'
-#' @export
-#'
 #' @return A `data.frame` with the formats compatible for conversion.
+#'
+#' @noRd
 #'
 check_compatible_ms_formats_for_conversion <- function() {
   df_formats <- data.frame(
@@ -29,10 +29,12 @@ check_compatible_ms_formats_for_conversion <- function() {
   return(df_formats)
 }
 
-#' convert_ms_files
+#' Function to convert vendor MS files to *mzML* or *mzXML*
 #'
-#' @description Function to convert vendor MS file formats to mzML/mzXML using
-#' the command line of `MSConvert` from \emph{ProteoWizard}.
+#' @description Function to convert vendor MS files to *.mzML* or *.mzXML*
+#' using the command line interface of
+#' \href{https://proteowizard.sourceforge.io/download.html}{MSConvert}
+#' from \href{https://proteowizard.sourceforge.io/}{ProteoWizard}.
 #'
 #' @param files A vector with file full path/s for conversion.
 #' @param outputFormat A character string with the format of the output file.
@@ -40,15 +42,15 @@ check_compatible_ms_formats_for_conversion <- function() {
 #' @param outputPath The directory to place the output file. When \code{NULL}
 #' the directory of the original file is used.
 #' @param optList A list of further options to be passed to the respective
-#' conversion tool. See
+#' conversion tool. See documentation in
 #' \url{https://proteowizard.sourceforge.io/tools/msconvert.html}
-#' for commands available for conversion of MS files with
-#' \href{https://proteowizard.sourceforge.io/download.html}{msConvert}.
+#' for possible commands.
 #'
 #' @note When giving paths make sure that single backslash is changed to
-#' double backslash of to single forward slash.
+#' double backslash or to single forward slash.
 #'
 #' @references
+#'
 #' \insertRef{proteo01}{streamFind}
 #'
 #' \insertRef{proteo02}{streamFind}
@@ -56,17 +58,15 @@ check_compatible_ms_formats_for_conversion <- function() {
 #' @export
 #'
 #' @examples
+#' ## The full file path
+#' #> file = E:/ms_file.d
 #'
-#' \dontrun{
-#' # The full file path
-#' file = E:/ms_file.d
+#' ## Options to centroid MS1 and MS2 data in file
+#' #> optList <- list(filter = "peakPicking vendor msLevel=1-2")
 #'
-#' # Options to centroid MS1 and MS2 data in file
-#' optList <- list(filter = "peakPicking vendor msLevel=1-2")
+#' ## Convert to mzML
+#' #> convert_ms_files(file, outfile = "mzML", optList = optList)
 #'
-#' # Convert to mzML
-#' convert_ms_files(file, outfile = "mzML", optList = optList)
-#' }
 #'
 convert_ms_files <- function(files = NULL, outputFormat = "mzML",
                              outputPath = NULL, optList = NULL) {
@@ -135,7 +135,7 @@ convert_ms_files <- function(files = NULL, outputFormat = "mzML",
   }
 }
 
-#' @title trim_ms_files_spectra
+#' Function to trim spectra in *mzML* or *mzXML* files
 #'
 #' @description Trim spectra in \emph{mzML} or \emph{mzXML} files based on time
 #' (in seconds) and  \emph{m/z} (in Da) ranges, using the \pkg{mzR} package.

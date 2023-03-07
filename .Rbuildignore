@@ -14,3 +14,8 @@ $run_dev.*
 ^log$
 ^settings_pp_2\.json$
 ^settings_pp\.rds$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.github$
+^vignettes/articles$
