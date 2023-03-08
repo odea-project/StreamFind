@@ -4,7 +4,7 @@
 \name{streamFind-package}
 \alias{streamFind}
 \alias{streamFind-package}
-\title{streamFind: Framework and Workflows for Mass Spectrometry and Spectroscopy Data Analysis in the Water Cycle}
+\title{streamFind: Framework and workflows for data analysis in the water cycle}
 \description{
 The streamFind R package is a framework for spectrometric and spectroscopic data processing with focus on environmental and quality studies of the water cycle. The streamFind R package aims to stimulate the use of advanced data analysis (e.g., non-target screening (NTS) and statistical analysis) in routine studies, promoting standardization of data processing and easing the retrospective inclusion of data.
 }

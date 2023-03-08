@@ -1,6 +1,5 @@
 Package: streamFind
-Title: Framework and Workflows for Mass Spectrometry and Spectroscopy Data 
-    Analysis in the Water Cycle
+Title: Framework and workflows for data analysis in the water cycle
 Version: 0.2.0
 Authors@R: person("Ricardo", "Cunha", email="cunha@iuta.de", role=c("cre", "aut"),
     comment = c(ORCID = "0000-0002-6791-0119"))
