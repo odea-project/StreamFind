@@ -1,5 +1,5 @@
 ---
-title: "streamFind: overview of R package for mass spectrometry"
+title: "*streamFind* framework for mass spectrometry with R"
 output:
   bookdown::html_document2:
     fig_caption: true
@@ -49,7 +49,7 @@ library(streamFind)
 
 # Introduction
 
-The streamFind R package is a tool focusing on data processing for environmental and quality studies. The streamFind aims to stimulate the use of advanced data analysis (e.g., non-target screening, statistical analysis, etc.) in routine studies, promoting standardization of data processing and structure and easing the retrospective evaluation of data. The streamFind is open-source and can be used by academics but also by technicians due to the comprehensive documentation and well categorized set of integrated functions or modules. This vignette introduces the basic framework of the streamFind for processing of mass spectrometric (MS) data. Installation instructions of streamFind R package can be found [here](https://github.com/ricardobachertdacunha/streamFind). Once installed, the streamFind R package is loaded as shown below.
+The streamFind R package is a framework for data processing in environmental and quality studies. This article introduces the basic framework of the streamFind R package for mass spectrometric (MS) data processing. Installation instructions of streamFind R package can be found [here](https://github.com/ricardobachertdacunha/streamFind). Once installed, the streamFind R package is loaded as shown below.
 
 ```{r setup, eval=FALSE}
 library(streamFind)
@@ -57,7 +57,12 @@ library(streamFind)
 
 # Resources
 
-The streamFind R package includes example data files via the [streamFindData](https://github.com/ricardobachertdacunha/streamFindData)  R package.
+The streamFind includes example data files via the supplementary  [streamFindData](https://github.com/ricardobachertdacunha/streamFindData) R package.
+
+```{r install-streamFindData, eval=FALSE}
+# install the streamFindData R package from the GitHub repository
+remotes::install_github("ricardobachertdacunha/streamFindData")
+```
 
 ## MS files
 
