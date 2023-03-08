@@ -2,7 +2,7 @@
 % Please edit documentation in R/fct_ms_001_convert_trim_files_.R
 \name{trim_ms_files_spectra}
 \alias{trim_ms_files_spectra}
-\title{trim_ms_files_spectra}
+\title{Function to trim spectra in \emph{mzML} or \emph{mzXML} files}
 \usage{
 trim_ms_files_spectra(
   files,

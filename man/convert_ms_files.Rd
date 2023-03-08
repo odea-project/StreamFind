@@ -2,7 +2,7 @@
 % Please edit documentation in R/fct_ms_001_convert_trim_files_.R
 \name{convert_ms_files}
 \alias{convert_ms_files}
-\title{convert_ms_files}
+\title{Function to convert vendor MS files to \emph{mzML} or \emph{mzXML}}
 \usage{
 convert_ms_files(
   files = NULL,
@@ -21,31 +21,30 @@ Possible values are "mzML" and "mzXML".}
 the directory of the original file is used.}
 
 \item{optList}{A list of further options to be passed to the respective
-conversion tool. See
+conversion tool. See documentation in
 \url{https://proteowizard.sourceforge.io/tools/msconvert.html}
-for commands available for conversion of MS files with
-\href{https://proteowizard.sourceforge.io/download.html}{msConvert}.}
+for possible commands.}
 }
 \description{
-Function to convert vendor MS file formats to mzML/mzXML using
-the command line of \code{MSConvert} from \emph{ProteoWizard}.
+Function to convert vendor MS files to \emph{.mzML} or \emph{.mzXML}
+using the command line interface of
+\href{https://proteowizard.sourceforge.io/download.html}{MSConvert}
+from \href{https://proteowizard.sourceforge.io/}{ProteoWizard}.
 }
 \note{
 When giving paths make sure that single backslash is changed to
-double backslash of to single forward slash.
+double backslash or to single forward slash.
 }
 \examples{
+## The full file path
+#> file = E:/ms_file.d
 
-\dontrun{
-# The full file path
-file = E:/ms_file.d
+## Options to centroid MS1 and MS2 data in file
+#> optList <- list(filter = "peakPicking vendor msLevel=1-2")
 
-# Options to centroid MS1 and MS2 data in file
-optList <- list(filter = "peakPicking vendor msLevel=1-2")
+## Convert to mzML
+#> convert_ms_files(file, outfile = "mzML", optList = optList)
 
-# Convert to mzML
-convert_ms_files(file, outfile = "mzML", optList = optList)
-}
 
 }
 \references{

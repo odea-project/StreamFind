@@ -16,6 +16,8 @@
 #'
 #' @export
 #'
+#' @noRd
+#'
 parse_ms_spectra <- function(files = NA_character_, levels = c(1, 2),
                              targets = NULL, allTraces = TRUE,
                              isolationWindow = 1.3, runParallel = FALSE,
@@ -660,6 +662,8 @@ parse_ms_spectra <- function(files = NA_character_, levels = c(1, 2),
 #' @param runParallel X.
 #'
 #' @return X.
+#'
+#' @noRd
 #'
 parse_ms_chromatograms <- function(files = NA_character_, runParallel = FALSE) {
 

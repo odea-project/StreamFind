@@ -4,7 +4,7 @@
 \alias{headers}
 \alias{validate.headers}
 \alias{as.headers}
-\title{Headers S3 Class Constructor}
+\title{\strong{headers} S3 class constructor and methods}
 \usage{
 headers(...)
 

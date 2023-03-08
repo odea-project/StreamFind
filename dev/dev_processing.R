@@ -93,6 +93,9 @@ ms <- msData$new(files = all_files[10:21],
   )
 )
 
+ms$plot_bpc()
+
+
 ms$find_features()
 ms$group_features()
 ms$load_groups_ms1()

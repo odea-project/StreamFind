@@ -1,4 +1,4 @@
-#' Headers S3 Class Constructor
+#' **headers** S3 class constructor and methods
 #'
 #' @description
 #' Creates a headers S3 class object.

@@ -1,4 +1,4 @@
-#' Settings S3 Class Constructor
+#' **settings** S3 class constructor and methods
 #'
 #' @description
 #' Creates a settings S3 class.

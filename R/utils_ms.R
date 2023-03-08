@@ -9,6 +9,8 @@
 #'
 #' @export
 #'
+#' @noRd
+#'
 trim_vector <- function(v, a, b) {
   rowSums(mapply(function(a, b) v >= a & v <= b, a = a, b = b)) > 0
 }
@@ -23,6 +25,8 @@ trim_vector <- function(v, a, b) {
 #' @return The filtered `traces` data.frame.
 #'
 #' @export
+#'
+#' @noRd
 #'
 trim_spectra_targets <- function(traces, targets, preMZr) {
   tg_list <- lapply(seq_len(nrow(targets)),
@@ -58,30 +62,32 @@ trim_spectra_targets <- function(traces, targets, preMZr) {
   tg_df
 }
 
-#' @title make_ms_targets
+#' Function to make targets for parsing data within msData class methods
 #'
 #' @description Helper function to build \emph{m/z} and retention time
 #' target pairs for searching data. Each target is composed of an
 #' id and \emph{m/z} (Da) and time (seconds) ranges. When mass is defined
 #' without time, the time range return 0 and vice versa.
 #'
-#' @param mz A vector with target \emph{m/z} values or a two columns
-#' \linkS4class{data.table} or data.frame with minimum and maximum
-#' \emph{m/z} values. Alternatively, \emph{m/z} and retention time values
-#' can be given as one \linkS4class{data.table}/data.frame and the deviations
-#' given as \code{ppm} and \code{sec} are used to calculate the ranges.
-#' The same also works for min and max values of \emph{m/z} and retention
-#' time targets. Note that when mass/time ranges are given, \code{ppm} and
-#' \code{sec} are not used.
-#' @param rt A vector with target retention time values or
-#' a two columns \linkS4class{data.table}/data.frame with minimum
-#' and maximum retention time values.
-#' @param ppm A numeric vector of length one with the mass deviation, in ppm.
-#' @param sec A numeric vector of length one with the time deviation, in seconds.
-#' @param id An id vector with target identifiers. When not given is built
-#' as a combination of the \emph{m/z} and retention time ranges or values.
+#' @param mz A vector with target \emph{m/z} values (in Da) or a two columns
+#' data.table or data.frame with minimum and maximum \emph{m/z} values (in Da).
+#' Alternatively, \emph{m/z} and retention time values (in seconds) can be given
+#' as one data.table or data.frame and the deviations given in the \code{ppm}
+#' and \code{sec} arguments are used to calculate the ranges. Also works with a
+#' data.table or data.frame with minimum and maximum values of \emph{m/z} and
+#' retention time targets. Note that when mass/time ranges are given, the
+#' \code{ppm} and \code{sec} arguments are not used.
+#' @param rt A vector with target retention time values (in seconds) or
+#' a two columns data.table or data.frame with minimum and maximum retention
+#' time values (in seconds).
+#' @param ppm Numeric of length one with the mass deviation, in ppm.
+#' @param sec Numeric of length one with the time deviation, in seconds.
+#' @param id Character with the same length as \emph{m/z} and retention time
+#' targets to be used as identifiers. When not given, the id is built as a
+#' combination of the \emph{m/z} and retention time ranges or values.
 #'
-#' @return A data.frame with columns: id, mz, rt, mzmin, mzmax, rtmin, rtmax.
+#' @return A data.frame with columns: *id*, *mz*, *rt*, *mzmin*, *mzmax*,
+#' *rtmin*, *rtmax*.
 #'
 #' @export
 #'
@@ -291,9 +297,11 @@ make_ms_targets <- function(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL)
 #'
 #' @param obj A character vector to associate with the colors.
 #'
-#' @return A vector of colors. The vector is named according the \code{obj}.
+#' @return A named vector of colors. The names of the vector is the \code{obj}.
 #'
 #' @export
+#'
+#' @noRd
 #'
 get_colors <- function(obj) {
   colors <- c(
@@ -352,6 +360,8 @@ get_colors <- function(obj) {
 #' @return X.
 #'
 #' @export
+#'
+#' @noRd
 #'
 correlate_analysis_spectra <- function(spectra,
                                        splitSpectra = FALSE,

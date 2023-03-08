@@ -1,5 +1,4 @@
-
-#' msData - R6 Class
+#' **msData** R6 class and methods
 #'
 #' @description
 #' The msData R6 class is a framework with methods for parsing, processing,
@@ -2248,12 +2247,11 @@ msData <- R6::R6Class("msData",
     ## remove -----
 
     #' @description
-    #' Removes headers entries from the `msData` object.
+    #' Removes headers entries from the `msData` object. Note that the name,
+    #' path and date headers cannot be removed.
     #'
     #' @param value A character vector with the names of the headers entries
     #' to be removed.
-    #'
-    #' @note Name, path and date cannot be removed.
     #'
     #' @return Invisible.
     #'
@@ -2286,9 +2284,8 @@ msData <- R6::R6Class("msData",
     #' @description
     #' Removes settings from the `msData` object.
     #'
-    #' @param call A character vector with the settings call name.
-    #'
-    #' @note When `call` is \code{NULL} all settings are removed.
+    #' @param call A character vector with the settings call name. When `call`
+    #' is \code{NULL} all settings are removed.
     #'
     #' @return Invisible.
     #'
@@ -2311,12 +2308,11 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Removes analyses from the `msData` object.
+    #' Removes analyses from the `msData` object. Note that unique feature
+    #' groups from the removed analyses are also removed.
     #'
     #' @param analyses A character vector with the names or indices of the
     #' analyses to be removed.
-    #'
-    #' @note Unique feature groups from the removed analyses are also removed.
     #'
     #' @return Invisible.
     #'
@@ -2657,14 +2653,12 @@ msData <- R6::R6Class("msData",
 
     #' @description
     #' Subsets an `msData` object on groups from correspondence of features
-    #' across analyses.
+    #' across analyses. Note that when sub-setting groups, features that lose
+    #' correspondence are not removed but filtered with "grouping" added as
+    #' filter category/tag. Filtered features can be removed with the method
+    #' `msData$remove_features(filtered = TRUE)`.
     #'
     #' @param groups X.
-    #'
-    #' @note When sub-setting groups, features that lose correspondence are not
-    #' removed but filtered with "grouping" added as filter category. Filtered
-    #' features can be removed with the method
-    #' `msData$remove_features(filtered = TRUE)`.
     #'
     #' @return A new cloned `msData` object with only the groups as defined
     #' by the `groups` argument.
@@ -3742,11 +3736,10 @@ msData <- R6::R6Class("msData",
     #' @description Finds features (i.e., chromatographic peaks) from MS data
     #' in an `msData` class object. The function uses the \pkg{patRoon} package
     #' for peak finding, enabling the use of several algorithms (see details).
+    #' Note that the settings call name must be "find_features".
     #'
     #' @param settings A list object with call name, algorithm and parameters.
     #' When not given, settings will be searched within the `msData` object.
-    #'
-    #' @note The settings call must be set to "find_features".
     #'
     #' @details See the \link[patRoon]{findFeatures} function from the
     #' \pkg{patRoon} package or the
@@ -3758,8 +3751,6 @@ msData <- R6::R6Class("msData",
     #' defined MS file formats and data in profile mode.
     #'
     #' @return Invisible.
-    #'
-    #' @seealso \link[patRoon]{findFeatures}
     #'
     #' @references
     #' \insertRef{patroon01}{streamFind}
@@ -3828,11 +3819,10 @@ msData <- R6::R6Class("msData",
     #' @description Groups and aligns features across analyses in the `msData`
     #' object. The function uses the \pkg{patRoon} package for grouping
     #' features, enabling the use of several algorithms (see details).
+    #' Note that the settings call name must be "group_features".
     #'
     #' @param settings A list object with call name, algorithm and parameters.
     #' When not given, settings will be searched within the `msData` object.
-    #'
-    #' @note The settings call must be set to "group_features".
     #'
     #' @return Invisible.
     #'
@@ -3843,11 +3833,6 @@ msData <- R6::R6Class("msData",
     #' possible: "xcms3", "xcms", "openms" or "kpic2". The algorithm slot in the
     #' settings should be one of the described. The parameters
     #' are given as a list and should match with algorithm requirements.
-    #'
-    #' @seealso \code{\link[patRoon]{groupFeatures}}
-    #'
-    #' @references
-    #' \insertRef{patroon01}{streamFind}
     #'
     group_features = function(settings = NULL) {
       valid <- TRUE
@@ -4194,11 +4179,8 @@ msData <- R6::R6Class("msData",
     #' @param name X.
     #' @param path X.
     #'
-    #' @note When saved as json, the \code{data.table} is split by groups as
-    #' list and the \code{data.table} of each group is converted to a list.
-    #'
     #' @return Saves the groups \code{data.table} as the defined \code{format}
-    #' in \code{path} and returns invisible.
+    #' in the \code{path} and returns invisible.
     #'
     save_groups = function(format = "json", name = "groups", path = getwd()) {
       if (format %in% "json") {
@@ -4236,11 +4218,8 @@ msData <- R6::R6Class("msData",
     #' @param name X.
     #' @param path X.
     #'
-    #' @note When saved as json, the \code{data.table} is split by groups as
-    #' list and the \code{data.table} of each group is converted to a list.
-    #'
-    #' @return Saves the private fields as the defined \code{format} in
-    #' \code{path} and returns invisible.
+    #' @return Saves the private fields of the msdata as the defined `format`
+    #' in the \code{path} and returns invisible.
     #'
     save = function(format = "json", name = "msData", path = getwd()) {
       list_all <- list()
@@ -4397,11 +4376,12 @@ msData <- R6::R6Class("msData",
 
 # import msData class -----
 
-#' @title import_msData
+#' Function to import an msData class object from a *json* or *rds* file
 #'
-#' @description Function to import an `msData` object from a saved file.
+#' @description Function to import an `msData` class object from a saved *json*
+#' or *rds* file.
 #'
-#' @param file X.
+#' @param file A *json* or *rds* file as obtained by the msData method `save()`.
 #'
 #' @return An `msData` class object.
 #'
@@ -4473,6 +4453,8 @@ import_msData <- function(file) {
 #' @param self An `msData` object. When applied within the R6, the self object.
 #'
 #' @return A list of with a features \linkS4class{data.table} for each analysis.
+#'
+#' @noRd
 #'
 build_features_table_from_patRoon <- function(pat, self) {
 
@@ -4635,6 +4617,8 @@ build_features_table_from_patRoon <- function(pat, self) {
 #' @param self An `msData` object. When applied within the R6, the self object.
 #'
 #' @return A \linkS4class{data.table} with the feature groups.
+#'
+#' @noRd
 #'
 build_feature_groups_table_from_patRoon <- function(pat, features, self) {
 
@@ -4835,6 +4819,8 @@ update_subset_features_and_groups <- function(newGroups, newFeatures) {
 #'
 #' @param pat An object with class `featureGroups` from \pkg{patRoon}.
 #' @param self An `msData` object. When applied within the R6, the self object.
+#'
+#' @noRd
 #'
 extract_time_alignment <- function(pat, self) {
   if ("featureGroupsXCMS3" %in% is(pat)) {

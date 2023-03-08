@@ -2,33 +2,35 @@
 % Please edit documentation in R/utils_ms.R
 \name{make_ms_targets}
 \alias{make_ms_targets}
-\title{make_ms_targets}
+\title{Function to make targets for parsing data within msData class methods}
 \usage{
 make_ms_targets(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL)
 }
 \arguments{
-\item{mz}{A vector with target \emph{m/z} values or a two columns
-\linkS4class{data.table} or data.frame with minimum and maximum
-\emph{m/z} values. Alternatively, \emph{m/z} and retention time values
-can be given as one \linkS4class{data.table}/data.frame and the deviations
-given as \code{ppm} and \code{sec} are used to calculate the ranges.
-The same also works for min and max values of \emph{m/z} and retention
-time targets. Note that when mass/time ranges are given, \code{ppm} and
-\code{sec} are not used.}
+\item{mz}{A vector with target \emph{m/z} values (in Da) or a two columns
+data.table or data.frame with minimum and maximum \emph{m/z} values (in Da).
+Alternatively, \emph{m/z} and retention time values (in seconds) can be given
+as one data.table or data.frame and the deviations given in the \code{ppm}
+and \code{sec} arguments are used to calculate the ranges. Also works with a
+data.table or data.frame with minimum and maximum values of \emph{m/z} and
+retention time targets. Note that when mass/time ranges are given, the
+\code{ppm} and \code{sec} arguments are not used.}
 
-\item{rt}{A vector with target retention time values or
-a two columns \linkS4class{data.table}/data.frame with minimum
-and maximum retention time values.}
+\item{rt}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
 
-\item{ppm}{A numeric vector of length one with the mass deviation, in ppm.}
+\item{ppm}{Numeric of length one with the mass deviation, in ppm.}
 
-\item{sec}{A numeric vector of length one with the time deviation, in seconds.}
+\item{sec}{Numeric of length one with the time deviation, in seconds.}
 
-\item{id}{An id vector with target identifiers. When not given is built
-as a combination of the \emph{m/z} and retention time ranges or values.}
+\item{id}{Character with the same length as \emph{m/z} and retention time
+targets to be used as identifiers. When not given, the id is built as a
+combination of the \emph{m/z} and retention time ranges or values.}
 }
 \value{
-A data.frame with columns: id, mz, rt, mzmin, mzmax, rtmin, rtmax.
+A data.frame with columns: \emph{id}, \emph{mz}, \emph{rt}, \emph{mzmin}, \emph{mzmax},
+\emph{rtmin}, \emph{rtmax}.
 }
 \description{
 Helper function to build \emph{m/z} and retention time

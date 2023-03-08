@@ -4,7 +4,7 @@
 \alias{settings}
 \alias{validate.settings}
 \alias{as.settings}
-\title{Settings S3 Class Constructor}
+\title{\strong{settings} S3 class constructor and methods}
 \usage{
 settings(call = NA_character_, algorithm = NA_character_, parameters = NULL)
 

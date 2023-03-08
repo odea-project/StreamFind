@@ -7,6 +7,8 @@
 #'
 #' @return X.
 #'
+#' @noRd
+#'
 centroidSpectra = function(object) {
 
 

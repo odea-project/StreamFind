@@ -1,6 +1,5 @@
 Package: streamFind
-Title: Framework and Workflows for Mass Spectrometry and Spectroscopy Data 
-    Analysis in the Water Cycle
+Title: Framework and workflows for data analysis in the water cycle
 Version: 0.2.0
 Authors@R: person("Ricardo", "Cunha", email="cunha@iuta.de", role=c("cre", "aut"),
     comment = c(ORCID = "0000-0002-6791-0119"))
@@ -11,7 +10,8 @@ Description: The streamFind R package is a framework for spectrometric and
     statistical analysis) in routine studies, promoting standardization of data 
     processing and easing the retrospective inclusion of data.
 License: GPL (>= 3)
-URL: https://github.com/ricardobachertdacunha/streamFind
+URL: https://github.com/ricardobachertdacunha/streamFind,
+    https://ricardobachertdacunha.github.io/streamFind/
 BugReports: https://github.com/ricardobachertdacunha/streamFind/issues
 Depends: R (>= 4.2.0)
 Imports: 

@@ -1,0 +1,23 @@
+---
+title: "streamFind"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{streamFind}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Introduction to streamFind
+
+The goal of the streamFind is to boost competences of researchers for data analysis. The focus is the development and assembly of workflows for processing data from mass spectrometry and spectroscopy and for application in environmental and quality studies of the water cycle. For the moment, the streamFind can be used via the [streamFind R package](https://github.com/ricardobachertdacunha?tab=repositories). For more information and usage of the R package see article [streamFind: overview of R package for mass spectrometry](https://ricardobachertdacunha.github.io/streamFind/articles/ms_overview.html).
+
+# Future developments
+
+Besides further development of the R package, a graphical user interface is planned to facilitate data analysis and assembly of workflows.
