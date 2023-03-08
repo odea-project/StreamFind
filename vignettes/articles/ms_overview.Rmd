@@ -1,5 +1,5 @@
 ---
-title: "*streamFind* framework for mass spectrometry with R"
+title: "streamFind for mass spectrometry with R"
 output:
   bookdown::html_document2:
     fig_caption: true
@@ -9,7 +9,7 @@ output:
     toc_depth: 4
 vignette: >
   %\VignetteEncoding{UTF-8}
-  %\VignetteIndexEntry{streamFind: Overview of Framework for Mass Spectrometry}
+  %\VignetteIndexEntry{streamFind for mass spectrometry with R}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options:
   chunk_output_type: console

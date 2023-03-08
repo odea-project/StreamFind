@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 
 # Introduction to streamFind
 
-The goal of the streamFind is to boost competences of researchers for data analysis. The focus is the development and assembly of data processing workflows for mass spectrometry (MS) and spectroscopy and the application of the workflows in environmental and quality studies of the water cycle. For the moment, the streamFind can be used via the [streamFind R package](https://github.com/ricardobachertdacunha?tab=repositories) back-end framework. For more information and usage of the R package see article ["*streamFind* framework for mass spectrometry with R"](https://ricardobachertdacunha.github.io/streamFind/articles/ms_overview.html).
+The goal of the streamFind is to boost competences of researchers for data analysis. The focus is the development and assembly of data processing workflows for mass spectrometry (MS) and spectroscopy and the application of the workflows in environmental and quality studies of the water cycle. For the moment, the streamFind can be used via the [streamFind R package](https://github.com/ricardobachertdacunha?tab=repositories) back-end framework. For more information and usage of the R package see article ["streamFind for mass spectrometry with R"](https://ricardobachertdacunha.github.io/streamFind/articles/ms_overview.html).
 
 # Future developments
 

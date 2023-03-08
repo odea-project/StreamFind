@@ -67,7 +67,7 @@ remotes::install_github("ricardobachertdacunha/streamFindData")
 
 ### Documentation
 
-The documentation and usage examples of the streamFind package can be
+The documentation and usage examples of the streamFind R package can be
 found in the [reference
 page](https://ricardobachertdacunha.github.io/streamFind/reference/index.html)
 and
