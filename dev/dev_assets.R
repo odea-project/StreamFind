@@ -6,6 +6,8 @@ devtools::document()
 
 devtools::install(upgrade = "never", dependencies = TRUE, build_vignettes = TRUE)
 
+pkgdown::build_site()
+
 devtools::check()
 
 devtools::load_all() #Ctrl+Shift+L

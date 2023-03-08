@@ -1883,7 +1883,7 @@ msData <- R6::R6Class("msData",
 
       if ("streamFind" %in% algorithm) {
 
-        if (requireNamespace("patRoon")) {
+        if (requireNamespace("patRoon", quietly = TRUE)) {
           ana_feats <- self$get_features()
           ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
           hash <- patRoon:::makeHash(ana_feats, parameters)
@@ -1980,7 +1980,7 @@ msData <- R6::R6Class("msData",
 
       if ("streamFind" %in% algorithm) {
 
-        if (requireNamespace("patRoon")) {
+        if (requireNamespace("patRoon", quietly = TRUE)) {
           ana_feats <- self$get_features()
           ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
           hash <- patRoon:::makeHash(ana_feats, parameters)
@@ -2086,7 +2086,7 @@ msData <- R6::R6Class("msData",
 
       if ("streamFind" %in% algorithm) {
 
-        if (requireNamespace("patRoon")) {
+        if (requireNamespace("patRoon", quietly = TRUE)) {
           ana_feats <- self$get_features()
           ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
           group_ids <- self$get_groups()[["groups"]]
@@ -2183,7 +2183,7 @@ msData <- R6::R6Class("msData",
 
       if ("streamFind" %in% algorithm) {
 
-        if (requireNamespace("patRoon")) {
+        if (requireNamespace("patRoon", quietly = TRUE)) {
           ana_feats <- self$get_features()
           ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
           group_ids <- self$get_groups()[["groups"]]
@@ -3920,7 +3920,9 @@ msData <- R6::R6Class("msData",
     #' @return An object with S4 class `features`.
     #'
     as_features_patRoon = function() {
-      requireNamespace("patRoon")
+      if (!requireNamespace("patRoon", quietly = TRUE)) {
+        return(NULL)
+      }
 
       anaInfo <- self$get_overview()
       anaInfo <- data.frame(

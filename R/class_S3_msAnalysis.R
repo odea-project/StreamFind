@@ -369,7 +369,7 @@ parse.msAnalysis <- function(files = NULL, runParallel = FALSE) {
 
   cached_analyses <- FALSE
 
-  if (requireNamespace("patRoon")) {
+  if (requireNamespace("patRoon", quietly = TRUE)) {
     hash <- patRoon:::makeHash(files)
     analyses <- patRoon:::loadCacheData("parsed_ms_analyses", hash)
 
@@ -399,7 +399,7 @@ parse.msAnalysis <- function(files = NULL, runParallel = FALSE) {
   i = NULL
 
   # with mzR -----
-  if (requireNamespace("mzR") & !cached_analyses) {
+  if (requireNamespace("mzR", quietly = TRUE) & !cached_analyses) {
     analyses <- foreach(i = files, .packages = "mzR") %dopar% {
       file_link <- mzR::openMSfile(i, backend = "pwiz")
       sH <- suppressWarnings(mzR::header(file_link))
@@ -529,7 +529,7 @@ parse.msAnalysis <- function(files = NULL, runParallel = FALSE) {
     }
 
     ## with xml2 -----
-  } else if (requireNamespace("xml2") & !cached_analyses) {
+  } else if (requireNamespace("xml2", quietly = TRUE) & !cached_analyses) {
     analyses <- foreach(i = files, .packages = "xml2") %dopar% {
 
       xml_data <- read_xml(i)
