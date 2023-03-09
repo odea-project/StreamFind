@@ -316,7 +316,7 @@ file.remove(paste0(getwd(), "/ms.json"))
 
 # Analyses
 
-Within the msData object, the internal field analyses is a list of msAnalysis S3 class objects representing MS files on disk. As shown above in [msData](#msdata) section, the msData can be initiated with the `files` argument using a character vector of full file path/s to *.mzML* or *.mzXML* files. Alternatively, the function `parse.msAnalysis()` can be used to generate the list of analysis objects and then the argument `analyses` of the `new()` method or the `add_analyses()` method can be used to add the msAnalysis objects to the msData object. The package [mzR](https://bioconductor.org/packages/release/bioc/html/mzR.html) from [Bioconductor](https://bioconductor.org/) is used to parse the data. When the [mzR](https://bioconductor.org/packages/release/bioc/html/mzR.html) package is not available (i.e., installed), the [xml2](https://cran.r-project.org/web/packages/xml2/index.html) package from CRAN is used instead but is much slower. Specially for large MS files (e.g., high resolution MS files with ion mobility), the [mzR](https://bioconductor.org/packages/release/bioc/html/mzR.html) package is recommended. The data parsed is the same independently of the package used. The structure of an example msAnalysis object is shown below and consists of 23 entries (see `?msAnalysis` for more information).
+Within the msData object, the internal field analyses is a list of msAnalysis S3 class objects representing MS files on disk. As shown above in [msData](#msdata) section, the msData can be initiated with the `files` argument using a character vector of full file path/s to *.mzML* or *.mzXML* files. Alternatively, the function `parse.msAnalysis()` can be used to generate the list of analysis objects and then the argument `analyses` of the `new()` method or the `add_analyses()` method can be used to add the msAnalysis objects to the msData object. The package [mzR](https://bioconductor.org/packages/release/bioc/html/mzR.html) from [Bioconductor](https://bioconductor.org/) is used to parse the data. When the [mzR](https://bioconductor.org/packages/release/bioc/html/mzR.html) package is not available (i.e., not installed), the [xml2](https://cran.r-project.org/web/packages/xml2/index.html) package from CRAN is used instead but is much slower. Specially for large MS files (e.g., high resolution MS files with ion mobility), the [mzR](https://bioconductor.org/packages/release/bioc/html/mzR.html) package is recommended. The data parsed is the same independently of the package used. The structure of an example msAnalysis object is shown below and consists of 23 entries (see `?msAnalysis` for more information).
 
 - **name** is the file name without extension;
 - **replicate** is the analysis replicate group name; 
@@ -348,7 +348,7 @@ str(a1[[1]])
 
 ## Get basic information
 
-The data from msAnalysis objects can be obtained with get methods as shown above. Below, methods to get information from analyses methods are demonstrated. In all methods except the `get_number_analyses()`, the analyses argument can be used to query information from specific analyses, using the analysis name or the index as shown below.
+The data from msAnalysis objects can be obtained with get methods as shown above. Below, methods to get information from analyses are demonstrated. In all methods except the `get_number_analyses()`, the analyses argument can be used to query information from specific analyses, using the analysis name or the index as shown below.
 
 ```{r}
 # getter for number of analyses
@@ -506,7 +506,7 @@ all(round(apply(t2[, 2:7], 2, sd), digits = 4) == 0)
 
 ## Get and plot spectra
 
-Besides the `get_tic()` and `get_bpc()` methods (shown above). There are four methods to get low level spectra from analyses: `get_spectra()`, `get_eic()`, `get_ms1()` and `get_ms2()`. All methods use the same arguments as the function `make_ms_targets()` to build MS targets and the *analyses* argument to specify which msAnalysis objects to query the data. All methods return a `data.table`. The documentation in `?msData` has detailed information about the use of each method. Show cases for each method are shown below. For each get method, a plot method is available with similar interface. Below each get and plot method is demonstrated for the defined targets.
+Besides the `get_tic()` and `get_bpc()` methods (shown above). There are four methods to get low level spectra from analyses: `get_spectra()`, `get_eic()`, `get_ms1()` and `get_ms2()`. All methods use the same arguments as the function `make_ms_targets()` to build MS targets and the *analyses* argument to specify which msAnalysis objects to query the data. All methods return a `data.table`. The documentation in `?msData` has detailed information about the use of each method. For each get method, a plot method is available with similar interface. Below each get and plot method is demonstrated for the defined targets.
 
 ### Mass traces
 
@@ -603,7 +603,7 @@ ms$plot_ms2(analyses = 3, mz = targets1,
 
 # Centroiding
 
-Possible using the function `convert_ms_files()` which utilizes the [msConvert](https://proteowizard.sourceforge.io/download.html) command line. See `help(convert_ms_files)` for more information. Alternative centroiding to be implemented with algorithm from DUE (Gerrit and Max).
+Possible using the function `convert_ms_files()` which utilizes the [MSConvert](https://proteowizard.sourceforge.io/download.html) command line interface. See `help(convert_ms_files)` for more information. Alternative centroiding to be implemented.
 
 # Processing settings
 
@@ -649,7 +649,7 @@ ms$get_settings(call = "find_features")[["find_features"]]
 
 Extraction of features from raw MS data is a frequent step applied during data processing for easing prioritization and identification of chemicals in a given analysis (i.e., sample). A feature in essence describes a chromatographic peak composed fundamentally of three values: mass-to-charge ratio (*m/z*), retention time (rt) and intensity. The method `find_features()` from an msData object can be used to extract features from files represented by the msAnalysis objects. Several algorithms (i.e., software) are available for finding features through the [patRoon](https://github.com/rickhelmus/patRoon) package as above mentioned. Some algorithms require spectral data in profile mode but most use centroided data (see [centroiding](#centroiding) section for more information about centroid vs profile mode). Below, we use the added settings to find features from the analyses in the object `ms`. Note that the argument `settings` was not used (`NULL` is the default value) as the settings were already added to the object. Adding settings via the argument `settings` during call for method `find_features()` would replace existing settings in the msData object with call name "find_features". If settings with call name "find_features" are not available or given, features are not extracted.
 
-```{r ff-01, warning=FALSE, message=FALSE}
+```{r ff-01, warning=FALSE, results='hide'}
 ms$find_features(settings = NULL)
 ```
 
@@ -855,7 +855,7 @@ msTargets$load_features_ms2(settings = settingsLoadFeaturesMS2)
 msTargets$has_loaded_features_ms2()
 ```
 
-The MS2 spectra can be obtained with the method `get_features_ms2()` with the argument loaded set to `TRUE` (the default value). Alternatively, but not recommended, the MS2 spectra can be obtained directly from the features `data.table` as for MS1 spectra (shown above).
+The loaded MS2 spectra can be obtained with the method `get_features_ms2()` with the argument *loadedMS2* set to `TRUE` (the default value). Alternatively, but not recommended, the MS2 spectra can be obtained directly from the features `data.table` as shown above for MS1 spectra.
 
 ```{r get-loaded-ms2-1}
 # The first 6 lines of the MS2 spectra
@@ -871,7 +871,7 @@ When MS1 or MS2 data is not available for a given feature (i.e., within the feat
 
 ## Remove features MS1 and MS2
 
-Loaded MS1 and MS2 feature spectra can be removed using the `remove_features_ms1()` and `remove_features_ms2()`. Note that all the loaded spectra are removed as no argument can be given to remove only certain spectra, meaning that if loaded MS1 or MS2 spectra are loaded, they are loaded for all features. Removing features from the msData object will also remove MS1 and MS2 spectra as they are in the features `data.table`.
+Loaded MS1 and MS2 feature spectra can be removed using the `remove_features_ms1()` and `remove_features_ms2()`. Note that all the loaded spectra are removed as no argument can be given to remove only certain spectra. This means that if features MS1 or MS2 spectra are loaded, they are loaded for all features. Removing features from the msData object will also remove MS1 and MS2 spectra as they are in the features `data.table`.
 
 ```{r remove-features-ms1-ms2}
 msTargets$remove_features_ms1()
@@ -908,13 +908,13 @@ settingsGroupFeatures <- settings(
 )
 ```
 
-```{r group-features}
+```{r group-features, results='hide'}
 ms$group_features(settings = settingsGroupFeatures)
 ```
 
 ## Get groups
 
-Getting groups as a similar interface as getting features. Feature groups are stored in the groups internal field as a `data.table`, which can be obtained with the method `get_groups()` as shown below. The groups `data.table` has the mandatory columns:
+Feature groups are stored in the groups internal field as a `data.table`, which can be obtained with the method `get_groups()`, as shown below. The groups `data.table` has the mandatory columns:
 
  - **group**: (character) The identifier of the feature group;
  - **rt**: (numeric) The averaged retention time of the features in the group, in seconds;
@@ -928,7 +928,7 @@ Getting groups as a similar interface as getting features. Feature groups are st
  - **filtered**: (logical) `TRUE` means that the feature group was filtered out from the set but still remained in the data set (see [filters](#filters) section for more information);
  - **filter**: (character) The filter tag or `NA_character_` if the feature group is not filtered (i.e., filtered is `FALSE`);
 
-For each analysis object, a column with the analysis name is added to the groups `data.table` with the intensity of the feature. Other columns are added by streamFind from specific workflow methods but these are explained in the respective method demonstration and documentation.
+For each msAnalysis object, a column with the analysis name is added to the groups `data.table` with the intensity of the feature. Other columns are added by streamFind from specific workflow methods but these are explained in the respective method demonstration and documentation.
 
 ```{r get-groups-field}
 head(ms$get_groups())
@@ -941,13 +941,13 @@ ms$get_groups(mz = targets1)
 
 ## Plot groups
 
-As for features, plotting methods for groups are also available. Below the methods `plot_groups()` and `plot_groups_overview()` are demonstrated. Further information about usage is available in the msData documentation.
+As for features, plotting methods for groups are also available. Below the methods `plot_groups()` and `plot_groups_overview()` are demonstrated. Further information about usage is available in the msData documentation (`?msData`).
 
 ```{r plot-groups}
 ms$plot_groups(mz = targets1, colorBy = "analyses")
 ```
 
-```{r plot-groups-overview}
+```{r plot-groups-overview, fig.height=8}
 # Plots an overview of the features within the group for each analysis
 ms$plot_groups_overview(mz = targets1)
 ```
@@ -992,10 +992,12 @@ ms$plot_groups_ms2(mz = targets1,
 
 Similarly to features, loading MS1 and MS2 spectra for feature groups is also possible via the methods `load_groups_ms1()` and `load_groups_ms2()`. Also here settings are used for loading the spectra and when spectra are not available for a given feature group, `NULL` is returned. Below, the loading process is demonstrated for the `msTargets` earlier created.
 
-```{r groups-ms1-ms2-settings}
+```{r grouping-ms1-ms2, results='hide'}
 # Grouping the features in the msTargets object
 msTargets$group_features(settings = settingsGroupFeatures)
+```
 
+```{r groups-ms1-ms2-settings}
 # Settings for loading groups MS1 spectra
 settingsLoadGroupsMS1 <- settings(
   "call" = "load_groups_ms1",
@@ -1072,6 +1074,6 @@ Not yet implemented.
 
 Not yet implemented.
 
-# Public fields
+# Outlook 
 
-Not yet implemented. Public fields are expected to contain results from specific workflow modules.
+The streamFind R package is experimental. This article showed the preliminary framework for mass spectrometry. This article will be updated with future developments for MS data processing. Please [contact us](mailto:cunha@iuta.de) for questions, suggestions, issues or collaboration.
