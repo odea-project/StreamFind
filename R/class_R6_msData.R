@@ -8,30 +8,53 @@
 #'
 msData <- R6::R6Class("msData",
 
-  # private fields -----
+  # _ private fields -----
   private = list(
 
-    ## .headers -----
+    ## ___ .headers -----
     .headers = NULL,
 
-    ## .settings -----
+    ## ___ .settings -----
     .settings = NULL,
 
-    ## .analyses -----
+    ## ___ .analyses -----
     .analyses = NULL,
 
-    ## .groups -----
+    ## ___ .groups -----
     .groups = NULL,
 
-    ## .alignment -----
-    .alignment = NULL
+    ## ___ .alignment -----
+    .alignment = NULL,
+
+    ## ___ .utils -----
+
+    #' @description
+    #' Checks the analyses argument as a character/integer vector to match
+    #' analyses names or indices from the `msData` object. Returns a valid
+    #' character vector with analysis names or `NULL` for non-matching.
+    #'
+    #' @param analyses X.
+    #'
+    .check_analyses_argument = function(analyses = NULL) {
+      if (is.null(analyses)) {
+        self$get_analysis_names()
+      } else {
+        analyses <- self$get_analysis_names(analyses)
+        if (!all(analyses %in% self$get_analysis_names())) {
+          warning("Defined analyses not found!")
+          NULL
+        } else {
+          analyses
+        }
+      }
+    }
   ),
 
-  # public fields/methods -----
+  # _ public fields/methods -----
 
   public = list(
 
-    ## system -----
+    ## ___ system -----
 
     #' @description
     #' Creates an msData class object. When `headers` are not given (i.e.,
@@ -122,7 +145,7 @@ msData <- R6::R6Class("msData",
       cat("\n")
     },
 
-    ## get -----
+    ## ___ get -----
 
     #' @description
     #' Method to get the headers of the `msData` object.
@@ -149,7 +172,7 @@ msData <- R6::R6Class("msData",
     #' @return The list of analyses defined by `value`.
     #'
     get_analyses = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       private$.analyses[analyses]
     },
 
@@ -239,7 +262,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_replicate_names = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(NULL)
       rpl <- vapply(private$.analyses, function(x) x$replicate, "")
       names(rpl) <- vapply(private$.analyses, function(x) x$name, "")
@@ -255,7 +278,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_blank_names = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(NULL)
       blk <- vapply(private$.analyses, function(x) x$blank, "")
       names(blk) <- vapply(private$.analyses, function(x) x$name, "")
@@ -271,7 +294,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_polarities = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(NULL)
       pol <- vapply(private$.analyses, function(x) {
         paste(x$polarity, collapse = "; ")
@@ -289,7 +312,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_file_paths = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(NULL)
       fls <- vapply(private$.analyses, function(x) x$file, "")
       names(fls) <- vapply(private$.analyses, function(x) x$name, "")
@@ -305,7 +328,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_mz_low = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(NULL)
       value <- vapply(private$.analyses, function(x) x$mz_low, 0)
       names(value) <- vapply(private$.analyses, function(x) x$name, "")
@@ -321,7 +344,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_mz_high = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(NULL)
       value <- vapply(private$.analyses, function(x) x$mz_high, 0)
       names(value) <- vapply(private$.analyses, function(x) x$name, "")
@@ -337,7 +360,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_rt_start = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(NULL)
       value <- vapply(private$.analyses, function(x) x$rt_start, 0)
       names(value) <- vapply(private$.analyses, function(x) x$name, "")
@@ -353,7 +376,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_rt_end = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(NULL)
       value <- vapply(private$.analyses, function(x) x$rt_end, 0)
       names(value) <- vapply(private$.analyses, function(x) x$name, "")
@@ -369,7 +392,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_spectra_mode = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(NULL)
       value <- vapply(private$.analyses, function(x) x$spectra_mode, "")
       names(value) <- vapply(private$.analyses, function(x) x$name, "")
@@ -385,7 +408,7 @@ msData <- R6::R6Class("msData",
     #' @return A list for each analysis with an integer vector.
     #'
     get_spectra_levels = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(NULL)
       value <- lapply(private$.analyses, function(x) x$spectra_levels)
       names(value) <- vapply(private$.analyses, function(x) x$name, "")
@@ -419,7 +442,7 @@ msData <- R6::R6Class("msData",
                            minIntensityMS1 = 0, minIntensityMS2 = 0,
                            runParallel = FALSE) {
 
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(data.table())
 
       if (!any(is.numeric(minIntensityMS1) | is.integer(minIntensityMS1))) {
@@ -522,7 +545,7 @@ msData <- R6::R6Class("msData",
     #'
     get_chromatograms = function(analyses = NULL, minIntensity = 0,
                                  runParallel = FALSE) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(data.table())
 
       files <- unname(self$get_file_paths(analyses))
@@ -549,7 +572,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_tic = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(data.table())
       tic <- lapply(private$.analyses[analyses], function(x) x$tic)
       tic <- rbindlist(tic, idcol = "analysis", fill = TRUE)
@@ -565,7 +588,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_bpc = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(data.table())
       bpc <- lapply(private$.analyses[analyses], function(x) x$bpc)
       bpc <- rbindlist(bpc, idcol = "analysis", fill = TRUE)
@@ -763,7 +786,7 @@ msData <- R6::R6Class("msData",
                             mz = NULL, rt = NULL, ppm = 20, sec = 60,
                             filtered = FALSE) {
 
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(data.frame())
 
       fts <- lapply(private$.analyses[analyses], function(x) x$features)
@@ -1397,7 +1420,7 @@ msData <- R6::R6Class("msData",
       ms2_df
     },
 
-    ## add -----
+    ## ___ add -----
 
     #' @description
     #' Method to add headers information to the `msData` object. If an argument
@@ -1769,7 +1792,7 @@ msData <- R6::R6Class("msData",
       invisible(self)
     },
 
-    ## load -----
+    ## ___ load -----
 
     #' @description
     #' Method to load all spectra from analyses to the `msData` object.
@@ -2244,7 +2267,7 @@ msData <- R6::R6Class("msData",
       invisible(self)
     },
 
-    ## remove -----
+    ## ___ remove -----
 
     #' @description
     #' Removes headers entries from the `msData` object. Note that the name,
@@ -2317,7 +2340,7 @@ msData <- R6::R6Class("msData",
     #' @return Invisible.
     #'
     remove_analyses = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
 
       if (!is.null(analyses)) {
         allNames <- self$get_analysis_names()
@@ -2562,7 +2585,7 @@ msData <- R6::R6Class("msData",
       invisible(self)
     },
 
-    ## subset -----
+    ## ___ subset -----
 
     #' @description
     #' Subsets an `msData` object on analyses.
@@ -2573,7 +2596,7 @@ msData <- R6::R6Class("msData",
     #' by the `analyses` argument.
     #'
     subset_analyses = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
 
       if (!is.null(analyses)) {
         allNames <- self$get_analysis_names()
@@ -2678,7 +2701,7 @@ msData <- R6::R6Class("msData",
       self$clone()
     },
 
-    ## has -----
+    ## ___ has -----
 
     #' @description
     #' Method to check of the `msData` object has analyses.
@@ -2697,7 +2720,7 @@ msData <- R6::R6Class("msData",
     #' @return Logical value.
     #'
     has_loaded_spectra = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) {
         return(FALSE)
       }
@@ -2720,7 +2743,7 @@ msData <- R6::R6Class("msData",
     #' @return Logical value.
     #'
     has_loaded_chromatograms = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) {
         return(FALSE)
       }
@@ -2743,7 +2766,7 @@ msData <- R6::R6Class("msData",
     #' @return Logical value.
     #'
     has_loaded_features_ms1 = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) {
         return(FALSE)
       }
@@ -2768,7 +2791,7 @@ msData <- R6::R6Class("msData",
     #' @return Logical value.
     #'
     has_loaded_features_ms2 = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) {
         return(FALSE)
       }
@@ -2841,7 +2864,7 @@ msData <- R6::R6Class("msData",
     #' @return Logical value.
     #'
     has_features = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) {
         return(FALSE)
       }
@@ -2875,7 +2898,7 @@ msData <- R6::R6Class("msData",
       !is.null(private$.groups)
     },
 
-    ## plot -----
+    ## ___ plot -----
 
     #' @description
     #' Plots spectra for given MS analyses.
@@ -3726,12 +3749,12 @@ msData <- R6::R6Class("msData",
       eic$var <- leg[eic$uid]
       fts$var <- leg
 
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
 
       plot_groups_overview_aux(fts, eic, heights, analyses)
     },
 
-    ## processing -----
+    ## ___ processing -----
 
     #' @description Finds features (i.e., chromatographic peaks) from MS data
     #' in an `msData` class object. The function uses the \pkg{patRoon} package
@@ -3911,7 +3934,7 @@ msData <- R6::R6Class("msData",
       invisible(self)
     },
 
-    ## as -----
+    ## ___ as -----
 
     #' @description
     #' Creates an object with S4 class `features` from the package \pkg{patRoon}
@@ -3992,28 +4015,6 @@ msData <- R6::R6Class("msData",
     ## checks -----
 
     #' @description
-    #' Checks the analyses argument as a character/integer vector to match
-    #' analyses names or indices from the `msData` object.
-    #'
-    #' @param analyses X.
-    #'
-    #' @return A valid character vector with analyses names of `NULL`.
-    #'
-    check_analyses_argument = function(analyses = NULL) {
-      if (is.null(analyses)) {
-        self$get_analysis_names()
-      } else {
-        analyses <- self$get_analysis_names(analyses)
-        if (!all(analyses %in% self$get_analysis_names())) {
-          warning("Defined analyses not found!")
-          NULL
-        } else {
-          analyses
-        }
-      }
-    },
-
-    #' @description
     #' Checks the correspondence of features within feature groups in
     #' the `msData` object.
     #'
@@ -4023,42 +4024,16 @@ msData <- R6::R6Class("msData",
       valid <- FALSE
 
       if (all(self$has_features()) & self$has_groups()) {
-        gps <- self$get_groups()
-        gps <- split(gps, gps$group)
-
-        fts <- self$get_features()
-
-        valid <- vapply(gps, function(x, fts) {
-          g <- x$group
-          gf <- fts[fts$group %in% g, ]
-
-          rt_check <- max(gf$rtmax) >= x$rt & min(gf$rtmin) <= x$rt
-
-          max_ppm <- max((gf$mzmax - gf$mz) / gf$mzmax * 1E6)
-          min_ppm <- min((gf$mzmin - gf$mz) / gf$mzmin * 1E6)
-
-          f_mass_mean <- mean(gf$mass)
-          mass_min <- round(min_ppm / 1E6 * f_mass_mean + f_mass_mean, 4)
-          mass_max <- round(max_ppm / 1E6 * f_mass_mean + f_mass_mean, 4)
-          g_max <- round(x$mass, 4)
-
-          mass_check <- mass_max >= g_max & mass_min <= g_max
-
-          ana <- gf$analysis
-          ints <- round(gf$intensity, 0)
-          int_check <- all(ints == round(x[, ana, with = FALSE], 0))
-
-          all(c(rt_check, mass_check, int_check))
-        }, FALSE, fts = fts)
-
-        valid <- all(valid)
-
-        if (!valid) browser()
+        valid <- rcpp_ms_feature_groups_correspondence(
+          groups = self$get_groups(),
+          features = self$get_features(),
+          verbose = TRUE
+        )
       }
       valid
     },
 
-    ## save -----
+    ## ___ save -----
 
     #' @description
     #' Method to save the headers list.
@@ -4263,7 +4238,7 @@ msData <- R6::R6Class("msData",
       invisible(self)
     },
 
-    ## import -----
+    ## ___ import -----
 
     #' @description
     #' Method to import headers to the `msData` object from a \emph{rds} or
@@ -4352,7 +4327,7 @@ msData <- R6::R6Class("msData",
       invisible(self)
     },
 
-    ## info -----
+    ## ___ info -----
 
     #' @description
     #' Possible processing function calls.
@@ -4376,7 +4351,7 @@ msData <- R6::R6Class("msData",
   )
 )
 
-# import msData class -----
+# _ import msData class -----
 
 #' Function to import an msData class object from a *json* or *rds* file
 #'
@@ -4444,9 +4419,7 @@ import_msData <- function(file) {
   }
 }
 
-# not-exported functions -----
-
-## amend from patRoon -----
+# _ not-exported functions -----
 
 #' @title build_features_table_from_patRoon
 #'

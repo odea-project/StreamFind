@@ -103,7 +103,6 @@ visualizing and storing MS data.
 \item \href{#method-msData-find_features}{\code{msData$find_features()}}
 \item \href{#method-msData-group_features}{\code{msData$group_features()}}
 \item \href{#method-msData-as_features_patRoon}{\code{msData$as_features_patRoon()}}
-\item \href{#method-msData-check_analyses_argument}{\code{msData$check_analyses_argument()}}
 \item \href{#method-msData-check_correspondence}{\code{msData$check_correspondence()}}
 \item \href{#method-msData-save_headers}{\code{msData$save_headers()}}
 \item \href{#method-msData-save_settings}{\code{msData$save_settings()}}
@@ -122,6 +121,11 @@ visualizing and storing MS data.
 \if{html}{\out{<a id="method-msData-new"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-new}{}}}
 \subsection{Method \code{new()}}{
+Checks the analyses argument as a character/integer vector to match
+analyses names or indices from the \code{msData} object.
+A valid character vector with analyses names or \code{NULL}.
+
+
 Creates an msData class object. When \code{headers} are not given (i.e.,
 \code{NULL}), a default headers S3 class object is generated with name as
 \code{NA_character}, path as \code{get_wd()} and date as \code{Sys.time()}.
@@ -164,11 +168,7 @@ objects as elements (see \code{?settings} for more information).}
 \item{\code{settings}}{A settings S3 class object or a list with settings S3 class
 objects as elements (see \code{?settings} for more information).}
 
-\item{\code{analyses}}{An msAnalysis S3 class object or a list with msAnalysis S3
-class objects as elements (see \code{?msAnalysis} for more information).}
-
-\item{\code{analyses}}{An msAnalysis S3 class object or a list with msAnalysis S3
-class objects as elements (see \code{?msAnalysis} for more information).}
+\item{\code{analyses}}{X.}
 
 \item{\code{groups}}{data.table with feature groups from correspondence across MS
 analyses as obtained by the msData method \code{get_groups()}. Note that
@@ -3009,27 +3009,6 @@ with the features in the analyses of the msData object.
 
 \subsection{Returns}{
 An object with S4 class \code{features}.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-check_analyses_argument"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-check_analyses_argument}{}}}
-\subsection{Method \code{check_analyses_argument()}}{
-Checks the analyses argument as a character/integer vector to match
-analyses names or indices from the \code{msData} object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$check_analyses_argument(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{X.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A valid character vector with analyses names of \code{NULL}.
 }
 }
 \if{html}{\out{<hr>}}

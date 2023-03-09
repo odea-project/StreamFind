@@ -43,7 +43,7 @@ settings_gf <- settings(
   "call" = "group_features",
   "algorithm" = "xcms3",
   "parameters" = list(
-    rtalign = FALSE,
+    # rtalign = FALSE,
     groupParam = xcms::PeakDensityParam(
       sampleGroups = "holder",
       bw = 5,
@@ -93,108 +93,6 @@ ms <- msData$new(files = all_files[10:21],
   )
 )
 
-ms$plot_bpc()
-
-
 ms$find_features()
 ms$group_features()
-ms$load_groups_ms1()
-
-
-
-ms$save()
-
-
-ms2 <- import_msData("msData.json")
-
-
-
-ms$remove_analyses()
-
-ms$import_analyses("analyses.json")
-
-View(ms$get_features())
-
-
-ms$get_groups()
-ms$get_features()
-ms$get_alignment()
-
-ms$get_settings()
-
-ms$save_analyses(analyses = 1)
-
-View(ms$get_analyses(1))
-
-ms$import_groups("groups.json")
-
-
-
-self <- ms$clone()
-
-
-
-ms$add_settings(settings_ff)
-ms$add_settings(settings_gf)
-
-ms$import_settings("settings.json")
-
-
-View(ms$get_settings())
-
-
-
-
-ms$save_settings()
-
-
-
-
-validate.headers()
-
-ms$save_headers()
-
-ms$import_headers("headers.json")
-
-
-ms$get_headers()
-
-ms$add_headers(name = "Example 2")
-
-ms$remove_headers("something")
-
-
-
-
-
-class(settings_ff)
-
-validate(settings_ff)
-
-
-
-settings_ff <- list(
-  call = "find_features",
-  algorithm = "xcms3",
-  parameters = list(xcms::CentWaveParam(
-    ppm = 12, peakwidth = c(5, 30),
-    snthresh = 10, prefilter = c(5, 1500),
-    mzCenterFun = "mean", integrate = 2,
-    mzdiff = -0.0001, fitgauss = TRUE,
-    noise = 500, verboseColumns = TRUE,
-    firstBaselineCheck = FALSE,
-    extendLengthMSW = TRUE
-  ))
-)
-
-class(settings_ff)
-class(as.settings(settings_ff))
-
-ana <- make_ms_analyses(files[1:3])
-
-analyses <- ana[[1]]
-
-
-ana <- lapply(ana, function(x) as.msAnalysis(x))
-
 

@@ -9,3 +9,7 @@ rcpp_ms_cluster_spectra <- function(spectra, mzClust, verbose) {
     .Call(`_streamFind_rcpp_ms_cluster_spectra`, spectra, mzClust, verbose)
 }
 
+rcpp_ms_feature_groups_correspondence <- function(groups, features, verbose) {
+    .Call(`_streamFind_rcpp_ms_feature_groups_correspondence`, groups, features, verbose)
+}
+
