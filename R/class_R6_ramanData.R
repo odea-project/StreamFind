@@ -39,13 +39,18 @@ ramanData <- R6::R6Class("ramanData",
           sf <- as.numeric(colnames(spec$spc))
           int <- as.numeric(spec$spc[1,])
           df <- data.table("shift" = sf, "intensity" = int)
-          df
+
+          f.name <- basename(x)
+          f.ext <- tools::file_ext(f.name)
+          f.name <- sub(paste0(".",f.ext), "", f.name)
+
+          list(
+            "name" = f.name,
+            "spectum" = df
+          )
         })
 
-        f.names <- basename(files)
-        f.ext <- tools::file_ext(f.names)
-        f.names <- sub(paste0(".",f.ext[1]), "", f.names)
-        names(analyses) <- f.names
+        names(analyses) <- vapply(analyses, function(x) x$name, "")
 
         private$.analyses <- analyses
       }
