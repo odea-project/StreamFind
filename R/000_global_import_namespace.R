@@ -51,5 +51,7 @@
 #'
 #' @importFrom utils txtProgressBar setTxtProgressBar
 #'
+#' @importFrom hyperSpec read.asc.Andor
+#'
 #' @noRd
 NULL

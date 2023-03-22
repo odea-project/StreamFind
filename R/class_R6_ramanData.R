@@ -6,7 +6,56 @@
 #'
 #' @export
 #'
-msData <- R6::R6Class("ramanData",
-  private = list(),
-  public = list()
+ramanData <- R6::R6Class("ramanData",
+
+  # private fields -----
+  private = list(
+
+    ## .headers -----
+    .headers = NULL,
+
+    ## .settings -----
+    .settings = NULL,
+
+    ## .analyses -----
+    .analyses = NULL
+  ),
+
+  # public fields/methods -----
+  public = list(
+
+    ## system -----
+    initialize = function(files = NULL) {
+
+      if (!is.null(files)) {
+
+        analyses <- lapply(files, function(x) {
+          spec <- hyperSpec::read.asc.Andor(
+            file = x,
+            quiet = TRUE,
+            dec = ".",
+            sep = ";"
+          )
+          sf <- as.numeric(colnames(spec$spc))
+          int <- as.numeric(spec$spc[1,])
+          df <- data.table("shift" = sf, "intensity" = int)
+          df
+        })
+
+        f.names <- basename(files)
+        f.ext <- tools::file_ext(f.names)
+        f.names <- sub(paste0(".",f.ext[1]), "", f.names)
+        names(analyses) <- f.names
+
+        private$.analyses <- analyses
+      }
+
+      message("\U2713 ramanData class object created!")
+    },
+
+    ## get -----
+    get_analyses = function() {
+      private$.analyses
+    }
+  )
 )

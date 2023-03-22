@@ -36,7 +36,8 @@ Imports:
     parallel,
     foreach,
     mzR,
-    base64enc
+    base64enc,
+    hyperSpec
 Suggests: 
     knitr,
     kableExtra,
