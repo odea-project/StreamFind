@@ -31,11 +31,11 @@ settings_ff <- settings(
   parameters = list(xcms::CentWaveParam(
     ppm = 12, peakwidth = c(5, 30),
     snthresh = 10, prefilter = c(5, 1500),
-    mzCenterFun = "mean", integrate = 2,
-    mzdiff = -0.0001, fitgauss = TRUE,
+    mzCenterFun = "wMean", integrate = 1,
+    mzdiff = -0.0005, fitgauss = TRUE,
     noise = 500, verboseColumns = TRUE,
-    firstBaselineCheck = FALSE,
-    extendLengthMSW = TRUE
+    firstBaselineCheck = TRUE,
+    extendLengthMSW = FALSE
   ))
 )
 
@@ -94,5 +94,130 @@ ms <- msData$new(files = all_files[10:21],
 )
 
 ms$find_features()
+
 ms$group_features()
+
+ms$add_analyses(anas)
+
+
+anas <- parse.msAnalysis(files)
+
+
+
+fts <- ms$get_features(mz = targets)
+gr <- ms$get_groups(groups = 1:2)
+
+ms$remove_features(fts)
+ms$remove_analyses(1:2)
+
+
+test <- ms$subset_features(fts)
+test <- ms$subset_groups(gr$group)
+
+test$get_groups()
+test$get_features()
+length(test$get_analyses())
+
+test$get_analysis_names()
+
+
+test$get_overview()
+
+test <- ms$subset_analyses(1:2)
+
+
+
+
+
+
+analyses = ms$get_analysis_names(1:2)
+
+test$get_groups()
+
+
+
+nrow(ms$get_features(filtered = TRUE))
+
+
+newFeatures <- lapply(ms$get_analyses(), function(x) {
+  # x$features$group <- NULL
+  x$features
+})
+
+newFeatures[[3]] <- NULL
+
+
+test <- rcpp_features_df_list_to_df(newFeatures)
+unique(test$analysis)
+
+
+all.equal(ms$get_features(filtered = TRUE), rcpp_features_df_list_to_df(newFeatures))
+
+ms$get_features()
+ms$get_groups()
+
+View(ms$get_analyses())
+View(ms$get_groups())
+
+all(unique(ms$get_features()$group) %in% ms$get_groups()$group)
+all(unique(ms$get_groups()$group %in% ms$get_features()$group))
+
+
+any(is.na(ms$get_features()$group))
+
+ms$check_correspondence()
+
+
+rcpp_ms_feature_groups_correspondence(ms$get_groups(), ms$get_features(), TRUE)
+
+
+test <- ms$get_features()
+View(rcpp_ms_make_groups_update_features(test)$features)
+View(test$intensities)
+
+
+fts <- ms$get_features(features = "m234.174_rt902_g177")
+
+ms$plot_features(features = "m234.174_rt902_g177", interactive = F)
+
+
+"[M]" %in% rcpp_ms_get_feature_groups_ranges(ms$get_groups()$group, ms$get_features())$adduct
+
+rcpp_ms_get_feature_groups_ranges(ms$get_groups()$group, ms$get_features())
+
+
+
+self <- ms$clone()
+
+all_groups <- self$get_groups()$group
+
+all_features_as_list <- lapply(self$get_analyses(), function(x) x$features)
+
+ana1 <- all_features_as_list[[1]]
+ana1_groups <- ana1$group
+ana1_groups <- ana1_groups[!is.na(ana1_groups)]
+groups_missing <- all_groups[!all_groups %in% ana1_groups]
+groups_missing <- self$get_groups(groups = groups_missing)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

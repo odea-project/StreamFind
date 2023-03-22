@@ -1024,9 +1024,12 @@ plot_features_static <- function(eic = NULL, features = NULL,
 
   eic$var <- varkey
 
+  eic$unique_ids <- paste0(eic$id, eic$analysis)
+  features$unique_ids <- paste0(features$feature, features$analysis)
+
   cl <- get_colors(unique(eic$var))
 
-  ids <- unique(eic$id)
+  ids <- unique(eic$unique_ids)
 
   plot(eic$rt,
     type = "n",
@@ -1038,14 +1041,13 @@ plot_features_static <- function(eic = NULL, features = NULL,
   )
 
   for (t in ids) {
-    select_vector <- eic$id == t
+    select_vector <- eic$unique_ids == t
     lt <- unique(eic$var[select_vector])
     pk_eic <- eic[select_vector, ]
-    pk_a <- features[features$feature == t, ]
+    pk_a <- features[features$unique_ids == t, ]
     pk_eic_a <- pk_eic[
       pk_eic$rt >= pk_a$rtmin &
-      pk_eic$rt <= pk_a$rtmax &
-      pk_eic$id == t,
+      pk_eic$rt <= pk_a$rtmax,
     ]
     points(
       x = pk_eic$rt,
@@ -1130,11 +1132,14 @@ plot_features_interactive <- function(eic = NULL, features = NULL,
 
   eic$var <- varkey
 
+  eic$unique_ids <- paste0(eic$id, eic$analysis)
+  features$unique_ids <- paste0(features$feature, features$analysis)
+
   leg <- unique(eic$var)
 
   cl <- get_colors(leg)
 
-  ids <- unique(eic$id)
+  ids <- unique(eic$unique_ids)
 
   title <- list(
     text = title, x = 0.13, y = 0.98,
@@ -1159,11 +1164,11 @@ plot_features_interactive <- function(eic = NULL, features = NULL,
   names(showL) <- leg
 
   for (t in ids) {
-    lt <- unique(eic$var[eic$id == t])
-    y <- eic$intensity[eic$id == t]
+    lt <- unique(eic$var[eic$unique_ids == t])
+    y <- eic$intensity[eic$unique_ids == t]
 
     plot <- plot %>% add_trace(
-      x = eic$rt[eic$id == t],
+      x = eic$rt[eic$unique_ids == t],
       y = y,
       type = "scatter", mode = "lines+markers",
       line = list(width = 0.3, color = unname(cl[lt])),
@@ -1175,8 +1180,8 @@ plot_features_interactive <- function(eic = NULL, features = NULL,
     )
     if (length(y) >= 1) showL[lt] <- FALSE
 
-    pk <- features[features$feature %in% t, ]
-    pk_eic <- eic[eic$rt >= pk$rtmin & eic$rt <= pk$rtmax & eic$id == t, ]
+    pk <- features[features$unique_ids %in% t, ]
+    pk_eic <- eic[eic$rt >= pk$rtmin & eic$rt <= pk$rtmax & eic$unique_ids == t, ]
 
     hT <- paste(
       "</br> feature: ", pk$feature,

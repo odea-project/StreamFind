@@ -122,8 +122,8 @@ visualizing and storing MS data.
 \if{latex}{\out{\hypertarget{method-msData-new}{}}}
 \subsection{Method \code{new()}}{
 Checks the analyses argument as a character/integer vector to match
-analyses names or indices from the \code{msData} object.
-A valid character vector with analyses names or \code{NULL}.
+analyses names or indices from the \code{msData} object. Returns a valid
+character vector with analysis names or \code{NULL} for non-matching.
 
 
 Creates an msData class object. When \code{headers} are not given (i.e.,
@@ -1346,15 +1346,17 @@ Invisible.
 \if{html}{\out{<a id="method-msData-add_features"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-add_features}{}}}
 \subsection{Method \code{add_features()}}{
-Method to add features to each analysis in the \code{msData} object.
+Method to add features to analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$add_features(features = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$add_features(features = NULL, replace = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{features}}{X.}
+
+\item{\code{replace}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1366,7 +1368,8 @@ Invisible.
 \if{html}{\out{<a id="method-msData-add_groups"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-add_groups}{}}}
 \subsection{Method \code{add_groups()}}{
-Method to add feature groups in the \code{msData} object.
+Method to add feature groups in the \code{msData} object. Note that existing
+features groups are replaced!
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$add_groups(groups = NULL)}\if{html}{\out{</div>}}
 }

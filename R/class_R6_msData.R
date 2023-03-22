@@ -80,7 +80,7 @@ msData <- R6::R6Class("msData",
                           groups = NULL,
                           alignment = NULL) {
 
-      if (!is.null(headers)) self$add_headers(headers)
+      if (!is.null(headers)) suppressMessages(self$add_headers(headers))
 
       if (is.null(private$.headers)) {
         private$.headers <- headers(
@@ -90,7 +90,7 @@ msData <- R6::R6Class("msData",
         )
       }
 
-      if (!is.null(settings)) self$add_settings(settings)
+      if (!is.null(settings)) suppressMessages(self$add_settings(settings))
 
       if (is.null(analyses) & !is.null(files)) {
         analyses <- parse.msAnalysis(files, runParallel)
@@ -99,11 +99,11 @@ msData <- R6::R6Class("msData",
         }
       }
 
-      if (!is.null(analyses)) self$add_analyses(analyses)
+      if (!is.null(analyses)) suppressMessages(self$add_analyses(analyses))
 
-      if (!is.null(groups)) self$add_groups(groups)
+      if (!is.null(groups)) suppressMessages(self$add_groups(groups))
 
-      if (!is.null(alignment)) self$add_alignment(alignment)
+      if (!is.null(alignment)) suppressMessages(self$add_alignment(alignment))
 
       message("\U2713 msData class object created!")
     },
@@ -1075,7 +1075,13 @@ msData <- R6::R6Class("msData",
         if (!filtered) fgroups <- fgroups[!fgroups$filtered, ]
 
         if (!is.null(groups)) {
-          fgroups <- fgroups[fgroups$group %in% groups, ]
+
+          if (is.numeric(groups)) {
+            fgroups <- fgroups[groups, ]
+          } else {
+            fgroups <- fgroups[fgroups$group %in% groups, ]
+          }
+
         } else if (!is.null(mass)) {
           if (is.data.frame(mass)) {
             colnames(mass) <- gsub("mass", "mz", colnames(mass))
@@ -1568,12 +1574,7 @@ msData <- R6::R6Class("msData",
           if (old_size < length(new_analyses)) {
             if (self$has_groups()) {
               warning("Feature groups cleared as new analyses were added!")
-              private$.analyses <- lapply(private$.analyses, function(x) {
-                x$features[["feature"]] <- NULL
-                x
-              })
-              private$.groups <- NULL
-              private$.alignment <- NULL
+              suppressMessages(self$remove_groups())
             }
           }
 
@@ -1645,43 +1646,82 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Method to add features to each analysis in the `msData` object.
+    #' Method to add features to analyses.
     #'
     #' @param features X.
+    #' @param replace X.
     #'
     #' @return Invisible.
     #'
-    add_features = function(features = NULL) {
+    add_features = function(features = NULL, replace = TRUE) {
       valid <- FALSE
+      org_analysis_names <- unname(self$get_analysis_names())
+      must_have_cols <- c(
+        "feature", "index", "mz", "rt", "mzmin", "mzmax",
+        "rtmin", "rtmax", "intensity", "area", "mass",
+        "adduct", "filled", "filtered", "filter"
+      )
 
       if (is.data.frame(features)) {
-        must_have_cols <- c(
-          "analysis", "feature", "mz", "rt", "mzmin", "mzmax",
-          "rtmin", "rtmax", "intensity", "area"
-        )
+        must_have_cols <- c("analysis", must_have_cols)
 
         if (all(must_have_cols %in% colnames(features))) {
           features <- features[order(features$analysis), ]
           analysis_names <- unique(features$analysis)
-          org_analysis_names <- unname(self$get_analysis_names())
 
-          if (identical(analysis_names, org_analysis_names)) {
+          if (all(analysis_names %in% org_analysis_names)) {
             valid <- TRUE
+            split_vector <- features$analysis
+            features$analysis <- NULL
+            features <- split(features, split_vector)
           }
+
+        } else {
+          warning("!! Features data frame does not have all mandatory columns!")
+        }
+
+      } else if (is.list(features)) {
+        analysis_names <- sort(names(features))
+
+        if (all(analysis_names %in% org_analysis_names)) {
+          features <- features[analysis_names]
+          valid <- vapply(features, function(x, must_have_cols) {
+
+            if (is.data.frame(x)) {
+              if (all(must_have_cols %in% colnames(x))) {
+                return(TRUE)
+              }
+            }
+            FALSE
+          }, must_have_cols = must_have_cols, FALSE)
+
+          valid <- all(valid)
         }
       }
 
       if (valid) {
-        features <- split(features, features$analysis)
-        private$.analyses <- Map(
-          function(x, y) {
-            x$features <- y
-            x
-          },
-          private$.analyses, features
-        )
-        message("\U2713 Features added!")
+        n_fts <- sum(vapply(features, function(x) nrow(x), 0))
 
+        org_features <- lapply(private$.analyses, function(x) x$features)
+        names(org_features) <- names(private$.analyses)
+
+        if (replace) {
+          org_features[names(features)] = features
+
+          private$.analyses <- Map(
+            function(x, y) {
+              x$features <- y
+              x
+            },
+            private$.analyses, org_features
+          )
+          message("\U2713 ", n_fts, " features added!")
+
+        } else {
+          warning("!! rbind for features not implemented yet!")
+          # TODO add rbind option for features
+          # Possibly needed to redo the index and amend the features ID
+        }
       } else {
         warning("Invalid features content or structure! Not added.")
       }
@@ -1689,7 +1729,8 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Method to add feature groups in the `msData` object.
+    #' Method to add feature groups in the `msData` object. Note that existing
+    #' features groups are replaced!
     #'
     #' @template arg-ms-groups
     #'
@@ -1697,7 +1738,7 @@ msData <- R6::R6Class("msData",
     #'
     add_groups = function(groups = NULL) {
 
-      if (is.list(groups)) {
+      if (is.list(groups) & !is.data.frame(groups)) {
         if ("ms1" %in% names(groups)) {
           groups$ms1 <- lapply(groups$ms1, as.data.table)
         }
@@ -1719,15 +1760,13 @@ msData <- R6::R6Class("msData",
         }
       }
 
-      if (is.data.table(groups)) {
+      if (is.data.frame(groups)) {
         must_have_cols <- c(
-          "group", "rt", unname(self$get_analysis_names()),
-          "dppm", "drt", "index", "hasFilled", "filtered", "filter",
-          "adduct", "mass"
+          "group", "rt", unname(self$get_analysis_names()), "rtdev", "massdev",
+          "filled", "filtered", "adduct", "mass"
         )
 
         if (all(must_have_cols %in% colnames(groups))) {
-          groups <- groups[order(groups$index), ]
           old_groups <- private$.groups
           private$.groups <- copy(groups)
 
@@ -2346,34 +2385,23 @@ msData <- R6::R6Class("msData",
         allNames <- self$get_analysis_names()
         keepAnalyses <- unname(allNames[!(allNames %in% analyses)])
         removeAnalyses <- unname(allNames[allNames %in% analyses])
-
         analysesLeft <- self$get_analyses(keepAnalyses)
 
         if (self$has_groups() & length(analysesLeft) > 0) {
           newGroups <- copy(self$get_groups())
           newGroups[, (removeAnalyses) := NULL]
           newFeatures <- lapply(analysesLeft, function(x) x$features)
-
-          out_list <- update_subset_features_and_groups(newGroups, newFeatures)
-
-          analysesLeft <- Map(
-            function(x, y) {
-              x$features <- y
-              x
-            },
-            analysesLeft, out_list[["features"]]
-          )
-
-          newGroups <- out_list[["groups"]]
+          newFeatures <- rbindlist(newFeatures, idcol = "analysis")
+          newGroups <- rcpp_ms_update_groups(newFeatures, keepAnalyses)
 
         } else {
-          newGroups <- NULL
+          newGroups <- data.table()
         }
 
         private$.analyses <- analysesLeft
 
-        if (!is.null(newGroups)) {
-          self$add_groups(newGroups)
+        if (nrow(newGroups) > 0) {
+          suppressMessages(self$add_groups(newGroups))
         } else {
           private$.groups <- NULL
         }
@@ -2427,11 +2455,9 @@ msData <- R6::R6Class("msData",
           if (n_org_new < n_org) {
 
             if (self$has_groups()) {
-              keep_groups <- unique(org_fts$group)
-              keep_groups <- private$.groups$group %in% keep_groups
-              private$.groups <- private$.groups[keep_groups, ]
-              keep_groups <- keep_groups[!keep_groups]
-              message("\U2713 Removed ", length(keep_groups), " groups!")
+              all_ana <- unname(self$get_analysis_names())
+              newGroups <- rcpp_ms_update_groups(org_fts, all_ana)
+              private$.groups <- newGroups
             }
 
             private$.analyses <- lapply(private$.analyses, function(x, org_fts) {
@@ -2497,7 +2523,7 @@ msData <- R6::R6Class("msData",
     #' @return Invisible.
     #'
     remove_groups = function(groups = NULL, filtered = FALSE) {
-      if (is.null(groups)) {
+      if (is.null(groups) & !filtered) {
         private$.groups <- NULL
         private$.alignment <- NULL
         private$.analyses <- lapply(private$.analyses, function(x) {
@@ -2513,7 +2539,7 @@ msData <- R6::R6Class("msData",
       }
 
       if (filtered) {
-        filtered_groups <- self$get_groups()
+        filtered_groups <- self$get_groups(filtered = TRUE)
         filtered_groups <- filtered_groups$group[filtered_groups$filtered]
         groups <- c(groups, filtered_groups)
         groups <- unique(groups)
@@ -2603,38 +2629,38 @@ msData <- R6::R6Class("msData",
         removeAnalyses <- unname(allNames[!(allNames %in% analyses)])
         keepAnalyses <- unname(allNames[allNames %in% analyses])
 
-        newAnalyses <- self$get_analyses(keepAnalyses)
+        if (length(keepAnalyses) > 0) {
+          newAnalyses <- self$get_analyses(keepAnalyses)
+          newAlignment <- self$get_alignment()[keepAnalyses]
 
-        if (self$has_groups()) {
-          newGroups <- copy(self$get_groups())
-          newGroups[, (removeAnalyses) := NULL]
-          newFeatures <- lapply(newAnalyses, function(x) x$features)
-          out_list <- update_subset_features_and_groups(newGroups, newFeatures)
+          new_ms <- suppressMessages(msData$new(
+            files = NULL,
+            headers = self$get_headers(),
+            settings = self$get_settings(),
+            analyses = newAnalyses,
+            groups = NULL,
+            alignment = newAlignment
+          ))
 
-          newAnalyses <- Map(
-            function(x, y) {
-              x$features <- y
-              x
-            },
-            newAnalyses, out_list[["features"]]
+          if (self$has_groups()) {
+            newGroups <- copy(self$get_groups())
+            newGroups[, (removeAnalyses) := NULL]
+            newFeatures <- new_ms$get_features()
+            all_ana <- unname(new_ms$get_analysis_names())
+            newGroups <- rcpp_ms_update_groups(newFeatures, all_ana)
+            suppressMessages(new_ms$add_groups(newGroups))
+          }
+
+          message("\U2713 Subset with ",
+                  new_ms$get_number_analyses(),
+                  " analyses created!"
           )
+          new_ms
 
-          newGroups <- out_list[["groups"]]
         } else {
-          newGroups <- NULL
+          warning("No analyses selected for the subset!")
+          NULL
         }
-
-        newAlignment <- private$.alignment[keepAnalyses]
-
-        msData$new(
-          files = NULL,
-          headers = private$.headers,
-          settings = private$.settings,
-          analyses = newAnalyses,
-          groups = newGroups,
-          alignment = newAlignment
-        )
-
       } else {
         self$clone()
       }
@@ -2664,9 +2690,13 @@ msData <- R6::R6Class("msData",
             rem_fts <- all_fts[rem_fts, cols_must_have, with = FALSE]
 
             if (nrow(rem_fts) > 0) {
-              new_msData <- self$clone()
-              new_msData <- new_msData$remove_features(rem_fts)
-              return(new_msData)
+              new_ms <- self$clone()
+              new_ms <- suppressMessages(new_ms$remove_features(rem_fts))
+              message("\U2713 Subset with ",
+                      nrow(new_ms$get_features()),
+                      " features created!"
+              )
+              return(new_ms)
             }
           }
         }
@@ -2693,9 +2723,13 @@ msData <- R6::R6Class("msData",
         groups_rem <- all_groups[!all_groups %in% groups]
 
         if (length(groups_rem) > 0) {
-          new_msData <- self$clone(deep = TRUE)
-          new_msData <- new_msData$remove_groups(groups_rem)
-          return(new_msData)
+          new_ms <- self$clone(deep = TRUE)
+          new_ms <- suppressMessages(new_ms$remove_groups(groups_rem))
+          message("\U2713 Subset with ",
+                  nrow(new_ms$get_groups()),
+                  " feature groups created!"
+          )
+          return(new_ms)
         }
       }
       self$clone()
@@ -3826,16 +3860,8 @@ msData <- R6::R6Class("msData",
       features <- build_features_table_from_patRoon(pat, self)
 
       self$add_settings(settings)
+      self$add_features(features, replace = TRUE)
 
-      private$.analyses <- Map(
-        function(x, y) {
-          x$features <- y
-          x
-        },
-        private$.analyses, features
-      )
-
-      message("\U2713 Features added to analyses!")
       invisible(self)
     },
 
@@ -3909,23 +3935,18 @@ msData <- R6::R6Class("msData",
       pat <- do.call(gr_fun, c(ag, parameters))
 
       features <- build_features_table_from_patRoon(pat, self)
-      out_list <- build_feature_groups_table_from_patRoon(pat, features, self)
+
+      features <- rbindlist(features, idcol = "analysis")
+
+      out_list <- rcpp_ms_make_groups_update_features(features)
 
       alignment <- extract_time_alignment(pat, self)
 
       self$add_settings(settings)
 
-      private$.analyses <- Map(
-        function(x, y) {
-          x$features <- y
-          x
-        },
-        private$.analyses, out_list[["features"]]
-      )
+      suppressMessages(self$add_features(out_list[["features"]], replace = TRUE))
 
-      private$.groups <- out_list[["groups"]]
-
-      message("\U2713 Added feature groups from correspondence analysis!")
+      self$add_groups(out_list[["groups"]])
 
       if (!is.null(alignment)) {
         private$.alignment <- alignment
@@ -4474,10 +4495,38 @@ build_features_table_from_patRoon <- function(pat, self) {
   features <- lapply(analyses, function(x, extra, features, self, isSet) {
     temp <- features[[x]]
 
+    valid = TRUE
+
+    if (!is.data.frame(temp)) valid <- FALSE
+
+    if (valid & nrow(temp) == 0) valid <- FALSE
+
+    if (!valid) return(data.table())
+
     if (!is.null(extra)) {
       if (temp == nrow(extra[[x]]) & all(temp$mz == extra[[x]]$mz)) {
-        temp$is_filled <- extra[[x]]$is_filled
+        temp$filled <- extra[[x]]$is_filled
       }
+    }
+
+    under_rt_max <- temp$rt <= temp$rtmax
+    if (!all(under_rt_max)) {
+      warning("!! Feature retention time value/s above the rtmax!")
+    }
+
+    under_rt_min <- temp$rt >= temp$rtmin
+    if (!all(under_rt_min)) {
+      warning("!! Feature retention time value/s under the rtmin!")
+    }
+
+    under_mz_max <- temp$mz <= temp$mzmax
+    if (!all(under_rt_min)) {
+      warning("!! Feature m/z value/s above the mzmax!")
+    }
+
+    under_mz_min <- temp$mz >= temp$mzmin
+    if (!all(under_rt_min)) {
+      warning("!! Feature m/z value/s under the mzmin!")
     }
 
     polarity <- self$get_polarities(x)
@@ -4508,10 +4557,10 @@ build_features_table_from_patRoon <- function(pat, self) {
 
     if (!"adduct" %in% colnames(temp)) temp$adduct <- adduct
     if (!"mass" %in% colnames(temp)) temp$mass <- temp$mz + adduct_val
-    if (!"is_filled" %in% colnames(temp)) {
-      temp$is_filled <- FALSE
+    if (!"filled" %in% colnames(temp)) {
+      temp$filled <- FALSE
     } else {
-      temp$is_filled <- as.logical(temp$is_filled)
+      temp$filled <- as.logical(temp$filled)
     }
     if (!"filtered" %in% colnames(temp)) temp$filtered <- FALSE
     if (!"filter" %in% colnames(temp)) temp$filter <- NA_character_
@@ -4539,8 +4588,9 @@ build_features_table_from_patRoon <- function(pat, self) {
       temp$filtered[is.na(temp$group)] <- TRUE
     }
 
-    dppm <- round((temp$mzmax - temp$mzmin) / temp$mzmin * 1E6, 0)
-    drt <- round(temp$rtmax - temp$rtmin, 0)
+    d_dig <- max(temp$mzmax - temp$mzmin)
+    d_dig <- sub('.*\\.(0+)[1-9].*', '\\1', as.character(d_dig))
+    d_dig <- nchar(d_dig) + 1
 
     temp <- temp[order(temp$mz), ]
     temp <- temp[order(temp$rt), ]
@@ -4552,19 +4602,15 @@ build_features_table_from_patRoon <- function(pat, self) {
       c(
         "feature", "index", "rt", "mz", "intensity", "area",
         "rtmin", "rtmax", "mzmin", "mzmax", "adduct", "mass",
-        "is_filled", "filtered", "filter"
+        "filled", "filtered", "filter"
       )
     )
 
     temp$feature <- paste0(
       "mz",
-      round(temp$mz, digits = 3),
-      "_d",
-      dppm,
+      round(temp$mz, digits = d_dig),
       "_rt",
       round(temp$rt, digits = 0),
-      "_t",
-      drt,
       "_f",
       temp$index
     )
@@ -4598,72 +4644,132 @@ build_features_table_from_patRoon <- function(pat, self) {
 build_feature_groups_table_from_patRoon <- function(pat, features, self) {
 
   fgroups <- patRoon::as.data.table(pat, average = FALSE)
-  setnames(fgroups, "ret", "rt")
+
+  valid = TRUE
+
+  if (!is.data.frame(fgroups)) valid <- FALSE
+
+  if (valid & nrow(fgroups) == 0) valid <- FALSE
+
+  if (!valid) return(NULL)
+
+  setnames(fgroups, "ret", "rt", skip_absent = TRUE)
+
+  return(
+    update_features_groups_correspondence(fgroups, features)
+  )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   fts <- copy(features)
   fts <- rbindlist(fts, idcol = "analysis")
 
-  index <- lapply(fgroups$group, function(g, fts) {
-    which(fts$group == g)
+
+
+
+
+  group_vals <- lapply(fgroups$group, function(g, fts) {
+    x <- which(fts$group == g)
+    return(
+      c(
+        "rt" = round(mean(fts$rt[x]), 3),
+        "rtmin" = min(fts$rtmin[x]),
+        "rtmax" = max(fts$rtmax[x]),
+        "mz" = round(mean(fts$mz[x]), 8),
+        "mass" = round(mean(fts$mass[x]), 8),
+        "mass_left" = max((fts$mz[x] - fts$mzmin[x]) / fts$mz[x] * 1E6),
+        "mass_right" = max((fts$mzmax[x] - fts$mz[x]) / fts$mz[x] * 1E6),
+        "filled" = TRUE %in% fts$filled[x]
+      )
+    )
+
   }, fts = fts)
 
-  fgroups$rt <- vapply(index, function(x) {
-    return(round(mean(fts$rt[x]), 3))
-  }, 0)
+  group_vals <- as.data.frame(do.call(rbind, group_vals))
 
-  fgroups$drt <- vapply(index, function(x) {
-    round(max(fts$rtmax[x]) - min(fts$rtmin[x]), 0)
-  }, 0)
-
-  fgroups$dppm <- vapply(index, function(x) {
-    max_ppm <- max((fts$mzmax[x] - fts$mz[x]) / fts$mz[x] * 1E6)
-    min_ppm <- min((fts$mzmin[x] - fts$mz[x]) / fts$mz[x] * 1E6)
-    round(max_ppm - min_ppm, 0)
-  }, 0)
-
+  fgroups$rt <- group_vals$rt
+  fgroups$rtdev <- round(group_vals$rtmax - group_vals$rtmin, 0)
+  fgroups$mass <- group_vals$mass
+  fgroups$massdev <- group_vals$mass_left + group_vals$mass_right
   fgroups$index <- as.numeric(sub(".*_", "", fgroups$group))
-
-  if ("is_filled" %in% colnames(fts)) {
-    fgroups$hasFilled <- vapply(
-      index,
-      function(x) {
-        TRUE %in% fts$is_filled[x]
-      }, FALSE
-    )
-  } else {
-    fgroups$hasFilled <- FALSE
-  }
+  fgroups$filled <- group_vals$filled
 
   if (!"filtered" %in% colnames(fgroups)) {
     fgroups$filtered <- FALSE
     fgroups$filter <- NA_character_
   }
 
+  d_dig <- fts$feature
+  d_dig <- sub('.*\\.(.*)_rt.*', '\\1', d_dig)
+  d_dig <- max(nchar(d_dig))
+
   if (TRUE %in% grepl("Set", is(pat))) {
     setnames(fgroups, "mz", "mass", skip_absent = TRUE)
     fgroups$neutralMass <- NULL
-
-    fgroups$mass <- vapply(index, function(x) {
-      round(mean(fts$mass[x]), 8)
-    }, 0)
+    fgroups$adduct <- "[M]"
 
     new_id <- paste0(
       "m",
-      round(fgroups$mass, 3),
-      "_d",
-      fgroups$dppm,
+      round(fgroups$mass, d_dig),
       "_rt",
       round(fgroups$rt, 0),
-      "_t",
-      round(fgroups$drt, 0),
       "_g",
       fgroups$index
     )
   } else {
-    fgroups$mz <- vapply(index, function(x) {
-      round(mean(fts$mz[x]), 8)
-    }, 0)
-
+    fgroups$mz <- group_vals$mz
     adduct <- unique(fts$adduct)
     fgroups$adduct <- adduct
     if (adduct %in% "[M+H]+") fgroups$mass <- fgroups$mz - 1.007276
@@ -4671,13 +4777,9 @@ build_feature_groups_table_from_patRoon <- function(pat, features, self) {
 
     new_id <- paste0(
       "mz",
-      round(fgroups$mz, digits = 3),
-      "_d",
-      fgroups$dppm,
+      round(fgroups$mz, digits = d_dig),
       "_rt",
       round(fgroups$rt, digits = 0),
-      "_t",
-      fgroups$drt,
       "_g",
       fgroups$index
     )
@@ -4691,97 +4793,123 @@ build_feature_groups_table_from_patRoon <- function(pat, features, self) {
     return(x)
   }, new_id = new_id)
 
+  fgroups <- fgroups[order(fgroups$mass), ]
+  fgroups <- fgroups[order(fgroups$rt), ]
+  fgroups <- fgroups[order(fgroups$filtered), ]
+
  list("features" = features_new_id, "groups" = fgroups)
 }
 
-update_subset_features_and_groups <- function(newGroups, newFeatures) {
+#' update_features_groups_correspondence
+#'
+#' Updates the groups data.table based on features in remaining msAnalysis.
+#'
+#' @param newGroups A copy of the groups data.table with columns of the analyses
+#' names remaining.
+#' @param newFeatures A list with a features data.table for each analyses
+#' remaining.
+#'
+#' @noRd
+#'
+update_features_groups_correspondence <- function(newGroups, newFeatures) {
+
   fts <- rbindlist(newFeatures, idcol = "analysis")
 
+  valid = TRUE
+
+  if (!is.data.frame(fts)) valid <- FALSE
+
+  if (valid & nrow(fts) == 0) valid <- FALSE
+
+  if (!is.data.frame(newGroups)) valid <- FALSE
+
+  if (valid & nrow(newGroups) == 0) valid <- FALSE
+
+  if (!valid) return(NULL)
+
+  setnames(newGroups, "ret", "rt", skip_absent = TRUE)
+  newGroups$neutralMass <- NULL
+
   fgs_remaining <- unique(unlist(fts$group))
+  fgs_remaining <- fgs_remaining[!is.na(fgs_remaining)]
+
   if (!is.null(fgs_remaining)) {
     newGroups <- newGroups[newGroups$group %in% fgs_remaining, ]
-  }
-
-  index <- lapply(newGroups$group, function(g, fts) {
-    which(fts$group == g)
-  }, fts = fts)
-
-  newGroups$rt <- vapply(index, function(x) {
-    round(mean(fts$rt[x]), digits = 3)
-  }, 0)
-
-  newGroups$mass <- vapply(index, function(x) {
-    round(mean(fts$mass[x]), digits = 8)
-  }, 0)
-
-  newGroups$adduct <- vapply(index, function(x) {
-    paste(unique(fts$adduct[x]), collapse = "; ")
-  }, NA_character_)
-
-  newGroups$drt <- vapply(index, function(x) {
-    round(max(fts$rtmax[x]) - min(fts$rtmin[x]), 0)
-  }, 0)
-
-  newGroups$dppm <- vapply(index, function(x) {
-    max_ppm <- max((fts$mzmax[x] - fts$mz[x]) / fts$mz[x] * 1E6)
-    min_ppm <- min((fts$mzmin[x] - fts$mz[x]) / fts$mz[x] * 1E6)
-   round(max_ppm - min_ppm, 0)
-  }, 0)
-
-  newGroups$index <- seq_len(length(newGroups$group))
-
-  if ("is_filled" %in% colnames(fts)) {
-    newGroups$hasFilled <- vapply(index, function(x) {
-      TRUE %in% fts$is_filled[x]
-    }, FALSE)
   } else {
-    newGroups$hasFilled <- FALSE
+    return(NULL)
   }
+
+  group_vals <- rcpp_ms_get_feature_groups_ranges(newGroups$group, fts)
+
+  newGroups$rt <- group_vals$rt
+  newGroups$rtdev <- round(group_vals$rtmax - group_vals$rtmin, 0)
+  newGroups$mass <- group_vals$mass
+  newGroups$massdev <- round(group_vals$mass_left + group_vals$mass_right, 1)
+  newGroups$filled <- group_vals$filled
+  newGroups$index <- seq_len(length(newGroups$group))
+#
+#   if ("[M]" %in% group_vals$adduct) {
+#     newGroups$adduct <- "[M]"
+#   } else {
+  newGroups$adduct <- group_vals$adduct
+#   }
 
   if (!"filtered" %in% colnames(newGroups)) {
     newGroups$filtered <- FALSE
     newGroups$filter <- NA_character_
   }
 
-  if (!"mz" %in% colnames(newGroups)) {
+  d_dig <- fts$feature
+  d_dig <- sub('.*\\.(.*)_rt.*', '\\1', d_dig)
+  d_dig <- max(nchar(d_dig))
+
+  if ("[M]" %in% unique(newGroups$adduct)) {
+    newGroups$mz <- NULL
+
     new_id <- paste0(
       "m",
-      round(newGroups$mass, digits = 3),
-      "_d",
-      newGroups$dppm,
+      round(newGroups$mass, digits = d_dig),
       "_rt",
       round(newGroups$rt, digits = 0),
-      "_t",
-      newGroups$drt,
       "_g",
       newGroups$index
     )
-  } else {
-    newGroups$mz <- vapply(index, function(x) {
-      round(mean(fts$mz[x]), digits = 8)
-    }, 0)
 
+    cols_order <- c(
+      "group", "mass", "rt", unique(fts$analysis),
+      "rtdev", "massdev", "index", "filled", "filtered", "filter", "adduct"
+    )
+
+  } else {
     new_id <- paste0(
       "mz",
-      round(newGroups$mz, digits = 3),
-      "_d",
-      newGroups$dppm,
+      round(newGroups$mz, digits = d_dig),
       "_rt",
       round(newGroups$rt, digits = 0),
-      "_t",
-      newGroups$drt,
       "_g",
       newGroups$index
+    )
+
+    cols_order <- c(
+      "group", "mz", "rt", unique(fts$analysis), "rtdev", "massdev",
+      "index", "filled", "filtered", "filter", "adduct", "mass"
     )
   }
 
+  setcolorder(newGroups, cols_order)
   names(new_id) <- newGroups$group
-  newGroups$group <- new_id
 
   newFeatures_new_id <- lapply(newFeatures, function(x, new_id) {
-    x$group <- new_id[x$group]
+    which_ft_to_change <- x$group %in% names(new_id)
+    x$group[which_ft_to_change] <- new_id[x$group[which_ft_to_change]]
     x
   }, new_id = new_id)
+
+  newGroups$group <- new_id
+
+  newGroups <- newGroups[order(newGroups$mass), ]
+  newGroups <- newGroups[order(newGroups$rt), ]
+  newGroups <- newGroups[order(newGroups$filtered), ]
 
   list("features" = newFeatures_new_id, "groups" = newGroups)
 }

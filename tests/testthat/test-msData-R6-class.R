@@ -18,19 +18,25 @@ db_cols <- c("name", "mass", "rt")
 carbamazepin_d10 <- db[db$name %in% "Carbamazepin-d10", db_cols, with = FALSE]
 diuron_d6 <- db[db$name %in% "Diuron-d6", db_cols, with = FALSE]
 carb_pos <- carbamazepin_d10$mass + 1.007276
-carb <- carbamazepin_d10$mass + 1.007276
+carb <- carbamazepin_d10$mass
 carb_rt <- carbamazepin_d10$rt
 diu_pos <- diuron_d6$mass + 1.007276
-diu <- diuron_d6$mass + 1.007276
+diu <- diuron_d6$mass
 diu_rt <- diuron_d6$rt
 sec_dev <- 30
 ppm_dev <- 10
 mz <- data.frame(
   id = c("tg1", "tg2"),
+  mz = c(carb_pos, diu_pos),
+  rt = c(carb_rt, diu_rt)
+)
+mass <- data.frame(
+  id = c("tg1", "tg2"),
   mz = c(carb, diu),
   rt = c(carb_rt, diu_rt)
 )
 targets <- make_ms_targets(mz = mz, ppm = ppm_dev, sec = sec_dev)
+neutral_targets <- make_ms_targets(mz = mass, ppm = ppm_dev, sec = sec_dev)
 
 # msData class tests -----
 
@@ -225,22 +231,22 @@ settings_gf <- list(
 ms$group_features(settings = settings_gf)
 
 test_that("group features", {
-  expect_s3_class(ms$get_groups(mz = targets), "data.table")
-  expect_true("group" %in% colnames(ms$get_groups(mz = targets[1, ])))
+  expect_s3_class(ms$get_groups(mass = neutral_targets), "data.table")
+  expect_true("group" %in% colnames(ms$get_groups(mz = neutral_targets[1, ])))
   expect_true(all(ms$has_groups()))
 })
 
 test_that("get feature groups MS1 and MS2", {
-  expect_s3_class(ms$get_groups_ms1(mz = targets), "data.table")
-  expect_gt(nrow(ms$get_groups_ms1(mz = targets)), 0)
-  expect_s3_class(ms$get_groups_ms2(mz = targets), "data.table")
-  expect_gt(nrow(ms$get_groups_ms2(mz = targets)), 0)
+  expect_s3_class(ms$get_groups_ms1(mass = neutral_targets), "data.table")
+  expect_gt(nrow(ms$get_groups_ms1(mass = neutral_targets)), 0)
+  expect_s3_class(ms$get_groups_ms2(mass = neutral_targets), "data.table")
+  expect_gt(nrow(ms$get_groups_ms2(mass = neutral_targets)), 0)
 })
 
 # ms$plot_groups(mz = targets, legendNames = c("Target1", "Target2"))
 # ms$plot_groups_overview(mz = targets)
 
-settings_gf_alignment <- list(
+settings_gf_alignment <- settings(
   "call" = "group_features",
   "algorithm" = "xcms3",
   "parameters" = list(
@@ -414,7 +420,7 @@ test_that("load MS1 features", {
   expect_true(any(ms5$has_loaded_features_ms1()))
   expect_equal(
     unique(ms5$get_features_ms1(loadedMS1 = TRUE)[["id"]]),
-    fts_to_subset$feature
+    unique(fts_to_subset$feature)
   )
 })
 
@@ -430,7 +436,7 @@ test_that("load MS2 features", {
   expect_true(any(ms5$has_loaded_features_ms2()))
   expect_equal(
       unique(ms5$get_features_ms2(loadedMS2 = TRUE)[["id"]]),
-      fts_to_subset$feature
+      unique(fts_to_subset$feature)
   )
 })
 
@@ -441,7 +447,7 @@ test_that("remove loaded MS2 features", {
 })
 
 ms5 <- import_msData("msData.json")
-groups_to_subset <- ms5$get_groups(mz = targets)
+groups_to_subset <- ms5$get_groups(mass = neutral_targets)
 ms5 <- ms5$subset_groups(groups = groups_to_subset$group)
 
 test_that("subset groups", {
