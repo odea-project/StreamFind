@@ -14,8 +14,6 @@
 #' @return A list with a spectra `data.frame` for each file in `files`.
 #' On error, returns \code{NULL}.
 #'
-#' @export
-#'
 #' @noRd
 #'
 parse_ms_spectra <- function(files = NA_character_, levels = c(1, 2),

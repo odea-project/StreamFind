@@ -10,8 +10,6 @@
 #'
 #' @return An interactive 3D plot.
 #'
-#' @export
-#'
 #' @noRd
 #'
 plot_spectra_interactive <- function(spectra = NULL, colorBy = "analyses") {
@@ -82,8 +80,6 @@ plot_spectra_interactive <- function(spectra = NULL, colorBy = "analyses") {
 #'
 #' @return An iterative plot of the traces for the requested \emph{m/z} and
 #' retention time pairs.
-#'
-#' @export
 #'
 #' @noRd
 #'
@@ -319,8 +315,6 @@ plot_xic_interactive <- function(xic,
 #'
 #' @return An EIC static plot.
 #'
-#' @export
-#'
 #' @noRd
 #'
 plot_eic_static <- function(eic = NULL, legendNames = NULL, colorBy = "targets",
@@ -404,8 +398,6 @@ plot_eic_static <- function(eic = NULL, legendNames = NULL, colorBy = "targets",
 #' @param title A character vector to be used as title.
 #'
 #' @return An EIC interactive plot.
-#'
-#' @export
 #'
 #' @noRd
 #'
@@ -501,8 +493,6 @@ plot_eic_interactive <- function(eic = NULL, legendNames = NULL,
 #' @param title A character vector to be used as title.
 #'
 #' @return A BPC interactive plot.
-#'
-#' @export
 #'
 #' @noRd
 #'
@@ -604,8 +594,6 @@ plot_bpc_interactive <- function(bpc = NULL, legendNames = NULL,
 #'
 #' @return An MSn plot.
 #'
-#' @export
-#'
 #' @noRd
 #'
 plot_ms2_static <- function(ms2 = NULL, legendNames = NULL,
@@ -698,8 +686,6 @@ plot_ms2_static <- function(ms2 = NULL, legendNames = NULL,
 #' @param title A character vector to be used as title.
 #'
 #' @return An MS2 spectra interactive plot.
-#'
-#' @export
 #'
 #' @noRd
 #'
@@ -807,8 +793,6 @@ plot_ms2_interactive <- function(ms2 = NULL, legendNames = NULL,
 #'
 #' @return An ms1 plot.
 #'
-#' @export
-#'
 #' @noRd
 #'
 plot_ms1_static <- function(ms1 = NULL, legendNames = NULL,
@@ -895,8 +879,6 @@ plot_ms1_static <- function(ms1 = NULL, legendNames = NULL,
 #' @param title A character vector to be used as title.
 #'
 #' @return An ms1 interactive plot.
-#'
-#' @export
 #'
 #' @noRd
 #'
@@ -998,8 +980,6 @@ plot_ms1_interactive <- function(ms1 = NULL, legendNames = NULL,
 #' @importFrom graphics axis legend lines points polygon
 #'
 #' @return A plot of chromatographic peaks.
-#'
-#' @export
 #'
 #' @noRd
 #'
@@ -1106,8 +1086,6 @@ plot_features_static <- function(eic = NULL, features = NULL,
 #' @param title A character vector to be used as title.
 #'
 #' @return A chromatographic peak plot through \pkg{plotly}.
-#'
-#' @export
 #'
 #' @noRd
 #'
@@ -1259,8 +1237,6 @@ plot_features_interactive <- function(eic = NULL, features = NULL,
 #'
 #' @return A peak/s map plot produced through \pkg{base} plot.
 #'
-#' @export
-#'
 #' @noRd
 #'
 map_features_static <- function(features, colorBy = "targets",
@@ -1360,8 +1336,6 @@ map_features_static <- function(features, colorBy = "targets",
 #' @param showLegend Logical, set to \code{TRUE} to show legend.
 #'
 #' @return A peak/s map plot produced through \pkg{plotly}.
-#'
-#' @export
 #'
 #' @noRd
 #'
@@ -1490,8 +1464,6 @@ map_features_interactive <- function(features, colorBy = "targets",
 #' @param analyses X.
 #'
 #' @return plot.
-#'
-#' @export
 #'
 #' @noRd
 #'

@@ -25,7 +25,6 @@ Imports:
     tools,
     utils,
     Rcpp (>= 1.0.8),
-    RcppArmadillo,
     magrittr,
     Rdpack,
     gtools,
@@ -55,4 +54,4 @@ Encoding: UTF-8
 Language: en-US
 RoxygenNote: 7.2.3
 Roxygen: list(markdown = TRUE, r6 = TRUE)
-LinkingTo: Rcpp, RcppArmadillo
+LinkingTo: Rcpp

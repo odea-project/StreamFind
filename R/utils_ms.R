@@ -7,8 +7,6 @@
 #' @return A logical vector with the same length as `v` with \code{TRUE} for
 #' regions between `a` and `b` value pairs.
 #'
-#' @export
-#'
 #' @noRd
 #'
 trim_vector <- function(v, a, b) {
@@ -23,8 +21,6 @@ trim_vector <- function(v, a, b) {
 #' `targets` but expanded with the isolation window.
 #'
 #' @return The filtered `traces` data.frame.
-#'
-#' @export
 #'
 #' @noRd
 #'
@@ -299,8 +295,6 @@ make_ms_targets <- function(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL)
 #'
 #' @return A named vector of colors. The names of the vector is the \code{obj}.
 #'
-#' @export
-#'
 #' @noRd
 #'
 get_colors <- function(obj) {
@@ -358,8 +352,6 @@ get_colors <- function(obj) {
 #' @param method X.
 #'
 #' @return X.
-#'
-#' @export
 #'
 #' @noRd
 #'

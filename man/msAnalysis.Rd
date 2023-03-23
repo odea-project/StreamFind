@@ -33,7 +33,7 @@ msAnalysis(
   metadata = list()
 )
 
-\method{validate}{msAnalysis}(msAnalysis = NULL)
+\method{validate}{msAnalysis}(x = NULL)
 
 as.msAnalysis(value)
 
@@ -102,7 +102,7 @@ if loaded).}
 \item{metadata}{List with flexible storage for experimental metadata
 (e.g., concentration, location, etc.).}
 
-\item{msAnalysis}{A msAnalysis S3 class object.}
+\item{x}{A msAnalysis S3 class object.}
 
 \item{value}{A list to be checked and/or converted to msAnalysis S3 class.}
 

@@ -1948,8 +1948,8 @@ msData <- R6::R6Class("msData",
         if (requireNamespace("patRoon", quietly = TRUE)) {
           ana_feats <- self$get_features()
           ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
-          hash <- patRoon:::makeHash(ana_feats, parameters)
-          ms1 <- patRoon:::loadCacheData("loadFeaturesMS1", hash)
+          hash <- patRoon::makeHash(ana_feats, parameters)
+          ms1 <- patRoon::loadCacheData("loadFeaturesMS1", hash)
           if (!all(ms1$id %in% ana_feats$feature)) ms1 <- NULL
 
         } else {
@@ -1970,7 +1970,7 @@ msData <- R6::R6Class("msData",
           )
 
           if (!is.null(hash)) {
-            patRoon:::saveCacheData("loadFeaturesMS1", ms1, hash)
+            patRoon::saveCacheData("loadFeaturesMS1", ms1, hash)
           }
         }
 
@@ -2045,8 +2045,8 @@ msData <- R6::R6Class("msData",
         if (requireNamespace("patRoon", quietly = TRUE)) {
           ana_feats <- self$get_features()
           ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
-          hash <- patRoon:::makeHash(ana_feats, parameters)
-          ms2 <- patRoon:::loadCacheData("loadFeaturesMS2", hash)
+          hash <- patRoon::makeHash(ana_feats, parameters)
+          ms2 <- patRoon::loadCacheData("loadFeaturesMS2", hash)
           if (!all(ms2$id %in% ana_feats$feature)) ms2 <- NULL
 
         } else {
@@ -2066,7 +2066,7 @@ msData <- R6::R6Class("msData",
           )
 
           if (!is.null(hash)) {
-            patRoon:::saveCacheData("loadFeaturesMS2", ms2, hash)
+            patRoon::saveCacheData("loadFeaturesMS2", ms2, hash)
           }
         }
 
@@ -2152,8 +2152,8 @@ msData <- R6::R6Class("msData",
           ana_feats <- self$get_features()
           ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
           group_ids <- self$get_groups()[["groups"]]
-          hash <- patRoon:::makeHash(ana_feats, group_ids,  parameters)
-          ms1 <- patRoon:::loadCacheData("loadGroupsMS1", hash)
+          hash <- patRoon::makeHash(ana_feats, group_ids,  parameters)
+          ms1 <- patRoon::loadCacheData("loadGroupsMS1", hash)
           if (!all(ms1$id %in% group_ids)) ms1 <- NULL
 
         } else {
@@ -2181,7 +2181,7 @@ msData <- R6::R6Class("msData",
             )
 
             if (!is.null(hash)) {
-              patRoon:::saveCacheData("loadGroupsMS1", ms1, hash)
+              patRoon::saveCacheData("loadGroupsMS1", ms1, hash)
             }
 
           } else {
@@ -2249,8 +2249,8 @@ msData <- R6::R6Class("msData",
           ana_feats <- self$get_features()
           ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
           group_ids <- self$get_groups()[["groups"]]
-          hash <- patRoon:::makeHash(ana_feats, group_ids,  parameters)
-          ms2 <- patRoon:::loadCacheData("loadgroupsMS2", hash)
+          hash <- patRoon::makeHash(ana_feats, group_ids,  parameters)
+          ms2 <- patRoon::loadCacheData("loadgroupsMS2", hash)
           if (!all(ms2$id %in% group_ids)) ms2 <- NULL
 
         } else {
@@ -2278,7 +2278,7 @@ msData <- R6::R6Class("msData",
             )
 
             if (!is.null(hash)) {
-              patRoon:::saveCacheData("loadGroupsMS2", ms2, hash)
+              patRoon::saveCacheData("loadGroupsMS2", ms2, hash)
             }
 
           } else {

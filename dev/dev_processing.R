@@ -8,22 +8,40 @@ files <- all_files[1:3]
 files1 <- all_files[grepl("influent|blank", all_files)]
 files2 <- all_files[grepl("o3sw", all_files)]
 db_cols <- c("name", "mass", "rt")
+
 carbamazepin_d10 <- db[db$name %in% "Carbamazepin-d10", db_cols, with = FALSE]
 diuron_d6 <- db[db$name %in% "Diuron-d6", db_cols, with = FALSE]
 carb_pos <- carbamazepin_d10$mass + 1.007276
-carb <- carbamazepin_d10$mass + 1.007276
+carb <- carbamazepin_d10$mass
 carb_rt <- carbamazepin_d10$rt
 diu_pos <- diuron_d6$mass + 1.007276
-diu <- diuron_d6$mass + 1.007276
+diu <- diuron_d6$mass
 diu_rt <- diuron_d6$rt
+
 sec_dev <- 30
 ppm_dev <- 10
-mz <- data.frame(
-  id = c("tg1", "tg2"),
-  mz = c(carb, diu),
-  rt = c(carb_rt, diu_rt)
+
+targets <- make_ms_targets(
+  mz = data.frame(
+    id = c("tg1", "tg2"),
+    mz = c(carb_pos, diu_pos),
+    rt = c(carb_rt, diu_rt)
+  ),
+  ppm = ppm_dev,
+  sec = sec_dev
 )
-targets <- make_ms_targets(mz = mz, ppm = ppm_dev, sec = sec_dev)
+
+neutral_targets <- make_ms_targets(
+  mz = data.frame(
+    id = c("tg1", "tg2"),
+    mz = c(carb, diu),
+    rt = c(carb_rt, diu_rt)
+  ),
+  ppm = ppm_dev,
+  sec = sec_dev
+)
+
+# settings ---------------------------------------------------------------------
 
 settings_ff <- settings(
   call = "find_features",
@@ -97,22 +115,43 @@ ms$find_features()
 
 ms$group_features()
 
+ms$load_features_ms1()
+
+ms$load_groups_ms1()
+
+
+ms$get_features(mass = neutral_targets)
 ms$add_analyses(anas)
-
-
 anas <- parse.msAnalysis(files)
 
 
+ms$has_loaded_features_ms1()
+ms$has_loaded_groups_ms1()
+
 
 fts <- ms$get_features(mz = targets)
-gr <- ms$get_groups(groups = 1:2)
+gr <- ms$get_groups(groups = unique(fts$group))
+# ms$remove_features(fts)
+# ms$remove_analyses(1:3)
 
-ms$remove_features(fts)
-ms$remove_analyses(1:2)
 
 
 test <- ms$subset_features(fts)
+
+test$has_loaded_features_ms1()
+test$get_features_ms1()
+
+
 test <- ms$subset_groups(gr$group)
+test$get_features(filtered = TRUE)
+test$has_loaded_groups_ms1()
+test$get_groups(filtered = TRUE)
+
+test$remove_features(filtered = TRUE)
+
+
+test$load_groups_ms1()
+
 
 test$get_groups()
 test$get_features()
@@ -124,11 +163,6 @@ test$get_analysis_names()
 test$get_overview()
 
 test <- ms$subset_analyses(1:2)
-
-
-
-
-
 
 analyses = ms$get_analysis_names(1:2)
 

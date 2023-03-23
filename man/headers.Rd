@@ -8,7 +8,7 @@
 \usage{
 headers(...)
 
-\method{validate}{headers}(headers)
+\method{validate}{headers}(x)
 
 as.headers(value)
 }
@@ -18,7 +18,7 @@ must be of length one. There is not type limitation. The name of the argument
 becomes the name of the header entry. Alternatively, a single list argument
 with the headers (all length one) can be given.}
 
-\item{headers}{A headers S3 class object.}
+\item{x}{A headers S3 class object.}
 
 \item{value}{List to be checked and converted to headers S3 class.}
 }
