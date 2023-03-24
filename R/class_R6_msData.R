@@ -1945,12 +1945,24 @@ msData <- R6::R6Class("msData",
 
       if ("streamFind" %in% algorithm) {
 
-        if (requireNamespace("patRoon", quietly = TRUE)) {
+        cached_ms1 <- FALSE
+
+        if (caches_data()) {
           ana_feats <- self$get_features()
           ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
           hash <- patRoon::makeHash(ana_feats, parameters)
-          ms1 <- patRoon::loadCacheData("loadFeaturesMS1", hash)
-          if (!all(ms1$id %in% ana_feats$feature)) ms1 <- NULL
+          ms1 <- patRoon::loadCacheData("load_features_ms1", hash)
+
+          if (!is.null(ms1)) {
+            if (all(ms1$id %in% ana_feats$feature)) {
+              message("\U2713 Features MS1 spectra loaded from cache!")
+              cached_ms1 <- TRUE
+            } else {
+              ms1 <- NULL
+            }
+          } else {
+            ms1 <- NULL
+          }
 
         } else {
           hash <- NULL
@@ -1969,8 +1981,9 @@ msData <- R6::R6Class("msData",
             runParallel = parameters$runParallel
           )
 
-          if (!is.null(hash)) {
-            patRoon::saveCacheData("loadFeaturesMS1", ms1, hash)
+          if (!cached_ms1 & !is.null(hash)) {
+            message("\U2713 Features MS1 spectra cached!")
+            patRoon::saveCacheData("load_features_ms1", ms1, hash)
           }
         }
 
@@ -2000,7 +2013,7 @@ msData <- R6::R6Class("msData",
 
         if (all(added_ms1)) {
           private$.analyses <- analyses
-          message("\U2713 MS1 data added to features in analyses!")
+          message("\U2713 MS1 spectra added to features in analyses!")
           self$add_settings(settings)
         }
       }
@@ -2042,12 +2055,24 @@ msData <- R6::R6Class("msData",
 
       if ("streamFind" %in% algorithm) {
 
-        if (requireNamespace("patRoon", quietly = TRUE)) {
+        cached_ms2 <- FALSE
+
+        if (caches_data()) {
           ana_feats <- self$get_features()
           ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
           hash <- patRoon::makeHash(ana_feats, parameters)
-          ms2 <- patRoon::loadCacheData("loadFeaturesMS2", hash)
-          if (!all(ms2$id %in% ana_feats$feature)) ms2 <- NULL
+          ms2 <- patRoon::loadCacheData("load_features_ms2", hash)
+
+          if (!is.null(ms2)) {
+            if (all(ms2$id %in% ana_feats$feature)) {
+              message("\U2713 Features MS2 spectra loaded from cache!")
+              cached_ms2 <- TRUE
+            } else {
+              ms2 <- NULL
+            }
+          } else {
+            ms2 <- NULL
+          }
 
         } else {
           hash <- NULL
@@ -2065,8 +2090,9 @@ msData <- R6::R6Class("msData",
             runParallel = parameters$runParallel
           )
 
-          if (!is.null(hash)) {
-            patRoon::saveCacheData("loadFeaturesMS2", ms2, hash)
+          if (!cached_ms2 & !is.null(hash)) {
+            message("\U2713 Features MS2 spectra cached!")
+            patRoon::saveCacheData("load_features_ms2", ms2, hash)
           }
         }
 
@@ -2099,7 +2125,7 @@ msData <- R6::R6Class("msData",
 
         if (all(added_ms2)) {
           private$.analyses <- analyses
-          message("\U2713 MS2 data added to features in analyses!")
+          message("\U2713 MS2 spectra added to features in analyses!")
           self$add_settings(settings)
         }
       }
@@ -2148,13 +2174,27 @@ msData <- R6::R6Class("msData",
 
       if ("streamFind" %in% algorithm) {
 
-        if (requireNamespace("patRoon", quietly = TRUE)) {
+        cached_ms1 <- FALSE
+
+        if (caches_data()) {
           ana_feats <- self$get_features()
           ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
-          group_ids <- self$get_groups()[["groups"]]
+          cols_to_hash <- c("group", "rt", "mass", "rtdev", "massdev")
+          group_ids <- self$get_groups()
+          group_ids <- group_ids[, cols_to_hash, with = FALSE]
           hash <- patRoon::makeHash(ana_feats, group_ids,  parameters)
-          ms1 <- patRoon::loadCacheData("loadGroupsMS1", hash)
-          if (!all(ms1$id %in% group_ids)) ms1 <- NULL
+          ms1 <- patRoon::loadCacheData("load_groups_ms1", hash)
+
+          if (!is.null(ms1)) {
+            if (all(ms1$id %in% group_ids)) {
+              message("\U2713 Groups MS1 spectra loaded from cache!")
+              cached_ms1 <- TRUE
+            } else {
+              ms1 <- NULL
+            }
+          } else {
+            ms1 <- NULL
+          }
 
         } else {
           hash <- NULL
@@ -2180,8 +2220,9 @@ msData <- R6::R6Class("msData",
               runParallel = parameters$runParallel
             )
 
-            if (!is.null(hash)) {
-              patRoon::saveCacheData("loadGroupsMS1", ms1, hash)
+            if (!cached_ms1 & !is.null(hash)) {
+              message("\U2713 Groups MS1 spectra cached!")
+              patRoon::saveCacheData("load_groups_ms1", ms1, hash)
             }
 
           } else {
@@ -2199,7 +2240,7 @@ msData <- R6::R6Class("msData",
           }, ms1 = ms1)
 
           private$.groups$ms1 <- groups_ms1
-          message("\U2713 MS1 data added to feature groups!")
+          message("\U2713 MS1 spectra added to feature groups!")
           self$add_settings(settings)
 
         } else {
@@ -2245,13 +2286,27 @@ msData <- R6::R6Class("msData",
 
       if ("streamFind" %in% algorithm) {
 
-        if (requireNamespace("patRoon", quietly = TRUE)) {
+        cached_ms2 <- FALSE
+
+        if (caches_data()) {
           ana_feats <- self$get_features()
           ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
-          group_ids <- self$get_groups()[["groups"]]
+          cols_to_hash <- c("group", "rt", "mass", "rtdev", "massdev")
+          group_ids <- self$get_groups()
+          group_ids <- group_ids[, cols_to_hash, with = FALSE]
           hash <- patRoon::makeHash(ana_feats, group_ids,  parameters)
-          ms2 <- patRoon::loadCacheData("loadgroupsMS2", hash)
-          if (!all(ms2$id %in% group_ids)) ms2 <- NULL
+          ms2 <- patRoon::loadCacheData("load_groups_ms2", hash)
+
+          if (!is.null(ms2)) {
+            if (all(ms2$id %in% group_ids)) {
+              message("\U2713 Groups MS2 spectra loaded from cache!")
+              cached_ms2 <- TRUE
+            } else {
+              ms2 <- NULL
+            }
+          } else {
+            ms2 <- NULL
+          }
 
         } else {
           hash <- NULL
@@ -2277,8 +2332,9 @@ msData <- R6::R6Class("msData",
               runParallel = parameters$runParallel
             )
 
-            if (!is.null(hash)) {
-              patRoon::saveCacheData("loadGroupsMS2", ms2, hash)
+            if (!cached_ms2 & !is.null(hash)) {
+              message("\U2713 Groups MS2 spectra cached!")
+              patRoon::saveCacheData("load_groups_ms2", ms2, hash)
             }
 
           } else {
@@ -2296,7 +2352,7 @@ msData <- R6::R6Class("msData",
           }, ms2 = ms2)
 
           private$.groups$ms2 <- groups_ms2
-          message("\U2713 MS2 data added to feature groups!")
+          message("\U2713 MS2 spectra added to feature groups!")
           self$add_settings(settings)
 
         } else {
@@ -2331,14 +2387,22 @@ msData <- R6::R6Class("msData",
           message("\U2713 Removed headers: \n",
             paste(value, collapse = "\n")
           )
+        } else {
+          message("\U2717 There are no headers to remove!")
         }
+
       } else {
         to_remove <- names(private$.headers) %in% c("name", "path", "date")
         to_remove <- names(private$.headers)[!to_remove]
         private$.headers[to_remove] <- NULL
-        message("\U2713 Removed headers: \n",
-          paste(to_remove, collapse = "\n")
-        )
+
+        if (length(to_remove) > 1) {
+          message("\U2713 Removed headers: \n",
+                  paste(to_remove, collapse = "\n")
+          )
+        } else {
+          message("\U2713 Removed all headers except name, path and date!")
+        }
       }
       invisible(self)
     },
@@ -2364,6 +2428,8 @@ msData <- R6::R6Class("msData",
           message("\U2713 Removed settings for:\n",
             paste(call, collapse = "\n")
           )
+        } else {
+          message("\U2717 There are no settings to remove!")
         }
       }
       invisible(self)
@@ -2379,37 +2445,49 @@ msData <- R6::R6Class("msData",
     #' @return Invisible.
     #'
     remove_analyses = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
 
       if (!is.null(analyses)) {
+        analyses <- private$.check_analyses_argument(analyses)
         allNames <- self$get_analysis_names()
         keepAnalyses <- unname(allNames[!(allNames %in% analyses)])
         removeAnalyses <- unname(allNames[allNames %in% analyses])
         analysesLeft <- self$get_analyses(keepAnalyses)
 
-        if (self$has_groups() & length(analysesLeft) > 0) {
-          newGroups <- copy(self$get_groups())
-          newGroups[, (removeAnalyses) := NULL]
-          newFeatures <- lapply(analysesLeft, function(x) x$features)
-          newFeatures <- rbindlist(newFeatures, idcol = "analysis")
-          newGroups <- rcpp_ms_update_groups(newFeatures, keepAnalyses)
+        if (length(removeAnalyses) > 0) {
+
+          if (self$has_groups()) {
+            newGroups <- copy(self$get_groups())
+            newGroups[, (removeAnalyses) := NULL]
+            newFeatures <- lapply(analysesLeft, function(x) x$features)
+            newFeatures <- rbindlist(newFeatures, idcol = "analysis")
+            newGroups <- rcpp_ms_update_groups(newFeatures, keepAnalyses)
+
+          } else {
+            newGroups <- data.table()
+          }
+
+          private$.analyses <- analysesLeft
+
+          if (nrow(newGroups) > 0) {
+            suppressMessages(self$add_groups(newGroups))
+          } else {
+            private$.groups <- NULL
+          }
+
+          private$.alignment <- private$.alignment[keepAnalyses]
+          message("\U2713 Removed analyses:\n", paste(analyses, collapse = "\n"))
 
         } else {
-          newGroups <- data.table()
+          message("\U2717 There are no analyses to remove!")
         }
 
-        private$.analyses <- analysesLeft
-
-        if (nrow(newGroups) > 0) {
-          suppressMessages(self$add_groups(newGroups))
-        } else {
-          private$.groups <- NULL
-        }
-
-        private$.alignment <- private$.alignment[keepAnalyses]
-
-        message("\U2713 Removed analyses:\n", paste(analyses, collapse = "\n"))
+      } else {
+        private$.analyses <- NULL
+        private$.groups <- NULL
+        private$.alignment <- NULL
+        message("\U2713 Removed all analyses!")
       }
+
       invisible(self)
     },
 
@@ -2468,8 +2546,14 @@ msData <- R6::R6Class("msData",
             }, org_fts = org_fts)
 
             message("\U2713 Removed ", n_org - n_org_new, " features!")
+          } else {
+            message("\U2717 There are no features to remove!")
           }
+        } else {
+          message("\U2717 There are no features to remove!")
         }
+      } else {
+        message("\U2717 There are no features to remove!")
       }
       invisible(self)
     },
@@ -2489,7 +2573,11 @@ msData <- R6::R6Class("msData",
             x
           })
           message("\U2713 Removed all MS1 spectra from features!")
+        } else {
+          message("\U2717 Features MS1 spectra not loaded!")
         }
+      } else {
+        message("\U2717 Features not present!")
       }
       invisible(self)
     },
@@ -2509,7 +2597,11 @@ msData <- R6::R6Class("msData",
             x
           })
           message("\U2713 Removed all MS2 spectra from features!")
+        } else {
+          message("\U2717 Features MS2 spectra not loaded!")
         }
+      } else {
+        message("\U2717 Features not present!")
       }
       invisible(self)
     },
@@ -2561,9 +2653,13 @@ msData <- R6::R6Class("msData",
             x$features <- x$features[order(x$features$filtered), ]
             x
           }, groups = groups)
+          n_g <- nrow(private$.groups)
+          message("\U2713 Removed ", n_org_g - n_g, " groups!")
+        } else {
+          message("\U2717 There are no groups to remove!")
         }
-        n_g <- nrow(private$.groups)
-        message("\U2713 Removed ", n_org_g - n_g, " groups!")
+      } else {
+        message("\U2717 There are no groups to remove!")
       }
       invisible(self)
     },
@@ -2579,7 +2675,11 @@ msData <- R6::R6Class("msData",
         if (any(self$has_loaded_groups_ms1())) {
           private$.groups$ms1 <- NULL
           message("\U2713 Removed all MS1 spectra from feature groups!")
+        } else {
+          message("\U2717 Groups MS1 spectra not loaded!")
         }
+      } else {
+        message("\U2717 Groups not present!")
       }
       invisible(self)
     },
@@ -2595,7 +2695,11 @@ msData <- R6::R6Class("msData",
         if (any(self$has_loaded_groups_ms2())) {
           private$.groups$ms2 <- NULL
           message("\U2713 Removed all MS2 spectra from feature groups!")
+        } else {
+          message("\U2717 Groups MS2 spectra not loaded!")
         }
+      } else {
+        message("\U2717 Groups not present!")
       }
       invisible(self)
     },
@@ -2655,15 +2759,13 @@ msData <- R6::R6Class("msData",
                   new_ms$get_number_analyses(),
                   " analyses created!"
           )
-          new_ms
 
-        } else {
-          warning("No analyses selected for the subset!")
-          NULL
+          return(new_ms)
         }
-      } else {
-        self$clone()
       }
+
+      message("\U2717 There are no analyses selected to subset!")
+      suppressMessages(msData$new())
     },
 
     #' @description
@@ -2697,11 +2799,20 @@ msData <- R6::R6Class("msData",
                       " features created!"
               )
               return(new_ms)
+
+            } else {
+              message("\U2717 There are no features to subset!")
             }
+          } else {
+            message("\U2717 There are no features to subset!")
           }
+        } else {
+          message("\U2717 Data.frame with analysis and feature IDs not given!")
         }
+      } else {
+        message("\U2717 Data.frame with analysis and feature IDs not given!")
       }
-      self$clone()
+      suppressMessages(msData$new())
     },
 
     #' @description
@@ -2730,9 +2841,14 @@ msData <- R6::R6Class("msData",
                   " feature groups created!"
           )
           return(new_ms)
+
+        } else {
+          message("\U2717 There are no groups to subset!")
         }
+      } else {
+        message("\U2717 There are no groups to subset!")
       }
-      self$clone()
+      suppressMessages(msData$new())
     },
 
     ## ___ has -----

@@ -82,7 +82,20 @@ settingsLoadFeaturesMS1 <- list(
     mzClust = 0.003,
     minIntensity = 250,
     filtered = FALSE,
-    runParallel = FALSE,
+    runParallel = TRUE,
+    verbose = FALSE
+  )
+)
+
+settingsLoadFeaturesMS2 <- list(
+  "call" = "load_features_ms2",
+  "algorithm" = "streamFind",
+  "parameters" = list(
+    isolationWindow = 1.3,
+    mzClust = 0.003,
+    minIntensity = 0,
+    filtered = FALSE,
+    runParallel = TRUE,
     verbose = FALSE
   )
 )
@@ -95,11 +108,31 @@ settingsLoadGroupsMS1 <- list(
     minIntensity = 1000,
     verbose = FALSE,
     filtered = FALSE,
-    runParallel = FALSE
+    runParallel = TRUE
+  )
+)
+
+settingsLoadGroupsMS2 <- list(
+  "call" = "load_groups_ms2",
+  "algorithm" = "streamFind",
+  "parameters" = list(
+    mzClust = 0.003,
+    minIntensity = 250,
+    filtered = FALSE,
+    runParallel = TRUE,
+    verbose = FALSE
   )
 )
 
 # code -------------------------------------------------------------------------
+
+patRoon::clearCache("parsed_ms_analyses")
+patRoon::clearCache("parsed_ms_spectra")
+patRoon::clearCache("load_features_ms1")
+patRoon::clearCache("load_features_ms2")
+patRoon::clearCache("load_groups_ms1")
+patRoon::clearCache("load_groups_ms2")
+
 
 ms <- msData$new(files = all_files[10:21],
   headers = list(name = "Example 1"),
@@ -107,23 +140,36 @@ ms <- msData$new(files = all_files[10:21],
     find = settings_ff,
     group = settings_gf,
     ms1ft = settingsLoadFeaturesMS1,
-    ms1gp = settingsLoadGroupsMS1
+    ms2ft = settingsLoadFeaturesMS2,
+    ms1gp = settingsLoadGroupsMS1,
+    ms2gp = settingsLoadGroupsMS2
   )
 )
+
+# ms$subset_analyses("ana")
+# ms$subset_features(1:2)
+# ms$subset_groups(1:2)
+#
+#
+# ms$remove_analyses(1)
+#
+# ms$get_spectra(analyses = 4:6, mz = targets)
 
 ms$find_features()
 
 ms$group_features()
 
 ms$load_features_ms1()
+ms$load_features_ms2()
 
 ms$load_groups_ms1()
+ms$load_groups_ms2()
 
 
 ms$get_features(mass = neutral_targets)
-ms$add_analyses(anas)
-anas <- parse.msAnalysis(files)
 
+anas <- parse.msAnalysis(files)
+ms$add_analyses(anas)
 
 ms$has_loaded_features_ms1()
 ms$has_loaded_groups_ms1()

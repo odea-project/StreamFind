@@ -448,3 +448,24 @@ correlate_analysis_spectra <- function(spectra,
 
   cor_list
 }
+
+#' caches_data
+#'
+#' @description Check if cache is possible and enabled via the global options.
+#'
+#' @return `TRUE` or `FALSE`.
+#'
+#' @noRd
+#'
+caches_data <- function() {
+  if (requireNamespace("patRoon", quietly = TRUE)) {
+    ret <- getOption("patRoon.cache.mode", default = "both")
+    if (ret %in% c("both", "save", "load")) {
+      TRUE
+    } else {
+      FALSE
+    }
+  } else {
+    FALSE
+  }
+}

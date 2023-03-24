@@ -10,6 +10,7 @@
 #' @param runParallel X.
 #' @param minIntensityMS1 X.
 #' @param minIntensityMS2 X.
+#' @param cache X.
 #'
 #' @return A list with a spectra `data.frame` for each file in `files`.
 #' On error, returns \code{NULL}.
@@ -65,6 +66,32 @@ parse_ms_spectra <- function(files = NA_character_, levels = c(1, 2),
       }
     } else {
       preMZr <- NULL
+    }
+
+    cached_spectra <- FALSE
+
+    if (caches_data()) {
+      hash <- patRoon::makeHash(
+        files, levels, targets, allTraces,
+        isolationWindow, minIntensityMS1, minIntensityMS2
+      )
+
+      spec_list <- patRoon::loadCacheData("parsed_ms_spectra", hash)
+
+      if (!is.null(spec_list)) {
+        message("\U2713 Spectra loaded from cache!")
+        cached_spectra <- TRUE
+        return(spec_list)
+      }
+
+    } else {
+      hash <- NULL
+    }
+
+    if (!cached_spectra) {
+      message("Parsing spectra from ", length(files),  " MS file/s..." ,
+        appendLF = FALSE
+      )
     }
 
     if (!is.logical(runParallel)) runParallel <- FALSE
@@ -648,9 +675,26 @@ parse_ms_spectra <- function(files = NA_character_, levels = c(1, 2),
       names(spec_list) = files
     }
   } else {
+    spec_list <- NULL
     warning("File/s not valid!")
   }
   # end -----
+
+  if (!cached_spectra & !is.null(spec_list)) {
+    message(" Done!") #\U2713
+  }
+
+  if (!cached_spectra & !is.null(hash)) {
+    if (!is.null(spec_list)) {
+      message("\U2713 Parsed spectra cached!")
+      patRoon::saveCacheData("parsed_ms_spectra", spec_list, hash)
+    }
+  }
+
+  # if (!cached_spectra & !is.null(spec_list)) {
+  #   message("\U2713 Parsed spectra from ", length(files),  " MS file/s!")
+  # }
+
   spec_list
 }
 
