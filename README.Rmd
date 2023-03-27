@@ -1,5 +1,6 @@
 ---
 output: github_document
+bibliography: inst/REFERENCES.bib
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -48,3 +49,9 @@ remotes::install_github("ricardobachertdacunha/streamFindData")
 ### Documentation
 
 The documentation and usage examples of the streamFind R package can be found in the [reference page](https://ricardobachertdacunha.github.io/streamFind/reference/index.html) and [articles](https://ricardobachertdacunha.github.io/streamFind/articles/index.html) of the [webpage](https://ricardobachertdacunha.github.io/streamFind/index.html).
+
+# References
+
+---
+nocite: '@*'
+---

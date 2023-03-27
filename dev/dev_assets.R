@@ -1,31 +1,36 @@
 
 # Development ------------------------------------------------------------------
 
+# Updates documentation with roxygen
 devtools::document()
 devtools::document()
 
+# Installs the package
 devtools::install(upgrade = "never", dependencies = TRUE, build_vignettes = TRUE)
 
+# Builds/Updates the GitHub page
 pkgdown::build_site()
 
+# Check the package for conformity
 devtools::check()
 
+# Loads all dependencies
 devtools::load_all() #Ctrl+Shift+L
 
+# Lists TODOs
 todor::todor()
 
-system.file(package = "streamFind", dir = "extdata")
-
-usethis::use_build_ignore("man-roxygen")
 
 # Code lines -------------------------------------------------------------------
 
 #gsub(".*M(.*)\\].*", "\\1", adduct_ion)
 
 
-
-
 # Others -----------------------------------------------------------------------
+
+system.file(package = "streamFind", dir = "extdata")
+
+usethis::use_build_ignore("man-roxygen")
 
 ## Add internal datasets ----
 ## If you have data in your package

@@ -45,6 +45,15 @@
 #'
 #' @return An msAnalysis S3 class object.
 #'
+#' @references
+#' \insertRef{mzr01}{streamFind}
+#'
+#' \insertRef{mzr02}{streamFind}
+#'
+#' \insertRef{mzr03}{streamFind}
+#'
+#' \insertRef{mzr04}{streamFind}
+#'
 #' @export
 #'
 msAnalysis <- function(name = NA_character_,
@@ -314,7 +323,8 @@ as.msAnalysis <- function(value) {
 
 #' @describeIn msAnalysis
 #' Parses information from *mzML* or *mzXML* file/s and returns a list with
-#' msAnalysis S3 class object/s. On error, returns \code{NULL}.
+#' msAnalysis S3 class object/s. On error, returns \code{NULL}. The function
+#' uses the package \pkg{mzR} or when not installed, the package \pkg{xml2}.
 #'
 #' @param files A character vector with *mzML* or *mzXML* full file path/s.
 #' Alternatively, a data.frame with the column/s file, replicate and blank

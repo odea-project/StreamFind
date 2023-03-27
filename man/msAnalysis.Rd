@@ -132,6 +132,16 @@ one.
 \item \code{as.msAnalysis()}: Converts the argument in an msAnalysis S3 class object.
 
 \item \code{parse.msAnalysis()}: Parses information from \emph{mzML} or \emph{mzXML} file/s and returns a list with
-msAnalysis S3 class object/s. On error, returns \code{NULL}.
+msAnalysis S3 class object/s. On error, returns \code{NULL}. The function
+uses the package \pkg{mzR} or when not installed, the package \pkg{xml2}.
 
 }}
+\references{
+\insertRef{mzr01}{streamFind}
+
+\insertRef{mzr02}{streamFind}
+
+\insertRef{mzr03}{streamFind}
+
+\insertRef{mzr04}{streamFind}
+}

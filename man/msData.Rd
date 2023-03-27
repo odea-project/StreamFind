@@ -9,6 +9,26 @@ visualizing and storing MS data.
 }
 \references{
 \insertRef{patroon01}{streamFind}
+
+\insertRef{patroon02}{streamFind}
+
+\insertRef{mzr01}{streamFind}
+
+\insertRef{mzr02}{streamFind}
+
+\insertRef{mzr03}{streamFind}
+
+\insertRef{mzr04}{streamFind}
+
+\insertRef{proteo01}{streamFind}
+
+\insertRef{proteo02}{streamFind}
+
+\insertRef{xcms01}{streamFind}
+
+\insertRef{xcms02}{streamFind}
+
+\insertRef{xcms03}{streamFind}
 }
 \section{Methods}{
 \subsection{Public methods}{
