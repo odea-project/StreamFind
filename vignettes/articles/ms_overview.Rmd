@@ -990,11 +990,19 @@ ms$plot_groups_ms2(mz = targets1,
 
 ## Load groups MS1 and MS2
 
-Similarly to features, loading MS1 and MS2 spectra for feature groups is also possible via the methods `load_groups_ms1()` and `load_groups_ms2()`. Also here settings are used for loading the spectra and when spectra are not available for a given feature group, `NULL` is returned. Below, the loading process is demonstrated for the `msTargets` earlier created.
+Similarly to features, loading MS1 and MS2 spectra for feature groups is also possible via the methods `load_groups_ms1()` and `load_groups_ms2()`. Also here settings are used for loading the spectra and when spectra are not available for a given feature group, `NULL` is returned. Below, the loading process is demonstrated for a subset as earlier shown.
 
 ```{r grouping-ms1-ms2, results='hide'}
-# Grouping the features in the msTargets object
-msTargets$group_features(settings = settingsGroupFeatures)
+targetGroups <- ms$get_groups(mz = targets1)
+
+# Only the groups from targets are kept in the msData object
+msTargets <- ms$subset_groups(groups = targetGroups$group)
+
+# Removing filtered features (i.e., not belonging to targeted groups)
+msTargets$remove_features(filtered = TRUE)
+
+# Only 6 features and 2 groups left 
+msTargets
 ```
 
 ```{r groups-ms1-ms2-settings}
@@ -1077,3 +1085,8 @@ Not yet implemented.
 # Outlook 
 
 The streamFind R package is experimental. This article showed the preliminary framework for mass spectrometry. This article will be updated with future developments for MS data processing. Please [contact us](mailto:cunha@iuta.de) for questions, suggestions, issues or collaboration.
+
+```{r clean-up, include=FALSE}
+patRoon::clearCache()
+```
+

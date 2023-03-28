@@ -23,6 +23,19 @@ todor::todor()
 
 # Code lines -------------------------------------------------------------------
 
+# \U1f5ab floppy disk (clear background)
+# \U1f5aa floppy disk
+# \U23f1 stopwatch for time tasks
+# \U231b ample for time tasks
+# \U2713 check mark for modified by reference
+# \U1D48A italic i for info messages
+# \U2139 i for information messages
+# \U24d8 i from information messages with round circle
+# \U2713 check for ready
+# \U1f5f9 check in a box
+
+
+
 #gsub(".*M(.*)\\].*", "\\1", adduct_ion)
 
 

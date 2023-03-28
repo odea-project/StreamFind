@@ -146,6 +146,14 @@ ms <- msData$new(files = all_files[10:21],
   )
 )
 
+
+ms$plot_bpc()
+
+
+
+
+View(ms$get_settings())
+
 # ms$subset_analyses("ana")
 # ms$subset_features(1:2)
 # ms$subset_groups(1:2)

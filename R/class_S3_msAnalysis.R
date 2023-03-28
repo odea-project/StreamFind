@@ -409,7 +409,7 @@ parse.msAnalysis <- function(files = NULL, runParallel = FALSE) {
   }
 
   if (!cached_analyses) {
-    message("Parsing ", length(files),  " MS file/s...", appendLF = FALSE)
+    message("\U2699 Parsing ", length(files),  " MS file/s...", appendLF = FALSE)
   }
 
   i = NULL
@@ -904,7 +904,7 @@ parse.msAnalysis <- function(files = NULL, runParallel = FALSE) {
     return(NULL)
 
   } else {
-    message("\U2713 Analyses loaded from cache!")
+    message("\U24d8 Analyses loaded from cache!")
   }
 
   # if (!cached_analyses & !is.null(analyses)) {
@@ -918,7 +918,7 @@ parse.msAnalysis <- function(files = NULL, runParallel = FALSE) {
   if (!cached_analyses & !is.null(hash)) {
     if (!is.null(analyses)) {
       if (all(vapply(analyses, validate.msAnalysis, FALSE))) {
-        message("\U2713 Parsed MS files/s cached!")
+        message("\U1f5ab Parsed MS files/s cached!")
         patRoon::saveCacheData("parsed_ms_analyses", analyses, hash)
       }
     }

@@ -79,7 +79,7 @@ parse_ms_spectra <- function(files = NA_character_, levels = c(1, 2),
       spec_list <- patRoon::loadCacheData("parsed_ms_spectra", hash)
 
       if (!is.null(spec_list)) {
-        message("\U2713 Spectra loaded from cache!")
+        message("\U24d8 Spectra loaded from cache!")
         cached_spectra <- TRUE
         return(spec_list)
       }
@@ -89,7 +89,7 @@ parse_ms_spectra <- function(files = NA_character_, levels = c(1, 2),
     }
 
     if (!cached_spectra) {
-      message("Parsing spectra from ", length(files),  " MS file/s..." ,
+      message("\U2699 Parsing spectra from ", length(files),  " MS file/s..." ,
         appendLF = FALSE
       )
     }
@@ -681,12 +681,12 @@ parse_ms_spectra <- function(files = NA_character_, levels = c(1, 2),
   # end -----
 
   if (!cached_spectra & !is.null(spec_list)) {
-    message(" Done!") #\U2713
+    message(" Done!")
   }
 
   if (!cached_spectra & !is.null(hash)) {
     if (!is.null(spec_list)) {
-      message("\U2713 Parsed spectra cached!")
+      message("\U1f5ab Parsed spectra cached!")
       patRoon::saveCacheData("parsed_ms_spectra", spec_list, hash)
     }
   }
