@@ -43,6 +43,7 @@ pre code {
 library(knitr)
 library(kableExtra)
 library(magrittr)
+library(mzR)
 library(patRoon)
 library(streamFind)
 ```

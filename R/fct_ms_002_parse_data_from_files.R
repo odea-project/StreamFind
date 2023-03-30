@@ -79,7 +79,7 @@ parse_ms_spectra <- function(files = NA_character_, levels = c(1, 2),
       spec_list <- patRoon::loadCacheData("parsed_ms_spectra", hash)
 
       if (!is.null(spec_list)) {
-        message("\U24d8 Spectra loaded from cache!")
+        message("\U2139 Spectra loaded from cache!")
         cached_spectra <- TRUE
         return(spec_list)
       }

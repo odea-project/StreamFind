@@ -408,14 +408,27 @@ parse.msAnalysis <- function(files = NULL, runParallel = FALSE) {
     registerDoSEQ()
   }
 
+  with_mzR <- FALSE
+  with_xml2 <- FALSE
+
   if (!cached_analyses) {
+
+    if (requireNamespace("mzR", quietly = TRUE)) {
+      with_mzR <- TRUE
+    } else if (requireNamespace("xml2", quietly = TRUE)) {
+      with_xml2 <- TRUE
+    } else {
+      warning("Both mzR and xml2 R packages are not installed or available!")
+      return(NULL)
+    }
+
     message("\U2699 Parsing ", length(files),  " MS file/s...", appendLF = FALSE)
   }
 
   i = NULL
 
   # with mzR -----
-  if (requireNamespace("mzR", quietly = TRUE) & !cached_analyses) {
+  if (with_mzR & !cached_analyses) {
     analyses <- foreach(i = files, .packages = "mzR") %dopar% {
       file_link <- mzR::openMSfile(i, backend = "pwiz")
       sH <- suppressWarnings(mzR::header(file_link))
@@ -545,7 +558,7 @@ parse.msAnalysis <- function(files = NULL, runParallel = FALSE) {
     }
 
     ## with xml2 -----
-  } else if (requireNamespace("xml2", quietly = TRUE) & !cached_analyses) {
+  } else if (with_xml2 & !cached_analyses) {
     analyses <- foreach(i = files, .packages = "xml2") %dopar% {
 
       xml_data <- read_xml(i)
@@ -900,11 +913,10 @@ parse.msAnalysis <- function(files = NULL, runParallel = FALSE) {
       analysis
     }
   } else if (!cached_analyses) {
-    warning("Both mzR and xml2 R packages are not installed or available!")
     return(NULL)
 
   } else {
-    message("\U24d8 Analyses loaded from cache!")
+    message("\U2139 Analyses loaded from cache!")
   }
 
   # if (!cached_analyses & !is.null(analyses)) {

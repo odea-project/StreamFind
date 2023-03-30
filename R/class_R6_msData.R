@@ -128,7 +128,7 @@ msData <- R6::R6Class("msData",
 
       if (!is.null(alignment)) suppressMessages(self$add_alignment(alignment))
 
-      message("\U1f5f9 msData class object created!")
+      message("\U2713 msData class object created!")
     },
 
     #' @description
@@ -1482,7 +1482,7 @@ msData <- R6::R6Class("msData",
 
         if (!identical(new_headers, old_headers) & is(new_headers, "headers")) {
           private$.headers <- new_headers
-          message("\U1f5f9 Added headers!")
+          message("\U2713 Added headers!")
         }
 
       } else {
@@ -1507,7 +1507,7 @@ msData <- R6::R6Class("msData",
           if (!is.null(settings)) {
             private$.settings[[settings$call]] <- settings
             message(
-              paste0("\U1f5f9 ", settings$call, " processing settings added!")
+              paste0("\U2713 ", settings$call, " processing settings added!")
             )
           }
 
@@ -1515,7 +1515,7 @@ msData <- R6::R6Class("msData",
           settings <- lapply(settings, as.settings)
           call_names <- vapply(settings, function(x) x$call, NA_character_)
           private$.settings[call_names] <- settings
-          message(paste0("\U1f5f9 Added settings for:\n",
+          message(paste0("\U2713 Added settings for:\n",
             paste(call_names, collapse = "\n"))
           )
 
@@ -1588,7 +1588,7 @@ msData <- R6::R6Class("msData",
           private$.analyses <- new_analyses
           message(
             paste0(
-              "\U1f5f9 ",
+              "\U2713 ",
               length(new_analyses) - old_size,
               " analyses added!"
             )
@@ -1628,7 +1628,7 @@ msData <- R6::R6Class("msData",
           private$.analyses, value
         )
 
-        message("\U1f5f9 Replicate names added!")
+        message("\U2713 Replicate names added!")
       } else {
         warning("Not done, check the value!")
       }
@@ -1657,7 +1657,7 @@ msData <- R6::R6Class("msData",
             private$.analyses, value
           )
 
-          message("\U1f5f9 Blank names added!")
+          message("\U2713 Blank names added!")
         } else {
           warning("Not done, blank names not among replicate names!")
         }
@@ -1738,7 +1738,7 @@ msData <- R6::R6Class("msData",
             },
             private$.analyses, org_features
           )
-          message("\U1f5f9 ", n_fts, " features added!")
+          message("\U2713 ", n_fts, " features added!")
 
         } else {
           warning("rbind for features not implemented yet!")
@@ -1805,7 +1805,7 @@ msData <- R6::R6Class("msData",
             }
 
           } else {
-            message(paste0("\U1f5f9 ", nrow(groups), " feature groups added!"))
+            message(paste0("\U2713 ", nrow(groups), " feature groups added!"))
           }
 
         } else {
@@ -1842,7 +1842,7 @@ msData <- R6::R6Class("msData",
 
         if (all(valid)) {
           private$.alignment <- alignment
-          message("\U1f5f9 Alignment added!")
+          message("\U2713 Alignment added!")
 
         } else {
           warning("Invalid alignment structure or content! Not added.")
@@ -1885,7 +1885,7 @@ msData <- R6::R6Class("msData",
           private$.analyses, spec_list
         )
 
-        message("\U1f5f9 Spectra loaded to all analyses!")
+        message("\U2713 Spectra loaded to all analyses!")
 
       } else {
         warning("Not done, check the MS file paths and formats!")
@@ -1921,7 +1921,7 @@ msData <- R6::R6Class("msData",
             private$.analyses, chrom_list
           )
 
-          message("\U1f5f9 Chromatograms loaded to all analyses!")
+          message("\U2713 Chromatograms loaded to all analyses!")
 
         } else {
           warning("Not done! Chromatograms not found.")
@@ -1978,7 +1978,7 @@ msData <- R6::R6Class("msData",
 
           if (!is.null(ms1)) {
             if (all(ms1$id %in% ana_feats$feature)) {
-              message("\U24d8 Features MS1 spectra loaded from cache!")
+              message("\U2139 Features MS1 spectra loaded from cache!")
               cached_ms1 <- TRUE
             } else {
               ms1 <- NULL
@@ -2036,7 +2036,7 @@ msData <- R6::R6Class("msData",
 
         if (all(added_ms1)) {
           private$.analyses <- analyses
-          message("\U1f5f9 MS1 spectra added to features in analyses!")
+          message("\U2713 MS1 spectra added to features in analyses!")
           self$add_settings(settings)
         }
       }
@@ -2088,7 +2088,7 @@ msData <- R6::R6Class("msData",
 
           if (!is.null(ms2)) {
             if (all(ms2$id %in% ana_feats$feature)) {
-              message("\U24d8 Features MS2 spectra loaded from cache!")
+              message("\U2139 Features MS2 spectra loaded from cache!")
               cached_ms2 <- TRUE
             } else {
               ms2 <- NULL
@@ -2148,7 +2148,7 @@ msData <- R6::R6Class("msData",
 
         if (all(added_ms2)) {
           private$.analyses <- analyses
-          message("\U1f5f9 MS2 spectra added to features in analyses!")
+          message("\U2713 MS2 spectra added to features in analyses!")
           self$add_settings(settings)
         }
       }
@@ -2210,7 +2210,7 @@ msData <- R6::R6Class("msData",
 
           if (!is.null(ms1)) {
             if (all(ms1$id %in% group_ids$group)) {
-              message("\U24d8 Groups MS1 spectra loaded from cache!")
+              message("\U2139 Groups MS1 spectra loaded from cache!")
               cached_ms1 <- TRUE
             } else {
               ms1 <- NULL
@@ -2263,7 +2263,7 @@ msData <- R6::R6Class("msData",
           }, ms1 = ms1)
 
           private$.groups$ms1 <- groups_ms1
-          message("\U1f5f9 MS1 spectra added to feature groups!")
+          message("\U2713 MS1 spectra added to feature groups!")
           self$add_settings(settings)
 
         } else {
@@ -2322,7 +2322,7 @@ msData <- R6::R6Class("msData",
 
           if (!is.null(ms2)) {
             if (all(ms2$id %in% group_ids$group)) {
-              message("\U24d8 Groups MS2 spectra loaded from cache!")
+              message("\U2139 Groups MS2 spectra loaded from cache!")
               cached_ms2 <- TRUE
             } else {
               ms2 <- NULL
@@ -2375,7 +2375,7 @@ msData <- R6::R6Class("msData",
           }, ms2 = ms2)
 
           private$.groups$ms2 <- groups_ms2
-          message("\U1f5f9 MS2 spectra added to feature groups!")
+          message("\U2713 MS2 spectra added to feature groups!")
           self$add_settings(settings)
 
         } else {
@@ -2407,7 +2407,7 @@ msData <- R6::R6Class("msData",
 
         if (value %in% names(private$.headers)) {
           private$.headers[value] <- NULL
-          message("\U1f5f9 Removed headers: \n",
+          message("\U2713 Removed headers: \n",
             paste(value, collapse = "\n")
           )
         } else {
@@ -2420,11 +2420,11 @@ msData <- R6::R6Class("msData",
         private$.headers[to_remove] <- NULL
 
         if (length(to_remove) > 1) {
-          message("\U1f5f9 Removed headers: \n",
+          message("\U2713 Removed headers: \n",
                   paste(to_remove, collapse = "\n")
           )
         } else {
-          message("\U1f5f9 Removed all headers except name, path and date!")
+          message("\U2713 Removed all headers except name, path and date!")
         }
       }
       invisible(self)
@@ -2448,7 +2448,7 @@ msData <- R6::R6Class("msData",
         call <- call[to_remove]
         if (length(call) > 0) {
           private$.settings[all_calls %in% call] <- NULL
-          message("\U1f5f9 Removed settings for:\n",
+          message("\U2713 Removed settings for:\n",
             paste(call, collapse = "\n")
           )
         } else {
@@ -2498,7 +2498,7 @@ msData <- R6::R6Class("msData",
           }
 
           private$.alignment <- private$.alignment[keepAnalyses]
-          message("\U1f5f9 Removed analyses:\n", paste(analyses, collapse = "\n"))
+          message("\U2713 Removed analyses:\n", paste(analyses, collapse = "\n"))
 
         } else {
           message("\U2717 There are no analyses to remove!")
@@ -2508,7 +2508,7 @@ msData <- R6::R6Class("msData",
         private$.analyses <- NULL
         private$.groups <- NULL
         private$.alignment <- NULL
-        message("\U1f5f9 Removed all analyses!")
+        message("\U2713 Removed all analyses!")
       }
 
       invisible(self)
@@ -2532,7 +2532,7 @@ msData <- R6::R6Class("msData",
           x$features <- data.table()
           x
         })
-        message("\U1f5f9 Removed all features and feature groups!")
+        message("\U2713 Removed all features and feature groups!")
       }
 
       if (is.data.frame(features) | filtered) {
@@ -2568,7 +2568,7 @@ msData <- R6::R6Class("msData",
               x
             }, org_fts = org_fts)
 
-            message("\U1f5f9 Removed ", n_org - n_org_new, " features!")
+            message("\U2713 Removed ", n_org - n_org_new, " features!")
           } else {
             message("\U2717 There are no features to remove!")
           }
@@ -2595,7 +2595,7 @@ msData <- R6::R6Class("msData",
             x$features$ms1 <- NULL
             x
           })
-          message("\U1f5f9 Removed all MS1 spectra from features!")
+          message("\U2713 Removed all MS1 spectra from features!")
         } else {
           message("\U2717 Features MS1 spectra not loaded!")
         }
@@ -2619,7 +2619,7 @@ msData <- R6::R6Class("msData",
             x$features$ms2 <- NULL
             x
           })
-          message("\U1f5f9 Removed all MS2 spectra from features!")
+          message("\U2713 Removed all MS2 spectra from features!")
         } else {
           message("\U2717 Features MS2 spectra not loaded!")
         }
@@ -2677,7 +2677,7 @@ msData <- R6::R6Class("msData",
             x
           }, groups = groups)
           n_g <- nrow(private$.groups)
-          message("\U1f5f9 Removed ", n_org_g - n_g, " groups!")
+          message("\U2713 Removed ", n_org_g - n_g, " groups!")
         } else {
           message("\U2717 There are no groups to remove!")
         }
@@ -2697,7 +2697,7 @@ msData <- R6::R6Class("msData",
       if (self$has_groups()) {
         if (any(self$has_loaded_groups_ms1())) {
           private$.groups$ms1 <- NULL
-          message("\U1f5f9 Removed all MS1 spectra from feature groups!")
+          message("\U2713 Removed all MS1 spectra from feature groups!")
         } else {
           message("\U2717 Groups MS1 spectra not loaded!")
         }
@@ -2717,7 +2717,7 @@ msData <- R6::R6Class("msData",
       if (self$has_groups()) {
         if (any(self$has_loaded_groups_ms2())) {
           private$.groups$ms2 <- NULL
-          message("\U1f5f9 Removed all MS2 spectra from feature groups!")
+          message("\U2713 Removed all MS2 spectra from feature groups!")
         } else {
           message("\U2717 Groups MS2 spectra not loaded!")
         }
@@ -2734,7 +2734,7 @@ msData <- R6::R6Class("msData",
     #'
     remove_alignment = function() {
       private$.alignment <- NULL
-      message("\U1f5f9 Removed alignment!")
+      message("\U2713 Removed alignment!")
       invisible(self)
     },
 
@@ -2778,7 +2778,7 @@ msData <- R6::R6Class("msData",
             suppressMessages(new_ms$add_groups(newGroups))
           }
 
-          message("\U1f5f9 Subset with ",
+          message("\U2713 Subset with ",
                   new_ms$get_number_analyses(),
                   " analyses created!"
           )
@@ -2817,7 +2817,7 @@ msData <- R6::R6Class("msData",
             if (nrow(rem_fts) > 0) {
               new_ms <- self$clone()
               new_ms <- suppressMessages(new_ms$remove_features(rem_fts))
-              message("\U1f5f9 Subset with ",
+              message("\U2713 Subset with ",
                       nrow(new_ms$get_features()),
                       " features created!"
               )
@@ -2859,7 +2859,7 @@ msData <- R6::R6Class("msData",
         if (length(groups_rem) > 0) {
           new_ms <- self$clone(deep = TRUE)
           new_ms <- suppressMessages(new_ms$remove_groups(groups_rem))
-          message("\U1f5f9 Subset with ",
+          message("\U2713 Subset with ",
                   nrow(new_ms$get_groups()),
                   " feature groups created!"
           )
@@ -4086,7 +4086,7 @@ msData <- R6::R6Class("msData",
 
       if (!is.null(alignment)) {
         private$.alignment <- alignment
-        message("\U1f5f9 Added alignment of retention time for each analysis!")
+        message("\U2713 Added alignment of retention time for each analysis!")
       }
       invisible(self)
     },
@@ -4558,14 +4558,14 @@ import_msData <- function(file) {
         }
       }
 
-      message("\U1f5f9 msData class object imported from json file!")
+      message("\U2713 msData class object imported from json file!")
     }
 
     if (file_ext(file) %in% "rds") {
       new_ms <- readRDS(file)
 
       # TODO validate object
-      message("\U1f5f9 msData class object imported from rds file!")
+      message("\U2713 msData class object imported from rds file!")
     }
 
     new_ms

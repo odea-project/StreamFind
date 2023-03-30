@@ -149,7 +149,7 @@ ms <- msData$new(files = all_files[10:21],
 
 ms$plot_bpc()
 
-
+parse_msAnalysis_from_mzxml(files[1])
 
 
 View(ms$get_settings())
