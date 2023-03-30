@@ -45,6 +45,15 @@
 #'
 #' @return An msAnalysis S3 class object.
 #'
+#' @references
+#' \insertRef{mzr01}{streamFind}
+#'
+#' \insertRef{mzr02}{streamFind}
+#'
+#' \insertRef{mzr03}{streamFind}
+#'
+#' \insertRef{mzr04}{streamFind}
+#'
 #' @export
 #'
 msAnalysis <- function(name = NA_character_,
@@ -151,152 +160,152 @@ msAnalysis <- function(name = NA_character_,
 #' Validates an msAnalysis S3 class object, returning a logical value of length
 #' one.
 #'
-#' @param msAnalysis A msAnalysis S3 class object.
+#' @param x A msAnalysis S3 class object.
 #'
 #' @export
 #'
-validate.msAnalysis <- function(msAnalysis = NULL) {
+validate.msAnalysis <- function(x = NULL) {
   valid <- FALSE
   name <- NA_character_
 
-  if (is.list(msAnalysis)) {
+  if (is.list(x)) {
     valid <- TRUE
 
-    if (length(msAnalysis$name) != 1 & !is.character(msAnalysis$name)) {
+    if (length(x$name) != 1 & !is.character(x$name)) {
       warning("Analysis name not conform!")
       valid <- FALSE
     } else {
-      name <- msAnalysis$name
+      name <- x$name
     }
 
-    if (length(msAnalysis$replicate) != 1 &
-        !is.character(msAnalysis$replicate)) {
+    if (length(x$replicate) != 1 &
+        !is.character(x$replicate)) {
       warning("Analysis replicate name not conform!")
       valid <- FALSE
     }
 
-    if (length(msAnalysis$blank) != 1 & !is.character(msAnalysis$blank)) {
+    if (length(x$blank) != 1 & !is.character(x$blank)) {
       warning("Analysis blank name not conform!")
       valid <- FALSE
     }
 
-    if (length(msAnalysis$file) != 1 & !is.character(msAnalysis$file)) {
+    if (length(x$file) != 1 & !is.character(x$file)) {
       warning("Analysis file path entry not conform!")
       valid <- FALSE
-    } else if (!file.exists(msAnalysis$file)) {
+    } else if (!file.exists(x$file)) {
       warning(paste0(
-        msAnalysis$file,
+        x$file,
         " does not exist! Update file paths with msData$update_files() method"
       ))
       valid <- FALSE
     }
 
-    if (length(msAnalysis$type) != 1) {
+    if (length(x$type) != 1) {
       warning("Analysis type entry not conform!")
       valid <- FALSE
-    } else if (!(msAnalysis$type %in% c("MS", "MS/MS", "SRM"))) {
+    } else if (!(x$type %in% c("MS", "MS/MS", "SRM"))) {
       warning("Analysis type must be 'MS', 'MS/MS' or 'SRM'!")
       valid <- FALSE
     }
 
-    if (!is.integer(msAnalysis$spectra_number) &&
-        length(msAnalysis$spectra_number) != 1) {
+    if (!is.integer(x$spectra_number) &&
+        length(x$spectra_number) != 1) {
       warning("Analysis spectra_numebr entry not conform!")
       valid <- FALSE
     }
 
-    if (!is.integer(msAnalysis$chromatograms_number) &&
-        length(msAnalysis$chromatograms_number) != 1) {
+    if (!is.integer(x$chromatograms_number) &&
+        length(x$chromatograms_number) != 1) {
       warning("Analysis chromatograms_number entry not conform!")
       valid <- FALSE
     }
 
-    if (!is.character(msAnalysis$spectra_mode) &
-        length(msAnalysis$spectra_mode) != 1) {
+    if (!is.character(x$spectra_mode) &
+        length(x$spectra_mode) != 1) {
       warning("Analysis spectra_mode entry not conform!")
       valid <- FALSE
     }
 
-    if (!is.integer(msAnalysis$spectra_levels)) {
+    if (!is.integer(x$spectra_levels)) {
       warning("Analysis spectra_levels entry not conform!")
       valid <- FALSE
     }
 
-    if (length(msAnalysis$mz_low) != 1 & !is.numeric(msAnalysis$mz_low)) {
+    if (length(x$mz_low) != 1 & !is.numeric(x$mz_low)) {
       warning("Analysis mz_low entry not conform!")
       valid <- FALSE
     }
 
-    if (length(msAnalysis$mz_high) != 1 & !is.numeric(msAnalysis$mz_high)) {
+    if (length(x$mz_high) != 1 & !is.numeric(x$mz_high)) {
       warning("Analysis mz_high entry not conform!")
       valid <- FALSE
     }
 
-    if (length(msAnalysis$rt_start) != 1 & !is.numeric(msAnalysis$rt_start)) {
+    if (length(x$rt_start) != 1 & !is.numeric(x$rt_start)) {
       warning("Analysis rt_start entry not conform!")
       valid <- FALSE
     }
 
-    if (length(msAnalysis$rt_end) != 1 & !is.numeric(msAnalysis$rt_end)) {
+    if (length(x$rt_end) != 1 & !is.numeric(x$rt_end)) {
       warning("Analysis rt_end entry not conform!")
       valid <- FALSE
     }
 
-    if (!is.character(msAnalysis$polarity)) {
+    if (!is.character(x$polarity)) {
       warning("Analysis polarity entry not conform!")
       valid <- FALSE
     } else if (FALSE %in%
-        (msAnalysis$polarity %in% c("positive", "negative", NA_character_))) {
+        (x$polarity %in% c("positive", "negative", NA_character_))) {
       warning("Analysis polarity entry not conform!")
       valid <- FALSE
     }
 
-    if (length(msAnalysis$ion_mobility) != 1 &
-        !is.logical(msAnalysis$ion_mobility)) {
+    if (length(x$ion_mobility) != 1 &
+        !is.logical(x$ion_mobility)) {
       warning("Analysis ion_mobility entry not conform!")
       valid <- FALSE
     }
 
-    if (!is.data.frame(msAnalysis$tic)) {
+    if (!is.data.frame(x$tic)) {
       warning("Analysis tic entry not conform!")
       valid <- FALSE
     } else if (FALSE %in%
-        (c("rt", "intensity") %in% colnames(msAnalysis$tic))) {
+        (c("rt", "intensity") %in% colnames(x$tic))) {
       warning("Analysis tic data.table must have columns rt and intensity!")
       valid <- FALSE
     }
 
-    if (!is.data.frame(msAnalysis$bpc)) {
+    if (!is.data.frame(x$bpc)) {
       warning("Analysis bpc entry not conform!")
       valid <- FALSE
     } else if (FALSE %in%
-        (c("rt", "mz", "intensity") %in% colnames(msAnalysis$bpc))) {
+        (c("rt", "mz", "intensity") %in% colnames(x$bpc))) {
       warning("Analysis bpc data.table must have columns mz, rt and intensity!")
       valid <- FALSE
     }
 
-    if (!is.data.frame(msAnalysis$spectra)) {
+    if (!is.data.frame(x$spectra)) {
       warning("Analysis spectra entry not conform!")
       valid <- FALSE
     }
 
-    if (!is.data.frame(msAnalysis$chromatograms)) {
+    if (!is.data.frame(x$chromatograms)) {
       warning("Analysis chromatograms entry not conform!")
       valid <- FALSE
     }
 
-    if (!is.data.frame(msAnalysis$features)) {
+    if (!is.data.frame(x$features)) {
       warning("Analysis features entry not conform!")
       valid <- FALSE
     }
 
-    if (!is.list(msAnalysis$metadata)) {
+    if (!is.list(x$metadata)) {
       warning("Analysis netadata entry not conform!")
       valid <- FALSE
     }
   }
 
-  if (!valid) warning("Issue/s found with analysis ", msAnalysis$name, "!")
+  if (!valid) warning("Issue/s found with analysis ", x$name, "!")
 
   valid
 }
@@ -314,7 +323,8 @@ as.msAnalysis <- function(value) {
 
 #' @describeIn msAnalysis
 #' Parses information from *mzML* or *mzXML* file/s and returns a list with
-#' msAnalysis S3 class object/s. On error, returns \code{NULL}.
+#' msAnalysis S3 class object/s. On error, returns \code{NULL}. The function
+#' uses the package \pkg{mzR} or when not installed, the package \pkg{xml2}.
 #'
 #' @param files A character vector with *mzML* or *mzXML* full file path/s.
 #' Alternatively, a data.frame with the column/s file, replicate and blank
@@ -369,13 +379,15 @@ parse.msAnalysis <- function(files = NULL, runParallel = FALSE) {
 
   cached_analyses <- FALSE
 
-  if (requireNamespace("patRoon", quietly = TRUE)) {
-    hash <- patRoon:::makeHash(files)
-    analyses <- patRoon:::loadCacheData("parsed_ms_analyses", hash)
+  if (caches_data()) {
+    hash <- patRoon::makeHash(files)
+    analyses <- patRoon::loadCacheData("parsed_ms_analyses", hash)
 
     if (!is.null(analyses)) {
       if (all(vapply(analyses, validate.msAnalysis, FALSE))) {
         cached_analyses <- TRUE
+      } else {
+        analyses <- NULL
       }
     }
 
@@ -396,10 +408,27 @@ parse.msAnalysis <- function(files = NULL, runParallel = FALSE) {
     registerDoSEQ()
   }
 
+  with_mzR <- FALSE
+  with_xml2 <- FALSE
+
+  if (!cached_analyses) {
+
+    if (requireNamespace("mzR", quietly = TRUE)) {
+      with_mzR <- TRUE
+    } else if (requireNamespace("xml2", quietly = TRUE)) {
+      with_xml2 <- TRUE
+    } else {
+      warning("Both mzR and xml2 R packages are not installed or available!")
+      return(NULL)
+    }
+
+    message("\U2699 Parsing ", length(files),  " MS file/s...", appendLF = FALSE)
+  }
+
   i = NULL
 
   # with mzR -----
-  if (requireNamespace("mzR", quietly = TRUE) & !cached_analyses) {
+  if (with_mzR & !cached_analyses) {
     analyses <- foreach(i = files, .packages = "mzR") %dopar% {
       file_link <- mzR::openMSfile(i, backend = "pwiz")
       sH <- suppressWarnings(mzR::header(file_link))
@@ -529,7 +558,7 @@ parse.msAnalysis <- function(files = NULL, runParallel = FALSE) {
     }
 
     ## with xml2 -----
-  } else if (requireNamespace("xml2", quietly = TRUE) & !cached_analyses) {
+  } else if (with_xml2 & !cached_analyses) {
     analyses <- foreach(i = files, .packages = "xml2") %dopar% {
 
       xml_data <- read_xml(i)
@@ -884,17 +913,25 @@ parse.msAnalysis <- function(files = NULL, runParallel = FALSE) {
       analysis
     }
   } else if (!cached_analyses) {
-    warning("Both mzR and xml2 R packages are not installed or available!")
     return(NULL)
 
   } else {
-    message("\U2713 Analyses loaded from cache!")
+    message("\U2139 Analyses loaded from cache!")
+  }
+
+  # if (!cached_analyses & !is.null(analyses)) {
+  #   message("\U2713 Parsed ", length(files),  " MS file/s!")
+  # }
+
+  if (!cached_analyses & !is.null(analyses)) {
+    message(" Done!")
   }
 
   if (!cached_analyses & !is.null(hash)) {
     if (!is.null(analyses)) {
       if (all(vapply(analyses, validate.msAnalysis, FALSE))) {
-        patRoon:::saveCacheData("parsed_ms_analyses", analyses, hash)
+        message("\U1f5ab Parsed MS files/s cached!")
+        patRoon::saveCacheData("parsed_ms_analyses", analyses, hash)
       }
     }
   }

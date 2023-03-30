@@ -1,5 +1,4 @@
-#' @export
 #' @noRd
-validate <- function(x, ...) {
-  UseMethod("validate", x)
+validate <- function(x) {
+  UseMethod("validate")
 }

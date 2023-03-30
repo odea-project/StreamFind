@@ -14,6 +14,7 @@ List rcpp_ms_cluster_spectra(DataFrame spectra, double mzClust, bool verbose) {
   StringVector all_ids = spectra["unique_id"];
   StringVector unique_ids = unique(all_ids);
   int totalNumberIds = unique_ids.size();
+  int n = all_ids.size();
 
   StringVector target_id;
 
@@ -22,8 +23,6 @@ List rcpp_ms_cluster_spectra(DataFrame spectra, double mzClust, bool verbose) {
   NumericVector rt;
   NumericVector mz;
   NumericVector intensity;
-
-  LogicalVector eval;
 
   IntegerVector idx;
   NumericVector mz_diff;
@@ -61,20 +60,18 @@ List rcpp_ms_cluster_spectra(DataFrame spectra, double mzClust, bool verbose) {
     mz = spectra["mz"];
     intensity = spectra["intensity"];
 
-    int n = all_ids.size();
-    LogicalVector eval = rep(false, n);
-
+    IntegerVector which_idx;
     for (int z=0; z<n; z++) {
-      eval(z) = (all_ids(z) == target_id(0));
+      if (all_ids(z) == target_id(0)) which_idx.push_back(z);
     }
 
-    analysis = analysis[eval];
+    analysis = analysis[which_idx];
     analysis = unique(analysis);
-    id = id[eval];
+    id = id[which_idx];
     id = unique(id);
-    rt = rt[eval];
-    mz = mz[eval];
-    intensity = intensity[eval];
+    rt = rt[which_idx];
+    mz = mz[which_idx];
+    intensity = intensity[which_idx];
 
     if (mz.size() > 0) {
 

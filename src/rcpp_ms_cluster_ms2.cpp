@@ -14,6 +14,7 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
   StringVector all_ids = ms2["unique_id"];
   StringVector unique_ids = unique(all_ids);
   int totalNumberIds = unique_ids.size();
+  int n = all_ids.size();
 
   StringVector target_id;
 
@@ -23,8 +24,6 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
   NumericVector preMZ;
   NumericVector mz;
   NumericVector intensity;
-
-  LogicalVector eval;
 
   IntegerVector idx;
   NumericVector mz_diff;
@@ -66,22 +65,19 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
     mz = ms2["mz"];
     intensity = ms2["intensity"];
 
-
-    int n = all_ids.size();
-    LogicalVector eval(n);
-
+    IntegerVector which_idx;
     for (int z=0; z<n; z++) {
-      eval(z) = (all_ids(z) == target_id(0));
+      if (all_ids(z) == target_id(0)) which_idx.push_back(z);
     }
 
-    analysis = analysis[eval];
+    analysis = analysis[which_idx];
     analysis = unique(analysis);
-    id = id[eval];
+    id = id[which_idx];
     id = unique(id);
-    rt = rt[eval];
-    preMZ = preMZ[eval];
-    mz = mz[eval];
-    intensity = intensity[eval];
+    rt = rt[which_idx];
+    preMZ = preMZ[which_idx];
+    mz = mz[which_idx];
+    intensity = intensity[which_idx];
 
     if (mz.size() > 0) {
 

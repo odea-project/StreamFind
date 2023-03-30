@@ -10,9 +10,9 @@ reference:
   - headers
   - settings
   - msAnalysis
-- title: Functions
+- title: MS functions
 - contents:
   - convert_ms_files
   - trim_ms_files_spectra
-  - make_ms_targets
   - import_msData
+  - make_ms_targets

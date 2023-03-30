@@ -10,8 +10,6 @@
 #'
 #' @return An interactive 3D plot.
 #'
-#' @export
-#'
 #' @noRd
 #'
 plot_spectra_interactive <- function(spectra = NULL, colorBy = "analyses") {
@@ -82,8 +80,6 @@ plot_spectra_interactive <- function(spectra = NULL, colorBy = "analyses") {
 #'
 #' @return An iterative plot of the traces for the requested \emph{m/z} and
 #' retention time pairs.
-#'
-#' @export
 #'
 #' @noRd
 #'
@@ -319,8 +315,6 @@ plot_xic_interactive <- function(xic,
 #'
 #' @return An EIC static plot.
 #'
-#' @export
-#'
 #' @noRd
 #'
 plot_eic_static <- function(eic = NULL, legendNames = NULL, colorBy = "targets",
@@ -404,8 +398,6 @@ plot_eic_static <- function(eic = NULL, legendNames = NULL, colorBy = "targets",
 #' @param title A character vector to be used as title.
 #'
 #' @return An EIC interactive plot.
-#'
-#' @export
 #'
 #' @noRd
 #'
@@ -501,8 +493,6 @@ plot_eic_interactive <- function(eic = NULL, legendNames = NULL,
 #' @param title A character vector to be used as title.
 #'
 #' @return A BPC interactive plot.
-#'
-#' @export
 #'
 #' @noRd
 #'
@@ -604,8 +594,6 @@ plot_bpc_interactive <- function(bpc = NULL, legendNames = NULL,
 #'
 #' @return An MSn plot.
 #'
-#' @export
-#'
 #' @noRd
 #'
 plot_ms2_static <- function(ms2 = NULL, legendNames = NULL,
@@ -698,8 +686,6 @@ plot_ms2_static <- function(ms2 = NULL, legendNames = NULL,
 #' @param title A character vector to be used as title.
 #'
 #' @return An MS2 spectra interactive plot.
-#'
-#' @export
 #'
 #' @noRd
 #'
@@ -807,8 +793,6 @@ plot_ms2_interactive <- function(ms2 = NULL, legendNames = NULL,
 #'
 #' @return An ms1 plot.
 #'
-#' @export
-#'
 #' @noRd
 #'
 plot_ms1_static <- function(ms1 = NULL, legendNames = NULL,
@@ -895,8 +879,6 @@ plot_ms1_static <- function(ms1 = NULL, legendNames = NULL,
 #' @param title A character vector to be used as title.
 #'
 #' @return An ms1 interactive plot.
-#'
-#' @export
 #'
 #' @noRd
 #'
@@ -999,8 +981,6 @@ plot_ms1_interactive <- function(ms1 = NULL, legendNames = NULL,
 #'
 #' @return A plot of chromatographic peaks.
 #'
-#' @export
-#'
 #' @noRd
 #'
 plot_features_static <- function(eic = NULL, features = NULL,
@@ -1024,9 +1004,12 @@ plot_features_static <- function(eic = NULL, features = NULL,
 
   eic$var <- varkey
 
+  eic$unique_ids <- paste0(eic$id, eic$analysis)
+  features$unique_ids <- paste0(features$feature, features$analysis)
+
   cl <- get_colors(unique(eic$var))
 
-  ids <- unique(eic$id)
+  ids <- unique(eic$unique_ids)
 
   plot(eic$rt,
     type = "n",
@@ -1038,14 +1021,13 @@ plot_features_static <- function(eic = NULL, features = NULL,
   )
 
   for (t in ids) {
-    select_vector <- eic$id == t
+    select_vector <- eic$unique_ids == t
     lt <- unique(eic$var[select_vector])
     pk_eic <- eic[select_vector, ]
-    pk_a <- features[features$feature == t, ]
+    pk_a <- features[features$unique_ids == t, ]
     pk_eic_a <- pk_eic[
       pk_eic$rt >= pk_a$rtmin &
-      pk_eic$rt <= pk_a$rtmax &
-      pk_eic$id == t,
+      pk_eic$rt <= pk_a$rtmax,
     ]
     points(
       x = pk_eic$rt,
@@ -1105,8 +1087,6 @@ plot_features_static <- function(eic = NULL, features = NULL,
 #'
 #' @return A chromatographic peak plot through \pkg{plotly}.
 #'
-#' @export
-#'
 #' @noRd
 #'
 plot_features_interactive <- function(eic = NULL, features = NULL,
@@ -1130,11 +1110,14 @@ plot_features_interactive <- function(eic = NULL, features = NULL,
 
   eic$var <- varkey
 
+  eic$unique_ids <- paste0(eic$id, eic$analysis)
+  features$unique_ids <- paste0(features$feature, features$analysis)
+
   leg <- unique(eic$var)
 
   cl <- get_colors(leg)
 
-  ids <- unique(eic$id)
+  ids <- unique(eic$unique_ids)
 
   title <- list(
     text = title, x = 0.13, y = 0.98,
@@ -1159,11 +1142,11 @@ plot_features_interactive <- function(eic = NULL, features = NULL,
   names(showL) <- leg
 
   for (t in ids) {
-    lt <- unique(eic$var[eic$id == t])
-    y <- eic$intensity[eic$id == t]
+    lt <- unique(eic$var[eic$unique_ids == t])
+    y <- eic$intensity[eic$unique_ids == t]
 
     plot <- plot %>% add_trace(
-      x = eic$rt[eic$id == t],
+      x = eic$rt[eic$unique_ids == t],
       y = y,
       type = "scatter", mode = "lines+markers",
       line = list(width = 0.3, color = unname(cl[lt])),
@@ -1175,8 +1158,8 @@ plot_features_interactive <- function(eic = NULL, features = NULL,
     )
     if (length(y) >= 1) showL[lt] <- FALSE
 
-    pk <- features[features$feature %in% t, ]
-    pk_eic <- eic[eic$rt >= pk$rtmin & eic$rt <= pk$rtmax & eic$id == t, ]
+    pk <- features[features$unique_ids %in% t, ]
+    pk_eic <- eic[eic$rt >= pk$rtmin & eic$rt <= pk$rtmax & eic$unique_ids == t, ]
 
     hT <- paste(
       "</br> feature: ", pk$feature,
@@ -1253,8 +1236,6 @@ plot_features_interactive <- function(eic = NULL, features = NULL,
 #' @param showLegend Logical, set to \code{TRUE} to show legend.
 #'
 #' @return A peak/s map plot produced through \pkg{base} plot.
-#'
-#' @export
 #'
 #' @noRd
 #'
@@ -1355,8 +1336,6 @@ map_features_static <- function(features, colorBy = "targets",
 #' @param showLegend Logical, set to \code{TRUE} to show legend.
 #'
 #' @return A peak/s map plot produced through \pkg{plotly}.
-#'
-#' @export
 #'
 #' @noRd
 #'
@@ -1485,8 +1464,6 @@ map_features_interactive <- function(features, colorBy = "targets",
 #' @param analyses X.
 #'
 #' @return plot.
-#'
-#' @export
 #'
 #' @noRd
 #'

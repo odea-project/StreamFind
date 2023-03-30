@@ -4,34 +4,80 @@
 #' The msData R6 class is a framework with methods for parsing, processing,
 #' visualizing and storing MS data.
 #'
+#' @references
+#' \insertRef{patroon01}{streamFind}
+#'
+#' \insertRef{patroon02}{streamFind}
+#'
+#' \insertRef{mzr01}{streamFind}
+#'
+#' \insertRef{mzr02}{streamFind}
+#'
+#' \insertRef{mzr03}{streamFind}
+#'
+#' \insertRef{mzr04}{streamFind}
+#'
+#' \insertRef{proteo01}{streamFind}
+#'
+#' \insertRef{proteo02}{streamFind}
+#'
+#' \insertRef{xcms01}{streamFind}
+#'
+#' \insertRef{xcms02}{streamFind}
+#'
+#' \insertRef{xcms03}{streamFind}
+#'
 #' @export
 #'
 msData <- R6::R6Class("msData",
 
-  # private fields -----
+  # _ private fields -----
   private = list(
 
-    ## .headers -----
+    ## ___ .headers -----
     .headers = NULL,
 
-    ## .settings -----
+    ## ___ .settings -----
     .settings = NULL,
 
-    ## .analyses -----
+    ## ___ .analyses -----
     .analyses = NULL,
 
-    ## .groups -----
+    ## ___ .groups -----
     .groups = NULL,
 
-    ## .alignment -----
-    .alignment = NULL
+    ## ___ .alignment -----
+    .alignment = NULL,
+
+    ## ___ .utils -----
+
+    #' @description
+    #' Checks the analyses argument as a character/integer vector to match
+    #' analyses names or indices from the `msData` object. Returns a valid
+    #' character vector with analysis names or `NULL` for non-matching.
+    #'
+    #' @param analyses X.
+    #'
+    .check_analyses_argument = function(analyses = NULL) {
+      if (is.null(analyses)) {
+        self$get_analysis_names()
+      } else {
+        analyses <- self$get_analysis_names(analyses)
+        if (!all(analyses %in% self$get_analysis_names())) {
+          warning("Defined analyses not found!")
+          NULL
+        } else {
+          analyses
+        }
+      }
+    }
   ),
 
-  # public fields/methods -----
+  # _ public fields/methods -----
 
   public = list(
 
-    ## system -----
+    ## ___ system -----
 
     #' @description
     #' Creates an msData class object. When `headers` are not given (i.e.,
@@ -57,7 +103,7 @@ msData <- R6::R6Class("msData",
                           groups = NULL,
                           alignment = NULL) {
 
-      if (!is.null(headers)) self$add_headers(headers)
+      if (!is.null(headers)) suppressMessages(self$add_headers(headers))
 
       if (is.null(private$.headers)) {
         private$.headers <- headers(
@@ -67,7 +113,7 @@ msData <- R6::R6Class("msData",
         )
       }
 
-      if (!is.null(settings)) self$add_settings(settings)
+      if (!is.null(settings)) suppressMessages(self$add_settings(settings))
 
       if (is.null(analyses) & !is.null(files)) {
         analyses <- parse.msAnalysis(files, runParallel)
@@ -76,11 +122,11 @@ msData <- R6::R6Class("msData",
         }
       }
 
-      if (!is.null(analyses)) self$add_analyses(analyses)
+      if (!is.null(analyses)) suppressMessages(self$add_analyses(analyses))
 
-      if (!is.null(groups)) self$add_groups(groups)
+      if (!is.null(groups)) suppressMessages(self$add_groups(groups))
 
-      if (!is.null(alignment)) self$add_alignment(alignment)
+      if (!is.null(alignment)) suppressMessages(self$add_alignment(alignment))
 
       message("\U2713 msData class object created!")
     },
@@ -122,7 +168,7 @@ msData <- R6::R6Class("msData",
       cat("\n")
     },
 
-    ## get -----
+    ## ___ get -----
 
     #' @description
     #' Method to get the headers of the `msData` object.
@@ -149,7 +195,7 @@ msData <- R6::R6Class("msData",
     #' @return The list of analyses defined by `value`.
     #'
     get_analyses = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       private$.analyses[analyses]
     },
 
@@ -239,7 +285,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_replicate_names = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(NULL)
       rpl <- vapply(private$.analyses, function(x) x$replicate, "")
       names(rpl) <- vapply(private$.analyses, function(x) x$name, "")
@@ -255,7 +301,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_blank_names = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(NULL)
       blk <- vapply(private$.analyses, function(x) x$blank, "")
       names(blk) <- vapply(private$.analyses, function(x) x$name, "")
@@ -271,7 +317,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_polarities = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(NULL)
       pol <- vapply(private$.analyses, function(x) {
         paste(x$polarity, collapse = "; ")
@@ -289,7 +335,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_file_paths = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(NULL)
       fls <- vapply(private$.analyses, function(x) x$file, "")
       names(fls) <- vapply(private$.analyses, function(x) x$name, "")
@@ -305,7 +351,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_mz_low = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(NULL)
       value <- vapply(private$.analyses, function(x) x$mz_low, 0)
       names(value) <- vapply(private$.analyses, function(x) x$name, "")
@@ -321,7 +367,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_mz_high = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(NULL)
       value <- vapply(private$.analyses, function(x) x$mz_high, 0)
       names(value) <- vapply(private$.analyses, function(x) x$name, "")
@@ -337,7 +383,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_rt_start = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(NULL)
       value <- vapply(private$.analyses, function(x) x$rt_start, 0)
       names(value) <- vapply(private$.analyses, function(x) x$name, "")
@@ -353,7 +399,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_rt_end = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(NULL)
       value <- vapply(private$.analyses, function(x) x$rt_end, 0)
       names(value) <- vapply(private$.analyses, function(x) x$name, "")
@@ -369,7 +415,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_spectra_mode = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(NULL)
       value <- vapply(private$.analyses, function(x) x$spectra_mode, "")
       names(value) <- vapply(private$.analyses, function(x) x$name, "")
@@ -385,7 +431,7 @@ msData <- R6::R6Class("msData",
     #' @return A list for each analysis with an integer vector.
     #'
     get_spectra_levels = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(NULL)
       value <- lapply(private$.analyses, function(x) x$spectra_levels)
       names(value) <- vapply(private$.analyses, function(x) x$name, "")
@@ -419,7 +465,7 @@ msData <- R6::R6Class("msData",
                            minIntensityMS1 = 0, minIntensityMS2 = 0,
                            runParallel = FALSE) {
 
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(data.table())
 
       if (!any(is.numeric(minIntensityMS1) | is.integer(minIntensityMS1))) {
@@ -522,7 +568,7 @@ msData <- R6::R6Class("msData",
     #'
     get_chromatograms = function(analyses = NULL, minIntensity = 0,
                                  runParallel = FALSE) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(data.table())
 
       files <- unname(self$get_file_paths(analyses))
@@ -549,7 +595,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_tic = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(data.table())
       tic <- lapply(private$.analyses[analyses], function(x) x$tic)
       tic <- rbindlist(tic, idcol = "analysis", fill = TRUE)
@@ -565,7 +611,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_bpc = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(data.table())
       bpc <- lapply(private$.analyses[analyses], function(x) x$bpc)
       bpc <- rbindlist(bpc, idcol = "analysis", fill = TRUE)
@@ -763,7 +809,7 @@ msData <- R6::R6Class("msData",
                             mz = NULL, rt = NULL, ppm = 20, sec = 60,
                             filtered = FALSE) {
 
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(data.frame())
 
       fts <- lapply(private$.analyses[analyses], function(x) x$features)
@@ -1052,7 +1098,13 @@ msData <- R6::R6Class("msData",
         if (!filtered) fgroups <- fgroups[!fgroups$filtered, ]
 
         if (!is.null(groups)) {
-          fgroups <- fgroups[fgroups$group %in% groups, ]
+
+          if (is.numeric(groups)) {
+            fgroups <- fgroups[groups, ]
+          } else {
+            fgroups <- fgroups[fgroups$group %in% groups, ]
+          }
+
         } else if (!is.null(mass)) {
           if (is.data.frame(mass)) {
             colnames(mass) <- gsub("mass", "mz", colnames(mass))
@@ -1397,7 +1449,7 @@ msData <- R6::R6Class("msData",
       ms2_df
     },
 
-    ## add -----
+    ## ___ add -----
 
     #' @description
     #' Method to add headers information to the `msData` object. If an argument
@@ -1545,12 +1597,7 @@ msData <- R6::R6Class("msData",
           if (old_size < length(new_analyses)) {
             if (self$has_groups()) {
               warning("Feature groups cleared as new analyses were added!")
-              private$.analyses <- lapply(private$.analyses, function(x) {
-                x$features[["feature"]] <- NULL
-                x
-              })
-              private$.groups <- NULL
-              private$.alignment <- NULL
+              suppressMessages(self$remove_groups())
             }
           }
 
@@ -1622,43 +1669,82 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Method to add features to each analysis in the `msData` object.
+    #' Method to add features to analyses.
     #'
     #' @param features X.
+    #' @param replace X.
     #'
     #' @return Invisible.
     #'
-    add_features = function(features = NULL) {
+    add_features = function(features = NULL, replace = TRUE) {
       valid <- FALSE
+      org_analysis_names <- unname(self$get_analysis_names())
+      must_have_cols <- c(
+        "feature", "index", "mz", "rt", "mzmin", "mzmax",
+        "rtmin", "rtmax", "intensity", "area", "mass",
+        "adduct", "filled", "filtered", "filter"
+      )
 
       if (is.data.frame(features)) {
-        must_have_cols <- c(
-          "analysis", "feature", "mz", "rt", "mzmin", "mzmax",
-          "rtmin", "rtmax", "intensity", "area"
-        )
+        must_have_cols <- c("analysis", must_have_cols)
 
         if (all(must_have_cols %in% colnames(features))) {
           features <- features[order(features$analysis), ]
           analysis_names <- unique(features$analysis)
-          org_analysis_names <- unname(self$get_analysis_names())
 
-          if (identical(analysis_names, org_analysis_names)) {
+          if (all(analysis_names %in% org_analysis_names)) {
             valid <- TRUE
+            split_vector <- features$analysis
+            features$analysis <- NULL
+            features <- split(features, split_vector)
           }
+
+        } else {
+          warning("Features data frame does not have all mandatory columns!")
+        }
+
+      } else if (is.list(features)) {
+        analysis_names <- sort(names(features))
+
+        if (all(analysis_names %in% org_analysis_names)) {
+          features <- features[analysis_names]
+          valid <- vapply(features, function(x, must_have_cols) {
+
+            if (is.data.frame(x)) {
+              if (all(must_have_cols %in% colnames(x))) {
+                return(TRUE)
+              }
+            }
+            FALSE
+          }, must_have_cols = must_have_cols, FALSE)
+
+          valid <- all(valid)
         }
       }
 
       if (valid) {
-        features <- split(features, features$analysis)
-        private$.analyses <- Map(
-          function(x, y) {
-            x$features <- y
-            x
-          },
-          private$.analyses, features
-        )
-        message("\U2713 Features added!")
+        n_fts <- sum(vapply(features, function(x) nrow(x), 0))
 
+        org_features <- lapply(private$.analyses, function(x) x$features)
+        names(org_features) <- names(private$.analyses)
+
+        if (replace) {
+          org_features[names(features)] = features
+
+          private$.analyses <- Map(
+            function(x, y) {
+              x$features <- y
+              x
+            },
+            private$.analyses, org_features
+          )
+          message("\U2713 ", n_fts, " features added!")
+
+        } else {
+          warning("rbind for features not implemented yet!")
+          # TODO add rbind option for features
+          # Possibly needed to redo the index and amend the features ID
+        }
       } else {
         warning("Invalid features content or structure! Not added.")
       }
@@ -1666,7 +1752,8 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Method to add feature groups in the `msData` object.
+    #' Method to add feature groups in the `msData` object. Note that existing
+    #' features groups are replaced!
     #'
     #' @template arg-ms-groups
     #'
@@ -1674,7 +1761,7 @@ msData <- R6::R6Class("msData",
     #'
     add_groups = function(groups = NULL) {
 
-      if (is.list(groups)) {
+      if (is.list(groups) & !is.data.frame(groups)) {
         if ("ms1" %in% names(groups)) {
           groups$ms1 <- lapply(groups$ms1, as.data.table)
         }
@@ -1696,15 +1783,13 @@ msData <- R6::R6Class("msData",
         }
       }
 
-      if (is.data.table(groups)) {
+      if (is.data.frame(groups)) {
         must_have_cols <- c(
-          "group", "rt", unname(self$get_analysis_names()),
-          "dppm", "drt", "index", "hasFilled", "filtered", "filter",
-          "adduct", "mass"
+          "group", "rt", unname(self$get_analysis_names()), "rtdev", "massdev",
+          "filled", "filtered", "adduct", "mass"
         )
 
         if (all(must_have_cols %in% colnames(groups))) {
-          groups <- groups[order(groups$index), ]
           old_groups <- private$.groups
           private$.groups <- copy(groups)
 
@@ -1769,7 +1854,7 @@ msData <- R6::R6Class("msData",
       invisible(self)
     },
 
-    ## load -----
+    ## ___ load -----
 
     #' @description
     #' Method to load all spectra from analyses to the `msData` object.
@@ -1883,12 +1968,24 @@ msData <- R6::R6Class("msData",
 
       if ("streamFind" %in% algorithm) {
 
-        if (requireNamespace("patRoon", quietly = TRUE)) {
-          ana_feats <- self$get_features()
+        cached_ms1 <- FALSE
+
+        if (caches_data()) {
+          ana_feats <- self$get_features(filtered = TRUE)
           ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
-          hash <- patRoon:::makeHash(ana_feats, parameters)
-          ms1 <- patRoon:::loadCacheData("loadFeaturesMS1", hash)
-          if (!all(ms1$id %in% ana_feats$feature)) ms1 <- NULL
+          hash <- patRoon::makeHash(ana_feats, parameters)
+          ms1 <- patRoon::loadCacheData("load_features_ms1", hash)
+
+          if (!is.null(ms1)) {
+            if (all(ms1$id %in% ana_feats$feature)) {
+              message("\U2139 Features MS1 spectra loaded from cache!")
+              cached_ms1 <- TRUE
+            } else {
+              ms1 <- NULL
+            }
+          } else {
+            ms1 <- NULL
+          }
 
         } else {
           hash <- NULL
@@ -1907,8 +2004,9 @@ msData <- R6::R6Class("msData",
             runParallel = parameters$runParallel
           )
 
-          if (!is.null(hash)) {
-            patRoon:::saveCacheData("loadFeaturesMS1", ms1, hash)
+          if (!cached_ms1 & !is.null(hash)) {
+            message("\U1f5ab Features MS1 spectra cached!")
+            patRoon::saveCacheData("load_features_ms1", ms1, hash)
           }
         }
 
@@ -1938,7 +2036,7 @@ msData <- R6::R6Class("msData",
 
         if (all(added_ms1)) {
           private$.analyses <- analyses
-          message("\U2713 MS1 data added to features in analyses!")
+          message("\U2713 MS1 spectra added to features in analyses!")
           self$add_settings(settings)
         }
       }
@@ -1980,12 +2078,24 @@ msData <- R6::R6Class("msData",
 
       if ("streamFind" %in% algorithm) {
 
-        if (requireNamespace("patRoon", quietly = TRUE)) {
-          ana_feats <- self$get_features()
+        cached_ms2 <- FALSE
+
+        if (caches_data()) {
+          ana_feats <- self$get_features(filtered = TRUE)
           ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
-          hash <- patRoon:::makeHash(ana_feats, parameters)
-          ms2 <- patRoon:::loadCacheData("loadFeaturesMS2", hash)
-          if (!all(ms2$id %in% ana_feats$feature)) ms2 <- NULL
+          hash <- patRoon::makeHash(ana_feats, parameters)
+          ms2 <- patRoon::loadCacheData("load_features_ms2", hash)
+
+          if (!is.null(ms2)) {
+            if (all(ms2$id %in% ana_feats$feature)) {
+              message("\U2139 Features MS2 spectra loaded from cache!")
+              cached_ms2 <- TRUE
+            } else {
+              ms2 <- NULL
+            }
+          } else {
+            ms2 <- NULL
+          }
 
         } else {
           hash <- NULL
@@ -2003,8 +2113,9 @@ msData <- R6::R6Class("msData",
             runParallel = parameters$runParallel
           )
 
-          if (!is.null(hash)) {
-            patRoon:::saveCacheData("loadFeaturesMS2", ms2, hash)
+          if (!cached_ms2 & !is.null(hash)) {
+            message("\U1f5ab Features MS2 spectra cached!")
+            patRoon::saveCacheData("load_features_ms2", ms2, hash)
           }
         }
 
@@ -2037,7 +2148,7 @@ msData <- R6::R6Class("msData",
 
         if (all(added_ms2)) {
           private$.analyses <- analyses
-          message("\U2713 MS2 data added to features in analyses!")
+          message("\U2713 MS2 spectra added to features in analyses!")
           self$add_settings(settings)
         }
       }
@@ -2086,13 +2197,27 @@ msData <- R6::R6Class("msData",
 
       if ("streamFind" %in% algorithm) {
 
-        if (requireNamespace("patRoon", quietly = TRUE)) {
-          ana_feats <- self$get_features()
+        cached_ms1 <- FALSE
+
+        if (caches_data()) {
+          ana_feats <- self$get_features(filtered = TRUE)
           ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
-          group_ids <- self$get_groups()[["groups"]]
-          hash <- patRoon:::makeHash(ana_feats, group_ids,  parameters)
-          ms1 <- patRoon:::loadCacheData("loadGroupsMS1", hash)
-          if (!all(ms1$id %in% group_ids)) ms1 <- NULL
+          cols_to_hash <- c("group", "rt", "mass", "rtdev", "massdev")
+          group_ids <- self$get_groups()
+          group_ids <- group_ids[, cols_to_hash, with = FALSE]
+          hash <- patRoon::makeHash(ana_feats, group_ids,  parameters)
+          ms1 <- patRoon::loadCacheData("load_groups_ms1", hash)
+
+          if (!is.null(ms1)) {
+            if (all(ms1$id %in% group_ids$group)) {
+              message("\U2139 Groups MS1 spectra loaded from cache!")
+              cached_ms1 <- TRUE
+            } else {
+              ms1 <- NULL
+            }
+          } else {
+            ms1 <- NULL
+          }
 
         } else {
           hash <- NULL
@@ -2118,8 +2243,9 @@ msData <- R6::R6Class("msData",
               runParallel = parameters$runParallel
             )
 
-            if (!is.null(hash)) {
-              patRoon:::saveCacheData("loadGroupsMS1", ms1, hash)
+            if (!cached_ms1 & !is.null(hash)) {
+              message("\U1f5ab Groups MS1 spectra cached!")
+              patRoon::saveCacheData("load_groups_ms1", ms1, hash)
             }
 
           } else {
@@ -2137,7 +2263,7 @@ msData <- R6::R6Class("msData",
           }, ms1 = ms1)
 
           private$.groups$ms1 <- groups_ms1
-          message("\U2713 MS1 data added to feature groups!")
+          message("\U2713 MS1 spectra added to feature groups!")
           self$add_settings(settings)
 
         } else {
@@ -2183,13 +2309,27 @@ msData <- R6::R6Class("msData",
 
       if ("streamFind" %in% algorithm) {
 
-        if (requireNamespace("patRoon", quietly = TRUE)) {
-          ana_feats <- self$get_features()
+        cached_ms2 <- FALSE
+
+        if (caches_data()) {
+          ana_feats <- self$get_features(filtered = TRUE)
           ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
-          group_ids <- self$get_groups()[["groups"]]
-          hash <- patRoon:::makeHash(ana_feats, group_ids,  parameters)
-          ms2 <- patRoon:::loadCacheData("loadgroupsMS2", hash)
-          if (!all(ms2$id %in% group_ids)) ms2 <- NULL
+          cols_to_hash <- c("group", "rt", "mass", "rtdev", "massdev")
+          group_ids <- self$get_groups()
+          group_ids <- group_ids[, cols_to_hash, with = FALSE]
+          hash <- patRoon::makeHash(ana_feats, group_ids,  parameters)
+          ms2 <- patRoon::loadCacheData("load_groups_ms2", hash)
+
+          if (!is.null(ms2)) {
+            if (all(ms2$id %in% group_ids$group)) {
+              message("\U2139 Groups MS2 spectra loaded from cache!")
+              cached_ms2 <- TRUE
+            } else {
+              ms2 <- NULL
+            }
+          } else {
+            ms2 <- NULL
+          }
 
         } else {
           hash <- NULL
@@ -2215,8 +2355,9 @@ msData <- R6::R6Class("msData",
               runParallel = parameters$runParallel
             )
 
-            if (!is.null(hash)) {
-              patRoon:::saveCacheData("loadGroupsMS2", ms2, hash)
+            if (!cached_ms2 & !is.null(hash)) {
+              message("\U1f5ab Groups MS2 spectra cached!")
+              patRoon::saveCacheData("load_groups_ms2", ms2, hash)
             }
 
           } else {
@@ -2234,7 +2375,7 @@ msData <- R6::R6Class("msData",
           }, ms2 = ms2)
 
           private$.groups$ms2 <- groups_ms2
-          message("\U2713 MS2 data added to feature groups!")
+          message("\U2713 MS2 spectra added to feature groups!")
           self$add_settings(settings)
 
         } else {
@@ -2244,7 +2385,7 @@ msData <- R6::R6Class("msData",
       invisible(self)
     },
 
-    ## remove -----
+    ## ___ remove -----
 
     #' @description
     #' Removes headers entries from the `msData` object. Note that the name,
@@ -2269,14 +2410,22 @@ msData <- R6::R6Class("msData",
           message("\U2713 Removed headers: \n",
             paste(value, collapse = "\n")
           )
+        } else {
+          message("\U2717 There are no headers to remove!")
         }
+
       } else {
         to_remove <- names(private$.headers) %in% c("name", "path", "date")
         to_remove <- names(private$.headers)[!to_remove]
         private$.headers[to_remove] <- NULL
-        message("\U2713 Removed headers: \n",
-          paste(to_remove, collapse = "\n")
-        )
+
+        if (length(to_remove) > 1) {
+          message("\U2713 Removed headers: \n",
+                  paste(to_remove, collapse = "\n")
+          )
+        } else {
+          message("\U2713 Removed all headers except name, path and date!")
+        }
       }
       invisible(self)
     },
@@ -2302,6 +2451,8 @@ msData <- R6::R6Class("msData",
           message("\U2713 Removed settings for:\n",
             paste(call, collapse = "\n")
           )
+        } else {
+          message("\U2717 There are no settings to remove!")
         }
       }
       invisible(self)
@@ -2317,48 +2468,49 @@ msData <- R6::R6Class("msData",
     #' @return Invisible.
     #'
     remove_analyses = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
 
       if (!is.null(analyses)) {
+        analyses <- private$.check_analyses_argument(analyses)
         allNames <- self$get_analysis_names()
         keepAnalyses <- unname(allNames[!(allNames %in% analyses)])
         removeAnalyses <- unname(allNames[allNames %in% analyses])
-
         analysesLeft <- self$get_analyses(keepAnalyses)
 
-        if (self$has_groups() & length(analysesLeft) > 0) {
-          newGroups <- copy(self$get_groups())
-          newGroups[, (removeAnalyses) := NULL]
-          newFeatures <- lapply(analysesLeft, function(x) x$features)
+        if (length(removeAnalyses) > 0) {
 
-          out_list <- update_subset_features_and_groups(newGroups, newFeatures)
+          if (self$has_groups()) {
+            newGroups <- copy(self$get_groups())
+            newGroups[, (removeAnalyses) := NULL]
+            newFeatures <- lapply(analysesLeft, function(x) x$features)
+            newFeatures <- rbindlist(newFeatures, idcol = "analysis")
+            newGroups <- rcpp_ms_update_groups(newFeatures, keepAnalyses)
 
-          analysesLeft <- Map(
-            function(x, y) {
-              x$features <- y
-              x
-            },
-            analysesLeft, out_list[["features"]]
-          )
+          } else {
+            newGroups <- data.table()
+          }
 
-          newGroups <- out_list[["groups"]]
+          private$.analyses <- analysesLeft
+
+          if (nrow(newGroups) > 0) {
+            suppressMessages(self$add_groups(newGroups))
+          } else {
+            private$.groups <- NULL
+          }
+
+          private$.alignment <- private$.alignment[keepAnalyses]
+          message("\U2713 Removed analyses:\n", paste(analyses, collapse = "\n"))
 
         } else {
-          newGroups <- NULL
+          message("\U2717 There are no analyses to remove!")
         }
 
-        private$.analyses <- analysesLeft
-
-        if (!is.null(newGroups)) {
-          self$add_groups(newGroups)
-        } else {
-          private$.groups <- NULL
-        }
-
-        private$.alignment <- private$.alignment[keepAnalyses]
-
-        message("\U2713 Removed analyses:\n", paste(analyses, collapse = "\n"))
+      } else {
+        private$.analyses <- NULL
+        private$.groups <- NULL
+        private$.alignment <- NULL
+        message("\U2713 Removed all analyses!")
       }
+
       invisible(self)
     },
 
@@ -2404,11 +2556,9 @@ msData <- R6::R6Class("msData",
           if (n_org_new < n_org) {
 
             if (self$has_groups()) {
-              keep_groups <- unique(org_fts$group)
-              keep_groups <- private$.groups$group %in% keep_groups
-              private$.groups <- private$.groups[keep_groups, ]
-              keep_groups <- keep_groups[!keep_groups]
-              message("\U2713 Removed ", length(keep_groups), " groups!")
+              all_ana <- unname(self$get_analysis_names())
+              newGroups <- rcpp_ms_update_groups(org_fts, all_ana)
+              private$.groups <- newGroups
             }
 
             private$.analyses <- lapply(private$.analyses, function(x, org_fts) {
@@ -2419,8 +2569,14 @@ msData <- R6::R6Class("msData",
             }, org_fts = org_fts)
 
             message("\U2713 Removed ", n_org - n_org_new, " features!")
+          } else {
+            message("\U2717 There are no features to remove!")
           }
+        } else {
+          message("\U2717 There are no features to remove!")
         }
+      } else {
+        message("\U2717 There are no features to remove!")
       }
       invisible(self)
     },
@@ -2440,7 +2596,11 @@ msData <- R6::R6Class("msData",
             x
           })
           message("\U2713 Removed all MS1 spectra from features!")
+        } else {
+          message("\U2717 Features MS1 spectra not loaded!")
         }
+      } else {
+        message("\U2717 Features not present!")
       }
       invisible(self)
     },
@@ -2460,7 +2620,11 @@ msData <- R6::R6Class("msData",
             x
           })
           message("\U2713 Removed all MS2 spectra from features!")
+        } else {
+          message("\U2717 Features MS2 spectra not loaded!")
         }
+      } else {
+        message("\U2717 Features not present!")
       }
       invisible(self)
     },
@@ -2474,7 +2638,7 @@ msData <- R6::R6Class("msData",
     #' @return Invisible.
     #'
     remove_groups = function(groups = NULL, filtered = FALSE) {
-      if (is.null(groups)) {
+      if (is.null(groups) & !filtered) {
         private$.groups <- NULL
         private$.alignment <- NULL
         private$.analyses <- lapply(private$.analyses, function(x) {
@@ -2490,7 +2654,7 @@ msData <- R6::R6Class("msData",
       }
 
       if (filtered) {
-        filtered_groups <- self$get_groups()
+        filtered_groups <- self$get_groups(filtered = TRUE)
         filtered_groups <- filtered_groups$group[filtered_groups$filtered]
         groups <- c(groups, filtered_groups)
         groups <- unique(groups)
@@ -2512,9 +2676,13 @@ msData <- R6::R6Class("msData",
             x$features <- x$features[order(x$features$filtered), ]
             x
           }, groups = groups)
+          n_g <- nrow(private$.groups)
+          message("\U2713 Removed ", n_org_g - n_g, " groups!")
+        } else {
+          message("\U2717 There are no groups to remove!")
         }
-        n_g <- nrow(private$.groups)
-        message("\U2713 Removed ", n_org_g - n_g, " groups!")
+      } else {
+        message("\U2717 There are no groups to remove!")
       }
       invisible(self)
     },
@@ -2530,7 +2698,11 @@ msData <- R6::R6Class("msData",
         if (any(self$has_loaded_groups_ms1())) {
           private$.groups$ms1 <- NULL
           message("\U2713 Removed all MS1 spectra from feature groups!")
+        } else {
+          message("\U2717 Groups MS1 spectra not loaded!")
         }
+      } else {
+        message("\U2717 Groups not present!")
       }
       invisible(self)
     },
@@ -2546,7 +2718,11 @@ msData <- R6::R6Class("msData",
         if (any(self$has_loaded_groups_ms2())) {
           private$.groups$ms2 <- NULL
           message("\U2713 Removed all MS2 spectra from feature groups!")
+        } else {
+          message("\U2717 Groups MS2 spectra not loaded!")
         }
+      } else {
+        message("\U2717 Groups not present!")
       }
       invisible(self)
     },
@@ -2562,7 +2738,7 @@ msData <- R6::R6Class("msData",
       invisible(self)
     },
 
-    ## subset -----
+    ## ___ subset -----
 
     #' @description
     #' Subsets an `msData` object on analyses.
@@ -2573,48 +2749,46 @@ msData <- R6::R6Class("msData",
     #' by the `analyses` argument.
     #'
     subset_analyses = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
 
       if (!is.null(analyses)) {
         allNames <- self$get_analysis_names()
         removeAnalyses <- unname(allNames[!(allNames %in% analyses)])
         keepAnalyses <- unname(allNames[allNames %in% analyses])
 
-        newAnalyses <- self$get_analyses(keepAnalyses)
+        if (length(keepAnalyses) > 0) {
+          newAnalyses <- self$get_analyses(keepAnalyses)
+          newAlignment <- self$get_alignment()[keepAnalyses]
 
-        if (self$has_groups()) {
-          newGroups <- copy(self$get_groups())
-          newGroups[, (removeAnalyses) := NULL]
-          newFeatures <- lapply(newAnalyses, function(x) x$features)
-          out_list <- update_subset_features_and_groups(newGroups, newFeatures)
+          new_ms <- suppressMessages(msData$new(
+            files = NULL,
+            headers = self$get_headers(),
+            settings = self$get_settings(),
+            analyses = newAnalyses,
+            groups = NULL,
+            alignment = newAlignment
+          ))
 
-          newAnalyses <- Map(
-            function(x, y) {
-              x$features <- y
-              x
-            },
-            newAnalyses, out_list[["features"]]
+          if (self$has_groups()) {
+            newGroups <- copy(self$get_groups())
+            newGroups[, (removeAnalyses) := NULL]
+            newFeatures <- new_ms$get_features()
+            all_ana <- unname(new_ms$get_analysis_names())
+            newGroups <- rcpp_ms_update_groups(newFeatures, all_ana)
+            suppressMessages(new_ms$add_groups(newGroups))
+          }
+
+          message("\U2713 Subset with ",
+                  new_ms$get_number_analyses(),
+                  " analyses created!"
           )
 
-          newGroups <- out_list[["groups"]]
-        } else {
-          newGroups <- NULL
+          return(new_ms)
         }
-
-        newAlignment <- private$.alignment[keepAnalyses]
-
-        msData$new(
-          files = NULL,
-          headers = private$.headers,
-          settings = private$.settings,
-          analyses = newAnalyses,
-          groups = newGroups,
-          alignment = newAlignment
-        )
-
-      } else {
-        self$clone()
       }
+
+      message("\U2717 There are no analyses selected to subset!")
+      suppressMessages(msData$new())
     },
 
     #' @description
@@ -2641,14 +2815,27 @@ msData <- R6::R6Class("msData",
             rem_fts <- all_fts[rem_fts, cols_must_have, with = FALSE]
 
             if (nrow(rem_fts) > 0) {
-              new_msData <- self$clone()
-              new_msData <- new_msData$remove_features(rem_fts)
-              return(new_msData)
+              new_ms <- self$clone()
+              new_ms <- suppressMessages(new_ms$remove_features(rem_fts))
+              message("\U2713 Subset with ",
+                      nrow(new_ms$get_features()),
+                      " features created!"
+              )
+              return(new_ms)
+
+            } else {
+              message("\U2717 There are no features to subset!")
             }
+          } else {
+            message("\U2717 There are no features to subset!")
           }
+        } else {
+          message("\U2717 Data.frame with analysis and feature IDs not given!")
         }
+      } else {
+        message("\U2717 Data.frame with analysis and feature IDs not given!")
       }
-      self$clone()
+      suppressMessages(msData$new())
     },
 
     #' @description
@@ -2670,15 +2857,24 @@ msData <- R6::R6Class("msData",
         groups_rem <- all_groups[!all_groups %in% groups]
 
         if (length(groups_rem) > 0) {
-          new_msData <- self$clone(deep = TRUE)
-          new_msData <- new_msData$remove_groups(groups_rem)
-          return(new_msData)
+          new_ms <- self$clone(deep = TRUE)
+          new_ms <- suppressMessages(new_ms$remove_groups(groups_rem))
+          message("\U2713 Subset with ",
+                  nrow(new_ms$get_groups()),
+                  " feature groups created!"
+          )
+          return(new_ms)
+
+        } else {
+          message("\U2717 There are no groups to subset!")
         }
+      } else {
+        message("\U2717 There are no groups to subset!")
       }
-      self$clone()
+      suppressMessages(msData$new())
     },
 
-    ## has -----
+    ## ___ has -----
 
     #' @description
     #' Method to check of the `msData` object has analyses.
@@ -2697,7 +2893,7 @@ msData <- R6::R6Class("msData",
     #' @return Logical value.
     #'
     has_loaded_spectra = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) {
         return(FALSE)
       }
@@ -2720,7 +2916,7 @@ msData <- R6::R6Class("msData",
     #' @return Logical value.
     #'
     has_loaded_chromatograms = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) {
         return(FALSE)
       }
@@ -2743,7 +2939,7 @@ msData <- R6::R6Class("msData",
     #' @return Logical value.
     #'
     has_loaded_features_ms1 = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) {
         return(FALSE)
       }
@@ -2768,7 +2964,7 @@ msData <- R6::R6Class("msData",
     #' @return Logical value.
     #'
     has_loaded_features_ms2 = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) {
         return(FALSE)
       }
@@ -2841,7 +3037,7 @@ msData <- R6::R6Class("msData",
     #' @return Logical value.
     #'
     has_features = function(analyses = NULL) {
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) {
         return(FALSE)
       }
@@ -2875,7 +3071,7 @@ msData <- R6::R6Class("msData",
       !is.null(private$.groups)
     },
 
-    ## plot -----
+    ## ___ plot -----
 
     #' @description
     #' Plots spectra for given MS analyses.
@@ -2912,7 +3108,7 @@ msData <- R6::R6Class("msData",
       )
 
       if (nrow(spec) == 0) {
-        message("!! Traces not found for the targets!")
+        message("\U2717 Traces not found for the targets!")
         return(NULL)
       }
 
@@ -2961,7 +3157,7 @@ msData <- R6::R6Class("msData",
       )
 
       if (nrow(xic) == 0) {
-        message("!! Traces not found for the targets!")
+        message("\U2717 Traces not found for the targets!")
         return(NULL)
       }
 
@@ -3002,7 +3198,7 @@ msData <- R6::R6Class("msData",
       eic <- self$get_eic(analyses, mz, rt, ppm, sec, id, runParallel)
 
       if (nrow(eic) == 0) {
-        message("!! Traces not found for the targets!")
+        message("\U2717 Traces not found for the targets!")
         return(NULL)
       }
 
@@ -3035,7 +3231,7 @@ msData <- R6::R6Class("msData",
       tic$id <- "TIC"
 
       if (nrow(tic) == 0) {
-        message("!! TIC not found for the analyses!")
+        message("\U2717 TIC not found for the analyses!")
         return(NULL)
       }
 
@@ -3071,7 +3267,7 @@ msData <- R6::R6Class("msData",
       bpc$id <- "BPC"
 
       if (nrow(bpc) == 0) {
-        message("!! BPC not found for the analyses!")
+        message("\U2717 BPC not found for the analyses!")
         return(NULL)
       }
 
@@ -3123,7 +3319,7 @@ msData <- R6::R6Class("msData",
       )
 
       if (nrow(ms2) == 0) {
-        message("!! MS2 traces not found for the targets!")
+        message("\U2717 MS2 traces not found for the targets!")
         return(NULL)
       }
 
@@ -3172,7 +3368,7 @@ msData <- R6::R6Class("msData",
       )
 
       if (nrow(ms1) == 0) {
-        message("!! MS1 traces not found for the targets!")
+        message("\U2717 MS1 traces not found for the targets!")
         return(NULL)
       }
 
@@ -3224,7 +3420,7 @@ msData <- R6::R6Class("msData",
       )
 
       if (nrow(eic) == 0) {
-        message("!! Traces not found for the targets!")
+        message("\U2717 Traces not found for the targets!")
         return(NULL)
       }
 
@@ -3270,7 +3466,7 @@ msData <- R6::R6Class("msData",
       fts <- self$get_features(analyses, features, mass, mz, rt, ppm, sec, filtered)
 
       if (nrow(fts) == 0) {
-        message("!! Features not found for the targets!")
+        message("\U2717 Features not found for the targets!")
         return(NULL)
       }
 
@@ -3333,7 +3529,7 @@ msData <- R6::R6Class("msData",
       )
 
       if (nrow(ms1) == 0) {
-        message("!! MS1 traces not found for the targets!")
+        message("\U2717 MS1 traces not found for the targets!")
         return(NULL)
       }
 
@@ -3389,7 +3585,7 @@ msData <- R6::R6Class("msData",
       )
 
       if (nrow(ms2) == 0) {
-        message("!! MS2 traces not found for the targets!")
+        message("\U2717 MS2 traces not found for the targets!")
         return(NULL)
       }
       if ("replicates" %in% colorBy) {
@@ -3411,7 +3607,7 @@ msData <- R6::R6Class("msData",
     #'
     plot_alignment = function() {
       if (!self$has_alignment()) {
-        warning("!! Adjusted retention time not found!")
+        warning("\U2717 Adjusted retention time not found!")
         return(NULL)
       }
 
@@ -3580,7 +3776,7 @@ msData <- R6::R6Class("msData",
       )
 
       if (nrow(ms1) == 0) {
-        message("!! MS1 traces not found for the targets!")
+        message("\U2717 MS1 traces not found for the targets!")
         return(NULL)
       }
 
@@ -3649,7 +3845,7 @@ msData <- R6::R6Class("msData",
       )
 
       if (nrow(ms2) == 0) {
-        message("!! MS2 traces not found for the targets!")
+        message("\U2717 MS2 traces not found for the targets!")
         return(NULL)
       }
 
@@ -3705,7 +3901,7 @@ msData <- R6::R6Class("msData",
       )
 
       if (nrow(eic) == 0) {
-        message("!! Traces and/or features not found for targets!")
+        message("\U2717 Traces and/or features not found for targets!")
         return(NULL)
       }
 
@@ -3726,12 +3922,12 @@ msData <- R6::R6Class("msData",
       eic$var <- leg[eic$uid]
       fts$var <- leg
 
-      analyses <- self$check_analyses_argument(analyses)
+      analyses <- private$.check_analyses_argument(analyses)
 
       plot_groups_overview_aux(fts, eic, heights, analyses)
     },
 
-    ## processing -----
+    ## ___ processing -----
 
     #' @description Finds features (i.e., chromatographic peaks) from MS data
     #' in an `msData` class object. The function uses the \pkg{patRoon} package
@@ -3751,9 +3947,6 @@ msData <- R6::R6Class("msData",
     #' defined MS file formats and data in profile mode.
     #'
     #' @return Invisible.
-    #'
-    #' @references
-    #' \insertRef{patroon01}{streamFind}
     #'
     find_features = function(settings = NULL) {
       valid <- TRUE
@@ -3803,16 +3996,8 @@ msData <- R6::R6Class("msData",
       features <- build_features_table_from_patRoon(pat, self)
 
       self$add_settings(settings)
+      self$add_features(features, replace = TRUE)
 
-      private$.analyses <- Map(
-        function(x, y) {
-          x$features <- y
-          x
-        },
-        private$.analyses, features
-      )
-
-      message("\U2713 Features added to analyses!")
       invisible(self)
     },
 
@@ -3886,23 +4071,18 @@ msData <- R6::R6Class("msData",
       pat <- do.call(gr_fun, c(ag, parameters))
 
       features <- build_features_table_from_patRoon(pat, self)
-      out_list <- build_feature_groups_table_from_patRoon(pat, features, self)
+
+      features <- rbindlist(features, idcol = "analysis")
+
+      out_list <- rcpp_ms_make_groups_update_features(features)
 
       alignment <- extract_time_alignment(pat, self)
 
       self$add_settings(settings)
 
-      private$.analyses <- Map(
-        function(x, y) {
-          x$features <- y
-          x
-        },
-        private$.analyses, out_list[["features"]]
-      )
+      suppressMessages(self$add_features(out_list[["features"]], replace = TRUE))
 
-      private$.groups <- out_list[["groups"]]
-
-      message("\U2713 Added feature groups from correspondence analysis!")
+      self$add_groups(out_list[["groups"]])
 
       if (!is.null(alignment)) {
         private$.alignment <- alignment
@@ -3911,7 +4091,7 @@ msData <- R6::R6Class("msData",
       invisible(self)
     },
 
-    ## as -----
+    ## ___ as -----
 
     #' @description
     #' Creates an object with S4 class `features` from the package \pkg{patRoon}
@@ -3960,7 +4140,7 @@ msData <- R6::R6Class("msData",
           )
         )
 
-        ft$ID <- as.numeric(gsub(".*_f", "", ft$ID))
+        # ft$ID <- as.numeric(gsub(".*_f", "", ft$ID))
 
         return(ft)
       })
@@ -3992,28 +4172,6 @@ msData <- R6::R6Class("msData",
     ## checks -----
 
     #' @description
-    #' Checks the analyses argument as a character/integer vector to match
-    #' analyses names or indices from the `msData` object.
-    #'
-    #' @param analyses X.
-    #'
-    #' @return A valid character vector with analyses names of `NULL`.
-    #'
-    check_analyses_argument = function(analyses = NULL) {
-      if (is.null(analyses)) {
-        self$get_analysis_names()
-      } else {
-        analyses <- self$get_analysis_names(analyses)
-        if (!all(analyses %in% self$get_analysis_names())) {
-          warning("Defined analyses not found!")
-          NULL
-        } else {
-          analyses
-        }
-      }
-    },
-
-    #' @description
     #' Checks the correspondence of features within feature groups in
     #' the `msData` object.
     #'
@@ -4023,42 +4181,16 @@ msData <- R6::R6Class("msData",
       valid <- FALSE
 
       if (all(self$has_features()) & self$has_groups()) {
-        gps <- self$get_groups()
-        gps <- split(gps, gps$group)
-
-        fts <- self$get_features()
-
-        valid <- vapply(gps, function(x, fts) {
-          g <- x$group
-          gf <- fts[fts$group %in% g, ]
-
-          rt_check <- max(gf$rtmax) >= x$rt & min(gf$rtmin) <= x$rt
-
-          max_ppm <- max((gf$mzmax - gf$mz) / gf$mzmax * 1E6)
-          min_ppm <- min((gf$mzmin - gf$mz) / gf$mzmin * 1E6)
-
-          f_mass_mean <- mean(gf$mass)
-          mass_min <- round(min_ppm / 1E6 * f_mass_mean + f_mass_mean, 4)
-          mass_max <- round(max_ppm / 1E6 * f_mass_mean + f_mass_mean, 4)
-          g_max <- round(x$mass, 4)
-
-          mass_check <- mass_max >= g_max & mass_min <= g_max
-
-          ana <- gf$analysis
-          ints <- round(gf$intensity, 0)
-          int_check <- all(ints == round(x[, ana, with = FALSE], 0))
-
-          all(c(rt_check, mass_check, int_check))
-        }, FALSE, fts = fts)
-
-        valid <- all(valid)
-
-        if (!valid) browser()
+        valid <- rcpp_ms_feature_groups_correspondence(
+          groups = self$get_groups(),
+          features = self$get_features(),
+          verbose = TRUE
+        )
       }
       valid
     },
 
-    ## save -----
+    ## ___ save -----
 
     #' @description
     #' Method to save the headers list.
@@ -4263,7 +4395,7 @@ msData <- R6::R6Class("msData",
       invisible(self)
     },
 
-    ## import -----
+    ## ___ import -----
 
     #' @description
     #' Method to import headers to the `msData` object from a \emph{rds} or
@@ -4352,7 +4484,7 @@ msData <- R6::R6Class("msData",
       invisible(self)
     },
 
-    ## info -----
+    ## ___ info -----
 
     #' @description
     #' Possible processing function calls.
@@ -4376,7 +4508,7 @@ msData <- R6::R6Class("msData",
   )
 )
 
-# import msData class -----
+# _ import msData class -----
 
 #' Function to import an msData class object from a *json* or *rds* file
 #'
@@ -4444,9 +4576,7 @@ import_msData <- function(file) {
   }
 }
 
-# not-exported functions -----
-
-## amend from patRoon -----
+# _ not-exported functions -----
 
 #' @title build_features_table_from_patRoon
 #'
@@ -4501,10 +4631,38 @@ build_features_table_from_patRoon <- function(pat, self) {
   features <- lapply(analyses, function(x, extra, features, self, isSet) {
     temp <- features[[x]]
 
+    valid = TRUE
+
+    if (!is.data.frame(temp)) valid <- FALSE
+
+    if (valid & nrow(temp) == 0) valid <- FALSE
+
+    if (!valid) return(data.table())
+
     if (!is.null(extra)) {
       if (temp == nrow(extra[[x]]) & all(temp$mz == extra[[x]]$mz)) {
-        temp$is_filled <- extra[[x]]$is_filled
+        temp$filled <- extra[[x]]$is_filled
       }
+    }
+
+    under_rt_max <- temp$rt <= temp$rtmax
+    if (!all(under_rt_max)) {
+      warning("Feature retention time value/s above the rtmax!")
+    }
+
+    under_rt_min <- temp$rt >= temp$rtmin
+    if (!all(under_rt_min)) {
+      warning("Feature retention time value/s under the rtmin!")
+    }
+
+    under_mz_max <- temp$mz <= temp$mzmax
+    if (!all(under_rt_min)) {
+      warning("Feature m/z value/s above the mzmax!")
+    }
+
+    under_mz_min <- temp$mz >= temp$mzmin
+    if (!all(under_rt_min)) {
+      warning("Feature m/z value/s under the mzmin!")
     }
 
     polarity <- self$get_polarities(x)
@@ -4535,10 +4693,10 @@ build_features_table_from_patRoon <- function(pat, self) {
 
     if (!"adduct" %in% colnames(temp)) temp$adduct <- adduct
     if (!"mass" %in% colnames(temp)) temp$mass <- temp$mz + adduct_val
-    if (!"is_filled" %in% colnames(temp)) {
-      temp$is_filled <- FALSE
+    if (!"filled" %in% colnames(temp)) {
+      temp$filled <- FALSE
     } else {
-      temp$is_filled <- as.logical(temp$is_filled)
+      temp$filled <- as.logical(temp$filled)
     }
     if (!"filtered" %in% colnames(temp)) temp$filtered <- FALSE
     if (!"filter" %in% colnames(temp)) temp$filter <- NA_character_
@@ -4552,10 +4710,23 @@ build_features_table_from_patRoon <- function(pat, self) {
     # when grouping features are removed from grouping conditions in patRoon
     # therefore, old features are retained and tagged with filter "grouping"
     temp_org <- self$get_features(x)
+    build_feature_ids <- TRUE
+
     if (nrow(temp_org) > 0) {
+
       temp_org$analysis <- NULL
+
       if (nrow(temp_org) != nrow(temp)) {
-        temp_org_not_grouped <- temp_org[!temp_org$index %in% temp$feature, ]
+
+        build_feature_ids <- FALSE
+
+        #modify the feature ids from original ids when numeric
+        if (is.numeric(temp$feature)) {
+          temp$feature <- temp_org$feature[temp$feature]
+        }
+
+        temp_org_not_grouped <- temp_org[!temp_org$feature %in% temp$feature, ]
+
         temp_list <- list(temp, temp_org_not_grouped)
         temp <- rbindlist(temp_list, fill = TRUE)
       }
@@ -4566,34 +4737,34 @@ build_features_table_from_patRoon <- function(pat, self) {
       temp$filtered[is.na(temp$group)] <- TRUE
     }
 
-    dppm <- round((temp$mzmax - temp$mzmin) / temp$mzmin * 1E6, 0)
-    drt <- round(temp$rtmax - temp$rtmin, 0)
-
     temp <- temp[order(temp$mz), ]
     temp <- temp[order(temp$rt), ]
     temp <- temp[order(temp$filtered), ]
-    temp$index <- seq_len(nrow(temp))
+
+    if (build_feature_ids) {
+      temp$index <- seq_len(nrow(temp))
+
+      d_dig <- max(temp$mzmax - temp$mzmin)
+      d_dig <- sub('.*\\.(0+)[1-9].*', '\\1', as.character(d_dig))
+      d_dig <- nchar(d_dig) + 1
+
+      temp$feature <- paste0(
+        "mz",
+        round(temp$mz, digits = d_dig),
+        "_rt",
+        round(temp$rt, digits = 0),
+        "_f",
+        temp$index
+      )
+    }
 
     setcolorder(
       temp,
       c(
         "feature", "index", "rt", "mz", "intensity", "area",
         "rtmin", "rtmax", "mzmin", "mzmax", "adduct", "mass",
-        "is_filled", "filtered", "filter"
+        "filled", "filtered", "filter"
       )
-    )
-
-    temp$feature <- paste0(
-      "mz",
-      round(temp$mz, digits = 3),
-      "_d",
-      dppm,
-      "_rt",
-      round(temp$rt, digits = 0),
-      "_t",
-      drt,
-      "_f",
-      temp$index
     )
 
     temp$rt <- round(temp$rt, 3)
@@ -4610,207 +4781,6 @@ build_features_table_from_patRoon <- function(pat, self) {
   names(features) <- analyses
 
   features
-}
-
-#' build_feature_groups_table_from_patRoon
-#'
-#' @param pat An object with class `featureGroups` from the package \pkg{patRoon}.
-#' @param features X.
-#' @param self An `msData` object. When applied within the R6, the self object.
-#'
-#' @return A \linkS4class{data.table} with the feature groups.
-#'
-#' @noRd
-#'
-build_feature_groups_table_from_patRoon <- function(pat, features, self) {
-
-  fgroups <- patRoon::as.data.table(pat, average = FALSE)
-  setnames(fgroups, "ret", "rt")
-
-  fts <- copy(features)
-  fts <- rbindlist(fts, idcol = "analysis")
-
-  index <- lapply(fgroups$group, function(g, fts) {
-    which(fts$group == g)
-  }, fts = fts)
-
-  fgroups$rt <- vapply(index, function(x) {
-    return(round(mean(fts$rt[x]), 3))
-  }, 0)
-
-  fgroups$drt <- vapply(index, function(x) {
-    round(max(fts$rtmax[x]) - min(fts$rtmin[x]), 0)
-  }, 0)
-
-  fgroups$dppm <- vapply(index, function(x) {
-    max_ppm <- max((fts$mzmax[x] - fts$mz[x]) / fts$mz[x] * 1E6)
-    min_ppm <- min((fts$mzmin[x] - fts$mz[x]) / fts$mz[x] * 1E6)
-    round(max_ppm - min_ppm, 0)
-  }, 0)
-
-  fgroups$index <- as.numeric(sub(".*_", "", fgroups$group))
-
-  if ("is_filled" %in% colnames(fts)) {
-    fgroups$hasFilled <- vapply(
-      index,
-      function(x) {
-        TRUE %in% fts$is_filled[x]
-      }, FALSE
-    )
-  } else {
-    fgroups$hasFilled <- FALSE
-  }
-
-  if (!"filtered" %in% colnames(fgroups)) {
-    fgroups$filtered <- FALSE
-    fgroups$filter <- NA_character_
-  }
-
-  if (TRUE %in% grepl("Set", is(pat))) {
-    setnames(fgroups, "mz", "mass", skip_absent = TRUE)
-    fgroups$neutralMass <- NULL
-
-    fgroups$mass <- vapply(index, function(x) {
-      round(mean(fts$mass[x]), 8)
-    }, 0)
-
-    new_id <- paste0(
-      "m",
-      round(fgroups$mass, 3),
-      "_d",
-      fgroups$dppm,
-      "_rt",
-      round(fgroups$rt, 0),
-      "_t",
-      round(fgroups$drt, 0),
-      "_g",
-      fgroups$index
-    )
-  } else {
-    fgroups$mz <- vapply(index, function(x) {
-      round(mean(fts$mz[x]), 8)
-    }, 0)
-
-    adduct <- unique(fts$adduct)
-    fgroups$adduct <- adduct
-    if (adduct %in% "[M+H]+") fgroups$mass <- fgroups$mz - 1.007276
-    if (adduct %in% "[M-H]-") fgroups$mass <- fgroups$mz + 1.007276
-
-    new_id <- paste0(
-      "mz",
-      round(fgroups$mz, digits = 3),
-      "_d",
-      fgroups$dppm,
-      "_rt",
-      round(fgroups$rt, digits = 0),
-      "_t",
-      fgroups$drt,
-      "_g",
-      fgroups$index
-    )
-  }
-
-  names(new_id) <- fgroups$group
-  fgroups$group <- new_id
-
-  features_new_id <- lapply(features, function(x, new_id) {
-    x$group <- new_id[x$group]
-    return(x)
-  }, new_id = new_id)
-
- list("features" = features_new_id, "groups" = fgroups)
-}
-
-update_subset_features_and_groups <- function(newGroups, newFeatures) {
-  fts <- rbindlist(newFeatures, idcol = "analysis")
-
-  fgs_remaining <- unique(unlist(fts$group))
-  if (!is.null(fgs_remaining)) {
-    newGroups <- newGroups[newGroups$group %in% fgs_remaining, ]
-  }
-
-  index <- lapply(newGroups$group, function(g, fts) {
-    which(fts$group == g)
-  }, fts = fts)
-
-  newGroups$rt <- vapply(index, function(x) {
-    round(mean(fts$rt[x]), digits = 3)
-  }, 0)
-
-  newGroups$mass <- vapply(index, function(x) {
-    round(mean(fts$mass[x]), digits = 8)
-  }, 0)
-
-  newGroups$adduct <- vapply(index, function(x) {
-    paste(unique(fts$adduct[x]), collapse = "; ")
-  }, NA_character_)
-
-  newGroups$drt <- vapply(index, function(x) {
-    round(max(fts$rtmax[x]) - min(fts$rtmin[x]), 0)
-  }, 0)
-
-  newGroups$dppm <- vapply(index, function(x) {
-    max_ppm <- max((fts$mzmax[x] - fts$mz[x]) / fts$mz[x] * 1E6)
-    min_ppm <- min((fts$mzmin[x] - fts$mz[x]) / fts$mz[x] * 1E6)
-   round(max_ppm - min_ppm, 0)
-  }, 0)
-
-  newGroups$index <- seq_len(length(newGroups$group))
-
-  if ("is_filled" %in% colnames(fts)) {
-    newGroups$hasFilled <- vapply(index, function(x) {
-      TRUE %in% fts$is_filled[x]
-    }, FALSE)
-  } else {
-    newGroups$hasFilled <- FALSE
-  }
-
-  if (!"filtered" %in% colnames(newGroups)) {
-    newGroups$filtered <- FALSE
-    newGroups$filter <- NA_character_
-  }
-
-  if (!"mz" %in% colnames(newGroups)) {
-    new_id <- paste0(
-      "m",
-      round(newGroups$mass, digits = 3),
-      "_d",
-      newGroups$dppm,
-      "_rt",
-      round(newGroups$rt, digits = 0),
-      "_t",
-      newGroups$drt,
-      "_g",
-      newGroups$index
-    )
-  } else {
-    newGroups$mz <- vapply(index, function(x) {
-      round(mean(fts$mz[x]), digits = 8)
-    }, 0)
-
-    new_id <- paste0(
-      "mz",
-      round(newGroups$mz, digits = 3),
-      "_d",
-      newGroups$dppm,
-      "_rt",
-      round(newGroups$rt, digits = 0),
-      "_t",
-      newGroups$drt,
-      "_g",
-      newGroups$index
-    )
-  }
-
-  names(new_id) <- newGroups$group
-  newGroups$group <- new_id
-
-  newFeatures_new_id <- lapply(newFeatures, function(x, new_id) {
-    x$group <- new_id[x$group]
-    x
-  }, new_id = new_id)
-
-  list("features" = newFeatures_new_id, "groups" = newGroups)
 }
 
 #' extract_time_alignment

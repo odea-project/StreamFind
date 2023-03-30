@@ -69,28 +69,28 @@ settings <- function(call = NA_character_,
 #' Validates a settings S3 class object, returning a logical value of length
 #' one.
 #'
-#' @param settings A settings S3 class object.
+#' @param x A settings S3 class object.
 #'
 #' @export
 #'
-validate.settings <- function(settings) {
+validate.settings <- function(x = NULL) {
   valid <- FALSE
 
-  if (is.list(settings)) {
-    if (all(c("call", "algorithm", "parameters") %in% names(settings))) {
+  if (is.list(x)) {
+    if (all(c("call", "algorithm", "parameters") %in% names(x))) {
       valid <- TRUE
 
-      if (!length(settings$call) == 1) {
+      if (!length(x$call) == 1) {
         warning("Call entry must be of length 1!")
         valid <- FALSE
       }
 
-      if (length(settings$algorithm) != 1 & !is.character(settings$algorithm)) {
+      if (length(x$algorithm) != 1 & !is.character(x$algorithm)) {
         warning("Algorithm entry must be of length 1 and type character!")
         valid <- FALSE
       }
 
-      if (!is.list(settings$parameters)) {
+      if (!is.list(x$parameters)) {
         warning("Parameters entry must be a list!")
         valid <- FALSE
       }
@@ -105,28 +105,28 @@ validate.settings <- function(settings) {
           "filter_features"
         )
 
-        if (!any(processingFunctionCalls %in% settings$call)) {
+        if (!any(processingFunctionCalls %in% x$call)) {
           warning("Call name not present in msData class processing methods!")
           valid <- FALSE
         }
 
         if (valid) {
-          if ("find_features" %in% settings$call) {
+          if ("find_features" %in% x$call) {
             ff_algorithm <- c(
               "openms", "xcms", "xcms3", "envipick",
               "sirius", "kpic2", "safd"
             )
 
-            if (!any(ff_algorithm %in% settings$algorithm)) {
+            if (!any(ff_algorithm %in% x$algorithm)) {
               warning("Algorithm not viable for find_feature call!")
               valid <- FALSE
             }
           }
 
-          if ("group_features" %in% settings$call) {
+          if ("group_features" %in% x$call) {
             fg_algorithm <- c("openms", "xcms", "xcms3", "kpic2", "sirius")
 
-            if (!any(fg_algorithm %in% settings$algorithm)) {
+            if (!any(fg_algorithm %in% x$algorithm)) {
               warning("Algorithm not viable for group_feature call!")
               valid <- FALSE
             }

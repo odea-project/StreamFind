@@ -48,45 +48,45 @@ headers <- function(...) {
 #' @describeIn headers
 #' Validates a headers S3 class object, returning a logical value of length one.
 #'
-#' @param headers A headers S3 class object.
+#' @param x A headers S3 class object.
 #'
 #' @export
 #'
-validate.headers <- function(headers) {
+validate.headers <- function(x) {
 
-  if (missing(headers)) headers <- NULL
+  if (missing(x)) x <- NULL
 
   valid <- FALSE
 
-  if (is.list(headers)) {
+  if (is.list(x)) {
     valid <- TRUE
 
-    if (!all(vapply(headers, function(headers) length(headers) == 1, FALSE))) {
+    if (!all(vapply(x, function(x) length(x) == 1, FALSE))) {
       warning("All headers must be of length 1!")
       valid <- FALSE
     }
 
-    if (length(unique(names(headers))) != length(headers)) {
+    if (length(unique(names(x))) != length(x)) {
       warning("Headers must have names and not permitted duplicated names!")
       valid <- FALSE
     }
 
-    if ("name" %in% names(headers)) {
-      if (!is.character(headers$name)) {
+    if ("name" %in% names(x)) {
+      if (!is.character(x$name)) {
         warning("Header list entry name must be character!")
         valid <- FALSE
       }
     }
 
-    if ("path" %in% names(headers)) {
-      if (!dir.exists(headers$path)) {
+    if ("path" %in% names(x)) {
+      if (!dir.exists(x$path)) {
         warning("Header list entry path must exist!")
         valid <- FALSE
       }
     }
 
-    if ("date" %in% names(headers)) {
-      if (!all(grepl("POSIXct|POSIXt", class(headers$date)))) {
+    if ("date" %in% names(x)) {
+      if (!all(grepl("POSIXct|POSIXt", class(x$date)))) {
         warning("Header list entry date class must be POSIXct or POSIXt!")
         valid <- FALSE
       }

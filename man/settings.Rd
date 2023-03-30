@@ -8,7 +8,7 @@
 \usage{
 settings(call = NA_character_, algorithm = NA_character_, parameters = NULL)
 
-\method{validate}{settings}(settings)
+\method{validate}{settings}(x = NULL)
 
 as.settings(value)
 }
@@ -22,7 +22,7 @@ be used.}
 \item{parameters}{List with parameter settings specific for the \code{call}
 method and used \code{algorithm}.}
 
-\item{settings}{A settings S3 class object.}
+\item{x}{A settings S3 class object.}
 
 \item{value}{A list to be checked and/or converted to settings S3 class.}
 }

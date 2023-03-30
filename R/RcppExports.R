@@ -9,3 +9,19 @@ rcpp_ms_cluster_spectra <- function(spectra, mzClust, verbose) {
     .Call(`_streamFind_rcpp_ms_cluster_spectra`, spectra, mzClust, verbose)
 }
 
+rcpp_ms_feature_groups_correspondence <- function(groups, features, verbose) {
+    .Call(`_streamFind_rcpp_ms_feature_groups_correspondence`, groups, features, verbose)
+}
+
+rcpp_ms_get_feature_groups_ranges <- function(groups, features) {
+    .Call(`_streamFind_rcpp_ms_get_feature_groups_ranges`, groups, features)
+}
+
+rcpp_ms_make_groups_update_features <- function(features) {
+    .Call(`_streamFind_rcpp_ms_make_groups_update_features`, features)
+}
+
+rcpp_ms_update_groups <- function(features, analyses) {
+    .Call(`_streamFind_rcpp_ms_update_groups`, features, analyses)
+}
+
