@@ -10,28 +10,6 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// parse_msAnalysis_from_mzxml
-Rcpp::List parse_msAnalysis_from_mzxml(std::string file_path);
-RcppExport SEXP _streamFind_parse_msAnalysis_from_mzxml(SEXP file_pathSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type file_path(file_pathSEXP);
-    rcpp_result_gen = Rcpp::wrap(parse_msAnalysis_from_mzxml(file_path));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpp_parse_mzxml_files
-Rcpp::List rcpp_parse_mzxml_files(std::string file_path);
-RcppExport SEXP _streamFind_rcpp_parse_mzxml_files(SEXP file_pathSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type file_path(file_pathSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_parse_mzxml_files(file_path));
-    return rcpp_result_gen;
-END_RCPP
-}
 // rcpp_ms_cluster_ms2
 List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose);
 RcppExport SEXP _streamFind_rcpp_ms_cluster_ms2(SEXP ms2SEXP, SEXP mzClustSEXP, SEXP verboseSEXP) {
@@ -106,16 +84,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// parse_msAnalysis_from_mzml
+Rcpp::List parse_msAnalysis_from_mzml(std::string file_path);
+RcppExport SEXP _streamFind_parse_msAnalysis_from_mzml(SEXP file_pathSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type file_path(file_pathSEXP);
+    rcpp_result_gen = Rcpp::wrap(parse_msAnalysis_from_mzml(file_path));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_streamFind_parse_msAnalysis_from_mzxml", (DL_FUNC) &_streamFind_parse_msAnalysis_from_mzxml, 1},
-    {"_streamFind_rcpp_parse_mzxml_files", (DL_FUNC) &_streamFind_rcpp_parse_mzxml_files, 1},
     {"_streamFind_rcpp_ms_cluster_ms2", (DL_FUNC) &_streamFind_rcpp_ms_cluster_ms2, 3},
     {"_streamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_streamFind_rcpp_ms_cluster_spectra, 3},
     {"_streamFind_rcpp_ms_feature_groups_correspondence", (DL_FUNC) &_streamFind_rcpp_ms_feature_groups_correspondence, 3},
     {"_streamFind_rcpp_ms_get_feature_groups_ranges", (DL_FUNC) &_streamFind_rcpp_ms_get_feature_groups_ranges, 2},
     {"_streamFind_rcpp_ms_make_groups_update_features", (DL_FUNC) &_streamFind_rcpp_ms_make_groups_update_features, 1},
     {"_streamFind_rcpp_ms_update_groups", (DL_FUNC) &_streamFind_rcpp_ms_update_groups, 2},
+    {"_streamFind_parse_msAnalysis_from_mzml", (DL_FUNC) &_streamFind_parse_msAnalysis_from_mzml, 1},
     {NULL, NULL, 0}
 };
 

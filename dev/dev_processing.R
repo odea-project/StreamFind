@@ -147,9 +147,14 @@ ms <- msData$new(files = all_files[10:21],
 )
 
 
-ms$plot_bpc()
+msz <- mzR::openMSfile(files[1])
+mzR::instrumentInfo(msz)
+mzR::runInfo(msz)
+mzR::header(msz)
 
-parse_msAnalysis_from_mzxml(files[1])
+
+parse_msAnalysis_from_mzml(files[1])
+parse_msAnalysis_from_mzml(all_files[28])
 
 
 View(ms$get_settings())

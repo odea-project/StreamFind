@@ -711,7 +711,7 @@ parse.msAnalysis <- function(files = NULL, runParallel = FALSE) {
                 val <- 'd1:binary'
                 val <- xml_find_all(z, xpath = val)
                 val <- xml_text(val)
-                val <- base64enc::base64decode(val)
+                val <- base64enc::base64decode
                 val <- as.raw(val)
                 val <- memDecompress(val, type = comp)
                 val <- readBin(
