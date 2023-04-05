@@ -84,6 +84,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rcpp_parse_msAnalysis
+Rcpp::List rcpp_parse_msAnalysis(std::string file_path);
+RcppExport SEXP _streamFind_rcpp_parse_msAnalysis(SEXP file_pathSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type file_path(file_pathSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_parse_msAnalysis(file_path));
+    return rcpp_result_gen;
+END_RCPP
+}
 // parse_msAnalysis_from_mzml
 Rcpp::List parse_msAnalysis_from_mzml(std::string file_path);
 RcppExport SEXP _streamFind_parse_msAnalysis_from_mzml(SEXP file_pathSEXP) {
@@ -103,6 +114,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_streamFind_rcpp_ms_get_feature_groups_ranges", (DL_FUNC) &_streamFind_rcpp_ms_get_feature_groups_ranges, 2},
     {"_streamFind_rcpp_ms_make_groups_update_features", (DL_FUNC) &_streamFind_rcpp_ms_make_groups_update_features, 1},
     {"_streamFind_rcpp_ms_update_groups", (DL_FUNC) &_streamFind_rcpp_ms_update_groups, 2},
+    {"_streamFind_rcpp_parse_msAnalysis", (DL_FUNC) &_streamFind_rcpp_parse_msAnalysis, 1},
     {"_streamFind_parse_msAnalysis_from_mzml", (DL_FUNC) &_streamFind_parse_msAnalysis_from_mzml, 1},
     {NULL, NULL, 0}
 };

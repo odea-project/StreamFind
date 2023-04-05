@@ -25,6 +25,10 @@ rcpp_ms_update_groups <- function(features, analyses) {
     .Call(`_streamFind_rcpp_ms_update_groups`, features, analyses)
 }
 
+rcpp_parse_msAnalysis <- function(file_path) {
+    .Call(`_streamFind_rcpp_parse_msAnalysis`, file_path)
+}
+
 parse_msAnalysis_from_mzml <- function(file_path) {
     .Call(`_streamFind_parse_msAnalysis_from_mzml`, file_path)
 }

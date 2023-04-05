@@ -151,11 +151,21 @@ msz <- mzR::openMSfile(files[1])
 mzR::instrumentInfo(msz)
 mzR::runInfo(msz)
 mzR::header(msz)
+colnames(mzR::header(msz))
+
+
+View(rcpp_parse_msAnalysis(file.choose()))
+
+rcpp_parse_msAnalysis(files[1])
+
+
+rcpp_parse_msAnalysis(all_files[28])
+rcpp_parse_msAnalysis(all_files[4])
 
 
 parse_msAnalysis_from_mzml(files[1])
 parse_msAnalysis_from_mzml(all_files[28])
-
+parse_msAnalysis_from_mzml(all_files[4])
 
 View(ms$get_settings())
 
