@@ -13,12 +13,10 @@
 #'
 centroid_spectra = function(spectra = list()) {
 
+  spectra <- as.list(spectra)
 
-  res <- rcpp_centroid_spectra(spectra)
+  # continue development with cpp
+  centroided <- rcpp_centroid_spectra(spectra)
 
-
-
-
-
-  return(res)
+  return(centroided)
 }
