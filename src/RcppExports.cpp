@@ -10,6 +10,17 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// rcpp_centroid_spectra
+Rcpp::DataFrame rcpp_centroid_spectra(Rcpp::List spectra);
+RcppExport SEXP _streamFind_rcpp_centroid_spectra(SEXP spectraSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type spectra(spectraSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_centroid_spectra(spectra));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpp_ms_cluster_ms2
 List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose);
 RcppExport SEXP _streamFind_rcpp_ms_cluster_ms2(SEXP ms2SEXP, SEXP mzClustSEXP, SEXP verboseSEXP) {
@@ -86,6 +97,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_streamFind_rcpp_centroid_spectra", (DL_FUNC) &_streamFind_rcpp_centroid_spectra, 1},
     {"_streamFind_rcpp_ms_cluster_ms2", (DL_FUNC) &_streamFind_rcpp_ms_cluster_ms2, 3},
     {"_streamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_streamFind_rcpp_ms_cluster_spectra, 3},
     {"_streamFind_rcpp_ms_feature_groups_correspondence", (DL_FUNC) &_streamFind_rcpp_ms_feature_groups_correspondence, 3},
