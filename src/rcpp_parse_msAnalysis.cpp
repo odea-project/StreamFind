@@ -173,31 +173,30 @@ Rcpp::List rcpp_parse_msAnalysis(std::string file_path)
       headers["tic_intensity"] = summary.headers.ticint;
 
       Rcpp::IntegerVector pre_scan = Rcpp::wrap(summary.headers.pre_scan);
+      Rcpp::NumericVector pre_mz = Rcpp::wrap(summary.headers.pre_mz);
+      Rcpp::NumericVector pre_ce = Rcpp::wrap(summary.headers.pre_ce);
+
       for (int i = 0; i < pre_scan.size(); i++) {
+
         if (pre_scan[i] == -1) {
           pre_scan[i] = NA_INTEGER;
         }
-      }
-      headers["pre_scan"] = pre_scan;
 
-      Rcpp::NumericVector pre_mz = Rcpp::wrap(summary.headers.pre_mz);
-      for (int i = 0; i < pre_mz.size(); i++) {
         if (std::isnan(pre_mz[i])) {
           pre_mz[i] = NA_REAL;
         }
-      }
-      headers["pre_mz"] = pre_mz;
 
-      Rcpp::NumericVector pre_ce = Rcpp::wrap(summary.headers.pre_ce);
-      for (int i = 0; i < pre_ce.size(); i++) {
         if (std::isnan(pre_ce[i])) {
           pre_ce[i] = NA_REAL;
         }
+
       }
+
+      headers["pre_scan"] = pre_scan;
+      headers["pre_mz"] = pre_mz;
       headers["pre_ce"] = pre_ce;
 
       headers.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-
 
       list_out["software"] = software_list;
 

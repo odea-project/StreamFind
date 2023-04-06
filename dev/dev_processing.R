@@ -146,17 +146,27 @@ ms <- msData$new(files = all_files[10:21],
   )
 )
 
+init <- Sys.time()
 
 msz <- mzR::openMSfile(files[1])
 mzR::instrumentInfo(msz)
 mzR::runInfo(msz)
 mzR::header(msz)
-colnames(mzR::header(msz))
+
+Sys.time() - init
+init <- Sys.time()
+
+ana <- rcpp_parse_msAnalysis(files[1])
+
+Sys.time() - init
+init <- Sys.time()
+
+ana1 <- parse.msAnalysis(files[1])
+
+Sys.time() - init
 
 
-View(rcpp_parse_msAnalysis(file.choose()))
 
-rcpp_parse_msAnalysis(files[1])
 
 
 rcpp_parse_msAnalysis(all_files[28])
