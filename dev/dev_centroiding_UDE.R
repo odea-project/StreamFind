@@ -55,7 +55,9 @@ orb_spectra <- orb_spectra[[1]][, c("scan", "rt", "mz", "intensity")]
 
 head(orb_spectra)
 
-centroid_spectra(spectra = orb_spectra)
+
+
+centroid_spectra(orb_spectra)
 
 
 
