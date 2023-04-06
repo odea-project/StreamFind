@@ -11,12 +11,12 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // rcpp_centroid_spectra
-Rcpp::DataFrame rcpp_centroid_spectra(Rcpp::List spectra);
+Rcpp::List rcpp_centroid_spectra(Rcpp::DataFrame spectra);
 RcppExport SEXP _streamFind_rcpp_centroid_spectra(SEXP spectraSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List >::type spectra(spectraSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type spectra(spectraSEXP);
     rcpp_result_gen = Rcpp::wrap(rcpp_centroid_spectra(spectra));
     return rcpp_result_gen;
 END_RCPP
