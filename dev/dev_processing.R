@@ -146,38 +146,41 @@ ms <- msData$new(files = all_files[10:21],
   )
 )
 
-init <- Sys.time()
+ms$get_files()
+ms$get_spectra_levels(analyses = 1:2)
+ms$get_polarities()
+ms$get_run(1:2)
 
+ms$get_bpc()
+ms$get_tic()
+
+
+init <- Sys.time()
 msz <- mzR::openMSfile(files[1])
-mzR::instrumentInfo(msz)
-mzR::runInfo(msz)
-mzR::header(msz)
-
+msz1 <- mzR::instrumentInfo(msz)
+msz2 <- mzR::runInfo(msz)
+msz3 <- mzR::header(msz)
 Sys.time() - init
 init <- Sys.time()
-
 ana <- rcpp_parse_msAnalysis(files[1])
-
 Sys.time() - init
 init <- Sys.time()
-
-ana1 <- parse.msAnalysis(files[1])
-
+ana1 <- parse_msAnalysis(files[1])
 Sys.time() - init
 
 
+rcpp_parse_xml(all_files[1])
 
 
-
+rcpp_parse_msAnalysis(all_files[1])
 rcpp_parse_msAnalysis(all_files[28])
 rcpp_parse_msAnalysis(all_files[4])
+rcpp_parse_msAnalysis(all_files[7])
+rcpp_parse_msAnalysis(all_files[31])
+rcpp_parse_msAnalysis(all_files[32])
 
 
-parse_msAnalysis_from_mzml(files[1])
-parse_msAnalysis_from_mzml(all_files[28])
-parse_msAnalysis_from_mzml(all_files[4])
 
-View(ms$get_settings())
 
 # ms$subset_analyses("ana")
 # ms$subset_features(1:2)

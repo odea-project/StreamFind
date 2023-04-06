@@ -70,6 +70,32 @@ msData <- R6::R6Class("msData",
           analyses
         }
       }
+    },
+
+    #' @description
+    #' Gets an entry from the analyses private field.
+    #'
+    #' @param analyses X.
+    #' @param value X.
+    #'
+    .get_analyses_entry = function(analyses = NULL, value = NA_character_) {
+      analyses <- private$.check_analyses_argument(analyses)
+
+      if (is.null(analyses)) return(NULL)
+      output <- lapply(private$.analyses, function(x, value) {
+
+        temp <- x[[value]]
+        names(temp) <- rep(x$name, length(temp))
+        temp
+
+      }, value = value)
+
+      output <- unname(output)
+
+      output <- unlist(output, recursive = FALSE, use.names = TRUE)
+
+      output[names(output) %in% analyses]
+
     }
   ),
 
@@ -116,7 +142,7 @@ msData <- R6::R6Class("msData",
       if (!is.null(settings)) suppressMessages(self$add_settings(settings))
 
       if (is.null(analyses) & !is.null(files)) {
-        analyses <- parse.msAnalysis(files, runParallel)
+        analyses <- parse_msAnalysis(files, runParallel)
         if (is.null(analyses)) {
           warning("No valid files were given! msData object is empty. \n")
         }
@@ -285,11 +311,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_replicate_names = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(NULL)
-      rpl <- vapply(private$.analyses, function(x) x$replicate, "")
-      names(rpl) <- vapply(private$.analyses, function(x) x$name, "")
-      rpl[analyses]
+      private$.get_analyses_entry(analyses, "replicate")
     },
 
     #' @description
@@ -301,11 +323,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_blank_names = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(NULL)
-      blk <- vapply(private$.analyses, function(x) x$blank, "")
-      names(blk) <- vapply(private$.analyses, function(x) x$name, "")
-      blk[analyses]
+      private$.get_analyses_entry(analyses, "blank")
     },
 
     #' @description
@@ -316,14 +334,44 @@ msData <- R6::R6Class("msData",
     #'
     #' @return A character vector.
     #'
-    get_polarities = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(NULL)
-      pol <- vapply(private$.analyses, function(x) {
-        paste(x$polarity, collapse = "; ")
-      }, "")
-      names(pol) <- vapply(private$.analyses, function(x) x$name, "")
-      pol[analyses]
+    get_files = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "file")
+    },
+
+    #' @description
+    #' Method to get the file format of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_formats = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "format")
+    },
+
+    #' @description
+    #' Method to get the type of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_types = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "type")
+    },
+
+    #' @description
+    #' Method to get the time stamp of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_time_stamps = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "time_stamp")
     },
 
     #' @description
@@ -334,76 +382,8 @@ msData <- R6::R6Class("msData",
     #'
     #' @return A character vector.
     #'
-    get_file_paths = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(NULL)
-      fls <- vapply(private$.analyses, function(x) x$file, "")
-      names(fls) <- vapply(private$.analyses, function(x) x$name, "")
-      fls[analyses]
-    },
-
-    #' @description
-    #' Method to get the polarity of the analyses.
-    #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #'
-    #' @return A character vector.
-    #'
-    get_mz_low = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(NULL)
-      value <- vapply(private$.analyses, function(x) x$mz_low, 0)
-      names(value) <- vapply(private$.analyses, function(x) x$name, "")
-      value[analyses]
-    },
-
-    #' @description
-    #' Method to get the polarity of the analyses.
-    #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #'
-    #' @return A character vector.
-    #'
-    get_mz_high = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(NULL)
-      value <- vapply(private$.analyses, function(x) x$mz_high, 0)
-      names(value) <- vapply(private$.analyses, function(x) x$name, "")
-      value[analyses]
-    },
-
-    #' @description
-    #' Method to get the polarity of the analyses.
-    #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #'
-    #' @return A character vector.
-    #'
-    get_rt_start = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(NULL)
-      value <- vapply(private$.analyses, function(x) x$rt_start, 0)
-      names(value) <- vapply(private$.analyses, function(x) x$name, "")
-      value[analyses]
-    },
-
-    #' @description
-    #' Method to get the polarity of the analyses.
-    #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #'
-    #' @return A character vector.
-    #'
-    get_rt_end = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(NULL)
-      value <- vapply(private$.analyses, function(x) x$rt_end, 0)
-      names(value) <- vapply(private$.analyses, function(x) x$name, "")
-      value[analyses]
+    get_spectra_number = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "spectra_number")
     },
 
     #' @description
@@ -415,11 +395,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_spectra_mode = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(NULL)
-      value <- vapply(private$.analyses, function(x) x$spectra_mode, "")
-      names(value) <- vapply(private$.analyses, function(x) x$name, "")
-      value[analyses]
+      private$.get_analyses_entry(analyses, "spectra_mode")
     },
 
     #' @description
@@ -431,11 +407,191 @@ msData <- R6::R6Class("msData",
     #' @return A list for each analysis with an integer vector.
     #'
     get_spectra_levels = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "spectra_levels")
+    },
+
+    #' @description
+    #' Method to get the polarity of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_mz_low = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "mz_low")
+    },
+
+    #' @description
+    #' Method to get the polarity of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_mz_high = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "mz_high")
+    },
+
+    #' @description
+    #' Method to get the polarity of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_rt_start = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "rt_start")
+    },
+
+    #' @description
+    #' Method to get the polarity of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_rt_end = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "rt_end")
+    },
+
+    #' @description
+    #' Method to get the polarity of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_polarities = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "polarity")
+    },
+
+    #' @description
+    #' Method to get the number of chromatograms in the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_chromatograms_number = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "chromatograms_number")
+    },
+
+    #' @description
+    #' Method to get the instrument information for each analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A data.table.
+    #'
+    get_instrument_info = function(analyses = NULL) {
       analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(NULL)
-      value <- lapply(private$.analyses, function(x) x$spectra_levels)
-      names(value) <- vapply(private$.analyses, function(x) x$name, "")
-      value[analyses]
+      if (is.null(analyses)) return(data.table())
+      value <- lapply(private$.analyses[analyses], function(x) {
+        x$instrument
+      })
+      value <- rbindlist(value, idcol = "analysis", fill = TRUE)
+      value
+    },
+
+    #' @description
+    #' Method to get the software information for each analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A data.table.
+    #'
+    get_software_info = function(analyses = NULL) {
+      analyses <- private$.check_analyses_argument(analyses)
+      if (is.null(analyses)) return(data.table())
+      value <- lapply(private$.analyses[analyses], function(x) {
+        x$software
+      })
+      value <- rbindlist(value, idcol = "analysis", fill = TRUE)
+      value
+    },
+
+    #' @description
+    #' Method to get the run summary data.table for each analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A data.table.
+    #'
+    get_run = function(analyses = NULL) {
+      analyses <- private$.check_analyses_argument(analyses)
+      if (is.null(analyses)) return(data.table())
+      value <- lapply(private$.analyses[analyses], function(x) {
+        x$run
+      })
+      value <- rbindlist(value, idcol = "analysis", fill = TRUE)
+      value
+    },
+
+    #' @description
+    #' Method to get the total ion chromatograms (TIC) from the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #' @param levels A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_tic = function(analyses = NULL, levels = 1) {
+      analyses <- private$.check_analyses_argument(analyses)
+      if (is.null(analyses)) return(data.table())
+      tic <- lapply(private$.analyses[analyses], function(x) {
+        data.table(
+          "scan" = x$run$scan,
+          "level" = x$run$level,
+          "rt" = x$run$rt,
+          "intensity" = x$run$tic_intensity
+        )
+      })
+
+      tic <- rbindlist(tic, idcol = "analysis", fill = TRUE)
+
+      tic <- tic[tic$level %in% levels, ]
+
+      tic
+    },
+
+    #' @description
+    #' Method to get the base peak chromatograms (BPC) from the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #' @param levels A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_bpc = function(analyses = NULL, levels = 1) {
+      analyses <- private$.check_analyses_argument(analyses)
+      if (is.null(analyses)) return(data.table())
+      bpc <- lapply(private$.analyses[analyses], function(x) {
+        data.table(
+          "scan" = x$run$scan,
+          "level" = x$run$level,
+          "rt" = x$run$rt,
+          "mz" = x$run$bpc_mz,
+          "intensity" = x$run$bpc_intensity
+        )
+      })
+      bpc <- rbindlist(bpc, idcol = "analysis", fill = TRUE)
+
+      bpc <- bpc[bpc$level %in% levels, ]
+
+      bpc
     },
 
     #' @description
@@ -540,7 +696,7 @@ msData <- R6::R6Class("msData",
         )
 
       } else {
-        files <- unname(self$get_file_paths(analyses))
+        files <- unname(self$get_files(analyses))
         spec_list <- parse_ms_spectra(
           files, levels, targets, allTraces, isolationWindow, runParallel,
           minIntensityMS1, minIntensityMS2
@@ -571,7 +727,7 @@ msData <- R6::R6Class("msData",
       analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(data.table())
 
-      files <- unname(self$get_file_paths(analyses))
+      files <- unname(self$get_files(analyses))
 
       chrom_list <- parse_ms_chromatograms(files, runParallel)
 
@@ -584,38 +740,6 @@ msData <- R6::R6Class("msData",
         warning("Defined analyses not found!")
         data.table()
       }
-    },
-
-    #' @description
-    #' Method to get the total ion chromatograms (TIC) from the analyses.
-    #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #'
-    #' @return A character vector.
-    #'
-    get_tic = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(data.table())
-      tic <- lapply(private$.analyses[analyses], function(x) x$tic)
-      tic <- rbindlist(tic, idcol = "analysis", fill = TRUE)
-      tic
-    },
-
-    #' @description
-    #' Method to get the base peak chromatograms (BPC) from the analyses.
-    #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #'
-    #' @return A character vector.
-    #'
-    get_bpc = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(data.table())
-      bpc <- lapply(private$.analyses[analyses], function(x) x$bpc)
-      bpc <- rbindlist(bpc, idcol = "analysis", fill = TRUE)
-      bpc
     },
 
     #' @description
@@ -1539,7 +1663,7 @@ msData <- R6::R6Class("msData",
 
       if (is.list(analyses)) {
         if (all(c("name", "file") %in% names(analyses))) {
-          analyses <- as.msAnalysis(analyses)
+          analyses <- as_msAnalysis(analyses)
 
           if (is(analyses, "msAnalysis")) {
             ana_name <- analyses$name
@@ -1552,7 +1676,7 @@ msData <- R6::R6Class("msData",
           }
 
         } else {
-          analyses <- lapply(analyses, as.msAnalysis)
+          analyses <- lapply(analyses, as_msAnalysis)
 
           if (all(vapply(analyses, function(x) is(x, "msAnalysis"), FALSE))) {
             ana_names <- vapply(analyses, function(x) x$name, "")
@@ -4116,7 +4240,7 @@ msData <- R6::R6Class("msData",
       polarities <- self$get_polarities()
       if (length(unique(polarities)) > 1) anaInfo$set <- polarities
 
-      anaInfo$file <- self$get_file_paths()
+      anaInfo$file <- self$get_files()
       rownames(anaInfo) <- seq_len(nrow(anaInfo))
 
       features <- lapply(self$get_analyses(), function(x) {
@@ -4814,7 +4938,7 @@ extract_time_alignment <- function(pat, self) {
       hasSpectra <- FALSE
 
       if (!hasSpectra) {
-        rtOrg <- lapply(self$get_file_paths(), function(x) {
+        rtOrg <- lapply(self$get_files(), function(x) {
           file_link <- mzR::openMSfile(x, backend = "pwiz")
           sH <- suppressWarnings(mzR::header(file_link))
           suppressWarnings(mzR::close(file_link))

@@ -2,9 +2,9 @@
 % Please edit documentation in R/class_S3_msAnalysis.R
 \name{msAnalysis}
 \alias{msAnalysis}
-\alias{validate.msAnalysis}
-\alias{as.msAnalysis}
-\alias{parse.msAnalysis}
+\alias{validate_msAnalysis}
+\alias{as_msAnalysis}
+\alias{parse_msAnalysis}
 \title{\strong{msAnalysis} S3 class constructor and methods}
 \usage{
 msAnalysis(
@@ -12,8 +12,8 @@ msAnalysis(
   replicate = NA_character_,
   blank = NA_character_,
   file = NA_character_,
+  format = NA_character_,
   type = NA_character_,
-  instrument = list(),
   time_stamp = NA_character_,
   spectra_number = NA_integer_,
   spectra_mode = NA_character_,
@@ -23,21 +23,22 @@ msAnalysis(
   rt_start = NA_real_,
   rt_end = NA_real_,
   polarity = NA_character_,
+  has_ion_mobility = FALSE,
   chromatograms_number = NA_integer_,
-  ion_mobility = NA,
-  tic = data.table(),
-  bpc = data.table(),
+  instrument = data.table(),
+  software = data.table(),
+  run = data.table(),
   spectra = data.table(),
   chromatograms = data.table(),
   features = data.table(),
   metadata = list()
 )
 
-\method{validate}{msAnalysis}(x = NULL)
+validate_msAnalysis(value = NULL)
 
-as.msAnalysis(value)
+as_msAnalysis(value)
 
-parse.msAnalysis(files = NULL, runParallel = FALSE)
+parse_msAnalysis(files = NULL, runParallel = FALSE)
 }
 \arguments{
 \item{name}{\emph{mzML} or \emph{mzXML} file name without extension.}
@@ -50,12 +51,11 @@ replicate group name.}
 
 \item{file}{\emph{mzML} or \emph{mzXML} full file path (with extension).}
 
+\item{format}{Character with length one. One of \emph{mzML} or \emph{mzXML}.}
+
 \item{type}{Character with length one. Possible values as "MS" for only MS1
 spectral data, "MS/MS" for tandem spectral data (i.e., MS1 and MS2) or "SRM"
 for selected reaction monitoring data (i.e., no spectra only chromatograms).}
-
-\item{instrument}{List with metadata from the instrument used to acquire the
-data (content is highly vendor dependent).}
 
 \item{time_stamp}{Character with length one, representing the start time and
 date of the data acquisition.}
@@ -82,15 +82,16 @@ in the spectra, in Da.}
 \item{polarity}{Character length one. Possible values are \emph{positive},
 \emph{negative} or \emph{both} (the latter refers to polarity switching acquisition).}
 
+\item{has_ion_mobility}{Logical length one for presence or absence of drift
+separation from ion mobility.}
+
 \item{chromatograms_number}{Integer with the number of chromatograms in the
 file.}
 
-\item{ion_mobility}{Logical length one for presence or absence of drift
-separation from ion mobility.}
+\item{instrument}{List with metadata from the instrument used to acquire the
+data (content is highly vendor dependent).}
 
-\item{tic}{data.table with the total ion chromatogram.}
-
-\item{bpc}{data.table with the base peak chromatogram.}
+\item{run}{data.table run information for each spectrum.}
 
 \item{spectra}{data.table with the raw spectra (only present if loaded).}
 
@@ -101,8 +102,6 @@ if loaded).}
 
 \item{metadata}{List with flexible storage for experimental metadata
 (e.g., concentration, location, etc.).}
-
-\item{x}{A msAnalysis S3 class object.}
 
 \item{value}{A list to be checked and/or converted to msAnalysis S3 class.}
 
@@ -121,27 +120,14 @@ An msAnalysis S3 class object.
 \description{
 Creates an msAnalysis S3 class object.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(msAnalysis)}: Validates an msAnalysis S3 class object, returning a logical value of length
-one.
-
-}}
 \section{Functions}{
 \itemize{
-\item \code{as.msAnalysis()}: Converts the argument in an msAnalysis S3 class object.
+\item \code{validate_msAnalysis()}: Validates an msAnalysis S3 class object, returning a logical value of length
+one.
 
-\item \code{parse.msAnalysis()}: Parses information from \emph{mzML} or \emph{mzXML} file/s and returns a list with
-msAnalysis S3 class object/s. On error, returns \code{NULL}. The function
-uses the package \pkg{mzR} or when not installed, the package \pkg{xml2}.
+\item \code{as_msAnalysis()}: Converts the argument value in an msAnalysis S3 class object.
+
+\item \code{parse_msAnalysis()}: Parses information from \emph{mzML} or \emph{mzXML} file/s and returns a list with
+msAnalysis S3 class object/s. On error, returns \code{NULL}.
 
 }}
-\references{
-\insertRef{mzr01}{streamFind}
-
-\insertRef{mzr02}{streamFind}
-
-\insertRef{mzr03}{streamFind}
-
-\insertRef{mzr04}{streamFind}
-}

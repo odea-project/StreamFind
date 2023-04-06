@@ -16,124 +16,8 @@
 #include <algorithm>
 #include <iterator>
 
-// namespace mzml_find {
-//
-// bool rt(pugi::xml_node node)
-// {
-//   return strcmp(node.attribute("name").as_string(), "scan start time") == 0;
-// }
-//
-// bool drift(pugi::xml_node node)
-// {
-//   return strcmp(node.attribute("name").as_string(), "ion mobility drift time") == 0;
-// }
-//
-// bool level(pugi::xml_node node)
-// {
-//   return strcmp(node.attribute("name").as_string(), "ms level") == 0;
-// }
-//
-// bool mzlow(pugi::xml_node node)
-// {
-//   return strcmp(node.attribute("name").as_string(), "lowest observed m/z") == 0;
-// }
-//
-// bool mzhigh(pugi::xml_node node)
-// {
-//   return strcmp(node.attribute("name").as_string(), "highest observed m/z") == 0;
-// }
-//
-// bool bpcmz(pugi::xml_node node)
-// {
-//   return strcmp(node.attribute("name").as_string(), "base peak m/z") == 0;
-// }
-//
-// bool bpcint(pugi::xml_node node)
-// {
-//   return strcmp(node.attribute("name").as_string(), "base peak intensity") == 0;
-// }
-//
-// bool ticint(pugi::xml_node node)
-// {
-//   return strcmp(node.attribute("name").as_string(), "total ion current") == 0;
-// }
-//
-// bool polpos(pugi::xml_node node)
-// {
-//   return strcmp(node.attribute("accession").as_string(), "MS:1000130") == 0;
-// }
-//
-// bool polneg(pugi::xml_node node)
-// {
-//   return strcmp(node.attribute("accession").as_string(), "MS:1000129") == 0;
-// }
-//
-// bool centroid(pugi::xml_node node)
-// {
-//   return strcmp(node.attribute("accession").as_string(), "MS:1000127") == 0;
-// }
-//
-// bool profile(pugi::xml_node node)
-// {
-//   return strcmp(node.attribute("accession").as_string(), "MS:1000128") == 0;
-// }
-//
-// bool pre_mz(pugi::xml_node node)
-// {
-//   return strcmp(node.attribute("name").as_string(), "isolation window target m/z") == 0;
-// }
-//
-// bool pre_loweroffset(pugi::xml_node node)
-// {
-//   return strcmp(node.attribute("name").as_string(), "isolation window lower offset") == 0;
-// }
-//
-// bool pre_upperoffset(pugi::xml_node node)
-// {
-//   return strcmp(node.attribute("name").as_string(), "isolation window upper offset") == 0;
-// }
-//
-// bool pre_ce(pugi::xml_node node)
-// {
-//   return strcmp(node.attribute("name").as_string(), "collision energy") == 0;
-// }
-//
-// bool precision_float(pugi::xml_node node)
-// {
-//   return strcmp(node.attribute("accession").as_string(), "MS:1000523") == 0;
-// }
-//
-// bool precision_integer(pugi::xml_node node)
-// {
-//   return strcmp(node.attribute("accession").as_string(), "MS:1000522") == 0;
-// }
-//
-// bool compression(pugi::xml_node node)
-// {
-//   return strcmp(node.attribute("accession").as_string(), "MS:1000574") == 0;
-// }
-// } // mzml_find
-
-// namespace other_utils {
-//
-// const char          fillchar = '=';
-//
-// // 00000000001111111111222222
-// // 01234567890123456789012345
-// static std::string  cvt = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-//
-// // 22223333333333444444444455
-// // 67890123456789012345678901
-// "abcdefghijklmnopqrstuvwxyz"
-//
-// // 555555556666
-// // 234567890123
-// "0123456789+/";
-//
-// }
-
 // [[Rcpp::export]]
-Rcpp::List parse_msAnalysis_from_mzml(std::string file_path)
+Rcpp::List rcpp_parse_xml(std::string file_path)
 {
 
   Rcpp::List list_out;
@@ -160,511 +44,156 @@ Rcpp::List parse_msAnalysis_from_mzml(std::string file_path)
 
     std::cout << "\u2713 " << node_in.name() << " opened!" << std::endl;
 
-    std::cout << "\n \u2699 Parsing data...";
+    std::cout << "\n \u2699 Parsing data..." << std::endl;
+
+    std::string search_run = "//spectrumList";
+    pugi::xpath_node xp_spec_list = node_in.select_node(search_run.c_str());
+
+    int number_spectra = xp_spec_list.node().attribute("count").as_int();
+
+    std::cout << "\n File with " << number_spectra << " spectra!" << std::endl;
+
+    std::list<std::vector<double>> out_list;
+    std::vector<double> scan;
+    std::vector<double> mz;
+    std::vector<double> intensity;
+
+    if (xp_spec_list != NULL) {
+      for (pugi::xml_node spec: xp_spec_list.node().children("spectrum"))
+      {
+
+        int number_traces = spec.attribute("defaultArrayLength").as_int();
+
+        std::string scan = spec.attribute("id").as_string();
+        std::size_t poslastEqual = scan.rfind('=');
+        int scan_n = std::stoi(scan.substr(poslastEqual + 1));
+
+        std::vector<double> temp_scan(number_traces, scan_n);
+
+        pugi::xml_node node_binary_list = spec.child("binaryDataArrayList");
+
+        int number_bins = node_binary_list.attribute("count").as_int();
+
+        number_bins = number_bins + 1;
+
+        std::vector<std::vector<double>> mat(number_traces, std::vector<double>(number_bins));
+
+        for (int i = 0; i < mat.size(); i++) {
+          mat[i][0] = scan_n;
+        }
+
+        for (pugi::xml_node bin: node_binary_list.children("binaryDataArray"))
+        {
+
+          std::string precision_str;
+          int precision_int;
+
+          pugi::xml_node node_float = bin.find_child_by_attribute("cvParam", "accession", "MS:1000523");
+          pugi::xml_node node_integer = bin.find_child_by_attribute("cvParam", "accession", "MS:1000522");
+
+          if (node_float != NULL) {
+            precision_str = node_float.attribute("name").as_string();
+          } else {
+            precision_str = node_integer.attribute("name").as_string();
+          }
+
+          std::sscanf(precision_str.c_str(), "%d%*c", &precision_int);
+
+
+          std::cout << precision_int << " ";
+
+          // std::string compression;
+
+          // pugi::xml_node node_compression = node_binary.find_child(mzml_find::compression);
+          // std::string node_compression_name = node_compression.name();
+          //
+          // if (strcmp(node_compression_name.c_str(), "cvParam") == 0) {
+          //   compression = node_compression.attribute("name").as_string();
+          // } else {
+          //   compression = "none";
+          // }
+          //
+          // if (compression == "zlib" || compression == "zlib compression") {
+          //   compression = "gzip";
+          // } else {
+          //   compression = "none";
+          // }
+          //
+          // pugi::xml_node node_binary_data = node_binary.child("binary");
+          // std::string encoded_data = node_binary_data.text().as_string();
 
 
 
-    // if (result) {
+        }
+
+
+
+
+
+
+
+
+
+
+        // for (int i = 0; i < mat.size(); i++) {
+        //   for (int j = 0; j < mat[i].size(); j++) {
+        //     std::cout << mat[i][j] << " ";
+        //   }
+        //   std::cout << std::endl;
+        // }
+
+
+
+
+
+
+
+
+
+      }
+
+      std::cout << std::endl;
+    }
+
+
+
+
+    // pugi::xml_node node_binary = spectra.first().node().child("binaryDataArrayList").child("binaryDataArray");
     //
-    //   node_in = doc.first_child();
+    // std::string node_binary_name = node_binary.name();
     //
-    //   if (node_in != NULL) {
-    //     std::string first_name;
-    //     first_name = node_in.name();
+    // std::string precision_str;
+    // int precision_int;
+    // std::string compression;
     //
-    //     if (strcmp("indexedmzML", first_name.c_str()) == 0) {
-    //       node_in = node_in.first_child();
-    //       std::cout << "\u2713 " << node_in.name() << " opened!" << std::endl;
-    //     }
+    // pugi::xml_node node_precision_float = node_binary.find_child(mzml_find::precision_float);
+    // std::string node_precision_float_name = node_precision_float.name();
     //
-    //   } else {
-    //     std::cout << "\u2717 First node of the xml file found!" << std::endl;
-    //   }
-    //
+    // if (strcmp(node_precision_float_name.c_str(), "cvParam") == 0) {
+    //   precision_str = node_precision_float.attribute("name").as_string();
     // } else {
-    //   std::cout << "\u2717 Not opened with result: " << result.description() << std::endl;
+    //   pugi::xml_node node_precision_integer = node_binary.find_child(mzml_find::precision_integer);
+    //   precision_str = node_precision_integer.attribute("name").as_string();
     // }
-
-    // std::cout << "Load result: " << result.description() << std::endl;
-
-    // std::cout << "Node name: " << node_in.name() << std::endl;
+    // std::sscanf(precision_str.c_str(), "%d%*c", &precision_int);
     //
-    // std::cout << "Second name: " << doc.first_child().name() << std::endl;
+    // pugi::xml_node node_compression = node_binary.find_child(mzml_find::compression);
+    // std::string node_compression_name = node_compression.name();
     //
-    // pugi::xml_node mzml = doc.first_child().first_child();
-    //
-    // std::cout << "File structure: " << mzml.name() << std::endl;
-
-    // std::cout << std::endl;
-    // std::cout << std::endl;
-
-
-    // std::list<std::vector<std::string>> instrument_list;
-    // instrument_list = xml_utils::mzml_instrument_parser(node_in);
-    // auto it = instrument_list.begin();
-    // Rcpp::StringVector instrument_class_names = Rcpp::wrap(*it);
-    // std::advance(it, 1);
-    // Rcpp::StringVector instrument = Rcpp::wrap(*it);
-    // instrument.names() = instrument_class_names;
-    // list_out["instrument"] = instrument_list;
-    //
-    // std::list<std::vector<std::string>> software_list_cpp;
-    // software_list_cpp = xml_utils::mzml_software_parser(node_in);
-    // Rcpp::List software_list;
-    // auto it2 = software_list_cpp.begin();
-    // software_list["name"] = Rcpp::wrap(*it2);
-    // std::advance(it2, 1);
-    // software_list["id"] = Rcpp::wrap(*it2);
-    // std::advance(it2, 1);
-    // software_list["version"] = Rcpp::wrap(*it2);
-    //
-    // software_list.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-    //
-    // list_out["software"] = software_list;
-    //
-    // xml_utils::runSummary summary;
-    // summary = xml_utils::run_summary(node_in);
-    // Rcpp::List summary_list;
-    //
-    // summary_list["file_format"] = summary.file_format;
-    // summary_list["time_stamp"] = summary.time_stamp;
-    // summary_list["spectra_number"] = summary.spectra_number;
-    // summary_list["spectra_mode"] = summary.spectra_mode;
-    // summary_list["spectra_levels"] = summary.spectra_levels;
-    // summary_list["mzlow"] = summary.mz_low;
-    // summary_list["mzhigh"] = summary.mz_high;
-    // summary_list["rt_start"] = summary.rt_start;
-    // summary_list["rt_end"] = summary.rt_end;
-    // summary_list["polarity"] = summary.polarity;
-    // summary_list["has_im"] = summary.has_ion_mobility;
-    //
-    // Rcpp::List headers;
-    // headers["index"] = summary.headers.index;
-    // headers["scan"] = summary.headers.scan;
-    // headers["traces"] = summary.headers.traces;
-    // headers["level"] = summary.headers.level;
-    // headers["bpc_mz"] = summary.headers.bpcmz;
-    // headers["bpc_intensity"] = summary.headers.bpcint;
-    // headers["tic_intensity"] = summary.headers.ticint;
-    // headers["pre_scan"] = summary.headers.pre_scan;
-    // headers["pre_mz"] = summary.headers.pre_mz;
-    // headers["pre_ce"] = summary.headers.pre_ce;
-    // // make case polarity switching
-    //
-    // headers.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-    //
-    // summary_list["run"] = headers;
-    //
-    // list_out["summary"] = summary_list;
-    //
-    // std::cout << " Done!" << std::endl;
-
-    // xml_utils::runHeaders test;
-    //
-    // test = xml_utils::mzml_run_headers_parser(mzml);
-
-    // Rcpp::List test_list;
-    // // test_list["time_stamp"] = test.time_stamp;
-    // test_list["index"] = test.index;
-    // test_list["scan"] = test.scan;
-    // test_list["traces"] = test.traces;
-    // test_list["rt"] = test.rt;
-    // test_list["drift"] = test.drift;
-    // test_list["level"] = test.level;
-    // test_list["polarity"] = test.polarity;
-    // test_list["mode"] = test.mode;
-    // test_list["mzlow"] = test.mzlow;
-    // test_list["mzhigh"] = test.mzhigh;
-    // test_list["bpc_mz"] = test.bpcmz;
-    // test_list["bpc_intensity"] = test.bpcint;
-    // test_list["tic_intensity"] = test.ticint;
-    // test_list["pre_scan"] = test.pre_scan;
-    // test_list["pre_mz"] = test.pre_mz;
-    // test_list["pre_loweroffset"] = test.pre_loweroffset;
-    // test_list["pre_upperoffset"] = test.pre_upperoffset;
-    // test_list["pre_ce"] = test.pre_ce;
-    //
-    // test_list.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-    //
-    //
-    // list_out["test"] = test_list;
-
-    // get instrument reference
-    // - gets information from "referenceableParamGroup" when available and
-    // from direct childs of "instrumentConfiguration" it return a cpp list of
-    // two elements with "names" and "values"
-
-    // std::list<std::vector<std::string>> instrument;
-    // std::vector<std::string> inst_names;
-    // std::vector<std::string> inst_values;
-    //
-    // std::string search_ref = "//referenceableParamGroup";
-    // pugi::xpath_node xp_ref = doc.select_node(search_ref.c_str());
-    // if (xp_ref.node() != NULL) {
-    //   for (pugi::xml_node temp: xp_ref.node().children())
-    //   {
-    //     if (temp.attribute("name") != NULL) {
-    //       inst_names.push_back(temp.attribute("name").as_string());
-    //       std::string val_value = temp.attribute("value").as_string();
-    //       if (val_value != "") {
-    //         inst_values.push_back(temp.attribute("value").as_string());
-    //       } else {
-    //         inst_values.push_back(temp.attribute("name").as_string());
-    //       }
-    //     }
-    //   }
+    // if (strcmp(node_compression_name.c_str(), "cvParam") == 0) {
+    //   compression = node_compression.attribute("name").as_string();
+    // } else {
+    //   compression = "none";
     // }
     //
-    // std::string search_inst = "//instrumentConfiguration";
-    // pugi::xpath_node xp_inst = doc.select_node(search_inst.c_str());
-    // if (xp_inst.node() != NULL) {
-    //   for (pugi::xml_node temp: xp_inst.node().children())
-    //   {
-    //     if (temp.attribute("name") != NULL) {
-    //       inst_names.push_back(temp.attribute("name").as_string());
-    //       std::string val_value = temp.attribute("value").as_string();
-    //       if (val_value != "") {
-    //         inst_values.push_back(temp.attribute("value").as_string());
-    //       } else {
-    //         inst_values.push_back(temp.attribute("name").as_string());
-    //       }
-    //     }
-    //   }
+    // if (compression == "zlib" || compression == "zlib compression") {
+    //   compression = "gzip";
+    // } else {
+    //   compression = "none";
     // }
     //
-    // std::string search_config = "//componentList/child::node()";
-    // pugi::xpath_node_set xps_config = doc.select_nodes(search_config.c_str());
-    // if (xps_config.size() > 0) {
-    //   for (pugi::xpath_node_set::const_iterator it = xps_config.begin(); it != xps_config.end(); ++it)
-    //   {
-    //     pugi::xpath_node node = *it;
-    //     for (pugi::xml_node temp: node.node().children())
-    //     {
-    //       inst_names.push_back(node.node().name());
-    //       inst_values.push_back(temp.attribute("name").as_string());
-    //     }
-    //   }
-    // }
-    //
-    // instrument.push_back(inst_names);
-    // instrument.push_back(inst_values);
-    //
-    // list_out["instrument"] = instrument;
-
-    // for (auto vect : instrument) {
-    //   // Each element of the list is
-    //   // a vector itself
-    //   std::vector<std::string> currentVector = vect;
-    //
-    //   std::cout << "[ ";
-    //
-    //   // Printing vector contents
-    //   for (auto element : currentVector)
-    //     std::cout << element << ' ';
-    //
-    //   std::cout << ']';
-    //   std::cout << '\n';
-    // }
-
-    // std::cout << "\u2023 Instrument reference node with name " << xp_node_inst.node().name() << std::endl;
-    //
-    // for (pugi::xml_node temp: xp_node_inst.node().children())
-    // {
-    //   std::cout << "\u25e6 Child name: " << temp.name() << std::endl;
-    //
-    //   for (pugi::xml_attribute attr: temp.attributes())
-    //   {
-    //     std::cout << " " << attr.name() << "=" << attr.value();
-    //   }
-    //
-    //   std::cout << std::endl;
-    // }
-
-    // std::cout << std::endl;
-    // std::cout << std::endl;
-
-    // get instrument configuration
-
-    // std::list<std::vector<std::string>> configuration;
-    // std::vector<std::string> config_names;
-    // std::vector<std::string> config_values;
-
-    // std::string search_config = "//componentList/child::node()";
-    // pugi::xpath_node_set xps_config = doc.select_nodes(search_config.c_str());
-    // if (xps_config.size() > 0) {
-    //   for (pugi::xpath_node_set::const_iterator it = xps_config.begin(); it != xps_config.end(); ++it)
-    //   {
-    //     pugi::xpath_node node = *it;
-    //     for (pugi::xml_node temp: node.node().children())
-    //     {
-    //       config_names.push_back(node.node().name());
-    //       config_values.push_back(temp.attribute("name").as_string());
-    //     }
-    //   }
-    // }
-    //
-    // configuration.push_back(config_names);
-    // configuration.push_back(config_values);
-    //
-    // list_out["configuration"] = configuration;
-
-
-
-
-    // for (pugi::xpath_node_set::const_iterator it = xp_node_config.begin(); it != xp_node_config.end(); ++it)
-    // {
-    //   pugi::xpath_node node = *it;
-    //   std::cout << "\u2023 Node name: " << node.node().name() << "\n";
-    //
-    //   for (pugi::xml_node temp: node.node().children())
-    //   {
-    //
-    //     std::cout << "\u25e6 Child name: " << temp.name() << std::endl;
-    //
-    //     for (pugi::xml_attribute attr: temp.attributes())
-    //     {
-    //       std::cout << " " << attr.name() << "=" << attr.value();
-    //     }
-    //
-    //     std::cout << std::endl;
-    //   }
-    // }
-
-    // std::cout << std::endl;
-    // std::cout << std::endl;
-
-    // get software list
-
-    // std::string search_software = "//softwareList/child::node()";
-    // pugi::xpath_node_set xp_node_software = doc.select_nodes(search_software.c_str());
-    // std::cout << "\u2217 Software node set with " << xp_node_software.size() << " nodes" << std::endl;
-    //
-    // for (pugi::xpath_node_set::const_iterator it = xp_node_software.begin(); it != xp_node_software.end(); ++it)
-    // {
-    //   pugi::xpath_node node = *it;
-    //   std::cout << "\u2023 Node name: " << node.node().name() << "\n";
-    //
-    //   for (pugi::xml_attribute attr_node: node.node().attributes())
-    //   {
-    //     std::cout << " " << attr_node.name() << "=" << attr_node.value();
-    //   }
-    //
-    //   std::cout << std::endl;
-    //
-    //   for (pugi::xml_node temp: node.node().children())
-    //   {
-    //
-    //     std::cout << "\u25e6 Child name: " << temp.name() << std::endl;
-    //
-    //     for (pugi::xml_attribute attr: temp.attributes())
-    //     {
-    //       std::cout << " " << attr.name() << "=" << attr.value();
-    //     }
-    //
-    //     std::cout << std::endl;
-    //   }
-    // }
-
-    // std::cout << std::endl;
-    // std::cout << std::endl;
-
-
-
-    // get run information ----------------------------------------------------------------------------
-
-    // std::string search_run = "//run";
-    // pugi::xpath_node xp_node_run = doc.select_node(search_run.c_str());
-    //
-    // pugi::xml_node spec_list = xp_node_run.node().child("spectrumList");
-    //
-    // std::cout << "\u2217 The node name is: " << spec_list.name() << std::endl;
-    //
-    // pugi::xml_node first_spec = spec_list.first_child();
-    //
-    // pugi::xml_node msl_node = first_spec.find_child_by_attribute("cvParam", "name", "ms level");
-    //
-    // std::cout << "\u2217 The node name is: " << msl_node.name() << std::endl;
-    //
-    // std::cout << "\u2217 The attr val in: " << msl_node.attribute("value").as_int() << std::endl;
-
-
-    // std::cout << "\u2217 The " << time_stamp.name() << " is " << time_stamp.value() << std::endl;
-
-    // get spectra index and scan numbers
-    // std::vector<int> index;
-    // std::vector<int> scan;
-    // std::vector<double> rt;
-    // std::vector<double> drift;
-    // std::vector<int> level;
-    // std::vector<std::string> polarity;
-    // std::vector<std::string> mode;
-    // std::vector<double> mzlow;
-    // std::vector<double> mzhigh;
-    // std::vector<double> bpcmz;
-    // std::vector<double> bpcint;
-    // std::vector<double> ticint;
-    // std::vector<int> pre_scan;
-    // std::vector<double> pre_mz;
-    // std::vector<double> pre_loweroffset;
-    // std::vector<double> pre_upperoffset;
-    // std::vector<double> pre_ce;
-
-    // std::string search_spectra = "//spectrum";
-    // pugi::xpath_node_set spectra = xp_node_run.node().select_nodes(search_spectra.c_str());
-
-    // std::cout << "\u2217 The file has " << spectra.size() << " spectra" << std::endl;
-
-    // std::cout << std::endl;
-    // std::cout << std::endl;
-
-    // if (spectra.size() > 0) {
-    //
-    //   for (pugi::xpath_node_set::const_iterator it = spectra.begin(); it != spectra.end(); ++it) {
-    //     pugi::xpath_node node = *it;
-    //     index.push_back(node.node().attribute("index").as_int());
-    //
-    //     std::string scan_t = node.node().attribute("id").as_string();
-    //     int scan_n;
-    //     std::sscanf(scan_t.c_str(), "%*[^=]=%d", &scan_n);
-    //     scan.push_back(scan_n);
-    //
-    //     pugi::xml_node node_scan = node.node().child("scanList").child("scan");
-    //
-    //     pugi::xml_node node_rt = node_scan.find_child(mzml_find::rt);
-    //     std::string rt_unit = node_rt.attribute("unitName").as_string();
-    //     double rt_t = node_rt.attribute("value").as_double();
-    //     if (rt_unit == "minute") rt_t = rt_t * 60;
-    //     rt.push_back(rt_t);
-    //
-    //     pugi::xml_node node_drift = node_scan.find_child(mzml_find::drift);
-    //     std::string node_drift_name = node_drift.name();
-    //
-    //     if (strcmp(node_drift_name.c_str(), "cvParam") == 0) {
-    //       // std::string drift_unit = node_drift.attribute("unitName").as_string();
-    //       double drift_t = node_drift.attribute("value").as_double();
-    //       // if (rt_unit == "millisecond") drift_t = drift_t / 0.001;
-    //       drift.push_back(drift_t);
-    //     } else {
-    //       drift.push_back(nan(""));
-    //     }
-    //
-    //     pugi::xml_node node_level = node.node().find_child(mzml_find::level);
-    //     level.push_back(node_level.attribute("value").as_int());
-    //
-    //     pugi::xml_node node_pol_pos = node.node().find_child(mzml_find::polpos);
-    //     std::string pol_pos = node_pol_pos.attribute("name").as_string();
-    //
-    //     pugi::xml_node node_pol_neg = node.node().find_child(mzml_find::polneg);
-    //     std::string pol_neg = node_pol_neg.attribute("name").as_string();
-    //
-    //     if (strcmp(pol_pos.c_str(), "positive scan") == 0) {
-    //       polarity.push_back(node_pol_pos.attribute("name").as_string());
-    //     } else if (strcmp(pol_neg.c_str(), "negative scan") == 0) {
-    //       polarity.push_back(pol_neg);
-    //     } else {
-    //       polarity.push_back("NA");
-    //     }
-    //
-    //     pugi::xml_node node_centroid = node.node().find_child(mzml_find::centroid);
-    //     std::string centroid = node_centroid.attribute("name").as_string();
-    //
-    //     pugi::xml_node node_profile = node.node().find_child(mzml_find::profile);
-    //     std::string profile = node_profile.attribute("name").as_string();
-    //
-    //     if (strcmp(centroid.c_str(), "centroid spectrum") == 0) {
-    //       mode.push_back(centroid);
-    //     } else if (strcmp(profile.c_str(), "profile spectrum") == 0) {
-    //       mode.push_back(profile);
-    //     } else {
-    //       mode.push_back("NA");
-    //     }
-    //
-    //     pugi::xml_node node_mzlow = node.node().find_child(mzml_find::mzlow);
-    //     mzlow.push_back(node_mzlow.attribute("value").as_double());
-    //
-    //     pugi::xml_node node_mzhigh = node.node().find_child(mzml_find::mzhigh);
-    //     mzhigh.push_back(node_mzhigh.attribute("value").as_double());
-    //
-    //     pugi::xml_node node_bpcmz = node.node().find_child(mzml_find::bpcmz);
-    //     bpcmz.push_back(node_bpcmz.attribute("value").as_double());
-    //
-    //     pugi::xml_node node_bpcint = node.node().find_child(mzml_find::bpcint);
-    //     bpcint.push_back(node_bpcint.attribute("value").as_double());
-    //
-    //     pugi::xml_node node_ticint = node.node().find_child(mzml_find::ticint);
-    //     ticint.push_back(node_ticint.attribute("value").as_double());
-    //
-    //     pugi::xml_node node_precursor = node.node().child("precursorList").child("precursor");
-    //     std::string has_precursor = node_precursor.name();
-    //
-    //     if (strcmp(has_precursor.c_str(), "precursor") == 0) {
-    //
-    //       std::string pre_scan_t = node_precursor.attribute("spectrumRef").as_string();
-    //       int pre_scan_n;
-    //       std::sscanf(pre_scan_t.c_str(), "%*[^=]=%d", &pre_scan_n);
-    //       pre_scan.push_back(pre_scan_n);
-    //
-    //       pugi::xml_node node_isolation = node_precursor.child("isolationWindow");
-    //       pugi::xml_node node_pre_mz = node_isolation.find_child(mzml_find::pre_mz);
-    //       pre_mz.push_back(node_pre_mz.attribute("value").as_double());
-    //
-    //       pugi::xml_node node_pre_loweroffset = node_isolation.find_child(mzml_find::pre_loweroffset);
-    //       pre_loweroffset.push_back(node_pre_loweroffset.attribute("value").as_double());
-    //
-    //       pugi::xml_node node_pre_upperoffset = node_isolation.find_child(mzml_find::pre_upperoffset);
-    //       pre_upperoffset.push_back(node_pre_upperoffset.attribute("value").as_double());
-    //
-    //       pugi::xml_node node_activation = node_precursor.child("activation");
-    //       pugi::xml_node node_pre_ce = node_activation.find_child(mzml_find::pre_ce);
-    //       pre_ce.push_back(node_pre_ce.attribute("value").as_double());
-    //
-    //     } else {
-    //       pre_scan.push_back(-1);
-    //       pre_mz.push_back(nan(""));
-    //       pre_loweroffset.push_back(nan(""));
-    //       pre_upperoffset.push_back(nan(""));
-    //       pre_ce.push_back(nan(""));
-    //     }
-    //
-    //
-    //   }
-
-
-      // pugi::xml_node node_binary = spectra.first().node().child("binaryDataArrayList").child("binaryDataArray");
-      // std::string node_binary_name = node_binary.name();
-      //
-      // std::string precision_str;
-      // int precision_int;
-      // std::string compression;
-      //
-      // pugi::xml_node node_precision_float = node_binary.find_child(mzml_find::precision_float);
-      // std::string node_precision_float_name = node_precision_float.name();
-      //
-      // if (strcmp(node_precision_float_name.c_str(), "cvParam") == 0) {
-      //   precision_str = node_precision_float.attribute("name").as_string();
-      // } else {
-      //   pugi::xml_node node_precision_integer = node_binary.find_child(mzml_find::precision_integer);
-      //   precision_str = node_precision_integer.attribute("name").as_string();
-      // }
-      // std::sscanf(precision_str.c_str(), "%d%*c", &precision_int);
-      //
-      // pugi::xml_node node_compression = node_binary.find_child(mzml_find::compression);
-      // std::string node_compression_name = node_compression.name();
-      //
-      // if (strcmp(node_compression_name.c_str(), "cvParam") == 0) {
-      //   compression = node_compression.attribute("name").as_string();
-      // } else {
-      //   compression = "none";
-      // }
-      //
-      // if (compression == "zlib" || compression == "zlib compression") {
-      //   compression = "gzip";
-      // } else {
-      //   compression = "none";
-      // }
-      //
-      // pugi::xml_node node_binary_data = node_binary.child("binary");
-      // std::string encoded_data = node_binary_data.text().as_string();
+    // pugi::xml_node node_binary_data = node_binary.child("binary");
+    // std::string encoded_data = node_binary_data.text().as_string();
       //
       // // via base64 library
       // std::string decoded_data = base64_decode(encoded_data, false);
@@ -941,3 +470,590 @@ Rcpp::List parse_msAnalysis_from_mzml(std::string file_path)
 
   return list_out;
 }
+
+// old code --------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+
+// namespace mzml_find {
+//
+// bool rt(pugi::xml_node node)
+// {
+//   return strcmp(node.attribute("name").as_string(), "scan start time") == 0;
+// }
+//
+// bool drift(pugi::xml_node node)
+// {
+//   return strcmp(node.attribute("name").as_string(), "ion mobility drift time") == 0;
+// }
+//
+// bool level(pugi::xml_node node)
+// {
+//   return strcmp(node.attribute("name").as_string(), "ms level") == 0;
+// }
+//
+// bool mzlow(pugi::xml_node node)
+// {
+//   return strcmp(node.attribute("name").as_string(), "lowest observed m/z") == 0;
+// }
+//
+// bool mzhigh(pugi::xml_node node)
+// {
+//   return strcmp(node.attribute("name").as_string(), "highest observed m/z") == 0;
+// }
+//
+// bool bpcmz(pugi::xml_node node)
+// {
+//   return strcmp(node.attribute("name").as_string(), "base peak m/z") == 0;
+// }
+//
+// bool bpcint(pugi::xml_node node)
+// {
+//   return strcmp(node.attribute("name").as_string(), "base peak intensity") == 0;
+// }
+//
+// bool ticint(pugi::xml_node node)
+// {
+//   return strcmp(node.attribute("name").as_string(), "total ion current") == 0;
+// }
+//
+// bool polpos(pugi::xml_node node)
+// {
+//   return strcmp(node.attribute("accession").as_string(), "MS:1000130") == 0;
+// }
+//
+// bool polneg(pugi::xml_node node)
+// {
+//   return strcmp(node.attribute("accession").as_string(), "MS:1000129") == 0;
+// }
+//
+// bool centroid(pugi::xml_node node)
+// {
+//   return strcmp(node.attribute("accession").as_string(), "MS:1000127") == 0;
+// }
+//
+// bool profile(pugi::xml_node node)
+// {
+//   return strcmp(node.attribute("accession").as_string(), "MS:1000128") == 0;
+// }
+//
+// bool pre_mz(pugi::xml_node node)
+// {
+//   return strcmp(node.attribute("name").as_string(), "isolation window target m/z") == 0;
+// }
+//
+// bool pre_loweroffset(pugi::xml_node node)
+// {
+//   return strcmp(node.attribute("name").as_string(), "isolation window lower offset") == 0;
+// }
+//
+// bool pre_upperoffset(pugi::xml_node node)
+// {
+//   return strcmp(node.attribute("name").as_string(), "isolation window upper offset") == 0;
+// }
+//
+// bool pre_ce(pugi::xml_node node)
+// {
+//   return strcmp(node.attribute("name").as_string(), "collision energy") == 0;
+// }
+//
+// bool precision_float(pugi::xml_node node)
+// {
+//   return strcmp(node.attribute("accession").as_string(), "MS:1000523") == 0;
+// }
+//
+// bool precision_integer(pugi::xml_node node)
+// {
+//   return strcmp(node.attribute("accession").as_string(), "MS:1000522") == 0;
+// }
+//
+// bool compression(pugi::xml_node node)
+// {
+//   return strcmp(node.attribute("accession").as_string(), "MS:1000574") == 0;
+// }
+// } // mzml_find
+
+// namespace other_utils {
+//
+// const char          fillchar = '=';
+//
+// // 00000000001111111111222222
+// // 01234567890123456789012345
+// static std::string  cvt = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+//
+// // 22223333333333444444444455
+// // 67890123456789012345678901
+// "abcdefghijklmnopqrstuvwxyz"
+//
+// // 555555556666
+// // 234567890123
+// "0123456789+/";
+//
+// }
+
+
+
+// if (result) {
+//
+//   node_in = doc.first_child();
+//
+//   if (node_in != NULL) {
+//     std::string first_name;
+//     first_name = node_in.name();
+//
+//     if (strcmp("indexedmzML", first_name.c_str()) == 0) {
+//       node_in = node_in.first_child();
+//       std::cout << "\u2713 " << node_in.name() << " opened!" << std::endl;
+//     }
+//
+//   } else {
+//     std::cout << "\u2717 First node of the xml file found!" << std::endl;
+//   }
+//
+// } else {
+//   std::cout << "\u2717 Not opened with result: " << result.description() << std::endl;
+// }
+
+// std::cout << "Load result: " << result.description() << std::endl;
+
+// std::cout << "Node name: " << node_in.name() << std::endl;
+//
+// std::cout << "Second name: " << doc.first_child().name() << std::endl;
+//
+// pugi::xml_node mzml = doc.first_child().first_child();
+//
+// std::cout << "File structure: " << mzml.name() << std::endl;
+
+// std::cout << std::endl;
+// std::cout << std::endl;
+
+
+// std::list<std::vector<std::string>> instrument_list;
+// instrument_list = xml_utils::mzml_instrument_parser(node_in);
+// auto it = instrument_list.begin();
+// Rcpp::StringVector instrument_class_names = Rcpp::wrap(*it);
+// std::advance(it, 1);
+// Rcpp::StringVector instrument = Rcpp::wrap(*it);
+// instrument.names() = instrument_class_names;
+// list_out["instrument"] = instrument_list;
+//
+// std::list<std::vector<std::string>> software_list_cpp;
+// software_list_cpp = xml_utils::mzml_software_parser(node_in);
+// Rcpp::List software_list;
+// auto it2 = software_list_cpp.begin();
+// software_list["name"] = Rcpp::wrap(*it2);
+// std::advance(it2, 1);
+// software_list["id"] = Rcpp::wrap(*it2);
+// std::advance(it2, 1);
+// software_list["version"] = Rcpp::wrap(*it2);
+//
+// software_list.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+//
+// list_out["software"] = software_list;
+//
+// xml_utils::runSummary summary;
+// summary = xml_utils::run_summary(node_in);
+// Rcpp::List summary_list;
+//
+// summary_list["file_format"] = summary.file_format;
+// summary_list["time_stamp"] = summary.time_stamp;
+// summary_list["spectra_number"] = summary.spectra_number;
+// summary_list["spectra_mode"] = summary.spectra_mode;
+// summary_list["spectra_levels"] = summary.spectra_levels;
+// summary_list["mzlow"] = summary.mz_low;
+// summary_list["mzhigh"] = summary.mz_high;
+// summary_list["rt_start"] = summary.rt_start;
+// summary_list["rt_end"] = summary.rt_end;
+// summary_list["polarity"] = summary.polarity;
+// summary_list["has_im"] = summary.has_ion_mobility;
+//
+// Rcpp::List headers;
+// headers["index"] = summary.headers.index;
+// headers["scan"] = summary.headers.scan;
+// headers["traces"] = summary.headers.traces;
+// headers["level"] = summary.headers.level;
+// headers["bpc_mz"] = summary.headers.bpcmz;
+// headers["bpc_intensity"] = summary.headers.bpcint;
+// headers["tic_intensity"] = summary.headers.ticint;
+// headers["pre_scan"] = summary.headers.pre_scan;
+// headers["pre_mz"] = summary.headers.pre_mz;
+// headers["pre_ce"] = summary.headers.pre_ce;
+// // make case polarity switching
+//
+// headers.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+//
+// summary_list["run"] = headers;
+//
+// list_out["summary"] = summary_list;
+//
+// std::cout << " Done!" << std::endl;
+
+// xml_utils::runHeaders test;
+//
+// test = xml_utils::mzml_run_headers_parser(mzml);
+
+// Rcpp::List test_list;
+// // test_list["time_stamp"] = test.time_stamp;
+// test_list["index"] = test.index;
+// test_list["scan"] = test.scan;
+// test_list["traces"] = test.traces;
+// test_list["rt"] = test.rt;
+// test_list["drift"] = test.drift;
+// test_list["level"] = test.level;
+// test_list["polarity"] = test.polarity;
+// test_list["mode"] = test.mode;
+// test_list["mzlow"] = test.mzlow;
+// test_list["mzhigh"] = test.mzhigh;
+// test_list["bpc_mz"] = test.bpcmz;
+// test_list["bpc_intensity"] = test.bpcint;
+// test_list["tic_intensity"] = test.ticint;
+// test_list["pre_scan"] = test.pre_scan;
+// test_list["pre_mz"] = test.pre_mz;
+// test_list["pre_loweroffset"] = test.pre_loweroffset;
+// test_list["pre_upperoffset"] = test.pre_upperoffset;
+// test_list["pre_ce"] = test.pre_ce;
+//
+// test_list.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+//
+//
+// list_out["test"] = test_list;
+
+// get instrument reference
+// - gets information from "referenceableParamGroup" when available and
+// from direct childs of "instrumentConfiguration" it return a cpp list of
+// two elements with "names" and "values"
+
+// std::list<std::vector<std::string>> instrument;
+// std::vector<std::string> inst_names;
+// std::vector<std::string> inst_values;
+//
+// std::string search_ref = "//referenceableParamGroup";
+// pugi::xpath_node xp_ref = doc.select_node(search_ref.c_str());
+// if (xp_ref.node() != NULL) {
+//   for (pugi::xml_node temp: xp_ref.node().children())
+//   {
+//     if (temp.attribute("name") != NULL) {
+//       inst_names.push_back(temp.attribute("name").as_string());
+//       std::string val_value = temp.attribute("value").as_string();
+//       if (val_value != "") {
+//         inst_values.push_back(temp.attribute("value").as_string());
+//       } else {
+//         inst_values.push_back(temp.attribute("name").as_string());
+//       }
+//     }
+//   }
+// }
+//
+// std::string search_inst = "//instrumentConfiguration";
+// pugi::xpath_node xp_inst = doc.select_node(search_inst.c_str());
+// if (xp_inst.node() != NULL) {
+//   for (pugi::xml_node temp: xp_inst.node().children())
+//   {
+//     if (temp.attribute("name") != NULL) {
+//       inst_names.push_back(temp.attribute("name").as_string());
+//       std::string val_value = temp.attribute("value").as_string();
+//       if (val_value != "") {
+//         inst_values.push_back(temp.attribute("value").as_string());
+//       } else {
+//         inst_values.push_back(temp.attribute("name").as_string());
+//       }
+//     }
+//   }
+// }
+//
+// std::string search_config = "//componentList/child::node()";
+// pugi::xpath_node_set xps_config = doc.select_nodes(search_config.c_str());
+// if (xps_config.size() > 0) {
+//   for (pugi::xpath_node_set::const_iterator it = xps_config.begin(); it != xps_config.end(); ++it)
+//   {
+//     pugi::xpath_node node = *it;
+//     for (pugi::xml_node temp: node.node().children())
+//     {
+//       inst_names.push_back(node.node().name());
+//       inst_values.push_back(temp.attribute("name").as_string());
+//     }
+//   }
+// }
+//
+// instrument.push_back(inst_names);
+// instrument.push_back(inst_values);
+//
+// list_out["instrument"] = instrument;
+
+// for (auto vect : instrument) {
+//   // Each element of the list is
+//   // a vector itself
+//   std::vector<std::string> currentVector = vect;
+//
+//   std::cout << "[ ";
+//
+//   // Printing vector contents
+//   for (auto element : currentVector)
+//     std::cout << element << ' ';
+//
+//   std::cout << ']';
+//   std::cout << '\n';
+// }
+
+// std::cout << "\u2023 Instrument reference node with name " << xp_node_inst.node().name() << std::endl;
+//
+// for (pugi::xml_node temp: xp_node_inst.node().children())
+// {
+//   std::cout << "\u25e6 Child name: " << temp.name() << std::endl;
+//
+//   for (pugi::xml_attribute attr: temp.attributes())
+//   {
+//     std::cout << " " << attr.name() << "=" << attr.value();
+//   }
+//
+//   std::cout << std::endl;
+// }
+
+// std::cout << std::endl;
+// std::cout << std::endl;
+
+// get instrument configuration
+
+// std::list<std::vector<std::string>> configuration;
+// std::vector<std::string> config_names;
+// std::vector<std::string> config_values;
+
+// std::string search_config = "//componentList/child::node()";
+// pugi::xpath_node_set xps_config = doc.select_nodes(search_config.c_str());
+// if (xps_config.size() > 0) {
+//   for (pugi::xpath_node_set::const_iterator it = xps_config.begin(); it != xps_config.end(); ++it)
+//   {
+//     pugi::xpath_node node = *it;
+//     for (pugi::xml_node temp: node.node().children())
+//     {
+//       config_names.push_back(node.node().name());
+//       config_values.push_back(temp.attribute("name").as_string());
+//     }
+//   }
+// }
+//
+// configuration.push_back(config_names);
+// configuration.push_back(config_values);
+//
+// list_out["configuration"] = configuration;
+
+
+
+
+// for (pugi::xpath_node_set::const_iterator it = xp_node_config.begin(); it != xp_node_config.end(); ++it)
+// {
+//   pugi::xpath_node node = *it;
+//   std::cout << "\u2023 Node name: " << node.node().name() << "\n";
+//
+//   for (pugi::xml_node temp: node.node().children())
+//   {
+//
+//     std::cout << "\u25e6 Child name: " << temp.name() << std::endl;
+//
+//     for (pugi::xml_attribute attr: temp.attributes())
+//     {
+//       std::cout << " " << attr.name() << "=" << attr.value();
+//     }
+//
+//     std::cout << std::endl;
+//   }
+// }
+
+// std::cout << std::endl;
+// std::cout << std::endl;
+
+// get software list
+
+// std::string search_software = "//softwareList/child::node()";
+// pugi::xpath_node_set xp_node_software = doc.select_nodes(search_software.c_str());
+// std::cout << "\u2217 Software node set with " << xp_node_software.size() << " nodes" << std::endl;
+//
+// for (pugi::xpath_node_set::const_iterator it = xp_node_software.begin(); it != xp_node_software.end(); ++it)
+// {
+//   pugi::xpath_node node = *it;
+//   std::cout << "\u2023 Node name: " << node.node().name() << "\n";
+//
+//   for (pugi::xml_attribute attr_node: node.node().attributes())
+//   {
+//     std::cout << " " << attr_node.name() << "=" << attr_node.value();
+//   }
+//
+//   std::cout << std::endl;
+//
+//   for (pugi::xml_node temp: node.node().children())
+//   {
+//
+//     std::cout << "\u25e6 Child name: " << temp.name() << std::endl;
+//
+//     for (pugi::xml_attribute attr: temp.attributes())
+//     {
+//       std::cout << " " << attr.name() << "=" << attr.value();
+//     }
+//
+//     std::cout << std::endl;
+//   }
+// }
+
+// std::cout << std::endl;
+// std::cout << std::endl;
+
+
+
+// get run information ----------------------------------------------------------------------------
+
+// std::string search_run = "//run";
+// pugi::xpath_node xp_node_run = doc.select_node(search_run.c_str());
+//
+// pugi::xml_node spec_list = xp_node_run.node().child("spectrumList");
+//
+// std::cout << "\u2217 The node name is: " << spec_list.name() << std::endl;
+//
+// pugi::xml_node first_spec = spec_list.first_child();
+//
+// pugi::xml_node msl_node = first_spec.find_child_by_attribute("cvParam", "name", "ms level");
+//
+// std::cout << "\u2217 The node name is: " << msl_node.name() << std::endl;
+//
+// std::cout << "\u2217 The attr val in: " << msl_node.attribute("value").as_int() << std::endl;
+
+
+// std::cout << "\u2217 The " << time_stamp.name() << " is " << time_stamp.value() << std::endl;
+
+// get spectra index and scan numbers
+// std::vector<int> index;
+// std::vector<int> scan;
+// std::vector<double> rt;
+// std::vector<double> drift;
+// std::vector<int> level;
+// std::vector<std::string> polarity;
+// std::vector<std::string> mode;
+// std::vector<double> mzlow;
+// std::vector<double> mzhigh;
+// std::vector<double> bpcmz;
+// std::vector<double> bpcint;
+// std::vector<double> ticint;
+// std::vector<int> pre_scan;
+// std::vector<double> pre_mz;
+// std::vector<double> pre_loweroffset;
+// std::vector<double> pre_upperoffset;
+// std::vector<double> pre_ce;
+
+// std::string search_spectra = "//spectrum";
+// pugi::xpath_node_set spectra = xp_node_run.node().select_nodes(search_spectra.c_str());
+
+// std::cout << "\u2217 The file has " << spectra.size() << " spectra" << std::endl;
+
+// std::cout << std::endl;
+// std::cout << std::endl;
+
+// if (spectra.size() > 0) {
+//
+//   for (pugi::xpath_node_set::const_iterator it = spectra.begin(); it != spectra.end(); ++it) {
+//     pugi::xpath_node node = *it;
+//     index.push_back(node.node().attribute("index").as_int());
+//
+//     std::string scan_t = node.node().attribute("id").as_string();
+//     int scan_n;
+//     std::sscanf(scan_t.c_str(), "%*[^=]=%d", &scan_n);
+//     scan.push_back(scan_n);
+//
+//     pugi::xml_node node_scan = node.node().child("scanList").child("scan");
+//
+//     pugi::xml_node node_rt = node_scan.find_child(mzml_find::rt);
+//     std::string rt_unit = node_rt.attribute("unitName").as_string();
+//     double rt_t = node_rt.attribute("value").as_double();
+//     if (rt_unit == "minute") rt_t = rt_t * 60;
+//     rt.push_back(rt_t);
+//
+//     pugi::xml_node node_drift = node_scan.find_child(mzml_find::drift);
+//     std::string node_drift_name = node_drift.name();
+//
+//     if (strcmp(node_drift_name.c_str(), "cvParam") == 0) {
+//       // std::string drift_unit = node_drift.attribute("unitName").as_string();
+//       double drift_t = node_drift.attribute("value").as_double();
+//       // if (rt_unit == "millisecond") drift_t = drift_t / 0.001;
+//       drift.push_back(drift_t);
+//     } else {
+//       drift.push_back(nan(""));
+//     }
+//
+//     pugi::xml_node node_level = node.node().find_child(mzml_find::level);
+//     level.push_back(node_level.attribute("value").as_int());
+//
+//     pugi::xml_node node_pol_pos = node.node().find_child(mzml_find::polpos);
+//     std::string pol_pos = node_pol_pos.attribute("name").as_string();
+//
+//     pugi::xml_node node_pol_neg = node.node().find_child(mzml_find::polneg);
+//     std::string pol_neg = node_pol_neg.attribute("name").as_string();
+//
+//     if (strcmp(pol_pos.c_str(), "positive scan") == 0) {
+//       polarity.push_back(node_pol_pos.attribute("name").as_string());
+//     } else if (strcmp(pol_neg.c_str(), "negative scan") == 0) {
+//       polarity.push_back(pol_neg);
+//     } else {
+//       polarity.push_back("NA");
+//     }
+//
+//     pugi::xml_node node_centroid = node.node().find_child(mzml_find::centroid);
+//     std::string centroid = node_centroid.attribute("name").as_string();
+//
+//     pugi::xml_node node_profile = node.node().find_child(mzml_find::profile);
+//     std::string profile = node_profile.attribute("name").as_string();
+//
+//     if (strcmp(centroid.c_str(), "centroid spectrum") == 0) {
+//       mode.push_back(centroid);
+//     } else if (strcmp(profile.c_str(), "profile spectrum") == 0) {
+//       mode.push_back(profile);
+//     } else {
+//       mode.push_back("NA");
+//     }
+//
+//     pugi::xml_node node_mzlow = node.node().find_child(mzml_find::mzlow);
+//     mzlow.push_back(node_mzlow.attribute("value").as_double());
+//
+//     pugi::xml_node node_mzhigh = node.node().find_child(mzml_find::mzhigh);
+//     mzhigh.push_back(node_mzhigh.attribute("value").as_double());
+//
+//     pugi::xml_node node_bpcmz = node.node().find_child(mzml_find::bpcmz);
+//     bpcmz.push_back(node_bpcmz.attribute("value").as_double());
+//
+//     pugi::xml_node node_bpcint = node.node().find_child(mzml_find::bpcint);
+//     bpcint.push_back(node_bpcint.attribute("value").as_double());
+//
+//     pugi::xml_node node_ticint = node.node().find_child(mzml_find::ticint);
+//     ticint.push_back(node_ticint.attribute("value").as_double());
+//
+//     pugi::xml_node node_precursor = node.node().child("precursorList").child("precursor");
+//     std::string has_precursor = node_precursor.name();
+//
+//     if (strcmp(has_precursor.c_str(), "precursor") == 0) {
+//
+//       std::string pre_scan_t = node_precursor.attribute("spectrumRef").as_string();
+//       int pre_scan_n;
+//       std::sscanf(pre_scan_t.c_str(), "%*[^=]=%d", &pre_scan_n);
+//       pre_scan.push_back(pre_scan_n);
+//
+//       pugi::xml_node node_isolation = node_precursor.child("isolationWindow");
+//       pugi::xml_node node_pre_mz = node_isolation.find_child(mzml_find::pre_mz);
+//       pre_mz.push_back(node_pre_mz.attribute("value").as_double());
+//
+//       pugi::xml_node node_pre_loweroffset = node_isolation.find_child(mzml_find::pre_loweroffset);
+//       pre_loweroffset.push_back(node_pre_loweroffset.attribute("value").as_double());
+//
+//       pugi::xml_node node_pre_upperoffset = node_isolation.find_child(mzml_find::pre_upperoffset);
+//       pre_upperoffset.push_back(node_pre_upperoffset.attribute("value").as_double());
+//
+//       pugi::xml_node node_activation = node_precursor.child("activation");
+//       pugi::xml_node node_pre_ce = node_activation.find_child(mzml_find::pre_ce);
+//       pre_ce.push_back(node_pre_ce.attribute("value").as_double());
+//
+//     } else {
+//       pre_scan.push_back(-1);
+//       pre_mz.push_back(nan(""));
+//       pre_loweroffset.push_back(nan(""));
+//       pre_upperoffset.push_back(nan(""));
+//       pre_ce.push_back(nan(""));
+//     }
+//
+//
+//   }

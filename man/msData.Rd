@@ -42,18 +42,26 @@ visualizing and storing MS data.
 \item \href{#method-msData-get_analysis_names}{\code{msData$get_analysis_names()}}
 \item \href{#method-msData-get_replicate_names}{\code{msData$get_replicate_names()}}
 \item \href{#method-msData-get_blank_names}{\code{msData$get_blank_names()}}
-\item \href{#method-msData-get_polarities}{\code{msData$get_polarities()}}
-\item \href{#method-msData-get_file_paths}{\code{msData$get_file_paths()}}
+\item \href{#method-msData-get_files}{\code{msData$get_files()}}
+\item \href{#method-msData-get_formats}{\code{msData$get_formats()}}
+\item \href{#method-msData-get_types}{\code{msData$get_types()}}
+\item \href{#method-msData-get_time_stamps}{\code{msData$get_time_stamps()}}
+\item \href{#method-msData-get_spectra_number}{\code{msData$get_spectra_number()}}
+\item \href{#method-msData-get_spectra_mode}{\code{msData$get_spectra_mode()}}
+\item \href{#method-msData-get_spectra_levels}{\code{msData$get_spectra_levels()}}
 \item \href{#method-msData-get_mz_low}{\code{msData$get_mz_low()}}
 \item \href{#method-msData-get_mz_high}{\code{msData$get_mz_high()}}
 \item \href{#method-msData-get_rt_start}{\code{msData$get_rt_start()}}
 \item \href{#method-msData-get_rt_end}{\code{msData$get_rt_end()}}
-\item \href{#method-msData-get_spectra_mode}{\code{msData$get_spectra_mode()}}
-\item \href{#method-msData-get_spectra_levels}{\code{msData$get_spectra_levels()}}
-\item \href{#method-msData-get_spectra}{\code{msData$get_spectra()}}
-\item \href{#method-msData-get_chromatograms}{\code{msData$get_chromatograms()}}
+\item \href{#method-msData-get_polarities}{\code{msData$get_polarities()}}
+\item \href{#method-msData-get_chromatograms_number}{\code{msData$get_chromatograms_number()}}
+\item \href{#method-msData-get_instrument_info}{\code{msData$get_instrument_info()}}
+\item \href{#method-msData-get_software_info}{\code{msData$get_software_info()}}
+\item \href{#method-msData-get_run}{\code{msData$get_run()}}
 \item \href{#method-msData-get_tic}{\code{msData$get_tic()}}
 \item \href{#method-msData-get_bpc}{\code{msData$get_bpc()}}
+\item \href{#method-msData-get_spectra}{\code{msData$get_spectra()}}
+\item \href{#method-msData-get_chromatograms}{\code{msData$get_chromatograms()}}
 \item \href{#method-msData-get_eic}{\code{msData$get_eic()}}
 \item \href{#method-msData-get_ms1}{\code{msData$get_ms1()}}
 \item \href{#method-msData-get_ms2}{\code{msData$get_ms2()}}
@@ -146,6 +154,9 @@ analyses names or indices from the \code{msData} object. Returns a valid
 character vector with analysis names or \code{NULL} for non-matching.
 
 
+Gets an entry from the analyses private field.
+
+
 Creates an msData class object. When \code{headers} are not given (i.e.,
 \code{NULL}), a default headers S3 class object is generated with name as
 \code{NA_character}, path as \code{get_wd()} and date as \code{Sys.time()}.
@@ -190,6 +201,8 @@ objects as elements (see \code{?settings} for more information).}
 
 \item{\code{analyses}}{X.}
 
+\item{\code{analyses}}{X.}
+
 \item{\code{groups}}{data.table with feature groups from correspondence across MS
 analyses as obtained by the msData method \code{get_groups()}. Note that
 correspondence of features across MS analyses is performed with the method
@@ -201,6 +214,8 @@ correspondence of features across MS analyses is performed with the method
 \code{group_features()} from the msData class.}
 
 \item{\code{alignment}}{X.}
+
+\item{\code{value}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -356,12 +371,12 @@ A character vector.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-get_polarities"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-get_polarities}{}}}
-\subsection{Method \code{get_polarities()}}{
+\if{html}{\out{<a id="method-msData-get_files"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-get_files}{}}}
+\subsection{Method \code{get_files()}}{
 Method to get the polarity of the analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$get_polarities(analyses = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$get_files(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -377,12 +392,12 @@ A character vector.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-get_file_paths"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-get_file_paths}{}}}
-\subsection{Method \code{get_file_paths()}}{
-Method to get the polarity of the analyses.
+\if{html}{\out{<a id="method-msData-get_formats"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-get_formats}{}}}
+\subsection{Method \code{get_formats()}}{
+Method to get the file format of the analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$get_file_paths(analyses = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$get_formats(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -395,6 +410,111 @@ of the analyses.}
 }
 \subsection{Returns}{
 A character vector.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-get_types"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-get_types}{}}}
+\subsection{Method \code{get_types()}}{
+Method to get the type of the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$get_types(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A character vector.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-get_time_stamps"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-get_time_stamps}{}}}
+\subsection{Method \code{get_time_stamps()}}{
+Method to get the time stamp of the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$get_time_stamps(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A character vector.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-get_spectra_number"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-get_spectra_number}{}}}
+\subsection{Method \code{get_spectra_number()}}{
+Method to get the polarity of the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$get_spectra_number(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A character vector.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-get_spectra_mode"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-get_spectra_mode}{}}}
+\subsection{Method \code{get_spectra_mode()}}{
+Method to get the polarity of the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$get_spectra_mode(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A character vector.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-get_spectra_levels"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-get_spectra_levels}{}}}
+\subsection{Method \code{get_spectra_levels()}}{
+Method to get the spectra levels of the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$get_spectra_levels(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A list for each analysis with an integer vector.
 }
 }
 \if{html}{\out{<hr>}}
@@ -482,12 +602,12 @@ A character vector.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-get_spectra_mode"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-get_spectra_mode}{}}}
-\subsection{Method \code{get_spectra_mode()}}{
+\if{html}{\out{<a id="method-msData-get_polarities"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-get_polarities}{}}}
+\subsection{Method \code{get_polarities()}}{
 Method to get the polarity of the analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$get_spectra_mode(analyses = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$get_polarities(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -503,12 +623,12 @@ A character vector.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-get_spectra_levels"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-get_spectra_levels}{}}}
-\subsection{Method \code{get_spectra_levels()}}{
-Method to get the spectra levels of the analyses.
+\if{html}{\out{<a id="method-msData-get_chromatograms_number"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-get_chromatograms_number}{}}}
+\subsection{Method \code{get_chromatograms_number()}}{
+Method to get the number of chromatograms in the analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$get_spectra_levels(analyses = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{msData$get_chromatograms_number(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -520,7 +640,118 @@ of the analyses.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A list for each analysis with an integer vector.
+A character vector.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-get_instrument_info"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-get_instrument_info}{}}}
+\subsection{Method \code{get_instrument_info()}}{
+Method to get the instrument information for each analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$get_instrument_info(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A data.table.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-get_software_info"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-get_software_info}{}}}
+\subsection{Method \code{get_software_info()}}{
+Method to get the software information for each analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$get_software_info(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A data.table.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-get_run"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-get_run}{}}}
+\subsection{Method \code{get_run()}}{
+Method to get the run summary data.table for each analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$get_run(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A data.table.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-get_tic"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-get_tic}{}}}
+\subsection{Method \code{get_tic()}}{
+Method to get the total ion chromatograms (TIC) from the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$get_tic(analyses = NULL, levels = 1)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{levels}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A character vector.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-msData-get_bpc"></a>}}
+\if{latex}{\out{\hypertarget{method-msData-get_bpc}{}}}
+\subsection{Method \code{get_bpc()}}{
+Method to get the base peak chromatograms (BPC) from the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{msData$get_bpc(analyses = NULL, levels = 1)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{levels}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A character vector.
 }
 }
 \if{html}{\out{<hr>}}
@@ -607,48 +838,6 @@ Method to get spectra from the MS analyses.
 }
 \subsection{Returns}{
 A data.frame with spectra.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-get_tic"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-get_tic}{}}}
-\subsection{Method \code{get_tic()}}{
-Method to get the total ion chromatograms (TIC) from the analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$get_tic(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A character vector.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-msData-get_bpc"></a>}}
-\if{latex}{\out{\hypertarget{method-msData-get_bpc}{}}}
-\subsection{Method \code{get_bpc()}}{
-Method to get the base peak chromatograms (BPC) from the analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{msData$get_bpc(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A character vector.
 }
 }
 \if{html}{\out{<hr>}}

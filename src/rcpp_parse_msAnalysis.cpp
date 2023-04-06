@@ -7,8 +7,7 @@
 #include <Rcpp.h>
 
 // [[Rcpp::export]]
-Rcpp::List rcpp_parse_msAnalysis(std::string file_path)
-{
+Rcpp::List rcpp_parse_msAnalysis(std::string file_path) {
 
   Rcpp::List list_out;
 
@@ -35,9 +34,9 @@ Rcpp::List rcpp_parse_msAnalysis(std::string file_path)
 
     if (node_in != NULL) {
 
-      std::cout << "\u2713 " << node_in.name() << " opened!" << std::endl;
-
-      std::cout << "\u2699 Parsing data...";
+      // std::cout << "\u2713 " << node_in.name() << " opened!" << std::endl;
+      //
+      // std::cout << "\u2699 Parsing data...";
 
       std::size_t lastSeparator = file_path.find_last_of("/\\");
       std::size_t lastDot = file_path.find_last_of(".");
@@ -119,6 +118,13 @@ Rcpp::List rcpp_parse_msAnalysis(std::string file_path)
       if (mode.size() == 1 && mode(0) == "") {
         list_out["spectra_mode"] = na_charvec;
       } else {
+
+        if (mode(0) == "centroid spectrum") {
+          mode(0) = "centroid";
+        } else if (mode(0) == "profile spectrum") {
+          mode(0) = "profile";
+        }
+
         list_out["spectra_mode"] = mode;
       }
 
@@ -152,10 +158,19 @@ Rcpp::List rcpp_parse_msAnalysis(std::string file_path)
       if (polarity.size() == 1 && polarity(0) == "") {
         list_out["polarity"] = na_charvec;
       } else {
+
+        if (polarity(0) == "positive scan") {
+          polarity(0) = "positive";
+        } else if (polarity(0) == "negative scan") {
+          polarity(0) = "negative";
+        }
+
         list_out["polarity"] = polarity;
       }
 
       list_out["has_ion_mobility"] = summary.has_ion_mobility;
+
+      list_out["chromatograms_number"] = 0;
 
       Rcpp::List headers;
       headers["index"] = summary.headers.index;
@@ -218,7 +233,22 @@ Rcpp::List rcpp_parse_msAnalysis(std::string file_path)
         }
       }
 
-      std::cout << " Done!" << std::endl;
+      Rcpp::DataFrame empty_df;
+      empty_df.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+
+      Rcpp::List empty_list;
+
+      list_out["spectra"] = empty_df;
+      list_out["chromatograms"] = empty_df;
+      list_out["features"] = empty_df;
+      list_out["metadata"] = empty_list;
+
+      // std::cout << " Done!" << std::endl;
+
+      list_out.attr("class") = Rcpp::CharacterVector::create("msAnalysis");
+
+    } else {
+      std::cout << "\u2717 MS file not conform!" << std::endl;
     }
 
   } else {

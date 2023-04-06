@@ -34,41 +34,41 @@ namespace xml_utils {
     std::vector<double> pre_ce;
   }; // runHeaders
 
-struct runHeadersOriginal {
-  std::string fileFormat;
-  std::string run_id;
-  std::string run_defaultInstrumentConfigurationRef;
-  std::string run_startTimeStamp;
-  std::string run_defaultSourceFileRef;
-  int specList_count;
-  std::string specList_defaultDataProcessingRef;
-  std::vector<int> spec_index;
-  std::vector<int> spec_id;
-  std::vector<int> scan;
-  std::vector<int> spec_defaultArrayLength;
-  std::vector<std::string> spec_polarity;
-  std::vector<double> spec_bpcmz;
-  std::vector<double> spec_bpcint;
-  std::vector<double> spec_ticint;
-  std::vector<int> spec_level;
-  std::vector<std::string> spec_mode;
-  std::vector<double> spec_mzlow;
-  std::vector<double> spec_mzhigh;
-  std::string spec_title;
-  std::vector<double> scan_rt;
-  std::vector<double> scan_drift;
-  std::string scan_filter_string;
-  std::vector<double> scan_injectionIonTime;
-  std::vector<int> pre_scan;
-  std::vector<double> pre_mz;
-  std::vector<double> pre_loweroffset;
-  std::vector<double> pre_upperoffset;
-  std::vector<double> ion_mz;
-  std::vector<double> ion_charge;
-  std::vector<double> ion_intensity;
-  std::vector<double> activation_type;
-  std::vector<double> activation_ce;
-}; // runHeadersOriginal
+  struct runHeadersOriginal {
+    std::string fileFormat;
+    std::string run_id;
+    std::string run_defaultInstrumentConfigurationRef;
+    std::string run_startTimeStamp;
+    std::string run_defaultSourceFileRef;
+    int specList_count;
+    std::string specList_defaultDataProcessingRef;
+    std::vector<int> spec_index;
+    std::vector<int> spec_id;
+    std::vector<int> scan;
+    std::vector<int> spec_defaultArrayLength;
+    std::vector<std::string> spec_polarity;
+    std::vector<double> spec_bpcmz;
+    std::vector<double> spec_bpcint;
+    std::vector<double> spec_ticint;
+    std::vector<int> spec_level;
+    std::vector<std::string> spec_mode;
+    std::vector<double> spec_mzlow;
+    std::vector<double> spec_mzhigh;
+    std::string spec_title;
+    std::vector<double> scan_rt;
+    std::vector<double> scan_drift;
+    std::string scan_filter_string;
+    std::vector<double> scan_injectionIonTime;
+    std::vector<int> pre_scan;
+    std::vector<double> pre_mz;
+    std::vector<double> pre_loweroffset;
+    std::vector<double> pre_upperoffset;
+    std::vector<double> ion_mz;
+    std::vector<double> ion_charge;
+    std::vector<double> ion_intensity;
+    std::vector<double> activation_type;
+    std::vector<double> activation_ce;
+  }; // runHeadersOriginal
 
   struct runSummary {
     std::string file_format;
