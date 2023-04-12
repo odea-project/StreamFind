@@ -59,6 +59,9 @@ Rcpp::List rcpp_parse_xml(std::string file_path)
     std::vector<double> intensity;
 
     if (xp_spec_list != NULL) {
+
+      bool print_out = true;
+
       for (pugi::xml_node spec: xp_spec_list.node().children("spectrum"))
       {
 
@@ -78,7 +81,9 @@ Rcpp::List rcpp_parse_xml(std::string file_path)
 
         std::vector<std::vector<double>> mat(number_traces, std::vector<double>(number_bins));
 
-        for (int i = 0; i < mat.size(); i++) {
+        int mat_size = mat.size();
+
+        for (int i = 0; i < mat_size; i++) {
           mat[i][0] = scan_n;
         }
 
@@ -99,28 +104,47 @@ Rcpp::List rcpp_parse_xml(std::string file_path)
 
           std::sscanf(precision_str.c_str(), "%d%*c", &precision_int);
 
+          std::string compression;
 
-          std::cout << precision_int << " ";
+          pugi::xml_node node_comp = bin.find_child_by_attribute("cvParam", "accession", "MS:1000574");
 
-          // std::string compression;
+          if (node_comp != NULL) {
+            compression = node_comp.attribute("name").as_string();
 
-          // pugi::xml_node node_compression = node_binary.find_child(mzml_find::compression);
-          // std::string node_compression_name = node_compression.name();
-          //
-          // if (strcmp(node_compression_name.c_str(), "cvParam") == 0) {
-          //   compression = node_compression.attribute("name").as_string();
-          // } else {
-          //   compression = "none";
-          // }
-          //
-          // if (compression == "zlib" || compression == "zlib compression") {
-          //   compression = "gzip";
-          // } else {
-          //   compression = "none";
-          // }
-          //
-          // pugi::xml_node node_binary_data = node_binary.child("binary");
-          // std::string encoded_data = node_binary_data.text().as_string();
+            if (compression == "zlib" || compression == "zlib compression") {
+              compression = "gzip";
+            } else {
+              compression = "none";
+            }
+
+          } else {
+            compression = "none";
+          }
+
+          pugi::xml_node node_unit = bin.find_child_by_attribute("cvParam", "unitCvRef", "MS");
+          std::string unit = node_unit.attribute("unitName").as_string();
+
+          int mat_col;
+
+          if (unit == "m/z") {
+            mat_col = 1;
+          } else {
+            mat_col = 2;
+          }
+          
+          pugi::xml_node node_binary = bin.child("binary");
+          std::string encoded_data = node_binary.text().as_string();
+
+          std::string decoded_data = base64_decode(encoded_data, false);
+          
+          if (print_out) {
+            std::cout << decoded_data << " ";
+            print_out = false;
+          }
+
+
+          
+          
 
 
 
