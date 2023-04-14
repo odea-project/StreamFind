@@ -40,302 +40,53 @@ parse_ms_spectra <- function(files = NA_character_, levels = c(1, 2),
     }, possible_ms_file_formats = possible_ms_file_formats
   )
 
-  if (!all(valid_files)) {
-    warning("File/s not valid!")
-    return(NULL)
-  }
-
-
-  if (!any(is.numeric(minIntensityMS1) | is.integer(minIntensityMS1))) {
-    minIntensityMS1 <- 0
-  }
-
-  if (!any(is.numeric(minIntensityMS2) | is.integer(minIntensityMS2))) {
-    minIntensityMS1 <- 0
-  }
-
-  if (!2 %in% levels) allTraces <- TRUE
-
-  if (!is.logical(allTraces)) allTraces <- TRUE
-
-  if (!allTraces) {
-    if (!any(is.numeric(isolationWindow) | is.integer(isolationWindow))) {
-      isolationWindow <- 0
-    }
-    preMZr <- targets[, c("mzmin", "mzmax")]
-    preMZr$mzmin <- preMZr$mzmin - (isolationWindow / 2)
-    preMZr$mzmax <- preMZr$mzmax + (isolationWindow / 2)
-    if (nrow(preMZr) == 1 & TRUE %in% (targets$mzmax == 0)) {
-      preMZr <- NULL
-    }
-  } else {
-    preMZr <- NULL
-  }
-
-  cached_spectra <- FALSE
-
-  if (caches_data()) {
-    hash <- patRoon::makeHash(
-      files, levels, targets, allTraces,
-      isolationWindow, minIntensityMS1, minIntensityMS2
-    )
-
-    spec_list <- patRoon::loadCacheData("parsed_ms_spectra", hash)
-
-    if (!is.null(spec_list)) {
-      message("\U2139 Spectra loaded from cache!")
-      return(spec_list)
-    }
-
-  } else {
-    hash <- NULL
-    spec_list <- NULL
-  }
-
-  message("\U2699 Parsing spectra from ", length(files),  " MS file/s..." ,
-          appendLF = FALSE
-  )
-
-  if (!is.logical(runParallel)) runParallel <- FALSE
-
-  if (runParallel & length(files) > 1) {
-    workers <- parallel::detectCores() - 1
-    if (length(files) < workers) workers <- length(files)
-    par_type <- "PSOCK"
-    if (parallelly::supportsMulticore()) par_type <- "FORK"
-    cl <- parallel::makeCluster(workers, type = par_type)
-    doParallel::registerDoParallel(cl)
-  } else {
-    registerDoSEQ()
-  }
-
-  i <- NULL
-
-  spec_list <- foreach(i = files) %dopar% {
-
-    if (!is.null(targets)) {
-      with_targets <- TRUE
-
-      trim <- function(v, a, b) {
-        rowSums(mapply(function(a, b) v >= a & v <= b, a = a, b = b)) > 0
-      }
-
-      trim_targets <- function(traces, targets, preMZr) {
-        trim <- function(v, a, b) {
-          rowSums(mapply(function(a, b) v >= a & v <= b, a = a, b = b)) > 0
-        }
-        tg_list <- lapply(seq_len(nrow(targets)),
-          function(z, traces, targets, trim, preMZr) {
-            tg <- traces
-            cutRt <- trim(tg$rt, targets$rtmin[z], targets$rtmax[z])
-            tg <- tg[cutRt, ]
-            if (nrow(tg) > 0) {
-              if (!is.null(preMZr)) {
-                cutMZ <- trim(tg$mz, targets$mzmin[z], targets$mzmax[z])
-                tg <- tg[tg$level == 2 | (tg$level == 1 & cutMZ), ]
-                if (nrow(tg) > 0) {
-                  cutPreMZ <- trim(tg$preMZ, preMZr$mzmin[z], preMZr$mzmax[z])
-                  tg <- tg[tg$level == 1 | (tg$level == 2 & cutPreMZ), ]
-                }
-              } else {
-                cutMZ <- trim(tg$mz, targets$mzmin[z], targets$mzmax[z])
-                tg <- tg[cutMZ, ]
-              }
-            }
-            if (nrow(tg) > 0) {
-              tg$id <- targets$id[z]
-            } else {
-              tg$id <- character()
-            }
-            tg
-          },
-          traces = traces, preMZr = preMZr, targets = targets, trim = trim
-        )
-        tg_df <- do.call("rbind", tg_list)
-        tg_df
-      }
-    }
-
-    file_link <- mzR::openMSfile(i, backend = "pwiz")
-
-    sH <- mzR::header(file_link)
-
-    if (nrow(sH) > 0) {
-      if (max(sH$retentionTime) < 60) {
-        sH$retentionTime <- sH$retentionTime * 60
-      }
-
-      if (!is.null(levels)) sH <- sH[sH$msLevel %in% levels, ]
-
-      if (with_targets) {
-        if ("analysis" %in% colnames(targets)) {
-          ana_name <- gsub(".mzML|.mzXML", "", basename(i))
-          tp_tar <- targets[targets$analysis %in% ana_name, ]
-          if (nrow(tp_tar) > 0) {
-            sH <- sH[trim(sH$retentionTime, tp_tar$rtmin, tp_tar$rtmax), ]
-          } else {
-            sH <- data.frame()
-          }
-        } else {
-          sH <- sH[trim(sH$retentionTime, targets$rtmin, targets$rtmax), ]
-        }
-      }
-
-      if (!is.null(preMZr) & with_targets) {
-        if ("analysis" %in% colnames(targets)) {
-          ana_name <- gsub(".mzML|.mzXML", "", basename(i))
-          pre_tar <- preMZr[targets$analysis %in% ana_name, ]
-          preMZ_check <- trim(sH$precursorMZ, pre_tar$mzmin, pre_tar$mzmax)
-          sH <- sH[(preMZ_check %in% TRUE) | is.na(preMZ_check), ]
-        } else {
-          preMZ_check <- trim(sH$precursorMZ, preMZr$mzmin, preMZr$mzmax)
-          sH <- sH[(preMZ_check %in% TRUE) | is.na(preMZ_check), ]
-        }
-      }
-
-      if (nrow(sH) > 0) {
-        scans <- mzR::peaks(file_link, scans = sH$seqNum)
-
-        mat_idx <- rep(sH$seqNum, sapply(scans, nrow))
-        scans <- as.data.frame(do.call(rbind, scans))
-        scans$index <- mat_idx
-
-        if (TRUE %in% (unique(sH$msLevel) == 2)) {
-          sH_b <- data.frame(
-            "index" = sH$seqNum,
-            "scan" = sH$acquisitionNum,
-            "level" = sH$msLevel,
-            "ce" = sH$collisionEnergy,
-            "preScan" = sH$precursorScanNum,
-            "preMZ" = sH$precursorMZ,
-            "rt" = sH$retentionTime
-          )
-        } else {
-          sH_b <- data.frame(
-            "index" = sH$seqNum,
-            "scan" = sH$acquisitionNum,
-            "level" = sH$msLevel,
-            "rt" = sH$retentionTime
-          )
-        }
-
-        if (!all(is.na(sH$ionMobilityDriftTime))) {
-          rt_unique <- unique(sH_b$rt)
-          frame_numbers <- seq_len(length(rt_unique))
-          if ("preMZ" %in% colnames(sH_b)) sH_b$preMZ <- NA_real_
-          sH_b$frame <- factor(sH_b$rt,
-                               levels = rt_unique, labels = frame_numbers
-          )
-          sH_b$driftTime <- sH$ionMobilityDriftTime
-        }
-
-        sH <- merge(sH_b, scans, by = "index")
-
-        if (with_targets) {
-          if ("analysis" %in% colnames(targets)) {
-            ana_name <- gsub(".mzML|.mzXML", "", basename(i))
-            tp_tar <- targets[targets$analysis %in% ana_name, ]
-            if (!is.null(preMZr)) {
-              pre_tar <- preMZr[targets$analysis %in% ana_name, ]
-            } else {
-              pre_tar <- NULL
-            }
-            if (nrow(tp_tar) > 0) {
-              sH <- trim_targets(sH, tp_tar, pre_tar)
-            } else {
-              sH <- data.frame()
-            }
-          } else {
-            sH <- trim_targets(sH, targets, preMZr)
-          }
-        }
-
-        if (exists("file_link")) suppressWarnings(mzR::close(file_link))
-        sH
-
-      } else {
-        data.frame()
-      }
-    } else {
-      data.frame()
-    }
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  cached_analyses <- FALSE
-
-  if (caches_data()) {
-    hash <- patRoon::makeHash(files)
-    analyses <- patRoon::loadCacheData("parsed_ms_analyses", hash)
-
-    if (!is.null(analyses)) {
-      if (all(vapply(analyses, validate_msAnalysis, FALSE))) {
-        cached_analyses <- TRUE
-      } else {
-        analyses <- NULL
-      }
-    }
-
-  } else {
-    hash <- NULL
-    analyses <- NULL
-  }
-
-
-
-
   if (all(valid_files)) {
 
+    if (!any(is.numeric(minIntensityMS1) | is.integer(minIntensityMS1))) {
+      minIntensityMS1 <- 0
+    }
 
+    if (!any(is.numeric(minIntensityMS2) | is.integer(minIntensityMS2))) {
+      minIntensityMS1 <- 0
+    }
 
+    if (!2 %in% levels) allTraces <- TRUE
 
+    if (!is.logical(allTraces)) allTraces <- TRUE
 
+    if (!allTraces) {
+      if (!any(is.numeric(isolationWindow) | is.integer(isolationWindow))) {
+        isolationWindow <- 0
+      }
+      preMZr <- targets[, c("mzmin", "mzmax")]
+      preMZr$mzmin <- preMZr$mzmin - (isolationWindow / 2)
+      preMZr$mzmax <- preMZr$mzmax + (isolationWindow / 2)
+      if (nrow(preMZr) == 1 & TRUE %in% (targets$mzmax == 0)) {
+        preMZr <- NULL
+      }
+    } else {
+      preMZr <- NULL
+    }
 
+    cached_spectra <- FALSE
+
+    if (caches_data()) {
+      hash <- patRoon::makeHash(
+        files, levels, targets, allTraces,
+        isolationWindow, minIntensityMS1, minIntensityMS2
+      )
+
+      spec_list <- patRoon::loadCacheData("parsed_ms_spectra", hash)
+
+      if (!is.null(spec_list)) {
+        message("\U2139 Spectra loaded from cache!")
+        cached_spectra <- TRUE
+        return(spec_list)
+      }
+
+    } else {
+      hash <- NULL
+    }
 
     if (!cached_spectra) {
       message("\U2699 Parsing spectra from ", length(files),  " MS file/s..." ,
@@ -343,50 +94,171 @@ parse_ms_spectra <- function(files = NA_character_, levels = c(1, 2),
       )
     }
 
+    if (!is.logical(runParallel)) runParallel <- FALSE
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    if (runParallel & length(files) > 1) {
+      workers <- parallel::detectCores() - 1
+      if (length(files) < workers) workers <- length(files)
+      par_type <- "PSOCK"
+      if (parallelly::supportsMulticore()) par_type <- "FORK"
+      cl <- parallel::makeCluster(workers, type = par_type)
+      doParallel::registerDoParallel(cl)
+      # on.exit(parallel::stopCluster(cl))
+    } else {
+      registerDoSEQ()
+    }
 
     # with mzR -----
     if (requireNamespace("mzR") & FALSE) {
+      spec_list <- foreach(i = files, .packages = "mzR") %dopar% {
 
+        if (!is.null(targets)) {
+          with_targets <- TRUE
+
+          trim <- function(v, a, b) {
+            rowSums(mapply(function(a, b) v >= a & v <= b, a = a, b = b)) > 0
+          }
+
+          trim_targets <- function(traces, targets, preMZr) {
+            trim <- function(v, a, b) {
+              rowSums(mapply(function(a, b) v >= a & v <= b, a = a, b = b)) > 0
+            }
+            tg_list <- lapply(seq_len(nrow(targets)),
+              function(z, traces, targets, trim, preMZr) {
+                tg <- traces
+                cutRt <- trim(tg$rt, targets$rtmin[z], targets$rtmax[z])
+                tg <- tg[cutRt, ]
+                if (nrow(tg) > 0) {
+                  if (!is.null(preMZr)) {
+                    cutMZ <- trim(tg$mz, targets$mzmin[z], targets$mzmax[z])
+                    tg <- tg[tg$level == 2 | (tg$level == 1 & cutMZ), ]
+                    if (nrow(tg) > 0) {
+                      cutPreMZ <- trim(tg$preMZ, preMZr$mzmin[z], preMZr$mzmax[z])
+                      tg <- tg[tg$level == 1 | (tg$level == 2 & cutPreMZ), ]
+                    }
+                  } else {
+                    cutMZ <- trim(tg$mz, targets$mzmin[z], targets$mzmax[z])
+                    tg <- tg[cutMZ, ]
+                  }
+                }
+                if (nrow(tg) > 0) {
+                  tg$id <- targets$id[z]
+                } else {
+                  tg$id <- character()
+                }
+                tg
+              },
+              traces = traces, preMZr = preMZr, targets = targets, trim = trim
+            )
+            tg_df <- do.call("rbind", tg_list)
+            tg_df
+          }
+        }
+
+        file_link <- mzR::openMSfile(i, backend = "pwiz")
+
+        sH <- mzR::header(file_link)
+
+        if (nrow(sH) > 0) {
+          if (max(sH$retentionTime) < 60) {
+            sH$retentionTime <- sH$retentionTime * 60
+          }
+
+          if (!is.null(levels)) sH <- sH[sH$msLevel %in% levels, ]
+
+          if (with_targets) {
+            if ("analysis" %in% colnames(targets)) {
+              ana_name <- gsub(".mzML|.mzXML", "", basename(i))
+              tp_tar <- targets[targets$analysis %in% ana_name, ]
+              if (nrow(tp_tar) > 0) {
+                sH <- sH[trim(sH$retentionTime, tp_tar$rtmin, tp_tar$rtmax), ]
+              } else {
+                sH <- data.frame()
+              }
+            } else {
+              sH <- sH[trim(sH$retentionTime, targets$rtmin, targets$rtmax), ]
+            }
+          }
+
+          if (!is.null(preMZr) & with_targets) {
+            if ("analysis" %in% colnames(targets)) {
+              ana_name <- gsub(".mzML|.mzXML", "", basename(i))
+              pre_tar <- preMZr[targets$analysis %in% ana_name, ]
+              preMZ_check <- trim(sH$precursorMZ, pre_tar$mzmin, pre_tar$mzmax)
+              sH <- sH[(preMZ_check %in% TRUE) | is.na(preMZ_check), ]
+            } else {
+              preMZ_check <- trim(sH$precursorMZ, preMZr$mzmin, preMZr$mzmax)
+              sH <- sH[(preMZ_check %in% TRUE) | is.na(preMZ_check), ]
+            }
+          }
+
+          if (nrow(sH) > 0) {
+            scans <- mzR::peaks(file_link, scans = sH$seqNum)
+
+            mat_idx <- rep(sH$seqNum, sapply(scans, nrow))
+            scans <- as.data.frame(do.call(rbind, scans))
+            scans$index <- mat_idx
+
+            if (TRUE %in% (unique(sH$msLevel) == 2)) {
+              sH_b <- data.frame(
+                "index" = sH$seqNum,
+                "scan" = sH$acquisitionNum,
+                "level" = sH$msLevel,
+                "ce" = sH$collisionEnergy,
+                "preScan" = sH$precursorScanNum,
+                "preMZ" = sH$precursorMZ,
+                "rt" = sH$retentionTime
+              )
+            } else {
+              sH_b <- data.frame(
+                "index" = sH$seqNum,
+                "scan" = sH$acquisitionNum,
+                "level" = sH$msLevel,
+                "rt" = sH$retentionTime
+              )
+            }
+
+            if (!all(is.na(sH$ionMobilityDriftTime))) {
+              rt_unique <- unique(sH_b$rt)
+              frame_numbers <- seq_len(length(rt_unique))
+              if ("preMZ" %in% colnames(sH_b)) sH_b$preMZ <- NA_real_
+              sH_b$frame <- factor(sH_b$rt,
+                                   levels = rt_unique, labels = frame_numbers
+              )
+              sH_b$driftTime <- sH$ionMobilityDriftTime
+            }
+
+            sH <- merge(sH_b, scans, by = "index")
+
+            if (with_targets) {
+              if ("analysis" %in% colnames(targets)) {
+                ana_name <- gsub(".mzML|.mzXML", "", basename(i))
+                tp_tar <- targets[targets$analysis %in% ana_name, ]
+                if (!is.null(preMZr)) {
+                  pre_tar <- preMZr[targets$analysis %in% ana_name, ]
+                } else {
+                  pre_tar <- NULL
+                }
+                if (nrow(tp_tar) > 0) {
+                  sH <- trim_targets(sH, tp_tar, pre_tar)
+                } else {
+                  sH <- data.frame()
+                }
+              } else {
+                sH <- trim_targets(sH, targets, preMZr)
+              }
+            }
+
+            if (exists("file_link")) suppressWarnings(mzR::close(file_link))
+            sH
+
+          } else {
+            data.frame()
+          }
+        } else {
+          data.frame()
+        }
+      }
 
   ## with xml2 -----
     } else if (requireNamespace("xml2")) {

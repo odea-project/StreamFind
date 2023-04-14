@@ -10,6 +10,39 @@
 
 namespace xml_utils {
 
+  std::vector<int> mzml_get_precision(pugi::xml_node& node);
+  int mzxml_get_precision(pugi::xml_node& node);
+
+  std::vector<std::string> mzml_get_compression(pugi::xml_node& node);
+  std::string mzxml_get_compression(pugi::xml_node& node);
+
+  const std::string base64_chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    "abcdefghijklmnopqrstuvwxyz"
+    "0123456789+/";
+
+  bool is_base64(unsigned char c);
+
+  std::string decode_base64(const std::string& encoded_string);
+
+  std::string decompress_zlib(const std::string& compressed_string);
+
+  Rcpp::NumericMatrix mzml_parse_binary_data_from_spectrum_node(
+    const pugi::xml_node& node,
+    const std::vector<int>& precision,
+    const std::vector<std::string>& compression,
+    const Rcpp::CharacterVector& cols
+  );
+
+  Rcpp::NumericMatrix mzxml_parse_binary_data_from_spectrum_node(
+    const pugi::xml_node& node,
+    const int& precision,
+    const std::string& compression,
+    const Rcpp::CharacterVector& cols
+  );
+
+  Rcpp::List parse_spectra(const pugi::xml_node& root);
+
   struct runHeaders {
     std::string file_format;
     std::string time_stamp;
@@ -33,6 +66,21 @@ namespace xml_utils {
     std::vector<double> pre_upperoffset;
     std::vector<double> pre_ce;
   }; // runHeaders
+
+  struct runSummary {
+    std::string file_format;
+    std::string time_stamp;
+    double spectra_number;
+    std::vector<std::string> spectra_mode;
+    std::vector<int> spectra_levels;
+    double mz_low;
+    double mz_high;
+    double rt_start;
+    double rt_end;
+    std::vector<std::string> polarity;
+    bool has_ion_mobility;
+    runHeaders headers;
+  }; // runSummary
 
   struct runHeadersOriginal {
     std::string fileFormat;
@@ -70,34 +118,19 @@ namespace xml_utils {
     std::vector<double> activation_ce;
   }; // runHeadersOriginal
 
-  struct runSummary {
-    std::string file_format;
-    std::string time_stamp;
-    double spectra_number;
-    std::vector<std::string> spectra_mode;
-    std::vector<int> spectra_levels;
-    double mz_low;
-    double mz_high;
-    double rt_start;
-    double rt_end;
-    std::vector<std::string> polarity;
-    bool has_ion_mobility;
-    runHeaders headers;
-  }; // runSummary
+  std::list<std::vector<std::string>> mzml_instrument_parser(const pugi::xml_node& node_mzml);
+  std::list<std::vector<std::string>> mzxml_instrument_parser(const pugi::xml_node& node_mzxml);
+  Rcpp::List parse_instrument(const pugi::xml_node& root);
 
-  std::list<std::vector<std::string>> mzml_instrument_parser(pugi::xml_node node_mzml);
+  std::list<std::vector<std::string>> mzml_software_parser(const pugi::xml_node& node_mzml);
+  std::list<std::vector<std::string>> mzxml_software_parser(const pugi::xml_node& node_mzxml);
+  Rcpp::List parse_software(const pugi::xml_node& root);
 
-  std::list<std::vector<std::string>> mzxml_instrument_parser(pugi::xml_node node_mzxml);
+  void mzml_run_headers_parser(const pugi::xml_node& node_mzml, runHeaders& output);
+  void mzxml_run_headers_parser(const pugi::xml_node& node_mzxml, runHeaders& output);
+  runHeaders parse_run(const pugi::xml_node& root);
 
-  std::list<std::vector<std::string>> mzml_software_parser(pugi::xml_node node_mzml);
-
-  std::list<std::vector<std::string>> mzxml_software_parser(pugi::xml_node node_mzxml);
-
-  runHeaders mzml_run_headers_parser(pugi::xml_node node_mzml);
-
-  runHeaders mzxml_run_headers_parser(pugi::xml_node node_mzxml);
-
-  runSummary run_summary(pugi::xml_node node);
+  runSummary run_summary(runHeaders& headers);
 
 } // xml_utils
 

@@ -12,12 +12,11 @@ Rcpp::List rcpp_parse_msAnalysis(std::string file_path) {
   Rcpp::List list_out;
 
   const char * path = file_path.c_str();
-
   pugi::xml_document doc;
-
   pugi::xml_parse_result result = doc.load_file(path);
 
   if (result) {
+
     pugi::xml_node root = doc.document_element();
 
     std::string root_name = root.name();
@@ -33,10 +32,6 @@ Rcpp::List rcpp_parse_msAnalysis(std::string file_path) {
     }
 
     if (node_in != NULL) {
-
-      // std::cout << "\u2713 " << node_in.name() << " opened!" << std::endl;
-      //
-      // std::cout << "\u2699 Parsing data...";
 
       std::size_t lastSeparator = file_path.find_last_of("/\\");
       std::size_t lastDot = file_path.find_last_of(".");
@@ -56,54 +51,27 @@ Rcpp::List rcpp_parse_msAnalysis(std::string file_path) {
 
       list_out["format"] = file_format;
 
-      list_out["type"] = na_charvec;
+      xml_utils::runHeaders headers_cpp = xml_utils::parse_run(root);
 
+      xml_utils::runSummary summary = xml_utils::run_summary(headers_cpp);
 
-      std::list<std::vector<std::string>> instrument_list_cpp;
-
-      if (strcmp("mzML", file_format.c_str()) == 0) {
-        instrument_list_cpp = xml_utils::mzml_instrument_parser(node_in);
-      } else if (strcmp("mzXML", root_name.c_str()) == 0) {
-        instrument_list_cpp = xml_utils::mzxml_instrument_parser(node_in);
-      }
-
-      Rcpp::List instrument_list;
-      auto it = instrument_list_cpp.begin();
-      instrument_list["category"] = Rcpp::wrap(*it);
-      std::advance(it, 1);
-      instrument_list["value"] = Rcpp::wrap(*it);
-      instrument_list.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-
-
-      std::list<std::vector<std::string>> software_list_cpp;
-
-      if (strcmp("mzML", file_format.c_str()) == 0) {
-        software_list_cpp = xml_utils::mzml_software_parser(node_in);
-      } else if (strcmp("mzXML", root_name.c_str()) == 0) {
-        software_list_cpp = xml_utils::mzxml_software_parser(node_in);
+      if (summary.spectra_number > 0) {
+        Rcpp::IntegerVector levels = Rcpp::wrap(headers_cpp.level);
+        levels = Rcpp::unique(levels);
+        if (levels.size() > 1) {
+          if (summary.has_ion_mobility) {
+            list_out["type"] = "IM-MS/MS";
+          } else {
+            list_out["type"] = "MS/MS";
+          }
+        } else {
+          list_out["type"] = "MS";
+        }
       } else {
-        std::list<std::vector<std::string>> software_list_cpp;
-        std::vector<std::string> names;
-        std::vector<std::string> ids;
-        std::vector<std::string> version;
-        software_list_cpp.push_back(names);
-        software_list_cpp.push_back(ids);
-        software_list_cpp.push_back(version);
+        list_out["type"] = na_charvec;
       }
-
-      Rcpp::List software_list;
-      auto it2 = software_list_cpp.begin();
-      software_list["name"] = Rcpp::wrap(*it2);
-      std::advance(it2, 1);
-      software_list["id"] = Rcpp::wrap(*it2);
-      std::advance(it2, 1);
-      software_list["version"] = Rcpp::wrap(*it2);
-      software_list.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
 
       //TODO make case polarity switching
-
-      xml_utils::runSummary summary;
-      summary = xml_utils::run_summary(node_in);
 
       Rcpp::String time_stamp = Rcpp::wrap(summary.time_stamp);
       if (time_stamp == "") {
@@ -172,24 +140,28 @@ Rcpp::List rcpp_parse_msAnalysis(std::string file_path) {
 
       list_out["chromatograms_number"] = 0;
 
+      list_out["software"] = xml_utils::parse_software(root);
+
+      list_out["instrument"] = xml_utils::parse_instrument(root);
+
       Rcpp::List headers;
-      headers["index"] = summary.headers.index;
-      headers["scan"] = summary.headers.scan;
-      headers["traces"] = summary.headers.traces;
-      headers["level"] = summary.headers.level;
-      headers["rt"] = summary.headers.rt;
+      headers["index"] = headers_cpp.index;
+      headers["scan"] = headers_cpp.scan;
+      headers["traces"] = headers_cpp.traces;
+      headers["level"] = headers_cpp.level;
+      headers["rt"] = headers_cpp.rt;
 
       if (summary.has_ion_mobility) {
-        headers["drift"] = summary.headers.drift;
+        headers["drift"] = headers_cpp.drift;
       }
 
-      headers["bpc_mz"] = summary.headers.bpcmz;
-      headers["bpc_intensity"] = summary.headers.bpcint;
-      headers["tic_intensity"] = summary.headers.ticint;
+      headers["bpc_mz"] = headers_cpp.bpcmz;
+      headers["bpc_intensity"] = headers_cpp.bpcint;
+      headers["tic_intensity"] = headers_cpp.ticint;
 
-      Rcpp::IntegerVector pre_scan = Rcpp::wrap(summary.headers.pre_scan);
-      Rcpp::NumericVector pre_mz = Rcpp::wrap(summary.headers.pre_mz);
-      Rcpp::NumericVector pre_ce = Rcpp::wrap(summary.headers.pre_ce);
+      Rcpp::IntegerVector pre_scan = Rcpp::wrap(headers_cpp.pre_scan);
+      Rcpp::NumericVector pre_mz = Rcpp::wrap(headers_cpp.pre_mz);
+      Rcpp::NumericVector pre_ce = Rcpp::wrap(headers_cpp.pre_ce);
 
       for (int i = 0; i < pre_scan.size(); i++) {
 
@@ -213,25 +185,7 @@ Rcpp::List rcpp_parse_msAnalysis(std::string file_path) {
 
       headers.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
 
-      list_out["software"] = software_list;
-
-      list_out["instrument"] = instrument_list;
-
       list_out["run"] = headers;
-
-      if (summary.spectra_number > 0) {
-        Rcpp::IntegerVector levels = Rcpp::wrap(headers["level"]);
-        levels = Rcpp::unique(levels);
-        if (levels.size() > 1) {
-          if (summary.has_ion_mobility) {
-            list_out["type"] = "IM-MS/MS";
-          } else {
-            list_out["type"] = "MS/MS";
-          }
-        } else {
-          list_out["type"] = "MS";
-        }
-      }
 
       Rcpp::DataFrame empty_df;
       empty_df.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
@@ -242,8 +196,6 @@ Rcpp::List rcpp_parse_msAnalysis(std::string file_path) {
       list_out["chromatograms"] = empty_df;
       list_out["features"] = empty_df;
       list_out["metadata"] = empty_list;
-
-      // std::cout << " Done!" << std::endl;
 
       list_out.attr("class") = Rcpp::CharacterVector::create("msAnalysis");
 

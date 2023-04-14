@@ -95,6 +95,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rcpp_parse_spectra
+Rcpp::List rcpp_parse_spectra(std::string file_path);
+RcppExport SEXP _streamFind_rcpp_parse_spectra(SEXP file_pathSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type file_path(file_pathSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_parse_spectra(file_path));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpp_parse_xml
 Rcpp::List rcpp_parse_xml(std::string file_path);
 RcppExport SEXP _streamFind_rcpp_parse_xml(SEXP file_pathSEXP) {
@@ -115,6 +126,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_streamFind_rcpp_ms_make_groups_update_features", (DL_FUNC) &_streamFind_rcpp_ms_make_groups_update_features, 1},
     {"_streamFind_rcpp_ms_update_groups", (DL_FUNC) &_streamFind_rcpp_ms_update_groups, 2},
     {"_streamFind_rcpp_parse_msAnalysis", (DL_FUNC) &_streamFind_rcpp_parse_msAnalysis, 1},
+    {"_streamFind_rcpp_parse_spectra", (DL_FUNC) &_streamFind_rcpp_parse_spectra, 1},
     {"_streamFind_rcpp_parse_xml", (DL_FUNC) &_streamFind_rcpp_parse_xml, 1},
     {NULL, NULL, 0}
 };

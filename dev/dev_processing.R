@@ -155,21 +155,58 @@ ms$get_bpc()
 ms$get_tic()
 
 
+big_file_test <- "E:\\Dev_20230126_IonMobilityDataFirstTraining\\WorklistData-0001.mzML"
+
+big_file_test <- "E:\\20230126_DA_EDA_background_evaluation\\221118_DA-EDA_solid phase background_centrifuged\\mzml\\02_QC_pos-r001.mzML"
+
 init <- Sys.time()
-msz <- mzR::openMSfile(files[1])
-msz1 <- mzR::instrumentInfo(msz)
-msz2 <- mzR::runInfo(msz)
+msz <- mzR::openMSfile(big_file_test)
+# msz1 <- mzR::instrumentInfo(msz)
+# msz2 <- mzR::runInfo(msz)
 msz3 <- mzR::header(msz)
+mzR::close(msz)
 Sys.time() - init
 init <- Sys.time()
-ana <- rcpp_parse_msAnalysis(files[1])
+ana <- rcpp_parse_msAnalysis(big_file_test)
 Sys.time() - init
 init <- Sys.time()
-ana1 <- parse_msAnalysis(files[1])
+ana1 <- parse_msAnalysis(big_file_test)
 Sys.time() - init
 
 
-rcpp_parse_xml(all_files[1])
+
+init <- Sys.time()
+msz <- mzR::openMSfile(big_file_test)
+msz4 <- mzR::peaks(msz)
+mzR::close(msz)
+Sys.time() - init
+init <- Sys.time()
+spectra <- rcpp_parse_spectra(big_file_test)
+Sys.time() - init
+
+
+init <- Sys.time()
+msz <- mzR::openMSfile(all_files[4])
+msz4 <- mzR::peaks(msz)
+mzR::close(msz)
+Sys.time() - init
+init <- Sys.time()
+spectra <- rcpp_parse_spectra(all_files[4])
+Sys.time() - init
+
+
+init <- Sys.time()
+spectra <- rcpp_parse_xml(all_files[1])
+Sys.time() - init
+# spectra
+
+
+
+
+
+
+
+
 
 
 rcpp_parse_msAnalysis(all_files[1])
