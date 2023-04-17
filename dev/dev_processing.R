@@ -204,12 +204,14 @@ Sys.time() - init
 
 
 
+rcpp_parse_spectra(all_files[4], index = c(1, 3))
+
+rcpp_parse_run(all_files[10])
 
 
 
+rcpp_parse_msAnalysis(all_files[11])
 
-
-rcpp_parse_msAnalysis(all_files[1])
 rcpp_parse_msAnalysis(all_files[28])
 rcpp_parse_msAnalysis(all_files[4])
 rcpp_parse_msAnalysis(all_files[7])

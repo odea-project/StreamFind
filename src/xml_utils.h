@@ -43,6 +43,11 @@ namespace xml_utils {
 
   Rcpp::List parse_spectra(const pugi::xml_node& root);
 
+  Rcpp::List parse_partial_spectra(
+    const pugi::xml_node& root,
+    Rcpp::IntegerVector& index
+  );
+
   struct runHeaders {
     std::string file_format;
     std::string time_stamp;
@@ -129,6 +134,7 @@ namespace xml_utils {
   void mzml_run_headers_parser(const pugi::xml_node& node_mzml, runHeaders& output);
   void mzxml_run_headers_parser(const pugi::xml_node& node_mzxml, runHeaders& output);
   runHeaders parse_run(const pugi::xml_node& root);
+  Rcpp::List runHeaders_to_list(const runHeaders& headers_cpp);
 
   runSummary run_summary(runHeaders& headers);
 

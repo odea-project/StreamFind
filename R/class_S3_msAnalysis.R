@@ -406,9 +406,11 @@ parse_msAnalysis <- function(files = NULL, runParallel = FALSE) {
   }
 
   if (!cached_analyses) {
-    message("\U2699 Parsing ", length(files),  " MS file/s...", appendLF = FALSE)
+    message("\U2699 Parsing ", length(files),  " MS file/s...",
+      appendLF = FALSE
+    )
 
-    i = NULL
+    i <- NULL
 
     analyses <- foreach(i = files) %dopar% {
       rcpp_parse_msAnalysis(i)

@@ -29,8 +29,12 @@ rcpp_parse_msAnalysis <- function(file_path) {
     .Call(`_streamFind_rcpp_parse_msAnalysis`, file_path)
 }
 
-rcpp_parse_spectra <- function(file_path) {
-    .Call(`_streamFind_rcpp_parse_spectra`, file_path)
+rcpp_parse_run <- function(file_path) {
+    .Call(`_streamFind_rcpp_parse_run`, file_path)
+}
+
+rcpp_parse_spectra <- function(file_path, index = NA_integer_) {
+    .Call(`_streamFind_rcpp_parse_spectra`, file_path, index)
 }
 
 rcpp_parse_xml <- function(file_path) {

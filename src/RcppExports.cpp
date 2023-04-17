@@ -95,14 +95,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// rcpp_parse_spectra
-Rcpp::List rcpp_parse_spectra(std::string file_path);
-RcppExport SEXP _streamFind_rcpp_parse_spectra(SEXP file_pathSEXP) {
+// rcpp_parse_run
+Rcpp::List rcpp_parse_run(std::string file_path);
+RcppExport SEXP _streamFind_rcpp_parse_run(SEXP file_pathSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type file_path(file_pathSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_parse_spectra(file_path));
+    rcpp_result_gen = Rcpp::wrap(rcpp_parse_run(file_path));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_parse_spectra
+Rcpp::List rcpp_parse_spectra(std::string file_path, Rcpp::IntegerVector index);
+RcppExport SEXP _streamFind_rcpp_parse_spectra(SEXP file_pathSEXP, SEXP indexSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type file_path(file_pathSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type index(indexSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_parse_spectra(file_path, index));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -126,7 +138,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_streamFind_rcpp_ms_make_groups_update_features", (DL_FUNC) &_streamFind_rcpp_ms_make_groups_update_features, 1},
     {"_streamFind_rcpp_ms_update_groups", (DL_FUNC) &_streamFind_rcpp_ms_update_groups, 2},
     {"_streamFind_rcpp_parse_msAnalysis", (DL_FUNC) &_streamFind_rcpp_parse_msAnalysis, 1},
-    {"_streamFind_rcpp_parse_spectra", (DL_FUNC) &_streamFind_rcpp_parse_spectra, 1},
+    {"_streamFind_rcpp_parse_run", (DL_FUNC) &_streamFind_rcpp_parse_run, 1},
+    {"_streamFind_rcpp_parse_spectra", (DL_FUNC) &_streamFind_rcpp_parse_spectra, 2},
     {"_streamFind_rcpp_parse_xml", (DL_FUNC) &_streamFind_rcpp_parse_xml, 1},
     {NULL, NULL, 0}
 };

@@ -283,7 +283,6 @@ void xml_utils::mzml_run_headers_parser(const pugi::xml_node& node_mzml, runHead
       output.index[i] = spec.attribute("index").as_int();
 
       std::string scan = spec.attribute("id").as_string();
-
       std::size_t poslastEqual = scan.rfind('=');
       int scan_n = std::stoi(scan.substr(poslastEqual + 1));
       // std::sscanf(scan.c_str(), "%*[^=]=%d", &scan_n);
@@ -354,9 +353,13 @@ void xml_utils::mzml_run_headers_parser(const pugi::xml_node& node_mzml, runHead
       if (precursor != NULL) {
 
         std::string pre_scan_str = precursor.attribute("spectrumRef").as_string();
-        std::size_t pre_poslastEqual = pre_scan_str.rfind('=');
-        int pre_scan_n = std::stoi(pre_scan_str.substr(pre_poslastEqual + 1));
-        output.pre_scan[i] = pre_scan_n;
+        if (pre_scan_str == "") {
+          output.pre_scan[i] = -1;  
+        } else {
+          std::size_t pre_poslastEqual = pre_scan_str.rfind('=');
+          int pre_scan_n = std::stoi(pre_scan_str.substr(pre_poslastEqual + 1));
+          output.pre_scan[i] = pre_scan_n;
+        }
 
         pugi::xml_node isolation = precursor.child("isolationWindow");
 
@@ -515,51 +518,56 @@ xml_utils::runHeaders xml_utils::parse_run(const pugi::xml_node& root) {
     std::cout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
   }
 
-  // if (summary.has_ion_mobility) {
-  //   headers["drift"] = output.drift;
-  // }
-  //
-  // Rcpp::IntegerVector drift = Rcpp::wrap(output.drift);
-  // Rcpp::IntegerVector pre_scan = Rcpp::wrap(output.pre_scan);
-  // Rcpp::NumericVector pre_mz = Rcpp::wrap(output.pre_mz);
-  // Rcpp::NumericVector pre_ce = Rcpp::wrap(output.pre_ce);
-  //
-  // for (int i = 0; i < pre_scan.size(); i++) {
-  //
-  //   if (drift[i] == -1) {
-  //     drift[i] = NA_REAL;
-  //   }
-  //
-  //   if (pre_scan[i] == -1) {
-  //     pre_scan[i] = NA_INTEGER;
-  //   }
-  //
-  //   if (std::isnan(pre_mz[i])) {
-  //     pre_mz[i] = NA_REAL;
-  //   }
-  //
-  //   if (std::isnan(pre_ce[i])) {
-  //     pre_ce[i] = NA_REAL;
-  //   }
-  //
-  // }
-  //
-  // headers["index"] = output.index;
-  // headers["scan"] = output.scan;
-  // headers["traces"] = output.traces;
-  // headers["level"] = output.level;
-  // headers["rt"] = output.rt;
-  // headers["drift"] = output.drift;
-  // headers["bpc_mz"] = output.bpcmz;
-  // headers["bpc_intensity"] = output.bpcint;
-  // headers["tic_intensity"] = output.ticint;
-  // headers["pre_scan"] = pre_scan;
-  // headers["pre_mz"] = pre_mz;
-  // headers["pre_ce"] = pre_ce;
-  //
-  // headers.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-
   return output;
+}
+
+
+
+
+Rcpp::List xml_utils::runHeaders_to_list(const xml_utils::runHeaders& headers_cpp) {
+
+  Rcpp::IntegerVector drift = Rcpp::wrap(headers_cpp.drift);
+  Rcpp::IntegerVector pre_scan = Rcpp::wrap(headers_cpp.pre_scan);
+  Rcpp::NumericVector pre_mz = Rcpp::wrap(headers_cpp.pre_mz);
+  Rcpp::NumericVector pre_ce = Rcpp::wrap(headers_cpp.pre_ce);
+  
+  for (int i = 0; i < pre_scan.size(); i++) {
+  
+      if (drift[i] == -1) {
+      drift[i] = NA_REAL;
+      }
+
+      if (pre_scan[i] == -1) {
+      pre_scan[i] = NA_INTEGER;
+      }
+
+      if (std::isnan(pre_mz[i])) {
+      pre_mz[i] = NA_REAL;
+      }
+
+      if (std::isnan(pre_ce[i])) {
+      pre_ce[i] = NA_REAL;
+      }
+  }
+
+  Rcpp::List headers;
+
+  headers["index"] = headers_cpp.index;
+  headers["scan"] = headers_cpp.scan;
+  headers["traces"] = headers_cpp.traces;
+  headers["level"] = headers_cpp.level;
+  headers["rt"] = headers_cpp.rt;
+  headers["drift"] = drift;
+  headers["bpc_mz"] = headers_cpp.bpcmz;
+  headers["bpc_intensity"] = headers_cpp.bpcint;
+  headers["tic_intensity"] = headers_cpp.ticint;
+  headers["pre_scan"] = pre_scan;
+  headers["pre_mz"] = pre_mz;
+  headers["pre_ce"] = pre_ce;
+
+  headers.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+
+  return headers;
 }
 
 
@@ -1088,6 +1096,105 @@ Rcpp::List xml_utils::parse_spectra(const pugi::xml_node& root) {
 
       for (int i = 0; i < number_spectra; i++) {
         list_output[i] = xml_utils::mzxml_parse_binary_data_from_spectrum_node(spectra[i], precision, compression, cols);
+      }
+
+      return list_output;
+    }
+
+  } else {
+    std::cout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
+  }
+
+  Rcpp::List list_output;
+  return list_output;
+}
+
+
+
+
+Rcpp::List xml_utils::parse_partial_spectra(
+    const pugi::xml_node& root, Rcpp::IntegerVector& index) {
+
+  const Rcpp::CharacterVector cols = {"mz","intenisty"};
+
+  const char* root_name = root.name();
+
+  if (strcmp("indexedmzML", root_name) == 0) {
+
+    pugi::xml_node node = root.child("mzML").child("run").child("spectrumList");
+
+    pugi::xml_node first_spec = node.child("spectrum");
+    const std::vector<int> precision = xml_utils::mzml_get_precision(first_spec);
+    const std::vector<std::string> compression = xml_utils::mzml_get_compression(first_spec);
+
+    std::vector<pugi::xml_node> spectra;
+
+    for (pugi::xml_node child = node.first_child(); child; child = child.next_sibling()) {
+      spectra.push_back(child);
+    }
+
+    int number_spectra = spectra.size();
+
+    // remove any larger than the number_spectra
+    Rcpp::LogicalVector overhead = index <= number_spectra;
+    index = index[overhead];
+
+    // remove duplicated indeces
+    std::set<int> index_set(index.begin(), index.end());
+    std::vector<int> index_unique(index_set.begin(), index_set.end());
+
+    int number_index = index_unique.size();
+
+    Rcpp::List list_output(number_index);
+
+    if (number_index > 0) {
+
+      int counter = 0;
+
+      for (int i : index_unique) {
+        Rcpp::Rcout << i << " ";
+        list_output[counter] = xml_utils::mzml_parse_binary_data_from_spectrum_node(spectra[i], precision, compression, cols);
+        counter++;
+      }
+    }
+
+    return list_output;
+
+  } else if (strcmp("mzXML", root_name) == 0) {
+
+    pugi::xml_node node = root.child("msRun");
+
+    pugi::xml_node first_spec = node.child("scan");
+    const int precision = xml_utils::mzxml_get_precision(first_spec);
+    const std::string compression = xml_utils::mzxml_get_compression(first_spec);
+
+    std::vector<pugi::xml_node> spectra;
+
+    for (pugi::xml_node child = node.child("scan"); child; child = child.next_sibling()) {
+      spectra.push_back(child);
+    }
+
+    int number_spectra = spectra.size();
+
+    // remove any larger than the number_spectra
+    Rcpp::LogicalVector overhead = index <= number_spectra;
+    index = index[overhead];
+
+    // remove duplicated indexes
+    std::set<int> index_set(index.begin(), index.end());
+    std::vector<int> index_unique(index_set.begin(), index_set.end());
+
+    int number_index = index_unique.size();
+
+    Rcpp::List list_output(number_index);
+
+    if (number_index > 0) {
+
+      int counter = 0;
+
+      for (int i : index_unique) {
+        list_output[counter] = xml_utils::mzxml_parse_binary_data_from_spectrum_node(spectra[i], precision, compression, cols);
+        counter++;
       }
 
       return list_output;

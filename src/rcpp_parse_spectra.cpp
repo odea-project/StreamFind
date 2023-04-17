@@ -17,7 +17,7 @@
 
 
 // [[Rcpp::export]]
-Rcpp::List rcpp_parse_spectra(std::string file_path) {
+Rcpp::List rcpp_parse_spectra(std::string file_path, Rcpp::IntegerVector index = NA_INTEGER) {
 
   Rcpp::List list_output;
 
@@ -29,7 +29,18 @@ Rcpp::List rcpp_parse_spectra(std::string file_path) {
 
   if (result) {
     pugi::xml_node root = doc.document_element();
-    return xml_utils::parse_spectra(root);
+
+    if (Rcpp::NumericVector::is_na(index[0])) {
+      return xml_utils::parse_spectra(root);
+
+    } else {
+
+      // Rcpp::List run = rcpp_parse_run(path);
+      // Rcpp::List bins = xml_utils::parse_partial_spectra(root, index);
+
+
+      return xml_utils::parse_partial_spectra(root, index);
+    }
 
   } else {
     std::cout << "\u2717 XML file could not be opened! " << result.description() << std::endl;
