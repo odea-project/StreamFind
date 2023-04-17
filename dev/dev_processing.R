@@ -151,6 +151,8 @@ ms$get_spectra_levels(analyses = 1:2)
 ms$get_polarities()
 ms$get_run(1:2)
 
+ms$get_spectra()
+
 ms$get_bpc()
 ms$get_tic()
 
@@ -201,10 +203,13 @@ Sys.time() - init
 # spectra
 
 
+all_files <- streamFindData::msFilePaths()
+analysis <- rcpp_parse_msAnalysis(all_files[1])
+spectra <- rcpp_parse_msAnalysis_spectra(analysis)
+spectra
 
-
-
-rcpp_parse_spectra(all_files[4], index = c(1, 3))
+all_files <- streamFindData::msFilePaths()
+rcpp_parse_spectra(all_files[4], which = c(1, 2))
 
 rcpp_parse_run(all_files[10])
 

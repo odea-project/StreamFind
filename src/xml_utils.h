@@ -49,8 +49,6 @@ namespace xml_utils {
   );
 
   struct runHeaders {
-    std::string file_format;
-    std::string time_stamp;
     std::vector<int> index;
     std::vector<int> id;
     std::vector<int> scan;
@@ -73,8 +71,6 @@ namespace xml_utils {
   }; // runHeaders
 
   struct runSummary {
-    std::string file_format;
-    std::string time_stamp;
     double spectra_number;
     std::vector<std::string> spectra_mode;
     std::vector<int> spectra_levels;
@@ -135,6 +131,7 @@ namespace xml_utils {
   void mzxml_run_headers_parser(const pugi::xml_node& node_mzxml, runHeaders& output);
   runHeaders parse_run(const pugi::xml_node& root);
   Rcpp::List runHeaders_to_list(const runHeaders& headers_cpp);
+  runHeaders list_to_runHeaders(const Rcpp::List& run);
 
   runSummary run_summary(runHeaders& headers);
 

@@ -234,7 +234,7 @@ Rcpp::List xml_utils::parse_software(const pugi::xml_node& root) {
 
 
 
-void xml_utils::mzml_run_headers_parser(const pugi::xml_node& node_mzml, runHeaders& output) {
+void xml_utils::mzml_run_headers_parser(const pugi::xml_node& node_mzml, xml_utils::runHeaders& output) {
 
   std::string search_run = "//run";
 
@@ -271,10 +271,6 @@ void xml_utils::mzml_run_headers_parser(const pugi::xml_node& node_mzml, runHead
     output.pre_loweroffset.resize(number_spectra);
     output.pre_upperoffset.resize(number_spectra);
     output.pre_ce.resize(number_spectra);
-
-    output.file_format = node_mzml.name();
-
-    output.time_stamp = xps_run.node().attribute("startTimeStamp").as_string();
 
     for (int i = 0; i < number_spectra; i++) {
 
@@ -392,7 +388,7 @@ void xml_utils::mzml_run_headers_parser(const pugi::xml_node& node_mzml, runHead
 
 
 
-void xml_utils::mzxml_run_headers_parser(const pugi::xml_node& node_mzxml, runHeaders& output) {
+void xml_utils::mzxml_run_headers_parser(const pugi::xml_node& node_mzxml, xml_utils::runHeaders& output) {
 
   std::string search_run = "//msRun";
 
@@ -425,10 +421,6 @@ void xml_utils::mzxml_run_headers_parser(const pugi::xml_node& node_mzxml, runHe
   output.pre_loweroffset.resize(number_spectra);
   output.pre_upperoffset.resize(number_spectra);
   output.pre_ce.resize(number_spectra);
-
-  output.file_format = node_mzxml.name();
-
-  output.time_stamp = xps_run.node().attribute("startTimeStamp").as_string();
 
   for (int i = 0; i < number_spectra; i++) {
 
@@ -573,15 +565,76 @@ Rcpp::List xml_utils::runHeaders_to_list(const xml_utils::runHeaders& headers_cp
 
 
 
+xml_utils::runHeaders xml_utils::list_to_runHeaders(const Rcpp::List& run) {
+
+  xml_utils::runHeaders output;
+
+  std::vector<int> index = run["index"];
+  int number_spectra = index.size();
+
+  Rcpp::IntegerVector pre_scan = run["pre_scan"];
+  Rcpp::NumericVector pre_mz = run["pre_mz"];
+  Rcpp::NumericVector pre_ce = run["pre_ce"];
+
+  for (int i = 0; i < number_spectra; i++) {
+
+      if (pre_scan[i] == NA_INTEGER) {
+        pre_scan[i] = -1;
+      }
+
+      if (pre_mz[i] == NA_REAL) {
+        pre_mz[i] = nan("");
+      }
+
+      if (pre_ce[i] == NA_REAL) {
+      pre_ce[i] = nan("");
+      }
+  }
+
+  output.index.resize(number_spectra);
+  output.id.resize(number_spectra);
+  output.scan.resize(number_spectra);
+  output.traces.resize(number_spectra);
+  // output.polarity.resize(number_spectra);
+  output.bpcmz.resize(number_spectra);
+  output.bpcint.resize(number_spectra);
+  output.ticint.resize(number_spectra);
+  output.level.resize(number_spectra);
+  // output.mode.resize(number_spectra);
+  // output.mzlow.resize(number_spectra);
+  // output.mzhigh.resize(number_spectra);
+  output.rt.resize(number_spectra);
+  // output.drift.resize(number_spectra);
+  output.pre_scan.resize(number_spectra);
+  output.pre_mz.resize(number_spectra);
+  // output.pre_loweroffset.resize(number_spectra);
+  // output.pre_upperoffset.resize(number_spectra);
+  output.pre_ce.resize(number_spectra);
+  
+  output.index = index;
+  output.scan = Rcpp::as<std::vector<int>>(run["scan"]);
+  output.traces = Rcpp::as<std::vector<int>>(run["traces"]);
+  output.level = Rcpp::as<std::vector<int>>(run["level"]);
+  output.rt = Rcpp::as<std::vector<double>>(run["rt"]);
+  // output.drift = Rcpp::as<std::vector<double>>(run["drift"]);
+  output.bpcmz = Rcpp::as<std::vector<double>>(run["bpc_mz"]);
+  output.bpcint = Rcpp::as<std::vector<double>>(run["bpc_intensity"]);
+  output.ticint = Rcpp::as<std::vector<double>>(run["tic_intensity"]);
+  output.pre_scan = Rcpp::as<std::vector<int>>(pre_scan);
+  output.pre_mz = Rcpp::as<std::vector<double>>(pre_mz);
+  output.pre_ce = Rcpp::as<std::vector<double>>(pre_ce);
+
+  return output;
+}
+
+
+
+
 xml_utils::runSummary xml_utils::run_summary(xml_utils::runHeaders& headers) {
 
   xml_utils::runSummary output;
 
-  output.file_format = headers.file_format;
-
-  output.time_stamp = headers.time_stamp;
-
-  output.spectra_number = headers.scan.size();
+  output.spectra_number = headers.index.size();
 
   if (output.spectra_number <= -1) output.spectra_number = 0;
 

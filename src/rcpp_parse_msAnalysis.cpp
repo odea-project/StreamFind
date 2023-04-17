@@ -73,7 +73,10 @@ Rcpp::List rcpp_parse_msAnalysis(std::string file_path) {
 
       //TODO make case polarity switching
 
-      Rcpp::String time_stamp = Rcpp::wrap(summary.time_stamp);
+      std::string search_run = "//run";
+      pugi::xpath_node xps_run = root.select_node(search_run.c_str());
+      Rcpp::String time_stamp = xps_run.node().attribute("startTimeStamp").as_string();
+
       if (time_stamp == "") {
         list_out["time_stamp"] = na_charvec;
       } else {
