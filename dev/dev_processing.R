@@ -146,25 +146,21 @@ ms <- msData$new(files = all_files[10:21],
   )
 )
 
-ms$get_files()
-ms$get_spectra_levels(analyses = 1:2)
-ms$get_polarities()
-ms$get_run(1:2)
-
-ms$get_spectra()
-
-ms$get_bpc()
-ms$get_tic()
 
 
+
+
+
+# tests ------------------------------------------------------------------------
+
+all_files <- streamFindData::msFilePaths()
 big_file_test <- "E:\\Dev_20230126_IonMobilityDataFirstTraining\\WorklistData-0001.mzML"
-
 big_file_test <- "E:\\20230126_DA_EDA_background_evaluation\\221118_DA-EDA_solid phase background_centrifuged\\mzml\\02_QC_pos-r001.mzML"
+big_file_test <- all_files[8]
 
+## headers
 init <- Sys.time()
 msz <- mzR::openMSfile(big_file_test)
-# msz1 <- mzR::instrumentInfo(msz)
-# msz2 <- mzR::runInfo(msz)
 msz3 <- mzR::header(msz)
 mzR::close(msz)
 Sys.time() - init
@@ -172,11 +168,10 @@ init <- Sys.time()
 ana <- rcpp_parse_msAnalysis(big_file_test)
 Sys.time() - init
 init <- Sys.time()
-ana1 <- parse_msAnalysis(big_file_test)
+ana_withR <- parse_msAnalysis(big_file_test)
 Sys.time() - init
 
-
-
+## spectra (list)
 init <- Sys.time()
 msz <- mzR::openMSfile(big_file_test)
 msz4 <- mzR::peaks(msz)
@@ -185,182 +180,37 @@ Sys.time() - init
 init <- Sys.time()
 spectra <- rcpp_parse_spectra(big_file_test)
 Sys.time() - init
-
-
+analysis <- rcpp_parse_msAnalysis(big_file_test)
 init <- Sys.time()
-msz <- mzR::openMSfile(all_files[4])
-msz4 <- mzR::peaks(msz)
-mzR::close(msz)
-Sys.time() - init
-init <- Sys.time()
-spectra <- rcpp_parse_spectra(all_files[4])
+spectra_analysis <- rcpp_parse_msAnalysis_spectra(analysis)
 Sys.time() - init
 
-
-init <- Sys.time()
-spectra <- rcpp_parse_xml(all_files[1])
-Sys.time() - init
-# spectra
-
-
-all_files <- streamFindData::msFilePaths()
-analysis <- rcpp_parse_msAnalysis(all_files[1])
-spectra <- rcpp_parse_msAnalysis_spectra(analysis)
-spectra
-
-all_files <- streamFindData::msFilePaths()
-rcpp_parse_spectra(all_files[4], which = c(1, 2))
-
-rcpp_parse_run(all_files[10])
-
-
-
-rcpp_parse_msAnalysis(all_files[11])
-
-rcpp_parse_msAnalysis(all_files[28])
-rcpp_parse_msAnalysis(all_files[4])
-rcpp_parse_msAnalysis(all_files[7])
-rcpp_parse_msAnalysis(all_files[31])
-rcpp_parse_msAnalysis(all_files[32])
-
-
-
-
-# ms$subset_analyses("ana")
-# ms$subset_features(1:2)
-# ms$subset_groups(1:2)
-#
-#
-# ms$remove_analyses(1)
-#
-# ms$get_spectra(analyses = 4:6, mz = targets)
-
-ms$find_features()
-
-ms$group_features()
-
-ms$load_features_ms1()
-ms$load_features_ms2()
-
-ms$load_groups_ms1()
-ms$load_groups_ms2()
-
-
-ms$get_features(mass = neutral_targets)
-
-anas <- parse.msAnalysis(files)
-ms$add_analyses(anas)
-
-ms$has_loaded_features_ms1()
-ms$has_loaded_groups_ms1()
-
-
-fts <- ms$get_features(mz = targets)
-gr <- ms$get_groups(groups = unique(fts$group))
-# ms$remove_features(fts)
-# ms$remove_analyses(1:3)
-
-
-
-test <- ms$subset_features(fts)
-
-test$has_loaded_features_ms1()
-test$get_features_ms1()
-
-
-test <- ms$subset_groups(gr$group)
-test$get_features(filtered = TRUE)
-test$has_loaded_groups_ms1()
-test$get_groups(filtered = TRUE)
-
-test$remove_features(filtered = TRUE)
-
-
-test$load_groups_ms1()
-
-
-test$get_groups()
-test$get_features()
-length(test$get_analyses())
-
-test$get_analysis_names()
-
-
-test$get_overview()
-
-test <- ms$subset_analyses(1:2)
-
-analyses = ms$get_analysis_names(1:2)
-
-test$get_groups()
-
-
-
-nrow(ms$get_features(filtered = TRUE))
-
-
-newFeatures <- lapply(ms$get_analyses(), function(x) {
-  # x$features$group <- NULL
-  x$features
-})
-
-newFeatures[[3]] <- NULL
-
-
-test <- rcpp_features_df_list_to_df(newFeatures)
-unique(test$analysis)
-
-
-all.equal(ms$get_features(filtered = TRUE), rcpp_features_df_list_to_df(newFeatures))
-
-ms$get_features()
-ms$get_groups()
-
-View(ms$get_analyses())
-View(ms$get_groups())
-
-all(unique(ms$get_features()$group) %in% ms$get_groups()$group)
-all(unique(ms$get_groups()$group %in% ms$get_features()$group))
-
-
-any(is.na(ms$get_features()$group))
-
-ms$check_correspondence()
-
-
-rcpp_ms_feature_groups_correspondence(ms$get_groups(), ms$get_features(), TRUE)
-
-
-test <- ms$get_features()
-View(rcpp_ms_make_groups_update_features(test)$features)
-View(test$intensities)
-
-
-fts <- ms$get_features(features = "m234.174_rt902_g177")
-
-ms$plot_features(features = "m234.174_rt902_g177", interactive = F)
-
-
-"[M]" %in% rcpp_ms_get_feature_groups_ranges(ms$get_groups()$group, ms$get_features())$adduct
-
-rcpp_ms_get_feature_groups_ranges(ms$get_groups()$group, ms$get_features())
-
-
-
-self <- ms$clone()
-
-all_groups <- self$get_groups()$group
-
-all_features_as_list <- lapply(self$get_analyses(), function(x) x$features)
-
-ana1 <- all_features_as_list[[1]]
-ana1_groups <- ana1$group
-ana1_groups <- ana1_groups[!is.na(ana1_groups)]
-groups_missing <- all_groups[!all_groups %in% ana1_groups]
-groups_missing <- self$get_groups(groups = groups_missing)
-
-
-
+## create msAnalysis
+ana_mzml_neg <- rcpp_parse_msAnalysis(all_files[11])
+validate_msAnalysis(ana_mzml_neg)
+ana_mzml_mrm_neg <- rcpp_parse_msAnalysis(all_files[28])
+validate_msAnalysis(ana_mzml_mrm_neg)
+ana_mzxml_pos <- rcpp_parse_msAnalysis(all_files[4])
+validate_msAnalysis(ana_mzxml_pos)
+ana_mzml_prof_pos <- rcpp_parse_msAnalysis(all_files[7])
+validate_msAnalysis(ana_mzml_prof_pos)
+ana_mzml_orb_pos <- rcpp_parse_msAnalysis(all_files[31])
+validate_msAnalysis(ana_mzml_orb_pos)
+ana_mzxml_orb_pos <- rcpp_parse_msAnalysis(all_files[32])
+validate_msAnalysis(ana_mzxml_orb_pos)
+
+is.data.table(rcpp_parse_msAnalysis_spectra(ana_mzml_neg))
+is.data.table(rcpp_parse_msAnalysis_spectra(ana_mzml_mrm_neg)) # empty for mrm without spectra
+is.data.table(rcpp_parse_msAnalysis_spectra(ana_mzxml_pos))
+is.data.table(rcpp_parse_msAnalysis_spectra(ana_mzml_prof_pos))
+is.data.table(rcpp_parse_msAnalysis_spectra(ana_mzml_orb_pos))
+is.data.table(rcpp_parse_msAnalysis_spectra(ana_mzxml_orb_pos))
+
+is.data.table(rcpp_parse_spectra_headers(all_files[1])) # mzML MS/MS
+
+is.data.table(rcpp_parse_chromatograms_headers(all_files[1])) # mzML MS/MS empty for XML without chromatograms
+is.data.table(rcpp_parse_chromatograms_headers(all_files[28])) # mzML SRM
+is.data.table(rcpp_parse_chromatograms_headers(all_files[4])) # mzXML empty for XML without chromatograms
 
 
 

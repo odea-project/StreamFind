@@ -31,14 +31,9 @@ Rcpp::List rcpp_parse_spectra(std::string file_path, Rcpp::IntegerVector which =
     pugi::xml_node root = doc.document_element();
 
     if (Rcpp::IntegerVector::is_na(which[0])) {
-
       return xml_utils::parse_spectra(root);
 
     } else {
-
-      // Rcpp::List run = rcpp_parse_run(path);
-      // Rcpp::List bins = xml_utils::parse_partial_spectra(root, index);
-
       return xml_utils::parse_partial_spectra(root, which);
     }
 

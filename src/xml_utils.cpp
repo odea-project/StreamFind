@@ -234,7 +234,7 @@ Rcpp::List xml_utils::parse_software(const pugi::xml_node& root) {
 
 
 
-void xml_utils::mzml_run_headers_parser(const pugi::xml_node& node_mzml, xml_utils::runHeaders& output) {
+void xml_utils::mzml_spectra_headers_parser(const pugi::xml_node& node_mzml, xml_utils::spectraHeaders& output) {
 
   std::string search_run = "//run";
 
@@ -253,7 +253,6 @@ void xml_utils::mzml_run_headers_parser(const pugi::xml_node& node_mzml, xml_uti
     int number_spectra = spectra.size();
 
     output.index.resize(number_spectra);
-    output.id.resize(number_spectra);
     output.scan.resize(number_spectra);
     output.traces.resize(number_spectra);
     output.polarity.resize(number_spectra);
@@ -285,6 +284,7 @@ void xml_utils::mzml_run_headers_parser(const pugi::xml_node& node_mzml, xml_uti
       output.scan[i] = scan_n;
 
       output.traces[i] = spec.attribute("defaultArrayLength").as_int();
+      if (std::isnan(output.traces[i])) output.traces[i] = NA_INTEGER;
 
       pugi::xml_node node_scan = spec.child("scanList").child("scan");
 
@@ -292,6 +292,7 @@ void xml_utils::mzml_run_headers_parser(const pugi::xml_node& node_mzml, xml_uti
       std::string rt_unit = rt_node.attribute("unitName").as_string();
       double rt_val = rt_node.attribute("value").as_double();
       if (rt_unit == "minute") rt_val = rt_val * 60;
+      if (std::isnan(rt_val)) rt_val = NA_INTEGER;
       output.rt[i] = rt_val;
 
       pugi::xml_node drift_node = node_scan.find_child_by_attribute("cvParam", "name", "ion mobility drift time");
@@ -301,19 +302,20 @@ void xml_utils::mzml_run_headers_parser(const pugi::xml_node& node_mzml, xml_uti
         // if (rt_unit == "millisecond") drift_t = drift_t / 0.001;
         output.drift[i] = drift_val;
       } else {
-        output.drift[i] = nan("");
+        output.drift[i] = NA_REAL;
       }
 
       pugi::xml_node level_node = spec.find_child_by_attribute("cvParam", "name", "ms level");
       output.level[i] = level_node.attribute("value").as_int();
+      if (std::isnan(output.level[i])) output.level[i] = NA_INTEGER;
 
       pugi::xml_node pol_pos = spec.find_child_by_attribute("cvParam", "accession", "MS:1000130");
       pugi::xml_node pol_neg = spec.find_child_by_attribute("cvParam", "accession", "MS:1000129");
 
       if (pol_pos != NULL) {
-        output.polarity[i] = pol_pos.attribute("name").as_string();
+        output.polarity[i] = "positive";
       } else if (pol_neg != NULL) {
-        output.polarity[i] = pol_neg.attribute("name").as_string();
+        output.polarity[i] = "negative";
       } else {
         output.polarity[i] = "NA";
       }
@@ -322,27 +324,32 @@ void xml_utils::mzml_run_headers_parser(const pugi::xml_node& node_mzml, xml_uti
       pugi::xml_node profile = spec.find_child_by_attribute("cvParam", "accession", "MS:1000128");
 
       if (centroid != NULL) {
-        output.mode[i] = centroid.attribute("name").as_string();
+        output.mode[i] = "centroid";
       } else if (profile != NULL) {
-        output.mode[i] = profile.attribute("name").as_string();
+        output.mode[i] = "profile";
       } else {
         output.mode[i] = "NA";
       }
 
       pugi::xml_node mzlow_node = spec.find_child_by_attribute("cvParam", "name", "lowest observed m/z");
       output.mzlow[i] = mzlow_node.attribute("value").as_double();
+      if (std::isnan(output.mzlow[i])) output.mzlow[i] = NA_REAL;
 
       pugi::xml_node mzhigh_node = spec.find_child_by_attribute("cvParam", "name", "highest observed m/z");
       output.mzhigh[i] = mzhigh_node.attribute("value").as_double();
+      if (std::isnan(output.mzhigh[i])) output.mzhigh[i] = NA_REAL;
 
       pugi::xml_node bpcmz_node = spec.find_child_by_attribute("cvParam", "name", "base peak m/z");
       output.bpcmz[i] = bpcmz_node.attribute("value").as_double();
+      if (std::isnan(output.bpcmz[i])) output.bpcmz[i] = NA_REAL;
 
       pugi::xml_node bpcint_node = spec.find_child_by_attribute("cvParam", "name", "base peak intensity");
       output.bpcint[i] = bpcint_node.attribute("value").as_double();
+      if (std::isnan(output.bpcint[i])) output.bpcint[i] = NA_REAL;
 
       pugi::xml_node ticint_node = spec.find_child_by_attribute("cvParam", "name", "total ion current");
       output.ticint[i] = ticint_node.attribute("value").as_double();
+      if (std::isnan(output.ticint[i])) output.ticint[i] = NA_REAL;
 
       pugi::xml_node precursor = spec.child("precursorList").child("precursor");
 
@@ -350,7 +357,7 @@ void xml_utils::mzml_run_headers_parser(const pugi::xml_node& node_mzml, xml_uti
 
         std::string pre_scan_str = precursor.attribute("spectrumRef").as_string();
         if (pre_scan_str == "") {
-          output.pre_scan[i] = -1;  
+          output.pre_scan[i] = NA_INTEGER;
         } else {
           std::size_t pre_poslastEqual = pre_scan_str.rfind('=');
           int pre_scan_n = std::stoi(pre_scan_str.substr(pre_poslastEqual + 1));
@@ -361,25 +368,29 @@ void xml_utils::mzml_run_headers_parser(const pugi::xml_node& node_mzml, xml_uti
 
         pugi::xml_node pre_mz_node = isolation.find_child_by_attribute("cvParam", "name", "isolation window target m/z");
         output.pre_mz[i] = pre_mz_node.attribute("value").as_double();
+        if (std::isnan(output.pre_mz[i])) output.pre_mz[i] = NA_REAL;
 
         pugi::xml_node pre_loweroffset_node = isolation.find_child_by_attribute("cvParam", "name", "isolation window lower offset");
         output.pre_loweroffset[i] = pre_loweroffset_node.attribute("value").as_double();
+        if (std::isnan(output.pre_loweroffset[i])) output.pre_loweroffset[i] = NA_REAL;
 
 
         pugi::xml_node pre_upperoffset_node = isolation.find_child_by_attribute("cvParam", "name", "isolation window upper offset");
         output.pre_upperoffset[i] = pre_upperoffset_node.attribute("value").as_double();
+        if (std::isnan(output.pre_upperoffset[i])) output.pre_upperoffset[i] = NA_REAL;
 
         pugi::xml_node activation = precursor.child("activation");
 
         pugi::xml_node pre_ce_node = activation.find_child_by_attribute("cvParam", "name", "collision energy");
         output.pre_ce[i] = pre_ce_node.attribute("value").as_double();
+        if (std::isnan(output.pre_ce[i])) output.pre_ce[i] = NA_REAL;
 
       } else {
-        output.pre_scan[i] = -1;
-        output.pre_mz[i] = nan("");
-        output.pre_loweroffset[i] = nan("");
-        output.pre_upperoffset[i] = nan("");
-        output.pre_ce[i] = nan("");
+        output.pre_scan[i] = NA_INTEGER;
+        output.pre_mz[i] = NA_REAL;
+        output.pre_loweroffset[i] = NA_REAL;
+        output.pre_upperoffset[i] = NA_REAL;
+        output.pre_ce[i] = NA_REAL;
       }
     }
   }
@@ -388,7 +399,7 @@ void xml_utils::mzml_run_headers_parser(const pugi::xml_node& node_mzml, xml_uti
 
 
 
-void xml_utils::mzxml_run_headers_parser(const pugi::xml_node& node_mzxml, xml_utils::runHeaders& output) {
+void xml_utils::mzxml_spectra_headers_parser(const pugi::xml_node& node_mzxml, xml_utils::spectraHeaders& output) {
 
   std::string search_run = "//msRun";
 
@@ -403,7 +414,6 @@ void xml_utils::mzxml_run_headers_parser(const pugi::xml_node& node_mzxml, xml_u
   int number_spectra = spectra.size();
 
   output.index.resize(number_spectra);
-  output.id.resize(number_spectra);
   output.scan.resize(number_spectra);
   output.traces.resize(number_spectra);
   output.polarity.resize(number_spectra);
@@ -431,6 +441,7 @@ void xml_utils::mzxml_run_headers_parser(const pugi::xml_node& node_mzxml, xml_u
     output.scan[i] = spec.attribute("num").as_int();
 
     output.traces[i] = spec.attribute("peaksCount").as_int();
+    if (std::isnan(output.traces[i])) output.traces[i] = NA_REAL;
 
     std::string rt = spec.attribute("retentionTime").as_string();
     double rt_n;
@@ -440,9 +451,10 @@ void xml_utils::mzxml_run_headers_parser(const pugi::xml_node& node_mzxml, xml_u
     if (last_char != 'S') rt_n = rt_n * 60;
     output.rt[i] = rt_n;
 
-    output.drift[i] = nan("");
+    output.drift[i] = NA_REAL;
 
     output.level[i] = spec.attribute("msLevel").as_int();
+    if (std::isnan(output.level[i])) output.level[i] = NA_INTEGER;
 
     std::string pol_sign = spec.attribute("polarity").as_string();
 
@@ -465,46 +477,54 @@ void xml_utils::mzxml_run_headers_parser(const pugi::xml_node& node_mzxml, xml_u
     }
 
     output.mzlow[i] = spec.attribute("lowMz").as_double();
+    if (std::isnan(output.mzlow[i])) output.mzlow[i] = NA_REAL;
 
     output.mzhigh[i] = spec.attribute("highMz").as_double();
+    if (std::isnan(output.mzhigh[i])) output.mzhigh[i] = NA_REAL;
 
     output.bpcmz[i] = spec.attribute("basePeakMz").as_double();
+    if (std::isnan(output.bpcmz[i])) output.bpcmz[i] = NA_REAL;
 
     output.bpcint[i] = spec.attribute("basePeakIntensity").as_double();
+    if (std::isnan(output.bpcint[i])) output.bpcint[i] = NA_REAL;
 
     output.ticint[i] = spec.attribute("totIonCurrent").as_double();
+    if (std::isnan(output.ticint[i])) output.ticint[i] = NA_REAL;
 
     pugi::xml_node precursor = spec.child("precursorMz");
 
     if (precursor != NULL) {
       output.pre_mz[i] = precursor.text().as_double();
+      if (std::isnan(output.pre_mz[i])) output.pre_mz[i] = NA_REAL;
+
       output.pre_ce[i] = spec.attribute("collisionEnergy").as_double();
+      if (std::isnan(output.pre_ce[i])) output.pre_ce[i] = NA_REAL;
 
     } else {
-      output.pre_mz[i] = nan("");
-      output.pre_ce[i] = nan("");
+      output.pre_mz[i] = NA_REAL;
+      output.pre_ce[i] = NA_REAL;
     }
 
-    output.pre_scan[i] = -1;
-    output.pre_loweroffset[i] = nan("");
-    output.pre_upperoffset[i] = nan("");
+    output.pre_scan[i] = NA_INTEGER;
+    output.pre_loweroffset[i] = NA_REAL;
+    output.pre_upperoffset[i] = NA_REAL;
   }
 }
 
 
 
 
-xml_utils::runHeaders xml_utils::parse_run(const pugi::xml_node& root) {
+xml_utils::spectraHeaders xml_utils::parse_spectra_headers(const pugi::xml_node& root) {
 
-  xml_utils::runHeaders output;
+  xml_utils::spectraHeaders output;
 
   const char* root_name = root.name();
 
   if (strcmp("indexedmzML", root_name) == 0) {
-    xml_utils::mzml_run_headers_parser(root.child("mzML"), output);
+    xml_utils::mzml_spectra_headers_parser(root.child("mzML"), output);
 
   } else if (strcmp("mzXML", root_name) == 0) {
-    xml_utils::mzxml_run_headers_parser(root, output);
+    xml_utils::mzxml_spectra_headers_parser(root, output);
 
   } else {
     std::cout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
@@ -516,30 +536,18 @@ xml_utils::runHeaders xml_utils::parse_run(const pugi::xml_node& root) {
 
 
 
-Rcpp::List xml_utils::runHeaders_to_list(const xml_utils::runHeaders& headers_cpp) {
+Rcpp::List xml_utils::spectraHeaders_to_list(const xml_utils::spectraHeaders& headers_cpp) {
 
-  Rcpp::IntegerVector drift = Rcpp::wrap(headers_cpp.drift);
-  Rcpp::IntegerVector pre_scan = Rcpp::wrap(headers_cpp.pre_scan);
-  Rcpp::NumericVector pre_mz = Rcpp::wrap(headers_cpp.pre_mz);
-  Rcpp::NumericVector pre_ce = Rcpp::wrap(headers_cpp.pre_ce);
-  
-  for (int i = 0; i < pre_scan.size(); i++) {
-  
-      if (drift[i] == -1) {
-      drift[i] = NA_REAL;
-      }
+  Rcpp::StringVector polarity = Rcpp::wrap(headers_cpp.polarity);
+  Rcpp::StringVector mode = Rcpp::wrap(headers_cpp.mode);
 
-      if (pre_scan[i] == -1) {
-      pre_scan[i] = NA_INTEGER;
-      }
-
-      if (std::isnan(pre_mz[i])) {
-      pre_mz[i] = NA_REAL;
-      }
-
-      if (std::isnan(pre_ce[i])) {
-      pre_ce[i] = NA_REAL;
-      }
+  for (int i = 0; i < polarity.size(); i++) {
+    if (polarity(i) == "NA") {
+      polarity(i) = NA_STRING;
+    }
+    if (mode(i) == "NA") {
+      mode(i) = NA_STRING;
+    }
   }
 
   Rcpp::List headers;
@@ -547,15 +555,21 @@ Rcpp::List xml_utils::runHeaders_to_list(const xml_utils::runHeaders& headers_cp
   headers["index"] = headers_cpp.index;
   headers["scan"] = headers_cpp.scan;
   headers["traces"] = headers_cpp.traces;
+  headers["polarity"] = polarity;
+  headers["mode"] = mode;
   headers["level"] = headers_cpp.level;
   headers["rt"] = headers_cpp.rt;
-  headers["drift"] = drift;
+  headers["drift"] = headers_cpp.drift;
   headers["bpc_mz"] = headers_cpp.bpcmz;
   headers["bpc_intensity"] = headers_cpp.bpcint;
   headers["tic_intensity"] = headers_cpp.ticint;
-  headers["pre_scan"] = pre_scan;
-  headers["pre_mz"] = pre_mz;
-  headers["pre_ce"] = pre_ce;
+  headers["mzlow"] = headers_cpp.mzlow;
+  headers["mzhigh"] = headers_cpp.mzhigh;
+  headers["pre_scan"] = headers_cpp.pre_scan;
+  headers["pre_mz"] = headers_cpp.pre_mz;
+  headers["pre_ce"] = headers_cpp.pre_ce;
+  headers["pre_loweroffset"] = headers_cpp.pre_loweroffset;
+  headers["pre_upperoffset"] = headers_cpp.pre_upperoffset;
 
   headers.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
 
@@ -565,9 +579,9 @@ Rcpp::List xml_utils::runHeaders_to_list(const xml_utils::runHeaders& headers_cp
 
 
 
-xml_utils::runHeaders xml_utils::list_to_runHeaders(const Rcpp::List& run) {
+xml_utils::spectraHeaders xml_utils::list_to_spectraHeaders(const Rcpp::List& run) {
 
-  xml_utils::runHeaders output;
+  xml_utils::spectraHeaders output;
 
   std::vector<int> index = run["index"];
   int number_spectra = index.size();
@@ -592,7 +606,6 @@ xml_utils::runHeaders xml_utils::list_to_runHeaders(const Rcpp::List& run) {
   }
 
   output.index.resize(number_spectra);
-  output.id.resize(number_spectra);
   output.scan.resize(number_spectra);
   output.traces.resize(number_spectra);
   // output.polarity.resize(number_spectra);
@@ -610,7 +623,7 @@ xml_utils::runHeaders xml_utils::list_to_runHeaders(const Rcpp::List& run) {
   // output.pre_loweroffset.resize(number_spectra);
   // output.pre_upperoffset.resize(number_spectra);
   output.pre_ce.resize(number_spectra);
-  
+
   output.index = index;
   output.scan = Rcpp::as<std::vector<int>>(run["scan"]);
   output.traces = Rcpp::as<std::vector<int>>(run["traces"]);
@@ -630,55 +643,212 @@ xml_utils::runHeaders xml_utils::list_to_runHeaders(const Rcpp::List& run) {
 
 
 
-xml_utils::runSummary xml_utils::run_summary(xml_utils::runHeaders& headers) {
+void xml_utils::mzml_chromatograms_headers_parser(
+    const pugi::xml_node& node_mzml, xml_utils::chromatogramsHeaders& output) {
+
+  std::string search_run = "//run";
+
+  pugi::xpath_node xps_run = node_mzml.select_node(search_run.c_str());
+
+  pugi::xml_node chrom_list = xps_run.node().child("chromatogramList");
+
+  if (chrom_list != NULL) {
+
+    std::vector<pugi::xml_node> chromatograms;
+
+    for (pugi::xml_node child = chrom_list.first_child(); child; child = child.next_sibling()) {
+      chromatograms.push_back(child);
+    }
+
+    int number_chromatograms = chromatograms.size();
+
+    if (number_chromatograms > 0) {
+
+      output.index.resize(number_chromatograms);
+      output.id.resize(number_chromatograms);
+      output.traces.resize(number_chromatograms);
+      output.polarity.resize(number_chromatograms);
+      output.pre_mz.resize(number_chromatograms);
+      output.pre_ce.resize(number_chromatograms);
+      output.pro_mz.resize(number_chromatograms);
+
+      for (int i = 0; i < number_chromatograms; i++) {
+
+        const pugi::xml_node chrom = chromatograms[i];
+
+        output.index[i] = chrom.attribute("index").as_int();
+
+        std::string id = chrom.attribute("id").as_string();
+        output.id[i] = id;
+
+        output.traces[i] = chrom.attribute("defaultArrayLength").as_int();
+        if (std::isnan(output.traces[i])) output.traces[i] = NA_INTEGER;
+
+        pugi::xml_node pol_pos = chrom.find_child_by_attribute("cvParam", "accession", "MS:1000130");
+        pugi::xml_node pol_neg = chrom.find_child_by_attribute("cvParam", "accession", "MS:1000129");
+
+        if (pol_pos != NULL) {
+          output.polarity[i] = "positive";
+        } else if (pol_neg != NULL) {
+          output.polarity[i] = "negative";
+        } else {
+          output.polarity[i] = "NA";
+        }
+
+        pugi::xml_node precursor = chrom.child("precursor");
+
+        if (precursor != NULL) {
+
+          pugi::xml_node isolation = precursor.child("isolationWindow");
+
+          pugi::xml_node pre_mz_node = isolation.find_child_by_attribute("cvParam", "name", "isolation window target m/z");
+          output.pre_mz[i] = pre_mz_node.attribute("value").as_double();
+          if (std::isnan(output.pre_mz[i])) output.pre_mz[i] = NA_REAL;
+
+          pugi::xml_node activation = precursor.child("activation");
+
+          pugi::xml_node pre_ce_node = activation.find_child_by_attribute("cvParam", "name", "collision energy");
+          output.pre_ce[i] = pre_ce_node.attribute("value").as_double();
+          if (std::isnan(output.pre_ce[i])) output.pre_ce[i] = NA_REAL;
+
+        } else {
+          output.pre_mz[i] = NA_REAL;
+          output.pre_ce[i] = NA_REAL;
+        }
+
+        pugi::xml_node product = chrom.child("product");
+
+        if (product != NULL) {
+
+          pugi::xml_node isolation = precursor.child("isolationWindow");
+
+          pugi::xml_node pre_mz_node = isolation.find_child_by_attribute("cvParam", "name", "isolation window target m/z");
+          output.pro_mz[i] = pre_mz_node.attribute("value").as_double();
+          if (std::isnan(output.pro_mz[i])) output.pro_mz[i] = NA_REAL;
+
+        } else {
+          output.pro_mz[i] = NA_REAL;
+        }
+      }
+    }
+  }
+}
+
+
+
+
+xml_utils::chromatogramsHeaders xml_utils::parse_chromatograms_headers(const pugi::xml_node& root) {
+
+  xml_utils::chromatogramsHeaders output;
+
+  const char* root_name = root.name();
+
+  if (strcmp("indexedmzML", root_name) == 0) {
+    xml_utils::mzml_chromatograms_headers_parser(root.child("mzML"), output);
+
+  } else if (strcmp("mzXML", root_name) == 0) {
+
+  } else {
+    std::cout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
+  }
+
+  return output;
+}
+
+
+
+
+Rcpp::List xml_utils::chromatogramsHeaders_to_list(const xml_utils::chromatogramsHeaders& headers_cpp) {
+
+  Rcpp::StringVector polarity = Rcpp::wrap(headers_cpp.polarity);
+
+  for (int i = 0; i < polarity.size(); i++) {
+    if (polarity(i) == "NA") {
+      polarity(i) = NA_STRING;
+    }
+  }
+
+  Rcpp::List headers;
+
+  headers["index"] = headers_cpp.index;
+  headers["id"] = headers_cpp.id;
+  headers["traces"] = headers_cpp.traces;
+  headers["polarity"] = polarity;
+  headers["pre_mz"] = headers_cpp.pre_mz;
+  headers["pre_ce"] = headers_cpp.pre_ce;
+  headers["pro_mz"] = headers_cpp.pro_mz;
+
+  headers.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+
+  return headers;
+}
+
+
+
+
+xml_utils::runSummary xml_utils::run_summary(
+    xml_utils::spectraHeaders& spec_headers,
+    xml_utils::chromatogramsHeaders& chrom_headers) {
 
   xml_utils::runSummary output;
 
-  output.spectra_number = headers.index.size();
+  Rcpp::CharacterVector na_charvec(1, NA_STRING);
+  std::vector<int> empty_int_vec(1, NA_INTEGER);
+
+  output.spectra_number = spec_headers.index.size();
+  output.chromatograms_number = chrom_headers.index.size();
 
   if (output.spectra_number <= -1) output.spectra_number = 0;
+  if (output.chromatograms_number <= -1) output.chromatograms_number = 0;
 
   if (output.spectra_number > 0) {
 
-    std::set<std::string> mode(headers.mode.begin(), headers.mode.end());
+    std::set<std::string> mode(spec_headers.mode.begin(), spec_headers.mode.end());
     std::vector<std::string> mode_v(mode.begin(), mode.end());
-    output.spectra_mode = mode_v;
 
-    std::set<int> level(headers.level.begin(), headers.level.end());
+    if (mode_v.size() == 1 && mode_v[0] == "NA") {
+      output.mode = na_charvec;
+    } else {
+      output.mode = Rcpp::wrap(mode_v);
+    }
+
+    std::set<int> level(spec_headers.level.begin(), spec_headers.level.end());
     std::vector<int> level_v(level.begin(), level.end());
-    output.spectra_levels = level_v;
+    output.levels = level_v;
 
-    auto mzlow = std::min_element(headers.mzlow.begin(), headers.mzlow.end());
+    auto mzlow = std::min_element(spec_headers.mzlow.begin(), spec_headers.mzlow.end());
     output.mz_low = *mzlow;
 
-    auto mzhigh = std::max_element(headers.mzhigh.begin(), headers.mzhigh.end());
+    auto mzhigh = std::max_element(spec_headers.mzhigh.begin(), spec_headers.mzhigh.end());
     output.mz_high = *mzhigh;
 
-    auto rtmin = std::min_element(headers.rt.begin(), headers.rt.end());
+    auto rtmin = std::min_element(spec_headers.rt.begin(), spec_headers.rt.end());
     output.rt_start = *rtmin;
 
-    auto rtmax = std::max_element(headers.rt.begin(), headers.rt.end());
+    auto rtmax = std::max_element(spec_headers.rt.begin(), spec_headers.rt.end());
     output.rt_end = *rtmax;
 
-    std::set<std::string> polarity(headers.polarity.begin(), headers.polarity.end());
+    std::set<std::string> polarity(spec_headers.polarity.begin(), spec_headers.polarity.end());
     std::vector<std::string> polarity_v(polarity.begin(), polarity.end());
-    output.polarity = polarity_v;
 
+    if (polarity_v.size() == 1 && polarity_v[0] == "NA") {
+      output.polarity = na_charvec;
+    } else {
+      output.polarity = Rcpp::wrap(polarity_v);
+    }
 
-    bool has_im = std::all_of(headers.drift.begin(), headers.drift.end(), [](double d) { return std::isnan(d); });
+    bool has_im = std::all_of(spec_headers.drift.begin(), spec_headers.drift.end(), [](double d) { return std::isnan(d); });
     output.has_ion_mobility = !has_im;
 
   } else {
-    std::vector<std::string> empty_string_v(1, "");
-    std::vector<int> empty_int_vec(1, 0);
 
-    output.spectra_mode = empty_string_v;
-    output.spectra_levels = empty_int_vec;
-    output.mz_low = nan("");
-    output.mz_high = nan("");
-    output.rt_start = nan("");
-    output.rt_end = nan("");
-    output.polarity = empty_string_v;
+    output.mode = na_charvec;
+    output.levels = empty_int_vec;
+    output.mz_low = NA_REAL;
+    output.mz_high = NA_REAL;
+    output.rt_start = NA_REAL;
+    output.rt_end = NA_REAL;
+    output.polarity = na_charvec;
     output.has_ion_mobility = false;
   }
 
@@ -688,9 +858,9 @@ xml_utils::runSummary xml_utils::run_summary(xml_utils::runHeaders& headers) {
 
 
 
-bool xml_utils::is_base64(unsigned char c) {
-  return (isalnum(c) || (c == '+') || (c == '/'));
-}
+// bool xml_utils::is_base64(unsigned char c) {
+//   return (isalnum(c) || (c == '+') || (c == '/'));
+// }
 
 
 
@@ -1192,7 +1362,7 @@ Rcpp::List xml_utils::parse_partial_spectra(
     Rcpp::LogicalVector overhead = index <= number_spectra;
     index = index[overhead];
 
-    // remove duplicated indeces
+    // remove duplicated indexes
     std::set<int> index_set(index.begin(), index.end());
     std::vector<int> index_unique(index_set.begin(), index_set.end());
 
@@ -1205,7 +1375,6 @@ Rcpp::List xml_utils::parse_partial_spectra(
       int counter = 0;
 
       for (int i : index_unique) {
-        Rcpp::Rcout << i << " ";
         list_output[counter] = xml_utils::mzml_parse_binary_data_from_spectrum_node(spectra[i], precision, compression, cols);
         counter++;
       }

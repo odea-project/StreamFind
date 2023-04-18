@@ -6,7 +6,7 @@
 #include <Rcpp.h>
 
 // [[Rcpp::export]]
-Rcpp::List rcpp_parse_run(std::string file_path) {
+Rcpp::List rcpp_parse_spectra_headers(std::string file_path) {
 
   Rcpp::List list_out;
 
@@ -18,9 +18,9 @@ Rcpp::List rcpp_parse_run(std::string file_path) {
 
     pugi::xml_node root = doc.document_element();
 
-    xml_utils::runHeaders headers_cpp = xml_utils::parse_run(root);
+    xml_utils::spectraHeaders headers_cpp = xml_utils::parse_spectra_headers(root);
 
-    return xml_utils::runHeaders_to_list(headers_cpp);
+    return xml_utils::spectraHeaders_to_list(headers_cpp);
 
   } else {
     std::cout << "\u2717 XML file could not be opened! " << result.description() << std::endl;

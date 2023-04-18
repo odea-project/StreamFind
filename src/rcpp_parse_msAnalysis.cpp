@@ -51,12 +51,14 @@ Rcpp::List rcpp_parse_msAnalysis(std::string file_path) {
 
       list_out["format"] = file_format;
 
-      xml_utils::runHeaders headers_cpp = xml_utils::parse_run(root);
+      xml_utils::spectraHeaders spec_headers_cpp = xml_utils::parse_spectra_headers(root);
 
-      xml_utils::runSummary summary = xml_utils::run_summary(headers_cpp);
+      xml_utils::chromatogramsHeaders chrom_headers_cpp = xml_utils::parse_chromatograms_headers(root);
+
+      xml_utils::runSummary summary = xml_utils::run_summary(spec_headers_cpp, chrom_headers_cpp);
 
       if (summary.spectra_number > 0) {
-        Rcpp::IntegerVector levels = Rcpp::wrap(headers_cpp.level);
+        Rcpp::IntegerVector levels = Rcpp::wrap(spec_headers_cpp.level);
         levels = Rcpp::unique(levels);
         if (levels.size() > 1) {
           if (summary.has_ion_mobility) {
@@ -67,6 +69,9 @@ Rcpp::List rcpp_parse_msAnalysis(std::string file_path) {
         } else {
           list_out["type"] = "MS";
         }
+      } else if (summary.chromatograms_number > 0) {
+        list_out["type"] = "SRM";
+
       } else {
         list_out["type"] = na_charvec;
       }
@@ -85,110 +90,29 @@ Rcpp::List rcpp_parse_msAnalysis(std::string file_path) {
 
       list_out["spectra_number"] = summary.spectra_number;
 
-      Rcpp::StringVector mode = Rcpp::wrap(summary.spectra_mode);
-      if (mode.size() == 1 && mode(0) == "") {
-        list_out["spectra_mode"] = na_charvec;
-      } else {
+      list_out["spectra_mode"] = Rcpp::wrap(summary.mode);
 
-        if (mode(0) == "centroid spectrum") {
-          mode(0) = "centroid";
-        } else if (mode(0) == "profile spectrum") {
-          mode(0) = "profile";
-        }
+      list_out["spectra_levels"] = summary.levels;
 
-        list_out["spectra_mode"] = mode;
-      }
+      list_out["mz_low"] = summary.mz_low;
 
-      list_out["spectra_levels"] = summary.spectra_levels;
+      list_out["mz_high"] = summary.mz_high;
 
-      if (std::isnan(summary.mz_low)) {
-        list_out["mz_low"] = NA_REAL;
-      } else {
-        list_out["mz_low"] = summary.mz_low;
-      }
+      list_out["rt_start"] = summary.rt_start;
 
-      if (std::isnan(summary.mz_high)) {
-        list_out["mz_high"] = NA_REAL;
-      } else {
-        list_out["mz_high"] = summary.mz_high;
-      }
+      list_out["rt_end"] = summary.rt_end;
 
-      if (std::isnan(summary.rt_start)) {
-        list_out["rt_start"] = NA_REAL;
-      } else {
-        list_out["rt_start"] = summary.rt_start;
-      }
-
-      if (std::isnan(summary.rt_end)) {
-        list_out["rt_end"] = NA_REAL;
-      } else {
-        list_out["rt_end"] = summary.rt_end;
-      }
-
-      Rcpp::StringVector polarity = Rcpp::wrap(summary.polarity);
-      if (polarity.size() == 1 && polarity(0) == "") {
-        list_out["polarity"] = na_charvec;
-      } else {
-
-        if (polarity(0) == "positive scan") {
-          polarity(0) = "positive";
-        } else if (polarity(0) == "negative scan") {
-          polarity(0) = "negative";
-        }
-
-        list_out["polarity"] = polarity;
-      }
+      list_out["polarity"] = Rcpp::wrap(summary.polarity);
 
       list_out["has_ion_mobility"] = summary.has_ion_mobility;
 
-      list_out["chromatograms_number"] = 0;
+      list_out["chromatograms_number"] = summary.chromatograms_number;
 
       list_out["software"] = xml_utils::parse_software(root);
 
       list_out["instrument"] = xml_utils::parse_instrument(root);
 
-      Rcpp::List headers;
-      headers["index"] = headers_cpp.index;
-      headers["scan"] = headers_cpp.scan;
-      headers["traces"] = headers_cpp.traces;
-      headers["level"] = headers_cpp.level;
-      headers["rt"] = headers_cpp.rt;
-
-      if (summary.has_ion_mobility) {
-        headers["drift"] = headers_cpp.drift;
-      }
-
-      headers["bpc_mz"] = headers_cpp.bpcmz;
-      headers["bpc_intensity"] = headers_cpp.bpcint;
-      headers["tic_intensity"] = headers_cpp.ticint;
-
-      Rcpp::IntegerVector pre_scan = Rcpp::wrap(headers_cpp.pre_scan);
-      Rcpp::NumericVector pre_mz = Rcpp::wrap(headers_cpp.pre_mz);
-      Rcpp::NumericVector pre_ce = Rcpp::wrap(headers_cpp.pre_ce);
-
-      for (int i = 0; i < pre_scan.size(); i++) {
-
-        if (pre_scan[i] == -1) {
-          pre_scan[i] = NA_INTEGER;
-        }
-
-        if (std::isnan(pre_mz[i])) {
-          pre_mz[i] = NA_REAL;
-        }
-
-        if (std::isnan(pre_ce[i])) {
-          pre_ce[i] = NA_REAL;
-        }
-
-      }
-
-      headers["pre_scan"] = pre_scan;
-      headers["pre_mz"] = pre_mz;
-      headers["pre_ce"] = pre_ce;
-
-      headers.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-
-      list_out["run"] = headers;
+      list_out["run"] = xml_utils::spectraHeaders_to_list(spec_headers_cpp);
 
       Rcpp::DataFrame empty_df;
       empty_df.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");

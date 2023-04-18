@@ -16,15 +16,14 @@ namespace xml_utils {
   std::vector<std::string> mzml_get_compression(pugi::xml_node& node);
   std::string mzxml_get_compression(pugi::xml_node& node);
 
-  const std::string base64_chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    "abcdefghijklmnopqrstuvwxyz"
-    "0123456789+/";
-
-  bool is_base64(unsigned char c);
+  // const std::string base64_chars =
+  //   "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  //   "abcdefghijklmnopqrstuvwxyz"
+  //   "0123456789+/";
+  //
+  // bool is_base64(unsigned char c);
 
   std::string decode_base64(const std::string& encoded_string);
-
   std::string decompress_zlib(const std::string& compressed_string);
 
   Rcpp::NumericMatrix mzml_parse_binary_data_from_spectrum_node(
@@ -48,9 +47,8 @@ namespace xml_utils {
     Rcpp::IntegerVector& index
   );
 
-  struct runHeaders {
+  struct spectraHeaders {
     std::vector<int> index;
-    std::vector<int> id;
     std::vector<int> scan;
     std::vector<int> traces;
     std::vector<std::string> polarity;
@@ -68,22 +66,34 @@ namespace xml_utils {
     std::vector<double> pre_loweroffset;
     std::vector<double> pre_upperoffset;
     std::vector<double> pre_ce;
-  }; // runHeaders
+  }; // spectraHeaders
+
+  struct chromatogramsHeaders {
+    std::vector<int> index;
+    std::vector<std::string> id;
+    std::vector<int> traces;
+    std::vector<std::string> polarity;
+    std::vector<double> pre_mz;
+    std::vector<double> pre_ce;
+    std::vector<double> pro_mz;
+  }; // spectraHeaders
 
   struct runSummary {
-    double spectra_number;
-    std::vector<std::string> spectra_mode;
-    std::vector<int> spectra_levels;
+    int spectra_number;
+    Rcpp::CharacterVector polarity;
+    Rcpp::CharacterVector mode;
+    std::vector<int> levels;
     double mz_low;
     double mz_high;
     double rt_start;
     double rt_end;
-    std::vector<std::string> polarity;
     bool has_ion_mobility;
-    runHeaders headers;
+    Rcpp::List spectra;
+    int chromatograms_number;
+    Rcpp::List chromatograms;
   }; // runSummary
 
-  struct runHeadersOriginal {
+  struct spectraHeadersOriginal {
     std::string fileFormat;
     std::string run_id;
     std::string run_defaultInstrumentConfigurationRef;
@@ -117,7 +127,7 @@ namespace xml_utils {
     std::vector<double> ion_intensity;
     std::vector<double> activation_type;
     std::vector<double> activation_ce;
-  }; // runHeadersOriginal
+  }; // spectraHeadersOriginal
 
   std::list<std::vector<std::string>> mzml_instrument_parser(const pugi::xml_node& node_mzml);
   std::list<std::vector<std::string>> mzxml_instrument_parser(const pugi::xml_node& node_mzxml);
@@ -127,13 +137,17 @@ namespace xml_utils {
   std::list<std::vector<std::string>> mzxml_software_parser(const pugi::xml_node& node_mzxml);
   Rcpp::List parse_software(const pugi::xml_node& root);
 
-  void mzml_run_headers_parser(const pugi::xml_node& node_mzml, runHeaders& output);
-  void mzxml_run_headers_parser(const pugi::xml_node& node_mzxml, runHeaders& output);
-  runHeaders parse_run(const pugi::xml_node& root);
-  Rcpp::List runHeaders_to_list(const runHeaders& headers_cpp);
-  runHeaders list_to_runHeaders(const Rcpp::List& run);
+  void mzml_spectra_headers_parser(const pugi::xml_node& node_mzml, spectraHeaders& output);
+  void mzxml_spectra_headers_parser(const pugi::xml_node& node_mzxml, spectraHeaders& output);
+  spectraHeaders parse_spectra_headers(const pugi::xml_node& root);
+  Rcpp::List spectraHeaders_to_list(const spectraHeaders& headers_cpp);
+  spectraHeaders list_to_spectraHeaders(const Rcpp::List& run);
 
-  runSummary run_summary(runHeaders& headers);
+  void mzml_chromatograms_headers_parser(const pugi::xml_node& node_mzml, chromatogramsHeaders& output);
+  chromatogramsHeaders parse_chromatograms_headers(const pugi::xml_node& root);
+  Rcpp::List chromatogramsHeaders_to_list(const chromatogramsHeaders& headers_cpp);
+
+  runSummary run_summary(spectraHeaders& spec_headers, chromatogramsHeaders& chrom_headers);
 
 } // xml_utils
 

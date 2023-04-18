@@ -551,7 +551,6 @@ msData <- R6::R6Class("msData",
       if (is.null(analyses)) return(data.table())
       tic <- lapply(private$.analyses[analyses], function(x) {
         data.table(
-          "scan" = x$run$scan,
           "level" = x$run$level,
           "rt" = x$run$rt,
           "intensity" = x$run$tic_intensity
@@ -580,7 +579,6 @@ msData <- R6::R6Class("msData",
       if (is.null(analyses)) return(data.table())
       bpc <- lapply(private$.analyses[analyses], function(x) {
         data.table(
-          "scan" = x$run$scan,
           "level" = x$run$level,
           "rt" = x$run$rt,
           "mz" = x$run$bpc_mz,
@@ -629,7 +627,7 @@ msData <- R6::R6Class("msData",
       }
 
       if (!any(is.numeric(minIntensityMS2) | is.integer(minIntensityMS2))) {
-        minIntensityMS1 <- 0
+        minIntensityMS2 <- 0
       }
 
       targets <- make_ms_targets(mz, rt, ppm, sec, id)
@@ -642,26 +640,66 @@ msData <- R6::R6Class("msData",
         targets$rtmax[targets$rtmax == 0] <- max(self$get_rt_end(analyses))
       }
 
+      if (!2 %in% levels) allTraces <- TRUE
+
+      if (!is.logical(allTraces)) allTraces <- TRUE
+
+      if (!allTraces) {
+        if (!any(is.numeric(isolationWindow) | is.integer(isolationWindow))) {
+          isolationWindow <- 0
+        }
+        preMZr <- targets[, c("mzmin", "mzmax")]
+        preMZr$mzmin <- preMZr$mzmin - (isolationWindow / 2)
+        preMZr$mzmax <- preMZr$mzmax + (isolationWindow / 2)
+        if (nrow(preMZr) == 1 & TRUE %in% (targets$mzmax == 0)) {
+          preMZr <- NULL
+        }
+      } else {
+        preMZr <- NULL
+      }
+
+      cached_spectra <- FALSE
+
+      if (caches_data()) {
+        hash <- patRoon::makeHash(
+          analyses, levels, targets, allTraces,
+          isolationWindow, minIntensityMS1, minIntensityMS2
+        )
+
+        spec_list <- patRoon::loadCacheData("parsed_ms_spectra", hash)
+
+        if (!is.null(spec_list)) {
+          message("\U2139 Spectra loaded from cache!")
+          return(spec_list)
+        }
+
+      } else {
+        hash <- NULL
+        spec_list <- NULL
+      }
+
+      message("\U2699 Parsing spectra from ", length(analyses),  " MS file/s..." ,
+        appendLF = FALSE
+      )
+
+      if (!is.logical(runParallel)) runParallel <- FALSE
+
+      if (runParallel & length(files) > 1) {
+        workers <- parallel::detectCores() - 1
+        if (length(files) < workers) workers <- length(analyses)
+        par_type <- "PSOCK"
+        if (parallelly::supportsMulticore()) par_type <- "FORK"
+        cl <- parallel::makeCluster(workers, type = par_type)
+        doParallel::registerDoParallel(cl)
+      } else {
+        registerDoSEQ()
+      }
+
+      i <- NULL
+
       has_spectra <- self$has_loaded_spectra(analyses)
 
       if (all(has_spectra)) {
-        if (!2 %in% levels) allTraces <- TRUE
-
-        if (!is.logical(allTraces)) allTraces <- TRUE
-
-        if (!allTraces) {
-          if (!any(is.numeric(isolationWindow) | is.integer(isolationWindow))) {
-            isolationWindow <- 0
-          }
-          preMZr <- targets[, c("mzmin", "mzmax")]
-          preMZr$mzmin <- preMZr$mzmin - (isolationWindow / 2)
-          preMZr$mzmax <- preMZr$mzmax + (isolationWindow / 2)
-          if (nrow(preMZr) == 1 & TRUE %in% (targets$mzmax == 0)) {
-            preMZr <- NULL
-          }
-        } else {
-          preMZr <- NULL
-        }
 
         spec_list <- lapply(self$get_analyses(analyses),
           function(x, levels, targets, preMZr, minMS1, minMS2) {
@@ -684,29 +722,104 @@ msData <- R6::R6Class("msData",
                 temp <- trim_spectra_targets(temp, targets, preMZr)
               }
             }
-            temp <- temp[!(temp$intensity <= minMS1 & temp$level == 1), ]
-            temp <- temp[!(temp$intensity <= minMS2 & temp$level == 2), ]
-            temp
           },
           levels = levels,
           targets = targets,
-          preMZr = preMZr,
-          minMS1 = minIntensityMS1,
-          minMS2 = minIntensityMS2
+          preMZr = preMZr
         )
 
       } else {
-        files <- unname(self$get_files(analyses))
-        spec_list <- parse_ms_spectra(
-          files, levels, targets, allTraces, isolationWindow, runParallel,
-          minIntensityMS1, minIntensityMS2
-        )
+
+        spec_list <- foreach(i = self$get_analyses(analyses)) %dopar% {
+
+          run <- i$run
+
+          if (nrow(run) > 0) {
+
+            if (!is.null(levels)) run <- run[run$level %in% levels, ]
+
+            if (!is.null(targets)) {
+              if ("analysis" %in% colnames(targets)) {
+                tp_tar <- targets[targets$analysis %in% i$name, ]
+                if (nrow(tp_tar) > 0) {
+                  run <- run[trim_vector(run$rt, tp_tar$rtmin, tp_tar$rtmax), ]
+                } else {
+                  run <- data.frame()
+                }
+              } else {
+                run <- run[trim_vector(run$rt, targets$rtmin, targets$rtmax), ]
+              }
+            }
+
+            if (!is.null(preMZr) & !is.null(targets)) {
+              if ("analysis" %in% colnames(targets)) {
+                pre_tar <- preMZr[targets$analysis %in% i$name, ]
+                preMZ_check <- trim_vector(run$pre_mz, pre_tar$mzmin, pre_tar$mzmax)
+                run <- run[(preMZ_check %in% TRUE) | is.na(preMZ_check), ]
+              } else {
+                preMZ_check <- trim_vector(run$pre_mz, preMZr$mzmin, preMZr$mzmax)
+                run <- run[(preMZ_check %in% TRUE) | is.na(preMZ_check), ]
+              }
+            }
+
+            if (nrow(run) > 0) {
+
+              run <- rcpp_parse_msAnalysis_spectra(i, run$index)
+
+              if (!is.null(targets)) {
+                if ("analysis" %in% colnames(targets)) {
+                  tp_tar <- targets[targets$analysis %in% i$name, ]
+                  if (!is.null(preMZr)) {
+                    pre_tar <- preMZr[targets$analysis %in% i$name, ]
+                  } else {
+                    pre_tar <- NULL
+                  }
+                  if (nrow(tp_tar) > 0) {
+                    run <- trim_spectra_targets(run, tp_tar, pre_tar)
+                  } else {
+                    run <- data.frame()
+                  }
+                } else {
+                  run <- trim_spectra_targets(run, targets, preMZr)
+                }
+              }
+
+              run
+
+            } else {
+              data.frame()
+            }
+          } else {
+            data.frame()
+          }
+        }
+
+        if (runParallel) parallel::stopCluster(cl)
       }
 
       if (length(spec_list) == length(analyses)) {
+
+        spec_list <- lapply(spec_list, function(x, minMS1, minMS2) {
+          x <- x[!(x$intensity <= minMS1 & x$level == 1), ]
+          x <- x[!(x$intensity <= minMS2 & x$level == 2), ]
+          x
+        }, minMS1 = minIntensityMS1, minMS2 = minIntensityMS2)
+
         names(spec_list) <- analyses
+
         spec <- rbindlist(spec_list, idcol = "analysis", fill = TRUE)
+
+        message(" Done!")
+
+        if (!cached_spectra & !is.null(hash)) {
+          if (!is.null(spec)) {
+            message("\U1f5ab Parsed spectra cached!")
+            patRoon::saveCacheData("parsed_ms_spectra", spec_list, hash)
+          }
+        }
+
         spec
+
       } else {
         warning("Defined analyses not found!")
         data.table()
