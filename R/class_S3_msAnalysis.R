@@ -412,7 +412,9 @@ parse_msAnalysis <- function(files = NULL, runParallel = FALSE) {
 
     i <- NULL
 
-    analyses <- foreach(i = files) %dopar% {
+    vars <- c("rcpp_parse_msAnalysis")
+
+    analyses <- foreach(i = files, .packages = "streamFind", .export = vars) %dopar% {
       rcpp_parse_msAnalysis(i)
     }
 

@@ -66,7 +66,7 @@ test_that("getter for names and filePaths", {
     unname(ms$get_analysis_names()),
     gsub(".mzML|.mzXML", "", basename(files))
   )
-  expect_equal(unname(ms$get_file_paths()), files)
+  expect_equal(unname(ms$get_files()), files)
   expect_s3_class(ms$get_overview(), "data.frame")
 })
 

@@ -17,7 +17,7 @@
 
 
 // [[Rcpp::export]]
-Rcpp::List rcpp_parse_msAnalysis_spectra(Rcpp::List analysis, Rcpp::IntegerVector index = NA_INTEGER) {
+Rcpp::List rcpp_parse_msAnalysis_chromatograms(Rcpp::List analysis, Rcpp::IntegerVector index = NA_INTEGER) {
 
   Rcpp::DataFrame empty_df;
   empty_df.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
@@ -33,57 +33,50 @@ Rcpp::List rcpp_parse_msAnalysis_spectra(Rcpp::List analysis, Rcpp::IntegerVecto
   if (result) {
     pugi::xml_node root = doc.document_element();
 
-    Rcpp::List run = analysis["run"];
-    Rcpp::IntegerVector scan = run["scan"];
+    xml_utils::chromatogramsHeaders headers = xml_utils::parse_chromatograms_headers(root);
+    Rcpp::List run = xml_utils::chromatogramsHeaders_to_list(headers);
 
-    if (scan.size() == 0) {
-      xml_utils::spectraHeaders headers = xml_utils::parse_spectra_headers(root);
-      Rcpp::List run = xml_utils::spectraHeaders_to_list(headers);
-      Rcpp::IntegerVector scan = run["scan"];
-    }
+    if (headers.index.size() > 0) {
 
-    if (scan.size() > 0) {
-      const Rcpp::IntegerVector& level = run["level"];
-      const Rcpp::IntegerVector& pre_scan = run["pre_scan"];
+      const Rcpp::CharacterVector& id = run["id"];
+      const Rcpp::CharacterVector& polarity = run["polarity"];
       const Rcpp::NumericVector& pre_mz = run["pre_mz"];
       const Rcpp::NumericVector& pre_ce = run["pre_ce"];
-      const Rcpp::NumericVector& rt = run["rt"];
+      const Rcpp::NumericVector& pro_mz = run["pro_mz"];
 
       Rcpp::ListOf<Rcpp::NumericMatrix> bins;
 
       // returns all spectra when index is NA
       if (Rcpp::IntegerVector::is_na(index[0])) {
-
         index = run["index"];
-        bins = xml_utils::parse_spectra(root);
+        bins = xml_utils::parse_chromatograms(root);
 
       // return only selected scans, by adapting the index vector
       } else {
-        bins = xml_utils::parse_partial_spectra(root, index);
+        bins = xml_utils::parse_partial_chromatograms(root, index);
       }
 
-      int number_spectra = bins.size();
+      int number_chroms = bins.size();
 
-      if (number_spectra > 0) {
+      if (number_chroms > 0) {
 
         int n_cols_bin = bins[0].ncol();
 
-        int n_cols = n_cols_bin + 7;
+        int n_cols = n_cols_bin + 6;
 
         int n_rows = 0;
-        for (int i = 0; i < number_spectra; i++) {
+        for (int i = 0; i < number_chroms; i++) {
           n_rows += bins[i].nrow();
         }
 
         Rcpp::NumericMatrix out_mat(n_rows, n_cols_bin);
 
         Rcpp::IntegerVector index_out(n_rows);
-        Rcpp::IntegerVector scan_out(n_rows);
-        Rcpp::IntegerVector level_out(n_rows);
-        Rcpp::IntegerVector pre_scan_out(n_rows);
+        Rcpp::CharacterVector id_out(n_rows);
+        Rcpp::CharacterVector polarity_out(n_rows);
         Rcpp::NumericVector pre_mz_out(n_rows);
         Rcpp::NumericVector pre_ce_out(n_rows);
-        Rcpp::NumericVector rt_out(n_rows);
+        Rcpp::NumericVector pro_mz_out(n_rows);
 
         int b = 0;
         int rowOffset = 0;
@@ -93,6 +86,7 @@ Rcpp::List rcpp_parse_msAnalysis_spectra(Rcpp::List analysis, Rcpp::IntegerVecto
           Rcpp::NumericMatrix bin = bins[b];
 
           int bin_rows = bin.nrow();
+          int bin_cols = bin.ncol();
 
           if (bin_rows > 0) {
             for (int r = 0; r < bin_rows; r++) {
@@ -100,14 +94,14 @@ Rcpp::List rcpp_parse_msAnalysis_spectra(Rcpp::List analysis, Rcpp::IntegerVecto
               int offset = rowOffset + r;
 
               index_out[offset] = i;
-              scan_out[offset] = scan[i];
-              level_out[offset] = level[i];
-              pre_scan_out[offset] = pre_scan[i];
+              id_out(offset) = id(i);
+              polarity_out(offset) = polarity(i);
               pre_ce_out[offset] = pre_ce[i];
               pre_mz_out[offset] = pre_mz[i];
-              rt_out[offset] = rt[i];
+              pro_mz_out[offset] = pro_mz[i];
 
-              for (int j = 0; j < n_cols_bin; j++) {
+
+              for (int j = 0; j < bin_cols; j++) {
                 out_mat(offset, j) = bin(r, j);
               }
             }
@@ -120,18 +114,23 @@ Rcpp::List rcpp_parse_msAnalysis_spectra(Rcpp::List analysis, Rcpp::IntegerVecto
         Rcpp::List output(n_cols);
 
         output[0] = index_out;
-        output[1] = scan_out;
-        output[2] = level_out;
-        output[3] = pre_scan_out;
-        output[4] = pre_ce_out;
-        output[5] = pre_mz_out;
-        output[6] = rt_out;
+        output[1] = id_out;
+        output[2] = polarity_out;
+        output[3] = pre_ce_out;
+        output[4] = pre_mz_out;
+        output[5] = pro_mz_out;
 
         for (int i = 0; i < n_cols_bin; ++i) {
-          output[i + 7] = out_mat(Rcpp::_, i);
+          output[i + 6] = out_mat(Rcpp::_, i);
         }
 
-        const Rcpp::CharacterVector cols = {"index", "scan", "level", "pre_scan", "pre_ce", "pre_mz", "rt", "mz", "intensity"};
+        Rcpp::CharacterVector cols = {"index", "id", "polarity", "pre_ce", "pre_mz", "pro_mz"};
+        Rcpp::CharacterVector cols_bins = Rcpp::colnames(bins[0]);
+
+        for (const auto& el : cols_bins) {
+          cols.push_back(el);
+        }
+
         output.attr("names") = cols;
 
 
@@ -140,10 +139,10 @@ Rcpp::List rcpp_parse_msAnalysis_spectra(Rcpp::List analysis, Rcpp::IntegerVecto
         return output;
 
       } else {
-        std::cout << "\u2717 Requested spectra not found! " << std::endl;
+        std::cout << "\u2717 Requested chromatograms not found! " << std::endl;
       }
     } else {
-      std::cout << "\u2717 File does not have spectra! " << std::endl;
+      std::cout << "\u2717 File does not have chromatograms! " << std::endl;
     }
   } else {
     std::cout << "\u2717 XML file could not be opened! " << result.description() << std::endl;

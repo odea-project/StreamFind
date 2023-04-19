@@ -16,6 +16,10 @@ namespace xml_utils {
   std::vector<std::string> mzml_get_compression(pugi::xml_node& node);
   std::string mzxml_get_compression(pugi::xml_node& node);
 
+  Rcpp::CharacterVector mzml_get_binary_type(pugi::xml_node& node);
+
+  Rcpp::CharacterVector mzml_get_binary_names(pugi::xml_node& node);
+
   // const std::string base64_chars =
   //   "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   //   "abcdefghijklmnopqrstuvwxyz"
@@ -43,6 +47,13 @@ namespace xml_utils {
   Rcpp::List parse_spectra(const pugi::xml_node& root);
 
   Rcpp::List parse_partial_spectra(
+    const pugi::xml_node& root,
+    Rcpp::IntegerVector& index
+  );
+
+  Rcpp::List parse_chromatograms(const pugi::xml_node& root);
+
+  Rcpp::List parse_partial_chromatograms(
     const pugi::xml_node& root,
     Rcpp::IntegerVector& index
   );

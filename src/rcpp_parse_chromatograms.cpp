@@ -17,7 +17,7 @@
 
 
 // [[Rcpp::export]]
-Rcpp::List rcpp_parse_spectra(std::string file_path, Rcpp::IntegerVector index = NA_INTEGER) {
+Rcpp::List rcpp_parse_chromatograms(std::string file_path, Rcpp::IntegerVector index = NA_INTEGER) {
 
   Rcpp::List list_output;
 
@@ -31,10 +31,10 @@ Rcpp::List rcpp_parse_spectra(std::string file_path, Rcpp::IntegerVector index =
     pugi::xml_node root = doc.document_element();
 
     if (Rcpp::IntegerVector::is_na(index[0])) {
-      return xml_utils::parse_spectra(root);
+      return xml_utils::parse_chromatograms(root);
 
     } else {
-      return xml_utils::parse_partial_spectra(root, index);
+      return xml_utils::parse_partial_chromatograms(root, index);
     }
 
   } else {

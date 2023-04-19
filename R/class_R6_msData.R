@@ -684,7 +684,7 @@ msData <- R6::R6Class("msData",
 
       if (!is.logical(runParallel)) runParallel <- FALSE
 
-      if (runParallel & length(files) > 1) {
+      if (runParallel & length(analyses) > 1) {
         workers <- parallel::detectCores() - 1
         if (length(files) < workers) workers <- length(analyses)
         par_type <- "PSOCK"
@@ -730,7 +730,13 @@ msData <- R6::R6Class("msData",
 
       } else {
 
-        spec_list <- foreach(i = self$get_analyses(analyses)) %dopar% {
+        vars <- c(
+          "rcpp_parse_msAnalysis_spectra",
+          "trim_spectra_targets"
+        )
+
+        spec_list <- foreach(i = self$get_analyses(analyses),
+                             .packages = "streamFind", .export = vars) %dopar% {
 
           run <- i$run
 
@@ -739,6 +745,9 @@ msData <- R6::R6Class("msData",
             if (!is.null(levels)) run <- run[run$level %in% levels, ]
 
             if (!is.null(targets)) {
+
+              trim_vector <- function(v, a, b) rowSums(mapply(function(a, b) v >= a & v <= b, a = a, b = b)) > 0
+
               if ("analysis" %in% colnames(targets)) {
                 tp_tar <- targets[targets$analysis %in% i$name, ]
                 if (nrow(tp_tar) > 0) {
@@ -835,14 +844,58 @@ msData <- R6::R6Class("msData",
     #'
     #' @return A data.frame with spectra.
     #'
-    get_chromatograms = function(analyses = NULL, minIntensity = 0,
-                                 runParallel = FALSE) {
+    get_chromatograms = function(analyses = NULL, index = NA_integer_,
+                                 minIntensity = 0, runParallel = FALSE) {
       analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(data.table())
 
-      files <- unname(self$get_files(analyses))
+      index <- as.integer(index)
 
-      chrom_list <- parse_ms_chromatograms(files, runParallel)
+      if (!is.integer(index)) {
+        warning("Index must be an integer vector!")
+        return(data.table())
+      }
+
+      has_chroms <- self$has_loaded_chromatograms(analyses)
+
+      if (all(has_chroms)) {
+        chrom_list <- lapply(self$get_analyses(analyses), function(x, index) {
+          chroms <- x$chromatograms
+          if (!is.na(index[1])) {
+            which_chroms <- chroms$index %in% index
+            chroms <- chroms[which_chroms, ]
+          }
+          chroms
+        }, index = index)
+
+      } else {
+
+        message("\U2699 Parsing chromatograms from ", length(analyses),  " MS file/s..." ,
+          appendLF = FALSE
+        )
+
+        if (!is.logical(runParallel)) runParallel <- FALSE
+
+        if (runParallel & length(analyses) > 1) {
+          workers <- parallel::detectCores() - 1
+          if (length(files) < workers) workers <- length(files)
+          par_type <- "PSOCK"
+          if (parallelly::supportsMulticore()) par_type <- "FORK"
+          cl <- parallel::makeCluster(workers, type = par_type)
+          doParallel::registerDoParallel(cl)
+        } else {
+          registerDoSEQ()
+        }
+
+        i = NULL
+
+        chrom_list <- foreach(i = self$get_analyses(analyses)) %dopar% {
+          chroms <- rcpp_parse_msAnalysis_chromatograms(i, index)
+          chroms
+        }
+
+        message(" Done!")
+      }
 
       if (length(chrom_list) == length(analyses)) {
         names(chrom_list) <- analyses

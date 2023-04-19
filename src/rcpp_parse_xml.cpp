@@ -17,72 +17,23 @@
 #include <iterator>
 
 // [[Rcpp::export]]
-Rcpp::List rcpp_parse_xml(std::string file_path)
-{
+Rcpp::List rcpp_parse_xml(Rcpp::NumericVector input) {
 
   Rcpp::List list_out;
 
-  const char * path = file_path.c_str();
+  size_t n = input.size();
 
-  pugi::xml_document doc;
+  Rcpp::RawVector result(n * sizeof(double));
 
-  pugi::xml_parse_result result = doc.load_file(path);
+  double* values = reinterpret_cast<double*>(result.begin());
 
-  if (result) {
-
-    pugi::xml_node root = doc.document_element();
-
-    std::string root_name = root.name();
-
-    pugi::xml_node node_in;
-
-    const Rcpp::CharacterVector cols = {"mz","intenisty"};
-
-    if (strcmp("indexedmzML", root_name.c_str()) == 0) {
-      node_in = root.child("mzML");
-
-      std::string search_run = "//chromatogramList";
-      pugi::xpath_node xp_spec_list = node_in.select_node(search_run.c_str());
-      pugi::xml_node spec_list = xp_spec_list.node();
-
-      if (spec_list != NULL) {
-
-        pugi::xml_node first_spec = spec_list.child("chromatogram");
-
-        Rcpp::Rcout << first_spec.name() << std::endl;
-
-        const std::vector<int> precision = xml_utils::mzml_get_precision(first_spec);
-
-        Rcpp::Rcout << precision.size() << std::endl;
-
-        Rcpp::Rcout << precision[0] << " " << precision[1] << std::endl;
-
-        const std::vector<std::string> compression = xml_utils::mzml_get_compression(first_spec);
-
-        Rcpp::Rcout << compression.size() << std::endl;
-
-        // std::vector<pugi::xml_node> spectra;
-        //
-        // for (pugi::xml_node child = spec_list.first_child(); child; child = child.next_sibling()) {
-        //   spectra.push_back(child);
-        // }
-        //
-        // int number_spectra = spectra.size();
-        //
-        // Rcpp::List list_out2(number_spectra);
-        //
-        // for (int i = 0; i < number_spectra; i++) {
-        //   list_out2[i] = xml_utils::mzml_parse_binary_data_from_spectrum_node(spectra[i], precision, compression, cols);
-        // }
-        //
-        // return list_out2;
-
-      }
-
-    } else if (strcmp("mzXML", root_name.c_str()) == 0) {
-
-    }
+  for (size_t i = 0; i < n; ++i) {
+    uint64_t little_endian_value;
+    std::memcpy(&little_endian_value, &input[i], sizeof(double));
+    std::memcpy(values + i, &little_endian_value, sizeof(uint64_t));
   }
+
+  list_out["RawVector"] = result;
 
   return list_out;
 }
@@ -207,6 +158,61 @@ Rcpp::List rcpp_parse_xml(std::string file_path)
 //
 // }
 
+
+// const char * path = file_path.c_str();
+//
+// pugi::xml_document doc;
+//
+// pugi::xml_parse_result result = doc.load_file(path);
+//
+// if (result) {
+//
+//   pugi::xml_node root = doc.document_element();
+//
+//   std::string root_name = root.name();
+//
+//   pugi::xml_node node_in;
+//
+//   const Rcpp::CharacterVector cols = {"mz","intenisty"};
+//
+//   if (strcmp("indexedmzML", root_name.c_str()) == 0) {
+//     node_in = root.child("mzML");
+//
+//     std::string search_run = "//chromatogramList";
+//     pugi::xpath_node xp_spec_list = node_in.select_node(search_run.c_str());
+//     pugi::xml_node chrom_list = xp_spec_list.node();
+//
+//     if (chrom_list != NULL) {
+//
+//       pugi::xml_node first_chrom = chrom_list.child("chromatogram");
+//
+//       const std::vector<int> precision = xml_utils::mzml_get_precision(first_chrom);
+//
+//       const std::vector<std::string> compression = xml_utils::mzml_get_compression(first_chrom);
+//
+//       const Rcpp::CharacterVector type = xml_utils::mzml_get_binary_type(first_chrom);
+//
+//       std::vector<pugi::xml_node> chromatograms;
+//
+//       for (pugi::xml_node child = chrom_list.first_child(); child; child = child.next_sibling()) {
+//         chromatograms.push_back(child);
+//       }
+//
+//       int number_chroms = chromatograms.size();
+//       //
+//       Rcpp::List list_out2(number_chroms);
+//       //
+//       for (int i = 0; i < number_chroms; i++) {
+//         list_out2[i] = xml_utils::mzml_parse_binary_data_from_spectrum_node(chromatograms[i], precision, compression, cols);
+//       }
+//       //
+//       return list_out2;
+//
+//     }
+//
+//   } else if (strcmp("mzXML", root_name.c_str()) == 0) {
+//
+//   }
 
 
 // if (result) {

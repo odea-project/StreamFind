@@ -124,7 +124,7 @@ settingsLoadGroupsMS2 <- list(
   )
 )
 
-# code -------------------------------------------------------------------------
+# r6 test ----------------------------------------------------------------------
 
 patRoon::clearCache("parsed_ms_analyses")
 patRoon::clearCache("parsed_ms_spectra")
@@ -146,7 +146,29 @@ ms <- msData$new(files = all_files[10:21],
   )
 )
 
-ms$plot_ms2(analyses = 4, mz = targets, minIntensity = 500)
+
+
+
+
+
+
+# temp -------------------------------------------------------------------------
+
+
+input <- c(1.1, 2.1, 3.3, 1000)
+
+
+rcpp_parse_xml(input)
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -219,11 +241,37 @@ is.data.table(rcpp_parse_chromatograms_headers(all_files[1])) # mzML MS/MS empty
 is.data.table(rcpp_parse_chromatograms_headers(all_files[28])) # mzML SRM
 is.data.table(rcpp_parse_chromatograms_headers(all_files[4])) # mzXML empty for XML without chromatograms
 
+ms_chrom <- msData$new(files = all_files[29])
 
-rcpp_parse_xml(all_files[28])
+unique(ms_chrom$get_chromatograms(index = c(1, 2))$index)
+unique(ms_chrom$get_chromatograms()$index)
 
+ms_chrom$has_loaded_chromatograms()
+ms_chrom$load_chromatograms()
 
+all_files <- streamFindData::msFilePaths()
 
+rcpp_parse_spectra(all_files[1], index = c(1, 2))
+rcpp_parse_spectra(all_files[1], index = c(2, 1))
+
+length(rcpp_parse_spectra(all_files[1]))
+
+ana <- rcpp_parse_msAnalysis(all_files[1])
+rcpp_parse_msAnalysis_spectra(ana, index = c(1, 2))
+rcpp_parse_msAnalysis_spectra(ana, index = c(2, 1))
+
+nrow(rcpp_parse_msAnalysis_spectra(ana))
+
+rcpp_parse_chromatograms_headers(all_files[29])
+
+View(rcpp_parse_chromatograms(all_files[29], index = c(1, 2)))
+View(rcpp_parse_chromatograms(all_files[29], index = c(2, 1)))
+
+ana <- rcpp_parse_msAnalysis(all_files[29])
+rcpp_parse_msAnalysis_chromatograms(ana, index = c(1, 2))
+rcpp_parse_msAnalysis_chromatograms(ana, index = c(2, 1))
+
+nrow(rcpp_parse_msAnalysis_chromatograms(ana))
 
 
 

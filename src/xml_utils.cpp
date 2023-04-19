@@ -720,10 +720,10 @@ void xml_utils::mzml_chromatograms_headers_parser(
 
         if (product != NULL) {
 
-          pugi::xml_node isolation = precursor.child("isolationWindow");
+          pugi::xml_node isolation = product.child("isolationWindow");
 
-          pugi::xml_node pre_mz_node = isolation.find_child_by_attribute("cvParam", "name", "isolation window target m/z");
-          output.pro_mz[i] = pre_mz_node.attribute("value").as_double();
+          pugi::xml_node pro_mz_node = isolation.find_child_by_attribute("cvParam", "name", "isolation window target m/z");
+          output.pro_mz[i] = pro_mz_node.attribute("value").as_double();
           if (std::isnan(output.pro_mz[i])) output.pro_mz[i] = NA_REAL;
 
         } else {
@@ -774,8 +774,8 @@ Rcpp::List xml_utils::chromatogramsHeaders_to_list(const xml_utils::chromatogram
   headers["id"] = headers_cpp.id;
   headers["traces"] = headers_cpp.traces;
   headers["polarity"] = polarity;
-  headers["pre_mz"] = headers_cpp.pre_mz;
   headers["pre_ce"] = headers_cpp.pre_ce;
+  headers["pre_mz"] = headers_cpp.pre_mz;
   headers["pro_mz"] = headers_cpp.pro_mz;
 
   headers.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
@@ -1134,6 +1134,75 @@ std::string xml_utils::mzxml_get_compression(pugi::xml_node& node) {
 
 
 
+Rcpp::CharacterVector xml_utils::mzml_get_binary_type(pugi::xml_node& node) {
+  pugi::xml_node node_binary_list = node.child("binaryDataArrayList");
+
+  Rcpp::CharacterVector type;
+
+  for (pugi::xml_node bin: node_binary_list.children("binaryDataArray")) {
+    pugi::xml_node node_float = bin.find_child_by_attribute("cvParam", "accession", "MS:1000523");
+    pugi::xml_node node_integer = bin.find_child_by_attribute("cvParam", "accession", "MS:1000522");
+
+    if (node_float != NULL) {
+      type.push_back("double");
+
+    } else if (node_integer != NULL) {
+      type.push_back("integer");
+
+    } else {
+      type.push_back("double");
+    }
+  }
+
+  return type;
+}
+
+
+
+
+Rcpp::CharacterVector xml_utils::mzml_get_binary_names(pugi::xml_node& node) {
+
+  pugi::xml_node node_binary_list = node.child("binaryDataArrayList");
+
+  Rcpp::CharacterVector bin_name_out;
+
+  int counter = 0;
+
+  for (pugi::xml_node bin: node_binary_list.children("binaryDataArray")) {
+
+    pugi::xml_node node_mz = bin.find_child_by_attribute("cvParam", "accession", "MS:1000514");
+    pugi::xml_node node_int = bin.find_child_by_attribute("cvParam", "accession", "MS:1000515");
+    pugi::xml_node node_rt = bin.find_child_by_attribute("cvParam", "accession", "MS:1000595");
+    pugi::xml_node node_other = bin.find_child_by_attribute("cvParam", "accession", "MS:1000786");
+
+    if (node_mz != NULL) {
+      bin_name_out.push_back("mz");
+
+    } else if (node_int != NULL) {
+      bin_name_out.push_back("intensity");
+
+    } else if (node_rt != NULL) {
+      bin_name_out.push_back("rt");
+
+    } else if (node_other != NULL) {
+      std::string name = node_other.attribute("value").as_string();
+      name.erase(std::remove(name.begin(), name.end(), ' '), name.end());
+      bin_name_out.push_back(name);
+
+    } else {
+      std::string name = "val_" + std::to_string(counter);
+      bin_name_out.push_back(name);
+    }
+
+    counter++;
+  }
+
+  return bin_name_out;
+}
+
+
+
+
 Rcpp::NumericMatrix xml_utils::mzml_parse_binary_data_from_spectrum_node(
   const pugi::xml_node& node,
   const std::vector<int>& precision,
@@ -1147,7 +1216,7 @@ Rcpp::NumericMatrix xml_utils::mzml_parse_binary_data_from_spectrum_node(
 
   int number_bins = node_binary_list.attribute("count").as_int();
 
-  Rcpp::NumericMatrix output(number_traces, number_bins);
+  Rcpp::NumericMatrix output(number_traces, number_bins); //number_bins
 
   if (number_traces == 0) return  output;
 
@@ -1156,6 +1225,10 @@ Rcpp::NumericMatrix xml_utils::mzml_parse_binary_data_from_spectrum_node(
   for (auto it2 = node_binary_list.children("binaryDataArray").begin(); it2 != node_binary_list.children("binaryDataArray").end(); ++it2) {
 
     const pugi::xml_node& bin = *it2;
+
+    if (counter > cols.size()) {
+      break;
+    }
 
     pugi::xml_node node_binary = bin.child("binary");
     const char* encoded_string = node_binary.child_value();
@@ -1180,12 +1253,23 @@ Rcpp::NumericMatrix xml_utils::mzml_parse_binary_data_from_spectrum_node(
       output(i, counter) = reinterpret_cast<double&>(byteVec[i * precision[counter]]);
     }
 
+    if (cols[counter] == "rt") {
+      pugi::xml_node node_unit = bin.find_child_by_attribute("cvParam", "unitCvRef", "UO");
+      std::string unit = node_unit.attribute("unitName").as_string();
+
+      if (unit == "minute") {
+        output(Rcpp::_, counter) = output(Rcpp::_, counter) * 60;
+      }
+    }
+
     // std::cout << "the n rows: " << output.nrow() << " the n cols: " << output.cols() << " " << output(0, 0) <<  std::endl;
 
     counter++;
   }
 
-  Rcpp::colnames(output) = cols;
+  Rcpp::CharacterVector f_cols = Rcpp::head(cols, number_bins);
+
+  Rcpp::colnames(output) = f_cols;
 
   return output;
 }
@@ -1222,15 +1306,24 @@ Rcpp::NumericMatrix xml_utils::mzxml_parse_binary_data_from_spectrum_node(
     size_t precision_t = static_cast<size_t>(precision);
 
     for (size_t i = 0; i < byte_count; i += precision_t) {
+
       uint64_t value = 0;
+
       for (size_t j = 0; j < precision_t; ++j) {
         value = (value << precision) | bytes[i + j];
       }
-      double* double_ptr = reinterpret_cast<double*>(&value);
-      double big_endian_value = *double_ptr;
+
       uint64_t little_endian_value;
-      std::memcpy(&little_endian_value, &big_endian_value, sizeof(little_endian_value));
-      result.push_back(*reinterpret_cast<double*>(&little_endian_value));
+      std::memcpy(&little_endian_value, &value, sizeof(little_endian_value));
+      double double_value;
+      std::memcpy(&double_value, &little_endian_value, sizeof(double_value));
+      result.push_back(double_value);
+
+      // double* double_ptr = reinterpret_cast<double*>(&value);
+      // double big_endian_value = *double_ptr;
+      // uint64_t little_endian_value;
+      // std::memcpy(&little_endian_value, &big_endian_value, sizeof(little_endian_value));
+      // result.push_back(*reinterpret_cast<double*>(&little_endian_value));
     }
 
   } else {
@@ -1265,8 +1358,6 @@ Rcpp::NumericMatrix xml_utils::mzxml_parse_binary_data_from_spectrum_node(
 
 Rcpp::List xml_utils::parse_spectra(const pugi::xml_node& root) {
 
-  const Rcpp::CharacterVector cols = {"mz","intenisty"};
-
   const char* root_name = root.name();
 
   if (strcmp("indexedmzML", root_name) == 0) {
@@ -1276,6 +1367,7 @@ Rcpp::List xml_utils::parse_spectra(const pugi::xml_node& root) {
     pugi::xml_node first_spec = node.child("spectrum");
     const std::vector<int> precision = xml_utils::mzml_get_precision(first_spec);
     const std::vector<std::string> compression = xml_utils::mzml_get_compression(first_spec);
+    const Rcpp::CharacterVector cols = xml_utils::mzml_get_binary_names(first_spec);
 
     std::vector<pugi::xml_node> spectra;
 
@@ -1298,6 +1390,8 @@ Rcpp::List xml_utils::parse_spectra(const pugi::xml_node& root) {
     return list_output;
 
   } else if (strcmp("mzXML", root_name) == 0) {
+
+    const Rcpp::CharacterVector cols = {"mz","intenisty"};
 
     pugi::xml_node node = root.child("msRun");
 
@@ -1338,8 +1432,6 @@ Rcpp::List xml_utils::parse_spectra(const pugi::xml_node& root) {
 Rcpp::List xml_utils::parse_partial_spectra(
     const pugi::xml_node& root, Rcpp::IntegerVector& index) {
 
-  const Rcpp::CharacterVector cols = {"mz","intenisty"};
-
   const char* root_name = root.name();
 
   if (strcmp("indexedmzML", root_name) == 0) {
@@ -1349,6 +1441,7 @@ Rcpp::List xml_utils::parse_partial_spectra(
     pugi::xml_node first_spec = node.child("spectrum");
     const std::vector<int> precision = xml_utils::mzml_get_precision(first_spec);
     const std::vector<std::string> compression = xml_utils::mzml_get_compression(first_spec);
+    const Rcpp::CharacterVector cols = xml_utils::mzml_get_binary_names(first_spec);
 
     std::vector<pugi::xml_node> spectra;
 
@@ -1368,21 +1461,28 @@ Rcpp::List xml_utils::parse_partial_spectra(
 
     int number_index = index_unique.size();
 
+    // updates index by reference with index_unique
+    index = Rcpp::wrap(index_unique);
+
+    std::sort(index.begin(), index.end());
+
     Rcpp::List list_output(number_index);
 
     if (number_index > 0) {
 
       int counter = 0;
 
-      for (int i : index_unique) {
+      for (int i : index) {
         list_output[counter] = xml_utils::mzml_parse_binary_data_from_spectrum_node(spectra[i], precision, compression, cols);
         counter++;
       }
+
+      return list_output;
     }
 
-    return list_output;
-
   } else if (strcmp("mzXML", root_name) == 0) {
+
+    const Rcpp::CharacterVector cols = {"mz","intenisty"};
 
     pugi::xml_node node = root.child("msRun");
 
@@ -1408,19 +1508,129 @@ Rcpp::List xml_utils::parse_partial_spectra(
 
     int number_index = index_unique.size();
 
+    // updates index by reference with index_unique
+    index = Rcpp::wrap(index_unique);
+
+    std::sort(index.begin(), index.end());
+
     Rcpp::List list_output(number_index);
 
     if (number_index > 0) {
-
       int counter = 0;
-
-      for (int i : index_unique) {
+      for (int i : index) {
         list_output[counter] = xml_utils::mzxml_parse_binary_data_from_spectrum_node(spectra[i], precision, compression, cols);
         counter++;
       }
 
       return list_output;
     }
+
+  } else {
+    std::cout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
+  }
+
+  Rcpp::List list_output;
+  return list_output;
+}
+
+
+
+
+Rcpp::List xml_utils::parse_chromatograms(const pugi::xml_node& root) {
+
+  const char* root_name = root.name();
+
+  if (strcmp("indexedmzML", root_name) == 0) {
+
+    pugi::xml_node node = root.child("mzML").child("run").child("chromatogramList");
+
+    pugi::xml_node first_chrom = node.child("chromatogram");
+    const std::vector<int> precision = xml_utils::mzml_get_precision(first_chrom);
+    const std::vector<std::string> compression = xml_utils::mzml_get_compression(first_chrom);
+    const Rcpp::CharacterVector cols = xml_utils::mzml_get_binary_names(first_chrom);
+
+    std::vector<pugi::xml_node> chromatograms;
+
+    for (pugi::xml_node child = node.first_child(); child; child = child.next_sibling()) {
+      chromatograms.push_back(child);
+    }
+
+    int number_chromatograms = chromatograms.size();
+
+    Rcpp::List list_output(number_chromatograms);
+
+    if (number_chromatograms > 0) {
+      for (int i = 0; i < number_chromatograms; i++) {
+        list_output[i] = xml_utils::mzml_parse_binary_data_from_spectrum_node(chromatograms[i], precision, compression, cols);
+      }
+
+      return list_output;
+    }
+
+  } else if (strcmp("mzXML", root_name) == 0) {
+    std::cout << "\u2717 Format mzXML does not hold chromatograms!" << std::endl;
+
+  } else {
+    std::cout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
+  }
+
+  Rcpp::List list_output;
+  return list_output;
+}
+
+
+
+
+Rcpp::List xml_utils::parse_partial_chromatograms(
+    const pugi::xml_node& root, Rcpp::IntegerVector& index) {
+
+  const char* root_name = root.name();
+
+  if (strcmp("indexedmzML", root_name) == 0) {
+
+    pugi::xml_node node = root.child("mzML").child("run").child("chromatogramList");
+
+    pugi::xml_node first_chrom = node.child("chromatogram");
+    const std::vector<int> precision = xml_utils::mzml_get_precision(first_chrom);
+    const std::vector<std::string> compression = xml_utils::mzml_get_compression(first_chrom);
+    const Rcpp::CharacterVector cols = xml_utils::mzml_get_binary_names(first_chrom);
+
+    std::vector<pugi::xml_node> chromatograms;
+
+    for (pugi::xml_node child = node.first_child(); child; child = child.next_sibling()) {
+      chromatograms.push_back(child);
+    }
+
+    int number_chromatograms = chromatograms.size();
+
+    // remove any larger than the number_spectra
+    Rcpp::LogicalVector overhead = index <= number_chromatograms;
+    index = index[overhead];
+
+    // remove duplicated indexes
+    std::set<int> index_set(index.begin(), index.end());
+    std::vector<int> index_unique(index_set.begin(), index_set.end());
+    int number_index = index_unique.size();
+
+    // updates index by reference with index_unique
+    index = Rcpp::wrap(index_unique);
+
+    std::sort(index.begin(), index.end());
+
+    Rcpp::List list_output(number_index);
+
+    if (number_index > 0) {
+      int counter = 0;
+      for (int i : index) {
+        list_output[counter] = xml_utils::mzml_parse_binary_data_from_spectrum_node(chromatograms[i], precision, compression, cols);
+        counter++;
+      }
+
+      return list_output;
+    }
+
+  } else if (strcmp("mzXML", root_name) == 0) {
+    std::cout << "\u2717 Format mzXML does not hold chromatograms!" << std::endl;
 
   } else {
     std::cout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
