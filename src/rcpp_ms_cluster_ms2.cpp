@@ -21,7 +21,7 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
   StringVector analysis;
   StringVector id;
   NumericVector rt;
-  NumericVector preMZ;
+  NumericVector pre_mz;
   NumericVector mz;
   NumericVector intensity;
 
@@ -61,7 +61,7 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
     analysis = ms2["analysis"];
     id = ms2["id"];
     rt = ms2["rt"];
-    preMZ= ms2["preMZ"];
+    pre_mz = ms2["pre_mz"];
     mz = ms2["mz"];
     intensity = ms2["intensity"];
 
@@ -75,7 +75,7 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
     id = id[which_idx];
     id = unique(id);
     rt = rt[which_idx];
-    preMZ = preMZ[which_idx];
+    pre_mz = pre_mz[which_idx];
     mz = mz[which_idx];
     intensity = intensity[which_idx];
 
@@ -85,7 +85,7 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
       std::sort(idx.begin(), idx.end(), [&](int i, int j){return mz[i] < mz[j];});
 
       rt = rt[idx];
-      preMZ = preMZ[idx];
+      pre_mz = pre_mz[idx];
       mz = mz[idx];
       intensity = intensity[idx];
 
@@ -172,7 +172,7 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
         }
       }
 
-      preMZ_mean = sum(preMZ) / preMZ.size();
+      preMZ_mean = sum(pre_mz) / pre_mz.size();
       rt_mean = sum(rt) / rt.size();
 
       isPre = rep(false, new_mz.size());
@@ -186,7 +186,7 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
       ms2_out[i] = DataFrame::create(
         Named("analysis") = analysis,
         Named("id") = id,
-        Named("preMZ") = preMZ_mean,
+        Named("pre_mz") = preMZ_mean,
         Named("rt") = rt_mean,
         Named("mz") = new_mz,
         Named("intensity") = new_intensity,

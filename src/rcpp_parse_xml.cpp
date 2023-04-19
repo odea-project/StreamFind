@@ -41,66 +41,46 @@ Rcpp::List rcpp_parse_xml(std::string file_path)
     if (strcmp("indexedmzML", root_name.c_str()) == 0) {
       node_in = root.child("mzML");
 
-      std::string search_run = "//spectrumList";
+      std::string search_run = "//chromatogramList";
       pugi::xpath_node xp_spec_list = node_in.select_node(search_run.c_str());
       pugi::xml_node spec_list = xp_spec_list.node();
 
       if (spec_list != NULL) {
 
-        pugi::xml_node first_spec = spec_list.child("spectrum");
+        pugi::xml_node first_spec = spec_list.child("chromatogram");
+
+        Rcpp::Rcout << first_spec.name() << std::endl;
 
         const std::vector<int> precision = xml_utils::mzml_get_precision(first_spec);
 
+        Rcpp::Rcout << precision.size() << std::endl;
+
+        Rcpp::Rcout << precision[0] << " " << precision[1] << std::endl;
+
         const std::vector<std::string> compression = xml_utils::mzml_get_compression(first_spec);
 
-        std::vector<pugi::xml_node> spectra;
+        Rcpp::Rcout << compression.size() << std::endl;
 
-        for (pugi::xml_node child = spec_list.first_child(); child; child = child.next_sibling()) {
-          spectra.push_back(child);
-        }
-
-        int number_spectra = spectra.size();
-
-        Rcpp::List list_out2(number_spectra);
-
-        for (int i = 0; i < number_spectra; i++) {
-          list_out2[i] = xml_utils::mzml_parse_binary_data_from_spectrum_node(spectra[i], precision, compression, cols);
-        }
-
-        return list_out2;
+        // std::vector<pugi::xml_node> spectra;
+        //
+        // for (pugi::xml_node child = spec_list.first_child(); child; child = child.next_sibling()) {
+        //   spectra.push_back(child);
+        // }
+        //
+        // int number_spectra = spectra.size();
+        //
+        // Rcpp::List list_out2(number_spectra);
+        //
+        // for (int i = 0; i < number_spectra; i++) {
+        //   list_out2[i] = xml_utils::mzml_parse_binary_data_from_spectrum_node(spectra[i], precision, compression, cols);
+        // }
+        //
+        // return list_out2;
 
       }
 
     } else if (strcmp("mzXML", root_name.c_str()) == 0) {
 
-      std::string search_run = "//msRun";
-
-      pugi::xpath_node xps_run = root.select_node(search_run.c_str());
-
-      pugi::xml_node first_spec = xps_run.node().child("scan");
-
-      const int precision = xml_utils::mzxml_get_precision(first_spec);
-
-      const std::string compression = xml_utils::mzxml_get_compression(first_spec);
-
-      std::vector<pugi::xml_node> spectra;
-
-      for (pugi::xml_node child = xps_run.node().child("scan"); child; child = child.next_sibling()) {
-        spectra.push_back(child);
-      }
-
-      int number_spectra = spectra.size();
-
-      if (number_spectra > 0) {
-
-        Rcpp::List list_out2(number_spectra);
-
-        for (int i = 0; i < number_spectra; i++) {
-          list_out2[i] = xml_utils::mzxml_parse_binary_data_from_spectrum_node(spectra[i], precision, compression, cols);
-        }
-
-        return list_out2;
-      }
     }
   }
 

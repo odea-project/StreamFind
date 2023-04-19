@@ -146,7 +146,7 @@ ms <- msData$new(files = all_files[10:21],
   )
 )
 
-
+ms$plot_ms2(analyses = 4, mz = targets, minIntensity = 500)
 
 
 
@@ -164,12 +164,16 @@ msz <- mzR::openMSfile(big_file_test)
 msz3 <- mzR::header(msz)
 mzR::close(msz)
 Sys.time() - init
+
 init <- Sys.time()
 ana <- rcpp_parse_msAnalysis(big_file_test)
 Sys.time() - init
+
 init <- Sys.time()
 ana_withR <- parse_msAnalysis(big_file_test)
 Sys.time() - init
+
+
 
 ## spectra (list)
 init <- Sys.time()
@@ -177,13 +181,16 @@ msz <- mzR::openMSfile(big_file_test)
 msz4 <- mzR::peaks(msz)
 mzR::close(msz)
 Sys.time() - init
+
 init <- Sys.time()
 spectra <- rcpp_parse_spectra(big_file_test)
 Sys.time() - init
+
 analysis <- rcpp_parse_msAnalysis(big_file_test)
 init <- Sys.time()
 spectra_analysis <- rcpp_parse_msAnalysis_spectra(analysis)
 Sys.time() - init
+
 
 ## create msAnalysis
 ana_mzml_neg <- rcpp_parse_msAnalysis(all_files[11])
@@ -213,7 +220,7 @@ is.data.table(rcpp_parse_chromatograms_headers(all_files[28])) # mzML SRM
 is.data.table(rcpp_parse_chromatograms_headers(all_files[4])) # mzXML empty for XML without chromatograms
 
 
-
+rcpp_parse_xml(all_files[28])
 
 
 

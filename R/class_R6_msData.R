@@ -814,7 +814,7 @@ msData <- R6::R6Class("msData",
         if (!cached_spectra & !is.null(hash)) {
           if (!is.null(spec)) {
             message("\U1f5ab Parsed spectra cached!")
-            patRoon::saveCacheData("parsed_ms_spectra", spec_list, hash)
+            patRoon::saveCacheData("parsed_ms_spectra", spec, hash)
           }
         }
 
@@ -2368,7 +2368,7 @@ msData <- R6::R6Class("msData",
             ft_ms2 <- ana_ms2[ana_ms2$id %in% x2, ]
 
             if (nrow(ft_ms2) > 0) {
-              cols <- c("preMZ", "rt","mz", "intensity", "isPre")
+              cols <- c("pre_mz", "rt","mz", "intensity", "isPre")
               ft_ms2 <- ft_ms2[, cols, with = FALSE]
               ft_ms2
             } else {
@@ -3322,7 +3322,7 @@ msData <- R6::R6Class("msData",
     #' @param id X.
     #' @param allTraces Logical, when \code{TRUE} all level 2 data is returned.
     #' When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
-    #' are returned, using the `preMZ` value and the `isolationWindow`.
+    #' are returned, using the `pre_mz` value and the `isolationWindow`.
     #' @param isolationWindow X.
     #' @param minIntensityMS1 X.
     #' @param minIntensityMS2 X.
