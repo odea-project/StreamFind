@@ -38,6 +38,8 @@ remotes::install_github("rickhelmus/patRoon",
   upgrade = "never", dependencies = TRUE
 )
 
+install.packages("plumber")
+
 ## Install local streamFind  ##
 #updates documentation and installs the package
 devtools::document()
@@ -46,3 +48,4 @@ devtools::install(upgrade = "never")
 
 print("streamFind package installed:")
 print(require(streamFind))
+

@@ -1,0 +1,17 @@
+.container {
+    position: absolute;
+    display: table-row;
+    /*Set your top-right-bottom-left absolute position here*/
+}
+
+.container > div {
+    display: table-cell;
+}
+
+.left {
+    min-width: 200px;
+}
+
+.right {
+    width: 100%;
+}
