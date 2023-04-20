@@ -29,4 +29,9 @@ settings_pp_2.json
 /dev/template_report.html
 inst/doc
 
+# IDE
+.idea
+
+# frontend
 node_modules
+public
