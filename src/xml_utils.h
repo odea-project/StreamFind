@@ -10,53 +10,27 @@
 
 namespace xml_utils {
 
-  std::vector<int> mzml_get_precision(pugi::xml_node& node);
-  int mzxml_get_precision(pugi::xml_node& node);
+  // // encode tools // //
 
-  std::vector<std::string> mzml_get_compression(pugi::xml_node& node);
-  std::string mzxml_get_compression(pugi::xml_node& node);
+  std::string encode_little_endian(const Rcpp::NumericVector& input);
 
-  Rcpp::CharacterVector mzml_get_binary_type(pugi::xml_node& node);
+  std::string encode_big_endian(const Rcpp::NumericVector& input);
 
-  Rcpp::CharacterVector mzml_get_binary_names(pugi::xml_node& node);
+  std::string compress_zlib(const std::string& str);
 
-  // const std::string base64_chars =
-  //   "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-  //   "abcdefghijklmnopqrstuvwxyz"
-  //   "0123456789+/";
-  //
-  // bool is_base64(unsigned char c);
+  std::string encode_base64(const std::string& str);
+
+  // // decode tools // //
 
   std::string decode_base64(const std::string& encoded_string);
+
   std::string decompress_zlib(const std::string& compressed_string);
 
-  Rcpp::NumericMatrix mzml_parse_binary_data_from_spectrum_node(
-    const pugi::xml_node& node,
-    const std::vector<int>& precision,
-    const std::vector<std::string>& compression,
-    const Rcpp::CharacterVector& cols
-  );
+  Rcpp::NumericVector decode_little_endian(const std::string& str, const int& precision);
 
-  Rcpp::NumericMatrix mzxml_parse_binary_data_from_spectrum_node(
-    const pugi::xml_node& node,
-    const int& precision,
-    const std::string& compression,
-    const Rcpp::CharacterVector& cols
-  );
+  Rcpp::NumericVector decode_big_endian(const std::string& str, const int& precision);
 
-  Rcpp::List parse_spectra(const pugi::xml_node& root);
-
-  Rcpp::List parse_partial_spectra(
-    const pugi::xml_node& root,
-    Rcpp::IntegerVector& index
-  );
-
-  Rcpp::List parse_chromatograms(const pugi::xml_node& root);
-
-  Rcpp::List parse_partial_chromatograms(
-    const pugi::xml_node& root,
-    Rcpp::IntegerVector& index
-  );
+  // // structures // //
 
   struct spectraHeaders {
     std::vector<int> index;
@@ -139,6 +113,47 @@ namespace xml_utils {
     std::vector<double> activation_type;
     std::vector<double> activation_ce;
   }; // spectraHeadersOriginal
+
+
+  // // parsing tools // //
+
+  std::vector<int> mzml_get_precision(pugi::xml_node& node);
+  int mzxml_get_precision(pugi::xml_node& node);
+
+  std::vector<std::string> mzml_get_compression(pugi::xml_node& node);
+  std::string mzxml_get_compression(pugi::xml_node& node);
+
+  Rcpp::CharacterVector mzml_get_binary_type(pugi::xml_node& node);
+
+  Rcpp::CharacterVector mzml_get_binary_names(pugi::xml_node& node);
+
+  Rcpp::NumericMatrix mzml_parse_binary_data_from_spectrum_node(
+      const pugi::xml_node& node,
+      const std::vector<int>& precision,
+      const std::vector<std::string>& compression,
+      const Rcpp::CharacterVector& cols
+  );
+
+  Rcpp::NumericMatrix mzxml_parse_binary_data_from_spectrum_node(
+      const pugi::xml_node& node,
+      const int& precision,
+      const std::string& compression,
+      const Rcpp::CharacterVector& cols
+  );
+
+  Rcpp::List parse_spectra(const pugi::xml_node& root);
+
+  Rcpp::List parse_partial_spectra(
+      const pugi::xml_node& root,
+      Rcpp::IntegerVector& index
+  );
+
+  Rcpp::List parse_chromatograms(const pugi::xml_node& root);
+
+  Rcpp::List parse_partial_chromatograms(
+      const pugi::xml_node& root,
+      Rcpp::IntegerVector& index
+  );
 
   std::list<std::vector<std::string>> mzml_instrument_parser(const pugi::xml_node& node_mzml);
   std::list<std::vector<std::string>> mzxml_instrument_parser(const pugi::xml_node& node_mzxml);

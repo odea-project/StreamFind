@@ -155,8 +155,7 @@ ms <- msData$new(files = all_files[10:21],
 # temp -------------------------------------------------------------------------
 
 
-input <- c(1.1, 2.1, 3.3, 1000)
-
+input <- c(1.1, 2.1, 3.31641646564465464, 1000)
 
 rcpp_parse_xml(input)
 
@@ -166,8 +165,12 @@ rcpp_parse_xml(input)
 
 
 
+ms <- msData$new()
+ms$get_headers()
 
 
+
+ms$get_number_analyses()
 
 
 

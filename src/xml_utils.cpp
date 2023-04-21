@@ -858,9 +858,45 @@ xml_utils::runSummary xml_utils::run_summary(
 
 
 
-// bool xml_utils::is_base64(unsigned char c) {
-//   return (isalnum(c) || (c == '+') || (c == '/'));
-// }
+std::string xml_utils::encode_base64(const std::string& str) {
+
+  static const char* base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+  std::string encoded_data;
+
+  encoded_data.reserve(((str.size() + 2) / 3) * 4);
+
+  for (size_t i = 0; i < str.size(); i += 3) {
+
+    int b = (str[i] & 0xFC) >> 2;
+    encoded_data.push_back(base64_chars[b]);
+
+    if (i + 1 < str.size()) {
+      b = ((str[i] & 0x03) << 4) | ((str[i + 1] & 0xF0) >> 4);
+      encoded_data.push_back(base64_chars[b]);
+
+      if (i + 2 < str.size()) {
+        b = ((str[i + 1] & 0x0F) << 2) | ((str[i + 2] & 0xC0) >> 6);
+        encoded_data.push_back(base64_chars[b]);
+        b = str[i + 2] & 0x3F;
+        encoded_data.push_back(base64_chars[b]);
+
+      } else {
+        b = (str[i + 1] & 0x0F) << 2;
+        encoded_data.push_back(base64_chars[b]);
+        encoded_data.push_back('=');
+      }
+
+    } else {
+      b = (str[i] & 0x03) << 4;
+      encoded_data.push_back(base64_chars[b]);
+      encoded_data.push_back('=');
+      encoded_data.push_back('=');
+    }
+  }
+
+  return encoded_data;
+}
 
 
 
@@ -973,6 +1009,43 @@ std::string xml_utils::decode_base64(const std::string& encoded_string) {
 
 
 
+std::string xml_utils::compress_zlib(const std::string& str) {
+
+  std::vector<char> compressed_data;
+
+  z_stream zs;
+  memset(&zs, 0, sizeof(zs));
+
+  if (deflateInit(&zs, Z_DEFAULT_COMPRESSION) != Z_OK) {
+    throw std::runtime_error("deflateInit failed while initializing zlib for compression");
+  }
+
+  zs.next_in = reinterpret_cast<Bytef*>(const_cast<char*>(str.data()));
+  zs.avail_in = str.size();
+
+  int ret;
+  char outbuffer[32768];
+
+  do {
+    zs.next_out = reinterpret_cast<Bytef*>(outbuffer);
+    zs.avail_out = sizeof(outbuffer);
+
+    ret = deflate(&zs, Z_FINISH);
+
+    if (compressed_data.size() < zs.total_out) {
+      compressed_data.insert(compressed_data.end(), outbuffer, outbuffer + (zs.total_out - compressed_data.size()));
+    }
+
+  } while (ret == Z_OK);
+
+  deflateEnd(&zs);
+
+  return std::string(compressed_data.begin(), compressed_data.end());
+}
+
+
+
+
 std::string xml_utils::decompress_zlib(const std::string& compressed_string) {
 
   // std::string output_string;
@@ -1035,6 +1108,99 @@ std::string xml_utils::decompress_zlib(const std::string& compressed_string) {
   inflateEnd(&zs);
 
   return outstring;
+}
+
+
+
+
+std::string xml_utils::encode_little_endian(const Rcpp::NumericVector& input) {
+
+  size_t n = input.size();
+
+  std::string result(n * sizeof(double), '\0');
+
+  const uint8_t* bytes = reinterpret_cast<const uint8_t*>(input.begin());
+
+  uint8_t* output_bytes = reinterpret_cast<uint8_t*>(&result[0]);
+
+  for (size_t i = 0; i < n; ++i) {
+    uint64_t little_endian_value;
+    std::memcpy(&little_endian_value, bytes + i * sizeof(double), sizeof(double));
+    std::memcpy(output_bytes + i * sizeof(uint64_t), &little_endian_value, sizeof(uint64_t));
+  }
+
+  return result;
+}
+
+
+
+
+Rcpp::NumericVector xml_utils::decode_little_endian(const std::string& str, const int& precision) {
+
+  std::vector<unsigned char> byteVec(str.begin(), str.end());
+
+  int array_len = (byteVec.size() / precision);
+
+  Rcpp::NumericVector result(array_len);
+
+  for (int i = 0; i < array_len; ++i) {
+    result[i] = reinterpret_cast<double&>(byteVec[i * precision]);
+  }
+
+  return result;
+}
+
+
+
+
+std::string xml_utils::encode_big_endian(const Rcpp::NumericVector& input) {
+
+  size_t n = input.size();
+
+  std::vector<uint8_t> result(n * sizeof(double));
+
+  double* values = reinterpret_cast<double*>(result.data());
+
+  for (size_t i = 0; i < n; ++i) {
+    uint64_t big_endian_value;
+    std::memcpy(&big_endian_value, &input[i], sizeof(double));
+    std::reverse(reinterpret_cast<uint8_t*>(&big_endian_value), reinterpret_cast<uint8_t*>(&big_endian_value) + sizeof(uint64_t));
+    std::memcpy(values + i, &big_endian_value, sizeof(uint64_t));
+  }
+
+  std::string str_result(reinterpret_cast<char*>(result.data()), result.size());
+
+  return str_result;
+}
+
+
+
+
+Rcpp::NumericVector xml_utils::decode_big_endian(const std::string& str, const int& precision) {
+
+  Rcpp::NumericVector result;
+
+  const uint8_t* bytes = reinterpret_cast<const uint8_t*>(str.c_str());
+  size_t byte_count = str.size();
+
+  size_t precision_t = static_cast<size_t>(precision);
+
+  for (size_t i = 0; i < byte_count; i += precision_t) {
+
+    uint64_t value = 0;
+
+    for (size_t j = 0; j < precision_t; ++j) {
+      value = (value << precision) | bytes[i + j];
+    }
+
+    uint64_t little_endian_value;
+    std::memcpy(&little_endian_value, &value, sizeof(little_endian_value));
+    double double_value;
+    std::memcpy(&double_value, &little_endian_value, sizeof(double_value));
+    result.push_back(double_value);
+  }
+
+  return result;
 }
 
 
@@ -1239,19 +1405,7 @@ Rcpp::NumericMatrix xml_utils::mzml_parse_binary_data_from_spectrum_node(
       decoded_string = xml_utils::decompress_zlib(decoded_string);
     }
 
-    std::string byteStr = decoded_string;
-
-    std::vector<unsigned char> byteVec(decoded_string.begin(), decoded_string.end());
-
-    int array_len = (byteVec.size() / precision[counter]);
-
-    if (number_traces != array_len) {
-      Rcpp::stop("The number of traces does not match with the dimension of the binary array!");
-    }
-
-    for (int i = 0; i < number_traces; ++i) {
-      output(i, counter) = reinterpret_cast<double&>(byteVec[i * precision[counter]]);
-    }
+    output(Rcpp::_, counter) = xml_utils::decode_little_endian(decoded_string, precision[counter]);
 
     if (cols[counter] == "rt") {
       pugi::xml_node node_unit = bin.find_child_by_attribute("cvParam", "unitCvRef", "UO");
@@ -1297,45 +1451,13 @@ Rcpp::NumericMatrix xml_utils::mzxml_parse_binary_data_from_spectrum_node(
 
   std::string endian_ness = node.child("peaks").attribute("byteOrder").as_string();
 
-  std::vector<double> result;
+  Rcpp::NumericVector result;
 
   if (endian_ness == "network") {
-    const uint8_t* bytes = reinterpret_cast<const uint8_t*>(decoded_string.c_str());
-    size_t byte_count = decoded_string.size();
-
-    size_t precision_t = static_cast<size_t>(precision);
-
-    for (size_t i = 0; i < byte_count; i += precision_t) {
-
-      uint64_t value = 0;
-
-      for (size_t j = 0; j < precision_t; ++j) {
-        value = (value << precision) | bytes[i + j];
-      }
-
-      uint64_t little_endian_value;
-      std::memcpy(&little_endian_value, &value, sizeof(little_endian_value));
-      double double_value;
-      std::memcpy(&double_value, &little_endian_value, sizeof(double_value));
-      result.push_back(double_value);
-
-      // double* double_ptr = reinterpret_cast<double*>(&value);
-      // double big_endian_value = *double_ptr;
-      // uint64_t little_endian_value;
-      // std::memcpy(&little_endian_value, &big_endian_value, sizeof(little_endian_value));
-      // result.push_back(*reinterpret_cast<double*>(&little_endian_value));
-    }
+    result = xml_utils::decode_big_endian(decoded_string, precision);
 
   } else {
-    std::string byteStr = decoded_string;
-    std::vector<unsigned char> byteVec(decoded_string.begin(), decoded_string.end());
-    int array_len = (byteVec.size() / precision);
-
-    result.resize(array_len);
-
-    for (int i = 0; i < array_len; ++i) {
-      result[i] = reinterpret_cast<double&>(byteVec[i * precision]);
-    }
+    result = xml_utils::decode_little_endian(decoded_string, precision);
   }
 
   int n_row = result.size() / 2;
