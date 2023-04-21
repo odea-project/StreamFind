@@ -38,6 +38,7 @@ remotes::install_github("rickhelmus/patRoon",
   upgrade = "never", dependencies = TRUE
 )
 
+remotes::install_github("ricardobachertdacunha/patRoon") # work-around
 install.packages("plumber")
 
 ## Install local streamFind  ##
