@@ -246,7 +246,7 @@ test_that("get feature groups MS1 and MS2", {
 # ms$plot_groups(mz = targets, legendNames = c("Target1", "Target2"))
 # ms$plot_groups_overview(mz = targets)
 
-settings_gf_alignment <- settings(
+settings_gf_alignment <- ProcessingSettings(
   "call" = "group_features",
   "algorithm" = "xcms3",
   "parameters" = list(

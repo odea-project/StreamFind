@@ -1,25 +1,26 @@
-#' **settings** S3 class constructor and methods
+#' **ProcessingSettings** S3 class constructor and methods
 #'
 #' @description
-#' Creates a settings S3 class.
+#' Creates a ProcessingSettings S3 class object.
 #'
 #' @param call Character of length one with the name of the method where the
-#' settings are to be applied.
+#' processing settings are to be applied.
 #' @param algorithm Character of length one with the name of the algorithm to
 #' be used.
-#' @param parameters List with parameter settings specific for the `call`
-#' method and used `algorithm`.
+#' @param parameters List with parameters specific for the method `call` and
+#' `algorithm`.
 #'
 #' @details See the method documentation for more information about possible
 #' algorithms and parameters to be used.
 #'
-#' @return A settings S3 class
+#' @return A ProcessingSettings S3 class
 #'
 #' @export
 #'
-settings <- function(call = NA_character_,
-                     algorithm = NA_character_,
-                     parameters = NULL) {
+ProcessingSettings <- function(call = NA_character_,
+                               algorithm = NA_character_,
+                               parameters = NULL) {
+
   x <- list(
     "call" = call,
     "algorithm" = algorithm,
@@ -58,22 +59,22 @@ settings <- function(call = NA_character_,
     }
   })
 
-  if (validate.settings(x)) {
-    structure(x, class = "settings")
+  if (validate.ProcessingSettings(x)) {
+    structure(x, class = "ProcessingSettings")
   } else {
     NULL
   }
 }
 
-#' @describeIn settings
-#' Validates a settings S3 class object, returning a logical value of length
-#' one.
+#' @describeIn ProcessingSettings
+#' Validates a ProcessingSettings S3 class object, returning a logical value of
+#' length one.
 #'
-#' @param x A settings S3 class object.
+#' @param x A ProcessingSettings S3 class object.
 #'
 #' @export
 #'
-validate.settings <- function(x = NULL) {
+validate.ProcessingSettings <- function(x = NULL) {
   valid <- FALSE
 
   if (is.list(x)) {
@@ -140,16 +141,16 @@ validate.settings <- function(x = NULL) {
   valid
 }
 
-#' @describeIn settings
-#' Converts the argument in a settings S3 class object
+#' @describeIn ProcessingSettings
+#' Converts the argument in a ProcessingSettings S3 class object.
 #'
-#' @param value A list to be checked and/or converted to settings S3 class.
+#' @param value A list to be checked and/or converted to ProcessingSettings S3 class.
 #'
 #' @export
-as.settings <- function(value) {
+as.ProcessingSettings <- function(value) {
   must_have_elements <- c("call", "algorithm", "parameters")
   if (!all(must_have_elements %in% names(value))) return(NULL)
-  settings(value$call, value$algorithm, value$parameters)
+  ProcessingSettings(value$call, value$algorithm, value$parameters)
 }
 
 

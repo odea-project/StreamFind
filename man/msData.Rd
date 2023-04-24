@@ -193,15 +193,19 @@ restrictions except for name (must be type character), path (must be type
 character) and date (must be class POSIXct or class POSIXt). See more
 information in \code{?headers}.}
 
-\item{\code{settings}}{A settings S3 class object or a list with settings S3 class
-objects as elements (see \code{?settings} for more information).}
+\item{\code{settings}}{A ProcessingSettings S3 class object or a list with
+ProcessingSettings S3 class objects as elements
+(see \code{?ProcessingSettings} for more information).}
 
-\item{\code{settings}}{A settings S3 class object or a list with settings S3 class
-objects as elements (see \code{?settings} for more information).}
+\item{\code{settings}}{A ProcessingSettings S3 class object or a list with
+ProcessingSettings S3 class objects as elements
+(see \code{?ProcessingSettings} for more information).}
 
-\item{\code{analyses}}{X.}
+\item{\code{analyses}}{An msAnalysis S3 class object or a list with msAnalysis S3
+class objects as elements (see \code{?msAnalysis} for more information).}
 
-\item{\code{analyses}}{X.}
+\item{\code{analyses}}{An msAnalysis S3 class object or a list with msAnalysis S3
+class objects as elements (see \code{?msAnalysis} for more information).}
 
 \item{\code{groups}}{data.table with feature groups from correspondence across MS
 analyses as obtained by the msData method \code{get_groups()}. Note that
@@ -214,8 +218,6 @@ correspondence of features across MS analyses is performed with the method
 \code{group_features()} from the msData class.}
 
 \item{\code{alignment}}{X.}
-
-\item{\code{value}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -820,6 +822,7 @@ Method to get spectra from the MS analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$get_chromatograms(
   analyses = NULL,
+  index = NA_integer_,
   minIntensity = 0,
   runParallel = FALSE
 )}\if{html}{\out{</div>}}
@@ -829,6 +832,8 @@ Method to get spectra from the MS analyses.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{analyses}}{X.}
+
+\item{\code{index}}{X.}
 
 \item{\code{minIntensity}}{X.}
 
@@ -989,7 +994,7 @@ A data.frame.
 \if{html}{\out{<a id="method-msData-get_settings"></a>}}
 \if{latex}{\out{\hypertarget{method-msData-get_settings}{}}}
 \subsection{Method \code{get_settings()}}{
-Method to get settings from analyses.
+Method to get ProcessingSettings S3 class objects from the msData.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{msData$get_settings(call = NULL)}\if{html}{\out{</div>}}
 }
@@ -1002,7 +1007,7 @@ Method to get settings from analyses.
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A data.frame.
+X.
 }
 }
 \if{html}{\out{<hr>}}
@@ -1471,11 +1476,13 @@ Method to add processing settings to the \code{msData} object.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{settings}}{A settings S3 class object or a list with settings S3 class
-objects as elements (see \code{?settings} for more information).}
+\item{\code{settings}}{A ProcessingSettings S3 class object or a list with
+ProcessingSettings S3 class objects as elements
+(see \code{?ProcessingSettings} for more information).}
 
-\item{\code{settings}}{A settings S3 class object or a list with settings S3 class
-objects as elements (see \code{?settings} for more information).}
+\item{\code{settings}}{A ProcessingSettings S3 class object or a list with
+ProcessingSettings S3 class objects as elements
+(see \code{?ProcessingSettings} for more information).}
 }
 \if{html}{\out{</div>}}
 }
@@ -2235,7 +2242,7 @@ Plots spectra for given MS analyses.
 
 \item{\code{allTraces}}{Logical, when \code{TRUE} all level 2 data is returned.
 When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
-are returned, using the \code{preMZ} value and the \code{isolationWindow}.}
+are returned, using the \code{pre_mz} value and the \code{isolationWindow}.}
 
 \item{\code{isolationWindow}}{X.}
 

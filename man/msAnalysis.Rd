@@ -2,9 +2,9 @@
 % Please edit documentation in R/class_S3_msAnalysis.R
 \name{msAnalysis}
 \alias{msAnalysis}
-\alias{validate_msAnalysis}
-\alias{as_msAnalysis}
-\alias{parse_msAnalysis}
+\alias{validate.msAnalysis}
+\alias{as.msAnalysis}
+\alias{parse.msAnalysis}
 \title{\strong{msAnalysis} S3 class constructor and methods}
 \usage{
 msAnalysis(
@@ -34,11 +34,11 @@ msAnalysis(
   metadata = list()
 )
 
-validate_msAnalysis(value = NULL)
+\method{validate}{msAnalysis}(value = NULL)
 
-as_msAnalysis(value)
+as.msAnalysis(value)
 
-parse_msAnalysis(files = NULL, runParallel = FALSE)
+parse.msAnalysis(files = NULL, runParallel = FALSE)
 }
 \arguments{
 \item{name}{\emph{mzML} or \emph{mzXML} file name without extension.}
@@ -120,14 +120,17 @@ An msAnalysis S3 class object.
 \description{
 Creates an msAnalysis S3 class object.
 }
-\section{Functions}{
+\section{Methods (by generic)}{
 \itemize{
-\item \code{validate_msAnalysis()}: Validates an msAnalysis S3 class object, returning a logical value of length
+\item \code{validate(msAnalysis)}: Validates an msAnalysis S3 class object, returning a logical value of length
 one.
 
-\item \code{as_msAnalysis()}: Converts the argument value in an msAnalysis S3 class object.
+}}
+\section{Functions}{
+\itemize{
+\item \code{as.msAnalysis()}: Converts the argument value in an msAnalysis S3 class object.
 
-\item \code{parse_msAnalysis()}: Parses information from \emph{mzML} or \emph{mzXML} file/s and returns a list with
+\item \code{parse.msAnalysis()}: Parses information from \emph{mzML} or \emph{mzXML} file/s and returns a list with
 msAnalysis S3 class object/s. On error, returns \code{NULL}.
 
 }}

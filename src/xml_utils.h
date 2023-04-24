@@ -175,6 +175,11 @@ namespace xml_utils {
 
   runSummary run_summary(spectraHeaders& spec_headers, chromatogramsHeaders& chrom_headers);
 
+  // // other functions // //
+
+  // in file xml_encoding_decoding_test_function.cpp
+  Rcpp::List encoding_decoding_test_function(Rcpp::NumericVector input);
+
 } // xml_utils
 
 #endif

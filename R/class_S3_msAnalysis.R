@@ -141,7 +141,7 @@ msAnalysis <- function(name = NA_character_,
   x$chromatograms <- as.data.table(x$chromatograms)
   x$features <- as.data.table(x$features)
 
-  if (validate_msAnalysis(x)) {
+  if (validate.msAnalysis(x)) {
     structure(x, class = "msAnalysis")
   } else {
     NULL
@@ -156,7 +156,7 @@ msAnalysis <- function(name = NA_character_,
 #'
 #' @export
 #'
-validate_msAnalysis <- function(value = NULL) {
+validate.msAnalysis <- function(value = NULL) {
   valid <- FALSE
   name <- NA_character_
 
@@ -313,7 +313,7 @@ validate_msAnalysis <- function(value = NULL) {
 #' @param value A list to be checked and/or converted to msAnalysis S3 class.
 #'
 #' @export
-as_msAnalysis <- function(value) {
+as.msAnalysis <- function(value) {
   if (length(value) == 1 & is.list(value)) value <- value[[1]]
   do.call(msAnalysis, value)
 }
@@ -329,7 +329,7 @@ as_msAnalysis <- function(value) {
 #' @template arg-runParallel
 #'
 #' @export
-parse_msAnalysis <- function(files = NULL, runParallel = FALSE) {
+parse.msAnalysis <- function(files = NULL, runParallel = FALSE) {
 
   if (is.data.frame(files)) {
     if ("file" %in% colnames(files)) {
@@ -382,7 +382,7 @@ parse_msAnalysis <- function(files = NULL, runParallel = FALSE) {
     analyses <- patRoon::loadCacheData("parsed_ms_analyses", hash)
 
     if (!is.null(analyses)) {
-      if (all(vapply(analyses, validate_msAnalysis, FALSE))) {
+      if (all(vapply(analyses, validate.msAnalysis, FALSE))) {
         cached_analyses <- TRUE
       } else {
         analyses <- NULL

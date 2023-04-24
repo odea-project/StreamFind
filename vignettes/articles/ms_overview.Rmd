@@ -71,6 +71,7 @@ Once [streamFindData](https://github.com/ricardobachertdacunha/streamFindData) i
 
 ```{r resource-files, cache=FALSE}
 files <- streamFindData::msFilePaths()
+# files is a vector with all file full paths
 ```
 
 <br>
@@ -131,8 +132,8 @@ ms$get_overview()[, 1:5] # only the first 5 columns
 The msData object contains the following internal fields (or private fields) to store standardized data: **headers**, **settings**, **analyses**, **groups** and **alignment**. The internal fields cannot be directly accessed nor changed. Instead, the user must use the respective get and add methods, as shown in the sections [get methods](#get-methods) and [add methods](#add-methods), respectively. The add methods contain validation and conformity checks to ensure that the structure and semantics of added data are respected.
 
 - The **headers** is an S3 class object and list with flexible headers of length one (e.g., name, path, date, etc.) that characterize the msData object. When not given, *name*, *path* and *date* are automatically generated (*name* is set to `NA_character_`, *path* is set to `getwd()` and *date* is set to `Sys.time()`) and included in the list, as they are required for workflow purposes. Other entries can be added by the user without type (or class) limitations but should be uniquely named and of length one. See `?headers` for more information;
-- The **settings** is a named `list` of settings S3 class objects used for data processing (see `?settings` for more information). Each added settings object is named according to the function call (or processing name). The settings interface is described in section [processing settings](#processing-settings);
-- The **analyses** is a named `list` of msAnalysis S3 class objects representing each file added to the msData (see` ?msAnalysis` for more information). The name of each msAnalysis object in the analyses list is the name of the file (without extension). No duplicate file names (or analyses names) can exist in the msData. The structure of the msAnalysis S3 class object is described in section [analyses](#analyses); 
+- The **settings** is a named `list` of ProcessingSettings S3 class objects used for data processing (see `?settings` for more information). Each added settings object is named according to the function call (or processing name). The settings interface is described in section [processing settings](#processing-settings);
+- The **analyses** is a named `list` of MSAnalysis S3 class objects representing each file added to the msData (see` ?MSAnalysis` for more information). The name of each MSAnalysis object in the analyses list is the name of the file (without extension). No duplicate file names (or analyses names) can exist in the msData. The structure of the MSAnalysis S3 class object is described in section [analyses](#analyses); 
 - The **groups** is a `data.table` with the feature groups after correspondence analysis (i.e., grouping of features across analyses). More information about **groups** is given in section [groups](#groups);
 - The **alignment** is a `list` with the results of the retention time alignment for each analyses in the msData object. More information about **alignment** is given in section [alignment](#alignment).
 
@@ -144,7 +145,7 @@ Several methods are implemented to access data within the msData object, as alre
 ms$get_headers()
 ```
 
-Similarly, the get method for analyses returns the list of msAnalysis objects. Below the `get_analyses()` is used to get the first analysis object (`a1`). Then, the `names()` function is used to show the names of entries in the `a1` msAnalysis, which represents the first *.mzML* file parsed to the `ms`. Note that the `get_analyses()` method always returns a list even for only one msAnalysis object. Therefore, we use the `[[` function as `a1[[1]]` to access the msAnalysis object itself. The analysis object contains `r length(ms$get_analyses(1)[[1]])` fields (listed below) with information and data parsed directly from the *.mzML* file. Variations in the content and structure (i.e., different vendors or data acquired with different conditions or modes) of the *.mzML* or *.mzXML* files added will affect the content of each entry in the msAnalysis object but the structure remains the same (see `?msAnalysis`). The function `parse.msAnalysis()` from the streamFind R package is used to create and validate the list of msAnalysis objects from a character vector with *.mzML* or *.mzXML* full file paths (see `?parse.msAnalysis` for more information). The structure of the msAnalysis S3 class object is further described in section [analyses](#analyses). By typing `ms$get`, other available get methods are listed. The documentation `?msData` also contains detailed information and usage examples for available get methods.
+Similarly, the get method for analyses returns the list of MSAnalysis objects. Below the `get_analyses()` is used to get the first analysis object (`a1`). Then, the `names()` function is used to show the names of entries in the `a1` MSAnalysis, which represents the first *.mzML* file parsed to the `ms`. Note that the `get_analyses()` method always returns a list even for only one MSAnalysis object. Therefore, we use the `[[` function as `a1[[1]]` to access the MSAnalysis object itself. The analysis object contains `r length(ms$get_analyses(1)[[1]])` fields (listed below) with information and data parsed directly from the *.mzML* file. Variations in the content and structure (i.e., different vendors or data acquired with different conditions or modes) of the *.mzML* or *.mzXML* files added will affect the content of each entry in the MSAnalysis object but the structure remains the same (see `?MSAnalysis`). The function `parse.msAnalysis()` from the streamFind R package is used to create and validate the list of MSAnalysis objects from a character vector with *.mzML* or *.mzXML* full file paths (see `?parse.msAnalysis` for more information). The structure of the MSAnalysis S3 class object is further described in section [analyses](#analyses). By typing `ms$get`, other available get methods are listed. The documentation `?msData` also contains detailed information and usage examples for available get methods.
 
 ```{r get-analyses}
 a1 = ms$get_analyses(analyses = 1)
@@ -166,7 +167,7 @@ ms$add_headers(name = "Ex1", description = "An example msData.")
 ms$get_headers()
 ```
 
-Similarly, new msAnalysis objects can be added with `add_analyses()` as shown below. Note that the function `parse.msAnalysis()` was used to parse data from files 7, 8 and 9, creating a named list of analysis objects. Again the name of each msAnalysis in the list is the file name without extension. Then, the list is added to the `ms` object with the method `add_analyses()`. By typing `ms$add`, other available add methods are listed. The documentation `?msData` also contains detailed information and usage examples for available add methods.
+Similarly, new MSAnalysis objects can be added with `add_analyses()` as shown below. Note that the function `parse.msAnalysis()` was used to parse data from files 7, 8 and 9, creating a named list of analysis objects. Again the name of each MSAnalysis in the list is the file name without extension. Then, the list is added to the `ms` object with the method `add_analyses()`. By typing `ms$add`, other available add methods are listed. The documentation `?msData` also contains detailed information and usage examples for available add methods.
 
 ```{r make-analysis-list}
 a_list = parse.msAnalysis(files[7:9])
@@ -273,7 +274,7 @@ ms$save_headers(format = "json", path = getwd())
 jsonlite::prettify(readLines("headers.json"))
 ```
 
-Similarly, `save_analyses()` method can be applied to export all or specific msAnalysis objects to *.rds* or *.json*. Below, the first msAnalysis object is exported as *.json* and named *a1*. Then in section [import methods](#import-methods), the exported analysis (*a1.json*) is imported to the `ms` object.
+Similarly, `save_analyses()` method can be applied to export all or specific MSAnalysis objects to *.rds* or *.json*. Below, the first MSAnalysis object is exported as *.json* and named *a1*. Then in section [import methods](#import-methods), the exported analysis (*a1.json*) is imported to the `ms` object.
 
 ```{r}
 ms$save_analyses(analyses = 1, format = "json", name = "a1")
@@ -293,7 +294,7 @@ Complementary to save methods, the *.json* or *.rds* files can be imported to th
 ms$import_headers("headers.json")
 ```
 
-Also, the saved *a1.json* msAnalysis object can be imported with `import_analyses()` method. However, because the analysis name is already present in the `ms` object, an warning is printed and the operation not done (as shown below). The other internal fields (i.e., *settings*, *groups* and *alignment*) can be similarly imported. Validation and conformity tests are applied to ensure that the data has the required structure.
+Also, the saved *a1.json* MSAnalysis object can be imported with `import_analyses()` method. However, because the analysis name is already present in the `ms` object, an warning is printed and the operation not done (as shown below). The other internal fields (i.e., *settings*, *groups* and *alignment*) can be similarly imported. Validation and conformity tests are applied to ensure that the data has the required structure.
 
 ```{r import-analyses}
 ms$import_analyses("a1.json")
@@ -317,7 +318,7 @@ file.remove(paste0(getwd(), "/ms.json"))
 
 # Analyses
 
-Within the msData object, the internal field analyses is a list of msAnalysis S3 class objects representing MS files on disk. As shown above in [msData](#msdata) section, the msData can be initiated with the `files` argument using a character vector of full file path/s to *.mzML* or *.mzXML* files. Alternatively, the function `parse.msAnalysis()` can be used to generate the list of analysis objects and then the argument `analyses` of the `new()` method or the `add_analyses()` method can be used to add the msAnalysis objects to the msData object. The package [mzR](https://bioconductor.org/packages/release/bioc/html/mzR.html) from [Bioconductor](https://bioconductor.org/) is used to parse the data. When the [mzR](https://bioconductor.org/packages/release/bioc/html/mzR.html) package is not available (i.e., not installed), the [xml2](https://cran.r-project.org/web/packages/xml2/index.html) package from CRAN is used instead but is much slower. Specially for large MS files (e.g., high resolution MS files with ion mobility), the [mzR](https://bioconductor.org/packages/release/bioc/html/mzR.html) package is recommended. The data parsed is the same independently of the package used. The structure of an example msAnalysis object is shown below and consists of 23 entries (see `?msAnalysis` for more information).
+Within the msData object, the internal field analyses is a list of MSAnalysis S3 class objects representing MS files on disk. As shown above in [msData](#msdata) section, the msData can be initiated with the `files` argument using a character vector of full file path/s to *.mzML* or *.mzXML* files. Alternatively, the function `parse.msAnalysis()` can be used to generate the list of analysis objects and then the argument `analyses` of the `new()` method or the `add_analyses()` method can be used to add the MSAnalysis objects to the msData object. The package [mzR](https://bioconductor.org/packages/release/bioc/html/mzR.html) from [Bioconductor](https://bioconductor.org/) is used to parse the data. When the [mzR](https://bioconductor.org/packages/release/bioc/html/mzR.html) package is not available (i.e., not installed), the [xml2](https://cran.r-project.org/web/packages/xml2/index.html) package from CRAN is used instead but is much slower. Specially for large MS files (e.g., high resolution MS files with ion mobility), the [mzR](https://bioconductor.org/packages/release/bioc/html/mzR.html) package is recommended. The data parsed is the same independently of the package used. The structure of an example MSAnalysis object is shown below and consists of 23 entries (see `?MSAnalysis` for more information).
 
 - **name** is the file name without extension;
 - **replicate** is the analysis replicate group name; 
@@ -349,7 +350,7 @@ str(a1[[1]])
 
 ## Get basic information
 
-The data from msAnalysis objects can be obtained with get methods as shown above. Below, methods to get information from analyses are demonstrated. In all methods except the `get_number_analyses()`, the analyses argument can be used to query information from specific analyses, using the analysis name or the index as shown below.
+The data from MSAnalysis objects can be obtained with get methods as shown above. Below, methods to get information from analyses are demonstrated. In all methods except the `get_number_analyses()`, the analyses argument can be used to query information from specific analyses, using the analysis name or the index as shown below.
 
 ```{r}
 # getter for number of analyses
@@ -359,7 +360,7 @@ ms$get_number_analyses()
 ms$get_analysis_names(analyses = 1:2)
 
 # getter for file full paths of analyses
-ms$get_file_paths(3)
+ms$get_files(3)
 
 # getter for replicate group names
 ms$get_replicate_names()
@@ -507,7 +508,7 @@ all(round(apply(t2[, 2:7], 2, sd), digits = 4) == 0)
 
 ## Get and plot spectra
 
-Besides the `get_tic()` and `get_bpc()` methods (shown above). There are four methods to get low level spectra from analyses: `get_spectra()`, `get_eic()`, `get_ms1()` and `get_ms2()`. All methods use the same arguments as the function `make_ms_targets()` to build MS targets and the *analyses* argument to specify which msAnalysis objects to query the data. All methods return a `data.table`. The documentation in `?msData` has detailed information about the use of each method. For each get method, a plot method is available with similar interface. Below each get and plot method is demonstrated for the defined targets.
+Besides the `get_tic()` and `get_bpc()` methods (shown above). There are four methods to get low level spectra from analyses: `get_spectra()`, `get_eic()`, `get_ms1()` and `get_ms2()`. All methods use the same arguments as the function `make_ms_targets()` to build MS targets and the *analyses* argument to specify which MSAnalysis objects to query the data. All methods return a `data.table`. The documentation in `?msData` has detailed information about the use of each method. For each get method, a plot method is available with similar interface. Below each get and plot method is demonstrated for the defined targets.
 
 ### Mass traces
 
@@ -608,10 +609,10 @@ Possible using the function `convert_ms_files()` which utilizes the [MSConvert](
 
 # Processing settings
 
-Data processing steps often require settings with parameters to support the application of a given function to the data. In the msData object, methods that require settings have the `settings` argument (e.g., the method `find_features()`). In the streamFind package, the `settings` argument takes a settings S3 class and list object (see `?settings`) with three mandatory elements: *call*, *algorithm* and *parameters*. The *call* defines the name of the method (or processing step to be applied), such as "find_features" or "group_features". The *algorithm* defines the algorithm to be used for the processing step (e.g., "xcms" or "openms"). Finally, the *parameters* are a list of algorithm dependent entries that define the settings to be applied during the data processing. An example for "find_features" settings using the algorithm "xcms" is given below. Most of the data processing methods in streamFind use the package [patRoon](https://github.com/rickhelmus/patRoon). Therefore, the interface parameters is similar. The algorithm and parameters (named "param" in [patRoon](https://github.com/rickhelmus/patRoon)) can be taken from the respective documentation of the equivalent function. For instance, the `find_features()` method in streamFind uses the [findFeatures()](https://rickhelmus.github.io/patRoon/reference/findFeatures.html) function in [patRoon](https://github.com/rickhelmus/patRoon). The documentation of each data processing method in `?msData` explains and exemplifies the usage and where the required settings can be acquired in [patRoon](https://github.com/rickhelmus/patRoon).
+Data processing steps often require settings with parameters to support the application of a given function to the data. In the msData object, methods that require settings have the `settings` argument (e.g., the method `find_features()`). In the streamFind package, the `settings` argument takes a ProcessingSettings S3 class and list object (see `?ProcessingSettings`) with three mandatory elements: *call*, *algorithm* and *parameters*. The *call* defines the name of the method (or processing step to be applied), such as "find_features" or "group_features". The *algorithm* defines the algorithm to be used for the processing step (e.g., "xcms" or "openms"). Finally, the *parameters* are a list of algorithm dependent entries that define the settings to be applied during the data processing. An example for "find_features" settings using the algorithm "xcms" is given below. Most of the data processing methods in streamFind use the package [patRoon](https://github.com/rickhelmus/patRoon). Therefore, the interface parameters is similar. The algorithm and parameters (named "param" in [patRoon](https://github.com/rickhelmus/patRoon)) can be taken from the respective documentation of the equivalent function. For instance, the `find_features()` method in streamFind uses the [findFeatures()](https://rickhelmus.github.io/patRoon/reference/findFeatures.html) function in [patRoon](https://github.com/rickhelmus/patRoon). The documentation of each data processing method in `?msData` explains and exemplifies the usage and where the required settings can be acquired in [patRoon](https://github.com/rickhelmus/patRoon).
 
 ```{r ff-settings-xcms}
-settingsFindFeatures <- settings(
+settingsFindFeatures <- ProcessingSettings(
   "call" = "find_features",
   "algorithm" = "xcms3",
   "parameters" = list(
@@ -635,7 +636,7 @@ settingsFindFeatures <- settings(
 settingsFindFeatures
 ```
 
-The settings object can be added to the msData object with the `add_settings()` method as shown below. Similarly, it can be obtained with the `get_settings()` method using the call name as also shown below.
+The ProcessingSettings object can be added to the msData object with the `add_settings()` method as shown below. Similarly, it can be obtained with the `get_settings()` method using the call name as also shown below.
 
 ```{r add-ff-xcms}
 ms$add_settings(settings = settingsFindFeatures)
@@ -648,7 +649,7 @@ ms$get_settings(call = "find_features")[["find_features"]]
 
 # Features
 
-Extraction of features from raw MS data is a frequent step applied during data processing for easing prioritization and identification of chemicals in a given analysis (i.e., sample). A feature in essence describes a chromatographic peak composed fundamentally of three values: mass-to-charge ratio (*m/z*), retention time (rt) and intensity. The method `find_features()` from an msData object can be used to extract features from files represented by the msAnalysis objects. Several algorithms (i.e., software) are available for finding features through the [patRoon](https://github.com/rickhelmus/patRoon) package as above mentioned. Some algorithms require spectral data in profile mode but most use centroided data (see [centroiding](#centroiding) section for more information about centroid vs profile mode). Below, we use the added settings to find features from the analyses in the object `ms`. Note that the argument `settings` was not used (`NULL` is the default value) as the settings were already added to the object. Adding settings via the argument `settings` during call for method `find_features()` would replace existing settings in the msData object with call name "find_features". If settings with call name "find_features" are not available or given, features are not extracted.
+Extraction of features from raw MS data is a frequent step applied during data processing for easing prioritization and identification of chemicals in a given analysis (i.e., sample). A feature in essence describes a chromatographic peak composed fundamentally of three values: mass-to-charge ratio (*m/z*), retention time (rt) and intensity. The method `find_features()` from an msData object can be used to extract features from files represented by the MSAnalysis objects. Several algorithms (i.e., software) are available for finding features through the [patRoon](https://github.com/rickhelmus/patRoon) package as above mentioned. Some algorithms require spectral data in profile mode but most use centroided data (see [centroiding](#centroiding) section for more information about centroid vs profile mode). Below, we use the added settings to find features from the analyses in the object `ms`. Note that the argument `settings` was not used (`NULL` is the default value) as the settings were already added to the object. Adding settings via the argument `settings` during call for method `find_features()` would replace existing settings in the msData object with call name "find_features". If settings with call name "find_features" are not available or given, features are not extracted.
 
 ```{r ff-01, warning=FALSE, results='hide'}
 ms$find_features(settings = NULL)
@@ -664,7 +665,7 @@ ms
 
 ## Get features
 
-As above described, there are get methods to parse data from an msData class object. For features, the method `get_features()` can be used as shown below. When no arguments are given, the features `data.table` in each msAnalysis object is collated without filtering and a column analysis is given to make reference for the analysis that the corresponding features belong to.
+As above described, there are get methods to parse data from an msData class object. For features, the method `get_features()` can be used as shown below. When no arguments are given, the features `data.table` in each MSAnalysis object is collated without filtering and a column analysis is given to make reference for the analysis that the corresponding features belong to.
 
 ```{r get-all-features}
 head(ms$get_features())
@@ -766,7 +767,7 @@ MS1 and MS2 spectra can support identification processing steps by giving additi
 
 ```{r features-ms1-ms2-settings}
 # Settings for loading features MS1 spectra
-settingsLoadFeaturesMS1 <- settings(
+settingsLoadFeaturesMS1 <- ProcessingSettings(
   "call" = "load_features_ms1",
   "algorithm" = "streamFind",
   "parameters" = list(
@@ -783,7 +784,7 @@ settingsLoadFeaturesMS1 <- settings(
 ms$add_settings(settings = settingsLoadFeaturesMS1)
 
 # Settings for loading features MS2 spectra
-settingsLoadFeaturesMS2 <- settings(
+settingsLoadFeaturesMS2 <- ProcessingSettings(
   "call" = "load_features_ms2",
   "algorithm" = "streamFind",
   "parameters" = list(
@@ -891,7 +892,7 @@ Not yet implemented.
 After extraction of features, correspondence analysis (i.e., grouping of features across analyses) is often applied as a following processing step. The result from correspondence analysis is feature groups, describing the correspondent features in each analysis. The method `group_features()` is used for correspondence analysis of features in an msData object. Similarly to `find_features()`, the `group_features()` method uses settings. Also here the [patRoon](https://github.com/rickhelmus/patRoon) package is used in the background. More precisely, the function [groupFeatures()](https://rickhelmus.github.io/patRoon/reference/groupFeatures.html) from [patRoon](https://github.com/rickhelmus/patRoon) is used. Therefore, the settings algorithm and parameters can be obtained by the documentation of [groupFeatures()](https://rickhelmus.github.io/patRoon/reference/groupFeatures.html). Below the correspondence analysis is demonstrated using the algorithm "xcms".
 
 ```{r grouping-settings}
-settingsGroupFeatures <- settings(
+settingsGroupFeatures <- ProcessingSettings(
   "call" = "group_features",
   "algorithm" = "xcms3",
   "parameters" = list(
@@ -929,7 +930,7 @@ Feature groups are stored in the groups internal field as a `data.table`, which 
  - **filtered**: (logical) `TRUE` means that the feature group was filtered out from the set but still remained in the data set (see [filters](#filters) section for more information);
  - **filter**: (character) The filter tag or `NA_character_` if the feature group is not filtered (i.e., filtered is `FALSE`);
 
-For each msAnalysis object, a column with the analysis name is added to the groups `data.table` with the intensity of the feature. Other columns are added by streamFind from specific workflow methods but these are explained in the respective method demonstration and documentation.
+For each MSAnalysis object, a column with the analysis name is added to the groups `data.table` with the intensity of the feature. Other columns are added by streamFind from specific workflow methods but these are explained in the respective method demonstration and documentation.
 
 ```{r get-groups-field}
 head(ms$get_groups())
@@ -1008,7 +1009,7 @@ msTargets
 
 ```{r groups-ms1-ms2-settings}
 # Settings for loading groups MS1 spectra
-settingsLoadGroupsMS1 <- settings(
+settingsLoadGroupsMS1 <- ProcessingSettings(
   "call" = "load_groups_ms1",
   "algorithm" = "streamFind",
   "parameters" = list(
@@ -1023,7 +1024,7 @@ settingsLoadGroupsMS1 <- settings(
 msTargets$add_settings(settings = settingsLoadGroupsMS1)
 
 # Settings for loading groups MS2 spectra
-settingsLoadGroupsMS2 <- settings(
+settingsLoadGroupsMS2 <- ProcessingSettings(
   "call" = "load_groups_ms2",
   "algorithm" = "streamFind",
   "parameters" = list(

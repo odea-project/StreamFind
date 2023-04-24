@@ -146,8 +146,16 @@ ms <- msData$new(files = all_files[10:21],
   )
 )
 
+ms$plot_spectra(analyses = 1, mz = 239, ppm = 500)
+
+ms1 <- ms1$subset_analyses(1)
+
+ms1$load_spectra()
+
+ms1$get_analyses()[[1]][["spectra"]]
 
 
+# do.call(ms[["get_analysis_names"]], list(analyses = 4:6))
 
 
 
@@ -155,12 +163,11 @@ ms <- msData$new(files = all_files[10:21],
 # temp -------------------------------------------------------------------------
 
 
-input <- c(1.1, 2.1, 3.31641646564465464, 1000)
-
+input <- c(1.1, 2.1, 3.31641646564465464, 1000, 314)
 rcpp_parse_xml(input)
 
 
-
+do
 
 
 

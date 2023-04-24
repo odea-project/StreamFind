@@ -56,8 +56,6 @@ msData <- R6::R6Class("msData",
     #' analyses names or indices from the `msData` object. Returns a valid
     #' character vector with analysis names or `NULL` for non-matching.
     #'
-    #' @param analyses X.
-    #'
     .check_analyses_argument = function(analyses = NULL) {
       if (is.null(analyses)) {
         self$get_analysis_names()
@@ -74,9 +72,6 @@ msData <- R6::R6Class("msData",
 
     #' @description
     #' Gets an entry from the analyses private field.
-    #'
-    #' @param analyses X.
-    #' @param value X.
     #'
     .get_analyses_entry = function(analyses = NULL, value = NA_character_) {
       analyses <- private$.check_analyses_argument(analyses)
@@ -95,7 +90,6 @@ msData <- R6::R6Class("msData",
       output <- unlist(output, recursive = FALSE, use.names = TRUE)
 
       output[names(output) %in% analyses]
-
     }
   ),
 
@@ -142,7 +136,7 @@ msData <- R6::R6Class("msData",
       if (!is.null(settings)) suppressMessages(self$add_settings(settings))
 
       if (is.null(analyses) & !is.null(files)) {
-        analyses <- parse_msAnalysis(files, runParallel)
+        analyses <- parse.msAnalysis(files, runParallel)
         if (is.null(analyses)) {
           warning("No valid files were given! msData object is empty. \n")
         }
@@ -632,19 +626,25 @@ msData <- R6::R6Class("msData",
 
       targets <- make_ms_targets(mz, rt, ppm, sec, id)
 
-      if (TRUE %in% (targets$mzmax == 0)) {
-        targets$mzmax[targets$mzmax == 0] <- max(self$get_mz_high(analyses))
-      }
+      if (all(apply(targets[, -1], 1, sum) != 0)) {
 
-      if (TRUE %in% (targets$rtmax == 0)) {
-        targets$rtmax[targets$rtmax == 0] <- max(self$get_rt_end(analyses))
+        if (TRUE %in% (targets$mzmax == 0)) {
+          targets$mzmax[targets$mzmax == 0] <- max(self$get_mz_high(analyses))
+        }
+
+        if (TRUE %in% (targets$rtmax == 0)) {
+          targets$rtmax[targets$rtmax == 0] <- max(self$get_rt_end(analyses))
+        }
+
+      } else {
+        targets <- NULL
       }
 
       if (!2 %in% levels) allTraces <- TRUE
 
       if (!is.logical(allTraces)) allTraces <- TRUE
 
-      if (!allTraces) {
+      if (!allTraces & !is.null(targets)) {
         if (!any(is.numeric(isolationWindow) | is.integer(isolationWindow))) {
           isolationWindow <- 0
         }
@@ -746,27 +746,27 @@ msData <- R6::R6Class("msData",
 
             if (!is.null(targets)) {
 
-              trim_vector <- function(v, a, b) rowSums(mapply(function(a, b) v >= a & v <= b, a = a, b = b)) > 0
+              trim <- function(v, a, b) rowSums(mapply(function(a, b) v >= a & v <= b, a = a, b = b)) > 0
 
               if ("analysis" %in% colnames(targets)) {
                 tp_tar <- targets[targets$analysis %in% i$name, ]
                 if (nrow(tp_tar) > 0) {
-                  run <- run[trim_vector(run$rt, tp_tar$rtmin, tp_tar$rtmax), ]
+                  run <- run[trim(run$rt, tp_tar$rtmin, tp_tar$rtmax), ]
                 } else {
                   run <- data.frame()
                 }
               } else {
-                run <- run[trim_vector(run$rt, targets$rtmin, targets$rtmax), ]
+                run <- run[trim(run$rt, targets$rtmin, targets$rtmax), ]
               }
             }
 
             if (!is.null(preMZr) & !is.null(targets)) {
               if ("analysis" %in% colnames(targets)) {
                 pre_tar <- preMZr[targets$analysis %in% i$name, ]
-                preMZ_check <- trim_vector(run$pre_mz, pre_tar$mzmin, pre_tar$mzmax)
+                preMZ_check <- trim(run$pre_mz, pre_tar$mzmin, pre_tar$mzmax)
                 run <- run[(preMZ_check %in% TRUE) | is.na(preMZ_check), ]
               } else {
-                preMZ_check <- trim_vector(run$pre_mz, preMZr$mzmin, preMZr$mzmax)
+                preMZ_check <- trim(run$pre_mz, preMZr$mzmin, preMZr$mzmax)
                 run <- run[(preMZ_check %in% TRUE) | is.na(preMZ_check), ]
               }
             }
@@ -839,6 +839,7 @@ msData <- R6::R6Class("msData",
     #' Method to get spectra from the MS analyses.
     #'
     #' @param analyses X.
+    #' @param index X.
     #' @param minIntensity X.
     #' @param runParallel X.
     #'
@@ -1066,11 +1067,11 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Method to get settings from analyses.
+    #' Method to get ProcessingSettings S3 class objects from the msData.
     #'
     #' @param call A string with the name of function call.
     #'
-    #' @return A data.frame.
+    #' @return X.
     #'
     get_settings = function(call = NULL) {
       if (is.null(call)) {
@@ -1792,7 +1793,7 @@ msData <- R6::R6Class("msData",
       if (is.list(settings)) {
 
         if (all(c("call", "algorithm", "parameters") %in% names(settings))) {
-          settings <- as.settings(settings)
+          settings <- as.ProcessingSettings(settings)
 
           if (!is.null(settings)) {
             private$.settings[[settings$call]] <- settings
@@ -2239,7 +2240,7 @@ msData <- R6::R6Class("msData",
         settings <- settings[["load_features_ms1"]]
       }
 
-      if (validate.settings(settings)) {
+      if (validate.ProcessingSettings(settings)) {
         if (!"load_features_ms1" %in% settings$call) {
           warning("Settings call must be load_features_ms1!")
           valid <- FALSE
@@ -2349,7 +2350,7 @@ msData <- R6::R6Class("msData",
         settings <- settings[["load_features_ms2"]]
       }
 
-      if (validate.settings(settings)) {
+      if (validate.ProcessingSettings(settings)) {
         if (!"load_features_ms2" %in% settings$call) {
           warning("Settings call must be 'load_features_ms2'!")
           valid <- FALSE
@@ -2468,7 +2469,7 @@ msData <- R6::R6Class("msData",
         settings <- settings[["load_groups_ms1"]]
       }
 
-      if (validate.settings(settings)) {
+      if (validate.ProcessingSettings(settings)) {
         if (!"load_groups_ms1" %in% settings$call) {
           warning("Settings call must be 'load_groups_ms1'!")
           valid <- FALSE
@@ -2580,7 +2581,7 @@ msData <- R6::R6Class("msData",
         settings <- settings[["load_groups_ms2"]]
       }
 
-      if (validate.settings(settings)) {
+      if (validate.ProcessingSettings(settings)) {
         if (!"load_groups_ms2" %in% settings$call) {
           warning("Settings call must be 'load_groups_ms2'!")
           valid <- FALSE
@@ -3704,6 +3705,8 @@ msData <- R6::R6Class("msData",
 
       fts <- self$get_features(analyses, features, mass, mz, rt, ppm, sec, filtered)
 
+      browser()
+
       eic <- self$get_features_eic(
         analyses = unique(fts$analysis), features = fts$feature,
         rtExpand = rtExpand, mzExpand = mzExpand, runParallel = runParallel
@@ -4252,7 +4255,7 @@ msData <- R6::R6Class("msData",
         settings <- settings[["find_features"]]
       }
 
-      if (validate.settings(settings)) {
+      if (validate.ProcessingSettings(settings)) {
         if (!"find_features" %in% settings$call) {
           warning("Settings call must be find_features!")
           valid <- FALSE
@@ -4323,7 +4326,7 @@ msData <- R6::R6Class("msData",
         settings <- settings[["group_features"]]
       }
 
-      if (validate.settings(settings)) {
+      if (validate.ProcessingSettings(settings)) {
         if (!"group_features" %in% settings$call) {
           warning("Settings call must be group_features!")
           valid <- FALSE
