@@ -1,7 +1,8 @@
-#' **ProcessingSettings** S3 class constructor and methods
+#' **ProcessingSettings** S3 class constructor, methods and functions
 #'
 #' @description
-#' Creates a ProcessingSettings S3 class object.
+#' Creates a ProcessingSettings S3 class object. The ProcessingSettings are used
+#' in \pkg{streamFind} for processing data in a given data class method.
 #'
 #' @param call Character of length one with the name of the method where the
 #' processing settings are to be applied.
@@ -10,8 +11,9 @@
 #' @param parameters List with parameters specific for the method `call` and
 #' `algorithm`.
 #'
-#' @details See the method documentation for more information about possible
-#' algorithms and parameters to be used.
+#' @details See the documentation of the method where the processing settings
+#' are to be applied for more information about applicable algorithms and
+#' parameters.
 #'
 #' @return A ProcessingSettings S3 class
 #'
@@ -81,12 +83,12 @@ validate.ProcessingSettings <- function(x = NULL) {
     if (all(c("call", "algorithm", "parameters") %in% names(x))) {
       valid <- TRUE
 
-      if (!length(x$call) == 1) {
+      if (!length(x$call) == 1 & !all(is.character(x$algorithm))) {
         warning("Call entry must be of length 1!")
         valid <- FALSE
       }
 
-      if (length(x$algorithm) != 1 & !is.character(x$algorithm)) {
+      if (length(x$algorithm) != 1 & !all(is.character(x$algorithm))) {
         warning("Algorithm entry must be of length 1 and type character!")
         valid <- FALSE
       }
@@ -96,44 +98,6 @@ validate.ProcessingSettings <- function(x = NULL) {
         valid <- FALSE
       }
 
-      if (valid) {
-
-        processingFunctionCalls <- c(
-          "find_features", "annotate_features",
-          "load_features_ms1", "load_features_ms2",
-          "load_groups_ms1", "load_groups_ms2",
-          "group_features", "fill_features",
-          "filter_features"
-        )
-
-        if (!any(processingFunctionCalls %in% x$call)) {
-          warning("Call name not present in msData class processing methods!")
-          valid <- FALSE
-        }
-
-        if (valid) {
-          if ("find_features" %in% x$call) {
-            ff_algorithm <- c(
-              "openms", "xcms", "xcms3", "envipick",
-              "sirius", "kpic2", "safd"
-            )
-
-            if (!any(ff_algorithm %in% x$algorithm)) {
-              warning("Algorithm not viable for find_feature call!")
-              valid <- FALSE
-            }
-          }
-
-          if ("group_features" %in% x$call) {
-            fg_algorithm <- c("openms", "xcms", "xcms3", "kpic2", "sirius")
-
-            if (!any(fg_algorithm %in% x$algorithm)) {
-              warning("Algorithm not viable for group_feature call!")
-              valid <- FALSE
-            }
-          }
-        }
-      }
     } else {
       warning("Settings elements must be named call, algorithm and parameters!")
     }
@@ -142,9 +106,31 @@ validate.ProcessingSettings <- function(x = NULL) {
 }
 
 #' @describeIn ProcessingSettings
+#' Converts a ProcessingSettings S3 class object to a JSON string.
+#'
+#' @export
+asJSON.ProcessingSettings <- function(x) {
+  toJSON(
+    x,
+    dataframe = "columns",
+    Date = "ISO8601",
+    POSIXt = "string",
+    factor = "string",
+    complex = "string",
+    null = "null",
+    na = "null",
+    auto_unbox = FALSE,
+    digits = 8,
+    pretty = TRUE,
+    force = TRUE
+  )
+}
+
+#' @describeIn ProcessingSettings
 #' Converts the argument in a ProcessingSettings S3 class object.
 #'
-#' @param value A list to be checked and/or converted to ProcessingSettings S3 class.
+#' @param value A list to be checked and/or converted to ProcessingSettings S3
+#' class.
 #'
 #' @export
 as.ProcessingSettings <- function(value) {
@@ -152,5 +138,3 @@ as.ProcessingSettings <- function(value) {
   if (!all(must_have_elements %in% names(value))) return(NULL)
   ProcessingSettings(value$call, value$algorithm, value$parameters)
 }
-
-

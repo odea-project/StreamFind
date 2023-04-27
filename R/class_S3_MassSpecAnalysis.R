@@ -1,7 +1,7 @@
-#' **msAnalysis** S3 class constructor and methods
+#' **MassSpecAnalysis** S3 class constructor, methods and functions
 #'
 #' @description
-#' Creates an msAnalysis S3 class object.
+#' Creates a MassSpecAnalysis S3 class object.
 #'
 #' @param name *mzML* or *mzXML* file name without extension.
 #' @param replicate Character with length one, representing the analysis
@@ -43,34 +43,34 @@
 #' @param metadata List with flexible storage for experimental metadata
 #' (e.g., concentration, location, etc.).
 #'
-#' @return An msAnalysis S3 class object.
+#' @return An MassSpecAnalysis S3 class object.
 #'
 #' @export
 #'
-msAnalysis <- function(name = NA_character_,
-                       replicate = NA_character_,
-                       blank = NA_character_,
-                       file = NA_character_,
-                       format = NA_character_,
-                       type = NA_character_,
-                       time_stamp = NA_character_,
-                       spectra_number = NA_integer_,
-                       spectra_mode = NA_character_,
-                       spectra_levels = NA_integer_,
-                       mz_low = NA_real_,
-                       mz_high = NA_real_,
-                       rt_start = NA_real_,
-                       rt_end = NA_real_,
-                       polarity = NA_character_,
-                       has_ion_mobility = FALSE,
-                       chromatograms_number = NA_integer_,
-                       instrument = data.table(),
-                       software = data.table(),
-                       run = data.table(),
-                       spectra = data.table(),
-                       chromatograms = data.table(),
-                       features = data.table(),
-                       metadata = list()) {
+MassSpecAnalysis <- function(name = NA_character_,
+                             replicate = NA_character_,
+                             blank = NA_character_,
+                             file = NA_character_,
+                             format = NA_character_,
+                             type = NA_character_,
+                             time_stamp = NA_character_,
+                             spectra_number = NA_integer_,
+                             spectra_mode = NA_character_,
+                             spectra_levels = NA_integer_,
+                             mz_low = NA_real_,
+                             mz_high = NA_real_,
+                             rt_start = NA_real_,
+                             rt_end = NA_real_,
+                             polarity = NA_character_,
+                             has_ion_mobility = FALSE,
+                             chromatograms_number = NA_integer_,
+                             instrument = data.table(),
+                             software = data.table(),
+                             run = data.table(),
+                             spectra = data.table(),
+                             chromatograms = data.table(),
+                             features = data.table(),
+                             metadata = list()) {
 
   if (is.data.frame(features)) {
     if ("ms1" %in% colnames(features)) {
@@ -141,127 +141,124 @@ msAnalysis <- function(name = NA_character_,
   x$chromatograms <- as.data.table(x$chromatograms)
   x$features <- as.data.table(x$features)
 
-  if (validate.msAnalysis(x)) {
-    structure(x, class = "msAnalysis")
+  if (validate.MassSpecAnalysis(x)) {
+    structure(x, class = "MassSpecAnalysis")
   } else {
     NULL
   }
 }
 
-#' @describeIn msAnalysis
-#' Validates an msAnalysis S3 class object, returning a logical value of length
-#' one.
+#' @describeIn MassSpecAnalysis
+#' Validates a MassSpecAnalysis S3 class object, returning a logical value of
+#' length one.
 #'
-#' @param value A msAnalysis S3 class object.
+#' @param x A MassSpecAnalysis S3 class object.
 #'
 #' @export
 #'
-validate.msAnalysis <- function(value = NULL) {
+validate.MassSpecAnalysis <- function(x = NULL) {
   valid <- FALSE
   name <- NA_character_
 
-  if (is.list(value)) {
+  if (is.list(x)) {
     valid <- TRUE
 
-    if (length(value$name) != 1 & !is.character(value$name)) {
+    if (length(x$name) != 1 & !is.character(x$name)) {
       warning("Analysis name not conform!")
       valid <- FALSE
     } else {
-      name <- value$name
+      name <- x$name
     }
 
-    if (length(value$replicate) != 1 &
-        !is.character(value$replicate)) {
+    if (length(x$replicate) != 1 &
+        !is.character(x$replicate)) {
       warning("Analysis replicate name not conform!")
       valid <- FALSE
     }
 
-    if (length(value$blank) != 1 & !is.character(value$blank)) {
+    if (length(x$blank) != 1 & !is.character(x$blank)) {
       warning("Analysis blank name not conform!")
       valid <- FALSE
     }
 
-    if (length(value$format) != 1) {
+    if (length(x$format) != 1) {
       warning("Analysis format not conform!")
       valid <- FALSE
-    } else if (!(value$format %in% c("mzML", "mzXML"))) {
+    } else if (!(x$format %in% c("mzML", "mzXML"))) {
       warning("Analysis format must be 'mzML' ot 'mzXML'!")
       valid <- FALSE
     }
 
-    if (length(value$file) != 1 & !is.character(value$file)) {
+    if (length(x$file) != 1 & !is.character(x$file)) {
       warning("Analysis file path entry not conform!")
       valid <- FALSE
-    } else if (!file.exists(value$file)) {
-      warning(paste0(
-        value$file,
-        " does not exist! Update file paths with msData$update_files() method"
-      ))
+    } else if (!file.exists(x$file)) {
+      warning(paste0(x$file, " does not exist!"))
       valid <- FALSE
     }
 
-    if (length(value$type) != 1) {
+    if (length(x$type) != 1) {
       warning("Analysis type entry not conform!")
       valid <- FALSE
-    } else if (!(value$type %in% c("MS", "MS/MS", "SRM"))) {
+    } else if (!(x$type %in% c("MS", "MS/MS", "SRM"))) {
       warning("Analysis type must be 'MS', 'MS/MS' or 'SRM'!")
       valid <- FALSE
     }
 
-    if (!is.integer(value$spectra_number) &&
-        length(value$spectra_number) != 1) {
+    if (!is.integer(x$spectra_number) &&
+        length(x$spectra_number) != 1) {
       warning("Analysis spectra_numebr entry not conform!")
       valid <- FALSE
     }
 
-    if (!is.integer(value$chromatograms_number) &&
-        length(value$chromatograms_number) != 1) {
+    if (!is.integer(x$chromatograms_number) &&
+        length(x$chromatograms_number) != 1) {
       warning("Analysis chromatograms_number entry not conform!")
       valid <- FALSE
     }
 
-    if (!is.character(value$spectra_mode) &
-        length(value$spectra_mode) != 1) {
+    if (!is.character(x$spectra_mode) &
+        length(x$spectra_mode) != 1) {
       warning("Analysis spectra_mode entry not conform!")
       valid <- FALSE
     }
 
-    if (!is.integer(value$spectra_levels)) {
+    if (!is.integer(x$spectra_levels)) {
       warning("Analysis spectra_levels entry not conform!")
       valid <- FALSE
     }
 
-    if (length(value$mz_low) != 1 & !is.numeric(value$mz_low)) {
+    if (length(x$mz_low) != 1 & !is.numeric(x$mz_low)) {
       warning("Analysis mz_low entry not conform!")
       valid <- FALSE
     }
 
-    if (length(value$mz_high) != 1 & !is.numeric(value$mz_high)) {
+    if (length(x$mz_high) != 1 & !is.numeric(x$mz_high)) {
       warning("Analysis mz_high entry not conform!")
       valid <- FALSE
     }
 
-    if (length(value$rt_start) != 1 & !is.numeric(value$rt_start)) {
+    if (length(x$rt_start) != 1 & !is.numeric(x$rt_start)) {
       warning("Analysis rt_start entry not conform!")
       valid <- FALSE
     }
 
-    if (length(value$rt_end) != 1 & !is.numeric(value$rt_end)) {
+    if (length(x$rt_end) != 1 & !is.numeric(x$rt_end)) {
       warning("Analysis rt_end entry not conform!")
       valid <- FALSE
     }
 
-    if (!is.character(value$polarity)) {
+    if (!is.character(x$polarity)) {
       warning("Analysis polarity entry not conform!")
       valid <- FALSE
     } else if (FALSE %in%
-        (value$polarity %in% c("positive", "negative", NA_character_))) {
+        (x$polarity %in% c("positive", "negative", NA_character_))) {
       warning("Analysis polarity entry not conform!")
       valid <- FALSE
     }
 
-    if (length(value$has_ion_mobility) != 1 &
-        !is.logical(value$has_ion_mobility)) {
+    if (length(x$has_ion_mobility) != 1 &
+        !is.logical(x$has_ion_mobility)) {
       warning("Analysis ion_mobility entry not conform!")
       valid <- FALSE
     }
@@ -272,55 +269,76 @@ validate.msAnalysis <- function(value = NULL) {
       "pre_scan", "pre_mz", "pre_ce"
     )
 
-    if (!is.data.frame(value$run)) {
+    if (!is.data.frame(x$run)) {
       warning("Analysis run entry not conform!")
       valid <- FALSE
     } else if (FALSE %in%
-        (must_have_run_cols %in% colnames(value$run))) {
+        (must_have_run_cols %in% colnames(x$run))) {
       warning("Analysis run data.table must have columns index, scan, traces, level, rt, bpc_mz, bpc_intensity, tic_intensity, pre_scan, pre_mz and pre_ce!")
       valid <- FALSE
     }
 
-    if (!is.data.frame(value$spectra)) {
+    if (!is.data.frame(x$spectra)) {
       warning("Analysis spectra entry not conform!")
       valid <- FALSE
     }
 
-    if (!is.data.frame(value$chromatograms)) {
+    if (!is.data.frame(x$chromatograms)) {
       warning("Analysis chromatograms entry not conform!")
       valid <- FALSE
     }
 
-    if (!is.data.frame(value$features)) {
+    if (!is.data.frame(x$features)) {
       warning("Analysis features entry not conform!")
       valid <- FALSE
     }
 
-    if (!is.list(value$metadata)) {
+    if (!is.list(x$metadata)) {
       warning("Analysis netadata entry not conform!")
       valid <- FALSE
     }
   }
 
-  if (!valid) warning("Issue/s found with analysis ", value$name, "!")
+  if (!valid) warning("Issue/s found with analysis ", x$name, "!")
 
   valid
 }
 
-#' @describeIn msAnalysis
-#' Converts the argument value in an msAnalysis S3 class object.
-#'
-#' @param value A list to be checked and/or converted to msAnalysis S3 class.
+#' @describeIn MassSpecAnalysis
+#' Converts a MassSpecAnalysis S3 class object to a JSON string.
 #'
 #' @export
-as.msAnalysis <- function(value) {
-  if (length(value) == 1 & is.list(value)) value <- value[[1]]
-  do.call(msAnalysis, value)
+asJSON.MassSpecAnalysis <- function(x) {
+  toJSON(
+    x,
+    dataframe = "columns",
+    Date = "ISO8601",
+    POSIXt = "string",
+    factor = "string",
+    complex = "string",
+    null = "null",
+    na = "null",
+    auto_unbox = FALSE,
+    digits = 8,
+    pretty = TRUE,
+    force = TRUE
+  )
 }
 
-#' @describeIn msAnalysis
+#' @describeIn MassSpecAnalysis
+#' Converts the argument value in a MassSpecAnalysis S3 class object.
+#'
+#' @param value A list to be checked and/or converted to MassSpecAnalysis S3 class.
+#'
+#' @export
+as.MassSpecAnalysis <- function(value) {
+  if (length(value) == 1 & is.list(value)) value <- value[[1]]
+  do.call(MassSpecAnalysis, value)
+}
+
+#' @describeIn MassSpecAnalysis
 #' Parses information from *mzML* or *mzXML* file/s and returns a list with
-#' msAnalysis S3 class object/s. On error, returns \code{NULL}.
+#' MassSpecAnalysis S3 class object/s. On error, returns \code{NULL}.
 #'
 #' @param files A character vector with *mzML* or *mzXML* full file path/s.
 #' Alternatively, a data.frame with the column/s file, replicate and blank
@@ -329,7 +347,7 @@ as.msAnalysis <- function(value) {
 #' @template arg-runParallel
 #'
 #' @export
-parse.msAnalysis <- function(files = NULL, runParallel = FALSE) {
+parse.MassSpecAnalysis <- function(files = NULL, runParallel = FALSE) {
 
   if (is.data.frame(files)) {
     if ("file" %in% colnames(files)) {
@@ -382,7 +400,7 @@ parse.msAnalysis <- function(files = NULL, runParallel = FALSE) {
     analyses <- patRoon::loadCacheData("parsed_ms_analyses", hash)
 
     if (!is.null(analyses)) {
-      if (all(vapply(analyses, validate.msAnalysis, FALSE))) {
+      if (all(vapply(analyses, validate.MassSpecAnalysis, FALSE))) {
         cached_analyses <- TRUE
       } else {
         analyses <- NULL
@@ -412,15 +430,16 @@ parse.msAnalysis <- function(files = NULL, runParallel = FALSE) {
 
     i <- NULL
 
-    vars <- c("rcpp_parse_msAnalysis")
+    vars <- c("rcpp_parse_ms_analysis")
 
-    analyses <- foreach(i = files, .packages = "streamFind", .export = vars) %dopar% {
-      rcpp_parse_msAnalysis(i)
-    }
+    analyses <- foreach(i = files,
+      .packages = "streamFind",
+      .export = vars
+    ) %dopar% { rcpp_parse_ms_analysis(i) }
 
     class_analyses <- vapply(analyses, class, "")
 
-    if (!all(class_analyses %in% "msAnalysis")) return(NULL)
+    if (!all(class_analyses %in% "MassSpecAnalysis")) return(NULL)
 
     message(" Done!")
 

@@ -17,7 +17,7 @@
 
 
 // [[Rcpp::export]]
-Rcpp::List rcpp_parse_msAnalysis_chromatograms(Rcpp::List analysis, Rcpp::IntegerVector index = NA_INTEGER) {
+Rcpp::List rcpp_parse_ms_analysis_chromatograms(Rcpp::List analysis, Rcpp::IntegerVector index = NA_INTEGER) {
 
   Rcpp::DataFrame empty_df;
   empty_df.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");

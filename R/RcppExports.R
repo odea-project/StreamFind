@@ -33,16 +33,16 @@ rcpp_parse_chromatograms_headers <- function(file_path) {
     .Call(`_streamFind_rcpp_parse_chromatograms_headers`, file_path)
 }
 
-rcpp_parse_msAnalysis <- function(file_path) {
-    .Call(`_streamFind_rcpp_parse_msAnalysis`, file_path)
+rcpp_parse_ms_analysis <- function(file_path) {
+    .Call(`_streamFind_rcpp_parse_ms_analysis`, file_path)
 }
 
-rcpp_parse_msAnalysis_chromatograms <- function(analysis, index = NA_integer_) {
-    .Call(`_streamFind_rcpp_parse_msAnalysis_chromatograms`, analysis, index)
+rcpp_parse_ms_analysis_chromatograms <- function(analysis, index = NA_integer_) {
+    .Call(`_streamFind_rcpp_parse_ms_analysis_chromatograms`, analysis, index)
 }
 
-rcpp_parse_msAnalysis_spectra <- function(analysis, index = NA_integer_) {
-    .Call(`_streamFind_rcpp_parse_msAnalysis_spectra`, analysis, index)
+rcpp_parse_ms_analysis_spectra <- function(analysis, index = NA_integer_) {
+    .Call(`_streamFind_rcpp_parse_ms_analysis_spectra`, analysis, index)
 }
 
 rcpp_parse_spectra <- function(file_path, index = NA_integer_) {

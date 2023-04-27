@@ -107,21 +107,21 @@ knitr::kable(db[, cols_table_01, with = FALSE], caption = "Chemical standards sp
 
 <br>
 
-# msData
+# MassSpecData
 
-The msData is an [R6 class](https://r6.r-lib.org/articles/Introduction.html) object, holding the MS data parsed from *.mzML* or *.mzXML* files as well as the methods to get, visualize and process the parsed data (see `?msData` for detailed documentation). The most straight forward manner to initiate an msData object is with a character vector of *.mzML* or *.mzXML* file full path/s, as shown below for three MS files (triplicate, 1 to 3 in files table in section [MS files](#ms-files)). The object name was defined to *Example 1* using the argument *headers*. For more information on the `msData$new()` method, see `?msData` documentation.
+The MassSpecData is an [R6 class](https://r6.r-lib.org/articles/Introduction.html) object, holding the MS data parsed from *.mzML* or *.mzXML* files as well as the methods to get, visualize and process the parsed data (see `?MassSpecData` for detailed documentation). The most straight forward manner to initiate a MassSpecData object is with a character vector of *.mzML* or *.mzXML* file full path/s, as shown below for three MS files (triplicate, 1 to 3 in files table in section [MS files](#ms-files)). The object name was defined to *Example 1* using the argument *headers*. For more information on the `MassSpecData$new()` method, see `?MassSpecData` documentation.
 
 ```{r new-ms-object-call, results='hide', warning=FALSE}
-ms <- msData$new(files = files[1:3], headers = list(name = "Example 1"))
+ms <- MassSpecData$new(files = files[1:3], headers = list(name = "Example 1"))
 ```
 
-The `print` (or `show`) method is shown below by running the msData object name. A list of the included analyses is printed to the console matching the files added.
+The `print` (or `show`) method is shown below by running the MassSpecData object name. A list of the included analyses is printed to the console matching the files added.
 
 ```{r print-method}
 ms
 ```
 
-Another option to obtain an overview of the `ms` object is the method `get_overview()` as shown below, returning a data.frame with the analysis details within the msData object.
+Another option to obtain an overview of the `ms` object is the method `get_overview()` as shown below, returning a data.frame with the analysis details within the MassSpecData object.
 
 ```{r get-overview}
 ms$get_overview()[, 1:5] # only the first 5 columns
@@ -129,23 +129,23 @@ ms$get_overview()[, 1:5] # only the first 5 columns
 
 ## Internal fields
 
-The msData object contains the following internal fields (or private fields) to store standardized data: **headers**, **settings**, **analyses**, **groups** and **alignment**. The internal fields cannot be directly accessed nor changed. Instead, the user must use the respective get and add methods, as shown in the sections [get methods](#get-methods) and [add methods](#add-methods), respectively. The add methods contain validation and conformity checks to ensure that the structure and semantics of added data are respected.
+The MassSpecData object contains the following internal fields (or private fields) to store standardized data: **headers**, **settings**, **analyses**, **groups** and **alignment**. The internal fields cannot be directly accessed nor changed. Instead, the user must use the respective get and add methods, as shown in the sections [get methods](#get-methods) and [add methods](#add-methods), respectively. The add methods contain validation and conformity checks to ensure that the structure and semantics of added data are respected.
 
-- The **headers** is an S3 class object and list with flexible headers of length one (e.g., name, path, date, etc.) that characterize the msData object. When not given, *name*, *path* and *date* are automatically generated (*name* is set to `NA_character_`, *path* is set to `getwd()` and *date* is set to `Sys.time()`) and included in the list, as they are required for workflow purposes. Other entries can be added by the user without type (or class) limitations but should be uniquely named and of length one. See `?headers` for more information;
+- The **headers** is also a Headers S3 class object and list with flexible headers of length one (e.g., name, path, date, etc.) that characterize the MassSpecData object. When not given, *name*, *path* and *date* are automatically generated (*name* is set to `NA_character_`, *path* is set to `getwd()` and *date* is set to `Sys.time()`) and included in the list, as they are required for workflow purposes. Other entries can be added by the user without type (or class) limitations but should be uniquely named and of length one. See `?Headers` for more information;
 - The **settings** is a named `list` of ProcessingSettings S3 class objects used for data processing (see `?settings` for more information). Each added settings object is named according to the function call (or processing name). The settings interface is described in section [processing settings](#processing-settings);
-- The **analyses** is a named `list` of MSAnalysis S3 class objects representing each file added to the msData (see` ?MSAnalysis` for more information). The name of each MSAnalysis object in the analyses list is the name of the file (without extension). No duplicate file names (or analyses names) can exist in the msData. The structure of the MSAnalysis S3 class object is described in section [analyses](#analyses); 
+- The **analyses** is a named `list` of MassSpecAnalysis S3 class objects representing each file added to the MassSpecData (see` ?MassSpecAnalysis` for more information). The name of each MassSpecAnalysis object in the analyses list is the name of the file (without extension). No duplicate file names (or analyses names) can exist in the MassSpecData. The structure of the MassSpecAnalysis S3 class object is described in section [analyses](#analyses); 
 - The **groups** is a `data.table` with the feature groups after correspondence analysis (i.e., grouping of features across analyses). More information about **groups** is given in section [groups](#groups);
-- The **alignment** is a `list` with the results of the retention time alignment for each analyses in the msData object. More information about **alignment** is given in section [alignment](#alignment).
+- The **alignment** is a `list` with the results of the retention time alignment for each analyses in the MassSpecData object. More information about **alignment** is given in section [alignment](#alignment).
 
 ## Get methods
 
-Several methods are implemented to access data within the msData object, as already demonstrated for the `get_overview()`. A method is always used by writing the name of the msData object followed by a `$` and then the method call (e.g., `ms$get_overview()`). The internal fields can be accessed with `get_headers()`, `get_settings()`, `get_analyses()`, `get_groups()` and `get_alignment()`. For instance, the get method for the headers returns the list of entries. Note that the `path` and `date` were automatically created when the vignette was built even if not given is the headers argument when the msData object is created.
+Several methods are implemented to access data within the MassSpecData object, as already demonstrated for the `get_overview()`. A method is always used by writing the name of the MassSpecData object followed by a `$` and then the method call (e.g., `ms$get_overview()`). The internal fields can be accessed with `get_headers()`, `get_settings()`, `get_analyses()`, `get_groups()` and `get_alignment()`. For instance, the get method for the headers returns the list of entries. Note that the `path` and `date` were automatically created when the vignette was built even if not given is the headers argument when the MassSpecData object is created.
 
 ```{r get-headers}
 ms$get_headers()
 ```
 
-Similarly, the get method for analyses returns the list of MSAnalysis objects. Below the `get_analyses()` is used to get the first analysis object (`a1`). Then, the `names()` function is used to show the names of entries in the `a1` MSAnalysis, which represents the first *.mzML* file parsed to the `ms`. Note that the `get_analyses()` method always returns a list even for only one MSAnalysis object. Therefore, we use the `[[` function as `a1[[1]]` to access the MSAnalysis object itself. The analysis object contains `r length(ms$get_analyses(1)[[1]])` fields (listed below) with information and data parsed directly from the *.mzML* file. Variations in the content and structure (i.e., different vendors or data acquired with different conditions or modes) of the *.mzML* or *.mzXML* files added will affect the content of each entry in the MSAnalysis object but the structure remains the same (see `?MSAnalysis`). The function `parse.msAnalysis()` from the streamFind R package is used to create and validate the list of MSAnalysis objects from a character vector with *.mzML* or *.mzXML* full file paths (see `?parse.msAnalysis` for more information). The structure of the MSAnalysis S3 class object is further described in section [analyses](#analyses). By typing `ms$get`, other available get methods are listed. The documentation `?msData` also contains detailed information and usage examples for available get methods.
+Similarly, the get method for analyses returns the list of MassSpecAnalysis objects. Below the `get_analyses()` is used to get the first analysis object (`a1`). Then, the `names()` function is used to show the names of entries in the `a1` MassSpecAnalysis, which represents the first *.mzML* file parsed to the `ms`. Note that the `get_analyses()` method always returns a list even for only one MassSpecAnalysis object. Therefore, we use the `[[` function as `a1[[1]]` to access the MassSpecAnalysis object itself. The analysis object contains `r length(ms$get_analyses(1)[[1]])` fields (listed below) with information and data parsed directly from the *.mzML* file. Variations in the content and structure (i.e., different vendors or data acquired with different conditions or modes) of the *.mzML* or *.mzXML* files added will affect the content of each entry in the MassSpecAnalysis object but the structure remains the same (see `?MassSpecAnalysis`). The function `parse.MassSpecAnalysis()` from the streamFind R package is used to create and validate the list of MassSpecAnalysis objects from a character vector with *.mzML* or *.mzXML* full file paths (see `?parse.MassSpecAnalysis` for more information). The structure of the MassSpecAnalysis S3 class object is further described in section [analyses](#analyses). By typing `ms$get`, other available get methods are listed. The documentation `?MassSpecData` also contains detailed information and usage examples for available get methods.
 
 ```{r get-analyses}
 a1 = ms$get_analyses(analyses = 1)
@@ -157,20 +157,20 @@ names(a1[[1]])
 
 ## Add methods
 
-Add methods are used to add data to an existing msData object. For instance, below we add a new name and a description to the `ms` object with the method `add_headers()`. If entry names are already present in the msData object (e.g., *name*), the content of these are overwritten as shown below.
+Add methods are used to add data to an existing MassSpecData object. For instance, below we add a new name and a description to the `ms` object with the method `add_headers()`. If entry names are already present in the MassSpecData object (e.g., *name*), the content of these are overwritten as shown below.
 
 ```{r add-headers}
-ms$add_headers(name = "Ex1", description = "An example msData.")
+ms$add_headers(name = "Ex1", description = "An example MassSpecData.")
 ```
 
 ```{r check-add-headers}
 ms$get_headers()
 ```
 
-Similarly, new MSAnalysis objects can be added with `add_analyses()` as shown below. Note that the function `parse.msAnalysis()` was used to parse data from files 7, 8 and 9, creating a named list of analysis objects. Again the name of each MSAnalysis in the list is the file name without extension. Then, the list is added to the `ms` object with the method `add_analyses()`. By typing `ms$add`, other available add methods are listed. The documentation `?msData` also contains detailed information and usage examples for available add methods.
+Similarly, new MassSpecAnalysis objects can be added with `add_analyses()` as shown below. Note that the function `parse.MassSpecAnalysis()` was used to parse data from files 7, 8 and 9, creating a named list of analysis objects. Again the name of each MassSpecAnalysis in the list is the file name without extension. Then, the list is added to the `ms` object with the method `add_analyses()`. By typing `ms$add`, other available add methods are listed. The documentation `?MassSpecData` also contains detailed information and usage examples for available add methods.
 
 ```{r make-analysis-list}
-a_list = parse.msAnalysis(files[7:9])
+a_list = parse.MassSpecAnalysis(files[7:9])
 
 vapply(a_list, class, "")
 ```
@@ -185,7 +185,7 @@ ms
 
 ## Remove methods
 
-Complementary to add methods, remove methods are used to remove data from an existing msData object. For instance, in the code chunk below the *name* and *description* are removed from the headers of the `ms` object. However, *name*, *path* and *date* cannot be removed. Even when one of these are specified, they are not removed. Yet, they can be changed with `add_headers()` method.
+Complementary to add methods, remove methods are used to remove data from an existing MassSpecData object. For instance, in the code chunk below the *name* and *description* are removed from the headers of the `ms` object. However, *name*, *path* and *date* cannot be removed. Even when one of these are specified, they are not removed. Yet, they can be changed with `add_headers()` method.
 
 ```{r remove-headers}
 ms$remove_headers(c("name", "description"))
@@ -195,7 +195,7 @@ ms$remove_headers(c("name", "description"))
 ms$get_headers()
 ```
 
-Also, analyses can be removed with `remove_analyses()` method as shown below. When removing analyses, correspondence feature groups that were unique to those analyses are also removed from the msData object. By typing `ms$remove`, other available remove methods are listed. The documentation `?msData` also contains detailed information and usage examples for available remove methods.
+Also, analyses can be removed with `remove_analyses()` method as shown below. When removing analyses, correspondence feature groups that were unique to those analyses are also removed from the MassSpecData object. By typing `ms$remove`, other available remove methods are listed. The documentation `?MassSpecData` also contains detailed information and usage examples for available remove methods.
 
 ```{r remove-analyses}
 ms$remove_analyses(4:6)
@@ -207,7 +207,7 @@ ms
 
 ## Subset methods
 
-While remove methods changes the msData object by reference, the subset methods create a clone subset of the msData object. For instance, the method `subset_analyses()` is demonstrated below to create a clone of the `ms` object but with only the first 2 analyses. Note that the output behaves as a new msData object was created. In fact, that is what happens in the background. Also, note that when sub-setting all the other content (i.e., the other internal fields) are cloned to the new msData class object. For instance, the headers in the `subset_ms` object is the same as in `ms` object. All changes to the `subset_ms` object after its creation will not affect the `ms` object as it was cloned. For more information about copy and cloning R6 class objects you are recommended the [R6](https://r6.r-lib.org/index.html) official documentation. By typing `ms$subset`, other available subset methods are listed. The documentation `?msData` also contains detailed information and usage examples for available subset methods.
+While remove methods changes the MassSpecData object by reference, the subset methods create a clone subset of the MassSpecData object. For instance, the method `subset_analyses()` is demonstrated below to create a clone of the `ms` object but with only the first 2 analyses. Note that the output behaves as a new MassSpecData object was created. In fact, that is what happens in the background. Also, note that when sub-setting all the other content (i.e., the other internal fields) are cloned to the new MassSpecData class object. For instance, the headers in the `subset_ms` object is the same as in `ms` object. All changes to the `subset_ms` object after its creation will not affect the `ms` object as it was cloned. For more information about copy and cloning R6 class objects you are recommended the [R6](https://r6.r-lib.org/index.html) official documentation. By typing `ms$subset`, other available subset methods are listed. The documentation `?MassSpecData` also contains detailed information and usage examples for available subset methods.
 
 ```{r subset-analyses}
 subset_ms <- ms$subset_analyses(analyses = 1:2)
@@ -217,7 +217,7 @@ subset_ms
 
 ## Has methods
 
-There are methods to simply check if data is present in the msData. These are the has methods as shown below. By typing `ms$has`, other available has methods are listed. The documentation `?msData` also contains detailed information and usage examples for available has methods.
+There are methods to simply check if data is present in the MassSpecData. These are the has methods as shown below. By typing `ms$has`, other available has methods are listed. The documentation `?MassSpecData` also contains detailed information and usage examples for available has methods.
 
 ```{r has-methods}
 # check if settings are present
@@ -235,7 +235,7 @@ ms$has_loaded_spectra()
 
 ## Plot methods
 
-Within the msData class object, standardized methods for plotting data are also available. All plot methods use data that can be obtained with get methods, meaning that the user is able to re-plot the data with a different approach/style. For instance, the `get_tic()` method can be used to obtain the total ion chromatogram (TIC) as a `data.table` with columns *analysis*, *rt* and *intensity*, as shown below for the first analysis. The same TIC data can be directly plotted using the `plot_tic()` method, as shown below.
+Within the MassSpecData class object, standardized methods for plotting data are also available. All plot methods use data that can be obtained with get methods, meaning that the user is able to re-plot the data with a different approach/style. For instance, the `get_tic()` method can be used to obtain the total ion chromatogram (TIC) as a `data.table` with columns *analysis*, *rt* and *intensity*, as shown below for the first analysis. The same TIC data can be directly plotted using the `plot_tic()` method, as shown below.
 
 ```{r get-tic-first-analysis}
 head(ms$get_tic(analyses = 1))
@@ -255,7 +255,7 @@ ms$plot_features()
  
 <br>
 
-Most plot methods have the *interactive* argument which is set to `TRUE` by default for using the [plotly](https://plotly.com/r/) package to plot the data. A static version of the plot using the base `plot()` function can be obtained by setting interactive to `FALSE`, as shown below for the base peak chromatogram (BPC) of all analyses in the `ms` object. By typing `ms$plot`, other available plot methods are listed. The documentation `?msData` also contains detailed information and usage examples for available plot methods.
+Most plot methods have the *interactive* argument which is set to `TRUE` by default for using the [plotly](https://plotly.com/r/) package to plot the data. A static version of the plot using the base `plot()` function can be obtained by setting interactive to `FALSE`, as shown below for the base peak chromatogram (BPC) of all analyses in the `ms` object. By typing `ms$plot`, other available plot methods are listed. The documentation `?MassSpecData` also contains detailed information and usage examples for available plot methods.
  
 ```{r plot-bpc-static}
 ms$plot_bpc(interactive = FALSE)
@@ -263,7 +263,7 @@ ms$plot_bpc(interactive = FALSE)
 
 ## Save methods
 
-The msData object is stored by default in the environment of an R session and will be save within the *.RData* when `save.image()` function is used (by default save current environment is asked when an R session ends or is terminated). However, save methods are also available to save data within the internal fields in other formats. Currently only *.rds* and *.json* are possible. Below, the `save_headers()` method is used to save the headers S3 class object as *.json*.
+The MassSpecData object is stored by default in the environment of an R session and will be save within the *.RData* when `save.image()` function is used (by default save current environment is asked when an R session ends or is terminated). However, save methods are also available to save data within the internal fields in other formats. Currently only *.rds* and *.json* are possible. Below, the `save_headers()` method is used to save the Headers S3 class object as *.json*.
 
 ```{r save-headers-json}
 ms$save_headers(format = "json", path = getwd())
@@ -274,39 +274,39 @@ ms$save_headers(format = "json", path = getwd())
 jsonlite::prettify(readLines("headers.json"))
 ```
 
-Similarly, `save_analyses()` method can be applied to export all or specific MSAnalysis objects to *.rds* or *.json*. Below, the first MSAnalysis object is exported as *.json* and named *a1*. Then in section [import methods](#import-methods), the exported analysis (*a1.json*) is imported to the `ms` object.
+Similarly, `save_analyses()` method can be applied to export all or specific MassSpecAnalysis objects to *.rds* or *.json*. Below, the first MassSpecAnalysis object is exported as *.json* and named *a1*. Then in section [import methods](#import-methods), the exported analysis (*a1.json*) is imported to the `ms` object.
 
 ```{r}
 ms$save_analyses(analyses = 1, format = "json", name = "a1")
 ```
 
-Also, the entire `ms` object can be saved using the `save()` method as shown below. Other save methods are listed by typing `ms$save`. Again, the documentation `?msData` contains detailed information and usage examples for available save methods.
+Also, the entire `ms` object can be saved using the `save()` method as shown below. Other save methods are listed by typing `ms$save`. Again, the documentation `?MassSpecData` contains detailed information and usage examples for available save methods.
 
-```{r save-entire-msData}
+```{r save-entire-MassSpecData}
 ms$save(format = "json", name = "ms", path = getwd())
 ```
 
 ## Import methods
 
-Complementary to save methods, the *.json* or *.rds* files can be imported to the msData using the import methods. For instance, below the previously saved *headers.json* is imported back to the `ms` object. As in `add_headers()`, if entry names are already present, their content is overwritten.
+Complementary to save methods, the *.json* or *.rds* files can be imported to the MassSpecData using the import methods. For instance, below the previously saved *headers.json* is imported back to the `ms` object. As in `add_headers()`, if entry names are already present, their content is overwritten.
 
 ```{r import-headers}
 ms$import_headers("headers.json")
 ```
 
-Also, the saved *a1.json* MSAnalysis object can be imported with `import_analyses()` method. However, because the analysis name is already present in the `ms` object, an warning is printed and the operation not done (as shown below). The other internal fields (i.e., *settings*, *groups* and *alignment*) can be similarly imported. Validation and conformity tests are applied to ensure that the data has the required structure.
+Also, the saved *a1.json* MassSpecAnalysis object can be imported with `import_analyses()` method. However, because the analysis name is already present in the `ms` object, an warning is printed and the operation not done (as shown below). The other internal fields (i.e., *settings*, *groups* and *alignment*) can be similarly imported. Validation and conformity tests are applied to ensure that the data has the required structure.
 
 ```{r import-analyses}
 ms$import_analyses("a1.json")
 ```
 
-A saved msData object can be imported from *.json* or *.rds* using the `import_msData()` function from the streamFind package. Below, the previously saved *ms.json* is imported and compared to the `ms`.
+A saved MassSpecData object can be imported from *.json* or *.rds* using the `import_MassSpecData()` function from the streamFind package. Below, the previously saved *ms.json* is imported and compared to the `ms`.
 
-```{r import-msData}
-ms_imported = import_msData("ms.json")
+```{r import-MassSpecData}
+ms_imported = import_MassSpecData("ms.json")
 ```
 
-```{r check-import-msData}
+```{r check-import-MassSpecData}
 all.equal(ms, ms_imported)
 ```
 
@@ -318,7 +318,7 @@ file.remove(paste0(getwd(), "/ms.json"))
 
 # Analyses
 
-Within the msData object, the internal field analyses is a list of MSAnalysis S3 class objects representing MS files on disk. As shown above in [msData](#msdata) section, the msData can be initiated with the `files` argument using a character vector of full file path/s to *.mzML* or *.mzXML* files. Alternatively, the function `parse.msAnalysis()` can be used to generate the list of analysis objects and then the argument `analyses` of the `new()` method or the `add_analyses()` method can be used to add the MSAnalysis objects to the msData object. The package [mzR](https://bioconductor.org/packages/release/bioc/html/mzR.html) from [Bioconductor](https://bioconductor.org/) is used to parse the data. When the [mzR](https://bioconductor.org/packages/release/bioc/html/mzR.html) package is not available (i.e., not installed), the [xml2](https://cran.r-project.org/web/packages/xml2/index.html) package from CRAN is used instead but is much slower. Specially for large MS files (e.g., high resolution MS files with ion mobility), the [mzR](https://bioconductor.org/packages/release/bioc/html/mzR.html) package is recommended. The data parsed is the same independently of the package used. The structure of an example MSAnalysis object is shown below and consists of 23 entries (see `?MSAnalysis` for more information).
+Within the MassSpecData object, the internal field analyses is a list of MassSpecAnalysis S3 class objects representing MS files on disk. As shown above in [MassSpecData](#msdata) section, the MassSpecData can be initiated with the `files` argument using a character vector of full file path/s to *.mzML* or *.mzXML* files. Alternatively, the function `parse.MassSpecAnalysis()` can be used to generate the list of analysis objects and then the argument `analyses` of the `new()` method or the `add_analyses()` method can be used to add the MassSpecAnalysis objects to the MassSpecData object. The package [mzR](https://bioconductor.org/packages/release/bioc/html/mzR.html) from [Bioconductor](https://bioconductor.org/) is used to parse the data. When the [mzR](https://bioconductor.org/packages/release/bioc/html/mzR.html) package is not available (i.e., not installed), the [xml2](https://cran.r-project.org/web/packages/xml2/index.html) package from CRAN is used instead but is much slower. Specially for large MS files (e.g., high resolution MS files with ion mobility), the [mzR](https://bioconductor.org/packages/release/bioc/html/mzR.html) package is recommended. The data parsed is the same independently of the package used. The structure of an example MassSpecAnalysis object is shown below and consists of 23 entries (see `?MassSpecAnalysis` for more information).
 
 - **name** is the file name without extension;
 - **replicate** is the analysis replicate group name; 
@@ -350,7 +350,7 @@ str(a1[[1]])
 
 ## Get basic information
 
-The data from MSAnalysis objects can be obtained with get methods as shown above. Below, methods to get information from analyses are demonstrated. In all methods except the `get_number_analyses()`, the analyses argument can be used to query information from specific analyses, using the analysis name or the index as shown below.
+The data from MassSpecAnalysis objects can be obtained with get methods as shown above. Below, methods to get information from analyses are demonstrated. In all methods except the `get_number_analyses()`, the analyses argument can be used to query information from specific analyses, using the analysis name or the index as shown below.
 
 ```{r}
 # getter for number of analyses
@@ -508,7 +508,7 @@ all(round(apply(t2[, 2:7], 2, sd), digits = 4) == 0)
 
 ## Get and plot spectra
 
-Besides the `get_tic()` and `get_bpc()` methods (shown above). There are four methods to get low level spectra from analyses: `get_spectra()`, `get_eic()`, `get_ms1()` and `get_ms2()`. All methods use the same arguments as the function `make_ms_targets()` to build MS targets and the *analyses* argument to specify which MSAnalysis objects to query the data. All methods return a `data.table`. The documentation in `?msData` has detailed information about the use of each method. For each get method, a plot method is available with similar interface. Below each get and plot method is demonstrated for the defined targets.
+Besides the `get_tic()` and `get_bpc()` methods (shown above). There are four methods to get low level spectra from analyses: `get_spectra()`, `get_eic()`, `get_ms1()` and `get_ms2()`. All methods use the same arguments as the function `make_ms_targets()` to build MS targets and the *analyses* argument to specify which MassSpecAnalysis objects to query the data. All methods return a `data.table`. The documentation in `?MassSpecData` has detailed information about the use of each method. For each get method, a plot method is available with similar interface. Below each get and plot method is demonstrated for the defined targets.
 
 ### Mass traces
 
@@ -609,7 +609,7 @@ Possible using the function `convert_ms_files()` which utilizes the [MSConvert](
 
 # Processing settings
 
-Data processing steps often require settings with parameters to support the application of a given function to the data. In the msData object, methods that require settings have the `settings` argument (e.g., the method `find_features()`). In the streamFind package, the `settings` argument takes a ProcessingSettings S3 class and list object (see `?ProcessingSettings`) with three mandatory elements: *call*, *algorithm* and *parameters*. The *call* defines the name of the method (or processing step to be applied), such as "find_features" or "group_features". The *algorithm* defines the algorithm to be used for the processing step (e.g., "xcms" or "openms"). Finally, the *parameters* are a list of algorithm dependent entries that define the settings to be applied during the data processing. An example for "find_features" settings using the algorithm "xcms" is given below. Most of the data processing methods in streamFind use the package [patRoon](https://github.com/rickhelmus/patRoon). Therefore, the interface parameters is similar. The algorithm and parameters (named "param" in [patRoon](https://github.com/rickhelmus/patRoon)) can be taken from the respective documentation of the equivalent function. For instance, the `find_features()` method in streamFind uses the [findFeatures()](https://rickhelmus.github.io/patRoon/reference/findFeatures.html) function in [patRoon](https://github.com/rickhelmus/patRoon). The documentation of each data processing method in `?msData` explains and exemplifies the usage and where the required settings can be acquired in [patRoon](https://github.com/rickhelmus/patRoon).
+Data processing steps often require settings with parameters to support the application of a given function to the data. In the MassSpecData object, methods that require settings have the `settings` argument (e.g., the method `find_features()`). In the streamFind package, the `settings` argument takes a ProcessingSettings S3 class and list object (see `?ProcessingSettings`) with three mandatory elements: *call*, *algorithm* and *parameters*. The *call* defines the name of the method (or processing step to be applied), such as "find_features" or "group_features". The *algorithm* defines the algorithm to be used for the processing step (e.g., "xcms" or "openms"). Finally, the *parameters* are a list of algorithm dependent entries that define the settings to be applied during the data processing. An example for "find_features" settings using the algorithm "xcms" is given below. Most of the data processing methods in streamFind use the package [patRoon](https://github.com/rickhelmus/patRoon). Therefore, the interface parameters is similar. The algorithm and parameters (named "param" in [patRoon](https://github.com/rickhelmus/patRoon)) can be taken from the respective documentation of the equivalent function. For instance, the `find_features()` method in streamFind uses the [findFeatures()](https://rickhelmus.github.io/patRoon/reference/findFeatures.html) function in [patRoon](https://github.com/rickhelmus/patRoon). The documentation of each data processing method in `?MassSpecData` explains and exemplifies the usage and where the required settings can be acquired in [patRoon](https://github.com/rickhelmus/patRoon).
 
 ```{r ff-settings-xcms}
 settingsFindFeatures <- ProcessingSettings(
@@ -636,7 +636,7 @@ settingsFindFeatures <- ProcessingSettings(
 settingsFindFeatures
 ```
 
-The ProcessingSettings object can be added to the msData object with the `add_settings()` method as shown below. Similarly, it can be obtained with the `get_settings()` method using the call name as also shown below.
+The ProcessingSettings object can be added to the MassSpecData object with the `add_settings()` method as shown below. Similarly, it can be obtained with the `get_settings()` method using the call name as also shown below.
 
 ```{r add-ff-xcms}
 ms$add_settings(settings = settingsFindFeatures)
@@ -649,7 +649,7 @@ ms$get_settings(call = "find_features")[["find_features"]]
 
 # Features
 
-Extraction of features from raw MS data is a frequent step applied during data processing for easing prioritization and identification of chemicals in a given analysis (i.e., sample). A feature in essence describes a chromatographic peak composed fundamentally of three values: mass-to-charge ratio (*m/z*), retention time (rt) and intensity. The method `find_features()` from an msData object can be used to extract features from files represented by the MSAnalysis objects. Several algorithms (i.e., software) are available for finding features through the [patRoon](https://github.com/rickhelmus/patRoon) package as above mentioned. Some algorithms require spectral data in profile mode but most use centroided data (see [centroiding](#centroiding) section for more information about centroid vs profile mode). Below, we use the added settings to find features from the analyses in the object `ms`. Note that the argument `settings` was not used (`NULL` is the default value) as the settings were already added to the object. Adding settings via the argument `settings` during call for method `find_features()` would replace existing settings in the msData object with call name "find_features". If settings with call name "find_features" are not available or given, features are not extracted.
+Extraction of features from raw MS data is a frequent step applied during data processing for easing prioritization and identification of chemicals in a given analysis (i.e., sample). A feature in essence describes a chromatographic peak composed fundamentally of three values: mass-to-charge ratio (*m/z*), retention time (rt) and intensity. The method `find_features()` from a MassSpecData object can be used to extract features from files represented by the MassSpecAnalysis objects. Several algorithms (i.e., software) are available for finding features through the [patRoon](https://github.com/rickhelmus/patRoon) package as above mentioned. Some algorithms require spectral data in profile mode but most use centroided data (see [centroiding](#centroiding) section for more information about centroid vs profile mode). Below, we use the added settings to find features from the analyses in the object `ms`. Note that the argument `settings` was not used (`NULL` is the default value) as the settings were already added to the object. Adding settings via the argument `settings` during call for method `find_features()` would replace existing settings in the MassSpecData object with call name "find_features". If settings with call name "find_features" are not available or given, features are not extracted.
 
 ```{r ff-01, warning=FALSE, results='hide'}
 ms$find_features(settings = NULL)
@@ -665,7 +665,7 @@ ms
 
 ## Get features
 
-As above described, there are get methods to parse data from an msData class object. For features, the method `get_features()` can be used as shown below. When no arguments are given, the features `data.table` in each MSAnalysis object is collated without filtering and a column analysis is given to make reference for the analysis that the corresponding features belong to.
+As above described, there are get methods to parse data from a MassSpecData class object. For features, the method `get_features()` can be used as shown below. When no arguments are given, the features `data.table` in each MassSpecAnalysis object is collated without filtering and a column analysis is given to make reference for the analysis that the corresponding features belong to.
 
 ```{r get-all-features}
 head(ms$get_features())
@@ -763,7 +763,7 @@ ms$plot_features_ms2(analyses = 1, mz = targets1,
 
 ## Load features MS1 and MS2
 
-MS1 and MS2 spectra can support identification processing steps by giving additional information from isotopic and specific fragmentation patterns, respectively. The methods `load_features_ms1()` and `load_features_ms2()` are used for systematically load averaged MS1 and MS2 spectra for features in an msData class object. Both methods have a `settings` argument which takes a settings object similar to "find_features" settings but with the specific call name, which is the method name, as shown below. The parameters are the same as the arguments of the respective get methods (see above in [get features ms1 and ms2](#get-features-ms1-and-ms2)). The settings can be also added to the settings internal field as explained above in [processing settings](#processing-settings) section. This allows for internal data re-processing, inspection and retrospective evaluation.
+MS1 and MS2 spectra can support identification processing steps by giving additional information from isotopic and specific fragmentation patterns, respectively. The methods `load_features_ms1()` and `load_features_ms2()` are used for systematically load averaged MS1 and MS2 spectra for features in a MassSpecData class object. Both methods have a `settings` argument which takes a settings object similar to "find_features" settings but with the specific call name, which is the method name, as shown below. The parameters are the same as the arguments of the respective get methods (see above in [get features ms1 and ms2](#get-features-ms1-and-ms2)). The settings can be also added to the settings internal field as explained above in [processing settings](#processing-settings) section. This allows for internal data re-processing, inspection and retrospective evaluation.
 
 ```{r features-ms1-ms2-settings}
 # Settings for loading features MS1 spectra
@@ -809,14 +809,14 @@ targetFeatures <- ms$get_features(mz = targets1)
 targetFeatures <- targetFeatures[, c("analysis", "feature"), with = FALSE]
 targetFeatures
 
-# Only the features from targets are kept in the msData object
+# Only the features from targets are kept in the MassSpecData object
 msTargets <- ms$subset_features(features = targetFeatures)
 
 # Only 2 features in each analysis object
 msTargets
 ```
 
-As the settings were already added to `ms`, the settings are also in `msTargets`. In general, the sub-setting methods transfer everything to the new msData object except what is to be excluded (see [subset-methods](#subset-methods) section for more information). Below, the MS1 spectra for the remaining features (i.e., feature corresponding to Carbamazepin-d10 and Diuron-d6 in each analysis) are loaded to the `msTargets`.
+As the settings were already added to `ms`, the settings are also in `msTargets`. In general, the sub-setting methods transfer everything to the new MassSpecData object except what is to be excluded (see [subset-methods](#subset-methods) section for more information). Below, the MS1 spectra for the remaining features (i.e., feature corresponding to Carbamazepin-d10 and Diuron-d6 in each analysis) are loaded to the `msTargets`.
 
 ```{r load-ms1-targets}
 msTargets$load_features_ms1()
@@ -873,7 +873,7 @@ When MS1 or MS2 data is not available for a given feature (i.e., within the feat
 
 ## Remove features MS1 and MS2
 
-Loaded MS1 and MS2 feature spectra can be removed using the `remove_features_ms1()` and `remove_features_ms2()`. Note that all the loaded spectra are removed as no argument can be given to remove only certain spectra. This means that if features MS1 or MS2 spectra are loaded, they are loaded for all features. Removing features from the msData object will also remove MS1 and MS2 spectra as they are in the features `data.table`.
+Loaded MS1 and MS2 feature spectra can be removed using the `remove_features_ms1()` and `remove_features_ms2()`. Note that all the loaded spectra are removed as no argument can be given to remove only certain spectra. This means that if features MS1 or MS2 spectra are loaded, they are loaded for all features. Removing features from the MassSpecData object will also remove MS1 and MS2 spectra as they are in the features `data.table`.
 
 ```{r remove-features-ms1-ms2}
 msTargets$remove_features_ms1()
@@ -889,7 +889,7 @@ Not yet implemented.
 
 # Groups
 
-After extraction of features, correspondence analysis (i.e., grouping of features across analyses) is often applied as a following processing step. The result from correspondence analysis is feature groups, describing the correspondent features in each analysis. The method `group_features()` is used for correspondence analysis of features in an msData object. Similarly to `find_features()`, the `group_features()` method uses settings. Also here the [patRoon](https://github.com/rickhelmus/patRoon) package is used in the background. More precisely, the function [groupFeatures()](https://rickhelmus.github.io/patRoon/reference/groupFeatures.html) from [patRoon](https://github.com/rickhelmus/patRoon) is used. Therefore, the settings algorithm and parameters can be obtained by the documentation of [groupFeatures()](https://rickhelmus.github.io/patRoon/reference/groupFeatures.html). Below the correspondence analysis is demonstrated using the algorithm "xcms".
+After extraction of features, correspondence analysis (i.e., grouping of features across analyses) is often applied as a following processing step. The result from correspondence analysis is feature groups, describing the correspondent features in each analysis. The method `group_features()` is used for correspondence analysis of features in a MassSpecData object. Similarly to `find_features()`, the `group_features()` method uses settings. Also here the [patRoon](https://github.com/rickhelmus/patRoon) package is used in the background. More precisely, the function [groupFeatures()](https://rickhelmus.github.io/patRoon/reference/groupFeatures.html) from [patRoon](https://github.com/rickhelmus/patRoon) is used. Therefore, the settings algorithm and parameters can be obtained by the documentation of [groupFeatures()](https://rickhelmus.github.io/patRoon/reference/groupFeatures.html). Below the correspondence analysis is demonstrated using the algorithm "xcms".
 
 ```{r grouping-settings}
 settingsGroupFeatures <- ProcessingSettings(
@@ -920,7 +920,7 @@ Feature groups are stored in the groups internal field as a `data.table`, which 
 
  - **group**: (character) The identifier of the feature group;
  - **rt**: (numeric) The averaged retention time of the features in the group, in seconds;
- - **mz**: (numeric) The averaged *m/z* of the features in the group, in Da (not present for msData with multiple polarities);
+ - **mz**: (numeric) The averaged *m/z* of the features in the group, in Da (not present for MassSpecData with multiple polarities);
  - **mass**: (numeric) The averaged neutral mass of the features in the group, in Da;
  - **adduct**: (character) The adduct ion assigned to the feature group;
  - **drt**: (numeric) The time deviation range of the feature group, in seconds;
@@ -930,7 +930,7 @@ Feature groups are stored in the groups internal field as a `data.table`, which 
  - **filtered**: (logical) `TRUE` means that the feature group was filtered out from the set but still remained in the data set (see [filters](#filters) section for more information);
  - **filter**: (character) The filter tag or `NA_character_` if the feature group is not filtered (i.e., filtered is `FALSE`);
 
-For each MSAnalysis object, a column with the analysis name is added to the groups `data.table` with the intensity of the feature. Other columns are added by streamFind from specific workflow methods but these are explained in the respective method demonstration and documentation.
+For each MassSpecAnalysis object, a column with the analysis name is added to the groups `data.table` with the intensity of the feature. Other columns are added by streamFind from specific workflow methods but these are explained in the respective method demonstration and documentation.
 
 ```{r get-groups-field}
 head(ms$get_groups())
@@ -943,7 +943,7 @@ ms$get_groups(mz = targets1)
 
 ## Plot groups
 
-As for features, plotting methods for groups are also available. Below the methods `plot_groups()` and `plot_groups_overview()` are demonstrated. Further information about usage is available in the msData documentation (`?msData`).
+As for features, plotting methods for groups are also available. Below the methods `plot_groups()` and `plot_groups_overview()` are demonstrated. Further information about usage is available in the MassSpecData documentation (`?MassSpecData`).
 
 ```{r plot-groups}
 ms$plot_groups(mz = targets1, colorBy = "analyses")
@@ -997,7 +997,7 @@ Similarly to features, loading MS1 and MS2 spectra for feature groups is also po
 ```{r grouping-ms1-ms2, results='hide'}
 targetGroups <- ms$get_groups(mz = targets1)
 
-# Only the groups from targets are kept in the msData object
+# Only the groups from targets are kept in the MassSpecData object
 msTargets <- ms$subset_groups(groups = targetGroups$group)
 
 # Removing filtered features (i.e., not belonging to targeted groups)
@@ -1066,7 +1066,7 @@ msTargets$plot_groups_ms2(mz = targets1)
 
 ## Remove groups MS1 and MS2
 
-Also for feature groups, the methods `remove_groups_ms1()` and `remove_groups_ms2()` can be used to clear the MS1 and MS2 spectra from the groups `data.table` in the msData class object, as shown below.
+Also for feature groups, the methods `remove_groups_ms1()` and `remove_groups_ms2()` can be used to clear the MS1 and MS2 spectra from the groups `data.table` in the MassSpecData class object, as shown below.
 
 ```{r remove-groups-ms1-ms2}
 msTargets$remove_groups_ms1()

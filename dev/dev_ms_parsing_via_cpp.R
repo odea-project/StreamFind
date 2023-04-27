@@ -43,7 +43,7 @@ neutral_targets <- make_ms_targets(
 
 # settings ---------------------------------------------------------------------
 
-settings_ff <- settings(
+settings_ff <- list(
   call = "find_features",
   algorithm = "xcms3",
   parameters = list(xcms::CentWaveParam(
@@ -57,7 +57,7 @@ settings_ff <- settings(
   ))
 )
 
-settings_gf <- settings(
+settings_gf <- list(
   "call" = "group_features",
   "algorithm" = "xcms3",
   "parameters" = list(
@@ -126,15 +126,15 @@ settingsLoadGroupsMS2 <- list(
 
 # r6 test ----------------------------------------------------------------------
 
-patRoon::clearCache("parsed_ms_analyses")
-patRoon::clearCache("parsed_ms_spectra")
-patRoon::clearCache("load_features_ms1")
-patRoon::clearCache("load_features_ms2")
-patRoon::clearCache("load_groups_ms1")
-patRoon::clearCache("load_groups_ms2")
+# patRoon::clearCache("parsed_ms_analyses")
+# patRoon::clearCache("parsed_ms_spectra")
+# patRoon::clearCache("load_features_ms1")
+# patRoon::clearCache("load_features_ms2")
+# patRoon::clearCache("load_groups_ms1")
+# patRoon::clearCache("load_groups_ms2")
 
 
-ms <- msData$new(files = all_files[10:21],
+ms <- MassSpecData$new(files = all_files[10:21],
   headers = list(name = "Example 1"),
   settings = list(
     find = settings_ff,
@@ -145,6 +145,20 @@ ms <- msData$new(files = all_files[10:21],
     ms2gp = settingsLoadGroupsMS2
   )
 )
+
+ana <- parse.MassSpecAnalysis(files[1])
+
+
+
+ps <- as.ProcessingSettings(settings_ff)
+
+asJSON(ps)
+
+jsonlite::toJSON(Headers(name = "Example", description = "test"))
+
+
+
+ms$get_settings("find_features")
 
 ms$plot_spectra(analyses = 1, mz = 239, ppm = 500)
 
@@ -167,12 +181,12 @@ input <- c(1.1, 2.1, 3.31641646564465464, 1000, 314)
 rcpp_parse_xml(input)
 
 
-do
 
 
 
 
-ms <- msData$new()
+
+ms <- MassSpecData$new()
 ms$get_headers()
 
 
@@ -251,7 +265,7 @@ is.data.table(rcpp_parse_chromatograms_headers(all_files[1])) # mzML MS/MS empty
 is.data.table(rcpp_parse_chromatograms_headers(all_files[28])) # mzML SRM
 is.data.table(rcpp_parse_chromatograms_headers(all_files[4])) # mzXML empty for XML without chromatograms
 
-ms_chrom <- msData$new(files = all_files[29])
+ms_chrom <- MassSpecData$new(files = all_files[29])
 
 unique(ms_chrom$get_chromatograms(index = c(1, 2))$index)
 unique(ms_chrom$get_chromatograms()$index)

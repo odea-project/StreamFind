@@ -3,8 +3,9 @@
 \name{ProcessingSettings}
 \alias{ProcessingSettings}
 \alias{validate.ProcessingSettings}
+\alias{asJSON.ProcessingSettings}
 \alias{as.ProcessingSettings}
-\title{\strong{ProcessingSettings} S3 class constructor and methods}
+\title{\strong{ProcessingSettings} S3 class constructor, methods and functions}
 \usage{
 ProcessingSettings(
   call = NA_character_,
@@ -13,6 +14,8 @@ ProcessingSettings(
 )
 
 \method{validate}{ProcessingSettings}(x = NULL)
+
+\method{asJSON}{ProcessingSettings}(x)
 
 as.ProcessingSettings(value)
 }
@@ -28,22 +31,27 @@ be used.}
 
 \item{x}{A ProcessingSettings S3 class object.}
 
-\item{value}{A list to be checked and/or converted to ProcessingSettings S3 class.}
+\item{value}{A list to be checked and/or converted to ProcessingSettings S3
+class.}
 }
 \value{
 A ProcessingSettings S3 class
 }
 \description{
-Creates a ProcessingSettings S3 class object.
+Creates a ProcessingSettings S3 class object. The ProcessingSettings are used
+in \pkg{streamFind} for processing data in a given data class method.
 }
 \details{
-See the method documentation for more information about possible
-algorithms and parameters to be used.
+See the documentation of the method where the processing settings
+are to be applied for more information about applicable algorithms and
+parameters.
 }
 \section{Methods (by generic)}{
 \itemize{
 \item \code{validate(ProcessingSettings)}: Validates a ProcessingSettings S3 class object, returning a logical value of
 length one.
+
+\item \code{asJSON(ProcessingSettings)}: Converts a ProcessingSettings S3 class object to a JSON string.
 
 }}
 \section{Functions}{

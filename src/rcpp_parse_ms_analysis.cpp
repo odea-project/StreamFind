@@ -7,7 +7,7 @@
 #include <Rcpp.h>
 
 // [[Rcpp::export]]
-Rcpp::List rcpp_parse_msAnalysis(std::string file_path) {
+Rcpp::List rcpp_parse_ms_analysis(std::string file_path) {
 
   Rcpp::List list_out;
 
@@ -124,7 +124,7 @@ Rcpp::List rcpp_parse_msAnalysis(std::string file_path) {
       list_out["features"] = empty_df;
       list_out["metadata"] = empty_list;
 
-      list_out.attr("class") = Rcpp::CharacterVector::create("msAnalysis");
+      list_out.attr("class") = Rcpp::CharacterVector::create("MassSpecAnalysis");
 
     } else {
       std::cout << "\u2717 MS file not conform!" << std::endl;
