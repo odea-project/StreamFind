@@ -4,15 +4,15 @@ template:
 reference:
 - title: R6 classes
 - contents:
-  - msData
+  - MassSpecData
 - title: S3 classes
 - contents:
-  - headers
-  - settings
-  - msAnalysis
+  - Headers
+  - ProcessingSettings
+  - MassSpecAnalysis
 - title: MS functions
 - contents:
   - convert_ms_files
   - trim_ms_files_spectra
-  - import_msData
+  - import_MassSpecData
   - make_ms_targets

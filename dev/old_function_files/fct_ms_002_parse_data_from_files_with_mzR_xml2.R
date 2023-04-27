@@ -109,7 +109,7 @@ parse_ms_spectra <- function(files = NA_character_, levels = c(1, 2),
     }
 
     # with mzR -----
-    if (requireNamespace("mzR")) {
+    if (requireNamespace("mzR") & FALSE) {
       spec_list <- foreach(i = files, .packages = "mzR") %dopar% {
 
         if (!is.null(targets)) {

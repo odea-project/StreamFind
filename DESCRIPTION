@@ -28,21 +28,19 @@ Imports:
     magrittr,
     Rdpack,
     gtools,
-    xml2,
     dplyr,
     plyr,
     parallelly,
     doParallel,
     parallel,
-    foreach,
-    mzR,
-    base64enc
+    foreach
 Suggests: 
     knitr,
     kableExtra,
     rmarkdown,
     testthat (>= 3.0.0),
     xcms,
+    mzR,
     patRoon,
     streamFindData
 VignetteBuilder: 

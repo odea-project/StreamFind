@@ -1,5 +1,5 @@
 
-#' @title centroidSpectra
+#' @title centroid_spectra
 #'
 #' @description X.
 #'
@@ -9,7 +9,7 @@
 #'
 #' @noRd
 #'
-centroidSpectra = function(object) {
+centroid_spectra = function(object) {
 
 
 
