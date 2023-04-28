@@ -14,6 +14,9 @@
 #'
 plot_spectra_interactive <- function(spectra = NULL, colorBy = "analyses") {
   if (!"id" %in% colnames(spectra)) spectra$id <- ""
+  if ("feature" %in% colnames(spectra)) spectra$id <- spectra$feature
+  if (!"level" %in% colnames(spectra)) spectra$level <- 0
+  if (!"analysis" %in% colnames(spectra)) spectra$analysis <- ""
 
   spectra$id <- factor(spectra$id)
   spectra$level <- paste("MS", spectra$level, sep = "")
