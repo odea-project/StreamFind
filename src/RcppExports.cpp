@@ -11,13 +11,14 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // rcpp_ms_annotation_isotopes
-Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features);
-RcppExport SEXP _streamFind_rcpp_ms_annotation_isotopes(SEXP featuresSEXP) {
+Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes);
+RcppExport SEXP _streamFind_rcpp_ms_annotation_isotopes(SEXP featuresSEXP, SEXP maxIsotopesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::DataFrame >::type features(featuresSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_ms_annotation_isotopes(features));
+    Rcpp::traits::input_parameter< int >::type maxIsotopes(maxIsotopesSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_ms_annotation_isotopes(features, maxIsotopes));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -189,7 +190,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_streamFind_rcpp_ms_annotation_isotopes", (DL_FUNC) &_streamFind_rcpp_ms_annotation_isotopes, 1},
+    {"_streamFind_rcpp_ms_annotation_isotopes", (DL_FUNC) &_streamFind_rcpp_ms_annotation_isotopes, 2},
     {"_streamFind_rcpp_ms_cluster_ms2", (DL_FUNC) &_streamFind_rcpp_ms_cluster_ms2, 3},
     {"_streamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_streamFind_rcpp_ms_cluster_spectra, 3},
     {"_streamFind_rcpp_ms_feature_groups_correspondence", (DL_FUNC) &_streamFind_rcpp_ms_feature_groups_correspondence, 3},

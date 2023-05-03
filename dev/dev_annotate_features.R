@@ -74,20 +74,28 @@ ms$find_features()
 # code dev ---------------------------------------------------------------------
 
 fts <- ms$get_features(analyses = 1)
-cols_keep <- c("feature", "mz", "mzmin", "mzmax", "rt", "rtmin","rtmax", "intensity")
+cols_keep <- c("feature", "mass", "mz", "mzmin", "mzmax", "rt", "rtmin","rtmax", "intensity")
 fts <- fts[, cols_keep, with = FALSE]
 
 fts_tar <- ms$get_features(analyses = 1, mz = targets[2, ])
 fts1 <- fts[fts$rt >= fts_tar$rtmin & fts$rt <= fts_tar$rtmax, ]
 fts1 <- fts1[order(fts1$mz), ]
 
+fts1$mz
+
+plot_spectra_interactive(fts)
 
 rcpp_ms_annotation_isotopes(fts)
 
 
-fts1$mz
 
-plot_spectra_interactive(fts)
+
+
+
+
+
+
+
 
 na.omit(isos$i1 - isos$i0) - (1.0033548378 * 2)
 
@@ -96,6 +104,36 @@ max(na.omit(isos$i1 - isos$i0)) - min(na.omit(isos$i1 - isos$i0))
 
 na.omit(isos$i2 - isos$i0)
 max(na.omit(isos$i2 - isos$i0)) - min(na.omit(isos$i2 - isos$i0))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Define the monoisotopic mass
