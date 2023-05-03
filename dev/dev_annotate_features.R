@@ -41,7 +41,8 @@ neutral_targets <- make_ms_targets(
 )
 
 isos <- read.csv(paste0(getwd(), "/dev/isotopes.csv"))
-isos <- isos[isos$element %in% c("C", "H", "N", "S", "Cl", "P", "O", "F"), ]
+elements <- c("C", "H", "N", "S", "Cl", "Br", "O")
+isos <- isos[isos$element %in% elements, ]
 
 # settings ---------------------------------------------------------------------
 
@@ -73,23 +74,96 @@ ms$find_features()
 # code dev ---------------------------------------------------------------------
 
 fts <- ms$get_features(analyses = 1)
-cols_keep <- c("feature", "mz", "rt", "intensity")
+cols_keep <- c("feature", "mz", "mzmin", "mzmax", "rt", "rtmin","rtmax", "intensity")
+fts <- fts[, cols_keep, with = FALSE]
+
 fts_tar <- ms$get_features(analyses = 1, mz = targets[2, ])
-fts1 <- fts[fts$rt >= fts_tar$rtmin & fts$rt <= fts_tar$rtmax, cols_keep, with = FALSE]
+fts1 <- fts[fts$rt >= fts_tar$rtmin & fts$rt <= fts_tar$rtmax, ]
 fts1 <- fts1[order(fts1$mz), ]
 
-plot_spectra_interactive(fts1)
 
-239/3
-
+rcpp_ms_annotation_isotopes(fts)
 
 
+fts1$mz
 
-na.omit(isos$i1 - isos$i0)
+plot_spectra_interactive(fts)
+
+na.omit(isos$i1 - isos$i0) - (1.0033548378 * 2)
+
 max(na.omit(isos$i1 - isos$i0)) - min(na.omit(isos$i1 - isos$i0))
+
 
 na.omit(isos$i2 - isos$i0)
 max(na.omit(isos$i2 - isos$i0)) - min(na.omit(isos$i2 - isos$i0))
+
+
+# Define the monoisotopic mass
+monoisotopic_mass <- 239.0628
+
+# Define the maximum number of isotopes to consider
+max_isotopes <- 6
+
+# Define the isotopic masses and intensities vectors
+isotopic_masses <- numeric(max_isotopes)
+isotopic_intensities <- numeric(max_isotopes)
+
+# Define the isotopic abundance ratios of carbon, hydrogen, nitrogen, oxygen, and sulfur
+C_ratio <- 0.0107
+H_ratio <- 0.000158
+N_ratio <- 0.00368
+O_ratio <- 0.00038
+S_ratio <- 0.0002
+
+# Calculate the isotopic masses and intensities
+for (i in 1:max_isotopes) {
+  # Calculate the mass of the ith isotope
+  mass <- monoisotopic_mass + (i - 1) * 1.007276
+
+  # Calculate the abundance of the ith isotope
+  abundance <- (1 - C_ratio - H_ratio - N_ratio - O_ratio - S_ratio) ^ (i - 1) * C_ratio * (1 - C_ratio - H_ratio - N_ratio - O_ratio - S_ratio) ^ (max(0, max_isotopes - i)) * H_ratio ^ (max(0, 4 - i)) * N_ratio ^ (max(0, 2 - i)) * O_ratio ^ (max(0, 3 - i)) * S_ratio ^ (max(0, 1 - i))
+
+  # Add the ith isotope to the isotopic masses and intensities vectors
+  isotopic_masses[i] <- mass
+  isotopic_intensities[i] <- abundance
+}
+
+# Print the isotopic masses and intensities
+cat("Isotopic masses (intensities):\n")
+for (i in 1:max_isotopes) {
+  cat(isotopic_masses[i], "(", isotopic_intensities[i]*100, "%)\n")
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
