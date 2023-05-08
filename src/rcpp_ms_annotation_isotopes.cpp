@@ -7,7 +7,8 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
 
   Rcpp::List list_out;
 
-  double isotope_diff = 1.0033548378;
+  double N_diff = 0.9970349;
+  double C_diff = 1.0033548378;
 
   std::vector<int> zvals(maxCharge);
   std::iota(zvals.begin(), zvals.end(), 1);
@@ -31,7 +32,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
     std::string id = ids[i];
     double mz = all_mz[i];
 
-    std::cout << id << std::endl;
+    std::cout << "Feature: " << id << std::endl;
 
     // not yet in an iso group, create chain of features
     if (isogr[i] == 0) {
@@ -40,8 +41,8 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
       double mzmin = all_mzmin[i];
       double mzmax = all_mzmax[i];
 
-      double mzr = (mzmax - mzmin) / 2; // better to replace for the sd of the eic all_mz
-      std::cout << mzr << std::endl;
+      double mzr = mzmax - mzmin; // better to replace for the sd of the eic all_mz
+      std::cout << "Mass deviation: " << mzr << std::endl;
 
       double maxisomz = (mz + maxIsotopes) * 1.05;
 
@@ -53,7 +54,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
       }
 
       int number_chain_features = which_fts.size();
-      std::cout << number_chain_features << std::endl;
+      std::cout << "Number of features in chain: " << number_chain_features << std::endl;
 
       // if more than 1 feature is present for chain
       if (number_chain_features > 1) {
@@ -86,7 +87,82 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
           *(fts_idx_ptr++) = *(which_fts_ptr + x);
         }
 
-        // double monoiso_idx = fts_idx[chain_mz == mz]; 
+        std::cout << "Charge distance: " << std::endl;
+
+        std::vector<double> exp_C_dist(zvals.size());
+        std::vector<double> exp_N_dist(zvals.size());
+
+        Rcpp::NumericMatrix isomat(zvals.size(), maxIsotopes + 1);
+
+        for (size_t z = 0; z < zvals.size(); z++) {
+          double C_step = C_diff / zvals[z];
+          std::cout << C_step << std::endl;
+
+          double N_step = N_diff / zvals[z];
+          std::cout << N_step << std::endl;
+
+          double C_candidate = mz + C_step;
+          double N_candidate = mz + N_step;
+
+          isomat(z, 0) = mz;
+
+          for (int col = 1; col < maxIsotopes + 1; col++) {
+
+            for (int f = 1; f < number_chain_features; f++) {
+              
+              if (col == 1) {
+                double C_canditate_error = chain_mz[f] - C_candidate;
+
+                // matching c13 but need to valid intensity
+                if (C_canditate_error <= mzr) {
+                  isomat(z, col) = chain_mz[f];
+                  C_candidate = chain_mz[f] + C_step;
+                  N_candidate = chain_mz[f] + N_step;
+
+                } else {
+                  C_candidate = C_candidate + C_step;
+                  N_candidate = C_candidate + N_step;
+                }
+
+              } else {
+                double C_canditate_error = chain_mz[f] - C_candidate;
+                double N_canditate_error = chain_mz[f] - N_candidate;
+
+                if (C_canditate_error <= mzr || N_canditate_error <= mzr) {
+                  isomat(z, col) = chain_mz[f];
+                  C_candidate = chain_mz[f] + C_step;  
+                  N_candidate = chain_mz[f] + N_step;
+
+                } else {
+                  C_candidate = C_candidate + C_step;
+                  N_candidate = C_candidate + N_step;
+                }
+
+              }
+              
+              
+              
+              
+              
+              
+
+
+            }
+
+          }
+        }
+
+        
+
+        list_out["isomat"] = isomat;
+        
+
+
+
+        
+
+
+        
 
 
         // std::vector<double> expected_dist = isotope_diff / zvals;
@@ -95,6 +171,9 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
         // std::cout << mz.size() << std::endl;
 
         // mz = all_mz[which_idx];
+
+        std::cout << "Chain: " << std::endl;
+
 
         for (size_t z = 0; z < chain_mz.size(); ++z) {
           std::cout << which_fts[z] << " " << chain_mz[z] << " " << fts_idx[z] << std::endl;

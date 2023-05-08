@@ -40,9 +40,44 @@ neutral_targets <- make_ms_targets(
   sec = sec_dev
 )
 
-isos <- read.csv(paste0(getwd(), "/dev/isotopes.csv"))
-elements <- c("C", "H", "N", "S", "Cl", "Br", "O")
+isos <- fread(paste0(getwd(), "/dev/isotopes.csv"))
+
+for (i in 1:9) {
+  col <- paste0("i", i)
+  isos[[col]] <- isos[[col]] - isos$i0
+  isos[[col]][isos[[col]] < 0] <- 0
+
+  # cal <- paste0("a", i)
+  # isos[[cal]] <- isos[[cal]] / 100
+}
+
+elements <- c("C", "H", "N", "S", "Cl", "Br", "O", "Si", "F", "P", "Mg", "Zn", "Fe", "K", "Ca", "I")
+
+
+elements <- c("C", "H", "N", "S", "Cl", "Br", "O", "F", "P", "I")
+
 isos <- isos[isos$element %in% elements, ]
+
+plot(isos$i1, isos$a1)
+
+weighted.mean(isos$i1[isos$i1 < 1], isos$a1[isos$i1 < 1])
+
+weighted.mean(isos$i1[isos$i1 < 1.5 & isos$i1 > 0], isos$a1[isos$i1 < 1.5 & isos$i1 > 0])
+
+
+unique(round(isos$i1, digits = 3))
+
+
+
+
+unique(round(na.omit(isos$i2 - isos$i0), digits = 3))
+unique(round(na.omit(isos$i3 - isos$i0), digits = 3))
+
+
+
+
+
+
 
 # settings ---------------------------------------------------------------------
 
@@ -83,7 +118,9 @@ fts1 <- fts1[order(fts1$mz), ]
 
 fts1$mz
 
-plot_spectra_interactive(fts)
+ms$plot_xic(analyses = 1, mz = 240, rt = 1158, ppm = 500)
+
+plot_spectra_interactive(fts1)
 
 rcpp_ms_annotation_isotopes(fts)
 
@@ -97,12 +134,14 @@ rcpp_ms_annotation_isotopes(fts)
 
 
 
-na.omit(isos$i1 - isos$i0) - (1.0033548378 * 2)
+unique(round(na.omit(isos$i1), digits = 3))
+unique(round(na.omit(isos$i2 - isos$i0), digits = 3))
+unique(round(na.omit(isos$i3 - isos$i0), digits = 3))
 
 max(na.omit(isos$i1 - isos$i0)) - min(na.omit(isos$i1 - isos$i0))
 
 
-na.omit(isos$i2 - isos$i0)
+na.omit(isos$i2 - isos$i1)
 max(na.omit(isos$i2 - isos$i0)) - min(na.omit(isos$i2 - isos$i0))
 
 
