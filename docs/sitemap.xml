@@ -43,6 +43,9 @@
     <loc>https://ricardobachertdacunha.github.io/streamFind/reference/headers.html</loc>
   </url>
   <url>
+    <loc>https://ricardobachertdacunha.github.io/streamFind/reference/import_MassSpecData.html</loc>
+  </url>
+  <url>
     <loc>https://ricardobachertdacunha.github.io/streamFind/reference/import_msData.html</loc>
   </url>
   <url>
@@ -56,6 +59,12 @@
   </url>
   <url>
     <loc>https://ricardobachertdacunha.github.io/streamFind/reference/map_features_static.html</loc>
+  </url>
+  <url>
+    <loc>https://ricardobachertdacunha.github.io/streamFind/reference/MassSpecAnalysis.html</loc>
+  </url>
+  <url>
+    <loc>https://ricardobachertdacunha.github.io/streamFind/reference/MassSpecData.html</loc>
   </url>
   <url>
     <loc>https://ricardobachertdacunha.github.io/streamFind/reference/msAnalysis.html</loc>
@@ -107,6 +116,9 @@
   </url>
   <url>
     <loc>https://ricardobachertdacunha.github.io/streamFind/reference/plot_xic_interactive.html</loc>
+  </url>
+  <url>
+    <loc>https://ricardobachertdacunha.github.io/streamFind/reference/ProcessingSettings.html</loc>
   </url>
   <url>
     <loc>https://ricardobachertdacunha.github.io/streamFind/reference/settings.html</loc>

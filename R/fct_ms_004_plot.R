@@ -583,7 +583,7 @@ plot_bpc_interactive <- function(bpc = NULL, legendNames = NULL,
 #'
 #' @description Static plot of MSn spectra using the \pkg{base} package.
 #'
-#' @param ms2 A data table with the id, mz, intensity, preMZ, isPre
+#' @param ms2 A data table with the id, mz, intensity, pre_mz, isPre
 #' and var (i.e., the plotting variable for each entry) as columns.
 #' @param legendNames A character vector with the same length as the unique ids
 #' in the table given in `eic`.
@@ -676,7 +676,7 @@ plot_ms2_static <- function(ms2 = NULL, legendNames = NULL,
 #'
 #' @description Interactive plot of MS2 spectra using the \pkg{plotly} package.
 #'
-#' @param ms2 A data.table with the id, preMZ, mz, intensity,
+#' @param ms2 A data.table with the id, pre_mz, mz, intensity,
 #' isPre and var (i.e., the plotting variable for each entry) as columns.
 #' @param legendNames A character vector with the same length as the unique ids
 #' in the table given in `eic`.

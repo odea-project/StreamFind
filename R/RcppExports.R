@@ -25,3 +25,35 @@ rcpp_ms_update_groups <- function(features, analyses) {
     .Call(`_streamFind_rcpp_ms_update_groups`, features, analyses)
 }
 
+rcpp_parse_chromatograms <- function(file_path, index = NA_integer_) {
+    .Call(`_streamFind_rcpp_parse_chromatograms`, file_path, index)
+}
+
+rcpp_parse_chromatograms_headers <- function(file_path) {
+    .Call(`_streamFind_rcpp_parse_chromatograms_headers`, file_path)
+}
+
+rcpp_parse_ms_analysis <- function(file_path) {
+    .Call(`_streamFind_rcpp_parse_ms_analysis`, file_path)
+}
+
+rcpp_parse_ms_analysis_chromatograms <- function(analysis, index = NA_integer_) {
+    .Call(`_streamFind_rcpp_parse_ms_analysis_chromatograms`, analysis, index)
+}
+
+rcpp_parse_ms_analysis_spectra <- function(analysis, index = NA_integer_) {
+    .Call(`_streamFind_rcpp_parse_ms_analysis_spectra`, analysis, index)
+}
+
+rcpp_parse_spectra <- function(file_path, index = NA_integer_) {
+    .Call(`_streamFind_rcpp_parse_spectra`, file_path, index)
+}
+
+rcpp_parse_spectra_headers <- function(file_path) {
+    .Call(`_streamFind_rcpp_parse_spectra_headers`, file_path)
+}
+
+rcpp_parse_xml <- function(input) {
+    .Call(`_streamFind_rcpp_parse_xml`, input)
+}
+

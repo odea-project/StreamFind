@@ -6,6 +6,7 @@
 .httr-oauth
 .DS_Store
 streamFind.Rproj
+.vscode
 
 # Excluded project folders ----------------------------------------------------
 **/doc
