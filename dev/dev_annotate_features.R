@@ -46,30 +46,18 @@ for (i in 1:9) {
   col <- paste0("i", i)
   isos[[col]] <- isos[[col]] - isos$i0
   isos[[col]][isos[[col]] < 0] <- 0
-
   # cal <- paste0("a", i)
   # isos[[cal]] <- isos[[cal]] / 100
 }
 
-elements <- c("C", "H", "N", "S", "Cl", "Br", "O", "Si", "F", "P", "Mg", "Zn", "Fe", "K", "Ca", "I")
-
-
+# elements <- c("C", "H", "N", "S", "Cl", "Br", "O", "Si", "F", "P", "Mg", "Zn", "Fe", "K", "Ca", "I")
 elements <- c("C", "H", "N", "S", "Cl", "Br", "O", "F", "P", "I")
-
 isos <- isos[isos$element %in% elements, ]
 
-plot(isos$i1, isos$a1)
-
 weighted.mean(isos$i1[isos$i1 < 1], isos$a1[isos$i1 < 1])
-
 weighted.mean(isos$i1[isos$i1 < 1.5 & isos$i1 > 0], isos$a1[isos$i1 < 1.5 & isos$i1 > 0])
 
-
-unique(round(isos$i1, digits = 3))
-
-
-
-
+unique(round(isos$i1[isos$i1 < 1.5], digits = 2))
 unique(round(na.omit(isos$i2 - isos$i0), digits = 3))
 unique(round(na.omit(isos$i3 - isos$i0), digits = 3))
 
@@ -118,21 +106,44 @@ fts1 <- fts1[order(fts1$mz), ]
 
 fts1$mz
 
-ms$plot_xic(analyses = 1, mz = 240, rt = 1158, ppm = 500)
+# ms$plot_xic(analyses = 1, mz = 240, rt = 1158, ppm = 500)
 
 plot_spectra_interactive(fts1)
 
-rcpp_ms_annotation_isotopes(fts)
+out <- rcpp_ms_annotation_isotopes(fts)
+out$iso_hits
+
+out$iso_elements_key
+
+length(out$IsoMd)
+
+length(unique(round(out$IsoMd, digits = 3)))
 
 
+out$iso_combinations_vec_mass
+
+View(out$iso_combined)
+
+length(out$combinations)
+
+test <- abs(c(0, out$iso_combined$mass_diff[-length(out$iso_combined$mass_diff)]) - out$iso_combined$mass_diff)
+
+head(out$iso_combinations_vec_mass_ordered, 20)
+
+out$iso_combined$mass_diff <- round(out$iso_combined$mass_diff, digits = 4)
+vec <- unique(out$iso_combined$mass_diff)
+vec <- vec[vec < 1.1]
+weighted.mean(vec, out$iso_combined$rel_ab[out$iso_combined$mass_diff %in% vec] * c(1, 1, 10, 1, 5))
 
 
+z <- 2
+m1 <- 300
+mz1 <- m1 / z
 
+m2 <- 302
+mz2 <- m2 / z
 
-
-
-
-
+mz2 - mz1
 
 unique(round(na.omit(isos$i1), digits = 3))
 unique(round(na.omit(isos$i2 - isos$i0), digits = 3))
@@ -152,17 +163,97 @@ max(na.omit(isos$i2 - isos$i0)) - min(na.omit(isos$i2 - isos$i0))
 
 
 
+N_diff <- 0.9970349
+N_w <- 0.3663 / 100
+C_diff <- 1.0033548378
+C_w <- 1.1078 / 100
+H_diff <- 1.0062767
+H_w <- 0.0156 / 100
+O_diff <- 1.0042169
+O_w <- 0.0372 / 100
+O2_diff <- 2.004246
+O2_w <- 0.2 / 100
+S_diff <- 0.9993878
+S_w <- 0.75 / 100
+S2_diff <- 1.995796
+S2_w <- 4.215 / 100
+S3_diff <- 3.99501
+S3_w <- 0.017 / 100
+Cl_diff <- 1.9970499
+Cl_w <- 24.229 / 100
+Br_diff <- 1.9979534
+Br_w <- 49.314 / 100
 
+elements <- c("C", "H", "N", "S", "S2", "S3", "Cl", "Br", "O", "O2")
+mass_diff <- c(C_diff, H_diff, N_diff, S_diff, S2_diff, S3_diff, Cl_diff, Br_diff, O_diff, O2_diff)
+weig_diff <- c(C_w, H_w, N_w, S_w, S2_w, S3_w, Cl_w, Br_w, O_w, O2_w)
 
+df <- data.table("element" = elements, "mass_diff" = mass_diff, "weig_diff" = weig_diff, level = 1)
+# df <- df[df$weig_diff > 0.001]
+replicatations <- 3
+offset <- 1
+for (r in 1:replicatations) {
+  iterations <- nrow(df)
+  cat(iterations)
+  cat("\n")
+  for (i in offset:iterations) {
+    for (z in 1:10) {
+      el <- paste0(df$element[i], df$element[z])
+      mass <- df$mass_diff[i] + df$mass_diff[z]
+      w <- df$weig_diff[i] * df$weig_diff[z]
+      df <- rbind(df,
+        data.table(
+          "element" = el,
+          "mass_diff" = mass,
+          "weig_diff" = w,
+          "level" = r + 1
+        )
+      )
+    }
+  }
 
+  df <- df[!duplicated(df[, c("mass_diff", "weig_diff", "level")]), ]
 
+  offset <- offset + iterations
+  cat(offset)
+  cat("\n")
+}
 
+# for (i in 11:iterations) {
+#   for (z in 1:iterations) {
+#     el <- paste0(df$element[i], df$element[z])
+#     mass <- df$mass_diff[i] + df$mass_diff[z]
+#     w <- df$weig_diff[i] * df$weig_diff[z]
+#     df <- rbind(df,
+#       data.table(
+#         "element" = el,
+#         "mass_diff" = mass,
+#         "weig_diff" = w
+#       )
+#     )
+#   }
+# }
 
+# for (i in 111:iterations) {
+#   for (z in 1:iterations) {
+#     el <- paste0(df$element[i], df$element[z])
+#     mass <- df$mass_diff[i] + df$mass_diff[z]
+#     w <- df$weig_diff[i] * df$weig_diff[z]
+#     df <- rbind(df,
+#       data.table(
+#         "element" = el,
+#         "mass_diff" = mass,
+#         "weig_diff" = w
+#       )
+#     )
+#   }
+# }
 
+df$mass_diff <- signif(df$mass_diff, digits = 5)
 
-
-
-
+vec <- unique(df$mass_diff[df$weig_diff > 0.01 / 100])
+vec <- vec[vec < 1.5]
+weighted.mean(vec, df$weig_diff[df$mass_diff %in% vec] * c(38, 69, 1, 0, 13))
 
 
 
