@@ -12,6 +12,9 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
 
   Rcpp::List list_out;
 
+  // TODO order by mz to avoid premature isotopes !!!!!!!!!!!!!!!
+
+
   int number_of_features = features.nrows();
   std::vector<std::string> ids = features["feature"];
   std::vector<double> all_rt = features["rt"];
@@ -126,12 +129,10 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
 
   Rcpp::NumericVector el_md_key = Rcpp::wrap(iso_md);
   el_md_key.names() = iso_elements;
-  list_out["el_md_key"] = el_md_key;
-
+  
   Rcpp::NumericVector el_ab_key = Rcpp::wrap(iso_ab);
   el_ab_key.names() = iso_elements;
-  list_out["el_ab_key"] = el_ab_key;
-
+  
   std::vector<std::vector<double>> CbMd0(CbEl0.size());
   std::vector<std::vector<double>> CbAb0(CbEl0.size());
 
@@ -179,10 +180,12 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
   for (const std::vector<double>& x : CbMd) CbMd_list.push_back(x);
   for (const std::vector<double>& x : CbAb) CbAb_list.push_back(x);
   
-  list_out["CbEl"] = CbEl_list;
-  list_out["CbMd"] = CbMd_list;
-  list_out["CbAb"] = CbAb_list;
-  list_out["IsoMd"] = IsoMd;
+  // list_out["el_md_key"] = el_md_key;
+  // list_out["el_ab_key"] = el_ab_key;
+  // list_out["CbEl"] = CbEl_list;
+  // list_out["CbMd"] = CbMd_list;
+  // list_out["CbAb"] = CbAb_list;
+  // list_out["IsoMd"] = IsoMd;
 
 
 
@@ -209,7 +212,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
     IsoStep[i] = std::round(IsoMd_merged[i] * 1) / 1;
   }
 
-  list_out["IsoMd_merged"] = IsoMd_merged;
+  // list_out["IsoMd_merged"] = IsoMd_merged;
 
 
 
@@ -222,7 +225,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
   std::vector<int> zvals(maxCharge);
   std::iota(zvals.begin(), zvals.end(), 1);
 
-  int iso_gr = 1;
+  // int iso_gr = 1;
   std::vector<int> feat_iso_gr(number_of_features);
 
 
@@ -235,10 +238,18 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
   // Main loop ///////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////
 
-  for (int i = 218; i < 219; ++i) {
+  // mz247.177_rt1121_f183
+  for (int i = 182; i < 183; ++i) {
+  
+  // Carbamazepin-d10
+  // for (int i = 132; i < 133; ++i) {
+  
+  // Diuron-d6
+  // for (int i = 218; i < 219; ++i) {
 
     std::string id = ids[i];
     double mz = all_mz[i];
+    double intensity = all_intensity[i];
 
     std::cout << "Feature: " << id << std::endl;
 
@@ -246,8 +257,12 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
     if (feat_iso_gr[i] == 0) {
       double rtmin = all_rtmin[i];
       double rtmax = all_rtmax[i];
-      double mzmin = all_mzmin[i];
-      double mzmax = all_mzmax[i];
+      // double mzmin = all_mzmin[i];
+      // double mzmax = all_mzmax[i];
+
+
+      // Build Chain /////////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////////////////////
 
       // Perhaps the rtmin and rtmax can be shrinked based on central rt
 
@@ -310,10 +325,18 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
           std::cout << chain_mz[z] - mz << std::endl;
         }
 
-        Rcpp::List iso_list(maxCharge);
+        // Chain evaluation ////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////////////////////
+
+        Rcpp::List iso_hits_list(maxCharge);
+        Rcpp::List iso_n_list(maxCharge);
+        Rcpp::List iso_ints_list(maxCharge);
+        Rcpp::List iso_diff_list(maxCharge);
+        Rcpp::List iso_elmass_list(maxCharge);
+        Rcpp::List iso_error_list(maxCharge);
 
         for (size_t z = 0; z < zvals.size(); z++) {
-          std::cout << "Charge: " << zvals[z] << std::endl;
+          // std::cout << "Charge: " << zvals[z] << std::endl;
 
           // Make chains based on iso position wihch is the rounded unit of the mass_diff
           // acccording to the defined max isos
@@ -322,10 +345,35 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
           // make a container for filling hits and write the in the output
           // gaps are avoided by unfilled position and the actual mass diff is stored to the output
 
-          // isomat(z, 0) = mz;
-
           Rcpp::List iso_hits(maxIsotopes + 1);
-          iso_hits[0] = mz;
+          Rcpp::NumericVector mz_v;
+          mz_v.push_back(mz);
+          iso_hits[0] = mz_v;
+
+          Rcpp::List iso_n(maxIsotopes + 1);
+          Rcpp::NumericVector n_v;
+          n_v.push_back(0);
+          iso_n[0] = n_v;
+
+          Rcpp::List iso_ints(maxIsotopes + 1);
+          Rcpp::NumericVector int_v;
+          int_v.push_back(1);
+          iso_ints[0] = int_v;
+
+          Rcpp::List iso_diff(maxIsotopes + 1);
+          Rcpp::NumericVector diff_v;
+          diff_v.push_back(0);
+          iso_diff[0] = diff_v;
+
+          Rcpp::List iso_elmass(maxIsotopes + 1);
+          Rcpp::NumericVector elmass_v;
+          elmass_v.push_back(0);
+          iso_elmass[0] = elmass_v;
+
+          Rcpp::List iso_error(maxIsotopes + 1);
+          Rcpp::NumericVector error_v;
+          error_v.push_back(0);
+          iso_error[0] = error_v;
 
           for (int iso = 1; iso < maxIsotopes + 1; ++iso) {
 
@@ -335,6 +383,11 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
             IsoMd_temp = IsoMd_temp / zvals[z];
 
             Rcpp::NumericVector hits;
+            Rcpp::NumericVector n;
+            Rcpp::NumericVector ints;
+            Rcpp::NumericVector diff;
+            Rcpp::NumericVector elmass;
+            Rcpp::NumericVector error;
 
             for (int f = 1; f < number_chain_features; ++f) {
               double canditate_diff = chain_mz[f] - mz;
@@ -346,110 +399,147 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
 
               bool is_iso_candidate = false;
               double mass_error = 10;
-              for (size_t j = 0; j < IsoMd_temp.size(); j++) {
+              double candidate_IsoMd;
+              for (int j = 0; j < IsoMd_temp.size(); j++) {
                 if (IsoMd_temp[j] > candidate_diff_min && IsoMd_temp[j] < candidate_diff_max) {
                   if (abs(IsoMd_temp[j] - canditate_diff) < mass_error) {
                     mass_error = abs(IsoMd_temp[j] - canditate_diff);
+                    candidate_IsoMd = IsoMd_temp[j];
                     is_iso_candidate = true;
                   }
                 }
               }
 
               if (is_iso_candidate) {
-                
                 hits.push_back(chain_mz[f]);
+                n.push_back(iso);
+                ints.push_back(chain_intensity[f] / intensity);
+                diff.push_back(canditate_diff);
+                elmass.push_back(candidate_IsoMd);
+                error.push_back(mass_error);
               }
             }
 
+            if (hits.size() == 0) {
+              hits.push_back(0);
+              n.push_back(iso);
+              ints.push_back(0);
+              diff.push_back(0);
+              elmass.push_back(0);
+              error.push_back(0);
+            }
+
             iso_hits[iso] = hits;
+            iso_n[iso] = n;
+            iso_ints[iso] = ints;
+            iso_diff[iso] = diff;
+            iso_elmass[iso] = elmass;
+            iso_error[iso] = error;
           }
           
-          iso_list[z] = iso_hits;
+          iso_hits_list[z] = iso_hits;
+          iso_n_list[z] = iso_n;
+          iso_ints_list[z] = iso_ints;
+          iso_diff_list[z] = iso_diff;
+          iso_elmass_list[z] = iso_elmass;
+          iso_error_list[z] = iso_error;
         }
 
-        list_out["iso_list"] = iso_list;
+        // list_out["iso_hits_list"] = iso_hits_list;
 
 
 
-        // std::cout << std::endl;
-        // std::cout << "Charge distance: " << std::endl;
 
-        // std::vector<double> exp_C_dist(zvals.size());
-        // std::vector<double> exp_N_dist(zvals.size());
 
-        // for (size_t z = 0; z < zvals.size(); z++) {
-        //   double C_step = C_diff / zvals[z];
-        //   // std::cout << "For z:" << z << "C dist: " << C_step << std::endl;
-        //   double N_step = N_diff / zvals[z];
-        //   // std::cout << "For z:" << z << "N dist: " << N_step << std::endl;
+        // Chain selection /////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////////////////////
 
-        //   double C_candidate = mz;
-        //   double N_candidate = mz;
+        int chain_length = 0;
+        int charge_idx = 0;
+        Rcpp::NumericVector final_chain;
 
-        //   isomat(z, 0) = mz;
+        for (size_t z = 0; z < zvals.size(); z++) {
+          const Rcpp::List& chain = iso_hits_list[z];
+          Rcpp::NumericVector flat_chain;
+          for (int iso = 0; iso < maxIsotopes + 1; ++iso) {
+            const Rcpp::List& iso_step = chain[iso];
+            for (int m = 0; m < iso_step.size(); m++) {
+              flat_chain.push_back(iso_step[m]);
+            }
+          }
 
-        //   for (int col = 1; col < maxIsotopes + 1; ++col) {
+          // list_out.push_back(final_chain);
 
-        //     bool found_hit = false;
+          int chain_counter = 0;
+          for (int m = 0; m < flat_chain.size(); m++) {
+            if (flat_chain[m] > 0) chain_counter++;
+          }
 
-        //     for (int f = 1; f < number_chain_features; ++f) {
-              
-        //       if (col == 1) {
-        //         double C_canditate_diff = abs(chain_mz[f] - C_candidate);
+          if (chain_counter > chain_length) {
+            chain_length = chain_counter;
+            final_chain = flat_chain;
+            charge_idx = z;
 
-        //         // matching c13 but need to validate intensity
-        //         if (C_canditate_diff <= 0.005) {
-        //           std::cout << "C13 with " << C_canditate_diff << std::endl;
-        //           isomat(z, col) = chain_mz[f];
-        //           found_hit = true;
-        //         }
+          } else if (chain_counter == chain_length) {
+            std::cout << std::endl;
+            std::cout << "Chain from different charges with the same length!!!" << std::endl;
+            std::cout << std::endl;
 
-        //       } else {
-        //         double C_canditate_diff = abs(chain_mz[f] - C_candidate);
-        //         double N_canditate_diff = abs(chain_mz[f] - N_candidate);
+          }
+        }
 
-        //         if (C_canditate_diff <= 0.005) {
-        //           std::cout << "Iso n" << col << " with C error " << C_canditate_diff << std::endl;
-        //           isomat(z, col) = chain_mz[f];
-        //           found_hit = true;
 
-        //         } else if (N_canditate_diff <= 0.005) {
-        //           std::cout << "Iso n" << col << " with N error " << N_canditate_diff << std::endl;
-        //           isomat(z, col) = chain_mz[f];
-        //           found_hit = true;
-        //         }
-        //       }
-        //     }
 
-        //     if (found_hit) {
-        //       C_candidate = isomat(z, col);
-        //       N_candidate = isomat(z, col);
-        //     } else {
-        //       C_candidate = C_candidate + C_step;
-        //       N_candidate = C_candidate + N_step;
-        //     }
-        //   }
-        // }
+        // Chain description ///////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////////////////////
+
+        if (final_chain.size() > 0) {
+          const Rcpp::List& n = iso_n_list[charge_idx];
+          const Rcpp::List& ints = iso_ints_list[charge_idx];
+          const Rcpp::List& diff = iso_diff_list[charge_idx];
+          const Rcpp::List& elmass = iso_elmass_list[charge_idx];
+          const Rcpp::List& error = iso_error_list[charge_idx];
+          Rcpp::NumericVector flat_n;
+          Rcpp::NumericVector flat_ints;
+          Rcpp::NumericVector flat_diff;
+          Rcpp::NumericVector flat_elmass;
+          Rcpp::NumericVector flat_error;
+          for (int iso = 0; iso < maxIsotopes + 1; ++iso) {
+            const Rcpp::List& n_step = n[iso];
+            const Rcpp::List& ints_step = ints[iso];
+            const Rcpp::List& diff_step = diff[iso];
+            const Rcpp::List& elmass_step = elmass[iso];
+            const Rcpp::List& error_step = error[iso];
+
+            for (int m = 0; m < ints_step.size(); m++) {
+              flat_n.push_back(n_step[m]);
+              flat_ints.push_back(ints_step[m]);
+              flat_diff.push_back(diff_step[m]);
+              flat_elmass.push_back(elmass_step[m]);
+              flat_error.push_back(error_step[m]);
+            }
+          }
+
+          list_out["n"] = flat_n;
+          list_out["chain"] = final_chain;
+          list_out["ints"] = flat_ints;
+          list_out["diff"] = flat_diff;
+          list_out["elmass"] = flat_elmass;
+          list_out["error"] = flat_error;
+
+
+
+        } else {
+
+          list_out["chain"] = final_chain;
+
+
+
+        }
 
         
 
-        
-        
 
-
-
-        
-
-
-        
-
-
-        // std::vector<double> expected_dist = isotope_diff / zvals;
-
-
-        // std::cout << mz.size() << std::endl;
-
-        // mz = all_mz[which_idx];
 
       // only 1 feature
       } else {
@@ -487,77 +577,138 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
 
 
 // Old Make mass diff combinations /////////////////////////////////////////////////////////////
-  // ////////////////////////////////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // std::vector<std::tuple<std::string, double>> iso_combined;
-  // for (size_t i = 0; i < iso_md.size(); ++i) {
-  //   iso_combined.push_back(std::make_tuple(iso_elements[i], iso_md[i]));
-  // }
+// std::vector<std::tuple<std::string, double>> iso_combined;
+// for (size_t i = 0; i < iso_md.size(); ++i) {
+//   iso_combined.push_back(std::make_tuple(iso_elements[i], iso_md[i]));
+// }
 
-  // int offset = 0;
+// int offset = 0;
 
-  // for (int r = 1; r <= max_number_elements; r++) {
-  //   int iterations =  iso_combined.size();
+// for (int r = 1; r <= max_number_elements; r++) {
+//   int iterations =  iso_combined.size();
 
-  //   for (int i = offset; i < iterations; ++i) {
+//   for (int i = offset; i < iterations; ++i) {
 
-  //     for (int e = 0; e < 10; ++e) {
-  //       std::string el = std::get<0>(iso_combined[i]) + std::get<0>(iso_combined[e]);
-  //       std::sort(el.begin(), el.end());
-  //       double m = std::get<1>(iso_combined[i]) + std::get<1>(iso_combined[e]);
-  //       iso_combined.push_back(std::make_tuple(el, m));
-  //     }
-  //   }
+//     for (int e = 0; e < 10; ++e) {
+//       std::string el = std::get<0>(iso_combined[i]) + std::get<0>(iso_combined[e]);
+//       std::sort(el.begin(), el.end());
+//       double m = std::get<1>(iso_combined[i]) + std::get<1>(iso_combined[e]);
+//       iso_combined.push_back(std::make_tuple(el, m));
+//     }
+//   }
 
-  //   std::sort(iso_combined.begin(), iso_combined.end(), [](const auto& a, const auto& b) {
-  //       return std::get<1>(a) < std::get<1>(b);
-  //   });
+//   std::sort(iso_combined.begin(), iso_combined.end(), [](const auto& a, const auto& b) {
+//       return std::get<1>(a) < std::get<1>(b);
+//   });
 
-  //   auto last = std::unique(iso_combined.begin(), iso_combined.end(),
-  //     [](const std::tuple<std::string, double>& a, const std::tuple<std::string, double>& b) {
-  //         return  std::get<0>(a) == std::get<0>(b);
-  //     });
+//   auto last = std::unique(iso_combined.begin(), iso_combined.end(),
+//     [](const std::tuple<std::string, double>& a, const std::tuple<std::string, double>& b) {
+//         return  std::get<0>(a) == std::get<0>(b);
+//     });
 
-  //   iso_combined.erase(last, iso_combined.end());
+//   iso_combined.erase(last, iso_combined.end());
 
-  //   offset = offset + iterations;
-  //   // std::cout << "The offset is " << offset << std::endl;
-  // }
+//   offset = offset + iterations;
+//   // std::cout << "The offset is " << offset << std::endl;
+// }
 
-  // Rcpp::CharacterVector column0;
-  // std::vector<double> column1;
-  
-  // // Iterate over the tuples and fill the DataFrame columns
-  // for (auto& tpl : iso_combined) {
-  //     column0.push_back(std::get<0>(tpl));
-  //     column1.push_back(std::get<1>(tpl));
-  // }
+// Rcpp::CharacterVector column0;
+// std::vector<double> column1;
 
-  // // Create the DataFrame with the columns
-  // Rcpp::DataFrame df = Rcpp::DataFrame::create(
-  //   Rcpp::Named("elements") = column0,
-  //   Rcpp::Named("massdiff") = column1
-  // );
+// // Iterate over the tuples and fill the DataFrame columns
+// for (auto& tpl : iso_combined) {
+//     column0.push_back(std::get<0>(tpl));
+//     column1.push_back(std::get<1>(tpl));
+// }
 
-  // list_out["iso_combined"] = df;
+// // Create the DataFrame with the columns
+// Rcpp::DataFrame df = Rcpp::DataFrame::create(
+//   Rcpp::Named("elements") = column0,
+//   Rcpp::Named("massdiff") = column1
+// );
 
-  // double multiplier = std::pow(10.0, decimal_numbers);
+// list_out["iso_combined"] = df;
 
-  // std::vector<double> mass_diff_res(column1.size());
+// double multiplier = std::pow(10.0, decimal_numbers);
 
-  // for (size_t v = 0; v < column1.size(); v++) {
-  //   mass_diff_res[v] = std::round(column1[v] * multiplier) / multiplier;
-  // }
+// std::vector<double> mass_diff_res(column1.size());
 
-  // std::sort(mass_diff_res.begin(), mass_diff_res.end());
+// for (size_t v = 0; v < column1.size(); v++) {
+//   mass_diff_res[v] = std::round(column1[v] * multiplier) / multiplier;
+// }
 
-  // auto last = std::unique(mass_diff_res.begin(), mass_diff_res.end());
+// std::sort(mass_diff_res.begin(), mass_diff_res.end());
 
-  // mass_diff_res.erase(last, mass_diff_res.end());
+// auto last = std::unique(mass_diff_res.begin(), mass_diff_res.end());
 
-  // list_out["unique_vec"] = mass_diff_res;
+// mass_diff_res.erase(last, mass_diff_res.end());
 
-  // std::vector<double> iso_n(mass_diff_res.size());
-  // for (size_t v = 0; v < mass_diff_res.size(); v++) {
-  //   iso_n[v] = std::round(mass_diff_res[v] * 1) / 1;
-  // }
+// list_out["unique_vec"] = mass_diff_res;
+
+// std::vector<double> iso_n(mass_diff_res.size());
+// for (size_t v = 0; v < mass_diff_res.size(); v++) {
+//   iso_n[v] = std::round(mass_diff_res[v] * 1) / 1;
+// }
+
+
+// std::cout << std::endl;
+// std::cout << "Charge distance: " << std::endl;
+
+// std::vector<double> exp_C_dist(zvals.size());
+// std::vector<double> exp_N_dist(zvals.size());
+
+// for (size_t z = 0; z < zvals.size(); z++) {
+//   double C_step = C_diff / zvals[z];
+//   // std::cout << "For z:" << z << "C dist: " << C_step << std::endl;
+//   double N_step = N_diff / zvals[z];
+//   // std::cout << "For z:" << z << "N dist: " << N_step << std::endl;
+
+//   double C_candidate = mz;
+//   double N_candidate = mz;
+
+//   isomat(z, 0) = mz;
+
+//   for (int col = 1; col < maxIsotopes + 1; ++col) {
+
+//     bool found_hit = false;
+
+//     for (int f = 1; f < number_chain_features; ++f) {
+      
+//       if (col == 1) {
+//         double C_canditate_diff = abs(chain_mz[f] - C_candidate);
+
+//         // matching c13 but need to validate intensity
+//         if (C_canditate_diff <= 0.005) {
+//           std::cout << "C13 with " << C_canditate_diff << std::endl;
+//           isomat(z, col) = chain_mz[f];
+//           found_hit = true;
+//         }
+
+//       } else {
+//         double C_canditate_diff = abs(chain_mz[f] - C_candidate);
+//         double N_canditate_diff = abs(chain_mz[f] - N_candidate);
+
+//         if (C_canditate_diff <= 0.005) {
+//           std::cout << "Iso n" << col << " with C error " << C_canditate_diff << std::endl;
+//           isomat(z, col) = chain_mz[f];
+//           found_hit = true;
+
+//         } else if (N_canditate_diff <= 0.005) {
+//           std::cout << "Iso n" << col << " with N error " << N_canditate_diff << std::endl;
+//           isomat(z, col) = chain_mz[f];
+//           found_hit = true;
+//         }
+//       }
+//     }
+
+//     if (found_hit) {
+//       C_candidate = isomat(z, col);
+//       N_candidate = isomat(z, col);
+//     } else {
+//       C_candidate = C_candidate + C_step;
+//       N_candidate = C_candidate + N_step;
+//     }
+//   }
+// }
