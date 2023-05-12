@@ -72,16 +72,16 @@ ms$find_features()
 # code dev ---------------------------------------------------------------------
 
 fts <- ms$get_features(analyses = 1)
-cols_keep <- c("feature", "mass", "mz", "mzmin", "mzmax", "rt", "rtmin","rtmax", "intensity")
+cols_keep <- c("index", "feature", "mass", "mz", "mzmin", "mzmax", "rt", "rtmin","rtmax", "intensity", "sn")
 fts <- fts[, cols_keep, with = FALSE]
 
 fts_tar <- ms$get_features(analyses = 1, mz = targets)
 fts1 <- fts[fts$rt >= min(fts_tar$rtmin) & fts$rt <= max(fts_tar$rtmax), ]
 fts1 <- fts1[order(fts1$mz), ]
+
 plot_spectra_interactive(fts1)
 
 View(rcpp_ms_annotation_isotopes(fts))
-View(out)
 
 
 
@@ -89,8 +89,9 @@ View(out)
 
 
 
+View(rcpp_ms_annotation_isotopes(fts)[[2]])
 
-
+ms$plot_features(analyses = 1, features = "mz247.177_rt1121_f183")
 
 out$iso_hits
 out$iso_elements_key

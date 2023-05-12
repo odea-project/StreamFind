@@ -8,22 +8,91 @@
 #include <Rcpp.h>
 
 // [[Rcpp::export]]
-Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes = 6, int maxCharge = 3) {
+Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes = 6, int maxCharge = 3, double rtWindowAlignment = 0.5) {
 
   Rcpp::List list_out;
 
-  // TODO order by mz to avoid premature isotopes !!!!!!!!!!!!!!!
-
-
   int number_of_features = features.nrows();
-  std::vector<std::string> ids = features["feature"];
-  std::vector<double> all_rt = features["rt"];
-  std::vector<double> all_rtmin = features["rtmin"];
-  std::vector<double> all_rtmax = features["rtmax"];
-  std::vector<double> all_mz = features["mz"];
-  std::vector<double> all_mzmin = features["mzmin"];
-  std::vector<double> all_mzmax = features["mzmax"];
-  std::vector<double> all_intensity = features["intensity"];
+
+  // Order Input data by mz //////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////
+
+  std::vector<std::string> all_ids_unsorted = features["feature"];
+  std::vector<int> all_idx_unsorted = features["index"];
+  std::vector<double> all_rt_unsorted = features["rt"];
+  std::vector<double> all_rtmin_unsorted = features["rtmin"];
+  std::vector<double> all_rtmax_unsorted = features["rtmax"];
+  std::vector<double> all_mz_unsorted = features["mz"];
+  std::vector<double> all_mzmin_unsorted = features["mzmin"];
+  std::vector<double> all_mzmax_unsorted = features["mzmax"];
+  std::vector<double> all_intensity_unsorted = features["intensity"];
+  std::vector<double> all_sn_unsorted = features["sn"];
+
+  const std::string* all_ids_unsorted_ptr = all_ids_unsorted.data();
+  const int* all_idx_unsorted_ptr = all_idx_unsorted.data();
+  const double* all_rt_unsorted_ptr = all_rt_unsorted.data();
+  const double* all_mz_unsorted_ptr = all_mz_unsorted.data();
+  const double* all_mzmin_unsorted_ptr = all_mzmin_unsorted.data();
+  const double* all_rtmin_unsorted_ptr = all_rtmin_unsorted.data();
+  const double* all_rtmax_unsorted_ptr = all_rtmax_unsorted.data();
+  const double* all_mzmax_unsorted_ptr = all_mzmax_unsorted.data();
+  const double* all_intensity_unsorted_ptr = all_intensity_unsorted.data();
+  const double* all_sn_unsorted_ptr = all_sn_unsorted.data();
+
+  std::vector<int> sort_features_idx(number_of_features);
+  std::iota(sort_features_idx.begin(), sort_features_idx.end(), 0);
+  std::sort(sort_features_idx.begin(), sort_features_idx.end(), [&](int i, int j){return all_mz_unsorted[i] < all_mz_unsorted[j];});
+
+  std::vector<std::string> all_ids(number_of_features);
+  std::vector<int> all_idx(number_of_features);
+  std::vector<double> all_rt(number_of_features);
+  std::vector<double> all_rtmin(number_of_features);
+  std::vector<double> all_rtmax(number_of_features);
+  std::vector<double> all_mz(number_of_features);
+  std::vector<double> all_mzmin(number_of_features);
+  std::vector<double> all_mzmax(number_of_features);
+  std::vector<double> all_intensity(number_of_features);
+  std::vector<double> all_sn(number_of_features);
+
+  std::string* all_ids_ptr = all_ids.data();
+  int* all_idx_ptr = all_idx.data();
+  double* all_rt_ptr = all_rt.data();
+  double* all_mz_ptr = all_mz.data();
+  double* all_mzmin_ptr = all_mzmin.data();
+  double* all_rtmin_ptr = all_rtmin.data();
+  double* all_rtmax_ptr = all_rtmax.data();
+  double* all_mzmax_ptr = all_mzmax.data();
+  double* all_intensity_ptr = all_intensity.data();
+  double* all_sn_ptr = all_sn.data();
+
+  for (const int& x : sort_features_idx) {
+    *(all_ids_ptr++) = *(all_ids_unsorted_ptr + x);
+    *(all_idx_ptr++) = *(all_idx_unsorted_ptr + x);
+    *(all_rt_ptr++) = *(all_rt_unsorted_ptr + x);
+    *(all_mz_ptr++) = *(all_mz_unsorted_ptr + x);
+    *(all_mzmin_ptr++) = *(all_mzmin_unsorted_ptr + x);
+    *(all_rtmin_ptr++) = *(all_rtmin_unsorted_ptr + x);
+    *(all_rtmax_ptr++) = *(all_rtmax_unsorted_ptr + x);
+    *(all_mzmax_ptr++) = *(all_mzmax_unsorted_ptr + x);
+    *(all_intensity_ptr++) = *(all_intensity_unsorted_ptr + x);
+    *(all_sn_ptr++) = *(all_sn_unsorted_ptr + x);
+  }
+
+  Rcpp::DataFrame sorted_features_df = Rcpp::DataFrame::create(
+    Rcpp::Named("index") = all_idx,
+    Rcpp::Named("feature") = all_ids,
+    Rcpp::Named("mz") = all_mz,
+    Rcpp::Named("rt") = all_rt
+  );
+
+  list_out["sorted_features"] = sorted_features_df;
+
+
+
+
+
+  // Mass accuracy of input data /////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////
 
   std::vector<double> all_mzr(all_mzmax.size());
   std::transform(all_mzmax.begin(), all_mzmax.end(), all_mzmin.begin(), all_mzr.begin(), std::minus<double>());
@@ -58,9 +127,8 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
 
 
 
-
   // Make mass diff combinations //////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////
 
   std::vector<std::string> iso_elements = {
     "C",
@@ -182,10 +250,10 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
   
   // list_out["el_md_key"] = el_md_key;
   // list_out["el_ab_key"] = el_ab_key;
-  // list_out["CbEl"] = CbEl_list;
-  // list_out["CbMd"] = CbMd_list;
-  // list_out["CbAb"] = CbAb_list;
-  // list_out["IsoMd"] = IsoMd;
+  list_out["CbEl"] = CbEl_list;
+  list_out["CbMd"] = CbMd_list;
+  list_out["CbAb"] = CbAb_list;
+  list_out["IsoMd"] = IsoMd;
 
 
 
@@ -212,7 +280,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
     IsoStep[i] = std::round(IsoMd_merged[i] * 1) / 1;
   }
 
-  // list_out["IsoMd_merged"] = IsoMd_merged;
+  list_out["IsoMd_merged"] = IsoMd_merged;
 
 
 
@@ -227,10 +295,14 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
 
   // int iso_gr = 1;
   std::vector<int> feat_iso_gr(number_of_features);
-
-
+  std::vector<std::string> feat_iso_cat(number_of_features);
+  std::vector<int> feat_iso_n(number_of_features);
+  std::vector<double> feat_iso_int(number_of_features);
+  std::vector<double> feat_iso_diff(number_of_features);
+  std::vector<double> feat_iso_elmass(number_of_features);
+  std::vector<double> feat_iso_error(number_of_features);
+  std::vector<std::string> feat_iso_feat(number_of_features);
   
-
 
 
 
@@ -238,35 +310,61 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
   // Main loop ///////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // mz233.025_rt1161_f224
+  for (int i = 55; i < 56; ++i) {
+
+  // mz245.161_rt1121_f182
+  // for (int i = 91; i < 92; ++i) {
+
+  // mz246.169_rt1122_f184, which is M+ of mz247.177_rt1121_f183 with mass diff of 0.008 Da
+  // for (int i = 93; i < 94; ++i) {
+
   // mz247.177_rt1121_f183
-  for (int i = 182; i < 183; ++i) {
+  // for (int i = 96; i < 97; ++i) {
   
   // Carbamazepin-d10
-  // for (int i = 132; i < 133; ++i) {
+  // for (int i = 95; i < 96; ++i) {
   
   // Diuron-d6
-  // for (int i = 218; i < 219; ++i) {
+  // for (int i = 75; i < 76; ++i) {
 
-    std::string id = ids[i];
+    std::string id = all_ids[i];
     double mz = all_mz[i];
+    double rt = all_rt[i];
+    double rtmin = all_rtmin[i];
+    double rtmax = all_rtmax[i];
     double intensity = all_intensity[i];
+
+    bool break_loop = false;
 
     std::cout << "Feature: " << id << std::endl;
 
+
+
+
+
     // not yet in an iso group, create chain of features
     if (feat_iso_gr[i] == 0) {
-      double rtmin = all_rtmin[i];
-      double rtmax = all_rtmax[i];
-      // double mzmin = all_mzmin[i];
-      // double mzmax = all_mzmax[i];
-
 
       // Build Chain /////////////////////////////////////////////////////////////////////////////////
       ////////////////////////////////////////////////////////////////////////////////////////////////
 
-      // Perhaps the rtmin and rtmax can be shrinked based on central rt
+      double left_rt = rt -rtmin;
+      double right_rt = rtmax - rt;
 
-      double maxisomz = (mz + maxIsotopes) * 1.05;
+      double rtW;
+      if (left_rt < right_rt) {
+        rtW = left_rt;
+      } else {
+        rtW = right_rt;
+      }
+
+      rtW = rtW * rtWindowAlignment;
+
+      rtmin = rt - rtW;
+      rtmax = rt + rtW;
+
+      double maxisomz = (mz + maxIsotopes) * 1.1;
 
       std::vector<int> which_fts;
       for (int z = 0; z < number_of_features; ++z) {
@@ -278,8 +376,11 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
       int number_chain_features = which_fts.size();
       std::cout << "Number of features in chain: " << number_chain_features << std::endl;
 
-      // if more than 1 feature is present for chain
       if (number_chain_features > 1) {
+
+        // TODO calculate chain mass deviation for accuracy update !!!!!!!!!!!
+        // double mzmin = all_mzmin[i];
+        // double mzmax = all_mzmax[i];
         
         const double* all_mz_ptr = all_mz.data();
 
@@ -304,12 +405,16 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
         std::vector<int> chain_idx(number_chain_features);
         int* chain_idx_ptr = chain_idx.data();
 
+        std::vector<std::string> chain_id(number_chain_features);
+        std::string* chain_id_ptr = chain_id.data();
+
         std::vector<int> chain_intensity(number_chain_features);
         int* chain_intensity_ptr = chain_intensity.data();
 
         for (const int& x : idx) {
           *(chain_mz_ptr++) = *(org_mz_ptr2 + x);
           *(chain_idx_ptr++) = *(which_fts_ptr + x);
+          *(chain_id_ptr++) =  all_ids[*(which_fts_ptr + x)];
           *(chain_intensity_ptr++) =  all_intensity[*(which_fts_ptr + x)];
         }
 
@@ -337,13 +442,6 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
 
         for (size_t z = 0; z < zvals.size(); z++) {
           // std::cout << "Charge: " << zvals[z] << std::endl;
-
-          // Make chains based on iso position wihch is the rounded unit of the mass_diff
-          // acccording to the defined max isos
-          // A position can have more than 1 hit for higher resolutions
-          // charge is validated by position
-          // make a container for filling hits and write the in the output
-          // gaps are avoided by unfilled position and the actual mass diff is stored to the output
 
           Rcpp::List iso_hits(maxIsotopes + 1);
           Rcpp::NumericVector mz_v;
@@ -376,7 +474,6 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
           iso_error[0] = error_v;
 
           for (int iso = 1; iso < maxIsotopes + 1; ++iso) {
-
             Rcpp::LogicalVector iso_filter = IsoStep == iso;
             Rcpp::NumericVector IsoMd_temp = Rcpp::wrap(IsoMd_merged);
             IsoMd_temp = IsoMd_temp[iso_filter];
@@ -390,9 +487,9 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
             Rcpp::NumericVector error;
 
             for (int f = 1; f < number_chain_features; ++f) {
-              double canditate_diff = chain_mz[f] - mz;
-              double candidate_diff_min = canditate_diff - mzr_mean;
-              double candidate_diff_max = canditate_diff + mzr_mean;
+              double candidate_diff = chain_mz[f] - mz;
+              double candidate_diff_min = candidate_diff - mzr_mean;
+              double candidate_diff_max = candidate_diff + mzr_mean;
 
               // std::cout << std::endl;
               // std::cout << "Candidate: " << candidate_diff_min << " to " << candidate_diff_max << std::endl;
@@ -402,11 +499,34 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
               double candidate_IsoMd;
               for (int j = 0; j < IsoMd_temp.size(); j++) {
                 if (IsoMd_temp[j] > candidate_diff_min && IsoMd_temp[j] < candidate_diff_max) {
-                  if (abs(IsoMd_temp[j] - canditate_diff) < mass_error) {
-                    mass_error = abs(IsoMd_temp[j] - canditate_diff);
+                  if (abs(IsoMd_temp[j] - candidate_diff) < mass_error) {
+                    mass_error = abs(IsoMd_temp[j] - candidate_diff);
                     candidate_IsoMd = IsoMd_temp[j];
                     is_iso_candidate = true;
                   }
+                }
+              }
+
+              // Check for molecular ion (M+) with distance 1.007276 and much higher intensity
+              if (iso == 1) {
+
+                if (candidate_diff_min < 1.007276 && candidate_diff_max > 1.007276 && all_intensity[chain_idx[f]]/intensity > 1.5) {
+                  std::cout <<  std::endl;
+                  std::cout << "Potential M+: " << id << std::endl;
+                  std::cout << "  - diff: " << candidate_diff << std::endl;
+                  std::cout << "  - max diff: " << candidate_diff_max << std::endl;
+                  std::cout << "  - min diff: " << candidate_diff_min << std::endl;
+                  std::cout << "  - [M+H]+: " << chain_id[f] << std::endl;
+                  std::cout << "  - int ratio: " << all_intensity[chain_idx[f]]/intensity << std::endl;
+                  std::cout <<  std::endl;
+
+                  feat_iso_cat[i] = "M+";
+                  feat_iso_diff[i] = candidate_diff;
+                  feat_iso_int[i] = all_intensity[chain_idx[f]]/intensity;
+                  feat_iso_feat[i] = chain_id[f];
+
+                  break_loop = true;
+                  break;
                 }
               }
 
@@ -414,11 +534,13 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
                 hits.push_back(chain_mz[f]);
                 n.push_back(iso);
                 ints.push_back(chain_intensity[f] / intensity);
-                diff.push_back(canditate_diff);
+                diff.push_back(candidate_diff);
                 elmass.push_back(candidate_IsoMd);
                 error.push_back(mass_error);
               }
             }
+
+            if (break_loop) break;
 
             if (hits.size() == 0) {
               hits.push_back(0);
@@ -436,6 +558,8 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
             iso_elmass[iso] = elmass;
             iso_error[iso] = error;
           }
+
+          if (break_loop) break;
           
           iso_hits_list[z] = iso_hits;
           iso_n_list[z] = iso_n;
@@ -443,7 +567,10 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
           iso_diff_list[z] = iso_diff;
           iso_elmass_list[z] = iso_elmass;
           iso_error_list[z] = iso_error;
-        }
+
+        } // loop for chain evaluation for each charge
+
+        if (break_loop) break;
 
         // list_out["iso_hits_list"] = iso_hits_list;
 
@@ -486,7 +613,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
             std::cout << std::endl;
 
           }
-        }
+        } // loop for chain selection for each charge
 
 
 
@@ -529,28 +656,28 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
 
 
 
-        } else {
+        } else { // if chain size is 0
 
           list_out["chain"] = final_chain;
 
 
 
-        }
+        } // if chain size is 0
 
         
 
 
 
-      // only 1 feature
-      } else {
+      
+      } else { // if only 1 feature
 
 
 
-      }
+      } // if only 1 feature
 
       
 
-    }
+    } // if no iso group assigned
 
     
 
@@ -570,7 +697,34 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
 
 
 
-  }
+  } // end main loop
+
+
+  // std::vector<int> feat_iso_gr(number_of_features);
+  // std::vector<std::string> feat_iso_cat(number_of_features);
+  // std::vector<int> feat_iso_n(number_of_features);
+  // std::vector<double> feat_iso_int(number_of_features);
+  // std::vector<double> feat_iso_diff(number_of_features);
+  // std::vector<double> feat_iso_elmass(number_of_features);
+  // std::vector<double> feat_iso_error(number_of_features);
+  // std::vector<double> feat_iso_feat(number_of_features);
+
+  Rcpp::DataFrame output_df = Rcpp::DataFrame::create(
+    Rcpp::Named("index") = all_idx,
+    Rcpp::Named("feature") = all_ids,
+    Rcpp::Named("mz") = all_mz,
+    Rcpp::Named("rt") = all_rt,
+    Rcpp::Named("iso_gr") = feat_iso_gr,
+    Rcpp::Named("iso_cat") = feat_iso_cat,
+    Rcpp::Named("iso_n") = feat_iso_n,
+    Rcpp::Named("iso_rel") = feat_iso_int,
+    Rcpp::Named("iso_diff") = feat_iso_diff,
+    Rcpp::Named("iso_elmass") = feat_iso_elmass,
+    Rcpp::Named("iso_error") = feat_iso_error,
+    Rcpp::Named("iso_feat") = feat_iso_feat
+  );
+
+  list_out["output"] = output_df;
 
   return list_out;
 }
@@ -677,26 +831,26 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes
 //     for (int f = 1; f < number_chain_features; ++f) {
       
 //       if (col == 1) {
-//         double C_canditate_diff = abs(chain_mz[f] - C_candidate);
+//         double C_candidate_diff = abs(chain_mz[f] - C_candidate);
 
 //         // matching c13 but need to validate intensity
-//         if (C_canditate_diff <= 0.005) {
-//           std::cout << "C13 with " << C_canditate_diff << std::endl;
+//         if (C_candidate_diff <= 0.005) {
+//           std::cout << "C13 with " << C_candidate_diff << std::endl;
 //           isomat(z, col) = chain_mz[f];
 //           found_hit = true;
 //         }
 
 //       } else {
-//         double C_canditate_diff = abs(chain_mz[f] - C_candidate);
-//         double N_canditate_diff = abs(chain_mz[f] - N_candidate);
+//         double C_candidate_diff = abs(chain_mz[f] - C_candidate);
+//         double N_candidate_diff = abs(chain_mz[f] - N_candidate);
 
-//         if (C_canditate_diff <= 0.005) {
-//           std::cout << "Iso n" << col << " with C error " << C_canditate_diff << std::endl;
+//         if (C_candidate_diff <= 0.005) {
+//           std::cout << "Iso n" << col << " with C error " << C_candidate_diff << std::endl;
 //           isomat(z, col) = chain_mz[f];
 //           found_hit = true;
 
-//         } else if (N_canditate_diff <= 0.005) {
-//           std::cout << "Iso n" << col << " with N error " << N_canditate_diff << std::endl;
+//         } else if (N_candidate_diff <= 0.005) {
+//           std::cout << "Iso n" << col << " with N error " << N_candidate_diff << std::endl;
 //           isomat(z, col) = chain_mz[f];
 //           found_hit = true;
 //         }
