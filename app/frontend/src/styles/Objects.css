@@ -1,17 +1,47 @@
+@import url("https://fonts.googleapis.com/css?family=Raleway&display=swap");
+
+body {
+  font-family: "Raleway", sans-serif;
+  background-color: #fefae0;
+  padding: 10px;
+}
+
 .container {
-    position: absolute;
-    display: table-row;
-    /*Set your top-right-bottom-left absolute position here*/
+  position: absolute;
+  display: table-row;
+  /*Set your top-right-bottom-left absolute position here*/
 }
 
 .container > div {
-    display: table-cell;
+  display: table-cell;
 }
 
 .left {
-    min-width: 200px;
+  min-width: 200px;
 }
 
 .right {
-    width: 100%;
+  width: 100%;
+}
+
+.instructions {
+  color: #783d19;
+  padding: 10px 30px;
+  margin: 20px;
+}
+
+.drop {
+  background-color: #f9ebc7;
+  opacity: 1;
+  background-image: radial-gradient(#ffffff 2px, transparent 2px),
+    radial-gradient(#ffffff 2px, #f9ebc7 2px);
+  background-size: 80px 80px;
+  background-position: 0 0, 40px 40px;
+}
+
+.instructions_btn {
+  background-color: antiquewhite;
+  margin: 0px;
+  cursor: pointer;
+  font-size: 20px;
 }

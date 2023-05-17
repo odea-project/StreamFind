@@ -1,25 +1,33 @@
-import { Container } from './Container.js'
-import Grid from '@mui/material/Unstable_Grid2';
-import {Objects} from "./Objects";
+import { Container } from "./Container.js";
+import Grid from "@mui/material/Unstable_Grid2";
+import { Objects } from "./Objects";
+import { Input } from "./Input.js";
 
-export default function Demo () {
+export default function Demo() {
   return (
     <div>
       <Grid container spacing={2}>
-        <Grid xs={12}>
-            <Container />
+        <Grid container justifyContent="center" xs={15}>
+          <Container />
         </Grid>
         <Grid xs={4}>
-            <div><h2>Objects</h2></div>
-            <Objects />
+          <div>
+            <h4>Objects</h4>
+          </div>
+          <Objects />
         </Grid>
         <Grid xs={4}>
-            Input
+          <div>
+            <h4>Input</h4>
+          </div>
+          <Input />
         </Grid>
         <Grid xs={4}>
-            Ms-preprocessing
+          <div>
+            <h4>Ms-Preprocessing</h4>
+          </div>
         </Grid>
       </Grid>
     </div>
-  )
+  );
 }
