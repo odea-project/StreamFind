@@ -7,26 +7,20 @@ export default function Demo() {
   return (
     <div>
       <Grid container spacing={2}>
-        <Grid container justifyContent="center" xs={15}>
+        <Grid xs={12}>
           <Container />
         </Grid>
-        <Grid xs={4}>
-          <div>
-            <h4>Objects</h4>
-          </div>
+        <div className="demo_box">
+          <h4>Objects</h4>
           <Objects />
-        </Grid>
-        <Grid xs={4}>
-          <div>
-            <h4>Input</h4>
-          </div>
+        </div>
+        <div className="demo_box">
+          <h4>Input</h4>
           <Input />
-        </Grid>
-        <Grid xs={4}>
-          <div>
-            <h4>Ms-Preprocessing</h4>
-          </div>
-        </Grid>
+        </div>
+        <div className="demo_box">
+          <h4>Ms-Preprocessing</h4>
+        </div>
       </Grid>
     </div>
   );
