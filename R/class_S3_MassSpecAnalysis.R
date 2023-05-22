@@ -125,6 +125,7 @@ MassSpecAnalysis <- function(name = NA_character_,
   x$file <- as.character(x$file)
   x$format <- as.character(x$format)
   x$type <- as.character(x$type)
+  x$instrument <- as.data.table(x$instrument)
   x$time_stamp <- as.character(x$time_stamp)
   x$spectra_number <- as.integer(x$spectra_number)
   x$spectra_mode <- as.character(x$spectra_mode)
@@ -137,6 +138,9 @@ MassSpecAnalysis <- function(name = NA_character_,
   x$chromatograms_number <- as.integer(x$chromatograms_number)
   x$has_ion_mobility <- as.logical(x$has_ion_mobility)
   x$run <- as.data.table(x$run)
+  x$run$pre_loweroffset <- as.numeric(x$run$pre_loweroffset)
+  x$run$pre_upperoffset <- as.numeric(x$run$pre_upperoffset)
+  x$run$drift <- as.numeric(x$run$drift)
   x$spectra <- as.data.table(x$spectra)
   x$chromatograms <- as.data.table(x$chromatograms)
   x$features <- as.data.table(x$features)
@@ -202,6 +206,11 @@ validate.MassSpecAnalysis <- function(x = NULL) {
       valid <- FALSE
     } else if (!(x$type %in% c("MS", "MS/MS", "SRM"))) {
       warning("Analysis type must be 'MS', 'MS/MS' or 'SRM'!")
+      valid <- FALSE
+    }
+
+    if (!is.data.frame(x$instrument)) {
+      warning("Analysis instrument entry not conform!")
       valid <- FALSE
     }
 

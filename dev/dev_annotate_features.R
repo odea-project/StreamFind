@@ -79,14 +79,24 @@ fts_tar <- ms$get_features(analyses = 1, mz = targets)
 fts1 <- fts[fts$rt >= min(fts_tar$rtmin) & fts$rt <= max(fts_tar$rtmax), ]
 fts1 <- fts1[order(fts1$mz), ]
 
-plot_spectra_interactive(fts1)
+
+
+
+# plot_spectra_interactive(fts1)
 
 View(rcpp_ms_annotation_isotopes(fts))
 
 
+View(rcpp_ms_annotation_isotopes(fts)[["output"]])
+
+out <- rcpp_ms_annotation_isotopes(fts)[["output"]]
+out <- out[out$iso_gr == 0, ]
+
+ms$map_features(1, features = out$feature)
+ms$plot_features(1, features = out$feature)
 
 
-
+max(out$intensity[out$iso_gr == 0 & out$iso_diff == 0])
 
 
 View(rcpp_ms_annotation_isotopes(fts)[[2]])
