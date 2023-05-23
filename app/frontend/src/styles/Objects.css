@@ -2,7 +2,7 @@
 
 body {
   font-family: "Raleway", sans-serif;
-  background-color: #fefae0;
+  background-color: #b3bdca;
   padding: 10px;
 }
 
@@ -24,28 +24,22 @@ body {
   width: 100%;
 }
 
-.instructions {
-  color: #783d19;
-  padding: 10px 30px;
-  margin: 20px;
-}
-
 .drop {
-  background-color: #f9ebc7;
+  background-color: #8d98aa;
   opacity: 1;
   background-image: radial-gradient(#ffffff 2px, transparent 2px),
-    radial-gradient(#ffffff 2px, #f9ebc7 2px);
+    radial-gradient(#ffffff 2px, #8d98aa 2px);
   background-size: 80px 80px;
   background-position: 0 0, 40px 40px;
 }
 
 .demo_box {
-  flex: 0 0 31.2%;
+  flex: 0 0 15%;
   height: 28vh;
-  background-color: #f9ebc7;
-  border-radius: 25px;
-  border: 1px solid brown;
-  margin-right: 10px;
-  text-align: left;
+  background-color: #8d98aa;
+  border-radius: 0px;
+  border: 1px solid white;
+  margin-left: 8px;
+  text-align: center;
   padding-left: 15px;
 }

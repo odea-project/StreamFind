@@ -1,18 +1,18 @@
 import { Paper } from "@mui/material";
 import { DraggableElement } from "./DraggableElement";
 import Grid from "@mui/material/Unstable_Grid2";
-import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
+import QueryStatsIcon from "@mui/icons-material/QueryStats";
 import { ItemTypes } from "./ItemTypes";
 import { SourceTypes } from "./SourceTypes";
 
-export const MsAnalysis = () => {
+export const PeakPicking = () => {
   return (
     <>
       <DraggableElement
-        id="msAnalysis"
-        title="msAnalysis"
+        id="peakPicking"
+        title="peakpicking"
         source={SourceTypes.OBJECTS}
-        type={ItemTypes.MS_ANALYSIS}
+        type={ItemTypes.PEAK}
       >
         <Paper style={{ backgroundColor: "transparent" }}>
           <Grid
@@ -23,10 +23,10 @@ export const MsAnalysis = () => {
             justifyContent="center"
           >
             <Grid xs={12}>
-              <InsertDriveFileOutlinedIcon style={{ fontSize: "3em" }} />
+              <QueryStatsIcon style={{ fontSize: "3em" }} />
             </Grid>
             <Grid xs={12} style={{ textAlign: "center" }}>
-              <div>msAnalysis</div>
+              <div>Peak Picking</div>
             </Grid>
           </Grid>
         </Paper>

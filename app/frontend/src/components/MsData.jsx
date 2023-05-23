@@ -4,8 +4,6 @@ import { DraggableElement } from "./DraggableElement";
 import Grid from "@mui/material/Unstable_Grid2";
 import { ItemTypes } from "./ItemTypes";
 import { SourceTypes } from "./SourceTypes";
-import { useState } from "react";
-import SettingsIcon from "@mui/icons-material/Settings";
 
 export const MsData = () => {
   return (
@@ -15,7 +13,7 @@ export const MsData = () => {
       source={SourceTypes.OBJECTS}
       type={ItemTypes.BOX}
     >
-      <Paper>
+      <Paper style={{ backgroundColor: "transparent" }}>
         <Grid
           container
           spacing={0}
@@ -24,7 +22,7 @@ export const MsData = () => {
           justifyContent="center"
         >
           <Grid xs={12}>
-            <FolderTwoToneIcon style={{ fontSize: "5em" }} />
+            <FolderTwoToneIcon style={{ fontSize: "3em" }} />
           </Grid>
           <Grid xs={12} style={{ textAlign: "center" }}>
             <div>msData</div>

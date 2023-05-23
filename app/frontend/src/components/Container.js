@@ -5,6 +5,7 @@ import { DraggableElement } from "./DraggableElement.js";
 import { ItemTypes } from "./ItemTypes.js";
 import { SourceTypes } from "./SourceTypes";
 import toast, { Toaster } from "react-hot-toast";
+import MenuIcon from "@mui/icons-material/Menu";
 
 export const Container = () => {
   const [items, setItems] = useState({});
@@ -74,10 +75,11 @@ export const Container = () => {
         height: "65vh",
         position: "relative",
         backgroundColor: "#F9EBC7",
-        borderRadius: "25px",
-        border: isOver ? "5px solid brown" : "1px solid brown",
+        borderRadius: "0px",
+        border: isOver ? "5px solid white" : "1px solid white",
       }}
     >
+      <MenuIcon fontSize="large"></MenuIcon>
       {Object.keys(items).map((key) => (
         <DraggableElement
           key={key}
