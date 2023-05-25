@@ -1,7 +1,7 @@
 import { Paper } from "@mui/material";
 import { DraggableElement } from "./DraggableElement";
 import Grid from "@mui/material/Unstable_Grid2";
-import QueryStatsIcon from "@mui/icons-material/QueryStats";
+import peakIcon from "D:/work/streamFind/app/frontend/src/peak.PNG";
 import { ItemTypes } from "./ItemTypes";
 import { SourceTypes } from "./SourceTypes";
 
@@ -23,7 +23,14 @@ export const PeakPicking = () => {
             justifyContent="center"
           >
             <Grid xs={12}>
-              <QueryStatsIcon style={{ fontSize: "3em" }} />
+              <img
+                style={{
+                  width: "80px",
+                  height: "70px",
+                }}
+                src={peakIcon}
+                alt="Custom Icon"
+              />
             </Grid>
             <Grid xs={12} style={{ textAlign: "center" }}>
               <div>Peak Picking</div>

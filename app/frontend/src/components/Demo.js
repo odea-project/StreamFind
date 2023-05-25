@@ -4,6 +4,7 @@ import { Objects } from "./Objects";
 import { Input } from "./Input.js";
 import { PreProcessing } from "./PreProcessing";
 import MenuIcon from "@mui/icons-material/Menu";
+import MyComponent from "./MyComponent";
 
 export default function Demo() {
   return (
@@ -13,15 +14,24 @@ export default function Demo() {
           <Container />
         </Grid>
         <div className="demo_box">
-          <h4>Objects</h4>
+          <div className="upper_div">
+            <MenuIcon></MenuIcon>
+            <h4>Objects</h4>
+          </div>
           <Objects />
         </div>
         <div className="demo_box">
-          <h4>Input</h4>
+          <div className="upper_div">
+            <MenuIcon></MenuIcon>
+            <h4>Input</h4>
+          </div>
           <Input />
         </div>
         <div className="demo_box">
-          <h4>Ms-Preprocessing</h4>
+          <div className="upper_div">
+            <MenuIcon></MenuIcon>
+            <h4>Ms-Preprocessing</h4>
+          </div>
           <PreProcessing />
         </div>
       </Grid>

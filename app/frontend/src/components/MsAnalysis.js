@@ -1,7 +1,7 @@
 import { Paper } from "@mui/material";
 import { DraggableElement } from "./DraggableElement";
 import Grid from "@mui/material/Unstable_Grid2";
-import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
+import mzmlIcon from "D:/work/streamFind/app/frontend/src/mzml.PNG";
 import { ItemTypes } from "./ItemTypes";
 import { SourceTypes } from "./SourceTypes";
 
@@ -23,10 +23,17 @@ export const MsAnalysis = () => {
             justifyContent="center"
           >
             <Grid xs={12}>
-              <InsertDriveFileOutlinedIcon style={{ fontSize: "3em" }} />
+              <img
+                style={{
+                  width: "78px",
+                  height: "70px",
+                }}
+                src={mzmlIcon}
+                alt="Custom Icon"
+              />
             </Grid>
             <Grid xs={12} style={{ textAlign: "center" }}>
-              <div>msAnalysis</div>
+              <div>mzML</div>
             </Grid>
           </Grid>
         </Paper>

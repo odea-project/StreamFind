@@ -1,12 +1,24 @@
 library(streamFind)
+library(tools)
 
 # DEMO TODOS:
 # TODO: Save stuff in sessions --> add to cache.
 # TODO: Create docker containers for server and frontend --> create image
-#* @filter cors
-cors <- function(res){
-  res$setHeader("Access-Control-Allow-Origin","*")
-  plumber::forward()
+
+#*@filter cors
+cors <- function(req, res) {
+
+  res$setHeader("Access-Control-Allow-Origin", "*")
+
+  if (req$REQUEST_METHOD == "OPTIONS") {
+    res$setHeader("Access-Control-Allow-Methods","*")
+    res$setHeader("Access-Control-Allow-Headers", req$HTTP_ACCESS_CONTROL_REQUEST_HEADERS)
+    res$status <- 200
+    return(list())
+  } else {
+    plumber::forward()
+  }
+
 }
 
 #* Echo back the input
@@ -17,12 +29,27 @@ function() {
   return(unclass(files))
 }
 
-
 #* @get /files_project
 function() {
-  files <- list.files(path = "D:/work/streamFind/app/backend/sample mzml", pattern = ".mzML", full.names = TRUE)
-  file_names <- basename(files)
-  return(file_names)
+  filesx <- list.files(path = "D:/work/streamFind", pattern = "\\.mzML$", full.names = TRUE, recursive = FALSE)
+  folders<- list.dirs(path = "D:/work/streamFind", full.names = TRUE, recursive = FALSE)
+  file_names <- basename(filesx)
+  folder_names <- basename(folders)
+  filesandfolders<-c(file_names,folder_names)
+  return(filesandfolders)
+}
+
+#* @post /open_folder
+function(req) {
+  folder_name <- req$body$name
+  print(folder_name)
+  folder_path <- paste0("D:/work/streamFind/", folder_name)
+  filesx <- list.files(path = folder_path, pattern = "\\.mzML$", full.names = TRUE, recursive = FALSE)
+  folders<- list.dirs(path = folder_path, full.names = TRUE, recursive = FALSE)
+  file_names <- basename(filesx)
+  folder_names <- basename(folders)
+  filesandfolders<-c(file_names,folder_names)
+  return(filesandfolders)
 }
 
 
@@ -34,4 +61,3 @@ function() {
   # names = ms$get_analysis_names()
   return(unclass(files))
 }
-

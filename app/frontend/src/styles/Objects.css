@@ -2,7 +2,7 @@
 
 body {
   font-family: "Raleway", sans-serif;
-  background-color: #b3bdca;
+  background-color: white;
   padding: 10px;
 }
 
@@ -25,10 +25,10 @@ body {
 }
 
 .drop {
-  background-color: #8d98aa;
+  background-color: white;
   opacity: 1;
   background-image: radial-gradient(#ffffff 2px, transparent 2px),
-    radial-gradient(#ffffff 2px, #8d98aa 2px);
+    radial-gradient(#ffffff 2px, white 2px);
   background-size: 80px 80px;
   background-position: 0 0, 40px 40px;
 }
@@ -36,10 +36,17 @@ body {
 .demo_box {
   flex: 0 0 15%;
   height: 28vh;
-  background-color: #8d98aa;
+  background-color: #c1eff9;
   border-radius: 0px;
-  border: 1px solid white;
+  border: 1px solid black;
   margin-left: 8px;
-  text-align: center;
   padding-left: 15px;
+  overflow: hidden;
+}
+
+.upper_div {
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 1;
 }

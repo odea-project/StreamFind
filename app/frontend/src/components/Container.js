@@ -74,9 +74,9 @@ export const Container = () => {
         width: "100%",
         height: "65vh",
         position: "relative",
-        backgroundColor: "#F9EBC7",
+        backgroundColor: "white",
         borderRadius: "0px",
-        border: isOver ? "5px solid white" : "1px solid white",
+        border: isOver ? "5px solid black" : "1px solid black",
       }}
     >
       <MenuIcon fontSize="large"></MenuIcon>

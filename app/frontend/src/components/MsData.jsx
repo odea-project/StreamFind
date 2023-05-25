@@ -1,4 +1,4 @@
-import FolderTwoToneIcon from "@mui/icons-material/FolderTwoTone";
+import msdataIcon from "D:/work/streamFind/app/frontend/src/msdata.PNG";
 import { Paper } from "@mui/material";
 import { DraggableElement } from "./DraggableElement";
 import Grid from "@mui/material/Unstable_Grid2";
@@ -22,7 +22,14 @@ export const MsData = () => {
           justifyContent="center"
         >
           <Grid xs={12}>
-            <FolderTwoToneIcon style={{ fontSize: "3em" }} />
+            <img
+              style={{
+                width: "80px",
+                height: "70px",
+              }}
+              src={msdataIcon}
+              alt="Custom Icon"
+            />
           </Grid>
           <Grid xs={12} style={{ textAlign: "center" }}>
             <div>msData</div>

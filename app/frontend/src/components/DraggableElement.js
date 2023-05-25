@@ -14,6 +14,7 @@ import SelectMzml from "./SelectMzml";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import SelectFile from "./SelectFile";
+import { blueGrey } from "@mui/material/colors";
 
 function getStyles(left, top, isDragging) {
   const transform = `translate3d(${left}px, ${top}px, 0)`;
@@ -81,15 +82,18 @@ export const DraggableElement = memo(function DraggableBox(props) {
 
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    setIsChildOpen(false);
+  };
   const style = {
     position: "absolute",
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",
-    width: 400,
-    height: 400,
-    bgcolor: "#8d98aa",
+    width: 500,
+    height: 500,
+    bgcolor: "#c1eff9",
     border: "2px solid white",
     borderRadius: "25px",
     p: 5,
@@ -99,16 +103,16 @@ export const DraggableElement = memo(function DraggableBox(props) {
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",
-    width: 400,
-    height: 150,
-    bgcolor: "#8d98aa",
+    width: 300,
+    height: "auto",
+    bgcolor: "#c1eff9",
     border: "2px solid white",
     borderRadius: "25px",
     p: 5,
   };
 
   const [isChildOpen, setIsChildOpen] = useState(false);
-  const handleFileSelect = (file) => {
+  const handleFolderSelect = (file) => {
     setSelectedFile(file);
 
     setIsChildOpen(false);
@@ -116,6 +120,8 @@ export const DraggableElement = memo(function DraggableBox(props) {
   };
 
   const openFileSelect = () => {
+    setSelectedFile(""); // Reset selected file
+    setfilSelected(false); // Reset file selection state
     setIsChildOpen(true);
   };
 
@@ -129,7 +135,7 @@ export const DraggableElement = memo(function DraggableBox(props) {
     >
       {settingIcon && (
         <div>
-          <SettingsIcon />
+          <SettingsIcon sx={{ color: blueGrey[500] }} />
         </div>
       )}
       <div
@@ -137,7 +143,7 @@ export const DraggableElement = memo(function DraggableBox(props) {
           display: "flex",
           alignItems: "center",
           borderRadius: "0px",
-          border: isOver ? "2px solid white" : "0px solid white",
+          border: isOver ? "2px solid black" : "0px solid black",
         }}
       >
         {whichObj && (
@@ -193,6 +199,7 @@ export const DraggableElement = memo(function DraggableBox(props) {
             {isDroppedOnDropbox ? (
               <div>
                 <SettingsIcon
+                  sx={{ color: blueGrey[500] }}
                   style={{
                     cursor: "pointer",
                   }}
@@ -238,13 +245,13 @@ export const DraggableElement = memo(function DraggableBox(props) {
                         >
                           <CloseIcon />
                         </IconButton>
-                        <SelectMzml onFileSelect={handleFileSelect} />
+                        <SelectMzml onFolderSelect={handleFolderSelect} />
                       </Box>
                     )}
                     {filSelected && (
                       <div>
                         <h4>Selected:{selectedFile}</h4>
-                        <Button onClick={handleClose}>Upload</Button>
+                        <Button onClick={handleClose}>OK</Button>
                       </div>
                     )}
                   </Box>

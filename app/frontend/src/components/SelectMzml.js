@@ -1,61 +1,120 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import Button from "@mui/material/Button";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import FolderIcon from "@mui/icons-material/Folder";
+import mzmlIcon from "D:/work/streamFind/app/frontend/src/mzml.PNG";
+import { Button } from "@mui/material";
 
-const SelectMzml = ({ onFileSelect }) => {
-  const [files, setFiles] = useState([]);
+const SelectMzml = ({ onFolderSelect }) => {
+  const [folders, setFolders] = useState([]);
+  const [selectedFolder, setSelectedFolder] = useState("");
+  const [previousFolders, setPreviousFolders] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
 
   useEffect(() => {
     axios
-      .get("http://127.0.0.1:4568/files_project")
+      .get("http://127.0.0.1:5368/files_project")
       .then((response) => {
         console.log(response);
-        setFiles(response.data);
+        setFolders(response.data);
       })
       .catch((error) => {
         console.log(error);
       });
   }, []);
 
-  const handleFileClick = (file) => {
-    const isSelected = selectedFiles.includes(file);
-    if (isSelected) {
-      setSelectedFiles(
-        selectedFiles.filter((selectedFile) => selectedFile !== file)
-      );
+  const handleSendFiles = () => {
+    onFolderSelect(selectedFiles);
+  };
+
+  const handleFolderClick = (item) => {
+    if (item.endsWith(".mzML")) {
+      // Clicked item is a ".mzML" file
+      const fileName = item.split("/").pop(); // Extract the file name
+      setSelectedFiles((prevSelectedFiles) => [
+        ...prevSelectedFiles,
+        "///",
+        fileName,
+      ]);
     } else {
-      setSelectedFiles([...selectedFiles, file]);
+      // Clicked item is a folder
+      setSelectedFolder(selectedFolder + "/" + item);
+      axios
+        .post("http://127.0.0.1:5368/open_folder", {
+          name: selectedFolder + "/" + item,
+        })
+        .then((response) => {
+          console.log(response);
+          console.log(response.data);
+          setPreviousFolders((prevFolders) => [...prevFolders, selectedFolder]);
+          setFolders(response.data);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     }
   };
 
-  const handleSelectFiles = () => {
-    onFileSelect(selectedFiles);
+  const handleBackClick = () => {
+    const prevFolder = previousFolders.pop();
+    setSelectedFolder(prevFolder);
+    axios
+      .post("http://127.0.0.1:5368/open_folder", {
+        name: prevFolder,
+      })
+      .then((response) => {
+        console.log(response); // Log the full response object for debugging
+        console.log(response.data); // Array of file names within the folder
+        setFolders(response.data);
+      })
+      .catch((error) => {
+        console.log(error);
+        // Handle errors if needed
+      });
   };
 
   return (
     <div>
-      SelectMzml
-      {files.map((file, index) => (
+      {selectedFolder !== "" && (
+        <div>
+          <p>Current Path: {selectedFolder}</p>
+          <ArrowBackIcon
+            style={{ cursor: "pointer" }}
+            onClick={handleBackClick}
+          ></ArrowBackIcon>
+        </div>
+      )}
+      {folders.map((item, index) => (
         <li
           key={index}
           style={{
             cursor: "pointer",
-            fontWeight: selectedFiles.includes(file) ? "bold" : "normal",
+            fontWeight: selectedFolder === item ? "bold" : "normal",
           }}
-          onClick={() => handleFileClick(file)}
+          onClick={() => handleFolderClick(item)}
         >
-          {file}
+          {item.endsWith(".mzML") ? (
+            <img
+              onClick={(e) => {
+                e.stopPropagation();
+                handleFolderClick(item);
+              }}
+              style={{
+                width: "25x",
+                height: "25px",
+              }}
+              src={mzmlIcon}
+              alt="Custom Icon"
+            />
+          ) : (
+            <FolderIcon fontSize="small" />
+          )}
+          {item}
         </li>
       ))}
+      {selectedFiles}
       {selectedFiles.length > 0 && (
-        <div>
-          <p>Selected Files:</p>
-          {selectedFiles.map((file, index) => (
-            <p key={index}>{file}</p>
-          ))}
-          <Button onClick={handleSelectFiles}>Confirm Selection</Button>
-        </div>
+        <Button onClick={handleSendFiles}>Confirm Selected</Button>
       )}
     </div>
   );
