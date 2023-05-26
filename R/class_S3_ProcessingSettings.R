@@ -10,6 +10,12 @@
 #' be used.
 #' @param parameters List with parameters specific for the method `call` and
 #' `algorithm`.
+#' @param software Character of length one with the name of the software or
+#' package.
+#' @param developer Character of length one with the name of the developer/s.
+#' @param contact Character of length one with the email of the developer.
+#' @param link Character of length one with the documentation web link.
+#' @param doi Character of length one with the DOI of algorithm.
 #'
 #' @details See the documentation of the method where the processing settings
 #' are to be applied for more information about applicable algorithms and
@@ -21,19 +27,26 @@
 #'
 ProcessingSettings <- function(call = NA_character_,
                                algorithm = NA_character_,
-                               parameters = NULL) {
+                               parameters = NULL,
+                               software = NA_character_,
+                               developer = NA_character_,
+                               contact = NA_character_,
+                               link = NA_character_,
+                               doi = NA_character_) {
 
   x <- list(
     "call" = call,
     "algorithm" = algorithm,
-    "parameters" = parameters
+    "parameters" = parameters,
+    "software" = software,
+    "developer" = developer,
+    "contact" = contact,
+    "link" = link,
+    "doi" = doi
   )
 
-  if (is.data.frame(x$parameters)) x$parameters <- list(x$parameters)
-
-  x$parameters <- lapply(x$parameters, function(par) {
-
-    if (is.data.frame(par)) par <- as.list(par)
+  if (is.data.frame(x$parameters)) {
+    par <- as.list(x$parameters)
 
     if ("class" %in% names(par)) {
       par[["Class"]] <- par$class
@@ -54,12 +67,10 @@ ProcessingSettings <- function(call = NA_character_,
 
       if (par$Class %in% "PeakGroupsParam") par$subset <- as.integer(par$subset)
 
-      do.call("new", par)
-
-    } else {
-      par
+      par <- do.call("new", par)
     }
-  })
+    x$parameters <- par
+  }
 
   if (validate.ProcessingSettings(x)) {
     structure(x, class = "ProcessingSettings")
@@ -93,8 +104,8 @@ validate.ProcessingSettings <- function(x = NULL) {
         valid <- FALSE
       }
 
-      if (!is.list(x$parameters)) {
-        warning("Parameters entry must be a list!")
+      if (!(is.list(x$parameters) || isS4(x$parameters))) {
+        warning("Parameters entry must be a list or an S4 class!")
         valid <- FALSE
       }
 
@@ -136,5 +147,14 @@ asJSON.ProcessingSettings <- function(x) {
 as.ProcessingSettings <- function(value) {
   must_have_elements <- c("call", "algorithm", "parameters")
   if (!all(must_have_elements %in% names(value))) return(NULL)
-  ProcessingSettings(value$call, value$algorithm, value$parameters)
+  ProcessingSettings(
+    value$call,
+    value$algorithm,
+    value$parameters,
+    value$software,
+    value$developer,
+    value$contact,
+    value$link,
+    value$doi
+  )
 }
