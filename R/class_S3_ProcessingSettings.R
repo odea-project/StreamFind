@@ -73,6 +73,39 @@ ProcessingSettings <- function(call = NA_character_,
     }
 
     x$parameters <- do.call("new", x$parameters)
+
+  } else if (is.list(x$parameters)) {
+
+    x$parameters <- lapply(x$parameters, function(par) {
+      if (is.list(par)) {
+        if ("class" %in% names(par)) {
+          par[["Class"]] <- par$class
+          par[["class"]] <- NULL
+          par <- lapply(par, function(z) {
+            if (is.list(z) & length(z) > 0) {
+              z[[1]]
+            } else {
+              z
+            }
+          })
+
+          if (par$Class %in% "CentWaveParam") {
+            par$roiScales <- as.double()
+          }
+
+          if (par$Class %in% "PeakGroupsParam") {
+            par$peakGroupsMatrix <- as.matrix(par$peakGroupsMatrix)
+          }
+
+          if (par$Class %in% "PeakGroupsParam") {
+            par$subset <- as.integer(par$subset)
+          }
+
+          par <- do.call("new", par)
+        }
+      }
+      par
+    })
   }
 
   if (validate.ProcessingSettings(x)) {
@@ -138,6 +171,46 @@ asJSON.ProcessingSettings <- function(x) {
     pretty = TRUE,
     force = TRUE
   )
+}
+
+#' @describeIn ProcessingSettings
+#' Exports a ProcessingSettings S3 class object to a JSON or RDS file.
+#'
+#' @param format X.
+#' @param name X.
+#' @param path X.
+#'
+#' @export
+export.ProcessingSettings <- function(x,
+                                      format = "json",
+                                      name = "settings",
+                                      path = getwd()) {
+
+  if (class(x) %in% "ProcessingSettings") {
+    if (validate(x)) {
+      if (format %in% "json") {
+        settings <- toJSON(
+          x,
+          dataframe = "columns",
+          Date = "ISO8601",
+          POSIXt = "string",
+          factor = "string",
+          complex = "string",
+          null = "null",
+          na = "null",
+          auto_unbox = FALSE,
+          digits = 8,
+          pretty = TRUE,
+          force = TRUE
+        )
+        write(settings, file = paste0(path, "/", name, ".json"))
+      }
+
+      if (format %in% "rds") {
+        saveRDS(settings, file = paste0(path, "/", name, ".rds"))
+      }
+    }
+  }
 }
 
 #' @describeIn ProcessingSettings

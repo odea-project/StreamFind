@@ -1147,6 +1147,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           colnames(mass) <- gsub("neutralMass", "mz", colnames(mass))
         }
         targets <- make_ms_targets(mass, rt, ppm, sec)
+        if (targets$rtmax == 0) targets$rtmax <- max(fts$rtmax)
+        if (targets$mzmax == 0) targets$mzmax <- max(fts$mass)
         sel <- rep(FALSE, nrow(fts))
         for (i in seq_len(nrow(targets))) {
           sel[between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
@@ -1157,6 +1159,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (!is.null(mz)) {
         targets <- make_ms_targets(mz, rt, ppm, sec)
+        if (targets$rtmax == 0) targets$rtmax <- max(fts$rtmax)
+        if (targets$mzmax == 0) targets$mzmax <- max(fts$mzmax)
         sel <- rep(FALSE, nrow(fts))
         for (i in seq_len(nrow(targets))) {
           sel[between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
