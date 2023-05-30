@@ -1162,7 +1162,7 @@ plot_features_interactive <- function(eic = NULL, features = NULL,
     if (length(y) >= 1) showL[lt] <- FALSE
 
     pk <- features[features$unique_ids %in% t, ]
-    pk_eic <- eic[eic$rt >= pk$rtmin & eic$rt <= pk$rtmax & eic$unique_ids == t, ]
+    pk_eic <- eic[eic$rt >= pk$rtmin & eic$rt <= pk$rtmax & eic$unique_ids %in% t, ]
 
     hT <- paste(
       "</br> feature: ", pk$feature,

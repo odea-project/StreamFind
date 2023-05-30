@@ -46,30 +46,33 @@ ProcessingSettings <- function(call = NA_character_,
   )
 
   if (is.data.frame(x$parameters)) {
-    par <- as.list(x$parameters)
+    x$parameters <- as.list(x$parameters)
+  }
 
-    if ("class" %in% names(par)) {
-      par[["Class"]] <- par$class
-      par[["class"]] <- NULL
-      par <- lapply(par, function(z) {
-        if (is.list(z) & length(z) > 0) {
-          z[[1]]
-        } else {
-          z
-        }
-      })
-
-      if (par$Class %in% "CentWaveParam") par$roiScales <- as.double()
-
-      if (par$Class %in% "PeakGroupsParam") {
-        par$peakGroupsMatrix <- as.matrix(par$peakGroupsMatrix)
+  if ("class" %in% names(x$parameters)) {
+    x$parameters[["Class"]] <- x$parameters$class
+    x$parameters[["class"]] <- NULL
+    x$parameters <- lapply(x$parameters, function(z) {
+      if (is.list(z) & length(z) > 0) {
+        z[[1]]
+      } else {
+        z
       }
+    })
 
-      if (par$Class %in% "PeakGroupsParam") par$subset <- as.integer(par$subset)
-
-      par <- do.call("new", par)
+    if (x$parameters$Class %in% "CentWaveParam") {
+      x$parameters$roiScales <- as.double()
     }
-    x$parameters <- par
+
+    if (x$parameters$Class %in% "PeakGroupsParam") {
+      x$parameters$peakGroupsMatrix <- as.matrix(x$parameters$peakGroupsMatrix)
+    }
+
+    if (x$parameters$Class %in% "PeakGroupsParam") {
+      x$parameters$subset <- as.integer(x$parameters$subset)
+    }
+
+    x$parameters <- do.call("new", x$parameters)
   }
 
   if (validate.ProcessingSettings(x)) {
@@ -94,12 +97,12 @@ validate.ProcessingSettings <- function(x = NULL) {
     if (all(c("call", "algorithm", "parameters") %in% names(x))) {
       valid <- TRUE
 
-      if (!length(x$call) == 1 & !all(is.character(x$algorithm))) {
+      if (!length(x$call) == 1 && !all(is.character(x$algorithm))) {
         warning("Call entry must be of length 1!")
         valid <- FALSE
       }
 
-      if (length(x$algorithm) != 1 & !all(is.character(x$algorithm))) {
+      if (length(x$algorithm) != 1 && !all(is.character(x$algorithm))) {
         warning("Algorithm entry must be of length 1 and type character!")
         valid <- FALSE
       }
