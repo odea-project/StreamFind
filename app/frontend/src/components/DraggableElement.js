@@ -13,8 +13,8 @@ import Button from "@mui/material/Button";
 import SelectMzml from "./SelectMzml";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-import SelectFile from "./SelectFile";
 import { blueGrey } from "@mui/material/colors";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 
 function getStyles(left, top, isDragging) {
   const transform = `translate3d(${left}px, ${top}px, 0)`;
@@ -69,6 +69,7 @@ export const DraggableElement = memo(function DraggableBox(props) {
         console.log("Dropped Item:", item);
         setIsDroppedOnDropbox(true);
         toast.success(item.title);
+        setArrow(true);
       },
       collect: (monitor) => ({
         canDrop: monitor.canDrop(),
@@ -81,7 +82,10 @@ export const DraggableElement = memo(function DraggableBox(props) {
   const isActive = canDrop && isOver;
 
   const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
+  const handleOpen = () => {
+    setOpen(true);
+    console.log("ok");
+  };
   const handleClose = () => {
     setOpen(false);
     setIsChildOpen(false);
@@ -127,6 +131,7 @@ export const DraggableElement = memo(function DraggableBox(props) {
 
   const [selectedFile, setSelectedFile] = useState("");
   const [filSelected, setfilSelected] = useState(false);
+  const [arrow, setArrow] = useState("false");
 
   return (
     <div
@@ -134,8 +139,8 @@ export const DraggableElement = memo(function DraggableBox(props) {
       style={getStyles(left, top, isDragging)}
     >
       {settingIcon && (
-        <div>
-          <SettingsIcon sx={{ color: blueGrey[500] }} />
+        <div style={{ position: "absolute", top: 13, left: 7 }}>
+          <SettingsIcon sx={{ color: blueGrey[700] }} />
         </div>
       )}
       <div
@@ -148,7 +153,7 @@ export const DraggableElement = memo(function DraggableBox(props) {
       >
         {whichObj && (
           <>
-            <p>in </p>
+            <p style={{ position: "absolute", top: 31, left: -15 }}>in </p>
             <div
               style={{
                 width: "10px",
@@ -156,36 +161,11 @@ export const DraggableElement = memo(function DraggableBox(props) {
                 borderRadius: "50%",
                 backgroundColor: "green",
                 marginRight: "10px",
+                position: "absolute",
+                top: 53,
+                left: 2,
               }}
             ></div>
-          </>
-        )}
-        <div style={{ flexGrow: 1 }}>
-          {children}
-          {whichObj && isDroppedOnDropbox && (
-            <svg width="100" height="50">
-              <marker
-                id="arrowhead"
-                markerWidth="10"
-                markerHeight="7"
-                refX="50"
-                refY="8"
-                orient="auto-start-reverse"
-              >
-                <polygon points="0 0, 10 0, 0 7" />
-              </marker>
-              <path
-                d="M 20 10 Q 0 20, 100 50"
-                fill="none"
-                stroke="black"
-                strokeWidth="2"
-                markerEnd="url(#arrowhead)"
-              />
-            </svg>
-          )}
-        </div>
-        {whichObj && (
-          <>
             <div
               style={{
                 width: "10px",
@@ -193,18 +173,64 @@ export const DraggableElement = memo(function DraggableBox(props) {
                 borderRadius: "50%",
                 backgroundColor: "blue",
                 marginRight: "10px",
+                position: "absolute",
+                top: 53,
+                left: 99,
               }}
             ></div>
-            <p>out</p>
+            <p style={{ position: "absolute", top: 31, left: 113 }}>out</p>
+          </>
+        )}
+        {children}
+        {whichObj && isDroppedOnDropbox && (
+          <>
+            <div style={{ position: "absolute", top: -33, left: 45 }}>
+              <ArrowDownwardIcon></ArrowDownwardIcon>
+            </div>
+            <svg
+              height="100"
+              width="100"
+              style={{ position: "absolute", top: -70, left: 56 }}
+            >
+              <path
+                d="M0 43 C22 -10, 190 0, 250 90"
+                stroke="black"
+                strokeWidth="1.7"
+                fill="transparent"
+              />
+            </svg>
+            <div style={{ position: "absolute", top: -7, left: 45 }}>
+              {filSelected ? (
+                <PlayCircleIcon style={{ color: "green" }}></PlayCircleIcon>
+              ) : (
+                <PlayCircleIcon style={{ color: "red" }}></PlayCircleIcon>
+              )}
+            </div>
+            <p style={{ position: "absolute", top: -21, left: 72 }}>input</p>
             {isDroppedOnDropbox ? (
-              <div>
-                <SettingsIcon
-                  sx={{ color: blueGrey[500] }}
+              <div
+                style={{
+                  position: "absolute",
+                  zIndex: 1,
+                  cursor: "pointer",
+                  top: -200,
+                  left: 130,
+                }}
+              >
+                <div
                   style={{
+                    position: "absolute",
+                    zIndex: 1,
                     cursor: "pointer",
+                    top: 7,
+                    left: 12,
                   }}
-                  onClick={handleOpen}
-                ></SettingsIcon>
+                >
+                  <SettingsIcon
+                    sx={{ color: blueGrey[700] }}
+                    onClick={handleOpen}
+                  ></SettingsIcon>
+                </div>
                 <Modal
                   open={open}
                   onClose={handleClose}
@@ -257,11 +283,19 @@ export const DraggableElement = memo(function DraggableBox(props) {
                   </Box>
                 </Modal>
                 <MsAnalysis></MsAnalysis>
-                {filSelected && (
-                  <>
-                    <PlayCircleIcon></PlayCircleIcon>
-                  </>
-                )}
+                <div
+                  style={{
+                    width: "10px",
+                    height: "10px",
+                    borderRadius: "50%",
+                    backgroundColor: "blue",
+                    marginRight: "10px",
+                    position: "absolute",
+                    top: 135,
+                    left: 25,
+                  }}
+                ></div>
+                <p style={{ position: "absolute", top: 113, left: 39 }}>send</p>
               </div>
             ) : null}
           </>

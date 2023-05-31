@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import FolderIcon from "@mui/icons-material/Folder";
-import mzmlIcon from "D:/work/streamFind/app/frontend/src/mzml.PNG";
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import { Button } from "@mui/material";
 
 const SelectMzml = ({ onFolderSelect }) => {
@@ -13,7 +13,7 @@ const SelectMzml = ({ onFolderSelect }) => {
 
   useEffect(() => {
     axios
-      .get("http://127.0.0.1:5368/files_project")
+      .get("http://127.0.0.1:8000/files_project")
       .then((response) => {
         console.log(response);
         setFolders(response.data);
@@ -40,7 +40,7 @@ const SelectMzml = ({ onFolderSelect }) => {
       // Clicked item is a folder
       setSelectedFolder(selectedFolder + "/" + item);
       axios
-        .post("http://127.0.0.1:5368/open_folder", {
+        .post("http://127.0.0.1:8000/open_folder", {
           name: selectedFolder + "/" + item,
         })
         .then((response) => {
@@ -59,7 +59,7 @@ const SelectMzml = ({ onFolderSelect }) => {
     const prevFolder = previousFolders.pop();
     setSelectedFolder(prevFolder);
     axios
-      .post("http://127.0.0.1:5368/open_folder", {
+      .post("http://127.0.0.1:8000/open_folder", {
         name: prevFolder,
       })
       .then((response) => {
@@ -94,18 +94,9 @@ const SelectMzml = ({ onFolderSelect }) => {
           onClick={() => handleFolderClick(item)}
         >
           {item.endsWith(".mzML") ? (
-            <img
-              onClick={(e) => {
-                e.stopPropagation();
-                handleFolderClick(item);
-              }}
-              style={{
-                width: "25x",
-                height: "25px",
-              }}
-              src={mzmlIcon}
-              alt="Custom Icon"
-            />
+            <InsertDriveFileIcon onClick={(e) => {
+              e.stopPropagation();
+              handleFolderClick(item)}}/>
           ) : (
             <FolderIcon fontSize="small" />
           )}

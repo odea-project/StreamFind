@@ -1,4 +1,4 @@
-import msdataIcon from "D:/work/streamFind/app/frontend/src/msdata.PNG";
+import FolderIcon from '@mui/icons-material/Folder';
 import { Paper } from "@mui/material";
 import { DraggableElement } from "./DraggableElement";
 import Grid from "@mui/material/Unstable_Grid2";
@@ -13,7 +13,6 @@ export const MsData = () => {
       source={SourceTypes.OBJECTS}
       type={ItemTypes.BOX}
     >
-      <Paper style={{ backgroundColor: "transparent" }}>
         <Grid
           container
           spacing={0}
@@ -22,20 +21,12 @@ export const MsData = () => {
           justifyContent="center"
         >
           <Grid xs={12}>
-            <img
-              style={{
-                width: "80px",
-                height: "70px",
-              }}
-              src={msdataIcon}
-              alt="Custom Icon"
-            />
+            <FolderIcon style={{fontSize:'6em', color:'orange'}} />
           </Grid>
           <Grid xs={12} style={{ textAlign: "center" }}>
             <div>msData</div>
           </Grid>
         </Grid>
-      </Paper>
     </DraggableElement>
   );
 };

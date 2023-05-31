@@ -18,6 +18,7 @@
     "@mui/material": "^5.11.1",
     "@r-wasm/webr": "^0.1.0",
     "axios": "^1.4.0",
+    "beautiful-react-diagrams": "^0.5.1",
     "chonky": "^2.3.2",
     "chonky-icon-fontawesome": "^2.3.2",
     "cors": "^2.8.5",
@@ -30,8 +31,10 @@
     "react-dnd": "16.0.1",
     "react-dnd-html5-backend": "16.0.1",
     "react-dom": "^18.0.0",
+    "react-flow-renderer": "^10.3.17",
     "react-frame-component": "^5.2.3",
     "react-hot-toast": "^2.4.1",
+    "react-xarrows": "^2.0.2",
     "reactjs-popup": "^2.0.5",
     "typescript": "~4.8.4",
     "web-vitals": "^2.1.4"

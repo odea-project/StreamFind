@@ -4,7 +4,6 @@ import { Objects } from "./Objects";
 import { Input } from "./Input.js";
 import { PreProcessing } from "./PreProcessing";
 import MenuIcon from "@mui/icons-material/Menu";
-import MyComponent from "./MyComponent";
 
 export default function Demo() {
   return (
