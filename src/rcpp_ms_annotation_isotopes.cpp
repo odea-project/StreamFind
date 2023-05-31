@@ -148,16 +148,16 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
   };
 
   std::vector<double> iso_md = {
-    1.0033548378, // C
-    // 1.0062767, // H
-    0.9970349, // N
-    1.0042169, // O
-    2.004246, //O2
-    0.9993878, // S
-    1.995796, // S2
-    // 3.99501, // S3
-    1.9970499, // Cl
-    1.9979534 // Br
+    1.0033548378, // C - 13
+    // 1.0062767, // H - 2
+    0.9970349, // N - 15
+    1.0042169, // O - 17
+    2.004246, //O2 - 18
+    0.9993878, // S - 33
+    1.995796, // S2 - 34
+    // 3.99501, // S3 - 36
+    1.9970499, // Cl - 37
+    1.9979534 // Br - 81
   };
 
   std::vector<double> iso_ab = {
@@ -352,7 +352,16 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
   // Orbitrap data from AFIN-TS
 
   // mz254.059_rt712_f2111, Sulfamethoxazole
-  for (int i = 1797; i < 1798; ++i) {
+  // for (int i = 4686; i < 4687; ++i) {
+
+  // mz192.138_rt1071_f9041, DEET
+  // for (int i = 2652; i < 2653; ++i) {
+
+  // mz249.019_rt1133_f12642, Linuron
+  // for (int i = 4490; i < 4491; ++i) {
+
+  // mz388.105_rt1244_f15264, Pyraclostrobin
+  for (int i = 9778; i < 9779; ++i) {
 
 
   // for (int i = 0; i < number_of_features; ++i) {
