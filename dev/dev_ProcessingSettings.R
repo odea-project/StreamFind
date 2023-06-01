@@ -1,34 +1,16 @@
 
 # library(streamFind)
 
-save_default_ProcessingSettings(
-  call = "find_features",
-  software = "xcms",
-  algorithm = "centwave"
-)
+# save_default_ProcessingSettings(
+#   call = "find_features",
+#   software = "xcms",
+#   algorithm = "centwave"
+# )
 
 # save_default_ProcessingSettings(
 #   call = "find_features",
 #   algorithm = "openms"
 # )
-
-all_files <- streamFindData::msFilePaths()
-files <- all_files[1:3]
-
-ms <- MassSpecData$new(files)
-
-ms$import_settings("./settings.json")
-ms$find_features()
-
-
-ms$get_features()
-
-ms$get_settings()
-
-
-
-
-
 
 db <- "E:\\Dev_20230530_Orbitrap_AFINTS\\Composition_Mix-Fusion.csv"
 db <- data.table::fread(db)
@@ -40,6 +22,8 @@ fl <- "E:\\Dev_20230530_Orbitrap_AFINTS\\220428_VqF-Coup_Etablierung_MixFusion_p
 ms <- MassSpecData$new(fl)
 ms$import_settings("./settings.json")
 ms$find_features()
+
+ms$plot_bpc()
 
 fts <- ms$get_features()
 fts <- fts[order(fts$mz), ]
@@ -177,9 +161,9 @@ ms$get_features(
 )
 
 ms$plot_features_ms1(
-  features = "mz388.105_rt1244_f15264",
+  features = "mz399.25_rt1276_f15896",
   rtWindow = c(-2, 2),
-  mzWindow = c(-1, 6),
+  mzWindow = c(-1, 8),
   mzClust = 0.0005
 )
 
@@ -189,10 +173,8 @@ ms$plot_features_ms2(
 )
 
 output <- rcpp_ms_annotation_isotopes(fts)
-View(output)
+View(output$output)
 
 
 
-ms$plot_bpc()
-ms$get_files()
 
