@@ -1142,13 +1142,19 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!is.null(mass)) {
+
         if (is.data.frame(mass)) {
           colnames(mass) <- gsub("mass", "mz", colnames(mass))
           colnames(mass) <- gsub("neutralMass", "mz", colnames(mass))
         }
+
         targets <- make_ms_targets(mass, rt, ppm, sec)
-        if (targets$rtmax == 0) targets$rtmax <- max(fts$rtmax)
-        if (targets$mzmax == 0) targets$mzmax <- max(fts$mass)
+
+        for (i in seq_len(nrow(targets))) {
+          if (targets$rtmax[i] == 0) targets$rtmax[i] <- max(fts$rtmax)
+          if (targets$mzmax[i] == 0) targets$mzmax[i] <- max(fts$mass)
+        }
+
         sel <- rep(FALSE, nrow(fts))
         for (i in seq_len(nrow(targets))) {
           sel[between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
@@ -1159,8 +1165,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (!is.null(mz)) {
         targets <- make_ms_targets(mz, rt, ppm, sec)
-        if (targets$rtmax == 0) targets$rtmax <- max(fts$rtmax)
-        if (targets$mzmax == 0) targets$mzmax <- max(fts$mzmax)
+
+        for (i in seq_len(nrow(targets))) {
+          if (targets$rtmax[i] == 0) targets$rtmax[i] <- max(fts$rtmax)
+          if (targets$mzmax[i] == 0) targets$mzmax[i] <- max(fts$mass)
+        }
+
         sel <- rep(FALSE, nrow(fts))
         for (i in seq_len(nrow(targets))) {
           sel[between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
