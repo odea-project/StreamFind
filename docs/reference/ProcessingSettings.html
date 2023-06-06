@@ -63,7 +63,12 @@ in <span class="pkg">streamFind</span> for processing data in a given data class
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ProcessingSettings</span><span class="op">(</span></span>
 <span>  call <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
 <span>  algorithm <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
-<span>  parameters <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  parameters <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  software <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
+<span>  developer <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
+<span>  contact <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
+<span>  link <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
+<span>  doi <span class="op">=</span> <span class="cn">NA_character_</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for ProcessingSettings</span></span>
@@ -71,6 +76,9 @@ in <span class="pkg">streamFind</span> for processing data in a given data class
 <span></span>
 <span><span class="co"># S3 method for ProcessingSettings</span></span>
 <span><span class="fu">asJSON</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for ProcessingSettings</span></span>
+<span><span class="fu">export</span><span class="op">(</span><span class="va">x</span>, format <span class="op">=</span> <span class="st">"json"</span>, name <span class="op">=</span> <span class="st">"settings"</span>, path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">as.ProcessingSettings</span><span class="op">(</span><span class="va">value</span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -92,8 +100,41 @@ be used.</p></dd>
 <code>algorithm</code>.</p></dd>
 
 
+<dt>software</dt>
+<dd><p>Character of length one with the name of the software or
+package.</p></dd>
+
+
+<dt>developer</dt>
+<dd><p>Character of length one with the name of the developer/s.</p></dd>
+
+
+<dt>contact</dt>
+<dd><p>Character of length one with the email of the developer.</p></dd>
+
+
+<dt>link</dt>
+<dd><p>Character of length one with the documentation web link.</p></dd>
+
+
+<dt>doi</dt>
+<dd><p>Character of length one with the DOI of algorithm.</p></dd>
+
+
 <dt>x</dt>
 <dd><p>A ProcessingSettings S3 class object.</p></dd>
+
+
+<dt>format</dt>
+<dd><p>X.</p></dd>
+
+
+<dt>name</dt>
+<dd><p>X.</p></dd>
+
+
+<dt>path</dt>
+<dd><p>X.</p></dd>
 
 
 <dt>value</dt>
@@ -119,6 +160,7 @@ parameters.</p>
 <ul><li><p><code>validate(ProcessingSettings)</code>: Validates a ProcessingSettings S3 class object, returning a logical value of
 length one.</p></li>
 <li><p><code>asJSON(ProcessingSettings)</code>: Converts a ProcessingSettings S3 class object to a JSON string.</p></li>
+<li><p><code>export(ProcessingSettings)</code>: Exports a ProcessingSettings S3 class object to a JSON or RDS file.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>
