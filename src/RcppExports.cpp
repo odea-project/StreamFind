@@ -10,17 +10,6 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// rcpp_centroid_spectra
-Rcpp::List rcpp_centroid_spectra(Rcpp::DataFrame spectra);
-RcppExport SEXP _streamFind_rcpp_centroid_spectra(SEXP spectraSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type spectra(spectraSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_centroid_spectra(spectra));
-    return rcpp_result_gen;
-END_RCPP
-}
 // rcpp_ms_annotation_isotopes
 Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes, int maxCharge, double rtWindowAlignment, int maxGaps);
 RcppExport SEXP _streamFind_rcpp_ms_annotation_isotopes(SEXP featuresSEXP, SEXP maxIsotopesSEXP, SEXP maxChargeSEXP, SEXP rtWindowAlignmentSEXP, SEXP maxGapsSEXP) {
@@ -33,6 +22,17 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type rtWindowAlignment(rtWindowAlignmentSEXP);
     Rcpp::traits::input_parameter< int >::type maxGaps(maxGapsSEXP);
     rcpp_result_gen = Rcpp::wrap(rcpp_ms_annotation_isotopes(features, maxIsotopes, maxCharge, rtWindowAlignment, maxGaps));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_centroid_spectra
+Rcpp::List rcpp_centroid_spectra(Rcpp::DataFrame spectra);
+RcppExport SEXP _streamFind_rcpp_centroid_spectra(SEXP spectraSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type spectra(spectraSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_centroid_spectra(spectra));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -204,6 +204,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_streamFind_rcpp_ms_annotation_isotopes", (DL_FUNC) &_streamFind_rcpp_ms_annotation_isotopes, 5},
+    {"_streamFind_rcpp_centroid_spectra", (DL_FUNC) &_streamFind_rcpp_centroid_spectra, 1},
     {"_streamFind_rcpp_ms_cluster_ms2", (DL_FUNC) &_streamFind_rcpp_ms_cluster_ms2, 3},
     {"_streamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_streamFind_rcpp_ms_cluster_spectra, 3},
     {"_streamFind_rcpp_ms_feature_groups_correspondence", (DL_FUNC) &_streamFind_rcpp_ms_feature_groups_correspondence, 3},

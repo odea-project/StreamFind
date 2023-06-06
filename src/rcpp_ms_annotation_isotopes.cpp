@@ -364,11 +364,11 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
   // for (int i = 9778; i < 9779; ++i) {
 
   // mz399.25_rt1276_f15896, highest feature
-  for (int i = 10074; i < 10075; ++i) {
+  // for (int i = 10074; i < 10075; ++i) {
 
 
 
-  // for (int i = 0; i < number_of_features; ++i) {
+  for (int i = 0; i < number_of_features; ++i) {
 
     std::string id = all_ids[i];
     double mz = all_mz[i];
