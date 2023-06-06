@@ -146,8 +146,9 @@ ms <- MassSpecData$new(files = all_files[10:21],
   )
 )
 
-ana <- parse.MassSpecAnalysis(files[1])
-
+ana <- ms$get_analyses(1)
+ana1 <- parse.MassSpecAnalysis(all_files[10])
+all.equal(ana, ana1)
 
 
 ps <- as.ProcessingSettings(settings_ff)
