@@ -100,7 +100,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     ## ___ system -----
 
     #' @description
-    #' Creates an MassSpecData class object. When `headers` are not given (i.e.,
+    #' Creates a MassSpecData class object. When `headers` are not given (i.e.,
     #' `NULL`), a default Headers S3 class object is generated with name as
     #' `NA_character`, path as `get_wd()` and date as `Sys.time()`.
     #' See `?Headers` for more information.
@@ -108,10 +108,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @template arg-ms-files
     #' @template arg-runParallel
     #' @template arg-headers-list
-    #' @template arg-settings-list
-    #' @template arg-ms-analyses-list
+    #' @template arg-ms-settings
+    #' @template arg-ms-analyses
     #' @template arg-ms-groups
-    #' @param alignment X.
+    #' @template arg-ms-alignment
     #'
     #' @return A new `MassSpecData` class object.
     #'
@@ -209,10 +209,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
+    #' @template arg-ms-analyses
     #'
-    #' @return The list of analyses defined by `value`.
+    #' @return The list of analyses defined by `analyses` argument.
     #'
     get_analyses = function(analyses = NULL) {
       analyses <- private$.check_analyses_argument(analyses)
@@ -220,7 +219,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Method to get the number of analysis present.
+    #' Method to get the number of analyses present.
     #'
     #' @return An integer value.
     #'
@@ -277,8 +276,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get the analysis names.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
+    #' @template arg-ms-analyses
     #'
     #' @return A character vector.
     #'
@@ -299,8 +297,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get the analysis replicate names.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
+    #' @template arg-ms-analyses
     #'
     #' @return A character vector.
     #'
@@ -311,8 +308,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get the analysis blank replicate names.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
+    #' @template arg-ms-analyses
     #'
     #' @return A character vector.
     #'
@@ -323,8 +319,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get the polarity of the analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
+    #' @template arg-ms-analyses
     #'
     #' @return A character vector.
     #'
@@ -335,8 +330,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get the file format of the analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
+    #' @template arg-ms-analyses
     #'
     #' @return A character vector.
     #'
@@ -347,8 +341,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get the type of the analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
+    #' @template arg-ms-analyses
     #'
     #' @return A character vector.
     #'
@@ -359,8 +352,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get the time stamp of the analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
+    #' @template arg-ms-analyses
     #'
     #' @return A character vector.
     #'
@@ -371,8 +363,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get the polarity of the analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
+    #' @template arg-ms-analyses
     #'
     #' @return A character vector.
     #'
@@ -383,8 +374,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get the polarity of the analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
+    #' @template arg-ms-analyses
     #'
     #' @return A character vector.
     #'
@@ -395,8 +385,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get the spectra levels of the analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
+    #' @template arg-ms-analyses
     #'
     #' @return A list for each analysis with an integer vector.
     #'
@@ -407,8 +396,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get the polarity of the analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
+    #' @template arg-ms-analyses
     #'
     #' @return A character vector.
     #'
@@ -419,8 +407,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get the polarity of the analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
+    #' @template arg-ms-analyses
     #'
     #' @return A character vector.
     #'
@@ -431,8 +418,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get the polarity of the analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
+    #' @template arg-ms-analyses
     #'
     #' @return A character vector.
     #'
@@ -443,8 +429,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get the polarity of the analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
+    #' @template arg-ms-analyses
     #'
     #' @return A character vector.
     #'
@@ -455,8 +440,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get the polarity of the analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
+    #' @template arg-ms-analyses
     #'
     #' @return A character vector.
     #'
@@ -467,8 +451,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get the number of chromatograms in the analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
+    #' @template arg-ms-analyses
     #'
     #' @return A character vector.
     #'
@@ -479,8 +462,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get the instrument information for each analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
+    #' @template arg-ms-analyses
     #'
     #' @return A data.table.
     #'
@@ -497,8 +479,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get the software information for each analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
+    #' @template arg-ms-analyses
     #'
     #' @return A data.table.
     #'
@@ -515,8 +496,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get the run summary data.table for each analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
+    #' @template arg-ms-analyses
     #'
     #' @return A data.table.
     #'
@@ -533,10 +513,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get the total ion chromatograms (TIC) from the analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #' @param levels A numeric/character vector with the number/name
-    #' of the analyses.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-levels
     #'
     #' @return A character vector.
     #'
@@ -561,10 +539,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get the base peak chromatograms (BPC) from the analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #' @param levels A numeric/character vector with the number/name
-    #' of the analyses.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-levels
     #'
     #' @return A character vector.
     #'
@@ -589,20 +565,18 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get spectra from the MS analyses.
     #'
-    #' @param analyses X.
-    #' @param levels Name.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param id X.
-    #' @param allTraces Logical, when \code{TRUE} all level 2 data is returned.
-    #' When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
-    #' are returned, using the `isolationWindow` to calculate the mass window.
-    #' @param isolationWindow X.
-    #' @param minIntensityMS1 X.
-    #' @param minIntensityMS2 X.
-    #' @param runParallel X.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-levels
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-id
+    #' @template arg-allTraces
+    #' @template arg-ms-isolationWindow
+    #' @template arg-ms-minIntensityMS1
+    #' @template arg-ms-minIntensityMS2
+    #' @template arg-runParallel
     #'
     #' @return A data.frame with spectra for each analyses and
     #' targets when defined.
@@ -840,10 +814,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get spectra from the MS analyses.
     #'
-    #' @param analyses X.
-    #' @param index X.
-    #' @param minIntensity X.
-    #' @param runParallel X.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-index
+    #' @template arg-ms-minIntensity
+    #' @template arg-runParallel
     #'
     #' @return A data.frame with spectra.
     #'
@@ -915,14 +889,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' Method to get extract ion chromatograms (EIC) from the analyses based
     #' on targets.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param id X.
-    #' @param runParallel X.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-id
+    #' @template arg-runParallel
     #'
     #' @return A data.frame.
     #'
@@ -957,17 +930,16 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get MS1 data from the analyses based on targets.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param id X.
-    #' @param mzClust X.
-    #' @param verbose X.
-    #' @param minIntensity X.
-    #' @param runParallel X.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-id
+    #' @template arg-ms-mzClust
+    #' @template arg-verbose
+    #' @template arg-ms-minIntensity
+    #' @template arg-runParallel
     #'
     #' @return A data.frame.
     #'
@@ -1014,18 +986,17 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get MS2 data from the analyses based on targets.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param id X.
-    #' @param isolationWindow X.
-    #' @param mzClust X.
-    #' @param verbose X.
-    #' @param minIntensity X.
-    #' @param runParallel X.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-id
+    #' @template arg-ms-isolationWindow
+    #' @template arg-ms-mzClust
+    #' @template arg-verbose
+    #' @template arg-ms-minIntensity
+    #' @template arg-runParallel
     #'
     #' @return A data.frame.
     #'
@@ -1086,15 +1057,14 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get features from analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #' @param features X.
-    #' @param mass X.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param filtered X.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-features
+    #' @template arg-ms-mass
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-filtered
     #'
     #' @return A data.frame.
     #'
@@ -1168,18 +1138,17 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get EIC of features from analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #' @param features X.
-    #' @param mass X.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param rtExpand X.
-    #' @param mzExpand X.
-    #' @param filtered X.
-    #' @param runParallel X.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-features
+    #' @template arg-ms-mass
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-rtExpand
+    #' @template arg-ms-mzExpand
+    #' @template arg-ms-filtered
+    #' @template arg-runParallel
     #'
     #' @return A data.frame/data.table.
     #'
@@ -1211,22 +1180,21 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get an averaged MS1 spectrum for features in analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #' @param features X.
-    #' @param mass X.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param rtWindow X.
-    #' @param mzWindow X.
-    #' @param mzClust X.
-    #' @param minIntensity X.
-    #' @param verbose X.
-    #' @param filtered X.
-    #' @param loadedMS1 X.
-    #' @param runParallel X.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-features
+    #' @template arg-ms-mass
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-rtWindow
+    #' @template arg-ms-mzWindow
+    #' @template arg-ms-mzClust
+    #' @template arg-ms-minIntensity
+    #' @template arg-verbose
+    #' @template arg-ms-filtered
+    #' @template arg-ms-loadedMS1
+    #' @template arg-runParallel
     #'
     #' @return A data.frame/data.table.
     #'
@@ -1290,21 +1258,20 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get an averaged MS2 spectrum for features in analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #' @param features X.
-    #' @param mass X.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param isolationWindow X.
-    #' @param mzClust X.
-    #' @param minIntensity X.
-    #' @param verbose X.
-    #' @param filtered X.
-    #' @param loadedMS2 X.
-    #' @param runParallel X.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-features
+    #' @template arg-ms-mass
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-isolationWindow
+    #' @template arg-ms-mzClust
+    #' @template arg-ms-minIntensity
+    #' @template arg-verbose
+    #' @template arg-ms-filtered
+    #' @template arg-ms-loadedMS2
+    #' @template arg-runParallel
     #'
     #' @return A data.frame/data.table.
     #'
@@ -1369,15 +1336,15 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get feature groups from analyses.
     #'
-    #' @param groups X.
-    #' @param mass X.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param filtered X.
-    #' @param onlyIntensities X.
-    #' @param average X.
+    #' @template arg-ms-groups
+    #' @template arg-ms-mass
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-filtered
+    #' @template arg-ms-onlyIntensities
+    #' @template arg-ms-average
     #'
     #' @return A data.frame/data.table.
     #'
@@ -1534,24 +1501,24 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get an averaged MS1 spectrum for feature groups in analyses.
     #'
-    #' @param groups X.
-    #' @param mass X.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param rtWindow X.
-    #' @param mzWindow X.
-    #' @param mzClustFeatures X.
-    #' @param minIntensityFeatures X.
-    #' @param loadedFeaturesMS1 X.
-    #' @param mzClustGroups X.
-    #' @param minIntensityGroups X.
-    #' @param groupBy X.
-    #' @param verbose X.
-    #' @param filtered X.
-    #' @param loadedGroupsMS1 X.
-    #' @param runParallel X.
+    #' @template arg-ms-groups
+    #' @template arg-ms-mass
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-rtWindow
+    #' @template arg-ms-mzWindow
+    #' @template arg-ms-mzClustFeatures
+    #' @template arg-ms-minIntensityFeatures
+    #' @template arg-ms-loadedFeaturesMS1
+    #' @template arg-ms-mzClustGroups
+    #' @template arg-ms-minIntensityGroups
+    #' @template arg-ms-groupBy
+    #' @template arg-verbose
+    #' @template arg-ms-filtered
+    #' @template arg-ms-loadedGroupsMS1
+    #' @template arg-runParallel
     #'
     #' @return A data.frame/data.table.
     #'
@@ -1640,23 +1607,23 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to get an averaged MS2 spectrum for feature groups in analyses.
     #'
-    #' @param groups X.
-    #' @param mass X.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param isolationWindow X.
-    #' @param mzClustFeatures X.
-    #' @param minIntensityFeatures X.
-    #' @param loadedFeaturesMS2 X.
-    #' @param mzClustGroups X.
-    #' @param minIntensityGroups X.
-    #' @param groupBy X.
-    #' @param verbose X.
-    #' @param filtered X.
-    #' @param loadedGroupsMS2 X.
-    #' @param runParallel X.
+    #' @template arg-ms-groups
+    #' @template arg-ms-mass
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-isolationWindow
+    #' @template arg-ms-mzClustFeatures
+    #' @template arg-ms-minIntensityFeatures
+    #' @template arg-ms-loadedFeaturesMS2
+    #' @template arg-ms-mzClustGroups
+    #' @template arg-ms-minIntensityGroups
+    #' @template arg-ms-groupBy
+    #' @template arg-verbose
+    #' @template arg-ms-filtered
+    #' @template arg-ms-loadedGroupsMS2
+    #' @template arg-runParallel
     #'
     #' @return A data.frame/data.table.
     #'
@@ -2009,8 +1976,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to add features to analyses.
     #'
-    #' @param features X.
-    #' @param replace X.
+    #' @template arg-ms-features-smallTable
+    #' @template arg-ms-replace
     #'
     #' @return Invisible.
     #'
@@ -2093,7 +2060,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' Method to add feature groups. Note that existing features groups are
     #' replaced!
     #'
-    #' @template arg-ms-groups
+    #' @template arg-ms-groupsTable
     #'
     #' @return Invisible.
     #'
@@ -2159,7 +2126,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to add time alignment results.
     #'
-    #' @param alignment list.
+    #' @template arg-ms-alignment
     #'
     #' @return Invisible.
     #'
@@ -2197,7 +2164,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to load all spectra from all analyses.
     #'
-    #' @param runParallel X.
+    #' @template arg-runParallel
     #'
     #' @return Invisible.
     #'
@@ -2234,7 +2201,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to load all chromatograms from all analyses.
     #'
-    #' @param runParallel X.
+    #' @template arg-runParallel
     #'
     #' @return Invisible.
     #'
@@ -2274,7 +2241,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to load and average MS1 spectra from features in the analyses.
     #'
-    #' @param settings X.
+    #' @template arg-ms-settings
     #'
     #' @return Invisible.
     #'
@@ -2384,7 +2351,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to load and average MS2 spectra from features in the analyses.
     #'
-    #' @param settings X.
+    #' @template arg-ms-settings
     #'
     #' @return Invisible.
     #'
@@ -2502,8 +2469,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' be given in the `settingsFeatures` argument or added beforehand with
     #' `all_settings` method.
     #'
-    #' @param settings X.
-    #' @param settingsFeatures X.
+    #' @template arg-ms-settings
+    #' @template arg-ms-settingsFeatures
     #'
     #' @return Invisible.
     #'
@@ -2614,8 +2581,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to load and average MS2 spectra from feature groups.
     #'
-    #' @param settings X.
-    #' @param settingsFeatures X.
+    #' @template arg-ms-settings
+    #' @template arg-ms-settingsFeatures
     #'
     #' @return Invisible.
     #'
@@ -2800,8 +2767,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' Removes analyses. Note that unique feature
     #' groups from the removed analyses are also removed.
     #'
-    #' @param analyses A character vector with the names or indices of the
-    #' analyses to be removed.
+    #' @template arg-ms-analyses
     #'
     #' @return Invisible.
     #'
@@ -2855,10 +2821,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Remove features.
     #'
-    #' @param features A data.frame with columns \emph{analysis} and \emph{feature}
-    #' representing the analysis name and the id of the features to remove,
-    #' respectively.
-    #' @param filtered X.
+    #' @template arg-ms-features
+    #' @template arg-ms-filtered
     #'
     #' @return Invisible.
     #'
@@ -2970,8 +2934,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Remove feature groups.
     #'
-    #' @param groups X.
-    #' @param filtered X.
+    #' @template arg-ms-groups
+    #' @template arg-ms-filtered
     #'
     #' @return Invisible.
     #'
@@ -3081,7 +3045,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Subsets a `MassSpecData` object on analyses.
     #'
-    #' @param analyses X.
+    #' @template arg-ms-analyses
     #'
     #' @return A new cloned `MassSpecData` object with only the analyses as
     #' defined by the `analyses` argument.
@@ -3132,9 +3096,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Subsets a `MassSpecData` object on features from analyses.
     #'
-    #' @param features A data.frame with columns \emph{analysis} and \emph{feature}
-    #' representing the analysis name and the id of the features to keep in the
-    #' new `MassSpecData` object, respectively.
+    #' @template arg-ms-features-smallTable
     #'
     #' @return A new cloned `MassSpecData` object with only the features as
     #' defined by the `features` argument.
@@ -3183,7 +3145,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' filter category/tag. Filtered features can be removed with the method
     #' `remove_features(filtered = TRUE)`.
     #'
-    #' @param groups X.
+    #' @template arg-ms-groups
     #'
     #' @return A new cloned `MassSpecData` object with only the groups as
     #' defined by the `groups` argument.
@@ -3226,7 +3188,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to check for loaded spectra in given analyses names/indices.
     #'
-    #' @param analyses The analyses names/indices to check for loaded spectra.
+    #' @template arg-ms-analyses
     #'
     #' @return Logical value.
     #'
@@ -3248,8 +3210,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to check for loaded chromatograms in given analyses names/indices.
     #'
-    #' @param analyses The analyses names/indices to check for loaded
-    #' chromatograms.
+    #' @template arg-ms-analyses
     #'
     #' @return Logical value.
     #'
@@ -3271,8 +3232,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to check for loaded features MS1 in given analyses names/indices.
     #'
-    #' @param analyses The analyses names/indices to check for loaded
-    #' chromatograms.
+    #' @template arg-ms-analyses
     #'
     #' @return Logical value.
     #'
@@ -3296,8 +3256,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to check for loaded features MS2 in given analyses names/indices.
     #'
-    #' @param analyses The analyses names/indices to check for loaded
-    #' chromatograms.
+    #' @template arg-ms-analyses
     #'
     #' @return Logical value.
     #'
@@ -3370,7 +3329,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to check if given analyses have features.
     #'
-    #' @param analyses The analyses names/indices to check for loaded spectra.
+    #' @template arg-ms-analyses
     #'
     #' @return Logical value.
     #'
@@ -3414,21 +3373,19 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Plots spectra for given MS analyses.
     #'
-    #' @param analyses X.
-    #' @param levels Name.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param id X.
-    #' @param allTraces Logical, when \code{TRUE} all level 2 data is returned.
-    #' When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
-    #' are returned, using the `pre_mz` value and the `isolationWindow`.
-    #' @param isolationWindow X.
-    #' @param minIntensityMS1 X.
-    #' @param minIntensityMS2 X.
-    #' @param runParallel X.
-    #' @param colorBy X.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-levels
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-id
+    #' @template arg-allTraces
+    #' @template arg-ms-isolationWindow
+    #' @template arg-ms-minIntensityMS1
+    #' @template arg-ms-minIntensityMS2
+    #' @template arg-runParallel
+    #' @template arg-ms-colorBy
     #'
     #' @return A 3D interactive plot.
     #'
@@ -3461,20 +3418,19 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' Method to plot extract ion chromatograms (EIC) and \emph{m/z} vs
     #' retention time from the analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param id X.
-    #' @param runParallel X.
-    #' @param legendNames x.
-    #' @param plotTargetMark x.
-    #' @param targetsMark x.
-    #' @param ppmMark x.
-    #' @param secMark x.
-    #' @param numberRows x.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-id
+    #' @template arg-runParallel
+    #' @template arg-ms-legendNames
+    #' @template arg-ms-plotTargetMark
+    #' @template arg-ms-targetsMark
+    #' @template arg-ms-ppmMark
+    #' @template arg-ms-secMark
+    #' @template arg-ms-numberRows
     #'
     #' @return A data.frame.
     #'
@@ -3513,18 +3469,17 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to plot extract ion chromatograms (EIC) from the analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param id X.
-    #' @param runParallel X.
-    #' @param legendNames x.
-    #' @param title x.
-    #' @param colorBy x.
-    #' @param interactive x.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-id
+    #' @template arg-runParallel
+    #' @template arg-ms-legendNames
+    #' @template arg-ms-title
+    #' @template arg-ms-colorBy
+    #' @template arg-ms-interactive
     #'
     #' @return A plot.
     #'
@@ -3554,11 +3509,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to plot total ion chromatograms (TIC) of the analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #' @param title x.
-    #' @param colorBy x.
-    #' @param interactive x.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-title
+    #' @template arg-ms-colorBy
+    #' @template arg-ms-interactive
     #'
     #' @return A plot.
     #'
@@ -3589,11 +3543,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to plot base peak chromatograms (BPC) of the analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #' @param title x.
-    #' @param colorBy x.
-    #' @param interactive x.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-title
+    #' @template arg-ms-colorBy
+    #' @template arg-ms-interactive
     #'
     #' @return A plot.
     #'
@@ -3625,22 +3578,21 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to plot MS2 spectra from the analyses based on targets.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param id X.
-    #' @param isolationWindow X.
-    #' @param mzClust X.
-    #' @param verbose X.
-    #' @param minIntensity X.
-    #' @param runParallel X.
-    #' @param legendNames x.
-    #' @param title x.
-    #' @param colorBy x.
-    #' @param interactive x.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-id
+    #' @template arg-ms-isolationWindow
+    #' @template arg-ms-mzClust
+    #' @template arg-verbose
+    #' @template arg-ms-minIntensity
+    #' @template arg-runParallel
+    #' @template arg-ms-legendNames
+    #' @template arg-ms-title
+    #' @template arg-ms-colorBy
+    #' @template arg-ms-interactive
     #'
     #' @return A plot.
     #'
@@ -3675,21 +3627,20 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to plot MS1 spectra from the analyses based on targets.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param id X.
-    #' @param mzClust X.
-    #' @param verbose X.
-    #' @param minIntensity X.
-    #' @param runParallel X.
-    #' @param legendNames x.
-    #' @param title x.
-    #' @param colorBy x.
-    #' @param interactive x.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-id
+    #' @template arg-ms-mzClust
+    #' @template arg-verbose
+    #' @template arg-ms-minIntensity
+    #' @template arg-runParallel
+    #' @template arg-ms-legendNames
+    #' @template arg-ms-title
+    #' @template arg-ms-colorBy
+    #' @template arg-ms-interactive
     #'
     #' @return A plot.
     #'
@@ -3724,22 +3675,21 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to plot features from analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #' @param features X.
-    #' @param mass X.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param rtExpand X.
-    #' @param mzExpand X.
-    #' @param filtered X.
-    #' @param runParallel X.
-    #' @param legendNames x.
-    #' @param title x.
-    #' @param colorBy x.
-    #' @param interactive x.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-features
+    #' @template arg-ms-mass
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-rtExpand
+    #' @template arg-ms-mzExpand
+    #' @template arg-ms-filtered
+    #' @template arg-runParallel
+    #' @template arg-ms-legendNames
+    #' @template arg-ms-title
+    #' @template arg-ms-colorBy
+    #' @template arg-ms-interactive
     #'
     #' @return plot.
     #'
@@ -3776,22 +3726,21 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to map retention time and \emph{m/z} of features from analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #' @param features X.
-    #' @param mass X.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param filtered X.
-    #' @param xlim X.
-    #' @param ylim X.
-    #' @param showLegend X.
-    #' @param legendNames x.
-    #' @param title x.
-    #' @param colorBy x.
-    #' @param interactive x.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-features
+    #' @template arg-ms-mass
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-filtered
+    #' @template arg-ms-xlim
+    #' @template arg-ms-ylim
+    #' @template arg-ms-showLegend
+    #' @template arg-ms-legendNames
+    #' @template arg-ms-title
+    #' @template arg-ms-colorBy
+    #' @template arg-ms-interactive
     #'
     #' @return A plot.
     #'
@@ -3828,26 +3777,25 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to plot MS1 spectra from features in the analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #' @param features X.
-    #' @param mass X.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param rtWindow X.
-    #' @param mzWindow X.
-    #' @param mzClust X.
-    #' @param minIntensity X.
-    #' @param verbose X.
-    #' @param filtered X.
-    #' @param loadedMS1 X.
-    #' @param runParallel X.
-    #' @param legendNames x.
-    #' @param title x.
-    #' @param colorBy x.
-    #' @param interactive x.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-features
+    #' @template arg-ms-mass
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-rtWindow
+    #' @template arg-ms-mzWindow
+    #' @template arg-ms-mzClust
+    #' @template arg-ms-minIntensity
+    #' @template arg-verbose
+    #' @template arg-ms-filtered
+    #' @template arg-ms-loadedMS1
+    #' @template arg-runParallel
+    #' @template arg-ms-legendNames
+    #' @template arg-ms-title
+    #' @template arg-ms-colorBy
+    #' @template arg-ms-interactive
     #'
     #' @return A plot.
     #'
@@ -3885,25 +3833,24 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to plot MS2 spectra from features in the analyses.
     #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #' @param features X.
-    #' @param mass X.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param isolationWindow X.
-    #' @param mzClust X.
-    #' @param minIntensity X.
-    #' @param verbose X.
-    #' @param filtered X.
-    #' @param loadedMS2 X.
-    #' @param runParallel X.
-    #' @param legendNames x.
-    #' @param title x.
-    #' @param colorBy x.
-    #' @param interactive x.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-features
+    #' @template arg-ms-mass
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-isolationWindow
+    #' @template arg-ms-mzClust
+    #' @template arg-ms-minIntensity
+    #' @template arg-verbose
+    #' @template arg-ms-filtered
+    #' @template arg-ms-loadedMS2
+    #' @template arg-runParallel
+    #' @template arg-ms-legendNames
+    #' @template arg-ms-title
+    #' @template arg-ms-colorBy
+    #' @template arg-ms-interactive
     #'
     #' @return A plot.
     #'
@@ -4012,20 +3959,20 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to plot feature groups EIC.
     #'
-    #' @param groups X.
-    #' @param mass X.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param rtExpand X.
-    #' @param mzExpand X.
-    #' @param filtered X.
-    #' @param runParallel X.
-    #' @param legendNames x.
-    #' @param title x.
-    #' @param colorBy x.
-    #' @param interactive x.
+    #' @template arg-ms-groups
+    #' @template arg-ms-mass
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-rtExpand
+    #' @template arg-ms-mzExpand
+    #' @template arg-ms-filtered
+    #' @template arg-runParallel
+    #' @template arg-ms-legendNames
+    #' @template arg-ms-title
+    #' @template arg-ms-colorBy
+    #' @template arg-ms-interactive
     #'
     #' @return A plot.
     #'
@@ -4061,28 +4008,28 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to plot MS1 spectra from features in the analyses.
     #'
-    #' @param groups X.
-    #' @param mass X.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param rtWindow X.
-    #' @param mzWindow X.
-    #' @param mzClustFeatures X.
-    #' @param minIntensityFeatures X.
-    #' @param loadedFeaturesMS1 X.
-    #' @param mzClustGroups X.
-    #' @param minIntensityGroups X.
-    #' @param groupBy X.
-    #' @param verbose X.
-    #' @param filtered X.
-    #' @param loadedGroupsMS1 X.
-    #' @param runParallel X.
-    #' @param legendNames x.
-    #' @param title x.
-    #' @param colorBy x.
-    #' @param interactive x.
+    #' @template arg-ms-groups
+    #' @template arg-ms-mass
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-rtWindow
+    #' @template arg-ms-mzWindow
+    #' @template arg-ms-mzClustFeatures
+    #' @template arg-ms-minIntensityFeatures
+    #' @template arg-ms-loadedFeaturesMS1
+    #' @template arg-ms-mzClustGroups
+    #' @template arg-ms-minIntensityGroups
+    #' @template arg-ms-groupBy
+    #' @template arg-verbose
+    #' @template arg-ms-filtered
+    #' @template arg-ms-loadedGroupsMS1
+    #' @template arg-runParallel
+    #' @template arg-ms-legendNames
+    #' @template arg-ms-title
+    #' @template arg-ms-colorBy
+    #' @template arg-ms-interactive
     #'
     #' @return A plot.
     #'
@@ -4130,27 +4077,27 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to plot MS1 spectra from features in the analyses.
     #'
-    #' @param groups X.
-    #' @param mass X.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param isolationWindow X.
-    #' @param mzClustFeatures X.
-    #' @param minIntensityFeatures X.
-    #' @param loadedFeaturesMS2 X.
-    #' @param mzClustGroups X.
-    #' @param minIntensityGroups X.
-    #' @param groupBy X.
-    #' @param verbose X.
-    #' @param filtered X.
-    #' @param loadedGroupsMS2 X.
-    #' @param runParallel X.
-    #' @param legendNames x.
-    #' @param title x.
-    #' @param colorBy x.
-    #' @param interactive x.
+    #' @template arg-ms-groups
+    #' @template arg-ms-mass
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-isolationWindow
+    #' @template arg-ms-mzClustFeatures
+    #' @template arg-ms-minIntensityFeatures
+    #' @template arg-ms-loadedFeaturesMS2
+    #' @template arg-ms-mzClustGroups
+    #' @template arg-ms-minIntensityGroups
+    #' @template arg-ms-groupBy
+    #' @template arg-verbose
+    #' @template arg-ms-filtered
+    #' @template arg-ms-loadedGroupsMS2
+    #' @template arg-runParallel
+    #' @template arg-ms-legendNames
+    #' @template arg-ms-title
+    #' @template arg-ms-colorBy
+    #' @template arg-ms-interactive
     #'
     #' @return A plot.
     #'
@@ -4200,20 +4147,20 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' Method to give an overview of the EIC, alignment and intensity variance
     #' from features within target feature groups.
     #'
-    #' @param analyses X.
-    #' @param groups X.
-    #' @param mass X.
-    #' @param mz X.
-    #' @param rt X.
-    #' @param ppm X.
-    #' @param sec X.
-    #' @param rtExpand X.
-    #' @param mzExpand X.
-    #' @param filtered X.
-    #' @param runParallel X.
-    #' @param legendNames x.
-    #' @param title x.
-    #' @param heights x.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-groups
+    #' @template arg-ms-mass
+    #' @template arg-ms-mz
+    #' @template arg-ms-rt
+    #' @template arg-ms-ppm
+    #' @template arg-ms-sec
+    #' @template arg-ms-rtExpand
+    #' @template arg-ms-mzExpand
+    #' @template arg-ms-filtered
+    #' @template arg-runParallel
+    #' @template arg-ms-legendNames
+    #' @template arg-ms-title
+    #' @template arg-ms-heights
     #'
     #' @return A plot.
     #'
@@ -4272,9 +4219,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' for peak finding, enabling the use of several algorithms (see details).
     #' Note that the settings call name must be "find_features".
     #'
-    #' @param settings A list object with call name, algorithm and parameters.
-    #' When not given, settings will be searched within the
-    #' `MassSpecData` object.
+    #' @template arg-ms-settings
     #'
     #' @details See the \link[patRoon]{findFeatures} function from the
     #' \pkg{patRoon} package or the
@@ -4345,8 +4290,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' features, enabling the use of several algorithms (see details).
     #' Note that the settings call name must be "group_features".
     #'
-    #' @param settings A list object with call name, algorithm and parameters.
-    #' When not given, settings will be searched within the `MassSpecData` object.
+    #' @template arg-ms-settings
     #'
     #' @return Invisible.
     #'
@@ -4533,9 +4477,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to save the headers list.
     #'
-    #' @param format X.
-    #' @param name X.
-    #' @param path X.
+    #' @template arg-ms-format
+    #' @template arg-ms-name
+    #' @template arg-ms-path
     #'
     #' @return Saves the headers list as the defined \code{format} in
     #' \code{path} and returns invisible.
@@ -4569,9 +4513,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' Method to save settings list.
     #'
     #' @param call x:
-    #' @param format X.
-    #' @param name X.
-    #' @param path X.
+    #' @template arg-ms-format
+    #' @template arg-ms-name
+    #' @template arg-ms-path
     #'
     #' @return Saves the settings list as the defined \code{format} in
     #' \code{path} and returns invisible.
@@ -4607,10 +4551,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to save the list of analyses.
     #'
-    #' @param analyses X.
-    #' @param format X.
-    #' @param name X.
-    #' @param path X.
+    #' @template arg-ms-analyses
+    #' @template arg-ms-format
+    #' @template arg-ms-name
+    #' @template arg-ms-path
     #'
     #' @return Saves the list of analyses as the defined \code{format} in
     #' \code{path} and returns invisible.
@@ -4647,9 +4591,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to save the feature groups \code{data.table}.
     #'
-    #' @param format X.
-    #' @param name X.
-    #' @param path X.
+    #' @template arg-ms-format
+    #' @template arg-ms-name
+    #' @template arg-ms-path
     #'
     #' @return Saves the groups \code{data.table} as the defined \code{format}
     #' in the \code{path} and returns invisible.
@@ -4686,9 +4630,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' Method to save the private fields (i.e., headers, settings, analyses,
     #' groups and alignment) of the MassSpecData object.
     #'
-    #' @param format X.
-    #' @param name X.
-    #' @param path X.
+    #' @template arg-ms-format
+    #' @template arg-ms-name
+    #' @template arg-ms-path
     #'
     #' @return Saves the private fields of the msdata as the defined `format`
     #' in the \code{path} and returns invisible.
@@ -4738,8 +4682,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to import headers from a \emph{rds} or \emph{json} file.
     #'
-    #' @param file X.
-    #' @param list X.
+    #' @template arg-ms-file
+    #' @template arg-ms-list
     #'
     #' @return Invisible.
     #'
@@ -4759,7 +4703,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to import processing settings from a \emph{rds} or \emph{json} file.
     #'
-    #' @param file X.
+    #' @template arg-ms-file
     #'
     #' @return Invisible.
     #'
@@ -4779,7 +4723,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to import analyses from a \emph{rds} or \emph{json} file.
     #'
-    #' @param file X.
+    #' @template arg-ms-file
     #'
     #' @return Invisible.
     #'
@@ -4800,7 +4744,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Method to import feature groups from a \emph{rds} or \emph{json} file.
     #'
-    #' @param file X.
+    #' @template arg-ms-file
     #'
     #' @return Invisible.
     #'
@@ -4849,8 +4793,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 #' @description Function to import a `MassSpecData` class object from a saved *json*
 #' or *rds* file.
 #'
-#' @param file A *json* or *rds* file as obtained by the MassSpecData
-#' method `save()`.
+#' @template arg-ms-file
 #'
 #' @return A `MassSpecData` class object.
 #'
@@ -4915,9 +4858,8 @@ import_MassSpecData <- function(file) {
 
 #' @title build_features_table_from_patRoon
 #'
-#' @param pat An object with class `features` or `featureGroups` from the
-#' package \pkg{patRoon}.
-#' @param self A `MassSpecData` object. When applied within the R6, the self object.
+#' @template arg-ms-pat
+#' @template arg-ms-self
 #'
 #' @return A list of with a features \linkS4class{data.table} for each analysis.
 #'
@@ -5124,8 +5066,8 @@ build_features_table_from_patRoon <- function(pat, self) {
 #' alignment results when using `xcms3` as algorithm for grouping and retention
 #' time alignment.
 #'
-#' @param pat An object with class `featureGroups` from \pkg{patRoon}.
-#' @param self A `MassSpecData` object. When applied within the R6, the self object.
+#' @template arg-ms-pat
+#' @template arg-ms-self
 #'
 #' @noRd
 #'

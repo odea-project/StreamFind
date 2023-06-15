@@ -157,7 +157,7 @@ character vector with analysis names or \code{NULL} for non-matching.
 Gets an entry from the analyses private field.
 
 
-Creates an MassSpecData class object. When \code{headers} are not given (i.e.,
+Creates a MassSpecData class object. When \code{headers} are not given (i.e.,
 \code{NULL}), a default Headers S3 class object is generated with name as
 \code{NA_character}, path as \code{get_wd()} and date as \code{Sys.time()}.
 See \code{?Headers} for more information.
@@ -187,37 +187,326 @@ replicate group name (character). Note the file paths must have the extension
 processing. Note that parallel processing is not always faster due to
 overhead.}
 
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
 \item{\code{headers}}{A named list with headers or a Headers S3 class object.
 Each list element must have length one. There is no type restrictions
 except for name (must be type character), path (must be type
 character) and date (must be class POSIXct or class POSIXt). See more
 information in \code{?Headers}.}
 
-\item{\code{settings}}{A ProcessingSettings S3 class object or a list with
-ProcessingSettings S3 class objects as elements
-(see \code{?ProcessingSettings} for more information).}
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
 
 \item{\code{settings}}{A ProcessingSettings S3 class object or a list with
 ProcessingSettings S3 class objects as elements
 (see \code{?ProcessingSettings} for more information).}
 
-\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
-MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
-more information).}
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 
 \item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
 MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
 more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
 
 \item{\code{groups}}{data.table with feature groups from correspondence across MS
 analyses as obtained by the msData method \code{get_groups()}. Note that
 correspondence of features across MS analyses is performed with the method
 \code{group_features()} from the msData class.}
 
-\item{\code{groups}}{data.table with feature groups from correspondence across MS
-analyses as obtained by the msData method \code{get_groups()}. Note that
-correspondence of features across MS analyses is performed with the method
-\code{group_features()} from the msData class.}
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{alignment}}{X.}
 
 \item{\code{alignment}}{X.}
 }
@@ -275,18 +564,175 @@ Method to get analyses.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-The list of analyses defined by \code{value}.
+The list of analyses defined by \code{analyses} argument.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecData-get_number_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_number_analyses}{}}}
 \subsection{Method \code{get_number_analyses()}}{
-Method to get the number of analysis present.
+Method to get the number of analyses present.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_number_analyses()}\if{html}{\out{</div>}}
 }
@@ -325,6 +771,163 @@ Method to get the analysis names.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -344,6 +947,163 @@ Method to get the analysis replicate names.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 }
@@ -367,6 +1127,163 @@ Method to get the analysis blank replicate names.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -386,6 +1303,163 @@ Method to get the polarity of the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 }
@@ -409,6 +1483,163 @@ Method to get the file format of the analyses.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -428,6 +1659,163 @@ Method to get the type of the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 }
@@ -451,6 +1839,163 @@ Method to get the time stamp of the analyses.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -470,6 +2015,163 @@ Method to get the polarity of the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 }
@@ -493,6 +2195,163 @@ Method to get the polarity of the analyses.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -512,6 +2371,163 @@ Method to get the spectra levels of the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 }
@@ -535,6 +2551,163 @@ Method to get the polarity of the analyses.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -554,6 +2727,163 @@ Method to get the polarity of the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 }
@@ -577,6 +2907,163 @@ Method to get the polarity of the analyses.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -596,6 +3083,163 @@ Method to get the polarity of the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 }
@@ -619,6 +3263,163 @@ Method to get the polarity of the analyses.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -638,6 +3439,163 @@ Method to get the number of chromatograms in the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 }
@@ -661,6 +3619,163 @@ Method to get the instrument information for each analyses.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -682,6 +3797,163 @@ Method to get the software information for each analyses.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -701,6 +3973,163 @@ Method to get the run summary data.table for each analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 }
@@ -725,8 +4154,170 @@ Method to get the total ion chromatograms (TIC) from the analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
-\item{\code{levels}}{A numeric/character vector with the number/name
+\item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{levels}}{Name.}
+
+\item{\code{levels}}{Name.}
+
+\item{\code{levels}}{Name.}
+
+\item{\code{levels}}{Name.}
 }
 \if{html}{\out{</div>}}
 }
@@ -749,8 +4340,170 @@ Method to get the base peak chromatograms (BPC) from the analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
-\item{\code{levels}}{A numeric/character vector with the number/name
+\item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{levels}}{Name.}
+
+\item{\code{levels}}{Name.}
+
+\item{\code{levels}}{Name.}
+
+\item{\code{levels}}{Name.}
 }
 \if{html}{\out{</div>}}
 }
@@ -783,17 +4536,381 @@ Method to get spectra from the MS analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{X.}
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{levels}}{Name.}
+
+\item{\code{levels}}{Name.}
+
+\item{\code{levels}}{Name.}
 
 \item{\code{levels}}{Name.}
 
 \item{\code{mz}}{X.}
 
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
 \item{\code{rt}}{X.}
 
 \item{\code{ppm}}{X.}
 
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
 \item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
 
 \item{\code{id}}{X.}
 
@@ -801,13 +4918,141 @@ Method to get spectra from the MS analyses.
 When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
 are returned, using the \code{isolationWindow} to calculate the mass window.}
 
+\item{\code{allTraces}}{Logical, when \code{TRUE} all level 2 data is returned.
+When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
+are returned, using the \code{pre_mz} value and the \code{isolationWindow}.}
+
+\item{\code{allTraces}}{Logical, when \code{TRUE} all level 2 data is returned.
+When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
+are returned, using the \code{isolationWindow} to calculate the mass window.}
+
+\item{\code{allTraces}}{Logical, when \code{TRUE} all level 2 data is returned.
+When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
+are returned, using the \code{pre_mz} value and the \code{isolationWindow}.}
+
 \item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{minIntensityMS1}}{X.}
 
 \item{\code{minIntensityMS1}}{X.}
 
 \item{\code{minIntensityMS2}}{X.}
 
-\item{\code{runParallel}}{X.}
+\item{\code{minIntensityMS2}}{X.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -833,13 +5078,285 @@ Method to get spectra from the MS analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{X.}
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 
 \item{\code{index}}{X.}
 
 \item{\code{minIntensity}}{X.}
 
-\item{\code{runParallel}}{X.}
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -871,17 +5388,472 @@ on targets.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
 
 \item{\code{rt}}{X.}
 
 \item{\code{ppm}}{X.}
 
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
 \item{\code{sec}}{X.}
 
 \item{\code{id}}{X.}
 
-\item{\code{runParallel}}{X.}
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -915,23 +5887,542 @@ Method to get MS1 data from the analyses based on targets.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
 
 \item{\code{rt}}{X.}
 
 \item{\code{ppm}}{X.}
 
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
 \item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
 
 \item{\code{id}}{X.}
 
 \item{\code{mzClust}}{X.}
 
-\item{\code{verbose}}{X.}
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
 
 \item{\code{minIntensity}}{X.}
 
-\item{\code{runParallel}}{X.}
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -966,25 +6457,558 @@ Method to get MS2 data from the analyses based on targets.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
 
 \item{\code{rt}}{X.}
 
 \item{\code{ppm}}{X.}
 
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
 \item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
 
 \item{\code{id}}{X.}
 
 \item{\code{isolationWindow}}{X.}
 
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
 \item{\code{mzClust}}{X.}
 
-\item{\code{verbose}}{X.}
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
 
 \item{\code{minIntensity}}{X.}
 
-\item{\code{runParallel}}{X.}
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1036,17 +7060,442 @@ Method to get features from analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
+representing the analysis name and the id of the features to remove,
+respectively.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
+representing the analysis name and the id of the features to remove,
+respectively.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
 
 \item{\code{mass}}{X.}
 
 \item{\code{mz}}{X.}
 
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
 \item{\code{rt}}{X.}
 
 \item{\code{ppm}}{X.}
 
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
 \item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
 
 \item{\code{filtered}}{X.}
 }
@@ -1083,25 +7532,560 @@ Method to get EIC of features from analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
+representing the analysis name and the id of the features to remove,
+respectively.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
+representing the analysis name and the id of the features to remove,
+respectively.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
 
 \item{\code{mass}}{X.}
 
 \item{\code{mz}}{X.}
 
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
 \item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
 
 \item{\code{ppm}}{X.}
 
 \item{\code{sec}}{X.}
 
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
 \item{\code{rtExpand}}{X.}
+
+\item{\code{rtExpand}}{X.}
+
+\item{\code{rtExpand}}{X.}
+
+\item{\code{rtExpand}}{X.}
+
+\item{\code{mzExpand}}{X.}
+
+\item{\code{mzExpand}}{X.}
+
+\item{\code{mzExpand}}{X.}
 
 \item{\code{mzExpand}}{X.}
 
 \item{\code{filtered}}{X.}
 
-\item{\code{runParallel}}{X.}
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1140,33 +8124,634 @@ Method to get an averaged MS1 spectrum for features in analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
+representing the analysis name and the id of the features to remove,
+respectively.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
+representing the analysis name and the id of the features to remove,
+respectively.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
 
 \item{\code{mass}}{X.}
 
 \item{\code{mz}}{X.}
 
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
 \item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
 
 \item{\code{ppm}}{X.}
 
 \item{\code{sec}}{X.}
 
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
 \item{\code{rtWindow}}{X.}
+
+\item{\code{rtWindow}}{X.}
+
+\item{\code{rtWindow}}{X.}
+
+\item{\code{rtWindow}}{X.}
+
+\item{\code{mzWindow}}{X.}
+
+\item{\code{mzWindow}}{X.}
+
+\item{\code{mzWindow}}{X.}
 
 \item{\code{mzWindow}}{X.}
 
 \item{\code{mzClust}}{X.}
 
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
 \item{\code{minIntensity}}{X.}
 
-\item{\code{verbose}}{X.}
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
 
 \item{\code{filtered}}{X.}
 
 \item{\code{loadedMS1}}{X.}
 
-\item{\code{runParallel}}{X.}
+\item{\code{loadedMS1}}{X.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1204,31 +8789,634 @@ Method to get an averaged MS2 spectrum for features in analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
+representing the analysis name and the id of the features to remove,
+respectively.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
+representing the analysis name and the id of the features to remove,
+respectively.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
 
 \item{\code{mass}}{X.}
 
 \item{\code{mz}}{X.}
 
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
 \item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
 
 \item{\code{ppm}}{X.}
 
 \item{\code{sec}}{X.}
 
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
 \item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
 
 \item{\code{mzClust}}{X.}
 
 \item{\code{minIntensity}}{X.}
 
-\item{\code{verbose}}{X.}
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
 
 \item{\code{filtered}}{X.}
 
 \item{\code{loadedMS2}}{X.}
 
-\item{\code{runParallel}}{X.}
+\item{\code{loadedMS2}}{X.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1273,15 +9461,282 @@ Method to get feature groups from analyses.
 \describe{
 \item{\code{groups}}{X.}
 
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{data.table with feature groups from correspondence across MS
+analyses as obtained by the msData method \code{get_groups()}. Note that
+correspondence of features across MS analyses is performed with the method
+\code{group_features()} from the msData class.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
 \item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
 
 \item{\code{mz}}{X.}
 
 \item{\code{rt}}{X.}
 
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
 \item{\code{ppm}}{X.}
 
 \item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
 
 \item{\code{filtered}}{X.}
 
@@ -1328,39 +9783,484 @@ Method to get an averaged MS1 spectrum for feature groups in analyses.
 \describe{
 \item{\code{groups}}{X.}
 
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{data.table with feature groups from correspondence across MS
+analyses as obtained by the msData method \code{get_groups()}. Note that
+correspondence of features across MS analyses is performed with the method
+\code{group_features()} from the msData class.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
 \item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
 
 \item{\code{mz}}{X.}
 
 \item{\code{rt}}{X.}
 
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
 \item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
 
 \item{\code{sec}}{X.}
 
 \item{\code{rtWindow}}{X.}
 
+\item{\code{rtWindow}}{X.}
+
+\item{\code{rtWindow}}{X.}
+
+\item{\code{rtWindow}}{X.}
+
 \item{\code{mzWindow}}{X.}
+
+\item{\code{mzWindow}}{X.}
+
+\item{\code{mzWindow}}{X.}
+
+\item{\code{mzWindow}}{X.}
+
+\item{\code{mzClustFeatures}}{X.}
+
+\item{\code{mzClustFeatures}}{X.}
+
+\item{\code{mzClustFeatures}}{X.}
 
 \item{\code{mzClustFeatures}}{X.}
 
 \item{\code{minIntensityFeatures}}{X.}
 
+\item{\code{minIntensityFeatures}}{X.}
+
+\item{\code{minIntensityFeatures}}{X.}
+
+\item{\code{minIntensityFeatures}}{X.}
+
 \item{\code{loadedFeaturesMS1}}{X.}
+
+\item{\code{loadedFeaturesMS1}}{X.}
+
+\item{\code{mzClustGroups}}{X.}
+
+\item{\code{mzClustGroups}}{X.}
+
+\item{\code{mzClustGroups}}{X.}
 
 \item{\code{mzClustGroups}}{X.}
 
 \item{\code{minIntensityGroups}}{X.}
 
+\item{\code{minIntensityGroups}}{X.}
+
+\item{\code{minIntensityGroups}}{X.}
+
+\item{\code{minIntensityGroups}}{X.}
+
 \item{\code{groupBy}}{X.}
 
-\item{\code{verbose}}{X.}
+\item{\code{groupBy}}{X.}
+
+\item{\code{groupBy}}{X.}
+
+\item{\code{groupBy}}{X.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
 
 \item{\code{filtered}}{X.}
 
 \item{\code{loadedGroupsMS1}}{X.}
 
-\item{\code{runParallel}}{X.}
+\item{\code{loadedGroupsMS1}}{X.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1400,37 +10300,484 @@ Method to get an averaged MS2 spectrum for feature groups in analyses.
 \describe{
 \item{\code{groups}}{X.}
 
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{data.table with feature groups from correspondence across MS
+analyses as obtained by the msData method \code{get_groups()}. Note that
+correspondence of features across MS analyses is performed with the method
+\code{group_features()} from the msData class.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
 \item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
 
 \item{\code{mz}}{X.}
 
 \item{\code{rt}}{X.}
 
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
 \item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
 
 \item{\code{sec}}{X.}
 
 \item{\code{isolationWindow}}{X.}
 
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
 \item{\code{mzClustFeatures}}{X.}
+
+\item{\code{mzClustFeatures}}{X.}
+
+\item{\code{mzClustFeatures}}{X.}
+
+\item{\code{mzClustFeatures}}{X.}
+
+\item{\code{minIntensityFeatures}}{X.}
+
+\item{\code{minIntensityFeatures}}{X.}
+
+\item{\code{minIntensityFeatures}}{X.}
 
 \item{\code{minIntensityFeatures}}{X.}
 
 \item{\code{loadedFeaturesMS2}}{X.}
 
+\item{\code{loadedFeaturesMS2}}{X.}
+
 \item{\code{mzClustGroups}}{X.}
+
+\item{\code{mzClustGroups}}{X.}
+
+\item{\code{mzClustGroups}}{X.}
+
+\item{\code{mzClustGroups}}{X.}
+
+\item{\code{minIntensityGroups}}{X.}
+
+\item{\code{minIntensityGroups}}{X.}
+
+\item{\code{minIntensityGroups}}{X.}
 
 \item{\code{minIntensityGroups}}{X.}
 
 \item{\code{groupBy}}{X.}
 
-\item{\code{verbose}}{X.}
+\item{\code{groupBy}}{X.}
+
+\item{\code{groupBy}}{X.}
+
+\item{\code{groupBy}}{X.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
 
 \item{\code{filtered}}{X.}
 
 \item{\code{loadedGroupsMS2}}{X.}
 
-\item{\code{runParallel}}{X.}
+\item{\code{loadedGroupsMS2}}{X.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1478,13 +10825,37 @@ Method to add processing settings.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{settings}}{A ProcessingSettings S3 class object or a list with
-ProcessingSettings S3 class objects as elements
-(see \code{?ProcessingSettings} for more information).}
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
 
 \item{\code{settings}}{A ProcessingSettings S3 class object or a list with
 ProcessingSettings S3 class objects as elements
 (see \code{?ProcessingSettings} for more information).}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1504,13 +10875,165 @@ Method to add analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
-MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
-more information).}
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 
 \item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
 MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
 more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1574,6 +11097,30 @@ Method to add features to analyses.
 \describe{
 \item{\code{features}}{X.}
 
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
+representing the analysis name and the id of the features to remove,
+respectively.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
+representing the analysis name and the id of the features to remove,
+respectively.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
 \item{\code{replace}}{X.}
 }
 \if{html}{\out{</div>}}
@@ -1595,15 +11142,30 @@ replaced!
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{groups}}{data.table with feature groups from correspondence across MS
-analyses as obtained by the msData method \code{get_groups()}. Note that
-correspondence of features across MS analyses is performed with the method
-\code{group_features()} from the msData class.}
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
 
 \item{\code{groups}}{data.table with feature groups from correspondence across MS
 analyses as obtained by the msData method \code{get_groups()}. Note that
 correspondence of features across MS analyses is performed with the method
 \code{group_features()} from the msData class.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1623,7 +11185,9 @@ Method to add time alignment results.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{alignment}}{list.}
+\item{\code{alignment}}{X.}
+
+\item{\code{alignment}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1643,7 +11207,105 @@ Method to load all spectra from all analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{runParallel}}{X.}
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1663,7 +11325,105 @@ Method to load all chromatograms from all analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{runParallel}}{X.}
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1683,7 +11443,37 @@ Method to load and average MS1 spectra from features in the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{settings}}{X.}
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A ProcessingSettings S3 class object or a list with
+ProcessingSettings S3 class objects as elements
+(see \code{?ProcessingSettings} for more information).}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1703,7 +11493,37 @@ Method to load and average MS2 spectra from features in the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{settings}}{X.}
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A ProcessingSettings S3 class object or a list with
+ProcessingSettings S3 class objects as elements
+(see \code{?ProcessingSettings} for more information).}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1729,7 +11549,39 @@ be given in the \code{settingsFeatures} argument or added beforehand with
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{settings}}{X.}
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A ProcessingSettings S3 class object or a list with
+ProcessingSettings S3 class objects as elements
+(see \code{?ProcessingSettings} for more information).}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settingsFeatures}}{X.}
 
 \item{\code{settingsFeatures}}{X.}
 }
@@ -1751,7 +11603,39 @@ Method to load and average MS2 spectra from feature groups.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{settings}}{X.}
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A ProcessingSettings S3 class object or a list with
+ProcessingSettings S3 class objects as elements
+(see \code{?ProcessingSettings} for more information).}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settingsFeatures}}{X.}
 
 \item{\code{settingsFeatures}}{X.}
 }
@@ -1817,8 +11701,165 @@ groups from the removed analyses are also removed.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A character vector with the names or indices of the
-analyses to be removed.}
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1838,9 +11879,63 @@ Remove features.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
 \item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
 representing the analysis name and the id of the features to remove,
 respectively.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
+representing the analysis name and the id of the features to remove,
+respectively.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
 
 \item{\code{filtered}}{X.}
 }
@@ -1893,6 +11988,61 @@ Remove feature groups.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{data.table with feature groups from correspondence across MS
+analyses as obtained by the msData method \code{get_groups()}. Note that
+correspondence of features across MS analyses is performed with the method
+\code{group_features()} from the msData class.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
 
 \item{\code{filtered}}{X.}
 }
@@ -1955,7 +12105,165 @@ Subsets a \code{MassSpecData} object on analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{X.}
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1976,9 +12284,31 @@ Subsets a \code{MassSpecData} object on features from analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
 \item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
-representing the analysis name and the id of the features to keep in the
-new \code{MassSpecData} object, respectively.}
+representing the analysis name and the id of the features to remove,
+respectively.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
+representing the analysis name and the id of the features to remove,
+respectively.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2003,6 +12333,29 @@ filter category/tag. Filtered features can be removed with the method
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{data.table with feature groups from correspondence across MS
+analyses as obtained by the msData method \code{get_groups()}. Note that
+correspondence of features across MS analyses is performed with the method
+\code{group_features()} from the msData class.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
 \item{\code{groups}}{X.}
 }
 \if{html}{\out{</div>}}
@@ -2037,7 +12390,165 @@ Method to check for loaded spectra in given analyses names/indices.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{The analyses names/indices to check for loaded spectra.}
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2057,8 +12568,165 @@ Method to check for loaded chromatograms in given analyses names/indices.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{The analyses names/indices to check for loaded
-chromatograms.}
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2078,8 +12746,165 @@ Method to check for loaded features MS1 in given analyses names/indices.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{The analyses names/indices to check for loaded
-chromatograms.}
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2099,8 +12924,165 @@ Method to check for loaded features MS2 in given analyses names/indices.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{The analyses names/indices to check for loaded
-chromatograms.}
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2166,7 +13148,165 @@ Method to check if given analyses have features.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{The analyses names/indices to check for loaded spectra.}
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2228,19 +13368,395 @@ Plots spectra for given MS analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{X.}
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{levels}}{Name.}
+
+\item{\code{levels}}{Name.}
+
+\item{\code{levels}}{Name.}
 
 \item{\code{levels}}{Name.}
 
 \item{\code{mz}}{X.}
 
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
 \item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
 
 \item{\code{ppm}}{X.}
 
 \item{\code{sec}}{X.}
 
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
 \item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{allTraces}}{Logical, when \code{TRUE} all level 2 data is returned.
+When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
+are returned, using the \code{isolationWindow} to calculate the mass window.}
+
+\item{\code{allTraces}}{Logical, when \code{TRUE} all level 2 data is returned.
+When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
+are returned, using the \code{pre_mz} value and the \code{isolationWindow}.}
+
+\item{\code{allTraces}}{Logical, when \code{TRUE} all level 2 data is returned.
+When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
+are returned, using the \code{isolationWindow} to calculate the mass window.}
 
 \item{\code{allTraces}}{Logical, when \code{TRUE} all level 2 data is returned.
 When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
@@ -2248,11 +13764,151 @@ are returned, using the \code{pre_mz} value and the \code{isolationWindow}.}
 
 \item{\code{isolationWindow}}{X.}
 
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{minIntensityMS1}}{X.}
+
 \item{\code{minIntensityMS1}}{X.}
 
 \item{\code{minIntensityMS2}}{X.}
 
-\item{\code{runParallel}}{X.}
+\item{\code{minIntensityMS2}}{X.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
 
 \item{\code{colorBy}}{X.}
 }
@@ -2292,17 +13948,494 @@ retention time from the analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
 
 \item{\code{rt}}{X.}
 
 \item{\code{ppm}}{X.}
 
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
 \item{\code{sec}}{X.}
 
 \item{\code{id}}{X.}
 
-\item{\code{runParallel}}{X.}
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
 
 \item{\code{legendNames}}{x.}
 
@@ -2349,23 +14482,570 @@ Method to plot extract ion chromatograms (EIC) from the analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
 
 \item{\code{rt}}{X.}
 
 \item{\code{ppm}}{X.}
 
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
 \item{\code{sec}}{X.}
 
 \item{\code{id}}{X.}
 
-\item{\code{runParallel}}{X.}
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
 
 \item{\code{legendNames}}{x.}
 
 \item{\code{title}}{x.}
 
-\item{\code{colorBy}}{x.}
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
 
 \item{\code{interactive}}{x.}
 }
@@ -2395,9 +15075,236 @@ Method to plot total ion chromatograms (TIC) of the analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{title}}{x.}
 
-\item{\code{colorBy}}{x.}
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
 
 \item{\code{interactive}}{x.}
 }
@@ -2427,9 +15334,236 @@ Method to plot base peak chromatograms (BPC) of the analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{title}}{x.}
 
-\item{\code{colorBy}}{x.}
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
 
 \item{\code{interactive}}{x.}
 }
@@ -2470,31 +15604,656 @@ Method to plot MS2 spectra from the analyses based on targets.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
 
 \item{\code{rt}}{X.}
 
 \item{\code{ppm}}{X.}
 
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
 \item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
 
 \item{\code{id}}{X.}
 
 \item{\code{isolationWindow}}{X.}
 
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
 \item{\code{mzClust}}{X.}
 
-\item{\code{verbose}}{X.}
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
 
 \item{\code{minIntensity}}{X.}
 
-\item{\code{runParallel}}{X.}
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
 
 \item{\code{legendNames}}{x.}
 
 \item{\code{title}}{x.}
 
-\item{\code{colorBy}}{x.}
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
 
 \item{\code{interactive}}{x.}
 }
@@ -2534,29 +16293,640 @@ Method to plot MS1 spectra from the analyses based on targets.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
 
 \item{\code{rt}}{X.}
 
 \item{\code{ppm}}{X.}
 
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
 \item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
+
+\item{\code{id}}{X.}
 
 \item{\code{id}}{X.}
 
 \item{\code{mzClust}}{X.}
 
-\item{\code{verbose}}{X.}
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
 
 \item{\code{minIntensity}}{X.}
 
-\item{\code{runParallel}}{X.}
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
 
 \item{\code{legendNames}}{x.}
 
 \item{\code{title}}{x.}
 
-\item{\code{colorBy}}{x.}
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
 
 \item{\code{interactive}}{x.}
 }
@@ -2597,31 +16967,658 @@ Method to plot features from analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
+representing the analysis name and the id of the features to remove,
+respectively.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
+representing the analysis name and the id of the features to remove,
+respectively.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
 
 \item{\code{mass}}{X.}
 
 \item{\code{mz}}{X.}
 
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
 \item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
 
 \item{\code{ppm}}{X.}
 
 \item{\code{sec}}{X.}
 
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
 \item{\code{rtExpand}}{X.}
+
+\item{\code{rtExpand}}{X.}
+
+\item{\code{rtExpand}}{X.}
+
+\item{\code{rtExpand}}{X.}
+
+\item{\code{mzExpand}}{X.}
+
+\item{\code{mzExpand}}{X.}
+
+\item{\code{mzExpand}}{X.}
 
 \item{\code{mzExpand}}{X.}
 
 \item{\code{filtered}}{X.}
 
-\item{\code{runParallel}}{X.}
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
 
 \item{\code{legendNames}}{x.}
 
 \item{\code{title}}{x.}
 
-\item{\code{colorBy}}{x.}
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
 
 \item{\code{interactive}}{x.}
 }
@@ -2662,17 +17659,442 @@ Method to map retention time and \emph{m/z} of features from analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
+representing the analysis name and the id of the features to remove,
+respectively.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
+representing the analysis name and the id of the features to remove,
+respectively.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
 
 \item{\code{mass}}{X.}
 
 \item{\code{mz}}{X.}
 
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
 \item{\code{rt}}{X.}
 
 \item{\code{ppm}}{X.}
 
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
 \item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
 
 \item{\code{filtered}}{X.}
 
@@ -2684,9 +18106,101 @@ of the analyses.}
 
 \item{\code{legendNames}}{x.}
 
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
 \item{\code{title}}{x.}
 
-\item{\code{colorBy}}{x.}
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
 
 \item{\code{interactive}}{x.}
 }
@@ -2731,39 +18245,732 @@ Method to plot MS1 spectra from features in the analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
+representing the analysis name and the id of the features to remove,
+respectively.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
+representing the analysis name and the id of the features to remove,
+respectively.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
 
 \item{\code{mass}}{X.}
 
 \item{\code{mz}}{X.}
 
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
 \item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
 
 \item{\code{ppm}}{X.}
 
 \item{\code{sec}}{X.}
 
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
 \item{\code{rtWindow}}{X.}
+
+\item{\code{rtWindow}}{X.}
+
+\item{\code{rtWindow}}{X.}
+
+\item{\code{rtWindow}}{X.}
+
+\item{\code{mzWindow}}{X.}
+
+\item{\code{mzWindow}}{X.}
+
+\item{\code{mzWindow}}{X.}
 
 \item{\code{mzWindow}}{X.}
 
 \item{\code{mzClust}}{X.}
 
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
 \item{\code{minIntensity}}{X.}
 
-\item{\code{verbose}}{X.}
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
 
 \item{\code{filtered}}{X.}
 
 \item{\code{loadedMS1}}{X.}
 
-\item{\code{runParallel}}{X.}
+\item{\code{loadedMS1}}{X.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
 
 \item{\code{legendNames}}{x.}
 
 \item{\code{title}}{x.}
 
-\item{\code{colorBy}}{x.}
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
 
 \item{\code{interactive}}{x.}
 }
@@ -2807,37 +19014,732 @@ Method to plot MS2 spectra from features in the analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
 \item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
+representing the analysis name and the id of the features to remove,
+respectively.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{A data.frame with columns \emph{analysis} and \emph{feature}
+representing the analysis name and the id of the features to remove,
+respectively.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{features}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
 
 \item{\code{mass}}{X.}
 
 \item{\code{mz}}{X.}
 
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
 \item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
 
 \item{\code{ppm}}{X.}
 
 \item{\code{sec}}{X.}
 
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
 \item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
+
+\item{\code{mzClust}}{X.}
 
 \item{\code{mzClust}}{X.}
 
 \item{\code{minIntensity}}{X.}
 
-\item{\code{verbose}}{X.}
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{minIntensity}}{X.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
 
 \item{\code{filtered}}{X.}
 
 \item{\code{loadedMS2}}{X.}
 
-\item{\code{runParallel}}{X.}
+\item{\code{loadedMS2}}{X.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
 
 \item{\code{legendNames}}{x.}
 
 \item{\code{title}}{x.}
 
-\item{\code{colorBy}}{x.}
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
 
 \item{\code{interactive}}{x.}
 }
@@ -2890,29 +19792,498 @@ Method to plot feature groups EIC.
 \describe{
 \item{\code{groups}}{X.}
 
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{data.table with feature groups from correspondence across MS
+analyses as obtained by the msData method \code{get_groups()}. Note that
+correspondence of features across MS analyses is performed with the method
+\code{group_features()} from the msData class.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
 \item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
 
 \item{\code{mz}}{X.}
 
 \item{\code{rt}}{X.}
 
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
 \item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
 
 \item{\code{sec}}{X.}
 
 \item{\code{rtExpand}}{X.}
 
+\item{\code{rtExpand}}{X.}
+
+\item{\code{rtExpand}}{X.}
+
+\item{\code{rtExpand}}{X.}
+
+\item{\code{mzExpand}}{X.}
+
+\item{\code{mzExpand}}{X.}
+
+\item{\code{mzExpand}}{X.}
+
 \item{\code{mzExpand}}{X.}
 
 \item{\code{filtered}}{X.}
 
-\item{\code{runParallel}}{X.}
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
 
 \item{\code{legendNames}}{x.}
 
 \item{\code{title}}{x.}
 
-\item{\code{colorBy}}{x.}
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
 
 \item{\code{interactive}}{x.}
 }
@@ -2958,47 +20329,576 @@ Method to plot MS1 spectra from features in the analyses.
 \describe{
 \item{\code{groups}}{X.}
 
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{data.table with feature groups from correspondence across MS
+analyses as obtained by the msData method \code{get_groups()}. Note that
+correspondence of features across MS analyses is performed with the method
+\code{group_features()} from the msData class.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
 \item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
 
 \item{\code{mz}}{X.}
 
 \item{\code{rt}}{X.}
 
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
 \item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
 
 \item{\code{sec}}{X.}
 
 \item{\code{rtWindow}}{X.}
 
+\item{\code{rtWindow}}{X.}
+
+\item{\code{rtWindow}}{X.}
+
+\item{\code{rtWindow}}{X.}
+
 \item{\code{mzWindow}}{X.}
+
+\item{\code{mzWindow}}{X.}
+
+\item{\code{mzWindow}}{X.}
+
+\item{\code{mzWindow}}{X.}
+
+\item{\code{mzClustFeatures}}{X.}
+
+\item{\code{mzClustFeatures}}{X.}
+
+\item{\code{mzClustFeatures}}{X.}
 
 \item{\code{mzClustFeatures}}{X.}
 
 \item{\code{minIntensityFeatures}}{X.}
 
+\item{\code{minIntensityFeatures}}{X.}
+
+\item{\code{minIntensityFeatures}}{X.}
+
+\item{\code{minIntensityFeatures}}{X.}
+
 \item{\code{loadedFeaturesMS1}}{X.}
+
+\item{\code{loadedFeaturesMS1}}{X.}
+
+\item{\code{mzClustGroups}}{X.}
+
+\item{\code{mzClustGroups}}{X.}
+
+\item{\code{mzClustGroups}}{X.}
 
 \item{\code{mzClustGroups}}{X.}
 
 \item{\code{minIntensityGroups}}{X.}
 
-\item{\code{verbose}}{X.}
+\item{\code{minIntensityGroups}}{X.}
+
+\item{\code{minIntensityGroups}}{X.}
+
+\item{\code{minIntensityGroups}}{X.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
 
 \item{\code{filtered}}{X.}
 
 \item{\code{loadedGroupsMS1}}{X.}
 
-\item{\code{runParallel}}{X.}
+\item{\code{loadedGroupsMS1}}{X.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
 
 \item{\code{legendNames}}{x.}
 
 \item{\code{title}}{x.}
 
-\item{\code{colorBy}}{x.}
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
 
 \item{\code{interactive}}{x.}
 
-\item{\code{groupBy}}{X.}
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
 }
 \if{html}{\out{</div>}}
 }
@@ -3041,45 +20941,576 @@ Method to plot MS1 spectra from features in the analyses.
 \describe{
 \item{\code{groups}}{X.}
 
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{data.table with feature groups from correspondence across MS
+analyses as obtained by the msData method \code{get_groups()}. Note that
+correspondence of features across MS analyses is performed with the method
+\code{group_features()} from the msData class.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
 \item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
 
 \item{\code{mz}}{X.}
 
 \item{\code{rt}}{X.}
 
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
 \item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
 
 \item{\code{sec}}{X.}
 
 \item{\code{isolationWindow}}{X.}
 
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
+\item{\code{isolationWindow}}{X.}
+
 \item{\code{mzClustFeatures}}{X.}
+
+\item{\code{mzClustFeatures}}{X.}
+
+\item{\code{mzClustFeatures}}{X.}
+
+\item{\code{mzClustFeatures}}{X.}
+
+\item{\code{minIntensityFeatures}}{X.}
+
+\item{\code{minIntensityFeatures}}{X.}
+
+\item{\code{minIntensityFeatures}}{X.}
 
 \item{\code{minIntensityFeatures}}{X.}
 
 \item{\code{loadedFeaturesMS2}}{X.}
 
+\item{\code{loadedFeaturesMS2}}{X.}
+
+\item{\code{mzClustGroups}}{X.}
+
+\item{\code{mzClustGroups}}{X.}
+
+\item{\code{mzClustGroups}}{X.}
+
 \item{\code{mzClustGroups}}{X.}
 
 \item{\code{minIntensityGroups}}{X.}
 
-\item{\code{verbose}}{X.}
+\item{\code{minIntensityGroups}}{X.}
+
+\item{\code{minIntensityGroups}}{X.}
+
+\item{\code{minIntensityGroups}}{X.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
 
 \item{\code{filtered}}{X.}
 
 \item{\code{loadedGroupsMS2}}{X.}
 
-\item{\code{runParallel}}{X.}
+\item{\code{loadedGroupsMS2}}{X.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
 
 \item{\code{legendNames}}{x.}
 
 \item{\code{title}}{x.}
 
-\item{\code{colorBy}}{x.}
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
+
+\item{\code{colorBy}}{X.}
 
 \item{\code{interactive}}{x.}
 
-\item{\code{groupBy}}{X.}
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
+
+\item{\code{interactive}}{x.}
 }
 \if{html}{\out{</div>}}
 }
@@ -3115,29 +21546,610 @@ from features within target feature groups.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{X.}
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{data.table with feature groups from correspondence across MS
+analyses as obtained by the msData method \code{get_groups()}. Note that
+correspondence of features across MS analyses is performed with the method
+\code{group_features()} from the msData class.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
+
+\item{\code{groups}}{X.}
 
 \item{\code{groups}}{X.}
 
 \item{\code{mass}}{X.}
 
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
+\item{\code{mass}}{X.}
+
 \item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{mz}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
+
+\item{\code{rt}}{X.}
 
 \item{\code{rt}}{X.}
 
 \item{\code{ppm}}{X.}
 
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
+\item{\code{ppm}}{X.}
+
 \item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{sec}}{X.}
+
+\item{\code{rtExpand}}{X.}
+
+\item{\code{rtExpand}}{X.}
+
+\item{\code{rtExpand}}{X.}
 
 \item{\code{rtExpand}}{X.}
 
 \item{\code{mzExpand}}{X.}
 
+\item{\code{mzExpand}}{X.}
+
+\item{\code{mzExpand}}{X.}
+
+\item{\code{mzExpand}}{X.}
+
 \item{\code{filtered}}{X.}
 
-\item{\code{runParallel}}{X.}
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{filtered}}{X.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{runParallel}}{Logical length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
 
 \item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{legendNames}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
+
+\item{\code{title}}{x.}
 
 \item{\code{title}}{x.}
 
@@ -3164,6 +22176,34 @@ Note that the settings call name must be "find_features".
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A ProcessingSettings S3 class object or a list with
+ProcessingSettings S3 class objects as elements
+(see \code{?ProcessingSettings} for more information).}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
 \item{\code{settings}}{A list object with call name, algorithm and parameters.
 When not given, settings will be searched within the
 \code{MassSpecData} object.}
@@ -3201,7 +22241,36 @@ Note that the settings call name must be "group_features".
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{settings}}{A list object with call name, algorithm and parameters.
-When not given, settings will be searched within the \code{MassSpecData} object.}
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A ProcessingSettings S3 class object or a list with
+ProcessingSettings S3 class objects as elements
+(see \code{?ProcessingSettings} for more information).}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
+
+\item{\code{settings}}{A list object with call name, algorithm and parameters.
+When not given, settings will be searched within the
+\code{MassSpecData} object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -3260,7 +22329,31 @@ Method to save the headers list.
 \describe{
 \item{\code{format}}{X.}
 
+\item{\code{format}}{X.}
+
+\item{\code{format}}{X.}
+
+\item{\code{format}}{X.}
+
+\item{\code{format}}{X.}
+
 \item{\code{name}}{X.}
+
+\item{\code{name}}{X.}
+
+\item{\code{name}}{X.}
+
+\item{\code{name}}{X.}
+
+\item{\code{name}}{X.}
+
+\item{\code{path}}{X.}
+
+\item{\code{path}}{X.}
+
+\item{\code{path}}{X.}
+
+\item{\code{path}}{X.}
 
 \item{\code{path}}{X.}
 }
@@ -3292,7 +22385,31 @@ Method to save settings list.
 
 \item{\code{format}}{X.}
 
+\item{\code{format}}{X.}
+
+\item{\code{format}}{X.}
+
+\item{\code{format}}{X.}
+
+\item{\code{format}}{X.}
+
 \item{\code{name}}{X.}
+
+\item{\code{name}}{X.}
+
+\item{\code{name}}{X.}
+
+\item{\code{name}}{X.}
+
+\item{\code{name}}{X.}
+
+\item{\code{path}}{X.}
+
+\item{\code{path}}{X.}
+
+\item{\code{path}}{X.}
+
+\item{\code{path}}{X.}
 
 \item{\code{path}}{X.}
 }
@@ -3320,11 +22437,193 @@ Method to save the list of analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{X.}
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
+MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
+more information).}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{format}}{X.}
+
+\item{\code{format}}{X.}
+
+\item{\code{format}}{X.}
+
+\item{\code{format}}{X.}
 
 \item{\code{format}}{X.}
 
 \item{\code{name}}{X.}
+
+\item{\code{name}}{X.}
+
+\item{\code{name}}{X.}
+
+\item{\code{name}}{X.}
+
+\item{\code{name}}{X.}
+
+\item{\code{path}}{X.}
+
+\item{\code{path}}{X.}
+
+\item{\code{path}}{X.}
+
+\item{\code{path}}{X.}
 
 \item{\code{path}}{X.}
 }
@@ -3349,7 +22648,31 @@ Method to save the feature groups \code{data.table}.
 \describe{
 \item{\code{format}}{X.}
 
+\item{\code{format}}{X.}
+
+\item{\code{format}}{X.}
+
+\item{\code{format}}{X.}
+
+\item{\code{format}}{X.}
+
 \item{\code{name}}{X.}
+
+\item{\code{name}}{X.}
+
+\item{\code{name}}{X.}
+
+\item{\code{name}}{X.}
+
+\item{\code{name}}{X.}
+
+\item{\code{path}}{X.}
+
+\item{\code{path}}{X.}
+
+\item{\code{path}}{X.}
+
+\item{\code{path}}{X.}
 
 \item{\code{path}}{X.}
 }
@@ -3375,7 +22698,31 @@ groups and alignment) of the MassSpecData object.
 \describe{
 \item{\code{format}}{X.}
 
+\item{\code{format}}{X.}
+
+\item{\code{format}}{X.}
+
+\item{\code{format}}{X.}
+
+\item{\code{format}}{X.}
+
 \item{\code{name}}{X.}
+
+\item{\code{name}}{X.}
+
+\item{\code{name}}{X.}
+
+\item{\code{name}}{X.}
+
+\item{\code{name}}{X.}
+
+\item{\code{path}}{X.}
+
+\item{\code{path}}{X.}
+
+\item{\code{path}}{X.}
+
+\item{\code{path}}{X.}
 
 \item{\code{path}}{X.}
 }
@@ -3398,7 +22745,17 @@ Method to import headers from a \emph{rds} or \emph{json} file.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{X.}
+\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
+method \code{save()}.}
+
+\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
+method \code{save()}.}
+
+\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
+method \code{save()}.}
+
+\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
+method \code{save()}.}
 
 \item{\code{list}}{X.}
 }
@@ -3420,7 +22777,17 @@ Method to import processing settings from a \emph{rds} or \emph{json} file.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{X.}
+\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
+method \code{save()}.}
+
+\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
+method \code{save()}.}
+
+\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
+method \code{save()}.}
+
+\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
+method \code{save()}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -3440,7 +22807,17 @@ Method to import analyses from a \emph{rds} or \emph{json} file.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{X.}
+\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
+method \code{save()}.}
+
+\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
+method \code{save()}.}
+
+\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
+method \code{save()}.}
+
+\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
+method \code{save()}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -3460,7 +22837,17 @@ Method to import feature groups from a \emph{rds} or \emph{json} file.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{X.}
+\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
+method \code{save()}.}
+
+\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
+method \code{save()}.}
+
+\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
+method \code{save()}.}
+
+\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
+method \code{save()}.}
 }
 \if{html}{\out{</div>}}
 }

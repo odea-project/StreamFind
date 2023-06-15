@@ -1,0 +1,1 @@
+#' @param mass X.

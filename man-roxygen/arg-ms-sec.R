@@ -1,0 +1,1 @@
+#' @param sec X.
