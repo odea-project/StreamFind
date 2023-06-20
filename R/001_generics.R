@@ -7,3 +7,8 @@ validate <- function(x) {
 asJSON <- function(x) {
   UseMethod("asJSON")
 }
+
+#' @noRd
+export <- function(x) {
+  UseMethod("export")
+}

@@ -4,6 +4,10 @@
 
 ### CRAN pkgs -----
 install.packages(c(
+  "devtools",
+  "languageserver",
+  "BiocManager",
+  "remotes",
   "bookdown",
   "kableExtra",
   "plotly",
@@ -18,11 +22,13 @@ install.packages(c(
 
 
 ### bioconductor pkgs -----
-install.packages(c("BiocManager", "remotes"))
 BiocManager::install(c(
-  "mzR", "xcms", "CAMERA", "ropls",
-  "InterpretMSSpectrum", "BiocStyle", "Rgraphviz"
-))
+  "CAMERA",
+  "ropls",
+  "InterpretMSSpectrum",
+  "BiocStyle",
+  "Rgraphviz"
+), update = TRUE, ask = FALSE)
 
 
 ### github pkgs -----
@@ -45,7 +51,11 @@ install.packages("plumber")
 #updates documentation and installs the package
 devtools::document()
 devtools::document()
-devtools::install(upgrade = "never")
+devtools::install(
+  upgrade = "never",
+  dependencies = TRUE,
+  build_vignettes = TRUE
+)
 
 print("streamFind package installed:")
 print(require(streamFind))

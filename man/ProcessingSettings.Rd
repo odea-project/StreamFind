@@ -4,18 +4,26 @@
 \alias{ProcessingSettings}
 \alias{validate.ProcessingSettings}
 \alias{asJSON.ProcessingSettings}
+\alias{export.ProcessingSettings}
 \alias{as.ProcessingSettings}
 \title{\strong{ProcessingSettings} S3 class constructor, methods and functions}
 \usage{
 ProcessingSettings(
   call = NA_character_,
   algorithm = NA_character_,
-  parameters = NULL
+  parameters = NULL,
+  software = NA_character_,
+  developer = NA_character_,
+  contact = NA_character_,
+  link = NA_character_,
+  doi = NA_character_
 )
 
 \method{validate}{ProcessingSettings}(x = NULL)
 
 \method{asJSON}{ProcessingSettings}(x)
+
+\method{export}{ProcessingSettings}(x, format = "json", name = "settings", path = getwd())
 
 as.ProcessingSettings(value)
 }
@@ -29,7 +37,24 @@ be used.}
 \item{parameters}{List with parameters specific for the method \code{call} and
 \code{algorithm}.}
 
+\item{software}{Character of length one with the name of the software or
+package.}
+
+\item{developer}{Character of length one with the name of the developer/s.}
+
+\item{contact}{Character of length one with the email of the developer.}
+
+\item{link}{Character of length one with the documentation web link.}
+
+\item{doi}{Character of length one with the DOI of algorithm.}
+
 \item{x}{A ProcessingSettings S3 class object.}
+
+\item{format}{X.}
+
+\item{name}{X.}
+
+\item{path}{X.}
 
 \item{value}{A list to be checked and/or converted to ProcessingSettings S3
 class.}
@@ -52,6 +77,8 @@ parameters.
 length one.
 
 \item \code{asJSON(ProcessingSettings)}: Converts a ProcessingSettings S3 class object to a JSON string.
+
+\item \code{export(ProcessingSettings)}: Exports a ProcessingSettings S3 class object to a JSON or RDS file.
 
 }}
 \section{Functions}{

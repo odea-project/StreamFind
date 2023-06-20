@@ -14,6 +14,9 @@
 #'
 plot_spectra_interactive <- function(spectra = NULL, colorBy = "analyses") {
   if (!"id" %in% colnames(spectra)) spectra$id <- ""
+  if ("feature" %in% colnames(spectra)) spectra$id <- spectra$feature
+  if (!"level" %in% colnames(spectra)) spectra$level <- 0
+  if (!"analysis" %in% colnames(spectra)) spectra$analysis <- ""
 
   spectra$id <- factor(spectra$id)
   spectra$level <- paste("MS", spectra$level, sep = "")
@@ -1159,7 +1162,7 @@ plot_features_interactive <- function(eic = NULL, features = NULL,
     if (length(y) >= 1) showL[lt] <- FALSE
 
     pk <- features[features$unique_ids %in% t, ]
-    pk_eic <- eic[eic$rt >= pk$rtmin & eic$rt <= pk$rtmax & eic$unique_ids == t, ]
+    pk_eic <- eic[eic$rt >= pk$rtmin & eic$rt <= pk$rtmax & eic$unique_ids %in% t, ]
 
     hT <- paste(
       "</br> feature: ", pk$feature,
