@@ -16,3 +16,5 @@ reference:
   - trim_ms_files_spectra
   - import_MassSpecData
   - make_ms_targets
+  - get_default_ProcessingSettings
+  - save_default_ProcessingSettings

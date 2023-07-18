@@ -168,7 +168,7 @@ test_that("get EIC, MS1 and MS2 spectra", {
 settings_ff <- list(
   "call" = "find_features",
   "algorithm" = "xcms3",
-  "parameters" = list(xcms::CentWaveParam(
+  "parameters" = xcms::CentWaveParam(
     ppm = 12, peakwidth = c(5, 30),
     snthresh = 10, prefilter = c(5, 1500),
     mzCenterFun = "mean", integrate = 2,
@@ -176,7 +176,7 @@ settings_ff <- list(
     noise = 500, verboseColumns = TRUE,
     firstBaselineCheck = FALSE,
     extendLengthMSW = TRUE
-  ))
+  )
 )
 
 ms$add_settings(settings = settings_ff)

@@ -32,10 +32,14 @@
 #' @param rt_end Numeric length one with the run end time, in seconds.
 #' @param polarity Character length one. Possible values are *positive*,
 #' *negative* or *both* (the latter refers to polarity switching acquisition).
-#' @param chromatograms_number Integer with the number of chromatograms in the
-#' file.
 #' @param has_ion_mobility Logical length one for presence or absence of drift
 #' separation from ion mobility.
+#' @param chromatograms_number Integer with the number of chromatograms in the
+#' file.
+#'@param software data.table with software info used to acquire/process the
+#' data (content is highly vendor dependent).
+#' @param instrument data.table with instrument info used to acquire the
+#' data (content is highly vendor dependent).
 #' @param run data.table run information for each spectrum.
 #' @param spectra data.table with the raw spectra (only present if loaded).
 #' @param chromatograms data.table with the raw chromatograms (only present
@@ -65,8 +69,8 @@ MassSpecAnalysis <- function(name = NA_character_,
                              polarity = NA_character_,
                              has_ion_mobility = FALSE,
                              chromatograms_number = NA_integer_,
-                             instrument = data.table(),
                              software = data.table(),
+                             instrument = data.table(),
                              run = data.table(),
                              spectra = data.table(),
                              chromatograms = data.table(),
@@ -100,7 +104,6 @@ MassSpecAnalysis <- function(name = NA_character_,
     "file" = file,
     "format" = format,
     "type" = type,
-    "instrument" = instrument,
     "time_stamp" = time_stamp,
     "spectra_number" = spectra_number,
     "spectra_mode" = spectra_mode,
@@ -110,8 +113,10 @@ MassSpecAnalysis <- function(name = NA_character_,
     "rt_start" = rt_start,
     "rt_end" = rt_end,
     "polarity" = polarity,
-    "chromatograms_number" = chromatograms_number,
     "has_ion_mobility" = has_ion_mobility,
+    "chromatograms_number" = chromatograms_number,
+    "software" = software,
+    "instrument" = instrument,
     "run" = run,
     "spectra" = spectra,
     "chromatograms" = chromatograms,
@@ -135,9 +140,16 @@ MassSpecAnalysis <- function(name = NA_character_,
   x$rt_start <- as.numeric(x$rt_start)
   x$rt_end <- as.numeric(x$rt_end)
   x$polarity <- as.character(x$polarity)
-  x$chromatograms_number <- as.integer(x$chromatograms_number)
   x$has_ion_mobility <- as.logical(x$has_ion_mobility)
+  x$chromatograms_number <- as.integer(x$chromatograms_number)
+  x$software <- as.data.table(x$software)
+  x$instrument <- as.data.table(x$instrument)
+
   x$run <- as.data.table(x$run)
+  x$run$pre_loweroffset <- as.numeric(x$run$pre_loweroffset)
+  x$run$pre_upperoffset <- as.numeric(x$run$pre_upperoffset)
+  x$run$drift <- as.numeric(x$run$drift)
+
   x$spectra <- as.data.table(x$spectra)
   x$chromatograms <- as.data.table(x$chromatograms)
   x$features <- as.data.table(x$features)
@@ -203,6 +215,16 @@ validate.MassSpecAnalysis <- function(x = NULL) {
       valid <- FALSE
     } else if (!(x$type %in% c("MS", "MS/MS", "SRM"))) {
       warning("Analysis type must be 'MS', 'MS/MS' or 'SRM'!")
+      valid <- FALSE
+    }
+
+    if (!is.data.frame(x$software)) {
+      warning("Analysis software entry not conform!")
+      valid <- FALSE
+    }
+
+    if (!is.data.frame(x$instrument)) {
+      warning("Analysis instrument entry not conform!")
       valid <- FALSE
     }
 

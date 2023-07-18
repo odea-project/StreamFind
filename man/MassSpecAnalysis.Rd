@@ -26,8 +26,8 @@ MassSpecAnalysis(
   polarity = NA_character_,
   has_ion_mobility = FALSE,
   chromatograms_number = NA_integer_,
-  instrument = data.table(),
   software = data.table(),
+  instrument = data.table(),
   run = data.table(),
   spectra = data.table(),
   chromatograms = data.table(),
@@ -91,7 +91,10 @@ separation from ion mobility.}
 \item{chromatograms_number}{Integer with the number of chromatograms in the
 file.}
 
-\item{instrument}{List with metadata from the instrument used to acquire the
+\item{software}{data.table with software info used to acquire/process the
+data (content is highly vendor dependent).}
+
+\item{instrument}{data.table with instrument info used to acquire the
 data (content is highly vendor dependent).}
 
 \item{software}{X.}

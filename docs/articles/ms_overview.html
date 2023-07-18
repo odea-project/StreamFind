@@ -1915,7 +1915,7 @@ the <code>a1</code> MassSpecAnalysis, which represents the first
 <code>get_analyses()</code> method always returns a list even for only
 one MassSpecAnalysis object. Therefore, we use the <code>[[</code>
 function as <code>a1[[1]]</code> to access the MassSpecAnalysis object
-itself. The analysis object contains 23 fields (listed below) with
+itself. The analysis object contains 24 fields (listed below) with
 information and data parsed directly from the <em>.mzML</em> file.
 Variations in the content and structure (i.e., different vendors or data
 acquired with different conditions or modes) of the <em>.mzML</em> or
@@ -1939,11 +1939,11 @@ information and usage examples for available get methods.</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">a1</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "name"                 "replicate"            "blank"                "file"                </span></span>
-<span><span class="co">#&gt;  [5] "format"               "type"                 "instrument"           "time_stamp"          </span></span>
-<span><span class="co">#&gt;  [9] "spectra_number"       "spectra_mode"         "spectra_levels"       "mz_low"              </span></span>
-<span><span class="co">#&gt; [13] "mz_high"              "rt_start"             "rt_end"               "polarity"            </span></span>
-<span><span class="co">#&gt; [17] "chromatograms_number" "has_ion_mobility"     "run"                  "spectra"             </span></span>
-<span><span class="co">#&gt; [21] "chromatograms"        "features"             "metadata"</span></span></code></pre></div>
+<span><span class="co">#&gt;  [5] "format"               "type"                 "time_stamp"           "spectra_number"      </span></span>
+<span><span class="co">#&gt;  [9] "spectra_mode"         "spectra_levels"       "mz_low"               "mz_high"             </span></span>
+<span><span class="co">#&gt; [13] "rt_start"             "rt_end"               "polarity"             "has_ion_mobility"    </span></span>
+<span><span class="co">#&gt; [17] "chromatograms_number" "software"             "instrument"           "run"                 </span></span>
+<span><span class="co">#&gt; [21] "spectra"              "chromatograms"        "features"             "metadata"</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="add-methods">Add methods<a class="anchor" aria-label="anchor" href="#add-methods"></a>
@@ -2148,7 +2148,7 @@ current <code>ms</code> object as feature finding was not yet applied)
 returns <code>NULL</code> (demonstrated below).</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ms</span><span class="op">$</span><span class="fu">plot_features</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; ✗ Traces not found for the targets!</span></span>
+<span><span class="co">#&gt; ✗ Features not found for the targets!</span></span>
 <span><span class="co">#&gt; NULL</span></span></code></pre></div>
 <p><br></p>
 <p>Most plot methods have the <em>interactive</em> argument which is set
@@ -2241,12 +2241,7 @@ imported and compared to the <code>ms</code>.</p>
 <span><span class="co">#&gt; ✓ MassSpecData class object imported from json file!</span></span></code></pre></div>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="va">ms</span>, <span class="va">ms_imported</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "Component \".__enclos_env__\": Component \"private\": Component \".analyses\": Component \"00_hrms_s_is_pos_cent-r001\": Component \"instrument\": target is data.table, current is list"                                                                                              </span></span>
-<span><span class="co">#&gt; [2] "Component \".__enclos_env__\": Component \"private\": Component \".analyses\": Component \"00_hrms_s_is_pos_cent-r001\": Component \"run\": Datasets have different column modes. First 3: drift(numeric!=logical) pre_loweroffset(numeric!=logical) pre_upperoffset(numeric!=logical)"</span></span>
-<span><span class="co">#&gt; [3] "Component \".__enclos_env__\": Component \"private\": Component \".analyses\": Component \"00_hrms_s_is_pos_cent-r002\": Component \"instrument\": target is data.table, current is list"                                                                                              </span></span>
-<span><span class="co">#&gt; [4] "Component \".__enclos_env__\": Component \"private\": Component \".analyses\": Component \"00_hrms_s_is_pos_cent-r002\": Component \"run\": Datasets have different column modes. First 3: drift(numeric!=logical) pre_loweroffset(numeric!=logical) pre_upperoffset(numeric!=logical)"</span></span>
-<span><span class="co">#&gt; [5] "Component \".__enclos_env__\": Component \"private\": Component \".analyses\": Component \"00_hrms_s_is_pos_cent-r003\": Component \"instrument\": target is data.table, current is list"                                                                                              </span></span>
-<span><span class="co">#&gt; [6] "Component \".__enclos_env__\": Component \"private\": Component \".analyses\": Component \"00_hrms_s_is_pos_cent-r003\": Component \"run\": Datasets have different column modes. First 3: drift(numeric!=logical) pre_loweroffset(numeric!=logical) pre_upperoffset(numeric!=logical)"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -2352,16 +2347,13 @@ etc.);</li>
 </ul>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">a1</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="co">#&gt; List of 23</span></span>
+<span><span class="co">#&gt; List of 24</span></span>
 <span><span class="co">#&gt;  $ name                : chr "00_hrms_s_is_pos_cent-r001"</span></span>
 <span><span class="co">#&gt;  $ replicate           : chr "00_hrms_s_is_pos_cent"</span></span>
 <span><span class="co">#&gt;  $ blank               : chr NA</span></span>
 <span><span class="co">#&gt;  $ file                : chr "C:/Users/cunha/AppData/Local/R/win-library/4.3/streamFindData/extdata/00_hrms_s_is_pos_cent-r001.mzML"</span></span>
 <span><span class="co">#&gt;  $ format              : chr "mzML"</span></span>
 <span><span class="co">#&gt;  $ type                : chr "MS/MS"</span></span>
-<span><span class="co">#&gt;  $ instrument          :Classes 'data.table' and 'data.frame':   10 obs. of  2 variables:</span></span>
-<span><span class="co">#&gt;   ..$ category: chr [1:10] "Agilent instrument model" "instrument serial number" "instrument model" "source" ...</span></span>
-<span><span class="co">#&gt;   ..$ value   : chr [1:10] "Agilent instrument model" "SG1845C101" "QTOF" "microelectrospray" ...</span></span>
 <span><span class="co">#&gt;  $ time_stamp          : chr "2022-06-17T14:45:28Z"</span></span>
 <span><span class="co">#&gt;  $ spectra_number      : int 1886</span></span>
 <span><span class="co">#&gt;  $ spectra_mode        : chr "centroid"</span></span>
@@ -2371,8 +2363,17 @@ etc.);</li>
 <span><span class="co">#&gt;  $ rt_start            : num 900</span></span>
 <span><span class="co">#&gt;  $ rt_end              : num 1350</span></span>
 <span><span class="co">#&gt;  $ polarity            : chr "positive"</span></span>
-<span><span class="co">#&gt;  $ chromatograms_number: int 0</span></span>
 <span><span class="co">#&gt;  $ has_ion_mobility    : logi FALSE</span></span>
+<span><span class="co">#&gt;  $ chromatograms_number: int 0</span></span>
+<span><span class="co">#&gt;  $ software            :Classes 'data.table' and 'data.frame':   4 obs. of  3 variables:</span></span>
+<span><span class="co">#&gt;   ..$ name   : chr [1:4] "MassHunter Data Acquisition" "ProteoWizard software" "ProteoWizard software" "mzR"</span></span>
+<span><span class="co">#&gt;   ..$ id     : chr [1:4] "MassHunter" "pwiz" "pwiz_3.0.21263" "mzR"</span></span>
+<span><span class="co">#&gt;   ..$ version: chr [1:4] "8.0" "3.0.19322" "3.0.21263" "2.30.0"</span></span>
+<span><span class="co">#&gt;   ..- attr(*, ".internal.selfref")=&lt;externalptr&gt; </span></span>
+<span><span class="co">#&gt;  $ instrument          :Classes 'data.table' and 'data.frame':   10 obs. of  2 variables:</span></span>
+<span><span class="co">#&gt;   ..$ category: chr [1:10] "Agilent instrument model" "instrument serial number" "instrument model" "source" ...</span></span>
+<span><span class="co">#&gt;   ..$ value   : chr [1:10] "Agilent instrument model" "SG1845C101" "QTOF" "microelectrospray" ...</span></span>
+<span><span class="co">#&gt;   ..- attr(*, ".internal.selfref")=&lt;externalptr&gt; </span></span>
 <span><span class="co">#&gt;  $ run                 :Classes 'data.table' and 'data.frame':   1886 obs. of  18 variables:</span></span>
 <span><span class="co">#&gt;   ..$ index          : int [1:1886] 0 1 2 3 4 5 6 7 8 9 ...</span></span>
 <span><span class="co">#&gt;   ..$ scan           : int [1:1886] 900101 900503 900703 900904 901105 901306 901506 901753 902154 902355 ...</span></span>
@@ -2947,6 +2948,21 @@ the required settings can be acquired in <a href="https://github.com/rickhelmus/
 <span><span class="co">#&gt;  - extendLengthMSW: [1] TRUE</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $software</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $developer</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $contact</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $link</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $doi</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; attr(,"class")</span></span>
 <span><span class="co">#&gt; [1] "ProcessingSettings"</span></span></code></pre></div>
 <p>The ProcessingSettings object can be added to the MassSpecData object
@@ -2984,6 +3000,21 @@ call name as also shown below.</p>
 <span><span class="co">#&gt;  - roiScales: numeric(0)</span></span>
 <span><span class="co">#&gt;  - extendLengthMSW: [1] TRUE</span></span>
 <span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $software</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $developer</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $contact</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $link</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $doi</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; attr(,"class")</span></span>
 <span><span class="co">#&gt; [1] "ProcessingSettings"</span></span></code></pre></div>

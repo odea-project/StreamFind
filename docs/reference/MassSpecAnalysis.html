@@ -75,8 +75,8 @@
 <span>  polarity <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
 <span>  has_ion_mobility <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  chromatograms_number <span class="op">=</span> <span class="cn">NA_integer_</span>,</span>
-<span>  instrument <span class="op">=</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  software <span class="op">=</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  instrument <span class="op">=</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  run <span class="op">=</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  spectra <span class="op">=</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  chromatograms <span class="op">=</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span>,</span>
@@ -178,8 +178,13 @@ separation from ion mobility.</p></dd>
 file.</p></dd>
 
 
+<dt>software</dt>
+<dd><p>data.table with software info used to acquire/process the
+data (content is highly vendor dependent).</p></dd>
+
+
 <dt>instrument</dt>
-<dd><p>List with metadata from the instrument used to acquire the
+<dd><p>data.table with instrument info used to acquire the
 data (content is highly vendor dependent).</p></dd>
 
 

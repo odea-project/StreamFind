@@ -1047,6 +1047,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
             fts <- fts[fts$feature %in% target_id, ]
           }
           return(fts)
+        } else if (is.numeric(target_id)) {
+          fts <- fts[target_id, ]
+          return(fts)
         }
 
         if (is.data.frame(target_id)) {
@@ -1066,13 +1069,21 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!is.null(mass)) {
+
         if (is.data.frame(mass)) {
           colnames(mass) <- gsub("mass", "mz", colnames(mass))
           colnames(mass) <- gsub("neutralMass", "mz", colnames(mass))
           colnames(mass) <- gsub("min", "mzmin", colnames(mass))
           colnames(mass) <- gsub("max", "mzmax", colnames(mass))
         }
+
         targets <- make_ms_targets(mass, rt, ppm, sec)
+
+        for (i in seq_len(nrow(targets))) {
+          if (targets$rtmax[i] == 0) targets$rtmax[i] <- max(fts$rtmax)
+          if (targets$mzmax[i] == 0) targets$mzmax[i] <- max(fts$mass)
+        }
+
         sel <- rep(FALSE, nrow(fts))
         for (i in seq_len(nrow(targets))) {
           sel[between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
@@ -1083,6 +1094,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (!is.null(mz)) {
         targets <- make_ms_targets(mz, rt, ppm, sec)
+
+        for (i in seq_len(nrow(targets))) {
+          if (targets$rtmax[i] == 0) targets$rtmax[i] <- max(fts$rtmax)
+          if (targets$mzmax[i] == 0) targets$mzmax[i] <- max(fts$mass)
+        }
+
         sel <- rep(FALSE, nrow(fts))
         for (i in seq_len(nrow(targets))) {
           sel[between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
@@ -3474,6 +3491,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       fts <- self$get_features(analyses, features, mass, mz, rt, ppm, sec, filtered)
 
+      if (nrow(fts) == 0) {
+        message("\U2717 Features not found for the targets!")
+        return(NULL)
+      }
+
       eic <- self$get_features_eic(
         analyses = unique(fts$analysis), features = fts$feature,
         rtExpand = rtExpand, mzExpand = mzExpand, runParallel = runParallel
@@ -3911,6 +3933,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       algorithm <- settings$algorithm
       parameters <- settings$parameters
+
+      if (isS4(parameters)) {
+        parameters <- list("param" = parameters)
+      }
 
       anaInfo <- self$get_overview()
       anaInfo <- data.frame(
@@ -4445,7 +4471,7 @@ import_MassSpecData <- function(file) {
       }
 
       if ("groups" %in% fields_present) {
-        if (!is.null(js_ms[["groups"]]) & length(js_ms[["groups"]]) > 0) {
+        if (!is.null(js_ms[["groups"]]) && length(js_ms[["groups"]]) > 0) {
           new_ms$add_groups(js_ms[["groups"]])
         }
       }
@@ -4484,7 +4510,7 @@ import_MassSpecData <- function(file) {
 #' @param self A `MassSpecData` object. When applied within the R6, the self
 #' object.
 #'
-#' @return A list of with a features \linkS4class{data.table} for each analysis.
+#' @return A list with a features \linkS4class{data.table} for each analysis.
 #'
 #' @noRd
 #'
