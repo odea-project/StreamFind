@@ -14,6 +14,6 @@ method \code{save()}.}
 A \code{MassSpecData} class object.
 }
 \description{
-Function to import a \code{MassSpecData} class object from a saved \emph{json}
-or \emph{rds} file.
+Function to import a \code{MassSpecData} class object from a saved
+\emph{json} or \emph{rds} file.
 }

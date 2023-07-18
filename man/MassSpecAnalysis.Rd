@@ -94,6 +94,8 @@ file.}
 \item{instrument}{List with metadata from the instrument used to acquire the
 data (content is highly vendor dependent).}
 
+\item{software}{X.}
+
 \item{run}{data.table run information for each spectrum.}
 
 \item{spectra}{data.table with the raw spectra (only present if loaded).}
@@ -115,7 +117,7 @@ Alternatively, a data.frame with the column/s file, replicate and blank
 with the full file path/s, the replicate group name/s (string) and the
 associated blank replicate group name (string).}
 
-\item{runParallel}{Logical length one. Set to \code{TRUE} for parallel
+\item{runParallel}{Logical of length one. Set to \code{TRUE} for parallel
 processing. Note that parallel processing is not always faster due to
 overhead.}
 }

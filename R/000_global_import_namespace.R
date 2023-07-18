@@ -21,9 +21,6 @@
 #'
 #' @importFrom foreach foreach `%dopar%` registerDoSEQ
 #'
-#' @importFrom mzR openMSfile header peaks close chromatogramHeader
-#' @importFrom mzR instrumentInfo runInfo nChrom chromatograms
-#'
 #' @importFrom tools file_ext
 #'
 #' @importFrom dplyr count
@@ -38,16 +35,13 @@
 #'
 #' @importFrom RColorBrewer brewer.pal
 #'
+#' @importFrom methods is
+#'
 #' @importFrom grDevices colorRampPalette colorRamp
 #'
 #' @importFrom plotly toRGB plot_ly add_trace layout hide_colorbar subplot
 #' @importFrom plotly add_segments add_annotations hide_legend add_lines
 #' @importFrom plotly group_by
-#'
-#' @importFrom xml2 read_xml xml_find_first xml_attr xml_find_all xml_name
-#' @importFrom xml2 xml_text xml_child
-#'
-#' @importFrom base64enc base64decode
 #'
 #' @importFrom utils txtProgressBar setTxtProgressBar
 #'

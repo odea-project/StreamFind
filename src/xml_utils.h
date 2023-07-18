@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include <list>
-#include "external_libraries.hpp"
+#include "pugixml.h"
 #include <Rcpp.h>
 
 namespace xml_utils {

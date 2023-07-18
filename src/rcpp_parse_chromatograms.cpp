@@ -1,5 +1,5 @@
 #include <iostream>
-#include "external_libraries.hpp"
+#include "pugixml.h"
 #include "xml_utils.h"
 #include <string>
 #include <vector>
@@ -38,7 +38,7 @@ Rcpp::List rcpp_parse_chromatograms(std::string file_path, Rcpp::IntegerVector i
     }
 
   } else {
-    std::cout << "\u2717 XML file could not be opened! " << result.description() << std::endl;
+    Rcpp::Rcout << "\u2717 XML file could not be opened! " << result.description() << std::endl;
   }
 
   return list_output;

@@ -1,3 +1,5 @@
-#' @param settings A list object with call name, algorithm and parameters.
-#' When not given, settings will be searched within the
-#' `MassSpecData` object.
+#' @param settings A ProcessingSettings S3 class object with the call name
+#' applicable to the processing method. Alternatively, a named
+#' list with `call`, `algorithm` and `parameters` to be transformed and used as
+#' ProcessingSettings S3 class object. When not given, settings for the
+#' processing method will be searched within the `MassSpecData` object.

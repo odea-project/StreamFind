@@ -15,6 +15,7 @@
 #' for selected reaction monitoring data (i.e., no spectra only chromatograms).
 #' @param instrument List with metadata from the instrument used to acquire the
 #' data (content is highly vendor dependent).
+#' @param software X.
 #' @param time_stamp Character with length one, representing the start time and
 #' date of the data acquisition.
 #' @param spectra_number Integer with the number of spectra in the file.

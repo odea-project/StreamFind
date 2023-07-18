@@ -1,1 +1,1 @@
-#' @param sec X.
+#' @param sec Numeric of length one with the time deviation, in seconds.

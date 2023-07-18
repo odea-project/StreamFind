@@ -1,1 +1,1 @@
-#' @param index X.
+#' @param index Integer value with the index.

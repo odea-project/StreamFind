@@ -7,7 +7,7 @@
 #include <list>
 #include <set>
 #include <algorithm>
-#include "external_libraries.hpp"
+#include "pugixml.h"
 #include "xml_utils.h"
 #include <Rcpp.h>
 
@@ -122,7 +122,7 @@ Rcpp::List xml_utils::parse_instrument(const pugi::xml_node& root) {
     output = xml_utils::mzxml_instrument_parser(root);
 
   } else {
-    std::cout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
+    Rcpp::Rcout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
     return instrument_list;
   }
 
@@ -216,7 +216,7 @@ Rcpp::List xml_utils::parse_software(const pugi::xml_node& root) {
     output = xml_utils::mzxml_software_parser(root);
 
   } else {
-    std::cout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
+    Rcpp::Rcout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
     return software_list;
   }
 
@@ -527,7 +527,7 @@ xml_utils::spectraHeaders xml_utils::parse_spectra_headers(const pugi::xml_node&
     xml_utils::mzxml_spectra_headers_parser(root, output);
 
   } else {
-    std::cout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
+    Rcpp::Rcout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
   }
 
   return output;
@@ -749,7 +749,7 @@ xml_utils::chromatogramsHeaders xml_utils::parse_chromatograms_headers(const pug
   } else if (strcmp("mzXML", root_name) == 0) {
 
   } else {
-    std::cout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
+    Rcpp::Rcout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
   }
 
   return output;
@@ -1416,7 +1416,7 @@ Rcpp::NumericMatrix xml_utils::mzml_parse_binary_data_from_spectrum_node(
       }
     }
 
-    // std::cout << "the n rows: " << output.nrow() << " the n cols: " << output.cols() << " " << output(0, 0) <<  std::endl;
+    // Rcpp::Rcout << "the n rows: " << output.nrow() << " the n cols: " << output.cols() << " " << output(0, 0) <<  std::endl;
 
     counter++;
   }
@@ -1541,7 +1541,7 @@ Rcpp::List xml_utils::parse_spectra(const pugi::xml_node& root) {
     }
 
   } else {
-    std::cout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
+    Rcpp::Rcout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
   }
 
   Rcpp::List list_output;
@@ -1648,7 +1648,7 @@ Rcpp::List xml_utils::parse_partial_spectra(
     }
 
   } else {
-    std::cout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
+    Rcpp::Rcout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
   }
 
   Rcpp::List list_output;
@@ -1690,10 +1690,10 @@ Rcpp::List xml_utils::parse_chromatograms(const pugi::xml_node& root) {
     }
 
   } else if (strcmp("mzXML", root_name) == 0) {
-    std::cout << "\u2717 Format mzXML does not hold chromatograms!" << std::endl;
+    Rcpp::Rcout << "\u2717 Format mzXML does not hold chromatograms!" << std::endl;
 
   } else {
-    std::cout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
+    Rcpp::Rcout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
   }
 
   Rcpp::List list_output;
@@ -1752,10 +1752,10 @@ Rcpp::List xml_utils::parse_partial_chromatograms(
     }
 
   } else if (strcmp("mzXML", root_name) == 0) {
-    std::cout << "\u2717 Format mzXML does not hold chromatograms!" << std::endl;
+    Rcpp::Rcout << "\u2717 Format mzXML does not hold chromatograms!" << std::endl;
 
   } else {
-    std::cout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
+    Rcpp::Rcout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
   }
 
   Rcpp::List list_output;
