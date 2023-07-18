@@ -73,13 +73,17 @@ trim_spectra_targets <- function(traces, targets, preMZr) {
 #' data.table or data.frame with minimum and maximum values of \emph{m/z} and
 #' retention time targets. Note that when mass/time ranges are given, the
 #' \code{ppm} and \code{sec} arguments are not used.
+#'
 #' @param rt A vector with target retention time values (in seconds) or
 #' a two columns data.table or data.frame with minimum and maximum retention
 #' time values (in seconds).
+#'
 #' @param ppm Numeric of length one with the mass deviation, in ppm.
+#'
 #' @param sec Numeric of length one with the time deviation, in seconds.
+#'
 #' @param id Character with the same length as \emph{m/z} and retention time
-#' targets to be used as identifiers. When not given, the id is built as a
+#' targets to be used as identifier/s. When not given, the id is built as a
 #' combination of the \emph{m/z} and retention time ranges or values.
 #'
 #' @return A data.frame with columns: *id*, *mz*, *rt*, *mzmin*, *mzmax*,

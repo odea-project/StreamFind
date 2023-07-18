@@ -13,6 +13,9 @@
 #' @param type Character with length one. Possible values as "MS" for only MS1
 #' spectral data, "MS/MS" for tandem spectral data (i.e., MS1 and MS2) or "SRM"
 #' for selected reaction monitoring data (i.e., no spectra only chromatograms).
+#' @param instrument List with metadata from the instrument used to acquire the
+#' data (content is highly vendor dependent).
+#' @param software X.
 #' @param time_stamp Character with length one, representing the start time and
 #' date of the data acquisition.
 #' @param spectra_number Integer with the number of spectra in the file.

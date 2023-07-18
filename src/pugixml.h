@@ -18,10 +18,10 @@
 #endif
 
 // Include user configuration file (this can define various configuration macros)
-#include "pugiconfig.hpp"
+#include "pugiconfig.h"
 
-#ifndef HEADER_PUGIXML_HPP
-#define HEADER_PUGIXML_HPP
+#ifndef HEADER_PUGIXML_H
+#define HEADER_PUGIXML_H
 
 // Include stddef.h for size_t and ptrdiff_t
 #include <stddef.h>

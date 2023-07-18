@@ -1,5 +1,5 @@
 #include <iostream>
-#include "external_libraries.hpp"
+#include "pugixml.h"
 #include "xml_utils.h"
 #include <string>
 #include <vector>
@@ -28,7 +28,7 @@ Rcpp::List rcpp_parse_ms_analysis(std::string file_path) {
     } else if (strcmp("mzXML", root_name.c_str()) == 0) {
       node_in = root;
     } else {
-      std::cout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
+      Rcpp::Rcout << "\u2717 The file must be in valid mzML or mzXML format!" << std::endl;
     }
 
     if (node_in != NULL) {
@@ -127,11 +127,11 @@ Rcpp::List rcpp_parse_ms_analysis(std::string file_path) {
       list_out.attr("class") = Rcpp::CharacterVector::create("MassSpecAnalysis");
 
     } else {
-      std::cout << "\u2717 MS file not conform!" << std::endl;
+      Rcpp::Rcout << "\u2717 MS file not conform!" << std::endl;
     }
 
   } else {
-    std::cout << "\u2717 XML file could not be opened! " << result.description() << std::endl;
+    Rcpp::Rcout << "\u2717 XML file could not be opened! " << result.description() << std::endl;
   }
 
   return list_out;

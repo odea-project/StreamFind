@@ -150,6 +150,16 @@ ana <- ms$get_analyses(1)
 ana1 <- parse.MassSpecAnalysis(all_files[10])
 all.equal(ana, ana1)
 
+ms1 <- ms$subset_analyses(4)
+ms1$load_spectra()
+
+spec <- ms1$get_spectra()
+spec <- spec[spec$level == 1, ]
+write.csv(spec, "./ms_spectra.csv")
+
+ms1$find_features()
+feat <- ms1$get_features()
+write.csv(feat, "./ms_features.csv")
 
 ps <- as.ProcessingSettings(settings_ff)
 

@@ -1,5 +1,5 @@
 #include <iostream>
-#include "external_libraries.hpp"
+#include "pugixml.h"
 #include "xml_utils.h"
 #include <string>
 #include <vector>
@@ -140,13 +140,13 @@ Rcpp::List rcpp_parse_ms_analysis_spectra(Rcpp::List analysis, Rcpp::IntegerVect
         return output;
 
       } else {
-        std::cout << "\u2717 Requested spectra not found! " << std::endl;
+        Rcpp::Rcout << "\u2717 Requested spectra not found! " << std::endl;
       }
     } else {
-      std::cout << "\u2717 File does not have spectra! " << std::endl;
+      Rcpp::Rcout << "\u2717 File does not have spectra! " << std::endl;
     }
   } else {
-    std::cout << "\u2717 XML file could not be opened! " << result.description() << std::endl;
+    Rcpp::Rcout << "\u2717 XML file could not be opened! " << result.description() << std::endl;
   }
 
   return empty_df;

@@ -1,5 +1,5 @@
 #include <iostream>
-#include "external_libraries.hpp"
+#include "pugixml.h"
 #include "xml_utils.h"
 #include <string>
 #include <vector>
@@ -139,13 +139,13 @@ Rcpp::List rcpp_parse_ms_analysis_chromatograms(Rcpp::List analysis, Rcpp::Integ
         return output;
 
       } else {
-        std::cout << "\u2717 Requested chromatograms not found! " << std::endl;
+        Rcpp::Rcout << "\u2717 Requested chromatograms not found! " << std::endl;
       }
     } else {
-      std::cout << "\u2717 File does not have chromatograms! " << std::endl;
+      Rcpp::Rcout << "\u2717 File does not have chromatograms! " << std::endl;
     }
   } else {
-    std::cout << "\u2717 XML file could not be opened! " << result.description() << std::endl;
+    Rcpp::Rcout << "\u2717 XML file could not be opened! " << result.description() << std::endl;
   }
 
   return empty_df;

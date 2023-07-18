@@ -33,7 +33,8 @@ Imports:
     parallelly,
     doParallel,
     parallel,
-    foreach
+    foreach,
+    methods
 Suggests: 
     knitr,
     kableExtra,
