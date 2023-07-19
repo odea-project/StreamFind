@@ -38,16 +38,16 @@ mass <- data.frame(
 targets <- make_ms_targets(mz = mz, ppm = ppm_dev, sec = sec_dev)
 neutral_targets <- make_ms_targets(mz = mass, ppm = ppm_dev, sec = sec_dev)
 
-# msData class tests -----
+# MassSpecData class tests -----
 
-test_that("test empty msData", {
-  expect_equal(class(msData$new()), c("msData", "R6"))
+test_that("test empty MassSpecData", {
+  expect_equal(class(MassSpecData$new()), c("MassSpecData", "R6"))
 })
 
-ms <- msData$new(files, runParallel = FALSE)
+ms <- MassSpecData$new(files, runParallel = FALSE)
 
-test_that("create msData", {
-  expect_equal(class(ms), c("msData", "R6"))
+test_that("create MassSpecData", {
+  expect_equal(class(ms), c("MassSpecData", "R6"))
 })
 
 test_that("getter for features with empty object", {
@@ -66,7 +66,7 @@ test_that("getter for names and filePaths", {
     unname(ms$get_analysis_names()),
     gsub(".mzML|.mzXML", "", basename(files))
   )
-  expect_equal(unname(ms$get_file_paths()), files)
+  expect_equal(unname(ms$get_files()), files)
   expect_s3_class(ms$get_overview(), "data.frame")
 })
 
@@ -94,7 +94,7 @@ test_that("test setter and getter for replicates and blanks", {
   expect_equal(names(ms$get_blank_names()), unname(ms$get_analysis_names()))
 })
 
-ms2 <- msData$new(files2, runParallel = FALSE)
+ms2 <- MassSpecData$new(files2, runParallel = FALSE)
 
 test_that("getter analyses", {
   expect_equal(class(ms2$get_analyses(1:3)), "list")
@@ -132,7 +132,7 @@ test_that("getting spectra for targets", {
     ms3$get_spectra(analyses = 1, mz = targets, allTraces = F, levels = 2)$level)
 })
 
-ms_mrm <- msData$new(files = files_mrm)
+ms_mrm <- MassSpecData$new(files = files_mrm)
 ms_mrm$load_chromatograms()
 test_that("get chromatograms", {
   expect_true(all(ms_mrm$has_loaded_chromatograms()))
@@ -168,7 +168,7 @@ test_that("get EIC, MS1 and MS2 spectra", {
 settings_ff <- list(
   "call" = "find_features",
   "algorithm" = "xcms3",
-  "parameters" = list(xcms::CentWaveParam(
+  "parameters" = xcms::CentWaveParam(
     ppm = 12, peakwidth = c(5, 30),
     snthresh = 10, prefilter = c(5, 1500),
     mzCenterFun = "mean", integrate = 2,
@@ -176,7 +176,7 @@ settings_ff <- list(
     noise = 500, verboseColumns = TRUE,
     firstBaselineCheck = FALSE,
     extendLengthMSW = TRUE
-  ))
+  )
 )
 
 ms$add_settings(settings = settings_ff)
@@ -246,7 +246,7 @@ test_that("get feature groups MS1 and MS2", {
 # ms$plot_groups(mz = targets, legendNames = c("Target1", "Target2"))
 # ms$plot_groups_overview(mz = targets)
 
-settings_gf_alignment <- settings(
+settings_gf_alignment <- ProcessingSettings(
   "call" = "group_features",
   "algorithm" = "xcms3",
   "parameters" = list(
@@ -300,10 +300,10 @@ test_that("save private fields as json", {
   expect_true(file.exists("settings.json"))
   expect_true(file.exists("analyses.json"))
   expect_true(file.exists("groups.json"))
-  expect_true(file.exists("msData.json"))
+  expect_true(file.exists("MassSpecData.json"))
 })
 
-ms5 <- msData$new()
+ms5 <- MassSpecData$new()
 
 test_that("import headers and settings from json file", {
   expect_invisible(ms5$import_headers("headers.json"))
@@ -319,8 +319,8 @@ test_that("import analyses and groups from json file", {
   expect_equal(ms$get_groups()[["group"]], ms5$get_groups()[["group"]])
 })
 
-test_that("import msData object from json file", {
-  expect_equal(ms5, import_msData("msData.json"))
+test_that("import MassSpecData object from json file", {
+  expect_equal(ms5, import_MassSpecData("MassSpecData.json"))
   expect_equal(ms$get_groups()[["group"]], ms5$get_groups()[["group"]])
 })
 
@@ -378,7 +378,7 @@ test_that("remove settings", {
 
 file.remove(c("headers.json", "analyses.json", "groups.json", "settings.json"))
 
-ms5 <- import_msData("msData.json")
+ms5 <- import_MassSpecData("MassSpecData.json")
 fts_to_subset <- ms5$get_features(mz = targets)
 ms5 <- ms5$subset_features(features = fts_to_subset)
 
@@ -446,7 +446,7 @@ test_that("remove loaded MS2 features", {
   expect_true(!any(ms5$has_loaded_features_ms2()))
 })
 
-ms5 <- import_msData("msData.json")
+ms5 <- import_MassSpecData("MassSpecData.json")
 groups_to_subset <- ms5$get_groups(mass = neutral_targets)
 ms5 <- ms5$subset_groups(groups = groups_to_subset$group)
 
@@ -528,7 +528,7 @@ test_that("remove loaded MS2 groups", {
   expect_false(ms5$has_loaded_groups_ms2())
 })
 
-file.remove("msData.json")
+file.remove("MassSpecData.json")
 
 
 
@@ -558,7 +558,7 @@ file.remove("msData.json")
 
 # work Lines -----
 
-# ms <- msData$new(files, runParallel = FALSE)
+# ms <- MassSpecData$new(files, runParallel = FALSE)
 # rpl <- c(rep("blank_neg", 3),rep("blank_pos", 3),rep("influent_neg", 3),rep("influent_pos", 3))
 # blk <- c(rep("blank_neg", 3),rep("blank_pos", 3),rep("blank_neg", 3),rep("blank_pos", 3))
 # ms$add_replicate_names(rpl)
@@ -622,7 +622,7 @@ file.remove("msData.json")
 #   )
 # )
 
-# ms <- msData$new(files[c(4:5)], runParallel = FALSE) #, 10:12
+# ms <- MassSpecData$new(files[c(4:5)], runParallel = FALSE) #, 10:12
 # ms$find_features(settings = settings_ff)
 # ms$group_features(settings = settings_gf)
 # ms$group_features(settings = settings_gf_alignment)

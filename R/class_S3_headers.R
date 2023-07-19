@@ -1,7 +1,7 @@
-#' **headers** S3 class constructor and methods
+#' **Headers** S3 class constructor, methods and functions
 #'
 #' @description
-#' Creates a headers S3 class object.
+#' Creates a Headers S3 class object.
 #'
 #' @template arg-headers-ellipsis
 #'
@@ -11,15 +11,15 @@
 #' If given date is character, conversion to class POSIXct or POSIXt is
 #' attempted.
 #'
-#' @return A headers S3 class object.
+#' @return A Headers S3 class object.
 #'
 #' @export
 #'
-headers <- function(...) {
+Headers <- function(...) {
 
   x <- list(...)
 
-  if (length(x) == 1 & is.list(x[[1]])) x <- x[[1]]
+  if (length(x) == 1) if (is.list(x[[1]])) x <- x[[1]]
 
   x_names <- names(x)
 
@@ -38,21 +38,21 @@ headers <- function(...) {
   if (!"path" %in% x_names) x$path <- getwd()
   if (!"date" %in% x_names) x$date <- Sys.time()
 
-  if (validate.headers(x)) {
-    structure(x, class = "headers")
+  if (validate.Headers(x)) {
+    structure(x, class = "Headers")
   } else {
     NULL
   }
 }
 
-#' @describeIn headers
-#' Validates a headers S3 class object, returning a logical value of length one.
+#' @describeIn Headers
+#' Validates a Headers S3 class object, returning a logical value of length one.
 #'
-#' @param x A headers S3 class object.
+#' @param x A Headers S3 class object.
 #'
 #' @export
 #'
-validate.headers <- function(x) {
+validate.Headers <- function(x) {
 
   if (missing(x)) x <- NULL
 
@@ -96,12 +96,33 @@ validate.headers <- function(x) {
   valid
 }
 
-#' @describeIn headers
-#' Converts the argument value into a headers S3 class object.
-#'
-#' @param value List to be checked and converted to headers S3 class.
+#' @describeIn Headers
+#' Converts a Headers S3 class object to a JSON string.
 #'
 #' @export
-as.headers <- function(value) {
-  headers(value = value)
+asJSON.Headers <- function(x) {
+  toJSON(
+    x,
+    dataframe = "columns",
+    Date = "ISO8601",
+    POSIXt = "string",
+    factor = "string",
+    complex = "string",
+    null = "null",
+    na = "null",
+    auto_unbox = FALSE,
+    digits = 8,
+    pretty = TRUE,
+    force = TRUE
+  )
+}
+
+#' @describeIn Headers
+#' Converts the argument value into a Headers S3 class object.
+#'
+#' @param value List to be checked and converted to Headers S3 class.
+#'
+#' @export
+as.Headers <- function(value) {
+  Headers(value = value)
 }

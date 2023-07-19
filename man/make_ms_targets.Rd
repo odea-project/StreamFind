@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_ms.R
 \name{make_ms_targets}
 \alias{make_ms_targets}
-\title{Function to make targets for parsing data within msData class methods}
+\title{Function to make targets for parsing data within MassSpecData class methods}
 \usage{
 make_ms_targets(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL)
 }

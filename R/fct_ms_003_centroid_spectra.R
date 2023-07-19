@@ -11,7 +11,7 @@
 #'
 #' @noRd
 #'
-centroid_spectra = function(spectra = data.frame()) {
+centroid_spectra <- function(spectra = data.frame()) {
 
   # continue development with cpp
   centroided <- rcpp_centroid_spectra(spectra)

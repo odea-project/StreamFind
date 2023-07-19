@@ -43,22 +43,19 @@ neutral_targets <- make_ms_targets(
 
 # development ------------------------------------------------------------------
 
-tof_prof_file <- all_files[7]
-tof_spectra <- parse_ms_spectra(tof_prof_file)
-tof_spectra <- tof_spectra[[1]][, c("scan", "rt", "mz", "intensity")]
+ms <- MassSpecData$new(all_files[c(7, 31)])
+
+tof_spectra <- ms$get_spectra(1)
+tof_spectra <- tof_spectra[, c("scan", "rt", "mz", "intensity")]
 
 head(tof_spectra)
 
-orb_prof_file <- all_files[31]
-orb_spectra <- parse_ms_spectra(orb_prof_file)
-orb_spectra <- orb_spectra[[1]][, c("scan", "rt", "mz", "intensity")]
+orb_spectra <- ms$get_spectra(2)
+orb_spectra <- orb_spectra[, c("scan", "rt", "mz", "intensity")]
 
 head(orb_spectra)
 
+test <- centroid_spectra(orb_spectra)
 
-
-centroid_spectra(orb_spectra)
-
-
-
+View(test$output)
 

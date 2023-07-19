@@ -103,8 +103,7 @@ Rcpp::List rcpp_centroid_spectra(Rcpp::DataFrame spectra) {
 
     df.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
 
-    list_out.push_back(df);
-
+    list_out["output"]= df;
   }
 
   return list_out;

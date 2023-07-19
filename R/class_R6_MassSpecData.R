@@ -1,7 +1,7 @@
-#' **msData** R6 class and methods
+#' **MassSpecData** R6 class and methods
 #'
 #' @description
-#' The msData R6 class is a framework with methods for parsing, processing,
+#' The MassSpecData R6 class is a framework with methods for parsing, processing,
 #' visualizing and storing MS data.
 #'
 #' @references
@@ -29,7 +29,7 @@
 #'
 #' @export
 #'
-msData <- R6::R6Class("msData",
+MassSpecData <- R6::R6Class("MassSpecData",
 
   # _ private fields -----
   private = list(
@@ -53,10 +53,8 @@ msData <- R6::R6Class("msData",
 
     #' @description
     #' Checks the analyses argument as a character/integer vector to match
-    #' analyses names or indices from the `msData` object. Returns a valid
+    #' analyses names or indices from the `MassSpecData` object. Returns a valid
     #' character vector with analysis names or `NULL` for non-matching.
-    #'
-    #' @param analyses X.
     #'
     .check_analyses_argument = function(analyses = NULL) {
       if (is.null(analyses)) {
@@ -70,6 +68,28 @@ msData <- R6::R6Class("msData",
           analyses
         }
       }
+    },
+
+    #' @description
+    #' Gets an entry from the analyses private field.
+    #'
+    .get_analyses_entry = function(analyses = NULL, value = NA_character_) {
+      analyses <- private$.check_analyses_argument(analyses)
+
+      if (is.null(analyses)) return(NULL)
+      output <- lapply(private$.analyses, function(x, value) {
+
+        temp <- x[[value]]
+        names(temp) <- rep(x$name, length(temp))
+        temp
+
+      }, value = value)
+
+      output <- unname(output)
+
+      output <- unlist(output, recursive = FALSE, use.names = TRUE)
+
+      output[names(output) %in% analyses]
     }
   ),
 
@@ -80,10 +100,10 @@ msData <- R6::R6Class("msData",
     ## ___ system -----
 
     #' @description
-    #' Creates an msData class object. When `headers` are not given (i.e.,
-    #' `NULL`), a default headers S3 class object is generated with name as
+    #' Creates an MassSpecData class object. When `headers` are not given (i.e.,
+    #' `NULL`), a default Headers S3 class object is generated with name as
     #' `NA_character`, path as `get_wd()` and date as `Sys.time()`.
-    #' See `?headers` for more information.
+    #' See `?Headers` for more information.
     #'
     #' @template arg-ms-files
     #' @template arg-runParallel
@@ -93,7 +113,7 @@ msData <- R6::R6Class("msData",
     #' @template arg-ms-groups
     #' @param alignment X.
     #'
-    #' @return A new `msData` class object.
+    #' @return A new `MassSpecData` class object.
     #'
     initialize = function(files = NULL,
                           runParallel = FALSE,
@@ -106,7 +126,7 @@ msData <- R6::R6Class("msData",
       if (!is.null(headers)) suppressMessages(self$add_headers(headers))
 
       if (is.null(private$.headers)) {
-        private$.headers <- headers(
+        private$.headers <- Headers(
           name = NA_character_,
           path = getwd(),
           date = Sys.time()
@@ -116,9 +136,9 @@ msData <- R6::R6Class("msData",
       if (!is.null(settings)) suppressMessages(self$add_settings(settings))
 
       if (is.null(analyses) & !is.null(files)) {
-        analyses <- parse.msAnalysis(files, runParallel)
+        analyses <- parse.MassSpecAnalysis(files, runParallel)
         if (is.null(analyses)) {
-          warning("No valid files were given! msData object is empty. \n")
+          warning("No valid files were given! MassSpecData object is empty. \n")
         }
       }
 
@@ -128,11 +148,11 @@ msData <- R6::R6Class("msData",
 
       if (!is.null(alignment)) suppressMessages(self$add_alignment(alignment))
 
-      message("\U2713 msData class object created!")
+      message("\U2713 MassSpecData class object created!")
     },
 
     #' @description
-    #' Prints a summary of the `msData` object in the console.
+    #' Prints a summary of the `MassSpecData` object in the console.
     #'
     #' @return Console text.
     #'
@@ -171,7 +191,7 @@ msData <- R6::R6Class("msData",
     ## ___ get -----
 
     #' @description
-    #' Method to get the headers of the `msData` object.
+    #' Method to get the headers.
     #'
     #' @param value A character vector with the name of the entry.
     #' Possible values are name, author, description, path and date.
@@ -187,7 +207,7 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Method to get specific analyses from the `msData` object.
+    #' Method to get analyses.
     #'
     #' @param analyses A numeric/character vector with the number/name
     #' of the analyses.
@@ -200,7 +220,7 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Method to get the number of analysis in the `msData` object.
+    #' Method to get the number of analysis present.
     #'
     #' @return An integer value.
     #'
@@ -285,11 +305,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_replicate_names = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(NULL)
-      rpl <- vapply(private$.analyses, function(x) x$replicate, "")
-      names(rpl) <- vapply(private$.analyses, function(x) x$name, "")
-      rpl[analyses]
+      private$.get_analyses_entry(analyses, "replicate")
     },
 
     #' @description
@@ -301,11 +317,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_blank_names = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(NULL)
-      blk <- vapply(private$.analyses, function(x) x$blank, "")
-      names(blk) <- vapply(private$.analyses, function(x) x$name, "")
-      blk[analyses]
+      private$.get_analyses_entry(analyses, "blank")
     },
 
     #' @description
@@ -316,14 +328,44 @@ msData <- R6::R6Class("msData",
     #'
     #' @return A character vector.
     #'
-    get_polarities = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(NULL)
-      pol <- vapply(private$.analyses, function(x) {
-        paste(x$polarity, collapse = "; ")
-      }, "")
-      names(pol) <- vapply(private$.analyses, function(x) x$name, "")
-      pol[analyses]
+    get_files = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "file")
+    },
+
+    #' @description
+    #' Method to get the file format of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_formats = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "format")
+    },
+
+    #' @description
+    #' Method to get the type of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_types = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "type")
+    },
+
+    #' @description
+    #' Method to get the time stamp of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_time_stamps = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "time_stamp")
     },
 
     #' @description
@@ -334,76 +376,8 @@ msData <- R6::R6Class("msData",
     #'
     #' @return A character vector.
     #'
-    get_file_paths = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(NULL)
-      fls <- vapply(private$.analyses, function(x) x$file, "")
-      names(fls) <- vapply(private$.analyses, function(x) x$name, "")
-      fls[analyses]
-    },
-
-    #' @description
-    #' Method to get the polarity of the analyses.
-    #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #'
-    #' @return A character vector.
-    #'
-    get_mz_low = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(NULL)
-      value <- vapply(private$.analyses, function(x) x$mz_low, 0)
-      names(value) <- vapply(private$.analyses, function(x) x$name, "")
-      value[analyses]
-    },
-
-    #' @description
-    #' Method to get the polarity of the analyses.
-    #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #'
-    #' @return A character vector.
-    #'
-    get_mz_high = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(NULL)
-      value <- vapply(private$.analyses, function(x) x$mz_high, 0)
-      names(value) <- vapply(private$.analyses, function(x) x$name, "")
-      value[analyses]
-    },
-
-    #' @description
-    #' Method to get the polarity of the analyses.
-    #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #'
-    #' @return A character vector.
-    #'
-    get_rt_start = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(NULL)
-      value <- vapply(private$.analyses, function(x) x$rt_start, 0)
-      names(value) <- vapply(private$.analyses, function(x) x$name, "")
-      value[analyses]
-    },
-
-    #' @description
-    #' Method to get the polarity of the analyses.
-    #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #'
-    #' @return A character vector.
-    #'
-    get_rt_end = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(NULL)
-      value <- vapply(private$.analyses, function(x) x$rt_end, 0)
-      names(value) <- vapply(private$.analyses, function(x) x$name, "")
-      value[analyses]
+    get_spectra_number = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "spectra_number")
     },
 
     #' @description
@@ -415,11 +389,7 @@ msData <- R6::R6Class("msData",
     #' @return A character vector.
     #'
     get_spectra_mode = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(NULL)
-      value <- vapply(private$.analyses, function(x) x$spectra_mode, "")
-      names(value) <- vapply(private$.analyses, function(x) x$name, "")
-      value[analyses]
+      private$.get_analyses_entry(analyses, "spectra_mode")
     },
 
     #' @description
@@ -431,11 +401,189 @@ msData <- R6::R6Class("msData",
     #' @return A list for each analysis with an integer vector.
     #'
     get_spectra_levels = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "spectra_levels")
+    },
+
+    #' @description
+    #' Method to get the polarity of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_mz_low = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "mz_low")
+    },
+
+    #' @description
+    #' Method to get the polarity of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_mz_high = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "mz_high")
+    },
+
+    #' @description
+    #' Method to get the polarity of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_rt_start = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "rt_start")
+    },
+
+    #' @description
+    #' Method to get the polarity of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_rt_end = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "rt_end")
+    },
+
+    #' @description
+    #' Method to get the polarity of the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_polarities = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "polarity")
+    },
+
+    #' @description
+    #' Method to get the number of chromatograms in the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_chromatograms_number = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "chromatograms_number")
+    },
+
+    #' @description
+    #' Method to get the instrument information for each analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A data.table.
+    #'
+    get_instrument_info = function(analyses = NULL) {
       analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(NULL)
-      value <- lapply(private$.analyses, function(x) x$spectra_levels)
-      names(value) <- vapply(private$.analyses, function(x) x$name, "")
-      value[analyses]
+      if (is.null(analyses)) return(data.table())
+      value <- lapply(private$.analyses[analyses], function(x) {
+        x$instrument
+      })
+      value <- rbindlist(value, idcol = "analysis", fill = TRUE)
+      value
+    },
+
+    #' @description
+    #' Method to get the software information for each analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A data.table.
+    #'
+    get_software_info = function(analyses = NULL) {
+      analyses <- private$.check_analyses_argument(analyses)
+      if (is.null(analyses)) return(data.table())
+      value <- lapply(private$.analyses[analyses], function(x) {
+        x$software
+      })
+      value <- rbindlist(value, idcol = "analysis", fill = TRUE)
+      value
+    },
+
+    #' @description
+    #' Method to get the run summary data.table for each analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A data.table.
+    #'
+    get_run = function(analyses = NULL) {
+      analyses <- private$.check_analyses_argument(analyses)
+      if (is.null(analyses)) return(data.table())
+      value <- lapply(private$.analyses[analyses], function(x) {
+        x$run
+      })
+      value <- rbindlist(value, idcol = "analysis", fill = TRUE)
+      value
+    },
+
+    #' @description
+    #' Method to get the total ion chromatograms (TIC) from the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #' @param levels A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_tic = function(analyses = NULL, levels = 1) {
+      analyses <- private$.check_analyses_argument(analyses)
+      if (is.null(analyses)) return(data.table())
+      tic <- lapply(private$.analyses[analyses], function(x) {
+        data.table(
+          "level" = x$run$level,
+          "rt" = x$run$rt,
+          "intensity" = x$run$tic_intensity
+        )
+      })
+
+      tic <- rbindlist(tic, idcol = "analysis", fill = TRUE)
+
+      tic <- tic[tic$level %in% levels, ]
+
+      tic
+    },
+
+    #' @description
+    #' Method to get the base peak chromatograms (BPC) from the analyses.
+    #'
+    #' @param analyses A numeric/character vector with the number/name
+    #' of the analyses.
+    #' @param levels A numeric/character vector with the number/name
+    #' of the analyses.
+    #'
+    #' @return A character vector.
+    #'
+    get_bpc = function(analyses = NULL, levels = 1) {
+      analyses <- private$.check_analyses_argument(analyses)
+      if (is.null(analyses)) return(data.table())
+      bpc <- lapply(private$.analyses[analyses], function(x) {
+        data.table(
+          "level" = x$run$level,
+          "rt" = x$run$rt,
+          "mz" = x$run$bpc_mz,
+          "intensity" = x$run$bpc_intensity
+        )
+      })
+      bpc <- rbindlist(bpc, idcol = "analysis", fill = TRUE)
+
+      bpc <- bpc[bpc$level %in% levels, ]
+
+      bpc
     },
 
     #' @description
@@ -473,39 +621,87 @@ msData <- R6::R6Class("msData",
       }
 
       if (!any(is.numeric(minIntensityMS2) | is.integer(minIntensityMS2))) {
-        minIntensityMS1 <- 0
+        minIntensityMS2 <- 0
       }
 
       targets <- make_ms_targets(mz, rt, ppm, sec, id)
 
-      if (TRUE %in% (targets$mzmax == 0)) {
-        targets$mzmax[targets$mzmax == 0] <- max(self$get_mz_high(analyses))
+      num_cols <- c("mz", "rt", "mzmin", "mzmax", "rtmin", "rtmax")
+
+      if (all(apply(targets[, num_cols, with = FALSE], 1, sum) != 0)) {
+
+        if (TRUE %in% (targets$mzmax == 0)) {
+          targets$mzmax[targets$mzmax == 0] <- max(self$get_mz_high(analyses))
+        }
+
+        if (TRUE %in% (targets$rtmax == 0)) {
+          targets$rtmax[targets$rtmax == 0] <- max(self$get_rt_end(analyses))
+        }
+
+      } else {
+        targets <- NULL
       }
 
-      if (TRUE %in% (targets$rtmax == 0)) {
-        targets$rtmax[targets$rtmax == 0] <- max(self$get_rt_end(analyses))
+      if (!2 %in% levels) allTraces <- TRUE
+
+      if (!is.logical(allTraces)) allTraces <- TRUE
+
+      if (!allTraces & !is.null(targets)) {
+        if (!any(is.numeric(isolationWindow) | is.integer(isolationWindow))) {
+          isolationWindow <- 0
+        }
+        preMZr <- targets[, c("mzmin", "mzmax")]
+        preMZr$mzmin <- preMZr$mzmin - (isolationWindow / 2)
+        preMZr$mzmax <- preMZr$mzmax + (isolationWindow / 2)
+        if (nrow(preMZr) == 1 & TRUE %in% (targets$mzmax == 0)) {
+          preMZr <- NULL
+        }
+      } else {
+        preMZr <- NULL
       }
+
+      cached_spectra <- FALSE
+
+      if (caches_data()) {
+        hash <- patRoon::makeHash(
+          analyses, levels, targets, allTraces,
+          isolationWindow, minIntensityMS1, minIntensityMS2
+        )
+
+        spec_list <- patRoon::loadCacheData("parsed_ms_spectra", hash)
+
+        if (!is.null(spec_list)) {
+          message("\U2139 Spectra loaded from cache!")
+          return(spec_list)
+        }
+
+      } else {
+        hash <- NULL
+        spec_list <- NULL
+      }
+
+      message("\U2699 Parsing spectra from ", length(analyses),  " MS file/s..." ,
+        appendLF = FALSE
+      )
+
+      if (!is.logical(runParallel)) runParallel <- FALSE
+
+      if (runParallel & length(analyses) > 1) {
+        workers <- parallel::detectCores() - 1
+        if (length(files) < workers) workers <- length(analyses)
+        par_type <- "PSOCK"
+        if (parallelly::supportsMulticore()) par_type <- "FORK"
+        cl <- parallel::makeCluster(workers, type = par_type)
+        doParallel::registerDoParallel(cl)
+      } else {
+        registerDoSEQ()
+      }
+
+      i <- NULL
 
       has_spectra <- self$has_loaded_spectra(analyses)
 
       if (all(has_spectra)) {
-        if (!2 %in% levels) allTraces <- TRUE
-
-        if (!is.logical(allTraces)) allTraces <- TRUE
-
-        if (!allTraces) {
-          if (!any(is.numeric(isolationWindow) | is.integer(isolationWindow))) {
-            isolationWindow <- 0
-          }
-          preMZr <- targets[, c("mzmin", "mzmax")]
-          preMZr$mzmin <- preMZr$mzmin - (isolationWindow / 2)
-          preMZr$mzmax <- preMZr$mzmax + (isolationWindow / 2)
-          if (nrow(preMZr) == 1 & TRUE %in% (targets$mzmax == 0)) {
-            preMZr <- NULL
-          }
-        } else {
-          preMZr <- NULL
-        }
 
         spec_list <- lapply(self$get_analyses(analyses),
           function(x, levels, targets, preMZr, minMS1, minMS2) {
@@ -528,29 +724,113 @@ msData <- R6::R6Class("msData",
                 temp <- trim_spectra_targets(temp, targets, preMZr)
               }
             }
-            temp <- temp[!(temp$intensity <= minMS1 & temp$level == 1), ]
-            temp <- temp[!(temp$intensity <= minMS2 & temp$level == 2), ]
-            temp
           },
           levels = levels,
           targets = targets,
-          preMZr = preMZr,
-          minMS1 = minIntensityMS1,
-          minMS2 = minIntensityMS2
+          preMZr = preMZr
         )
 
       } else {
-        files <- unname(self$get_file_paths(analyses))
-        spec_list <- parse_ms_spectra(
-          files, levels, targets, allTraces, isolationWindow, runParallel,
-          minIntensityMS1, minIntensityMS2
+
+        vars <- c(
+          "rcpp_parse_ms_analysis_spectra",
+          "trim_spectra_targets"
         )
+
+        spec_list <- foreach(i = self$get_analyses(analyses),
+                             .packages = "streamFind", .export = vars) %dopar% {
+
+          run <- i$run
+
+          if (nrow(run) > 0) {
+
+            if (!is.null(levels)) run <- run[run$level %in% levels, ]
+
+            if (!is.null(targets)) {
+
+              trim <- function(v, a, b) rowSums(mapply(function(a, b) v >= a & v <= b, a = a, b = b)) > 0
+
+              if ("analysis" %in% colnames(targets)) {
+                tp_tar <- targets[targets$analysis %in% i$name, ]
+                if (nrow(tp_tar) > 0) {
+                  run <- run[trim(run$rt, tp_tar$rtmin, tp_tar$rtmax), ]
+                } else {
+                  run <- data.frame()
+                }
+              } else {
+                run <- run[trim(run$rt, targets$rtmin, targets$rtmax), ]
+              }
+            }
+
+            if (!is.null(preMZr) & !is.null(targets)) {
+              if ("analysis" %in% colnames(targets)) {
+                pre_tar <- preMZr[targets$analysis %in% i$name, ]
+                preMZ_check <- trim(run$pre_mz, pre_tar$mzmin, pre_tar$mzmax)
+                run <- run[(preMZ_check %in% TRUE) | is.na(preMZ_check), ]
+              } else {
+                preMZ_check <- trim(run$pre_mz, preMZr$mzmin, preMZr$mzmax)
+                run <- run[(preMZ_check %in% TRUE) | is.na(preMZ_check), ]
+              }
+            }
+
+            if (nrow(run) > 0) {
+
+              run <- rcpp_parse_ms_analysis_spectra(i, run$index)
+
+              if (!is.null(targets)) {
+                if ("analysis" %in% colnames(targets)) {
+                  tp_tar <- targets[targets$analysis %in% i$name, ]
+                  if (!is.null(preMZr)) {
+                    pre_tar <- preMZr[targets$analysis %in% i$name, ]
+                  } else {
+                    pre_tar <- NULL
+                  }
+                  if (nrow(tp_tar) > 0) {
+                    run <- trim_spectra_targets(run, tp_tar, pre_tar)
+                  } else {
+                    run <- data.frame()
+                  }
+                } else {
+                  run <- trim_spectra_targets(run, targets, preMZr)
+                }
+              }
+
+              run
+
+            } else {
+              data.frame()
+            }
+          } else {
+            data.frame()
+          }
+        }
+
+        if (runParallel) parallel::stopCluster(cl)
       }
 
       if (length(spec_list) == length(analyses)) {
+
+        spec_list <- lapply(spec_list, function(x, minMS1, minMS2) {
+          x <- x[!(x$intensity <= minMS1 & x$level == 1), ]
+          x <- x[!(x$intensity <= minMS2 & x$level == 2), ]
+          x
+        }, minMS1 = minIntensityMS1, minMS2 = minIntensityMS2)
+
         names(spec_list) <- analyses
+
         spec <- rbindlist(spec_list, idcol = "analysis", fill = TRUE)
+
+        message(" Done!")
+
+        if (!cached_spectra & !is.null(hash)) {
+          if (!is.null(spec)) {
+            message("\U1f5ab Parsed spectra cached!")
+            patRoon::saveCacheData("parsed_ms_spectra", spec, hash)
+          }
+        }
+
         spec
+
       } else {
         warning("Defined analyses not found!")
         data.table()
@@ -561,19 +841,64 @@ msData <- R6::R6Class("msData",
     #' Method to get spectra from the MS analyses.
     #'
     #' @param analyses X.
+    #' @param index X.
     #' @param minIntensity X.
     #' @param runParallel X.
     #'
     #' @return A data.frame with spectra.
     #'
-    get_chromatograms = function(analyses = NULL, minIntensity = 0,
-                                 runParallel = FALSE) {
+    get_chromatograms = function(analyses = NULL, index = NA_integer_,
+                                 minIntensity = 0, runParallel = FALSE) {
       analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(data.table())
 
-      files <- unname(self$get_file_paths(analyses))
+      index <- as.integer(index)
 
-      chrom_list <- parse_ms_chromatograms(files, runParallel)
+      if (!is.integer(index)) {
+        warning("Index must be an integer vector!")
+        return(data.table())
+      }
+
+      has_chroms <- self$has_loaded_chromatograms(analyses)
+
+      if (all(has_chroms)) {
+        chrom_list <- lapply(self$get_analyses(analyses), function(x, index) {
+          chroms <- x$chromatograms
+          if (!is.na(index[1])) {
+            which_chroms <- chroms$index %in% index
+            chroms <- chroms[which_chroms, ]
+          }
+          chroms
+        }, index = index)
+
+      } else {
+
+        message("\U2699 Parsing chromatograms from ", length(analyses),  " MS file/s..." ,
+          appendLF = FALSE
+        )
+
+        if (!is.logical(runParallel)) runParallel <- FALSE
+
+        if (runParallel & length(analyses) > 1) {
+          workers <- parallel::detectCores() - 1
+          if (length(files) < workers) workers <- length(files)
+          par_type <- "PSOCK"
+          if (parallelly::supportsMulticore()) par_type <- "FORK"
+          cl <- parallel::makeCluster(workers, type = par_type)
+          doParallel::registerDoParallel(cl)
+        } else {
+          registerDoSEQ()
+        }
+
+        i = NULL
+
+        chrom_list <- foreach(i = self$get_analyses(analyses)) %dopar% {
+          chroms <- rcpp_parse_ms_analysis_chromatograms(i, index)
+          chroms
+        }
+
+        message(" Done!")
+      }
 
       if (length(chrom_list) == length(analyses)) {
         names(chrom_list) <- analyses
@@ -584,38 +909,6 @@ msData <- R6::R6Class("msData",
         warning("Defined analyses not found!")
         data.table()
       }
-    },
-
-    #' @description
-    #' Method to get the total ion chromatograms (TIC) from the analyses.
-    #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #'
-    #' @return A character vector.
-    #'
-    get_tic = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(data.table())
-      tic <- lapply(private$.analyses[analyses], function(x) x$tic)
-      tic <- rbindlist(tic, idcol = "analysis", fill = TRUE)
-      tic
-    },
-
-    #' @description
-    #' Method to get the base peak chromatograms (BPC) from the analyses.
-    #'
-    #' @param analyses A numeric/character vector with the number/name
-    #' of the analyses.
-    #'
-    #' @return A character vector.
-    #'
-    get_bpc = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) return(data.table())
-      bpc <- lapply(private$.analyses[analyses], function(x) x$bpc)
-      bpc <- rbindlist(bpc, idcol = "analysis", fill = TRUE)
-      bpc
     },
 
     #' @description
@@ -776,11 +1069,11 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Method to get settings from analyses.
+    #' Method to get processing settings.
     #'
-    #' @param call A string with the name of function call.
+    #' @param call A string with the name of the processing method.
     #'
-    #' @return A data.frame.
+    #' @return A list with ProcessingSettings S3 class object/s.
     #'
     get_settings = function(call = NULL) {
       if (is.null(call)) {
@@ -827,6 +1120,9 @@ msData <- R6::R6Class("msData",
             fts <- fts[fts$feature %in% target_id, ]
           }
           return(fts)
+        } else if (is.numeric(target_id)) {
+          fts <- fts[target_id, ]
+          return(fts)
         }
 
         if (is.data.frame(target_id)) {
@@ -846,11 +1142,19 @@ msData <- R6::R6Class("msData",
       }
 
       if (!is.null(mass)) {
+
         if (is.data.frame(mass)) {
           colnames(mass) <- gsub("mass", "mz", colnames(mass))
           colnames(mass) <- gsub("neutralMass", "mz", colnames(mass))
         }
+
         targets <- make_ms_targets(mass, rt, ppm, sec)
+
+        for (i in seq_len(nrow(targets))) {
+          if (targets$rtmax[i] == 0) targets$rtmax[i] <- max(fts$rtmax)
+          if (targets$mzmax[i] == 0) targets$mzmax[i] <- max(fts$mass)
+        }
+
         sel <- rep(FALSE, nrow(fts))
         for (i in seq_len(nrow(targets))) {
           sel[between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
@@ -861,6 +1165,12 @@ msData <- R6::R6Class("msData",
 
       if (!is.null(mz)) {
         targets <- make_ms_targets(mz, rt, ppm, sec)
+
+        for (i in seq_len(nrow(targets))) {
+          if (targets$rtmax[i] == 0) targets$rtmax[i] <- max(fts$rtmax)
+          if (targets$mzmax[i] == 0) targets$mzmax[i] <- max(fts$mass)
+        }
+
         sel <- rep(FALSE, nrow(fts))
         for (i in seq_len(nrow(targets))) {
           sel[between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
@@ -1452,12 +1762,12 @@ msData <- R6::R6Class("msData",
     ## ___ add -----
 
     #' @description
-    #' Method to add headers information to the `msData` object. If an argument
-    #' or element name is given, it must be type character. If an argument or
-    #' element path is given, it must be type character and exist. If an
-    #' argument or element date is given, it must be class POSIXct or POSIXt.
-    #' If given date is character, conversion to class POSIXct or POSIXt is
-    #' attempted. See `?headers` for more information.
+    #' Method to add headers. If an argument or element name is given, it must
+    #' be type character. If an argument or element path is given, it must be
+    #' type character and exist. If an argument or element date is given, it
+    #' must be class POSIXct or POSIXt. If given date is character, conversion
+    #' to class POSIXct or POSIXt is attempted. See `?Headers` for more
+    #' information.
     #'
     #' @template arg-headers-ellipsis
     #'
@@ -1465,9 +1775,9 @@ msData <- R6::R6Class("msData",
     #'
     add_headers = function(...) {
 
-      headers <- headers(...)
+      headers <- Headers(...)
 
-      if (is(headers, "headers")) {
+      if (is(headers, "Headers")) {
         old_headers <- private$.headers
         if (is.null(old_headers)) old_headers <- list()
 
@@ -1478,9 +1788,9 @@ msData <- R6::R6Class("msData",
           new_headers <- headers
         }
 
-        new_headers <- as.headers(new_headers)
+        new_headers <- as.Headers(new_headers)
 
-        if (!identical(new_headers, old_headers) & is(new_headers, "headers")) {
+        if (!identical(new_headers, old_headers) & is(new_headers, "Headers")) {
           private$.headers <- new_headers
           message("\U2713 Added headers!")
         }
@@ -1492,32 +1802,79 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Method to add processing settings to the `msData` object.
+    #' Method to add processing settings.
     #'
     #' @template arg-settings-list
     #'
     #' @return Invisible.
     #'
     add_settings = function(settings = NULL) {
+
       if (is.list(settings)) {
 
-        if (all(c("call", "algorithm", "parameters") %in% names(settings))) {
-          settings <- as.settings(settings)
+        cols_check <- c("call", "algorithm", "parameters")
+        if (all(cols_check %in% names(settings))) {
+          settings <- list(settings)
+        }
 
-          if (!is.null(settings)) {
-            private$.settings[[settings$call]] <- settings
-            message(
-              paste0("\U2713 ", settings$call, " processing settings added!")
+        valid <- vapply(settings, function(x) {
+          eval <- validate.ProcessingSettings(x)
+
+          if (eval) {
+            processingFunctionCalls <- c(
+              "find_features", "annotate_features",
+              "load_features_ms1", "load_features_ms2",
+              "load_groups_ms1", "load_groups_ms2",
+              "group_features", "fill_features",
+              "filter_features"
             )
-          }
 
-        } else if (all(vapply(settings, validate.settings, FALSE))) {
-          settings <- lapply(settings, as.settings)
+            if (!any(processingFunctionCalls %in% x$call)) {
+              warning("Call name not present in MassSpecData class processing methods!")
+              eval <- FALSE
+            }
+
+            if (eval) {
+
+              if ("find_features" %in% x$call) {
+                ff_algorithm <- c(
+                  "openms", "xcms", "xcms3", "envipick",
+                  "sirius", "kpic2", "safd"
+                )
+
+                if (!any(ff_algorithm %in% x$algorithm)) {
+                  warning("Algorithm not viable for find_feature call!")
+                  eval <- FALSE
+                }
+              }
+
+              if ("group_features" %in% x$call) {
+                fg_algorithm <- c("openms", "xcms", "xcms3", "kpic2", "sirius")
+
+                if (!any(fg_algorithm %in% x$algorithm)) {
+                  warning("Algorithm not viable for group_feature call!")
+                  eval <- FALSE
+                }
+              }
+            }
+          }
+          eval
+        }, FALSE)
+
+        if (all(valid)) {
+          settings <- lapply(settings, as.ProcessingSettings)
           call_names <- vapply(settings, function(x) x$call, NA_character_)
           private$.settings[call_names] <- settings
-          message(paste0("\U2713 Added settings for:\n",
-            paste(call_names, collapse = "\n"))
-          )
+
+          if (length(settings) == 1) {
+            message(
+              paste0("\U2713 ", settings[[1]]$call, " processing settings added!")
+            )
+          } else {
+            message(paste0("\U2713 Added settings for:\n",
+                           paste(call_names, collapse = "\n"))
+            )
+          }
 
         } else {
           warning("Settings content or structure not conform! Not added.")
@@ -1529,7 +1886,7 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Method to add analyses to the `msData` object.
+    #' Method to add analyses.
     #'
     #' @template arg-ms-analyses-list
     #'
@@ -1539,9 +1896,9 @@ msData <- R6::R6Class("msData",
 
       if (is.list(analyses)) {
         if (all(c("name", "file") %in% names(analyses))) {
-          analyses <- as.msAnalysis(analyses)
+          analyses <- as.MassSpecAnalysis(analyses)
 
-          if (is(analyses, "msAnalysis")) {
+          if (is(analyses, "MassSpecAnalysis")) {
             ana_name <- analyses$name
             analyses <- list(analyses)
             names(analyses) <- ana_name
@@ -1552,9 +1909,9 @@ msData <- R6::R6Class("msData",
           }
 
         } else {
-          analyses <- lapply(analyses, as.msAnalysis)
+          analyses <- lapply(analyses, as.MassSpecAnalysis)
 
-          if (all(vapply(analyses, function(x) is(x, "msAnalysis"), FALSE))) {
+          if (all(vapply(analyses, function(x) is(x, "MassSpecAnalysis"), FALSE))) {
             ana_names <- vapply(analyses, function(x) x$name, "")
             names(analyses) <- ana_names
 
@@ -1609,8 +1966,7 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Method to add or redefine the analysis replicate names. Changes the
-    #' `msData` object.
+    #' Method to add or redefine the analysis replicate names.
     #'
     #' @param value A character vector with the analysis replicate names.
     #' Must be of the same length as the number of analyses.
@@ -1637,7 +1993,6 @@ msData <- R6::R6Class("msData",
 
     #' @description
     #' Method to add or redefine the analysis blank replicate names.
-    #' Changes the `msData` object.
     #'
     #' @param value A character vector with the analysis blank replicate names.
     #' Must be of the same length as the number of analyses.
@@ -1752,8 +2107,8 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Method to add feature groups in the `msData` object. Note that existing
-    #' features groups are replaced!
+    #' Method to add feature groups. Note that existing features groups are
+    #' replaced!
     #'
     #' @template arg-ms-groups
     #'
@@ -1819,7 +2174,7 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Method to add time alignment results in the `msData` object.
+    #' Method to add time alignment results.
     #'
     #' @param alignment list.
     #'
@@ -1857,7 +2212,7 @@ msData <- R6::R6Class("msData",
     ## ___ load -----
 
     #' @description
-    #' Method to load all spectra from analyses to the `msData` object.
+    #' Method to load all spectra from all analyses.
     #'
     #' @param runParallel X.
     #'
@@ -1894,7 +2249,7 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Method to load all chromatograms from analyses to the `msData` object.
+    #' Method to load all chromatograms from all analyses.
     #'
     #' @param runParallel X.
     #'
@@ -1949,7 +2304,7 @@ msData <- R6::R6Class("msData",
         settings <- settings[["load_features_ms1"]]
       }
 
-      if (validate.settings(settings)) {
+      if (validate.ProcessingSettings(settings)) {
         if (!"load_features_ms1" %in% settings$call) {
           warning("Settings call must be load_features_ms1!")
           valid <- FALSE
@@ -2059,7 +2414,7 @@ msData <- R6::R6Class("msData",
         settings <- settings[["load_features_ms2"]]
       }
 
-      if (validate.settings(settings)) {
+      if (validate.ProcessingSettings(settings)) {
         if (!"load_features_ms2" %in% settings$call) {
           warning("Settings call must be 'load_features_ms2'!")
           valid <- FALSE
@@ -2131,7 +2486,7 @@ msData <- R6::R6Class("msData",
             ft_ms2 <- ana_ms2[ana_ms2$id %in% x2, ]
 
             if (nrow(ft_ms2) > 0) {
-              cols <- c("preMZ", "rt","mz", "intensity", "isPre")
+              cols <- c("pre_mz", "rt","mz", "intensity", "isPre")
               ft_ms2 <- ft_ms2[, cols, with = FALSE]
               ft_ms2
             } else {
@@ -2161,8 +2516,8 @@ msData <- R6::R6Class("msData",
     #' used for averaging into the respective feature group. If features MS1
     #' are not present, settings for loading and averaging features MS1
     #' spectra (i.e., settings with call name "load_features_ms1") must
-    #' be given in the `settingsFeatures` argument or added beforehand to the
-    #' msData object.
+    #' be given in the `settingsFeatures` argument or added beforehand with
+    #' `all_settings` method.
     #'
     #' @param settings X.
     #' @param settingsFeatures X.
@@ -2178,7 +2533,7 @@ msData <- R6::R6Class("msData",
         settings <- settings[["load_groups_ms1"]]
       }
 
-      if (validate.settings(settings)) {
+      if (validate.ProcessingSettings(settings)) {
         if (!"load_groups_ms1" %in% settings$call) {
           warning("Settings call must be 'load_groups_ms1'!")
           valid <- FALSE
@@ -2290,7 +2645,7 @@ msData <- R6::R6Class("msData",
         settings <- settings[["load_groups_ms2"]]
       }
 
-      if (validate.settings(settings)) {
+      if (validate.ProcessingSettings(settings)) {
         if (!"load_groups_ms2" %in% settings$call) {
           warning("Settings call must be 'load_groups_ms2'!")
           valid <- FALSE
@@ -2388,8 +2743,8 @@ msData <- R6::R6Class("msData",
     ## ___ remove -----
 
     #' @description
-    #' Removes headers entries from the `msData` object. Note that the name,
-    #' path and date headers cannot be removed.
+    #' Removes headers entries. Note that the name, path and date headers
+    #' cannot be removed.
     #'
     #' @param value A character vector with the names of the headers entries
     #' to be removed.
@@ -2431,7 +2786,7 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Removes settings from the `msData` object.
+    #' Removes settings.
     #'
     #' @param call A character vector with the settings call name. When `call`
     #' is \code{NULL} all settings are removed.
@@ -2459,7 +2814,7 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Removes analyses from the `msData` object. Note that unique feature
+    #' Removes analyses. Note that unique feature
     #' groups from the removed analyses are also removed.
     #'
     #' @param analyses A character vector with the names or indices of the
@@ -2515,7 +2870,7 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Remove feature from the `msData` object.
+    #' Remove features.
     #'
     #' @param features A data.frame with columns \emph{analysis} and \emph{feature}
     #' representing the analysis name and the id of the features to remove,
@@ -2582,9 +2937,9 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Removes loaded MS1 spectra from features in the analyses of
-    #' the `msData` object. In practice, the column \emph{ms1} in the features
-    #' data.table of each analysis object is removed.
+    #' Removes loaded MS1 spectra from features in the analyses. In practice,
+    #' the column \emph{ms1} in the features data.table of each analysis object
+    #' is removed.
     #'
     #' @return Invisible.
     #'
@@ -2606,9 +2961,9 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Removes loaded MS2 spectra from features in the analyses of
-    #' the `msData` object. In practice, the column \emph{ms2} in the features
-    #' data.table of each analysis object is removed.
+    #' Removes loaded MS2 spectra from features in the analyses. In practice,
+    #' the column \emph{ms2} in the features data.table of each analysis object
+    #' is removed.
     #'
     #' @return Invisible.
     #'
@@ -2630,7 +2985,7 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Remove feature groups from the `msData` object.
+    #' Remove feature groups.
     #'
     #' @param groups X.
     #' @param filtered X.
@@ -2688,8 +3043,8 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Removes loaded MS1 spectra from feature groups in the `msData` object.
-    #' In practice, the column \emph{ms1} in the groups data.table is removed.
+    #' Removes loaded MS1 spectra from feature groups. In practice, the column
+    #' \emph{ms1} in the groups data.table is removed.
     #'
     #' @return Invisible.
     #'
@@ -2708,8 +3063,8 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Removes loaded MS2 spectra from feature groups in the `msData` object.
-    #' In practice, the column \emph{ms2} in the groups data.table is removed.
+    #' Removes loaded MS2 spectra from feature groups. In practice, the column
+    #' \emph{ms2} in the groups data.table is removed.
     #'
     #' @return Invisible.
     #'
@@ -2728,7 +3083,7 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Removes alignment results from the `msData` object.
+    #' Removes alignment results.
     #'
     #' @return Invisible.
     #'
@@ -2741,12 +3096,12 @@ msData <- R6::R6Class("msData",
     ## ___ subset -----
 
     #' @description
-    #' Subsets an `msData` object on analyses.
+    #' Subsets a `MassSpecData` object on analyses.
     #'
     #' @param analyses X.
     #'
-    #' @return A new cloned `msData` object with only the analyses as defined
-    #' by the `analyses` argument.
+    #' @return A new cloned `MassSpecData` object with only the analyses as
+    #' defined by the `analyses` argument.
     #'
     subset_analyses = function(analyses = NULL) {
       analyses <- private$.check_analyses_argument(analyses)
@@ -2760,7 +3115,7 @@ msData <- R6::R6Class("msData",
           newAnalyses <- self$get_analyses(keepAnalyses)
           newAlignment <- self$get_alignment()[keepAnalyses]
 
-          new_ms <- suppressMessages(msData$new(
+          new_ms <- suppressMessages(MassSpecData$new(
             files = NULL,
             headers = self$get_headers(),
             settings = self$get_settings(),
@@ -2788,18 +3143,18 @@ msData <- R6::R6Class("msData",
       }
 
       message("\U2717 There are no analyses selected to subset!")
-      suppressMessages(msData$new())
+      suppressMessages(MassSpecData$new())
     },
 
     #' @description
-    #' Subsets an `msData` object on features from analyses.
+    #' Subsets a `MassSpecData` object on features from analyses.
     #'
     #' @param features A data.frame with columns \emph{analysis} and \emph{feature}
     #' representing the analysis name and the id of the features to keep in the
-    #' new `msData` object, respectively.
+    #' new `MassSpecData` object, respectively.
     #'
-    #' @return A new cloned `msData` object with only the features as defined
-    #' by the `features` argument.
+    #' @return A new cloned `MassSpecData` object with only the features as
+    #' defined by the `features` argument.
     #'
     subset_features = function(features = NULL) {
       if (is.data.frame(features)) {
@@ -2835,20 +3190,20 @@ msData <- R6::R6Class("msData",
       } else {
         message("\U2717 Data.frame with analysis and feature IDs not given!")
       }
-      suppressMessages(msData$new())
+      suppressMessages(MassSpecData$new())
     },
 
     #' @description
-    #' Subsets an `msData` object on groups from correspondence of features
+    #' Subsets a `MassSpecData` object on groups from correspondence of features
     #' across analyses. Note that when sub-setting groups, features that lose
     #' correspondence are not removed but filtered with "grouping" added as
     #' filter category/tag. Filtered features can be removed with the method
-    #' `msData$remove_features(filtered = TRUE)`.
+    #' `remove_features(filtered = TRUE)`.
     #'
     #' @param groups X.
     #'
-    #' @return A new cloned `msData` object with only the groups as defined
-    #' by the `groups` argument.
+    #' @return A new cloned `MassSpecData` object with only the groups as
+    #' defined by the `groups` argument.
     #'
     subset_groups = function(groups = NULL) {
       if (self$has_groups() & !is.null(groups)) {
@@ -2871,13 +3226,13 @@ msData <- R6::R6Class("msData",
       } else {
         message("\U2717 There are no groups to subset!")
       }
-      suppressMessages(msData$new())
+      suppressMessages(MassSpecData$new())
     },
 
     ## ___ has -----
 
     #' @description
-    #' Method to check of the `msData` object has analyses.
+    #' Method to check is analyses are present.
     #'
     #' @return Logical value.
     #'
@@ -3015,7 +3370,7 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Method to check if there are processing settings in the `msData` object.
+    #' Method to check if there are processing settings.
     #'
     #' @param call A string with the name of function call.
     #'
@@ -3085,7 +3440,7 @@ msData <- R6::R6Class("msData",
     #' @param id X.
     #' @param allTraces Logical, when \code{TRUE} all level 2 data is returned.
     #' When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
-    #' are returned, using the `preMZ` value and the `isolationWindow`.
+    #' are returned, using the `pre_mz` value and the `isolationWindow`.
     #' @param isolationWindow X.
     #' @param minIntensityMS1 X.
     #' @param minIntensityMS2 X.
@@ -3413,6 +3768,11 @@ msData <- R6::R6Class("msData",
                              colorBy = "targets", interactive = TRUE) {
 
       fts <- self$get_features(analyses, features, mass, mz, rt, ppm, sec, filtered)
+
+      if (nrow(fts) == 0) {
+        message("\U2717 Features not found for the targets!")
+        return(NULL)
+      }
 
       eic <- self$get_features_eic(
         analyses = unique(fts$analysis), features = fts$feature,
@@ -3930,12 +4290,13 @@ msData <- R6::R6Class("msData",
     ## ___ processing -----
 
     #' @description Finds features (i.e., chromatographic peaks) from MS data
-    #' in an `msData` class object. The function uses the \pkg{patRoon} package
+    #' in analyses. The function uses the \pkg{patRoon} package
     #' for peak finding, enabling the use of several algorithms (see details).
     #' Note that the settings call name must be "find_features".
     #'
     #' @param settings A list object with call name, algorithm and parameters.
-    #' When not given, settings will be searched within the `msData` object.
+    #' When not given, settings will be searched within the
+    #' `MassSpecData` object.
     #'
     #' @details See the \link[patRoon]{findFeatures} function from the
     #' \pkg{patRoon} package or the
@@ -3962,7 +4323,7 @@ msData <- R6::R6Class("msData",
         settings <- settings[["find_features"]]
       }
 
-      if (validate.settings(settings)) {
+      if (validate.ProcessingSettings(settings)) {
         if (!"find_features" %in% settings$call) {
           warning("Settings call must be find_features!")
           valid <- FALSE
@@ -3978,6 +4339,10 @@ msData <- R6::R6Class("msData",
 
       algorithm <- settings$algorithm
       parameters <- settings$parameters
+
+      if (isS4(parameters)) {
+        parameters <- list("param" = parameters)
+      }
 
       anaInfo <- self$get_overview()
       anaInfo <- data.frame(
@@ -4001,13 +4366,13 @@ msData <- R6::R6Class("msData",
       invisible(self)
     },
 
-    #' @description Groups and aligns features across analyses in the `msData`
-    #' object. The function uses the \pkg{patRoon} package for grouping
+    #' @description Groups and aligns features across analyses.
+    #' The function uses the \pkg{patRoon} package for grouping
     #' features, enabling the use of several algorithms (see details).
     #' Note that the settings call name must be "group_features".
     #'
     #' @param settings A list object with call name, algorithm and parameters.
-    #' When not given, settings will be searched within the `msData` object.
+    #' When not given, settings will be searched within the `MassSpecData` object.
     #'
     #' @return Invisible.
     #'
@@ -4033,7 +4398,7 @@ msData <- R6::R6Class("msData",
         settings <- settings[["group_features"]]
       }
 
-      if (validate.settings(settings)) {
+      if (validate.ProcessingSettings(settings)) {
         if (!"group_features" %in% settings$call) {
           warning("Settings call must be group_features!")
           valid <- FALSE
@@ -4095,7 +4460,7 @@ msData <- R6::R6Class("msData",
 
     #' @description
     #' Creates an object with S4 class `features` from the package \pkg{patRoon}
-    #' with the features in the analyses of the msData object.
+    #' with the features in the analyses.
     #'
     #' @return An object with S4 class `features`.
     #'
@@ -4116,7 +4481,7 @@ msData <- R6::R6Class("msData",
       polarities <- self$get_polarities()
       if (length(unique(polarities)) > 1) anaInfo$set <- polarities
 
-      anaInfo$file <- self$get_file_paths()
+      anaInfo$file <- self$get_files()
       rownames(anaInfo) <- seq_len(nrow(anaInfo))
 
       features <- lapply(self$get_analyses(), function(x) {
@@ -4172,8 +4537,7 @@ msData <- R6::R6Class("msData",
     ## checks -----
 
     #' @description
-    #' Checks the correspondence of features within feature groups in
-    #' the `msData` object.
+    #' Checks the correspondence of features within feature groups.
     #'
     #' @return \code{TRUE} or \code{FALSE}.
     #'
@@ -4346,7 +4710,7 @@ msData <- R6::R6Class("msData",
 
     #' @description
     #' Method to save the private fields (i.e., headers, settings, analyses,
-    #' groups and alignment) of the msData object.
+    #' groups and alignment) of the MassSpecData object.
     #'
     #' @param format X.
     #' @param name X.
@@ -4355,7 +4719,7 @@ msData <- R6::R6Class("msData",
     #' @return Saves the private fields of the msdata as the defined `format`
     #' in the \code{path} and returns invisible.
     #'
-    save = function(format = "json", name = "msData", path = getwd()) {
+    save = function(format = "json", name = "MassSpecData", path = getwd()) {
       list_all <- list()
 
       headers <- self$get_headers()
@@ -4398,8 +4762,7 @@ msData <- R6::R6Class("msData",
     ## ___ import -----
 
     #' @description
-    #' Method to import headers to the `msData` object from a \emph{rds} or
-    #' \emph{json} file.
+    #' Method to import headers from a \emph{rds} or \emph{json} file.
     #'
     #' @param file X.
     #' @param list X.
@@ -4420,8 +4783,7 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Method to import processing settings to the `msData` object from a
-    #' \emph{rds} or \emph{json} file.
+    #' Method to import processing settings from a \emph{rds} or \emph{json} file.
     #'
     #' @param file X.
     #'
@@ -4441,8 +4803,7 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Method to import analyses to the `msData` object from a \emph{rds} or
-    #' \emph{json} file.
+    #' Method to import analyses from a \emph{rds} or \emph{json} file.
     #'
     #' @param file X.
     #'
@@ -4463,8 +4824,7 @@ msData <- R6::R6Class("msData",
     },
 
     #' @description
-    #' Method to import feature groups to the `msData` object from a
-    #' \emph{rds} or \emph{json} file.
+    #' Method to import feature groups from a \emph{rds} or \emph{json} file.
     #'
     #' @param file X.
     #'
@@ -4508,20 +4868,21 @@ msData <- R6::R6Class("msData",
   )
 )
 
-# _ import msData class -----
+# _ import MassSpecData class -----
 
-#' Function to import an msData class object from a *json* or *rds* file
+#' Function to import a MassSpecData class object from a *json* or *rds* file
 #'
-#' @description Function to import an `msData` class object from a saved *json*
+#' @description Function to import a `MassSpecData` class object from a saved *json*
 #' or *rds* file.
 #'
-#' @param file A *json* or *rds* file as obtained by the msData method `save()`.
+#' @param file A *json* or *rds* file as obtained by the MassSpecData
+#' method `save()`.
 #'
-#' @return An `msData` class object.
+#' @return A `MassSpecData` class object.
 #'
 #' @export
 #'
-import_msData <- function(file) {
+import_MassSpecData <- function(file) {
   if (file.exists(file)) {
     new_ms <- NULL
 
@@ -4530,7 +4891,7 @@ import_msData <- function(file) {
 
       fields_present <- names(js_ms)
 
-      new_ms <- msData$new()
+      new_ms <- MassSpecData$new()
 
       if ("headers" %in% fields_present) new_ms$add_headers(js_ms[["headers"]])
 
@@ -4547,7 +4908,7 @@ import_msData <- function(file) {
       }
 
       if ("groups" %in% fields_present) {
-        if (!is.null(js_ms[["groups"]]) & length(js_ms[["groups"]]) > 0) {
+        if (!is.null(js_ms[["groups"]]) && length(js_ms[["groups"]]) > 0) {
           new_ms$add_groups(js_ms[["groups"]])
         }
       }
@@ -4558,14 +4919,14 @@ import_msData <- function(file) {
         }
       }
 
-      message("\U2713 msData class object imported from json file!")
+      message("\U2713 MassSpecData class object imported from json file!")
     }
 
     if (file_ext(file) %in% "rds") {
       new_ms <- readRDS(file)
 
       # TODO validate object
-      message("\U2713 msData class object imported from rds file!")
+      message("\U2713 MassSpecData class object imported from rds file!")
     }
 
     new_ms
@@ -4582,9 +4943,9 @@ import_msData <- function(file) {
 #'
 #' @param pat An object with class `features` or `featureGroups` from the
 #' package \pkg{patRoon}.
-#' @param self An `msData` object. When applied within the R6, the self object.
+#' @param self A `MassSpecData` object. When applied within the R6, the self object.
 #'
-#' @return A list of with a features \linkS4class{data.table} for each analysis.
+#' @return A list with a features \linkS4class{data.table} for each analysis.
 #'
 #' @noRd
 #'
@@ -4790,7 +5151,7 @@ build_features_table_from_patRoon <- function(pat, self) {
 #' time alignment.
 #'
 #' @param pat An object with class `featureGroups` from \pkg{patRoon}.
-#' @param self An `msData` object. When applied within the R6, the self object.
+#' @param self A `MassSpecData` object. When applied within the R6, the self object.
 #'
 #' @noRd
 #'
@@ -4814,7 +5175,7 @@ extract_time_alignment <- function(pat, self) {
       hasSpectra <- FALSE
 
       if (!hasSpectra) {
-        rtOrg <- lapply(self$get_file_paths(), function(x) {
+        rtOrg <- lapply(self$get_files(), function(x) {
           file_link <- mzR::openMSfile(x, backend = "pwiz")
           sH <- suppressWarnings(mzR::header(file_link))
           suppressWarnings(mzR::close(file_link))

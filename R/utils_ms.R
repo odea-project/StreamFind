@@ -35,7 +35,7 @@ trim_spectra_targets <- function(traces, targets, preMZr) {
           cutMZ <- trim_vector(tg$mz, targets$mzmin[z], targets$mzmax[z])
           tg <- tg[tg$level == 2 | (tg$level == 1 & cutMZ), ]
           if (nrow(tg) > 0) {
-            cutPreMZ <- trim_vector(tg$preMZ, preMZr$mzmin[z], preMZr$mzmax[z])
+            cutPreMZ <- trim_vector(tg$pre_mz, preMZr$mzmin[z], preMZr$mzmax[z])
             tg <- tg[tg$level == 1 | (tg$level == 2 & cutPreMZ), ]
           }
         } else {
@@ -58,7 +58,7 @@ trim_spectra_targets <- function(traces, targets, preMZr) {
   tg_df
 }
 
-#' Function to make targets for parsing data within msData class methods
+#' Function to make targets for parsing data within MassSpecData class methods
 #'
 #' @description Helper function to build \emph{m/z} and retention time
 #' target pairs for searching data. Each target is composed of an
