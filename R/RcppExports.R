@@ -5,6 +5,10 @@ rcpp_ms_annotation_isotopes <- function(features, maxIsotopes = 6L, maxCharge = 
     .Call(`_streamFind_rcpp_ms_annotation_isotopes`, features, maxIsotopes, maxCharge, rtWindowAlignment, maxGaps)
 }
 
+rcpp_centroid_spectra <- function(spectra) {
+    .Call(`_streamFind_rcpp_centroid_spectra`, spectra)
+}
+
 rcpp_ms_cluster_ms2 <- function(ms2, mzClust, verbose) {
     .Call(`_streamFind_rcpp_ms_cluster_ms2`, ms2, mzClust, verbose)
 }
