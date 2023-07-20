@@ -7,8 +7,6 @@
 #' @return A logical vector with the same length as `v` with \code{TRUE} for
 #' regions between `a` and `b` value pairs.
 #'
-#' @export
-#'
 #' @noRd
 #'
 trim_vector <- function(v, a, b) {
@@ -24,8 +22,6 @@ trim_vector <- function(v, a, b) {
 #'
 #' @return The filtered `traces` data.frame.
 #'
-#' @export
-#'
 #' @noRd
 #'
 trim_spectra_targets <- function(traces, targets, preMZr) {
@@ -39,7 +35,7 @@ trim_spectra_targets <- function(traces, targets, preMZr) {
           cutMZ <- trim_vector(tg$mz, targets$mzmin[z], targets$mzmax[z])
           tg <- tg[tg$level == 2 | (tg$level == 1 & cutMZ), ]
           if (nrow(tg) > 0) {
-            cutPreMZ <- trim_vector(tg$preMZ, preMZr$mzmin[z], preMZr$mzmax[z])
+            cutPreMZ <- trim_vector(tg$pre_mz, preMZr$mzmin[z], preMZr$mzmax[z])
             tg <- tg[tg$level == 1 | (tg$level == 2 & cutPreMZ), ]
           }
         } else {
@@ -62,7 +58,7 @@ trim_spectra_targets <- function(traces, targets, preMZr) {
   tg_df
 }
 
-#' Function to make targets for parsing data within msData class methods
+#' Function to make targets for parsing data within MassSpecData class methods
 #'
 #' @description Helper function to build \emph{m/z} and retention time
 #' target pairs for searching data. Each target is composed of an
@@ -77,13 +73,17 @@ trim_spectra_targets <- function(traces, targets, preMZr) {
 #' data.table or data.frame with minimum and maximum values of \emph{m/z} and
 #' retention time targets. Note that when mass/time ranges are given, the
 #' \code{ppm} and \code{sec} arguments are not used.
+#'
 #' @param rt A vector with target retention time values (in seconds) or
 #' a two columns data.table or data.frame with minimum and maximum retention
 #' time values (in seconds).
+#'
 #' @param ppm Numeric of length one with the mass deviation, in ppm.
+#'
 #' @param sec Numeric of length one with the time deviation, in seconds.
+#'
 #' @param id Character with the same length as \emph{m/z} and retention time
-#' targets to be used as identifiers. When not given, the id is built as a
+#' targets to be used as identifier/s. When not given, the id is built as a
 #' combination of the \emph{m/z} and retention time ranges or values.
 #'
 #' @return A data.frame with columns: *id*, *mz*, *rt*, *mzmin*, *mzmax*,
@@ -299,8 +299,6 @@ make_ms_targets <- function(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL)
 #'
 #' @return A named vector of colors. The names of the vector is the \code{obj}.
 #'
-#' @export
-#'
 #' @noRd
 #'
 get_colors <- function(obj) {
@@ -358,8 +356,6 @@ get_colors <- function(obj) {
 #' @param method X.
 #'
 #' @return X.
-#'
-#' @export
 #'
 #' @noRd
 #'
@@ -455,4 +451,25 @@ correlate_analysis_spectra <- function(spectra,
   }
 
   cor_list
+}
+
+#' caches_data
+#'
+#' @description Check if cache is possible and enabled via the global options.
+#'
+#' @return `TRUE` or `FALSE`.
+#'
+#' @noRd
+#'
+caches_data <- function() {
+  if (requireNamespace("patRoon", quietly = TRUE)) {
+    ret <- getOption("patRoon.cache.mode", default = "both")
+    if (ret %in% c("both", "save", "load")) {
+      TRUE
+    } else {
+      FALSE
+    }
+  } else {
+    FALSE
+  }
 }

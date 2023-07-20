@@ -25,7 +25,7 @@ targets = data.frame(
 
 unregister_dopar <- function() {
   env <- foreach:::.foreachGlobals
-  rm(list=ls(name=env), pos=env)
+  rm(list = ls(name = env), pos = env)
 }
 
 unregister_dopar()

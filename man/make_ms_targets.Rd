@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_ms.R
 \name{make_ms_targets}
 \alias{make_ms_targets}
-\title{Function to make targets for parsing data within msData class methods}
+\title{Function to make targets for parsing data within MassSpecData class methods}
 \usage{
 make_ms_targets(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL)
 }
@@ -25,7 +25,7 @@ time values (in seconds).}
 \item{sec}{Numeric of length one with the time deviation, in seconds.}
 
 \item{id}{Character with the same length as \emph{m/z} and retention time
-targets to be used as identifiers. When not given, the id is built as a
+targets to be used as identifier/s. When not given, the id is built as a
 combination of the \emph{m/z} and retention time ranges or values.}
 }
 \value{

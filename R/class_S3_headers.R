@@ -1,7 +1,7 @@
-#' **headers** S3 class constructor and methods
+#' **Headers** S3 class constructor, methods and functions
 #'
 #' @description
-#' Creates a headers S3 class object.
+#' Creates a Headers S3 class object.
 #'
 #' @template arg-headers-ellipsis
 #'
@@ -11,15 +11,15 @@
 #' If given date is character, conversion to class POSIXct or POSIXt is
 #' attempted.
 #'
-#' @return A headers S3 class object.
+#' @return A Headers S3 class object.
 #'
 #' @export
 #'
-headers <- function(...) {
+Headers <- function(...) {
 
   x <- list(...)
 
-  if (length(x) == 1 & is.list(x[[1]])) x <- x[[1]]
+  if (length(x) == 1) if (is.list(x[[1]])) x <- x[[1]]
 
   x_names <- names(x)
 
@@ -38,55 +38,55 @@ headers <- function(...) {
   if (!"path" %in% x_names) x$path <- getwd()
   if (!"date" %in% x_names) x$date <- Sys.time()
 
-  if (validate.headers(x)) {
-    structure(x, class = "headers")
+  if (validate.Headers(x)) {
+    structure(x, class = "Headers")
   } else {
     NULL
   }
 }
 
-#' @describeIn headers
-#' Validates a headers S3 class object, returning a logical value of length one.
+#' @describeIn Headers
+#' Validates a Headers S3 class object, returning a logical value of length one.
 #'
-#' @param headers A headers S3 class object.
+#' @param x A Headers S3 class object.
 #'
 #' @export
 #'
-validate.headers <- function(headers) {
+validate.Headers <- function(x) {
 
-  if (missing(headers)) headers <- NULL
+  if (missing(x)) x <- NULL
 
   valid <- FALSE
 
-  if (is.list(headers)) {
+  if (is.list(x)) {
     valid <- TRUE
 
-    if (!all(vapply(headers, function(headers) length(headers) == 1, FALSE))) {
+    if (!all(vapply(x, function(x) length(x) == 1, FALSE))) {
       warning("All headers must be of length 1!")
       valid <- FALSE
     }
 
-    if (length(unique(names(headers))) != length(headers)) {
+    if (length(unique(names(x))) != length(x)) {
       warning("Headers must have names and not permitted duplicated names!")
       valid <- FALSE
     }
 
-    if ("name" %in% names(headers)) {
-      if (!is.character(headers$name)) {
+    if ("name" %in% names(x)) {
+      if (!is.character(x$name)) {
         warning("Header list entry name must be character!")
         valid <- FALSE
       }
     }
 
-    if ("path" %in% names(headers)) {
-      if (!dir.exists(headers$path)) {
+    if ("path" %in% names(x)) {
+      if (!dir.exists(x$path)) {
         warning("Header list entry path must exist!")
         valid <- FALSE
       }
     }
 
-    if ("date" %in% names(headers)) {
-      if (!all(grepl("POSIXct|POSIXt", class(headers$date)))) {
+    if ("date" %in% names(x)) {
+      if (!all(grepl("POSIXct|POSIXt", class(x$date)))) {
         warning("Header list entry date class must be POSIXct or POSIXt!")
         valid <- FALSE
       }
@@ -96,12 +96,33 @@ validate.headers <- function(headers) {
   valid
 }
 
-#' @describeIn headers
-#' Converts the argument value into a headers S3 class object.
-#'
-#' @param value List to be checked and converted to headers S3 class.
+#' @describeIn Headers
+#' Converts a Headers S3 class object to a JSON string.
 #'
 #' @export
-as.headers <- function(value) {
-  headers(value = value)
+asJSON.Headers <- function(x) {
+  toJSON(
+    x,
+    dataframe = "columns",
+    Date = "ISO8601",
+    POSIXt = "string",
+    factor = "string",
+    complex = "string",
+    null = "null",
+    na = "null",
+    auto_unbox = FALSE,
+    digits = 8,
+    pretty = TRUE,
+    force = TRUE
+  )
+}
+
+#' @describeIn Headers
+#' Converts the argument value into a Headers S3 class object.
+#'
+#' @param value List to be checked and converted to Headers S3 class.
+#'
+#' @export
+as.Headers <- function(value) {
+  Headers(value = value)
 }

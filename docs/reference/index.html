@@ -62,9 +62,9 @@
 
       <dl><dt>
           
-          <code><a href="msData.html">msData</a></code> 
+          <code><a href="MassSpecData.html">MassSpecData</a></code> 
         </dt>
-        <dd><strong>msData</strong> R6 class and methods</dd>
+        <dd><strong>MassSpecData</strong> R6 class and methods</dd>
       </dl></div><div class="section level2">
       <h2 id="s-classes">S3 classes<a class="anchor" aria-label="anchor" href="#s-classes"></a></h2>
       
@@ -78,21 +78,21 @@
 
       <dl><dt>
           
-          <code><a href="headers.html">headers()</a></code> <code><a href="headers.html">validate(<i>&lt;headers&gt;</i>)</a></code> <code><a href="headers.html">as.headers()</a></code> 
+          <code><a href="Headers.html">Headers()</a></code> <code><a href="Headers.html">validate(<i>&lt;Headers&gt;</i>)</a></code> <code><a href="Headers.html">asJSON(<i>&lt;Headers&gt;</i>)</a></code> <code><a href="Headers.html">as.Headers()</a></code> 
         </dt>
-        <dd><strong>headers</strong> S3 class constructor and methods</dd>
+        <dd><strong>Headers</strong> S3 class constructor, methods and functions</dd>
       </dl><dl><dt>
           
-          <code><a href="settings.html">settings()</a></code> <code><a href="settings.html">validate(<i>&lt;settings&gt;</i>)</a></code> <code><a href="settings.html">as.settings()</a></code> 
+          <code><a href="ProcessingSettings.html">ProcessingSettings()</a></code> <code><a href="ProcessingSettings.html">validate(<i>&lt;ProcessingSettings&gt;</i>)</a></code> <code><a href="ProcessingSettings.html">asJSON(<i>&lt;ProcessingSettings&gt;</i>)</a></code> <code><a href="ProcessingSettings.html">export(<i>&lt;ProcessingSettings&gt;</i>)</a></code> <code><a href="ProcessingSettings.html">as.ProcessingSettings()</a></code> 
         </dt>
-        <dd><strong>settings</strong> S3 class constructor and methods</dd>
+        <dd><strong>ProcessingSettings</strong> S3 class constructor, methods and functions</dd>
       </dl><dl><dt>
           
-          <code><a href="msAnalysis.html">msAnalysis()</a></code> <code><a href="msAnalysis.html">validate(<i>&lt;msAnalysis&gt;</i>)</a></code> <code><a href="msAnalysis.html">as.msAnalysis()</a></code> <code><a href="msAnalysis.html">parse.msAnalysis()</a></code> 
+          <code><a href="MassSpecAnalysis.html">MassSpecAnalysis()</a></code> <code><a href="MassSpecAnalysis.html">validate(<i>&lt;MassSpecAnalysis&gt;</i>)</a></code> <code><a href="MassSpecAnalysis.html">asJSON(<i>&lt;MassSpecAnalysis&gt;</i>)</a></code> <code><a href="MassSpecAnalysis.html">as.MassSpecAnalysis()</a></code> <code><a href="MassSpecAnalysis.html">parse.MassSpecAnalysis()</a></code> 
         </dt>
-        <dd><strong>msAnalysis</strong> S3 class constructor and methods</dd>
+        <dd><strong>MassSpecAnalysis</strong> S3 class constructor, methods and functions</dd>
       </dl></div><div class="section level2">
-      <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>
+      <h2 id="ms-functions">MS functions<a class="anchor" aria-label="anchor" href="#ms-functions"></a></h2>
       
       
 
@@ -114,14 +114,24 @@
         <dd>Function to trim spectra in <em>mzML</em> or <em>mzXML</em> files</dd>
       </dl><dl><dt>
           
-          <code><a href="make_ms_targets.html">make_ms_targets()</a></code> 
+          <code><a href="import_MassSpecData.html">import_MassSpecData()</a></code> 
         </dt>
-        <dd>Function to make targets for parsing data within msData class methods</dd>
+        <dd>Function to import a MassSpecData class object from a <em>json</em> or <em>rds</em> file</dd>
       </dl><dl><dt>
           
-          <code><a href="import_msData.html">import_msData()</a></code> 
+          <code><a href="make_ms_targets.html">make_ms_targets()</a></code> 
         </dt>
-        <dd>Function to import an msData class object from a <em>json</em> or <em>rds</em> file</dd>
+        <dd>Function to make targets for parsing data within MassSpecData class methods</dd>
+      </dl><dl><dt>
+          
+          <code><a href="get_default_ProcessingSettings.html">get_default_ProcessingSettings()</a></code> 
+        </dt>
+        <dd>get_default_ProcessingSettings</dd>
+      </dl><dl><dt>
+          
+          <code><a href="save_default_ProcessingSettings.html">save_default_ProcessingSettings()</a></code> 
+        </dt>
+        <dd>save_default_ProcessingSettings</dd>
       </dl></div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>
