@@ -45,6 +45,13 @@ ProcessingSettings <- function(call = NA_character_,
     "doi" = doi
   )
 
+  if ("xcms" %in% algorithm || "xcms3" %in% algorithm) {
+    if (!requireNamespace("xcms")) {
+      warning("xcms package is not installed!")
+      return(NULL)
+    }
+  }
+
   if (is.data.frame(x$parameters)) {
     x$parameters <- as.list(x$parameters)
   }

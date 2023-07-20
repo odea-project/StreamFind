@@ -1,11 +1,11 @@
 
-# library(streamFind)
+library(streamFind)
 
-# save_default_ProcessingSettings(
-#   call = "find_features",
-#   software = "xcms",
-#   algorithm = "centwave"
-# )
+save_default_ProcessingSettings(
+  call = "find_features",
+  software = "xcms",
+  algorithm = "centwave"
+)
 
 # save_default_ProcessingSettings(
 #   call = "find_features",

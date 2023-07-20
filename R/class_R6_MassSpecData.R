@@ -4638,7 +4638,7 @@ build_features_table_from_patRoon <- function(pat, self) {
     temp_org <- self$get_features(x)
     build_feature_ids <- TRUE
 
-    if (nrow(temp_org) > 0) {
+    if (nrow(temp_org) > 0 && "featureGroups" %in% is(pat)) {
 
       temp_org$analysis <- NULL
 
@@ -4701,7 +4701,7 @@ build_features_table_from_patRoon <- function(pat, self) {
     temp$mzmin <- round(temp$mzmin, 8)
     temp$mzmax <- round(temp$mzmax, 8)
 
-    return(temp)
+    temp
   }, extra = extra, features = features, self = self, isSet = isSet)
 
   names(features) <- analyses

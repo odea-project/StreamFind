@@ -49,7 +49,7 @@ settings_ff <- list(
   algorithm = "xcms3",
   parameters = list(xcms::CentWaveParam(
     ppm = 12, peakwidth = c(5, 30),
-    snthresh = 10, prefilter = c(5, 1000),
+    snthresh = 10, prefilter = c(5, 6000),
     mzCenterFun = "wMean", integrate = 1,
     mzdiff = -0.0005, fitgauss = TRUE,
     noise = 500, verboseColumns = TRUE,
