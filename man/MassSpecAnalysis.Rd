@@ -97,8 +97,6 @@ data (content is highly vendor dependent).}
 \item{instrument}{data.table with instrument info used to acquire the
 data (content is highly vendor dependent).}
 
-\item{software}{X.}
-
 \item{run}{data.table run information for each spectrum.}
 
 \item{spectra}{data.table with the raw spectra (only present if loaded).}
