@@ -1,0 +1,46 @@
+{
+  "find_features": {
+    "call": ["find_features"],
+    "algorithm": ["xcms3"],
+    "parameters": {
+      "ppm": [12],
+      "peakwidth": [5, 60],
+      "snthresh": [15],
+      "prefilter": [5, 1500],
+      "mzCenterFun": ["wMean"],
+      "integrate": [1],
+      "mzdiff": [-0.0002],
+      "fitgauss": [true],
+      "noise": [500],
+      "verboseColumns": [true],
+      "roiList": [],
+      "firstBaselineCheck": [false],
+      "roiScales": [],
+      "extendLengthMSW": [false],
+      "class": ["CentWaveParam"]
+    },
+    "software": ["xcms"],
+    "developer": ["Ralf Tautenhahn, Johannes Rainer"],
+    "contact": ["rtautenh@ipb-halle.de"],
+    "link": ["https://rdrr.io/bioc/xcms/man/findChromPeaks-centWave.html"],
+    "doi": ["https://doi.org/10.1186/1471-2105-9-504"]
+  },
+  "group_features": {
+    "call": ["group_features"],
+    "algorithm": ["xcms3"],
+    "parameters": {
+      "sampleGroups": ["holder"],
+      "bw": [5],
+      "minFraction": [0.5],
+      "minSamples": [1],
+      "binSize": [0.008],
+      "maxFeatures": [100],
+      "class": ["PeakDensityParam"]
+    },
+    "software": ["xcms"],
+    "developer": ["Colin Smith, Johannes Rainer"],
+    "contact": ["siuzdak@scripps.edu"],
+    "link": ["https://rdrr.io/bioc/xcms/man/groupChromPeaks-density.html"],
+    "doi": ["https://doi.org/10.1021/ac051437y"]
+  }
+}

@@ -125,17 +125,17 @@ save_default_ProcessingSettings <- function(call = NA_character_,
     algorithm = "xcms3",
     parameters = xcms::CentWaveParam(
       ppm = 12,
-      peakwidth = c(5, 40),
-      snthresh = 20,
+      peakwidth = c(5, 60),
+      snthresh = 15,
       prefilter = c(5, 1500),
       mzCenterFun = "wMean",
       integrate = 1,
-      mzdiff = 0.0005,
+      mzdiff = -0.0002,
       fitgauss = TRUE,
       noise = 500,
       verboseColumns = TRUE,
       roiList = list(),
-      firstBaselineCheck = TRUE,
+      firstBaselineCheck = FALSE,
       roiScales = numeric(),
       extendLengthMSW = FALSE
     ),
@@ -216,7 +216,7 @@ save_default_ProcessingSettings <- function(call = NA_character_,
   }
 
   settings <- list(
-    call = "find_features",
+    call = "group_features",
     algorithm = "xcms3",
     parameters = xcms::PeakDensityParam(
       sampleGroups = "holder",

@@ -1053,6 +1053,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
 
         if (is.data.frame(target_id)) {
+          if (all(colnames(fts) %in% colnames(target_id))) {
+            return(target_id)
+          }
+
           if ("analysis" %in% colnames(target_id)) {
             sel <- rep(FALSE, nrow(fts))
             for (i in seq_len(nrow(target_id))) {
@@ -1085,10 +1089,16 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
 
         sel <- rep(FALSE, nrow(fts))
+        ids <- rep(NA_character_, nrow(fts))
         for (i in seq_len(nrow(targets))) {
           sel[between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
             between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
+
+          ids[between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
+            between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- targets$id[i]
         }
+
+        fts$name <- ids
         return(fts[sel])
       }
 
@@ -1101,10 +1111,16 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
 
         sel <- rep(FALSE, nrow(fts))
+        ids <- rep(NA_character_, nrow(fts))
         for (i in seq_len(nrow(targets))) {
           sel[between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
             between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
+
+          sel[between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
+            between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- targets$id[i]
         }
+
+        fts$name <- ids
         return(fts[sel])
       }
 
@@ -1137,6 +1153,18 @@ MassSpecData <- R6::R6Class("MassSpecData",
         mz = fts, id = fts$feature,
         runParallel = runParallel
       )
+
+      if ("group" %in% colnames(fts)) {
+        fgs <- fts$group
+        names(fgs) <- fts$feature
+        eic$group <- fgs[eic$id]
+      }
+
+      if ("name" %in% colnames(fts)) {
+        tar_ids <- fts$name
+        names(tar_ids) <- fts$feature
+        eic$name <- tar_ids[eic$id]
+      }
 
       eic
     },
@@ -1200,6 +1228,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
         ms1$group <- fgs[ms1$id]
       }
 
+      if ("name" %in% colnames(fts)) {
+        tar_ids <- fts$name
+        names(tar_ids) <- fts$feature
+        ms1$name <- tar_ids[ms1$id]
+      }
+
       ms1
     },
 
@@ -1254,6 +1288,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
         ms2$group <- fgs[ms2$id]
       }
 
+      if ("name" %in% colnames(fts)) {
+        tar_ids <- fts$name
+        names(tar_ids) <- fts$feature
+        ms2$name <- tar_ids[ms2$id]
+      }
+
       ms2
     },
 
@@ -1294,9 +1334,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
             colnames(mass) <- gsub("neutralMass", "mz", colnames(mass))
           }
           targets <- make_ms_targets(mass, rt, ppm, sec)
-          sel <- rep(FALSE, nrow(fgroups))
+          ids <- rep(NA_character_, nrow(fgroups))
+
           for (i in seq_len(nrow(targets))) {
-            sel[between(
+            ids[between(
               fgroups$mass,
               targets$mzmin[i],
               targets$mzmax[i]
@@ -1305,20 +1346,22 @@ MassSpecData <- R6::R6Class("MassSpecData",
                 fgroups$rt,
                 targets$rtmin[i],
                 targets$rtmax[i]
-              )] <- TRUE
+              )] <- targets$id[i]
           }
+          fgroups$name <- ids
+          sel <- !is.na(ids)
           fgroups <- fgroups[sel, ]
+
         } else if (!is.null(mz)) {
           targets <- make_ms_targets(mz, rt, ppm, sec)
-          sel <- rep(FALSE, nrow(fgroups))
-
+          ids <- rep(NA_character_, nrow(fgroups))
           if (!"mz" %in% colnames(fgroups)) {
             adduct <- paste(unique(fgroups$adduct), collapse = ",")
 
             if (grepl("\\[M\\+H\\]\\+", adduct)) {
               for (i in seq_len(nrow(targets))) {
                 if (targets$rtmax[i] > 0) {
-                  sel[between(
+                  ids[between(
                     fgroups$mass,
                     targets$mzmin[i] - 1.007276,
                     targets$mzmax[i] - 1.007276
@@ -1327,13 +1370,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
                       fgroups$rt,
                       targets$rtmin[i],
                       targets$rtmax[i]
-                    )] <- TRUE
+                    )] <- targets$id[i]
                 } else {
-                  sel[between(
+                  ids[between(
                     fgroups$mass,
                     targets$mzmin[i] - 1.007276,
                     targets$mzmax[i] - 1.007276
-                  )] <- TRUE
+                  )] <- targets$id[i]
                 }
               }
             }
@@ -1341,7 +1384,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             if (grepl("\\[M-H\\]-", adduct)) {
               for (i in seq_len(nrow(targets))) {
                 if (targets$rtmax[i] > 0) {
-                  sel[between(
+                  ids[between(
                     fgroups$mass,
                     targets$mzmin[i] + 1.007276,
                     targets$mzmax[i] + 1.007276
@@ -1350,20 +1393,20 @@ MassSpecData <- R6::R6Class("MassSpecData",
                       fgroups$rt,
                       targets$rtmin[i],
                       targets$rtmax[i]
-                    )] <- TRUE
+                    )] <- targets$id[i]
                 } else {
-                  sel[between(
+                  ids[between(
                     fgroups$mass,
                     targets$mzmin[i] + 1.007276,
                     targets$mzmax[i] + 1.007276
-                  )] <- TRUE
+                  )] <- targets$id[i]
                 }
               }
             }
           } else {
             for (i in seq_len(nrow(targets))) {
               if (targets$rtmax[i] > 0) {
-                sel[between(
+                ids[between(
                   fgroups$mz,
                   targets$mzmin[i],
                   targets$mzmax[i]
@@ -1372,22 +1415,27 @@ MassSpecData <- R6::R6Class("MassSpecData",
                     fgroups$rt,
                     targets$rtmin[i],
                     targets$rtmax[i]
-                  )] <- TRUE
+                  )] <- targets$id[i]
               } else {
-                sel[between(
+                ids[between(
                   feats@metadata$mz,
                   targets$mzmin[i],
                   targets$mzmax[i]
-                )] <- TRUE
+                )] <- targets$id[i]
               }
             }
           }
 
+          fgroups$name <- ids
+          sel <- !is.na(ids)
           fgroups <- fgroups[sel, ]
         }
 
         if (onlyIntensities) {
           cols_id_ints <- unname(c("group", self$get_analysis_names()))
+          if ("name" %in% colnames(fgroups)) {
+            cols_id_ints <- c("name", cols_id_ints)
+          }
           fgroups <- fgroups[, cols_id_ints, with = FALSE]
         }
 
@@ -1413,7 +1461,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           to_keep <- to_keep[!to_keep %in% self$get_analysis_names()]
           fgroups <- fgroups[, to_keep, with = FALSE]
 
-          names(sd_vals) <- paste0(rpl, "_sd")
+          names(sd_vals) <- paste0(names(rpl_ana), "_sd")
           fgroups <- cbind(fgroups, as.data.table(sd_vals))
         }
       }
@@ -3497,7 +3545,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       eic <- self$get_features_eic(
-        analyses = unique(fts$analysis), features = fts$feature,
+        analyses = unique(fts$analysis), features = fts,
         rtExpand = rtExpand, mzExpand = mzExpand, runParallel = runParallel
       )
 
@@ -3718,19 +3766,17 @@ MassSpecData <- R6::R6Class("MassSpecData",
         groups, mass, mz, rt, ppm, sec, filtered
       )
 
-      if (!is.null(legendNames)) {
-        if (is.character(legendNames) &
-          length(legendNames) == length(unique(fts$group))) {
-          leg <- legendNames
-          names(leg) <- unique(fts$group)
-          fts$group <- leg[fts$group]
-        }
+      if ("targets" %in% colorBy & !isTRUE(legendNames)) {
+        fts$name <- fts$group
+        if (is.null(legendNames)) legendNames <- TRUE
       }
+
+      #browser()
 
       self$plot_features(
         features = fts,
         rtExpand = rtExpand, mzExpand = mzExpand,
-        runParallel = runParallel, legendNames = fts$group,
+        runParallel = runParallel, legendNames = legendNames,
         title = title, colorBy = colorBy, interactive = interactive
       )
     },
@@ -3846,11 +3892,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                     legendNames = NULL, title = NULL,
                                     heights = c(0.35, 0.5, 0.15)) {
 
-      fgs <- self$get_groups(groups, mass, mz, rt, ppm, sec, filtered,
-        onlyIntensities = FALSE, average = FALSE
-      )
+      # fgs <- self$get_groups(groups, mass, mz, rt, ppm, sec, filtered,
+      #   onlyIntensities = FALSE, average = FALSE
+      # )
+      #
+      # fts <- self$get_features(analyses = analyses, features = fgs$group)
 
-      fts <- self$get_features(analyses = analyses, features = fgs$group)
+      fts <- self$get_features(analyses, groups, mass, mz, rt, ppm, sec, filtered)
 
       eic <- self$get_features_eic(
         analyses = fts$analysis, features = fts,
@@ -3863,13 +3911,14 @@ MassSpecData <- R6::R6Class("MassSpecData",
         return(NULL)
       }
 
-      if (!is.null(legendNames)) {
-        if (is.character(legendNames) &
-          length(legendNames) == length(unique(fgs$group))) {
-          leg <- legendNames
-          names(leg) <- unique(fts$group)
-          leg <- leg[fts$group]
-        }
+
+      if (is.character(legendNames) &
+        length(legendNames) == length(unique(fts$group))) {
+        leg <- legendNames
+        names(leg) <- unique(fts$group)
+        leg <- leg[fts$group]
+      } else if (isTRUE(legendNames)) {
+        leg <- fts$name
       } else {
         leg <- fts$group
       }
@@ -4014,6 +4063,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       parameters <- settings$parameters
 
       if (algorithm == "xcms3") {
+        if ("Param" %in% is(parameters)) {
+          parameters <- list("groupParam" = parameters)
+        }
         parameters$groupParam@sampleGroups <- self$get_replicate_names()
         if ("rtalign" %in% names(parameters)) {
           if (parameters$rtalign) {
