@@ -51,14 +51,11 @@ ms$add_replicate_names(rpls)$add_blank_names(blks)$import_settings("ffs.json")
 
 ms$get_settings()
 
-#ms
-
 oview <- ms$get_overview()
 
 #View(oview)
 
-#ms$plot_bpc()
-
+#ms$plot_bpc(interactive = TRUE)
 
 
 # process ----------------------------------------------------------------------
@@ -68,15 +65,48 @@ gfs <- get_default_ProcessingSettings(
   algorithm = "peakdensity"
 )
 
-#gfs
+gfs
 
 ms$find_features()$group_features(gfs)
 
-#ms
+ms
 
-#ms$save_settings()
+
+
+
+
 
 # filter -----------------------------------------------------------------------
+
+filters <- ProcessingSettings(
+  call = "filter_features",
+  algorithm = "streamFind",
+  parameters = list(
+    "minIntensity" = 5000,
+    "minSnRatio" = 100,
+    "maxReplicateIntensityDeviation" = 30
+  )
+)
+
+
+ms$filter_features(filters)
+
+ms$get_groups(filtered = TRUE)
+
+ms$get_history()
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -88,15 +118,18 @@ db <- db[grepl("IS", db$tag), ]
 db[, .(name, formula, mass, rt)]
 
 
+db_mz <- db
+db_mz$mz <- db_mz$mass + 1.0073
+db_mz <- db_mz[1, ]
+
+ms$plot_eic(analyses = 4, mz = targets)
+
 
 ms$get_groups(mass = db[, .(name, formula, mass, rt)], ppm = 20, sec = 30, onlyIntensities = F, average = T)
-
 ms$plot_groups(mass = db[, .(name, formula, mass, rt)], ppm = 20, sec = 30)
-
 ms$plot_groups_overview(mass = db[, .(name, formula, mass, rt)], ppm = 20, sec = 30, legendNames = T)
 
-
-
+ms$get_features(mass = db[1:3, .(name, mass, rt)], ppm = 20, sec = 30)
 ms$get_features_eic(mass = db[1:3, .(name, mass, rt)], ppm = 20, sec = 30)
 ms$plot_features_ms2(mass = db[1:3, .(name, mass, rt)], ppm = 20, sec = 30, legendNames = T)
 ms$get_features_ms2(mass = db[1:3, .(name, mass, rt)], ppm = 20, sec = 30)
@@ -106,31 +139,6 @@ ms$map_features(mass = db[, .(name, mass, rt)], ppm = 20, sec = 30, legendNames 
 
 
 
-#ms$plot_groups(mass = db[, .(name, formula, mass, rt)], ppm = 20, sec = 30)
-
-
-#
-
-
-
-
-
-
-ms$plot_xic(
-  analyses = 16:17,
-  mz = 266.0625 + 1.0073,
-  rt = 1007,
-  ppm = 12,
-  sec = 60
-)
-
-ms$plot_features(
-  analyses = 16:17,
-  mz = 266.0625 + 1.0073,
-  rt = 1007,
-  ppm = 12,
-  sec = 60
-)
 
 
 
@@ -141,30 +149,6 @@ ms$plot_features(
 
 
 
-# settings ---------------------------------------------------------------------
-
-save_default_ProcessingSettings(
-  call = "find_features",
-  algorithm = "centwave",
-  format = "json",
-  name = "settings_find_features"
-)
-
-save_default_ProcessingSettings(
-  call = "group_features",
-  algorithm = "peakdensity",
-  format = "json",
-  name = "settings_group_features"
-)
-
-
-
-
-# create ----------------------------------------------------------------------
-
-
-
-ms$find_features()
 
 
 
@@ -181,6 +165,10 @@ ms$find_features()
 
 
 # other code -------------------------------------------------------------------
+
+
+patRoon::clearCache("parsed_ms_spectra")
+
 
 db_cols <- c("name", "mass", "rt")
 carbamazepin_d10 <- db[db$name %in% "Carbamazepin-d10", db_cols, with = FALSE]

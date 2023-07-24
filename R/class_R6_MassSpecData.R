@@ -92,6 +92,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
     ## ___ .settings -----
     .settings = NULL,
 
+    ## ___ .history -----
+    .history = NULL,
+
     ## ___ .analyses -----
     .analyses = NULL,
 
@@ -101,7 +104,31 @@ MassSpecData <- R6::R6Class("MassSpecData",
     ## ___ .alignment -----
     .alignment = NULL,
 
+    ## ___ .modules -----
+    .modules = NULL,
+
     ## ___ .utils -----
+
+    #' @description
+    #' Registers changes in the history private field.
+    #'
+    .register = function(
+      action = NA_character_,
+      name = NA_character_,
+      details = NA_character_) {
+
+      date_time <- Sys.time()
+      if (is.null(private$.history)) private$.history <- list()
+
+      private$.history[[as.character.POSIXt(date_time)]] <- data.table(
+        "time" = date_time,
+        "action" = action,
+        "name" = name,
+        "details" = details
+      )
+
+      invisible(self)
+    },
 
     #' @description
     #' Checks the analyses argument as a character/integer vector to match
@@ -142,7 +169,33 @@ MassSpecData <- R6::R6Class("MassSpecData",
       output <- unlist(output, recursive = FALSE, use.names = TRUE)
 
       output[names(output) %in% analyses]
+    },
+
+    ## ___ .filters -----
+    #' @description
+    #' Gets an entry from the analyses private field.
+    #'
+    .filter_features_minIntensity = function(value = 5000) {
+
+      lapply(private$.analyses, function(x) {
+        sel <- x$features$intensity <= value & !x$features$filtered
+        x$features$filtered[sel] <- TRUE
+        x$features$filter[sel] <- "minIntensity"
+        x
+      })
+
+      if (self$has_groups()) {
+        rpl <- self$get_replicate_names()
+        groups <- self$get_groups(filtered = TRUE, onlyIntensities = TRUE, average = TRUE)
+        groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1, function(x) {
+          max(x) <= value
+        })
+        private$.groups$filtered[groups_sel] <- TRUE
+      }
+
+      private$.register("filtered", "minIntensity", paste0("with ", value, " counts"))
     }
+
   ),
 
   # _ public fields/methods -----
@@ -207,6 +260,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (!is.null(alignment)) suppressMessages(self$add_alignment(alignment))
 
+      private$.register("created", "MassSpecData")
+
       message("\U2713 MassSpecData class object created!")
     },
 
@@ -262,6 +317,19 @@ MassSpecData <- R6::R6Class("MassSpecData",
         private$.headers
       } else {
         private$.headers[value]
+      }
+    },
+
+    #' @description
+    #' Gets the object history.
+    #'
+    #' @return The history list of processing steps applied.
+    #'
+    get_history = function() {
+      if (is.list(private$.history)) {
+        rbindlist(private$.history)
+      } else {
+        private$.history
       }
     },
 
@@ -369,7 +437,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets the polarity of the analyses.
+    #' Gets the full file paths of the analyses.
     #'
     #' @return A character vector.
     #'
@@ -1018,6 +1086,15 @@ MassSpecData <- R6::R6Class("MassSpecData",
       } else {
         private$.settings[call]
       }
+    },
+
+    #' @description
+    #' Gets the names of all present processing settings.
+    #'
+    #' @return A character vector with the name of with the ProcessingSettings.
+    #'
+    get_settings_names = function() {
+      names(private$.settings)
     },
 
     #' @description
@@ -1676,6 +1753,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         if (!identical(new_headers, old_headers) & is(new_headers, "Headers")) {
           private$.headers <- new_headers
+          details <- paste(names(headers), collapse = ", ")
+          private$.register("added", "headers", details)
           message("\U2713 Added headers!")
         }
 
@@ -1752,13 +1831,29 @@ MassSpecData <- R6::R6Class("MassSpecData",
         if (all(valid)) {
           settings <- lapply(settings, as.ProcessingSettings)
           call_names <- vapply(settings, function(x) x$call, NA_character_)
-          private$.settings[call_names] <- settings
+
+          if (is.null(private$.settings)) private$.settings <- list()
+
+          names(settings) <- call_names
+
+          private$.settings <- c(private$.settings, settings)
 
           if (length(settings) == 1) {
+
+            details <- c(settings[[1]]$call, settings[[1]]$algorithm)
+            details <- paste(details, collapse = ", ")
+            private$.register("added", "settings", details)
+
             message(
               paste0("\U2713 ", settings[[1]]$call, " processing settings added!")
             )
           } else {
+
+            lapply(settings, function(x) {
+              details <- paste(c(x$call, x$algorithm), collapse = ", ")
+              private$.register("added", "settings", details)
+            })
+
             message(paste0("\U2713 Added settings for:\n",
                            paste(call_names, collapse = "\n"))
             )
@@ -1833,6 +1928,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
           old_size <- length(private$.analyses)
 
           private$.analyses <- new_analyses
+
+          lapply(analyses, function(x) {
+            private$.register("added", "analysis", x$name)
+          })
+
           message(
             paste0(
               "\U2713 ",
@@ -1874,6 +1974,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           private$.analyses, value
         )
 
+        private$.register("added", "replicate names")
         message("\U2713 Replicate names added!")
       } else {
         warning("Not done, check the value!")
@@ -1902,6 +2003,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             private$.analyses, value
           )
 
+          private$.register("added", "blank names")
           message("\U2713 Blank names added!")
         } else {
           warning("Not done, blank names not among replicate names!")
@@ -1987,6 +2089,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
             },
             private$.analyses, org_features
           )
+
+          private$.register("added", "features", n_fts)
           message("\U2713 ", n_fts, " features added!")
 
         } else {
@@ -2057,6 +2161,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             }
 
           } else {
+            private$.register("added", "feature groups", nrow(groups))
             message(paste0("\U2713 ", nrow(groups), " feature groups added!"))
           }
 
@@ -2092,6 +2197,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         if (all(valid)) {
           private$.alignment <- alignment
+          private$.register("added", "alignment")
           message("\U2713 Alignment added!")
 
         } else {
@@ -2133,6 +2239,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           private$.analyses, spec_list
         )
 
+        private$.register("loaded", "raw spectra")
         message("\U2713 Spectra loaded to all analyses!")
 
       } else {
@@ -2167,6 +2274,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             private$.analyses, chrom_list
           )
 
+          private$.register("loaded", "raw chromatograms")
           message("\U2713 Chromatograms loaded to all analyses!")
 
         } else {
@@ -2186,9 +2294,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     load_features_ms1 = function(settings = NULL) {
       valid <- TRUE
+      add_settings <- TRUE
 
       if (is.null(settings)) {
         settings <- self$get_settings(call = "load_features_ms1")[[1]]
+        add_settings <- FALSE
       } else if ("load_features_ms1" %in% names(settings)) {
         settings <- settings[["load_features_ms1"]]
       }
@@ -2279,9 +2389,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }, FALSE)
 
         if (all(added_ms1)) {
+          if (add_settings) self$add_settings(settings)
           private$.analyses <- analyses
+          details <- paste(settings$call, settings$algorithm, collapse = ", ")
+          private$.register("loaded", "data", "features_ms1")
           message("\U2713 MS1 spectra added to features in analyses!")
-          self$add_settings(settings)
         }
       }
       invisible(self)
@@ -2294,9 +2406,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     load_features_ms2 = function(settings = NULL) {
       valid <- TRUE
+      add_settings <- TRUE
 
       if (is.null(settings)) {
         settings <- self$get_settings(call = "load_features_ms2")[[1]]
+        add_settings <- FALSE
       } else if ("load_features_ms2" %in% names(settings)) {
         settings <- settings[["load_features_ms2"]]
       }
@@ -2389,9 +2503,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }, FALSE)
 
         if (all(added_ms2)) {
+          if (add_settings) self$add_settings(settings)
           private$.analyses <- analyses
+          details <- paste(settings$call, settings$algorithm, collapse = ", ")
+          private$.register("loaded", "data", "features_ms2")
           message("\U2713 MS2 spectra added to features in analyses!")
-          self$add_settings(settings)
         }
       }
       invisible(self)
@@ -2410,9 +2526,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     load_groups_ms1 = function(settings = NULL, settingsFeatures = NULL) {
       valid <- TRUE
+      add_settings <- TRUE
 
       if (is.null(settings)) {
         settings <- self$get_settings(call = "load_groups_ms1")[[1]]
+        add_settings <- FALSE
       } else if ("load_groups_ms1" %in% names(settings)) {
         settings <- settings[["load_groups_ms1"]]
       }
@@ -2501,9 +2619,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
             temp
           }, ms1 = ms1)
 
+          if (add_settings) self$add_settings(settings)
           private$.groups$ms1 <- groups_ms1
           message("\U2713 MS1 spectra added to feature groups!")
-          self$add_settings(settings)
+          details <- paste(settings$call, settings$algorithm, collapse = ", ")
+          private$.register("loaded", "data", "groups_ms1")
 
         } else {
           warning("Mass traces were not found for feature groups!")
@@ -2525,9 +2645,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     load_groups_ms2 = function(settings = NULL, settingsFeatures = NULL) {
       valid <- TRUE
+      add_settings <- TRUE
 
       if (is.null(settings)) {
         settings <- self$get_settings(call = "load_groups_ms2")[[1]]
+        add_settings <- FALSE
       } else if ("load_groups_ms2" %in% names(settings)) {
         settings <- settings[["load_groups_ms2"]]
       }
@@ -2616,9 +2738,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
             temp
           }, ms2 = ms2)
 
+          if (add_settings) self$add_settings(settings)
           private$.groups$ms2 <- groups_ms2
           message("\U2713 MS2 spectra added to feature groups!")
-          self$add_settings(settings)
+          details <- paste(settings$call, settings$algorithm, collapse = ", ")
+          private$.register("loaded", "data", "groups_ms2")
 
         } else {
           warning("Mass traces were not found for feature groups!")
@@ -2649,6 +2773,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         if (value %in% names(private$.headers)) {
           private$.headers[value] <- NULL
+          details <- paste(value, collapse = ", ")
+          private$.register("removed", "headers", details)
           message("\U2713 Removed headers: \n",
             paste(value, collapse = "\n")
           )
@@ -2662,8 +2788,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
         private$.headers[to_remove] <- NULL
 
         if (length(to_remove) > 1) {
+          details <- paste(to_remove, collapse = ", ")
+          private$.register("removed headers", details)
           message("\U2713 Removed headers: \n",
-                  paste(to_remove, collapse = "\n")
+            paste(to_remove, collapse = "\n")
           )
         } else {
           message("\U2713 Removed all headers except name, path and date!")
@@ -2676,23 +2804,37 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' Removes settings.
     #'
     #' @param call A string or a vector of strings with the name/s of the
-    #' processing method/s to be removed. When `call` is \code{NULL} all
-    #' settings are removed.
+    #' processing method/s to be removed. Alternatively, an integer vector
+    #' with the indice/s of the settings to be removed. When `call` is
+    #' \code{NULL} all settings are removed.
     #'
     #' @return Invisible.
     #'
     remove_settings = function(call = NULL) {
       if (is.null(call)) {
+        lapply(private$.settings, function(x) {
+          details <- paste(c(x$call, x$algorithm), collapse = ", ")
+          private$.register("removed", "settings", details)
+        })
         private$.settings <- NULL
         cat("Removed settings! \n")
       } else {
         all_calls <- names(private$.settings)
-        to_remove <- call %in% all_calls
-        call <- call[to_remove]
+
+        if (is.numeric(call)) {
+          to_remove <- call
+        } else {
+          to_remove <- which(call %in% all_calls)
+        }
+
         if (length(call) > 0) {
-          private$.settings[all_calls %in% call] <- NULL
+          lapply(private$.settings[to_remove], function(x) {
+            details <- paste(c(x$call, x$algorithm), collapse = ", ")
+            private$.register("removed", "settings", details)
+          })
+          private$.settings[to_remove] <- NULL
           message("\U2713 Removed settings for:\n",
-            paste(call, collapse = "\n")
+            paste(all_calls[to_remove], collapse = "\n")
           )
         } else {
           message("\U2717 There are no settings to remove!")
@@ -2738,6 +2880,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
           }
 
           private$.alignment <- private$.alignment[keepAnalyses]
+          lapply(analyses, function(x) {
+            private$.register("removed", "analysis", x$name)
+          })
           message("\U2713 Removed analyses:\n", paste(analyses, collapse = "\n"))
 
         } else {
@@ -2745,6 +2890,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
 
       } else {
+        lapply(private$.analyses, function(x) {
+          private$.register("removed", "analysis", x$name)
+        })
         private$.analyses <- NULL
         private$.groups <- NULL
         private$.alignment <- NULL
@@ -2767,6 +2915,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
           x$features <- data.table()
           x
         })
+
+        private$.register("removed", "features", "all")
+        private$.register("removed", "feature groups", "all")
         message("\U2713 Removed all features and feature groups!")
       }
 
@@ -2803,6 +2954,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
               x
             }, org_fts = org_fts)
 
+            private$.register("removed", "features", n_org - n_org_new)
             message("\U2713 Removed ", n_org - n_org_new, " features!")
           } else {
             message("\U2717 There are no features to remove!")
@@ -2830,6 +2982,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             x$features$ms1 <- NULL
             x
           })
+          private$.register("removed", "data", "features_ms1")
           message("\U2713 Removed all MS1 spectra from features!")
         } else {
           message("\U2717 Features MS1 spectra not loaded!")
@@ -2854,6 +3007,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             x$features$ms2 <- NULL
             x
           })
+          private$.register("removed", "data", "features_ms2")
           message("\U2713 Removed all MS2 spectra from features!")
         } else {
           message("\U2717 Features MS2 spectra not loaded!")
@@ -2909,6 +3063,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             x
           }, groups = groups)
           n_g <- nrow(private$.groups)
+          private$.register("removed", "feature groups", n_org_g - n_g)
           message("\U2713 Removed ", n_org_g - n_g, " groups!")
         } else {
           message("\U2717 There are no groups to remove!")
@@ -2929,6 +3084,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (self$has_groups()) {
         if (any(self$has_loaded_groups_ms1())) {
           private$.groups$ms1 <- NULL
+          private$.register("removed", "data", "feature_groups_ms1")
           message("\U2713 Removed all MS1 spectra from feature groups!")
         } else {
           message("\U2717 Groups MS1 spectra not loaded!")
@@ -2949,6 +3105,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (self$has_groups()) {
         if (any(self$has_loaded_groups_ms2())) {
           private$.groups$ms2 <- NULL
+          private$.register("removed", "data", "feature_groups_ms2")
           message("\U2713 Removed all MS2 spectra from feature groups!")
         } else {
           message("\U2717 Groups MS2 spectra not loaded!")
@@ -2966,6 +3123,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     remove_alignment = function() {
       private$.alignment <- NULL
+      private$.register("removed", "alignment")
       message("\U2713 Removed alignment!")
       invisible(self)
     },
@@ -3901,7 +4059,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       fts <- self$get_features(analyses, groups, mass, mz, rt, ppm, sec, filtered)
 
       eic <- self$get_features_eic(
-        analyses = fts$analysis, features = fts,
+        analyses = unique(fts$analysis), features = fts,
         rtExpand = rtExpand, mzExpand = mzExpand,
         filtered = TRUE, runParallel = runParallel
       )
@@ -3954,16 +4112,27 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     find_features = function(settings = NULL) {
       valid <- TRUE
+      add_settings <- TRUE
 
       if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
-        warning("Install package patRoon for finding peaks!")
+        warning("patRoon package not found! Install it for finding features.")
         valid <- FALSE
       }
 
       if (is.null(settings)) {
-        settings <- self$get_settings(call = "find_features")[[1]]
+        settings <- self$get_settings(call = "find_features")
+        add_settings <- FALSE
       } else if ("find_features" %in% names(settings)) {
-        settings <- settings[["find_features"]]
+        settings <- settings["find_features"]
+      }
+
+      if (!"call" %in% names(settings)) {
+        if (length(settings) > 1) {
+          warning("More then one settings for finding features found!")
+          valid <- FALSE
+        } else {
+          settings <- settings[["find_features"]]
+        }
       }
 
       if (validate.ProcessingSettings(settings)) {
@@ -4003,7 +4172,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       features <- build_features_table_from_patRoon(pat, self)
 
-      self$add_settings(settings)
+      if (add_settings) self$add_settings(settings)
+
+      if (any(self$has_features())) self$remove_features()
+
+      private$.register("processed", "find_features", settings$algorithm)
+
       self$add_features(features, replace = TRUE)
 
       invisible(self)
@@ -4026,16 +4200,27 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     group_features = function(settings = NULL) {
       valid <- TRUE
+      add_settings <- TRUE
 
       if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
-        warning("Install package patRoon for finding peaks!")
+        warning("patRoon package not found! Install it for grouping features.")
         valid <- FALSE
       }
 
       if (is.null(settings)) {
-        settings <- self$get_settings(call = "group_features")[[1]]
+        settings <- self$get_settings(call = "group_features")
+        add_settings <- FALSE
       } else if ("group_features" %in% names(settings)) {
-        settings <- settings[["group_features"]]
+        settings <- settings["group_features"]
+      }
+
+      if (!("call" %in% names(settings))) {
+        if (length(settings) > 1) {
+          warning("More then one settings for grouping features found!")
+          valid <- FALSE
+        } else {
+          settings <- settings[["group_features"]]
+        }
       }
 
       if (validate.ProcessingSettings(settings)) {
@@ -4086,16 +4271,149 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       alignment <- extract_time_alignment(pat, self)
 
-      self$add_settings(settings)
+      if (add_settings) self$add_settings(settings)
+
+      if (self$has_groups()) self$remove_groups()
+
+      private$.register("processed", "group_features", settings$algorithm)
 
       suppressMessages(self$add_features(out_list[["features"]], replace = TRUE))
 
       self$add_groups(out_list[["groups"]])
 
       if (!is.null(alignment)) {
+        private$.register("added alignment")
         private$.alignment <- alignment
         message("\U2713 Added alignment of retention time for each analysis!")
       }
+      invisible(self)
+    },
+
+    #' @description Filters features according to filter settings.
+    #'
+    #' @return Invisible.
+    #'
+    #' @details The features are not entirely removed but tagged as filtered.
+    #' See columns `filtered` and `filter` of the features data.table as obtained
+    #' with the method `get_features()`.
+    #'
+    filter_features = function(settings = NULL) {
+      valid <- TRUE
+      add_settings <- TRUE
+
+      if (is.null(settings)) {
+        settings <- self$get_settings(call = "filter_features")
+        add_settings <- FALSE
+      } else if ("filter_features" %in% names(settings)) {
+        settings <- settings["filter_features"]
+      }
+
+      if (!"call" %in% names(settings)) {
+        if (length(settings) > 1) {
+          warning("More then one settings for filtering features found!")
+          valid <- FALSE
+        } else {
+          settings <- settings[["filter_features"]]
+        }
+      }
+
+      if (validate.ProcessingSettings(settings)) {
+        if (!"filter_features" %in% settings$call) {
+          warning("Settings call must be filter_features!")
+          valid <- FALSE
+        }
+      } else {
+        warning("Settings content or structure not conform!")
+        valid <- FALSE
+      }
+
+      if (!any(self$has_features())) {
+        warning("Features were not found! Run find_features method first!")
+        valid <- FALSE
+      }
+
+      parameters <- settings$parameters
+
+      filters <- names(parameters)
+
+      possible_feature_filters <- c(
+        "minIntensity",
+        "minSnRatio",
+        "blankThreshold",
+        "maxReplicateIntensityDeviation",
+        "minReplicateAbundance",
+        "excludeIsotopes",
+        "excludeAdducts"
+      )
+
+      if (!all(filters %in% possible_feature_filters)) {
+        warning("At least one of the filters is not recognized.")
+        valid <- FALSE
+      }
+
+      if (!valid) {
+        invisible(self)
+      }
+
+
+
+      # features <- self$get_features(filtered = TRUE)
+      # groups <- self$get_groups(filtered = TRUE)
+      # groups_sd <- self$get_groups(filtered = TRUE, onlyIntensities = TRUE, average = TRUE)
+      #
+      #
+      #
+      # not_filtered <- nrow(self$get_features(filtered = FALSE))
+      # print(not_filtered)
+
+      for (i in seq_len(length(filters))) {
+        switch(filters[i],
+          minIntensity = (private$.filter_features_minIntensity(parameters[[filters[i]]]))
+          #minIntensity = (features <- minIntensityFeatures(features, value = parameters[[filters[i]]])),
+          # minSnRatio = (features <- minSnRationFeatures(features, value = parameters[[filters[i]]])),
+          # maxReplicateIntensityDeviation = (features <- maxReplicateIntensityDeviationFeatures(features, groups_sd, value = parameters[[filters[i]]])),
+          # blankThreshold = (obj <- blankThresholdFeatures(obj, value = unlist(filterList[i]))),
+          # maxReplicateIntensityDeviation = (obj <- maxReplicateIntensityDeviationFeatures(obj, value = unlist(filterList[i]))),
+          # minReplicateAbundance = (obj <- minReplicateAbundanceFeatures(obj, value = unlist(filterList[i]))),
+          # excludeIsotopes = (obj <- excludeIsotopesFeatures(obj, value = unlist(filterList[i]))),
+          # excludeAdducts = (obj <- excludeAdductsFeatures(obj, value = unlist(filterList[i]))),
+        )
+      }
+
+
+
+
+
+
+
+
+
+
+
+      # not_filtered <- nrow(self$get_features(filtered = FALSE))
+      # print(not_filtered)
+      #
+      #
+      #
+      #
+      # if (add_settings) self$add_settings(settings)
+      #
+      # lapply(filters, function(x) {
+      #   private$.register("filtered", "x", paste0(new_filtered - filtered, " features"))
+      # })
+
+      # if (!identical(features, self$get_features(filtered = TRUE))) {
+      #   self$add_features(features, replace = TRUE)
+      # }
+      #
+      # if (self$has_groups()) {
+      #   if (!identical(groups, self$get_groups(filtered = FALSE))) {
+      #     self$add_groups(groups)
+      #   }
+      # }
+
+
+
       invisible(self)
     },
 
@@ -4208,7 +4526,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     save_headers = function(format = "json", name = "headers", path = getwd()) {
       if (format %in% "json") {
         js_headers <- toJSON(
-          self$get_headers(),
+          private$.headers,
           dataframe = "columns",
           Date = "ISO8601",
           POSIXt = "string",
@@ -4225,8 +4543,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (format %in% "rds") {
-        saveRDS(self$get_headers(), file = paste0(path, "/", name, ".rds"))
+        saveRDS(private$.headers, file = paste0(path, "/", name, ".rds"))
       }
+
       invisible(self)
     },
 
@@ -4242,6 +4561,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     save_settings = function(call = NULL, format = "json",
                              name = "settings", path = getwd()) {
+
       js_settings <- self$get_settings(call)
 
       if (format %in% "json") {
@@ -4265,6 +4585,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (format %in% "rds") {
         saveRDS(self$get_settings(call), file = paste0(path, "/", name, ".rds"))
       }
+
       invisible(self)
     },
 
@@ -4276,6 +4597,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     save_analyses = function(analyses = NULL, format = "json",
                              name = "analyses", path = getwd()) {
+
       analyses <- self$get_analyses(analyses)
 
       if (format %in% "json") {
@@ -4300,6 +4622,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (format %in% "rds") {
         saveRDS(analyses, file = paste0(path, "/", name, ".rds"))
       }
+
       invisible(self)
     },
 
@@ -4310,11 +4633,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' in the \code{path} and returns invisible.
     #'
     save_groups = function(format = "json", name = "groups", path = getwd()) {
-      if (format %in% "json") {
-        js_groups <- self$get_groups()
 
+      if (format %in% "json") {
         js_groups <- toJSON(
-          js_groups,
+          private$.groups,
           dataframe = "columns",
           Date = "ISO8601",
           POSIXt = "string",
@@ -4332,8 +4654,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (format %in% "rds") {
-        saveRDS(self$get_groups(), file = paste0(path, "/", name, ".rds"))
+        saveRDS(private$.groups, file = paste0(path, "/", name, ".rds"))
       }
+
       invisible(self)
     },
 
@@ -4345,21 +4668,24 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' in the \code{path} and returns invisible.
     #'
     save = function(format = "json", name = "MassSpecData", path = getwd()) {
-      list_all <- list()
-
-      headers <- self$get_headers()
-      settings <- self$get_settings()
-      analyses <- self$get_analyses()
-      groups <- self$get_groups()
-      alignment <- self$get_alignment()
-
-      if (length(headers) > 0) list_all$headers <- headers
-      if (!is.null(settings)) list_all$settings <- settings
-      if (!is.null(analyses)) list_all$analyses <- analyses
-      if (!is.null(groups)) list_all$groups <- groups
-      if (!is.null(alignment)) list_all$alignment <- alignment
 
       if (format %in% "json") {
+        list_all <- list()
+
+        headers <- private$.headers
+        settings <- private$.settings
+        analyses <- private$.analyses
+        groups <- private$.groups
+        alignment <- private$.alignment
+        history <- private$.history
+
+        if (length(headers) > 0) list_all$headers <- headers
+        if (!is.null(settings)) list_all$settings <- settings
+        if (!is.null(analyses)) list_all$analyses <- analyses
+        if (!is.null(groups)) list_all$groups <- groups
+        if (!is.null(alignment)) list_all$alignment <- alignment
+        if (!is.null(history)) list_all$history <- history
+
         js_all <- toJSON(
           list_all,
           dataframe = "columns",
@@ -4379,8 +4705,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (format %in% "rds") {
-        saveRDS(list_all, file = paste0(path, "/", name, ".rds"))
+        saveRDS(self, file = paste0(path, "/", name, ".rds"))
       }
+
       invisible(self)
     },
 
@@ -4460,6 +4787,61 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
+    #' @description
+    #' Imports all fields from a `MassSpecData` object saved as \emph{json}.
+    #'
+    #' @param file A \emph{json} file representing a `MassSpecData` object.
+    #'
+    #' @return Invisible.
+    #'
+    import_all = function(file = NA_character_) {
+
+      if (file.exists(file)) {
+        if (file_ext(file) %in% "json") {
+          js_ms <- fromJSON(file, simplifyDataFrame = FALSE)
+
+          fields_present <- names(js_ms)
+
+          if ("headers" %in% fields_present) self$add_headers(js_ms[["headers"]])
+
+          if ("settings" %in% fields_present) {
+            if (!is.null(js_ms[["settings"]])) {
+              self$add_settings(js_ms[["settings"]])
+            }
+          }
+
+          if ("analyses" %in% fields_present) {
+            if (!is.null(js_ms[["analyses"]])) {
+              self$add_analyses(js_ms[["analyses"]])
+            }
+          }
+
+          if ("groups" %in% fields_present) {
+            if (!is.null(js_ms[["groups"]]) && length(js_ms[["groups"]]) > 0) {
+              self$add_groups(js_ms[["groups"]])
+            }
+          }
+
+          if ("alignment" %in% fields_present) {
+            if (!is.null(js_ms[["alignment"]])) {
+              self$add_alignment(js_ms[["alignment"]])
+            }
+          }
+
+          if ("history" %in% fields_present) {
+            private$.history <- js_ms[["history"]]
+          }
+
+          message("\U2713 MassSpecData class object imported from json file!")
+        }
+      } else {
+        warning("File not found in given path!")
+        NULL
+      }
+
+      invisible(self)
+    },
+
     ## ___ info -----
 
     #' @description
@@ -4498,48 +4880,17 @@ MassSpecData <- R6::R6Class("MassSpecData",
 #' @export
 #'
 import_MassSpecData <- function(file) {
+
   if (file.exists(file)) {
-    new_ms <- NULL
-
     if (file_ext(file) %in% "json") {
-      js_ms <- fromJSON(file, simplifyDataFrame = FALSE)
-
-      fields_present <- names(js_ms)
 
       new_ms <- MassSpecData$new()
-
-      if ("headers" %in% fields_present) new_ms$add_headers(js_ms[["headers"]])
-
-      if ("settings" %in% fields_present) {
-        if (!is.null(js_ms[["settings"]])) {
-          new_ms$add_settings(js_ms[["settings"]])
-        }
-      }
-
-      if ("analyses" %in% fields_present) {
-        if (!is.null(js_ms[["analyses"]])) {
-          new_ms$add_analyses(js_ms[["analyses"]])
-        }
-      }
-
-      if ("groups" %in% fields_present) {
-        if (!is.null(js_ms[["groups"]]) && length(js_ms[["groups"]]) > 0) {
-          new_ms$add_groups(js_ms[["groups"]])
-        }
-      }
-
-      if ("alignment" %in% fields_present) {
-        if (!is.null(js_ms[["alignment"]])) {
-          new_ms$add_alignment(js_ms[["alignment"]])
-        }
-      }
-
+      new_ms$import_all(file)
       message("\U2713 MassSpecData class object imported from json file!")
     }
 
     if (file_ext(file) %in% "rds") {
       new_ms <- readRDS(file)
-
       # TODO validate object
       message("\U2713 MassSpecData class object imported from rds file!")
     }

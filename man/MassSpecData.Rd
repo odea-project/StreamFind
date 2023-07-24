@@ -36,6 +36,7 @@ visualizing and storing MS data.
 \item \href{#method-MassSpecData-new}{\code{MassSpecData$new()}}
 \item \href{#method-MassSpecData-print}{\code{MassSpecData$print()}}
 \item \href{#method-MassSpecData-get_headers}{\code{MassSpecData$get_headers()}}
+\item \href{#method-MassSpecData-get_history}{\code{MassSpecData$get_history()}}
 \item \href{#method-MassSpecData-get_analyses}{\code{MassSpecData$get_analyses()}}
 \item \href{#method-MassSpecData-get_number_analyses}{\code{MassSpecData$get_number_analyses()}}
 \item \href{#method-MassSpecData-get_overview}{\code{MassSpecData$get_overview()}}
@@ -141,6 +142,7 @@ visualizing and storing MS data.
 \item \href{#method-MassSpecData-import_settings}{\code{MassSpecData$import_settings()}}
 \item \href{#method-MassSpecData-import_analyses}{\code{MassSpecData$import_analyses()}}
 \item \href{#method-MassSpecData-import_groups}{\code{MassSpecData$import_groups()}}
+\item \href{#method-MassSpecData-import_all}{\code{MassSpecData$import_all()}}
 \item \href{#method-MassSpecData-processing_function_calls}{\code{MassSpecData$processing_function_calls()}}
 \item \href{#method-MassSpecData-clone}{\code{MassSpecData$clone()}}
 }
@@ -149,6 +151,9 @@ visualizing and storing MS data.
 \if{html}{\out{<a id="method-MassSpecData-new"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-new}{}}}
 \subsection{Method \code{new()}}{
+Registers changes in the history private field.
+
+
 Checks the analyses argument as a character/integer vector to match
 analyses names or indices from the \code{MassSpecData} object. Returns a valid
 character vector with analysis names or \code{NULL} for non-matching.
@@ -250,6 +255,19 @@ When \code{NULL}, the entire headers list is returned.}
 }
 \subsection{Returns}{
 The headers list or the header elements as defined by \code{value}.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-get_history"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-get_history}{}}}
+\subsection{Method \code{get_history()}}{
+Gets the object history.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_history()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+The history list of processing steps applied.
 }
 }
 \if{html}{\out{<hr>}}
@@ -370,7 +388,7 @@ A character vector.
 \if{html}{\out{<a id="method-MassSpecData-get_files"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_files}{}}}
 \subsection{Method \code{get_files()}}{
-Gets the polarity of the analyses.
+Gets the full file paths of the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_files(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -4148,6 +4166,26 @@ Imports feature groups from a \emph{rds} or \emph{json} file.
 \describe{
 \item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
 method \code{save()}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-import_all"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-import_all}{}}}
+\subsection{Method \code{import_all()}}{
+Imports all fields from a \code{MassSpecData} object saved as \emph{json}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$import_all(file = NA_character_)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file}}{A \emph{json} file representing a \code{MassSpecData} object.}
 }
 \if{html}{\out{</div>}}
 }
