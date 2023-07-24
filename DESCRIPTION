@@ -34,7 +34,8 @@ Imports:
     doParallel,
     parallel,
     foreach,
-    methods
+    methods,
+    hyperSpec
 Suggests: 
     knitr,
     kableExtra,
