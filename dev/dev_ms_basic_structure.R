@@ -72,10 +72,6 @@ ms$find_features()$group_features(gfs)
 ms
 
 
-
-
-
-
 # filter -----------------------------------------------------------------------
 
 filters <- ProcessingSettings(
@@ -83,64 +79,48 @@ filters <- ProcessingSettings(
   algorithm = "streamFind",
   parameters = list(
     "minIntensity" = 5000,
-    "minSnRatio" = 100,
-    "maxReplicateIntensityDeviation" = 30
+    "minSnRatio" = 25,
+    "maxGroupSd" = 30,
+    "blank" = 5,
+    "minGroupAbundance" = 3
   )
 )
 
+ms$filter(filters)
 
-ms$filter_features(filters)
-
-ms$get_groups(filtered = TRUE)
-
-ms$get_history()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ms$get_overview()
 
 
 # plot -------------------------------------------------------------------------
 
 db <- streamFindData::msSpikedChemicals()
-db <- db[grepl("IS", db$tag), ]
 
-db[, .(name, formula, mass, rt)]
+iStandards <- db[grepl("IS", db$tag), ]
+iStandards <- iStandards[, .(name, formula, mass, rt)]
+iStandards
 
-
-db_mz <- db
-db_mz$mz <- db_mz$mass + 1.0073
-db_mz <- db_mz[1, ]
-
-ms$plot_eic(analyses = 4, mz = targets)
+standards <- db[db$tag %in% "S", ]
+standards <- standards[, .(name, formula, mass, rt)]
+standards
 
 
-ms$get_groups(mass = db[, .(name, formula, mass, rt)], ppm = 20, sec = 30, onlyIntensities = F, average = T)
-ms$plot_groups(mass = db[, .(name, formula, mass, rt)], ppm = 20, sec = 30)
-ms$plot_groups_overview(mass = db[, .(name, formula, mass, rt)], ppm = 20, sec = 30, legendNames = T)
+ms$get_groups(mass = standards, ppm = 5, sec = 10, average = TRUE)
 
-ms$get_features(mass = db[1:3, .(name, mass, rt)], ppm = 20, sec = 30)
-ms$get_features_eic(mass = db[1:3, .(name, mass, rt)], ppm = 20, sec = 30)
-ms$plot_features_ms2(mass = db[1:3, .(name, mass, rt)], ppm = 20, sec = 30, legendNames = T)
-ms$get_features_ms2(mass = db[1:3, .(name, mass, rt)], ppm = 20, sec = 30)
-ms$plot_features(mass = db[, .(name, mass, rt)], ppm = 20, sec = 30, legendNames = TRUE, interactive = T)
-ms$map_features(mass = db[, .(name, mass, rt)], ppm = 20, sec = 30, legendNames = F, interactive = F)
+ms$plot_groups(mass = standards, ppm = 5, sec = 10, legendNames = TRUE)
 
+ms$get_groups(mass = iStandards, ppm = 8, sec = 15, average = TRUE, filtered = TRUE)
 
-
-
+ms$plot_groups_overview(
+  mass = rbind(iStandards, standards),
+  ppm = 5, sec = 10,
+  filtered = TRUE,
+  legendNames = TRUE
+)
 
 
+# history ----------------------------------------------------------------------
+
+ms$get_history()
 
 
 
