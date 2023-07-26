@@ -67,6 +67,7 @@ visualizing and storing MS data.
 \item \href{#method-MassSpecData-get_ms1}{\code{MassSpecData$get_ms1()}}
 \item \href{#method-MassSpecData-get_ms2}{\code{MassSpecData$get_ms2()}}
 \item \href{#method-MassSpecData-get_settings}{\code{MassSpecData$get_settings()}}
+\item \href{#method-MassSpecData-get_settings_names}{\code{MassSpecData$get_settings_names()}}
 \item \href{#method-MassSpecData-get_features}{\code{MassSpecData$get_features()}}
 \item \href{#method-MassSpecData-get_features_eic}{\code{MassSpecData$get_features_eic()}}
 \item \href{#method-MassSpecData-get_features_ms1}{\code{MassSpecData$get_features_ms1()}}
@@ -131,6 +132,7 @@ visualizing and storing MS data.
 \item \href{#method-MassSpecData-plot_groups_overview}{\code{MassSpecData$plot_groups_overview()}}
 \item \href{#method-MassSpecData-find_features}{\code{MassSpecData$find_features()}}
 \item \href{#method-MassSpecData-group_features}{\code{MassSpecData$group_features()}}
+\item \href{#method-MassSpecData-filter_features}{\code{MassSpecData$filter_features()}}
 \item \href{#method-MassSpecData-as_features_patRoon}{\code{MassSpecData$as_features_patRoon()}}
 \item \href{#method-MassSpecData-check_correspondence}{\code{MassSpecData$check_correspondence()}}
 \item \href{#method-MassSpecData-save_headers}{\code{MassSpecData$save_headers()}}
@@ -160,6 +162,25 @@ character vector with analysis names or \code{NULL} for non-matching.
 
 
 Gets an entry from the analyses private field.
+
+
+Filters features and feature groups with minimum intensity.
+
+
+Filters features and feature groups with minimum intensity.
+
+
+Filters features and feature groups with minimum signal-to-noise ratio.
+
+
+Filters feature groups with max replicate group intensity deviation.
+
+
+Filters feature groups with max replicate group abundance.
+
+
+Filters feature groups which not higher then the defined threshold of the
+corresponding blank replicate group.
 
 
 Creates an R6 MassSpecData class object. When \code{headers} are not given
@@ -313,9 +334,16 @@ Gets the overview data.frame with all the analysis types,
 names, replicates, associated blank replicates, polarities and full
 file paths.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_overview()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_overview(filtered = FALSE)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 A data.frame with columns type, analysis, replicate, blank
 polarity and file.
@@ -388,7 +416,7 @@ A character vector.
 \if{html}{\out{<a id="method-MassSpecData-get_files"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_files}{}}}
 \subsection{Method \code{get_files()}}{
-Gets the full file paths of the analyses.
+Gets the full file paths of each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_files(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -409,7 +437,7 @@ A character vector.
 \if{html}{\out{<a id="method-MassSpecData-get_formats"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_formats}{}}}
 \subsection{Method \code{get_formats()}}{
-Gets the file format of the analyses.
+Gets the file format of each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_formats(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -430,7 +458,7 @@ A character vector.
 \if{html}{\out{<a id="method-MassSpecData-get_types"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_types}{}}}
 \subsection{Method \code{get_types()}}{
-Gets the type of the analyses.
+Gets the type of each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_types(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -451,7 +479,7 @@ A character vector.
 \if{html}{\out{<a id="method-MassSpecData-get_time_stamps"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_time_stamps}{}}}
 \subsection{Method \code{get_time_stamps()}}{
-Gets the time stamp of the analyses.
+Gets the time stamp of the each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_time_stamps(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -472,7 +500,7 @@ A character vector.
 \if{html}{\out{<a id="method-MassSpecData-get_spectra_number"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_spectra_number}{}}}
 \subsection{Method \code{get_spectra_number()}}{
-Gets the polarity of the analyses.
+Gets the number of spectra in each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_spectra_number(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -493,7 +521,7 @@ A character vector.
 \if{html}{\out{<a id="method-MassSpecData-get_spectra_mode"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_spectra_mode}{}}}
 \subsection{Method \code{get_spectra_mode()}}{
-Gets the polarity of the analyses.
+Gets the spectra mode of each analysis (i.e., profile or centroided).
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_spectra_mode(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -514,7 +542,7 @@ A character vector.
 \if{html}{\out{<a id="method-MassSpecData-get_spectra_levels"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_spectra_levels}{}}}
 \subsection{Method \code{get_spectra_levels()}}{
-Gets the spectra levels of the analyses.
+Gets the spectra levels of each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_spectra_levels(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -535,7 +563,7 @@ A list for each analysis with an integer vector.
 \if{html}{\out{<a id="method-MassSpecData-get_mz_low"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_mz_low}{}}}
 \subsection{Method \code{get_mz_low()}}{
-Gets the polarity of the analyses.
+Gets the lower \emph{m/z} value of each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_mz_low(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -556,7 +584,7 @@ A character vector.
 \if{html}{\out{<a id="method-MassSpecData-get_mz_high"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_mz_high}{}}}
 \subsection{Method \code{get_mz_high()}}{
-Gets the polarity of the analyses.
+Gets the higher \emph{m/z} value of each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_mz_high(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -577,7 +605,7 @@ A character vector.
 \if{html}{\out{<a id="method-MassSpecData-get_rt_start"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_rt_start}{}}}
 \subsection{Method \code{get_rt_start()}}{
-Gets the polarity of the analyses.
+Gets the start retention time value of each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_rt_start(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -598,7 +626,7 @@ A character vector.
 \if{html}{\out{<a id="method-MassSpecData-get_rt_end"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_rt_end}{}}}
 \subsection{Method \code{get_rt_end()}}{
-Gets the polarity of the analyses.
+Gets the end retention time value of each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_rt_end(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -619,7 +647,7 @@ A character vector.
 \if{html}{\out{<a id="method-MassSpecData-get_polarities"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_polarities}{}}}
 \subsection{Method \code{get_polarities()}}{
-Gets the polarity of the analyses.
+Gets the polarity of each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_polarities(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -640,7 +668,7 @@ A character vector.
 \if{html}{\out{<a id="method-MassSpecData-get_chromatograms_number"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_chromatograms_number}{}}}
 \subsection{Method \code{get_chromatograms_number()}}{
-Gets the number of chromatograms in the analyses.
+Gets the number of chromatograms in each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_chromatograms_number(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -661,7 +689,7 @@ A character vector.
 \if{html}{\out{<a id="method-MassSpecData-get_instrument_info"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_instrument_info}{}}}
 \subsection{Method \code{get_instrument_info()}}{
-Gets the instrument information for each analyses.
+Gets the instrument information of each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_instrument_info(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -682,7 +710,7 @@ A data.table.
 \if{html}{\out{<a id="method-MassSpecData-get_software_info"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_software_info}{}}}
 \subsection{Method \code{get_software_info()}}{
-Gets the software information for each analyses.
+Gets the software information of each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_software_info(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -703,7 +731,7 @@ A data.table.
 \if{html}{\out{<a id="method-MassSpecData-get_run"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_run}{}}}
 \subsection{Method \code{get_run()}}{
-Gets the run summary data.table for each analyses.
+Gets the run summary data.table of each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_run(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -724,7 +752,7 @@ A data.table.
 \if{html}{\out{<a id="method-MassSpecData-get_tic"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_tic}{}}}
 \subsection{Method \code{get_tic()}}{
-Gets the total ion chromatogram (TIC) from the analyses.
+Gets the total ion chromatogram (TIC) of each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_tic(analyses = NULL, levels = 1)}\if{html}{\out{</div>}}
 }
@@ -748,7 +776,7 @@ A data.table with the TIC chromatogram.
 \if{html}{\out{<a id="method-MassSpecData-get_bpc"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_bpc}{}}}
 \subsection{Method \code{get_bpc()}}{
-Gets the base peak chromatogram (BPC) from the analyses.
+Gets the base peak chromatogram (BPC) of each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_bpc(analyses = NULL, levels = 1)}\if{html}{\out{</div>}}
 }
@@ -772,7 +800,7 @@ A character vector.
 \if{html}{\out{<a id="method-MassSpecData-get_spectra"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_spectra}{}}}
 \subsection{Method \code{get_spectra()}}{
-Gets spectra from the MS analyses.
+Gets spectra from each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_spectra(
   analyses = NULL,
@@ -851,7 +879,7 @@ targets, when defined.
 \if{html}{\out{<a id="method-MassSpecData-get_chromatograms"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_chromatograms}{}}}
 \subsection{Method \code{get_chromatograms()}}{
-Gets chromatograms from the MS analyses.
+Gets chromatograms from each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_chromatograms(
   analyses = NULL,
@@ -1099,6 +1127,19 @@ A list with ProcessingSettings S3 class object/s.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-get_settings_names"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-get_settings_names}{}}}
+\subsection{Method \code{get_settings_names()}}{
+Gets the names of all present processing settings.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_settings_names()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+A character vector with the name of with the ProcessingSettings.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecData-get_features"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_features}{}}}
 \subsection{Method \code{get_features()}}{
@@ -1249,7 +1290,7 @@ A data.table.
 \if{html}{\out{<a id="method-MassSpecData-get_features_ms1"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_features_ms1}{}}}
 \subsection{Method \code{get_features_ms1()}}{
-Gets an averaged MS1 spectrum for features in analyses.
+Gets an averaged MS1 spectrum for features in the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_features_ms1(
   analyses = NULL,
@@ -1348,7 +1389,7 @@ A data.table.
 \if{html}{\out{<a id="method-MassSpecData-get_features_ms2"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_features_ms2}{}}}
 \subsection{Method \code{get_features_ms2()}}{
-Gets an averaged MS2 spectrum for features in analyses.
+Gets an averaged MS2 spectrum for features in the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_features_ms2(
   analyses = NULL,
@@ -1453,7 +1494,7 @@ A data.frame.
 \if{html}{\out{<a id="method-MassSpecData-get_groups"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_groups}{}}}
 \subsection{Method \code{get_groups()}}{
-Gets feature groups from analyses.
+Gets feature groups from the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_groups(
   groups = NULL,
@@ -1522,7 +1563,7 @@ A data.table.
 \if{html}{\out{<a id="method-MassSpecData-get_groups_ms1"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_groups_ms1}{}}}
 \subsection{Method \code{get_groups_ms1()}}{
-Gets an averaged MS1 spectrum for feature groups in analyses.
+Gets an averaged MS1 spectrum for feature groups in the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_groups_ms1(
   groups = NULL,
@@ -1635,7 +1676,7 @@ A data.table.
 \if{html}{\out{<a id="method-MassSpecData-get_groups_ms2"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-get_groups_ms2}{}}}
 \subsection{Method \code{get_groups_ms2()}}{
-Gets an averaged MS2 spectrum for feature groups in analyses.
+Gets an averaged MS2 spectrum for feature groups in the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_groups_ms2(
   groups = NULL,
@@ -2123,8 +2164,9 @@ Removes settings.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{call}}{A string or a vector of strings with the name/s of the
-processing method/s to be removed. When \code{call} is \code{NULL} all
-settings are removed.}
+processing method/s to be removed. Alternatively, an integer vector
+with the indice/s of the settings to be removed. When \code{call} is
+\code{NULL} all settings are removed.}
 }
 \if{html}{\out{</div>}}
 }
@@ -3908,6 +3950,38 @@ for more information. The following algorithms are
 possible: "xcms3", "xcms", "openms" or "kpic2". The algorithm slot in the
 settings should be one of the described. The parameters
 are given as a list and should match with algorithm requirements.
+}
+
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-filter_features"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-filter_features}{}}}
+\subsection{Method \code{filter_features()}}{
+Filters features and feature groups according to defined
+settings.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$filter_features(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the \code{MassSpecData} object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+The filtered features and feature groups are not entirely
+removed but tagged as filtered. See columns \code{filtered} and \code{filter}
+of the features and feature groups data.table as obtained with the
+methods \code{get_features()} and \code{get_groups()}, respectively.
 }
 
 \subsection{Returns}{

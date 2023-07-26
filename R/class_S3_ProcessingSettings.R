@@ -115,6 +115,13 @@ ProcessingSettings <- function(call = NA_character_,
     })
   }
 
+  if ("streamFind" %in% x$algorithm & any(c("filter_features") %in% x$call)) {
+    if (is.na(x$software)) x$software <- "streamFind"
+    if (is.na(x$developer)) x$developer <- "Ricardo Cunha"
+    if (is.na(x$contact)) x$contact <- "cunha@iuta.de"
+    if (is.na(x$link)) x$link <- "https://github.com/ricardobachertdacunha/streamFind"
+  }
+
   if (validate.ProcessingSettings(x)) {
     structure(x, class = "ProcessingSettings")
   } else {

@@ -602,7 +602,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets the full file paths of the analyses.
+    #' Gets the full file paths of each analysis.
     #'
     #' @return A character vector.
     #'
@@ -611,7 +611,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets the file format of the analyses.
+    #' Gets the file format of each analysis.
     #'
     #' @return A character vector.
     #'
@@ -620,7 +620,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets the type of the analyses.
+    #' Gets the type of each analysis.
     #'
     #' @return A character vector.
     #'
@@ -629,7 +629,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets the time stamp of the analyses.
+    #' Gets the time stamp of the each analysis.
     #'
     #' @return A character vector.
     #'
@@ -638,7 +638,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets the polarity of the analyses.
+    #' Gets the number of spectra in each analysis.
     #'
     #' @return A character vector.
     #'
@@ -647,7 +647,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets the polarity of the analyses.
+    #' Gets the spectra mode of each analysis (i.e., profile or centroided).
     #'
     #' @return A character vector.
     #'
@@ -656,7 +656,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets the spectra levels of the analyses.
+    #' Gets the spectra levels of each analysis.
     #'
     #' @return A list for each analysis with an integer vector.
     #'
@@ -665,7 +665,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets the polarity of the analyses.
+    #' Gets the lower \emph{m/z} value of each analysis.
     #'
     #' @return A character vector.
     #'
@@ -674,7 +674,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets the polarity of the analyses.
+    #' Gets the higher \emph{m/z} value of each analysis.
     #'
     #' @return A character vector.
     #'
@@ -683,7 +683,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets the polarity of the analyses.
+    #' Gets the start retention time value of each analysis.
     #'
     #' @return A character vector.
     #'
@@ -692,7 +692,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets the polarity of the analyses.
+    #' Gets the end retention time value of each analysis.
     #'
     #' @return A character vector.
     #'
@@ -701,7 +701,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets the polarity of the analyses.
+    #' Gets the polarity of each analysis.
     #'
     #' @return A character vector.
     #'
@@ -710,7 +710,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets the number of chromatograms in the analyses.
+    #' Gets the number of chromatograms in each analysis.
     #'
     #' @return A character vector.
     #'
@@ -719,7 +719,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets the instrument information for each analyses.
+    #' Gets the instrument information of each analysis.
     #'
     #' @return A data.table.
     #'
@@ -734,7 +734,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets the software information for each analyses.
+    #' Gets the software information of each analysis.
     #'
     #' @return A data.table.
     #'
@@ -749,7 +749,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets the run summary data.table for each analyses.
+    #' Gets the run summary data.table of each analysis.
     #'
     #' @return A data.table.
     #'
@@ -764,7 +764,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets the total ion chromatogram (TIC) from the analyses.
+    #' Gets the total ion chromatogram (TIC) of each analysis.
     #'
     #' @return A data.table with the TIC chromatogram.
     #'
@@ -787,7 +787,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets the base peak chromatogram (BPC) from the analyses.
+    #' Gets the base peak chromatogram (BPC) of each analysis.
     #'
     #' @return A character vector.
     #'
@@ -810,7 +810,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets spectra from the MS analyses.
+    #' Gets spectra from each analysis.
     #'
     #' @return A data.table with spectra for each analyses and
     #' targets, when defined.
@@ -1046,7 +1046,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets chromatograms from the MS analyses.
+    #' Gets chromatograms from each analysis.
     #'
     #' @return A data.table with chromatogram/s.
     #'
@@ -1412,7 +1412,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets an averaged MS1 spectrum for features in analyses.
+    #' Gets an averaged MS1 spectrum for features in the analyses.
     #'
     #' @return A data.table.
     #'
@@ -1480,7 +1480,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets an averaged MS2 spectrum for features in analyses.
+    #' Gets an averaged MS2 spectrum for features in the analyses.
     #'
     #' @return A data.table.
     #'
@@ -1549,7 +1549,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets feature groups from analyses.
+    #' Gets feature groups from the analyses.
     #'
     #' @return A data.table.
     #'
@@ -1721,7 +1721,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets an averaged MS1 spectrum for feature groups in analyses.
+    #' Gets an averaged MS1 spectrum for feature groups in the analyses.
     #'
     #' @return A data.table.
     #'
@@ -1808,7 +1808,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets an averaged MS2 spectrum for feature groups in analyses.
+    #' Gets an averaged MS2 spectrum for feature groups in the analyses.
     #'
     #' @return A data.table.
     #'
@@ -1959,9 +1959,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
 
         valid <- vapply(settings, function(x) {
+
           eval <- validate.ProcessingSettings(x)
 
           if (eval) {
+
             processingFunctionCalls <- c(
               "find_features", "annotate_features",
               "load_features_ms1", "load_features_ms2",
@@ -2052,6 +2054,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return Invisible.
     #'
     add_analyses = function(analyses = NULL) {
+
+      # TODO add possibility to add from files
 
       if (is.list(analyses)) {
         if (all(c("name", "file") %in% names(analyses))) {
@@ -4480,7 +4484,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' of the features and feature groups data.table as obtained with the
     #' methods `get_features()` and `get_groups()`, respectively.
     #'
-    filter = function(settings = NULL) {
+    filter_features = function(settings = NULL) {
       valid <- TRUE
       add_settings <- TRUE
 
@@ -4549,8 +4553,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         )
       }
 
-
-
+      if (add_settings) self$add_settings(settings)
 
       invisible(self)
     },
@@ -4969,8 +4972,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
           if ("history" %in% fields_present) {
             private$.history <- js_ms[["history"]]
           }
-
-          message("\U2713 MassSpecData class object imported from json file!")
         }
       } else {
         warning("File not found in given path!")

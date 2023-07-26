@@ -19,7 +19,6 @@ ms <- MassSpecData$new(files = files, headers = headers)
 # print method
 ms
 
-
 # change -----------------------------------------------------------------------
 
 rpls <- c(
@@ -51,11 +50,9 @@ ms$add_replicate_names(rpls)$add_blank_names(blks)$import_settings("ffs.json")
 
 ms$get_settings()
 
-oview <- ms$get_overview()
+ms$get_overview()
 
-#View(oview)
-
-#ms$plot_bpc(interactive = TRUE)
+ms$plot_bpc(interactive = TRUE)
 
 
 # process ----------------------------------------------------------------------
@@ -86,7 +83,7 @@ filters <- ProcessingSettings(
   )
 )
 
-ms$filter(filters)
+ms$filter_features(filters)
 
 ms$get_overview()
 
@@ -103,12 +100,12 @@ standards <- db[db$tag %in% "S", ]
 standards <- standards[, .(name, formula, mass, rt)]
 standards
 
-
 ms$get_groups(mass = standards, ppm = 5, sec = 10, average = TRUE)
 
 ms$plot_groups(mass = standards, ppm = 5, sec = 10, legendNames = TRUE)
 
-ms$get_groups(mass = iStandards, ppm = 8, sec = 15, average = TRUE, filtered = TRUE)
+# changing filtered to TRUE to show hidden data
+ms$get_groups(mass = iStandards, ppm = 8, sec = 15, average = TRUE, filtered = FALSE)
 
 ms$plot_groups_overview(
   mass = rbind(iStandards, standards),
@@ -117,71 +114,31 @@ ms$plot_groups_overview(
   legendNames = TRUE
 )
 
+# useful for development/optimization
+ms$plot_xic(
+  analyses = 4,
+  mz = 239.062,
+  rt = 1157,
+  ppm = 50,
+  sec = 120,
+  plotTargetMark = TRUE,
+  targetsMark = data.frame(
+    mz = 239.062,
+    rt = 1157
+  ),
+  ppmMark = 5,
+  secMark = 10
+)
+
 
 # history ----------------------------------------------------------------------
 
 ms$get_history()
 
 
+# extra ------------------------------------------------------------------------
 
+ms$get_headers()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# other code -------------------------------------------------------------------
-
-
-patRoon::clearCache("parsed_ms_spectra")
-
-
-db_cols <- c("name", "mass", "rt")
-carbamazepin_d10 <- db[db$name %in% "Carbamazepin-d10", db_cols, with = FALSE]
-diuron_d6 <- db[db$name %in% "Diuron-d6", db_cols, with = FALSE]
-carb_pos <- carbamazepin_d10$mass + 1.007276
-carb <- carbamazepin_d10$mass
-carb_rt <- carbamazepin_d10$rt
-diu_pos <- diuron_d6$mass + 1.007276
-diu <- diuron_d6$mass
-diu_rt <- diuron_d6$rt
-
-sec_dev <- 30
-ppm_dev <- 10
-
-targets <- make_ms_targets(
-  mz = data.frame(
-    id = c("tg1", "tg2"),
-    mz = c(carb_pos, diu_pos),
-    rt = c(carb_rt, diu_rt)
-  ),
-  ppm = ppm_dev,
-  sec = sec_dev
-)
-
-neutral_targets <- make_ms_targets(
-  mz = data.frame(
-    id = c("tg1", "tg2"),
-    mz = c(carb, diu),
-    rt = c(carb_rt, diu_rt)
-  ),
-  ppm = ppm_dev,
-  sec = sec_dev
-)
-
-
+ms$save_settings()
 
