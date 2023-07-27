@@ -26,6 +26,10 @@ get_default_ProcessingSettings <- function(call = NA_character_,
     if ("openms" %in% algorithm) {
       settings <- .default_find_features_openms()
     }
+
+    if ("kpic2" %in% algorithm) {
+      settings <- .default_find_features_kpic2()
+    }
   }
 
   if ("group_features" %in% call) {
@@ -53,6 +57,10 @@ get_default_ProcessingSettings <- function(call = NA_character_,
 
   if ("load_groups_ms2" %in% call) {
     settings <- .default_load_groups_ms2_streamFind()
+  }
+
+  if ("filter_features" %in% call) {
+    settings <- .default_filter_features_streamFind()
   }
 
   return(settings)
@@ -193,6 +201,44 @@ save_default_ProcessingSettings <- function(call = NA_character_,
     contact = "oliver.kohlbacher@uni-tuebingen.de",
     link = "https://abibuilder.cs.uni-tuebingen.de/archive/openms/Documentation/release/latest/html/index.html",
     doi = "https://doi.org/10.1038/nmeth.3959"
+  )
+
+  settings <- as.ProcessingSettings(settings)
+
+  return(settings)
+}
+
+#' @title .default_find_features_kpic2
+#'
+#' @description X.
+#'
+#' @return X.
+#'
+#' @noRd
+#'
+.default_find_features_kpic2 <- function() {
+
+  if (!requireNamespace("KPIC", quietly = TRUE)) {
+    warning("KPIC package required but not installed!")
+    return(NULL)
+  }
+
+  settings <- list(
+    call = "find_features",
+    algorithm = "kpic2",
+    parameters = list(
+      kmeans = TRUE,
+      level = 500, # Mass traces are only retained if their maximum values are over level
+      mztol = 0.01, # The initial m/z tolerance.
+      gap = 2, # The number of gap points of a mass trace.
+      width = 5, # The minimum length of a mass trace.
+      min_snr = 4 # Minimum signal to noise ratio.
+    ),
+    software = "kpic2",
+    developer = "Hongchao Ji",
+    contact = "ji.hongchao@foxmail.com",
+    link = "https://github.com/hcji/KPIC2",
+    doi = "10.1021/acs.analchem.7b01547"
   )
 
   settings <- as.ProcessingSettings(settings)
@@ -369,3 +415,34 @@ save_default_ProcessingSettings <- function(call = NA_character_,
   return(settings)
 }
 
+#' @title .default_filter_features_streamFind
+#'
+#' @description X.
+#'
+#' @return X.
+#'
+#' @noRd
+#'
+.default_filter_features_streamFind <- function() {
+
+  settings <- list(
+    call = "filter_features",
+    algorithm = "streamFind",
+    parameters = list(
+      "minIntensity" = 5000,
+      "minSnRatio" = 25,
+      "maxGroupSd" = 30,
+      "blank" = 5,
+      "minGroupAbundance" = 3
+    ),
+    software = "streamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://github.com/ricardobachertdacunha/streamFind",
+    doi = NA_character_
+  )
+
+  settings <- as.ProcessingSettings(settings)
+
+  return(settings)
+}

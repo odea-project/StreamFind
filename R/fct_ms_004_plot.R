@@ -1622,7 +1622,9 @@ plot_groups_overview_aux <- function(features, eic, heights, analyses) {
         "</br> width: ", round(ft_nf$rtmax - ft_nf$rtmin, digits = 0),
         "</br> dppm: ", round(((ft_nf$mzmax - ft_nf$mzmin) / ft_nf$mz) *
           1E6, digits = 1),
-        "</br> filled: ", ft_nf$is_filled
+        "</br> filled: ", ft_nf$is_filled,
+        "</br> filtered: ", ft_nf$filtered,
+        "</br> filter: ", ft_nf$filter
       )
     )
 

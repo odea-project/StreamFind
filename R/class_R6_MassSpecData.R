@@ -1,8 +1,8 @@
 #' **MassSpecData** R6 class and methods
 #'
 #' @description
-#' The MassSpecData R6 class is a framework with methods for parsing, processing,
-#' visualizing and storing MS data.
+#' The MassSpecData R6 class is a framework with methods for parsing,
+#' processing, visualizing and storing mass spectrometry (MS) data.
 #'
 #' @template arg-ms-files
 #' @template arg-runParallel
@@ -199,28 +199,30 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     .filter_minIntensity = function(value = 5000) {
 
-      lapply(private$.analyses, function(x) {
-        sel <- (x$features$intensity <= value) & (!x$features$filtered)
-        x$features$filtered[sel] <- TRUE
-        x$features$filter[sel] <- "minIntensity"
-        x
-      })
+      if (is.numeric(value)) {
+        lapply(private$.analyses, function(x) {
+          sel <- (x$features$intensity <= value) & (!x$features$filtered)
+          x$features$filtered[sel] <- TRUE
+          x$features$filter[sel] <- "minIntensity"
+          x
+        })
 
-      if (self$has_groups()) {
-        rpl <- self$get_replicate_names()
+        if (self$has_groups()) {
+          rpl <- self$get_replicate_names()
 
-        groups <- self$get_groups(
-          filtered = TRUE, onlyIntensities = TRUE, average = TRUE
-        )
+          groups <- self$get_groups(
+            filtered = TRUE, onlyIntensities = TRUE, average = TRUE
+          )
 
-        groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1,
-          function(x) { max(x) <= value }
-        )
+          groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1,
+                              function(x) { max(x) <= value }
+          )
 
-        private$.tag_filtered(groups_sel, "minIntensity")
+          private$.tag_filtered(groups_sel, "minIntensity")
+        }
+
+        private$.register("filtered", "minIntensity", paste0(value, " counts"))
       }
-
-      private$.register("filtered", "minIntensity", paste0(value, " counts"))
     },
 
     #' @description
@@ -230,7 +232,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       features <- self$get_features(filtered = TRUE)
 
-      if ("sn" %in% colnames(features)) {
+      if ("sn" %in% colnames(features) & is.numeric(value)) {
         lapply(private$.analyses, function(x) {
           sel <- x$features$sn <= value & !x$features$filtered
           x$features$filtered[sel] <- TRUE
@@ -262,7 +264,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     .filter_maxGroupSd = function(value = 30) {
 
-      if (self$has_groups()) {
+      if (self$has_groups() & is.numeric(value)) {
         rpl <- self$get_replicate_names()
         blk <- self$get_blank_names()
         rpl <- rpl[!rpl %in% blk]
@@ -289,7 +291,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     .filter_minGroupAbundance = function(value = 3) {
 
-      if (self$has_groups()) {
+      if (self$has_groups() & is.numeric(value)) {
         rpl <- self$get_replicate_names()
         groups <- self$get_groups(filtered = TRUE)
         features <- self$get_features(filtered = TRUE)
@@ -320,7 +322,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     .filter_blank = function(value = 30) {
 
-      if (self$has_groups()) {
+      if (self$has_groups() & is.numeric(value)) {
         rpl <- self$get_replicate_names()
         blk <- self$get_blank_names()
         names(blk) <- rpl
@@ -1358,7 +1360,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           sel[between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
             between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
 
-          sel[between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
+          ids[between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
             between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- targets$id[i]
         }
 
@@ -1947,9 +1949,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' list with call name, algorithm and parameters to be transformed and added
     #' as ProcessingSettings S3 class object.
     #'
+    #' @param replace Logical. When `TRUE`, existing settings are replaced by
+    #' the new settings with the same call name.
+    #'
     #' @return Invisible.
     #'
-    add_settings = function(settings = NULL) {
+    add_settings = function(settings = NULL, replace = TRUE) {
 
       if (is.list(settings)) {
 
@@ -2012,7 +2017,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           names(settings) <- call_names
 
-          private$.settings <- c(private$.settings, settings)
+          if (replace) {
+            private$.settings[call_names] <- settings
+          } else {
+            private$.settings <- c(private$.settings, settings)
+          }
 
           if (length(settings) == 1) {
 
@@ -2492,7 +2501,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!valid) {
-        invisible(self)
+        return(invisible(self))
       }
 
       algorithm <- settings$algorithm
@@ -2604,7 +2613,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!valid) {
-        invisible(self)
+        return(invisible(self))
       }
 
       algorithm <- settings$algorithm
@@ -2724,7 +2733,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!valid) {
-        invisible(self)
+        return(invisible(self))
       }
 
       algorithm <- settings$algorithm
@@ -2843,7 +2852,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!valid) {
-        invisible(self)
+        return(invisible(self))
       }
 
       algorithm <- settings$algorithm
@@ -4279,6 +4288,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
     ## ___ processing -----
 
+    ### ___ basic -----
+
     #' @description Finds features (i.e., chromatographic peaks) from MS data
     #' in analyses. The function uses the \pkg{patRoon} package
     #' for peak finding, enabling the use of several algorithms (see details).
@@ -4331,7 +4342,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!valid) {
-        invisible(self)
+        return(invisible(self))
       }
 
       algorithm <- settings$algorithm
@@ -4426,7 +4437,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!valid) {
-        invisible(self)
+        return(invisible(self))
       }
 
       algorithm <- settings$algorithm
@@ -4539,8 +4550,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!valid) {
-        invisible(self)
+        return(invisible(self))
       }
+
+      n_features <- nrow(self$get_features(filtered = FALSE))
 
       for (i in seq_len(length(filters))) {
         switch(filters[i],
@@ -4549,13 +4562,145 @@ MassSpecData <- R6::R6Class("MassSpecData",
           maxGroupSd = (private$.filter_maxGroupSd(parameters[[filters[i]]])),
           blank = (private$.filter_blank(parameters[[filters[i]]])),
           minGroupAbundance = (private$.filter_minGroupAbundance(parameters[[filters[i]]]))
-
+          # TODO add more filters, e.g., mass and time widths and limits
         )
       }
 
+      n_features_after <- nrow(self$get_features(filtered = FALSE))
+      n_features_filtered <- n_features - n_features_after
+      if (n_features_filtered < 0) n_features_filtered <- 0
+
       if (add_settings) self$add_settings(settings)
 
+      message(paste0("\U2713 ", n_features_filtered, " features filtered!"))
+
       invisible(self)
+    },
+
+    ### ___ advanced -----
+
+    suspect_screening = function(database = NULL, ppm = 4, sec = 10) {
+
+      if (!any(self$has_features())) {
+        warning("Features not found in the MassSpecData object!")
+        return(invisible(self))
+      }
+
+      valid_db <- FALSE
+
+      if (is.data.frame(database)) {
+        database <- as.data.table(database)
+        if (any(c("mass", "neutral_mass") %in% colnames(database)) |
+            "mz" %in% colnames(database)) {
+          if ("name" %in% colnames(database)) {
+            if ("neutral_mass" %in% colnames(database)) {
+              setnames(database, neutral_mass, mass)
+            }
+            valid_db = TRUE
+          }
+        }
+      }
+
+      if (!valid_db) {
+        warning("Argument database must be a data.frame with at least the columns name and mass or mz!")
+        return(invisible(self))
+      }
+
+      if (!"rt" %in% colnames(database)) {
+        database$rt <- NA_real_
+      } else {
+        database$rt[database$rt == ""] <- NA_real_
+      }
+
+      database$rt <- as.numeric(database$rt)
+
+      analyses <- lapply(self$get_analysis_names(),
+        function(analysis, database, ppm, sec) {
+
+          cols_db <- colnames(database)
+
+          if (!("mz" %in% cols_db) && "mass" %in% cols_db) {
+            pol <- self$get_polarities(analysis)
+
+            if ("positive" %in% pol) {
+              database$mz <- db$mass + 1.007276
+            }
+
+            if ("negative" %in% pol) {
+              database$mz <- db$mass - 1.007276
+            }
+          }
+
+          database$mz <- as.numeric(database$mz)
+
+          it <- seq_len(nrow(database))
+
+          suspects <- lapply(it,
+            function(x, analysis, database, ppm, sec) {
+
+              x_mz = database$mz[x]
+              x_rt = database$rt[x]
+              if (is.na(x_rt)) {
+                x_rt = NULL
+              }
+
+              temp <- self$get_features(
+                analyses = analysis,
+                mz = x_mz,
+                rt = x_rt,
+                ppm = ppm,
+                sec = sec
+              )
+
+              if (nrow(temp) > 0) {
+                temp$name <- database$name[x]
+                cols_front <- c("name")
+
+                if ("formula" %in% colnames(database)) {
+                  temp$formula <- database$formula[x]
+                  cols_front <- c(cols_front, "formula")
+                }
+
+                temp$id_level <- NA_character_
+                temp$mz_error <- round(
+                  (abs(temp$mz - x_mz) / temp$mz) * 1E6, digits = 1
+                )
+                temp$rt_error <- NA_real_
+                cols_front <- c(cols_front, "id_level", "mz_error", "rt_error")
+
+                setcolorder(temp, cols_front)
+
+                for (i in seq_len(nrow(temp))) {
+                  temp$id_level[i] = "4"
+
+                  if (!is.null(x_rt)) {
+                    temp$id_level[i] = "3b"
+                    temp$rt_error[i] = round(temp$rt[i] - x_rt, digits = 0)
+                  }
+
+                  # TODO add check for MS2 data in suspect screening
+                  # when MS2 are loaded, if not loaded ask to load
+                }
+              } else {
+                temp <- data.table()
+              }
+              temp
+            },
+            analysis = analysis,
+            database = database,
+            ppm = ppm,
+            sec = sec
+          )
+          suspects <- rbindlist(suspects, fill = TRUE)
+        },
+        database = database,
+        ppm = ppm,
+        sec = sec
+      )
+      analyses <- rbindlist(analyses, fill = TRUE)
+
+
+      analyses
     },
 
     ## ___ as -----
@@ -4875,14 +5020,17 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Imports processing settings from a \emph{rds} or \emph{json} file.
     #'
+    #' @param replace Logical. When `TRUE`, existing settings are replaced by
+    #' the new settings with the same call name.
+    #'
     #' @return Invisible.
     #'
-    import_settings = function(file = NA_character_) {
+    import_settings = function(file = NA_character_, replace = TRUE) {
       if (file.exists(file)) {
         settings <- NULL
         if (file_ext(file) %in% "json") settings <- fromJSON(file)
         if (file_ext(file) %in% "rds") settings <- readRDS(file)
-        self$add_settings(settings)
+        self$add_settings(settings, replace)
 
       } else {
         warning("File not found in given path!")
@@ -4947,7 +5095,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           if ("settings" %in% fields_present) {
             if (!is.null(js_ms[["settings"]])) {
-              self$add_settings(js_ms[["settings"]])
+              self$add_settings(js_ms[["settings"]], replace = TRUE)
             }
           }
 
