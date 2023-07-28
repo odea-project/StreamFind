@@ -4578,7 +4578,17 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     ### ___ advanced -----
-
+    #' @description Screens for suspect targets in features according to defined
+    #' settings.
+    #'
+    #' @return A data.frame with the suspects and matched features.
+    #'
+    #' @details The settings must contain a database as data.frame with at least
+    #' the columns name and mass, indicating the name and neutral monoisotopic
+    #' mass of the suspect targets. Other parameters in the settings are `ppm`
+    #' and `sec` which indicate the mass (im ppm) and time (in seconds)
+    #' deviations applied during the screening.
+    #'
     suspect_screening = function(database = NULL, ppm = 4, sec = 10) {
 
       if (!any(self$has_features())) {

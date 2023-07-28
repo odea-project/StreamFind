@@ -52,7 +52,7 @@ ffs <- ProcessingSettings(
   call = "find_features",
   algorithm = "xcms3",
   parameters = xcms::CentWaveParam(
-    ppm = 4,
+    ppm = 3,
     peakwidth = c(5, 80),
     snthresh = 5,
     prefilter = c(6, 50000 * 3),
@@ -70,13 +70,12 @@ ffs <- ProcessingSettings(
 ms$find_features(ffs)
 
 suspects <- ms$suspect_screening(db, ppm = 2)
+View(suspects)
 
 
-#
-# View(ms$get_features(mz = db))
-#
-ms$plot_features(features = "mz195.123_rt293_f503")
+ms$plot_features(features = "mz195.123_rt293_f479")
 
+ms$plot_features(mz = 195.123, rt = 293, ppm = 50, sec = 30)
 
 
 # ms$plot_spectra(levels = 1, mz = data.frame(
@@ -85,23 +84,26 @@ ms$plot_features(features = "mz195.123_rt293_f503")
 #   rtmin = 370,
 #   rtmax = 380
 # ))
-#
-# View(ms$get_features(mz = data.frame(
-#   mzmin = 273,
-#   mzmax = 280,
-#   rtmin = 360,
-#   rtmax = 370
-# )))
 
-ms$plot_xic(mz = 195.123, rt = 293, ppm = 50, sec = 10)
+# ms$plot_xic(mz = 195.123, rt = 293, ppm = 50, sec = 10)
 
 
 fts <- ms$get_features()
 fts <- fts[order(fts$mz), ]
-which(fts$feature %in% "mz195.123_rt293_f503")
+which(fts$feature %in% "mz388.106_rt1165_f7725")
 
 output <- rcpp_ms_annotation_isotopes(fts)
 View(output)
+View(output$output)
+
+ms$plot_eic(mz = 197.1262, rt = 293, ppm = 5, sec = 30)
+
+ms$map_features(features = output$output$feature[output$output$iso_gr == 1])
+
+ms$plot_features_ms1(features = output$output$feature[output$output$iso_gr == 1],
+                     mzClust = 0.0001, rtWindow = c(-1, 1), mzWindow = c(-1, 3))
 
 
+ms$map_features(features = output$output$feature[output$output$iso_gr == 558])
 
+ms$plot_features(features = output$output$feature[output$output$iso_gr == 558])
