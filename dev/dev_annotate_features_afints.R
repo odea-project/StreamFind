@@ -70,13 +70,12 @@ ffs <- ProcessingSettings(
 ms$find_features(ffs)
 
 suspects <- ms$suspect_screening(db, ppm = 2)
-View(suspects)
+#View(suspects)
 
 
-ms$plot_features(features = "mz195.123_rt293_f479")
+# ms$plot_features(features = "mz195.123_rt293_f479")
 
-ms$plot_features(mz = 195.123, rt = 293, ppm = 50, sec = 30)
-
+# ms$plot_features(mz = 195.123, rt = 293, ppm = 50, sec = 30)
 
 # ms$plot_spectra(levels = 1, mz = data.frame(
 #   mzmin = 164,

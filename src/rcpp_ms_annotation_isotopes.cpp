@@ -174,9 +174,9 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
     1.99684369 // Si30
   };
 
-  // // iso relative abundance from monoisotopic ion
+  // iso relative abundance from monoisotopic ion
   std::vector<double> iso_ab = {
-    0.01107800, // C13
+    0.0107800, // C13
     0.00015574, // H2
     0.00366300, // N15
     0.00037200, // O17
@@ -188,6 +188,54 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
     0.49314000, // Br81
     0.0468316, // Si29
     0.0308716 // Si30
+  };
+
+  // iso relative abundance from monoisotopic ion
+  std::vector<double> iso_mono = {
+    0.988922, // C
+    0.99984426, // H
+    0.996337, // N
+    0.997628, // O
+    0.997628, // O
+    0.95018, // S
+    0.95018, // S
+    // 0.00017000, // S36
+    0.75771, // Cl
+    0.50686, // Br
+    0.9222968, // Si
+    0.9222968// Si
+  };
+
+  // iso minimum number of elements
+  std::vector<double> iso_min_el = {
+    2, // C
+    2, // H
+    1, // N
+    1, // O
+    1, // O
+    1, // S
+    1, // S
+    // 0.00017000, // S
+    1, // Cl
+    1, // Br
+    1, // Si
+    1// Si
+  };
+
+  // iso maximum number of elements
+  std::vector<double> iso_max_el = {
+    80, // C
+    80, // H
+    5, // N
+    5, // O
+    5, // O
+    5, // S
+    5, // S
+    // 0.00017000, // S
+    5, // Cl
+    5, // Br
+    5, // Si
+    5// Si
   };
 
   int max_number_elements = 4;
@@ -402,7 +450,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
   // #### Orbitrap data from AFIN-TS High Resolution
 
   // highest feature
-  for (int i = 5242; i < 5243; ++i) {
+  for (int i = 775; i < 776; ++i) {
 
 
   // for (int i = 0; i < number_of_features; ++i) {
@@ -717,37 +765,158 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
                   Rcpp::CharacterVector candidate_el = el_combinations_list[candidate_idx];
                   Rcpp::NumericVector candidate_ab = el_ab_combinations_list[candidate_idx];
 
-                  double rel_int;
-                  int min_el_num = 1;
-                  int max_el_num = 20;
+                  double min_rel_int = 0;
+                  double max_rel_int = 0;
 
-                  for (int e = 0; e < candidate_ab.size(); ++e) {
+                  std::unordered_map<std::string, int> count_map;
 
-                    if (e == 0) {
-                      rel_int = candidate_ab[0];
-                    } else {
-                      rel_int = rel_int * candidate_ab[e];
+                  for (int e = 0; e < candidate_el.size(); ++e) {
+                    std::string e_el = Rcpp::as<std::string>(candidate_el[e]);
+                    count_map[e_el]++;
+                  }
+
+                  for (const auto& pair : count_map) {
+                    std::string e_el = pair.first;
+                    int number_el = pair.second;
+
+                    double e_ab = 0;
+                    double mono_ab = 0;
+                    int min_el_num;
+                    int max_el_num;
+                    for (size_t a = 0; a <= iso_elements.size(); ++a) {
+                      if (iso_elements[a] == e_el) {
+                        e_ab = iso_ab[a];
+                        mono_ab = iso_mono[a];
+                        min_el_num = iso_min_el[a];
+                        max_el_num = iso_max_el[a];
+                      }
                     }
 
-                    if ((candidate_el[e] == "C13") || (candidate_el[e] == "H2")) {
-                      max_el_num = 80;
-                    } else if (candidate_el[e] == "Cl37" || (candidate_el[e] == "Br81")) {
-                      max_el_num = 5;
+                    e_ab = candidate_ab[0];
+
+                    Rcpp::Rcout << pair.first << ": " << number_el << " with ab:" << e_ab << std::endl;
+                    Rcpp::Rcout << "mono_iso ab" << ": " << mono_ab << std::endl;
+                    Rcpp::Rcout << "max number el" << ": " << max_el_num << std::endl;
+
+                    // when only one isotope atom, mostly for M+1
+                    // or M+2 for Cl, Br, Si and S
+                    if (number_el == 1) {
+                      double min_coef = (min_el_num * std::pow(mono_ab, min_el_num - number_el) * e_ab) / std::pow(mono_ab, min_el_num);
+                      double max_coef = (max_el_num * std::pow(mono_ab, max_el_num - number_el) * e_ab) / std::pow(mono_ab, max_el_num);
+
+                      min_rel_int = min_rel_int + min_coef;
+                      max_rel_int = max_rel_int + max_coef;
+
+                    // when second time isotope, mostly for M+2 ...
+                    } else {
+
+                      unsigned int fact = 1;
+                      for (int a = 1; a <= number_el; ++a) {
+                        fact *= a;
+                      }
+
+                      Rcpp::Rcout << "factorial" << ": " << fact << std::endl;
+
+                      double min_coef = (std::pow(mono_ab, min_el_num - number_el) * std::pow(e_ab, number_el)) / fact;
+                      double max_coef = (std::pow(mono_ab, max_el_num - number_el) * std::pow(e_ab, number_el)) / fact;
+
+                      min_coef = min_coef / std::pow(mono_ab, min_el_num);
+                      max_coef = max_coef / std::pow(mono_ab, max_el_num);
+
+                      min_coef = min_coef * min_el_num * (min_el_num - 1);
+                      max_coef = max_coef * max_el_num * (max_el_num - 1);
+
+                      for (int t = 2; t <= number_el - 1; ++t) {
+                        Rcpp::Rcout << "run extra multiplication" << std::endl;
+                        min_coef = min_coef * (min_el_num - t);
+                        max_coef = max_coef * (max_el_num - t);
+                      }
+
+
+
+                      min_rel_int = min_rel_int + min_coef;
+                      max_rel_int = max_rel_int + max_coef;
                     }
                   }
 
-                  double min_rel_int = (rel_int/candidate_ab.size()) * min_el_num * (min_el_num - 1);
-                  double max_rel_int = (rel_int/candidate_ab.size()) * max_el_num * (max_el_num - 1);
+
+
+
+
+
+                  // if (candidate_ab.size() == 1) {
+                  //
+                  //   std::string e_el = Rcpp::as<std::string>(candidate_el[0]);
+                  //
+                  //   if ((e_el == "C13") || (e_el == "H2")) {
+                  //     max_el_num = 80;
+                  //   } else if (e_el == "Cl37" || (e_el == "Br81")) {
+                  //     max_el_num = 5;
+                  //   }
+                  //
+                  //   double mono_ab = 0;
+                  //   for (int a = 0; a <  iso_elements.size(); ++a) {
+                  //     if (iso_elements[a] == e_el) mono_ab = iso_mono[a];
+                  //   }
+                  //
+                  //
+                  //
+                  // } else {
+                  //
+                  //   // to calculate the M+2 with more than one atom the elements
+                  //   // first we extract unique el, then count their presence and continue
+                  //   // with the estimation based on the expansion (book page 499) for
+                  //   // repeating elements or direct multiplication for single el
+                  //   Rcpp::CharacterVector candidate_el_unique = Rcpp::unique(candidate_el);
+                  //
+                  //   // std::unordered_map<std::string, int> count_map;
+                  //   //
+                  //   // for (int e = 0; e < candidate_el.size(); ++e) {
+                  //   //   std::string e_el = Rcpp::as<std::string>(candidate_el[e]);
+                  //   //   count_map[e_el]++;
+                  //   // }
+                  //
+                  //   // Rcpp::Rcout << "Map Contents:" << std::endl;
+                  //   // for (const auto& pair : count_map) {
+                  //   //   Rcpp::Rcout << pair.first << ": " << pair.second << std::endl;
+                  //   // }
+                  //
+                  //
+                  //
+                  //
+                  //
+                  //   for (int e = 0; e < candidate_ab.size(); ++e) {
+                  //
+                  //     if ((candidate_el[e] == "C13") || (candidate_el[e] == "H2")) {
+                  //       max_el_num = 80;
+                  //     } else if (candidate_el[e] == "Cl37" || (candidate_el[e] == "Br81")) {
+                  //       max_el_num = 5;
+                  //     }
+                  //
+                  //     if (e == 0) {
+                  //       rel_int = candidate_ab[0];
+                  //     } else {
+                  //       rel_int = rel_int * candidate_ab[e];
+                  //     }
+                  //
+                  //   }
+                  //
+                  //   min_rel_int = (rel_int/candidate_ab.size()) * min_el_num * (min_el_num - 1);
+                  //
+                  //   max_rel_int = (rel_int/candidate_ab.size()) * max_el_num * (max_el_num - 1);
+                  //
+                  // }
+
                   double f_rel_int = all_intensity[chain_idx[f]]/intensity;
 
-                  Rcpp::Rcout << "rel min: " << min_rel_int << std::endl;
-                  Rcpp::Rcout << "rel max: " << max_rel_int << std::endl;
+                  Rcpp::Rcout << "rel min: " << min_rel_int * 0.95 << std::endl;
+                  Rcpp::Rcout << "rel max: " << max_rel_int * 1.05 << std::endl;
                   Rcpp::Rcout << "rel f: " << f_rel_int << std::endl;
 
 
                   if (candidate_md_error < mass_error &&
-                      f_rel_int >= min_rel_int &&
-                      f_rel_int <= max_rel_int) {
+                      f_rel_int >= min_rel_int * 0.95 &&
+                      f_rel_int <= max_rel_int * 1.05) {
 
                     mass_error = candidate_md_error;
                     candidate_iso_md = temp_iso_md[j];

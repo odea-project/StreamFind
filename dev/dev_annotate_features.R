@@ -6,7 +6,7 @@ files_mrm <- all_files[grepl("mrm", all_files)]
 files <- all_files[1:3]
 files1 <- all_files[grepl("influent|blank", all_files)]
 files2 <- all_files[grepl("o3sw", all_files)]
-db_cols <- c("name", "mass", "rt")
+db_cols <- c("name", "formula", "mass", "rt")
 
 carbamazepin_d10 <- db[db$name %in% "Carbamazepin-d10", db_cols, with = FALSE]
 diuron_d6 <- db[db$name %in% "Diuron-d6", db_cols, with = FALSE]
@@ -48,12 +48,12 @@ settings_ff <- list(
   call = "find_features",
   algorithm = "xcms3",
   parameters = list(xcms::CentWaveParam(
-    ppm = 12, peakwidth = c(5, 30),
-    snthresh = 10, prefilter = c(5, 6000),
+    ppm = 12, peakwidth = c(5, 40),
+    snthresh = 10, prefilter = c(5, 2000),
     mzCenterFun = "wMean", integrate = 1,
-    mzdiff = -0.0005, fitgauss = TRUE,
+    mzdiff = 0.0002, fitgauss = TRUE,
     noise = 500, verboseColumns = TRUE,
-    firstBaselineCheck = TRUE,
+    firstBaselineCheck = FALSE,
     extendLengthMSW = FALSE
   ))
 )
@@ -62,7 +62,7 @@ settings_ff <- list(
 # patRoon::clearCache("parsed_ms_analyses")
 # patRoon::clearCache("parsed_ms_spectra")
 
-ms <- MassSpecData$new(files = all_files[1:3],
+ms <- MassSpecData$new(files = all_files[2],
   headers = list(name = "Example 1"),
   settings = list(settings_ff)
 )
@@ -71,20 +71,26 @@ ms$find_features()
 
 # code dev ---------------------------------------------------------------------
 
-fts <- ms$get_features(analyses = 1)
-cols_keep <- c("index", "feature", "mass", "mz", "mzmin", "mzmax", "rt", "rtmin","rtmax", "intensity", "sn")
-fts <- fts[, cols_keep, with = FALSE]
-
-fts_tar <- ms$get_features(analyses = 1, mz = targets)
-fts1 <- fts[fts$rt >= min(fts_tar$rtmin) & fts$rt <= max(fts_tar$rtmax), ]
-fts1 <- fts1[order(fts1$mz), ]
+suspects <- ms$suspect_screening(db[, db_cols, with = FALSE], ppm = 8, sec = 10)
 
 
+fts <- ms$get_features()
+fts <- fts[order(fts$mz), ]
+which(fts$feature %in% "mz441.168_rt1099_f118")
+
+# fts_tar <- ms$get_features(analyses = 1, mz = targets)
+# fts1 <- fts[fts$rt >= min(fts_tar$rtmin) & fts$rt <= max(fts_tar$rtmax), ]
+# fts1 <- fts1[order(fts1$mz), ]
 
 
-# plot_spectra_interactive(fts1)
 
-View(rcpp_ms_annotation_isotopes(fts))
+ms$plot_features_ms1(features = "mz441.168_rt1099_f118")
+
+
+
+output <- rcpp_ms_annotation_isotopes(fts)
+View(output)
+View(output$output)
 
 
 View(rcpp_ms_annotation_isotopes(fts)[["output"]])
