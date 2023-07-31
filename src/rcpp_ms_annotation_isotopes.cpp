@@ -9,10 +9,10 @@
 
 // [[Rcpp::export]]
 Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
-                                       int maxIsotopes = 2,
+                                       int maxIsotopes = 5,
                                        int maxCharge = 1,
                                        double rtWindowAlignment = 0.2,
-                                       int maxGaps = 1) {
+                                       int maxGaps = 2) {
 
   Rcpp::List list_out;
 
@@ -153,9 +153,9 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
     "S34",
     // "S36",
     "Cl37",
-    "Br81",
-    "Si29",
-    "Si30"
+    "Br81"
+    // "Si29",
+    // "Si30"
   };
 
   // iso mass difference from monoisotopic ion
@@ -166,12 +166,12 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
     1.0042169, // O17
     2.004246, //O18
     0.9993878, // S33
-    1.995796, // S234
-    // 3.99501, // S336
+    1.995796, // S34
+    // 3.99501, // S36
     1.9970499, // Cl37
-    1.9979534, // Br81
-    0.99956819, // Si29
-    1.99684369 // Si30
+    1.9979534 // Br81
+    // 0.99956819, // Si29
+    // 1.99684369 // Si30
   };
 
   // iso relative abundance from monoisotopic ion
@@ -185,9 +185,9 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
     0.04215000, // S34
     // 0.00017000, // S36
     0.24229000, // Cl37
-    0.49314000, // Br81
-    0.0468316, // Si29
-    0.0308716 // Si30
+    0.49314000 // Br81
+    // 0.0468316, // Si29
+    // 0.0308716 // Si30
   };
 
   // iso relative abundance from monoisotopic ion
@@ -199,11 +199,11 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
     0.997628, // O
     0.95018, // S
     0.95018, // S
-    // 0.00017000, // S36
+    // 0.95018, // S
     0.75771, // Cl
-    0.50686, // Br
-    0.9222968, // Si
-    0.9222968// Si
+    0.50686 // Br
+    // 0.9222968, // Si
+    // 0.9222968// Si
   };
 
   // iso minimum number of elements
@@ -217,28 +217,28 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
     1, // S
     // 0.00017000, // S
     1, // Cl
-    1, // Br
-    1, // Si
-    1// Si
+    1 // Br
+    // 1, // Si
+    // 1// Si
   };
 
   // iso maximum number of elements
   std::vector<double> iso_max_el = {
     80, // C
     80, // H
-    5, // N
-    5, // O
-    5, // O
-    5, // S
-    5, // S
+    15, // N
+    15, // O
+    15, // O
+    10, // S
+    10, // S
     // 0.00017000, // S
-    5, // Cl
-    5, // Br
-    5, // Si
-    5// Si
+    10, // Cl
+    10 // Br
+    // 5, // Si
+    // 5// Si
   };
 
-  int max_number_elements = 4;
+  int max_number_elements = 3;
 
   std::set<std::vector<std::string>> combinations;
   for (const std::string& el : iso_elements) {
@@ -256,12 +256,37 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
     std::set<std::vector<std::string>> new_combinations;
 
     for (const std::vector<std::string>& prev_combination : combinations_vec) {
-        for (const std::string& el : iso_elements) {
-          std::vector<std::string> combination = prev_combination;
-          combination.push_back(el);
-          std::sort(combination.begin(), combination.end());
-          new_combinations.insert(combination);
+
+      // excludes H2 and O17 from the M+2 on due to the low contribution
+      if (prev_combination[0] == "H2" || prev_combination[0] == "O17") {
+        continue;
+      }
+
+      // excludes N15 and S33 from the M+3 on due to the low contribution
+      if (n > 1 &&  (prev_combination[0] == "N15" || prev_combination[0] == "S33")) {
+        continue;
+      }
+
+      // excludes N15 and S33 from the M+3 on due to the low contribution
+      if (prev_combination.size() >= 2) {
+        if (prev_combination[1] == "N15" || prev_combination[1] == "S33") {
+          continue;
         }
+      }
+
+      for (const std::string& el : iso_elements) {
+
+        // excludes H2 and O17 from the M+2 on due to the low contribution
+        if (el == "H2" || el == "O17") continue;
+
+        // excludes N15 and S33 from the M+3 on due to the low contribution
+        if (n > 1 &&  (el == "N15" || el == "S33")) continue;
+
+        std::vector<std::string> combination = prev_combination;
+        combination.push_back(el);
+        std::sort(combination.begin(), combination.end());
+        new_combinations.insert(combination);
+      }
     }
     combinations.insert(new_combinations.begin(), new_combinations.end());
   }
@@ -450,7 +475,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
   // #### Orbitrap data from AFIN-TS High Resolution
 
   // highest feature
-  for (int i = 775; i < 776; ++i) {
+  for (int i = 104; i < 105; ++i) {
 
 
   // for (int i = 0; i < number_of_features; ++i) {
@@ -654,6 +679,8 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
           // list_out["hits_iso_el_empty"] = hits_iso_el;
           // list_out["hits_iso_ab_empty"] = hits_iso_ab;
 
+          double estimated_number_carbons = 0;
+
           for (int iso = 1; iso < maxIsotopes + 1; ++iso) {
             Rcpp::Rcout << "step " << iso << std::endl;
             Rcpp::Rcout << std::endl;
@@ -720,14 +747,14 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
                 if (candidate_diff_min < 1.007276 &&
                     candidate_diff_max > 1.007276 &&
                     all_intensity[chain_idx[f]]/intensity > 5) {
-                  // Rcpp::Rcout <<  std::endl;
-                  // Rcpp::Rcout << "Potential M+: " << id << std::endl;
-                  // Rcpp::Rcout << "  - diff: " << candidate_diff << std::endl;
-                  // Rcpp::Rcout << "  - max diff: " << candidate_diff_max << std::endl;
-                  // Rcpp::Rcout << "  - min diff: " << candidate_diff_min << std::endl;
-                  // Rcpp::Rcout << "  - [M+H]+: " << chain_id[f] << std::endl;
-                  // Rcpp::Rcout << "  - int ratio: " << all_intensity[chain_idx[f]]/intensity << std::endl;
-                  // Rcpp::Rcout <<  std::endl;
+                  Rcpp::Rcout <<  std::endl;
+                  Rcpp::Rcout << "Potential M+: " << id << std::endl;
+                  Rcpp::Rcout << "  - diff: " << candidate_diff << std::endl;
+                  Rcpp::Rcout << "  - max diff: " << candidate_diff_max << std::endl;
+                  Rcpp::Rcout << "  - min diff: " << candidate_diff_min << std::endl;
+                  Rcpp::Rcout << "  - [M+H]+: " << chain_id[f] << std::endl;
+                  Rcpp::Rcout << "  - int ratio: " << all_intensity[chain_idx[f]]/intensity << std::endl;
+                  Rcpp::Rcout <<  std::endl;
 
                   // TODO this will also capture H2 loss and mark it as M+
                   // the mass error might give an indication to check
@@ -750,7 +777,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
 
               // when candidate is inside of the mass range for iso step
               if (temp_iso_md_min - mzr < candidate_diff && temp_iso_md_max + mzr > candidate_diff) {
-                Rcpp::Rcout << "Feature: " << all_ids[chain_idx[f]] << "with mass_diff " << candidate_diff << std::endl;
+                Rcpp::Rcout << "Feature: " << all_ids[chain_idx[f]] << " with mass_diff " << candidate_diff << std::endl;
                 Rcpp::Rcout << std::endl;
 
                 // selects the md within the mass dev
@@ -759,14 +786,12 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
 
                   double candidate_md_error = abs(temp_iso_md[j] - candidate_diff);
 
-                  Rcpp::Rcout << "md: " << temp_iso_md[j] << " with error " << candidate_md_error <<  std::endl;
-
                   int candidate_idx = temp_iso_idx[j];
                   Rcpp::CharacterVector candidate_el = el_combinations_list[candidate_idx];
                   Rcpp::NumericVector candidate_ab = el_ab_combinations_list[candidate_idx];
 
-                  double min_rel_int = 0;
-                  double max_rel_int = 0;
+                  double min_rel_int = 1;
+                  double max_rel_int = 1;
 
                   std::unordered_map<std::string, int> count_map;
 
@@ -779,6 +804,8 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
                     std::string e_el = pair.first;
                     int number_el = pair.second;
 
+                    Rcpp::Rcout << "El: " << e_el <<  "(" << temp_iso_md[j] << ")" << " with error " << candidate_md_error <<  std::endl;
+
                     double e_ab = 0;
                     double mono_ab = 0;
                     int min_el_num;
@@ -787,16 +814,33 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
                       if (iso_elements[a] == e_el) {
                         e_ab = iso_ab[a];
                         mono_ab = iso_mono[a];
-                        min_el_num = iso_min_el[a];
-                        max_el_num = iso_max_el[a];
+
+                        if (number_el == 1 && e_el == "C13" && iso == 1) {
+                          estimated_number_carbons = all_intensity[chain_idx[f]]/(e_ab * intensity);
+
+                          Rcpp::Rcout << std::endl;
+                          Rcpp::Rcout << "Estimated N. carbons:" << estimated_number_carbons << std::endl;
+                          Rcpp::Rcout << std::endl;
+                        }
+
+                        if (estimated_number_carbons > 0 && e_el == "C13") {
+                          min_el_num = estimated_number_carbons * 0.9;
+                          max_el_num = estimated_number_carbons * 1.1;
+                        } else {
+                          min_el_num = iso_min_el[a];
+                          max_el_num = iso_max_el[a];
+                        }
                       }
                     }
 
-                    e_ab = candidate_ab[0];
+                    if (iso == 4) {
+                      Rcpp::Rcout << pair.first << ": " << number_el << " with ab:" << e_ab << std::endl;
+                      Rcpp::Rcout << "mono_iso ab" << ": " << mono_ab << std::endl;
+                      Rcpp::Rcout << "min number el" << ": " << min_el_num << std::endl;
+                      Rcpp::Rcout << "max number el" << ": " << max_el_num << std::endl;
+                    }
 
-                    Rcpp::Rcout << pair.first << ": " << number_el << " with ab:" << e_ab << std::endl;
-                    Rcpp::Rcout << "mono_iso ab" << ": " << mono_ab << std::endl;
-                    Rcpp::Rcout << "max number el" << ": " << max_el_num << std::endl;
+
 
                     // when only one isotope atom, mostly for M+1
                     // or M+2 for Cl, Br, Si and S
@@ -804,8 +848,8 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
                       double min_coef = (min_el_num * std::pow(mono_ab, min_el_num - number_el) * e_ab) / std::pow(mono_ab, min_el_num);
                       double max_coef = (max_el_num * std::pow(mono_ab, max_el_num - number_el) * e_ab) / std::pow(mono_ab, max_el_num);
 
-                      min_rel_int = min_rel_int + min_coef;
-                      max_rel_int = max_rel_int + max_coef;
+                      min_rel_int = min_rel_int * min_coef;
+                      max_rel_int = max_rel_int * max_coef;
 
                     // when second time isotope, mostly for M+2 ...
                     } else {
@@ -815,7 +859,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
                         fact *= a;
                       }
 
-                      Rcpp::Rcout << "factorial" << ": " << fact << std::endl;
+                      if (iso == 4) Rcpp::Rcout << "factorial" << ": " << fact << std::endl;
 
                       double min_coef = (std::pow(mono_ab, min_el_num - number_el) * std::pow(e_ab, number_el)) / fact;
                       double max_coef = (std::pow(mono_ab, max_el_num - number_el) * std::pow(e_ab, number_el)) / fact;
@@ -827,15 +871,15 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
                       max_coef = max_coef * max_el_num * (max_el_num - 1);
 
                       for (int t = 2; t <= number_el - 1; ++t) {
-                        Rcpp::Rcout << "run extra multiplication" << std::endl;
+                        if (iso == 4) Rcpp::Rcout << "run extra multiplication" << std::endl;
                         min_coef = min_coef * (min_el_num - t);
                         max_coef = max_coef * (max_el_num - t);
                       }
 
 
 
-                      min_rel_int = min_rel_int + min_coef;
-                      max_rel_int = max_rel_int + max_coef;
+                      min_rel_int = min_rel_int * min_coef;
+                      max_rel_int = max_rel_int * max_coef;
                     }
                   }
 
@@ -1202,7 +1246,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
     Rcpp::Named("iso_rel") = feat_iso_int,
     Rcpp::Named("hits_iso_diff") = feat_iso_diff,
     Rcpp::Named("hits_iso_md") = feat_iso_md,
-    // Rcpp::Named("hits_iso_el") = feat_iso_el,
+    Rcpp::Named("hits_iso_el") = feat_iso_el,
     Rcpp::Named("hits_iso_error") = feat_iso_error,
     Rcpp::Named("iso_feat") = feat_iso_feat
   );

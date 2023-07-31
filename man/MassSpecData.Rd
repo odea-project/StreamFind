@@ -4,8 +4,8 @@
 \alias{MassSpecData}
 \title{\strong{MassSpecData} R6 class and methods}
 \description{
-The MassSpecData R6 class is a framework with methods for parsing, processing,
-visualizing and storing MS data.
+The MassSpecData R6 class is a framework with methods for parsing,
+processing, visualizing and storing mass spectrometry (MS) data.
 }
 \references{
 \insertRef{patroon01}{streamFind}
@@ -133,6 +133,7 @@ visualizing and storing MS data.
 \item \href{#method-MassSpecData-find_features}{\code{MassSpecData$find_features()}}
 \item \href{#method-MassSpecData-group_features}{\code{MassSpecData$group_features()}}
 \item \href{#method-MassSpecData-filter_features}{\code{MassSpecData$filter_features()}}
+\item \href{#method-MassSpecData-suspect_screening}{\code{MassSpecData$suspect_screening()}}
 \item \href{#method-MassSpecData-as_features_patRoon}{\code{MassSpecData$as_features_patRoon()}}
 \item \href{#method-MassSpecData-check_correspondence}{\code{MassSpecData$check_correspondence()}}
 \item \href{#method-MassSpecData-save_headers}{\code{MassSpecData$save_headers()}}
@@ -1812,7 +1813,7 @@ Invisible.
 \subsection{Method \code{add_settings()}}{
 Adds processing settings.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$add_settings(settings = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$add_settings(settings = NULL, replace = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -1823,6 +1824,9 @@ single ProcessingSettings S3 class object. The list names should match
 the call name of each ProcessingSettings object. Alternatively, a named
 list with call name, algorithm and parameters to be transformed and added
 as ProcessingSettings S3 class object.}
+
+\item{\code{replace}}{Logical. When \code{TRUE}, existing settings are replaced by
+the new settings with the same call name.}
 }
 \if{html}{\out{</div>}}
 }
@@ -3989,6 +3993,37 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-suspect_screening"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-suspect_screening}{}}}
+\subsection{Method \code{suspect_screening()}}{
+Screens for suspect targets in features according to defined
+settings.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$suspect_screening(database = NULL, ppm = 4, sec = 10)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
+
+\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+The settings must contain a database as data.frame with at least
+the columns name and mass, indicating the name and neutral monoisotopic
+mass of the suspect targets. Other parameters in the settings are \code{ppm}
+and \code{sec} which indicate the mass (im ppm) and time (in seconds)
+deviations applied during the screening.
+}
+
+\subsection{Returns}{
+A data.frame with the suspects and matched features.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecData-as_features_patRoon"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-as_features_patRoon}{}}}
 \subsection{Method \code{as_features_patRoon()}}{
@@ -4190,7 +4225,7 @@ Invisible.
 \subsection{Method \code{import_settings()}}{
 Imports processing settings from a \emph{rds} or \emph{json} file.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$import_settings(file = NA_character_)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$import_settings(file = NA_character_, replace = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -4198,6 +4233,9 @@ Imports processing settings from a \emph{rds} or \emph{json} file.
 \describe{
 \item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
 method \code{save()}.}
+
+\item{\code{replace}}{Logical. When \code{TRUE}, existing settings are replaced by
+the new settings with the same call name.}
 }
 \if{html}{\out{</div>}}
 }

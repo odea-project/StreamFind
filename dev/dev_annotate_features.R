@@ -76,7 +76,7 @@ suspects <- ms$suspect_screening(db[, db_cols, with = FALSE], ppm = 8, sec = 10)
 
 fts <- ms$get_features()
 fts <- fts[order(fts$mz), ]
-which(fts$feature %in% "mz441.168_rt1099_f118")
+which(fts$feature %in% "mz267.07_rt1008_f51")
 
 # fts_tar <- ms$get_features(analyses = 1, mz = targets)
 # fts1 <- fts[fts$rt >= min(fts_tar$rtmin) & fts$rt <= max(fts_tar$rtmax), ]
@@ -84,11 +84,22 @@ which(fts$feature %in% "mz441.168_rt1099_f118")
 
 
 
-ms$plot_features_ms1(features = "mz441.168_rt1099_f118")
+# ms$plot_features_ms1(features = "mz441.168_rt1099_f118")
 
 
 
 output <- rcpp_ms_annotation_isotopes(fts)
+
+
+suspects_res <- suspects$name
+names(suspects_res) <- suspects$feature
+
+suspects_for <- suspects$formula
+names(suspects_for) <- suspects$feature
+
+output$output$name <- suspects_res[output$output$feature]
+output$output$formula <- suspects_for[output$output$feature]
+
 View(output)
 View(output$output)
 
