@@ -414,6 +414,8 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
   std::vector<std::string> feat_iso_feat(number_of_features);
   Rcpp::CharacterVector feat_iso_el(number_of_features);
 
+  std::vector<double> feat_estimated_carbons(number_of_features);
+  int final_estimated_number_carbons;
 
 
 
@@ -603,6 +605,8 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
         Rcpp::List hits_el_list(maxCharge);
         Rcpp::List hits_ab_list(maxCharge);
 
+        std::vector<double> estimated_number_carbons(zvals.size());
+
         for (size_t z = 0; z < zvals.size(); z++) {
           // Rcpp::Rcout << std::endl;
           // Rcpp::Rcout << "Charge: " << zvals[z] << std::endl;
@@ -679,7 +683,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
           // list_out["hits_iso_el_empty"] = hits_iso_el;
           // list_out["hits_iso_ab_empty"] = hits_iso_ab;
 
-          double estimated_number_carbons = 0;
+          estimated_number_carbons[z] = 0;
 
           for (int iso = 1; iso < maxIsotopes + 1; ++iso) {
             Rcpp::Rcout << "step " << iso << std::endl;
@@ -816,16 +820,16 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
                         mono_ab = iso_mono[a];
 
                         if (number_el == 1 && e_el == "C13" && iso == 1) {
-                          estimated_number_carbons = all_intensity[chain_idx[f]]/(e_ab * intensity);
+                          estimated_number_carbons[z] = all_intensity[chain_idx[f]]/(e_ab * intensity);
 
                           Rcpp::Rcout << std::endl;
-                          Rcpp::Rcout << "Estimated N. carbons:" << estimated_number_carbons << std::endl;
+                          Rcpp::Rcout << "Estimated N. carbons:" << estimated_number_carbons[z] << std::endl;
                           Rcpp::Rcout << std::endl;
                         }
 
-                        if (estimated_number_carbons > 0 && e_el == "C13") {
-                          min_el_num = estimated_number_carbons * 0.9;
-                          max_el_num = estimated_number_carbons * 1.1;
+                        if (estimated_number_carbons[z] > 0 && e_el == "C13") {
+                          min_el_num = estimated_number_carbons[z] * 0.9;
+                          max_el_num = estimated_number_carbons[z] * 1.1;
                         } else {
                           min_el_num = iso_min_el[a];
                           max_el_num = iso_max_el[a];
@@ -1177,6 +1181,12 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
             }
           }
 
+          final_estimated_number_carbons = int (estimated_number_carbons[charge_idx]);
+
+          // rounds when decimal is above or equal to 0.5
+          double rounding = estimated_number_carbons[charge_idx] - final_estimated_number_carbons;
+          if (rounding >= 0.5) final_estimated_number_carbons = final_estimated_number_carbons + 1;
+
           // list_out["step"] = flat_step;
           // list_out["chain"] = final_chain;
           // list_out["idx"] = flat_idx;
@@ -1219,6 +1229,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
                 feat_iso_int[flat_idx[m]] = flat_ints[m];
                 feat_iso_feat[flat_idx[m]] = id;
                 feat_iso_z[flat_idx[m]] = zvals[charge_idx];
+                feat_estimated_carbons[flat_idx[m]] = final_estimated_number_carbons;
               }
             }
           }
@@ -1247,6 +1258,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
     Rcpp::Named("hits_iso_diff") = feat_iso_diff,
     Rcpp::Named("hits_iso_md") = feat_iso_md,
     Rcpp::Named("hits_iso_el") = feat_iso_el,
+    Rcpp::Named("hits_n_carbons") = feat_estimated_carbons,
     Rcpp::Named("hits_iso_error") = feat_iso_error,
     Rcpp::Named("iso_feat") = feat_iso_feat
   );

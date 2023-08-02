@@ -1,7 +1,10 @@
 
-path <- "C:/Users/Ricardo Cunha/Documents/Work/Dev_20230530_Orbitrap_AFINTS"
-all_files <- list.files(path, pattern = ".mzML", full.names = TRUE)
-file <- all_files[5]
+# path <- "C:/Users/Ricardo Cunha/Documents/Work/Dev_20230530_Orbitrap_AFINTS"
+# all_files <- list.files(path, pattern = ".mzML", full.names = TRUE)
+# file <- all_files[5]
+
+path <- "E:/Dev_20230530_Orbitrap_AFINTS/"
+file <- "E:/Dev_20230530_Orbitrap_AFINTS/230621_MixFusion_HR_02_10.mzML"
 
 db <- paste0(path, "/Composition_Mix-Fusion.csv")
 db <- data.table::fread(db)
@@ -10,17 +13,6 @@ db <- db[, cols, with = FALSE]
 db
 
 ms <- MassSpecData$new(file)
-
-# ms$plot_bpc()
-#
-# ms$plot_eic(mz = db$mz[2], ppm = 4)
-#
-# ms$plot_spectra(levels = 1, mz = data.frame(
-#   mzmin = 251,
-#   mzmax = 260,
-#   rtmin = 550,
-#   rtmax = 650
-# ))
 
 ffs <- ProcessingSettings(
   # call = "find_features",
@@ -55,7 +47,7 @@ ffs <- ProcessingSettings(
     ppm = 3,
     peakwidth = c(5, 80),
     snthresh = 5,
-    prefilter = c(6, 50000 * 3),
+    prefilter = c(6, 150000),
     mzCenterFun = "wMean",
     integrate = 2,
     mzdiff = 0.00005,
@@ -71,6 +63,18 @@ ms$find_features(ffs)
 
 suspects <- ms$suspect_screening(db, ppm = 2)
 #View(suspects)
+
+
+# ms$plot_bpc()
+#
+# ms$plot_eic(mz = db$mz[176], ppm = 4)
+#
+# ms$plot_spectra(levels = 1, mz = data.frame(
+#   mzmin = 251,
+#   mzmax = 260,
+#   rtmin = 550,
+#   rtmax = 650
+# ))
 
 
 # ms$plot_features(features = "mz195.123_rt293_f479")

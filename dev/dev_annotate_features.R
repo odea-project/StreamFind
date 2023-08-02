@@ -69,26 +69,21 @@ ms <- MassSpecData$new(files = all_files[2],
 
 ms$find_features()
 
+
 # code dev ---------------------------------------------------------------------
 
 suspects <- ms$suspect_screening(db[, db_cols, with = FALSE], ppm = 8, sec = 10)
 
+ms$plot_features_ms1(features = "mz233.025_rt1161_f162",
+  rtWindow = c(-0.5, 0.5),
+  mzWindow = c(0, 6)
+)
 
 fts <- ms$get_features()
 fts <- fts[order(fts$mz), ]
 which(fts$feature %in% "mz267.07_rt1008_f51")
 
-# fts_tar <- ms$get_features(analyses = 1, mz = targets)
-# fts1 <- fts[fts$rt >= min(fts_tar$rtmin) & fts$rt <= max(fts_tar$rtmax), ]
-# fts1 <- fts1[order(fts1$mz), ]
-
-
-
-# ms$plot_features_ms1(features = "mz441.168_rt1099_f118")
-
-
-
-output <- rcpp_ms_annotation_isotopes(fts, maxGaps = 0)
+output <- rcpp_ms_annotation_isotopes(fts, maxGaps = 1)
 
 
 suspects_res <- suspects$name
@@ -97,11 +92,22 @@ names(suspects_res) <- suspects$feature
 suspects_for <- suspects$formula
 names(suspects_for) <- suspects$feature
 
-output$output$name <- suspects_res[output$output$feature]
-output$output$formula <- suspects_for[output$output$feature]
+output$output$name <- suspects_res[output$output$iso_feat]
+output$output$formula <- suspects_for[output$output$iso_feat]
 
-View(output)
+# View(output)
+
+
+
 View(output$output)
+
+
+
+
+
+
+
+
 
 
 View(rcpp_ms_annotation_isotopes(fts)[["output"]])
