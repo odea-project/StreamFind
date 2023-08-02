@@ -12,7 +12,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
                                        int maxIsotopes = 5,
                                        int maxCharge = 1,
                                        double rtWindowAlignment = 0.2,
-                                       int maxGaps = 2) {
+                                       int maxGaps = 1) {
 
   Rcpp::List list_out;
 
@@ -475,10 +475,10 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
   // #### Orbitrap data from AFIN-TS High Resolution
 
   // highest feature
-  for (int i = 104; i < 105; ++i) {
+  // for (int i = 104; i < 105; ++i) {
 
 
-  // for (int i = 0; i < number_of_features; ++i) {
+  for (int i = 0; i < number_of_features; ++i) {
 
     std::string id = all_ids[i];
     double mz = all_mz[i];
@@ -687,15 +687,15 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
 
             // If iso above maximum gaps, only continues chain if at
             // least a hit was found to step n-1 and n-2
-            if (iso >= maxGaps + 1) {
-              Rcpp::LogicalVector gaps;
-              for (int g = 1; g <= maxGaps; g++) {
+            if (iso > maxGaps) {
+              Rcpp::IntegerVector gaps;
+              for (int g = 1; g <= maxGaps + 1; ++g) {
                 const Rcpp::NumericVector& temp_hits_iso_mz = hits_iso_mz[iso - g];
                 bool is_gap = temp_hits_iso_mz[0] == 0;
-                gaps.push_back(is_gap);
+                if (is_gap) gaps.push_back(1);
               }
 
-              if (Rcpp::is_true(Rcpp::all(gaps))) break;
+              if (gaps.size() > maxGaps) break;
             }
 
             // filter possible isotopes for the step and

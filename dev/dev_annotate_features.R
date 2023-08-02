@@ -88,7 +88,7 @@ which(fts$feature %in% "mz267.07_rt1008_f51")
 
 
 
-output <- rcpp_ms_annotation_isotopes(fts)
+output <- rcpp_ms_annotation_isotopes(fts, maxGaps = 0)
 
 
 suspects_res <- suspects$name
