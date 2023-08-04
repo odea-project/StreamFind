@@ -83,58 +83,14 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
     *(all_sn_ptr++) = *(all_sn_unsorted_ptr + x);
   }
 
-  // Rcpp::DataFrame sorted_features_df = Rcpp::DataFrame::create(
-  //   Rcpp::Named("index") = all_idx,
-  //   Rcpp::Named("feature") = all_ids,
-  //   Rcpp::Named("mz") = all_mz,
-  //   Rcpp::Named("rt") = all_rt
-  // );
-  //
-  // list_out["sorted_features"] = sorted_features_df;
-
-
-
-
-
-  // Mass accuracy of input data /////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////////////////////
-
-  std::vector<double> all_mzr(all_mzmax.size());
-
-  std::transform(
-    all_mzmax.begin(), all_mzmax.end(),
-    all_mzmin.begin(), all_mzr.begin(),
-    std::minus<double>()
+  Rcpp::DataFrame sorted_features_df = Rcpp::DataFrame::create(
+    Rcpp::Named("index") = all_idx,
+    Rcpp::Named("feature") = all_ids,
+    Rcpp::Named("mz") = all_mz,
+    Rcpp::Named("rt") = all_rt
   );
 
-  double mzr_max = *std::max_element(all_mzr.begin(), all_mzr.end());
-  double mzr_min = *std::min_element(all_mzr.begin(), all_mzr.end());
-  double mzr_mean = std::accumulate(all_mzr.begin(), all_mzr.end(), 0.0) / all_mzr.size();
-
-  Rcpp::Rcout << "Mass deviation: " << std::endl;
-  Rcpp::Rcout << "Max: " << mzr_max << std::endl;
-  Rcpp::Rcout << "Min: " << mzr_min << std::endl;
-  Rcpp::Rcout << "Mean: " << mzr_mean << std::endl;
-
-  // calculates the number of decimal numbers
-  // according to the mean mass deviation,
-  // which is dependent on the mass resolution
-  std::string mzr_str = std::to_string(mzr_mean);
-  size_t decimal_pos = mzr_str.find(".");
-  int decimal_numbers = 1;
-  if (decimal_pos != std::string::npos) {
-    for (size_t d = decimal_pos + 1; d < mzr_str.length(); d++) {
-      if (mzr_str[d] == '0') {
-        decimal_numbers++;
-      } else {
-        break;
-      }
-    }
-  }
-
-  Rcpp::Rcout << std::endl;
-  Rcpp::Rcout << "Decimal numbers: " << decimal_numbers << std::endl;
-  Rcpp::Rcout << std::endl;
+  // list_out["sorted_features"] = sorted_features_df;
 
 
 
@@ -350,44 +306,18 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
   for (const std::vector<double>& x : el_md_combinations) el_md_combinations_list.push_back(x);
   for (const std::vector<double>& x : el_ab_combinations) el_ab_combinations_list.push_back(x);
 
+  Rcpp::IntegerVector iso_md_step(iso_sum_md.size());
+  for (size_t i = 0; i < iso_sum_md.size(); i++) {
+    iso_md_step[i] = std::round(iso_sum_md[i] * 1) / 1;
+  }
+
   list_out["el_md_key"] = el_md_key;
   list_out["el_ab_key"] = el_ab_key;
   list_out["el_combinations"] = el_combinations_list;
   list_out["el_md_combinations"] = el_md_combinations_list;
   list_out["el_ab_combinations"] = el_ab_combinations_list;
   list_out["iso_sum_md"] = iso_sum_md;
-
-
-
-
-
-  // merging based on resolution or mass deviation ///////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-  // double multiplier = std::pow(10.0, decimal_numbers);
-
-  std::vector<double> iso_sum_md_rounded(iso_sum_md.size());
-
-  for (size_t i = 0; i < iso_sum_md.size(); i++) {
-    iso_sum_md_rounded[i] = iso_sum_md[i];
-    // iso_sum_md_rounded[i] = std::round(iso_sum_md[i] * multiplier) / multiplier;
-  }
-
-  // does not remove duplicates, consequently the first hit is the one stored
-  // as following duplicates will give the same error
-  // std::sort(iso_sum_md_rounded.begin(), iso_sum_md_rounded.end());
-  // auto last = std::unique(iso_sum_md_rounded.begin(), iso_sum_md_rounded.end());
-  // iso_sum_md_rounded.erase(last, iso_sum_md_rounded.end());
-
-  Rcpp::IntegerVector iso_md_step(iso_sum_md_rounded.size());
-  for (size_t i = 0; i < iso_sum_md_rounded.size(); i++) {
-    iso_md_step[i] = std::round(iso_sum_md_rounded[i] * 1) / 1;
-  }
-
-  list_out["iso_sum_md_rounded"] = iso_sum_md_rounded;
   list_out["iso_md_step"] = iso_md_step;
-
 
 
 
@@ -411,8 +341,13 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
   std::vector<double> feat_iso_diff(number_of_features);
   std::vector<double> feat_iso_md(number_of_features);
   std::vector<double> feat_iso_error(number_of_features);
+  std::vector<double> feat_iso_mz_sd(number_of_features);
   std::vector<std::string> feat_iso_feat(number_of_features);
   Rcpp::CharacterVector feat_iso_el(number_of_features);
+
+
+  // estimation carbons //////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////
 
   std::vector<double> feat_estimated_carbons(number_of_features);
   int final_estimated_number_carbons;
@@ -477,10 +412,10 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
   // #### Orbitrap data from AFIN-TS High Resolution
 
   // highest feature
-  // for (int i = 104; i < 105; ++i) {
+  for (int i = 630; i < 631; ++i) {
 
 
-  for (int i = 0; i < number_of_features; ++i) {
+  // for (int i = 0; i < number_of_features; ++i) {
 
     std::string id = all_ids[i];
     double mz = all_mz[i];
@@ -490,13 +425,6 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
     double intensity = all_intensity[i];
 
     bool is_Mplus = false;
-
-    // Rcpp::Rcout << "Feature: " << id << std::endl;
-    // Rcpp::Rcout << "Intensity: " << intensity << std::endl;
-
-
-
-
 
     // not yet in an iso group, create chain of features
     if (feat_iso_gr[i] == 0) {
@@ -529,13 +457,8 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
       }
 
       int number_chain_features = which_fts.size();
-      // Rcpp::Rcout << "Number of features in chain: " << number_chain_features << std::endl;
 
       if (number_chain_features > 1) {
-        double mzmin = all_mzmin[i];
-        double mzmax = all_mzmax[i];
-        double mzr_i = mzmax - mzmin;
-
         const double* all_mz_ptr = all_mz.data();
 
         std::vector<double> org_mz(number_chain_features);
@@ -554,6 +477,12 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
         std::vector<double> chain_mz(number_chain_features);
         double* chain_mz_ptr = chain_mz.data();
 
+        std::vector<double> chain_mzmin(number_chain_features);
+        double* chain_mzmin_ptr = chain_mzmin.data();
+
+        std::vector<double> chain_mzmax(number_chain_features);
+        double* chain_mzmax_ptr = chain_mzmax.data();
+
         const int* which_fts_ptr = which_fts.data();
 
         std::vector<int> chain_idx(number_chain_features);
@@ -570,27 +499,66 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
 
         for (const int& x : idx) {
           *(chain_mz_ptr++) = *(org_mz_ptr2 + x);
+          *(chain_mzmin_ptr++) =  all_mzmin[*(which_fts_ptr + x)];
+          *(chain_mzmax_ptr++) =  all_mzmax[*(which_fts_ptr + x)];
           *(chain_idx_ptr++) = *(which_fts_ptr + x);
           *(chain_id_ptr++) =  all_ids[*(which_fts_ptr + x)];
           *(chain_intensity_ptr++) =  all_intensity[*(which_fts_ptr + x)];
           *(chain_rt_ptr++) =  all_rt[*(which_fts_ptr + x)];
         }
 
+        // Chain mass resolution ///////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////////////////////
+
+        std::vector<double> chain_mzr(chain_mz.size());
+        std::vector<double> chain_mzr_left(chain_mz.size());
+        std::vector<double> chain_mzr_right(chain_mz.size());
+
+        std::transform(
+          chain_mz.begin(), chain_mz.end(),
+          chain_mzmin.begin(), chain_mzr_left.begin(),
+          std::minus<double>()
+        );
+
+        std::transform(
+          chain_mzmax.begin(), chain_mzmax.end(),
+          chain_mz.begin(), chain_mzr_right.begin(),
+          std::minus<double>()
+        );
+
+        for (size_t z = 0; z < chain_mz.size(); ++z) {
+          chain_mzr[z] = chain_mzr_left[z];
+          if (chain_mzr[z] < chain_mzr_right[z]) {
+            chain_mzr[z] = chain_mzr_right[z];
+          }
+        }
+
         // TODO perhaps here the chain could be filter by EIC correlation
 
         Rcpp::Rcout << std::endl;
-        Rcpp::Rcout << "Candidates in chain: " << std::endl;
+        Rcpp::Rcout << "Candidates in chain for: "<< id << std::endl;
+
+        Rcpp::Rcout << std::left << std::setw(5) << "i"
+          << std::setw(10) << "mz"
+          << std::setw(10) << "mz_diff"
+          << std::setw(10) << "mz_sd"
+          << std::setw(10) << "int"
+          << std::setw(10) << "rel_int"
+          << std::setw(10) << "rt"
+          << std::setw(10) << "rt_diff" << std::endl;
+
         for (size_t z = 0; z < chain_mz.size(); ++z) {
-          Rcpp::Rcout << chain_idx[z] << "   " <<
-            chain_mz[z] << "   " <<
-            chain_mz[z] - mz << "   " <<
-            chain_intensity[z] << "   " <<
-            chain_intensity[z]/intensity << "   " <<
-            chain_rt[z] << "   " <<
-            chain_rt[z] - rt <<  std::endl;
+          Rcpp::Rcout << std::left << std::setw(5) << chain_idx[z]
+            << std::fixed << std::setprecision(4) << std::setw(10) << chain_mz[z]
+            << std::fixed << std::setprecision(4) << std::setw(10) << chain_mz[z] - mz
+            << std::fixed << std::setprecision(4) << std::setw(10) << chain_mzr[z]
+            << std::fixed << std::setprecision(1) << std::setw(10) << chain_intensity[z]
+            << std::fixed << std::setprecision(3) << std::setw(10) << chain_intensity[z]/intensity
+            << std::setw(10) << chain_rt[z]
+            << std::fixed << std::setprecision(3) << std::setw(10) << chain_rt[z] - rt <<  std::endl;
         }
-        Rcpp::Rcout <<  std::endl;
-        Rcpp::Rcout <<  std::endl;
+
+
 
         // Chain evaluation ////////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -602,15 +570,15 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
         Rcpp::List hits_diff_list(maxCharge);
         Rcpp::List hits_md_list(maxCharge);
         Rcpp::List hits_error_list(maxCharge);
+        Rcpp::List hits_mz_sd_list(maxCharge);
         Rcpp::List hits_el_list(maxCharge);
         Rcpp::List hits_ab_list(maxCharge);
 
         std::vector<double> estimated_number_carbons(zvals.size());
 
         for (size_t z = 0; z < zvals.size(); z++) {
-          // Rcpp::Rcout << std::endl;
-          // Rcpp::Rcout << "Charge: " << zvals[z] << std::endl;
-          // Rcpp::Rcout << std::endl;
+          Rcpp::Rcout << std::endl;
+          Rcpp::Rcout << "Charge: " << zvals[z] << std::endl;
 
           Rcpp::List hits_iso_mz(maxIsotopes + 1);
           Rcpp::NumericVector mz_monoiso;
@@ -641,6 +609,11 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
           Rcpp::NumericVector md_monoiso;
           md_monoiso.push_back(0);
           hits_iso_md[0] = md_monoiso;
+
+          Rcpp::List hits_iso_mz_sd(maxIsotopes + 1);
+          Rcpp::NumericVector mz_sd_monoiso;
+          mz_sd_monoiso.push_back(chain_mzr[0]);
+          hits_iso_mz_sd[0] = mz_sd_monoiso;
 
           Rcpp::List hits_iso_error(maxIsotopes + 1);
           Rcpp::NumericVector error_monoiso;
@@ -675,6 +648,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
             hits_iso_diff[iso] = empty_vector;
             hits_iso_md[iso] = empty_vector;
             hits_iso_error[iso] = empty_vector;
+            hits_iso_mz_sd[iso] = empty_vector;
             hits_iso_el[iso] = char_empty_vector;
             hits_iso_ab[iso] = empty_vector;
           }
@@ -686,8 +660,8 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
           estimated_number_carbons[z] = 0;
 
           for (int iso = 1; iso < maxIsotopes + 1; ++iso) {
-            Rcpp::Rcout << "step " << iso << std::endl;
             Rcpp::Rcout << std::endl;
+            Rcpp::Rcout << "Step: " << iso << std::endl;
 
             // If iso above maximum gaps, only continues chain if at
             // least a hit was found to step n-1 and n-2
@@ -705,7 +679,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
             // filter possible isotopes for the step and
             // calculate md according to charge
             Rcpp::LogicalVector iso_step_filter = iso_md_step == iso;
-            Rcpp::NumericVector temp_iso_md = Rcpp::wrap(iso_sum_md_rounded);
+            Rcpp::NumericVector temp_iso_md = Rcpp::wrap(iso_sum_md);
             Rcpp::IntegerVector temp_iso_idx(temp_iso_md.size());
             std::iota(temp_iso_idx.begin(), temp_iso_idx.end(), 0);
             temp_iso_md = temp_iso_md[iso_step_filter];
@@ -722,24 +696,15 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
             Rcpp::NumericVector diff;
             Rcpp::NumericVector md;
             Rcpp::NumericVector error;
+            Rcpp::NumericVector mz_sd;
             Rcpp::CharacterVector el;
 
             for (int f = 1; f < number_chain_features; ++f) {
-              // Rcpp::Rcout << "Feature: " << all_ids[chain_idx[f]] << std::endl;
-              // Rcpp::Rcout << std::endl;
-
-              double mzmin_f = all_mzmin[chain_idx[f]];
-              double mzmax_f = all_mzmax[chain_idx[f]];
-              double mzr_f = mzmax_f - mzmin_f;
 
               // updates the mass accuracy for the highest overall:
               // mean then feature and then candidate
-              double mzr = mzr_mean;
-              if (mzr_mean < mzr_i) {
-                mzr = mzr_i;
-              } else if (mzr_i < mzr_f) {
-                mzr = mzr_f;
-              };
+              double mzr = chain_mzr[f];
+              if (mzr < chain_mzr[0]) mzr = chain_mzr[0];
 
               double candidate_diff = chain_mz[f] - mz;
               double candidate_diff_min = candidate_diff - mzr;
@@ -758,14 +723,15 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
                   Rcpp::Rcout << "  - min diff: " << candidate_diff_min << std::endl;
                   Rcpp::Rcout << "  - [M+H]+: " << chain_id[f] << std::endl;
                   Rcpp::Rcout << "  - int ratio: " << all_intensity[chain_idx[f]]/intensity << std::endl;
-                  Rcpp::Rcout <<  std::endl;
 
                   // TODO this will also capture H2 loss and mark it as M+
                   // the mass error might give an indication to check
 
                   feat_iso_cat[i] = "M+";
+                  feat_iso_step[i] = -1;
                   feat_iso_diff[i] = candidate_diff;
                   feat_iso_int[i] = all_intensity[chain_idx[f]]/intensity;
+                  feat_iso_mz_sd[i] = mzr;
                   feat_iso_feat[i] = chain_id[f];
 
                   is_Mplus = true;
@@ -779,10 +745,10 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
               Rcpp::CharacterVector el_temp;
               Rcpp::NumericVector ab_temp;
 
-              // when candidate is inside of the mass range for iso step
+              // when candidate is inside of the mass +/- sd for iso step
               if (temp_iso_md_min - mzr < candidate_diff && temp_iso_md_max + mzr > candidate_diff) {
-                Rcpp::Rcout << "Feature: " << all_ids[chain_idx[f]] << " with mass_diff " << candidate_diff << std::endl;
                 Rcpp::Rcout << std::endl;
+                Rcpp::Rcout << "Eval " << all_ids[chain_idx[f]] << " with mass_diff " << candidate_diff << ": " << std::endl;
 
                 // selects the md within the mass dev
                 // when duplicated md, the first hit is the one stored
@@ -808,43 +774,32 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
                     std::string e_el = pair.first;
                     int number_el = pair.second;
 
-                    Rcpp::Rcout << "El: " << e_el <<  "(" << temp_iso_md[j] << ")" << " with error " << candidate_md_error <<  std::endl;
-
                     double e_ab = 0;
                     double mono_ab = 0;
                     int min_el_num;
                     int max_el_num;
+
                     for (size_t a = 0; a <= iso_elements.size(); ++a) {
+
                       if (iso_elements[a] == e_el) {
                         e_ab = iso_ab[a];
                         mono_ab = iso_mono[a];
 
                         if (number_el == 1 && e_el == "C13" && iso == 1) {
                           estimated_number_carbons[z] = all_intensity[chain_idx[f]]/(e_ab * intensity);
-
                           Rcpp::Rcout << std::endl;
                           Rcpp::Rcout << "Estimated N. carbons:" << estimated_number_carbons[z] << std::endl;
-                          Rcpp::Rcout << std::endl;
                         }
 
                         if (estimated_number_carbons[z] > 0 && e_el == "C13") {
-                          min_el_num = estimated_number_carbons[z] * 0.9;
-                          max_el_num = estimated_number_carbons[z] * 1.1;
+                          min_el_num = estimated_number_carbons[z] * 0.95;
+                          max_el_num = estimated_number_carbons[z] * 1.05;
                         } else {
                           min_el_num = iso_min_el[a];
                           max_el_num = iso_max_el[a];
                         }
                       }
                     }
-
-                    if (iso == 4) {
-                      Rcpp::Rcout << pair.first << ": " << number_el << " with ab:" << e_ab << std::endl;
-                      Rcpp::Rcout << "mono_iso ab" << ": " << mono_ab << std::endl;
-                      Rcpp::Rcout << "min number el" << ": " << min_el_num << std::endl;
-                      Rcpp::Rcout << "max number el" << ": " << max_el_num << std::endl;
-                    }
-
-
 
                     // when only one isotope atom, mostly for M+1
                     // or M+2 for Cl, Br, Si and S
@@ -855,15 +810,13 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
                       min_rel_int = min_rel_int * min_coef;
                       max_rel_int = max_rel_int * max_coef;
 
-                    // when second time isotope, mostly for M+2 ...
+                    // when second time isotope, mostly for M+n, with n > 1
                     } else {
 
                       unsigned int fact = 1;
                       for (int a = 1; a <= number_el; ++a) {
                         fact *= a;
                       }
-
-                      if (iso == 4) Rcpp::Rcout << "factorial" << ": " << fact << std::endl;
 
                       double min_coef = (std::pow(mono_ab, min_el_num - number_el) * std::pow(e_ab, number_el)) / fact;
                       double max_coef = (std::pow(mono_ab, max_el_num - number_el) * std::pow(e_ab, number_el)) / fact;
@@ -875,96 +828,36 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
                       max_coef = max_coef * max_el_num * (max_el_num - 1);
 
                       for (int t = 2; t <= number_el - 1; ++t) {
-                        if (iso == 4) Rcpp::Rcout << "run extra multiplication" << std::endl;
                         min_coef = min_coef * (min_el_num - t);
                         max_coef = max_coef * (max_el_num - t);
                       }
 
-
-
                       min_rel_int = min_rel_int * min_coef;
                       max_rel_int = max_rel_int * max_coef;
                     }
-                  }
-
-
-
-
-
-
-                  // if (candidate_ab.size() == 1) {
-                  //
-                  //   std::string e_el = Rcpp::as<std::string>(candidate_el[0]);
-                  //
-                  //   if ((e_el == "C13") || (e_el == "H2")) {
-                  //     max_el_num = 80;
-                  //   } else if (e_el == "Cl37" || (e_el == "Br81")) {
-                  //     max_el_num = 5;
-                  //   }
-                  //
-                  //   double mono_ab = 0;
-                  //   for (int a = 0; a <  iso_elements.size(); ++a) {
-                  //     if (iso_elements[a] == e_el) mono_ab = iso_mono[a];
-                  //   }
-                  //
-                  //
-                  //
-                  // } else {
-                  //
-                  //   // to calculate the M+2 with more than one atom the elements
-                  //   // first we extract unique el, then count their presence and continue
-                  //   // with the estimation based on the expansion (book page 499) for
-                  //   // repeating elements or direct multiplication for single el
-                  //   Rcpp::CharacterVector candidate_el_unique = Rcpp::unique(candidate_el);
-                  //
-                  //   // std::unordered_map<std::string, int> count_map;
-                  //   //
-                  //   // for (int e = 0; e < candidate_el.size(); ++e) {
-                  //   //   std::string e_el = Rcpp::as<std::string>(candidate_el[e]);
-                  //   //   count_map[e_el]++;
-                  //   // }
-                  //
-                  //   // Rcpp::Rcout << "Map Contents:" << std::endl;
-                  //   // for (const auto& pair : count_map) {
-                  //   //   Rcpp::Rcout << pair.first << ": " << pair.second << std::endl;
-                  //   // }
-                  //
-                  //
-                  //
-                  //
-                  //
-                  //   for (int e = 0; e < candidate_ab.size(); ++e) {
-                  //
-                  //     if ((candidate_el[e] == "C13") || (candidate_el[e] == "H2")) {
-                  //       max_el_num = 80;
-                  //     } else if (candidate_el[e] == "Cl37" || (candidate_el[e] == "Br81")) {
-                  //       max_el_num = 5;
-                  //     }
-                  //
-                  //     if (e == 0) {
-                  //       rel_int = candidate_ab[0];
-                  //     } else {
-                  //       rel_int = rel_int * candidate_ab[e];
-                  //     }
-                  //
-                  //   }
-                  //
-                  //   min_rel_int = (rel_int/candidate_ab.size()) * min_el_num * (min_el_num - 1);
-                  //
-                  //   max_rel_int = (rel_int/candidate_ab.size()) * max_el_num * (max_el_num - 1);
-                  //
-                  // }
+                  } // loop for each unique element in hit md
 
                   double f_rel_int = all_intensity[chain_idx[f]]/intensity;
 
-                  Rcpp::Rcout << "rel min: " << min_rel_int * 0.95 << std::endl;
-                  Rcpp::Rcout << "rel max: " << max_rel_int * 1.05 << std::endl;
+                  Rcpp::Rcout << std::endl;
+                  Rcpp::Rcout << "Elements: ";
+                  for (int e = 0; e < candidate_el.size(); ++e) {
+                    Rcpp::Rcout << candidate_el[e] << " ";
+                  }
+                  Rcpp::Rcout << "(" << temp_iso_md[j] << ")"<< std::endl;
+                  Rcpp::Rcout << "rel min: " << min_rel_int * 0.8 << std::endl;
+                  Rcpp::Rcout << "rel max: " << max_rel_int * 1.2 << std::endl;
                   Rcpp::Rcout << "rel f: " << f_rel_int << std::endl;
-
+                  bool int_eval_temp = f_rel_int >= min_rel_int * 0.8 && f_rel_int <= max_rel_int * 1.2;
+                  Rcpp::Rcout << "int eval: " << int_eval_temp << std::endl;
+                  bool mass_eval_temp = candidate_md_error < mass_error;
+                  Rcpp::Rcout << "mass eval: " << mass_eval_temp << std::endl;
 
                   if (candidate_md_error < mass_error &&
-                      f_rel_int >= min_rel_int * 0.95 &&
-                      f_rel_int <= max_rel_int * 1.05) {
+                      f_rel_int >= min_rel_int * 0.8 &&
+                      f_rel_int <= max_rel_int * 1.2) {
+
+                    Rcpp::Rcout << "!!!!!! Hit !!!!!!" << std::endl;
 
                     mass_error = candidate_md_error;
                     candidate_iso_md = temp_iso_md[j];
@@ -972,55 +865,11 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
 
                     el_temp = candidate_el;
                     ab_temp = candidate_ab;
-
-                    Rcpp::Rcout << "Hit: " << temp_iso_md[j] << std::endl;
                   }
-                  Rcpp::Rcout << std::endl;
-                  // TODO evaluate the mass error for wrong assignment
-                }
+                } // loop for each hit md
               }
 
               if (is_iso_candidate) {
-
-                // relative intensity validation ///////////////////////////////////////////////////////////////
-                ////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-                // for (int e = 0; e < ab_temp.size(); ++e) {
-                //   Rcpp::Rcout << "step " << iso << " ab: " << ab_temp[e] << std::endl;
-                // }
-                //
-                // double rel_int = 1;
-                //
-                // if (ab_temp.size() == 1) {
-                //   rel_int = ab_temp[0];
-                // } else {
-                //   for (int e = 0; e < ab_temp.size(); ++e) {
-                //     rel_int = rel_int * ab_temp[e];
-                //   }
-                // }
-                //
-                // int min_el_num = 1;
-                // int max_el_num = 10;
-                //
-                // if ((el_temp[0] == "C13") || (el_temp[0] == "H2")) {
-                //   max_el_num = 60;
-                // } else if (el_temp[0] == "Cl37") {
-                //   max_el_num = 5;
-                // }
-                //
-                // double min_rel_int = min_el_num * rel_int;
-                // double max_rel_int = max_el_num * rel_int;
-                //
-                // double f_rel_int = all_intensity[chain_idx[f]]/intensity;
-                //
-                // Rcpp::Rcout << "rel min: " << min_rel_int << std::endl;
-                // Rcpp::Rcout << "rel max: " << max_rel_int << std::endl;
-                // Rcpp::Rcout << "rel f: " << f_rel_int << std::endl;
-
-
-                // TODO validate intensity based on md matched
-                // if out of the boundaries continue to next feature without adding candidate to chain
 
                 // compares the error and if lower update
                 if (feat_iso_gr[chain_idx[f]] != 0) {
@@ -1034,7 +883,8 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
                   concat_el_temp += " " + Rcpp::as<std::string>(el_temp[e]);
                 }
 
-                Rcpp::Rcout << "step " << iso << " elements: " << concat_el_temp << std::endl;
+                Rcpp::Rcout << std::endl;
+                Rcpp::Rcout << "Step " << iso << " elements: " << concat_el_temp << std::endl;
                 Rcpp::Rcout <<  std::endl;
 
                 hits.push_back(chain_mz[f]);
@@ -1045,6 +895,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
                 md.push_back(candidate_iso_md);
                 el.push_back(concat_el_temp);
                 error.push_back(mass_error);
+                mz_sd.push_back(mzr);
               }
             } // loop for each feature in chain
 
@@ -1060,6 +911,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
               hits_iso_md[iso] = md;
               hits_iso_el[iso] = el;
               hits_iso_error[iso] = error;
+              hits_iso_mz_sd[iso] = mz_sd;
             }
           } // lop for each iso step
 
@@ -1074,6 +926,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
           hits_md_list[z] = hits_iso_md;
           hits_el_list[z] = hits_iso_el;
           hits_error_list[z] = hits_iso_error;
+          hits_mz_sd_list[z] = hits_iso_mz_sd;
 
         } // loop for chain evaluation for each charge
 
@@ -1154,6 +1007,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
           const Rcpp::List& md = hits_md_list[charge_idx];
           const Rcpp::List& el = hits_el_list[charge_idx];
           const Rcpp::List& error = hits_error_list[charge_idx];
+          const Rcpp::List& mz_sd = hits_mz_sd_list[charge_idx];
           Rcpp::NumericVector flat_step;
           Rcpp::NumericVector flat_idx;
           Rcpp::NumericVector flat_ints;
@@ -1161,6 +1015,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
           Rcpp::NumericVector flat_md;
           Rcpp::CharacterVector flat_el;
           Rcpp::NumericVector flat_error;
+          Rcpp::NumericVector flat_mz_sd;
           for (int iso = 0; iso < maxIsotopes + 1; ++iso) {
             const Rcpp::List& step_step = step[iso];
             const Rcpp::List& idx_step = idx[iso];
@@ -1169,6 +1024,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
             const Rcpp::List& md_step = md[iso];
             const Rcpp::List& el_step = el[iso];
             const Rcpp::List& error_step = error[iso];
+            const Rcpp::List& mz_sd_step = mz_sd[iso];
 
             for (int m = 0; m < step_step.size(); m++) {
               flat_step.push_back(step_step[m]);
@@ -1178,6 +1034,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
               flat_md.push_back(md_step[m]);
               flat_el.push_back(el_step[m]);
               flat_error.push_back(error_step[m]);
+              flat_mz_sd.push_back(mz_sd_step[m]);
             }
           }
 
@@ -1226,6 +1083,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
                 feat_iso_md[flat_idx[m]] = flat_md[m];
                 feat_iso_el[flat_idx[m]] = flat_el[m];
                 feat_iso_error[flat_idx[m]] = flat_error[m];
+                feat_iso_mz_sd[flat_idx[m]] = flat_mz_sd[m];
                 feat_iso_int[flat_idx[m]] = flat_ints[m];
                 feat_iso_feat[flat_idx[m]] = id;
                 feat_iso_z[flat_idx[m]] = zvals[charge_idx];
@@ -1244,6 +1102,48 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
     }
   } // end main loop
 
+  // adds iso group to M+ ions with iso step -1
+  // cleans iso groups with size one
+  for (int i = 0; i < number_of_features; ++i) {
+
+    if (feat_iso_gr[i] > 0) {
+      bool is_m_ion = false;
+      std::string gr_feat = feat_iso_feat[i];
+      int gr = feat_iso_gr[i];
+      int count = 0;
+
+      if (feat_iso_step[i] == -1) is_m_ion = true;
+
+      for (int f = 0; f < number_of_features; ++f) {
+
+        if (is_m_ion) {
+          if (all_ids[f] == gr_feat) {
+            feat_iso_gr[i] = feat_iso_gr[f];
+          }
+        }
+
+        if (feat_iso_gr[f] == gr) count++;
+      }
+
+      if (count <= 1) {
+        feat_iso_gr[i] = 0;
+        feat_iso_step[i] = 0;
+        // feat_iso_cat[i] = "[M+" + step_step[m];
+        // feat_iso_cat[i] = feat_iso_cat[i] + "]";
+        feat_iso_diff[i] = 0;
+        feat_iso_md[i] = 0;
+        feat_iso_el[i] = "";
+        feat_iso_error[i] = 0;
+        feat_iso_mz_sd[i] = 0;
+        feat_iso_int[i] = 0;
+        feat_iso_feat[i] = "";
+        feat_iso_z[i] = 0;
+        feat_estimated_carbons[i] = 0;
+      }
+    }
+  }
+
+
   Rcpp::DataFrame output_df = Rcpp::DataFrame::create(
     Rcpp::Named("index") = all_idx,
     Rcpp::Named("feature") = all_ids,
@@ -1253,13 +1153,14 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
     Rcpp::Named("iso_gr") = feat_iso_gr,
     Rcpp::Named("iso_z") = feat_iso_z,
     // Rcpp::Named("iso_cat") = feat_iso_cat,
-    Rcpp::Named("hits_iso_step") = feat_iso_step,
-    Rcpp::Named("iso_rel") = feat_iso_int,
-    Rcpp::Named("hits_iso_diff") = feat_iso_diff,
-    Rcpp::Named("hits_iso_md") = feat_iso_md,
-    Rcpp::Named("hits_iso_el") = feat_iso_el,
-    Rcpp::Named("hits_n_carbons") = feat_estimated_carbons,
-    Rcpp::Named("hits_iso_error") = feat_iso_error,
+    Rcpp::Named("iso_step") = feat_iso_step,
+    Rcpp::Named("iso_md_diff") = feat_iso_diff,
+    Rcpp::Named("iso_md_hit") = feat_iso_md,
+    Rcpp::Named("iso_md_error") = feat_iso_error,
+    Rcpp::Named("iso_mz_sd") = feat_iso_mz_sd,
+    Rcpp::Named("iso_rel_int") = feat_iso_int,
+    Rcpp::Named("iso_el") = feat_iso_el,
+    Rcpp::Named("n_carbons") = feat_estimated_carbons,
     Rcpp::Named("iso_feat") = feat_iso_feat
   );
 
@@ -1267,6 +1168,71 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
 
   return list_out;
 }
+
+// merging based on resolution or mass deviation ///////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+// double multiplier = std::pow(10.0, decimal_numbers);
+
+// std::vector<double> iso_sum_md_rounded(iso_sum_md.size());
+//
+// for (size_t i = 0; i < iso_sum_md.size(); i++) {
+//   iso_sum_md_rounded[i] = iso_sum_md[i];
+//   // iso_sum_md_rounded[i] = std::round(iso_sum_md[i] * multiplier) / multiplier;
+// }
+//
+// // does not remove duplicates, consequently the first hit is the one stored
+// // as following duplicates will give the same error
+// // std::sort(iso_sum_md_rounded.begin(), iso_sum_md_rounded.end());
+// // auto last = std::unique(iso_sum_md_rounded.begin(), iso_sum_md_rounded.end());
+// // iso_sum_md_rounded.erase(last, iso_sum_md_rounded.end());
+//
+// Rcpp::IntegerVector iso_md_step(iso_sum_md_rounded.size());
+// for (size_t i = 0; i < iso_sum_md_rounded.size(); i++) {
+//   iso_md_step[i] = std::round(iso_sum_md_rounded[i] * 1) / 1;
+// }
+//
+// list_out["iso_sum_md_rounded"] = iso_sum_md_rounded;
+// list_out["iso_md_step"] = iso_md_step;
+
+
+
+
+// Mass accuracy of input data /////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+// std::vector<double> all_mzr(all_mzmax.size());
+//
+// std::transform(
+//   all_mzmax.begin(), all_mzmax.end(),
+//   all_mzmin.begin(), all_mzr.begin(),
+//   std::minus<double>()
+// );
+//
+// double mzr_max = *std::max_element(all_mzr.begin(), all_mzr.end());
+// double mzr_min = *std::min_element(all_mzr.begin(), all_mzr.end());
+// double mzr_mean = std::accumulate(all_mzr.begin(), all_mzr.end(), 0.0) / all_mzr.size();
+//
+// // calculates the number of decimal numbers
+// // according to the mean mass deviation,
+// // which is dependent on the mass resolution
+// std::string mzr_str = std::to_string(mzr_mean);
+// size_t decimal_pos = mzr_str.find(".");
+// int decimal_numbers = 1;
+// if (decimal_pos != std::string::npos) {
+//   for (size_t d = decimal_pos + 1; d < mzr_str.length(); d++) {
+//     if (mzr_str[d] == '0') {
+//       decimal_numbers++;
+//     } else {
+//       break;
+//     }
+//   }
+// }
+
+// list_out["resolution_min"] = mzr_min;
+// list_out["resolution_max"] = mzr_max;
+// list_out["resolution_av"] = mzr_mean;
+// list_out["resolution_decimal"] = decimal_numbers;
 
 
 // Old Make mass diff combinations /////////////////////////////////////////////////////////////
@@ -1404,4 +1370,69 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
 //       N_candidate = C_candidate + N_step;
 //     }
 //   }
+// }
+
+
+
+// if (candidate_ab.size() == 1) {
+//
+//   std::string e_el = Rcpp::as<std::string>(candidate_el[0]);
+//
+//   if ((e_el == "C13") || (e_el == "H2")) {
+//     max_el_num = 80;
+//   } else if (e_el == "Cl37" || (e_el == "Br81")) {
+//     max_el_num = 5;
+//   }
+//
+//   double mono_ab = 0;
+//   for (int a = 0; a <  iso_elements.size(); ++a) {
+//     if (iso_elements[a] == e_el) mono_ab = iso_mono[a];
+//   }
+//
+//
+//
+// } else {
+//
+//   // to calculate the M+2 with more than one atom the elements
+//   // first we extract unique el, then count their presence and continue
+//   // with the estimation based on the expansion (book page 499) for
+//   // repeating elements or direct multiplication for single el
+//   Rcpp::CharacterVector candidate_el_unique = Rcpp::unique(candidate_el);
+//
+//   // std::unordered_map<std::string, int> count_map;
+//   //
+//   // for (int e = 0; e < candidate_el.size(); ++e) {
+//   //   std::string e_el = Rcpp::as<std::string>(candidate_el[e]);
+//   //   count_map[e_el]++;
+//   // }
+//
+//   // Rcpp::Rcout << "Map Contents:" << std::endl;
+//   // for (const auto& pair : count_map) {
+//   //   Rcpp::Rcout << pair.first << ": " << pair.second << std::endl;
+//   // }
+//
+//
+//
+//
+//
+//   for (int e = 0; e < candidate_ab.size(); ++e) {
+//
+//     if ((candidate_el[e] == "C13") || (candidate_el[e] == "H2")) {
+//       max_el_num = 80;
+//     } else if (candidate_el[e] == "Cl37" || (candidate_el[e] == "Br81")) {
+//       max_el_num = 5;
+//     }
+//
+//     if (e == 0) {
+//       rel_int = candidate_ab[0];
+//     } else {
+//       rel_int = rel_int * candidate_ab[e];
+//     }
+//
+//   }
+//
+//   min_rel_int = (rel_int/candidate_ab.size()) * min_el_num * (min_el_num - 1);
+//
+//   max_rel_int = (rel_int/candidate_ab.size()) * max_el_num * (max_el_num - 1);
+//
 // }

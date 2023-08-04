@@ -69,29 +69,46 @@ ms <- MassSpecData$new(files = all_files[2],
 
 ms$find_features()
 
-
 # code dev ---------------------------------------------------------------------
 
 suspects <- ms$suspect_screening(db[, db_cols, with = FALSE], ppm = 8, sec = 10)
 
-ms$plot_features_ms1(features = c("mz233.025_rt1161_f162"),
-  rtWindow = c(-0.5, 0.5),
-  mzWindow = c(0, 6),
+ms$plot_features_ms1(features = c("mz247.166_rt1075_f88"),
+  rtWindow = c(-2, 2),
+  mzWindow = c(-2, 6),
   interactive = TRUE
 )
 
-ms$plot_features_ms1(features = c("mz293.071_rt907_f4"),
-                     rtWindow = c(-0.5, 0.5),
-                     mzWindow = c(0, 6)
+ms$plot_features_ms1(
+  analyses = 1,
+  features = output$output$feature[output$output$iso_feat %in% c("mz254.06_rt1017_f70")],
+  rtWindow = c(-0.5, 0.5),
+  mzWindow = c(-0.005, 0.005)
 )
 
-fts <- ms$get_features()
+
+
+
+ms$plot_features_ms1(
+  analyses = 1,
+  features = output$output$feature[output$output$iso_feat %in% c("mz233.025_rt1161_f162")],
+  rtWindow = c(-0.5, 0.5),
+  mzWindow = c(-0.005, 0.005)
+)
+
+
+ms$plot_features_ms1(
+  analyses = 1,
+  features = fts[fts$mz >= 254.06 & fts$mz <= 257.06, ],
+  rtWindow = c(-0.5, 0.5),
+  mzWindow = c(-0.005, 0.005)
+)
+
+fts <- ms$get_features(analyses = 1)
 fts <- fts[order(fts$mz), ]
-which(fts$feature %in% "mz267.07_rt1008_f51")
+which(fts$feature %in% "mz254.06_rt1017_f70")
 
 output <- rcpp_ms_annotation_isotopes(fts, maxGaps = 1)
-
-
 
 suspects_res <- suspects$name
 names(suspects_res) <- suspects$feature
@@ -112,6 +129,72 @@ View(output$output)
 
 
 
+
+
+
+
+
+orb_files <- c(
+  "E:\\20210705_OrbitrapData\\Centroid_mzML\\orb_cent_10_02.mzML",
+  "E:\\20210705_OrbitrapData\\Centroid_mzML\\orb_cent_100_02.mzML"
+)
+
+orb_ms <- MassSpecData$new(orb_files)
+
+# orb_ms$plot_bpc()
+# orb_ms$plot_eic(mz = 293.071, ppm = 10, colorBy = "analyses")
+
+ffs <- ProcessingSettings(
+  call = "find_features",
+  algorithm = "xcms3",
+  parameters = xcms::CentWaveParam(
+    ppm = 3,
+    peakwidth = c(5, 80),
+    snthresh = 5,
+    prefilter = c(6, 75000),
+    mzCenterFun = "wMean",
+    integrate = 2,
+    mzdiff = 0.00005,
+    fitgauss = TRUE,
+    noise = 25000,
+    verboseColumns = TRUE,
+    firstBaselineCheck = FALSE,
+    extendLengthMSW = FALSE
+  )
+)
+
+orb_ms$find_features(ffs)
+
+suspects <- orb_ms$suspect_screening(db[, c("name", "formula", "mass"), with = FALSE], ppm = 5, sec = 10)
+
+orb_ms$plot_features_ms1(
+  analyses = 2,
+  features = output$output$feature[output$output$iso_feat %in% c("mz254.059_rt610_f947")][1:4],
+  rtWindow = c(-0.5, 0.5),
+  mzWindow = c(-0.0005, 0.0005)
+)
+
+
+fts <- orb_ms$get_features(analyses = 2)
+fts <- fts[order(fts$mz), ]
+which(fts$feature %in% "mz242.133_rt801_f1374")
+
+orb_ms$map_features(analyses = 2, mz = data.frame(mzmin = 242, mzmax = 247, rtmin = 798, rtmax = 802))
+
+orb_ms$plot_xic(analyses = 2, mz = data.frame(mzmin = 242, mzmax = 243, rtmin = 780, rtmax = 820))
+
+output <- rcpp_ms_annotation_isotopes(fts, maxGaps = 1)
+
+suspects_res <- suspects$name
+names(suspects_res) <- suspects$feature
+
+suspects_for <- suspects$formula
+names(suspects_for) <- suspects$feature
+
+output$output$name <- suspects_res[output$output$iso_feat]
+output$output$formula <- suspects_for[output$output$iso_feat]
+
+View(output$output)
 
 
 
