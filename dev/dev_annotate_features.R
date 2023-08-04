@@ -74,9 +74,15 @@ ms$find_features()
 
 suspects <- ms$suspect_screening(db[, db_cols, with = FALSE], ppm = 8, sec = 10)
 
-ms$plot_features_ms1(features = "mz233.025_rt1161_f162",
+ms$plot_features_ms1(features = c("mz233.025_rt1161_f162"),
   rtWindow = c(-0.5, 0.5),
-  mzWindow = c(0, 6)
+  mzWindow = c(0, 6),
+  interactive = TRUE
+)
+
+ms$plot_features_ms1(features = c("mz293.071_rt907_f4"),
+                     rtWindow = c(-0.5, 0.5),
+                     mzWindow = c(0, 6)
 )
 
 fts <- ms$get_features()
@@ -84,6 +90,7 @@ fts <- fts[order(fts$mz), ]
 which(fts$feature %in% "mz267.07_rt1008_f51")
 
 output <- rcpp_ms_annotation_isotopes(fts, maxGaps = 1)
+
 
 
 suspects_res <- suspects$name

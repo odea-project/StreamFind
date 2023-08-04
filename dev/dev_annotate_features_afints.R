@@ -1,10 +1,10 @@
 
-# path <- "C:/Users/Ricardo Cunha/Documents/Work/Dev_20230530_Orbitrap_AFINTS"
-# all_files <- list.files(path, pattern = ".mzML", full.names = TRUE)
-# file <- all_files[5]
+path <- "C:/Users/Ricardo Cunha/Documents/Work/Dev_20230530_Orbitrap_AFINTS"
+all_files <- list.files(path, pattern = ".mzML", full.names = TRUE)
+file <- all_files[5]
 
-path <- "E:/Dev_20230530_Orbitrap_AFINTS/"
-file <- "E:/Dev_20230530_Orbitrap_AFINTS/230621_MixFusion_HR_02_10.mzML"
+# path <- "E:/Dev_20230530_Orbitrap_AFINTS/"
+# file <- "E:/Dev_20230530_Orbitrap_AFINTS/230621_MixFusion_HR_02_10.mzML"
 
 db <- paste0(path, "/Composition_Mix-Fusion.csv")
 db <- data.table::fread(db)
@@ -63,6 +63,39 @@ ms$find_features(ffs)
 
 suspects <- ms$suspect_screening(db, ppm = 2)
 #View(suspects)
+
+
+ms$plot_features_ms1(
+  features = c("mz273.127_rt365_f1767"),
+  rtWindow = c(-0.5, 0.5),
+  mzWindow = c(0, 6)
+)
+
+fts <- ms$get_features()
+fts <- fts[order(fts$mz), ]
+which(fts$feature %in% "mz267.07_rt1008_f51")
+
+output <- rcpp_ms_annotation_isotopes(fts, maxGaps = 1)
+
+suspects_res <- suspects$name
+names(suspects_res) <- suspects$feature
+
+suspects_for <- suspects$formula
+names(suspects_for) <- suspects$feature
+
+output$output$name <- suspects_res[output$output$iso_feat]
+output$output$formula <- suspects_for[output$output$iso_feat]
+
+# View(output)
+
+
+
+View(output$output)
+
+
+
+
+
 
 
 # ms$plot_bpc()
