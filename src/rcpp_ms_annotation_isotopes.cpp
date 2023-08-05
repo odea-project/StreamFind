@@ -412,10 +412,10 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
   // #### Orbitrap data from AFIN-TS High Resolution
 
   // highest feature
-  for (int i = 630; i < 631; ++i) {
+  // for (int i = 630; i < 631; ++i) {
 
 
-  // for (int i = 0; i < number_of_features; ++i) {
+  for (int i = 0; i < number_of_features; ++i) {
 
     std::string id = all_ids[i];
     double mz = all_mz[i];
@@ -1077,8 +1077,12 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
               if (final_chain[m] != 0) {
                 feat_iso_gr[flat_idx[m]] = iso_gr;
                 feat_iso_step[flat_idx[m]] = flat_step[m];
-                // feat_iso_cat[flat_idx[m]] = "[M+" + step_step[m];
-                // feat_iso_cat[flat_idx[m]] = feat_iso_cat[i] + "]";
+
+                std::string cat = "[M+";
+                int rounded_step = static_cast<int>(std::round(flat_step[m]));
+                cat +=  std::to_string(rounded_step) + "]";
+                feat_iso_cat[flat_idx[m]] = cat;
+
                 feat_iso_diff[flat_idx[m]] = flat_diff[m];
                 feat_iso_md[flat_idx[m]] = flat_md[m];
                 feat_iso_el[flat_idx[m]] = flat_el[m];
@@ -1106,13 +1110,13 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
   // cleans iso groups with size one
   for (int i = 0; i < number_of_features; ++i) {
 
-    if (feat_iso_gr[i] > 0) {
-      bool is_m_ion = false;
+    bool is_m_ion = false;
+    if (feat_iso_step[i] == -1) is_m_ion = true;
+
+    if (feat_iso_gr[i] > 0 || is_m_ion) {
       std::string gr_feat = feat_iso_feat[i];
       int gr = feat_iso_gr[i];
       int count = 0;
-
-      if (feat_iso_step[i] == -1) is_m_ion = true;
 
       for (int f = 0; f < number_of_features; ++f) {
 
@@ -1128,8 +1132,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
       if (count <= 1) {
         feat_iso_gr[i] = 0;
         feat_iso_step[i] = 0;
-        // feat_iso_cat[i] = "[M+" + step_step[m];
-        // feat_iso_cat[i] = feat_iso_cat[i] + "]";
+        feat_iso_cat[i] = "";
         feat_iso_diff[i] = 0;
         feat_iso_md[i] = 0;
         feat_iso_el[i] = "";
@@ -1152,7 +1155,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
     Rcpp::Named("intensity") = all_intensity,
     Rcpp::Named("iso_gr") = feat_iso_gr,
     Rcpp::Named("iso_z") = feat_iso_z,
-    // Rcpp::Named("iso_cat") = feat_iso_cat,
+    Rcpp::Named("iso_cat") = feat_iso_cat,
     Rcpp::Named("iso_step") = feat_iso_step,
     Rcpp::Named("iso_md_diff") = feat_iso_diff,
     Rcpp::Named("iso_md_hit") = feat_iso_md,

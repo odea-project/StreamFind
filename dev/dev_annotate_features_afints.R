@@ -15,32 +15,6 @@ db
 ms <- MassSpecData$new(file)
 
 ffs <- ProcessingSettings(
-  # call = "find_features",
-  # algorithm = "openms",
-  # parameters = list(
-  #   noiseThrInt = 20000,
-  #   chromSNR = 3,
-  #   chromFWHM = 10,
-  #   mzPPM = 4,
-  #   reEstimateMTSD = FALSE,
-  #   traceTermCriterion = "sample_rate",
-  #   traceTermOutliers = 5,
-  #   minSampleRate = 1,
-  #   minTraceLength = 5,
-  #   maxTraceLength = -1,
-  #   widthFiltering = "fixed",
-  #   minFWHM = 5,
-  #   maxFWHM = 80,
-  #   traceSNRFiltering = TRUE,
-  #   localRTRange = 10,
-  #   localMZRange = 6.5,
-  #   isotopeFilteringModel = "metabolites (5% RMS)",
-  #   MZScoring13C = FALSE,
-  #   useSmoothedInts = FALSE,
-  #   extraOpts = NULL,
-  #   intSearchRTWindow = 3,
-  #   useFFMIntensities = FALSE
-  # )
   call = "find_features",
   algorithm = "xcms3",
   parameters = xcms::CentWaveParam(
