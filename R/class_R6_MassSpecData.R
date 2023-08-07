@@ -171,6 +171,41 @@ MassSpecData <- R6::R6Class("MassSpecData",
       output[names(output) %in% analyses]
     },
 
+    #' @description
+    #' Extracts and validates ProcessingSettings for a given call.
+    #'
+    .get_call_settings = function(settings = NULL, call = NULL) {
+
+      valid <- TRUE
+
+      if (length(call) > 1 & !is.character(call)) return(NULL)
+      if (!(call %in% self$processing_function_calls())) return(NULL)
+
+      if (is.null(settings)) {
+        settings <- self$get_settings(call)
+      } else if (call %in% names(settings)) {
+        settings <- settings[call]
+      }
+
+      if (!"call" %in% names(settings)) {
+        if (length(settings) > 1) {
+          warning("More then one settings for ", call, "found!")
+          valid <- FALSE
+        } else {
+          settings <- settings[[call]]
+        }
+      }
+
+      settings <- as.ProcessingSettings(settings)
+
+      if (!call %in% settings$call) {
+        warning("Settings call must be ", call)
+        return(NULL)
+      }
+
+      settings
+    },
+
     ## ___ .filters -----
 
     #' @description
@@ -423,17 +458,18 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return Console text.
     #'
     print = function() {
+      cat("\n")
       cat(
-        "Class         ", paste(is(self), collapse = "; "), "\n",
-        "Name          ", private$.headers$name, "\n",
-        "Date          ", as.character(private$.headers$date), "\n",
+        paste(is(self), collapse = "; "), "\n",
+        "name          ", private$.headers$name, "\n",
+        "date          ", as.character(private$.headers$date), "\n",
         sep = ""
       )
 
       cat("\n")
 
       if (self$has_settings()) {
-        cat("Settings: \n")
+        cat("settings: \n")
         names_settings <- names(private$.settings)
         cat(
           paste0(" ", seq_len(length(names_settings)), ": ", names_settings),
@@ -445,11 +481,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (length(private$.analyses) > 0) {
         overview <- self$get_overview()
         overview$file <- NULL
-        row.names(overview) <- paste0("Analyses ", seq_len(nrow(overview)), ":")
+        cat("analyses: \n")
+        row.names(overview) <- paste0(" ", seq_len(nrow(overview)), ":")
         print(overview)
 
       } else {
-        cat("Analyses      ", 0, "\n", sep = "")
+        cat("analyses      ", 0, "\n", sep = "")
       }
       cat("\n")
     },
@@ -4307,74 +4344,21 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return Invisible.
     #'
     find_features = function(settings = NULL) {
-      valid <- TRUE
+
       add_settings <- TRUE
+      if (is.null(settings)) add_settings <- FALSE
 
-      if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
-        warning("patRoon package not found! Install it for finding features.")
-        valid <- FALSE
+      settings <- private$.get_call_settings(settings, "find_features")
+      if (is.null(settings)) return(invisible(self))
+
+      processed <- .s3_ms_find_features(settings, self)
+
+      if (processed) {
+
+        if (add_settings) self$add_settings(settings)
+
+        private$.register("processed", "find_features", settings$algorithm)
       }
-
-      if (is.null(settings)) {
-        settings <- self$get_settings(call = "find_features")
-        add_settings <- FALSE
-      } else if ("find_features" %in% names(settings)) {
-        settings <- settings["find_features"]
-      }
-
-      if (!"call" %in% names(settings)) {
-        if (length(settings) > 1) {
-          warning("More then one settings for finding features found!")
-          valid <- FALSE
-        } else {
-          settings <- settings[["find_features"]]
-        }
-      }
-
-      if (validate.ProcessingSettings(settings)) {
-        if (!"find_features" %in% settings$call) {
-          warning("Settings call must be find_features!")
-          valid <- FALSE
-        }
-      } else {
-        warning("Settings content or structure not conform!")
-        valid <- FALSE
-      }
-
-      if (!valid) {
-        return(invisible(self))
-      }
-
-      algorithm <- settings$algorithm
-      parameters <- settings$parameters
-
-      if (isS4(parameters)) {
-        parameters <- list("param" = parameters)
-      }
-
-      anaInfo <- self$get_overview()
-      anaInfo <- data.frame(
-        "path" = dirname(anaInfo$file),
-        "analysis" = anaInfo$analysis,
-        "group" = anaInfo$replicate,
-        "blank" = anaInfo$blank
-      )
-
-      anaInfo$blank[is.na(anaInfo$blank)] <- ""
-      anaInfo$algorithm <- algorithm
-      ag <- list(analysisInfo = anaInfo, algorithm = algorithm)
-      pp_fun <- patRoon::findFeatures
-      pat <- do.call(pp_fun, c(ag, parameters, verbose = FALSE))
-
-      features <- build_features_table_from_patRoon(pat, self)
-
-      if (add_settings) self$add_settings(settings)
-
-      if (any(self$has_features())) self$remove_features()
-
-      private$.register("processed", "find_features", settings$algorithm)
-
-      self$add_features(features, replace = TRUE)
 
       invisible(self)
     },
@@ -4395,93 +4379,22 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' are given as a list and should match with algorithm requirements.
     #'
     group_features = function(settings = NULL) {
-      valid <- TRUE
+
       add_settings <- TRUE
+      if (is.null(settings)) add_settings <- FALSE
 
-      if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
-        warning("patRoon package not found! Install it for grouping features.")
-        valid <- FALSE
+      settings <- private$.get_call_settings(settings, "group_features")
+      if (is.null(settings)) return(invisible(self))
+
+      processed <- .s3_ms_group_features(settings, self)
+
+      if (processed) {
+
+        if (add_settings) self$add_settings(settings)
+
+        private$.register("processed", "group_features", settings$algorithm)
       }
 
-      if (is.null(settings)) {
-        settings <- self$get_settings(call = "group_features")
-        add_settings <- FALSE
-      } else if ("group_features" %in% names(settings)) {
-        settings <- settings["group_features"]
-      }
-
-      if (!("call" %in% names(settings))) {
-        if (length(settings) > 1) {
-          warning("More then one settings for grouping features found!")
-          valid <- FALSE
-        } else {
-          settings <- settings[["group_features"]]
-        }
-      }
-
-      if (validate.ProcessingSettings(settings)) {
-        if (!"group_features" %in% settings$call) {
-          warning("Settings call must be group_features!")
-          valid <- FALSE
-        }
-      } else {
-        warning("Settings content or structure not conform!")
-        valid <- FALSE
-      }
-
-      pat_features <- self$as_features_patRoon()
-
-      if (length(pat_features) == 0) {
-        warning("Features were not found! Run find_features method first!")
-        valid <- FALSE
-      }
-
-      if (!valid) {
-        return(invisible(self))
-      }
-
-      algorithm <- settings$algorithm
-      parameters <- settings$parameters
-
-      if (algorithm == "xcms3") {
-        if ("Param" %in% is(parameters)) {
-          parameters <- list("groupParam" = parameters)
-        }
-        parameters$groupParam@sampleGroups <- self$get_replicate_names()
-        if ("rtalign" %in% names(parameters)) {
-          if (parameters$rtalign) {
-            parameters$preGroupParam@sampleGroups <- self$get_replicate_names()
-          }
-        }
-      }
-
-      ag <- list(obj = pat_features, algorithm = algorithm)
-      gr_fun <- patRoon::groupFeatures
-      pat <- do.call(gr_fun, c(ag, parameters))
-
-      features <- build_features_table_from_patRoon(pat, self)
-
-      features <- rbindlist(features, idcol = "analysis")
-
-      out_list <- rcpp_ms_make_groups_update_features(features)
-
-      alignment <- extract_time_alignment(pat, self)
-
-      if (add_settings) self$add_settings(settings)
-
-      if (self$has_groups()) self$remove_groups()
-
-      private$.register("processed", "group_features", settings$algorithm)
-
-      suppressMessages(self$add_features(out_list[["features"]], replace = TRUE))
-
-      self$add_groups(out_list[["groups"]])
-
-      if (!is.null(alignment)) {
-        private$.register("added alignment")
-        private$.alignment <- alignment
-        message("\U2713 Added alignment of retention time for each analysis!")
-      }
       invisible(self)
     },
 
@@ -4496,83 +4409,93 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' methods `get_features()` and `get_groups()`, respectively.
     #'
     filter_features = function(settings = NULL) {
-      valid <- TRUE
+
+      processed <- FALSE
       add_settings <- TRUE
+      if (is.null(settings)) add_settings <- FALSE
 
-      if (is.null(settings)) {
-        settings <- self$get_settings(call = "filter_features")
-        add_settings <- FALSE
-      } else if ("filter_features" %in% names(settings)) {
-        settings <- settings["filter_features"]
-      }
+      settings <- private$.get_call_settings(settings, "filter_features")
+      if (is.null(settings)) return(invisible(self))
 
-      if (!"call" %in% names(settings)) {
-        if (length(settings) > 1) {
-          warning("More then one settings for filtering features found!")
-          valid <- FALSE
-        } else {
-          settings <- settings[["filter_features"]]
+      if ("streamFind" %in% class(settings)) {
+        if (!any(self$has_features())) {
+          warning("Features were not found! Run find_features method first!")
+          return(invisible(self))
         }
-      }
 
-      if (validate.ProcessingSettings(settings)) {
-        if (!"filter_features" %in% settings$call) {
-          warning("Settings call must be filter_features!")
-          valid <- FALSE
-        }
-      } else {
-        warning("Settings content or structure not conform!")
-        valid <- FALSE
-      }
+        parameters <- settings$parameters
+        filters <- names(parameters)
 
-      if (!any(self$has_features())) {
-        warning("Features were not found! Run find_features method first!")
-        valid <- FALSE
-      }
-
-      parameters <- settings$parameters
-
-      filters <- names(parameters)
-
-      possible_feature_filters <- c(
-        "minIntensity",
-        "minSnRatio",
-        "blank",
-        "maxGroupSd",
-        "minGroupAbundance",
-        "excludeIsotopes",
-        "excludeAdducts"
-      )
-
-      if (!all(filters %in% possible_feature_filters)) {
-        warning("At least one of the filters is not recognized.")
-        valid <- FALSE
-      }
-
-      if (!valid) {
-        return(invisible(self))
-      }
-
-      n_features <- nrow(self$get_features(filtered = FALSE))
-
-      for (i in seq_len(length(filters))) {
-        switch(filters[i],
-          minIntensity = (private$.filter_minIntensity(parameters[[filters[i]]])),
-          minSnRatio = (private$.filter_minSnRatio(parameters[[filters[i]]])),
-          maxGroupSd = (private$.filter_maxGroupSd(parameters[[filters[i]]])),
-          blank = (private$.filter_blank(parameters[[filters[i]]])),
-          minGroupAbundance = (private$.filter_minGroupAbundance(parameters[[filters[i]]]))
-          # TODO add more filters, e.g., mass and time widths and limits
+        possible_feature_filters <- c(
+          "minIntensity",
+          "minSnRatio",
+          "blank",
+          "maxGroupSd",
+          "minGroupAbundance",
+          "excludeIsotopes",
+          "excludeAdducts"
         )
+
+        if (!all(filters %in% possible_feature_filters)) {
+          warning("At least one of the filters is not recognized.")
+          return(invisible(self))
+        }
+
+        n_features <- nrow(self$get_features(filtered = FALSE))
+
+        for (i in seq_len(length(filters))) {
+          switch(filters[i],
+            minIntensity = (private$.filter_minIntensity(parameters[[filters[i]]])),
+            minSnRatio = (private$.filter_minSnRatio(parameters[[filters[i]]])),
+            maxGroupSd = (private$.filter_maxGroupSd(parameters[[filters[i]]])),
+            blank = (private$.filter_blank(parameters[[filters[i]]])),
+            minGroupAbundance = (private$.filter_minGroupAbundance(parameters[[filters[i]]]))
+            # TODO add more filters, e.g., mass and time widths and limits
+          )
+        }
+
+        n_features_after <- nrow(self$get_features(filtered = FALSE))
+        n_features_filtered <- n_features - n_features_after
+        if (n_features_filtered < 0) n_features_filtered <- 0
+
+        message(paste0("\U2713 ", n_features_filtered, " features filtered!"))
+
+        processed <- TRUE
+
+      } else {
+        processed <- .s3_ms_filter_features(settings, self)
       }
 
-      n_features_after <- nrow(self$get_features(filtered = FALSE))
-      n_features_filtered <- n_features - n_features_after
-      if (n_features_filtered < 0) n_features_filtered <- 0
+      if (processed) {
+        if (add_settings) self$add_settings(settings)
+      }
 
-      if (add_settings) self$add_settings(settings)
+      invisible(self)
+    },
 
-      message(paste0("\U2713 ", n_features_filtered, " features filtered!"))
+    #' @description Annotates isotopic features according to defined settings.
+    #'
+    #' @return Invisible.
+    #'
+    #' @details Extra columns are added to the features data.table in each
+    #' analysis.
+    #'
+    annotate_features = function(settings = NULL) {
+
+      add_settings <- TRUE
+      if (is.null(settings)) add_settings <- FALSE
+
+      settings <- private$.get_call_settings(settings, "annotate_features")
+      if (is.null(settings)) return(invisible(self))
+
+      processed <- .s3_ms_annotate_features(settings, self)
+
+      if (processed) {
+
+        if (add_settings) self$add_settings(settings)
+
+        # message(paste0("\U2713 ", n_features_filtered, " features annotated!"))
+      }
 
       invisible(self)
     },
@@ -4582,6 +4505,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' settings.
     #'
     #' @return A data.frame with the suspects and matched features.
+    #'
+    #' @param database X.
     #'
     #' @details The settings must contain a database as data.frame with at least
     #' the columns name and mass, indicating the name and neutral monoisotopic
@@ -5198,297 +5123,4 @@ import_MassSpecData <- function(file) {
     warning("File not found in given path!")
     NULL
   }
-}
-
-# _ not-exported functions -----
-
-#' @title build_features_table_from_patRoon
-#'
-#' @param pat An object with class `features` or `featureGroups` from the
-#' package \pkg{patRoon}.
-#'
-#' @param self A `MassSpecData` object. When applied within the R6, the self
-#' object.
-#'
-#' @return A list with a features \linkS4class{data.table} for each analysis.
-#'
-#' @noRd
-#'
-build_features_table_from_patRoon <- function(pat, self) {
-
-  if ("features" %in% is(pat)) {
-    anaInfo <- pat@analysisInfo
-    isSet <- TRUE %in% grepl("Set", is(pat))
-    features <- pat@features
-    if ("featuresXCMS3" %in% is(pat)) {
-      if (xcms::hasFilledChromPeaks(pat@xdata)) {
-        extra <- xcms::chromPeaks(pat@xdata, isFilledColumn = TRUE)
-        extra$is_filled <- as.logical(extra$is_filled)
-        extra$analysis <- anaInfo$analysis[extra$sample]
-        extra <- split(extra, extra$analysis)
-      } else {
-        extra <- NULL
-      }
-    } else {
-      extra <- NULL
-    }
-  }
-
-  if ("featureGroups" %in% is(pat)) {
-    anaInfo <- pat@analysisInfo
-    features <- copy(pat@features@features)
-    isSet <- TRUE %in% grepl("Set", is(pat))
-    if ("featureGroupsXCMS3" %in% is(pat)) {
-      if (xcms::hasFilledChromPeaks(pat@xdata)) {
-        extra <- xcms::chromPeaks(pat@xdata, isFilledColumn = TRUE)
-        extra$is_filled <- as.logical(extra$is_filled)
-        extra$analysis <- anaInfo$analysis[extra$sample]
-        extra <- split(extra, extra$analysis)
-      } else {
-        extra <- NULL
-      }
-    } else {
-      extra <- NULL
-    }
-  }
-
-  analyses <- names(features)
-
-  features <- lapply(analyses, function(x, extra, features, self, isSet) {
-    temp <- features[[x]]
-
-    valid = TRUE
-
-    if (!is.data.frame(temp)) valid <- FALSE
-
-    if (valid & nrow(temp) == 0) valid <- FALSE
-
-    if (!valid) return(data.table())
-
-    if (!is.null(extra)) {
-      if (temp == nrow(extra[[x]]) & all(temp$mz == extra[[x]]$mz)) {
-        temp$filled <- extra[[x]]$is_filled
-      }
-    }
-
-    under_rt_max <- temp$rt <= temp$rtmax
-    if (!all(under_rt_max)) {
-      warning("Feature retention time value/s above the rtmax!")
-    }
-
-    under_rt_min <- temp$rt >= temp$rtmin
-    if (!all(under_rt_min)) {
-      warning("Feature retention time value/s under the rtmin!")
-    }
-
-    under_mz_max <- temp$mz <= temp$mzmax
-    if (!all(under_rt_min)) {
-      warning("Feature m/z value/s above the mzmax!")
-    }
-
-    under_mz_min <- temp$mz >= temp$mzmin
-    if (!all(under_rt_min)) {
-      warning("Feature m/z value/s under the mzmin!")
-    }
-
-    polarity <- self$get_polarities(x)
-
-    if (polarity %in% "positive") {
-      adduct <- "[M+H]+"
-      adduct_val <- -1.007276
-    }
-
-    if (polarity %in% "negative") {
-      adduct <- "[M-H]-"
-      adduct_val <- 1.007276
-    }
-
-    # required as when is set the mz value is neutralized from patRoon
-    if (isSet) {
-      temp[temp$adduct %in% "[M-H]-", `:=`(
-        mzmin = (temp$mz - 1.007276) - (temp$mz - temp$mzmin),
-        mzmax = (temp$mz - 1.007276) + (temp$mzmax - temp$mz),
-        mz = temp$mz - 1.007276
-      )]
-      temp[temp$adduct %in% "[M+H]+", `:=`(
-        mzmin = (temp$mz + 1.007276) - (temp$mz - temp$mzmin),
-        mzmax = (temp$mz + 1.007276) + (temp$mzmax - temp$mz),
-        mz = temp$mz + 1.007276
-      )]
-    }
-
-    if (!"adduct" %in% colnames(temp)) temp$adduct <- adduct
-    if (!"mass" %in% colnames(temp)) temp$mass <- temp$mz + adduct_val
-    if (!"filled" %in% colnames(temp)) {
-      temp$filled <- FALSE
-    } else {
-      temp$filled <- as.logical(temp$filled)
-    }
-    if (!"filtered" %in% colnames(temp)) temp$filtered <- FALSE
-    if (!"filter" %in% colnames(temp)) temp$filter <- NA_character_
-
-    setnames(temp,
-      c("ID", "ret", "retmin", "retmax"),
-      c("feature", "rt", "rtmin", "rtmax"),
-      skip_absent = TRUE
-    )
-
-    # when grouping features are removed from grouping conditions in patRoon
-    # therefore, old features are retained and tagged with filter "grouping"
-    temp_org <- self$get_features(x)
-    build_feature_ids <- TRUE
-
-    if (nrow(temp_org) > 0 && "featureGroups" %in% is(pat)) {
-
-      temp_org$analysis <- NULL
-
-      if (nrow(temp_org) != nrow(temp)) {
-
-        build_feature_ids <- FALSE
-
-        #modify the feature ids from original ids when numeric
-        if (is.numeric(temp$feature)) {
-          temp$feature <- temp_org$feature[temp$feature]
-        }
-
-        temp_org_not_grouped <- temp_org[!temp_org$feature %in% temp$feature, ]
-
-        temp_list <- list(temp, temp_org_not_grouped)
-        temp <- rbindlist(temp_list, fill = TRUE)
-      }
-    }
-
-    if ("group" %in% colnames(temp)) {
-      temp$filter[is.na(temp$group)] <- "grouping"
-      temp$filtered[is.na(temp$group)] <- TRUE
-    }
-
-    temp <- temp[order(temp$mz), ]
-    temp <- temp[order(temp$rt), ]
-    temp <- temp[order(temp$filtered), ]
-
-    if (build_feature_ids) {
-      temp$index <- seq_len(nrow(temp))
-
-      d_dig <- max(temp$mzmax - temp$mzmin)
-      d_dig <- sub('.*\\.(0+)[1-9].*', '\\1', as.character(d_dig))
-      d_dig <- nchar(d_dig) + 1
-
-      temp$feature <- paste0(
-        "mz",
-        round(temp$mz, digits = d_dig),
-        "_rt",
-        round(temp$rt, digits = 0),
-        "_f",
-        temp$index
-      )
-    }
-
-    setcolorder(
-      temp,
-      c(
-        "feature", "index", "rt", "mz", "intensity", "area",
-        "rtmin", "rtmax", "mzmin", "mzmax", "adduct", "mass",
-        "filled", "filtered", "filter"
-      )
-    )
-
-    temp$rt <- round(temp$rt, 3)
-    temp$rtmin <- round(temp$rtmin, 3)
-    temp$rtmax <- round(temp$rtmax, 3)
-
-    temp$mz <- round(temp$mz, 8)
-    temp$mzmin <- round(temp$mzmin, 8)
-    temp$mzmax <- round(temp$mzmax, 8)
-
-    temp
-  }, extra = extra, features = features, self = self, isSet = isSet)
-
-  names(features) <- analyses
-
-  features
-}
-
-#' extract_time_alignment
-#'
-#' @description Function to extract adjusted retention time information from
-#' alignment results when using `xcms3` as algorithm for grouping and retention
-#' time alignment.
-#'
-#' @param pat An object with class `features` or `featureGroups` from the
-#' package \pkg{patRoon}.
-#'
-#' @param self A `MassSpecData` object. When applied within the R6, the self
-#' object.
-#'
-#' @noRd
-#'
-extract_time_alignment <- function(pat, self) {
-  if ("featureGroupsXCMS3" %in% is(pat)) {
-
-    if (xcms::hasAdjustedRtime(pat@xdata)) {
-      rtAdj <- xcms::adjustedRtime(pat@xdata)
-      pkAdj <- xcms::processHistory(pat@xdata,
-        type = "Retention time correction"
-      )[[1]]
-      pkAdj <- pkAdj@param
-
-      addAdjPoints <- FALSE
-      if ("PeakGroupsParam" %in% is(pkAdj)) {
-        addAdjPoints <- TRUE
-        pkAdj <- xcms::peakGroupsMatrix(pkAdj)
-      }
-
-      # hasSpectra = all(self$has_loaded_spectra())
-      hasSpectra <- FALSE
-
-      if (!hasSpectra) {
-        rtOrg <- lapply(self$get_files(), function(x) {
-          file_link <- mzR::openMSfile(x, backend = "pwiz")
-          sH <- suppressWarnings(mzR::header(file_link))
-          suppressWarnings(mzR::close(file_link))
-          sH$retentionTime
-        })
-      }
-
-      alignment <- lapply(self$get_analysis_names(),
-        function(ana, rtOrg, rtAdj, addAdjPoints, pkAdj, all_ana) {
-          ana_idx <- which(all_ana %in% ana)
-          n_ana <- length(all_ana)
-
-          rts <- names(rtAdj)
-          ana_idx_string <- paste0(
-            "F",
-            paste(rep("0", nchar(n_ana) - nchar(ana_idx)), collapse = ""),
-            ana_idx
-          )
-          rts <- grepl(ana_idx_string, rts)
-          rts <- rtAdj[rts]
-
-          temp <- data.frame(
-            "rt_original" = rtOrg[[ana]],
-            "rt_adjusted" = rts
-          )
-
-          temp$adjustment <- temp$rt_original - temp$rt_adjusted
-
-          if (addAdjPoints) {
-            adjPoints <- unique(pkAdj[, ana_idx])
-            adjPoints <- adjPoints[adjPoints %in% temp$rt_original]
-            temp$adjPoints[temp$rt_original %in% adjPoints] <- adjPoints
-          }
-          row.names(temp) <- seq_len(nrow(temp))
-          temp
-        },
-        rtOrg = rtOrg,
-        rtAdj = rtAdj,
-        addAdjPoints = addAdjPoints,
-        pkAdj = pkAdj,
-        all_ana = self$get_analysis_names()
-      )
-
-      return(alignment)
-    }
-  }
-  NULL
 }

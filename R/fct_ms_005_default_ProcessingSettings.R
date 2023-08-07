@@ -1,4 +1,6 @@
 
+# Default Settings -----
+
 #' @title get_default_ProcessingSettings
 #'
 #' @description X.
@@ -20,22 +22,22 @@ get_default_ProcessingSettings <- function(call = NA_character_,
   if ("find_features" %in% call) {
 
     if ("centwave" %in% algorithm) {
-      settings <- .default_find_features_xcms3_centwave()
+      settings <- settings_find_features_xcms3_centwave()
     }
 
     if ("openms" %in% algorithm) {
-      settings <- .default_find_features_openms()
+      settings <- settings_find_features_openms()
     }
 
     if ("kpic2" %in% algorithm) {
-      settings <- .default_find_features_kpic2()
+      settings <- settings_find_features_kpic2()
     }
   }
 
   if ("group_features" %in% call) {
 
     if ("peakdensity" %in% algorithm) {
-      settings <- .default_group_features_xcms3_peakdensity()
+      settings <- settings_group_features_xcms3_peakdensity()
     }
 
     if ("openms" %in% algorithm) {
@@ -44,23 +46,27 @@ get_default_ProcessingSettings <- function(call = NA_character_,
   }
 
   if ("load_features_ms1" %in% call) {
-    settings <- .default_load_features_ms1_streamFind()
+    settings <- settings_load_features_ms1_streamFind()
   }
 
   if ("load_features_ms2" %in% call) {
-    settings <- .default_load_features_ms2_streamFind()
+    settings <- settings_load_features_ms2_streamFind()
   }
 
   if ("load_groups_ms1" %in% call) {
-    settings <- .default_load_groups_ms1_streamFind()
+    settings <- settings_load_groups_ms1_streamFind()
   }
 
   if ("load_groups_ms2" %in% call) {
-    settings <- .default_load_groups_ms2_streamFind()
+    settings <- settings_load_groups_ms2_streamFind()
   }
 
   if ("filter_features" %in% call) {
-    settings <- .default_filter_features_streamFind()
+    settings <- settings_filter_features_streamFind()
+  }
+
+  if ("annotate_features" %in% call) {
+    settings <- settings_annotate_features_streamFind()
   }
 
   return(settings)
@@ -113,7 +119,9 @@ save_default_ProcessingSettings <- function(call = NA_character_,
   }
 }
 
-#' @title .default_find_features_xcms3_centwave
+## find -----
+
+#' @title settings_find_features_xcms3_centwave
 #'
 #' @description X.
 #'
@@ -121,7 +129,7 @@ save_default_ProcessingSettings <- function(call = NA_character_,
 #'
 #' @noRd
 #'
-.default_find_features_xcms3_centwave <- function() {
+settings_find_features_xcms3_centwave <- function() {
 
   if (!requireNamespace("xcms", quietly = TRUE)) {
     warning("xcms package required but not installed!")
@@ -159,7 +167,7 @@ save_default_ProcessingSettings <- function(call = NA_character_,
   return(settings)
 }
 
-#' @title .default_find_features_openms
+#' @title settings_find_features_openms
 #'
 #' @description X.
 #'
@@ -167,7 +175,7 @@ save_default_ProcessingSettings <- function(call = NA_character_,
 #'
 #' @noRd
 #'
-.default_find_features_openms <- function() {
+settings_find_features_openms <- function() {
 
   settings <- list(
     call = "find_features",
@@ -208,7 +216,7 @@ save_default_ProcessingSettings <- function(call = NA_character_,
   return(settings)
 }
 
-#' @title .default_find_features_kpic2
+#' @title settings_find_features_kpic2
 #'
 #' @description X.
 #'
@@ -216,7 +224,7 @@ save_default_ProcessingSettings <- function(call = NA_character_,
 #'
 #' @noRd
 #'
-.default_find_features_kpic2 <- function() {
+settings_find_features_kpic2 <- function() {
 
   if (!requireNamespace("KPIC", quietly = TRUE)) {
     warning("KPIC package required but not installed!")
@@ -246,7 +254,9 @@ save_default_ProcessingSettings <- function(call = NA_character_,
   return(settings)
 }
 
-#' @title .default_group_features_xcms3_peakdensity
+## group -----
+
+#' @title settings_group_features_xcms3_peakdensity
 #'
 #' @description X.
 #'
@@ -254,7 +264,7 @@ save_default_ProcessingSettings <- function(call = NA_character_,
 #'
 #' @noRd
 #'
-.default_group_features_xcms3_peakdensity <- function() {
+settings_group_features_xcms3_peakdensity <- function() {
 
   if (!requireNamespace("xcms", quietly = TRUE)) {
     warning("xcms package required but not installed!")
@@ -284,7 +294,9 @@ save_default_ProcessingSettings <- function(call = NA_character_,
   return(settings)
 }
 
-#' @title .default_load_features_ms1_streamFind
+## load -----
+
+#' @title settings_load_features_ms1_streamFind
 #'
 #' @description X.
 #'
@@ -292,7 +304,7 @@ save_default_ProcessingSettings <- function(call = NA_character_,
 #'
 #' @noRd
 #'
-.default_load_features_ms1_streamFind <- function() {
+settings_load_features_ms1_streamFind <- function() {
 
   settings <- list(
     call = "load_features_ms1",
@@ -318,7 +330,7 @@ save_default_ProcessingSettings <- function(call = NA_character_,
   return(settings)
 }
 
-#' @title .default_load_features_ms2_streamFind
+#' @title settings_load_features_ms2_streamFind
 #'
 #' @description X.
 #'
@@ -326,7 +338,7 @@ save_default_ProcessingSettings <- function(call = NA_character_,
 #'
 #' @noRd
 #'
-.default_load_features_ms2_streamFind <- function() {
+settings_load_features_ms2_streamFind <- function() {
 
   settings <- list(
     call = "load_features_ms2",
@@ -351,7 +363,7 @@ save_default_ProcessingSettings <- function(call = NA_character_,
   return(settings)
 }
 
-#' @title .default_load_groups_ms1_streamFind
+#' @title settings_load_groups_ms1_streamFind
 #'
 #' @description X.
 #'
@@ -359,7 +371,7 @@ save_default_ProcessingSettings <- function(call = NA_character_,
 #'
 #' @noRd
 #'
-.default_load_groups_ms1_streamFind <- function() {
+settings_load_groups_ms1_streamFind <- function() {
 
   settings <- list(
     call = "load_groups_ms1",
@@ -383,7 +395,7 @@ save_default_ProcessingSettings <- function(call = NA_character_,
   return(settings)
 }
 
-#' @title .default_load_groups_ms2_streamFind
+#' @title settings_load_groups_ms2_streamFind
 #'
 #' @description X.
 #'
@@ -391,7 +403,7 @@ save_default_ProcessingSettings <- function(call = NA_character_,
 #'
 #' @noRd
 #'
-.default_load_groups_ms2_streamFind <- function() {
+settings_load_groups_ms2_streamFind <- function() {
 
   settings <- list(
     call = "load_groups_ms2",
@@ -415,7 +427,9 @@ save_default_ProcessingSettings <- function(call = NA_character_,
   return(settings)
 }
 
-#' @title .default_filter_features_streamFind
+## filter -----
+
+#' @title settings_filter_features_streamFind
 #'
 #' @description X.
 #'
@@ -423,7 +437,7 @@ save_default_ProcessingSettings <- function(call = NA_character_,
 #'
 #' @noRd
 #'
-.default_filter_features_streamFind <- function() {
+settings_filter_features_streamFind <- function() {
 
   settings <- list(
     call = "filter_features",
@@ -434,6 +448,42 @@ save_default_ProcessingSettings <- function(call = NA_character_,
       "maxGroupSd" = 30,
       "blank" = 5,
       "minGroupAbundance" = 3
+    ),
+    software = "streamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://github.com/ricardobachertdacunha/streamFind",
+    doi = NA_character_
+  )
+
+  settings <- as.ProcessingSettings(settings)
+
+  return(settings)
+}
+
+## annotate -----
+
+#' @title settings_annotate_features_streamFind
+#'
+#' @description X.
+#'
+#' @return X.
+#'
+#' @noRd
+#'
+settings_annotate_features_streamFind <- function(maxIsotopes = 5,
+                                                  maxCharge = 1,
+                                                  rtWindowAlignment = 0.2,
+                                                  maxGaps = 1) {
+
+  settings <- list(
+    call = "annotate_features",
+    algorithm = "streamFind",
+    parameters = list(
+      "maxIsotopes" = maxIsotopes,
+      "maxCharge" = maxCharge,
+      "rtWindowAlignment" = rtWindowAlignment,
+      "maxGaps" = maxGaps
     ),
     software = "streamFind",
     developer = "Ricardo Cunha",

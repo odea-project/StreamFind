@@ -3,6 +3,7 @@
 \name{MassSpecAnalysis}
 \alias{MassSpecAnalysis}
 \alias{validate.MassSpecAnalysis}
+\alias{print.MassSpecAnalysis}
 \alias{asJSON.MassSpecAnalysis}
 \alias{as.MassSpecAnalysis}
 \alias{parse.MassSpecAnalysis}
@@ -36,6 +37,8 @@ MassSpecAnalysis(
 )
 
 \method{validate}{MassSpecAnalysis}(x = NULL)
+
+\method{print}{MassSpecAnalysis}(x)
 
 \method{asJSON}{MassSpecAnalysis}(x)
 
@@ -132,6 +135,8 @@ Creates a MassSpecAnalysis S3 class object.
 \itemize{
 \item \code{validate(MassSpecAnalysis)}: Validates a MassSpecAnalysis S3 class object, returning a logical value of
 length one.
+
+\item \code{print(MassSpecAnalysis)}: Prints the MassSpecAnalysis S3 class object in the console.
 
 \item \code{asJSON(MassSpecAnalysis)}: Converts a MassSpecAnalysis S3 class object to a JSON string.
 

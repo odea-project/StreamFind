@@ -40,14 +40,14 @@ neutral_targets <- make_ms_targets(
   sec = sec_dev
 )
 
-iso_info <- fread(paste0(getwd(), "/dev/isotopes.csv"))
+iso_info <- data.table::fread(paste0(getwd(), "/dev/isotopes.csv"))
 
 # settings ---------------------------------------------------------------------
 
-settings_ff <- list(
+ffs <- ProcessingSettings(
   call = "find_features",
   algorithm = "xcms3",
-  parameters = list(xcms::CentWaveParam(
+  parameters = xcms::CentWaveParam(
     ppm = 12, peakwidth = c(5, 40),
     snthresh = 10, prefilter = c(5, 2000),
     mzCenterFun = "wMean", integrate = 1,
@@ -55,19 +55,22 @@ settings_ff <- list(
     noise = 500, verboseColumns = TRUE,
     firstBaselineCheck = FALSE,
     extendLengthMSW = FALSE
-  ))
+  )
 )
 
 # r6 test ----------------------------------------------------------------------
 # patRoon::clearCache("parsed_ms_analyses")
 # patRoon::clearCache("parsed_ms_spectra")
 
-ms <- MassSpecData$new(files = all_files[2],
+ms <- MassSpecData$new(
+  files = all_files[2],
   headers = list(name = "Example 1"),
-  settings = list(settings_ff)
+  settings = ffs
 )
 
 ms$find_features()
+
+ms$get_analyses()
 
 # code dev ---------------------------------------------------------------------
 
@@ -90,6 +93,15 @@ View(output$output)
 
 
 
+afs <- list(
+  call = "annotate_features",
+  algorithm = "streamFind",
+  parameters = list()
+)
+
+ms$annotate_features(afs)
+
+ms
 
 
 

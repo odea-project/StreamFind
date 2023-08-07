@@ -133,6 +133,7 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \item \href{#method-MassSpecData-find_features}{\code{MassSpecData$find_features()}}
 \item \href{#method-MassSpecData-group_features}{\code{MassSpecData$group_features()}}
 \item \href{#method-MassSpecData-filter_features}{\code{MassSpecData$filter_features()}}
+\item \href{#method-MassSpecData-annotate_features}{\code{MassSpecData$annotate_features()}}
 \item \href{#method-MassSpecData-suspect_screening}{\code{MassSpecData$suspect_screening()}}
 \item \href{#method-MassSpecData-as_features_patRoon}{\code{MassSpecData$as_features_patRoon()}}
 \item \href{#method-MassSpecData-check_correspondence}{\code{MassSpecData$check_correspondence()}}
@@ -163,6 +164,9 @@ character vector with analysis names or \code{NULL} for non-matching.
 
 
 Gets an entry from the analyses private field.
+
+
+Extracts and validates ProcessingSettings for a given call.
 
 
 Filters features and feature groups with minimum intensity.
@@ -3993,6 +3997,35 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-annotate_features"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-annotate_features}{}}}
+\subsection{Method \code{annotate_features()}}{
+Annotates isotopic features according to defined settings.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$annotate_features(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the \code{MassSpecData} object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+Extra columns are added to the features data.table in each
+analysis.
+}
+
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecData-suspect_screening"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-suspect_screening}{}}}
 \subsection{Method \code{suspect_screening()}}{
@@ -4005,6 +4038,8 @@ settings.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{database}}{X.}
+
 \item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
 
 \item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}

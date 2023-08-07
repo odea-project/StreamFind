@@ -328,6 +328,34 @@ validate.MassSpecAnalysis <- function(x = NULL) {
 }
 
 #' @describeIn MassSpecAnalysis
+#' Prints the MassSpecAnalysis S3 class object in the console.
+#'
+#' @export
+print.MassSpecAnalysis <- function(x) {
+  cat("\n")
+  cat(
+    " ", class(x), "\n"
+  )
+  cat(
+    # "  file              ", x$file, "\n",
+    "  name              ", x$name, "\n",
+    "  replicate         ", x$replicate, "\n",
+    "  blank             ", x$blank, "\n",
+    "  format            ", x$format, "\n",
+    "  type              ", x$type, "\n",
+    "  spectra number    ", x$spectra_number, "\n",
+    "  spectra mode      ", x$spectra_mode, "\n",
+    "  spectra levels    ", paste(x$spectra_levels, collapse = " "), "\n",
+    "  chromatograms     ", x$chromatograms_number, "\n",
+    "  has ion mobility  ", x$has_ion_mobility, "\n",
+    "  polarity          ", paste(x$polarity, collapse = "; "), "\n",
+    "  features          ", nrow(x$features), "\n",
+    sep = ""
+  )
+  cat("\n")
+}
+
+#' @describeIn MassSpecAnalysis
 #' Converts a MassSpecAnalysis S3 class object to a JSON string.
 #'
 #' @export

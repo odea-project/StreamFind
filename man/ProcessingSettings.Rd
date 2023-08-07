@@ -3,6 +3,7 @@
 \name{ProcessingSettings}
 \alias{ProcessingSettings}
 \alias{validate.ProcessingSettings}
+\alias{print.ProcessingSettings}
 \alias{asJSON.ProcessingSettings}
 \alias{export.ProcessingSettings}
 \alias{as.ProcessingSettings}
@@ -20,6 +21,8 @@ ProcessingSettings(
 )
 
 \method{validate}{ProcessingSettings}(x = NULL)
+
+\method{print}{ProcessingSettings}(x)
 
 \method{asJSON}{ProcessingSettings}(x)
 
@@ -75,6 +78,8 @@ parameters.
 \itemize{
 \item \code{validate(ProcessingSettings)}: Validates a ProcessingSettings S3 class object, returning a logical value of
 length one.
+
+\item \code{print(ProcessingSettings)}: Prints the ProcessingSettings S3 class object in the console.
 
 \item \code{asJSON(ProcessingSettings)}: Converts a ProcessingSettings S3 class object to a JSON string.
 

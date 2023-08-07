@@ -741,7 +741,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
 
               bool is_iso_candidate = false;
               double mass_error = 10; // is updated on the first hit
-              double candidate_iso_md;
+              double candidate_iso_md = 0;
               Rcpp::CharacterVector el_temp;
               Rcpp::NumericVector ab_temp;
 
@@ -776,8 +776,8 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
 
                     double e_ab = 0;
                     double mono_ab = 0;
-                    int min_el_num;
-                    int max_el_num;
+                    int min_el_num = 1;
+                    int max_el_num = 10;
 
                     for (size_t a = 0; a <= iso_elements.size(); ++a) {
 
