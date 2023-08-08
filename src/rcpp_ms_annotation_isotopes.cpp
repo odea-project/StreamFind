@@ -8,11 +8,14 @@
 #include <Rcpp.h>
 
 // [[Rcpp::export]]
-Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
-                                       int maxIsotopes = 5,
-                                       int maxCharge = 1,
-                                       double rtWindowAlignment = 0.2,
-                                       int maxGaps = 1) {
+Rcpp::List rcpp_ms_annotation_isotopes(
+    Rcpp::DataFrame features,
+    int maxIsotopes = 5,
+    Rcpp::CharacterVector elements = Rcpp::CharacterVector::create("C","H", "N", "O", "S", "Cl", "Br"),
+    std::string mode = "small molecules",
+    int maxCharge = 1,
+    double rtWindowAlignment = 0.2,
+    int maxGaps = 1) {
 
   Rcpp::List list_out;
 
@@ -96,10 +99,35 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
 
 
 
-  // Make mass diff combinations //////////////////////////////////////////////////////////////////
+  // possible elements ////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////
 
-  std::vector<std::string> iso_elements = {
+  double maxCarbons = 80;
+  double maxHetero = 15;
+  double maxHalogens = 10;
+
+  if (mode == "small molecules") {
+    maxCarbons = 80;
+    maxHetero = 15;
+    maxHalogens = 10;
+  }
+
+  std::vector<std::string> select_elements = {
+    "C",
+    "H",
+    "N",
+    "O",
+    "O", //
+    "S",
+    "S",
+    // "S36",
+    "Cl",
+    "Br"
+    // "Si29",
+    // "Si30"
+  };
+
+  std::vector<std::string> all_iso_elements = {
     "C13",
     "H2",
     "N15",
@@ -115,7 +143,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
   };
 
   // iso mass difference from monoisotopic ion
-  std::vector<double> iso_md = {
+  std::vector<double> all_iso_md = {
     1.0033548378, // C13
     1.0062767, // H2
     0.9970349, // N15
@@ -131,7 +159,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
   };
 
   // iso relative abundance from monoisotopic ion
-  std::vector<double> iso_ab = {
+  std::vector<double> all_iso_ab = {
     0.0107800, // C13
     0.00015574, // H2
     0.00366300, // N15
@@ -147,7 +175,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
   };
 
   // iso relative abundance from monoisotopic ion
-  std::vector<double> iso_mono = {
+  std::vector<double> all_iso_mono = {
     0.988922, // C
     0.99984426, // H
     0.996337, // N
@@ -163,7 +191,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
   };
 
   // iso minimum number of elements
-  std::vector<double> iso_min_el = {
+  std::vector<double> all_iso_min_el = {
     2, // C
     2, // H
     1, // N
@@ -179,20 +207,69 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
   };
 
   // iso maximum number of elements
-  std::vector<double> iso_max_el = {
-    80, // C
-    80, // H
-    15, // N
-    15, // O
-    15, // O
-    10, // S
-    10, // S
-    // 0.00017000, // S
-    10, // Cl
-    10 // Br
-    // 5, // Si
-    // 5// Si
+  std::vector<double> all_iso_max_el = {
+    maxCarbons, // C
+    maxCarbons, // H
+    maxHetero, // N
+    maxHetero, // O
+    maxHetero, // O
+    maxHalogens, // S
+    maxHalogens, // S
+    // maxHalogens, // S
+    maxHalogens, // Cl
+    maxHalogens // Br
+    // maxHalogens, // Si
+    // maxHalogens// Si
   };
+
+
+
+
+
+
+
+  // Select elements based on input ///////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  int n = elements.size();
+  std::vector<std::string> elements_sv(n);
+
+  for (int e = 0; e < n; ++e) {
+    elements_sv[e] = Rcpp::as<std::string>(elements[e]);
+  }
+
+  std::vector<int> which_elements;
+  for (int e = 0; e < n; ++e) {
+    for (size_t s = 0; s < select_elements.size(); ++s) {
+      if (select_elements[s] ==  elements_sv[e]) {
+        which_elements.push_back(s);
+      }
+    }
+  }
+
+  std::vector<std::string> iso_elements;
+  std::vector<double> iso_md;
+  std::vector<double> iso_ab;
+  std::vector<double> iso_mono;
+  std::vector<double> iso_min_el;
+  std::vector<double> iso_max_el;
+
+  for (int idx : which_elements) {
+    iso_elements.push_back(all_iso_elements[idx]);
+    iso_md.push_back(all_iso_md[idx]);
+    iso_ab.push_back(all_iso_ab[idx]);
+    iso_mono.push_back(all_iso_mono[idx]);
+    iso_min_el.push_back(all_iso_min_el[idx]);
+    iso_max_el.push_back(all_iso_max_el[idx]);
+  }
+
+
+
+
+
+
+  // Make mass diff combinations //////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////
 
   int max_number_elements = 3;
 
@@ -412,7 +489,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
   // #### Orbitrap data from AFIN-TS High Resolution
 
   // highest feature
-  // for (int i = 630; i < 631; ++i) {
+  // for (int i = 3; i < 4; ++i) {
 
 
   for (int i = 0; i < number_of_features; ++i) {
@@ -1163,7 +1240,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features,
     Rcpp::Named("iso_mz_sd") = feat_iso_mz_sd,
     Rcpp::Named("iso_rel_int") = feat_iso_int,
     Rcpp::Named("iso_el") = feat_iso_el,
-    Rcpp::Named("n_carbons") = feat_estimated_carbons,
+    Rcpp::Named("iso_n_carbons") = feat_estimated_carbons,
     Rcpp::Named("iso_feat") = feat_iso_feat
   );
 

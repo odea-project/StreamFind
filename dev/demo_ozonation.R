@@ -74,6 +74,18 @@ ms$find_features()$group_features(gfs)$filter_features(fls)
 
 ms
 
+afs <- get_default_ProcessingSettings(
+  call = "annotate_features",
+  algorithm = "streamFind"
+)
+
+ms$annotate_features(afs)
+
+
+ms$get_components(groups = "m440.16_rt1098_g1398")
+
+
+
 
 # plot -------------------------------------------------------------------------
 

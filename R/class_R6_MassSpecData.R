@@ -1933,6 +1933,56 @@ MassSpecData <- R6::R6Class("MassSpecData",
       ms2_df
     },
 
+    #' @description
+    #' Gets feature components (i.e., isotope clusters and adducts) in the
+    #' analyses.
+    #'
+    #' @param components X.
+    #'
+    #' @return A data.table.
+    #'
+    get_components = function(analyses = NULL, groups = NULL, features = NULL,
+                              components = NULL, mass = NULL,
+                              mz = NULL, rt = NULL, ppm = 20, sec = 60,
+                              filtered = FALSE) {
+
+      fts <- self$get_features(
+        analyses, features, mass, mz, rt, ppm, sec, filtered
+      )
+
+      if (!("iso_gr" %in% colnames(fts))) {
+        warning("Components not found! Run annotate_features to cluster features into components.")
+        return(data.table())
+      }
+
+      if (!is.null(groups) & "group" %in% colnames(fts)) {
+        if (is.numeric(groups)) {
+          all_groups <- self$get_groups()
+          all_groups <- all_groups[[group]]
+          groups <- all_groups[groups]
+        }
+        fts <- fts[fts$group == groups, ]
+      }
+
+      if (!is.null(components)) {
+        if (is.numeric(components)) {
+          fts <- fts[fts$iso_gr == components, ]
+        }
+      }
+
+      if (nrow(fts) == 0) return(data.table())
+
+      which_components <- unique(fts$iso_gr)
+      which_components <- which_components[!(which_components == 0)]
+
+      if (length(which_components) == 0) return(data.table())
+
+      components <- self$get_features(filtered = TRUE)
+      components <- components[components$iso_gr %in% which_components, ]
+
+      components
+    },
+
     ## ___ add -----
 
     #' @description
@@ -4323,6 +4373,41 @@ MassSpecData <- R6::R6Class("MassSpecData",
       plot_groups_overview_aux(fts, eic, heights, analyses)
     },
 
+    #' @description
+    #' Plots components (i.e., isotope clusters and adducts) in the analyses.
+    #'
+    #' @return A plot.
+    #'
+    plot_components = function(analyses = NULL, features = NULL, mass = NULL,
+                               mz = NULL, rt = NULL, ppm = 20, sec = 60,
+                               isolationWindow = 1.3, mzClust = 0.005,
+                               minIntensity = 0, verbose = FALSE,
+                               filtered = FALSE, loadedMS2 = TRUE,
+                               runParallel = FALSE, legendNames = NULL,
+                               title = NULL, colorBy = "targets",
+                               interactive = TRUE) {
+
+      # ms2 <- self$get_features_ms2(
+      #   analyses, features, mass, mz, rt, ppm, sec,
+      #   isolationWindow, mzClust, minIntensity,
+      #   verbose, filtered, loadedMS2, runParallel
+      # )
+      #
+      # if (nrow(ms2) == 0) {
+      #   message("\U2717 MS2 traces not found for the targets!")
+      #   return(NULL)
+      # }
+      # if ("replicates" %in% colorBy) {
+      #   ms2$replicate <- self$get_replicate_names()[ms2$analysis]
+      # }
+      #
+      # if (!interactive) {
+      #   plot_ms2_static(ms2, legendNames, colorBy, title)
+      # } else {
+      #   plot_ms2_interactive(ms2, legendNames, colorBy, title)
+      # }
+    },
+
     ## ___ processing -----
 
     ### ___ basic -----
@@ -4344,7 +4429,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return Invisible.
     #'
     find_features = function(settings = NULL) {
-
       add_settings <- TRUE
       if (is.null(settings)) add_settings <- FALSE
 
@@ -4354,9 +4438,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       processed <- .s3_ms_find_features(settings, self)
 
       if (processed) {
-
         if (add_settings) self$add_settings(settings)
-
         private$.register("processed", "find_features", settings$algorithm)
       }
 
@@ -4379,7 +4461,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' are given as a list and should match with algorithm requirements.
     #'
     group_features = function(settings = NULL) {
-
       add_settings <- TRUE
       if (is.null(settings)) add_settings <- FALSE
 
@@ -4389,9 +4470,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       processed <- .s3_ms_group_features(settings, self)
 
       if (processed) {
-
         if (add_settings) self$add_settings(settings)
-
         private$.register("processed", "group_features", settings$algorithm)
       }
 
@@ -4409,7 +4488,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' methods `get_features()` and `get_groups()`, respectively.
     #'
     filter_features = function(settings = NULL) {
-
       processed <- FALSE
       add_settings <- TRUE
       if (is.null(settings)) add_settings <- FALSE
@@ -4459,7 +4537,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         if (n_features_filtered < 0) n_features_filtered <- 0
 
         message(paste0("\U2713 ", n_features_filtered, " features filtered!"))
-
         processed <- TRUE
 
       } else {
@@ -4468,6 +4545,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (processed) {
         if (add_settings) self$add_settings(settings)
+        private$.register("processed", "filter_features", settings$algorithm)
       }
 
       invisible(self)
@@ -4481,7 +4559,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' analysis.
     #'
     annotate_features = function(settings = NULL) {
-
       add_settings <- TRUE
       if (is.null(settings)) add_settings <- FALSE
 
@@ -4491,10 +4568,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       processed <- .s3_ms_annotate_features(settings, self)
 
       if (processed) {
-
         if (add_settings) self$add_settings(settings)
-
-        # message(paste0("\U2713 ", n_features_filtered, " features annotated!"))
+        message(paste0("\U2713 ", "Features annotated!"))
+        private$.register("processed", "annotate_features", settings$algorithm)
       }
 
       invisible(self)

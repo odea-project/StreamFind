@@ -61,6 +61,8 @@ ffs <- ProcessingSettings(
 # r6 test ----------------------------------------------------------------------
 # patRoon::clearCache("parsed_ms_analyses")
 # patRoon::clearCache("parsed_ms_spectra")
+patRoon::clearCache("annotate_features")
+
 
 ms <- MassSpecData$new(
   files = all_files[2],
@@ -70,7 +72,34 @@ ms <- MassSpecData$new(
 
 ms$find_features()
 
-ms$get_analyses()
+
+afs <- get_default_ProcessingSettings(
+  call = "annotate_features",
+  algorithm = "streamFind"
+)
+
+ms$annotate_features(afs)
+
+suspects <- ms$suspect_screening(db[, db_cols, with = FALSE], ppm = 8, sec = 10)
+
+ms$get_components(features = "mz239.063_rt1158_f157")
+
+suspects_res <- suspects$name
+names(suspects_res) <- suspects$feature
+suspects_for <- suspects$formula
+names(suspects_for) <- suspects$feature
+features <- ms$get_features(filtered = TRUE)
+features$name <- suspects_res[features$iso_feat]
+features$formula <- suspects_for[features$iso_feat]
+View(features)
+
+
+
+
+
+
+
+
 
 # code dev ---------------------------------------------------------------------
 

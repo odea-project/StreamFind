@@ -474,16 +474,20 @@ settings_filter_features_streamFind <- function() {
 settings_annotate_features_streamFind <- function(maxIsotopes = 5,
                                                   maxCharge = 1,
                                                   rtWindowAlignment = 0.2,
-                                                  maxGaps = 1) {
+                                                  maxGaps = 1,
+                                                  runParallel = FALSE) {
 
   settings <- list(
     call = "annotate_features",
     algorithm = "streamFind",
     parameters = list(
       "maxIsotopes" = maxIsotopes,
+      "elements" = c("C","H", "N", "O", "S", "Cl", "Br"),
+      "mode" = "small molecules",
       "maxCharge" = maxCharge,
       "rtWindowAlignment" = rtWindowAlignment,
-      "maxGaps" = maxGaps
+      "maxGaps" = maxGaps,
+      "runParallel" = runParallel
     ),
     software = "streamFind",
     developer = "Ricardo Cunha",
