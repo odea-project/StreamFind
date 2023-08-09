@@ -16,7 +16,7 @@ ms <- MassSpecData$new(files = files, headers = headers)
 # print method
 ms
 
-ms$plot_bpc(interactive = TRUE)
+# ms$plot_bpc(interactive = TRUE)
 
 # change -----------------------------------------------------------------------
 
@@ -38,6 +38,12 @@ blks <- c(
   rep("blank_pos", 3)
 )
 
+ms$add_replicate_names(rpls)$add_blank_names(blks)
+
+ms
+
+# processing settings ----------------------------------------------------------
+
 # saves an example of settings on disk
 save_default_ProcessingSettings(
   call = "find_features",
@@ -46,7 +52,7 @@ save_default_ProcessingSettings(
   name = "ffs"
 )
 
-ms$add_replicate_names(rpls)$add_blank_names(blks)$import_settings("ffs.json")
+ms$import_settings("ffs.json")
 
 ms
 
@@ -54,6 +60,13 @@ ms
 # process ----------------------------------------------------------------------
 
 # gets an example of settings as object
+afs <- get_default_ProcessingSettings(
+  call = "annotate_features",
+  algorithm = "streamFind"
+)
+
+afs
+
 gfs <- get_default_ProcessingSettings(
   call = "group_features",
   algorithm = "peakdensity"
@@ -70,21 +83,9 @@ fls
 
 fls$parameters$minIntensity <- 3000
 
-ms$find_features()$group_features(gfs)$filter_features(fls)
+ms$find_features()$annotate_features(afs)$group_features(gfs)$filter_features(fls)
 
 ms
-
-afs <- get_default_ProcessingSettings(
-  call = "annotate_features",
-  algorithm = "streamFind"
-)
-
-ms$annotate_features(afs)
-
-
-ms$get_components(groups = "m440.16_rt1098_g1398")
-
-
 
 
 # plot -------------------------------------------------------------------------
@@ -107,12 +108,14 @@ ms$plot_groups_overview(
   legendNames = TRUE
 )
 
-# ms$plot_eic(
-#   analyses = ms$get_analysis_names()[grepl("neg", ms$get_analysis_names())],
-#   mz = db$mass[db$name %in% "Valsartan"] - 1.0073,
-#   ppm = 20,
-#   colorBy = "analyses"
-# )
+ms$plot_eic(
+  analyses = ms$get_analysis_names()[grepl("neg", ms$get_analysis_names())],
+  mz = db$mass[db$name %in% "Valsartan"] - 1.0073,
+  ppm = 20,
+  colorBy = "analyses"
+)
+
+ms$map_components(mass = db[24, ], ppm = 8, sec = 10, colorBy = "replicates")
 
 # history ----------------------------------------------------------------------
 

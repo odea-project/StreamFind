@@ -1,50 +1,26 @@
 # resources --------------------------------------------------------------------
 
 all_files <- streamFindData::msFilePaths()
+tof_file <- all_files[2]
+
 db <- streamFindData::msSpikedChemicals()
-files_mrm <- all_files[grepl("mrm", all_files)]
-files <- all_files[1:3]
-files1 <- all_files[grepl("influent|blank", all_files)]
-files2 <- all_files[grepl("o3sw", all_files)]
 db_cols <- c("name", "formula", "mass", "rt")
 
-carbamazepin_d10 <- db[db$name %in% "Carbamazepin-d10", db_cols, with = FALSE]
-diuron_d6 <- db[db$name %in% "Diuron-d6", db_cols, with = FALSE]
-carb_pos <- carbamazepin_d10$mass + 1.007276
-carb <- carbamazepin_d10$mass
-carb_rt <- carbamazepin_d10$rt
-diu_pos <- diuron_d6$mass + 1.007276
-diu <- diuron_d6$mass
-diu_rt <- diuron_d6$rt
+orb_path <- "C:/Users/Ricardo Cunha/Documents/Work/Dev_20230530_Orbitrap_AFINTS"
+orb_all_files <- list.files(orb_path, pattern = ".mzML", full.names = TRUE)
+orb_file <- orb_all_files[5]
 
-sec_dev <- 30
-ppm_dev <- 10
+db2 <- paste0(orb_path, "/Composition_Mix-Fusion.csv")
+db2 <- data.table::fread(db2)
+cols <- c("name", "formula", "mz")
+db2 <- db2[, cols, with = FALSE]
 
-targets <- make_ms_targets(
-  mz = data.frame(
-    id = c("tg1", "tg2"),
-    mz = c(carb_pos, diu_pos),
-    rt = c(carb_rt, diu_rt)
-  ),
-  ppm = ppm_dev,
-  sec = sec_dev
-)
 
-neutral_targets <- make_ms_targets(
-  mz = data.frame(
-    id = c("tg1", "tg2"),
-    mz = c(carb, diu),
-    rt = c(carb_rt, diu_rt)
-  ),
-  ppm = ppm_dev,
-  sec = sec_dev
-)
 
-iso_info <- data.table::fread(paste0(getwd(), "/dev/isotopes.csv"))
 
 # settings ---------------------------------------------------------------------
 
-ffs <- ProcessingSettings(
+tof_ffs <- ProcessingSettings(
   call = "find_features",
   algorithm = "xcms3",
   parameters = xcms::CentWaveParam(
@@ -58,31 +34,82 @@ ffs <- ProcessingSettings(
   )
 )
 
-# r6 test ----------------------------------------------------------------------
-# patRoon::clearCache("parsed_ms_analyses")
-# patRoon::clearCache("parsed_ms_spectra")
-patRoon::clearCache("annotate_features")
-
-
-ms <- MassSpecData$new(
-  files = all_files[2],
-  headers = list(name = "Example 1"),
-  settings = ffs
+orb_ffs <- ProcessingSettings(
+  call = "find_features",
+  algorithm = "xcms3",
+  parameters = xcms::CentWaveParam(
+    ppm = 3,
+    peakwidth = c(5, 80),
+    snthresh = 10,
+    prefilter = c(6, 150000),
+    mzCenterFun = "wMean",
+    integrate = 1,
+    mzdiff = 0.00005,
+    fitgauss = TRUE,
+    noise = 50000,
+    verboseColumns = TRUE,
+    firstBaselineCheck = FALSE,
+    extendLengthMSW = FALSE
+  )
 )
 
-ms$find_features()
+# MassSpecData objects ---------------------------------------------------------
 
+tof_ms <- MassSpecData$new(files = tof_file,
+  headers = list(name = "tof"),
+  settings = tof_ffs
+)
+
+orb_ms <- MassSpecData$new(files = orb_file,
+  headers = list(name = "orb"),
+  settings = orb_ffs
+)
+
+tof_ms$find_features()
+
+orb_ms$find_features()
+
+# Annotation -------------------------------------------------------------------
 
 afs <- get_default_ProcessingSettings(
   call = "annotate_features",
   algorithm = "streamFind"
 )
 
-ms$annotate_features(afs)
+tof_ms$annotate_features(afs)
 
-suspects <- ms$suspect_screening(db[, db_cols, with = FALSE], ppm = 8, sec = 10)
+orb_ms$annotate_features(afs)
 
-ms$get_components(features = "mz239.063_rt1158_f157")
+
+
+
+tof_suspects <- tof_ms$suspect_screening(db[, db_cols, with = FALSE], ppm = 8, sec = 10)
+
+orb_suspects <- orb_ms$suspect_screening(db2, ppm = 3)
+
+
+tof_features <- tof_ms$get_features()
+orb_features <- orb_ms$get_features()
+
+plot(tof_features$mz[tof_features$iso_step == 0], tof_features$iso_mz_sd[tof_features$iso_step == 0])
+plot(orb_features$mz[orb_features$iso_step == 0], orb_features$iso_mz_sd[orb_features$iso_step == 0])
+
+
+tof_overlap_suspects <- tof_suspects$name[tof_suspects$formula %in% orb_suspects$formula]
+orb_overlap_suspects <- orb_suspects$name[orb_suspects$formula %in% tof_suspects$formula]
+
+
+orb_ms$map_components(features = "mz273.127_rt365_f1505")
+
+
+
+
+ms$get_components(mass = db[, db_cols, with = FALSE])
+
+ms$map_components(mass = db[, db_cols, with = FALSE], legendNames = TRUE, interactive = T)
+
+
+
 
 suspects_res <- suspects$name
 names(suspects_res) <- suspects$feature
@@ -96,7 +123,8 @@ View(features)
 
 
 
-
+fts <- ms$get_features(analyses = 10)
+plot(fts$mz[fts$iso_step == 0], fts$iso_mz_sd[fts$iso_step == 0])
 
 
 

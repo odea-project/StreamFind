@@ -1980,6 +1980,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
       components <- self$get_features(filtered = TRUE)
       components <- components[components$iso_gr %in% which_components, ]
 
+      if ("name" %in% colnames(fts)) {
+        tar_names <- fts$name
+        names(tar_names) <- as.character(fts$iso_gr)
+        components$name <- tar_names[as.character(components$iso_gr)]
+      }
+
       components
     },
 
@@ -4374,38 +4380,40 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Plots components (i.e., isotope clusters and adducts) in the analyses.
+    #' Maps components (i.e., isotope clusters and adducts) in the analyses.
     #'
     #' @return A plot.
     #'
-    plot_components = function(analyses = NULL, features = NULL, mass = NULL,
-                               mz = NULL, rt = NULL, ppm = 20, sec = 60,
-                               isolationWindow = 1.3, mzClust = 0.005,
-                               minIntensity = 0, verbose = FALSE,
-                               filtered = FALSE, loadedMS2 = TRUE,
-                               runParallel = FALSE, legendNames = NULL,
-                               title = NULL, colorBy = "targets",
-                               interactive = TRUE) {
+    map_components = function(analyses = NULL, groups = NULL, features = NULL,
+                              components = NULL, mass = NULL,
+                              mz = NULL, rt = NULL, ppm = 20, sec = 60,
+                              filtered = FALSE, xlim = 30, ylim = 0.05,
+                              showLegend = TRUE, legendNames = NULL, title = NULL,
+                              colorBy = "targets", interactive = TRUE) {
 
-      # ms2 <- self$get_features_ms2(
-      #   analyses, features, mass, mz, rt, ppm, sec,
-      #   isolationWindow, mzClust, minIntensity,
-      #   verbose, filtered, loadedMS2, runParallel
-      # )
-      #
-      # if (nrow(ms2) == 0) {
-      #   message("\U2717 MS2 traces not found for the targets!")
-      #   return(NULL)
-      # }
-      # if ("replicates" %in% colorBy) {
-      #   ms2$replicate <- self$get_replicate_names()[ms2$analysis]
-      # }
-      #
-      # if (!interactive) {
-      #   plot_ms2_static(ms2, legendNames, colorBy, title)
-      # } else {
-      #   plot_ms2_interactive(ms2, legendNames, colorBy, title)
-      # }
+      components <- self$get_components(analyses, groups, features, components,
+                                        mass, mz, rt, ppm, sec, filtered)
+
+      if (nrow(components) == 0) {
+        message("\U2717 Feature components not found for the targets!")
+        return(NULL)
+      }
+
+      if ("replicates" %in% colorBy) {
+        components$replicate <- self$get_replicate_names()[components$analysis]
+      }
+
+      if (!interactive) {
+        map_components_static(
+          components, colorBy, legendNames,
+          xlim, ylim, title, showLegend
+        )
+      } else {
+        map_components_interactive(
+          components, colorBy, legendNames,
+          xlim, ylim, title
+        )
+      }
     },
 
     ## ___ processing -----

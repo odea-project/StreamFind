@@ -91,13 +91,17 @@
         temp_i[["rt"]] <- NULL
         temp_i[["intensity"]] <- NULL
 
+        feature = NULL
+
         temp_f <- copy(features[[x]])
 
         temp <- temp_f[temp_i, on = .(feature = feature)]
 
         temp_max_gr <- max(temp$iso_gr)
 
-        temp$iso_gr[temp$iso_gr > 0] <- temp$iso_gr[temp$iso_gr > 0] + iso_group_count
+        # temp$iso_gr[temp$iso_gr > 0] <- temp$iso_gr[temp$iso_gr > 0] + iso_group_count
+
+        temp$iso_gr <- temp$iso_gr + iso_group_count
 
         iso_group_count <<- iso_group_count + temp_max_gr
 

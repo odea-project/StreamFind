@@ -120,58 +120,58 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     "O", //
     "S",
     "S",
-    // "S36",
+    // "36S",
     "Cl",
     "Br"
-    // "Si29",
-    // "Si30"
+    // "29Si",
+    // "30Si"
   };
 
   std::vector<std::string> all_iso_elements = {
-    "C13",
-    "H2",
-    "N15",
-    "O17",
-    "O18", //
-    "S33",
-    "S34",
-    // "S36",
-    "Cl37",
-    "Br81"
-    // "Si29",
-    // "Si30"
+    "13C",
+    "2H",
+    "15N",
+    "17O",
+    "18O", //
+    "33S",
+    "34S",
+    // "36S",
+    "37Cl",
+    "81Br"
+    // "29Si",
+    // "30Si"
   };
 
   // iso mass difference from monoisotopic ion
   std::vector<double> all_iso_md = {
-    1.0033548378, // C13
-    1.0062767, // H2
-    0.9970349, // N15
-    1.0042169, // O17
-    2.004246, //O18
-    0.9993878, // S33
-    1.995796, // S34
-    // 3.99501, // S36
-    1.9970499, // Cl37
-    1.9979534 // Br81
-    // 0.99956819, // Si29
-    // 1.99684369 // Si30
+    1.0033548378, // 13C
+    1.0062767, // 2H
+    0.9970349, // 15N
+    1.0042169, // 17O
+    2.004246, //18O
+    0.9993878, // 33S
+    1.995796, // 34S
+    // 3.99501, // 36S
+    1.9970499, // 37Cl
+    1.9979534 // 81Br
+    // 0.99956819, // 29Si
+    // 1.99684369 // 30Si
   };
 
   // iso relative abundance from monoisotopic ion
   std::vector<double> all_iso_ab = {
-    0.0107800, // C13
-    0.00015574, // H2
-    0.00366300, // N15
-    0.00037200, // O17
-    0.00200040, // O18
-    0.00750000, // S33
-    0.04215000, // S34
-    // 0.00017000, // S36
-    0.24229000, // Cl37
-    0.49314000 // Br81
-    // 0.0468316, // Si29
-    // 0.0308716 // Si30
+    0.0107800, // 13C
+    0.00015574, // 2H
+    0.00366300, // 15N
+    0.00037200, // 17O
+    0.00200040, // 18O
+    0.00750000, // 33S
+    0.04215000, // 34S
+    // 0.00017000, // 36S
+    0.24229000, // 37Cl
+    0.49314000 // 81Br
+    // 0.0468316, // 29Si
+    // 0.0308716 // 30Si
   };
 
   // iso relative abundance from monoisotopic ion
@@ -290,30 +290,30 @@ Rcpp::List rcpp_ms_annotation_isotopes(
 
     for (const std::vector<std::string>& prev_combination : combinations_vec) {
 
-      // excludes H2 and O17 from the M+2 on due to the low contribution
-      if (prev_combination[0] == "H2" || prev_combination[0] == "O17") {
+      // excludes 2H and 17O from the M+2 on due to the low contribution
+      if (prev_combination[0] == "2H" || prev_combination[0] == "17O") {
         continue;
       }
 
-      // excludes N15 and S33 from the M+3 on due to the low contribution
-      if (n > 1 &&  (prev_combination[0] == "N15" || prev_combination[0] == "S33")) {
+      // excludes 15N and 33S from the M+3 on due to the low contribution
+      if (n > 1 &&  (prev_combination[0] == "15N" || prev_combination[0] == "33S")) {
         continue;
       }
 
-      // excludes N15 and S33 from the M+3 on due to the low contribution
+      // excludes 15N and 33S from the M+3 on due to the low contribution
       if (prev_combination.size() >= 2) {
-        if (prev_combination[1] == "N15" || prev_combination[1] == "S33") {
+        if (prev_combination[1] == "15N" || prev_combination[1] == "33S") {
           continue;
         }
       }
 
       for (const std::string& el : iso_elements) {
 
-        // excludes H2 and O17 from the M+2 on due to the low contribution
-        if (el == "H2" || el == "O17") continue;
+        // excludes 2H and 17O from the M+2 on due to the low contribution
+        if (el == "2H" || el == "17O") continue;
 
-        // excludes N15 and S33 from the M+3 on due to the low contribution
-        if (n > 1 &&  (el == "N15" || el == "S33")) continue;
+        // excludes 15N and 33S from the M+3 on due to the low contribution
+        if (n > 1 &&  (el == "15N" || el == "33S")) continue;
 
         std::vector<std::string> combination = prev_combination;
         combination.push_back(el);
@@ -409,7 +409,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(
   // Output data.frame preparation ///////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////
 
-  int iso_gr = 0;
+  int iso_gr = 1;
   std::vector<int> feat_iso_gr(number_of_features);
   std::vector<int> feat_iso_z(number_of_features);
   std::vector<std::string> feat_iso_cat(number_of_features);
@@ -442,10 +442,10 @@ Rcpp::List rcpp_ms_annotation_isotopes(
   // possibly highly affected by Nitegen or Oxygen
   //  for (int i = 34; i < 35; ++i) {
 
-  // mz273.167_rt945_f35, not assigned with c13
+  // mz273.167_rt945_f35, not assigned with 13C
   // for (int i = 159; i < 160; ++i) {
 
-  // mz276.079_rt1164_f230, chain without C13 but iso 2
+  // mz276.079_rt1164_f230, chain without 13C but iso 2
   // for (int i = 167; i < 168; ++i) {
 
   // mz213.147_rt1112_f177, single feature with chain length 0
@@ -801,13 +801,13 @@ Rcpp::List rcpp_ms_annotation_isotopes(
                   Rcpp::Rcout << "  - [M+H]+: " << chain_id[f] << std::endl;
                   Rcpp::Rcout << "  - int ratio: " << all_intensity[chain_idx[f]]/intensity << std::endl;
 
-                  // TODO this will also capture H2 loss and mark it as M+
+                  // TODO this will also capture 2H loss and mark it as M+
                   // the mass error might give an indication to check
 
-                  feat_iso_cat[i] = "M+";
+                  feat_iso_cat[i] = "M";
                   feat_iso_step[i] = -1;
                   feat_iso_diff[i] = candidate_diff;
-                  feat_iso_int[i] = all_intensity[chain_idx[f]]/intensity;
+                  feat_iso_int[i] = intensity/all_intensity[chain_idx[f]];
                   feat_iso_mz_sd[i] = mzr;
                   feat_iso_feat[i] = chain_id[f];
 
@@ -862,13 +862,13 @@ Rcpp::List rcpp_ms_annotation_isotopes(
                         e_ab = iso_ab[a];
                         mono_ab = iso_mono[a];
 
-                        if (number_el == 1 && e_el == "C13" && iso == 1) {
+                        if (number_el == 1 && e_el == "13C" && iso == 1) {
                           estimated_number_carbons[z] = all_intensity[chain_idx[f]]/(e_ab * intensity);
                           Rcpp::Rcout << std::endl;
                           Rcpp::Rcout << "Estimated N. carbons:" << estimated_number_carbons[z] << std::endl;
                         }
 
-                        if (estimated_number_carbons[z] > 0 && e_el == "C13") {
+                        if (estimated_number_carbons[z] > 0 && e_el == "13C") {
                           min_el_num = estimated_number_carbons[z] * 0.95;
                           max_el_num = estimated_number_carbons[z] * 1.05;
                         } else {
@@ -1147,7 +1147,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(
           }
 
           if (has_isotopes) {
-            iso_gr++;
+            // iso_gr++;
 
             for (int m = 0; m < final_chain.size(); m++) {
 
@@ -1155,9 +1155,9 @@ Rcpp::List rcpp_ms_annotation_isotopes(
                 feat_iso_gr[flat_idx[m]] = iso_gr;
                 feat_iso_step[flat_idx[m]] = flat_step[m];
 
-                std::string cat = "[M+";
+                std::string cat = "M+";
                 int rounded_step = static_cast<int>(std::round(flat_step[m]));
-                cat +=  std::to_string(rounded_step) + "]";
+                cat +=  std::to_string(rounded_step);
                 feat_iso_cat[flat_idx[m]] = cat;
 
                 feat_iso_diff[flat_idx[m]] = flat_diff[m];
@@ -1171,16 +1171,71 @@ Rcpp::List rcpp_ms_annotation_isotopes(
                 feat_estimated_carbons[flat_idx[m]] = final_estimated_number_carbons;
               }
             }
+          } else {
+            double mzmin = all_mzmin[i];
+            double mzmax = all_mzmax[i];
+            double mzr = mzmax - mzmin;
+
+            // make single iso group
+            feat_iso_gr[i] = iso_gr;
+            feat_iso_step[i] = 0;
+            feat_iso_cat[i] = "M+0";
+            feat_iso_diff[i] = 0;
+            feat_iso_md[i] = 0;
+            feat_iso_el[i] = "";
+            feat_iso_error[i] = 0;
+            feat_iso_mz_sd[i] = mzr;
+            feat_iso_int[i] = 1;
+            feat_iso_feat[i] = id;
+            feat_iso_z[i] = 1;
+            feat_estimated_carbons[i] = 0;
           }
+
         } else { // if chain size is 0
+          double mzmin = all_mzmin[i];
+          double mzmax = all_mzmax[i];
+          double mzr = mzmax - mzmin;
 
+          // make single iso group
+          feat_iso_gr[i] = iso_gr;
+          feat_iso_step[i] = 0;
+          feat_iso_cat[i] = "M+0";
+          feat_iso_diff[i] = 0;
+          feat_iso_md[i] = 0;
+          feat_iso_el[i] = "";
+          feat_iso_error[i] = 0;
+          feat_iso_mz_sd[i] = mzr;
+          feat_iso_int[i] = 1;
+          feat_iso_feat[i] = id;
+          feat_iso_z[i] = 1;
+          feat_estimated_carbons[i] = 0;
         }
-      } else { // if only 1 feature
 
+      } else { // if only 1 feature
+        double mzmin = all_mzmin[i];
+        double mzmax = all_mzmax[i];
+        double mzr = mzmax - mzmin;
+
+        // make single iso group
+        feat_iso_gr[i] = iso_gr;
+        feat_iso_step[i] = 0;
+        feat_iso_cat[i] = "M+0";
+        feat_iso_diff[i] = 0;
+        feat_iso_md[i] = 0;
+        feat_iso_el[i] = "";
+        feat_iso_error[i] = 0;
+        feat_iso_mz_sd[i] = mzr;
+        feat_iso_int[i] = 1;
+        feat_iso_feat[i] = id;
+        feat_iso_z[i] = 1;
+        feat_estimated_carbons[i] = 0;
       }
+
     } else { // if iso group is already
 
     }
+
+    iso_gr++;
   } // end main loop
 
   // adds iso group to M+ ions with iso step -1
@@ -1207,17 +1262,21 @@ Rcpp::List rcpp_ms_annotation_isotopes(
       }
 
       if (count <= 1) {
-        feat_iso_gr[i] = 0;
+        double mzmin = all_mzmin[i];
+        double mzmax = all_mzmax[i];
+        double mzr = mzmax - mzmin;
+
+        // make single iso group
         feat_iso_step[i] = 0;
-        feat_iso_cat[i] = "";
+        feat_iso_cat[i] = "M+0";
         feat_iso_diff[i] = 0;
         feat_iso_md[i] = 0;
         feat_iso_el[i] = "";
         feat_iso_error[i] = 0;
-        feat_iso_mz_sd[i] = 0;
-        feat_iso_int[i] = 0;
-        feat_iso_feat[i] = "";
-        feat_iso_z[i] = 0;
+        feat_iso_mz_sd[i] = mzr;
+        feat_iso_int[i] = 1;
+        feat_iso_feat[i] = all_ids[i];
+        feat_iso_z[i] = 1;
         feat_estimated_carbons[i] = 0;
       }
     }
@@ -1418,9 +1477,9 @@ Rcpp::List rcpp_ms_annotation_isotopes(
 //       if (col == 1) {
 //         double C_candidate_diff = abs(chain_mz[f] - C_candidate);
 
-//         // matching c13 but need to validate intensity
+//         // matching 13C but need to validate intensity
 //         if (C_candidate_diff <= 0.005) {
-//           Rcpp::Rcout << "C13 with " << C_candidate_diff << std::endl;
+//           Rcpp::Rcout << "13C with " << C_candidate_diff << std::endl;
 //           isomat(z, col) = chain_mz[f];
 //           found_hit = true;
 //         }
@@ -1458,9 +1517,9 @@ Rcpp::List rcpp_ms_annotation_isotopes(
 //
 //   std::string e_el = Rcpp::as<std::string>(candidate_el[0]);
 //
-//   if ((e_el == "C13") || (e_el == "H2")) {
+//   if ((e_el == "13C") || (e_el == "2H")) {
 //     max_el_num = 80;
-//   } else if (e_el == "Cl37" || (e_el == "Br81")) {
+//   } else if (e_el == "37Cl" || (e_el == "81Br")) {
 //     max_el_num = 5;
 //   }
 //
@@ -1497,9 +1556,9 @@ Rcpp::List rcpp_ms_annotation_isotopes(
 //
 //   for (int e = 0; e < candidate_ab.size(); ++e) {
 //
-//     if ((candidate_el[e] == "C13") || (candidate_el[e] == "H2")) {
+//     if ((candidate_el[e] == "13C") || (candidate_el[e] == "2H")) {
 //       max_el_num = 80;
-//     } else if (candidate_el[e] == "Cl37" || (candidate_el[e] == "Br81")) {
+//     } else if (candidate_el[e] == "37Cl" || (candidate_el[e] == "81Br")) {
 //       max_el_num = 5;
 //     }
 //
