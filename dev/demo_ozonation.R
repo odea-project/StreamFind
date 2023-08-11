@@ -98,8 +98,8 @@ db
 
 ms$get_groups(mass = db, ppm = 8, sec = 10, average = TRUE)
 
-# changing filtered to TRUE to show hidden data
-ms$get_groups(mass = db, ppm = 8, sec = 10, average = TRUE, filtered = TRUE)
+# change filtered to TRUE to show hidden data
+ms$get_features(analyses = 10, mass = db, ppm = 8, sec = 10, filtered = TRUE)
 
 ms$plot_groups_overview(
   mass = db,

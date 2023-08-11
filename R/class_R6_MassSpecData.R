@@ -54,7 +54,9 @@
 #' @template arg-ms-save-name
 #' @template arg-ms-save-path
 #' @template arg-ms-import-file
-#'
+#' @template arg-ms-xlim-ylim
+#' @template arg-ms-showLegend
+#' @template arg-ms-components
 #'
 #' @references
 #' \insertRef{patroon01}{streamFind}
@@ -291,6 +293,41 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
 
         private$.register("filtered", "minSnRatio", value)
+      }
+    },
+
+    #' @description
+    #' Filters features annotated as isotopes when groups are present the
+    #' isotopes are filtered if present in the all samples of a replicate.
+    #'
+    .filter_excludeIsotopes = function(value = TRUE) {
+
+      features <- self$get_features(filtered = TRUE)
+
+      if ("iso_step" %in% colnames(features) & isTRUE(value)) {
+        lapply(private$.analyses, function(x) {
+          sel <- x$features$iso_step > 0 & !x$features$filtered
+          x$features$filtered[sel] <- TRUE
+          x$features$filter[sel] <- "isotope"
+          x
+        })
+
+        if (self$has_groups()) {
+          groups <- self$get_groups(filtered = TRUE)
+          groups <- groups$group
+
+          index <- lapply(groups, function(x, features) {
+            which(features$group == x)
+          }, features = features)
+
+          groups_sel <- vapply(index, function(x) {
+            all(features$iso_step[x] > 0)
+          }, FALSE)
+
+          private$.tag_filtered(groups_sel, "isotope")
+        }
+
+        private$.register("filtered", "excludeIsotopes", TRUE)
       }
     },
 
@@ -550,16 +587,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return A data.frame with columns type, analysis, replicate, blank
     #' polarity and file.
     #'
-    get_overview = function(filtered = FALSE) {
+    get_overview = function() {
       if (length(private$.analyses) > 0) {
 
         if (!is.null(private$.groups)) {
-
-          if (filtered) {
-            wfilt <- rep(TRUE, nrow(private$.groups))
-          } else {
-            wfilt <- !private$.groups$filtered
-          }
+          wfilt <- !private$.groups$filtered
 
           groups <- apply(
             private$.groups[wfilt, self$get_analysis_names(), with = FALSE],
@@ -572,13 +604,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
           groups <- 0
         }
 
-        features <- vapply(private$.analyses, function(x, filtered) {
-          if (filtered) {
-            nrow(x$features)
-          } else {
-            nrow(x$features[!x$features$filtered])
-          }
-        }, filtered = filtered, 0)
+        features <- vapply(private$.analyses, function(x) {
+          nrow(x$features[!x$features$filtered])
+        }, 0)
+
+        filtered <- vapply(private$.analyses, function(x) {
+          nrow(x$features[x$features$filtered])
+        }, 0)
 
         df <- data.frame(
           "type" = vapply(private$.analyses, function(x) x$type, ""),
@@ -592,6 +624,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             x$spectra_number
           }, 0),
           "features" = features,
+          "filtered" = filtered,
           "groups" = groups,
           "file" = vapply(private$.analyses, function(x) x$file, "")
         )
@@ -1937,8 +1970,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' Gets feature components (i.e., isotope clusters and adducts) in the
     #' analyses.
     #'
-    #' @param components X.
-    #'
     #' @return A data.table.
     #'
     get_components = function(analyses = NULL, groups = NULL, features = NULL,
@@ -1987,6 +2018,143 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       components
+    },
+
+    #' @description Gets suspects from features according to a defined database
+    #' and mass (`ppm`) and time (`sec`) deviations.
+    #'
+    #' @return A data.frame with the suspects and matched features.
+    #'
+    #' @param database X.
+    #'
+    #' @details The `database` is a data.frame with at least the columns name
+    #' and mass, indicating the name and neutral monoisotopic
+    #' mass of the suspect targets. The `ppm` and `sec` which indicate the
+    #' mass (im ppm) and time (in seconds) deviations applied during the
+    #' screening.
+    #'
+    get_suspects = function(analyses = NULL, database = NULL, ppm = 4, sec = 10) {
+
+      if (!any(self$has_features(analyses))) {
+        warning("Features not found in the MassSpecData object!")
+        return(invisible(self))
+      }
+
+      valid_db <- FALSE
+
+      if (is.data.frame(database)) {
+        database <- as.data.table(database)
+        if (any(c("mass", "neutral_mass") %in% colnames(database)) |
+            "mz" %in% colnames(database)) {
+          if ("name" %in% colnames(database)) {
+            if ("neutral_mass" %in% colnames(database)) {
+              setnames(database, neutral_mass, mass)
+            }
+            valid_db = TRUE
+          }
+        }
+      }
+
+      if (!valid_db) {
+        warning("Argument database must be a data.frame with at least the columns name and mass or mz!")
+        return(invisible(self))
+      }
+
+      if (!"rt" %in% colnames(database)) {
+        database$rt <- NA_real_
+      } else {
+        database$rt[database$rt == ""] <- NA_real_
+      }
+
+      database$rt <- as.numeric(database$rt)
+
+      analyses <- lapply(self$get_analysis_names(analyses),
+        function(analysis, database, ppm, sec) {
+
+         cols_db <- colnames(database)
+
+         if (!("mz" %in% cols_db) && "mass" %in% cols_db) {
+           pol <- self$get_polarities(analysis)
+
+           if ("positive" %in% pol) {
+             database$mz <- db$mass + 1.007276
+           }
+
+           if ("negative" %in% pol) {
+             database$mz <- db$mass - 1.007276
+           }
+         }
+
+         database$mz <- as.numeric(database$mz)
+
+         it <- seq_len(nrow(database))
+
+         suspects <- lapply(it,
+          function(x, analysis, database, ppm, sec) {
+
+            x_mz = database$mz[x]
+            x_rt = database$rt[x]
+            if (is.na(x_rt)) {
+              x_rt = NULL
+            }
+
+            temp <- self$get_features(
+              analyses = analysis,
+              mz = x_mz,
+              rt = x_rt,
+              ppm = ppm,
+              sec = sec
+            )
+
+            if (nrow(temp) > 0) {
+              temp$name <- database$name[x]
+              cols_front <- c("name")
+
+              if ("formula" %in% colnames(database)) {
+                temp$formula <- database$formula[x]
+                cols_front <- c(cols_front, "formula")
+              }
+
+              temp$id_level <- NA_character_
+              temp$mz_error <- round(
+                (abs(temp$mz - x_mz) / temp$mz) * 1E6, digits = 1
+              )
+              temp$rt_error <- NA_real_
+              cols_front <- c(cols_front, "id_level", "mz_error", "rt_error")
+
+              setcolorder(temp, cols_front)
+
+              for (i in seq_len(nrow(temp))) {
+                temp$id_level[i] = "4"
+
+                if (!is.null(x_rt)) {
+                  temp$id_level[i] = "3b"
+                  temp$rt_error[i] = round(temp$rt[i] - x_rt, digits = 0)
+                }
+
+                # TODO add check for MS2 data in suspect screening
+                # when MS2 are loaded, if not loaded ask to load
+              }
+            } else {
+              temp <- data.table()
+            }
+            temp
+          },
+          analysis = analysis,
+          database = database,
+          ppm = ppm,
+          sec = sec
+          )
+          suspects <- rbindlist(suspects, fill = TRUE)
+        },
+        database = database,
+        ppm = ppm,
+        sec = sec
+      )
+      analyses <- rbindlist(analyses, fill = TRUE)
+
+
+      analyses
     },
 
     ## ___ add -----
@@ -4013,12 +4181,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Plots a map of the retention time vs \emph{m/z} of features from analyses.
     #'
-    #' @param xlim A length one or two numeric vector for setting the \emph{x}
-    #' limits (in seconds) of the plot.
-    #' @param ylim A length one or two numeric vector for setting the \emph{m/z}
-    #' limits of the plot.
-    #' @param showLegend Logical. Set to \code{TRUE} to show legend.
-    #'
     #' @return A plot.
     #'
     map_features = function(analyses = NULL, features = NULL, mass = NULL,
@@ -4362,7 +4524,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         leg <- legendNames
         names(leg) <- unique(fts$group)
         leg <- leg[fts$group]
-      } else if (isTRUE(legendNames)) {
+      } else if (isTRUE(legendNames) & "name" %in% colnames(fts)) {
         leg <- fts$name
       } else {
         leg <- fts$group
@@ -4535,7 +4697,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
             minSnRatio = (private$.filter_minSnRatio(parameters[[filters[i]]])),
             maxGroupSd = (private$.filter_maxGroupSd(parameters[[filters[i]]])),
             blank = (private$.filter_blank(parameters[[filters[i]]])),
-            minGroupAbundance = (private$.filter_minGroupAbundance(parameters[[filters[i]]]))
+            minGroupAbundance = (private$.filter_minGroupAbundance(parameters[[filters[i]]])),
+            excludeIsotopes = (private$.filter_excludeIsotopes(parameters[[filters[i]]]))
             # TODO add more filters, e.g., mass and time widths and limits
           )
         }
@@ -4585,12 +4748,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     ### ___ advanced -----
+
     #' @description Screens for suspect targets in features according to defined
     #' settings.
     #'
     #' @return A data.frame with the suspects and matched features.
-    #'
-    #' @param database X.
     #'
     #' @details The settings must contain a database as data.frame with at least
     #' the columns name and mass, indicating the name and neutral monoisotopic
@@ -4598,128 +4760,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' and `sec` which indicate the mass (im ppm) and time (in seconds)
     #' deviations applied during the screening.
     #'
-    suspect_screening = function(database = NULL, ppm = 4, sec = 10) {
-
-      if (!any(self$has_features())) {
-        warning("Features not found in the MassSpecData object!")
-        return(invisible(self))
-      }
-
-      valid_db <- FALSE
-
-      if (is.data.frame(database)) {
-        database <- as.data.table(database)
-        if (any(c("mass", "neutral_mass") %in% colnames(database)) |
-            "mz" %in% colnames(database)) {
-          if ("name" %in% colnames(database)) {
-            if ("neutral_mass" %in% colnames(database)) {
-              setnames(database, neutral_mass, mass)
-            }
-            valid_db = TRUE
-          }
-        }
-      }
-
-      if (!valid_db) {
-        warning("Argument database must be a data.frame with at least the columns name and mass or mz!")
-        return(invisible(self))
-      }
-
-      if (!"rt" %in% colnames(database)) {
-        database$rt <- NA_real_
-      } else {
-        database$rt[database$rt == ""] <- NA_real_
-      }
-
-      database$rt <- as.numeric(database$rt)
-
-      analyses <- lapply(self$get_analysis_names(),
-        function(analysis, database, ppm, sec) {
-
-          cols_db <- colnames(database)
-
-          if (!("mz" %in% cols_db) && "mass" %in% cols_db) {
-            pol <- self$get_polarities(analysis)
-
-            if ("positive" %in% pol) {
-              database$mz <- db$mass + 1.007276
-            }
-
-            if ("negative" %in% pol) {
-              database$mz <- db$mass - 1.007276
-            }
-          }
-
-          database$mz <- as.numeric(database$mz)
-
-          it <- seq_len(nrow(database))
-
-          suspects <- lapply(it,
-            function(x, analysis, database, ppm, sec) {
-
-              x_mz = database$mz[x]
-              x_rt = database$rt[x]
-              if (is.na(x_rt)) {
-                x_rt = NULL
-              }
-
-              temp <- self$get_features(
-                analyses = analysis,
-                mz = x_mz,
-                rt = x_rt,
-                ppm = ppm,
-                sec = sec
-              )
-
-              if (nrow(temp) > 0) {
-                temp$name <- database$name[x]
-                cols_front <- c("name")
-
-                if ("formula" %in% colnames(database)) {
-                  temp$formula <- database$formula[x]
-                  cols_front <- c(cols_front, "formula")
-                }
-
-                temp$id_level <- NA_character_
-                temp$mz_error <- round(
-                  (abs(temp$mz - x_mz) / temp$mz) * 1E6, digits = 1
-                )
-                temp$rt_error <- NA_real_
-                cols_front <- c(cols_front, "id_level", "mz_error", "rt_error")
-
-                setcolorder(temp, cols_front)
-
-                for (i in seq_len(nrow(temp))) {
-                  temp$id_level[i] = "4"
-
-                  if (!is.null(x_rt)) {
-                    temp$id_level[i] = "3b"
-                    temp$rt_error[i] = round(temp$rt[i] - x_rt, digits = 0)
-                  }
-
-                  # TODO add check for MS2 data in suspect screening
-                  # when MS2 are loaded, if not loaded ask to load
-                }
-              } else {
-                temp <- data.table()
-              }
-              temp
-            },
-            analysis = analysis,
-            database = database,
-            ppm = ppm,
-            sec = sec
-          )
-          suspects <- rbindlist(suspects, fill = TRUE)
-        },
-        database = database,
-        ppm = ppm,
-        sec = sec
-      )
-      analyses <- rbindlist(analyses, fill = TRUE)
+    suspect_screening = function(settings = NULL) {
 
 
-      analyses
     },
 
     ## ___ as -----

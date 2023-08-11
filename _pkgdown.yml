@@ -10,11 +10,33 @@ reference:
   - Headers
   - ProcessingSettings
   - MassSpecAnalysis
-- title: MS functions
+- title: Settings find_features
+- contents:
+  - settings_find_features_xcms3_centwave
+  - settings_find_features_openms
+  - settings_find_features_kpic2
+- title: Settings group_features
+- contents:
+  - settings_group_features_xcms3_peakdensity
+- title: Settings load_features spectra
+- contents:
+  - settings_load_features_ms1_streamFind
+  - settings_load_features_ms2_streamFind
+  - settings_load_groups_ms1_streamFind
+  - settings_load_groups_ms2_streamFind
+- title: Settings filter_features
+- contents:
+  - settings_filter_features_streamFind
+- title: Settings annotate_features
+- contents:
+  - settings_annotate_features_streamFind
+- title: Default settings
+- contents:
+  - get_default_ProcessingSettings
+  - save_default_ProcessingSettings
+- title: Other MS functions
 - contents:
   - convert_ms_files
   - trim_ms_files_spectra
   - import_MassSpecData
   - make_ms_targets
-  - get_default_ProcessingSettings
-  - save_default_ProcessingSettings

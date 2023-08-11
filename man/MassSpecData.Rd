@@ -76,6 +76,8 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \item \href{#method-MassSpecData-get_groups}{\code{MassSpecData$get_groups()}}
 \item \href{#method-MassSpecData-get_groups_ms1}{\code{MassSpecData$get_groups_ms1()}}
 \item \href{#method-MassSpecData-get_groups_ms2}{\code{MassSpecData$get_groups_ms2()}}
+\item \href{#method-MassSpecData-get_components}{\code{MassSpecData$get_components()}}
+\item \href{#method-MassSpecData-get_suspects}{\code{MassSpecData$get_suspects()}}
 \item \href{#method-MassSpecData-add_headers}{\code{MassSpecData$add_headers()}}
 \item \href{#method-MassSpecData-add_settings}{\code{MassSpecData$add_settings()}}
 \item \href{#method-MassSpecData-add_analyses}{\code{MassSpecData$add_analyses()}}
@@ -130,6 +132,7 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \item \href{#method-MassSpecData-plot_groups_ms1}{\code{MassSpecData$plot_groups_ms1()}}
 \item \href{#method-MassSpecData-plot_groups_ms2}{\code{MassSpecData$plot_groups_ms2()}}
 \item \href{#method-MassSpecData-plot_groups_overview}{\code{MassSpecData$plot_groups_overview()}}
+\item \href{#method-MassSpecData-map_components}{\code{MassSpecData$map_components()}}
 \item \href{#method-MassSpecData-find_features}{\code{MassSpecData$find_features()}}
 \item \href{#method-MassSpecData-group_features}{\code{MassSpecData$group_features()}}
 \item \href{#method-MassSpecData-filter_features}{\code{MassSpecData$filter_features()}}
@@ -176,6 +179,10 @@ Filters features and feature groups with minimum intensity.
 
 
 Filters features and feature groups with minimum signal-to-noise ratio.
+
+
+Filters features annotated as isotopes when groups are present the
+isotopes are filtered if present in the all samples of a replicate.
 
 
 Filters feature groups with max replicate group intensity deviation.
@@ -339,16 +346,9 @@ Gets the overview data.frame with all the analysis types,
 names, replicates, associated blank replicates, polarities and full
 file paths.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_overview(filtered = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_overview()}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
-}
-\if{html}{\out{</div>}}
-}
 \subsection{Returns}{
 A data.frame with columns type, analysis, replicate, blank
 polarity and file.
@@ -1781,6 +1781,117 @@ overhead.}
 }
 \subsection{Returns}{
 A data.table.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-get_components"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-get_components}{}}}
+\subsection{Method \code{get_components()}}{
+Gets feature components (i.e., isotope clusters and adducts) in the
+analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_components(
+  analyses = NULL,
+  groups = NULL,
+  features = NULL,
+  components = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  ppm = 20,
+  sec = 60,
+  filtered = FALSE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{groups}}{A numeric/character vector with the number/id
+of feature groups.}
+
+\item{\code{features}}{A character vector with the feature id/s or a data.frame or
+data.table with a column named \code{feature} with the feature id/s. A column
+named \code{analysis} can be given to specify from which analyses the features are
+returned.}
+
+\item{\code{components}}{A numeric vector with the number/s of feature component/s.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
+data.table or data.frame named \code{min} and \code{max} with minimum and maximum
+neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time values (in seconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt}. Then, the deviations given in
+the \code{ppm} and \code{sec} arguments are used to calculate the ranges.
+Also works with a data.table or data.frame with minimum and maximum values of
+neutral mass and retention time targets. In this case, the column names must
+be \code{min}, \code{max}, \code{rtmin} and \code{rtmax}. Note that when mass/time ranges
+are given, the \code{ppm} and \code{sec} arguments are not used.}
+
+\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns
+data.table or data.frame named \code{mzmin} and \code{mzmax} with minimum and maximum
+\emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da)
+and retention time values (in seconds) can be given as one data.table or
+data.frame with columns named \code{mz} and \code{rt}. Then, the deviations given in
+the \code{ppm} and \code{sec} arguments are used to calculate the ranges.
+Also works with a data.table or data.frame with minimum and maximum values of
+\emph{m/z} and retention time targets. In this case, the column names must
+be \code{mzmin}, \code{mzmax}, \code{rtmin} and \code{rtmax}. Note that when mass/time ranges
+are given, the \code{ppm} and \code{sec} arguments are not used.}
+
+\item{\code{rt}}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
+
+\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+
+\item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A data.table.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-get_suspects"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-get_suspects}{}}}
+\subsection{Method \code{get_suspects()}}{
+Gets suspects from features according to a defined database
+and mass (\code{ppm}) and time (\code{sec}) deviations.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_suspects(analyses = NULL, database = NULL, ppm = 4, sec = 10)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{database}}{X.}
+
+\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
+
+\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+The \code{database} is a data.frame with at least the columns name
+and mass, indicating the name and neutral monoisotopic
+mass of the suspect targets. The \code{ppm} and \code{sec} which indicate the
+mass (im ppm) and time (in seconds) deviations applied during the
+screening.
+}
+
+\subsection{Returns}{
+A data.frame with the suspects and matched features.
 }
 }
 \if{html}{\out{<hr>}}
@@ -3890,6 +4001,105 @@ A plot.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-map_components"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-map_components}{}}}
+\subsection{Method \code{map_components()}}{
+Maps components (i.e., isotope clusters and adducts) in the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$map_components(
+  analyses = NULL,
+  groups = NULL,
+  features = NULL,
+  components = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  ppm = 20,
+  sec = 60,
+  filtered = FALSE,
+  xlim = 30,
+  ylim = 0.05,
+  showLegend = TRUE,
+  legendNames = NULL,
+  title = NULL,
+  colorBy = "targets",
+  interactive = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{groups}}{A numeric/character vector with the number/id
+of feature groups.}
+
+\item{\code{features}}{A character vector with the feature id/s or a data.frame or
+data.table with a column named \code{feature} with the feature id/s. A column
+named \code{analysis} can be given to specify from which analyses the features are
+returned.}
+
+\item{\code{components}}{A numeric vector with the number/s of feature component/s.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
+data.table or data.frame named \code{min} and \code{max} with minimum and maximum
+neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time values (in seconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt}. Then, the deviations given in
+the \code{ppm} and \code{sec} arguments are used to calculate the ranges.
+Also works with a data.table or data.frame with minimum and maximum values of
+neutral mass and retention time targets. In this case, the column names must
+be \code{min}, \code{max}, \code{rtmin} and \code{rtmax}. Note that when mass/time ranges
+are given, the \code{ppm} and \code{sec} arguments are not used.}
+
+\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns
+data.table or data.frame named \code{mzmin} and \code{mzmax} with minimum and maximum
+\emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da)
+and retention time values (in seconds) can be given as one data.table or
+data.frame with columns named \code{mz} and \code{rt}. Then, the deviations given in
+the \code{ppm} and \code{sec} arguments are used to calculate the ranges.
+Also works with a data.table or data.frame with minimum and maximum values of
+\emph{m/z} and retention time targets. In this case, the column names must
+be \code{mzmin}, \code{mzmax}, \code{rtmin} and \code{rtmax}. Note that when mass/time ranges
+are given, the \code{ppm} and \code{sec} arguments are not used.}
+
+\item{\code{rt}}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
+
+\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+
+\item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
+
+\item{\code{xlim}}{A length one or two numeric vector for setting the \emph{x}
+limits (in seconds) of the plot.}
+
+\item{\code{ylim}}{A length one or two numeric vector for setting the \emph{m/z}
+limits of the plot.}
+
+\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
+
+\item{\code{legendNames}}{A character vector with the same length as the targets.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{colorBy}}{A string of length 1. One of \code{analyses}, \code{targets} (the
+default) or \code{replicates}.}
+
+\item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
+using \pkg{plotly}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A plot.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecData-find_features"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-find_features}{}}}
 \subsection{Method \code{find_features()}}{
@@ -4032,17 +4242,17 @@ Invisible.
 Screens for suspect targets in features according to defined
 settings.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$suspect_screening(database = NULL, ppm = 4, sec = 10)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$suspect_screening(settings = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{database}}{X.}
-
-\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
-
-\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the \code{MassSpecData} object.}
 }
 \if{html}{\out{</div>}}
 }

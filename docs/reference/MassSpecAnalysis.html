@@ -88,6 +88,9 @@
 <span><span class="fu">validate</span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for MassSpecAnalysis</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for MassSpecAnalysis</span></span>
 <span><span class="fu">asJSON</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">as.MassSpecAnalysis</span><span class="op">(</span><span class="va">value</span><span class="op">)</span></span>
@@ -188,10 +191,6 @@ data (content is highly vendor dependent).</p></dd>
 data (content is highly vendor dependent).</p></dd>
 
 
-<dt>software</dt>
-<dd><p>X.</p></dd>
-
-
 <dt>run</dt>
 <dd><p>data.table run information for each spectrum.</p></dd>
 
@@ -246,6 +245,7 @@ overhead.</p></dd>
     
 <ul><li><p><code>validate(MassSpecAnalysis)</code>: Validates a MassSpecAnalysis S3 class object, returning a logical value of
 length one.</p></li>
+<li><p><code>print(MassSpecAnalysis)</code>: Prints the MassSpecAnalysis S3 class object in the console.</p></li>
 <li><p><code>asJSON(MassSpecAnalysis)</code>: Converts a MassSpecAnalysis S3 class object to a JSON string.</p></li>
 </ul></div>
     <div class="section level2">

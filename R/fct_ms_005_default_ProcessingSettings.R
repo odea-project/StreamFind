@@ -127,7 +127,7 @@ save_default_ProcessingSettings <- function(call = NA_character_,
 #'
 #' @return X.
 #'
-#' @noRd
+#' @export
 #'
 settings_find_features_xcms3_centwave <- function() {
 
@@ -173,7 +173,7 @@ settings_find_features_xcms3_centwave <- function() {
 #'
 #' @return X.
 #'
-#' @noRd
+#' @export
 #'
 settings_find_features_openms <- function() {
 
@@ -222,7 +222,7 @@ settings_find_features_openms <- function() {
 #'
 #' @return X.
 #'
-#' @noRd
+#' @export
 #'
 settings_find_features_kpic2 <- function() {
 
@@ -262,7 +262,7 @@ settings_find_features_kpic2 <- function() {
 #'
 #' @return X.
 #'
-#' @noRd
+#' @export
 #'
 settings_group_features_xcms3_peakdensity <- function() {
 
@@ -302,7 +302,7 @@ settings_group_features_xcms3_peakdensity <- function() {
 #'
 #' @return X.
 #'
-#' @noRd
+#' @export
 #'
 settings_load_features_ms1_streamFind <- function() {
 
@@ -336,7 +336,7 @@ settings_load_features_ms1_streamFind <- function() {
 #'
 #' @return X.
 #'
-#' @noRd
+#' @export
 #'
 settings_load_features_ms2_streamFind <- function() {
 
@@ -369,7 +369,7 @@ settings_load_features_ms2_streamFind <- function() {
 #'
 #' @return X.
 #'
-#' @noRd
+#' @export
 #'
 settings_load_groups_ms1_streamFind <- function() {
 
@@ -401,7 +401,7 @@ settings_load_groups_ms1_streamFind <- function() {
 #'
 #' @return X.
 #'
-#' @noRd
+#' @export
 #'
 settings_load_groups_ms2_streamFind <- function() {
 
@@ -435,7 +435,7 @@ settings_load_groups_ms2_streamFind <- function() {
 #'
 #' @return X.
 #'
-#' @noRd
+#' @export
 #'
 settings_filter_features_streamFind <- function() {
 
@@ -447,7 +447,8 @@ settings_filter_features_streamFind <- function() {
       "minSnRatio" = 25,
       "maxGroupSd" = 30,
       "blank" = 5,
-      "minGroupAbundance" = 3
+      "minGroupAbundance" = 3,
+      "excludeIsotopes" = TRUE
     ),
     software = "streamFind",
     developer = "Ricardo Cunha",
@@ -469,7 +470,7 @@ settings_filter_features_streamFind <- function() {
 #'
 #' @return X.
 #'
-#' @noRd
+#' @export
 #'
 settings_annotate_features_streamFind <- function(maxIsotopes = 5,
                                                   maxCharge = 1,

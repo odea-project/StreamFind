@@ -1637,7 +1637,12 @@ plot_groups_overview_aux <- function(features, eic, heights, analyses) {
           1E6, digits = 1),
         "</br> filled: ", ft_nf$is_filled,
         "</br> filtered: ", ft_nf$filtered,
-        "</br> filter: ", ft_nf$filter
+        "</br> filter: ", ft_nf$filter,
+        ifelse("iso_gr" %in% colnames(ft_nf),
+          paste("</br> component: ", ft_nf$iso_gr,
+                "</br>  - size: ", ft_nf$iso_size,
+                "</br>  - isotope: ", ft_nf$iso_cat,
+                "</br>  - carbons: ", ft_nf$iso_n_carbons), "")
       )
     )
 
@@ -1795,6 +1800,8 @@ plot_groups_overview_aux <- function(features, eic, heights, analyses) {
 #'
 #' @return A dotted plot with features annotation.
 #'
+#' @noRd
+#'
 map_components_interactive <- function(components, colorBy = "targets",
                                       legendNames = NULL,
                                       xlim = 60, ylim = 5,
@@ -1880,7 +1887,7 @@ map_components_interactive <- function(components, colorBy = "targets",
       marker = list(size = 15 * ft$iso_rel_int, color = cl[ft$var]),
       name = ft$var,
       legendgroup = ft$var,
-      showlegend = plotlegend[ft$var],
+      showlegend = ifelse(ft$iso_cat == "M", FALSE, plotlegend[ft$var]),
       text =  paste0(ft$iso_cat, " ", ft$iso_el),
       textposition = "midle right",
       textfont = list(size = 12, color = cl[ft$var]),
@@ -1910,7 +1917,7 @@ map_components_interactive <- function(components, colorBy = "targets",
       )
     )
 
-    if (isTRUE(plotlegend[ft$var])) {
+    if (isTRUE(plotlegend[ft$var]) & ft$iso_cat != "M") {
       plotlegend[ft$var] <- FALSE
     }
   }
