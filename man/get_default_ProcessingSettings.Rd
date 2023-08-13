@@ -4,16 +4,10 @@
 \alias{get_default_ProcessingSettings}
 \title{get_default_ProcessingSettings}
 \usage{
-get_default_ProcessingSettings(
-  call = NA_character_,
-  software = NA_character_,
-  algorithm = NA_character_
-)
+get_default_ProcessingSettings(call = NA_character_, algorithm = NA_character_)
 }
 \arguments{
 \item{call}{X.}
-
-\item{software}{X.}
 
 \item{algorithm}{X.}
 }

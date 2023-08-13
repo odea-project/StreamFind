@@ -3315,7 +3315,7 @@ settings</a> section. This allows for internal data re-processing,
 inspection and retrospective evaluation.</p>
 <div class="sourceCode" id="cb69"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Settings for loading features MS1 spectra</span></span>
-<span><span class="va">settingsLoadFeaturesMS1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ProcessingSettings.html">ProcessingSettings</a></span><span class="op">(</span></span>
+<span><span class="va">settingsSettings_load_features_ms1_streamFind</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ProcessingSettings.html">ProcessingSettings</a></span><span class="op">(</span></span>
 <span>  <span class="st">"call"</span> <span class="op">=</span> <span class="st">"load_features_ms1"</span>,</span>
 <span>  <span class="st">"algorithm"</span> <span class="op">=</span> <span class="st">"streamFind"</span>,</span>
 <span>  <span class="st">"parameters"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -3329,11 +3329,11 @@ inspection and retrospective evaluation.</p>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">ms</span><span class="op">$</span><span class="fu">add_settings</span><span class="op">(</span>settings <span class="op">=</span> <span class="va">settingsLoadFeaturesMS1</span><span class="op">)</span></span>
+<span><span class="va">ms</span><span class="op">$</span><span class="fu">add_settings</span><span class="op">(</span>settings <span class="op">=</span> <span class="va">settingsSettings_load_features_ms1_streamFind</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ✓ load_features_ms1 processing settings added!</span></span>
 <span></span>
 <span><span class="co"># Settings for loading features MS2 spectra</span></span>
-<span><span class="va">settingsLoadFeaturesMS2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ProcessingSettings.html">ProcessingSettings</a></span><span class="op">(</span></span>
+<span><span class="va">settingsSettings_load_features_ms2_streamFind</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ProcessingSettings.html">ProcessingSettings</a></span><span class="op">(</span></span>
 <span>  <span class="st">"call"</span> <span class="op">=</span> <span class="st">"load_features_ms2"</span>,</span>
 <span>  <span class="st">"algorithm"</span> <span class="op">=</span> <span class="st">"streamFind"</span>,</span>
 <span>  <span class="st">"parameters"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -3346,12 +3346,12 @@ inspection and retrospective evaluation.</p>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">ms</span><span class="op">$</span><span class="fu">add_settings</span><span class="op">(</span>settings <span class="op">=</span> <span class="va">settingsLoadFeaturesMS2</span><span class="op">)</span></span>
+<span><span class="va">ms</span><span class="op">$</span><span class="fu">add_settings</span><span class="op">(</span>settings <span class="op">=</span> <span class="va">settingsSettings_load_features_ms2_streamFind</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ✓ load_features_ms2 processing settings added!</span></span>
 <span></span>
 <span><span class="co"># Returns the names of the settings list, which is also the call or method name</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ms</span><span class="op">$</span><span class="fu">get_settings</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "find_features"     "load_features_ms1" "load_features_ms2"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "load_features_ms1" "load_features_ms2"</span></span></code></pre></div>
 <div class="sourceCode" id="cb70"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># The ms object is first reduced in size to ease computation for this example</span></span>
 <span><span class="va">targetFeatures</span> <span class="op">&lt;-</span> <span class="va">ms</span><span class="op">$</span><span class="fu">get_features</span><span class="op">(</span>mz <span class="op">=</span> <span class="va">targets1</span><span class="op">)</span></span>
@@ -3471,10 +3471,8 @@ one can add the settings again in the method call. The previously stored
 settings will then be overwritten. In this case, there is no change as
 the settings are the same.</p>
 <div class="sourceCode" id="cb75"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">msTargets</span><span class="op">$</span><span class="fu">load_features_ms2</span><span class="op">(</span>settings <span class="op">=</span> <span class="va">settingsLoadFeaturesMS2</span><span class="op">)</span></span>
-<span><span class="co">#&gt; ⚙ Parsing spectra from 3 MS file/s... Done!</span></span>
-<span><span class="co">#&gt; 🖫 Parsed spectra cached!</span></span>
-<span><span class="co">#&gt; 🖫 Features MS2 spectra cached!</span></span>
+<code class="sourceCode R"><span><span class="va">msTargets</span><span class="op">$</span><span class="fu">load_features_ms2</span><span class="op">(</span>settings <span class="op">=</span> <span class="va">settingsSettings_load_features_ms2_streamFind</span><span class="op">)</span></span>
+<span><span class="co">#&gt; ℹ Features MS2 spectra loaded from cache!</span></span>
 <span><span class="co">#&gt; ✓ MS2 spectra added to features in analyses!</span></span>
 <span><span class="co">#&gt; ✓ load_features_ms2 processing settings added!</span></span>
 <span></span>
@@ -3764,7 +3762,7 @@ demonstrated for a subset as earlier shown.</p>
 <span><span class="va">msTargets</span></span></code></pre></div>
 <div class="sourceCode" id="cb90"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Settings for loading groups MS1 spectra</span></span>
-<span><span class="va">settingsLoadGroupsMS1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ProcessingSettings.html">ProcessingSettings</a></span><span class="op">(</span></span>
+<span><span class="va">settingsSettings_load_groups_ms1_streamFind</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ProcessingSettings.html">ProcessingSettings</a></span><span class="op">(</span></span>
 <span>  <span class="st">"call"</span> <span class="op">=</span> <span class="st">"load_groups_ms1"</span>,</span>
 <span>  <span class="st">"algorithm"</span> <span class="op">=</span> <span class="st">"streamFind"</span>,</span>
 <span>  <span class="st">"parameters"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -3776,11 +3774,11 @@ demonstrated for a subset as earlier shown.</p>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">msTargets</span><span class="op">$</span><span class="fu">add_settings</span><span class="op">(</span>settings <span class="op">=</span> <span class="va">settingsLoadGroupsMS1</span><span class="op">)</span></span>
+<span><span class="va">msTargets</span><span class="op">$</span><span class="fu">add_settings</span><span class="op">(</span>settings <span class="op">=</span> <span class="va">settingsSettings_load_groups_ms1_streamFind</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ✓ load_groups_ms1 processing settings added!</span></span>
 <span></span>
 <span><span class="co"># Settings for loading groups MS2 spectra</span></span>
-<span><span class="va">settingsLoadGroupsMS2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ProcessingSettings.html">ProcessingSettings</a></span><span class="op">(</span></span>
+<span><span class="va">settingsSettings_load_groups_ms2_streamFind</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ProcessingSettings.html">ProcessingSettings</a></span><span class="op">(</span></span>
 <span>  <span class="st">"call"</span> <span class="op">=</span> <span class="st">"load_groups_ms2"</span>,</span>
 <span>  <span class="st">"algorithm"</span> <span class="op">=</span> <span class="st">"streamFind"</span>,</span>
 <span>  <span class="st">"parameters"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -3792,7 +3790,7 @@ demonstrated for a subset as earlier shown.</p>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">msTargets</span><span class="op">$</span><span class="fu">add_settings</span><span class="op">(</span>settings <span class="op">=</span> <span class="va">settingsLoadGroupsMS2</span><span class="op">)</span></span>
+<span><span class="va">msTargets</span><span class="op">$</span><span class="fu">add_settings</span><span class="op">(</span>settings <span class="op">=</span> <span class="va">settingsSettings_load_groups_ms2_streamFind</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ✓ load_groups_ms2 processing settings added!</span></span>
 <span></span>
 <span><span class="co"># Returns the names of the settings list, which is also the call or method name</span></span>

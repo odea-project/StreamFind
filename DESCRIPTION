@@ -34,7 +34,8 @@ Imports:
     doParallel,
     parallel,
     foreach,
-    methods
+    methods,
+    checkmate
 Suggests: 
     knitr,
     kableExtra,

@@ -1,11 +1,11 @@
 
-#' @title .s3_ms_annotate_features.streamFind
+#' @title .s3_ms_annotate_features.Settings_annotate_features_streamFind
 #'
 #' @description Annotates features with isotopes.
 #'
 #' @noRd
 #'
-.s3_ms_annotate_features.streamFind <- function(settings, self) {
+.s3_ms_annotate_features.Settings_annotate_features_streamFind <- function(settings, self) {
 
   if (!any(self$has_features())) {
     warning("Features were not found! Run find_features method first!")
@@ -63,7 +63,7 @@
 
   if (!cached_analyses) {
     message("\U2699 Annotating features from ",
-      length(features),
+      length(self$get_analyses()),
       " analyses...",
       appendLF = FALSE
     )
@@ -98,8 +98,6 @@
         temp <- temp_f[temp_i, on = .(feature = feature)]
 
         temp_max_gr <- max(temp$iso_gr)
-
-        # temp$iso_gr[temp$iso_gr > 0] <- temp$iso_gr[temp$iso_gr > 0] + iso_group_count
 
         temp$iso_gr <- temp$iso_gr + iso_group_count
 

@@ -6,7 +6,6 @@
 #' @description X.
 #'
 #' @param call X.
-#' @param software X.
 #' @param algorithm X.
 #'
 #' @return A ProcessingSettings S3 class object.
@@ -14,62 +13,11 @@
 #' @export
 #'
 get_default_ProcessingSettings <- function(call = NA_character_,
-                                           software = NA_character_,
                                            algorithm = NA_character_) {
 
-  settings <- NULL
+  class_string <- paste0("Settings_", call, "_", algorithm)
 
-  if ("find_features" %in% call) {
-
-    if ("centwave" %in% algorithm) {
-      settings <- settings_find_features_xcms3_centwave()
-    }
-
-    if ("openms" %in% algorithm) {
-      settings <- settings_find_features_openms()
-    }
-
-    if ("kpic2" %in% algorithm) {
-      settings <- settings_find_features_kpic2()
-    }
-  }
-
-  if ("group_features" %in% call) {
-
-    if ("peakdensity" %in% algorithm) {
-      settings <- settings_group_features_xcms3_peakdensity()
-    }
-
-    if ("openms" %in% algorithm) {
-
-    }
-  }
-
-  if ("load_features_ms1" %in% call) {
-    settings <- settings_load_features_ms1_streamFind()
-  }
-
-  if ("load_features_ms2" %in% call) {
-    settings <- settings_load_features_ms2_streamFind()
-  }
-
-  if ("load_groups_ms1" %in% call) {
-    settings <- settings_load_groups_ms1_streamFind()
-  }
-
-  if ("load_groups_ms2" %in% call) {
-    settings <- settings_load_groups_ms2_streamFind()
-  }
-
-  if ("filter_features" %in% call) {
-    settings <- settings_filter_features_streamFind()
-  }
-
-  if ("annotate_features" %in% call) {
-    settings <- settings_annotate_features_streamFind()
-  }
-
-  return(settings)
+  do.call(class_string, list())
 }
 
 #' @title save_default_ProcessingSettings
@@ -88,13 +36,12 @@ get_default_ProcessingSettings <- function(call = NA_character_,
 #' @export
 #'
 save_default_ProcessingSettings <- function(call = NA_character_,
-                                            software = NA_character_,
                                             algorithm = NA_character_,
                                             format = "json",
                                             name = "settings",
                                             path = getwd()) {
 
-  settings <- get_default_ProcessingSettings(call, software, algorithm)
+  settings <- get_default_ProcessingSettings(call, algorithm)
 
   if (format %in% "json") {
     settings_js <- toJSON(
@@ -119,9 +66,9 @@ save_default_ProcessingSettings <- function(call = NA_character_,
   }
 }
 
-## find -----
+## find_features -----
 
-#' @title settings_find_features_xcms3_centwave
+#' @title Settings_find_features_xcms3_centwave
 #'
 #' @description X.
 #'
@@ -129,7 +76,7 @@ save_default_ProcessingSettings <- function(call = NA_character_,
 #'
 #' @export
 #'
-settings_find_features_xcms3_centwave <- function() {
+Settings_find_features_xcms3_centwave <- function() {
 
   if (!requireNamespace("xcms", quietly = TRUE)) {
     warning("xcms package required but not installed!")
@@ -138,7 +85,7 @@ settings_find_features_xcms3_centwave <- function() {
 
   settings <- list(
     call = "find_features",
-    algorithm = "xcms3",
+    algorithm = "xcms3_centwave",
     parameters = xcms::CentWaveParam(
       ppm = 12,
       peakwidth = c(5, 60),
@@ -167,7 +114,7 @@ settings_find_features_xcms3_centwave <- function() {
   return(settings)
 }
 
-#' @title settings_find_features_openms
+#' @title Settings_find_features_openms
 #'
 #' @description X.
 #'
@@ -175,7 +122,7 @@ settings_find_features_xcms3_centwave <- function() {
 #'
 #' @export
 #'
-settings_find_features_openms <- function() {
+Settings_find_features_openms <- function() {
 
   settings <- list(
     call = "find_features",
@@ -216,7 +163,7 @@ settings_find_features_openms <- function() {
   return(settings)
 }
 
-#' @title settings_find_features_kpic2
+#' @title Settings_find_features_kpic2
 #'
 #' @description X.
 #'
@@ -224,7 +171,7 @@ settings_find_features_openms <- function() {
 #'
 #' @export
 #'
-settings_find_features_kpic2 <- function() {
+Settings_find_features_kpic2 <- function() {
 
   if (!requireNamespace("KPIC", quietly = TRUE)) {
     warning("KPIC package required but not installed!")
@@ -254,9 +201,9 @@ settings_find_features_kpic2 <- function() {
   return(settings)
 }
 
-## group -----
+## group_features -----
 
-#' @title settings_group_features_xcms3_peakdensity
+#' @title Settings_group_features_xcms3_peakdensity
 #'
 #' @description X.
 #'
@@ -264,7 +211,7 @@ settings_find_features_kpic2 <- function() {
 #'
 #' @export
 #'
-settings_group_features_xcms3_peakdensity <- function() {
+Settings_group_features_xcms3_peakdensity <- function() {
 
   if (!requireNamespace("xcms", quietly = TRUE)) {
     warning("xcms package required but not installed!")
@@ -273,7 +220,7 @@ settings_group_features_xcms3_peakdensity <- function() {
 
   settings <- list(
     call = "group_features",
-    algorithm = "xcms3",
+    algorithm = "xcms3_peakdensity",
     parameters = xcms::PeakDensityParam(
       sampleGroups = "holder",
       bw = 5,
@@ -294,9 +241,9 @@ settings_group_features_xcms3_peakdensity <- function() {
   return(settings)
 }
 
-## load -----
+## load_features -----
 
-#' @title settings_load_features_ms1_streamFind
+#' @title Settings_load_features_ms1_streamFind
 #'
 #' @description X.
 #'
@@ -304,7 +251,7 @@ settings_group_features_xcms3_peakdensity <- function() {
 #'
 #' @export
 #'
-settings_load_features_ms1_streamFind <- function() {
+Settings_load_features_ms1_streamFind <- function() {
 
   settings <- list(
     call = "load_features_ms1",
@@ -319,10 +266,10 @@ settings_load_features_ms1_streamFind <- function() {
       verbose = FALSE
     ),
     software = "streamFind",
-    developer = "",
+    developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = "",
-    doi = ""
+    link = "https://github.com/ricardobachertdacunha/streamFind",
+    doi = NA_character_
   )
 
   settings <- as.ProcessingSettings(settings)
@@ -330,7 +277,29 @@ settings_load_features_ms1_streamFind <- function() {
   return(settings)
 }
 
-#' @title settings_load_features_ms2_streamFind
+#' @describeIn Settings_load_features_ms1_streamFind
+#' Validates the Settings_load_features_ms1_streamFind S3 class object,
+#' returning a logical value of length one.
+#'
+#' @param x A Settings_load_features_ms1_streamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_load_features_ms1_streamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "load_features_ms1"),
+    checkmate::test_choice(x$algorithm, "streamFind"),
+    checkmate::test_double(x$parameters$rtWindow, max.len = 2),
+    checkmate::test_double(x$parameters$mzWindow, max.len = 2),
+    checkmate::test_double(x$parameters$mzClust, max.len = 1),
+    checkmate::test_double(x$parameters$minIntensity, max.len = 1),
+    checkmate::test_logical(x$parameters$filtered, max.len = 1),
+    checkmate::test_logical(x$parameters$runParallel, max.len = 1),
+    checkmate::test_logical(x$parameters$verbose, max.len = 1)
+  )
+}
+
+#' @title Settings_load_features_ms2_streamFind
 #'
 #' @description X.
 #'
@@ -338,7 +307,7 @@ settings_load_features_ms1_streamFind <- function() {
 #'
 #' @export
 #'
-settings_load_features_ms2_streamFind <- function() {
+Settings_load_features_ms2_streamFind <- function() {
 
   settings <- list(
     call = "load_features_ms2",
@@ -352,10 +321,10 @@ settings_load_features_ms2_streamFind <- function() {
       verbose = FALSE
     ),
     software = "streamFind",
-    developer = "",
+    developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = "",
-    doi = ""
+    link = "https://github.com/ricardobachertdacunha/streamFind",
+    doi = NA_character_
   )
 
   settings <- as.ProcessingSettings(settings)
@@ -363,7 +332,28 @@ settings_load_features_ms2_streamFind <- function() {
   return(settings)
 }
 
-#' @title settings_load_groups_ms1_streamFind
+#' @describeIn Settings_load_features_ms2_streamFind
+#' Validates the Settings_load_features_ms1_streamFind S3 class object,
+#' returning a logical value of length one.
+#'
+#' @param x A Settings_load_features_ms2_streamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_load_features_ms2_streamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "load_features_ms2"),
+    checkmate::test_choice(x$algorithm, "streamFind"),
+    checkmate::test_double(x$parameters$isolationWindow, max.len = 1),
+    checkmate::test_double(x$parameters$mzClust, max.len = 1),
+    checkmate::test_double(x$parameters$minIntensity, max.len = 1),
+    checkmate::test_logical(x$parameters$filtered, max.len = 1),
+    checkmate::test_logical(x$parameters$runParallel, max.len = 1),
+    checkmate::test_logical(x$parameters$verbose, max.len = 1)
+  )
+}
+
+#' @title Settings_load_groups_ms1_streamFind
 #'
 #' @description X.
 #'
@@ -371,7 +361,7 @@ settings_load_features_ms2_streamFind <- function() {
 #'
 #' @export
 #'
-settings_load_groups_ms1_streamFind <- function() {
+Settings_load_groups_ms1_streamFind <- function() {
 
   settings <- list(
     call = "load_groups_ms1",
@@ -382,73 +372,6 @@ settings_load_groups_ms1_streamFind <- function() {
       verbose = FALSE,
       filtered = FALSE,
       runParallel = FALSE
-    ),
-    software = "streamFind",
-    developer = "",
-    contact = "cunha@iuta.de",
-    link = "",
-    doi = ""
-  )
-
-  settings <- as.ProcessingSettings(settings)
-
-  return(settings)
-}
-
-#' @title settings_load_groups_ms2_streamFind
-#'
-#' @description X.
-#'
-#' @return X.
-#'
-#' @export
-#'
-settings_load_groups_ms2_streamFind <- function() {
-
-  settings <- list(
-    call = "load_groups_ms2",
-    algorithm = "streamFind",
-    parameters = list(
-      mzClust = 0.003,
-      minIntensity = 250,
-      filtered = FALSE,
-      runParallel = FALSE,
-      verbose = FALSE
-    ),
-    software = "streamFind",
-    developer = "",
-    contact = "cunha@iuta.de",
-    link = "",
-    doi = ""
-  )
-
-  settings <- as.ProcessingSettings(settings)
-
-  return(settings)
-}
-
-## filter -----
-
-#' @title settings_filter_features_streamFind
-#'
-#' @description X.
-#'
-#' @return X.
-#'
-#' @export
-#'
-settings_filter_features_streamFind <- function() {
-
-  settings <- list(
-    call = "filter_features",
-    algorithm = "streamFind",
-    parameters = list(
-      "minIntensity" = 5000,
-      "minSnRatio" = 25,
-      "maxGroupSd" = 30,
-      "blank" = 5,
-      "minGroupAbundance" = 3,
-      "excludeIsotopes" = TRUE
     ),
     software = "streamFind",
     developer = "Ricardo Cunha",
@@ -462,9 +385,27 @@ settings_filter_features_streamFind <- function() {
   return(settings)
 }
 
-## annotate -----
+#' @describeIn Settings_load_groups_ms1_streamFind
+#' Validates the Settings_load_groups_ms1_streamFind S3 class object,
+#' returning a logical value of length one.
+#'
+#' @param x A Settings_load_groups_ms1_streamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_load_groups_ms1_streamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "load_groups_ms1"),
+    checkmate::test_choice(x$algorithm, "streamFind"),
+    checkmate::test_double(x$parameters$mzClust, max.len = 1),
+    checkmate::test_double(x$parameters$minIntensity, max.len = 1),
+    checkmate::test_logical(x$parameters$filtered, max.len = 1),
+    checkmate::test_logical(x$parameters$runParallel, max.len = 1),
+    checkmate::test_logical(x$parameters$verbose, max.len = 1)
+  )
+}
 
-#' @title settings_annotate_features_streamFind
+#' @title Settings_load_groups_ms2_streamFind
 #'
 #' @description X.
 #'
@@ -472,19 +413,174 @@ settings_filter_features_streamFind <- function() {
 #'
 #' @export
 #'
-settings_annotate_features_streamFind <- function(maxIsotopes = 5,
-                                                  maxCharge = 1,
-                                                  rtWindowAlignment = 0.2,
-                                                  maxGaps = 1,
-                                                  runParallel = FALSE) {
+Settings_load_groups_ms2_streamFind <- function() {
+
+  settings <- list(
+    call = "load_groups_ms2",
+    algorithm = "streamFind",
+    parameters = list(
+      mzClust = 0.003,
+      minIntensity = 250,
+      filtered = FALSE,
+      runParallel = FALSE,
+      verbose = FALSE
+    ),
+    software = "streamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://github.com/ricardobachertdacunha/streamFind",
+    doi = NA_character_
+  )
+
+  settings <- as.ProcessingSettings(settings)
+
+  return(settings)
+}
+
+#' @describeIn Settings_load_groups_ms2_streamFind
+#' Validates the Settings_load_groups_ms2_streamFind S3 class object,
+#' returning a logical value of length one.
+#'
+#' @param x A Settings_load_groups_ms2_streamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_load_groups_ms2_streamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "load_groups_ms2"),
+    checkmate::test_choice(x$algorithm, "streamFind"),
+    checkmate::test_double(x$parameters$mzClust, max.len = 1),
+    checkmate::test_double(x$parameters$minIntensity, max.len = 1),
+    checkmate::test_logical(x$parameters$filtered, max.len = 1),
+    checkmate::test_logical(x$parameters$runParallel, max.len = 1),
+    checkmate::test_logical(x$parameters$verbose, max.len = 1)
+  )
+}
+
+## filter_features -----
+
+#' Settings_filter_features_streamFind
+#'
+#' @description X.
+#'
+#' @return X.
+#'
+#' @export
+#'
+Settings_filter_features_streamFind <- function(
+    minIntensity = 5000,
+    minSnRatio = 25,
+    maxGroupSd = 30,
+    blank = 5,
+    minGroupAbundance = 3,
+    excludeIsotopes = TRUE) {
+
+  checkmate::assert_double(minIntensity, max.len = 1)
+  checkmate::assert_double(minSnRatio, max.len = 1)
+  checkmate::assert_double(maxGroupSd, max.len = 1)
+  checkmate::assert_double(blank, max.len = 1)
+  checkmate::assert_count(minGroupAbundance)
+  checkmate::assert_logical(excludeIsotopes, max.len = 1)
+
+  settings <- list(
+    call = "filter_features",
+    algorithm = "streamFind",
+    parameters = list(
+      "minIntensity" = minIntensity,
+      "minSnRatio" = minSnRatio,
+      "maxGroupSd" = maxGroupSd,
+      "blank" = blank,
+      "minGroupAbundance" = minGroupAbundance,
+      "excludeIsotopes" = excludeIsotopes
+    ),
+    software = "streamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://github.com/ricardobachertdacunha/streamFind",
+    doi = NA_character_
+  )
+
+  settings <- as.ProcessingSettings(settings)
+
+  return(settings)
+}
+
+#' @describeIn Settings_filter_features_streamFind
+#' Validates the Settings_filter_features_streamFind S3 class object, returning
+#' a logical value of length one.
+#'
+#' @param x A Settings_filter_features_streamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_filter_features_streamFind <- function(x) {
+  all(
+  checkmate::test_choice(x$call, "filter_features"),
+  checkmate::test_choice(x$algorithm, "streamFind"),
+  checkmate::test_double(x$parameters$minIntensity, max.len = 1),
+  checkmate::test_double(x$parameters$minSnRatio, max.len = 1),
+  checkmate::test_double(x$parameters$maxGroupSd, max.len = 1),
+  checkmate::test_double(x$parameters$blank, max.len = 1),
+  checkmate::test_count(x$parameters$minGroupAbundance),
+  checkmate::test_logical(x$parameters$excludeIsotopes, max.len = 1)
+  )
+}
+
+## annotate_features -----
+
+#' Settings_annotate_features_streamFind
+#'
+#' @description
+#' Settings for annotation of isotopic features. The method uses the `maxIsotopes`
+#' to define the maximum length of the isotopic chain. The list of candidate features is
+#' build with the `rtWindowAlignment` and the maximum mass increment to match the
+#' maximum chain length. Then, the mass difference  of the natural isotopes defined
+#' by `elements` and a given monoisotopic ion (i.e., feature) are targeted.
+#' Each candidate is then evaluated according to the mass error and the expected
+#' relative intensity range as defined by the `mode`.
+#'
+#' @param maxIsotopes Numeric (length 1) with the maximum number of isotopic steps.
+#' @param elements Character vector with the elements to target the isotopic annotation.
+#' Possible elements are C, H, N, O, S, Cl, Br.
+#' @param mode Character (length 1) with the type of molecules to be targeted.
+#' For now, only "small molecules" are possible.
+#' @param maxCharge Numeric (length 1) with the maximum charge that ions can be
+#' ionized to find isotopes.
+#' @param rtWindowAlignment Numeric (length 1) with the proportion of the
+#' monoisotopic feature time window to be used for retrieving isotopic candidates.
+#' @param maxGaps Numeric (length 1) with the maximum of allowed gaps in isotopic chains.
+#' @template arg-runParallel
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_annotate_features_streamFind.
+#'
+#' @export
+#'
+Settings_annotate_features_streamFind <- function(
+    maxIsotopes = 5,
+    elements = c("C","H", "N", "O", "S", "Cl", "Br"),
+    mode = "small molecules",
+    maxCharge = 1,
+    rtWindowAlignment = 0.3,
+    maxGaps = 1,
+    runParallel = FALSE) {
+
+  checkmate::assert_count(maxIsotopes)
+  checkmate::assert_count(maxCharge)
+  checkmate::assert_count(maxGaps)
+  checkmate::assert_double(rtWindowAlignment, max.len = 1)
+  checkmate::assert_choice(mode, "small molecules")
+  checkmate::assert_vector(elements, any.missing = FALSE, min.len = 1)
+  lapply(elements, function(i) checkmate::assert_choice(i, c("C","H", "N", "O", "S", "Cl", "Br")))
+  checkmate::assert_logical(runParallel, max.len = 1)
 
   settings <- list(
     call = "annotate_features",
     algorithm = "streamFind",
     parameters = list(
       "maxIsotopes" = maxIsotopes,
-      "elements" = c("C","H", "N", "O", "S", "Cl", "Br"),
-      "mode" = "small molecules",
+      "elements" = elements,
+      "mode" = mode,
       "maxCharge" = maxCharge,
       "rtWindowAlignment" = rtWindowAlignment,
       "maxGaps" = maxGaps,
@@ -500,4 +596,27 @@ settings_annotate_features_streamFind <- function(maxIsotopes = 5,
   settings <- as.ProcessingSettings(settings)
 
   return(settings)
+}
+
+#' @describeIn Settings_annotate_features_streamFind
+#' Validates the Settings_annotate_features_streamFind S3 class object, returning a logical
+#' value of length one.
+#'
+#' @param x A Settings_annotate_features_streamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_annotate_features_streamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "annotate_features"),
+    checkmate::test_choice(x$algorithm, "streamFind"),
+    checkmate::test_count(x$parameters$maxIsotopes),
+    checkmate::test_count(x$parameters$maxCharge),
+    checkmate::test_count(x$parameters$maxGaps),
+    checkmate::test_double(x$parameters$rtWindowAlignment, max.len = 1),
+    checkmate::test_choice(x$parameters$mode, "small molecules"),
+    checkmate::test_vector(x$parameters$elements, any.missing = FALSE, min.len = 1),
+    vapply(x$parameters$elements, function(i) checkmate::test_choice(i, c("C","H", "N", "O", "S", "Cl", "Br")), FALSE),
+    checkmate::test_logical(x$parameters$runParallel, max.len = 1)
+  )
 }

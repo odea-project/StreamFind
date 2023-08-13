@@ -73,7 +73,7 @@ settings_gf <- list(
   )
 )
 
-settingsLoadFeaturesMS1 <- list(
+settingsSettings_load_features_ms1_streamFind <- list(
   "call" = "load_features_ms1",
   "algorithm" = "streamFind",
   "parameters" = list(
@@ -87,7 +87,7 @@ settingsLoadFeaturesMS1 <- list(
   )
 )
 
-settingsLoadFeaturesMS2 <- list(
+settingsSettings_load_features_ms2_streamFind <- list(
   "call" = "load_features_ms2",
   "algorithm" = "streamFind",
   "parameters" = list(
@@ -100,7 +100,7 @@ settingsLoadFeaturesMS2 <- list(
   )
 )
 
-settingsLoadGroupsMS1 <- list(
+settingsSettings_load_groups_ms1_streamFind <- list(
   "call" = "load_groups_ms1",
   "algorithm" = "streamFind",
   "parameters" = list(
@@ -112,7 +112,7 @@ settingsLoadGroupsMS1 <- list(
   )
 )
 
-settingsLoadGroupsMS2 <- list(
+settingsSettings_load_groups_ms2_streamFind <- list(
   "call" = "load_groups_ms2",
   "algorithm" = "streamFind",
   "parameters" = list(
@@ -139,10 +139,10 @@ ms <- MassSpecData$new(files = all_files[10:21],
   settings = list(
     find = settings_ff,
     group = settings_gf,
-    ms1ft = settingsLoadFeaturesMS1,
-    ms2ft = settingsLoadFeaturesMS2,
-    ms1gp = settingsLoadGroupsMS1,
-    ms2gp = settingsLoadGroupsMS2
+    ms1ft = settingsSettings_load_features_ms1_streamFind,
+    ms2ft = settingsSettings_load_features_ms2_streamFind,
+    ms1gp = settingsSettings_load_groups_ms1_streamFind,
+    ms2gp = settingsSettings_load_groups_ms2_streamFind
   )
 )
 

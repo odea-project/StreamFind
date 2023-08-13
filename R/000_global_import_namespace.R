@@ -43,6 +43,9 @@
 #' @importFrom plotly add_segments add_annotations hide_legend add_lines
 #' @importFrom plotly group_by
 #'
+#' @importFrom checkmate assert_count assert_double assert_choice assert_logical assert_vector
+#' @importFrom checkmate test_count test_double test_choice test_logical test_vector
+#'
 #' @importFrom utils txtProgressBar setTxtProgressBar
 #'
 #' @noRd

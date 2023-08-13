@@ -2245,26 +2245,26 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
             if (eval) {
 
-              if ("find_features" %in% x$call) {
-                ff_algorithm <- c(
-                  "openms", "xcms", "xcms3", "envipick",
-                  "sirius", "kpic2", "safd"
-                )
+              # if ("find_features" %in% x$call) {
+              #   ff_algorithm <- c(
+              #     "openms", "xcms", "xcms3", "envipick",
+              #     "sirius", "kpic2", "safd"
+              #   )
+              #
+              #   if (!any(ff_algorithm %in% x$algorithm)) {
+              #     warning("Algorithm not viable for find_features call!")
+              #     eval <- FALSE
+              #   }
+              # }
 
-                if (!any(ff_algorithm %in% x$algorithm)) {
-                  warning("Algorithm not viable for find_feature call!")
-                  eval <- FALSE
-                }
-              }
-
-              if ("group_features" %in% x$call) {
-                fg_algorithm <- c("openms", "xcms", "xcms3", "kpic2", "sirius")
-
-                if (!any(fg_algorithm %in% x$algorithm)) {
-                  warning("Algorithm not viable for group_feature call!")
-                  eval <- FALSE
-                }
-              }
+              # if ("group_features" %in% x$call) {
+              #   fg_algorithm <- c("openms", "xcms", "xcms3", "kpic2", "sirius")
+              #
+              #   if (!any(fg_algorithm %in% x$algorithm)) {
+              #     warning("Algorithm not viable for group_feature call!")
+              #     eval <- FALSE
+              #   }
+              # }
             }
           }
           eval
@@ -3253,7 +3253,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @param call A string or a vector of strings with the name/s of the
     #' processing method/s to be removed. Alternatively, an integer vector
-    #' with the indice/s of the settings to be removed. When `call` is
+    #' with the index/es of the settings to be removed. When `call` is
     #' \code{NULL} all settings are removed.
     #'
     #' @return Invisible.
@@ -4665,7 +4665,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       settings <- private$.get_call_settings(settings, "filter_features")
       if (is.null(settings)) return(invisible(self))
 
-      if ("streamFind" %in% class(settings)) {
+      if ("Settings_filter_features_streamFind" %in% class(settings)) {
         if (!any(self$has_features())) {
           warning("Features were not found! Run find_features method first!")
           return(invisible(self))

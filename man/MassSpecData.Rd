@@ -2284,7 +2284,7 @@ Removes settings.
 \describe{
 \item{\code{call}}{A string or a vector of strings with the name/s of the
 processing method/s to be removed. Alternatively, an integer vector
-with the indice/s of the settings to be removed. When \code{call} is
+with the index/es of the settings to be removed. When \code{call} is
 \code{NULL} all settings are removed.}
 }
 \if{html}{\out{</div>}}

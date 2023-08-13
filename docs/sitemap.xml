@@ -25,6 +25,9 @@
     <loc>https://ricardobachertdacunha.github.io/streamFind/LICENSE.html</loc>
   </url>
   <url>
+    <loc>https://ricardobachertdacunha.github.io/streamFind/reference/AnnotateIsotopesStreamFind.html</loc>
+  </url>
+  <url>
     <loc>https://ricardobachertdacunha.github.io/streamFind/reference/centroidSpectra.html</loc>
   </url>
   <url>
@@ -35,6 +38,9 @@
   </url>
   <url>
     <loc>https://ricardobachertdacunha.github.io/streamFind/reference/correlate_analysis_spectra.html</loc>
+  </url>
+  <url>
+    <loc>https://ricardobachertdacunha.github.io/streamFind/reference/FilterFeaturesStreamFind.html</loc>
   </url>
   <url>
     <loc>https://ricardobachertdacunha.github.io/streamFind/reference/get_colors.html</loc>
@@ -136,16 +142,16 @@
     <loc>https://ricardobachertdacunha.github.io/streamFind/reference/settings_filter_features_streamFind.html</loc>
   </url>
   <url>
-    <loc>https://ricardobachertdacunha.github.io/streamFind/reference/settings_find_features_kpic2.html</loc>
+    <loc>https://ricardobachertdacunha.github.io/streamFind/reference/Settings_find_features_kpic2.html</loc>
   </url>
   <url>
-    <loc>https://ricardobachertdacunha.github.io/streamFind/reference/settings_find_features_openms.html</loc>
+    <loc>https://ricardobachertdacunha.github.io/streamFind/reference/Settings_find_features_openms.html</loc>
   </url>
   <url>
-    <loc>https://ricardobachertdacunha.github.io/streamFind/reference/settings_find_features_xcms3_centwave.html</loc>
+    <loc>https://ricardobachertdacunha.github.io/streamFind/reference/Settings_find_features_xcms3_centwave.html</loc>
   </url>
   <url>
-    <loc>https://ricardobachertdacunha.github.io/streamFind/reference/settings_group_features_xcms3_peakdensity.html</loc>
+    <loc>https://ricardobachertdacunha.github.io/streamFind/reference/Settings_group_features_xcms3_peakdensity.html</loc>
   </url>
   <url>
     <loc>https://ricardobachertdacunha.github.io/streamFind/reference/settings_load_features_ms1_streamFind.html</loc>

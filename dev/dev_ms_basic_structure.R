@@ -21,7 +21,35 @@ files_df <- data.frame(
   )
 )
 
+
+
+
+
 ms <- MassSpecData$new(files = files_df)
+
+x <- Settings_filter_features_streamFind()
+y <- Settings_annotate_features_streamFind()
+z <- Settings_load_features_ms1_streamFind()
+t <- Settings_load_features_ms2_streamFind()
+g <- Settings_load_groups_ms1_streamFind()
+f <- Settings_load_groups_ms2_streamFind()
+j <- Settings_find_features_xcms3_centwave()
+
+class(x)
+class(y)
+class(z)
+class(t)
+class(j)
+
+sloop::s3_dispatch(validate(x))
+sloop::s3_dispatch(validate(y))
+sloop::s3_dispatch(validate(z))
+sloop::s3_dispatch(validate(t))
+sloop::s3_dispatch(validate(j))
+sloop::s3_dispatch(validate(g))
+sloop::s3_dispatch(validate(f))
+
+
 
 # save_default_ProcessingSettings(
 #   call = "find_features",
@@ -58,7 +86,7 @@ ms$import_settings("fls.json")
 
 ms$find_features()#$group_features()#$filter_features()
 
-suspects <- ms$suspect_screening(database = db)
+suspects <- ms$get_suspects(database = db)
 
 View(suspects)
 

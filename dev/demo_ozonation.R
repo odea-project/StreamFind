@@ -47,7 +47,7 @@ ms
 # saves an example of settings on disk
 save_default_ProcessingSettings(
   call = "find_features",
-  algorithm = "centwave",
+  algorithm = "xcms3_centwave",
   format = "json",
   name = "ffs"
 )
@@ -69,15 +69,12 @@ afs
 
 gfs <- get_default_ProcessingSettings(
   call = "group_features",
-  algorithm = "peakdensity"
+  algorithm = "xcms3_peakdensity"
 )
 
 gfs
 
-fls <- get_default_ProcessingSettings(
-  call = "filter_features",
-  algorithm = "streamFind"
-)
+fls <- Settings_filter_features_streamFind()
 
 fls
 
@@ -86,6 +83,7 @@ fls$parameters$minIntensity <- 3000
 ms$find_features()$annotate_features(afs)$group_features(gfs)$filter_features(fls)
 
 ms
+
 
 
 # plot -------------------------------------------------------------------------

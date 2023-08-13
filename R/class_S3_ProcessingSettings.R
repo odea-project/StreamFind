@@ -47,24 +47,30 @@ ProcessingSettings <- function(call = NA_character_,
 
   if (is.data.frame(x$parameters)) x$parameters <- as.list(x$parameters)
 
-  if ("streamFind" %in% x$algorithm & any(c("filter_features", "annotate_features") %in% x$call)) {
-    if (is.na(x$software)) x$software <- "streamFind"
-    if (is.na(x$developer)) x$developer <- "Ricardo Cunha"
-    if (is.na(x$contact)) x$contact <- "cunha@iuta.de"
-    if (is.na(x$link)) x$link <- "https://github.com/ricardobachertdacunha/streamFind"
-  }
-
   if (validate.ProcessingSettings(x)) {
 
-    s3_classes <- c(x$algorithm, "ProcessingSettings")
+    s3_classes <- c(
+      paste0("Settings_", x$call, "_" ,x$algorithm),
+      "ProcessingSettings"
+    )
 
-    ff_algorithm <- c(
+    patRoon_algorithms <- c(
       "openms", "xcms", "xcms3", "envipick", "sirius", "kpic2", "safd"
     )
 
-    if (any(x$algorithm %in% ff_algorithm)) s3_classes[1] <- "patRoon"
+    if (any(vapply(patRoon_algorithms, function(a) {
+      grepl(a, x$algorithm, fixed = FALSE)
+    }, FALSE))) {
+      s3_classes <- append(s3_classes, "patRoon", after = 0)
+    }
 
-    structure(x, class = s3_classes)
+    x <- structure(x, class = s3_classes)
+
+    if (validate(x)) {
+      x
+    } else {
+      NULL
+    }
   } else {
     NULL
   }
@@ -104,6 +110,12 @@ validate.ProcessingSettings <- function(x = NULL) {
       warning("Settings elements must be named call, algorithm and parameters!")
     }
   }
+
+  # TODO add validate for settings specific class
+  # if (length(class(x)) > 1) {
+  #   valid <- NextMethod()
+  # }
+
   valid
 }
 
@@ -117,6 +129,11 @@ print.ProcessingSettings <- function(x) {
   cat(
     " call         ", x$call, "\n",
     " algorithm    ", x$algorithm, "\n",
+    " software     ", x$software, "\n",
+    " developer    ", x$developer, "\n",
+    " contact      ", x$contact, "\n",
+    " link         ", x$link, "\n",
+    " doi          ", x$doi, "\n",
     sep = ""
   )
 
@@ -144,6 +161,7 @@ print.ProcessingSettings <- function(x) {
     }
   }
   cat("\n")
+
 }
 
 #' @describeIn ProcessingSettings

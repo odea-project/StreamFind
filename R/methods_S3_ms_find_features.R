@@ -14,6 +14,10 @@
 
   algorithm <- settings$algorithm
 
+  if (grepl("_", algorithm, fixed = FALSE)) {
+    algorithm <- gsub("^(.*?)_.*$", "\\1", algorithm)
+  }
+
   if ("xcms" %in% algorithm || "xcms3" %in% algorithm) {
     if (!requireNamespace("xcms")) {
       warning("xcms package is not installed!")
