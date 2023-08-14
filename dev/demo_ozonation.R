@@ -9,6 +9,7 @@ files <- all_files[grepl("blank|influent|o3sw", all_files)]
 headers <- Headers(
   name = "Example wastewater ozonation",
   author = "Ricardo Cunha"
+
 )
 
 ms <- MassSpecData$new(files = files, headers = headers)
@@ -54,7 +55,14 @@ save_default_ProcessingSettings(
 
 ms$import_settings("ffs.json")
 
-ms
+save_default_ProcessingSettings(
+  call = "filter_features",
+  algorithm = "streamFind",
+  format = "json",
+  name = "flfs"
+)
+
+ms$import_settings("flfs.json")
 
 
 # process ----------------------------------------------------------------------
@@ -74,7 +82,14 @@ gfs <- get_default_ProcessingSettings(
 
 gfs
 
-fls <- Settings_filter_features_streamFind()
+fls <- Settings_filter_features_streamFind(
+  minIntensity = 5000,
+  minSnRatio = 20,
+  maxGroupSd = 30,
+  blank = 5,
+  minGroupAbundance = 3,
+  excludeIsotopes = TRUE
+)
 
 fls
 
@@ -83,7 +98,6 @@ fls$parameters$minIntensity <- 3000
 ms$find_features()$annotate_features(afs)$group_features(gfs)$filter_features(fls)
 
 ms
-
 
 
 # plot -------------------------------------------------------------------------
@@ -106,6 +120,8 @@ ms$plot_groups_overview(
   legendNames = TRUE
 )
 
+ms$plot_features(features = "mz258.085_rt1014_f236", filtered = TRUE)
+
 ms$plot_eic(
   analyses = ms$get_analysis_names()[grepl("neg", ms$get_analysis_names())],
   mz = db$mass[db$name %in% "Valsartan"] - 1.0073,
@@ -114,6 +130,7 @@ ms$plot_eic(
 )
 
 ms$map_components(mass = db[24, ], ppm = 8, sec = 10, colorBy = "replicates")
+
 
 # history ----------------------------------------------------------------------
 

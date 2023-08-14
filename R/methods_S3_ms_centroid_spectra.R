@@ -1,5 +1,5 @@
 
-#' @title centroid_spectra
+#' .S3_ms_centroid_spectra.Settings_centroid_spectra_qCentroids
 #'
 #' @description Centroids profile spectra.
 #'
@@ -11,7 +11,11 @@
 #'
 #' @noRd
 #'
-centroid_spectra <- function(spectra = data.frame()) {
+.S3_ms_centroid_spectra.Settings_centroid_spectra_qCentroids <- function(settings, self) {
+
+  spectra <- self$get_spectra()
+
+  # TODO Gerrit Implementation qCentroids method
 
   # continue development with cpp
   centroided <- rcpp_centroid_spectra(spectra)

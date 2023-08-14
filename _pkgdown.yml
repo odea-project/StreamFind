@@ -24,10 +24,21 @@ reference:
     _ProcessingSettings_ object obtains a subclass according to the assinged
     algorithm for each MS processing method. Below the available subclasses
     for _ProcessingSettings_ are listed for each processing method.
+- subtitle: centroid_spectra
+  desc: >
+    Settings for the processing method centroid_spectra.
+- contents:
+  - Settings_centroid_spectra_qCentroids
+- subtitle: bin_spectra
+  desc: >
+    Settings for the processing method bin_spectra.
+- contents:
+  - Settings_bin_spectra_qBinning
 - subtitle: find_features
   desc: >
     Settings for the processing method find_features.
 - contents:
+  - Settings_find_features_qPeaks
   - Settings_find_features_xcms3_centwave
   - Settings_find_features_openms
   - Settings_find_features_kpic2

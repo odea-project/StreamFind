@@ -7,13 +7,15 @@
 get_default_ProcessingSettings(call = NA_character_, algorithm = NA_character_)
 }
 \arguments{
-\item{call}{X.}
+\item{call}{Character (length 1) with the method call name.}
 
-\item{algorithm}{X.}
+\item{algorithm}{Character (length 1) with the algorithm name.}
 }
 \value{
-A ProcessingSettings S3 class object.
+A ProcessingSettings S3 class object with subclass as defined by
+\code{call} and \code{algorithm}.
 }
 \description{
-X.
+Saves on disk a ProcessingSettings S3 class object as the
+defined \code{format}, \code{path} and \code{name}.
 }

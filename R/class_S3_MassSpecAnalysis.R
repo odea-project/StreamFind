@@ -44,6 +44,8 @@
 #' @param spectra data.table with the raw spectra (only present if loaded).
 #' @param chromatograms data.table with the raw chromatograms (only present
 #' if loaded).
+#' @param feature_eics list with the feature extracted ions chromatograms (EICs)
+#' from binning of spectra.
 #' @param features data.table with the features from data processing.
 #' @param metadata List with flexible storage for experimental metadata
 #' (e.g., concentration, location, etc.).
@@ -74,6 +76,7 @@ MassSpecAnalysis <- function(name = NA_character_,
                              run = data.table(),
                              spectra = data.table(),
                              chromatograms = data.table(),
+                             feature_eics = list(),
                              features = data.table(),
                              metadata = list()) {
 
@@ -120,6 +123,7 @@ MassSpecAnalysis <- function(name = NA_character_,
     "run" = run,
     "spectra" = spectra,
     "chromatograms" = chromatograms,
+    "feature_eics" = feature_eics,
     "features" = features,
     "metadata" = metadata
   )
@@ -311,6 +315,11 @@ validate.MassSpecAnalysis <- function(x = NULL) {
       valid <- FALSE
     }
 
+    if (!is.list(x$feature_eics)) {
+      warning("Analysis feature_eics entry not conform!")
+      valid <- FALSE
+    }
+
     if (!is.data.frame(x$features)) {
       warning("Analysis features entry not conform!")
       valid <- FALSE
@@ -330,8 +339,10 @@ validate.MassSpecAnalysis <- function(x = NULL) {
 #' @describeIn MassSpecAnalysis
 #' Prints the MassSpecAnalysis S3 class object in the console.
 #'
+#' @param ... Not used.
+#'
 #' @export
-print.MassSpecAnalysis <- function(x) {
+print.MassSpecAnalysis <- function(x, ...) {
   cat("\n")
   cat(
     " ", class(x), "\n"

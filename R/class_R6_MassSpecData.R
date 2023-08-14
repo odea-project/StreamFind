@@ -968,7 +968,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (runParallel & length(analyses) > 1) {
         workers <- parallel::detectCores() - 1
-        if (length(files) < workers) workers <- length(analyses)
+        if (length(analyses) < workers) workers <- length(analyses)
         par_type <- "PSOCK"
         if (parallelly::supportsMulticore()) par_type <- "FORK"
         cl <- parallel::makeCluster(workers, type = par_type)
@@ -2229,8 +2229,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           eval <- validate.ProcessingSettings(x)
 
           if (eval) {
-
             processingFunctionCalls <- c(
+              "centroid_spectra", "bin_spectra",
               "find_features", "annotate_features",
               "load_features_ms1", "load_features_ms2",
               "load_groups_ms1", "load_groups_ms2",
@@ -2242,36 +2242,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
               warning("Call name not present in MassSpecData class processing methods!")
               eval <- FALSE
             }
-
-            if (eval) {
-
-              # if ("find_features" %in% x$call) {
-              #   ff_algorithm <- c(
-              #     "openms", "xcms", "xcms3", "envipick",
-              #     "sirius", "kpic2", "safd"
-              #   )
-              #
-              #   if (!any(ff_algorithm %in% x$algorithm)) {
-              #     warning("Algorithm not viable for find_features call!")
-              #     eval <- FALSE
-              #   }
-              # }
-
-              # if ("group_features" %in% x$call) {
-              #   fg_algorithm <- c("openms", "xcms", "xcms3", "kpic2", "sirius")
-              #
-              #   if (!any(fg_algorithm %in% x$algorithm)) {
-              #     warning("Algorithm not viable for group_feature call!")
-              #     eval <- FALSE
-              #   }
-              # }
-            }
           }
           eval
         }, FALSE)
 
         if (all(valid)) {
           settings <- lapply(settings, as.ProcessingSettings)
+
           call_names <- vapply(settings, function(x) x$call, NA_character_)
 
           if (is.null(private$.settings)) private$.settings <- list()
@@ -3272,7 +3249,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         if (is.numeric(call)) {
           to_remove <- call
         } else {
-          to_remove <- which(call %in% all_calls)
+          to_remove <- which(all_calls %in% call)
         }
 
         if (length(call) > 0) {
@@ -3328,8 +3305,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           }
 
           private$.alignment <- private$.alignment[keepAnalyses]
-          lapply(analyses, function(x) {
-            private$.register("removed", "analysis", x$name)
+          lapply(removeAnalyses, function(x) {
+            private$.register("removed", "analysis", x)
           })
           message("\U2713 Removed analyses:\n", paste(analyses, collapse = "\n"))
 
@@ -4581,6 +4558,48 @@ MassSpecData <- R6::R6Class("MassSpecData",
     ## ___ processing -----
 
     ### ___ basic -----
+
+    #' @description Centroids profile spectra data for each MS analysis.
+    #'
+    #' @return Invisible.
+    #'
+    centroid_spectra = function(settings = NULL) {
+      add_settings <- TRUE
+      if (is.null(settings)) add_settings <- FALSE
+
+      settings <- private$.get_call_settings(settings, "centroid_spectra")
+      if (is.null(settings)) return(invisible(self))
+
+      processed <- .s3_ms_centroid_spectra(settings, self)
+
+      if (processed) {
+        if (add_settings) self$add_settings(settings)
+        private$.register("processed", "centroid_spectra", settings$algorithm)
+      }
+
+      invisible(self)
+    },
+
+    #' @description Bins centroided spectra for each MS analysis.
+    #'
+    #' @return Invisible.
+    #'
+    bin_spectra = function(settings = NULL) {
+      add_settings <- TRUE
+      if (is.null(settings)) add_settings <- FALSE
+
+      settings <- private$.get_call_settings(settings, "bin_spectra")
+      if (is.null(settings)) return(invisible(self))
+
+      processed <- .s3_ms_bin_spectra(settings, self)
+
+      if (processed) {
+        if (add_settings) self$add_settings(settings)
+        private$.register("processed", "bin_spectra", settings$algorithm)
+      }
+
+      invisible(self)
+    },
 
     #' @description Finds features (i.e., chromatographic peaks) from MS data
     #' in analyses. The function uses the \pkg{patRoon} package

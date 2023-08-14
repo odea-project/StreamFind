@@ -9,8 +9,18 @@ asJSON <- function(x) {
 }
 
 #' @noRd
-export <- function(x) {
+export <- function(x, ...) {
   UseMethod("export")
+}
+
+#' @noRd
+.s3_ms_centroid_spectra <- function(settings, self) {
+  UseMethod(".s3_ms_centroid_spectra")
+}
+
+#' @noRd
+.s3_ms_bin_spectra <- function(settings, self) {
+  UseMethod(".s3_ms_bin_spectra")
 }
 
 #' @noRd

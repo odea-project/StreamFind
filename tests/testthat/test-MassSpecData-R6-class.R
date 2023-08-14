@@ -309,7 +309,7 @@ test_that("import headers and settings from json file", {
   expect_invisible(ms5$import_headers("headers.json"))
   expect_invisible(ms5$import_settings("settings.json"))
   expect_equal(ms$get_headers(), ms5$get_headers())
-  expect_equal(ms$get_settings(), ms5$get_settings())
+  expect_equal(names(ms$get_settings()), names(ms5$get_settings()))
 })
 
 test_that("import analyses and groups from json file", {

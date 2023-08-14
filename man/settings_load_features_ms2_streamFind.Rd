@@ -5,18 +5,44 @@
 \alias{validate.Settings_load_features_ms2_streamFind}
 \title{Settings_load_features_ms2_streamFind}
 \usage{
-Settings_load_features_ms2_streamFind()
+Settings_load_features_ms2_streamFind(
+  isolationWindow = 1.3,
+  mzClust = 0.003,
+  minIntensity = 0,
+  filtered = FALSE,
+  runParallel = FALSE,
+  verbose = FALSE
+)
 
 \method{validate}{Settings_load_features_ms2_streamFind}(x)
 }
 \arguments{
+\item{isolationWindow}{Numeric value with the isolation window (in Da)
+applied for ion isolation and fragmentation during acquisition of tandem
+data (i.e., MS2 data).}
+
+\item{mzClust}{Numeric value with the mass deviation threshold (in Da) to
+cluster mass traces. Highly dependent on the mass resolution of the MS data.}
+
+\item{minIntensity}{Numeric value with the minimum intensity.}
+
+\item{filtered}{Logical. When \code{TRUE}, filtered features/groups are considered.}
+
+\item{runParallel}{Logical of length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{verbose}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
 \item{x}{A Settings_load_features_ms2_streamFind S3 class object.}
 }
 \value{
-X.
+A ProcessingSettings S3 class object with subclass
+Settings_load_features_ms2_streamFind.
 }
 \description{
-X.
+Settings for loading MS2 spectra for features.
 }
 \section{Methods (by generic)}{
 \itemize{

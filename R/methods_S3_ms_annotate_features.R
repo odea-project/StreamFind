@@ -50,7 +50,7 @@
 
   if (parameters$runParallel & length(features) > 1 & !cached_analyses) {
     workers <- parallel::detectCores() - 1
-    if (length(files) < workers) workers <- length(features)
+    if (length(features) < workers) workers <- length(features)
     par_type <- "PSOCK"
     if (parallelly::supportsMulticore()) par_type <- "FORK"
     cl <- parallel::makeCluster(workers, type = par_type)
@@ -73,8 +73,8 @@
     vars <- c("rcpp_ms_annotation_isotopes", "parameters")
 
     iso_output <- foreach(i = features,
-                            .packages = "streamFind",
-                            .export = vars
+                          .packages = "streamFind",
+                          .export = vars
     ) %dopar% {
       do.call("rcpp_ms_annotation_isotopes", c(list("features" = i), parameters))
     }
@@ -94,6 +94,8 @@
         feature = NULL
 
         temp_f <- copy(features[[x]])
+
+        `.` <- list
 
         temp <- temp_f[temp_i, on = .(feature = feature)]
 

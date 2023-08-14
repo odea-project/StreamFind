@@ -133,6 +133,8 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \item \href{#method-MassSpecData-plot_groups_ms2}{\code{MassSpecData$plot_groups_ms2()}}
 \item \href{#method-MassSpecData-plot_groups_overview}{\code{MassSpecData$plot_groups_overview()}}
 \item \href{#method-MassSpecData-map_components}{\code{MassSpecData$map_components()}}
+\item \href{#method-MassSpecData-centroid_spectra}{\code{MassSpecData$centroid_spectra()}}
+\item \href{#method-MassSpecData-bin_spectra}{\code{MassSpecData$bin_spectra()}}
 \item \href{#method-MassSpecData-find_features}{\code{MassSpecData$find_features()}}
 \item \href{#method-MassSpecData-group_features}{\code{MassSpecData$group_features()}}
 \item \href{#method-MassSpecData-filter_features}{\code{MassSpecData$filter_features()}}
@@ -4097,6 +4099,54 @@ using \pkg{plotly}.}
 }
 \subsection{Returns}{
 A plot.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-centroid_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-centroid_spectra}{}}}
+\subsection{Method \code{centroid_spectra()}}{
+Centroids profile spectra data for each MS analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$centroid_spectra(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the \code{MassSpecData} object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-bin_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-bin_spectra}{}}}
+\subsection{Method \code{bin_spectra()}}{
+Bins centroided spectra for each MS analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$bin_spectra(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the \code{MassSpecData} object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
 }
 }
 \if{html}{\out{<hr>}}

@@ -1,4 +1,16 @@
 
+#' @title .s3_ms_find_features.Settings_find_features_qPeaks
+#'
+#' @description Finds features using the algorithm qPeaks.
+#'
+#' @noRd
+#'
+.s3_ms_find_features.Settings_find_features_qPeaks <- function(settings, self) {
+
+# TODO Max Implementation qPeaks method
+
+}
+
 #' @title .s3_ms_find_features.patRoon
 #'
 #' @description Finds features using the package patRoon.

@@ -22,11 +22,11 @@ ProcessingSettings(
 
 \method{validate}{ProcessingSettings}(x = NULL)
 
-\method{print}{ProcessingSettings}(x)
+\method{print}{ProcessingSettings}(x, ...)
 
 \method{asJSON}{ProcessingSettings}(x)
 
-\method{export}{ProcessingSettings}(x, format = "json", name = "settings", path = getwd())
+\method{export}{ProcessingSettings}(x, format = "json", name = "settings", path = getwd(), ...)
 
 as.ProcessingSettings(value)
 }
@@ -53,11 +53,14 @@ package.}
 
 \item{x}{A ProcessingSettings S3 class object.}
 
-\item{format}{X.}
+\item{...}{Not used.}
 
-\item{name}{X.}
+\item{format}{A string. Possible values are \code{json} and \code{rds} for saving as
+JSON or RDS formats, respectively.}
 
-\item{path}{X.}
+\item{name}{String with the name of the file to be saved.}
+
+\item{path}{String with the directory of the file to be saved.}
 
 \item{value}{A list to be checked and/or converted to ProcessingSettings S3
 class.}

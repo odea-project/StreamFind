@@ -32,13 +32,14 @@ MassSpecAnalysis(
   run = data.table(),
   spectra = data.table(),
   chromatograms = data.table(),
+  feature_eics = list(),
   features = data.table(),
   metadata = list()
 )
 
 \method{validate}{MassSpecAnalysis}(x = NULL)
 
-\method{print}{MassSpecAnalysis}(x)
+\method{print}{MassSpecAnalysis}(x, ...)
 
 \method{asJSON}{MassSpecAnalysis}(x)
 
@@ -113,6 +114,8 @@ if loaded).}
 (e.g., concentration, location, etc.).}
 
 \item{x}{A MassSpecAnalysis S3 class object.}
+
+\item{...}{Not used.}
 
 \item{value}{A list to be checked and/or converted to MassSpecAnalysis S3 class.}
 

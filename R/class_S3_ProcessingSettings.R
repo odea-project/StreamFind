@@ -122,8 +122,10 @@ validate.ProcessingSettings <- function(x = NULL) {
 #' @describeIn ProcessingSettings
 #' Prints the ProcessingSettings S3 class object in the console.
 #'
+#' @param ... Not used.
+#'
 #' @export
-print.ProcessingSettings <- function(x) {
+print.ProcessingSettings <- function(x, ...) {
   cat("\n")
   cat("", class(x)[length(class(x))], "\n")
   cat(
@@ -188,15 +190,16 @@ asJSON.ProcessingSettings <- function(x) {
 #' @describeIn ProcessingSettings
 #' Exports a ProcessingSettings S3 class object to a JSON or RDS file.
 #'
-#' @param format X.
-#' @param name X.
-#' @param path X.
+#' @template arg-ms-save-format
+#' @template arg-ms-save-name
+#' @template arg-ms-save-path
 #'
 #' @export
+#'
 export.ProcessingSettings <- function(x,
                                       format = "json",
                                       name = "settings",
-                                      path = getwd()) {
+                                      path = getwd(), ...) {
 
   if (class(x) %in% "ProcessingSettings") {
     if (validate(x)) {

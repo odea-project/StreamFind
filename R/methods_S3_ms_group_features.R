@@ -120,8 +120,8 @@
   self$add_groups(out_list[["groups"]])
 
   if (!is.null(alignment)) {
-    private$.register("added alignment")
-    private$.alignment <- alignment
+    # private$.register("added alignment")
+    self$add_alignment(alignment)
     message("\U2713 Added alignment of retention time for each analysis!")
   }
 

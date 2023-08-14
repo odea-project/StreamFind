@@ -5,18 +5,51 @@
 \alias{validate.Settings_load_features_ms1_streamFind}
 \title{Settings_load_features_ms1_streamFind}
 \usage{
-Settings_load_features_ms1_streamFind()
+Settings_load_features_ms1_streamFind(
+  rtWindow = c(-2, 2),
+  mzWindow = c(-1, 6),
+  mzClust = 0.003,
+  minIntensity = 250,
+  filtered = FALSE,
+  runParallel = FALSE,
+  verbose = FALSE
+)
 
 \method{validate}{Settings_load_features_ms1_streamFind}(x)
 }
 \arguments{
+\item{rtWindow}{Numeric vector of length two with the retention time values
+(in seconds) for expanding left and right the retention time range.
+The first element expands left and the second expands right.
+Note that the first element should be negative to expand to the left.}
+
+\item{mzWindow}{Numeric vector of length two with the mass or mass-to-charge
+ratio (\emph{m/z}) values (in Da) for expanding left and right the mass range.
+The first element expands left and the second expands right.
+Note that the first element should be negative to expand to the left.}
+
+\item{mzClust}{Numeric value with the mass deviation threshold (in Da) to
+cluster mass traces. Highly dependent on the mass resolution of the MS data.}
+
+\item{minIntensity}{Numeric value with the minimum intensity.}
+
+\item{filtered}{Logical. When \code{TRUE}, filtered features/groups are considered.}
+
+\item{runParallel}{Logical of length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{verbose}{Logical with length one. Set \code{TRUE} to output diagnostic and
+result messages. When \code{FALSE}, some messages are omitted.}
+
 \item{x}{A Settings_load_features_ms1_streamFind S3 class object.}
 }
 \value{
-X.
+A ProcessingSettings S3 class object with subclass
+Settings_load_features_ms1_streamFind.
 }
 \description{
-X.
+Settings for loading MS1 spectra for features.
 }
 \section{Methods (by generic)}{
 \itemize{
