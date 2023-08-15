@@ -7,8 +7,20 @@
 #'
 .s3_ms_find_features.Settings_find_features_qPeaks <- function(settings, self) {
 
-# TODO Max Implementation qPeaks method
+  message("Finding features with qPeaks...", appendLF = TRUE)
 
+  if (!any(self$has_features_eic())) {
+    warning("Feature EICs not found! Run bin_spectra to build feature EICs first.")
+    return(FALSE)
+  }
+
+  eics <- self$get_features_eic()
+
+  # TODO Max Implementation qPeaks method
+
+  # self$add_features(features)
+
+  FALSE
 }
 
 #' @title .s3_ms_find_features.patRoon

@@ -32,7 +32,7 @@ MassSpecAnalysis(
   run = data.table(),
   spectra = data.table(),
   chromatograms = data.table(),
-  feature_eics = list(),
+  features_eic = list(),
   features = data.table(),
   metadata = list()
 )
@@ -107,6 +107,9 @@ data (content is highly vendor dependent).}
 
 \item{chromatograms}{data.table with the raw chromatograms (only present
 if loaded).}
+
+\item{features_eic}{list with the feature extracted ions chromatograms (EICs)
+from binning of spectra.}
 
 \item{features}{data.table with the features from data processing.}
 

@@ -121,7 +121,7 @@ Rcpp::List rcpp_parse_ms_analysis(std::string file_path) {
 
       list_out["spectra"] = empty_df;
       list_out["chromatograms"] = empty_df;
-      list_out["feature_eics"] = empty_list;
+      list_out["features_eic"] = empty_list;
       list_out["features"] = empty_df;
       list_out["metadata"] = empty_list;
 

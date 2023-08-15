@@ -40,7 +40,7 @@ Rcpp::List rcpp_centroid_spectra(Rcpp::DataFrame spectra) {
     int scan = unique_scans.at(i);
 
     // Diagnostic output
-    Rcpp::Rcout << "\u2699 Processing scan: " << scan << " " << std::endl;
+    // Rcpp::Rcout << "\u2699 Processing scan: " << scan << " " << std::endl;
 
     // finds the indexes of the scan values and gets them
     std::vector<std::size_t> which_idx;

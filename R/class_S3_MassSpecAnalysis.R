@@ -44,7 +44,7 @@
 #' @param spectra data.table with the raw spectra (only present if loaded).
 #' @param chromatograms data.table with the raw chromatograms (only present
 #' if loaded).
-#' @param feature_eics list with the feature extracted ions chromatograms (EICs)
+#' @param features_eic list with the feature extracted ions chromatograms (EICs)
 #' from binning of spectra.
 #' @param features data.table with the features from data processing.
 #' @param metadata List with flexible storage for experimental metadata
@@ -76,7 +76,7 @@ MassSpecAnalysis <- function(name = NA_character_,
                              run = data.table(),
                              spectra = data.table(),
                              chromatograms = data.table(),
-                             feature_eics = list(),
+                             features_eic = list(),
                              features = data.table(),
                              metadata = list()) {
 
@@ -123,7 +123,7 @@ MassSpecAnalysis <- function(name = NA_character_,
     "run" = run,
     "spectra" = spectra,
     "chromatograms" = chromatograms,
-    "feature_eics" = feature_eics,
+    "features_eic" = features_eic,
     "features" = features,
     "metadata" = metadata
   )
@@ -315,8 +315,8 @@ validate.MassSpecAnalysis <- function(x = NULL) {
       valid <- FALSE
     }
 
-    if (!is.list(x$feature_eics)) {
-      warning("Analysis feature_eics entry not conform!")
+    if (!is.list(x$features_eic)) {
+      warning("Analysis features_eic entry not conform!")
       valid <- FALSE
     }
 
@@ -514,7 +514,9 @@ parse.MassSpecAnalysis <- function(files = NULL, runParallel = FALSE) {
     message("\U2139 Analyses loaded from cache!")
   }
 
-  if (runParallel) parallel::stopCluster(cl)
+  if (runParallel & length(files) > 1 & !cached_analyses) {
+    parallel::stopCluster(cl)
+  }
 
   if (!is.null(analyses)) {
     if (all(is.na(replicates))) {

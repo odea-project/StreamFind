@@ -1085,7 +1085,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           }
         }
 
-        if (runParallel) parallel::stopCluster(cl)
+        if (runParallel & length(analyses) > 1) parallel::stopCluster(cl)
       }
 
       if (length(spec_list) == length(analyses)) {
@@ -2229,14 +2229,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           eval <- validate.ProcessingSettings(x)
 
           if (eval) {
-            processingFunctionCalls <- c(
-              "centroid_spectra", "bin_spectra",
-              "find_features", "annotate_features",
-              "load_features_ms1", "load_features_ms2",
-              "load_groups_ms1", "load_groups_ms2",
-              "group_features", "fill_features",
-              "filter_features"
-            )
+            processingFunctionCalls <- self$processing_function_calls()
 
             if (!any(processingFunctionCalls %in% x$call)) {
               warning("Call name not present in MassSpecData class processing methods!")
@@ -2436,6 +2429,177 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       } else {
         warning("Not done, check the value!")
+      }
+      invisible(self)
+    },
+
+    #' @description
+    #' Adds spectra to analyses.
+    #'
+    #' @param spectra A data.table with spectra from MS analyses as obtained
+    #' by the method `get_spectra()`.
+    #'
+    #' @param replace Logical. When `TRUE`, existing spectra are replaced by
+    #' the new features.
+    #'
+    #' @return Invisible.
+    #'
+    add_spectra = function(spectra = NULL, replace = TRUE) {
+      valid <- FALSE
+      org_analysis_names <- unname(self$get_analysis_names())
+      must_have_cols <- c(
+        "index", "scan", "level", "pre_scan", "pre_ce",
+        "pre_mz", "rt", "mz", "intensity"
+      )
+
+      if (is.data.frame(spectra)) {
+        must_have_cols <- c("analysis", must_have_cols)
+
+        if (all(must_have_cols %in% colnames(spectra))) {
+          spectra <- spectra[order(spectra$analysis), ]
+          analysis_names <- unique(spectra$analysis)
+
+          if (all(analysis_names %in% org_analysis_names)) {
+            valid <- TRUE
+            split_vector <- spectra$analysis
+            spectra$analysis <- NULL
+            spectra <- split(spectra, split_vector)
+          }
+
+        } else {
+          warning("Features data frame does not have all mandatory columns!")
+        }
+
+      } else if (is.list(spectra)) {
+        analysis_names <- sort(names(spectra))
+
+        if (all(analysis_names %in% org_analysis_names)) {
+          spectra <- spectra[analysis_names]
+          valid <- vapply(spectra, function(x, must_have_cols) {
+
+            if (is.data.frame(x)) {
+              if (all(must_have_cols %in% colnames(x))) {
+                return(TRUE)
+              }
+            }
+            FALSE
+          }, must_have_cols = must_have_cols, FALSE)
+
+          valid <- all(valid)
+        }
+      }
+
+      if (valid) {
+        n_data <- sum(vapply(spectra, function(x) nrow(x), 0))
+
+        org_spectra <- lapply(private$.analyses, function(x) x$spectra)
+        names(org_spectra) <- names(private$.analyses)
+
+        if (replace) {
+          org_spectra[names(spectra)] <- spectra
+
+          private$.analyses <- Map(
+            function(x, y) {
+              x$spectra <- y
+              x
+            },
+            private$.analyses, org_spectra
+          )
+
+          private$.register("added", "spectra", n_data)
+          message("\U2713 ", n_data, " spectra added!")
+
+        } else {
+          warning("rbind for spectra not implemented yet!")
+          # TODO add rbind option for features
+          # Possibly needed to redo the index and amend the features ID
+        }
+      } else {
+        warning("Invalid spectra content or structure! Not added.")
+      }
+      invisible(self)
+    },
+
+    #' @description
+    #' Adds extracted ion chromatograms (EICs) of features to analyses.
+    #'
+    #' @param eics A data.table with features from MS analyses as obtained
+    #' by the method `get_features_eics()`.
+    #'
+    #' @param replace Logical. When `TRUE`, existing EICs of features are
+    #' replaced by the new EICs.
+    #'
+    #' @return Invisible.
+    #'
+    add_features_eic = function(eics = NULL, replace = TRUE) {
+      valid <- FALSE
+      org_analysis_names <- unname(self$get_analysis_names())
+      must_have_cols <- c("feature", "index", "mz", "rt", "intensity")
+
+      if (is.data.frame(eics)) {
+        must_have_cols <- c("analysis", must_have_cols)
+
+        if (all(must_have_cols %in% colnames(eics))) {
+          eics <- eics[order(eics$analysis), ]
+          analysis_names <- unique(eics$analysis)
+
+          if (all(analysis_names %in% org_analysis_names)) {
+            valid <- TRUE
+            split_vector <- eics$analysis
+            eics$analysis <- NULL
+            eics <- split(eics, split_vector)
+          }
+
+        } else {
+          warning("EICs data frame does not have all mandatory columns!")
+        }
+
+      } else if (is.list(eics)) {
+        analysis_names <- sort(names(eics))
+
+        if (all(analysis_names %in% org_analysis_names)) {
+          eics <- eics[analysis_names]
+          valid <- vapply(eics, function(x, must_have_cols) {
+
+            if (is.data.frame(x)) {
+              if (all(must_have_cols %in% colnames(x))) {
+                return(TRUE)
+              }
+            }
+            FALSE
+          }, must_have_cols = must_have_cols, FALSE)
+
+          valid <- all(valid)
+        }
+      }
+
+      if (valid) {
+        n_fts <- sum(vapply(eics, function(x) length(x), 0))
+
+        org_features_eic <- lapply(private$.analyses, function(x) x$features_eic)
+        names(org_features_eic) <- names(private$.analyses)
+
+        if (replace) {
+          org_features_eic[names(eics)] <- eics
+
+          private$.analyses <- Map(
+            function(x, y) {
+              x$features_eic <- y
+              x
+            },
+            private$.analyses, org_features
+          )
+
+          private$.register("added", "features_eic", n_fts)
+          message("\U2713 ", n_fts, " feature EICs added!")
+
+        } else {
+          warning("rbind for feature EICs not implemented yet!")
+          # TODO add rbind option for features
+          # Possibly needed to redo the index and amend the features ID
+        }
+      } else {
+        warning("Invalid EICs content or structure! Not added.")
       }
       invisible(self)
     },
@@ -3834,6 +3998,27 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
+    #' Checks for presence of feature extracted ion chromatograms (EICs) in
+    #' given analyses names/indices.
+    #'
+    #' @return Logical value.
+    #'
+    has_features_eic = function(analyses = NULL) {
+      analyses <- private$.check_analyses_argument(analyses)
+      if (is.null(analyses)) {
+        return(FALSE)
+      }
+
+      has_eics <- vapply(
+        private$.analyses[analyses],
+        function(x) length(x$features_eic) > 0, FALSE
+      )
+
+      names(has_eics) <- self$get_analysis_names(analyses)
+      has_eics
+    },
+
+    #' @description
     #' Checks if given analyses have features.
     #'
     #' @return Logical value.
@@ -5220,6 +5405,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     processing_function_calls = function() {
       c(
+        "centroid_spectra",
+        "bin_spectra",
         "find_features",
         "annotate_features",
         "load_features_ms1",
