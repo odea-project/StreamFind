@@ -83,6 +83,8 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \item \href{#method-MassSpecData-add_analyses}{\code{MassSpecData$add_analyses()}}
 \item \href{#method-MassSpecData-add_replicate_names}{\code{MassSpecData$add_replicate_names()}}
 \item \href{#method-MassSpecData-add_blank_names}{\code{MassSpecData$add_blank_names()}}
+\item \href{#method-MassSpecData-add_spectra}{\code{MassSpecData$add_spectra()}}
+\item \href{#method-MassSpecData-add_features_eic}{\code{MassSpecData$add_features_eic()}}
 \item \href{#method-MassSpecData-add_features}{\code{MassSpecData$add_features()}}
 \item \href{#method-MassSpecData-add_groups}{\code{MassSpecData$add_groups()}}
 \item \href{#method-MassSpecData-add_alignment}{\code{MassSpecData$add_alignment()}}
@@ -113,6 +115,7 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \item \href{#method-MassSpecData-has_loaded_groups_ms1}{\code{MassSpecData$has_loaded_groups_ms1()}}
 \item \href{#method-MassSpecData-has_loaded_groups_ms2}{\code{MassSpecData$has_loaded_groups_ms2()}}
 \item \href{#method-MassSpecData-has_settings}{\code{MassSpecData$has_settings()}}
+\item \href{#method-MassSpecData-has_features_eic}{\code{MassSpecData$has_features_eic()}}
 \item \href{#method-MassSpecData-has_features}{\code{MassSpecData$has_features()}}
 \item \href{#method-MassSpecData-has_alignment}{\code{MassSpecData$has_alignment()}}
 \item \href{#method-MassSpecData-has_groups}{\code{MassSpecData$has_groups()}}
@@ -2016,6 +2019,54 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-add_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-add_spectra}{}}}
+\subsection{Method \code{add_spectra()}}{
+Adds spectra to analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$add_spectra(spectra = NULL, replace = TRUE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{spectra}}{A data.table with spectra from MS analyses as obtained
+by the method \code{get_spectra()}.}
+
+\item{\code{replace}}{Logical. When \code{TRUE}, existing spectra are replaced by
+the new features.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-add_features_eic"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-add_features_eic}{}}}
+\subsection{Method \code{add_features_eic()}}{
+Adds extracted ion chromatograms (EICs) of features to analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$add_features_eic(eics = NULL, replace = TRUE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{eics}}{A data.table with features from MS analyses as obtained
+by the method \code{get_features_eics()}.}
+
+\item{\code{replace}}{Logical. When \code{TRUE}, existing EICs of features are
+replaced by the new EICs.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecData-add_features"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-add_features}{}}}
 \subsection{Method \code{add_features()}}{
@@ -2645,6 +2696,28 @@ Checks if there are processing settings.
 \describe{
 \item{\code{call}}{A string or a vector of strings with the name/s of the
 processing method/s.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Logical value.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-has_features_eic"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-has_features_eic}{}}}
+\subsection{Method \code{has_features_eic()}}{
+Checks for presence of feature extracted ion chromatograms (EICs) in
+given analyses names/indices.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$has_features_eic(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 }
 \if{html}{\out{</div>}}
 }

@@ -58,6 +58,8 @@ ms$bin_spectra(qBinning)
 
 ms$find_features(qPeaks)
 
+# spectra dt -------------------------------------------------------------------
+
 # tof_spectra <- ms$get_spectra(1)
 # tof_spectra <- tof_spectra[, c("scan", "rt", "mz", "intensity")]
 #

@@ -2077,11 +2077,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
            pol <- self$get_polarities(analysis)
 
            if ("positive" %in% pol) {
-             database$mz <- db$mass + 1.007276
+             database$mz <- database$mass + 1.007276
            }
 
            if ("negative" %in% pol) {
-             database$mz <- db$mass - 1.007276
+             database$mz <- database$mass - 1.007276
            }
          }
 
