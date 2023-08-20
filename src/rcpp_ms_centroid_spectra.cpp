@@ -25,7 +25,7 @@ Rcpp::List rcpp_centroid_spectra(Rcpp::DataFrame spectra) {
   // - When ion mobility is applied this is TRUE, meaning that the rt values should
   // be amended with drift time values
   if (unique_scans.size() != unique_rt_vals.size()) {
-    std::cout << "\u2717 The number of scans differs from the number of retention time values!" << std::endl;
+    Rcpp::Rcout << "\u2717 The number of scans differs from the number of retention time values!" << std::endl;
     return list_out;
   }
 
@@ -40,7 +40,7 @@ Rcpp::List rcpp_centroid_spectra(Rcpp::DataFrame spectra) {
     int scan = unique_scans.at(i);
 
     // Diagnostic output
-    std::cout << "\u2699 Processing scan: " << scan << " " << std::endl;
+    // Rcpp::Rcout << "\u2699 Processing scan: " << scan << " " << std::endl;
 
     // finds the indexes of the scan values and gets them
     std::vector<std::size_t> which_idx;

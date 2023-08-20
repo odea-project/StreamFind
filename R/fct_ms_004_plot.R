@@ -321,7 +321,7 @@ plot_xic_interactive <- function(xic,
 #' @noRd
 #'
 plot_eic_static <- function(eic = NULL, legendNames = NULL, colorBy = "targets",
-                            title = NULL) {
+                            title = NULL, showLegend = TRUE) {
   if (!"id" %in% colnames(eic)) eic$id <- NA_character_
 
   if ("analyses" %in% colorBy) {
@@ -346,12 +346,14 @@ plot_eic_static <- function(eic = NULL, legendNames = NULL, colorBy = "targets",
   sp <- unique(eic$analysis)
   ids <- unique(eic$id)
 
+  ylim_oufset <- 1 + (0.05*length(unique(eic$var)))
+
   plot(eic$rt,
     type = "n",
     xlab = "Retention time / seconds",
     ylab = "Intensity / counts",
     xlim = c(min(eic$rt), max(eic$rt)),
-    ylim = c(0, max(eic$intensity)),
+    ylim = c(0, max(eic$intensity) * ylim_oufset),
     main = title
   )
 
@@ -378,13 +380,18 @@ plot_eic_static <- function(eic = NULL, legendNames = NULL, colorBy = "targets",
     }
   }
 
-  legend(
-    "topright",
-    legend = names(cl),
-    col = cl,
-    lty = 1,
-    cex = 0.8
-  )
+  if (showLegend) {
+    legend(
+      "topleft",
+      # x = min(eic$rt),
+      # y = max(eic$intensity),
+      legend = names(cl),
+      col = cl,
+      lty = 1,
+      cex = 0.8,
+      bty = "n"
+    )
+  }
 }
 
 #' plot_eic_interactive
@@ -612,6 +619,9 @@ plot_ms2_static <- function(ms2 = NULL, legendNames = NULL,
     leg <- legendNames
     names(leg) <- unique(ms2$id)
     varkey <- leg[ms2$id]
+  } else if ("name" %in% colnames(ms2) & isTRUE(legendNames)) {
+    leg <- unique(ms2$name)
+    varkey <- ms2$name
   } else {
     leg <- unique(ms2$id)
     varkey <- ms2$id
@@ -667,11 +677,12 @@ plot_ms2_static <- function(ms2 = NULL, legendNames = NULL,
   axis(1, seq(ticksMin, ticksMax, 2.5), labels = FALSE, lwd = 0.5, col = "darkgray")
 
   legend(
-    "topright",
+    "topleft",
     legend = levels(ms2$var),
     col = cl,
     lty = 1,
-    cex = 0.8
+    cex = 0.8,
+    bty = "n"
   )
 }
 
@@ -705,6 +716,9 @@ plot_ms2_interactive <- function(ms2 = NULL, legendNames = NULL,
     leg <- legendNames
     names(leg) <- unique(ms2$id)
     varkey <- leg[ms2$id]
+  } else if ("name" %in% colnames(ms2) & isTRUE(legendNames)) {
+    leg <- unique(ms2$name)
+    varkey <- ms2$name
   } else {
     leg <- unique(ms2$id)
     varkey <- ms2$id
@@ -811,6 +825,9 @@ plot_ms1_static <- function(ms1 = NULL, legendNames = NULL,
     leg <- legendNames
     names(leg) <- unique(ms1$id)
     varkey <- leg[ms1$id]
+  } else if ("name" %in% colnames(ms1) & isTRUE(legendNames)) {
+    leg <- unique(ms1$name)
+    varkey <- ms1$name
   } else {
     leg <- unique(ms1$id)
     varkey <- ms1$id
@@ -860,11 +877,12 @@ plot_ms1_static <- function(ms1 = NULL, legendNames = NULL,
   )
 
   legend(
-    "topright",
+    "topleft",
     legend = levels(ms1$var),
     col = cl,
     lty = 1,
-    cex = 0.8
+    cex = 0.8,
+    bty = "n"
   )
 }
 
@@ -898,6 +916,9 @@ plot_ms1_interactive <- function(ms1 = NULL, legendNames = NULL,
     leg <- legendNames
     names(leg) <- unique(ms1$id)
     varkey <- leg[ms1$id]
+  } else if ("name" %in% colnames(ms1) & isTRUE(legendNames)) {
+    leg <- unique(ms1$name)
+    varkey <- ms1$name
   } else {
     leg <- unique(ms1$id)
     varkey <- ms1$id
@@ -1000,6 +1021,9 @@ plot_features_static <- function(eic = NULL, features = NULL,
     leg <- legendNames
     names(leg) <- unique(eic$id)
     varkey <- leg[eic$id]
+  } else if ("name" %in% colnames(eic) & isTRUE(legendNames)) {
+    leg <- unique(eic$name)
+    varkey <- eic$name
   } else {
     leg <- unique(eic$id)
     varkey <- eic$id
@@ -1008,9 +1032,10 @@ plot_features_static <- function(eic = NULL, features = NULL,
   eic$var <- varkey
 
   eic$unique_ids <- paste0(eic$id, eic$analysis)
+
   features$unique_ids <- paste0(features$feature, features$analysis)
 
-  cl <- get_colors(unique(eic$var))
+  cl <- get_colors(leg)
 
   ids <- unique(eic$unique_ids)
 
@@ -1027,11 +1052,7 @@ plot_features_static <- function(eic = NULL, features = NULL,
     select_vector <- eic$unique_ids == t
     lt <- unique(eic$var[select_vector])
     pk_eic <- eic[select_vector, ]
-    pk_a <- features[features$unique_ids == t, ]
-    pk_eic_a <- pk_eic[
-      pk_eic$rt >= pk_a$rtmin &
-      pk_eic$rt <= pk_a$rtmax,
-    ]
+
     points(
       x = pk_eic$rt,
       y = pk_eic$intensity,
@@ -1048,28 +1069,39 @@ plot_features_static <- function(eic = NULL, features = NULL,
       cex = 0.3,
       col = cl[lt]
     )
-    polygon(
-      c(pk_eic_a$rt, rev(pk_eic_a$rt)),
-      c(pk_eic_a$intensity, rep(0, length(pk_eic_a$intensity))),
-      col = paste(color = unname(cl[lt]), 50, sep = ""),
-      border = F
-    )
-    lines(
-      x = rep(pk_a$rt, 2),
-      y = c(0, pk_a$intensity),
-      type = "l",
-      pch = 19,
-      cex = 0.6,
-      col = cl[lt]
-    )
+
+    pk_a <- features[features$unique_ids == t, ]
+
+    for (f in seq_len(nrow(pk_a))) {
+      pk_eic_a <- pk_eic[
+        pk_eic$rt >= pk_a$rtmin[f] &
+          pk_eic$rt <= pk_a$rtmax[f],
+      ]
+
+      polygon(
+        c(pk_eic_a$rt, rev(pk_eic_a$rt)),
+        c(pk_eic_a$intensity, rep(0, length(pk_eic_a$intensity))),
+        col = paste(color = unname(cl[lt]), 50, sep = ""),
+        border = F
+      )
+      lines(
+        x = rep(pk_a$rt, 2),
+        y = c(0, pk_a$intensity),
+        type = "l",
+        pch = 19,
+        cex = 0.6,
+        col = cl[lt]
+      )
+    }
   }
 
   legend(
-    "topright",
+    "topleft",
     legend = names(cl),
     col = cl,
     lty = 1,
-    cex = 0.8
+    cex = 0.8,
+    bty = "n"
   )
 }
 
@@ -1106,6 +1138,9 @@ plot_features_interactive <- function(eic = NULL, features = NULL,
     leg <- legendNames
     names(leg) <- unique(eic$id)
     varkey <- leg[eic$id]
+  } else if ("name" %in% colnames(eic) & isTRUE(legendNames)) {
+    leg <- unique(eic$name)
+    varkey <- eic$name
   } else {
     leg <- unique(eic$id)
     varkey <- eic$id
@@ -1114,9 +1149,8 @@ plot_features_interactive <- function(eic = NULL, features = NULL,
   eic$var <- varkey
 
   eic$unique_ids <- paste0(eic$id, eic$analysis)
-  features$unique_ids <- paste0(features$feature, features$analysis)
 
-  leg <- unique(eic$var)
+  features$unique_ids <- paste0(features$feature, features$analysis)
 
   cl <- get_colors(leg)
 
@@ -1162,53 +1196,57 @@ plot_features_interactive <- function(eic = NULL, features = NULL,
     if (length(y) >= 1) showL[lt] <- FALSE
 
     pk <- features[features$unique_ids %in% t, ]
-    pk_eic <- eic[eic$rt >= pk$rtmin & eic$rt <= pk$rtmax & eic$unique_ids %in% t, ]
 
-    hT <- paste(
-      "</br> feature: ", pk$feature,
-      ifelse("group" %in% colnames(pk),
-        paste("</br> group: ", pk$group), ""
-      ),
-      "</br> analysis: ", pk$analysis,
-      "</br> <i>m/z</i>: ", round(pk$mz, digits = 4),
-      "</br> dppm: ", round(((pk$mzmax - pk$mzmin) / pk$mz) * 1E6, digits = 0),
-      "</br> rt: ", round(pk$rt, digits = 0),
-      "</br> drt: ", round(pk$rtmax - pk$rtmin, digits = 0),
-      "</br> intensity: ", round(pk$intensity, digits = 0),
-      "</br> filled: ",
-      if ("is_filled" %in% colnames(pk)) {
-        ifelse(pk$is_filled == 1, TRUE, FALSE)
-      } else {
-        FALSE
-      }
-    )
+    for (f in seq_len(nrow(pk))) {
 
-    plot <- plot %>% add_trace(
-      x = pk_eic$rt,
-      y = pk_eic$intensity,
-      type = "scatter", mode = "lines+markers",
-      line = list(width = 0.6, color = unname(cl[lt])),
-      fill = "tozeroy", connectgaps = TRUE,
-      fillcolor = paste(color = unname(cl[lt]), 50, sep = ""),
-      marker = list(size = 3, color = unname(cl[lt])),
-      name = lt,
-      legendgroup = lt,
-      showlegend = FALSE,
-      hoverinfo = "text",
-      text = hT
-    )
+      pk_eic <- eic[eic$rt >= pk$rtmin[f] & eic$rt <= pk$rtmax[f] & eic$unique_ids %in% t, ]
 
-    plot <- plot %>% add_segments(
-      x = pk$rt,
-      xend = pk$rt,
-      y = 0,
-      yend = pk$intensity,
-      legendgroup = lt,
-      showlegend = FALSE,
-      line = list(color = unname(cl[lt]), size = 0.5),
-      hoverinfo = "text",
-      text = hT
-    )
+      hT <- paste(
+        "</br> feature: ", pk$feature[f],
+        ifelse("group" %in% colnames(pk),
+          paste("</br> group: ", pk$group[f]), ""
+        ),
+        "</br> analysis: ", pk$analysis[f],
+        "</br> <i>m/z</i>: ", round(pk$mz[f], digits = 4),
+        "</br> dppm: ", round(((pk$mzmax[f] - pk$mzmin[f]) / pk$mz[f]) * 1E6, digits = 0),
+        "</br> rt: ", round(pk$rt[f], digits = 0),
+        "</br> drt: ", round(pk$rtmax[f] - pk$rtmin[f], digits = 0),
+        "</br> intensity: ", round(pk$intensity[f], digits = 0),
+        "</br> filled: ",
+        if ("is_filled" %in% colnames(pk)) {
+          ifelse(pk$is_filled[f] == 1, TRUE, FALSE)
+        } else {
+          FALSE
+        }
+      )
+
+      plot <- plot %>% add_trace(
+        x = pk_eic$rt,
+        y = pk_eic$intensity,
+        type = "scatter", mode = "lines+markers",
+        line = list(width = 0.6, color = unname(cl[lt])),
+        fill = "tozeroy", connectgaps = TRUE,
+        fillcolor = paste(color = unname(cl[lt]), 50, sep = ""),
+        marker = list(size = 3, color = unname(cl[lt])),
+        name = lt,
+        legendgroup = lt,
+        showlegend = FALSE,
+        hoverinfo = "text",
+        text = hT
+      )
+
+      plot <- plot %>% add_segments(
+        x = pk$rt[f],
+        xend = pk$rt[f],
+        y = 0,
+        yend = pk$intensity[f],
+        legendgroup = lt,
+        showlegend = FALSE,
+        line = list(color = unname(cl[lt]), size = 0.5),
+        hoverinfo = "text",
+        text = hT
+      )
+    }
   }
 
   plot <- plot %>% plotly::layout(
@@ -1257,6 +1295,9 @@ map_features_static <- function(features, colorBy = "targets",
     leg <- legendNames
     names(leg) <- unique(features$feature)
     varkey <- leg[features$feature]
+  } else if ("name" %in% colnames(features) & isTRUE(legendNames)) {
+    leg <- unique(features$name)
+    varkey <- features$name
   } else {
     leg <- unique(features$feature)
     varkey <- features$feature
@@ -1272,12 +1313,14 @@ map_features_static <- function(features, colorBy = "targets",
     rtr <- c(min(features$rtmin), max(features$rtmax))
   }
 
+  ylim_oufset <- 1 + (0.02 * length(unique(features$var)))
+
   if (length(ylim) == 1) {
-    mzr <- c(min(features$mzmin) - ylim, max(features$mzmax) + ylim)
+    mzr <- c(min(features$mzmin) - ylim, (max(features$mzmax) + ylim) * ylim_oufset)
   } else if (length(ylim) == 2) {
     mzr <- ylim
   } else {
-    mzr <- c(min(features$mzmin), max(features$mzmax))
+    mzr <- c(min(features$mzmin), max(features$mzmax) * ylim_oufset)
   }
 
   cl <- get_colors(unique(features$var))
@@ -1312,12 +1355,13 @@ map_features_static <- function(features, colorBy = "targets",
 
   if (showLegend) {
     legend(
-      "topright",
+      "topleft",
       legend = names(cl),
       col = cl,
       pch = 19,
       lty = 1,
-      cex = 0.8
+      cex = 0.8,
+      bty = "n"
     )
   }
 }
@@ -1357,6 +1401,9 @@ map_features_interactive <- function(features, colorBy = "targets",
     leg <- legendNames
     names(leg) <- unique(features$feature)
     varkey <- leg[features$feature]
+  } else if ("name" %in% colnames(features) & isTRUE(legendNames)) {
+    leg <- unique(features$name)
+    varkey <- features$name
   } else {
     leg <- unique(features$feature)
     varkey <- features$feature
@@ -1382,46 +1429,68 @@ map_features_interactive <- function(features, colorBy = "targets",
 
   cl <- get_colors(unique(features$var))
 
+  plotlegend <- rep(TRUE, length(cl))
+  names(plotlegend) <- names(cl)
+
   plot <- plot_ly()
 
-  plot <- plot %>% add_trace(
-    x = features$rt, y = features$mz, color = features$var,
-    type = "scatter", mode = "markers", colors = cl,
-    marker = list(size = 8),
-    hoverinfo = "text",
-    text = paste(
-      "</br> feature: ", features$feature,
-      "</br> analysis: ", features$analysis,
-      "</br> <i>m/z</i>: ", round(features$mz, digits = 4),
-      "</br> dppm: ", round(((features$mzmax - features$mzmin) /
-        features$mz) * 1E6, digits = 0),
-      "</br> rt: ", round(features$rt, digits = 0),
-      "</br> drt: ", round(features$rtmax - features$rtmin, digits = 0),
-      "</br> intensity: ", round(features$intensity, digits = 0),
-      "</br> filled: ",
-      if ("is_filled" %in% colnames(features)) {
-        ifelse(features$is_filled == 1, TRUE, FALSE)
-      } else {
-        FALSE
-      }
-    )
-  )
+  for (i in seq_len(nrow(features))) {
 
-  shapes <- list()
+    x0 <- features$rtmin[i]
+    x1 <- features$rtmax[i]
+    y0 <- features$mzmin[i]
+    y1 <- features$mzmax[i]
+
+    plot <- plot %>% add_trace(
+      x = c(x0, x1, x1, x0, x0),
+      y = c(y0, y0, y1, y1, y0),
+      type = "scatter",
+      mode = "lines",
+      fill = "none",
+      line = list(color = cl[features$var[i]]),
+      opacity = 0.2,
+      name = features$var[i],
+      legendgroup = features$var[i],
+      showlegend = FALSE
+    )
+  }
+
 
   for (i in seq_len(nrow(features))) {
-    shapes[[i]] <- list(
-      type = "rect",
-      fillcolor = cl[names(cl) %in% features$var[i]],
-      opacity = 0.2,
-      line = list(color = cl[names(cl) %in% features$var[i]]),
-      x0 = features$rtmin[i],
-      x1 = features$rtmax[i],
-      xref = "x",
-      y0 = features$mzmin[i],
-      y1 = features$mzmax[i],
-      yref = "y"
+    ft <- features[i, ]
+    x <- ft$rt
+    y <- ft$mz
+
+    plot <- plot %>% add_trace(
+      x = x, y = y,
+      type = "scatter", mode = "markers",
+      #color = cl[ft$var],
+      marker = list(size = 8, color = cl[ft$var]),
+      name = ft$var,
+      legendgroup = ft$var,
+      showlegend = plotlegend[ft$var],
+      hoverinfo = "text",
+      text = paste(
+        "</br> feature: ", ft$feature,
+        "</br> analysis: ", ft$analysis,
+        "</br> <i>m/z</i>: ", round(y, digits = 4),
+        "</br> dppm: ", round(((ft$mzmax - ft$mzmin) /
+                                 y) * 1E6, digits = 0),
+        "</br> rt: ", round(x, digits = 0),
+        "</br> drt: ", round(ft$rtmax - ft$rtmin, digits = 0),
+        "</br> intensity: ", round(ft$intensity, digits = 0),
+        "</br> filled: ",
+        if ("is_filled" %in% colnames(ft)) {
+          ifelse(ft$is_filled == 1, TRUE, FALSE)
+        } else {
+          FALSE
+        }
+      )
     )
+
+    if (isTRUE(plotlegend[ft$var])) {
+      plotlegend[ft$var] <- FALSE
+    }
   }
 
   title <- list(
@@ -1448,11 +1517,10 @@ map_features_interactive <- function(features, colorBy = "targets",
     legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
     xaxis = xaxis,
     yaxis = yaxis,
-    title = title,
-    shapes = shapes
+    title = title
   )
 
-  return(plot)
+  plot
 }
 
 #' plot_groups_overview_aux
@@ -1567,7 +1635,14 @@ plot_groups_overview_aux <- function(features, eic, heights, analyses) {
         "</br> width: ", round(ft_nf$rtmax - ft_nf$rtmin, digits = 0),
         "</br> dppm: ", round(((ft_nf$mzmax - ft_nf$mzmin) / ft_nf$mz) *
           1E6, digits = 1),
-        "</br> filled: ", ft_nf$is_filled
+        "</br> filled: ", ft_nf$is_filled,
+        "</br> filtered: ", ft_nf$filtered,
+        "</br> filter: ", ft_nf$filter,
+        ifelse("iso_gr" %in% colnames(ft_nf),
+          paste("</br> component: ", ft_nf$iso_gr,
+                "</br>  - size: ", ft_nf$iso_size,
+                "</br>  - isotope: ", ft_nf$iso_cat,
+                "</br>  - carbons: ", ft_nf$iso_n_carbons), "")
       )
     )
 
@@ -1705,4 +1780,293 @@ plot_groups_overview_aux <- function(features, eic, heights, analyses) {
   )
 
   return(plotf_2)
+}
+
+#' @title map_components_interactive
+#'
+#' @description Function to plot features annotation.
+#'
+#' @param components A data table with the individual peak details to plot.
+#' @param legendNames A character vector with the same length as the unique ids
+#' in the table given in `eic`.
+#' @param colorBy Possible values are \code{"targets"} (the default),
+#' \code{"analyses"} or \code{replicates}.
+#' @param xlim A length one or two numeric vector for setting the \emph{x}
+#' limits (in seconds) of the plot.
+#' @param ylim A length one or two numeric vector for setting the \emph{m/z}
+#' limits of the plot.
+#' @param title An optional character vector to be used as title.
+#' @param showLegend Logical, set to \code{TRUE} to show legend.
+#'
+#' @return A dotted plot with features annotation.
+#'
+#' @noRd
+#'
+map_components_interactive <- function(components, colorBy = "targets",
+                                      legendNames = NULL,
+                                      xlim = 60, ylim = 5,
+                                      title = NULL, showLegend = TRUE) {
+
+  if ("analyses" %in% colorBy) {
+    leg <- unique(components$analysis)
+    varkey <- components$analysis
+  } else if ("replicates" %in% colorBy & "replicate" %in% colnames(components)) {
+    leg <- unique(components$replicate)
+    varkey <- components$replicate
+  } else if (is.character(legendNames) &
+             length(legendNames) == length(unique(components$iso_gr))) {
+    leg <- legendNames
+    names(leg) <- unique(components$iso_gr)
+    varkey <- leg[components$iso_gr]
+  } else if ("name" %in% colnames(components) & isTRUE(legendNames)) {
+    leg <- unique(components$name)
+    varkey <- components$name
+  } else if ("features" %in% colorBy) {
+    leg <- unique(components$feature)
+    varkey <- components$feature
+  } else {
+    leg <- unique(components$iso_gr)
+    varkey <- as.character(components$iso_gr)
+  }
+
+  components$var <- varkey
+
+  if (length(xlim) == 1) {
+    rtr <- c(min(components$rtmin) - xlim, max(components$rtmax) + xlim)
+  } else if (length(xlim) == 2) {
+    rtr <- xlim
+  } else {
+    rtr <- c(min(components$rtmin), max(components$rtmax))
+  }
+
+  if (length(ylim) == 1) {
+    mzr <- c(min(components$mzmin) - ylim, max(components$mzmax) + ylim)
+  } else if (length(ylim) == 2) {
+    mzr <- ylim
+  } else {
+    mzr <- c(min(components$mzmin), max(components$mzmax))
+  }
+
+  cl <- get_colors(unique(components$var))
+
+  plotlegend <- rep(TRUE, length(cl))
+  names(plotlegend) <- names(cl)
+
+  plot <- plot_ly()
+
+  for (i in seq_len(nrow(components))) {
+
+    x0 <- components$rtmin[i]
+    x1 <- components$rtmax[i]
+    y0 <- components$mzmin[i]
+    y1 <- components$mzmax[i]
+
+    plot <- plot %>% add_trace(
+      x = c(x0, x1, x1, x0, x0),
+      y = c(y0, y0, y1, y1, y0),
+      type = "scatter",
+      mode = "lines",
+      fill = "none",
+      line = list(color = cl[components$var[i]]),
+      opacity = 0.2,
+      name = components$var[i],
+      legendgroup = components$var[i],
+      showlegend = FALSE
+    )
+  }
+
+  for (i in seq_len(nrow(components))) {
+    ft <- components[i, ]
+    x <- ft$rt
+    y <- ft$mz
+
+    plot <- plot %>% add_trace(
+      x = x, y = y,
+      type = "scatter", mode = "markers+text",
+      #color = cl[ft$var],
+      marker = list(size = 15 * ft$iso_rel_int, color = cl[ft$var]),
+      name = ft$var,
+      legendgroup = ft$var,
+      showlegend = ifelse(ft$iso_cat == "M", FALSE, plotlegend[ft$var]),
+      text =  paste0(ft$iso_cat, " ", ft$iso_el),
+      textposition = "midle right",
+      textfont = list(size = 12, color = cl[ft$var]),
+      hovertext = paste(
+        "</br> component: ", ft$iso_gr,
+        "</br> feature: ", ft$feature,
+        "</br> analysis: ", ft$analysis,
+        "</br> <i>m/z</i>: ", round(y, digits = 4),
+        "</br> dppm: ", round(((ft$mzmax - ft$mzmin) /
+                                 y) * 1E6, digits = 0),
+        "</br> rt: ", round(x, digits = 0),
+        "</br> drt: ", round(ft$rtmax - ft$rtmin, digits = 0),
+        "</br> filled: ",
+        if ("is_filled" %in% colnames(ft)) {
+          ifelse(ft$is_filled == 1, TRUE, FALSE)
+        } else {
+          FALSE
+        },
+        "</br> intensity: ", round(ft$intensity, digits = 0),
+        "</br> rel intensity (%): ", round(ft$iso_rel_int * 100, digits = 2),
+        "</br> charge: ", ft$iso_z,
+        "</br> isotope: ", ft$iso_cat,
+        "</br> element/s: ", ft$iso_el,
+        "</br> target mass defect: ", round(ft$iso_md_hit, digits = 4),
+        "</br> exp mass defect: ", round(ft$iso_md_diff, digits = 4),
+        "</br> estimated carbons: ", ft$iso_n_carbons
+      )
+    )
+
+    if (isTRUE(plotlegend[ft$var]) & ft$iso_cat != "M") {
+      plotlegend[ft$var] <- FALSE
+    }
+  }
+
+  title <- list(
+    text = title, x = 0.1, y = 0.98,
+    font = list(size = 9, color = "black")
+  )
+
+  xaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2, title = "Retention time / seconds",
+    titlefont = list(size = 12, color = "black"),
+    range = rtr,
+    autotick = TRUE, ticks = "outside"
+  )
+
+  yaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2, title = "<i>m/z</i>",
+    range = mzr,
+    titlefont = list(size = 12, color = "black")
+  )
+
+  plot <- plot %>% plotly::layout(
+    legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
+    xaxis = xaxis,
+    yaxis = yaxis,
+    title = title
+  )
+
+  plot
+}
+
+#' @title map_components_static
+#'
+#' @description Function for plotting peak spaces.
+#'
+#' @param components A data table with the individual peak details to plot.
+#' @param legendNames A character vector with the same length as the unique ids
+#' in the table given in `eic`.
+#' @param colorBy Possible values are \code{"targets"} (the default),
+#' \code{"analyses"} or \code{replicates}.
+#' @param xlim A length one or two numeric vector for setting the \emph{x}
+#' limits (in seconds) of the plot.
+#' @param ylim A length one or two numeric vector for setting the \emph{m/z}
+#' limits of the plot.
+#' @param title An optional character vector to be used as title.
+#' for coloring by target features, analyses or replicates, respectively.
+#' @param showLegend Logical, set to \code{TRUE} to show legend.
+#'
+#' @return A peak/s map plot produced through \pkg{base} plot.
+#'
+#' @noRd
+#'
+map_components_static <- function(components, colorBy = "targets",
+                                  legendNames = NULL,
+                                  xlim = 60, ylim = 5,
+                                  title = NULL, showLegend = TRUE) {
+  if ("analyses" %in% colorBy) {
+    leg <- unique(components$analysis)
+    varkey <- components$analysis
+  } else if ("replicates" %in% colorBy & "replicate" %in% colnames(components)) {
+    leg <- unique(components$replicate)
+    varkey <- components$replicate
+  } else if (is.character(legendNames) &
+             length(legendNames) == length(unique(components$iso_gr))) {
+    leg <- legendNames
+    names(leg) <- unique(components$iso_gr)
+    varkey <- leg[components$iso_gr]
+  } else if ("name" %in% colnames(components) & isTRUE(legendNames)) {
+    leg <- unique(components$name)
+    varkey <- components$name
+  } else if ("features" %in% colorBy) {
+    leg <- unique(components$feature)
+    varkey <- components$feature
+  } else {
+    leg <- unique(components$iso_gr)
+    varkey <- as.character(components$iso_gr)
+  }
+
+  components$var <- varkey
+
+  if (length(xlim) == 1) {
+    rtr <- c(min(components$rtmin) - xlim, max(components$rtmax) + xlim)
+  } else if (length(xlim) == 2) {
+    rtr <- xlim
+  } else {
+    rtr <- c(min(components$rtmin), max(components$rtmax))
+  }
+
+  ylim_oufset <- 1 + (0.02 * length(unique(components$var)))
+
+  if (length(ylim) == 1) {
+    mzr <- c(min(components$mzmin) - ylim, (max(components$mzmax) + ylim) * ylim_oufset)
+  } else if (length(ylim) == 2) {
+    mzr <- ylim
+  } else {
+    mzr <- c(min(components$mzmin), max(components$mzmax) * ylim_oufset)
+  }
+
+  cl <- get_colors(unique(components$var))
+
+  plot(components$rt,
+       components$mz,
+       type = "n",
+       xlab = "Retention time / seconds",
+       ylab = expression(italic("m/z")),
+       xlim = rtr,
+       ylim = mzr,
+       main = title
+  )
+
+  rect(
+    xleft = components$rtmin,
+    xright = components$rtmax,
+    ybottom = components$mzmin,
+    ytop = components$mzmax,
+    col = paste0(cl[components$var], "70"),
+    border = paste0(cl[components$var], "70")
+  )
+
+  points(
+    x = components$rt,
+    y = components$mz,
+    type = "p",
+    pch = 19,
+    cex = 1.5 * components$iso_rel_int,
+    col = cl[components$var]
+  )
+
+  for (i in seq_len(nrow(components))) {
+    text(
+      components$rt[i] + 0.2,
+      components$mz[i],
+      paste0(components$iso_cat, " ", components$iso_el)[i],
+      pos = 4, col = cl[components$var[i]], cex = 0.6
+    )
+  }
+
+  if (showLegend) {
+    legend(
+      "topleft",
+      legend = names(cl),
+      col = cl,
+      pch = 19,
+      lty = 1,
+      cex = 0.7,
+      bty = "n"
+    )
+  }
 }

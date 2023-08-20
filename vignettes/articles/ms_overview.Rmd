@@ -767,7 +767,7 @@ MS1 and MS2 spectra can support identification processing steps by giving additi
 
 ```{r features-ms1-ms2-settings}
 # Settings for loading features MS1 spectra
-settingsLoadFeaturesMS1 <- ProcessingSettings(
+settingsSettings_load_features_ms1_streamFind <- ProcessingSettings(
   "call" = "load_features_ms1",
   "algorithm" = "streamFind",
   "parameters" = list(
@@ -781,10 +781,10 @@ settingsLoadFeaturesMS1 <- ProcessingSettings(
   )
 )
 
-ms$add_settings(settings = settingsLoadFeaturesMS1)
+ms$add_settings(settings = settingsSettings_load_features_ms1_streamFind)
 
 # Settings for loading features MS2 spectra
-settingsLoadFeaturesMS2 <- ProcessingSettings(
+settingsSettings_load_features_ms2_streamFind <- ProcessingSettings(
   "call" = "load_features_ms2",
   "algorithm" = "streamFind",
   "parameters" = list(
@@ -797,7 +797,7 @@ settingsLoadFeaturesMS2 <- ProcessingSettings(
   )
 )
 
-ms$add_settings(settings = settingsLoadFeaturesMS2)
+ms$add_settings(settings = settingsSettings_load_features_ms2_streamFind)
 
 # Returns the names of the settings list, which is also the call or method name
 names(ms$get_settings())
@@ -852,7 +852,7 @@ ms1FromFeaturesDataTable$ms1[[1]]
 Similarly to MS1, MS2 data can be loaded as shown below. Note the settings were already added to the former `ms` object. Still, one can add the settings again in the method call. The previously stored settings will then be overwritten. In this case, there is no change as the settings are the same.
 
 ```{r load-ms1-ms2-targets}
-msTargets$load_features_ms2(settings = settingsLoadFeaturesMS2)
+msTargets$load_features_ms2(settings = settingsSettings_load_features_ms2_streamFind)
 
 msTargets$has_loaded_features_ms2()
 ```
@@ -1009,7 +1009,7 @@ msTargets
 
 ```{r groups-ms1-ms2-settings}
 # Settings for loading groups MS1 spectra
-settingsLoadGroupsMS1 <- ProcessingSettings(
+settingsSettings_load_groups_ms1_streamFind <- ProcessingSettings(
   "call" = "load_groups_ms1",
   "algorithm" = "streamFind",
   "parameters" = list(
@@ -1021,10 +1021,10 @@ settingsLoadGroupsMS1 <- ProcessingSettings(
   )
 )
 
-msTargets$add_settings(settings = settingsLoadGroupsMS1)
+msTargets$add_settings(settings = settingsSettings_load_groups_ms1_streamFind)
 
 # Settings for loading groups MS2 spectra
-settingsLoadGroupsMS2 <- ProcessingSettings(
+settingsSettings_load_groups_ms2_streamFind <- ProcessingSettings(
   "call" = "load_groups_ms2",
   "algorithm" = "streamFind",
   "parameters" = list(
@@ -1036,7 +1036,7 @@ settingsLoadGroupsMS2 <- ProcessingSettings(
   )
 )
 
-msTargets$add_settings(settings = settingsLoadGroupsMS2)
+msTargets$add_settings(settings = settingsSettings_load_groups_ms2_streamFind)
 
 # Returns the names of the settings list, which is also the call or method name
 names(msTargets$get_settings())

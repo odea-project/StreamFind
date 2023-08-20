@@ -80,12 +80,16 @@
 <span>  run <span class="op">=</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  spectra <span class="op">=</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  chromatograms <span class="op">=</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  features_eic <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  features <span class="op">=</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  metadata <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for MassSpecAnalysis</span></span>
 <span><span class="fu">validate</span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for MassSpecAnalysis</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for MassSpecAnalysis</span></span>
 <span><span class="fu">asJSON</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
@@ -188,10 +192,6 @@ data (content is highly vendor dependent).</p></dd>
 data (content is highly vendor dependent).</p></dd>
 
 
-<dt>software</dt>
-<dd><p>X.</p></dd>
-
-
 <dt>run</dt>
 <dd><p>data.table run information for each spectrum.</p></dd>
 
@@ -205,6 +205,11 @@ data (content is highly vendor dependent).</p></dd>
 if loaded).</p></dd>
 
 
+<dt>features_eic</dt>
+<dd><p>list with the feature extracted ions chromatograms (EICs)
+from binning of spectra.</p></dd>
+
+
 <dt>features</dt>
 <dd><p>data.table with the features from data processing.</p></dd>
 
@@ -216,6 +221,10 @@ if loaded).</p></dd>
 
 <dt>x</dt>
 <dd><p>A MassSpecAnalysis S3 class object.</p></dd>
+
+
+<dt>...</dt>
+<dd><p>Not used.</p></dd>
 
 
 <dt>value</dt>
@@ -246,6 +255,7 @@ overhead.</p></dd>
     
 <ul><li><p><code>validate(MassSpecAnalysis)</code>: Validates a MassSpecAnalysis S3 class object, returning a logical value of
 length one.</p></li>
+<li><p><code>print(MassSpecAnalysis)</code>: Prints the MassSpecAnalysis S3 class object in the console.</p></li>
 <li><p><code>asJSON(MassSpecAnalysis)</code>: Converts a MassSpecAnalysis S3 class object to a JSON string.</p></li>
 </ul></div>
     <div class="section level2">

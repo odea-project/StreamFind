@@ -34,12 +34,14 @@ Imports:
     doParallel,
     parallel,
     foreach,
-    methods
+    methods,
+    checkmate
 Suggests: 
     knitr,
     kableExtra,
     rmarkdown,
     testthat (>= 3.0.0),
+    KPIC,
     xcms,
     mzR,
     patRoon,

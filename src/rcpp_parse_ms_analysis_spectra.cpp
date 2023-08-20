@@ -66,7 +66,16 @@ Rcpp::List rcpp_parse_ms_analysis_spectra(Rcpp::List analysis, Rcpp::IntegerVect
 
       if (number_spectra > 0) {
 
-        int n_cols_bin = bins[0].ncol();
+        int n_cols_bin = 0;
+
+        for (int c = 0; c < number_spectra; c++) {
+          n_cols_bin = bins[c].ncol();
+          if (n_cols_bin > 0) {
+            break;
+          }
+        }
+
+        if (n_cols_bin == 0) return empty_df;
 
         int n_cols = n_cols_bin + 7;
 

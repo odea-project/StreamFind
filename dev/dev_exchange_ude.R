@@ -43,19 +43,29 @@ neutral_targets <- make_ms_targets(
 
 # development ------------------------------------------------------------------
 
+# MassSpecData with one TOF and Orbitrap MS file
 ms <- MassSpecData$new(all_files[c(7, 31)])
 
-tof_spectra <- ms$get_spectra(1)
-tof_spectra <- tof_spectra[, c("scan", "rt", "mz", "intensity")]
+qCentroids <- Settings_centroid_spectra_qCentroids()
 
-head(tof_spectra)
+qBinning <- Settings_bin_spectra_qBinning()
 
-orb_spectra <- ms$get_spectra(2)
-orb_spectra <- orb_spectra[, c("scan", "rt", "mz", "intensity")]
+qPeaks <- Settings_find_features_qPeaks()
 
-head(orb_spectra)
+ms$centroid_spectra(qCentroids)
 
-test <- centroid_spectra(orb_spectra)
+ms$bin_spectra(qBinning)
 
-View(test$output)
+ms$find_features(qPeaks)
 
+# spectra dt -------------------------------------------------------------------
+
+# tof_spectra <- ms$get_spectra(1)
+# tof_spectra <- tof_spectra[, c("scan", "rt", "mz", "intensity")]
+#
+# head(tof_spectra)
+#
+# orb_spectra <- ms$get_spectra(2)
+# orb_spectra <- orb_spectra[, c("scan", "rt", "mz", "intensity")]
+#
+# head(orb_spectra)

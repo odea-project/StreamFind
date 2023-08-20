@@ -102,6 +102,14 @@ make_ms_targets <- function(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL)
     rtmax = 0
   )
 
+  if (is.data.frame(mz) & "name" %in% colnames(mz)) {
+    colnames(mz)[colnames(mz) == "name"] <- "id"
+  }
+
+  if (is.data.frame(rt) & "name" %in% colnames(rt)) {
+    colnames(rt)[colnames(rt) == "name"] <- "id"
+  }
+
   cols_mz_ranges <- c("mzmin", "mzmax")
   cols_rt_ranges = c("rtmin", "rtmax")
 

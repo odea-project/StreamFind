@@ -3,18 +3,80 @@ template:
   bootstrap: 5
 reference:
 - title: R6 classes
+  desc: >
+    The R6 classes are used as framework for reading, processing, inspecting
+    and storing Mass Spectrometry (MS) and Spectroscopy data.
 - contents:
   - MassSpecData
 - title: S3 classes
+  desc: >
+    S3 classes are implemented to harmonize, verify and dispatch data within
+    the R6 classes. _Headers_ and _ProcessingSettings_ S3 classes are used in
+    all R6 classes.
 - contents:
   - Headers
   - ProcessingSettings
   - MassSpecAnalysis
-- title: MS functions
+- title: Processing settings for MS data
+  desc: >
+    The _ProcessingSettings_ S3 class is used to store, assign and dispatch
+    the algorithm and respective parameters to processing methods. The
+    _ProcessingSettings_ object obtains a subclass according to the assinged
+    algorithm for each MS processing method. Below the available subclasses
+    for _ProcessingSettings_ are listed for each processing method.
+- subtitle: centroid_spectra
+  desc: >
+    Settings for the processing method centroid_spectra.
+- contents:
+  - Settings_centroid_spectra_qCentroids
+- subtitle: bin_spectra
+  desc: >
+    Settings for the processing method bin_spectra.
+- contents:
+  - Settings_bin_spectra_qBinning
+- subtitle: find_features
+  desc: >
+    Settings for the processing method find_features.
+- contents:
+  - Settings_find_features_qPeaks
+  - Settings_find_features_xcms3_centwave
+  - Settings_find_features_openms
+  - Settings_find_features_kpic2
+- subtitle: group_features
+  desc: >
+    Settings for the processing method group_features.
+- contents:
+  - Settings_group_features_xcms3_peakdensity
+- subtitle: load_features MS1 and MS2 spectra
+  desc: >
+    Settings for the processing methods starting with load_features,
+    which aim to load data from raw MS files (e.g., MS1 and MS2 spectra).
+- contents:
+  - Settings_load_features_ms1_streamFind
+  - Settings_load_features_ms2_streamFind
+  - Settings_load_groups_ms1_streamFind
+  - Settings_load_groups_ms2_streamFind
+- subtitle: filter_features
+  desc: >
+    Settings for the processing method filter_features.
+- contents:
+  - Settings_filter_features_streamFind
+- subtitle: annotate_features
+  desc: >
+    Settings for the processing method annotate_features.
+- contents:
+  - Settings_annotate_features_streamFind
+- subtitle: General get and save default settings
+  desc: >
+    Funtions to uniformily get and save _ProcessingSettings_ are available.
+    These return the default _ProcessingSettings_ according the arguments
+    **call** and **algorithm**.
+- contents:
+  - get_default_ProcessingSettings
+  - save_default_ProcessingSettings
+- title: Other MS functions
 - contents:
   - convert_ms_files
   - trim_ms_files_spectra
   - import_MassSpecData
   - make_ms_targets
-  - get_default_ProcessingSettings
-  - save_default_ProcessingSettings

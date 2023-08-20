@@ -6,7 +6,6 @@
 \usage{
 save_default_ProcessingSettings(
   call = NA_character_,
-  software = NA_character_,
   algorithm = NA_character_,
   format = "json",
   name = "settings",
@@ -14,21 +13,22 @@ save_default_ProcessingSettings(
 )
 }
 \arguments{
-\item{call}{X.}
+\item{call}{Character (length 1) with the method call name.}
 
-\item{software}{X.}
+\item{algorithm}{Character (length 1) with the algorithm name.}
 
-\item{algorithm}{X.}
+\item{format}{Character (length 1) with the format of the saved file.
+Possible are "json" and "rds".}
 
-\item{format}{X.}
+\item{name}{Character (length 1) with the name of the file without extension.}
 
-\item{name}{X.}
-
-\item{path}{X.}
+\item{path}{Character (length 1) with the saving path.
+The default is the \code{getwd()} path.}
 }
 \value{
 Creates a json/rds files on the defined path.
 }
 \description{
-X.
+Saves on disk a ProcessingSettings S3 class object as the
+defined \code{format}, \code{path} and \code{name}.
 }

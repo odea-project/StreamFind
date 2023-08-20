@@ -391,6 +391,14 @@ List rcpp_ms_make_groups_update_features(Rcpp::DataFrame features) {
   list_groups["filled"] = g_filled;
   list_groups["filtered"] = rep(false, number_of_groups);
 
+  Rcpp::CharacterVector filter_column(number_of_groups);
+
+  for (int i = 0; i < number_of_groups; ++i) {
+    filter_column[i] = Rcpp::CharacterVector::get_na();
+  }
+
+  list_groups["filter"] = filter_column;
+
   list_groups.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
 
   list_out["groups"] = list_groups;

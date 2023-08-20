@@ -44,6 +44,8 @@
 #' @param spectra data.table with the raw spectra (only present if loaded).
 #' @param chromatograms data.table with the raw chromatograms (only present
 #' if loaded).
+#' @param features_eic list with the feature extracted ions chromatograms (EICs)
+#' from binning of spectra.
 #' @param features data.table with the features from data processing.
 #' @param metadata List with flexible storage for experimental metadata
 #' (e.g., concentration, location, etc.).
@@ -74,6 +76,7 @@ MassSpecAnalysis <- function(name = NA_character_,
                              run = data.table(),
                              spectra = data.table(),
                              chromatograms = data.table(),
+                             features_eic = list(),
                              features = data.table(),
                              metadata = list()) {
 
@@ -120,6 +123,7 @@ MassSpecAnalysis <- function(name = NA_character_,
     "run" = run,
     "spectra" = spectra,
     "chromatograms" = chromatograms,
+    "features_eic" = features_eic,
     "features" = features,
     "metadata" = metadata
   )
@@ -311,6 +315,11 @@ validate.MassSpecAnalysis <- function(x = NULL) {
       valid <- FALSE
     }
 
+    if (!is.list(x$features_eic)) {
+      warning("Analysis features_eic entry not conform!")
+      valid <- FALSE
+    }
+
     if (!is.data.frame(x$features)) {
       warning("Analysis features entry not conform!")
       valid <- FALSE
@@ -325,6 +334,36 @@ validate.MassSpecAnalysis <- function(x = NULL) {
   if (!valid) warning("Issue/s found with analysis ", x$name, "!")
 
   valid
+}
+
+#' @describeIn MassSpecAnalysis
+#' Prints the MassSpecAnalysis S3 class object in the console.
+#'
+#' @param ... Not used.
+#'
+#' @export
+print.MassSpecAnalysis <- function(x, ...) {
+  cat("\n")
+  cat(
+    " ", class(x), "\n"
+  )
+  cat(
+    # "  file              ", x$file, "\n",
+    "  name              ", x$name, "\n",
+    "  replicate         ", x$replicate, "\n",
+    "  blank             ", x$blank, "\n",
+    "  format            ", x$format, "\n",
+    "  type              ", x$type, "\n",
+    "  spectra number    ", x$spectra_number, "\n",
+    "  spectra mode      ", x$spectra_mode, "\n",
+    "  spectra levels    ", paste(x$spectra_levels, collapse = " "), "\n",
+    "  chromatograms     ", x$chromatograms_number, "\n",
+    "  has ion mobility  ", x$has_ion_mobility, "\n",
+    "  polarity          ", paste(x$polarity, collapse = "; "), "\n",
+    "  features          ", nrow(x$features), "\n",
+    sep = ""
+  )
+  cat("\n")
 }
 
 #' @describeIn MassSpecAnalysis
@@ -475,7 +514,9 @@ parse.MassSpecAnalysis <- function(files = NULL, runParallel = FALSE) {
     message("\U2139 Analyses loaded from cache!")
   }
 
-  if (runParallel) parallel::stopCluster(cl)
+  if (runParallel & length(files) > 1 & !cached_analyses) {
+    parallel::stopCluster(cl)
+  }
 
   if (!is.null(analyses)) {
     if (all(is.na(replicates))) {

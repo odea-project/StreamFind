@@ -3,6 +3,7 @@
 \name{MassSpecAnalysis}
 \alias{MassSpecAnalysis}
 \alias{validate.MassSpecAnalysis}
+\alias{print.MassSpecAnalysis}
 \alias{asJSON.MassSpecAnalysis}
 \alias{as.MassSpecAnalysis}
 \alias{parse.MassSpecAnalysis}
@@ -31,11 +32,14 @@ MassSpecAnalysis(
   run = data.table(),
   spectra = data.table(),
   chromatograms = data.table(),
+  features_eic = list(),
   features = data.table(),
   metadata = list()
 )
 
 \method{validate}{MassSpecAnalysis}(x = NULL)
+
+\method{print}{MassSpecAnalysis}(x, ...)
 
 \method{asJSON}{MassSpecAnalysis}(x)
 
@@ -104,12 +108,17 @@ data (content is highly vendor dependent).}
 \item{chromatograms}{data.table with the raw chromatograms (only present
 if loaded).}
 
+\item{features_eic}{list with the feature extracted ions chromatograms (EICs)
+from binning of spectra.}
+
 \item{features}{data.table with the features from data processing.}
 
 \item{metadata}{List with flexible storage for experimental metadata
 (e.g., concentration, location, etc.).}
 
 \item{x}{A MassSpecAnalysis S3 class object.}
+
+\item{...}{Not used.}
 
 \item{value}{A list to be checked and/or converted to MassSpecAnalysis S3 class.}
 
@@ -132,6 +141,8 @@ Creates a MassSpecAnalysis S3 class object.
 \itemize{
 \item \code{validate(MassSpecAnalysis)}: Validates a MassSpecAnalysis S3 class object, returning a logical value of
 length one.
+
+\item \code{print(MassSpecAnalysis)}: Prints the MassSpecAnalysis S3 class object in the console.
 
 \item \code{asJSON(MassSpecAnalysis)}: Converts a MassSpecAnalysis S3 class object to a JSON string.
 

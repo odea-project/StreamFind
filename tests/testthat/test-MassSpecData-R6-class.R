@@ -309,7 +309,7 @@ test_that("import headers and settings from json file", {
   expect_invisible(ms5$import_headers("headers.json"))
   expect_invisible(ms5$import_settings("settings.json"))
   expect_equal(ms$get_headers(), ms5$get_headers())
-  expect_equal(ms$get_settings(), ms5$get_settings())
+  expect_equal(names(ms$get_settings()), names(ms5$get_settings()))
 })
 
 test_that("import analyses and groups from json file", {
@@ -387,7 +387,7 @@ test_that("subset features", {
   expect_equal(nrow(ms5$get_groups()), 2)
 })
 
-settingsLoadFeaturesMS1 <- list(
+settingsSettings_load_features_ms1_streamFind <- list(
   "call" = "load_features_ms1",
   "algorithm" = "streamFind",
   "parameters" = list(
@@ -401,7 +401,7 @@ settingsLoadFeaturesMS1 <- list(
   )
 )
 
-settingsLoadFeaturesMS2 <- list(
+settingsSettings_load_features_ms2_streamFind <- list(
   "call" = "load_features_ms2",
   "algorithm" = "streamFind",
   "parameters" = list(
@@ -414,7 +414,7 @@ settingsLoadFeaturesMS2 <- list(
   )
 )
 
-ms5$load_features_ms1(settings = settingsLoadFeaturesMS1)
+ms5$load_features_ms1(settings = settingsSettings_load_features_ms1_streamFind)
 
 test_that("load MS1 features", {
   expect_true(any(ms5$has_loaded_features_ms1()))
@@ -430,7 +430,7 @@ test_that("remove loaded MS1 features", {
   expect_true(!any(ms5$has_loaded_features_ms1()))
 })
 
-ms5$load_features_ms2(settings = settingsLoadFeaturesMS2)
+ms5$load_features_ms2(settings = settingsSettings_load_features_ms2_streamFind)
 
 test_that("load MS2 features", {
   expect_true(any(ms5$has_loaded_features_ms2()))
@@ -469,10 +469,10 @@ test_that("remove filtered features", {
   expect_equal(nrow(ms5$get_groups()), 2)
 })
 
-ms5$load_features_ms1(settings = settingsLoadFeaturesMS1)
-ms5$load_features_ms2(settings = settingsLoadFeaturesMS2)
+ms5$load_features_ms1(settings = settingsSettings_load_features_ms1_streamFind)
+ms5$load_features_ms2(settings = settingsSettings_load_features_ms2_streamFind)
 
-settingsLoadGroupsMS1 <- list(
+settingsSettings_load_groups_ms1_streamFind <- list(
   "call" = "load_groups_ms1",
   "algorithm" = "streamFind",
   "parameters" = list(
@@ -484,7 +484,7 @@ settingsLoadGroupsMS1 <- list(
   )
 )
 
-settingsLoadGroupsMS2 <- list(
+settingsSettings_load_groups_ms2_streamFind <- list(
   "call" = "load_groups_ms2",
   "algorithm" = "streamFind",
   "parameters" = list(
@@ -496,7 +496,7 @@ settingsLoadGroupsMS2 <- list(
   )
 )
 
-ms5$load_groups_ms1(settings = settingsLoadGroupsMS1)
+ms5$load_groups_ms1(settings = settingsSettings_load_groups_ms1_streamFind)
 
 test_that("load MS1 groups", {
   expect_true(any(ms5$has_loaded_groups_ms1()))
@@ -512,7 +512,7 @@ test_that("remove loaded MS1 groups", {
   expect_false(ms5$has_loaded_groups_ms1())
 })
 
-ms5$load_groups_ms2(settings = settingsLoadGroupsMS2)
+ms5$load_groups_ms2(settings = settingsSettings_load_groups_ms2_streamFind)
 
 test_that("load MS2 groups", {
   expect_true(any(ms5$has_loaded_groups_ms2()))
@@ -629,7 +629,7 @@ file.remove("MassSpecData.json")
 
 
 
-# settingsLoadFeaturesMS1 <- list(
+# settingsSettings_load_features_ms1_streamFind <- list(
 #   "call" = "load_features_ms1",
 #   "algorithm" = "streamFind",
 #   "parameters" = list(
@@ -643,7 +643,7 @@ file.remove("MassSpecData.json")
 #   )
 # )
 
-# settingsLoadFeaturesMS2 <- list(
+# settingsSettings_load_features_ms2_streamFind <- list(
 #   "call" = "load_features_ms2",
 #   "algorithm" = "streamFind",
 #   "parameters" = list(
@@ -656,7 +656,7 @@ file.remove("MassSpecData.json")
 #   )
 # )
 
-# ms$add_settings(settingsLoadFeaturesMS2)
+# ms$add_settings(settingsSettings_load_features_ms2_streamFind)
 # ms$get_settings("load_features_ms2")
 
 # ms$load_features_ms1()

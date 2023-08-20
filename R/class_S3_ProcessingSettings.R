@@ -45,78 +45,32 @@ ProcessingSettings <- function(call = NA_character_,
     "doi" = doi
   )
 
-  if ("xcms" %in% algorithm || "xcms3" %in% algorithm) {
-    if (!requireNamespace("xcms")) {
-      warning("xcms package is not installed!")
-      return(NULL)
-    }
-  }
-
-  if (is.data.frame(x$parameters)) {
-    x$parameters <- as.list(x$parameters)
-  }
-
-  if ("class" %in% names(x$parameters)) {
-    x$parameters[["Class"]] <- x$parameters$class
-    x$parameters[["class"]] <- NULL
-    x$parameters <- lapply(x$parameters, function(z) {
-      if (is.list(z) & length(z) > 0) {
-        z[[1]]
-      } else {
-        z
-      }
-    })
-
-    if (x$parameters$Class %in% "CentWaveParam") {
-      x$parameters$roiScales <- as.double()
-    }
-
-    if (x$parameters$Class %in% "PeakGroupsParam") {
-      x$parameters$peakGroupsMatrix <- as.matrix(x$parameters$peakGroupsMatrix)
-    }
-
-    if (x$parameters$Class %in% "PeakGroupsParam") {
-      x$parameters$subset <- as.integer(x$parameters$subset)
-    }
-
-    x$parameters <- do.call("new", x$parameters)
-
-  } else if (is.list(x$parameters)) {
-
-    x$parameters <- lapply(x$parameters, function(par) {
-      if (is.list(par)) {
-        if ("class" %in% names(par)) {
-          par[["Class"]] <- par$class
-          par[["class"]] <- NULL
-          par <- lapply(par, function(z) {
-            if (is.list(z) & length(z) > 0) {
-              z[[1]]
-            } else {
-              z
-            }
-          })
-
-          if (par$Class %in% "CentWaveParam") {
-            par$roiScales <- as.double()
-          }
-
-          if (par$Class %in% "PeakGroupsParam") {
-            par$peakGroupsMatrix <- as.matrix(par$peakGroupsMatrix)
-          }
-
-          if (par$Class %in% "PeakGroupsParam") {
-            par$subset <- as.integer(par$subset)
-          }
-
-          par <- do.call("new", par)
-        }
-      }
-      par
-    })
-  }
+  if (is.data.frame(x$parameters)) x$parameters <- as.list(x$parameters)
 
   if (validate.ProcessingSettings(x)) {
-    structure(x, class = "ProcessingSettings")
+
+    s3_classes <- c(
+      paste0("Settings_", x$call, "_" ,x$algorithm),
+      "ProcessingSettings"
+    )
+
+    patRoon_algorithms <- c(
+      "openms", "xcms", "xcms3", "envipick", "sirius", "kpic2", "safd"
+    )
+
+    if (any(vapply(patRoon_algorithms, function(a) {
+      grepl(a, x$algorithm, fixed = FALSE)
+    }, FALSE))) {
+      s3_classes <- append(s3_classes, "patRoon", after = 0)
+    }
+
+    x <- structure(x, class = s3_classes)
+
+    if (validate(x)) {
+      x
+    } else {
+      NULL
+    }
   } else {
     NULL
   }
@@ -156,7 +110,60 @@ validate.ProcessingSettings <- function(x = NULL) {
       warning("Settings elements must be named call, algorithm and parameters!")
     }
   }
+
+  # TODO add validate for settings specific class
+  # if (length(class(x)) > 1) {
+  #   valid <- NextMethod()
+  # }
+
   valid
+}
+
+#' @describeIn ProcessingSettings
+#' Prints the ProcessingSettings S3 class object in the console.
+#'
+#' @param ... Not used.
+#'
+#' @export
+print.ProcessingSettings <- function(x, ...) {
+  cat("\n")
+  cat("", class(x)[length(class(x))], "\n")
+  cat(
+    " call         ", x$call, "\n",
+    " algorithm    ", x$algorithm, "\n",
+    " software     ", x$software, "\n",
+    " developer    ", x$developer, "\n",
+    " contact      ", x$contact, "\n",
+    " link         ", x$link, "\n",
+    " doi          ", x$doi, "\n",
+    sep = ""
+  )
+
+  if (isS4(x$parameters) || length(x$parameters) == 1) {
+    if (is.list(x$parameters)) {
+      if (isS4(x$parameters[[1]])) {
+        cat("\n")
+        print(x$parameters[[1]])
+      } else {
+        cat("\n")
+        cat(" parameters ", "\n")
+        for (i in seq_len(length(x$parameters))) {
+          cat("  - ", names(x$parameters)[i], x$parameters[[i]], "\n")
+        }
+      }
+    } else {
+      cat("\n")
+      print(x$parameters)
+    }
+  } else {
+    cat("\n")
+    cat(" parameters ", "\n")
+    for (i in seq_len(length(x$parameters))) {
+      cat("  - ", names(x$parameters)[i], x$parameters[[i]], "\n")
+    }
+  }
+  cat("\n")
+
 }
 
 #' @describeIn ProcessingSettings
@@ -183,15 +190,16 @@ asJSON.ProcessingSettings <- function(x) {
 #' @describeIn ProcessingSettings
 #' Exports a ProcessingSettings S3 class object to a JSON or RDS file.
 #'
-#' @param format X.
-#' @param name X.
-#' @param path X.
+#' @template arg-ms-save-format
+#' @template arg-ms-save-name
+#' @template arg-ms-save-path
 #'
 #' @export
+#'
 export.ProcessingSettings <- function(x,
                                       format = "json",
                                       name = "settings",
-                                      path = getwd()) {
+                                      path = getwd(), ...) {
 
   if (class(x) %in% "ProcessingSettings") {
     if (validate(x)) {
