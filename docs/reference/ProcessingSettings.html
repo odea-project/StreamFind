@@ -75,13 +75,13 @@ in <span class="pkg">streamFind</span> for processing data in a given data class
 <span><span class="fu">validate</span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for ProcessingSettings</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for ProcessingSettings</span></span>
 <span><span class="fu">asJSON</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for ProcessingSettings</span></span>
-<span><span class="fu">export</span><span class="op">(</span><span class="va">x</span>, format <span class="op">=</span> <span class="st">"json"</span>, name <span class="op">=</span> <span class="st">"settings"</span>, path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">export</span><span class="op">(</span><span class="va">x</span>, format <span class="op">=</span> <span class="st">"json"</span>, name <span class="op">=</span> <span class="st">"settings"</span>, path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">as.ProcessingSettings</span><span class="op">(</span><span class="va">value</span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -126,6 +126,10 @@ package.</p></dd>
 
 <dt>x</dt>
 <dd><p>A ProcessingSettings S3 class object.</p></dd>
+
+
+<dt>...</dt>
+<dd><p>Not used.</p></dd>
 
 
 <dt>format</dt>
