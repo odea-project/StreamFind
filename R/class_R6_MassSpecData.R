@@ -2023,21 +2023,21 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description Gets suspects from features according to a defined database
     #' and mass (`ppm`) and time (`sec`) deviations.
     #'
-    #' @return A data.frame with the suspects and matched features.
-    #'
-    #' @param database X.
-    #'
-    #' @details The `database` is a data.frame with at least the columns name
+    #' @param database A data.frame with at least the columns name
     #' and mass, indicating the name and neutral monoisotopic
-    #' mass of the suspect targets. The `ppm` and `sec` which indicate the
+    #' mass of the suspect targets.
+    #'
+    #' @details The `ppm` and `sec` which indicate the
     #' mass (im ppm) and time (in seconds) deviations applied during the
     #' screening.
+    #'
+    #' @return A data.frame with the suspects and matched features.
     #'
     get_suspects = function(analyses = NULL, database = NULL, ppm = 4, sec = 10) {
 
       if (!any(self$has_features(analyses))) {
         warning("Features not found in the MassSpecData object!")
-        return(invisible(self))
+        return(data.table())
       }
 
       valid_db <- FALSE
@@ -2057,7 +2057,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (!valid_db) {
         warning("Argument database must be a data.frame with at least the columns name and mass or mz!")
-        return(invisible(self))
+        return(data.table())
       }
 
       if (!"rt" %in% colnames(database)) {
@@ -2155,6 +2155,19 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
 
       analyses
+    },
+
+    #' @description
+    #' Gets modules data.
+    #'
+    #' @param modules X.
+    #'
+    #' @return The list of modules data as defined by `modules` argument when
+    #' `NULL` all data in modules is returned.
+    #'
+    get_modules_data = function(modules = NULL) {
+      if (is.null(modules)) modules <- names(private$.modules)
+      private$.modules[modules]
     },
 
     ## ___ add -----
@@ -2795,6 +2808,28 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       } else {
         warning("Groups not present or alignment not valid! Not added.")
+      }
+      invisible(self)
+    },
+
+    #' @description
+    #' Adds data from modules to the MassSpecData.
+    #'
+    #' @param value A named list with data from modules.
+    #'
+    #' @return Invisible.
+    #'
+    add_modules_data = function(value = NULL) {
+      if (!is.null(names(value))) {
+
+        if (is.null(private$.modules)) private$.modules <- list()
+
+        private$.modules <- c(private$.modules, value)
+
+        private$.register("added", "module data for", paste0(names(value), collapse = "; "))
+        message("\U2713 Module data added!")
+      } else {
+        warning("Not done, the value must be a named list!")
       }
       invisible(self)
     },
@@ -4956,17 +4991,22 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description Screens for suspect targets in features according to defined
     #' settings.
     #'
-    #' @return A data.frame with the suspects and matched features.
-    #'
-    #' @details The settings must contain a database as data.frame with at least
-    #' the columns name and mass, indicating the name and neutral monoisotopic
-    #' mass of the suspect targets. Other parameters in the settings are `ppm`
-    #' and `sec` which indicate the mass (im ppm) and time (in seconds)
-    #' deviations applied during the screening.
-    #'
     suspect_screening = function(settings = NULL) {
+      add_settings <- TRUE
+      if (is.null(settings)) add_settings <- FALSE
 
+      settings <- private$.get_call_settings(settings, "suspect_screening")
+      if (is.null(settings)) return(invisible(self))
 
+      processed <- .s3_ms_suspect_screening(settings, self)
+
+      if (processed) {
+        if (add_settings) self$add_settings(settings)
+        message(paste0("\U2713 ", "Suspects added to modules!"))
+        private$.register("processed", "suspect_screening", settings$algorithm)
+      }
+
+      invisible(self)
     },
 
     ## ___ as -----
@@ -5415,7 +5455,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         "load_groups_ms2",
         "group_features",
         "fill_features",
-        "filter_features"
+        "filter_features",
+        "suspect_screening"
       )
     }
   )

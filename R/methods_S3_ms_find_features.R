@@ -51,7 +51,7 @@
 
   parameters <- settings$parameters
 
-  if ("class" %in% names(parameters)) {
+  if (any(grepl("class|Class", names(parameters)))) {
     parameters[["Class"]] <- parameters$class
     parameters[["class"]] <- NULL
 
@@ -65,6 +65,7 @@
 
     if (parameters$Class %in% "CentWaveParam") {
       parameters$roiScales <- as.double()
+      parameters$integrate <- as.integer(parameters$integrate)
     }
 
     parameters <- do.call("new", parameters)
@@ -85,7 +86,10 @@
             }
           })
 
-          if (par$Class %in% "CentWaveParam") par$roiScales <- as.double()
+          if (par$Class %in% "CentWaveParam") {
+            par$roiScales <- as.double()
+            par$integrate <- as.integer(par$integrate)
+          }
 
           par <- do.call("new", par)
         }

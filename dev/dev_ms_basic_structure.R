@@ -21,77 +21,36 @@ files_df <- data.frame(
   )
 )
 
-
-
-
-
 ms <- MassSpecData$new(files = files_df)
 
-x <- Settings_filter_features_streamFind()
-y <- Settings_annotate_features_streamFind()
-z <- Settings_load_features_ms1_streamFind()
-t <- Settings_load_features_ms2_streamFind()
-g <- Settings_load_groups_ms1_streamFind()
-f <- Settings_load_groups_ms2_streamFind()
-j <- Settings_find_features_xcms3_centwave()
-
-class(x)
-class(y)
-class(z)
-class(t)
+j <- Settings_suspect_screening_streamFind()
 class(j)
-
-sloop::s3_dispatch(validate(x))
-sloop::s3_dispatch(validate(y))
-sloop::s3_dispatch(validate(z))
-sloop::s3_dispatch(validate(t))
 sloop::s3_dispatch(validate(j))
-sloop::s3_dispatch(validate(g))
-sloop::s3_dispatch(validate(f))
 
+ffs <- get_default_ProcessingSettings(
+  call = "find_features",
+  algorithm = "xcms3_centwave"
+)
 
+gfs <- get_default_ProcessingSettings(
+  call = "group_features",
+  algorithm = "xcms3_peakdensity"
+)
 
-# save_default_ProcessingSettings(
-#   call = "find_features",
-#   algorithm = "centwave",
-#   format = "json",
-#   name = "ffs"
-# )
-#
-# save_default_ProcessingSettings(
-#   call = "group_features",
-#   algorithm = "peakdensity",
-#   name = "gfs"
-# )
-#
-# save_default_ProcessingSettings(
-#   call = "filter_features",
-#   algorithm = "streamFind",
-#   name = "fls"
-# )
+fls <- Settings_filter_features_streamFind(
+  minIntensity = 5000,
+  minSnRatio = 20,
+  maxGroupSd = 30,
+  # blank = 5,
+  minGroupAbundance = 3,
+  excludeIsotopes = TRUE
+)
 
-# save_default_ProcessingSettings(
-#   call = "find_features",
-#   algorithm = "kpic2",
-#   format = "json",
-#   name = "ffs"
-# )
+ms$add_settings(list(ffs, gfs, fls))
 
+ms$find_features()$group_features()$filter_features()
 
-
-
-ms$import_settings("ffs.json")
-ms$import_settings("gfs.json")
-ms$import_settings("fls.json")
-
-ms$find_features()#$group_features()#$filter_features()
-
-suspects <- ms$get_suspects(database = db)
-
-View(suspects)
-
-
-# plot -------------------------------------------------------------------------
+ms
 
 db <- streamFindData::msSpikedChemicals()
 db <- db[grepl("S", db$tag), ]
@@ -99,12 +58,50 @@ cols <- c("name", "formula", "mass", "rt")
 db <- db[, cols, with = FALSE]
 db
 
-ms$plot_groups_overview(
-  mass = db,
-  ppm = 8, sec = 10,
-  filtered = TRUE,
-  legendNames = TRUE
+sss <- Settings_suspect_screening_streamFind(
+  database = db,
+  ppm = 5,
+  sec = 10
 )
+
+
+# implement export MS2 ------
+
+slfms2 <- Settings_load_features_ms2_streamFind()
+slfms2$parameters$minIntensity <- 150
+slgms2 <- Settings_load_groups_ms2_streamFind()
+slgms2$parameters$minIntensity <- 150
+msbp <- ms$subset_analyses(4:6)
+suspects <- msbp$get_suspects(database = db, ppm = 10, sec = 15)
+
+msbp$remove_features(filtered = TRUE)
+msbp <- msbp$subset_features(features = suspects)
+msbp$load_features_ms2(slfms2)
+msbp$load_groups_ms2(slgms2)
+
+
+msbp$suspect_screening(sss)
+
+
+
+msbp$get_modules_data("suspect_screening")
+
+
+
+
+
+View(suspects)
+
+ms$plot_groups_ms2(groups = suspects$group[1],
+  isolationWindow = 1.3,
+  mzClustFeatures = 0.003,
+  minIntensityFeatures = 150
+)
+
+
+
+
+
 
 
 # history ----------------------------------------------------------------------
@@ -112,7 +109,7 @@ ms$plot_groups_overview(
 ms$get_history()
 
 
-# extra ------------------------------------------------------------------------
+# other ------------------------------------------------------------------------
 
-ms$save_settings(format = "json", name = "settings")
+# ms$save_settings(format = "json", name = "settings")
 

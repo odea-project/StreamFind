@@ -165,15 +165,11 @@ Settings_find_features_qPeaks <- function() {
 #'
 Settings_find_features_xcms3_centwave <- function() {
 
-  if (!requireNamespace("xcms", quietly = TRUE)) {
-    warning("xcms package required but not installed!")
-    return(NULL)
-  }
-
   settings <- list(
     call = "find_features",
     algorithm = "xcms3_centwave",
-    parameters = xcms::CentWaveParam(
+    parameters = list(
+      class = "CentWaveParam",
       ppm = 12,
       peakwidth = c(5, 60),
       snthresh = 15,
@@ -300,15 +296,11 @@ Settings_find_features_kpic2 <- function() {
 #'
 Settings_group_features_xcms3_peakdensity <- function() {
 
-  if (!requireNamespace("xcms", quietly = TRUE)) {
-    warning("xcms package required but not installed!")
-    return(NULL)
-  }
-
   settings <- list(
     call = "group_features",
     algorithm = "xcms3_peakdensity",
-    parameters = xcms::PeakDensityParam(
+    parameters = list(
+      class = "PeakDensityParam",
       sampleGroups = "holder",
       bw = 5,
       minFraction = 0.5,
@@ -830,3 +822,69 @@ validate.Settings_annotate_features_streamFind <- function(x) {
     checkmate::test_logical(x$parameters$runParallel, max.len = 1)
   )
 }
+
+## suspect_screening -----
+
+#' Settings_suspect_screening_streamFind
+#'
+#' @description
+#' Settings for performing suspect screening using a data.frame with target
+#' compounds.
+#'
+#' @param database A data.frame with at least the columns name and mass,
+#' indicating the name and neutral monoisotopic mass of the suspect targets.
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_suspect_screening_streamFind.
+#'
+#' @export
+#'
+Settings_suspect_screening_streamFind <- function(
+    database = NULL,
+    ppm = 4,
+    sec = 10) {
+
+  settings <- list(
+    call = "suspect_screening",
+    algorithm = "streamFind",
+    parameters = list(
+      "database" = database,
+      "ppm" = ppm,
+      "sec" = sec
+    ),
+    software = "streamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://github.com/ricardobachertdacunha/streamFind",
+    doi = NA_character_
+  )
+
+  settings <- as.ProcessingSettings(settings)
+
+  return(settings)
+}
+
+#' @describeIn Settings_suspect_screening_streamFind
+#' Validates the Settings_suspect_screening_streamFind S3 class object,
+#' returning a logical value of length one.
+#'
+#' @param x A Settings_suspect_screening_streamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_suspect_screening_streamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "suspect_screening"),
+    checkmate::test_choice(x$algorithm, "streamFind"),
+    checkmate::test_double(x$parameters$ppm, max.len = 1),
+    checkmate::test_double(x$parameters$sec, max.len = 1)
+  )
+}
+
+
+
+
+
+

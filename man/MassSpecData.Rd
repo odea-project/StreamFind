@@ -78,6 +78,7 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \item \href{#method-MassSpecData-get_groups_ms2}{\code{MassSpecData$get_groups_ms2()}}
 \item \href{#method-MassSpecData-get_components}{\code{MassSpecData$get_components()}}
 \item \href{#method-MassSpecData-get_suspects}{\code{MassSpecData$get_suspects()}}
+\item \href{#method-MassSpecData-get_modules_data}{\code{MassSpecData$get_modules_data()}}
 \item \href{#method-MassSpecData-add_headers}{\code{MassSpecData$add_headers()}}
 \item \href{#method-MassSpecData-add_settings}{\code{MassSpecData$add_settings()}}
 \item \href{#method-MassSpecData-add_analyses}{\code{MassSpecData$add_analyses()}}
@@ -88,6 +89,7 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \item \href{#method-MassSpecData-add_features}{\code{MassSpecData$add_features()}}
 \item \href{#method-MassSpecData-add_groups}{\code{MassSpecData$add_groups()}}
 \item \href{#method-MassSpecData-add_alignment}{\code{MassSpecData$add_alignment()}}
+\item \href{#method-MassSpecData-add_modules_data}{\code{MassSpecData$add_modules_data()}}
 \item \href{#method-MassSpecData-load_spectra}{\code{MassSpecData$load_spectra()}}
 \item \href{#method-MassSpecData-load_chromatograms}{\code{MassSpecData$load_chromatograms()}}
 \item \href{#method-MassSpecData-load_features_ms1}{\code{MassSpecData$load_features_ms1()}}
@@ -1879,7 +1881,9 @@ and mass (\code{ppm}) and time (\code{sec}) deviations.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
-\item{\code{database}}{X.}
+\item{\code{database}}{A data.frame with at least the columns name
+and mass, indicating the name and neutral monoisotopic
+mass of the suspect targets.}
 
 \item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
 
@@ -1888,15 +1892,34 @@ of the analyses.}
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-The \code{database} is a data.frame with at least the columns name
-and mass, indicating the name and neutral monoisotopic
-mass of the suspect targets. The \code{ppm} and \code{sec} which indicate the
+The \code{ppm} and \code{sec} which indicate the
 mass (im ppm) and time (in seconds) deviations applied during the
 screening.
 }
 
 \subsection{Returns}{
 A data.frame with the suspects and matched features.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-get_modules_data"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-get_modules_data}{}}}
+\subsection{Method \code{get_modules_data()}}{
+Gets modules data.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_modules_data(modules = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{modules}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+The list of modules data as defined by \code{modules} argument when
+\code{NULL} all data in modules is returned.
 }
 }
 \if{html}{\out{<hr>}}
@@ -2130,6 +2153,26 @@ Adds time alignment results.
 \item{\code{alignment}}{A named list with a data.table for each analysis with the
 results from alignment of features or correspondence of features across
 analyses. The names of the list must match the names of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-add_modules_data"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-add_modules_data}{}}}
+\subsection{Method \code{add_modules_data()}}{
+Adds data from modules to the MassSpecData.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$add_modules_data(value = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{A named list with data from modules.}
 }
 \if{html}{\out{</div>}}
 }
@@ -4378,17 +4421,6 @@ ProcessingSettings S3 class object. When not given, settings for the
 processing method will be searched within the \code{MassSpecData} object.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Details}{
-The settings must contain a database as data.frame with at least
-the columns name and mass, indicating the name and neutral monoisotopic
-mass of the suspect targets. Other parameters in the settings are \code{ppm}
-and \code{sec} which indicate the mass (im ppm) and time (in seconds)
-deviations applied during the screening.
-}
-
-\subsection{Returns}{
-A data.frame with the suspects and matched features.
 }
 }
 \if{html}{\out{<hr>}}

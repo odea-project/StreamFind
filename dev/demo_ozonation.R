@@ -55,15 +55,6 @@ save_default_ProcessingSettings(
 
 ms$import_settings("ffs.json")
 
-save_default_ProcessingSettings(
-  call = "filter_features",
-  algorithm = "streamFind",
-  format = "json",
-  name = "flfs"
-)
-
-ms$import_settings("flfs.json")
-
 
 # process ----------------------------------------------------------------------
 
@@ -120,8 +111,6 @@ ms$plot_groups_overview(
   legendNames = TRUE
 )
 
-ms$plot_features(features = "mz258.085_rt1014_f236", filtered = TRUE)
-
 ms$plot_eic(
   analyses = ms$get_analysis_names()[grepl("neg", ms$get_analysis_names())],
   mz = db$mass[db$name %in% "Valsartan"] - 1.0073,
@@ -140,4 +129,3 @@ ms$get_history()
 # extra ------------------------------------------------------------------------
 
 ms$save_settings(format = "json", name = "settings")
-
