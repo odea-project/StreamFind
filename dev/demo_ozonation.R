@@ -90,7 +90,6 @@ ms$find_features()$annotate_features(afs)$group_features(gfs)$filter_features(fl
 
 ms
 
-
 # plot -------------------------------------------------------------------------
 
 db <- streamFindData::msSpikedChemicals()

@@ -394,6 +394,7 @@ settingsSettings_load_features_ms1_streamFind <- list(
     rtWindow = c(-2, 2),
     mzWindow = c(-1, 6),
     mzClust = 0.003,
+    isInAllSpectra = FALSE,
     minIntensity = 250,
     filtered = FALSE,
     runParallel = FALSE,
@@ -407,6 +408,7 @@ settingsSettings_load_features_ms2_streamFind <- list(
   "parameters" = list(
     isolationWindow = 1.3,
     mzClust = 0.003,
+    isInAllSpectra = FALSE,
     minIntensity = 0,
     filtered = FALSE,
     runParallel = FALSE,
@@ -477,6 +479,7 @@ settingsSettings_load_groups_ms1_streamFind <- list(
   "algorithm" = "streamFind",
   "parameters" = list(
     mzClust = 0.003,
+    isInAllSpectra = FALSE,
     minIntensity = 1000,
     verbose = FALSE,
     filtered = FALSE,
@@ -489,6 +492,7 @@ settingsSettings_load_groups_ms2_streamFind <- list(
   "algorithm" = "streamFind",
   "parameters" = list(
     mzClust = 0.003,
+    isInAllSpectra = FALSE,
     minIntensity = 250,
     filtered = FALSE,
     runParallel = FALSE,

@@ -7,7 +7,8 @@
 \usage{
 Settings_load_features_ms2_streamFind(
   isolationWindow = 1.3,
-  mzClust = 0.003,
+  mzClust = 0.01,
+  isInAllSpectra = TRUE,
   minIntensity = 0,
   filtered = FALSE,
   runParallel = FALSE,
@@ -23,6 +24,11 @@ data (i.e., MS2 data).}
 
 \item{mzClust}{Numeric value with the mass deviation threshold (in Da) to
 cluster mass traces. Highly dependent on the mass resolution of the MS data.}
+
+\item{isInAllSpectra}{Logical with length one. When \code{TRUE}, traces are kept
+if present in all spectra. For MS2 data and when applied multiple collision
+energies, the presence is evaluated for traces within spectra of each
+collision energy.}
 
 \item{minIntensity}{Numeric value with the minimum intensity.}
 

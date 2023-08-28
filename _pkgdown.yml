@@ -66,6 +66,11 @@ reference:
     Settings for the processing method annotate_features.
 - contents:
   - Settings_annotate_features_streamFind
+- subtitle: suspect_screening
+  desc: >
+    Settings for the processing method suspect_screening.
+- contents:
+  - Settings_suspect_screening_streamFind
 - subtitle: General get and save default settings
   desc: >
     Funtions to uniformily get and save _ProcessingSettings_ are available.

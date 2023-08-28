@@ -61,6 +61,7 @@
 <span>  rtWindow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span>,</span>
 <span>  mzWindow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="fl">6</span><span class="op">)</span>,</span>
 <span>  mzClust <span class="op">=</span> <span class="fl">0.003</span>,</span>
+<span>  isInAllSpectra <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  minIntensity <span class="op">=</span> <span class="fl">250</span>,</span>
 <span>  filtered <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  runParallel <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -90,6 +91,13 @@ Note that the first element should be negative to expand to the left.</p></dd>
 <dt>mzClust</dt>
 <dd><p>Numeric value with the mass deviation threshold (in Da) to
 cluster mass traces. Highly dependent on the mass resolution of the MS data.</p></dd>
+
+
+<dt>isInAllSpectra</dt>
+<dd><p>Logical with length one. When <code>TRUE</code>, traces are kept
+if present in all spectra. For MS2 data and when applied multiple collision
+energies, the presence is evaluated for traces within spectra of each
+collision energy.</p></dd>
 
 
 <dt>minIntensity</dt>

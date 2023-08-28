@@ -68,9 +68,9 @@ sss <- Settings_suspect_screening_streamFind(
 # implement export MS2 ------
 
 slfms2 <- Settings_load_features_ms2_streamFind()
-slfms2$parameters$minIntensity <- 150
+slfms2$parameters$minIntensity <- 100
 slgms2 <- Settings_load_groups_ms2_streamFind()
-slgms2$parameters$minIntensity <- 150
+slgms2$parameters$minIntensity <- 100
 msbp <- ms$subset_analyses(4:6)
 suspects <- msbp$get_suspects(database = db, ppm = 10, sec = 15)
 
@@ -79,13 +79,27 @@ msbp <- msbp$subset_features(features = suspects)
 msbp$load_features_ms2(slfms2)
 msbp$load_groups_ms2(slgms2)
 
-
 msbp$suspect_screening(sss)
 
+View(msbp$get_modules_data("suspect_screening"))
 
 
-msbp$get_modules_data("suspect_screening")
 
+ms2 <- ms$get_spectra(analyses = 4, mz = 239.0629, rt = 1157.414, ppm = 20, sec = 30, levels = 2, allTraces = FALSE)
+ms2$unique_id <- paste0(ms2$analysis, "_", ms2$id)
+
+
+rcpp_ms_cluster_ms2(ms2, 0.005, TRUE, TRUE)
+
+
+
+ms$get_ms2(analyses = 4, mz = 267.0702, rt = 1007.222, ppm = 20, sec = 30, mzClust = 0.01, isInAllSpectra = TRUE)
+
+ms$get_ms2(analyses = 5, mz = 267.0702, rt = 1007.222, ppm = 20, sec = 30, mzClust = 0.01, isInAllSpectra = TRUE)
+
+
+ms$plot_ms1(analyses = 4, mz = data.frame(mzmin = 239, mzmax = 245, rtmin = 1156, rtmax = 1158), isInAllSpectra = TRUE, verbose = TRUE)
+ms1
 
 
 

@@ -11,24 +11,6 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \insertRef{patroon01}{streamFind}
 
 \insertRef{patroon02}{streamFind}
-
-\insertRef{mzr01}{streamFind}
-
-\insertRef{mzr02}{streamFind}
-
-\insertRef{mzr03}{streamFind}
-
-\insertRef{mzr04}{streamFind}
-
-\insertRef{proteo01}{streamFind}
-
-\insertRef{proteo02}{streamFind}
-
-\insertRef{xcms01}{streamFind}
-
-\insertRef{xcms02}{streamFind}
-
-\insertRef{xcms03}{streamFind}
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -992,6 +974,7 @@ Gets MS1 data from the analyses based on targets.
   sec = 60,
   id = NULL,
   mzClust = 0.003,
+  isInAllSpectra = TRUE,
   verbose = FALSE,
   minIntensity = 1000,
   runParallel = FALSE
@@ -1030,6 +1013,11 @@ combination of the \emph{m/z} and retention time ranges or values.}
 \item{\code{mzClust}}{Numeric value with the mass deviation threshold (in Da) to
 cluster mass traces. Highly dependent on the mass resolution of the MS data.}
 
+\item{\code{isInAllSpectra}}{Logical with length one. When \code{TRUE}, traces are kept
+if present in all spectra. For MS2 data and when applied multiple collision
+energies, the presence is evaluated for traces within spectra of each
+collision energy.}
+
 \item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
 result messages. When \code{FALSE}, some messages are omitted.}
 
@@ -1060,6 +1048,7 @@ Gets MS2 data from the analyses based on targets.
   id = NULL,
   isolationWindow = 1.3,
   mzClust = 0.005,
+  isInAllSpectra = TRUE,
   verbose = FALSE,
   minIntensity = 0,
   runParallel = FALSE
@@ -1101,6 +1090,11 @@ data (i.e., MS2 data).}
 
 \item{\code{mzClust}}{Numeric value with the mass deviation threshold (in Da) to
 cluster mass traces. Highly dependent on the mass resolution of the MS data.}
+
+\item{\code{isInAllSpectra}}{Logical with length one. When \code{TRUE}, traces are kept
+if present in all spectra. For MS2 data and when applied multiple collision
+energies, the presence is evaluated for traces within spectra of each
+collision energy.}
 
 \item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
 result messages. When \code{FALSE}, some messages are omitted.}
@@ -1315,6 +1309,7 @@ Gets an averaged MS1 spectrum for features in the analyses.
   rtWindow = c(-2, 2),
   mzWindow = c(-5, 100),
   mzClust = 0.003,
+  isInAllSpectra = TRUE,
   minIntensity = 1000,
   verbose = FALSE,
   filtered = FALSE,
@@ -1377,6 +1372,11 @@ Note that the first element should be negative to expand to the left.}
 \item{\code{mzClust}}{Numeric value with the mass deviation threshold (in Da) to
 cluster mass traces. Highly dependent on the mass resolution of the MS data.}
 
+\item{\code{isInAllSpectra}}{Logical with length one. When \code{TRUE}, traces are kept
+if present in all spectra. For MS2 data and when applied multiple collision
+energies, the presence is evaluated for traces within spectra of each
+collision energy.}
+
 \item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 
 \item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
@@ -1413,6 +1413,7 @@ Gets an averaged MS2 spectrum for features in the analyses.
   sec = 60,
   isolationWindow = 1.3,
   mzClust = 0.003,
+  isInAllSpectra = TRUE,
   minIntensity = 0,
   verbose = FALSE,
   filtered = FALSE,
@@ -1468,6 +1469,11 @@ data (i.e., MS2 data).}
 
 \item{\code{mzClust}}{Numeric value with the mass deviation threshold (in Da) to
 cluster mass traces. Highly dependent on the mass resolution of the MS data.}
+
+\item{\code{isInAllSpectra}}{Logical with length one. When \code{TRUE}, traces are kept
+if present in all spectra. For MS2 data and when applied multiple collision
+energies, the presence is evaluated for traces within spectra of each
+collision energy.}
 
 \item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 
@@ -1587,9 +1593,11 @@ Gets an averaged MS1 spectrum for feature groups in the analyses.
   rtWindow = c(-2, 2),
   mzWindow = c(-5, 90),
   mzClustFeatures = 0.003,
+  isInAllSpectraFeatures = TRUE,
   minIntensityFeatures = 1000,
   loadedFeaturesMS1 = TRUE,
   mzClustGroups = 0.003,
+  isInAllSpectraGroups = TRUE,
   minIntensityGroups = 1000,
   groupBy = "groups",
   verbose = FALSE,
@@ -1649,6 +1657,11 @@ Note that the first element should be negative to expand to the left.}
 (in Da) to cluster mass traces for features. Highly dependent on the mass
 resolution of the MS data.}
 
+\item{\code{isInAllSpectraFeatures}}{Logical with length one. When \code{TRUE}, traces
+from features are kept if present in all spectra. For MS2 data and when
+applied multiple collision energies, the presence is evaluated for traces
+within spectra of each collision energy.}
+
 \item{\code{minIntensityFeatures}}{Numeric value with the minimum intensity for
 features.}
 
@@ -1658,6 +1671,9 @@ loaded features MS1 data is used instead of extraction from raw data.}
 \item{\code{mzClustGroups}}{Numeric value with the mass deviation threshold
 (in Da) to cluster mass traces for feature groups. Highly dependent on the
 mass resolution of the MS data.}
+
+\item{\code{isInAllSpectraGroups}}{Logical with length one. When \code{TRUE}, traces are
+kept if present in all spectra from features.}
 
 \item{\code{minIntensityGroups}}{Numeric value with the minimum intensity for
 feature groups.}
@@ -1699,9 +1715,11 @@ Gets an averaged MS2 spectrum for feature groups in the analyses.
   sec = 60,
   isolationWindow = 1.3,
   mzClustFeatures = 0.003,
+  isInAllSpectraFeatures = TRUE,
   minIntensityFeatures = 100,
   loadedFeaturesMS2 = TRUE,
   mzClustGroups = 0.003,
+  isInAllSpectraGroups = TRUE,
   minIntensityGroups = 100,
   groupBy = "groups",
   verbose = FALSE,
@@ -1755,6 +1773,11 @@ data (i.e., MS2 data).}
 (in Da) to cluster mass traces for features. Highly dependent on the mass
 resolution of the MS data.}
 
+\item{\code{isInAllSpectraFeatures}}{Logical with length one. When \code{TRUE}, traces
+from features are kept if present in all spectra. For MS2 data and when
+applied multiple collision energies, the presence is evaluated for traces
+within spectra of each collision energy.}
+
 \item{\code{minIntensityFeatures}}{Numeric value with the minimum intensity for
 features.}
 
@@ -1764,6 +1787,9 @@ loaded features MS2 data is used instead of extraction from raw data.}
 \item{\code{mzClustGroups}}{Numeric value with the mass deviation threshold
 (in Da) to cluster mass traces for feature groups. Highly dependent on the
 mass resolution of the MS data.}
+
+\item{\code{isInAllSpectraGroups}}{Logical with length one. When \code{TRUE}, traces are
+kept if present in all spectra from features.}
 
 \item{\code{minIntensityGroups}}{Numeric value with the minimum intensity for
 feature groups.}
@@ -3133,6 +3159,7 @@ Plots MS2 spectra from the analyses based on targets.
   id = NULL,
   isolationWindow = 1.3,
   mzClust = 0.005,
+  isInAllSpectra = TRUE,
   verbose = FALSE,
   minIntensity = 0,
   runParallel = FALSE,
@@ -3179,6 +3206,11 @@ data (i.e., MS2 data).}
 \item{\code{mzClust}}{Numeric value with the mass deviation threshold (in Da) to
 cluster mass traces. Highly dependent on the mass resolution of the MS data.}
 
+\item{\code{isInAllSpectra}}{Logical with length one. When \code{TRUE}, traces are kept
+if present in all spectra. For MS2 data and when applied multiple collision
+energies, the presence is evaluated for traces within spectra of each
+collision energy.}
+
 \item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
 result messages. When \code{FALSE}, some messages are omitted.}
 
@@ -3218,6 +3250,7 @@ Plots MS1 spectra from the analyses based on targets.
   sec = 60,
   id = NULL,
   mzClust = 0.001,
+  isInAllSpectra = TRUE,
   verbose = FALSE,
   minIntensity = 1000,
   runParallel = FALSE,
@@ -3259,6 +3292,11 @@ combination of the \emph{m/z} and retention time ranges or values.}
 
 \item{\code{mzClust}}{Numeric value with the mass deviation threshold (in Da) to
 cluster mass traces. Highly dependent on the mass resolution of the MS data.}
+
+\item{\code{isInAllSpectra}}{Logical with length one. When \code{TRUE}, traces are kept
+if present in all spectra. For MS2 data and when applied multiple collision
+energies, the presence is evaluated for traces within spectra of each
+collision energy.}
 
 \item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
 result messages. When \code{FALSE}, some messages are omitted.}
@@ -3488,6 +3526,7 @@ Plots MS1 spectra from features in the analyses.
   rtWindow = c(-2, 2),
   mzWindow = c(-5, 100),
   mzClust = 0.003,
+  isInAllSpectra = TRUE,
   minIntensity = 1000,
   verbose = FALSE,
   filtered = FALSE,
@@ -3554,6 +3593,11 @@ Note that the first element should be negative to expand to the left.}
 \item{\code{mzClust}}{Numeric value with the mass deviation threshold (in Da) to
 cluster mass traces. Highly dependent on the mass resolution of the MS data.}
 
+\item{\code{isInAllSpectra}}{Logical with length one. When \code{TRUE}, traces are kept
+if present in all spectra. For MS2 data and when applied multiple collision
+energies, the presence is evaluated for traces within spectra of each
+collision energy.}
+
 \item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 
 \item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
@@ -3600,6 +3644,7 @@ Plots MS2 spectra from features in the analyses.
   sec = 60,
   isolationWindow = 1.3,
   mzClust = 0.005,
+  isInAllSpectra = TRUE,
   minIntensity = 0,
   verbose = FALSE,
   filtered = FALSE,
@@ -3659,6 +3704,11 @@ data (i.e., MS2 data).}
 
 \item{\code{mzClust}}{Numeric value with the mass deviation threshold (in Da) to
 cluster mass traces. Highly dependent on the mass resolution of the MS data.}
+
+\item{\code{isInAllSpectra}}{Logical with length one. When \code{TRUE}, traces are kept
+if present in all spectra. For MS2 data and when applied multiple collision
+energies, the presence is evaluated for traces within spectra of each
+collision energy.}
 
 \item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 
@@ -3808,6 +3858,7 @@ Plots MS1 spectra from feature groups in the analyses.
   rtWindow = c(-2, 2),
   mzWindow = c(-5, 90),
   mzClustFeatures = 0.005,
+  isInAllSpectraFeatures = TRUE,
   minIntensityFeatures = 1000,
   loadedFeaturesMS1 = TRUE,
   mzClustGroups = 0.005,
@@ -3873,6 +3924,11 @@ Note that the first element should be negative to expand to the left.}
 (in Da) to cluster mass traces for features. Highly dependent on the mass
 resolution of the MS data.}
 
+\item{\code{isInAllSpectraFeatures}}{Logical with length one. When \code{TRUE}, traces
+from features are kept if present in all spectra. For MS2 data and when
+applied multiple collision energies, the presence is evaluated for traces
+within spectra of each collision energy.}
+
 \item{\code{minIntensityFeatures}}{Numeric value with the minimum intensity for
 features.}
 
@@ -3929,9 +3985,11 @@ Plots MS1 spectra from feature groups in the analyses.
   sec = 60,
   isolationWindow = 1.3,
   mzClustFeatures = 0.003,
+  isInAllSpectraFeatures = TRUE,
   minIntensityFeatures = 100,
   loadedFeaturesMS2 = TRUE,
   mzClustGroups = 0.003,
+  isInAllSpectraGroups = TRUE,
   minIntensityGroups = 100,
   verbose = FALSE,
   filtered = FALSE,
@@ -3988,6 +4046,11 @@ data (i.e., MS2 data).}
 (in Da) to cluster mass traces for features. Highly dependent on the mass
 resolution of the MS data.}
 
+\item{\code{isInAllSpectraFeatures}}{Logical with length one. When \code{TRUE}, traces
+from features are kept if present in all spectra. For MS2 data and when
+applied multiple collision energies, the presence is evaluated for traces
+within spectra of each collision energy.}
+
 \item{\code{minIntensityFeatures}}{Numeric value with the minimum intensity for
 features.}
 
@@ -3997,6 +4060,9 @@ loaded features MS2 data is used instead of extraction from raw data.}
 \item{\code{mzClustGroups}}{Numeric value with the mass deviation threshold
 (in Da) to cluster mass traces for feature groups. Highly dependent on the
 mass resolution of the MS data.}
+
+\item{\code{isInAllSpectraGroups}}{Logical with length one. When \code{TRUE}, traces are
+kept if present in all spectra from features.}
 
 \item{\code{minIntensityGroups}}{Numeric value with the minimum intensity for
 feature groups.}
@@ -4269,10 +4335,9 @@ Invisible.
 \if{html}{\out{<a id="method-MassSpecData-find_features"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-find_features}{}}}
 \subsection{Method \code{find_features()}}{
-Finds features (i.e., chromatographic peaks) from MS data
-in analyses. The function uses the \pkg{patRoon} package
-for peak finding, enabling the use of several algorithms (see details).
-Note that the settings call name must be "find_features".
+Finds features (i.e., chromatographic peaks) in the spectra
+data of the analyses. Note, MS data structure requirements vary between
+the available processing settings for finding features.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$find_features(settings = NULL)}\if{html}{\out{</div>}}
 }
@@ -4288,17 +4353,6 @@ processing method will be searched within the \code{MassSpecData} object.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Details}{
-See the \link[patRoon]{findFeatures} function from the
-\pkg{patRoon} package or the
-\href{https://rickhelmus.github.io/patRoon/reference/findFeatures.html}{reference guide} for more information. The following algorithms are
-available via \pkg{patRoon}: "xcms3", "xcms", "openms", "envipick",
-"sirius", "kpic2", "safd". The algorithm in the  settings should be
-one of the described. The parameters are given as a list and should
-match with algorithm requirements. Certain algorithms also require
-defined MS file formats and data in profile mode.
-}
-
 \subsection{Returns}{
 Invisible.
 }
@@ -4307,10 +4361,7 @@ Invisible.
 \if{html}{\out{<a id="method-MassSpecData-group_features"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-group_features}{}}}
 \subsection{Method \code{group_features()}}{
-Groups and aligns features across analyses.
-The function uses the \pkg{patRoon} package for grouping
-features, enabling the use of several algorithms (see details).
-Note that the settings call name must be "group_features".
+Groups and possibly aligns features across analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$group_features(settings = NULL)}\if{html}{\out{</div>}}
 }
@@ -4326,16 +4377,6 @@ processing method will be searched within the \code{MassSpecData} object.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Details}{
-See the \link[patRoon]{groupFeatures} function from the
-\pkg{patRoon} package or the
-\href{https://rickhelmus.github.io/patRoon/reference/groupFeatures.html}{reference guide}
-for more information. The following algorithms are
-possible: "xcms3", "xcms", "openms" or "kpic2". The algorithm slot in the
-settings should be one of the described. The parameters
-are given as a list and should match with algorithm requirements.
-}
-
 \subsection{Returns}{
 Invisible.
 }

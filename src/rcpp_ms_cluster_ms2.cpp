@@ -9,12 +9,21 @@ using namespace std;
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
+List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool isInAllSpectra, bool verbose) {
 
   StringVector all_ids = ms2["unique_id"];
   StringVector unique_ids = unique(all_ids);
   int totalNumberIds = unique_ids.size();
   int n = all_ids.size();
+
+  bool hasCEValues = false;
+  CharacterVector names_ms2 = ms2.names();
+  std::string ce_name = "pre_ce";
+  for (int i = 0; i < names_ms2.size(); ++i) {
+    if (as<std::string>(names_ms2[i]) == ce_name) {
+      hasCEValues = true;
+    }
+  }
 
   StringVector target_id;
 
@@ -24,6 +33,7 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
   NumericVector pre_mz;
   NumericVector mz;
   NumericVector intensity;
+  NumericVector ce;
 
   IntegerVector idx;
   NumericVector mz_diff;
@@ -46,6 +56,10 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
   IntegerVector temp_idx;
   NumericVector temp_rt;
   NumericVector temp_rt_unique;
+
+  NumericVector temp_all_unique_rt;
+
+  bool isisInAllSpectraScans;
 
   LogicalVector isPre;
 
@@ -89,6 +103,12 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
       mz = mz[idx];
       intensity = intensity[idx];
 
+      if (hasCEValues) {
+        ce = ms2["pre_ce"];
+        ce = ce[which_idx];
+        ce = ce[idx];
+      }
+
       mz_diff = diff(mz);
 
       // TODO replace by automated estimation of the width for clustering to
@@ -131,17 +151,49 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
 
           temp_idx = idx_clusters[mz_clusters == unique_clusters[z]];
 
+          temp_rt = rt[temp_idx];
+          temp_rt_unique = unique(temp_rt);
+          hasFromSameScan[z] = temp_rt_unique.size() < temp_rt.size();
+
+          if (counter > 10) hasFromSameScan[z] = false;
+          if (itMzClust < 0.0001) hasFromSameScan[z] = false;
+
+          if (hasFromSameScan[z]) break;
+
+          // checks if traces are present in all unique rt values (i.e., all scans)
+          if (isInAllSpectra) {
+            temp_all_unique_rt = unique(rt);
+            isisInAllSpectraScans = temp_all_unique_rt.size() == temp_rt_unique.size();
+
+            // check if a mz is present in only certain CE values
+            if (hasCEValues & !isisInAllSpectraScans) {
+              NumericVector temp_ce = ce[temp_idx];
+              NumericVector temp_ce_unique = unique(temp_ce);
+
+              LogicalVector which_rt_with_ce = rep(false, rt.size());
+              for (int r = 0; r < rt.size(); r++) {
+                for (int r2 = 0; r2 < temp_ce_unique.size(); r2++) {
+                  if (ce[r] == temp_ce_unique[r2]) which_rt_with_ce[r] = true;
+                }
+              }
+
+              temp_all_unique_rt = rt[which_rt_with_ce];
+              temp_all_unique_rt = unique(temp_all_unique_rt);
+
+              isisInAllSpectraScans = temp_all_unique_rt.size() == temp_rt_unique.size();
+            }
+          } else {
+            isisInAllSpectraScans = true;
+          }
+
+          if (!isisInAllSpectraScans) continue;
+
           temp_intensity = intensity[temp_idx];
           temp_intensity_mean = max(temp_intensity);
           new_intensity.push_back(temp_intensity_mean);
 
-          temp_mz = mz[temp_idx];
-
-          // temp_mz = temp_mz[temp_intensity == temp_intensity_mean];
-          // temp_mz_mean = sum(temp_mz) / temp_mz.size();
-          // new_mz.push_back(temp_mz_mean);
-
           // weighted mean with intensities
+          temp_mz = mz[temp_idx];
           int size_temp_mz = temp_mz.size();
           float mz_sum = 0, mz_numWeight = 0;
           for (int w = 0; w < size_temp_mz; w++) {
@@ -151,21 +203,16 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
           temp_mz_mean = mz_numWeight / mz_sum;
           new_mz.push_back(temp_mz_mean);
 
-          temp_rt = rt[temp_idx];
-          temp_rt_unique = unique(temp_rt);
+          if (hasFromSameScan[z]) {
 
-          hasFromSameScan[z] = temp_rt_unique.size() < temp_rt.size();
-
-          if (counter > 10) hasFromSameScan[z] = false;
-          if (itMzClust < 0.0001) hasFromSameScan[z] = false;
-
-          if (hasFromSameScan[z] & verbose) {
-            double min_mz = min(temp_mz);
-            double max_mz = max(temp_mz);
-            Rcpp::Rcout << "\n The m/z cluster " << min_mz << " to " << max_mz <<
-              " of " << target_id[0] << " has traces from the same scan at:\n";
-            Rcpp::Rcout << temp_rt << "\n";
-            Rcpp::Rcout << temp_mz << "\n\n";
+            if (verbose) {
+              double min_mz = min(temp_mz);
+              double max_mz = max(temp_mz);
+              Rcpp::Rcout << "\n The m/z cluster " << min_mz << " to " << max_mz <<
+                " of " << target_id[0] << " has traces from the same scan at:\n";
+              Rcpp::Rcout << temp_rt << "\n";
+              Rcpp::Rcout << temp_mz << "\n\n";
+            }
 
             itMzClust = itMzClust - 0.0001;
           }
@@ -181,8 +228,7 @@ List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool verbose) {
       if (verbose) Rcpp::Rcout << "Done! \n\n";
     }
 
-    if (mz.size() > 0) {
-
+    if (new_mz.size() > 0) {
       ms2_out[i] = DataFrame::create(
         Named("analysis") = analysis,
         Named("id") = id,

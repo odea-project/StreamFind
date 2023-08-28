@@ -78,7 +78,8 @@ MassSpecAnalysis <- function(name = NA_character_,
                              chromatograms = data.table(),
                              features_eic = list(),
                              features = data.table(),
-                             metadata = list()) {
+                             metadata = list(),
+                             version = NA_character_) {
 
   if (is.data.frame(features)) {
     if ("ms1" %in% colnames(features)) {
@@ -157,6 +158,8 @@ MassSpecAnalysis <- function(name = NA_character_,
   x$spectra <- as.data.table(x$spectra)
   x$chromatograms <- as.data.table(x$chromatograms)
   x$features <- as.data.table(x$features)
+
+  x$version <- as.character(packageVersion("streamFind"))
 
   if (validate.MassSpecAnalysis(x)) {
     structure(x, class = "MassSpecAnalysis")
@@ -326,7 +329,12 @@ validate.MassSpecAnalysis <- function(x = NULL) {
     }
 
     if (!is.list(x$metadata)) {
-      warning("Analysis netadata entry not conform!")
+      warning("Analysis metadata entry not conform!")
+      valid <- FALSE
+    }
+
+    if (!is.character(x$version)) {
+      warning("Analysis version entry not conform!")
       valid <- FALSE
     }
   }
