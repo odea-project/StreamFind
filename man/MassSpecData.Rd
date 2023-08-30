@@ -58,6 +58,7 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \item \href{#method-MassSpecData-get_groups}{\code{MassSpecData$get_groups()}}
 \item \href{#method-MassSpecData-get_groups_ms1}{\code{MassSpecData$get_groups_ms1()}}
 \item \href{#method-MassSpecData-get_groups_ms2}{\code{MassSpecData$get_groups_ms2()}}
+\item \href{#method-MassSpecData-get_groups_coverage}{\code{MassSpecData$get_groups_coverage()}}
 \item \href{#method-MassSpecData-get_components}{\code{MassSpecData$get_components()}}
 \item \href{#method-MassSpecData-get_suspects}{\code{MassSpecData$get_suspects()}}
 \item \href{#method-MassSpecData-get_modules_data}{\code{MassSpecData$get_modules_data()}}
@@ -182,6 +183,12 @@ Filters feature groups with max replicate group abundance.
 
 Filters feature groups which not higher then the defined threshold of the
 corresponding blank replicate group.
+
+
+Filters features and feature groups within a retention time range.
+
+
+Filters features and feature groups within a mass range.
 
 
 Creates an R6 MassSpecData class object. When \code{headers} are not given
@@ -1809,6 +1816,71 @@ loaded feature groups MS2 data is used instead of extraction from raw data.}
 \item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
 processing. Note that parallel processing is not always faster due to
 overhead.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A data.table.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-get_groups_coverage"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-get_groups_coverage}{}}}
+\subsection{Method \code{get_groups_coverage()}}{
+Gets the percentage coverage of feature groups in the analyses (i.e.
+100\% means that a feature group is present in all the analyses).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_groups_coverage(
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  ppm = 20,
+  sec = 60,
+  filtered = FALSE,
+  minIntensity = 0
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{groups}}{A numeric/character vector with the number/id
+of feature groups.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
+data.table or data.frame named \code{min} and \code{max} with minimum and maximum
+neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time values (in seconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt}. Then, the deviations given in
+the \code{ppm} and \code{sec} arguments are used to calculate the ranges.
+Also works with a data.table or data.frame with minimum and maximum values of
+neutral mass and retention time targets. In this case, the column names must
+be \code{min}, \code{max}, \code{rtmin} and \code{rtmax}. Note that when mass/time ranges
+are given, the \code{ppm} and \code{sec} arguments are not used.}
+
+\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns
+data.table or data.frame named \code{mzmin} and \code{mzmax} with minimum and maximum
+\emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da)
+and retention time values (in seconds) can be given as one data.table or
+data.frame with columns named \code{mz} and \code{rt}. Then, the deviations given in
+the \code{ppm} and \code{sec} arguments are used to calculate the ranges.
+Also works with a data.table or data.frame with minimum and maximum values of
+\emph{m/z} and retention time targets. In this case, the column names must
+be \code{mzmin}, \code{mzmax}, \code{rtmin} and \code{rtmax}. Note that when mass/time ranges
+are given, the \code{ppm} and \code{sec} arguments are not used.}
+
+\item{\code{rt}}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
+
+\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+
+\item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
+
+\item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 }
 \if{html}{\out{</div>}}
 }

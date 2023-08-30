@@ -226,7 +226,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     .filter_minIntensity = function(value = 5000) {
 
       if (is.numeric(value)) {
-        lapply(private$.analyses, function(x) {
+        private$.analyses <- lapply(private$.analyses, function(x) {
           sel <- (x$features$intensity <= value) & (!x$features$filtered)
           x$features$filtered[sel] <- TRUE
           x$features$filter[sel] <- "minIntensity"
@@ -252,7 +252,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           "minIntensity",
           "streamFind",
           as.character(packageVersion("streamFind")),
-          paste0(value, " counts"))
+          paste0(value, " counts")
+        )
       }
     },
 
@@ -264,7 +265,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       features <- self$get_features(filtered = TRUE)
 
       if ("sn" %in% colnames(features) & is.numeric(value)) {
-        lapply(private$.analyses, function(x) {
+        private$.analyses <- lapply(private$.analyses, function(x) {
           sel <- x$features$sn <= value & !x$features$filtered
           x$features$filtered[sel] <- TRUE
           x$features$filter[sel] <- "minSnRatio"
@@ -291,7 +292,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           "minSnRatio",
           "streamFind",
           as.character(packageVersion("streamFind")),
-          value)
+          value
+        )
       }
     },
 
@@ -304,7 +306,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       features <- self$get_features(filtered = TRUE)
 
       if ("iso_step" %in% colnames(features) & isTRUE(value)) {
-        lapply(private$.analyses, function(x) {
+        private$.analyses <- lapply(private$.analyses, function(x) {
           sel <- x$features$iso_step > 0 & !x$features$filtered
           x$features$filtered[sel] <- TRUE
           x$features$filter[sel] <- "isotope"
@@ -331,7 +333,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           "excludeIsotopes",
           "streamFind",
           as.character(packageVersion("streamFind")),
-          TRUE)
+          TRUE
+        )
       }
     },
 
@@ -363,7 +366,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           "maxGroupSd",
           "streamFind",
           as.character(packageVersion("streamFind")),
-          paste0(value, "%"))
+          paste0(value, "%")
+        )
       }
     },
 
@@ -398,7 +402,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           "minGroupAbundance",
           "streamFind",
           as.character(packageVersion("streamFind")),
-          value)
+          value
+        )
       }
     },
 
@@ -436,7 +441,83 @@ MassSpecData <- R6::R6Class("MassSpecData",
           "blank",
           "streamFind",
           as.character(packageVersion("streamFind")),
-          paste0("multiplier ", value))
+          paste0("multiplier ", value)
+        )
+      }
+    },
+
+    #' @description
+    #' Filters features and feature groups within a retention time range.
+    #'
+    .filter_rtFilter = function(value = c(0, 0)) {
+
+      if (is.numeric(value) & length(value) == 2) {
+        value <- sort(value)
+
+        private$.analyses <- lapply(private$.analyses, function(x) {
+          sel <- (x$features$rt <= value[2]) & (x$features$rt >= value[1]) & (!x$features$filtered)
+          x$features$filtered[sel] <- TRUE
+          x$features$filter[sel] <- "rtFilter"
+          x
+        })
+
+        if (self$has_groups()) {
+          rpl <- self$get_replicate_names()
+
+          groups <- self$get_groups(
+            filtered = TRUE, onlyIntensities = TRUE, average = TRUE
+          )
+
+          groups_sel <- (groups$rt <= value[2]) & (groups$rt >= value[1])
+
+          private$.tag_filtered(groups_sel, "rtFilter")
+        }
+
+        private$.register(
+          "filtered",
+          "rtFilter",
+          "streamFind",
+          as.character(packageVersion("streamFind")),
+          paste(value, collapse = "; ")
+        )
+      }
+    },
+
+    #' @description
+    #' Filters features and feature groups within a mass range.
+    #'
+    .filter_massFilter = function(value = c(0, 0)) {
+
+      if (is.numeric(value) & length(value) == 2) {
+
+        value <- sort(value)
+
+        private$.analyses <- lapply(private$.analyses, function(x) {
+          sel <- (x$features$mass <= value[2]) &
+                          (x$features$mass >= value[1]) &
+                                    (!x$features$filtered)
+          x$features$filtered[sel] <- TRUE
+          x$features$filter[sel] <- "massFilter"
+          x
+        })
+
+        if (self$has_groups()) {
+          rpl <- self$get_replicate_names()
+
+          groups <- self$get_groups(filtered = TRUE)
+
+          groups_sel <- (groups$mass <= value[2]) & (groups$mass >= value[1])
+
+          private$.tag_filtered(groups_sel, "massFilter")
+        }
+
+        private$.register(
+          "filtered",
+          "massFilter",
+          "streamFind",
+          as.character(packageVersion("streamFind")),
+          paste(value, collapse = "; ")
+        )
       }
     }
   ),
@@ -494,11 +575,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         analyses <- parse.MassSpecAnalysis(files, runParallel)
         if (is.null(analyses)) {
           warning("No valid files were given! MassSpecData object is empty. \n")
-        } else {
-          analyses <- lapply(analyses, function(x) {
-            x$version <- as.character(packageVersion("streamFind"))
-            x
-          })
         }
       }
 
@@ -807,7 +883,38 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return A character vector.
     #'
     get_polarities = function(analyses = NULL) {
-      private$.get_analyses_entry(analyses, "polarity")
+      polarities <- private$.get_analyses_entry(analyses, "polarity")
+
+      if (length(polarities) > length(self$get_analysis_names(analyses))) {
+
+        polarities <- vapply(private$.analyses, function(x) {
+          run <- x$run
+          polarity <- run$polarity
+
+          scans_pos <- length(polarity[polarity %in% "positive"])
+          scans_neg <- length(polarity[polarity %in% "negative"])
+
+          ratio <- scans_pos/scans_neg
+
+          if (ratio < 1.2 & ratio > 0.8) {
+            warning("Multiple polarities detected! Currently, find_features algorithms cannot handled multiple polarities properly.", )
+            return(NA_character_)
+
+          } else if (ratio > 1.2) {
+            per_pos_pol <- round((scans_pos / nrow(run)) * 100, digits = 0)
+            warning("Multiple polarities detected but positive polarity is present in ", per_pos_pol, "% of the spectra! Advisable to remove data from negative ionization." )
+            return("positive")
+
+          } else {
+            per_neg_pol <- round((scans_neg / nrow(run)) * 100, digits = 0)
+            warning("Multiple polarities detected but negative polarity is present in ", per_neg_pol, "% of the spectra! Advisable to remove data from positive ionization." )
+            return("negative")
+          }
+        }, "")
+
+        names(polarities) <- self$get_analysis_names()
+      }
+      polarities
     },
 
     #' @description
@@ -2123,6 +2230,47 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       ms2_df
+    },
+
+    #' @description
+    #' Gets the percentage coverage of feature groups in the analyses (i.e.
+    #' 100% means that a feature group is present in all the analyses).
+    #'
+    #' @return A data.table.
+    #'
+    get_groups_coverage = function(groups = NULL,
+                                   mass = NULL,
+                                   mz = NULL,
+                                   rt = NULL,
+                                   ppm = 20,
+                                   sec = 60,
+                                   filtered = FALSE,
+                                   minIntensity = 0) {
+
+      groups <- self$get_groups(groups, mass, mz, rt, ppm, sec, filtered)
+
+      cols_id_ints <- unname(self$get_analysis_names())
+
+      groups_ints <- groups[, cols_id_ints, with = FALSE]
+
+      cov <- apply(groups_ints, 1, function(x, n) {
+        x <- x[x > 0]
+        round((length(x) / n) * 100, digits = 0)
+      }, n = length(cols_id_ints))
+
+      res <- data.table::data.table("group" = groups$group)
+
+      if ("name" %in% colnames(groups)) {
+        res$name <- groups$name
+      }
+
+      res$coverage <- cov
+
+      res <- cbind(res, groups_ints)
+
+      # TODO improve coverage eval by given the coverage within each replicate group
+
+      res
     },
 
     #' @description
@@ -5544,7 +5692,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
           "maxGroupSd",
           "minGroupAbundance",
           "excludeIsotopes",
-          "excludeAdducts"
+          "excludeAdducts",
+          "rtFilter",
+          "massFilter"
         )
 
         if (!all(filters %in% possible_feature_filters)) {
@@ -5561,7 +5711,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
             maxGroupSd = (private$.filter_maxGroupSd(parameters[[filters[i]]])),
             blank = (private$.filter_blank(parameters[[filters[i]]])),
             minGroupAbundance = (private$.filter_minGroupAbundance(parameters[[filters[i]]])),
-            excludeIsotopes = (private$.filter_excludeIsotopes(parameters[[filters[i]]]))
+            excludeIsotopes = (private$.filter_excludeIsotopes(parameters[[filters[i]]])),
+            rtFilter = private$.filter_rtFilter(parameters[[filters[i]]]),
+            massFilter = private$.filter_massFilter(parameters[[filters[i]]])
             # TODO add more filters, e.g., mass and time widths and limits
           )
         }

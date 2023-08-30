@@ -114,8 +114,41 @@ ms$plot_groups_ms2(groups = suspects$group[1],
 
 
 
+fls <- list.files("D:/NTS/Project_230829_LINEG_LCMSMS_Scan_KA_Gesamtablauf/mzml", full.names = TRUE)
+ms <- MassSpecData$new(fls[grepl("pos", fls)])
 
+ffs <- Settings_find_features_xcms3_matchedfilter(binSize = 0.5, snthresh = 40)
+gfs <- Settings_group_features_xcms3_peakdensity(bw = 5, binSize = 0.5)
 
+ms$find_features(ffs)
+
+rtf1 <- Settings_filter_features_streamFind(
+  rtFilter = c(0, 100)
+)
+
+rtf2 <- Settings_filter_features_streamFind(
+  rtFilter = c(1400, 1500)
+)
+
+ms$filter_features(rtf1)
+
+ms$filter_features(rtf2)
+
+ms$group_features(gfs)
+
+View(ms$get_groups_coverage())
+
+ms$save()
+
+View(ms$get_features())
+
+ms$plot_features(features = "mz438.4_rt1174_g97")
+
+ms$get_run()
+
+ms$plot_spectra(analyses = 2, mz = data.frame(
+  mzmin = 337.5, mzmax = 339, rtmin = 1200, rtmax = 1300
+))
 
 
 # history ----------------------------------------------------------------------

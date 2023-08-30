@@ -6,7 +6,7 @@
 \usage{
 Settings_group_features_xcms3_peakdensity(
   bw = 5,
-  minFraction = 0.5,
+  minFraction = 1,
   minSamples = 1,
   binSize = 0.008,
   maxFeatures = 100
@@ -39,8 +39,8 @@ Settings_group_features_xcms3_peakdensity.
 Settings for grouping features (i.e., chromatographic peaks)
 across mzML/mzXML files using the package
 \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms}
-(version 3) with the algorithm peakdensity
-(\url{https://rdrr.io/bioc/xcms/man/groupChromPeaks-density.html}).
+(version 3) with the algorithm
+\href{https://rdrr.io/bioc/xcms/man/groupChromPeaks-density.html}{peakDensity}.
 The function uses the package \pkg{patRoon} in the background.
 }
 \details{

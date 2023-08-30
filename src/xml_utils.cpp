@@ -1123,6 +1123,7 @@ std::string xml_utils::encode_little_endian(const Rcpp::NumericVector& input) {
 
   uint8_t* output_bytes = reinterpret_cast<uint8_t*>(&result[0]);
 
+  // encodes to 64-bit float
   for (size_t i = 0; i < n; ++i) {
     uint64_t little_endian_value;
     std::memcpy(&little_endian_value, bytes + i * sizeof(double), sizeof(double));
@@ -1144,7 +1145,18 @@ Rcpp::NumericVector xml_utils::decode_little_endian(const std::string& str, cons
   Rcpp::NumericVector result(array_len);
 
   for (int i = 0; i < array_len; ++i) {
-    result[i] = reinterpret_cast<double&>(byteVec[i * precision]);
+
+    if (precision == 8) { //64-bit float
+      result[i] = reinterpret_cast<double&>(byteVec[i * precision]);
+
+    } else if (precision == 4) { //32-bit float
+      float floatValue;
+      std::memcpy(&floatValue, &byteVec[i * precision], sizeof(float));
+      result[i] = static_cast<double>(floatValue);
+
+    } else {
+      Rcpp::stop("Precision must be 4 (32-bit) or 8 (64-bit)!");
+    }
   }
 
   return result;
@@ -1217,13 +1229,18 @@ std::vector<int> xml_utils::mzml_get_precision(pugi::xml_node& node) {
     std::string precision_str;
     int precision_int;
 
-    pugi::xml_node node_float = bin.find_child_by_attribute("cvParam", "accession", "MS:1000523");
+    pugi::xml_node node_float_32 = bin.find_child_by_attribute("cvParam", "accession", "MS:1000521");
     pugi::xml_node node_integer = bin.find_child_by_attribute("cvParam", "accession", "MS:1000522");
+    pugi::xml_node node_float_64 = bin.find_child_by_attribute("cvParam", "accession", "MS:1000523");
 
-    if (node_float != NULL) {
-      precision_str = node_float.attribute("name").as_string();
-    } else {
+    if (node_float_64 != NULL) {
+      precision_str = node_float_64.attribute("name").as_string();
+    } else if (node_float_32 != NULL) {
+      precision_str = node_float_32.attribute("name").as_string();
+    } else if (node_integer != NULL){
       precision_str = node_integer.attribute("name").as_string();
+    } else {
+      Rcpp::stop("Encoding precision with accession MS:1000521, MS:1000522 or MS:1000523 not found!");
     }
 
     std::sscanf(precision_str.c_str(), "%d%*c", &precision_int);
@@ -1301,22 +1318,26 @@ std::string xml_utils::mzxml_get_compression(pugi::xml_node& node) {
 
 
 Rcpp::CharacterVector xml_utils::mzml_get_binary_type(pugi::xml_node& node) {
+
   pugi::xml_node node_binary_list = node.child("binaryDataArrayList");
 
   Rcpp::CharacterVector type;
 
   for (pugi::xml_node bin: node_binary_list.children("binaryDataArray")) {
-    pugi::xml_node node_float = bin.find_child_by_attribute("cvParam", "accession", "MS:1000523");
+    pugi::xml_node node_float_32 = bin.find_child_by_attribute("cvParam", "accession", "MS:1000521");
     pugi::xml_node node_integer = bin.find_child_by_attribute("cvParam", "accession", "MS:1000522");
+    pugi::xml_node node_float_64 = bin.find_child_by_attribute("cvParam", "accession", "MS:1000523");
 
-    if (node_float != NULL) {
+    if (node_float_64 != NULL) {
       type.push_back("double");
 
     } else if (node_integer != NULL) {
       type.push_back("integer");
 
+    } else if (node_float_32 != NULL) {
+      type.push_back("float");
     } else {
-      type.push_back("double");
+      Rcpp::stop("Encoding precision with accession MS:1000521, MS:1000522 or MS:1000523 not found!");
     }
   }
 

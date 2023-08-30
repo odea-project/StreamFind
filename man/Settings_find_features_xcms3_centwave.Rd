@@ -77,8 +77,8 @@ Settings_find_features_xcms3_centwave.
 Settings for finding features (i.e., chromatographic peaks)
 in mzML/mzXML files using the package
 \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms}
-(version 3) with the algorithm centwave
-(\url{https://rdrr.io/bioc/xcms/man/findChromPeaks-centWave.html}).
+(version 3) with the algorithm
+\href{https://rdrr.io/bioc/xcms/man/findChromPeaks-centWave.html}{centWave}.
 The function uses the package \pkg{patRoon} in the background.
 }
 \details{

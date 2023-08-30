@@ -148,11 +148,19 @@ print.ProcessingSettings <- function(x, ...) {
         cat("\n")
         cat(" parameters ", "\n")
         for (i in seq_len(length(x$parameters))) {
+
           if (is.data.frame(x$parameters[[i]])) {
             cat("  - ", names(x$parameters)[i], " (only head rows)", "\n")
             cat("\n")
             print(head(x$parameters[[i]]), quote = FALSE)
             cat("\n")
+
+          } else if (is.list(x$parameters[[i]])) {
+            cat("  - ", names(x$parameters)[i], ": ", "\n")
+            for (i2 in seq_len(length(x$parameters[[i]]))) {
+              cat("      - ", names(x$parameters[[i]])[i2], x$parameters[[i]][[i2]], "\n")
+            }
+
           } else {
             cat("  - ", names(x$parameters)[i], x$parameters[[i]], "\n")
           }
@@ -171,6 +179,13 @@ print.ProcessingSettings <- function(x, ...) {
         cat("\n")
         print(head(x$parameters[[i]]), quote = FALSE)
         cat("\n")
+
+      } else if (is.list(x$parameters[[i]])) {
+        cat("  - ", names(x$parameters)[i], ": ", "\n")
+        for (i2 in seq_len(length(x$parameters[[i]]))) {
+          cat("      - ", names(x$parameters[[i]])[i2], x$parameters[[i]][[i2]], "\n")
+        }
+
       } else {
         cat("  - ", names(x$parameters)[i], x$parameters[[i]], "\n")
       }

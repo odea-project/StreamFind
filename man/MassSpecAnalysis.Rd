@@ -34,7 +34,8 @@ MassSpecAnalysis(
   chromatograms = data.table(),
   features_eic = list(),
   features = data.table(),
-  metadata = list()
+  metadata = list(),
+  version = NA_character_
 )
 
 \method{validate}{MassSpecAnalysis}(x = NULL)

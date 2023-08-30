@@ -40,6 +40,7 @@ reference:
 - contents:
   - Settings_find_features_qPeaks
   - Settings_find_features_xcms3_centwave
+  - Settings_find_features_xcms3_matchedfilter
   - Settings_find_features_openms
   - Settings_find_features_kpic2
 - subtitle: group_features
@@ -47,6 +48,7 @@ reference:
     Settings for the processing method group_features.
 - contents:
   - Settings_group_features_xcms3_peakdensity
+  - Settings_group_features_xcms3_peakdensity_peakgroups
 - subtitle: load_features MS1 and MS2 spectra
   desc: >
     Settings for the processing methods starting with load_features,
