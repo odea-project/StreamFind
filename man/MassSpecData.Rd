@@ -192,9 +192,9 @@ Filters features and feature groups within a mass range.
 
 
 Creates an R6 MassSpecData class object. When \code{headers} are not given
-(i.e., \code{NULL}), a default Headers S3 class object is generated with name
+(i.e., \code{NULL}), a default ProjectHeaders S3 class object is generated with name
 as \code{NA_character}, path as \code{get_wd()} and date as \code{Sys.time()}.
-See \code{?Headers} for more information.
+See \code{?ProjectHeaders} for more information.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$new(
   files = NULL,
@@ -221,11 +221,12 @@ replicate group name (character). Note the file paths must have the extension
 processing. Note that parallel processing is not always faster due to
 overhead.}
 
-\item{\code{headers}}{A named list with headers or a Headers S3 class object.
+\item{\code{headers}}{A named list with headers or a ProjectHeaders S3 class object.
 Each list element must have length one. There is no type restrictions
-except for name (must be type character), path (must be type
-character) and date (must be class POSIXct or class POSIXt). See more
-information in \code{?Headers}.}
+except for name (must be type character length 1), author (must be type
+character length 1), path (must be type character length 1) and date (must
+be class POSIXct or class POSIXt length 1). See more information in
+\code{?ProjectHeaders}.}
 
 \item{\code{settings}}{A named list of ProcessingSettings S3 class objects or a
 single ProcessingSettings S3 class object. The list names should match
@@ -2028,7 +2029,7 @@ Adds headers. If an argument or element "name" is given, it must
 be type character. If an argument or element path is given, it must be
 type character and exist. If an argument or element date is given, it
 must be class POSIXct or POSIXt. If given date is character, conversion
-to class POSIXct or POSIXt is attempted. See \code{?Headers} for more
+to class POSIXct or POSIXt is attempted. See \code{?ProjectHeaders} for more
 information.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$add_headers(...)}\if{html}{\out{</div>}}
@@ -2934,6 +2935,7 @@ Plots spectra for given MS analyses.
   minIntensityMS1 = 0,
   minIntensityMS2 = 0,
   runParallel = FALSE,
+  legendNames = NULL,
   colorBy = "analyses"
 )}\if{html}{\out{</div>}}
 }
@@ -2987,6 +2989,8 @@ data (i.e., MS2 data).}
 \item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
 processing. Note that parallel processing is not always faster due to
 overhead.}
+
+\item{\code{legendNames}}{A character vector with the same length as the targets.}
 
 \item{\code{colorBy}}{A string of length 1. One of \code{analyses} (the default),
 \code{levels}, \code{targets} or \code{replicates}.}

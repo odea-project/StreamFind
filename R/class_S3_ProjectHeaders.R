@@ -1,7 +1,7 @@
-#' **Headers** S3 class constructor, methods and functions
+#' **ProjectHeaders** S3 class constructor, methods and functions
 #'
 #' @description
-#' Creates a Headers S3 class object.
+#' Creates a ProjectHeaders S3 class object.
 #'
 #' @template arg-headers-ellipsis
 #'
@@ -11,11 +11,11 @@
 #' If given date is character, conversion to class POSIXct or POSIXt is
 #' attempted.
 #'
-#' @return A Headers S3 class object.
+#' @return A ProjectHeaders S3 class object.
 #'
 #' @export
 #'
-Headers <- function(...) {
+ProjectHeaders <- function(...) {
 
   x <- list(...)
 
@@ -35,24 +35,26 @@ Headers <- function(...) {
   }
 
   if (!"name" %in% x_names) x$name <- NA_character_
+  if (!"author" %in% x_names) x$author <- NA_character_
   if (!"path" %in% x_names) x$path <- getwd()
   if (!"date" %in% x_names) x$date <- Sys.time()
 
-  if (validate.Headers(x)) {
-    structure(x, class = "Headers")
+  if (validate.ProjectHeaders(x)) {
+    structure(x, class = "ProjectHeaders")
   } else {
     NULL
   }
 }
 
-#' @describeIn Headers
-#' Validates a Headers S3 class object, returning a logical value of length one.
+#' @describeIn ProjectHeaders
+#' Validates a ProjectHeaders S3 class object, returning a logical value of
+#' length one.
 #'
-#' @param x A Headers S3 class object.
+#' @param x A ProjectHeaders S3 class object.
 #'
 #' @export
 #'
-validate.Headers <- function(x) {
+validate.ProjectHeaders <- function(x) {
 
   if (missing(x)) x <- NULL
 
@@ -67,27 +69,39 @@ validate.Headers <- function(x) {
     }
 
     if (length(unique(names(x))) != length(x)) {
-      warning("Headers must have names and not permitted duplicated names!")
+      warning("ProjectHeaders must have names and not permitted duplicated names!")
+      valid <- FALSE
+    }
+
+    if (!all(c("name", "author", "path", "date") %in% names(x))) {
+      warning("ProjectHeaders must contain at least entries name, author, path and date!")
       valid <- FALSE
     }
 
     if ("name" %in% names(x)) {
       if (!is.character(x$name)) {
-        warning("Header list entry name must be character!")
+        warning("ProjectHeaders entry name must be character length 1!")
+        valid <- FALSE
+      }
+    }
+
+    if ("author" %in% names(x)) {
+      if (!is.character(x$author)) {
+        warning("ProjectHeaders entry author must be character length 1!")
         valid <- FALSE
       }
     }
 
     if ("path" %in% names(x)) {
       if (!dir.exists(x$path)) {
-        warning("Header list entry path must exist!")
+        warning("ProjectHeaders entry path must exist!")
         valid <- FALSE
       }
     }
 
     if ("date" %in% names(x)) {
       if (!all(grepl("POSIXct|POSIXt", class(x$date)))) {
-        warning("Header list entry date class must be POSIXct or POSIXt!")
+        warning("ProjectHeaders entry date class must be POSIXct or POSIXt length 1!")
         valid <- FALSE
       }
     }
@@ -96,11 +110,11 @@ validate.Headers <- function(x) {
   valid
 }
 
-#' @describeIn Headers
-#' Converts a Headers S3 class object to a JSON string.
+#' @describeIn ProjectHeaders
+#' Converts a ProjectHeaders S3 class object to a JSON string.
 #'
 #' @export
-asJSON.Headers <- function(x) {
+asJSON.ProjectHeaders <- function(x) {
   toJSON(
     x,
     dataframe = "columns",
@@ -117,12 +131,12 @@ asJSON.Headers <- function(x) {
   )
 }
 
-#' @describeIn Headers
-#' Converts the argument value into a Headers S3 class object.
+#' @describeIn ProjectHeaders
+#' Converts the argument value into a ProjectHeaders S3 class object.
 #'
-#' @param value List to be checked and converted to Headers S3 class.
+#' @param value List to be checked and converted to ProjectHeaders S3 class.
 #'
 #' @export
-as.Headers <- function(value) {
-  Headers(value = value)
+as.ProjectHeaders <- function(value) {
+  ProjectHeaders(value = value)
 }

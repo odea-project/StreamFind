@@ -88,6 +88,7 @@ Settings_centroid_spectra_qCentroids <- function() {
     call = "centroid_spectra",
     algorithm = "qCentroids",
     parameters = list(),
+    version = as.character(packageVersion("streamFind")),
     software = "q",
     developer = "Max, Gerrit",
     contact = "gerrit@email.de",
@@ -116,6 +117,7 @@ Settings_bin_spectra_qBinning <- function() {
     call = "bin_spectra",
     algorithm = "qBinning",
     parameters = list(),
+    version = as.character(packageVersion("streamFind")),
     software = "q",
     developer = "Max, Gerrit",
     contact = "max@email.de",
@@ -144,6 +146,7 @@ Settings_find_features_qPeaks <- function() {
     call = "find_features",
     algorithm = "qPeaks",
     parameters = list(),
+    version = as.character(packageVersion("streamFind")),
     software = "q",
     developer = "Max, Gerrit",
     contact = "max@email.de",
@@ -255,6 +258,7 @@ Settings_find_features_xcms3_centwave <- function(
       roiScales = numeric(),
       extendLengthMSW = extendLengthMSW
     ),
+    version = as.character(packageVersion("streamFind")),
     software = "xcms",
     developer = "Ralf Tautenhahn, Johannes Rainer",
     contact = "rtautenh@ipb-halle.de",
@@ -352,6 +356,7 @@ Settings_find_features_xcms3_matchedfilter <- function(
       mzdiff = mzdiff,
       index = index
     ),
+    version = as.character(packageVersion("streamFind")),
     software = "xcms",
     developer = "Ralf Tautenhahn, Johannes Rainer",
     contact = "rtautenh@ipb-halle.de",
@@ -492,6 +497,7 @@ Settings_find_features_openms <- function(
       intSearchRTWindow = intSearchRTWindow,
       useFFMIntensities = useFFMIntensities
     ),
+    version = as.character(packageVersion("streamFind")),
     software = "openms",
     developer = "Rost HL, Sachsenberg T, Aiche S, Bielow C et al.",
     contact = "oliver.kohlbacher@uni-tuebingen.de",
@@ -560,6 +566,7 @@ Settings_find_features_kpic2 <- function(
       width = width,
       min_snr = min_snr
     ),
+    version = as.character(packageVersion("streamFind")),
     software = "kpic2",
     developer = "Hongchao Ji",
     contact = "ji.hongchao@foxmail.com",
@@ -642,6 +649,7 @@ Settings_group_features_xcms3_peakdensity <- function(
         maxFeatures = maxFeatures
       )
     ),
+    version = as.character(packageVersion("streamFind")),
     software = "xcms",
     developer = "Colin Smith, Johannes Rainer",
     contact = "siuzdak@scripps.edu",
@@ -790,6 +798,7 @@ Settings_group_features_xcms3_peakdensity_peakgroups <- function(
         subsetAdjust = "average"
       )
     ),
+    version = as.character(packageVersion("streamFind")),
     software = "xcms",
     developer = "Colin Smith, Johannes Rainer",
     contact = "siuzdak@scripps.edu",
@@ -845,6 +854,7 @@ Settings_load_features_ms1_streamFind <- function(
       "runParallel" = runParallel,
       "verbose" = verbose
     ),
+    version = as.character(packageVersion("streamFind")),
     software = "streamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
@@ -917,6 +927,7 @@ Settings_load_features_ms2_streamFind <- function(
       "runParallel" = runParallel,
       "verbose" = verbose
     ),
+    version = as.character(packageVersion("streamFind")),
     software = "streamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
@@ -985,6 +996,7 @@ Settings_load_groups_ms1_streamFind <- function(
       "runParallel" = runParallel,
       "verbose" = verbose
     ),
+    version = as.character(packageVersion("streamFind")),
     software = "streamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
@@ -1052,6 +1064,7 @@ Settings_load_groups_ms2_streamFind <- function(
       "runParallel" = runParallel,
       "verbose" = verbose
     ),
+    version = as.character(packageVersion("streamFind")),
     software = "streamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
@@ -1128,6 +1141,7 @@ Settings_filter_features_streamFind <- function(
     call = "filter_features",
     algorithm = "streamFind",
     parameters = list(),
+    version = as.character(packageVersion("streamFind")),
     software = "streamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
@@ -1313,6 +1327,7 @@ Settings_annotate_features_streamFind <- function(
       "maxGaps" = maxGaps,
       "runParallel" = runParallel
     ),
+    version = as.character(packageVersion("streamFind")),
     software = "streamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
@@ -1379,6 +1394,7 @@ Settings_suspect_screening_streamFind <- function(
       "ppm" = ppm,
       "sec" = sec
     ),
+    version = as.character(packageVersion("streamFind")),
     software = "streamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
@@ -1408,8 +1424,77 @@ validate.Settings_suspect_screening_streamFind <- function(x) {
   )
 }
 
+#' Settings_suspect_screening_forident
+#'
+#' @description
+#' Settings for performing suspect screening using the
+#' \href{https://water.for-ident.org/}{FOR-IDENT} platform.
+#'
+#' @param addMS2 Logical length 1. When `TRUE` and MS2 data is available, the
+#' fragments pattern (i.e., MS2 averaged spectra) is added to the .txt file to
+#' import in FOR-IDENT platform. Note that when `addMS2` is `TRUE` the \emph{m/z}
+#' values are used instead of neutral mass even is `useNeutralMass` is set to `TRUE`.
+#' @param useNeutralMass Logical length 1. When `TRUE` and neutral mass is
+#' available, the neutral mass of features/feature groups is used instead of the
+#' \emph{m/z}.
+#' @param path Character length 1 with the path to save the .txt file with the
+#' list of features for identification.
+#' @param name Character length 1 with the name of the file (without extension)
+#' to be saved in the `path`.
+#'
+#' @note
+#' After processing, a .txt file as defined by name and path is created with the
+#' list of features or feature groups to be imported in the FOR-IDENT platform
+#' (\url{https://water.for-ident.org/}). Note that log in credentials are needed.
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_suspect_screening_forident.
+#'
+#' @export
+#'
+Settings_suspect_screening_forident <- function(
+    addMS2 = FALSE,
+    useNeutralMass = TRUE,
+    path = getwd(),
+    name = "feature_list") {
 
+  settings <- list(
+    call = "suspect_screening",
+    algorithm = "forident",
+    parameters = list(
+      "addMS2" = addMS2,
+      "useNeutralMass" = useNeutralMass,
+      "path" = path,
+      "name" = name
+    ),
+    version = as.character(packageVersion("streamFind")),
+    software = "forident",
+    developer = "Sylvia Grosse, Thomas Letzel",
+    contact = "support@for-ident.org",
+    link = "https://water.for-ident.org/",
+    doi = NA_character_
+  )
 
+  settings <- as.ProcessingSettings(settings)
 
+  return(settings)
+}
 
-
+#' @describeIn Settings_suspect_screening_forident
+#' Validates the Settings_suspect_screening_forident S3 class object,
+#' returning a logical value of length one.
+#'
+#' @param x A Settings_suspect_screening_forident S3 class object.
+#'
+#' @export
+#'
+validate.Settings_suspect_screening_forident <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "suspect_screening"),
+    checkmate::test_choice(x$algorithm, "forident"),
+    dir.exists(x$parameters$path),
+    is.character(x$parameters$name),
+    length(x$parameters$name) == 1,
+    checkmate::test_logical(x$parameters$addMS2, max.len = 1)
+  )
+}

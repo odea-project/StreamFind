@@ -11,10 +11,10 @@ reference:
 - title: S3 classes
   desc: >
     S3 classes are implemented to harmonize, verify and dispatch data within
-    the R6 classes. _Headers_ and _ProcessingSettings_ S3 classes are used in
-    all R6 classes.
+    the R6 classes. _ProjectHeaders_ and _ProcessingSettings_ S3 classes are
+    used in all R6 classes.
 - contents:
-  - Headers
+  - ProjectHeaders
   - ProcessingSettings
   - MassSpecAnalysis
 - title: Processing settings for MS data
@@ -73,6 +73,7 @@ reference:
     Settings for the processing method suspect_screening.
 - contents:
   - Settings_suspect_screening_streamFind
+  - Settings_suspect_screening_forident
 - subtitle: General get and save default settings
   desc: >
     Funtions to uniformily get and save _ProcessingSettings_ are available.

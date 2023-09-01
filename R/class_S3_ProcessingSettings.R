@@ -28,6 +28,7 @@
 ProcessingSettings <- function(call = NA_character_,
                                algorithm = NA_character_,
                                parameters = NULL,
+                               version = NA_character_,
                                software = NA_character_,
                                developer = NA_character_,
                                contact = NA_character_,
@@ -38,6 +39,7 @@ ProcessingSettings <- function(call = NA_character_,
     "call" = call,
     "algorithm" = algorithm,
     "parameters" = parameters,
+    "version" = version,
     "software" = software,
     "developer" = developer,
     "contact" = contact,
@@ -46,6 +48,7 @@ ProcessingSettings <- function(call = NA_character_,
   )
 
   if (is.data.frame(x$parameters)) x$parameters <- as.list(x$parameters)
+  if (is.numeric(x$version)) x$version <- as.character(x$version)
 
   if (validate.ProcessingSettings(x)) {
 
@@ -106,6 +109,11 @@ validate.ProcessingSettings <- function(x = NULL) {
         valid <- FALSE
       }
 
+      if (!length(x$version) == 1 && !all(is.character(x$version))) {
+        warning("Version entry must be of length 1 and type character!")
+        valid <- FALSE
+      }
+
     } else {
       warning("Settings elements must be named call, algorithm and parameters!")
     }
@@ -131,6 +139,7 @@ print.ProcessingSettings <- function(x, ...) {
   cat(
     " call         ", x$call, "\n",
     " algorithm    ", x$algorithm, "\n",
+    " version      ", x$version, "\n",
     " software     ", x$software, "\n",
     " developer    ", x$developer, "\n",
     " contact      ", x$contact, "\n",
@@ -267,10 +276,14 @@ export.ProcessingSettings <- function(x,
 as.ProcessingSettings <- function(value) {
   must_have_elements <- c("call", "algorithm", "parameters")
   if (!all(must_have_elements %in% names(value))) return(NULL)
+
+  if (!"version" %in% names(value)) value$version <- NA_character_
+
   ProcessingSettings(
     value$call,
     value$algorithm,
     value$parameters,
+    value$version,
     value$software,
     value$developer,
     value$contact,

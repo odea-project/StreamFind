@@ -238,9 +238,9 @@ corresponding blank replicate group.</p>
 <p>Filters features and feature groups within a mass range.</p>
 
 <p>Creates an R6 MassSpecData class object. When <code>headers</code> are not given
-(i.e., <code>NULL</code>), a default Headers S3 class object is generated with name
+(i.e., <code>NULL</code>), a default ProjectHeaders S3 class object is generated with name
 as <code>NA_character</code>, path as <code>get_wd()</code> and date as <code><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time()</a></code>.
-See <code><a href="Headers.html">?Headers</a></code> for more information.</p><div class="section">
+See <code><a href="ProjectHeaders.html">?ProjectHeaders</a></code> for more information.</p><div class="section">
 <h4 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va"><a href="../reference/MassSpecData.html">MassSpecData</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
 <span>  files <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -271,11 +271,12 @@ overhead.</p></dd>
 
 
 <dt><code>headers</code></dt>
-<dd><p>A named list with headers or a Headers S3 class object.
+<dd><p>A named list with headers or a ProjectHeaders S3 class object.
 Each list element must have length one. There is no type restrictions
-except for name (must be type character), path (must be type
-character) and date (must be class POSIXct or class POSIXt). See more
-information in <code><a href="Headers.html">?Headers</a></code>.</p></dd>
+except for name (must be type character length 1), author (must be type
+character length 1), path (must be type character length 1) and date (must
+be class POSIXct or class POSIXt length 1). See more information in
+<code><a href="ProjectHeaders.html">?ProjectHeaders</a></code>.</p></dd>
 
 
 <dt><code>settings</code></dt>
@@ -2387,7 +2388,7 @@ screening.</p>
 be type character. If an argument or element path is given, it must be
 type character and exist. If an argument or element date is given, it
 must be class POSIXct or POSIXt. If given date is character, conversion
-to class POSIXct or POSIXt is attempted. See <code><a href="Headers.html">?Headers</a></code> for more
+to class POSIXct or POSIXt is attempted. See <code><a href="ProjectHeaders.html">?ProjectHeaders</a></code> for more
 information.</p><div class="section">
 <h4 id="usage-47">Usage<a class="anchor" aria-label="anchor" href="#usage-47"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">add_headers</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
@@ -3299,6 +3300,7 @@ across analyses.</p><div class="section">
 <span>  minIntensityMS1 <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  minIntensityMS2 <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  runParallel <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  legendNames <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  colorBy <span class="op">=</span> <span class="st">"analyses"</span></span>
 <span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
@@ -3374,6 +3376,10 @@ data (i.e., MS2 data).</p></dd>
 <dd><p>Logical of length one. Set to <code>TRUE</code> for parallel
 processing. Note that parallel processing is not always faster due to
 overhead.</p></dd>
+
+
+<dt><code>legendNames</code></dt>
+<dd><p>A character vector with the same length as the targets.</p></dd>
 
 
 <dt><code>colorBy</code></dt>

@@ -13,6 +13,7 @@ ProcessingSettings(
   call = NA_character_,
   algorithm = NA_character_,
   parameters = NULL,
+  version = NA_character_,
   software = NA_character_,
   developer = NA_character_,
   contact = NA_character_,

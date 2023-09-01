@@ -101,6 +101,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     .register = function(
       action = NA_character_,
+      object = NA_character_,
       name = NA_character_,
       software = NA_character_,
       version = NA_character_,
@@ -112,6 +113,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       private$.history[[as.character.POSIXt(date_time)]] <- data.table(
         "time" = date_time,
         "action" = action,
+        "object" = object,
         "name" = name,
         "software" = software,
         "version" = version,
@@ -248,7 +250,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
 
         private$.register(
-          "filtered",
+          "filter_features",
+          "features",
           "minIntensity",
           "streamFind",
           as.character(packageVersion("streamFind")),
@@ -288,7 +291,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
 
         private$.register(
-          "filtered",
+          "filter_features",
+          "features",
           "minSnRatio",
           "streamFind",
           as.character(packageVersion("streamFind")),
@@ -329,7 +333,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
 
         private$.register(
-          "filtered",
+          "filter_features",
+          "features",
           "excludeIsotopes",
           "streamFind",
           as.character(packageVersion("streamFind")),
@@ -362,7 +367,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         private$.tag_filtered(groups_sel, "maxGroupSd")
 
         private$.register(
-          "filtered",
+          "filter_features",
+          "features",
           "maxGroupSd",
           "streamFind",
           as.character(packageVersion("streamFind")),
@@ -398,7 +404,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         private$.tag_filtered(groups_sel, "minGroupAbundance")
 
         private$.register(
-          "filtered",
+          "filter_features",
+          "features",
           "minGroupAbundance",
           "streamFind",
           as.character(packageVersion("streamFind")),
@@ -437,7 +444,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         private$.tag_filtered(groups_sel, "blank")
 
         private$.register(
-          "filtered",
+          "filter_features",
+          "features",
           "blank",
           "streamFind",
           as.character(packageVersion("streamFind")),
@@ -474,7 +482,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
 
         private$.register(
-          "filtered",
+          "filter_features",
+          "features",
           "rtFilter",
           "streamFind",
           as.character(packageVersion("streamFind")),
@@ -512,7 +521,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
 
         private$.register(
-          "filtered",
+          "filter_features",
+          "features",
           "massFilter",
           "streamFind",
           as.character(packageVersion("streamFind")),
@@ -530,9 +540,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
     #' @description
     #' Creates an R6 MassSpecData class object. When `headers` are not given
-    #' (i.e., `NULL`), a default Headers S3 class object is generated with name
+    #' (i.e., `NULL`), a default ProjectHeaders S3 class object is generated with name
     #' as `NA_character`, path as `get_wd()` and date as `Sys.time()`.
-    #' See `?Headers` for more information.
+    #' See `?ProjectHeaders` for more information.
     #'
     #' @param settings  A named list of ProcessingSettings S3 class objects or a
     #' single ProcessingSettings S3 class object. The list names should match
@@ -559,15 +569,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
                           groups = NULL,
                           alignment = NULL) {
 
-      if (!is.null(headers)) suppressMessages(self$add_headers(headers))
+      if (is.null(headers)) headers <- ProjectHeaders()
 
-      if (is.null(private$.headers)) {
-        private$.headers <- Headers(
-          name = NA_character_,
-          path = getwd(),
-          date = Sys.time()
-        )
-      }
+      if (!is.null(headers)) suppressMessages(self$add_headers(headers))
 
       if (!is.null(settings)) suppressMessages(self$add_settings(settings))
 
@@ -587,8 +591,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
       private$.register(
         "created",
         "MassSpecData",
+        headers$name,
         "streamFind",
-        as.character(packageVersion("streamFind"))
+        as.character(packageVersion("streamFind")),
+        paste(c(headers$author, headers$path), collapse = ", ")
       )
 
       message("\U2713 MassSpecData class object created!")
@@ -604,6 +610,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       cat(
         paste(is(self), collapse = "; "), "\n",
         "name          ", private$.headers$name, "\n",
+        "author        ", private$.headers$author, "\n",
+        "path          ", private$.headers$path, "\n",
         "date          ", as.character(private$.headers$date), "\n",
         sep = ""
       )
@@ -1868,6 +1876,17 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           if (is.numeric(groups)) {
             fgroups <- fgroups[groups, ]
+          } else if (is.data.frame(groups)) {
+            if ("group" %in% colnames(groups)) {
+              fgroups <- fgroups[fgroups$group %in% groups$group, ]
+            }
+
+            if ("name" %in% colnames(groups)) {
+              gn <- groups$name
+              names(gn) <- groups$group
+              fgroups$name <- gn[fgroups$group]
+            }
+
           } else {
             fgroups <- fgroups[fgroups$group %in% groups, ]
           }
@@ -2057,6 +2076,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
         return(data.table())
       }
 
+      polarities <- unique(self$get_polarities())
+
+      if (length(polarities) > 1) {
+        warning("Clustering ms1 for multiple polarities is not possible!")
+        return(data.table())
+      }
+
       if (loadedGroupsMS1 & self$has_loaded_groups_ms1()) {
         ms1 <- fgs$ms1
         ids <- fgs$group
@@ -2159,6 +2185,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
       )
 
       if (nrow(fgs) == 0) {
+        return(data.table())
+      }
+
+      polarities <- unique(self$get_polarities())
+
+      if (length(polarities) > 1) {
+        warning("Clustering ms1 for multiple polarities is not possible!")
         return(data.table())
       }
 
@@ -2493,7 +2526,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' be type character. If an argument or element path is given, it must be
     #' type character and exist. If an argument or element date is given, it
     #' must be class POSIXct or POSIXt. If given date is character, conversion
-    #' to class POSIXct or POSIXt is attempted. See `?Headers` for more
+    #' to class POSIXct or POSIXt is attempted. See `?ProjectHeaders` for more
     #' information.
     #'
     #' @template arg-headers-ellipsis
@@ -2502,9 +2535,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     add_headers = function(...) {
 
-      headers <- Headers(...)
+      headers <- ProjectHeaders(...)
 
-      if (is(headers, "Headers")) {
+      if (is(headers, "ProjectHeaders")) {
         old_headers <- private$.headers
         if (is.null(old_headers)) old_headers <- list()
 
@@ -2515,18 +2548,23 @@ MassSpecData <- R6::R6Class("MassSpecData",
           new_headers <- headers
         }
 
-        new_headers <- as.Headers(new_headers)
+        new_headers <- as.ProjectHeaders(new_headers)
 
-        if (!identical(new_headers, old_headers) & is(new_headers, "Headers")) {
+        if (!identical(new_headers, old_headers) & is(new_headers, "ProjectHeaders")) {
           private$.headers <- new_headers
-          details <- paste(names(headers), collapse = ", ")
-          private$.register(
-            "added",
-            "headers",
-            NA_character_,
-            NA_character_,
-            details
-          )
+
+          lapply(names(headers), function(x, new_headers) {
+            private$.register(
+              "added",
+              "ProjectHeaders",
+              x,
+              NA_character_,
+              NA_character_,
+              new_headers[x]
+            )
+          }, new_headers = new_headers)
+
+
           message("\U2713 Added headers!")
         }
 
@@ -2590,21 +2628,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
           }
 
           if (length(settings) == 1) {
-
-            details <- c(settings[[1]]$call, settings[[1]]$algorithm)
-            details <- paste(details, collapse = ", ")
-
-            if (requireNamespace(settings[[1]]$software, quietly = TRUE)) {
-              software <- settings[[1]]$software
-              version <- as.character(packageVersion(software))
-            }
-
             private$.register(
               "added",
-              "settings",
-              software,
-              version,
-              details
+              "ProcessingSettings",
+              settings[[1]]$call,
+              "streamFind",
+              settings[[1]]$version,
+              settings[[1]]$algorithm
             )
 
             message(
@@ -2613,19 +2643,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
           } else {
 
             lapply(settings, function(x) {
-              details <- paste(c(x$call, x$algorithm), collapse = ", ")
-
-              if (requireNamespace(x$software, quietly = TRUE)) {
-                software <- x$software
-                version <- as.character(packageVersion(software))
-              }
-
               private$.register(
                 "added",
-                "settings",
-                software,
-                version,
-                details
+                "ProcessingSettings",
+                x$call,
+                "streamFind",
+                x$version,
+                x$algorithm
               )
             })
 
@@ -2710,9 +2734,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
             private$.register(
               "added",
               class(x),
-              NA_character_,
+              x$name,
+              "streamFind",
               x$version,
-              x$name
+              x$file
             )
           })
 
@@ -2759,9 +2784,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         private$.register(
           "added",
+          "analyses",
           "replicate names",
-          "streamFind",
-          as.character(packageVersion("streamFind")),
+          NA_character_,
+          NA_character_,
           NA_character_
         )
 
@@ -2796,9 +2822,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           private$.register(
             "added",
+            "analyses",
             "blank names",
-            "streamFind",
-            as.character(packageVersion("streamFind")),
+            NA_character_,
+            NA_character_,
             NA_character_
           )
 
@@ -2889,6 +2916,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           private$.register(
             "added",
+            "analyses",
             "spectra",
             NA_character_,
             NA_character_,
@@ -2980,6 +3008,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           private$.register(
             "added",
+            "analyses",
             "features_eic",
             NA_character_,
             NA_character_,
@@ -3076,6 +3105,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           private$.register(
             "added",
+            "analyses",
             "features",
             NA_character_,
             NA_character_,
@@ -3154,6 +3184,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           } else {
             private$.register(
               "added",
+              "analyses",
               "feature groups",
               NA_character_,
               NA_character_,
@@ -3198,6 +3229,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           private$.register(
             "added",
+            "MassSpecData",
             "alignment",
             NA_character_,
             NA_character_,
@@ -3241,13 +3273,15 @@ MassSpecData <- R6::R6Class("MassSpecData",
           private$.register(
             "added",
             "module",
+            x,
             value[[x]]$software,
             value[[x]]$version,
-            paste0(x, collapse = "; ")
+            length(value[[x]])
           )
-        }, value = value)
 
-        message("\U2713 Module/s data added!")
+          message(paste0("\U2713 ", x, " data added to modules!"))
+
+        }, value = value)
 
       } else {
         warning("Not done, the value must be a named list!")
@@ -3287,6 +3321,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         private$.register(
           "loaded",
+          "analyses",
           "raw spectra",
           NA_character_,
           NA_character_,
@@ -3329,6 +3364,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           private$.register(
             "loaded",
+            "analyses",
             "raw chromatograms",
             NA_character_,
             NA_character_,
@@ -3461,6 +3497,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           private$.register(
             "loaded",
+            "features",
             settings$call,
             settings$software,
             version,
@@ -3589,6 +3626,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           private$.register(
             "loaded",
+            "features",
             settings$call,
             settings$software,
             version,
@@ -3630,6 +3668,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
       } else {
         warning("Settings content or structure not conform!")
+        valid <- FALSE
+      }
+
+      polarities <- unique(self$get_polarities())
+
+      if (length(polarities) > 1) {
+        warning("Clustering ms1 for multiple polarities is not possible!")
         valid <- FALSE
       }
 
@@ -3720,6 +3765,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           private$.register(
             "loaded",
+            "feature groups",
             settings$call,
             settings$software,
             version,
@@ -3764,6 +3810,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
       } else {
         warning("Settings content or structure not conform!")
+        valid <- FALSE
+      }
+
+      polarities <- unique(self$get_polarities())
+
+      if (length(polarities) > 1) {
+        warning("Clustering ms2 for multiple polarities is not possible!")
         valid <- FALSE
       }
 
@@ -3857,6 +3910,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           private$.register(
             "loaded",
+            "feature groups",
             settings$call,
             settings$software,
             version,
@@ -3885,34 +3939,34 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     remove_headers = function(value = NULL) {
       if (!is.null(value)) {
-        value <- value[!(value %in% c("name", "path", "date"))]
+        value <- value[!(value %in% c("name", "author", "path", "date"))]
 
         if (length(value) == 0) {
-          warning("Name, path and date headers cannot be removed!")
+          warning("Name, author, path and date headers cannot be removed!")
           value <- NA_character_
         }
 
-        if (value %in% names(private$.headers)) {
-          private$.headers[value] <- NULL
-          details <- paste(value, collapse = ", ")
+        message("\U2713 Removed headers: ",
+          paste(value[value %in% names(private$.headers)], collapse = ", ")
+        )
 
-          private$.register(
-            "removed",
-            "headers",
-            NA_character_,
-            NA_character_,
-            details
-          )
+        lapply(value, function(x) {
+          if (x %in% names(private$.headers)) {
+            private$.register(
+              "removed",
+              "ProjectHeaders",
+              x,
+              NA_character_,
+              NA_character_,
+              private$.headers[[x]]
+            )
 
-          message("\U2713 Removed headers: \n",
-            paste(value, collapse = "\n")
-          )
-        } else {
-          message("\U2717 There are no headers to remove!")
-        }
+            private$.headers[x] <- NULL
+          }
+        })
 
       } else {
-        to_remove <- names(private$.headers) %in% c("name", "path", "date")
+        to_remove <- names(private$.headers) %in% c("name", "author", "path", "date")
         to_remove <- names(private$.headers)[!to_remove]
         private$.headers[to_remove] <- NULL
 
@@ -3921,7 +3975,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           private$.register(
             "removed",
-            "headers",
+            "ProjectHeaders",
+            "all",
             NA_character_,
             NA_character_,
             details
@@ -3931,7 +3986,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             paste(to_remove, collapse = "\n")
           )
         } else {
-          message("\U2713 Removed all headers except name, path and date!")
+          message("\U2713 Removed all headers except name, author, path and date!")
         }
       }
       invisible(self)
@@ -3948,13 +4003,23 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return Invisible.
     #'
     remove_settings = function(call = NULL) {
+
       if (is.null(call)) {
         lapply(private$.settings, function(x) {
-          details <- paste(c(x$call, x$algorithm), collapse = ", ")
-          private$.register("removed", "settings", details)
+          private$.register(
+            "removed",
+            "ProcessingSettings",
+            x$call,
+            "streamFind",
+            x$version,
+            x$algorithm
+          )
         })
+
         private$.settings <- NULL
-        cat("Removed settings! \n")
+
+        cat("Removed all processing settings! \n")
+
       } else {
         all_calls <- names(private$.settings)
 
@@ -3966,21 +4031,22 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         if (length(call) > 0) {
           lapply(private$.settings[to_remove], function(x) {
-            details <- paste(c(x$call, x$algorithm), collapse = ", ")
-
             private$.register(
               "removed",
-              "settings",
-              NA_character_,
-              NA_character_,
-              details
+              "ProcessingSettings",
+              x$call,
+              "streamFind",
+              x$version,
+              x$algorithm
             )
-
           })
+
           private$.settings[to_remove] <- NULL
+
           message("\U2713 Removed settings for:\n",
             paste(all_calls[to_remove], collapse = "\n")
           )
+
         } else {
           message("\U2717 There are no settings to remove!")
         }
@@ -4025,16 +4091,19 @@ MassSpecData <- R6::R6Class("MassSpecData",
           }
 
           private$.alignment <- private$.alignment[keepAnalyses]
+
           lapply(removeAnalyses, function(x) {
             private$.register(
               "removed",
-              "analysis",
+              "MassSpecAnalysis",
+              x,
               NA_character_,
               NA_character_,
-              x
+              NA_character_
             )
           })
-          message("\U2713 Removed analyses:\n", paste(analyses, collapse = "\n"))
+
+          message("\U2713 Removed analyses:\n", paste(removeAnalyses, collapse = "\n"))
 
         } else {
           message("\U2717 There are no analyses to remove!")
@@ -4042,7 +4111,14 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       } else {
         lapply(private$.analyses, function(x) {
-          private$.register("removed", "analysis", x$name)
+          private$.register(
+            "removed",
+            "MassSpecAnalysis",
+            x,
+            NA_character_,
+            NA_character_,
+            NA_character_
+          )
         })
         private$.analyses <- NULL
         private$.groups <- NULL
@@ -4070,17 +4146,19 @@ MassSpecData <- R6::R6Class("MassSpecData",
         private$.register(
           "removed",
           "features",
+          "all",
           NA_character_,
           NA_character_,
-          "all"
+          NA_character_
         )
 
         private$.register(
           "removed",
           "feature groups",
+          "all",
           NA_character_,
           NA_character_,
-          "all"
+          NA_character_
         )
 
         message("\U2713 Removed all features and feature groups!")
@@ -4129,9 +4207,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
             private$.register(
               "removed",
               "features",
+              n_org - n_org_new,
               NA_character_,
               NA_character_,
-              n_org - n_org_new
+              NA_character_
             )
 
             message("\U2713 Removed ", n_org - n_org_new, " features!")
@@ -4165,10 +4244,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           private$.register(
             "removed",
-            "data",
+            "features_ms1",
+            "all",
             NA_character_,
             NA_character_,
-            "features_ms1"
+            NA_character_
           )
 
           message("\U2713 Removed all MS1 spectra from features!")
@@ -4199,10 +4279,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           private$.register(
             "removed",
-            "data",
+            "features_ms2",
+            "all",
             NA_character_,
             NA_character_,
-            "features_ms2"
+            NA_character_
           )
 
           message("\U2713 Removed all MS2 spectra from features!")
@@ -4264,9 +4345,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
           private$.register(
             "removed",
             "feature groups",
+            n_org_g - n_g,
             NA_character_,
             NA_character_,
-            n_org_g - n_g
+            NA_character_
           )
 
           message("\U2713 Removed ", n_org_g - n_g, " groups!")
@@ -4292,10 +4374,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           private$.register(
             "removed",
-            "data",
+            "feature_groups_ms1",
+            "all",
             NA_character_,
             NA_character_,
-            "feature_groups_ms1"
+            NA_character_
           )
 
           message("\U2713 Removed all MS1 spectra from feature groups!")
@@ -4322,10 +4405,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           private$.register(
             "removed",
-            "data",
+            "feature_groups_ms2",
+            "all",
             NA_character_,
             NA_character_,
-            "feature_groups_ms2"
+            NA_character_
           )
 
           message("\U2713 Removed all MS2 spectra from feature groups!")
@@ -4349,6 +4433,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       private$.register(
         "removed",
         "alignment",
+        NA_character_,
         NA_character_,
         NA_character_,
         NA_character_
@@ -4713,6 +4798,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                             minIntensityMS1 = 0,
                             minIntensityMS2 = 0,
                             runParallel = FALSE,
+                            legendNames = NULL,
                             colorBy = "analyses") {
 
       spec <- self$get_spectra(
@@ -4731,7 +4817,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         spec$replicate <- self$get_replicate_names()[spec$analysis]
       }
 
-      plot_spectra_interactive(spec, colorBy)
+      plot_spectra_interactive(spec, colorBy, legendNames)
     },
 
     #' @description
@@ -5544,6 +5630,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         private$.register(
           "processed",
+          "spectra",
           settings$call,
           settings$software,
           version,
@@ -5578,6 +5665,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         private$.register(
           "processed",
+          "spectra",
           settings$call,
           settings$software,
           version,
@@ -5614,6 +5702,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         private$.register(
           "processed",
+          "spectra",
           settings$call,
           settings$software,
           version,
@@ -5648,6 +5737,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         private$.register(
           "processed",
+          "features",
           settings$call,
           settings$software,
           version,
@@ -5740,6 +5830,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         private$.register(
           "processed",
+          "features",
           settings$call,
           settings$software,
           version,
@@ -5777,6 +5868,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         private$.register(
           "processed",
+          "features",
           settings$call,
           settings$software,
           version,
@@ -5814,13 +5906,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         private$.register(
           "processed",
+          "features",
           settings$call,
           settings$software,
           version,
           settings$algorithm
         )
-
-        message(paste0("\U2713 ", "Suspects added to modules!"))
       }
 
       invisible(self)

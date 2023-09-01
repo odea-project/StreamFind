@@ -1,6 +1,12 @@
 
 all_files <- streamFindData::msFilePaths()
 
+db <- streamFindData::msSpikedChemicals()
+db <- db[grepl("S", db$tag), ]
+cols <- c("name", "formula", "mass", "rt")
+db <- db[, cols, with = FALSE]
+db
+
 files_df <- data.frame(
   "file" = all_files[grepl("blank|influent|o3sw", all_files)],
   "replicate" = c(
@@ -23,46 +29,138 @@ files_df <- data.frame(
 
 ms <- MassSpecData$new(files = files_df)
 
-j <- Settings_suspect_screening_streamFind()
-class(j)
-sloop::s3_dispatch(validate(j))
-
-ffs <- get_default_ProcessingSettings(
-  call = "find_features",
-  algorithm = "xcms3_centwave"
+ms$add_settings(
+  list(
+    Settings_find_features_xcms3_centwave(),
+    Settings_group_features_xcms3_peakdensity(),
+    Settings_filter_features_streamFind(
+      minIntensity = 5000,
+      minSnRatio = 20,
+      maxGroupSd = 30,
+      blank = 5,
+      minGroupAbundance = 3,
+      excludeIsotopes = TRUE
+    ),
+    Settings_load_features_ms2_streamFind(),
+    Settings_load_groups_ms2_streamFind()
+  )
 )
 
-gfs <- get_default_ProcessingSettings(
-  call = "group_features",
-  algorithm = "xcms3_peakdensity"
-)
-
-fls <- Settings_filter_features_streamFind(
-  minIntensity = 5000,
-  minSnRatio = 20,
-  maxGroupSd = 30,
-  # blank = 5,
-  minGroupAbundance = 3,
-  excludeIsotopes = TRUE
-)
-
-ms$add_settings(list(ffs, gfs, fls))
+ms$get_history()
 
 ms$find_features()$group_features()$filter_features()
 
 ms
 
-db <- streamFindData::msSpikedChemicals()
-db <- db[grepl("S", db$tag), ]
-cols <- c("name", "formula", "mass", "rt")
-db <- db[, cols, with = FALSE]
-db
+ms$plot_spectra(analyses = 10:12, mz = 254.0594, ppm = 20, allTraces = FALSE, levels = c(1, 2), colorBy = "levels")
+# TODO make feature ms1 and feature group MS2 for PPT
 
-sss <- Settings_suspect_screening_streamFind(
-  database = db,
-  ppm = 5,
-  sec = 10
-)
+
+ms$get_groups(mass = db)
+
+suspects <- ms$get_suspects(analyses = 7:12, database = db, ppm = 10, sec = 15)
+
+msbp <- ms$subset_analyses(10:12)
+msbp$remove_features(filtered = TRUE)
+msbp <- msbp$subset_features(features = suspects)
+
+msbp$load_features_ms2()
+msbp$load_groups_ms2()
+
+
+
+sssfi <- Settings_suspect_screening_forident(addMS2 = TRUE)
+msbp$suspect_screening(sssfi)
+
+
+
+file.remove("feature_list.txt")
+
+
+
+
+
+
+
+write.csv(suspects_g, "C:/Users/Ricardo Cunha/Desktop/suspects_g.csv", row.names = FALSE)
+
+sink("C:/Users/Ricardo Cunha/Desktop/suspects_g.txt")
+cat("\n")
+cat("\n")
+
+for (i in 1:nrow(suspects_g)) {
+  cat("NAME: ")
+  cat(suspects_g$Label[i])
+  cat("\n")
+  cat("RETENTIONTIME: ")
+  cat(round(suspects_g$RT[i], digits = 3))
+  cat("\n")
+  cat("Mass: ")
+  cat(round(suspects_g$Mass[i], digits = 4))
+  cat("\n")
+  cat("Formula: ")
+  cat("\n")
+  cat("//")
+  cat("\n")
+  cat("\n")
+}
+sink()
+
+
+
+
+
+# sink(paste0(getwd(),"/", "forident",".txt"))
+# cat("\n")
+# cat("\n")
+#
+# for (i in 1:nrow(suspects_g)) {
+#   cat("NAME: ")
+#   cat(suspects_g$group[i])
+#   cat("\n")
+#   cat("RETENTIONTIME: ")
+#   cat(round(suspects_g$rt[i] / 60, digits = 3))
+#   cat("\n")
+#   cat("PRECURSORMZ: ")
+#   cat(round(suspects_g$mass[i] + 1.0073, digits = 4))
+#   cat("\n")
+#   cat("Formula: ")
+#   cat("\n")
+#   if (ForIdent_PeakList$MS2[i] == TRUE) {
+#     tempMS2 <- MS2[[ForIdent_PeakList$group[i]]]$MSMS
+#     for (j in 1:nrow(tempMS2)) {
+#       cat(paste(round(tempMS2$mz[j], digits = 4),tempMS2$intensity[j], sep = " "))
+#       cat(" ")
+#     }
+#     rm(j, tempMS2)
+#   } else {
+#     cat("N/A")
+#   }
+#   cat("\n")
+#   cat("//")
+#   cat("\n")
+#   cat("\n")
+# }
+# sink()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+sss <- Settings_suspect_screening_streamFind(database = db, ppm = 5, sec = 10)
+
+
 
 
 # implement export MS2 ------
@@ -72,7 +170,7 @@ slfms2$parameters$minIntensity <- 100
 slgms2 <- Settings_load_groups_ms2_streamFind()
 slgms2$parameters$minIntensity <- 100
 msbp <- ms$subset_analyses(4:6)
-suspects <- msbp$get_suspects(database = db, ppm = 10, sec = 15)
+
 
 msbp$remove_features(filtered = TRUE)
 msbp <- msbp$subset_features(features = suspects)

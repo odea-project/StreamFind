@@ -12,7 +12,7 @@
 #'
 #' @noRd
 #'
-plot_spectra_interactive <- function(spectra = NULL, colorBy = "analyses") {
+plot_spectra_interactive <- function(spectra = NULL, colorBy = "analyses", legendNames = NULL) {
   if (!"id" %in% colnames(spectra)) spectra$id <- ""
   if ("feature" %in% colnames(spectra)) spectra$id <- spectra$feature
   if (!"level" %in% colnames(spectra)) spectra$level <- 0
@@ -52,7 +52,7 @@ plot_spectra_interactive <- function(spectra = NULL, colorBy = "analyses") {
 
   fig <- fig %>% plotly::layout(scene = list(
     xaxis = list(title = "Retention time / seconds"),
-    yaxis = list(title = "<i>m/z</i>"),
+    yaxis = list(title = "<i>m/z</i> / Da"),
     zaxis = list(title = "Intensity / counts")
   ))
 
@@ -151,7 +151,7 @@ plot_xic_interactive <- function(xic,
   yaxis2 <- list(
     linecolor = toRGB("black"),
     linewidth = 2,
-    title = paste("<i>m/z</i>"),
+    title = paste("<i>m/z</i> / Da"),
     titlefont = list(size = 10, color = "black"),
     tickfont = list(size = 10)
   )
@@ -639,7 +639,7 @@ plot_ms2_static <- function(ms2 = NULL, legendNames = NULL,
 
   plot(intensity ~ mz, ms2,
     type = "h",
-    xlab = expression(italic("m/z")),
+    xlab = expression(italic("m/z ") / " Da"),
     ylab = "Intensity / counts",
     col = ms2$color,
     lwd = 2,
@@ -772,7 +772,7 @@ plot_ms2_interactive <- function(ms2 = NULL, legendNames = NULL,
 
   xaxis <- list(
     linecolor = toRGB("black"),
-    linewidth = 2, title = "<i>m/z<i>",
+    linewidth = 2, title = "<i>m/z</i> / Da",
     titlefont = list(size = 12, color = "black"),
     range = c(ticksMin, ticksMax),
     dtick = round((max(ms2$mz) / 10), -1),
@@ -845,7 +845,7 @@ plot_ms1_static <- function(ms1 = NULL, legendNames = NULL,
 
   plot(intensity ~ mz, ms1,
     type = "h",
-    xlab = expression(italic("m/z")),
+    xlab = expression(italic("m/z ") / " Da"),
     ylab = "Intensity / counts",
     col = ms1$color,
     lwd = 2,
@@ -963,7 +963,7 @@ plot_ms1_interactive <- function(ms1 = NULL, legendNames = NULL,
 
   xaxis <- list(
     linecolor = toRGB("black"),
-    linewidth = 2, title = "<i>m/z<i>",
+    linewidth = 2, title = "<i>m/z</i> / Da",
     titlefont = list(size = 12, color = "black"),
     range = c(ticksMin, ticksMax),
     dtick = round((max(ms1$mz) / 10), -1),
@@ -1329,7 +1329,7 @@ map_features_static <- function(features, colorBy = "targets",
     features$mz,
     type = "n",
     xlab = "Retention time / seconds",
-    ylab = expression(italic("m/z")),
+    ylab = expression(italic("m/z ") / " Da"),
     xlim = rtr,
     ylim = mzr,
     main = title
@@ -1474,8 +1474,7 @@ map_features_interactive <- function(features, colorBy = "targets",
         "</br> feature: ", ft$feature,
         "</br> analysis: ", ft$analysis,
         "</br> <i>m/z</i>: ", round(y, digits = 4),
-        "</br> dppm: ", round(((ft$mzmax - ft$mzmin) /
-                                 y) * 1E6, digits = 0),
+        "</br> dppm: ", round(((ft$mzmax - ft$mzmin) / y) * 1E6, digits = 0),
         "</br> rt: ", round(x, digits = 0),
         "</br> drt: ", round(ft$rtmax - ft$rtmin, digits = 0),
         "</br> intensity: ", round(ft$intensity, digits = 0),
@@ -1508,7 +1507,7 @@ map_features_interactive <- function(features, colorBy = "targets",
 
   yaxis <- list(
     linecolor = toRGB("black"),
-    linewidth = 2, title = "<i>m/z</i>",
+    linewidth = 2, title = "<i>m/z</i> / Da",
     range = mzr,
     titlefont = list(size = 12, color = "black")
   )
@@ -1937,7 +1936,7 @@ map_components_interactive <- function(components, colorBy = "targets",
 
   yaxis <- list(
     linecolor = toRGB("black"),
-    linewidth = 2, title = "<i>m/z</i>",
+    linewidth = 2, title = "<i>m/z</i> / Da",
     range = mzr,
     titlefont = list(size = 12, color = "black")
   )
@@ -2025,7 +2024,7 @@ map_components_static <- function(components, colorBy = "targets",
        components$mz,
        type = "n",
        xlab = "Retention time / seconds",
-       ylab = expression(italic("m/z")),
+       ylab = expression(italic("m/z ") / " Da"),
        xlim = rtr,
        ylim = mzr,
        main = title
