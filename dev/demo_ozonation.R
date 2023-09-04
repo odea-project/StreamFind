@@ -7,7 +7,7 @@ all_files <- streamFindData::msFilePaths()
 
 files <- all_files[grepl("blank|influent|o3sw", all_files)]
 
-headers <- Headers(
+headers <- ProjectHeaders(
   name = "Example wastewater ozonation",
   author = "Ricardo Cunha"
 )
