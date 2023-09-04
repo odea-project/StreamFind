@@ -1,3 +1,7 @@
+.idea
+app/frontend/node_modules
+app/frontend/public
+
 # R project files -------------------------------------------------------------
 .Rproj.user
 .Rhistory
