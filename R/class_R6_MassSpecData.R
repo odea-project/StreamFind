@@ -891,11 +891,14 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return A character vector.
     #'
     get_polarities = function(analyses = NULL) {
+
       polarities <- private$.get_analyses_entry(analyses, "polarity")
 
-      if (length(polarities) > length(self$get_analysis_names(analyses))) {
+      analyses <- unique(names(polarities))
 
-        polarities <- vapply(private$.analyses, function(x) {
+      if (length(polarities) > length(analyses)) {
+
+        polarities <- vapply(private$.analyses[analyses], function(x) {
           run <- x$run
           polarity <- run$polarity
 
@@ -920,7 +923,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           }
         }, "")
 
-        names(polarities) <- self$get_analysis_names()
+        names(polarities) <- analyses
       }
       polarities
     },

@@ -213,12 +213,18 @@ ms$plot_groups_ms2(groups = suspects$group[1],
 
 
 fls <- list.files("D:/NTS/Project_230829_LINEG_LCMSMS_Scan_KA_Gesamtablauf/mzml", full.names = TRUE)
-ms <- MassSpecData$new(fls[grepl("pos", fls)])
+ms <- MassSpecData$new(fls[c(1, 40)]) #[grepl("neg", fls)]
 
 ffs <- Settings_find_features_xcms3_matchedfilter(binSize = 0.5, snthresh = 40)
 gfs <- Settings_group_features_xcms3_peakdensity(bw = 5, binSize = 0.5)
 
 ms$find_features(ffs)
+
+ms$get_features()
+
+ms$group_features(gfs)
+
+ms$get_groups()
 
 rtf1 <- Settings_filter_features_streamFind(
   rtFilter = c(0, 100)
