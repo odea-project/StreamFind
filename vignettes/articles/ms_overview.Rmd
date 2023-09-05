@@ -612,25 +612,19 @@ Possible using the function `convert_ms_files()` which utilizes the [MSConvert](
 Data processing steps often require settings with parameters to support the application of a given function to the data. In the MassSpecData object, methods that require settings have the `settings` argument (e.g., the method `find_features()`). In the streamFind package, the `settings` argument takes a ProcessingSettings S3 class and list object (see `?ProcessingSettings`) with three mandatory elements: *call*, *algorithm* and *parameters*. The *call* defines the name of the method (or processing step to be applied), such as "find_features" or "group_features". The *algorithm* defines the algorithm to be used for the processing step (e.g., "xcms" or "openms"). Finally, the *parameters* are a list of algorithm dependent entries that define the settings to be applied during the data processing. An example for "find_features" settings using the algorithm "xcms" is given below. Most of the data processing methods in streamFind use the package [patRoon](https://github.com/rickhelmus/patRoon). Therefore, the interface parameters is similar. The algorithm and parameters (named "param" in [patRoon](https://github.com/rickhelmus/patRoon)) can be taken from the respective documentation of the equivalent function. For instance, the `find_features()` method in streamFind uses the [findFeatures()](https://rickhelmus.github.io/patRoon/reference/findFeatures.html) function in [patRoon](https://github.com/rickhelmus/patRoon). The documentation of each data processing method in `?MassSpecData` explains and exemplifies the usage and where the required settings can be acquired in [patRoon](https://github.com/rickhelmus/patRoon).
 
 ```{r ff-settings-xcms}
-settingsFindFeatures <- ProcessingSettings(
-  "call" = "find_features",
-  "algorithm" = "xcms3",
-  "parameters" = list(
-    xcms::CentWaveParam(
-      ppm = 12,
-      peakwidth = c(5, 40),
-      snthresh = 10,
-      prefilter = c(5, 1500),
-      mzCenterFun = "mean",
-      integrate = 2,
-      mzdiff = -0.0001,
-      fitgauss = TRUE,
-      noise = 500,
-      verboseColumns = TRUE,
-      firstBaselineCheck = FALSE,
-      extendLengthMSW = TRUE
-    )
-  )
+settingsFindFeatures <- Settings_find_features_xcms3_centwave(
+  ppm = 12,
+  peakwidth = c(5, 30),
+  snthresh = 10,
+  prefilter = c(5, 1500),
+  mzCenterFun = "mean",
+  integrate = 2,
+  mzdiff = -0.0001,
+  fitgauss = TRUE,
+  noise = 500,
+  verboseColumns = TRUE,
+  firstBaselineCheck = FALSE,
+  extendLengthMSW = TRUE
 )
 
 settingsFindFeatures
@@ -767,37 +761,31 @@ MS1 and MS2 spectra can support identification processing steps by giving additi
 
 ```{r features-ms1-ms2-settings}
 # Settings for loading features MS1 spectra
-settingsSettings_load_features_ms1_streamFind <- ProcessingSettings(
-  "call" = "load_features_ms1",
-  "algorithm" = "streamFind",
-  "parameters" = list(
-    rtWindow = c(-2, 2),
-    mzWindow = c(-1, 6),
-    mzClust = 0.003,
-    minIntensity = 500,
-    filtered = FALSE,
-    runParallel = FALSE,
-    verbose = FALSE
-  )
+slfms1 <- Settings_load_features_ms1_streamFind(
+  rtWindow = c(-2, 2),
+  mzWindow = c(-1, 6),
+  mzClust = 0.003,
+  isInAllSpectra = FALSE,
+  minIntensity = 250,
+  filtered = FALSE,
+  runParallel = FALSE,
+  verbose = FALSE
 )
 
-ms$add_settings(settings = settingsSettings_load_features_ms1_streamFind)
+ms$add_settings(settings = slfms1)
 
 # Settings for loading features MS2 spectra
-settingsSettings_load_features_ms2_streamFind <- ProcessingSettings(
-  "call" = "load_features_ms2",
-  "algorithm" = "streamFind",
-  "parameters" = list(
-    isolationWindow = 1.3,
-    mzClust = 0.003,
-    minIntensity = 250,
-    filtered = FALSE,
-    runParallel = FALSE,
-    verbose = FALSE
-  )
+slfms2 <- Settings_load_features_ms2_streamFind(
+  isolationWindow = 1.3,
+  mzClust = 0.003,
+  isInAllSpectra = FALSE,
+  minIntensity = 0,
+  filtered = FALSE,
+  runParallel = FALSE,
+  verbose = FALSE
 )
 
-ms$add_settings(settings = settingsSettings_load_features_ms2_streamFind)
+ms$add_settings(settings = slfms2)
 
 # Returns the names of the settings list, which is also the call or method name
 names(ms$get_settings())
@@ -852,7 +840,7 @@ ms1FromFeaturesDataTable$ms1[[1]]
 Similarly to MS1, MS2 data can be loaded as shown below. Note the settings were already added to the former `ms` object. Still, one can add the settings again in the method call. The previously stored settings will then be overwritten. In this case, there is no change as the settings are the same.
 
 ```{r load-ms1-ms2-targets}
-msTargets$load_features_ms2(settings = settingsSettings_load_features_ms2_streamFind)
+msTargets$load_features_ms2(settings = slfms2)
 
 msTargets$has_loaded_features_ms2()
 ```
@@ -892,21 +880,12 @@ Not yet implemented.
 After extraction of features, correspondence analysis (i.e., grouping of features across analyses) is often applied as a following processing step. The result from correspondence analysis is feature groups, describing the correspondent features in each analysis. The method `group_features()` is used for correspondence analysis of features in a MassSpecData object. Similarly to `find_features()`, the `group_features()` method uses settings. Also here the [patRoon](https://github.com/rickhelmus/patRoon) package is used in the background. More precisely, the function [groupFeatures()](https://rickhelmus.github.io/patRoon/reference/groupFeatures.html) from [patRoon](https://github.com/rickhelmus/patRoon) is used. Therefore, the settings algorithm and parameters can be obtained by the documentation of [groupFeatures()](https://rickhelmus.github.io/patRoon/reference/groupFeatures.html). Below the correspondence analysis is demonstrated using the algorithm "xcms".
 
 ```{r grouping-settings}
-settingsGroupFeatures <- ProcessingSettings(
-  "call" = "group_features",
-  "algorithm" = "xcms3",
-  "parameters" = list(
-    rtalign = FALSE,
-    groupParam = xcms::PeakDensityParam(
-      # sampleGroups is set to "holder" but is updated with replicate names by the method
-      sampleGroups = "holder",
-      bw = 5,
-      minFraction = 0.5,
-      minSamples = 1,
-      binSize = 0.008,
-      maxFeatures = 100
-    )
-  )
+settingsGroupFeatures <- Settings_group_features_xcms3_peakdensity(
+  bw = 5,
+  minFraction = 0.5,
+  minSamples = 1,
+  binSize = 0.008,
+  maxFeatures = 100
 )
 ```
 
@@ -1009,34 +988,31 @@ msTargets
 
 ```{r groups-ms1-ms2-settings}
 # Settings for loading groups MS1 spectra
-settingsSettings_load_groups_ms1_streamFind <- ProcessingSettings(
-  "call" = "load_groups_ms1",
-  "algorithm" = "streamFind",
-  "parameters" = list(
-    mzClust = 0.003,
-    minIntensity = 500,
-    filtered = FALSE,
-    runParallel = FALSE,
-    verbose = FALSE
-  )
+slfgms1 <- Settings_load_features_ms1_streamFind(
+  rtWindow = c(-2, 2),
+  mzWindow = c(-1, 6),
+  mzClust = 0.003,
+  isInAllSpectra = FALSE,
+  minIntensity = 250,
+  filtered = FALSE,
+  runParallel = FALSE,
+  verbose = FALSE
 )
 
-msTargets$add_settings(settings = settingsSettings_load_groups_ms1_streamFind)
+msTargets$add_settings(settings = slfgms1)
 
 # Settings for loading groups MS2 spectra
-settingsSettings_load_groups_ms2_streamFind <- ProcessingSettings(
-  "call" = "load_groups_ms2",
-  "algorithm" = "streamFind",
-  "parameters" = list(
-    mzClust = 0.003,
-    minIntensity = 250,
-    filtered = FALSE,
-    runParallel = FALSE,
-    verbose = FALSE
-  )
+slfgms2 <- Settings_load_features_ms2_streamFind(
+  isolationWindow = 1.3,
+  mzClust = 0.003,
+  isInAllSpectra = FALSE,
+  minIntensity = 0,
+  filtered = FALSE,
+  runParallel = FALSE,
+  verbose = FALSE
 )
 
-msTargets$add_settings(settings = settingsSettings_load_groups_ms2_streamFind)
+msTargets$add_settings(settings = slfgms2)
 
 # Returns the names of the settings list, which is also the call or method name
 names(msTargets$get_settings())
