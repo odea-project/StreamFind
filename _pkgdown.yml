@@ -1,6 +1,8 @@
 url: https://ricardobachertdacunha.github.io/streamFind/
+
 template:
   bootstrap: 5
+
 reference:
 - title: R6 classes
   desc: >

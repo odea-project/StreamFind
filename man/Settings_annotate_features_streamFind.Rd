@@ -45,13 +45,14 @@ A ProcessingSettings S3 class object with subclass
 Settings_annotate_features_streamFind.
 }
 \description{
-Settings for annotation of isotopic features. The method uses the \code{maxIsotopes}
-to define the maximum length of the isotopic chain. The list of candidate features is
-build with the \code{rtWindowAlignment} and the maximum mass increment to match the
-maximum chain length. Then, the mass difference  of the natural isotopes defined
-by \code{elements} and a given monoisotopic ion (i.e., feature) are targeted.
-Each candidate is then evaluated according to the mass error and the expected
-relative intensity range as defined by the \code{mode}.
+Settings for annotation of isotopic features. The method uses
+the \code{maxIsotopes} to define the maximum length of the isotopic chain.
+The list of candidate features is build with the \code{rtWindowAlignment} and the
+maximum mass increment to match the maximum chain length. Then, the mass
+difference  of the natural isotopes defined by \code{elements} and a given
+monoisotopic ion (i.e., feature) are targeted. Each candidate is then
+evaluated according to the mass error and the expected relative intensity
+range as defined by the \code{mode}.
 }
 \section{Methods (by generic)}{
 \itemize{

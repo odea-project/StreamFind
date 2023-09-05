@@ -1,7 +1,7 @@
 
 # Default Settings -----
 
-#' get_default_ProcessingSettings
+#' @title get_default_ProcessingSettings
 #'
 #' @description Saves on disk a ProcessingSettings S3 class object as the
 #' defined `format`, `path` and `name`.
@@ -22,7 +22,7 @@ get_default_ProcessingSettings <- function(call = NA_character_,
   do.call(class_string, list())
 }
 
-#' save_default_ProcessingSettings
+#' @title save_default_ProcessingSettings
 #'
 #' @description Saves on disk a ProcessingSettings S3 class object as the
 #' defined `format`, `path` and `name`.
@@ -158,7 +158,7 @@ Settings_find_features_qPeaks <- function() {
 
 }
 
-#' Settings_find_features_xcms3_centwave
+#' @title Settings_find_features_xcms3_centwave
 #'
 #' @description Settings for finding features (i.e., chromatographic peaks)
 #' in mzML/mzXML files using the package
@@ -271,7 +271,7 @@ Settings_find_features_xcms3_centwave <- function(
   return(settings)
 }
 
-#' Settings_find_features_xcms3_matchedfilter
+#' @title Settings_find_features_xcms3_matchedfilter
 #'
 #' @description Settings for finding features (i.e., chromatographic peaks)
 #' in mzML/mzXML files using the package
@@ -369,7 +369,7 @@ Settings_find_features_xcms3_matchedfilter <- function(
   return(settings)
 }
 
-#' Settings_find_features_openms
+#' @title Settings_find_features_openms
 #'
 #' @description Settings for finding features (i.e., chromatographic peaks)
 #' in mzML/mzXML files using the \href{https://www.openms.org/}{OpenMS}
@@ -585,7 +585,7 @@ Settings_find_features_kpic2 <- function(
 
 ## group_features -----
 
-#' Settings_group_features_xcms3_peakdensity
+#' @title Settings_group_features_xcms3_peakdensity
 #'
 #' @description Settings for grouping features (i.e., chromatographic peaks)
 #' across mzML/mzXML files using the package
@@ -662,7 +662,7 @@ Settings_group_features_xcms3_peakdensity <- function(
   return(settings)
 }
 
-#' Settings_group_features_xcms3_peakdensity_peakgroups
+#' @title Settings_group_features_xcms3_peakdensity_peakgroups
 #'
 #' @description Settings for aligning and grouping features (i.e.,
 #' chromatographic peaks) across mzML/mzXML files using the package
@@ -1099,7 +1099,7 @@ validate.Settings_load_groups_ms2_streamFind <- function(x) {
 
 ## filter_features -----
 
-#' Settings_filter_features_streamFind
+#' @title Settings_filter_features_streamFind
 #'
 #' @description Settings for filtering of features and feature groups.
 #'
@@ -1269,16 +1269,16 @@ validate.Settings_filter_features_streamFind <- function(x) {
 
 ## annotate_features -----
 
-#' Settings_annotate_features_streamFind
+#' @title Settings_annotate_features_streamFind
 #'
-#' @description
-#' Settings for annotation of isotopic features. The method uses the `maxIsotopes`
-#' to define the maximum length of the isotopic chain. The list of candidate features is
-#' build with the `rtWindowAlignment` and the maximum mass increment to match the
-#' maximum chain length. Then, the mass difference  of the natural isotopes defined
-#' by `elements` and a given monoisotopic ion (i.e., feature) are targeted.
-#' Each candidate is then evaluated according to the mass error and the expected
-#' relative intensity range as defined by the `mode`.
+#' @description Settings for annotation of isotopic features. The method uses
+#' the `maxIsotopes` to define the maximum length of the isotopic chain.
+#' The list of candidate features is build with the `rtWindowAlignment` and the
+#' maximum mass increment to match the maximum chain length. Then, the mass
+#' difference  of the natural isotopes defined by `elements` and a given
+#' monoisotopic ion (i.e., feature) are targeted. Each candidate is then
+#' evaluated according to the mass error and the expected relative intensity
+#' range as defined by the `mode`.
 #'
 #' @param maxIsotopes Numeric (length 1) with the maximum number of isotopic steps.
 #' @param elements Character vector with the elements to target the isotopic annotation.
@@ -1365,7 +1365,7 @@ validate.Settings_annotate_features_streamFind <- function(x) {
 
 ## suspect_screening -----
 
-#' Settings_suspect_screening_streamFind
+#' @title Settings_suspect_screening_streamFind
 #'
 #' @description
 #' Settings for performing suspect screening using a data.frame with target
@@ -1424,7 +1424,7 @@ validate.Settings_suspect_screening_streamFind <- function(x) {
   )
 }
 
-#' Settings_suspect_screening_forident
+#' @title Settings_suspect_screening_forident
 #'
 #' @description
 #' Settings for performing suspect screening using the
