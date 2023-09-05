@@ -1,7 +1,7 @@
 #'
 #' @importFrom Rcpp sourceCpp
 #'
-#' @importFrom utils packageVersion
+#' @importFrom utils packageVersion head
 #'
 #' @importFrom Rdpack reprompt
 #'

@@ -41,6 +41,9 @@ be used.}
 \item{parameters}{List with parameters specific for the method \code{call} and
 \code{algorithm}.}
 
+\item{version}{Character of length one with the version of the processing
+settings.}
+
 \item{software}{Character of length one with the name of the software or
 package.}
 

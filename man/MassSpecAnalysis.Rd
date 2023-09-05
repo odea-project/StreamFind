@@ -117,6 +117,10 @@ from binning of spectra.}
 \item{metadata}{List with flexible storage for experimental metadata
 (e.g., concentration, location, etc.).}
 
+\item{version}{Character of length one with the version. It should match with
+the version of the streamFind package when created the \code{MassSpecAnalysis}
+object.}
+
 \item{x}{A MassSpecAnalysis S3 class object.}
 
 \item{...}{Not used.}

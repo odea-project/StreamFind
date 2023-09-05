@@ -16,7 +16,7 @@
 
   suspect_groups <- self$get_groups(groups = unique(suspect_features$group))
 
-  if (nrow(suspects) > 0) {
+  if (nrow(suspect_features) > 0) {
     suspects_data <- list(
       "suspect_features" = suspect_features,
       "suspect_groups" = suspect_groups,

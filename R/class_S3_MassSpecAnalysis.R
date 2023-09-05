@@ -49,6 +49,9 @@
 #' @param features data.table with the features from data processing.
 #' @param metadata List with flexible storage for experimental metadata
 #' (e.g., concentration, location, etc.).
+#' @param version Character of length one with the version. It should match with
+#' the version of the streamFind package when created the `MassSpecAnalysis`
+#' object.
 #'
 #' @return An MassSpecAnalysis S3 class object.
 #'

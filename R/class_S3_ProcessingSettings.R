@@ -10,6 +10,8 @@
 #' be used.
 #' @param parameters List with parameters specific for the method `call` and
 #' `algorithm`.
+#' @param version Character of length one with the version of the processing
+#' settings.
 #' @param software Character of length one with the name of the software or
 #' package.
 #' @param developer Character of length one with the name of the developer/s.
@@ -53,7 +55,7 @@ ProcessingSettings <- function(call = NA_character_,
   if (validate.ProcessingSettings(x)) {
 
     s3_classes <- c(
-      paste0("Settings_", x$call, "_" ,x$algorithm),
+      paste0("Settings_", x$call, "_" , x$algorithm),
       "ProcessingSettings"
     )
 
@@ -65,6 +67,12 @@ ProcessingSettings <- function(call = NA_character_,
       grepl(a, x$algorithm, fixed = FALSE)
     }, FALSE))) {
       s3_classes <- append(s3_classes, "patRoon", after = 0)
+    }
+
+    if (is.na(x$link)) {
+      page <- "https://ricardobachertdacunha.github.io/streamFind/reference/"
+      algo <- paste0("Settings_", x$call, "_" , x$algorithm)
+      x$link <- paste0(page, algo, ".html")
     }
 
     x <- structure(x, class = s3_classes)

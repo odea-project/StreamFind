@@ -92,8 +92,8 @@ Settings_centroid_spectra_qCentroids <- function() {
     software = "q",
     developer = "Max, Gerrit",
     contact = "gerrit@email.de",
-    link = "",
-    doi = ""
+    link = NA_character_,
+    doi = NA_character_
   )
 
   as.ProcessingSettings(settings)
@@ -121,8 +121,8 @@ Settings_bin_spectra_qBinning <- function() {
     software = "q",
     developer = "Max, Gerrit",
     contact = "max@email.de",
-    link = "",
-    doi = ""
+    link = NA_character_,
+    doi = NA_character_
   )
 
   as.ProcessingSettings(settings)
@@ -150,8 +150,8 @@ Settings_find_features_qPeaks <- function() {
     software = "q",
     developer = "Max, Gerrit",
     contact = "max@email.de",
-    link = "",
-    doi = ""
+    link = NA_character_,
+    doi = NA_character_
   )
 
   as.ProcessingSettings(settings)
@@ -262,7 +262,7 @@ Settings_find_features_xcms3_centwave <- function(
     software = "xcms",
     developer = "Ralf Tautenhahn, Johannes Rainer",
     contact = "rtautenh@ipb-halle.de",
-    link = "https://rdrr.io/bioc/xcms/man/findChromPeaks-centWave.html",
+    link = NA_character_,
     doi = "https://doi.org/10.1186/1471-2105-9-504"
   )
 
@@ -360,7 +360,7 @@ Settings_find_features_xcms3_matchedfilter <- function(
     software = "xcms",
     developer = "Ralf Tautenhahn, Johannes Rainer",
     contact = "rtautenh@ipb-halle.de",
-    link = "https://rdrr.io/bioc/xcms/man/findChromPeaks-centWave.html",
+    link = NA_character_,
     doi = "https://doi.org/10.1186/1471-2105-9-504"
   )
 
@@ -501,7 +501,7 @@ Settings_find_features_openms <- function(
     software = "openms",
     developer = "Rost HL, Sachsenberg T, Aiche S, Bielow C et al.",
     contact = "oliver.kohlbacher@uni-tuebingen.de",
-    link = "https://abibuilder.cs.uni-tuebingen.de/archive/openms/Documentation/release/latest/html/index.html",
+    link = NA_character_,
     doi = "https://doi.org/10.1038/nmeth.3959"
   )
 
@@ -570,7 +570,7 @@ Settings_find_features_kpic2 <- function(
     software = "kpic2",
     developer = "Hongchao Ji",
     contact = "ji.hongchao@foxmail.com",
-    link = "https://github.com/hcji/KPIC2",
+    link = NA_character_,
     doi = "10.1021/acs.analchem.7b01547"
   )
 
@@ -653,7 +653,7 @@ Settings_group_features_xcms3_peakdensity <- function(
     software = "xcms",
     developer = "Colin Smith, Johannes Rainer",
     contact = "siuzdak@scripps.edu",
-    link = "https://rdrr.io/bioc/xcms/man/groupChromPeaks-density.html",
+    link = NA_character_,
     doi = "https://doi.org/10.1021/ac051437y"
   )
 
@@ -802,7 +802,7 @@ Settings_group_features_xcms3_peakdensity_peakgroups <- function(
     software = "xcms",
     developer = "Colin Smith, Johannes Rainer",
     contact = "siuzdak@scripps.edu",
-    link = "https://rdrr.io/bioc/xcms/man/groupChromPeaks-density.html",
+    link = NA_character_,
     doi = "https://doi.org/10.1021/ac051437y"
   )
 
@@ -858,7 +858,7 @@ Settings_load_features_ms1_streamFind <- function(
     software = "streamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = "https://github.com/ricardobachertdacunha/streamFind",
+    link = NA_character_,
     doi = NA_character_
   )
 
@@ -931,7 +931,7 @@ Settings_load_features_ms2_streamFind <- function(
     software = "streamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = "https://github.com/ricardobachertdacunha/streamFind",
+    link = NA_character_,
     doi = NA_character_
   )
 
@@ -1000,7 +1000,7 @@ Settings_load_groups_ms1_streamFind <- function(
     software = "streamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = "https://github.com/ricardobachertdacunha/streamFind",
+    link = NA_character_,
     doi = NA_character_
   )
 
@@ -1068,7 +1068,7 @@ Settings_load_groups_ms2_streamFind <- function(
     software = "streamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = "https://github.com/ricardobachertdacunha/streamFind",
+    link = NA_character_,
     doi = NA_character_
   )
 
@@ -1145,7 +1145,7 @@ Settings_filter_features_streamFind <- function(
     software = "streamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = "https://github.com/ricardobachertdacunha/streamFind",
+    link = NA_character_,
     doi = NA_character_
   )
 
@@ -1331,7 +1331,7 @@ Settings_annotate_features_streamFind <- function(
     software = "streamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = "https://github.com/ricardobachertdacunha/streamFind",
+    link = NA_character_,
     doi = NA_character_
   )
 
@@ -1398,7 +1398,7 @@ Settings_suspect_screening_streamFind <- function(
     software = "streamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = "https://github.com/ricardobachertdacunha/streamFind",
+    link = NA_character_,
     doi = NA_character_
   )
 
@@ -1471,7 +1471,7 @@ Settings_suspect_screening_forident <- function(
     software = "forident",
     developer = "Sylvia Grosse, Thomas Letzel",
     contact = "support@for-ident.org",
-    link = "https://water.for-ident.org/",
+    link = NA_character_,
     doi = NA_character_
   )
 
