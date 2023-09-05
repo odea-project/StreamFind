@@ -91,11 +91,18 @@
     if ("Param" %in% is(parameters)) {
       parameters <- list("groupParam" = parameters)
     }
+
     parameters$groupParam@sampleGroups <- self$get_replicate_names()
+
     if ("rtalign" %in% names(parameters)) {
       if (parameters$rtalign) {
         parameters$preGroupParam@sampleGroups <- self$get_replicate_names()
       }
+    }
+
+    # when multiple polarities it makes setFeatureGroups, no rt alignment possible
+    if (length(unique(self$get_polarities())) > 1) {
+      parameters <- parameters["groupParam"]
     }
   }
 

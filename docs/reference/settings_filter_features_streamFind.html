@@ -63,7 +63,9 @@
 <span>  maxGroupSd <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  blank <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  minGroupAbundance <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  excludeIsotopes <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  excludeIsotopes <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  rtFilter <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  massFilter <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for Settings_filter_features_streamFind</span></span>
@@ -100,6 +102,18 @@ feature is a given analysis replicate.</p></dd>
 <dt>excludeIsotopes</dt>
 <dd><p>Logical (length 1) with <code>TRUE</code> for filtering
 annotated isotopes (only prevails the monoisotopic features).</p></dd>
+
+
+<dt>rtFilter</dt>
+<dd><p>Numeric (length 2) with the min and max retention time
+(in seconds) values to filter features. Features within the retention time
+range are filtered out.</p></dd>
+
+
+<dt>massFilter</dt>
+<dd><p>Numeric (length 2) with the min and max mass
+(in Da) values to filter features. Features within the mass range are
+filtered out.</p></dd>
 
 
 <dt>x</dt>

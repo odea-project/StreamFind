@@ -51,7 +51,7 @@
 
   parameters <- settings$parameters
 
-  if ("class" %in% names(parameters)) {
+  if (any(grepl("class|Class", names(parameters)))) {
     parameters[["Class"]] <- parameters$class
     parameters[["class"]] <- NULL
 
@@ -65,6 +65,7 @@
 
     if (parameters$Class %in% "CentWaveParam") {
       parameters$roiScales <- as.double()
+      parameters$integrate <- as.integer(parameters$integrate)
     }
 
     parameters <- do.call("new", parameters)
@@ -85,7 +86,10 @@
             }
           })
 
-          if (par$Class %in% "CentWaveParam") par$roiScales <- as.double()
+          if (par$Class %in% "CentWaveParam") {
+            par$roiScales <- as.double()
+            par$integrate <- as.integer(par$integrate)
+          }
 
           par <- do.call("new", par)
         }
@@ -213,16 +217,48 @@
       warning("Feature m/z value/s under the mzmin!")
     }
 
-    polarity <- self$get_polarities(x)
+    polarity <- unique(self$get_polarities(x))
 
-    if (polarity %in% "positive") {
-      adduct <- "[M+H]+"
-      adduct_val <- -1.007276
-    }
+    adduct <- NA_character_
+    adduct_val <- 0
 
-    if (polarity %in% "negative") {
-      adduct <- "[M-H]-"
-      adduct_val <- 1.007276
+    if (length(polarity) > 1) {
+      run <- self$get_run()
+      polarity <- run$polarity
+
+      scans_pos <- length(polarity[polarity %in% "positive"])
+      scans_neg <- length(polarity[polarity %in% "negative"])
+
+      ratio <- scans_pos/scans_neg
+
+      if (ratio < 1.2 & ratio > 0.8) {
+        warning("Multiple polarities detected! Currently, find_features algorithms cannot handled multiple polarities properly.", )
+
+      } else if (ratio > 1.2) {
+        per_pos_pol <- round((scans_pos / nrow(run)) * 100, digits = 0)
+        warning("Multiple polarities detected but positive polarity is present in ", per_pos_pol, "% of the spectra!" )
+
+        adduct <- "[M+H]+"
+        adduct_val <- -1.007276
+
+      } else {
+        per_neg_pol <- round((scans_neg / nrow(run)) * 100, digits = 0)
+        warning("Multiple polarities detected but negative polarity is present in ", per_neg_pol, "% of the spectra!" )
+
+        adduct <- "[M-H]-"
+        adduct_val <- 1.007276
+      }
+    } else {
+
+      if (polarity %in% "positive") {
+        adduct <- "[M+H]+"
+        adduct_val <- -1.007276
+      }
+
+      if (polarity %in% "negative") {
+        adduct <- "[M-H]-"
+        adduct_val <- 1.007276
+      }
     }
 
     # required as when is set the mz value is neutralized from patRoon
@@ -293,8 +329,14 @@
       temp$index <- seq_len(nrow(temp))
 
       d_dig <- max(temp$mzmax - temp$mzmin)
-      d_dig <- sub('.*\\.(0+)[1-9].*', '\\1', as.character(d_dig))
-      d_dig <- nchar(d_dig) + 1
+      if (d_dig < 0.1) {
+        d_dig <- sub('.*\\.(0+)[1-9].*', '\\1', as.character(d_dig))
+        d_dig <- nchar(d_dig) + 1
+      } else if (d_dig >= 1) {
+        d_dig <- 0
+      } else {
+        d_dig <- 1
+      }
 
       temp$feature <- paste0(
         "mz",

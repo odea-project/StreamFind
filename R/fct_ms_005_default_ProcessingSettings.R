@@ -88,11 +88,12 @@ Settings_centroid_spectra_qCentroids <- function() {
     call = "centroid_spectra",
     algorithm = "qCentroids",
     parameters = list(),
+    version = as.character(packageVersion("streamFind")),
     software = "q",
     developer = "Max, Gerrit",
     contact = "gerrit@email.de",
-    link = "",
-    doi = ""
+    link = NA_character_,
+    doi = NA_character_
   )
 
   as.ProcessingSettings(settings)
@@ -116,11 +117,12 @@ Settings_bin_spectra_qBinning <- function() {
     call = "bin_spectra",
     algorithm = "qBinning",
     parameters = list(),
+    version = as.character(packageVersion("streamFind")),
     software = "q",
     developer = "Max, Gerrit",
     contact = "max@email.de",
-    link = "",
-    doi = ""
+    link = NA_character_,
+    doi = NA_character_
   )
 
   as.ProcessingSettings(settings)
@@ -144,55 +146,123 @@ Settings_find_features_qPeaks <- function() {
     call = "find_features",
     algorithm = "qPeaks",
     parameters = list(),
+    version = as.character(packageVersion("streamFind")),
     software = "q",
     developer = "Max, Gerrit",
     contact = "max@email.de",
-    link = "",
-    doi = ""
+    link = NA_character_,
+    doi = NA_character_
   )
 
   as.ProcessingSettings(settings)
 
 }
 
-#' @title Settings_find_features_xcms3_centwave
+#' Settings_find_features_xcms3_centwave
 #'
-#' @description X.
+#' @description Settings for finding features (i.e., chromatographic peaks)
+#' in mzML/mzXML files using the package
+#' \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms}
+#' (version 3) with the algorithm
+#' \href{https://rdrr.io/bioc/xcms/man/findChromPeaks-centWave.html}{centWave}.
+#' The function uses the package \pkg{patRoon} in the background.
 #'
-#' @return X.
+#' @param ppm numeric(1) defining the maximal tolerated m/z deviation in
+#' consecutive scans in parts per million (ppm) for the initial ROI definition.
+#' @param peakwidth numeric(2) with the expected approximate feature width in
+#' chromatographic space. Given as a range (min, max) in seconds.
+#' @param snthresh numeric(1) defining the signal to noise ratio cutoff.
+#' @param prefilter numeric(2): c(k, I) specifying the prefilter step for the
+#' first analysis step (ROI detection). Mass traces are only retained if they
+#' contain at least k peaks with intensity >= I.
+#' @param mzCenterFun Name of the function to calculate the m/z center of the
+#' chromatographic peak (feature). Allowed are: "wMean": intensity weighted mean
+#' of the peak's m/z values, "mean": mean of the peak's m/z values, "apex": use the
+#' m/z value at the peak apex, "wMeanApex3": intensity weighted mean of the m/z
+#' value at the peak apex and the m/z values left and right of it and
+#' "meanApex3": mean of the m/z value of the peak apex and the m/z values
+#' left and right of it.
+#' @param integrate Integration method. For integrate = 1 peak limits are found
+#' through descent on the mexican hat filtered data, for integrate = 2 the
+#' descent is done on the real data. The latter method is more accurate but
+#' prone to noise, while the former is more robust, but less exact.
+#' @param mzdiff numeric(1) representing the minimum difference in m/z dimension
+#' required for peaks with overlapping retention times; can be negative to
+#' allow overlap. During peak post-processing, peaks defined to be overlapping
+#' are reduced to the one peak with the largest signal.
+#' @param fitgauss logical(1) whether or not a Gaussian should be fitted to each
+#' peak. This affects mostly the retention time position of the peak.
+#' @param noise numeric(1) allowing to set a minimum intensity required for
+#' centroids to be considered in the first analysis step (centroids with
+#' intensity < noise are omitted from ROI detection).
+#' @param verboseColumns logical(1) whether additional peak meta data columns
+#' should be returned.
+#' @param firstBaselineCheck logical(1). If TRUE continuous data within regions
+#' of interest is checked to be above the first baseline.
+#' @param extendLengthMSW Option to force centWave to use all scales when
+#' running centWave rather than truncating with the EIC length. Uses the
+#' "open" method to extend the EIC to a integer base-2 length prior to being
+#' passed to convolve rather than the default "reflect" method.
+#' See https://github.com/sneumann/xcms/issues/445 for more information.
+#'
+#' @details See the \link[patRoon]{findFeaturesXCMS3} function from the
+#' \pkg{patRoon} package for more information and requirements.
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_find_features_xcms3_centwave.
+#'
+#' @references
+#' \insertRef{patroon01}{streamFind}
+#'
+#' \insertRef{patroon02}{streamFind}
+#'
+#' \insertRef{xcms01}{streamFind}
+#'
+#' \insertRef{xcms02}{streamFind}
+#'
+#' \insertRef{xcms03}{streamFind}
 #'
 #' @export
 #'
-Settings_find_features_xcms3_centwave <- function() {
-
-  if (!requireNamespace("xcms", quietly = TRUE)) {
-    warning("xcms package required but not installed!")
-    return(NULL)
-  }
+Settings_find_features_xcms3_centwave <- function(
+    ppm = 12,
+    peakwidth = c(5, 60),
+    snthresh = 15,
+    prefilter = c(5, 1500),
+    mzCenterFun = "wMean",
+    integrate = 1,
+    mzdiff = -0.0002,
+    fitgauss = TRUE,
+    noise = 500,
+    verboseColumns = TRUE,
+    firstBaselineCheck = FALSE,
+    extendLengthMSW = FALSE) {
 
   settings <- list(
     call = "find_features",
     algorithm = "xcms3_centwave",
-    parameters = xcms::CentWaveParam(
-      ppm = 12,
-      peakwidth = c(5, 60),
-      snthresh = 15,
-      prefilter = c(5, 1500),
-      mzCenterFun = "wMean",
-      integrate = 1,
-      mzdiff = -0.0002,
-      fitgauss = TRUE,
-      noise = 500,
-      verboseColumns = TRUE,
+    parameters = list(
+      class = "CentWaveParam",
+      ppm = ppm,
+      peakwidth = peakwidth,
+      snthresh = snthresh,
+      prefilter = prefilter,
+      mzCenterFun = mzCenterFun,
+      integrate = integrate,
+      mzdiff = mzdiff,
+      fitgauss = fitgauss,
+      noise = noise,
+      verboseColumns = verboseColumns,
       roiList = list(),
-      firstBaselineCheck = FALSE,
+      firstBaselineCheck = firstBaselineCheck,
       roiScales = numeric(),
-      extendLengthMSW = FALSE
+      extendLengthMSW = extendLengthMSW
     ),
+    version = as.character(packageVersion("streamFind")),
     software = "xcms",
     developer = "Ralf Tautenhahn, Johannes Rainer",
     contact = "rtautenh@ipb-halle.de",
-    link = "https://rdrr.io/bioc/xcms/man/findChromPeaks-centWave.html",
+    link = NA_character_,
     doi = "https://doi.org/10.1186/1471-2105-9-504"
   )
 
@@ -201,47 +271,237 @@ Settings_find_features_xcms3_centwave <- function() {
   return(settings)
 }
 
-#' @title Settings_find_features_openms
+#' Settings_find_features_xcms3_matchedfilter
 #'
-#' @description X.
+#' @description Settings for finding features (i.e., chromatographic peaks)
+#' in mzML/mzXML files using the package
+#' \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms}
+#' (version 3) with the algorithm
+#' \href{https://rdrr.io/bioc/xcms/man/findChromPeaks-Chromatogram-MatchedFilter.html}{MatchedFilter},
+#' which is optimal/preferred for low resolution LC-MS data.
+#' The function uses the package \pkg{patRoon} in the background.
 #'
-#' @return X.
+#' @param binSize numeric(1) specifying the width of the bins/slices in m/z dimension.
+#' @param impute Character string specifying the method to be used for missing
+#' value imputation. Allowed values are "none" (no linear interpolation), "lin"
+#' (linear interpolation), "linbase" (linear interpolation within a certain
+#' bin-neighborhood) and "intlin".
+#' @param baseValue The base value to which empty elements should be set.
+#' This is only considered for `impute` as "linbase" and corresponds to the
+#' profBinLinBase's `baselevel` argument.
+#' @param distance For `impute` as "linbase": number of non-empty neighboring
+#' element of an empty element that should be considered for linear
+#' interpolation. See details section for more information.
+#' @param fwhm numeric(1) specifying the full width at half maximum of matched
+#' filtration gaussian model peak. Only used to calculate the actual sigma,
+#' see below.
+#' @param max numeric(1) representing the maximum number of peaks that are
+#' expected/will be identified per slice.
+#' @param snthresh numeric(1) defining the signal to noise ratio cutoff.
+#' @param steps numeric(1) defining the number of bins to be merged before
+#' filtration (i.e. the number of neighboring bins that will be joined to the
+#' slice in which filtration and peak detection will be performed).
+#' @param mzdiff numeric(1) representing the minimum difference in m/z dimension
+#' required for peaks with overlapping retention times; can be negative to allow
+#' overlap. During peak post-processing, peaks defined to be overlapping are
+#' reduced to the one peak with the largest signal.
+#' @param index logical(1) specifying whether indicies should be returned
+#' instead of values for m/z and retention times.
+#'
+#' @details See the \link[patRoon]{findFeaturesXCMS3} function from the
+#' \pkg{patRoon} package for more information and requirements.
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_find_features_xcms3_matchedfilter.
+#'
+#' @references
+#' \insertRef{patroon01}{streamFind}
+#'
+#' \insertRef{patroon02}{streamFind}
+#'
+#' \insertRef{xcms01}{streamFind}
+#'
+#' \insertRef{xcms02}{streamFind}
+#'
+#' \insertRef{xcms03}{streamFind}
 #'
 #' @export
 #'
-Settings_find_features_openms <- function() {
+Settings_find_features_xcms3_matchedfilter <- function(
+    binSize = 0.5,
+    impute = "none",
+    baseValue = 0,
+    distance = 0,
+    fwhm = 30,
+    max = 5,
+    snthresh = 20,
+    steps = 2,
+    mzdiff = 0.5,
+    index = FALSE) {
+
+  settings <- list(
+    call = "find_features",
+    algorithm = "xcms3_matchedfilter",
+    parameters = list(
+      class = "MatchedFilterParam",
+      binSize = binSize,
+      impute = impute,
+      baseValue = baseValue,
+      distance = distance,
+      fwhm = fwhm,
+      sigma = fwhm/2.3548,
+      max = max,
+      snthresh = snthresh,
+      steps = steps,
+      mzdiff = mzdiff,
+      index = index
+    ),
+    version = as.character(packageVersion("streamFind")),
+    software = "xcms",
+    developer = "Ralf Tautenhahn, Johannes Rainer",
+    contact = "rtautenh@ipb-halle.de",
+    link = NA_character_,
+    doi = "https://doi.org/10.1186/1471-2105-9-504"
+  )
+
+  settings <- as.ProcessingSettings(settings)
+
+  return(settings)
+}
+
+#' Settings_find_features_openms
+#'
+#' @description Settings for finding features (i.e., chromatographic peaks)
+#' in mzML/mzXML files using the \href{https://www.openms.org/}{OpenMS}
+#' (\url{https://abibuilder.cs.uni-tuebingen.de/archive/openms/}) software
+#' with the algorithm
+#' \href{https://abibuilder.cs.uni-tuebingen.de/archive/openms/Documentation/release/latest/html/TOPP_FeatureFinderMetabo.html}{FeatureFinderMetabo}.
+#' The function uses the package \pkg{patRoon} in the background.
+#'
+#' @param noiseThrInt Intensity threshold below which peaks are regarded as noise.
+#' @param chromSNR Minimum signal-to-noise a mass trace should have.
+#' @param chromFWHM Expected chromatographic peak width (in seconds).
+#' @param mzPPM Allowed mass deviation (in ppm).
+#' @param reEstimateMTSD Enables dynamic re-estimation of m/z variance during
+#' mass trace collection stage.
+#' @param traceTermCriterion Termination criterion for the extension of mass
+#' traces. In 'outlier' mode, trace extension cancels if a predefined number of
+#' consecutive outliers are found (see trace_termination_outliers parameter).
+#' In 'sample_rate' mode, trace extension in both directions stops if ratio of
+#' found peaks versus visited spectra falls below the 'min_sample_rate' threshold.
+#' @param traceTermOutliers Mass trace extension in one direction cancels if
+#' this number of consecutive spectra with no detectable peaks is reached.
+#' @param minSampleRate Minimum fraction of scans along the mass trace that must
+#' contain a peak.
+#' @param minTraceLength Minimum expected length of a mass trace (in seconds).
+#' @param maxTraceLength Maximum expected length of a mass trace (in seconds).
+#' Set to a negative value to disable maximal length check during mass trace
+#' detection.
+#' @param widthFiltering Enable filtering of unlikely peak widths. The fixed
+#' setting filters out mass traces outside the `min_fwhm`, `max_fwhm` interval
+#' (set parameters accordingly!). The auto setting filters with the 5 and 95%
+#' quantiles of the peak width distribution.
+#' @param minFWHM Minimum full-width-at-half-maximum of chromatographic peaks
+#' (in seconds). Ignored if parameter width_filtering is off or auto.
+#' @param maxFWHM Maximum full-width-at-half-maximum of chromatographic peaks
+#' (in seconds). Ignored if parameter width_filtering is off or auto.
+#' @param traceSNRFiltering Apply post-filtering by signal-to-noise ratio after
+#' smoothing.
+#' @param localRTRange RT range where to look for coeluting mass traces.
+#' @param localMZRange MZ range where to look for isotopic mass traces.
+#' @param isotopeFilteringModel Remove/score candidate assemblies based on
+#' isotope intensities. SVM isotope models for metabolites were trained with
+#' either 2% or 5% RMS error. For peptides, an averagine cosine scoring is used.
+#' Select the appropriate noise model according to the quality of measurement
+#' or MS device.
+#' @param MZScoring13C Use the 13C isotope peak position (~1.003355 Da) as the
+#' expected shift in m/z for isotope mass traces (highly recommended for
+#' lipidomics!). Disable for general metabolites
+#' (as described in Kenar et al. 2014, MCP.).
+#' @param useSmoothedInts Use LOWESS intensities instead of raw intensities.
+#' @param extraOpts = NULL,
+#' @param intSearchRTWindow Retention time window (in seconds, +/- feature
+#' retention time) that is used to find the closest data point to the retention
+#' time to obtain the intensity of a feature (this is needed since OpenMS does
+#' not provide this data).
+#' @param useFFMIntensities If TRUE then peak intensities are directly loaded
+#' from FeatureFinderMetabo output. Otherwise, intensities are loaded afterwards
+#' from the input ‘mzML’ files, which is potentially much slower, especially
+#' with many analyses files. However, useFFMIntensities=TRUE is still somewhat
+#' experimental, may be less accurate and requires a recent version of OpenMS
+#' (>=2.7).
+#'
+#' @details See the \link[patRoon]{findFeaturesOpenMS} function from the
+#' \pkg{patRoon} package for more information and requirements.
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_find_features_openms.
+#'
+#' @references
+#' \insertRef{patroon01}{streamFind}
+#'
+#' \insertRef{patroon02}{streamFind}
+#'
+#' \insertRef{openms01}{streamFind}
+#'
+#' @export
+#'
+Settings_find_features_openms <- function(
+    noiseThrInt = 500,
+    chromSNR = 3,
+    chromFWHM = 10,
+    mzPPM = 12,
+    reEstimateMTSD = FALSE,
+    traceTermCriterion = "sample_rate",
+    traceTermOutliers = 5,
+    minSampleRate = 1,
+    minTraceLength = 5,
+    maxTraceLength = -1,
+    widthFiltering = "fixed",
+    minFWHM = 5,
+    maxFWHM = 40,
+    traceSNRFiltering = TRUE,
+    localRTRange = 10,
+    localMZRange = 6.5,
+    isotopeFilteringModel = "metabolites (5% RMS)",
+    MZScoring13C = FALSE,
+    useSmoothedInts = FALSE,
+    extraOpts = NULL,
+    intSearchRTWindow = 3,
+    useFFMIntensities = FALSE) {
 
   settings <- list(
     call = "find_features",
     algorithm = "openms",
     parameters = list(
-      noiseThrInt = 500,
-      chromSNR = 3,
-      chromFWHM = 10,
-      mzPPM = 12,
-      reEstimateMTSD = FALSE,
-      traceTermCriterion = "sample_rate",
-      traceTermOutliers = 5,
-      minSampleRate = 1,
-      minTraceLength = 5,
-      maxTraceLength = -1,
-      widthFiltering = "fixed",
-      minFWHM = 5,
-      maxFWHM = 40,
-      traceSNRFiltering = TRUE,
-      localRTRange = 10,
-      localMZRange = 6.5,
-      isotopeFilteringModel = "metabolites (5% RMS)",
-      MZScoring13C = FALSE,
-      useSmoothedInts = FALSE,
-      extraOpts = NULL,
-      intSearchRTWindow = 3,
-      useFFMIntensities = FALSE
+      noiseThrInt = noiseThrInt,
+      chromSNR = chromSNR,
+      chromFWHM = chromFWHM,
+      mzPPM = mzPPM,
+      reEstimateMTSD = reEstimateMTSD,
+      traceTermCriterion = traceTermCriterion,
+      traceTermOutliers = traceTermOutliers,
+      minSampleRate = minSampleRate,
+      minTraceLength = minTraceLength,
+      maxTraceLength = maxTraceLength,
+      widthFiltering = widthFiltering,
+      minFWHM = minFWHM,
+      maxFWHM = maxFWHM,
+      traceSNRFiltering = traceSNRFiltering,
+      localRTRange = localRTRange,
+      localMZRange = localMZRange,
+      isotopeFilteringModel = isotopeFilteringModel,
+      MZScoring13C = MZScoring13C,
+      useSmoothedInts = useSmoothedInts,
+      extraOpts = extraOpts,
+      intSearchRTWindow = intSearchRTWindow,
+      useFFMIntensities = useFFMIntensities
     ),
+    version = as.character(packageVersion("streamFind")),
     software = "openms",
     developer = "Rost HL, Sachsenberg T, Aiche S, Bielow C et al.",
     contact = "oliver.kohlbacher@uni-tuebingen.de",
-    link = "https://abibuilder.cs.uni-tuebingen.de/archive/openms/Documentation/release/latest/html/index.html",
+    link = NA_character_,
     doi = "https://doi.org/10.1038/nmeth.3959"
   )
 
@@ -252,13 +512,43 @@ Settings_find_features_openms <- function() {
 
 #' @title Settings_find_features_kpic2
 #'
-#' @description X.
+#' @description Settings for finding features (i.e., chromatographic peaks)
+#' in mzML/mzXML files using the package \href{https://github.com/hcji/KPIC2}{KPIC}.
+#' The function uses the package \pkg{patRoon} in the background.
 #'
-#' @return X.
+#' @param level Mass traces are only retained if their maximum values are over `level`.
+#' @param mztol The initial m/z tolerance.
+#' @param gap The number of gap points of a mass trace.
+#' @param width The minimum length of a mass trace.
+#' @param min_snr Minimum signal to noise ratio.
+#' @param kmeans If `TRUE`, \link[KPIC]{getPIC.kmeans} is used to obtain
+#' PICs (i.e., features). If `FALSE`, \link[KPIC]{getPIC} is used.
+#' @param alpha If `kmeans` is `TRUE`, alpha is the parameter of forecasting.
+#' If `kmeans` is `FALSE`, alpha is not used.
+#'
+#' @details See the \link[patRoon]{findFeaturesKPIC2} function from the
+#' \pkg{patRoon} package for more information and requirements.
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_find_features_kpic2.
+#'
+#' @references
+#' \insertRef{patroon01}{streamFind}
+#'
+#' \insertRef{patroon02}{streamFind}
+#'
+#' \insertRef{kpic01}{streamFind}
 #'
 #' @export
 #'
-Settings_find_features_kpic2 <- function() {
+Settings_find_features_kpic2 <- function(
+    level = 500,
+    mztol = 0.01,
+    gap = 2,
+    width = 5,
+    min_snr = 4,
+    kmeans = TRUE,
+    alpha = 0.3) {
 
   if (!requireNamespace("KPIC", quietly = TRUE)) {
     warning("KPIC package required but not installed!")
@@ -269,19 +559,24 @@ Settings_find_features_kpic2 <- function() {
     call = "find_features",
     algorithm = "kpic2",
     parameters = list(
-      kmeans = TRUE,
-      level = 500, # Mass traces are only retained if their maximum values are over level
-      mztol = 0.01, # The initial m/z tolerance.
-      gap = 2, # The number of gap points of a mass trace.
-      width = 5, # The minimum length of a mass trace.
-      min_snr = 4 # Minimum signal to noise ratio.
+      kmeans = kmeans,
+      level = level,
+      mztol = mztol,
+      gap = gap,
+      width = width,
+      min_snr = min_snr
     ),
+    version = as.character(packageVersion("streamFind")),
     software = "kpic2",
     developer = "Hongchao Ji",
     contact = "ji.hongchao@foxmail.com",
-    link = "https://github.com/hcji/KPIC2",
+    link = NA_character_,
     doi = "10.1021/acs.analchem.7b01547"
   )
+
+  if (kmeans) {
+    settings$parameters$alpha <- alpha
+  }
 
   settings <- as.ProcessingSettings(settings)
 
@@ -290,36 +585,224 @@ Settings_find_features_kpic2 <- function() {
 
 ## group_features -----
 
-#' @title Settings_group_features_xcms3_peakdensity
+#' Settings_group_features_xcms3_peakdensity
 #'
-#' @description X.
+#' @description Settings for grouping features (i.e., chromatographic peaks)
+#' across mzML/mzXML files using the package
+#' \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms}
+#' (version 3) with the algorithm
+#' \href{https://rdrr.io/bioc/xcms/man/groupChromPeaks-density.html}{peakDensity}.
+#' The function uses the package \pkg{patRoon} in the background.
 #'
-#' @return X.
+#' @param bw numeric(1) defining the bandwidth (standard deviation of the
+#' smoothing kernel) to be used. This argument is passed to the `density()`
+#' method.
+#' @param minFraction numeric(1) defining the minimum fraction of analyses in at
+#' least one analysis replicate group in which the features have to be present
+#' to be considered as a feature group.
+#' @param minSamples numeric(1) with the minimum number of analyses in at least
+#' one analysis replicate group in which the features have to be detected to be
+#' considered a feature group.
+#' @param binSize numeric(1) defining the size of the overlapping slices in mz
+#' dimension.
+#' @param maxFeatures numeric(1) with the maximum number of feature groups to be
+#' identified in a single mz slice.
+#'
+#' @details See the \link[patRoon]{groupFeaturesXCMS3} function from the
+#' \pkg{patRoon} package for more information and requirements.
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_group_features_xcms3_peakdensity.
+#'
+#' @references
+#' \insertRef{patroon01}{streamFind}
+#'
+#' \insertRef{patroon02}{streamFind}
+#'
+#' \insertRef{xcms01}{streamFind}
+#'
+#' \insertRef{xcms02}{streamFind}
+#'
+#' \insertRef{xcms03}{streamFind}
 #'
 #' @export
 #'
-Settings_group_features_xcms3_peakdensity <- function() {
-
-  if (!requireNamespace("xcms", quietly = TRUE)) {
-    warning("xcms package required but not installed!")
-    return(NULL)
-  }
+Settings_group_features_xcms3_peakdensity <- function(
+    bw = 5,
+    minFraction = 1,
+    minSamples = 1,
+    binSize = 0.008,
+    maxFeatures = 100) {
 
   settings <- list(
     call = "group_features",
     algorithm = "xcms3_peakdensity",
-    parameters = xcms::PeakDensityParam(
-      sampleGroups = "holder",
-      bw = 5,
-      minFraction = 0.5,
-      minSamples = 1,
-      binSize = 0.008,
-      maxFeatures = 100
+    parameters = list(
+      "rtalign" = FALSE,
+      "groupParam" = list(
+        class = "PeakDensityParam",
+        sampleGroups = "holder",
+        bw = bw,
+        minFraction = minFraction,
+        minSamples = minSamples,
+        binSize = binSize,
+        maxFeatures = maxFeatures
+      )
     ),
+    version = as.character(packageVersion("streamFind")),
     software = "xcms",
     developer = "Colin Smith, Johannes Rainer",
     contact = "siuzdak@scripps.edu",
-    link = "https://rdrr.io/bioc/xcms/man/groupChromPeaks-density.html",
+    link = NA_character_,
+    doi = "https://doi.org/10.1021/ac051437y"
+  )
+
+  settings <- as.ProcessingSettings(settings)
+
+  return(settings)
+}
+
+#' Settings_group_features_xcms3_peakdensity_peakgroups
+#'
+#' @description Settings for aligning and grouping features (i.e.,
+#' chromatographic peaks) across mzML/mzXML files using the package
+#' \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms}
+#' (version 3) with the algorithm
+#' \href{https://rdrr.io/bioc/xcms/man/adjustRtime-peakGroups.html}{peakGroups}
+#' for retention time alignment and the algorithm
+#' \href{https://rdrr.io/bioc/xcms/man/groupChromPeaks-density.html}{peakdensity}
+#' for grouping. The function uses the package \pkg{patRoon} in the background.
+#'
+#' @param bw numeric(1) defining the bandwidth (standard deviation of the
+#' smoothing kernel) to be used. This argument is passed to the `density()`
+#' method.
+#' @param minFraction numeric(1) defining the minimum fraction of analyses in at
+#' least one analysis replicate group in which the features have to be present
+#' to be considered as a feature group.
+#' @param minSamples numeric(1) with the minimum number of analyses in at least
+#' one analysis replicate group in which the features have to be detected to be
+#' considered a feature group.
+#' @param binSize numeric(1) defining the size of the overlapping slices in mz
+#' dimension.
+#' @param pre_bw as `bw` but applied before retention time alignment.
+#' @param pre_minFraction as `minFraction` but applied before retention time
+#' alignment.
+#' @param pre_minSamples as `minSamples` but applied before retention time
+#' alignment.
+#' @param pre_binSize as `binSize` but applied before retention time alignment.
+#' @param maxFeatures numeric(1) with the maximum number of feature groups to be
+#' identified in a single mz slice.
+#' @param rtAlignMinFraction numeric(1) between 0 and 1 defining the minimum
+#' required fraction of samples in which peaks for the peak group were identified.
+#' Peak groups passing this criteria will aligned across samples and retention
+#' times of individual spectra will be adjusted based on this alignment.
+#' For minFraction = 1 the peak group has to contain peaks in all samples of
+#' the experiment. Note that if subset is provided, the specified fraction is
+#' relative to the defined subset of samples and not to the total number of
+#' samples within the experiment (i.e. a peak has to be present in the specified
+#' proportion of subset samples).
+#' @param extraPeaks numeric(1) defining the maximal number of additional peaks
+#' for all samples to be assigned to a peak group (i.e. feature) for retention
+#' time correction. For a data set with 6 samples, extraPeaks = 1 uses all peak
+#' groups with a total peak count <= 6 + 1. The total peak count is the total
+#' number of peaks being assigned to a peak group and considers also multiple
+#' peaks within a sample being assigned to the group.
+#' @param smooth character defining the function to be used, to interpolate
+#' corrected retention times for all peak groups. Either "loess" or "linear".
+#' @param span numeric(1) defining the degree of smoothing (if smooth = "loess").
+#' This parameter is passed to the internal call to loess.
+#' @param family character defining the method to be used for loess smoothing.
+#' Allowed values are "gaussian" and "symmetric".See loess for more information.
+#' @param peakGroupsMatrix optional matrix of (raw) retention times for the peak
+#' groups on which the alignment should be performed. Each column represents a
+#' sample, each row a feature/peak group. Such a matrix is for example returned
+#' by the adjustRtimePeakGroups method.
+#' @param subset integer with the indices of samples within the experiment on
+#' which the alignment models should be estimated. Samples not part of the subset
+#' are adjusted based on the closest subset sample. See description above
+#' for more details.
+#' @param subsetAdjust character specifying the method with which non-subset
+#' samples should be adjusted. Supported options are "previous" and "average"
+#' (default). See description above for more information.
+#'
+#' @details See the \link[patRoon]{groupFeaturesXCMS3} function from the
+#' \pkg{patRoon} package for more information and requirements.
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_group_features_xcms3_peakdensity_peakgroups.
+#'
+#' @references
+#' \insertRef{patroon01}{streamFind}
+#'
+#' \insertRef{patroon02}{streamFind}
+#'
+#' \insertRef{xcms01}{streamFind}
+#'
+#' \insertRef{xcms02}{streamFind}
+#'
+#' \insertRef{xcms03}{streamFind}
+#'
+#' @export
+#'
+Settings_group_features_xcms3_peakdensity_peakgroups <- function(
+    bw = 5,
+    minFraction = 1,
+    minSamples = 1,
+    binSize = 0.008,
+    pre_bw = 5,
+    pre_minFraction = 1,
+    pre_minSamples = 1,
+    pre_binSize = 0.008,
+    maxFeatures = 100,
+    rtAlignMinFraction = 0.9,
+    extraPeaks = 1,
+    smooth = "loess",
+    span = 0.2,
+    family = "gaussian",
+    peakGroupsMatrix = matrix(nrow = 0, ncol = 0),
+    subset = integer(),
+    subsetAdjust = "average") {
+
+  settings <- list(
+    call = "group_features",
+    algorithm = "xcms3_peakdensity_peakgroups",
+    parameters = list(
+      "rtalign" = TRUE,
+      "groupParam" = list(
+        class = "PeakDensityParam",
+        sampleGroups = "holder",
+        bw = bw,
+        minFraction = minFraction,
+        minSamples = minSamples,
+        binSize = binSize,
+        maxFeatures = maxFeatures
+      ),
+      "preGroupParam" = list(
+        class = "PeakDensityParam",
+        sampleGroups = "holder",
+        bw = pre_bw,
+        minFraction = pre_minFraction,
+        minSamples = pre_minSamples,
+        binSize = pre_binSize,
+        maxFeatures = maxFeatures
+      ),
+      "retAlignParam" = list(
+        class = "PeakGroupsParam",
+        minFraction = rtAlignMinFraction,
+        extraPeaks = extraPeaks,
+        smooth = smooth,
+        span = span,
+        family = family,
+        peakGroupsMatrix = peakGroupsMatrix,
+        subset = as.integer(subset),
+        subsetAdjust = "average"
+      )
+    ),
+    version = as.character(packageVersion("streamFind")),
+    software = "xcms",
+    developer = "Colin Smith, Johannes Rainer",
+    contact = "siuzdak@scripps.edu",
+    link = NA_character_,
     doi = "https://doi.org/10.1021/ac051437y"
   )
 
@@ -337,6 +820,7 @@ Settings_group_features_xcms3_peakdensity <- function() {
 #' @template arg-ms-rtWindow
 #' @template arg-ms-mzWindow
 #' @template arg-ms-mzClust
+#' @template arg-ms-isInAllSpectra
 #' @template arg-ms-minIntensity
 #' @template arg-ms-filtered
 #' @template arg-runParallel
@@ -351,6 +835,7 @@ Settings_load_features_ms1_streamFind <- function(
     rtWindow = c(-2, 2),
     mzWindow = c(-1, 6),
     mzClust = 0.003,
+    isInAllSpectra = TRUE,
     minIntensity = 250,
     filtered = FALSE,
     runParallel = FALSE,
@@ -363,15 +848,17 @@ Settings_load_features_ms1_streamFind <- function(
       "rtWindow" = rtWindow,
       "mzWindow" = mzWindow,
       "mzClust" = mzClust,
+      "isInAllSpectra" = isInAllSpectra,
       "minIntensity" = minIntensity,
       "filtered" = filtered,
       "runParallel" = runParallel,
       "verbose" = verbose
     ),
+    version = as.character(packageVersion("streamFind")),
     software = "streamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = "https://github.com/ricardobachertdacunha/streamFind",
+    link = NA_character_,
     doi = NA_character_
   )
 
@@ -408,6 +895,7 @@ validate.Settings_load_features_ms1_streamFind <- function(x) {
 #'
 #' @template arg-ms-isolationWindow
 #' @template arg-ms-mzClust
+#' @template arg-ms-isInAllSpectra
 #' @template arg-ms-minIntensity
 #' @template arg-ms-filtered
 #' @template arg-runParallel
@@ -420,7 +908,8 @@ validate.Settings_load_features_ms1_streamFind <- function(x) {
 #'
 Settings_load_features_ms2_streamFind <- function(
     isolationWindow = 1.3,
-    mzClust = 0.003,
+    mzClust = 0.01,
+    isInAllSpectra = TRUE,
     minIntensity = 0,
     filtered = FALSE,
     runParallel = FALSE,
@@ -432,15 +921,17 @@ Settings_load_features_ms2_streamFind <- function(
     parameters = list(
       "isolationWindow" = isolationWindow,
       "mzClust" = mzClust,
+      "isInAllSpectra" = isInAllSpectra,
       "minIntensity" = minIntensity,
       "filtered" = filtered,
       "runParallel" = runParallel,
       "verbose" = verbose
     ),
+    version = as.character(packageVersion("streamFind")),
     software = "streamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = "https://github.com/ricardobachertdacunha/streamFind",
+    link = NA_character_,
     doi = NA_character_
   )
 
@@ -475,6 +966,7 @@ validate.Settings_load_features_ms2_streamFind <- function(x) {
 #' @description Settings for loading MS1 spectra for feature groups.
 #'
 #' @template arg-ms-mzClust
+#' @template arg-ms-isInAllSpectra
 #' @template arg-ms-minIntensity
 #' @template arg-ms-filtered
 #' @template arg-runParallel
@@ -487,6 +979,7 @@ validate.Settings_load_features_ms2_streamFind <- function(x) {
 #'
 Settings_load_groups_ms1_streamFind <- function(
     mzClust = 0.003,
+    isInAllSpectra = TRUE,
     minIntensity = 1000,
     verbose = FALSE,
     filtered = FALSE,
@@ -497,15 +990,17 @@ Settings_load_groups_ms1_streamFind <- function(
     algorithm = "streamFind",
     parameters = list(
       "mzClust" = mzClust,
+      "isInAllSpectra" = isInAllSpectra,
       "minIntensity" = minIntensity,
       "filtered" = filtered,
       "runParallel" = runParallel,
       "verbose" = verbose
     ),
+    version = as.character(packageVersion("streamFind")),
     software = "streamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = "https://github.com/ricardobachertdacunha/streamFind",
+    link = NA_character_,
     doi = NA_character_
   )
 
@@ -539,6 +1034,7 @@ validate.Settings_load_groups_ms1_streamFind <- function(x) {
 #' @description Settings for loading MS2 spectra for feature groups.
 #'
 #' @template arg-ms-mzClust
+#' @template arg-ms-isInAllSpectra
 #' @template arg-ms-minIntensity
 #' @template arg-ms-filtered
 #' @template arg-runParallel
@@ -550,7 +1046,8 @@ validate.Settings_load_groups_ms1_streamFind <- function(x) {
 #' @export
 #'
 Settings_load_groups_ms2_streamFind <- function(
-    mzClust = 0.003,
+    mzClust = 0.01,
+    isInAllSpectra = TRUE,
     minIntensity = 250,
     filtered = FALSE,
     runParallel = FALSE,
@@ -561,15 +1058,17 @@ Settings_load_groups_ms2_streamFind <- function(
     algorithm = "streamFind",
     parameters = list(
       "mzClust" = mzClust,
+      "isInAllSpectra" = isInAllSpectra,
       "minIntensity" = minIntensity,
       "filtered" = filtered,
       "runParallel" = runParallel,
       "verbose" = verbose
     ),
+    version = as.character(packageVersion("streamFind")),
     software = "streamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = "https://github.com/ricardobachertdacunha/streamFind",
+    link = NA_character_,
     doi = NA_character_
   )
 
@@ -616,6 +1115,12 @@ validate.Settings_load_groups_ms2_streamFind <- function(x) {
 #' feature is a given analysis replicate.
 #' @param excludeIsotopes Logical (length 1) with `TRUE` for filtering
 #' annotated isotopes (only prevails the monoisotopic features).
+#' @param rtFilter Numeric (length 2) with the min and max retention time
+#' (in seconds) values to filter features. Features within the retention time
+#' range are filtered out.
+#' @param massFilter Numeric (length 2) with the min and max mass
+#' (in Da) values to filter features. Features within the mass range are
+#' filtered out.
 #'
 #' @return A ProcessingSettings S3 class object with subclass
 #' Settings_filter_features_streamFind.
@@ -628,16 +1133,19 @@ Settings_filter_features_streamFind <- function(
     maxGroupSd = NULL,
     blank = NULL,
     minGroupAbundance = NULL,
-    excludeIsotopes = NULL) {
+    excludeIsotopes = NULL,
+    rtFilter = NULL,
+    massFilter = NULL) {
 
   settings <- list(
     call = "filter_features",
     algorithm = "streamFind",
     parameters = list(),
+    version = as.character(packageVersion("streamFind")),
     software = "streamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = "https://github.com/ricardobachertdacunha/streamFind",
+    link = NA_character_,
     doi = NA_character_
   )
 
@@ -669,6 +1177,16 @@ Settings_filter_features_streamFind <- function(
   if (!is.null(excludeIsotopes)) {
     checkmate::assert_logical(excludeIsotopes, max.len = 1)
     settings$parameters[["excludeIsotopes"]] <- excludeIsotopes
+  }
+
+  if (!is.null(rtFilter)) {
+    checkmate::assert_double(rtFilter, len = 2)
+    settings$parameters[["rtFilter"]] <- rtFilter
+  }
+
+  if (!is.null(massFilter)) {
+    checkmate::assert_double(massFilter, len = 2)
+    settings$parameters[["massFilter"]] <- massFilter
   }
 
   settings <- as.ProcessingSettings(settings)
@@ -726,7 +1244,20 @@ validate.Settings_filter_features_streamFind <- function(x) {
       checkmate::test_logical(x$parameters$excludeIsotopes, max.len = 1)
     } else {
       TRUE
+    },
+
+    if ("rtFilter" %in% filters) {
+      checkmate::test_double(x$parameters$rtFilter, len = 2)
+    } else {
+      TRUE
+    },
+
+    if ("massFilter" %in% filters) {
+      checkmate::test_double(x$parameters$massFilter, len = 2)
+    } else {
+      TRUE
     }
+
     # checkmate::test_number(x$parameters$minIntensity),
     # checkmate::test_number(x$parameters$minSnRatio),
     # checkmate::test_number(x$parameters$maxGroupSd),
@@ -796,10 +1327,11 @@ Settings_annotate_features_streamFind <- function(
       "maxGaps" = maxGaps,
       "runParallel" = runParallel
     ),
+    version = as.character(packageVersion("streamFind")),
     software = "streamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = "https://github.com/ricardobachertdacunha/streamFind",
+    link = NA_character_,
     doi = NA_character_
   )
 
@@ -828,5 +1360,141 @@ validate.Settings_annotate_features_streamFind <- function(x) {
     checkmate::test_vector(x$parameters$elements, any.missing = FALSE, min.len = 1),
     vapply(x$parameters$elements, function(i) checkmate::test_choice(i, c("C","H", "N", "O", "S", "Cl", "Br")), FALSE),
     checkmate::test_logical(x$parameters$runParallel, max.len = 1)
+  )
+}
+
+## suspect_screening -----
+
+#' Settings_suspect_screening_streamFind
+#'
+#' @description
+#' Settings for performing suspect screening using a data.frame with target
+#' compounds.
+#'
+#' @param database A data.frame with at least the columns name and mass,
+#' indicating the name and neutral monoisotopic mass of the suspect targets.
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_suspect_screening_streamFind.
+#'
+#' @export
+#'
+Settings_suspect_screening_streamFind <- function(
+    database = NULL,
+    ppm = 4,
+    sec = 10) {
+
+  settings <- list(
+    call = "suspect_screening",
+    algorithm = "streamFind",
+    parameters = list(
+      "database" = database,
+      "ppm" = ppm,
+      "sec" = sec
+    ),
+    version = as.character(packageVersion("streamFind")),
+    software = "streamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = NA_character_,
+    doi = NA_character_
+  )
+
+  settings <- as.ProcessingSettings(settings)
+
+  return(settings)
+}
+
+#' @describeIn Settings_suspect_screening_streamFind
+#' Validates the Settings_suspect_screening_streamFind S3 class object,
+#' returning a logical value of length one.
+#'
+#' @param x A Settings_suspect_screening_streamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_suspect_screening_streamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "suspect_screening"),
+    checkmate::test_choice(x$algorithm, "streamFind"),
+    checkmate::test_double(x$parameters$ppm, max.len = 1),
+    checkmate::test_double(x$parameters$sec, max.len = 1)
+  )
+}
+
+#' Settings_suspect_screening_forident
+#'
+#' @description
+#' Settings for performing suspect screening using the
+#' \href{https://water.for-ident.org/}{FOR-IDENT} platform.
+#'
+#' @param addMS2 Logical length 1. When `TRUE` and MS2 data is available, the
+#' fragments pattern (i.e., MS2 averaged spectra) is added to the .txt file to
+#' import in FOR-IDENT platform. Note that when `addMS2` is `TRUE` the \emph{m/z}
+#' values are used instead of neutral mass even is `useNeutralMass` is set to `TRUE`.
+#' @param useNeutralMass Logical length 1. When `TRUE` and neutral mass is
+#' available, the neutral mass of features/feature groups is used instead of the
+#' \emph{m/z}.
+#' @param path Character length 1 with the path to save the .txt file with the
+#' list of features for identification.
+#' @param name Character length 1 with the name of the file (without extension)
+#' to be saved in the `path`.
+#'
+#' @note
+#' After processing, a .txt file as defined by name and path is created with the
+#' list of features or feature groups to be imported in the FOR-IDENT platform
+#' (\url{https://water.for-ident.org/}). Note that log in credentials are needed.
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_suspect_screening_forident.
+#'
+#' @export
+#'
+Settings_suspect_screening_forident <- function(
+    addMS2 = FALSE,
+    useNeutralMass = TRUE,
+    path = getwd(),
+    name = "feature_list") {
+
+  settings <- list(
+    call = "suspect_screening",
+    algorithm = "forident",
+    parameters = list(
+      "addMS2" = addMS2,
+      "useNeutralMass" = useNeutralMass,
+      "path" = path,
+      "name" = name
+    ),
+    version = as.character(packageVersion("streamFind")),
+    software = "forident",
+    developer = "Sylvia Grosse, Thomas Letzel",
+    contact = "support@for-ident.org",
+    link = NA_character_,
+    doi = NA_character_
+  )
+
+  settings <- as.ProcessingSettings(settings)
+
+  return(settings)
+}
+
+#' @describeIn Settings_suspect_screening_forident
+#' Validates the Settings_suspect_screening_forident S3 class object,
+#' returning a logical value of length one.
+#'
+#' @param x A Settings_suspect_screening_forident S3 class object.
+#'
+#' @export
+#'
+validate.Settings_suspect_screening_forident <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "suspect_screening"),
+    checkmate::test_choice(x$algorithm, "forident"),
+    dir.exists(x$parameters$path),
+    is.character(x$parameters$name),
+    length(x$parameters$name) == 1,
+    checkmate::test_logical(x$parameters$addMS2, max.len = 1)
   )
 }

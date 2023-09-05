@@ -13,6 +13,7 @@ ProcessingSettings(
   call = NA_character_,
   algorithm = NA_character_,
   parameters = NULL,
+  version = NA_character_,
   software = NA_character_,
   developer = NA_character_,
   contact = NA_character_,
@@ -39,6 +40,9 @@ be used.}
 
 \item{parameters}{List with parameters specific for the method \code{call} and
 \code{algorithm}.}
+
+\item{version}{Character of length one with the version of the processing
+settings.}
 
 \item{software}{Character of length one with the name of the software or
 package.}

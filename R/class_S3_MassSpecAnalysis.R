@@ -49,6 +49,9 @@
 #' @param features data.table with the features from data processing.
 #' @param metadata List with flexible storage for experimental metadata
 #' (e.g., concentration, location, etc.).
+#' @param version Character of length one with the version. It should match with
+#' the version of the streamFind package when created the `MassSpecAnalysis`
+#' object.
 #'
 #' @return An MassSpecAnalysis S3 class object.
 #'
@@ -78,7 +81,8 @@ MassSpecAnalysis <- function(name = NA_character_,
                              chromatograms = data.table(),
                              features_eic = list(),
                              features = data.table(),
-                             metadata = list()) {
+                             metadata = list(),
+                             version = NA_character_) {
 
   if (is.data.frame(features)) {
     if ("ms1" %in% colnames(features)) {
@@ -99,6 +103,8 @@ MassSpecAnalysis <- function(name = NA_character_,
       features$ms2 <- lapply(features$ms2, as.data.table)
     }
   }
+
+  if (is.na(version)) version <- as.character(packageVersion("streamFind"))
 
   x <- list(
     "name" = name,
@@ -125,7 +131,8 @@ MassSpecAnalysis <- function(name = NA_character_,
     "chromatograms" = chromatograms,
     "features_eic" = features_eic,
     "features" = features,
-    "metadata" = metadata
+    "metadata" = metadata,
+    "version" = version
   )
 
   x$name <- as.character(x$name)
@@ -157,6 +164,10 @@ MassSpecAnalysis <- function(name = NA_character_,
   x$spectra <- as.data.table(x$spectra)
   x$chromatograms <- as.data.table(x$chromatograms)
   x$features <- as.data.table(x$features)
+
+  x$version <- as.character(x$version)
+
+
 
   if (validate.MassSpecAnalysis(x)) {
     structure(x, class = "MassSpecAnalysis")
@@ -326,7 +337,12 @@ validate.MassSpecAnalysis <- function(x = NULL) {
     }
 
     if (!is.list(x$metadata)) {
-      warning("Analysis netadata entry not conform!")
+      warning("Analysis metadata entry not conform!")
+      valid <- FALSE
+    }
+
+    if (!is.character(as.character(x$version))) {
+      warning("Analysis version entry not conform!")
       valid <- FALSE
     }
   }
@@ -547,6 +563,12 @@ parse.MassSpecAnalysis <- function(files = NULL, runParallel = FALSE) {
 
     names(analyses) <- vapply(analyses, function(x) x$name, "")
     analyses <- analyses[order(names(analyses))]
+
+    analyses <- lapply(analyses, function(x) {
+      x$version <- as.character(packageVersion("streamFind"))
+      x
+    })
+
   }
 
   analyses

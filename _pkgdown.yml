@@ -11,10 +11,10 @@ reference:
 - title: S3 classes
   desc: >
     S3 classes are implemented to harmonize, verify and dispatch data within
-    the R6 classes. _Headers_ and _ProcessingSettings_ S3 classes are used in
-    all R6 classes.
+    the R6 classes. _ProjectHeaders_ and _ProcessingSettings_ S3 classes are
+    used in all R6 classes.
 - contents:
-  - Headers
+  - ProjectHeaders
   - ProcessingSettings
   - MassSpecAnalysis
 - title: Processing settings for MS data
@@ -40,6 +40,7 @@ reference:
 - contents:
   - Settings_find_features_qPeaks
   - Settings_find_features_xcms3_centwave
+  - Settings_find_features_xcms3_matchedfilter
   - Settings_find_features_openms
   - Settings_find_features_kpic2
 - subtitle: group_features
@@ -47,6 +48,7 @@ reference:
     Settings for the processing method group_features.
 - contents:
   - Settings_group_features_xcms3_peakdensity
+  - Settings_group_features_xcms3_peakdensity_peakgroups
 - subtitle: load_features MS1 and MS2 spectra
   desc: >
     Settings for the processing methods starting with load_features,
@@ -66,6 +68,12 @@ reference:
     Settings for the processing method annotate_features.
 - contents:
   - Settings_annotate_features_streamFind
+- subtitle: suspect_screening
+  desc: >
+    Settings for the processing method suspect_screening.
+- contents:
+  - Settings_suspect_screening_streamFind
+  - Settings_suspect_screening_forident
 - subtitle: General get and save default settings
   desc: >
     Funtions to uniformily get and save _ProcessingSettings_ are available.

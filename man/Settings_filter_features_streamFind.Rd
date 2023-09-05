@@ -11,7 +11,9 @@ Settings_filter_features_streamFind(
   maxGroupSd = NULL,
   blank = NULL,
   minGroupAbundance = NULL,
-  excludeIsotopes = NULL
+  excludeIsotopes = NULL,
+  rtFilter = NULL,
+  massFilter = NULL
 )
 
 \method{validate}{Settings_filter_features_streamFind}(x)
@@ -34,6 +36,14 @@ feature is a given analysis replicate.}
 
 \item{excludeIsotopes}{Logical (length 1) with \code{TRUE} for filtering
 annotated isotopes (only prevails the monoisotopic features).}
+
+\item{rtFilter}{Numeric (length 2) with the min and max retention time
+(in seconds) values to filter features. Features within the retention time
+range are filtered out.}
+
+\item{massFilter}{Numeric (length 2) with the min and max mass
+(in Da) values to filter features. Features within the mass range are
+filtered out.}
 
 \item{x}{A Settings_filter_features_streamFind S3 class object.}
 }

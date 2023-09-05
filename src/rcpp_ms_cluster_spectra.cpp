@@ -9,7 +9,7 @@ using namespace std;
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-List rcpp_ms_cluster_spectra(DataFrame spectra, double mzClust, bool verbose) {
+List rcpp_ms_cluster_spectra(DataFrame spectra, double mzClust, bool isInAllSpectra, bool verbose) {
 
   StringVector all_ids = spectra["unique_id"];
   StringVector unique_ids = unique(all_ids);
@@ -45,6 +45,10 @@ List rcpp_ms_cluster_spectra(DataFrame spectra, double mzClust, bool verbose) {
   IntegerVector temp_idx;
   NumericVector temp_rt;
   NumericVector temp_rt_unique;
+
+  NumericVector temp_all_unique_rt;
+
+  bool isisInAllSpectraScans;
 
   double rt_mean = 0;
 
@@ -126,16 +130,32 @@ List rcpp_ms_cluster_spectra(DataFrame spectra, double mzClust, bool verbose) {
 
           temp_idx = idx_clusters[mz_clusters == unique_clusters[z]];
 
+          temp_rt = rt[temp_idx];
+          temp_rt_unique = unique(temp_rt);
+
+          hasFromSameScan[z] = temp_rt_unique.size() < temp_rt.size();
+
+          if (counter > 10) hasFromSameScan[z] = false;
+          if (itMzClust < 0.0001) hasFromSameScan[z] = false;
+
+          if (hasFromSameScan[z]) break;
+
+          // checks if traces are present in all unique rt values (i.e., all scans)
+          if (isInAllSpectra) {
+            temp_all_unique_rt = unique(rt);
+            isisInAllSpectraScans = temp_all_unique_rt.size() == temp_rt_unique.size();
+          } else {
+            isisInAllSpectraScans = true;
+          }
+
+          if (!isisInAllSpectraScans) continue;
+
           temp_intensity = intensity[temp_idx];
           temp_intensity_mean = mean(temp_intensity);
           new_intensity.push_back(temp_intensity_mean);
 
-          temp_mz = mz[temp_idx];
-          // NumericVector temp_mz_2 = temp_mz[temp_intensity == temp_intensity_mean];
-          // temp_mz_mean = sum(temp_mz_2) / temp_mz_2.size();
-          // temp_mz_mean = sum(temp_mz) / temp_mz.size();
-
           // weighted mean with intensities
+          temp_mz = mz[temp_idx];
           int size_temp_mz = temp_mz.size();
           float mz_sum = 0, mz_numWeight = 0;
           for (int w = 0; w < size_temp_mz; w++) {
@@ -145,22 +165,16 @@ List rcpp_ms_cluster_spectra(DataFrame spectra, double mzClust, bool verbose) {
           temp_mz_mean = mz_numWeight / mz_sum;
           new_mz.push_back(temp_mz_mean);
 
+          if (hasFromSameScan[z]) {
 
-          temp_rt = rt[temp_idx];
-          temp_rt_unique = unique(temp_rt);
-
-          hasFromSameScan[z] = temp_rt_unique.size() < temp_rt.size();
-
-          if (counter > 10) hasFromSameScan[z] = false;
-          if (itMzClust < 0.0001) hasFromSameScan[z] = false;
-
-          if (hasFromSameScan[z] & verbose) {
-            double min_mz = min(temp_mz);
-            double max_mz = max(temp_mz);
-            Rcpp::Rcout << "\n The m/z cluster " << min_mz << " to " << max_mz <<
-              " of " << target_id[0] << " has traces from the same scan at:\n";
-            Rcpp::Rcout << temp_rt << "\n";
-            Rcpp::Rcout << temp_mz << "\n\n";
+            if (verbose) {
+              double min_mz = min(temp_mz);
+              double max_mz = max(temp_mz);
+              Rcpp::Rcout << "\n The m/z cluster " << min_mz << " to " << max_mz <<
+                " of " << target_id[0] << " has traces from the same scan at:\n";
+              Rcpp::Rcout << temp_rt << "\n";
+              Rcpp::Rcout << temp_mz << "\n\n";
+            }
 
             itMzClust = itMzClust - 0.0001;
           }
@@ -172,8 +186,7 @@ List rcpp_ms_cluster_spectra(DataFrame spectra, double mzClust, bool verbose) {
       rt_mean = sum(rt) / rt.size();
     }
 
-    if (mz.size() > 0) {
-
+    if (new_mz.size() > 0) {
       list_out[i] = DataFrame::create(
         Named("analysis") = analysis,
         Named("id") = id,
