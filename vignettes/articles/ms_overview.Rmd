@@ -1,5 +1,5 @@
 ---
-title: "streamFind for mass spectrometry with R"
+title: "StreamFind for mass spectrometry with R"
 output:
   bookdown::html_document2:
     fig_caption: true
@@ -9,7 +9,7 @@ output:
     toc_depth: 4
 vignette: >
   %\VignetteEncoding{UTF-8}
-  %\VignetteIndexEntry{streamFind for mass spectrometry with R}
+  %\VignetteIndexEntry{StreamFind for mass spectrometry with R}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options:
   chunk_output_type: console
@@ -45,41 +45,41 @@ library(kableExtra)
 library(magrittr)
 library(mzR)
 library(patRoon)
-library(streamFind)
+library(StreamFind)
 ```
 
 # Introduction
 
-The streamFind R package is a framework for data processing in environmental and quality studies. This article introduces the basic framework of the streamFind R package for mass spectrometric (MS) data processing. Installation instructions of streamFind R package can be found [here](https://github.com/ricardobachertdacunha/streamFind). Once installed, the streamFind R package is loaded as shown below.
+The StreamFind R package is a framework for data processing in environmental and quality studies. This article introduces the basic framework of the StreamFind R package for mass spectrometric (MS) data processing. Installation instructions of StreamFind R package can be found [here](https://github.com/odea-project/StreamFind). Once installed, the StreamFind R package is loaded as shown below.
 
 ```{r setup, eval=FALSE}
-library(streamFind)
+library(StreamFind)
 ```
 
 # Resources
 
-The streamFind includes example data files via the supplementary  [streamFindData](https://github.com/ricardobachertdacunha/streamFindData) R package.
+The StreamFind includes example data files via the supplementary  [StreamFindData](https://github.com/odea-project/StreamFindData) R package.
 
-```{r install-streamFindData, eval=FALSE}
-# install the streamFindData R package from the GitHub repository
-remotes::install_github("ricardobachertdacunha/streamFindData")
+```{r install-StreamFindData, eval=FALSE}
+# install the StreamFindData R package from the GitHub repository
+remotes::install_github("odea-project/StreamFindData")
 ```
 
 ## MS files
 
-Once [streamFindData](https://github.com/ricardobachertdacunha/streamFindData) is installed, the full file paths of example MS data files can be obtained as shown below. The files available are described in the table below. Note, the MS files (.mzML and .mzXML) were trimmed with the function `trim_ms_files_spectra()` from streamFind to reduce their size. The centroided Agilent Q-TOF files were trimmed with retention time between 900 and 1350 seconds, *m/z* for MS1 data between 200 and 450 Da and *m/z* for MS2 between 35 and 450 Da. Additionally, MS1 and MS2 traces below 100 and 50 counts were removed, respectively. The profile Agilent Q-TOF files were trimmed with retention time between 1000 and 1200 seconds, *m/z* for MS1 data between 200 and 300 Da and *m/z* for MS2 between 35 and 300 Da. Additionally, MS1 and MS2 traces below 1 count were removed to exclude empty spectra. The files are used within the document for demonstration of the framework.
+Once [StreamFindData](https://github.com/odea-project/StreamFindData) is installed, the full file paths of example MS data files can be obtained as shown below. The files available are described in the table below. Note, the MS files (.mzML and .mzXML) were trimmed with the function `trim_ms_files_spectra()` from StreamFind to reduce their size. The centroided Agilent Q-TOF files were trimmed with retention time between 900 and 1350 seconds, *m/z* for MS1 data between 200 and 450 Da and *m/z* for MS2 between 35 and 450 Da. Additionally, MS1 and MS2 traces below 100 and 50 counts were removed, respectively. The profile Agilent Q-TOF files were trimmed with retention time between 1000 and 1200 seconds, *m/z* for MS1 data between 200 and 300 Da and *m/z* for MS2 between 35 and 300 Da. Additionally, MS1 and MS2 traces below 1 count were removed to exclude empty spectra. The files are used within the document for demonstration of the framework.
 
 ```{r resource-files, cache=FALSE}
-files <- streamFindData::msFilePaths()
+files <- StreamFindData::msFilePaths()
 # files is a vector with all file full paths
 ```
 
 <br>
 
 ```{r description-files, echo=FALSE}
-df_files_desc <- streamFindData::msFilesDescription()
+df_files_desc <- StreamFindData::msFilesDescription()
 
-knitr::kable(df_files_desc, caption = "Files included in the streamFind R package.") %>%
+knitr::kable(df_files_desc, caption = "Files included in the StreamFind R package.") %>%
   column_spec(column = 3, width = "100px") %>%
   column_spec(column = 4, width = "60px") %>%
   kable_styling(font_size = 11.5, bootstrap_options = c("striped", "hover", "responsive"), fixed_thead = TRUE) %>%
@@ -93,7 +93,7 @@ knitr::kable(df_files_desc, caption = "Files included in the streamFind R packag
 The chemicals spiked in the MS files are described below in the table. The internal standards (IS) are spiked to all Agilent Q-TOF files. The chemical standards (S) were only spiked for the first 6 Agilent Q-TOF files. Note that not all IS and S are visible in the profile Agilent Q-TOF files as a narrower trimming was applied.
 
 ```{r load-table-chemicals}
-db <- streamFindData::msSpikedChemicals()
+db <- StreamFindData::msSpikedChemicals()
 ```
 
 <br>
@@ -145,7 +145,7 @@ Several methods are implemented to access data within the MassSpecData object, a
 ms$get_headers()
 ```
 
-Similarly, the get method for analyses returns the list of MassSpecAnalysis objects. Below the `get_analyses()` is used to get the first analysis object (`a1`). Then, the `names()` function is used to show the names of entries in the `a1` MassSpecAnalysis, which represents the first *.mzML* file parsed to the `ms`. Note that the `get_analyses()` method always returns a list even for only one MassSpecAnalysis object. Therefore, we use the `[[` function as `a1[[1]]` to access the MassSpecAnalysis object itself. The analysis object contains `r length(ms$get_analyses(1)[[1]])` fields (listed below) with information and data parsed directly from the *.mzML* file. Variations in the content and structure (i.e., different vendors or data acquired with different conditions or modes) of the *.mzML* or *.mzXML* files added will affect the content of each entry in the MassSpecAnalysis object but the structure remains the same (see `?MassSpecAnalysis`). The function `parse.MassSpecAnalysis()` from the streamFind R package is used to create and validate the list of MassSpecAnalysis objects from a character vector with *.mzML* or *.mzXML* full file paths (see `?parse.MassSpecAnalysis` for more information). The structure of the MassSpecAnalysis S3 class object is further described in section [analyses](#analyses). By typing `ms$get`, other available get methods are listed. The documentation `?MassSpecData` also contains detailed information and usage examples for available get methods.
+Similarly, the get method for analyses returns the list of MassSpecAnalysis objects. Below the `get_analyses()` is used to get the first analysis object (`a1`). Then, the `names()` function is used to show the names of entries in the `a1` MassSpecAnalysis, which represents the first *.mzML* file parsed to the `ms`. Note that the `get_analyses()` method always returns a list even for only one MassSpecAnalysis object. Therefore, we use the `[[` function as `a1[[1]]` to access the MassSpecAnalysis object itself. The analysis object contains `r length(ms$get_analyses(1)[[1]])` fields (listed below) with information and data parsed directly from the *.mzML* file. Variations in the content and structure (i.e., different vendors or data acquired with different conditions or modes) of the *.mzML* or *.mzXML* files added will affect the content of each entry in the MassSpecAnalysis object but the structure remains the same (see `?MassSpecAnalysis`). The function `parse.MassSpecAnalysis()` from the StreamFind R package is used to create and validate the list of MassSpecAnalysis objects from a character vector with *.mzML* or *.mzXML* full file paths (see `?parse.MassSpecAnalysis` for more information). The structure of the MassSpecAnalysis S3 class object is further described in section [analyses](#analyses). By typing `ms$get`, other available get methods are listed. The documentation `?MassSpecData` also contains detailed information and usage examples for available get methods.
 
 ```{r get-analyses}
 a1 = ms$get_analyses(analyses = 1)
@@ -300,7 +300,7 @@ Also, the saved *a1.json* MassSpecAnalysis object can be imported with `import_a
 ms$import_analyses("a1.json")
 ```
 
-A saved MassSpecData object can be imported from *.json* or *.rds* using the `import_MassSpecData()` function from the streamFind package. Below, the previously saved *ms.json* is imported and compared to the `ms`.
+A saved MassSpecData object can be imported from *.json* or *.rds* using the `import_MassSpecData()` function from the StreamFind package. Below, the previously saved *ms.json* is imported and compared to the `ms`.
 
 ```{r import-MassSpecData}
 ms_imported = import_MassSpecData("ms.json")
@@ -398,7 +398,7 @@ head(ms$get_bpc())
 
 ## Making spectra targets
 
-Besides analysis information, low level data (i.e., spectra and chromatograms) can also be obtained with specific get methods. For spectra, the definition of targets to selectively parse small pieces of the raw data is essential. In streamFind, targets can be comprehensively assembled with the function `make_ms_targets()`, as demonstrated below for Carbamazepin-d10 and Diuron-d6 (both internal standards spiked to the analyses in the `ms` object). The function `make_ms_targets()` has five arguments (*mz*, *rt*, *ppm*, *sec* and *id*) that are used to assemble the targets. Below, different ways are demonstrated to build MS targets.
+Besides analysis information, low level data (i.e., spectra and chromatograms) can also be obtained with specific get methods. For spectra, the definition of targets to selectively parse small pieces of the raw data is essential. In StreamFind, targets can be comprehensively assembled with the function `make_ms_targets()`, as demonstrated below for Carbamazepin-d10 and Diuron-d6 (both internal standards spiked to the analyses in the `ms` object). The function `make_ms_targets()` has five arguments (*mz*, *rt*, *ppm*, *sec* and *id*) that are used to assemble the targets. Below, different ways are demonstrated to build MS targets.
 
 ```{r carb-diu-db}
 # Carbamazepin-d10 is ionized only in positive mode
@@ -609,7 +609,7 @@ Possible using the function `convert_ms_files()` which utilizes the [MSConvert](
 
 # Processing settings
 
-Data processing steps often require settings with parameters to support the application of a given function to the data. In the MassSpecData object, methods that require settings have the `settings` argument (e.g., the method `find_features()`). In the streamFind package, the `settings` argument takes a ProcessingSettings S3 class and list object (see `?ProcessingSettings`) with three mandatory elements: *call*, *algorithm* and *parameters*. The *call* defines the name of the method (or processing step to be applied), such as "find_features" or "group_features". The *algorithm* defines the algorithm to be used for the processing step (e.g., "xcms" or "openms"). Finally, the *parameters* are a list of algorithm dependent entries that define the settings to be applied during the data processing. An example for "find_features" settings using the algorithm "xcms" is given below. Most of the data processing methods in streamFind use the package [patRoon](https://github.com/rickhelmus/patRoon). Therefore, the interface parameters is similar. The algorithm and parameters (named "param" in [patRoon](https://github.com/rickhelmus/patRoon)) can be taken from the respective documentation of the equivalent function. For instance, the `find_features()` method in streamFind uses the [findFeatures()](https://rickhelmus.github.io/patRoon/reference/findFeatures.html) function in [patRoon](https://github.com/rickhelmus/patRoon). The documentation of each data processing method in `?MassSpecData` explains and exemplifies the usage and where the required settings can be acquired in [patRoon](https://github.com/rickhelmus/patRoon).
+Data processing steps often require settings with parameters to support the application of a given function to the data. In the MassSpecData object, methods that require settings have the `settings` argument (e.g., the method `find_features()`). In the StreamFind package, the `settings` argument takes a ProcessingSettings S3 class and list object (see `?ProcessingSettings`) with three mandatory elements: *call*, *algorithm* and *parameters*. The *call* defines the name of the method (or processing step to be applied), such as "find_features" or "group_features". The *algorithm* defines the algorithm to be used for the processing step (e.g., "xcms" or "openms"). Finally, the *parameters* are a list of algorithm dependent entries that define the settings to be applied during the data processing. An example for "find_features" settings using the algorithm "xcms" is given below. Most of the data processing methods in StreamFind use the package [patRoon](https://github.com/rickhelmus/patRoon). Therefore, the interface parameters is similar. The algorithm and parameters (named "param" in [patRoon](https://github.com/rickhelmus/patRoon)) can be taken from the respective documentation of the equivalent function. For instance, the `find_features()` method in StreamFind uses the [findFeatures()](https://rickhelmus.github.io/patRoon/reference/findFeatures.html) function in [patRoon](https://github.com/rickhelmus/patRoon). The documentation of each data processing method in `?MassSpecData` explains and exemplifies the usage and where the required settings can be acquired in [patRoon](https://github.com/rickhelmus/patRoon).
 
 ```{r ff-settings-xcms}
 settingsFindFeatures <- Settings_find_features_xcms3_centwave(
@@ -685,7 +685,7 @@ The features `data.table` contain the following mandatory columns:
  - **intensity**: (numeric) The calculated height of the features, in counts; 
  - **area**: (numeric) The calculated area of the integrated feature;
  
-Other columns added from specific algorithms or added by streamFind after feature extraction are:
+Other columns added from specific algorithms or added by StreamFind after feature extraction are:
 
  - **adduct**: (character) The adduct label of the feature (e.g., [M+H]+, [M-H]-, [M+Na]+), see  [isotopes and adducts](#isotopes-and-adducts) section for more information;
  - **mass**: (numeric) The calculated neutral mass of the feature based on the polarity of the analysis;
@@ -761,7 +761,7 @@ MS1 and MS2 spectra can support identification processing steps by giving additi
 
 ```{r features-ms1-ms2-settings}
 # Settings for loading features MS1 spectra
-slfms1 <- Settings_load_features_ms1_streamFind(
+slfms1 <- Settings_load_features_ms1_StreamFind(
   rtWindow = c(-2, 2),
   mzWindow = c(-1, 6),
   mzClust = 0.003,
@@ -775,7 +775,7 @@ slfms1 <- Settings_load_features_ms1_streamFind(
 ms$add_settings(settings = slfms1)
 
 # Settings for loading features MS2 spectra
-slfms2 <- Settings_load_features_ms2_streamFind(
+slfms2 <- Settings_load_features_ms2_StreamFind(
   isolationWindow = 1.3,
   mzClust = 0.003,
   isInAllSpectra = FALSE,
@@ -909,7 +909,7 @@ Feature groups are stored in the groups internal field as a `data.table`, which 
  - **filtered**: (logical) `TRUE` means that the feature group was filtered out from the set but still remained in the data set (see [filters](#filters) section for more information);
  - **filter**: (character) The filter tag or `NA_character_` if the feature group is not filtered (i.e., filtered is `FALSE`);
 
-For each MassSpecAnalysis object, a column with the analysis name is added to the groups `data.table` with the intensity of the feature. Other columns are added by streamFind from specific workflow methods but these are explained in the respective method demonstration and documentation.
+For each MassSpecAnalysis object, a column with the analysis name is added to the groups `data.table` with the intensity of the feature. Other columns are added by StreamFind from specific workflow methods but these are explained in the respective method demonstration and documentation.
 
 ```{r get-groups-field}
 head(ms$get_groups())
@@ -988,7 +988,7 @@ msTargets
 
 ```{r groups-ms1-ms2-settings}
 # Settings for loading groups MS1 spectra
-slfgms1 <- Settings_load_features_ms1_streamFind(
+slfgms1 <- Settings_load_features_ms1_StreamFind(
   rtWindow = c(-2, 2),
   mzWindow = c(-1, 6),
   mzClust = 0.003,
@@ -1002,7 +1002,7 @@ slfgms1 <- Settings_load_features_ms1_streamFind(
 msTargets$add_settings(settings = slfgms1)
 
 # Settings for loading groups MS2 spectra
-slfgms2 <- Settings_load_features_ms2_streamFind(
+slfgms2 <- Settings_load_features_ms2_StreamFind(
   isolationWindow = 1.3,
   mzClust = 0.003,
   isInAllSpectra = FALSE,
@@ -1062,7 +1062,7 @@ Not yet implemented.
 
 # Outlook 
 
-The streamFind R package is experimental. This article showed the preliminary framework for mass spectrometry. This article will be updated with future developments for MS data processing. Please [contact us](mailto:cunha@iuta.de) for questions, suggestions, issues or collaboration.
+The StreamFind R package is experimental. This article showed the preliminary framework for mass spectrometry. This article will be updated with future developments for MS data processing. Please [contact us](mailto:cunha@iuta.de) for questions, suggestions, issues or collaboration.
 
 ```{r clean-up, include=FALSE}
 patRoon::clearCache()

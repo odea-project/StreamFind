@@ -1,10 +1,10 @@
-#' @title .s3_ms_suspect_screening.Settings_suspect_screening_streamFind
+#' @title .s3_ms_suspect_screening.Settings_suspect_screening_StreamFind
 #'
 #' @description Makes suspect screening on features.
 #'
 #' @noRd
 #'
-.s3_ms_suspect_screening.Settings_suspect_screening_streamFind <- function(settings, self) {
+.s3_ms_suspect_screening.Settings_suspect_screening_StreamFind <- function(settings, self) {
 
   if (!validate(settings)) return(FALSE)
 

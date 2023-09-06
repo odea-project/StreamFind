@@ -62,9 +62,9 @@
 #' @template arg-ms-components
 #'
 #' @references
-#' \insertRef{patroon01}{streamFind}
+#' \insertRef{patroon01}{StreamFind}
 #'
-#' \insertRef{patroon02}{streamFind}
+#' \insertRef{patroon02}{StreamFind}
 #'
 #' @export
 #'
@@ -253,8 +253,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           "filter_features",
           "features",
           "minIntensity",
-          "streamFind",
-          as.character(packageVersion("streamFind")),
+          "StreamFind",
+          as.character(packageVersion("StreamFind")),
           paste0(value, " counts")
         )
       }
@@ -294,8 +294,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           "filter_features",
           "features",
           "minSnRatio",
-          "streamFind",
-          as.character(packageVersion("streamFind")),
+          "StreamFind",
+          as.character(packageVersion("StreamFind")),
           value
         )
       }
@@ -336,8 +336,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           "filter_features",
           "features",
           "excludeIsotopes",
-          "streamFind",
-          as.character(packageVersion("streamFind")),
+          "StreamFind",
+          as.character(packageVersion("StreamFind")),
           TRUE
         )
       }
@@ -370,8 +370,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           "filter_features",
           "features",
           "maxGroupSd",
-          "streamFind",
-          as.character(packageVersion("streamFind")),
+          "StreamFind",
+          as.character(packageVersion("StreamFind")),
           paste0(value, "%")
         )
       }
@@ -407,8 +407,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           "filter_features",
           "features",
           "minGroupAbundance",
-          "streamFind",
-          as.character(packageVersion("streamFind")),
+          "StreamFind",
+          as.character(packageVersion("StreamFind")),
           value
         )
       }
@@ -447,8 +447,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           "filter_features",
           "features",
           "blank",
-          "streamFind",
-          as.character(packageVersion("streamFind")),
+          "StreamFind",
+          as.character(packageVersion("StreamFind")),
           paste0("multiplier ", value)
         )
       }
@@ -485,8 +485,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           "filter_features",
           "features",
           "rtFilter",
-          "streamFind",
-          as.character(packageVersion("streamFind")),
+          "StreamFind",
+          as.character(packageVersion("StreamFind")),
           paste(value, collapse = "; ")
         )
       }
@@ -524,8 +524,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           "filter_features",
           "features",
           "massFilter",
-          "streamFind",
-          as.character(packageVersion("streamFind")),
+          "StreamFind",
+          as.character(packageVersion("StreamFind")),
           paste(value, collapse = "; ")
         )
       }
@@ -592,8 +592,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         "created",
         "MassSpecData",
         headers$name,
-        "streamFind",
-        as.character(packageVersion("streamFind")),
+        "StreamFind",
+        as.character(packageVersion("StreamFind")),
         paste(c(headers$author, headers$path), collapse = ", ")
       )
 
@@ -1172,7 +1172,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         )
 
         spec_list <- foreach(i = self$get_analyses(analyses),
-                             .packages = "streamFind", .export = vars) %dopar% {
+                             .packages = "StreamFind", .export = vars) %dopar% {
 
           run <- i$run
 
@@ -2635,7 +2635,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
               "added",
               "ProcessingSettings",
               settings[[1]]$call,
-              "streamFind",
+              "StreamFind",
               settings[[1]]$version,
               settings[[1]]$algorithm
             )
@@ -2650,7 +2650,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                 "added",
                 "ProcessingSettings",
                 x$call,
-                "streamFind",
+                "StreamFind",
                 x$version,
                 x$algorithm
               )
@@ -2738,7 +2738,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
               "added",
               class(x),
               x$name,
-              "streamFind",
+              "StreamFind",
               x$version,
               x$file
             )
@@ -3419,7 +3419,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       algorithm <- settings$algorithm
       parameters <- settings$parameters
 
-      if ("streamFind" %in% algorithm) {
+      if ("StreamFind" %in% algorithm) {
 
         cached_ms1 <- FALSE
 
@@ -3546,7 +3546,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       algorithm <- settings$algorithm
       parameters <- settings$parameters
 
-      if ("streamFind" %in% algorithm) {
+      if ("StreamFind" %in% algorithm) {
 
         cached_ms2 <- FALSE
 
@@ -3688,7 +3688,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       algorithm <- settings$algorithm
       parameters <- settings$parameters
 
-      if ("streamFind" %in% algorithm) {
+      if ("StreamFind" %in% algorithm) {
 
         cached_ms1 <- FALSE
 
@@ -3830,7 +3830,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       algorithm <- settings$algorithm
       parameters <- settings$parameters
 
-      if ("streamFind" %in% algorithm) {
+      if ("StreamFind" %in% algorithm) {
 
         cached_ms2 <- FALSE
 
@@ -4013,7 +4013,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             "removed",
             "ProcessingSettings",
             x$call,
-            "streamFind",
+            "StreamFind",
             x$version,
             x$algorithm
           )
@@ -4038,7 +4038,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
               "removed",
               "ProcessingSettings",
               x$call,
-              "streamFind",
+              "StreamFind",
               x$version,
               x$algorithm
             )
@@ -5769,7 +5769,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       settings <- private$.get_call_settings(settings, "filter_features")
       if (is.null(settings)) return(invisible(self))
 
-      if ("Settings_filter_features_streamFind" %in% class(settings)) {
+      if ("Settings_filter_features_StreamFind" %in% class(settings)) {
         if (!any(self$has_features())) {
           warning("Features were not found! Run find_features method first!")
           return(invisible(self))

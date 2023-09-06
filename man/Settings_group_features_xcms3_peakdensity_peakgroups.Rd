@@ -112,13 +112,13 @@ See the \link[patRoon]{groupFeaturesXCMS3} function from the
 \pkg{patRoon} package for more information and requirements.
 }
 \references{
-\insertRef{patroon01}{streamFind}
+\insertRef{patroon01}{StreamFind}
 
-\insertRef{patroon02}{streamFind}
+\insertRef{patroon02}{StreamFind}
 
-\insertRef{xcms01}{streamFind}
+\insertRef{xcms01}{StreamFind}
 
-\insertRef{xcms02}{streamFind}
+\insertRef{xcms02}{StreamFind}
 
-\insertRef{xcms03}{streamFind}
+\insertRef{xcms03}{StreamFind}
 }

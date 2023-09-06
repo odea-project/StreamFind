@@ -60,11 +60,11 @@ When giving paths make sure that single backslash is changed to
 double backslash of to single forward slash.
 }
 \references{
-\insertRef{mzr01}{streamFind}
+\insertRef{mzr01}{StreamFind}
 
-\insertRef{mzr02}{streamFind}
+\insertRef{mzr02}{StreamFind}
 
-\insertRef{mzr03}{streamFind}
+\insertRef{mzr03}{StreamFind}
 
-\insertRef{mzr04}{streamFind}
+\insertRef{mzr04}{StreamFind}
 }

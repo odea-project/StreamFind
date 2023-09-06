@@ -1,8 +1,8 @@
 
 # resources --------------------------------------------------------------------
 
-all_files <- streamFindData::msFilePaths()
-db <- streamFindData::msSpikedChemicals()
+all_files <- StreamFindData::msFilePaths()
+db <- StreamFindData::msSpikedChemicals()
 files_mrm <- all_files[grepl("mrm", all_files)]
 files <- all_files[1:3]
 files1 <- all_files[grepl("influent|blank", all_files)]

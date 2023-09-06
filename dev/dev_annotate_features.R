@@ -1,9 +1,9 @@
 # resources --------------------------------------------------------------------
 
-all_files <- streamFindData::msFilePaths()
+all_files <- StreamFindData::msFilePaths()
 tof_file <- all_files[2]
 
-db <- streamFindData::msSpikedChemicals()
+db <- StreamFindData::msSpikedChemicals()
 db_cols <- c("name", "formula", "mass", "rt")
 db <- db[, db_cols, with = FALSE]
 
@@ -78,7 +78,7 @@ orb_ffs_2 <- ProcessingSettings(
 
 afs <- get_default_ProcessingSettings(
   call = "annotate_features",
-  algorithm = "streamFind"
+  algorithm = "StreamFind"
 )
 
 afs$parameters$maxCharge = 1
@@ -150,7 +150,7 @@ ms_25k$find_features(tof_ffs)$annotate_features(afs)
 # fig <- fig %>% plotly::add_trace(y = ~i4, name = 'M+4', mode = 'lines')
 #
 # fig <- fig %>% plotly::layout(
-#   title = "streamFind annotate_features method",
+#   title = "StreamFind annotate_features method",
 #   xaxis = list(title = "Number of <sup>13</sup>C"),
 #   yaxis = list(title = "Relative abundance"))
 #

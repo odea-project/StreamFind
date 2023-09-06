@@ -2,7 +2,7 @@
 #'
 #' @description
 #' Creates a ProcessingSettings S3 class object. The ProcessingSettings are used
-#' in \pkg{streamFind} for processing data in a given data class method.
+#' in \pkg{StreamFind} for processing data in a given data class method.
 #'
 #' @param call Character of length one with the name of the method where the
 #' processing settings are to be applied.
@@ -70,7 +70,7 @@ ProcessingSettings <- function(call = NA_character_,
     }
 
     if (is.na(x$link)) {
-      page <- "https://ricardobachertdacunha.github.io/streamFind/reference/"
+      page <- "https://odea-project.github.io/StreamFind/reference/"
       algo <- paste0("Settings_", x$call, "_" , x$algorithm)
       x$link <- paste0(page, algo, ".html")
     }

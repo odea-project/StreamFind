@@ -1,5 +1,5 @@
 
-library(streamFind)
+library(StreamFind)
 
 save_default_ProcessingSettings(
   call = "find_features",

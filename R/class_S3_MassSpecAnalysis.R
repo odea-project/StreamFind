@@ -50,7 +50,7 @@
 #' @param metadata List with flexible storage for experimental metadata
 #' (e.g., concentration, location, etc.).
 #' @param version Character of length one with the version. It should match with
-#' the version of the streamFind package when created the `MassSpecAnalysis`
+#' the version of the StreamFind package when created the `MassSpecAnalysis`
 #' object.
 #'
 #' @return An MassSpecAnalysis S3 class object.
@@ -104,7 +104,7 @@ MassSpecAnalysis <- function(name = NA_character_,
     }
   }
 
-  if (is.na(version)) version <- as.character(packageVersion("streamFind"))
+  if (is.na(version)) version <- as.character(packageVersion("StreamFind"))
 
   x <- list(
     "name" = name,
@@ -511,7 +511,7 @@ parse.MassSpecAnalysis <- function(files = NULL, runParallel = FALSE) {
     vars <- c("rcpp_parse_ms_analysis")
 
     analyses <- foreach(i = files,
-      .packages = "streamFind",
+      .packages = "StreamFind",
       .export = vars
     ) %dopar% { rcpp_parse_ms_analysis(i) }
 
@@ -565,7 +565,7 @@ parse.MassSpecAnalysis <- function(files = NULL, runParallel = FALSE) {
     analyses <- analyses[order(names(analyses))]
 
     analyses <- lapply(analyses, function(x) {
-      x$version <- as.character(packageVersion("streamFind"))
+      x$version <- as.character(packageVersion("StreamFind"))
       x
     })
 

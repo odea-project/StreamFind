@@ -1,11 +1,11 @@
 
-#' @title .s3_ms_annotate_features.Settings_annotate_features_streamFind
+#' @title .s3_ms_annotate_features.Settings_annotate_features_StreamFind
 #'
 #' @description Annotates features with isotopes.
 #'
 #' @noRd
 #'
-.s3_ms_annotate_features.Settings_annotate_features_streamFind <- function(settings, self) {
+.s3_ms_annotate_features.Settings_annotate_features_StreamFind <- function(settings, self) {
 
   if (!any(self$has_features())) {
     warning("Features were not found! Run find_features method first!")
@@ -73,7 +73,7 @@
     vars <- c("rcpp_ms_annotation_isotopes", "parameters")
 
     iso_output <- foreach(i = features,
-                          .packages = "streamFind",
+                          .packages = "StreamFind",
                           .export = vars
     ) %dopar% {
       do.call("rcpp_ms_annotation_isotopes", c(list("features" = i), parameters))

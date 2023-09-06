@@ -2,66 +2,66 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 rcpp_ms_annotation_isotopes <- function(features, maxIsotopes = 5L, elements = as.character( c("C","H", "N", "O", "S", "Cl", "Br")), mode = "small molecules", maxCharge = 1L, rtWindowAlignment = 0.2, maxGaps = 1L, maxCarbons = 80, maxHetero = 15, maxHalogens = 10) {
-    .Call(`_streamFind_rcpp_ms_annotation_isotopes`, features, maxIsotopes, elements, mode, maxCharge, rtWindowAlignment, maxGaps, maxCarbons, maxHetero, maxHalogens)
+    .Call(`_StreamFind_rcpp_ms_annotation_isotopes`, features, maxIsotopes, elements, mode, maxCharge, rtWindowAlignment, maxGaps, maxCarbons, maxHetero, maxHalogens)
 }
 
 rcpp_centroid_spectra <- function(spectra) {
-    .Call(`_streamFind_rcpp_centroid_spectra`, spectra)
+    .Call(`_StreamFind_rcpp_centroid_spectra`, spectra)
 }
 
 rcpp_ms_cluster_ms2 <- function(ms2, mzClust, isInAllSpectra, verbose) {
-    .Call(`_streamFind_rcpp_ms_cluster_ms2`, ms2, mzClust, isInAllSpectra, verbose)
+    .Call(`_StreamFind_rcpp_ms_cluster_ms2`, ms2, mzClust, isInAllSpectra, verbose)
 }
 
 rcpp_ms_cluster_spectra <- function(spectra, mzClust, isInAllSpectra, verbose) {
-    .Call(`_streamFind_rcpp_ms_cluster_spectra`, spectra, mzClust, isInAllSpectra, verbose)
+    .Call(`_StreamFind_rcpp_ms_cluster_spectra`, spectra, mzClust, isInAllSpectra, verbose)
 }
 
 rcpp_ms_feature_groups_correspondence <- function(groups, features, verbose) {
-    .Call(`_streamFind_rcpp_ms_feature_groups_correspondence`, groups, features, verbose)
+    .Call(`_StreamFind_rcpp_ms_feature_groups_correspondence`, groups, features, verbose)
 }
 
 rcpp_ms_get_feature_groups_ranges <- function(groups, features) {
-    .Call(`_streamFind_rcpp_ms_get_feature_groups_ranges`, groups, features)
+    .Call(`_StreamFind_rcpp_ms_get_feature_groups_ranges`, groups, features)
 }
 
 rcpp_ms_make_groups_update_features <- function(features) {
-    .Call(`_streamFind_rcpp_ms_make_groups_update_features`, features)
+    .Call(`_StreamFind_rcpp_ms_make_groups_update_features`, features)
 }
 
 rcpp_ms_update_groups <- function(features, analyses) {
-    .Call(`_streamFind_rcpp_ms_update_groups`, features, analyses)
+    .Call(`_StreamFind_rcpp_ms_update_groups`, features, analyses)
 }
 
 rcpp_parse_chromatograms <- function(file_path, index = NA_integer_) {
-    .Call(`_streamFind_rcpp_parse_chromatograms`, file_path, index)
+    .Call(`_StreamFind_rcpp_parse_chromatograms`, file_path, index)
 }
 
 rcpp_parse_chromatograms_headers <- function(file_path) {
-    .Call(`_streamFind_rcpp_parse_chromatograms_headers`, file_path)
+    .Call(`_StreamFind_rcpp_parse_chromatograms_headers`, file_path)
 }
 
 rcpp_parse_ms_analysis <- function(file_path) {
-    .Call(`_streamFind_rcpp_parse_ms_analysis`, file_path)
+    .Call(`_StreamFind_rcpp_parse_ms_analysis`, file_path)
 }
 
 rcpp_parse_ms_analysis_chromatograms <- function(analysis, index = NA_integer_) {
-    .Call(`_streamFind_rcpp_parse_ms_analysis_chromatograms`, analysis, index)
+    .Call(`_StreamFind_rcpp_parse_ms_analysis_chromatograms`, analysis, index)
 }
 
 rcpp_parse_ms_analysis_spectra <- function(analysis, index = NA_integer_) {
-    .Call(`_streamFind_rcpp_parse_ms_analysis_spectra`, analysis, index)
+    .Call(`_StreamFind_rcpp_parse_ms_analysis_spectra`, analysis, index)
 }
 
 rcpp_parse_spectra <- function(file_path, index = NA_integer_) {
-    .Call(`_streamFind_rcpp_parse_spectra`, file_path, index)
+    .Call(`_StreamFind_rcpp_parse_spectra`, file_path, index)
 }
 
 rcpp_parse_spectra_headers <- function(file_path) {
-    .Call(`_streamFind_rcpp_parse_spectra_headers`, file_path)
+    .Call(`_StreamFind_rcpp_parse_spectra_headers`, file_path)
 }
 
 rcpp_parse_xml <- function(input) {
-    .Call(`_streamFind_rcpp_parse_xml`, input)
+    .Call(`_StreamFind_rcpp_parse_xml`, input)
 }
 

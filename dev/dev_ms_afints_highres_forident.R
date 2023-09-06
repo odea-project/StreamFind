@@ -23,7 +23,7 @@ ude_db <- ude_db[, cols, with = FALSE]
 files <- list.files(path, pattern = ".mzML", full.names = TRUE)
 
 # Settings for annotation of isotopes
-afs <- Settings_annotate_features_streamFind(
+afs <- Settings_annotate_features_StreamFind(
   maxIsotopes = 5,
   elements = c("C", "H", "N", "O", "S", "Cl", "Br"),
   mode = "small molecules",
@@ -139,7 +139,7 @@ ude_suspects <- ude_ms$get_suspects(database = ude_db, ppm = 5, sec = 10)
 suspects <- tof_ms$get_suspects(database = tof_db, ppm = 5, sec = 10)
 suspects_ms <- tof_ms$subset_features(features = suspects)
 
-slfms2 <- Settings_load_features_ms2_streamFind(
+slfms2 <- Settings_load_features_ms2_StreamFind(
   isolationWindow = 1.3,
   mzClust = 0.008,
   isInAllSpectra = TRUE,

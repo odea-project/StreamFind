@@ -1,9 +1,9 @@
 
-library(streamFind)
+library(StreamFind)
 
 # create -----------------------------------------------------------------------
 
-all_files <- streamFindData::msFilePaths()
+all_files <- StreamFindData::msFilePaths()
 
 files <- all_files[grepl("blank|influent|o3sw", all_files)]
 
@@ -71,7 +71,7 @@ ms$import_settings("ffs.json")
 # process ----------------------------------------------------------------------
 
 # gets settings as object
-fls <- Settings_filter_features_streamFind(
+fls <- Settings_filter_features_StreamFind(
   minIntensity = 5000,
   minSnRatio = 20,
   maxGroupSd = 30,
@@ -83,7 +83,7 @@ fls <- Settings_filter_features_streamFind(
 fls
 
 # other module settings
-afs <- Settings_annotate_features_streamFind()
+afs <- Settings_annotate_features_StreamFind()
 gfs <- Settings_group_features_xcms3_peakdensity()
 
 
@@ -99,7 +99,7 @@ ms
 # plot -------------------------------------------------------------------------
 
 # database
-db <- streamFindData::msSpikedChemicals()
+db <- StreamFindData::msSpikedChemicals()
 db <- db[grepl("S", db$tag), ]
 cols <- c("name", "formula", "mass", "rt", "tag")
 db <- db[, cols, with = FALSE]

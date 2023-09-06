@@ -9,7 +9,7 @@ app/frontend/public
 .RData
 .httr-oauth
 .DS_Store
-streamFind.Rproj
+StreamFind.Rproj
 .vscode
 
 # Excluded project folders ----------------------------------------------------
@@ -24,9 +24,9 @@ streamFind.Rproj
 **/log
 
 # Excluded rds, cache and html files ------------------------------------------
-/handbooks/Handbook_backend_streamFind.html
-/handbooks/Handbook_backend_streamFind_cache
-/handbooks/Handbook_backend_streamFind_files
+/handbooks/Handbook_backend_StreamFind.html
+/handbooks/Handbook_backend_StreamFind_cache
+/handbooks/Handbook_backend_StreamFind_files
 settings_pp.rds
 settings_pp_2.json
 settings.json

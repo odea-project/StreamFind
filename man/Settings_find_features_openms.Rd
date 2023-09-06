@@ -121,9 +121,9 @@ See the \link[patRoon]{findFeaturesOpenMS} function from the
 \pkg{patRoon} package for more information and requirements.
 }
 \references{
-\insertRef{patroon01}{streamFind}
+\insertRef{patroon01}{StreamFind}
 
-\insertRef{patroon02}{streamFind}
+\insertRef{patroon02}{StreamFind}
 
-\insertRef{openms01}{streamFind}
+\insertRef{openms01}{StreamFind}
 }

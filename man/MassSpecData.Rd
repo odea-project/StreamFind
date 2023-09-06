@@ -8,9 +8,9 @@ The MassSpecData R6 class is a framework with methods for parsing,
 processing, visualizing and storing mass spectrometry (MS) data.
 }
 \references{
-\insertRef{patroon01}{streamFind}
+\insertRef{patroon01}{StreamFind}
 
-\insertRef{patroon02}{streamFind}
+\insertRef{patroon02}{StreamFind}
 }
 \section{Methods}{
 \subsection{Public methods}{

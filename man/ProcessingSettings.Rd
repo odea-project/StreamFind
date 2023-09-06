@@ -74,7 +74,7 @@ A ProcessingSettings S3 class
 }
 \description{
 Creates a ProcessingSettings S3 class object. The ProcessingSettings are used
-in \pkg{streamFind} for processing data in a given data class method.
+in \pkg{StreamFind} for processing data in a given data class method.
 }
 \details{
 See the documentation of the method where the processing settings

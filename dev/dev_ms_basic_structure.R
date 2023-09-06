@@ -1,7 +1,7 @@
 
-all_files <- streamFindData::msFilePaths()
+all_files <- StreamFindData::msFilePaths()
 
-db <- streamFindData::msSpikedChemicals()
+db <- StreamFindData::msSpikedChemicals()
 db <- db[grepl("S", db$tag), ]
 cols <- c("name", "formula", "mass", "rt")
 db <- db[, cols, with = FALSE]
@@ -33,7 +33,7 @@ ms$add_settings(
   list(
     Settings_find_features_xcms3_centwave(),
     Settings_group_features_xcms3_peakdensity(),
-    Settings_filter_features_streamFind(
+    Settings_filter_features_StreamFind(
       minIntensity = 5000,
       minSnRatio = 20,
       maxGroupSd = 30,
@@ -41,8 +41,8 @@ ms$add_settings(
       minGroupAbundance = 3,
       excludeIsotopes = TRUE
     ),
-    Settings_load_features_ms2_streamFind(),
-    Settings_load_groups_ms2_streamFind()
+    Settings_load_features_ms2_StreamFind(),
+    Settings_load_groups_ms2_StreamFind()
   )
 )
 
@@ -158,16 +158,16 @@ sink()
 
 
 
-sss <- Settings_suspect_screening_streamFind(database = db, ppm = 5, sec = 10)
+sss <- Settings_suspect_screening_StreamFind(database = db, ppm = 5, sec = 10)
 
 
 
 
 # implement export MS2 ------
 
-slfms2 <- Settings_load_features_ms2_streamFind()
+slfms2 <- Settings_load_features_ms2_StreamFind()
 slfms2$parameters$minIntensity <- 100
-slgms2 <- Settings_load_groups_ms2_streamFind()
+slgms2 <- Settings_load_groups_ms2_StreamFind()
 slgms2$parameters$minIntensity <- 100
 msbp <- ms$subset_analyses(4:6)
 
@@ -226,11 +226,11 @@ ms$group_features(gfs)
 
 ms$get_groups()
 
-rtf1 <- Settings_filter_features_streamFind(
+rtf1 <- Settings_filter_features_StreamFind(
   rtFilter = c(0, 100)
 )
 
-rtf2 <- Settings_filter_features_streamFind(
+rtf2 <- Settings_filter_features_StreamFind(
   rtFilter = c(1400, 1500)
 )
 
