@@ -1,7 +1,7 @@
 
-all_files <- StreamFindData::msFilePaths()
+all_files <- streamFindData::msFilePaths()
 
-db <- StreamFindData::msSpikedChemicals()
+db <- streamFindData::msSpikedChemicals()
 db <- db[grepl("S", db$tag), ]
 cols <- c("name", "formula", "mass", "rt")
 db <- db[, cols, with = FALSE]

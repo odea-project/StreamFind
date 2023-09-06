@@ -1,8 +1,8 @@
 
 # resources --------------------------------------------------------------------
 
-all_files <- StreamFindData::msFilePaths()
-db <- StreamFindData::msSpikedChemicals()
+all_files <- streamFindData::msFilePaths()
+db <- streamFindData::msSpikedChemicals()
 files_mrm <- all_files[grepl("mrm", all_files)]
 files <- all_files[1:3]
 files1 <- all_files[grepl("influent|blank", all_files)]
@@ -210,7 +210,7 @@ ms$get_number_analyses()
 
 # tests ------------------------------------------------------------------------
 
-all_files <- StreamFindData::msFilePaths()
+all_files <- streamFindData::msFilePaths()
 big_file_test <- "E:\\Dev_20230126_IonMobilityDataFirstTraining\\WorklistData-0001.mzML"
 big_file_test <- "E:\\20230126_DA_EDA_background_evaluation\\221118_DA-EDA_solid phase background_centrifuged\\mzml\\02_QC_pos-r001.mzML"
 big_file_test <- all_files[8]
@@ -284,7 +284,7 @@ unique(ms_chrom$get_chromatograms()$index)
 ms_chrom$has_loaded_chromatograms()
 ms_chrom$load_chromatograms()
 
-all_files <- StreamFindData::msFilePaths()
+all_files <- streamFindData::msFilePaths()
 
 rcpp_parse_spectra(all_files[1], index = c(1, 2))
 rcpp_parse_spectra(all_files[1], index = c(2, 1))

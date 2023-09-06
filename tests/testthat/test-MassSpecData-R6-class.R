@@ -2,15 +2,15 @@ library(StreamFind)
 library(testthat)
 
 test_that("suggested dependencies", {
-  expect_true(requireNamespace("StreamFindData"))
+  expect_true(requireNamespace("streamFindData"))
   expect_true(requireNamespace("xcms"))
   expect_true(requireNamespace("patRoon"))
 })
 
 # resources -----
 
-all_files <- StreamFindData::msFilePaths()
-db <- StreamFindData::msSpikedChemicals()
+all_files <- streamFindData::msFilePaths()
+db <- streamFindData::msSpikedChemicals()
 files_mrm <- all_files[grepl("mrm", all_files)]
 files <- all_files[grepl("influent|blank", all_files)]
 files2 <- all_files[grepl("o3sw", all_files)]

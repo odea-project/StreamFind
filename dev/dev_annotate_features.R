@@ -1,9 +1,9 @@
 # resources --------------------------------------------------------------------
 
-all_files <- StreamFindData::msFilePaths()
+all_files <- streamFindData::msFilePaths()
 tof_file <- all_files[2]
 
-db <- StreamFindData::msSpikedChemicals()
+db <- streamFindData::msSpikedChemicals()
 db_cols <- c("name", "formula", "mass", "rt")
 db <- db[, db_cols, with = FALSE]
 

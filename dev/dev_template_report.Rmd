@@ -35,7 +35,7 @@ knitr::opts_chunk$set(echo = TRUE, fig.align = "center", fig.width = 9, results 
 path_wd <- getwd()
 
 # Add logo file
-path_extdata <- system.file(package = "StreamFindData", dir = "extdata")
+path_extdata <- system.file(package = "streamFindData", dir = "extdata")
 logo <- file.path(path_extdata, "logo_iuta.png") #207 x 216 px
 ```
 
