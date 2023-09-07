@@ -57,13 +57,13 @@ remotes::install_github("odea-project/StreamFind", dependencies = TRUE)
 ```
 
 The supplementary
-[streamFindData](https://github.com/odea-project/streamFindData)
+[StreamFindData](https://github.com/odea-project/StreamFindData)
 R package holds the data used in examples and other documentation assets
 of the StreamFind R package and can also be installed from the GitHub
 repository.
 
 ``` r
-remotes::install_github("odea-project/streamFindData")
+remotes::install_github("odea-project/StreamFindData")
 ```
 
 ### Documentation

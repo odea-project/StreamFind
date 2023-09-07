@@ -45,7 +45,7 @@ Suggests:
     xcms,
     mzR,
     patRoon,
-    streamFindData
+    StreamFindData
 VignetteBuilder: 
     knitr
 RdMacros: 
