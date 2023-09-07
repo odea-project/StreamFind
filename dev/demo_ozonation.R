@@ -54,16 +54,16 @@ ms
 # processing settings ----------------------------------------------------------
 
 # saves an example of settings on disk
-save_default_ProcessingSettings(
-  call = "find_features",
-  algorithm = "xcms3_centwave",
-  format = "json",
-  name = "ffs"
-)
+# save_default_ProcessingSettings(
+#   call = "find_features",
+#   algorithm = "xcms3_centwave",
+#   format = "json",
+#   name = "ffs"
+# )
+# 
+# ms$import_settings("ffs.json")
 
-ms$import_settings("ffs.json")
-
-
+ffs <- Settings_find_features_xcms3_centwave()
 
 
 
@@ -87,7 +87,7 @@ afs <- Settings_annotate_features_StreamFind()
 gfs <- Settings_group_features_xcms3_peakdensity()
 
 
-ms$find_features()$annotate_features(afs)$group_features(gfs)$filter_features(fls)
+ms$find_features(ffs)$annotate_features(afs)$group_features(gfs)$filter_features(fls)
 
 ms
 

@@ -383,7 +383,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
     .filter_minGroupAbundance = function(value = 3) {
 
       if (self$has_groups() & is.numeric(value)) {
-        rpl <- self$get_replicate_names()
         groups <- self$get_groups(filtered = TRUE)
         features <- self$get_features(filtered = TRUE)
 

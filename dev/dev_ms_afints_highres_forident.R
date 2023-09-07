@@ -1,6 +1,6 @@
 
-path <- "F:/example_ms_files"
-# path <- "C:/Users/Ricardo Cunha/Documents/Work/example_ms_files"
+#path <- "F:/example_ms_files"
+path <- "C:/Users/Ricardo Cunha/Documents/Work/example_ms_files"
 
 
 
