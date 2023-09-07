@@ -10,6 +10,7 @@ app/frontend/public
 .httr-oauth
 .DS_Store
 StreamFind.Rproj
+streamFind.Rproj
 .vscode
 
 # Excluded project folders ----------------------------------------------------
