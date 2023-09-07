@@ -13,28 +13,29 @@ The StreamFind project, entitled “Flexible data analysis and workflow
 designer to identify chemicals in the water cycle”, is funded by the
 [Bundesministerium für Bildung und Forschung
 (BMBF)](https://www.bmbf.de) and is a cooperation between the [Institut
-für Energie- und Umwelttechnik e. V. (IUTA)](https://www.iuta.de), the
-[Forschungszentrum Informatik (FZI)](https://www.fzi.de/) and supporting
-partners. The goal of the StreamFind project is the development and
-assembly of data processing workflows for mass spectrometry and
-spectroscopy and the application of the workflows in environmental and
-quality studies of the water cycle. The StreamFind aims to stimulate the
-use of advanced data analysis (e.g., non-target screening, statistical
-analysis, etc.) in routine studies, promoting standardization of data
-processing and structure and easing the retrospective evaluation of
-data. The StreamFind platform is directed to academics but also
-technicians, due to the aspired comprehensive documentation, well
-categorized set of integrated modular functions and the graphical user
-interface. The StreamFind development is ongoing, please [contact
-us](mailto:cunha@iuta.de) for questions or collaboration.
+für Umwelt & Energie, Technik & Analytik e. V.
+(IUTA)](https://www.iuta.de), the [Forschungszentrum Informatik
+(FZI)](https://www.fzi.de/) and supporting partners. The goal of the
+StreamFind project is the development and assembly of data processing
+workflows for mass spectrometry and spectroscopy and the application of
+the workflows in environmental and quality studies of the water cycle.
+The StreamFind aims to stimulate the use of advanced data analysis
+(e.g., non-target screening, statistical analysis, etc.) in routine
+studies, promoting standardization of data processing and structure and
+easing the retrospective evaluation of data. The StreamFind platform is
+directed to academics but also technicians, due to the aspired
+comprehensive documentation, well categorized set of integrated modular
+functions and the graphical user interface. The StreamFind development
+is ongoing, please [contact us](mailto:cunha@iuta.de) for questions or
+collaboration.
 
 <img src="man/figures/logo_group.png" width="100%" style="display: block; margin: auto;" />
 
 # StreamFind R package
 
 The back-end framework of
-[StreamFind](https://github.com/odea-project/StreamFind) is an
-R package.
+[StreamFind](https://github.com/odea-project/StreamFind) is an R
+package.
 
 ## Installation
 
@@ -57,8 +58,8 @@ remotes::install_github("odea-project/StreamFind", dependencies = TRUE)
 ```
 
 The supplementary
-[StreamFindData](https://github.com/odea-project/StreamFindData)
-R package holds the data used in examples and other documentation assets
+[StreamFindData](https://github.com/odea-project/StreamFindData) R
+package holds the data used in examples and other documentation assets
 of the StreamFind R package and can also be installed from the GitHub
 repository.
 
@@ -73,8 +74,7 @@ found in the [reference
 page](https://odea-project.github.io/StreamFind/reference/index.html)
 and
 [articles](https://odea-project.github.io/StreamFind/articles/index.html)
-of the
-[webpage](https://odea-project.github.io/StreamFind/index.html).
+of the [webpage](https://odea-project.github.io/StreamFind/index.html).
 
 # References
 
@@ -142,6 +142,15 @@ Transformation Product Screening.” *Journal of Open Source Software* 7
 
 </div>
 
+<div id="ref-kpic01" class="csl-entry">
+
+Ji, Hongchao, Fanjuan Zeng, Yamei Xu, Hongmei Lu, and Zhimin Zhang.
+2017. “KPIC2: An Effective Framework for Mass Spectrometry-Based
+Metabolomics Using Pure Ion Chromatograms.” *Anal Chem.* 14 (89):
+7631–40. <https://doi.org/10.1021/acs.analchem.7b01547>.
+
+</div>
+
 <div id="ref-mzr02" class="csl-entry">
 
 Keller, Andrew, Jimmy Eng, Ning Zhang, Xiao-jun Li, and Ruedi Aebersold.
@@ -185,6 +194,16 @@ Eric W Deutsch, Brian Raught, Brian Pratt, et al. 2004. “A Common Open
 Representation of Mass Spectrometry Data and Its Application to
 Proteomics Research.” *Nat Biotechnol* 22 (11): 1459–66.
 <https://doi.org/10.1038/nbt1031>.
+
+</div>
+
+<div id="ref-openms01" class="csl-entry">
+
+Röst, Hannes L., Timo Sachsenberg, Stephan Aiche, Chris Bielow, Hendrik
+Weisser, Fabian Aicheler, Sandro Andreotti, et al. 2016. “OpenMS: A
+Flexible Open-Source Software Platform for Mass Spectrometry Data
+Analysis.” *Nature Methods* 13 (9): 741–48.
+<https://doi.org/10.1038/nmeth.3959>.
 
 </div>
 
