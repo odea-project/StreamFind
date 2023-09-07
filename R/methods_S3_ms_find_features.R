@@ -197,24 +197,28 @@
       }
     }
 
-    under_rt_max <- temp$rt <= temp$rtmax
+    under_rt_max <- temp$ret <= temp$retmax
     if (!all(under_rt_max)) {
-      warning("Feature retention time value/s above the rtmax!")
+      warning("Feature/s with retention time value above the rtmax removed!")
+      temp <- temp[under_rt_max, ]
     }
 
-    under_rt_min <- temp$rt >= temp$rtmin
+    under_rt_min <- temp$ret >= temp$retmin
     if (!all(under_rt_min)) {
-      warning("Feature retention time value/s under the rtmin!")
+      warning("Feature/s with retention time value below the rtmin removed!")
+      temp <- temp[under_rt_min, ]
     }
 
     under_mz_max <- temp$mz <= temp$mzmax
     if (!all(under_rt_min)) {
-      warning("Feature m/z value/s above the mzmax!")
+      warning("Feature/s with m/z value above the mzmax removed!")
+      temp <- temp[under_mz_max, ]
     }
 
     under_mz_min <- temp$mz >= temp$mzmin
     if (!all(under_rt_min)) {
-      warning("Feature m/z value/s under the mzmin!")
+      warning("Feature/s with m/z value below the mzmin removed!")
+      temp <- temp[under_mz_min, ]
     }
 
     polarity <- unique(self$get_polarities(x))
@@ -284,11 +288,11 @@
     }
     if (!"filtered" %in% colnames(temp)) temp$filtered <- FALSE
     if (!"filter" %in% colnames(temp)) temp$filter <- NA_character_
-
+    
     setnames(temp,
-             c("ID", "ret", "retmin", "retmax"),
-             c("feature", "rt", "rtmin", "rtmax"),
-             skip_absent = TRUE
+      c("ID", "ret", "retmin", "retmax"),
+      c("feature", "rt", "rtmin", "rtmax"),
+      skip_absent = TRUE
     )
 
     # when grouping features are removed from grouping conditions in patRoon
@@ -301,12 +305,14 @@
       temp_org$analysis <- NULL
 
       if (nrow(temp_org) != nrow(temp)) {
-
+        
         build_feature_ids <- FALSE
 
-        #modify the feature ids from original ids when numeric
+        # TODO modify the feature ids from original ids when numeric
+        # but other data specially from modules might be outdated then
         if (is.numeric(temp$feature)) {
           temp$feature <- temp_org$feature[temp$feature]
+          build_feature_ids <- TRUE
         }
 
         temp_org_not_grouped <- temp_org[!temp_org$feature %in% temp$feature, ]
@@ -347,6 +353,8 @@
         temp$index
       )
     }
+    
+    # if ("mz132.89_rt176_f409" %in% temp$feature) browser() #M134_R176_763 #mz132.89_rt176_f409 #19_ww_in_neg-r003
 
     setcolorder(
       temp,

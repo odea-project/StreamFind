@@ -13,114 +13,6 @@ List rcpp_ms_make_groups_update_features(Rcpp::DataFrame features) {
 
   List list_out_temp = List::create();
 
-  // int n_analyses = features_list.size();
-  // if (n_analyses == 0) return DataFrame();
-  //
-  // StringVector analyses = features_list.names();
-  //
-  // int ncols = 0;
-  // int nrows = 0;
-  // CharacterVector colnames;
-  // DataFrame res;
-  //
-  // StringVector must_have_cols = {
-  //   "feature", "analysis",
-  //   "rt", "rtmax", "rtmin",
-  //   "mz", "mzmax", "mzmin", "mass",
-  //   "filled", "adduct", "intensity", "group"
-  // };
-  //
-  // for (int i = 0; i < n_analyses; ++i) {
-  //   DataFrame df_temp;
-  //   df_temp = as<DataFrame>(features_list[i]);
-  //   int df_nrows = df_temp.nrows();
-  //
-  //   if (df_nrows > 0) {
-  //     bool has_ana_col = df_temp.containsElementNamed("analysis");
-  //
-  //     if (!has_ana_col) {
-  //       vector<string> ana(1);
-  //       ana[0] = analyses(i);
-  //       StringVector ana_rcpp;
-  //       ana_rcpp = analyses(i);
-  //       int n_rows = df_temp.nrows();
-  //       StringVector ana_col = rep(ana_rcpp, n_rows);
-  //       df_temp.push_front(ana_col, "analysis");
-  //     }
-  //
-  //     if (i == 0 || nrows == 0) {
-  //       nrows = df_nrows;
-  //       ncols = df_temp.length();
-  //       res = as<DataFrame>(df_temp);
-  //       colnames = df_temp.names();
-  //
-  //     } else {
-  //
-  //       if (df_temp.length() != ncols) {
-  //         Rcpp::Rcout << "!! Data frames must have the same number of columns! \n";
-  //         return DataFrame();
-  //       }
-  //       nrows += df_nrows;
-  //     }
-  //
-  //     StringVector df_temp_cols = df_temp.names();
-  //
-  //     for (int i=0; i<must_have_cols.size(); ++i) {
-  //       auto str_position = std::find(df_temp_cols.begin(), df_temp_cols.end(), must_have_cols(i));
-  //
-  //       if (str_position == df_temp_cols.end()) {
-  //         Rcout << "!! The column '" << must_have_cols(i) << "' not found in features! \n";
-  //         return DataFrame();
-  //       }
-  //     }
-  //
-  //     features_list[i] = df_temp;
-  //   }
-  // }
-  //
-  // List res_list(ncols);
-  // CharacterVector rownames(nrows);
-  //
-  // for (int j = 0; j < ncols; ++j) {
-  //   SEXP res_col = res[j];
-  //   Rcpp::Shield<SEXP> res_class(Rf_getAttrib(res_col, R_ClassSymbol));
-  //   Rcpp::Shield<SEXP> res_attr(Rf_getAttrib(res_col, R_NamesSymbol));
-  //   Rcpp::Function res_attr_assign("names<-");
-  //   res_col = Rf_lengthgets(res_col, nrows);
-  //   Rf_setAttrib(res_col, R_ClassSymbol, res_class);
-  //   res_col = res_attr_assign(res_col, rownames);
-  //   Rf_setAttrib(res_col, R_NamesSymbol, res_attr);
-  //   int rowcount = 0;
-  //
-  //   // concatenate input data frames vertically into result column vector
-  //   for (int i = 0; i < n_analyses; ++i) {
-  //     DataFrame df = as<DataFrame>(features_list[i]);
-  //     SEXP df_col = df[j];
-  //     Rf_copyMostAttrib(df_col, res_col);
-  //     int type = TYPEOF(df_col);
-  //
-  //     if (type == 14) {
-  //       std::copy(REAL(df_col), REAL(df_col) + LENGTH(df_col), REAL(res_col) + rowcount);
-  //     } else if (type == 13) {
-  //       std::copy(INTEGER(df_col), INTEGER(df_col) + LENGTH(df_col), INTEGER(res_col) + rowcount);
-  //     } else if (type == 16) {
-  //       std::copy(STRING_PTR(df_col), STRING_PTR(df_col) + LENGTH(df_col), STRING_PTR(res_col) + rowcount);
-  //     } else if (type == 10) {
-  //       std::copy(LOGICAL(df_col), LOGICAL(df_col) + LENGTH(df_col), LOGICAL(res_col) + rowcount);
-  //     } else {
-  //       Rcpp::Rcout << type << " \n";
-  //     }
-  //
-  //     rowcount += df.nrows();
-  //   }
-  //
-  //   res_list[j] = res_col;
-  // }
-  //
-  // DataFrame features(res_list);
-  // features.attr("names") = colnames;
-  // features.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-
   StringVector features_cols = features.names();
 
   if (features.nrows() == 0 && features_cols.size() == 0) {
@@ -179,7 +71,6 @@ List rcpp_ms_make_groups_update_features(Rcpp::DataFrame features) {
   }
 
   StringVector analyses = sort_unique(features_analyses);
-  // analyses = sort_unique(analyses);
   int n_analyses = analyses.size();
   NumericMatrix ints(number_of_groups, n_analyses);
   Rcpp::colnames(ints) = analyses;
@@ -208,6 +99,11 @@ List rcpp_ms_make_groups_update_features(Rcpp::DataFrame features) {
     }
 
     int which_idx_size = which_idx.size();
+    
+    if (which_idx_size > n_analyses) {
+      Rcpp::Rcout << "\n !! The feature group " << g_id << " (n " << i << ")" 
+      << " has more features than analyses! \n";
+    }
 
     NumericVector f_rt(which_idx_size);
     NumericVector f_rtmin(which_idx_size);
@@ -236,11 +132,16 @@ List rcpp_ms_make_groups_update_features(Rcpp::DataFrame features) {
 
     g_rt[i] = mean(f_rt);
     g_rt[i] = std::round(g_rt[i] / 0.001) * 0.001;
+    
+    double g_rtmin_val = min(f_rtmin);
+    double g_rtmax_val = max(f_rtmax);
+    
+    if (g_rt[i] > g_rtmax_val || g_rt[i] < g_rtmin_val) {
+      Rcpp::Rcout << "\n !! The feature group " << g_id << " (n " << i << ")" 
+      << " does not match retention time range in features!! \n";
+    }
 
-    // g_rtmin[i] = min(f_rtmin);
-    // g_rtmax[i] = max(f_rtmax);
-
-    g_rtdev[i] = max(f_rtmax) - min(f_rtmin);
+    g_rtdev[i] = g_rtmax_val - g_rtmin_val;
     g_rtdev[i] = std::round(g_rtdev[i] / 1) * 1;
 
     g_mz[i] = mean(f_mz);

@@ -241,7 +241,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           groups <- self$get_groups(
             filtered = TRUE, onlyIntensities = TRUE, average = TRUE
           )
-
+          
           groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1,
                               function(x) { max(x) <= value }
           )
@@ -360,7 +360,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1,
           function(x, value) {
-            all(x >= value, na.rm = TRUE)
+            all(x >= value | x == 0, na.rm = TRUE)
           }, value = value
         )
 
@@ -3173,15 +3173,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           private$.groups <- copy(groups)
 
           if (!self$check_correspondence()) {
-
-            if (is.null(old_groups)) {
-              self$remove_groups()
-              warning("Removed groups as correspondence did not match!.")
-
-            } else {
-              private$.groups <- old_groups
-              warning("Correspondence did not match! Groups not added.")
-            }
+            warning("Correspondence did not match! Groups not added.")
+            private$.groups <- old_groups
 
           } else {
             private$.register(
@@ -5949,11 +5942,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       features <- lapply(self$get_analyses(), function(x) {
         ft <- copy(x$features)
+        
         if ("filtered" %in% colnames(ft)) ft <- ft[!ft$filtered, ]
 
-        if (nrow(ft) == 0) {
-          return(ft)
-        }
+        if (nrow(ft) == 0) return(ft)
 
         setnames(ft, c("feature", "rt", "rtmin", "rtmax"),
           c("ID", "ret", "retmin", "retmax"),
