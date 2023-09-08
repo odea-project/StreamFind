@@ -163,6 +163,8 @@ MassSpecAnalysis <- function(name = NA_character_,
 
   x$spectra <- as.data.table(x$spectra)
   x$chromatograms <- as.data.table(x$chromatograms)
+  
+  x$features_eic <- as.list(x$features_eic)
   x$features <- as.data.table(x$features)
 
   x$version <- as.character(x$version)
