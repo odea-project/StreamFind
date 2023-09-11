@@ -29,6 +29,8 @@ files_df <- data.frame(
 
 ms <- MassSpecData$new(files = files_df)
 
+ms <- ms$subset_analyses(c(4:6, 10:12, 16:18))
+
 ms$add_settings(
   list(
     Settings_find_features_xcms3_centwave(),
@@ -41,7 +43,9 @@ ms$add_settings(
       minGroupAbundance = 3,
       excludeIsotopes = TRUE
     ),
+    Settings_load_features_ms1_StreamFind(),
     Settings_load_features_ms2_StreamFind(),
+    Settings_load_groups_ms1_StreamFind(),
     Settings_load_groups_ms2_StreamFind()
   )
 )
@@ -50,7 +54,176 @@ ms$get_history()
 
 ms$find_features()$group_features()$filter_features()
 
+suspects <- ms$get_suspects(database = db, ppm = 10, sec = 15)
+
+ms <- ms$subset_features(features = suspects)
+
+ms$load_features_ms1()$load_groups_ms1()
+
+ms$load_features_ms2()$load_groups_ms2()
+
 ms
+
+pat_fg <- ms$as_featureGroups_patRoon()
+
+
+
+pat_pl <- ms$as_MSPeakLists_patRoon()
+
+
+
+
+
+
+
+formulas <- patRoon::generateFormulasGenForm(
+  pat_fg,
+  # pat_pl,
+  mspl,
+  relMzDev = 10,
+  adduct = "[M+H]+",
+  elements = "CHNOP",
+  hetero = TRUE,
+  oc = FALSE,
+  thrMS = NULL,
+  thrMSMS = NULL,
+  thrComb = NULL,
+  maxCandidates = Inf,
+  extraOpts = NULL,
+  calculateFeatures = FALSE,
+  featThreshold = 0,
+  featThresholdAnn = 0.75,
+  absAlignMzDev = 0.01,
+  MSMode = "both",
+  isolatePrec = TRUE,
+  timeout = 120,
+  topMost = 50,
+  batchSize = 8
+)
+
+
+
+#ms$get_features()
+#ms$get_groups()
+
+patRoon::clearCache("load_features_ms2")
+
+
+
+library(patRoon)
+
+pat_fg <- ms$as_featureGroups_patRoon()
+
+pat_fg@features@features
+
+?generateMSPeakList
+
+mspl <- generateMSPeakListsMzR(
+  pat_fg,
+  maxMSRtWindow = 5,
+  precursorMzWindow = 4,
+  topMost = NULL,
+  avgFeatParams = getDefAvgPListParams(),
+  avgFGroupParams = getDefAvgPListParams()
+)
+
+# patRoon::report(pat_fg)
+# pat <- readRDS("example_pat.rds")
+
+
+if (ms$has_groups()) {
+  
+  plist <- lapply(ms$get_analyses(), function(x) {
+    
+    features <- x$features
+    features <- features[!features$filtered, ]
+    
+    groups <- unique(features$group)
+    groups <- groups[!is.na(groups)]
+    
+    glist <- lapply(groups, function(x2, features) {
+      out <- list()
+      
+      MS <- features$ms1[features$group %in% x2]
+      MSMS <- features$ms2[features$group %in% x2]
+      
+      if (length(MS) > 1) {
+        warning("")
+        MS <- MS[1]
+      }
+      
+      if (length(MSMS) > 1) {
+        warning("")
+        MSMS <- MSMS[1]
+      }
+      
+      if (!is.null(MS[[1]])) {
+        names(MS) <- "MS"
+        out <- c(out, MS)
+      }
+      
+      if (!is.null(MSMS[[1]])) {
+        names(MSMS) <- "MSMS"
+        out <- c(out, MSMS)
+      }
+      
+      out
+      
+    }, features = features)
+    
+    names(glist) <- groups
+    
+    glist
+  })
+  
+  names(plist) <- ms$get_analysis_names()
+  
+  groups <- ms$get_groups()
+  
+  aplist <- lapply(seq_len(nrow(groups)), function(x, groups) {
+    out <- list()
+    
+    MS <- groups$ms1[x]
+    MSMS <- groups$ms2[x]
+    
+    if (length(MS) > 1) {
+      warning("")
+      MS <- MS[1]
+    }
+    
+    if (length(MSMS) > 1) {
+      warning("")
+      MSMS <- MSMS[1]
+    }
+    
+    if (!is.null(MS[[1]])) {
+      names(MS) <- "MS"
+      out <- c(out, MS)
+    }
+    
+    if (!is.null(MSMS[[1]])) {
+      names(MSMS) <- "MSMS"
+      out <- c(out, MSMS)
+    }
+    
+    out
+    
+    
+  }, groups = groups)
+  
+  names(aplist) <- groups$group
+  
+  new("MSPeakLists",
+      peakLists = plist,
+      averagedPeakLists = aplist,
+      algorithm = "StreamFind"
+  )
+}
+
+
+
+
+
 
 ms$plot_spectra(analyses = 10:12, mz = 254.0594, ppm = 20, allTraces = FALSE, levels = c(1, 2), colorBy = "levels")
 # TODO make feature ms1 and feature group MS2 for PPT

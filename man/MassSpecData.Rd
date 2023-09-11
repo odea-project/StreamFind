@@ -129,6 +129,8 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \item \href{#method-MassSpecData-annotate_features}{\code{MassSpecData$annotate_features()}}
 \item \href{#method-MassSpecData-suspect_screening}{\code{MassSpecData$suspect_screening()}}
 \item \href{#method-MassSpecData-as_features_patRoon}{\code{MassSpecData$as_features_patRoon()}}
+\item \href{#method-MassSpecData-as_featureGroups_patRoon}{\code{MassSpecData$as_featureGroups_patRoon()}}
+\item \href{#method-MassSpecData-as_MSPeakLists_patRoon}{\code{MassSpecData$as_MSPeakLists_patRoon()}}
 \item \href{#method-MassSpecData-check_correspondence}{\code{MassSpecData$check_correspondence()}}
 \item \href{#method-MassSpecData-save_headers}{\code{MassSpecData$save_headers()}}
 \item \href{#method-MassSpecData-save_settings}{\code{MassSpecData$save_settings()}}
@@ -4547,11 +4549,61 @@ processing method will be searched within the \code{MassSpecData} object.}
 Creates an object with S4 class \code{features} from the package \pkg{patRoon}
 with the features in the analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$as_features_patRoon()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$as_features_patRoon(filtered = FALSE)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 An object with S4 class \code{features}.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-as_featureGroups_patRoon"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-as_featureGroups_patRoon}{}}}
+\subsection{Method \code{as_featureGroups_patRoon()}}{
+Creates an object with S4 class \code{featureGroups} from the package
+\pkg{patRoon} with the features in the analyses and feature groups.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$as_featureGroups_patRoon(filtered = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+An object with S4 class \code{featureGroups}.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-as_MSPeakLists_patRoon"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-as_MSPeakLists_patRoon}{}}}
+\subsection{Method \code{as_MSPeakLists_patRoon()}}{
+Creates an object with S4 class \code{MSPeakLists} from the package
+\pkg{patRoon} with MS and MSMS data from features in the analyses and
+feature groups.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$as_MSPeakLists_patRoon(filtered = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+An object with S4 class \code{MSPeakLists}.
 }
 }
 \if{html}{\out{<hr>}}

@@ -1135,9 +1135,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
       has_spectra <- self$has_loaded_spectra(analyses)
 
       if (all(has_spectra)) {
-
+        
+        # TODO add polarity check when getting spectra of targets
         spec_list <- lapply(self$get_analyses(analyses),
-          function(x, levels, targets, preMZr, minMS1, minMS2) {
+          function(x, levels, targets, preMZr) {
             temp <- x$spectra
             if (!is.null(levels)) temp <- temp[temp$level %in% levels, ]
             if (!is.null(targets)) {
@@ -1176,9 +1177,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
           run <- i$run
 
           if (nrow(run) > 0) {
-
+              
             if (!is.null(levels)) run <- run[run$level %in% levels, ]
-
+            
+            # TODO add polarity check when getting spectra of targets
             if (!is.null(targets)) {
 
               trim <- function(v, a, b) rowSums(mapply(function(a, b) v >= a & v <= b, a = a, b = b)) > 0
@@ -3587,10 +3589,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
         analyses <- lapply(analyses, function(x, ms2) {
 
           ana <- x$name
+          
           ana_ms2 <- ms2[ms2$analysis %in% ana, ]
 
           fts_all <- x$features$feature
+          
           fts_ms2 <- lapply(fts_all, function(x2, ana_ms2) {
+            
             ft_ms2 <- ana_ms2[ana_ms2$id %in% x2, ]
 
             if (nrow(ft_ms2) > 0) {
@@ -3601,7 +3606,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
               NULL
             }
           }, ana_ms2 = ana_ms2)
+          
           x$features$ms2 <- fts_ms2
+          
           x
         }, ms2 = ms2)
 
@@ -3741,7 +3748,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         if (nrow(ms1) > 0) {
           ms1 <- split(ms1, ms1$id)
-          groups <- self$get_groups()
+          groups <- self$get_groups(filtered = TRUE)
           groups <- groups$group
           groups_ms1 <- lapply(groups, function(x, ms1) {
             temp <- ms1[[x]]
@@ -3857,7 +3864,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             self$load_features_ms2(settings = settingsFeatures)
           }
 
-          if (all(self$has_loaded_features_ms2())) {
+          if (any(self$has_loaded_features_ms2())) {
             ms2 <- self$get_groups_ms2(
               isolationWindow = NULL,
               mzClustFeatures = NULL,
@@ -3886,7 +3893,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         if (nrow(ms2) > 0) {
           ms2 <- split(ms2, ms2$id)
-          groups <- self$get_groups()
+          groups <- self$get_groups(filtered = TRUE)
           groups <- groups$group
           groups_ms2 <- lapply(groups, function(x, ms2) {
             temp <- ms2[[x]]
@@ -4509,7 +4516,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
             if (nrow(rem_fts) > 0) {
               new_ms <- self$clone()
-              new_ms <- suppressMessages(new_ms$remove_features(rem_fts))
+              new_ms <- suppressMessages(
+                new_ms$remove_features(rem_fts, filtered = TRUE)
+              )
               message("\U2713 Subset with ",
                       nrow(new_ms$get_features()),
                       " features created!"
@@ -4549,7 +4558,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         if (length(groups_rem) > 0) {
           new_ms <- self$clone(deep = TRUE)
-          new_ms <- suppressMessages(new_ms$remove_groups(groups_rem))
+          new_ms <- suppressMessages(
+            new_ms$remove_groups(groups_rem, filtered = TRUE)
+          )
           message("\U2713 Subset with ",
                   nrow(new_ms$get_groups()),
                   " feature groups created!"
@@ -5920,32 +5931,38 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @return An object with S4 class `features`.
     #'
-    as_features_patRoon = function() {
+    as_features_patRoon = function(filtered = FALSE) {
+      
       if (!requireNamespace("patRoon", quietly = TRUE)) {
         return(NULL)
       }
 
       anaInfo <- self$get_overview()
+      
       anaInfo <- data.frame(
         "path" = dirname(anaInfo$file),
         "analysis" = anaInfo$analysis,
         "group" = anaInfo$replicate,
         "blank" = anaInfo$blank
       )
+      
       anaInfo$blank[is.na(anaInfo$blank)] <- ""
 
       polarities <- self$get_polarities()
+      
       if (length(unique(polarities)) > 1) anaInfo$set <- polarities
 
       anaInfo$file <- self$get_files()
+      
       rownames(anaInfo) <- seq_len(nrow(anaInfo))
 
-      features <- lapply(self$get_analyses(), function(x) {
+      features <- lapply(self$get_analyses(), function(x, without_filtered_features) {
+        
         ft <- copy(x$features)
         
-        if ("filtered" %in% colnames(ft)) ft <- ft[!ft$filtered, ]
-
-        if (nrow(ft) == 0) return(ft)
+        if (without_filtered_features) {
+          if ("filtered" %in% colnames(ft)) ft <- ft[!ft$filtered, ]
+        }
 
         setnames(ft, c("feature", "rt", "rtmin", "rtmax"),
           c("ID", "ret", "retmin", "retmax"),
@@ -5959,27 +5976,45 @@ MassSpecData <- R6::R6Class("MassSpecData",
             "intensity", "area"
           )
         )
-
-        # ft$ID <- as.numeric(gsub(".*_f", "", ft$ID))
-
-        return(ft)
-      })
-
+        
+        # when features are removed updates the index
+        # TODO feature ID must change?
+        if (nrow(ft) > 0 && nrow(ft) != nrow(x$features)) {
+          # ft$ID <- gsub("_f.*", "", ft$ID )
+          # ft <- ft[order(ft$mz), ]
+          # ft <- ft[order(ft$ret), ]
+          # ft$index <- seq_len(nrow(ft))
+          # ft$ID <- paste0(ft$ID, "_f", ft$index)
+        }
+        
+        ft <- ft[order(ft$mz), ]
+        ft <- ft[order(ft$ret), ]
+        ft$index <- seq_len(nrow(ft))
+        
+        ft
+      }, without_filtered_features = !filtered)
+      
       if (length(unique(polarities)) > 1) {
+        
         features <- lapply(features, function(x) {
           if (nrow(x) == 0) {
+            x$mass <- NULL
             return(x)
           }
+          
           x$mzmin <- x$mass - (x$mz - x$mzmin)
           x$mzmax <- x$mass + (x$mzmax - x$mz)
           x$mz <- x$mass
           x$mass <- NULL
+          
           return(x)
         })
+        
         features_obj <- new("featuresSet",
           features = features, analysisInfo = anaInfo,
           algorithm = "openms-set"
         )
+        
       } else {
         features_obj <- new("featuresOpenMS",
           features = features, analysisInfo = anaInfo
@@ -5987,6 +6022,225 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       return(features_obj)
+    },
+    
+    #' @description
+    #' Creates an object with S4 class `featureGroups` from the package 
+    #' \pkg{patRoon} with the features in the analyses and feature groups.
+    #'
+    #' @return An object with S4 class `featureGroups`.
+    #'
+    as_featureGroups_patRoon = function(filtered = FALSE) {
+      
+      if (!requireNamespace("patRoon", quietly = TRUE)) {
+        return(NULL)
+      }
+      
+      pat_features <- ms$as_features_patRoon(filtered)
+      
+      features <- pat_features@features
+      
+      n_analyses <- length(features)
+      
+      groups <- ms$get_groups(filtered = filtered, onlyIntensities = TRUE)
+      groups_cols <- groups$group
+      groups[["group"]] <- NULL
+      groups_trans <- data.table::transpose(groups)
+      colnames(groups_trans) <- groups_cols
+      
+      groups_info <- ms$get_groups(filtered = filtered)
+      groups_info <- groups_info[, 1:3]
+      groups_info_rows <- groups_info$group
+      groups_info[["group"]] <- NULL
+      groups_info <- as.data.frame(groups_info)
+      rownames(groups_info) <- groups_info_rows
+      colnames(groups_info) <- c("rts", "mzs")
+      
+      ftindex <- data.table::data.table(rep(0, n_analyses))
+      colnames(ftindex) <- groups_cols[1]
+      for(i in groups_cols) {
+        ftindex[[i]] <- rep(0, n_analyses)
+      }
+      
+      for(i in seq_len(n_analyses)) {
+        fts_temp <- features[[i]]
+        if (nrow(fts_temp) > 0) {
+          for (j in groups_cols) {
+            # takes that feature index column was updated with as_features_patRoon
+            idx_temp <- fts_temp$index[fts_temp$group %in% j]
+            if (length(idx_temp) > 0) {
+              if (length(idx_temp) > 1) {
+                warning("More than one feature per analyses assigned to a feature group!")
+              } else {
+                ftindex[[j]][i] <- idx_temp
+              }
+            }
+          }
+        }
+      }
+      
+      if (TRUE %in% grepl("Set", is(pat_features))) {
+        polarity_set <- c("positive", "negatgive")
+        names(polarity_set) <- c("[M+H]+", "[M-H]-")
+        
+        neutralMasses <- groups_info$mzs
+        names(neutralMasses) <- groups_cols
+        
+        annotations_entry <- data.table::rbindlist(pat_features@features)
+        annotations_entry$neutralMass <- neutralMasses[annotations_entry$group]
+        annotations_entry$set <- polarity_set[annotations_entry$adduct]
+        
+        cols_to_keep <- c("set", "group", "adduct", "neutralMass")
+        annotations_entry <- annotations_entry[, cols_to_keep, with = FALSE]
+        
+        new("featureGroupsSet",
+          groups = groups_trans,
+          analysisInfo = pat_features@analysisInfo,
+          groupInfo = groups_info,
+          features = pat_features,
+          ftindex = ftindex,
+          annotations = annotations_entry,
+          algorithm = "openms-set"
+        )
+        
+      } else {
+        new("featureGroupsOpenMS",
+          groups = groups_trans,
+          analysisInfo = pat_features@analysisInfo,
+          groupInfo = groups_info,
+          features = pat_features,
+          ftindex = ftindex
+        )
+      }
+    },
+    
+    #' @description
+    #' Creates an object with S4 class `MSPeakLists` from the package 
+    #' \pkg{patRoon} with MS and MSMS data from features in the analyses and 
+    #' feature groups.
+    #'
+    #' @return An object with S4 class `MSPeakLists`.
+    #'
+    as_MSPeakLists_patRoon = function(filtered = FALSE) {
+      
+      if (ms$has_groups()) {
+        
+        correct_spectrum <- function(s, t, out) {
+          if (length(s) > 1) {
+            warning("")
+            s <- s[1]
+          }
+          
+          names(s) <- t
+          
+          if (!is.null(s[[1]])) {
+            n_traces <- nrow(s[[1]])
+            
+            if (n_traces > 0) {
+              s[[1]][["id"]] <- seq_len(n_traces)
+              
+              if (!"isPre" %in% colnames(s[[1]])) {
+                s[[1]][["isPre"]] <- rep(FALSE, n_traces)
+              }
+              
+              cols_to_keep <- c("id", "mz", "intensity", "isPre")
+              s[[1]] <- s[[1]][, cols_to_keep, with = FALSE]
+              
+              colnames(s[[1]]) <- c("ID", "mz", "intensity", "precursor")
+            }
+          }
+          
+          out <- c(out, s)
+          
+          out
+        }
+        
+        plist <- lapply(ms$get_analyses(), function(x, filtered, correct_spectrum) {
+          
+          features <- x$features
+          
+          if (!filtered) features <- features[!features$filtered, ]
+          
+          groups <- unique(features$group)
+          groups <- groups[!is.na(groups)]
+          
+          glist <- lapply(groups, function(x2, features, correct_spectrum) {
+            out <- list()
+            
+            MS <- features$ms1[features$group %in% x2]
+            MSMS <- features$ms2[features$group %in% x2]
+            
+            out <- correct_spectrum(MS, "MS", out)
+            out <- correct_spectrum(MSMS, "MSMS", out)
+            
+            out
+            
+          }, features = features, correct_spectrum = correct_spectrum)
+          
+          names(glist) <- groups
+          
+          glist
+        }, filtered = filtered, correct_spectrum = correct_spectrum)
+        
+        names(plist) <- ms$get_analysis_names()
+        
+        plist <- plist[vapply(plist, function(x) length(x) > 0, FALSE)]
+        
+        groups <- ms$get_groups(filtered = filtered)
+        
+        aplist <- lapply(seq_len(nrow(groups)), function(x, groups, correct_spectrum) {
+          out <- list()
+          
+          MS <- groups$ms1[x]
+          MSMS <- groups$ms2[x]
+          
+          out <- correct_spectrum(MS, "MS", out)
+          out <- correct_spectrum(MSMS, "MSMS", out)
+          
+          out
+          
+        }, groups = groups, correct_spectrum = correct_spectrum)
+        
+        names(aplist) <- groups$group
+        
+        settings <- self$get_settings("load_groups_ms2")
+        parameters <- settings$load_groups_ms2$parameters
+        
+        pat_param <- list(
+          "clusterMzWindow" = 0.005,
+          "topMost" = 100,
+          "minIntensityPre" = 50,
+          "minIntensityPost" = 50,
+          "avgFun" = mean,
+          "method" = "hclust",
+          "pruneMissingPrecursorMS" = TRUE,
+          "retainPrecursorMSMS" = TRUE
+        )
+        
+        if ("mzClust" %in% names(parameters)) {
+          pat_param$clusterMzWindow <- parameters$mzClust
+        }
+        
+        if ("minIntensity" %in% names(parameters)) {
+          pat_param$minIntensityPre <- parameters$minIntensity
+          pat_param$minIntensityPost <- parameters$minIntensity
+        }
+
+        plfinal <- new("MSPeakLists",
+          peakLists = plist,
+          averagedPeakLists = aplist,
+          avgPeakListArgs = pat_param,
+          origFGNames = groups$group,
+          algorithm = "mzr"
+        )
+        
+        plfinal@averagedPeakLists <- aplist
+        
+        plfinal
+        
+      } else {
+        warning("No feature groups found to make the MSPeakLists S4 object!")
+      }
     },
 
     ## checks -----

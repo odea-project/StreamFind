@@ -327,13 +327,13 @@
       temp$filtered[is.na(temp$group)] <- TRUE
     }
 
+    # updates the order and index but not necessary changes the ID
     temp <- temp[order(temp$mz), ]
     temp <- temp[order(temp$rt), ]
     temp <- temp[order(temp$filtered), ]
+    temp$index <- seq_len(nrow(temp))
 
     if (build_feature_ids) {
-      temp$index <- seq_len(nrow(temp))
-
       d_dig <- max(temp$mzmax - temp$mzmin)
       if (d_dig < 0.1) {
         d_dig <- sub('.*\\.(0+)[1-9].*', '\\1', as.character(d_dig))
@@ -353,8 +353,6 @@
         temp$index
       )
     }
-    
-    # if ("mz132.89_rt176_f409" %in% temp$feature) browser() #M134_R176_763 #mz132.89_rt176_f409 #19_ww_in_neg-r003
 
     setcolorder(
       temp,
