@@ -1026,6 +1026,22 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       bpc
     },
+    
+    #' @description
+    #' Gets metadata from each analysis.
+    #'
+    #' @return A data.table.
+    #'
+    get_metadata = function(analyses = NULL) {
+      analyses <- private$.check_analyses_argument(analyses)
+      if (is.null(analyses)) return(data.table())
+      metadata <- lapply(private$.analyses[analyses], function(x) {
+        as.data.table(x$metadata)
+      })
+      metadata <- rbindlist(metadata, idcol = "analysis", fill = TRUE)
+
+      metadata
+    },
 
     #' @description
     #' Gets spectra from each analysis.
@@ -2841,6 +2857,70 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       } else {
         warning("Not done, check the value!")
+      }
+      invisible(self)
+    },
+    
+    #' @description
+    #' Adds metadata to analyses.
+    #'
+    #' @param value A data.frame or data.table with metadata for the analyses.
+    #' The data.frame must have an analysis column and the same number of rows 
+    #' as the number of analyses in the MassSpecData. Metadata is added using 
+    #' any extra columns of the data.frame.
+    #'
+    #' @return Invisible.
+    #'
+    add_metadata = function(value = NULL) {
+      
+      if (is.data.frame(value)) {
+        if (nrow(value) == self$get_number_analyses()) {
+          if ("analysis" %in% colnames(value)) {
+            if (ncol(value) >= 2) {
+              value <- value[order(value$analysis), ]
+              value <- as.data.table(value)
+              setcolorder(value, "analysis")
+              
+              col_names <- colnames(value)
+              col_names <- col_names[2:length(col_names)]
+              
+              value <- split(value, value$analysis)
+              
+              private$.analyses <- Map(
+                function(x, y) {
+                  
+                  cols <- colnames(y)
+                  cols <- cols[2:length(cols)]
+                  
+                  for (i in cols) x$metadata[[i]] <- y[[i]][1]
+                  
+                  x
+                },
+                private$.analyses, value
+              )
+              
+              private$.register(
+                "added",
+                "analyses",
+                "metadata",
+                NA_character_,
+                NA_character_,
+                paste(col_names, collapse = "; ")
+              )
+              
+              message("\U2713 Metadata ", paste(col_names, collapse = ", "), " added!")
+              
+            } else {
+              warning("No metadata found in the data.frame/data.table!")
+            }
+          } else {
+            warning("The column analysis must be in the data.frame/data.table!")
+          }
+        } else {
+          warning("The data.frame/data.table must have the same number of rows as the number of analyses in the MassSpecData!")
+        }
+      } else {
+        warning("The argument value must be a data.frame/data.table!")
       }
       invisible(self)
     },

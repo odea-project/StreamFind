@@ -43,6 +43,7 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \item \href{#method-MassSpecData-get_run}{\code{MassSpecData$get_run()}}
 \item \href{#method-MassSpecData-get_tic}{\code{MassSpecData$get_tic()}}
 \item \href{#method-MassSpecData-get_bpc}{\code{MassSpecData$get_bpc()}}
+\item \href{#method-MassSpecData-get_metadata}{\code{MassSpecData$get_metadata()}}
 \item \href{#method-MassSpecData-get_spectra}{\code{MassSpecData$get_spectra()}}
 \item \href{#method-MassSpecData-get_chromatograms}{\code{MassSpecData$get_chromatograms()}}
 \item \href{#method-MassSpecData-get_eic}{\code{MassSpecData$get_eic()}}
@@ -67,6 +68,7 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \item \href{#method-MassSpecData-add_analyses}{\code{MassSpecData$add_analyses()}}
 \item \href{#method-MassSpecData-add_replicate_names}{\code{MassSpecData$add_replicate_names()}}
 \item \href{#method-MassSpecData-add_blank_names}{\code{MassSpecData$add_blank_names()}}
+\item \href{#method-MassSpecData-add_metadata}{\code{MassSpecData$add_metadata()}}
 \item \href{#method-MassSpecData-add_spectra}{\code{MassSpecData$add_spectra()}}
 \item \href{#method-MassSpecData-add_features_eic}{\code{MassSpecData$add_features_eic()}}
 \item \href{#method-MassSpecData-add_features}{\code{MassSpecData$add_features()}}
@@ -798,6 +800,27 @@ MS data. Possible values are 1 and 2 for MS1 and MS2 data, respectively.}
 }
 \subsection{Returns}{
 A character vector.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-get_metadata"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-get_metadata}{}}}
+\subsection{Method \code{get_metadata()}}{
+Gets metadata from each analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_metadata(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A data.table.
 }
 }
 \if{html}{\out{<hr>}}
@@ -2135,6 +2158,29 @@ Adds or redefines the analysis blank replicate names.
 \describe{
 \item{\code{value}}{A character vector with the analysis blank replicate names.
 Must be of the same length as the number of analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-add_metadata"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-add_metadata}{}}}
+\subsection{Method \code{add_metadata()}}{
+Adds metadata to analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$add_metadata(value = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{A data.frame or data.table with metadata for the analyses.
+The data.frame must have an analysis column and the same number of rows
+as the number of analyses in the MassSpecData. Metadata is added using
+any extra columns of the data.frame.}
 }
 \if{html}{\out{</div>}}
 }
