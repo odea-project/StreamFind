@@ -1,14 +1,14 @@
 
 # resources --------------------------------------------------------------------
-
 all_files <- StreamFindData::get_all_file_paths()
 db <- StreamFindData::get_tof_spiked_chemicals()
+
 files_mrm <- all_files[grepl("mrm", all_files)]
 files <- all_files[1:3]
 files1 <- all_files[grepl("influent|blank", all_files)]
 files2 <- all_files[grepl("o3sw", all_files)]
-db_cols <- c("name", "mass", "rt")
 
+db_cols <- c("name", "mass", "rt")
 carbamazepin_d10 <- db[db$name %in% "Carbamazepin-d10", db_cols, with = FALSE]
 diuron_d6 <- db[db$name %in% "Diuron-d6", db_cols, with = FALSE]
 carb_pos <- carbamazepin_d10$mass + 1.007276
@@ -41,97 +41,47 @@ neutral_targets <- make_ms_targets(
   sec = sec_dev
 )
 
-# settings ---------------------------------------------------------------------
+# cached ---------------------------------------------------------------------
 
-settings_ff <- list(
-  call = "find_features",
-  algorithm = "xcms3",
-  parameters = list(xcms::CentWaveParam(
-    ppm = 12, peakwidth = c(5, 30),
-    snthresh = 10, prefilter = c(5, 1500),
-    mzCenterFun = "wMean", integrate = 1,
-    mzdiff = -0.0005, fitgauss = TRUE,
-    noise = 500, verboseColumns = TRUE,
-    firstBaselineCheck = TRUE,
-    extendLengthMSW = FALSE
-  ))
-)
+patRoon::clearCache("parsed_ms_analyses")
+patRoon::clearCache("parsed_ms_spectra")
+patRoon::clearCache("load_features_ms1")
+patRoon::clearCache("load_features_ms2")
+patRoon::clearCache("load_groups_ms1")
+patRoon::clearCache("load_groups_ms2")
 
-settings_gf <- list(
-  "call" = "group_features",
-  "algorithm" = "xcms3",
-  "parameters" = list(
-    # rtalign = FALSE,
-    groupParam = xcms::PeakDensityParam(
-      sampleGroups = "holder",
-      bw = 5,
-      minFraction = 0.5,
-      minSamples = 1,
-      binSize = 0.008,
-      maxFeatures = 100
-    )
-  )
-)
+patRoon::clearCache("all")
 
-settingsSettings_load_features_ms1_StreamFind <- list(
-  "call" = "load_features_ms1",
-  "algorithm" = "StreamFind",
-  "parameters" = list(
-    rtWindow = c(-2, 2),
-    mzWindow = c(-1, 6),
-    mzClust = 0.003,
-    minIntensity = 250,
-    filtered = FALSE,
-    runParallel = TRUE,
-    verbose = FALSE
-  )
-)
+# spectra ----------------------------------------------------------------------
 
-settingsSettings_load_features_ms2_StreamFind <- list(
-  "call" = "load_features_ms2",
-  "algorithm" = "StreamFind",
-  "parameters" = list(
-    isolationWindow = 1.3,
-    mzClust = 0.003,
-    minIntensity = 0,
-    filtered = FALSE,
-    runParallel = TRUE,
-    verbose = FALSE
-  )
-)
+ms <- MassSpecData$new(files = files2)
 
-settingsSettings_load_groups_ms1_StreamFind <- list(
-  "call" = "load_groups_ms1",
-  "algorithm" = "StreamFind",
-  "parameters" = list(
-    mzClust = 0.003,
-    minIntensity = 1000,
-    verbose = FALSE,
-    filtered = FALSE,
-    runParallel = TRUE
-  )
-)
+ms$get_eic(mass = diu)
 
-settingsSettings_load_groups_ms2_StreamFind <- list(
-  "call" = "load_groups_ms2",
-  "algorithm" = "StreamFind",
-  "parameters" = list(
-    mzClust = 0.003,
-    minIntensity = 250,
-    filtered = FALSE,
-    runParallel = TRUE,
-    verbose = FALSE
-  )
-)
+ms$get_spectra(1)
 
-# r6 test ----------------------------------------------------------------------
+ms$get_ms2(analyses = c(2, 5), mass = diu, rt = diu_rt)
 
-# patRoon::clearCache("parsed_ms_analyses")
-# patRoon::clearCache("parsed_ms_spectra")
-# patRoon::clearCache("load_features_ms1")
-# patRoon::clearCache("load_features_ms2")
-# patRoon::clearCache("load_groups_ms1")
-# patRoon::clearCache("load_groups_ms2")
+ms$get_analyses(1)[[1]]$run
+
+rcpp_parse_ms_analysis(all_files[7])
+
+rcpp_parse_spectra_headers(all_files[7])
+
+rcpp_parse_ms_analysis_spectra(ms$get_analyses(1)[[1]])
+
+rcpp_parse_spectra_headers(files2[1])
+
+rcpp_parse_spectra(files2[1])
+
+
+
+
+
+
+
+
+
 
 
 ms <- MassSpecData$new(files = all_files[10:21],

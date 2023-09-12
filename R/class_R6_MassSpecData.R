@@ -901,8 +901,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           run <- x$run
           polarity <- run$polarity
 
-          scans_pos <- length(polarity[polarity %in% "positive"])
-          scans_neg <- length(polarity[polarity %in% "negative"])
+          scans_pos <- length(polarity[polarity == 1])
+          scans_neg <- length(polarity[polarity == -1])
 
           ratio <- scans_pos/scans_neg
 
@@ -1051,6 +1051,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     get_spectra = function(analyses = NULL,
                            levels = NULL,
+                           mass = NULL,
                            mz = NULL,
                            rt = NULL,
                            ppm = 20,
@@ -1072,8 +1073,45 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (!any(is.numeric(minIntensityMS2) | is.integer(minIntensityMS2))) {
         minIntensityMS2 <- 0
       }
-
-      targets <- make_ms_targets(mz, rt, ppm, sec, id)
+      
+      if (!is.null(mass)) {
+        neutral_targets <- make_ms_targets(mass, rt, ppm, sec, id)
+        
+        targets <- list()
+        
+        polarities <- unique(self$get_polarities())
+        
+        for (i in polarities) {
+          if (i %in% "positive") {
+            temp_tar <- copy(neutral_targets)
+            temp_tar$mz <- temp_tar$mz + 1.00726
+            temp_tar$mzmax <- temp_tar$mzmax + 1.00726
+            temp_tar$mzmin <- temp_tar$mzmin + 1.00726
+            temp_tar$polarity <- 1
+            temp_tar$id <- paste0(temp_tar$id, "/positive")
+            targets[[length(targets) + 1]] <- temp_tar
+          } else if (i %in% "negative") {
+            temp_tar <- copy(neutral_targets)
+            temp_tar$mz <- temp_tar$mz - 1.00726
+            temp_tar$mzmax <- temp_tar$mzmax - 1.00726
+            temp_tar$mzmin <- temp_tar$mzmin - 1.00726
+            temp_tar$polarity <- -1
+            temp_tar$id <- paste0(temp_tar$id, "/negative")
+            targets[[length(targets) + 1]] <- temp_tar
+          }
+        }
+        
+        if (length(targets) > 0) {
+          targets <- rbindlist(targets, fill = TRUE)
+          
+        } else {
+          warning("Targets could not be made from mass as polarities are not defined!")
+          return(data.table())
+        }
+        
+      } else {
+        targets <- make_ms_targets(mz, rt, ppm, sec, id)
+      }
 
       num_cols <- c("mz", "rt", "mzmin", "mzmax", "rtmin", "rtmax")
 
@@ -1367,6 +1405,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return A data.table.
     #'
     get_eic = function(analyses = NULL,
+                       mass = NULL,
                        mz = NULL,
                        rt = NULL,
                        ppm = 20,
@@ -1377,6 +1416,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       eic <- self$get_spectra(
         analyses,
         levels = 1,
+        mass,
         mz, rt, ppm, sec, id,
         allTraces = TRUE,
         isolationWindow = 1.3,
@@ -1389,9 +1429,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
         eic <- as.data.table(eic)
         if (!"id" %in% colnames(eic)) eic$id <- NA_character_
         eic <- eic[, `:=`(intensity = sum(intensity)),
-          by = c("analysis", "id", "rt")
+          by = c("analysis", "polarity", "id", "rt")
         ][]
-        eic <- eic[, c("analysis", "id", "rt", "intensity"), with = FALSE]
+        eic <- eic[, c("analysis", "polarity", "id", "rt", "intensity"), with = FALSE]
         eic <- unique(eic)
       }
 
@@ -1404,6 +1444,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return A data.frame.
     #'
     get_ms1 = function(analyses = NULL,
+                       mass = NULL,
                        mz = NULL,
                        rt = NULL,
                        ppm = 20,
@@ -1418,6 +1459,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       ms1 <- self$get_spectra(
         analyses = analyses,
         levels = 1,
+        mass = mass,
         mz = mz,
         rt = rt,
         ppm = ppm,
@@ -1463,6 +1505,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return A data.frame.
     #'
     get_ms2 = function(analyses = NULL,
+                       mass = NULL,
                        mz = NULL,
                        rt = NULL,
                        ppm = 20,
@@ -1478,6 +1521,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       ms2 <- self$get_spectra(
         analyses = analyses,
         levels = 2,
+        mass = mass,
         mz = mz,
         rt = rt,
         ppm = ppm,
@@ -3376,7 +3420,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     load_spectra = function(runParallel = FALSE) {
       spec <- self$get_spectra(
-        analyses = NULL, levels = NULL,
+        analyses = NULL, levels = NULL, mass = NULL,
         mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
         allTraces = TRUE, isolationWindow = 1.3,
         minIntensityMS1 = 0, minIntensityMS2 = 0,
@@ -4874,6 +4918,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     plot_spectra = function(analyses = NULL,
                             levels = NULL,
+                            mass = NULL,
                             mz = NULL,
                             rt = NULL,
                             ppm = 20,
@@ -4888,7 +4933,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                             colorBy = "analyses") {
 
       spec <- self$get_spectra(
-        analyses, levels, mz, rt, ppm, sec, id,
+        analyses, levels, mass, mz, rt, ppm, sec, id,
         allTraces = allTraces, isolationWindow,
         minIntensityMS1, minIntensityMS2,
         runParallel
@@ -4929,6 +4974,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return An interactive plot.
     #'
     plot_xic = function(analyses = NULL,
+                        mass = NULL,
                         mz = NULL,
                         rt = NULL,
                         ppm = 20,
@@ -4945,6 +4991,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       xic <- self$get_spectra(
         analyses,
         levels = 1,
+        mass,
         mz, rt, ppm, sec, id,
         allTraces = TRUE,
         isolationWindow = 1.3,
@@ -4975,6 +5022,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return A plot.
     #'
     plot_eic = function(analyses = NULL,
+                        mass = NULL,
                         mz = NULL,
                         rt = NULL,
                         ppm = 20,
@@ -4986,7 +5034,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                         colorBy = "targets",
                         interactive = TRUE) {
 
-      eic <- self$get_eic(analyses, mz, rt, ppm, sec, id, runParallel)
+      eic <- self$get_eic(analyses, mass, mz, rt, ppm, sec, id, runParallel)
 
       if (nrow(eic) == 0) {
         message("\U2717 Traces not found for the targets!")

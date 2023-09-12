@@ -28,8 +28,14 @@ trim_spectra_targets <- function(traces, targets, preMZr) {
   tg_list <- lapply(seq_len(nrow(targets)),
     function(z, traces, targets, preMZr) {
       tg <- traces
+      
       cutRt <- trim_vector(tg$rt, targets$rtmin[z], targets$rtmax[z])
       tg <- tg[cutRt, ]
+      
+      if ("polarity" %in% colnames(targets)) {
+        tg <- tg[tg$polarity == targets$polarity[z], ]
+      }
+      
       if (nrow(tg) > 0) {
         if (!is.null(preMZr)) {
           cutMZ <- trim_vector(tg$mz, targets$mzmin[z], targets$mzmax[z])

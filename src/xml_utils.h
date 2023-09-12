@@ -36,12 +36,12 @@ namespace xml_utils {
     std::vector<int> index;
     std::vector<int> scan;
     std::vector<int> traces;
-    std::vector<std::string> polarity;
+    std::vector<int> polarity;
     std::vector<double> bpcmz;
     std::vector<double> bpcint;
     std::vector<double> ticint;
     std::vector<int> level;
-    std::vector<std::string> mode;
+    std::vector<int> mode;
     std::vector<double> mzlow;
     std::vector<double> mzhigh;
     std::vector<double> rt;
@@ -57,7 +57,7 @@ namespace xml_utils {
     std::vector<int> index;
     std::vector<std::string> id;
     std::vector<int> traces;
-    std::vector<std::string> polarity;
+    std::vector<int> polarity;
     std::vector<double> pre_mz;
     std::vector<double> pre_ce;
     std::vector<double> pro_mz;
@@ -90,7 +90,7 @@ namespace xml_utils {
     std::vector<int> spec_id;
     std::vector<int> scan;
     std::vector<int> spec_defaultArrayLength;
-    std::vector<std::string> spec_polarity;
+    std::vector<int> spec_polarity;
     std::vector<double> spec_bpcmz;
     std::vector<double> spec_bpcint;
     std::vector<double> spec_ticint;

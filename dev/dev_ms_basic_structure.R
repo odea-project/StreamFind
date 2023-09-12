@@ -62,11 +62,10 @@ ms$load_features_ms1()$load_groups_ms1()
 
 ms$load_features_ms2()$load_groups_ms2()
 
-ms
+# View(ms$get_features())
+
 
 pat_fg <- ms$as_featureGroups_patRoon()
-
-
 
 pat_pl <- ms$as_MSPeakLists_patRoon()
 
