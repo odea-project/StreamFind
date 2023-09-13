@@ -894,36 +894,40 @@ MassSpecData <- R6::R6Class("MassSpecData",
       polarities <- private$.get_analyses_entry(analyses, "polarity")
 
       analyses <- unique(names(polarities))
-
+      
       if (length(polarities) > length(analyses)) {
-
-        polarities <- vapply(private$.analyses[analyses], function(x) {
-          run <- x$run
-          polarity <- run$polarity
-
-          scans_pos <- length(polarity[polarity == 1])
-          scans_neg <- length(polarity[polarity == -1])
-
-          ratio <- scans_pos/scans_neg
-
-          if (ratio < 1.2 & ratio > 0.8) {
-            warning("Multiple polarities detected! Currently, find_features algorithms cannot handled multiple polarities properly.", )
-            return(NA_character_)
-
-          } else if (ratio > 1.2) {
-            per_pos_pol <- round((scans_pos / nrow(run)) * 100, digits = 0)
-            warning("Multiple polarities detected but positive polarity is present in ", per_pos_pol, "% of the spectra! Advisable to remove data from negative ionization." )
-            return("positive")
-
-          } else {
-            per_neg_pol <- round((scans_neg / nrow(run)) * 100, digits = 0)
-            warning("Multiple polarities detected but negative polarity is present in ", per_neg_pol, "% of the spectra! Advisable to remove data from positive ionization." )
-            return("negative")
-          }
-        }, "")
-
-        names(polarities) <- analyses
+        message("\U2139 Multiple polarities detected in each analysis! Some find_features algorithms cannot handled multiple polarities properly.")
       }
+
+      # if (length(polarities) > length(analyses)) {
+      # 
+      #   polarities <- vapply(private$.analyses[analyses], function(x) {
+      #     run <- x$run
+      #     polarity <- run$polarity
+      # 
+      #     scans_pos <- length(polarity[polarity == 1])
+      #     scans_neg <- length(polarity[polarity == -1])
+      # 
+      #     ratio <- scans_pos/scans_neg
+      # 
+      #     if (ratio < 1.2 & ratio > 0.8) {
+      #       warning("Multiple polarities detected! Currently, find_features algorithms cannot handled multiple polarities properly.", )
+      #       return(NA_character_)
+      # 
+      #     } else if (ratio > 1.2) {
+      #       per_pos_pol <- round((scans_pos / nrow(run)) * 100, digits = 0)
+      #       warning("Multiple polarities detected but positive polarity is present in ", per_pos_pol, "% of the spectra! Advisable to remove data from negative ionization." )
+      #       return("positive")
+      # 
+      #     } else {
+      #       per_neg_pol <- round((scans_neg / nrow(run)) * 100, digits = 0)
+      #       warning("Multiple polarities detected but negative polarity is present in ", per_neg_pol, "% of the spectra! Advisable to remove data from positive ionization." )
+      #       return("negative")
+      #     }
+      #   }, "")
+      # 
+      #   names(polarities) <- analyses
+      # }
       polarities
     },
 

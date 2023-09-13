@@ -1,45 +1,65 @@
 
 # resources --------------------------------------------------------------------
-all_files <- StreamFindData::get_all_file_paths()
-db <- StreamFindData::get_tof_spiked_chemicals()
 
-files_mrm <- all_files[grepl("mrm", all_files)]
-files <- all_files[1:3]
-files1 <- all_files[grepl("influent|blank", all_files)]
-files2 <- all_files[grepl("o3sw", all_files)]
+## files -----------------------------------------------------------------------
+# all_files <- StreamFindData::get_all_file_paths()
+# files_mrm <- all_files[grepl("mrm", all_files)]
+# files <- all_files[1:3]
+# files1 <- all_files[grepl("influent|blank", all_files)]
+# files2 <- all_files[grepl("o3sw", all_files)]
 
-db_cols <- c("name", "mass", "rt")
-carbamazepin_d10 <- db[db$name %in% "Carbamazepin-d10", db_cols, with = FALSE]
-diuron_d6 <- db[db$name %in% "Diuron-d6", db_cols, with = FALSE]
-carb_pos <- carbamazepin_d10$mass + 1.007276
-carb <- carbamazepin_d10$mass
-carb_rt <- carbamazepin_d10$rt
-diu_pos <- diuron_d6$mass + 1.007276
-diu <- diuron_d6$mass
-diu_rt <- diuron_d6$rt
+path <- "C:/Users/Ricardo Cunha/Documents/Work/example_ms_files"
+files <- list.files(path, pattern = ".mzML", full.names = TRUE)
 
-sec_dev <- 30
-ppm_dev <- 10
+## databases -------------------------------------------------------------------
+# db <- StreamFindData::get_tof_spiked_chemicals()
+# 
+# db_cols <- c("name", "mass", "rt")
+# carbamazepin_d10 <- db[db$name %in% "Carbamazepin-d10", db_cols, with = FALSE]
+# diuron_d6 <- db[db$name %in% "Diuron-d6", db_cols, with = FALSE]
+# carb_pos <- carbamazepin_d10$mass + 1.007276
+# carb <- carbamazepin_d10$mass
+# carb_rt <- carbamazepin_d10$rt
+# diu_pos <- diuron_d6$mass + 1.007276
+# diu <- diuron_d6$mass
+# diu_rt <- diuron_d6$rt
+# 
+# sec_dev <- 30
+# ppm_dev <- 10
+# 
+# targets <- make_ms_targets(
+#   mz = data.frame(
+#     id = c("tg1", "tg2"),
+#     mz = c(carb_pos, diu_pos),
+#     rt = c(carb_rt, diu_rt)
+#   ),
+#   ppm = ppm_dev,
+#   sec = sec_dev
+# )
+# 
+# neutral_targets <- make_ms_targets(
+#   mz = data.frame(
+#     name = c("tg1", "tg2"),
+#     mz = c(carb, diu),
+#     rt = c(carb_rt, diu_rt)
+#   ),
+#   ppm = ppm_dev,
+#   sec = sec_dev
+# )
 
-targets <- make_ms_targets(
-  mz = data.frame(
-    id = c("tg1", "tg2"),
-    mz = c(carb_pos, diu_pos),
-    rt = c(carb_rt, diu_rt)
-  ),
-  ppm = ppm_dev,
-  sec = sec_dev
-)
+cols <- c("name", "formula", "mass", "rt")
 
-neutral_targets <- make_ms_targets(
-  mz = data.frame(
-    name = c("tg1", "tg2"),
-    mz = c(carb, diu),
-    rt = c(carb_rt, diu_rt)
-  ),
-  ppm = ppm_dev,
-  sec = sec_dev
-)
+# tof_db <- paste0(path, "/qc_MS2_pos.csv")
+# tof_db <- data.table::fread(tof_db)
+# tof_db <- tof_db[, cols, with = FALSE]
+
+afin_db <- paste0(path, "/Composition_Mix-Fusion.csv")
+afin_db <- data.table::fread(afin_db)
+afin_db <- afin_db[, cols, with = FALSE]
+
+# ude_db <- paste0(path, "/mix1_orbitrap_ude.csv")
+# ude_db <- data.table::fread(ude_db)
+# ude_db <- ude_db[, cols, with = FALSE]
 
 # cached ---------------------------------------------------------------------
 
@@ -54,7 +74,26 @@ patRoon::clearCache("all")
 
 # spectra ----------------------------------------------------------------------
 
-ms <- MassSpecData$new(files = files2)
+ms <- MassSpecData$new(files = files[9])
+
+ms$get_polarities()
+
+ms$plot_eic(mz = afin_db$mass[2] + 1.00726, colorBy = "targets")
+
+ms$get_ms2(mass = afin_db$mass[2])
+
+ms$plot_bpc(levels = 1, colorBy = "polarities")
+
+
+
+
+
+ms$get_spectra(analyses = c(2, 5), mass = diu, rt = diu_rt, sec = 120, levels = 2, allTraces = FALSE)
+
+
+
+
+
 
 # ms$plot_spectra(mass = diu, rt = diu_rt, colorBy = "analyses")
 
