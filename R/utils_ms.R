@@ -49,18 +49,22 @@ trim_spectra_targets <- function(traces, targets, preMZr) {
           tg <- tg[cutMZ, ]
         }
       }
+      
       if (nrow(tg) > 0) {
         tg$id <- targets$id[z]
       } else {
         tg$id <- character()
       }
+      
       tg
     },
     traces = traces,
     preMZr = preMZr,
     targets = targets
   )
+  
   tg_df <- do.call("rbind", tg_list)
+  
   tg_df
 }
 

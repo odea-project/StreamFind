@@ -986,11 +986,15 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @return A data.table with the TIC chromatogram.
     #'
-    get_tic = function(analyses = NULL, levels = 1) {
+    get_tic = function(analyses = NULL, levels = c(1, 2)) {
+      
       analyses <- private$.check_analyses_argument(analyses)
+      
       if (is.null(analyses)) return(data.table())
+      
       tic <- lapply(private$.analyses[analyses], function(x) {
         data.table(
+          "polarity" = x$run$polarity,
           "level" = x$run$level,
           "rt" = x$run$rt,
           "intensity" = x$run$tic_intensity
@@ -1009,17 +1013,21 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @return A character vector.
     #'
-    get_bpc = function(analyses = NULL, levels = 1) {
+    get_bpc = function(analyses = NULL, levels = c(1, 2)) {
       analyses <- private$.check_analyses_argument(analyses)
+      
       if (is.null(analyses)) return(data.table())
+      
       bpc <- lapply(private$.analyses[analyses], function(x) {
         data.table(
+          "polarity" = x$run$polarity,
           "level" = x$run$level,
           "rt" = x$run$rt,
           "mz" = x$run$bpc_mz,
           "intensity" = x$run$bpc_intensity
         )
       })
+      
       bpc <- rbindlist(bpc, idcol = "analysis", fill = TRUE)
 
       bpc <- bpc[bpc$level %in% levels, ]
@@ -4912,7 +4920,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' Plots spectra for given MS analyses.
     #'
     #' @param colorBy A string of length 1. One of `analyses` (the default),
-    #' `levels`, `targets` or `replicates`.
+    #' `polarities`, `levels`, `targets` or `replicates`.
     #'
     #' @return A 3D interactive plot.
     #'
@@ -4943,6 +4951,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         message("\U2717 Traces not found for the targets!")
         return(NULL)
       }
+      
+      if ("feature" %in% colnames(spec)) spec$id <- spec$feature
 
       if ("replicates" %in% colorBy) {
         spec$replicate <- self$get_replicate_names()[spec$analysis]
@@ -5058,13 +5068,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return A plot.
     #'
     plot_tic = function(analyses = NULL,
+                        levels = c(1, 2),
                         title = NULL,
                         colorBy = "analyses",
+                        legendNames = NULL,
                         interactive = TRUE) {
 
-      tic <- self$get_tic(analyses)
-
-      tic$id <- "TIC"
+      tic <- self$get_tic(analyses, levels)
 
       if (nrow(tic) == 0) {
         message("\U2717 TIC not found for the analyses!")
@@ -5073,9 +5083,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if ("replicates" %in% colorBy) {
         tic$replicate <- self$get_replicate_names()[tic$analysis]
-      } else {
-        colorBy <- "analyses"
       }
+      
+      if (!"id" %in% colnames(tic)) tic$id <- tic$analysis
 
       if (!interactive) {
         plot_eic_static(tic, legendNames, colorBy, title)
@@ -5090,13 +5100,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return A plot.
     #'
     plot_bpc = function(analyses = NULL,
+                        levels = c(1, 2),
                         title = NULL,
                         colorBy = "analyses",
+                        legendNames = NULL,
                         interactive = TRUE) {
 
-      bpc <- self$get_bpc(analyses)
-
-      bpc$id <- "BPC"
+      bpc <- self$get_bpc(analyses, levels)
 
       if (nrow(bpc) == 0) {
         message("\U2717 BPC not found for the analyses!")
@@ -5105,9 +5115,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if ("replicates" %in% colorBy) {
         bpc$replicate <- self$get_replicate_names()[bpc$analysis]
-      } else {
-        colorBy <- "analyses"
       }
+      
+      if (!"id" %in% colnames(bpc)) bpc$id <- bpc$analysis
 
       if (!interactive) {
         plot_eic_static(bpc, legendNames, colorBy, title)
@@ -5122,6 +5132,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return A plot.
     #'
     plot_ms2 = function(analyses = NULL,
+                        mass = NULL,
                         mz = NULL,
                         rt = NULL,
                         ppm = 20, sec = 60,
@@ -5138,7 +5149,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                         interactive = TRUE) {
 
       ms2 <- self$get_ms2(
-        analyses, mz, rt, ppm, sec, id, isolationWindow,
+        analyses, mass, mz, rt, ppm, sec, id, isolationWindow,
         mzClust, isInAllSpectra, verbose, minIntensity, runParallel
       )
 
@@ -5164,12 +5175,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return A plot.
     #'
     plot_ms1 = function(analyses = NULL,
+                        mass = NULL,
                         mz = NULL,
                         rt = NULL,
                         ppm = 20,
                         sec = 60,
                         id = NULL,
-                        mzClust = 0.001,
+                        mzClust = 0.003,
                         isInAllSpectra = TRUE,
                         verbose = FALSE,
                         minIntensity = 1000,
@@ -5180,7 +5192,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                         interactive = TRUE) {
 
       ms1 <- self$get_ms1(
-        analyses, mz, rt, ppm, sec, id, mzClust, isInAllSpectra,
+        analyses, mass, mz, rt, ppm, sec, id, mzClust, isInAllSpectra,
         verbose, minIntensity, runParallel
       )
 

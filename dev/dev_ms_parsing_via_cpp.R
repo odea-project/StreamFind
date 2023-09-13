@@ -33,7 +33,7 @@ targets <- make_ms_targets(
 
 neutral_targets <- make_ms_targets(
   mz = data.frame(
-    id = c("tg1", "tg2"),
+    name = c("tg1", "tg2"),
     mz = c(carb, diu),
     rt = c(carb_rt, diu_rt)
   ),
@@ -43,12 +43,12 @@ neutral_targets <- make_ms_targets(
 
 # cached ---------------------------------------------------------------------
 
-patRoon::clearCache("parsed_ms_analyses")
-patRoon::clearCache("parsed_ms_spectra")
-patRoon::clearCache("load_features_ms1")
-patRoon::clearCache("load_features_ms2")
-patRoon::clearCache("load_groups_ms1")
-patRoon::clearCache("load_groups_ms2")
+# patRoon::clearCache("parsed_ms_analyses")
+# patRoon::clearCache("parsed_ms_spectra")
+# patRoon::clearCache("load_features_ms1")
+# patRoon::clearCache("load_features_ms2")
+# patRoon::clearCache("load_groups_ms1")
+# patRoon::clearCache("load_groups_ms2")
 
 patRoon::clearCache("all")
 
@@ -56,11 +56,30 @@ patRoon::clearCache("all")
 
 ms <- MassSpecData$new(files = files2)
 
-ms$get_eic(mass = diu)
+# ms$plot_spectra(mass = diu, rt = diu_rt, colorBy = "analyses")
 
-ms$get_spectra(1)
+# ms$plot_ms2(analyses = c(2, 5), mass = diu, rt = diu_rt, colorBy = "targets", interactive = T)
 
-ms$get_ms2(analyses = c(2, 5), mass = diu, rt = diu_rt)
+ms$plot_ms1(analyses = c(2, 5), mass = diu, rt = diu_rt, interactive = F)
+
+ms$get_ms1(analyses = c(2, 5), mass = diu, rt = diu_rt)
+
+# TODO clustering does not see polarity yet and it should be split.
+
+ms$get_tic()
+
+ms$plot_tic(levels = 1, colorBy = "polarities", interactive = F)
+
+ms$plot_eic(mass = neutral_targets, colorBy = "targets", interactive = F, legendNames = TRUE)
+
+#ms$get_eic(mass = diu)
+
+#ms$get_eic(mz = diu_pos)
+
+
+
+
+
 
 ms$get_analyses(1)[[1]]$run
 

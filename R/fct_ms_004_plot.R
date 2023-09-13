@@ -1,3 +1,74 @@
+#' @title make_colorBy_varkey
+#'
+#' @description Makes a var key vector to use a plot legend.
+#'
+#' @param data A `data.table` with the data for plotting.
+#' @param colorBy A string (length 1). One of "analyses" (the default),
+#' "polarities", "levels", "targets" or "replicates".
+#' @param legendNames A character vector with the same length as the unique ids
+#' in the data table given. Alternatively, set to `TRUE` to use the columns names
+#' for legend the plot when available.
+#'
+#' @return A variable key vector.
+#'
+#' @noRd
+#'
+make_colorBy_varkey <- function(data = NULL, colorBy = NULL, legendNames = NULL) {
+  
+  if (!"id" %in% colnames(data)) data$id <- ""
+  
+  if (!"analysis" %in% colnames(data)) data$analysis <- ""
+  
+  data$id <- factor(data$id)
+  
+  data$analysis <- factor(data$analysis)
+  
+  if ("level" %in% colnames(data)) {
+    data$level <- paste("MS", data$level, sep = "")
+    data$level <- factor(data$level)
+  } else {
+    data$level <- "not defined"
+  }
+  
+  if ("polarity" %in% colnames(data)) {
+    pol_key <- c("positive", "negative", "not defined")
+    names(pol_key) <- c("1", "-1", "0")
+    data$polarity <- as.character(data$polarity)
+    data$polarity <- pol_key[data$polarity]
+  } else {
+    data$polarity <- "not defined"
+  }
+  
+  if ("analyses" %in% colorBy) {
+    varkey <- data$analysis
+    
+  } else if ("replicates" %in% colorBy & "replicate" %in% colnames(data)) {
+    varkey <- data$replicate
+    
+  } else if ("polarities" %in% colorBy & "polarity" %in% colnames(data)) {
+    varkey <- data$polarity
+    
+  } else if ("levels" %in% colorBy & "level" %in% colnames(data)) {
+    varkey <- data$level
+    
+  } else if (is.character(legendNames) & length(legendNames) == length(unique(data$id))) {
+    leg <- legendNames
+    names(leg) <- unique(data$id)
+    varkey <- leg[data$id]
+    
+  } else if ("name" %in% colnames(data) & isTRUE(legendNames)) {
+    varkey <- data$name
+    
+  } else {
+    varkey <- data$id
+  }
+  
+  data$var <- varkey
+  
+  data
+}
+
+
 #' @title plot_spectra_interactive
 #'
 #' @description 3D interactive plot for spectra using the \pkg{plotly} package.
@@ -13,36 +84,22 @@
 #' @noRd
 #'
 plot_spectra_interactive <- function(spectra = NULL, colorBy = "analyses", legendNames = NULL) {
-  if (!"id" %in% colnames(spectra)) spectra$id <- ""
-  if ("feature" %in% colnames(spectra)) spectra$id <- spectra$feature
-  if (!"level" %in% colnames(spectra)) spectra$level <- 0
-  if (!"analysis" %in% colnames(spectra)) spectra$analysis <- ""
-
-  spectra$id <- factor(spectra$id)
-  spectra$level <- paste("MS", spectra$level, sep = "")
-  spectra$level <- factor(spectra$level)
-  spectra$analysis <- factor(spectra$analysis)
+  
+  spectra <- make_colorBy_varkey(spectra, colorBy, legendNames)
 
   spectra$rtmz <- paste(
-    spectra$id, spectra$level,
-    spectra$mz, spectra$rt,
+    spectra$id,
+    spectra$level,
+    spectra$polarity,
+    spectra$mz,
+    spectra$rt,
     spectra$analysis,
     sep = ""
   )
-
+  
   spec_temp <- spectra
   spec_temp$intensity <- 0
   spectra <- rbind(spectra, spec_temp)
-
-  if (colorBy == "levels") {
-    spectra$var <- spectra$level
-  } else if (colorBy == "targets") {
-    spectra$var <- spectra$id
-  } else if ("replicates" %in% colorBy & "replicate" %in% colnames(spectra)) {
-    spectra$var <- spectra$replicate
-  } else {
-    spectra$var <- spectra$analysis
-  }
 
   colors_var <- get_colors(unique(spectra$var))
 
@@ -93,6 +150,7 @@ plot_xic_interactive <- function(xic,
                                  ppmMark = 5,
                                  secMark = 10,
                                  numberRows = 1) {
+  
   if (!"id" %in% colnames(xic)) xic$id <- NA_character_
 
   ids <- unique(xic$id)
@@ -320,31 +378,18 @@ plot_xic_interactive <- function(xic,
 #'
 #' @noRd
 #'
-plot_eic_static <- function(eic = NULL, legendNames = NULL, colorBy = "targets",
-                            title = NULL, showLegend = TRUE) {
-  if (!"id" %in% colnames(eic)) eic$id <- NA_character_
-
-  if ("analyses" %in% colorBy) {
-    leg <- unique(eic$analysis)
-    varkey <- eic$analysis
-  } else if ("replicates" %in% colorBy & "replicate" %in% colnames(eic)) {
-    leg <- unique(eic$replicate)
-    varkey <- eic$replicate
-  } else if (is.character(legendNames) &
-    length(legendNames) == length(unique(eic$id))) {
-    leg <- legendNames
-    names(leg) <- unique(eic$id)
-    varkey <- leg[eic$id]
-  } else {
-    leg <- unique(eic$id)
-    varkey <- eic$id
-  }
-
-  eic$var <- varkey
+plot_eic_static <- function(eic = NULL,
+                            legendNames = NULL,
+                            colorBy = "targets",
+                            title = NULL,
+                            showLegend = TRUE) {
+  
+  eic <- make_colorBy_varkey(eic, colorBy, legendNames)
 
   cl <- get_colors(unique(eic$var))
-  sp <- unique(eic$analysis)
-  ids <- unique(eic$id)
+  
+  eic$loop <- paste0(eic$analysis, eic$id, eic$var)
+  loop_key <- unique(eic$loop)
 
   ylim_oufset <- 1 + (0.05*length(unique(eic$var)))
 
@@ -357,27 +402,26 @@ plot_eic_static <- function(eic = NULL, legendNames = NULL, colorBy = "targets",
     main = title
   )
 
-  for (s in sp) {
-    for (t in ids) {
-      select_vector <- eic$analysis == s & eic$id == t
-      lt <- unique(eic$var[select_vector])
-      lines(
-        x = eic$rt[select_vector],
-        y = eic$intensity[select_vector],
-        type = "l",
-        pch = 19,
-        cex = 0.5,
-        col = cl[lt]
-      )
-      points(
-        x = eic$rt[select_vector],
-        y = eic$intensity[select_vector],
-        type = "p",
-        pch = 19,
-        cex = 0.2,
-        col = cl[lt]
-      )
-    }
+
+  for (t in loop_key) {
+    select_vector <- eic$loop %in% t
+    lt <- unique(eic$var[select_vector])
+    lines(
+      x = eic$rt[select_vector],
+      y = eic$intensity[select_vector],
+      type = "l",
+      pch = 19,
+      cex = 0.5,
+      col = cl[lt]
+    )
+    points(
+      x = eic$rt[select_vector],
+      y = eic$intensity[select_vector],
+      type = "p",
+      pch = 19,
+      cex = 0.2,
+      col = cl[lt]
+    )
   }
 
   if (showLegend) {
@@ -411,32 +455,19 @@ plot_eic_static <- function(eic = NULL, legendNames = NULL, colorBy = "targets",
 #'
 #' @noRd
 #'
-plot_eic_interactive <- function(eic = NULL, legendNames = NULL,
-                                 colorBy = "targets", title = NULL) {
-  if (!"id" %in% colnames(eic)) eic$id <- NA_character_
-
-  if ("analyses" %in% colorBy) {
-    leg <- unique(eic$analysis)
-    varkey <- eic$analysis
-  } else if ("replicates" %in% colorBy & "replicate" %in% colnames(eic)) {
-    leg <- unique(eic$replicate)
-    varkey <- eic$replicate
-  } else if (is.character(legendNames) &
-    length(legendNames) == length(unique(eic$id))) {
-    leg <- legendNames
-    names(leg) <- unique(eic$id)
-    varkey <- leg[eic$id]
-  } else {
-    leg <- unique(eic$id)
-    varkey <- eic$id
-  }
-
-  eic$var <- varkey
-
+plot_eic_interactive <- function(eic = NULL,
+                                 legendNames = NULL,
+                                 colorBy = "targets",
+                                 title = NULL) {
+  
+  eic <- make_colorBy_varkey(eic, colorBy, legendNames)
+  
   leg <- unique(eic$var)
   cl <- get_colors(leg)
-  sp <- unique(eic$analysis)
-  ids <- unique(eic$id)
+  
+  eic$loop <- paste0(eic$analysis, eic$id, eic$var)
+  loop_key <- unique(eic$loop)
+  
 
   title <- list(
     text = title, x = 0.13, y = 0.98,
@@ -459,24 +490,24 @@ plot_eic_interactive <- function(eic = NULL, legendNames = NULL,
   showL <- rep(TRUE, length(leg))
   names(showL) <- leg
 
-  for (s in sp) {
-    for (t in ids) {
-      select_vector <- eic$analysis == s & eic$id == t
-      lt <- unique(eic$var[select_vector])
-      y <- eic$intensity[select_vector]
-      plot <- plot %>% add_trace(
-        x = eic$rt[select_vector],
-        y = y,
-        type = "scatter", mode = "lines+markers",
-        line = list(width = 0.5, color = unname(cl[lt])),
-        marker = list(size = 2, color = unname(cl[lt])),
-        name = lt,
-        legendgroup = lt,
-        showlegend = showL[lt],
-        hovertemplate = paste("<br>rt: %{x}<br>", "intensity: %{y}")
-      )
-      if (length(y) >= 1) showL[lt] <- FALSE
-    }
+  for (t in loop_key) {
+    select_vector <- eic$loop %in% t
+    lt <- unique(eic$var[select_vector])
+    x <- eic$rt[select_vector]
+    y <- eic$intensity[select_vector]
+    
+    plot <- plot %>% add_trace(
+      x = x,
+      y = y,
+      type = "scatter", mode = "lines+markers",
+      line = list(width = 0.5, color = unname(cl[lt])),
+      marker = list(size = 2, color = unname(cl[lt])),
+      name = lt,
+      legendgroup = lt,
+      showlegend = showL[lt],
+      hovertemplate = paste("<br>rt: %{x}<br>", "intensity: %{y}")
+    )
+    if (length(y) >= 1) showL[lt] <- FALSE
   }
 
   plot <- plot %>% plotly::layout(
@@ -508,30 +539,14 @@ plot_eic_interactive <- function(eic = NULL, legendNames = NULL,
 #'
 plot_bpc_interactive <- function(bpc = NULL, legendNames = NULL,
                                  colorBy = "targets", title = NULL) {
-  if (!"id" %in% colnames(bpc)) bpc$id <- NA_character_
-
-  if ("analyses" %in% colorBy) {
-    leg <- unique(bpc$analysis)
-    varkey <- bpc$analysis
-  } else if ("replicates" %in% colorBy & "replicate" %in% colnames(bpc)) {
-    leg <- unique(bpc$replicate)
-    varkey <- bpc$replicate
-  } else if (is.character(legendNames) &
-    length(legendNames) == length(unique(bpc$id))) {
-    leg <- legendNames
-    names(leg) <- unique(bpc$id)
-    varkey <- leg[bpc$id]
-  } else {
-    leg <- unique(bpc$id)
-    varkey <- bpc$id
-  }
-
-  bpc$var <- varkey
+  
+  bpc <- make_colorBy_varkey(bpc, colorBy, legendNames)
 
   leg <- unique(bpc$var)
   cl <- get_colors(leg)
-  sp <- unique(bpc$analysis)
-  ids <- unique(bpc$id)
+  
+  bpc$loop <- paste0(bpc$analysis, bpc$id, bpc$var)
+  loop_key <- unique(bpc$loop)
 
   title <- list(
     text = title, x = 0.13, y = 0.98,
@@ -554,30 +569,32 @@ plot_bpc_interactive <- function(bpc = NULL, legendNames = NULL,
   showL <- rep(TRUE, length(leg))
   names(showL) <- leg
 
-  for (s in sp) {
-    for (t in ids) {
-      select_vector <- bpc$analysis == s & bpc$id == t
-      lt <- unique(bpc$var[select_vector])
-      y <- bpc$intensity[select_vector]
-      plot <- plot %>% add_trace(
-        x = bpc$rt[select_vector],
-        y = y,
-        type = "scatter", mode = "lines+markers",
-        line = list(width = 0.5, color = unname(cl[lt])),
-        marker = list(size = 2, color = unname(cl[lt])),
-        name = lt,
-        legendgroup = lt,
-        showlegend = showL[lt],
-        hovertemplate = paste(
-          "<br>rt: %{x}<br>",
-          "mz: ",
-          round(bpc$mz[select_vector], digits = 4),
-          "<br>", "intensity: %{y}"
-        )
+  
+  for (t in loop_key) {
+    select_vector <- bpc$loop %in% t
+    lt <- unique(bpc$var[select_vector])
+    x <- bpc$rt[select_vector]
+    y <- bpc$intensity[select_vector]
+    
+    plot <- plot %>% add_trace(
+      x = x,
+      y = y,
+      type = "scatter", mode = "lines+markers",
+      line = list(width = 0.5, color = unname(cl[lt])),
+      marker = list(size = 2, color = unname(cl[lt])),
+      name = lt,
+      legendgroup = lt,
+      showlegend = showL[lt],
+      hovertemplate = paste(
+        "<br>rt: %{x}<br>",
+        "mz: ",
+        round(bpc$mz[select_vector], digits = 4),
+        "<br>", "intensity: %{y}"
       )
-      if (length(y) >= 1) showL[lt] <- FALSE
-    }
+    )
+    if (length(y) >= 1) showL[lt] <- FALSE
   }
+  
 
   plot <- plot %>% plotly::layout(
     legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
@@ -606,28 +623,12 @@ plot_bpc_interactive <- function(bpc = NULL, legendNames = NULL,
 #'
 #' @noRd
 #'
-plot_ms2_static <- function(ms2 = NULL, legendNames = NULL,
-                            colorBy = "targets", title = NULL) {
-  if ("analyses" %in% colorBy) {
-    leg <- unique(ms2$analysis)
-    varkey <- ms2$analysis
-  } else if ("replicates" %in% colorBy & "replicate" %in% colnames(ms2)) {
-    leg <- unique(ms2$replicate)
-    varkey <- ms2$replicate
-  } else if (is.character(legendNames) &
-    length(legendNames) == length(unique(ms2$id))) {
-    leg <- legendNames
-    names(leg) <- unique(ms2$id)
-    varkey <- leg[ms2$id]
-  } else if ("name" %in% colnames(ms2) & isTRUE(legendNames)) {
-    leg <- unique(ms2$name)
-    varkey <- ms2$name
-  } else {
-    leg <- unique(ms2$id)
-    varkey <- ms2$id
-  }
-
-  ms2$var <- varkey
+plot_ms2_static <- function(ms2 = NULL,
+                            legendNames = NULL,
+                            colorBy = "targets",
+                            title = NULL) {
+  
+  ms2 <- make_colorBy_varkey(ms2, colorBy, legendNames)
 
   cl <- get_colors(unique(ms2$var))
 
@@ -705,26 +706,8 @@ plot_ms2_static <- function(ms2 = NULL, legendNames = NULL,
 #'
 plot_ms2_interactive <- function(ms2 = NULL, legendNames = NULL,
                                  colorBy = "targets", title = NULL) {
-  if ("analyses" %in% colorBy) {
-    leg <- unique(ms2$analysis)
-    varkey <- ms2$analysis
-  } else if ("replicates" %in% colorBy & "replicate" %in% colnames(ms2)) {
-    leg <- unique(ms2$replicate)
-    varkey <- ms2$replicate
-  } else if (is.character(legendNames) &
-    length(legendNames) == length(unique(ms2$id))) {
-    leg <- legendNames
-    names(leg) <- unique(ms2$id)
-    varkey <- leg[ms2$id]
-  } else if ("name" %in% colnames(ms2) & isTRUE(legendNames)) {
-    leg <- unique(ms2$name)
-    varkey <- ms2$name
-  } else {
-    leg <- unique(ms2$id)
-    varkey <- ms2$id
-  }
-
-  ms2$var <- varkey
+  
+  ms2 <- make_colorBy_varkey(ms2, colorBy, legendNames)
 
   leg <- unique(ms2$var)
 
@@ -812,28 +795,12 @@ plot_ms2_interactive <- function(ms2 = NULL, legendNames = NULL,
 #'
 #' @noRd
 #'
-plot_ms1_static <- function(ms1 = NULL, legendNames = NULL,
-                            colorBy = "targets", title = NULL) {
-  if ("analyses" %in% colorBy) {
-    leg <- unique(ms1$analysis)
-    varkey <- ms1$analysis
-  } else if ("replicates" %in% colorBy & "replicate" %in% colnames(ms1)) {
-    leg <- unique(ms1$replicate)
-    varkey <- ms1$replicate
-  } else if (is.character(legendNames) &
-    length(legendNames) == length(unique(ms1$id))) {
-    leg <- legendNames
-    names(leg) <- unique(ms1$id)
-    varkey <- leg[ms1$id]
-  } else if ("name" %in% colnames(ms1) & isTRUE(legendNames)) {
-    leg <- unique(ms1$name)
-    varkey <- ms1$name
-  } else {
-    leg <- unique(ms1$id)
-    varkey <- ms1$id
-  }
-
-  ms1$var <- varkey
+plot_ms1_static <- function(ms1 = NULL,
+                            legendNames = NULL,
+                            colorBy = "targets",
+                            title = NULL) {
+  
+  ms1 <- make_colorBy_varkey(ms1, colorBy, legendNames)
 
   cl <- get_colors(unique(ms1$var))
 
@@ -903,28 +870,12 @@ plot_ms1_static <- function(ms1 = NULL, legendNames = NULL,
 #'
 #' @noRd
 #'
-plot_ms1_interactive <- function(ms1 = NULL, legendNames = NULL,
-                                 colorBy = "targets", title = NULL) {
-  if ("analyses" %in% colorBy) {
-    leg <- unique(ms1$analysis)
-    varkey <- ms1$analysis
-  } else if ("replicates" %in% colorBy & "replicate" %in% colnames(ms1)) {
-    leg <- unique(ms1$replicate)
-    varkey <- ms1$replicate
-  } else if (is.character(legendNames) &
-    length(legendNames) == length(unique(ms1$id))) {
-    leg <- legendNames
-    names(leg) <- unique(ms1$id)
-    varkey <- leg[ms1$id]
-  } else if ("name" %in% colnames(ms1) & isTRUE(legendNames)) {
-    leg <- unique(ms1$name)
-    varkey <- ms1$name
-  } else {
-    leg <- unique(ms1$id)
-    varkey <- ms1$id
-  }
-
-  ms1$var <- varkey
+plot_ms1_interactive <- function(ms1 = NULL,
+                                 legendNames = NULL,
+                                 colorBy = "targets",
+                                 title = NULL) {
+  
+  ms1 <- make_colorBy_varkey(ms1, colorBy, legendNames)
 
   leg <- unique(ms1$var)
 
