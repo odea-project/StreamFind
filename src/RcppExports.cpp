@@ -41,31 +41,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// rcpp_ms_cluster_ms2
-List rcpp_ms_cluster_ms2(DataFrame ms2, double mzClust, bool isInAllSpectra, bool verbose);
-RcppExport SEXP _StreamFind_rcpp_ms_cluster_ms2(SEXP ms2SEXP, SEXP mzClustSEXP, SEXP isInAllSpectraSEXP, SEXP verboseSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< DataFrame >::type ms2(ms2SEXP);
-    Rcpp::traits::input_parameter< double >::type mzClust(mzClustSEXP);
-    Rcpp::traits::input_parameter< bool >::type isInAllSpectra(isInAllSpectraSEXP);
-    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_ms_cluster_ms2(ms2, mzClust, isInAllSpectra, verbose));
-    return rcpp_result_gen;
-END_RCPP
-}
 // rcpp_ms_cluster_spectra
-List rcpp_ms_cluster_spectra(DataFrame spectra, double mzClust, bool isInAllSpectra, bool verbose);
-RcppExport SEXP _StreamFind_rcpp_ms_cluster_spectra(SEXP spectraSEXP, SEXP mzClustSEXP, SEXP isInAllSpectraSEXP, SEXP verboseSEXP) {
+Rcpp::List rcpp_ms_cluster_spectra(Rcpp::DataFrame spectra, double mzClust, double presence, bool verbose);
+RcppExport SEXP _StreamFind_rcpp_ms_cluster_spectra(SEXP spectraSEXP, SEXP mzClustSEXP, SEXP presenceSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< DataFrame >::type spectra(spectraSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type spectra(spectraSEXP);
     Rcpp::traits::input_parameter< double >::type mzClust(mzClustSEXP);
-    Rcpp::traits::input_parameter< bool >::type isInAllSpectra(isInAllSpectraSEXP);
+    Rcpp::traits::input_parameter< double >::type presence(presenceSEXP);
     Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_ms_cluster_spectra(spectra, mzClust, isInAllSpectra, verbose));
+    rcpp_result_gen = Rcpp::wrap(rcpp_ms_cluster_spectra(spectra, mzClust, presence, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -213,7 +199,6 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_ms_annotation_isotopes", (DL_FUNC) &_StreamFind_rcpp_ms_annotation_isotopes, 10},
     {"_StreamFind_rcpp_centroid_spectra", (DL_FUNC) &_StreamFind_rcpp_centroid_spectra, 1},
-    {"_StreamFind_rcpp_ms_cluster_ms2", (DL_FUNC) &_StreamFind_rcpp_ms_cluster_ms2, 4},
     {"_StreamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_StreamFind_rcpp_ms_cluster_spectra, 4},
     {"_StreamFind_rcpp_ms_feature_groups_correspondence", (DL_FUNC) &_StreamFind_rcpp_ms_feature_groups_correspondence, 3},
     {"_StreamFind_rcpp_ms_get_feature_groups_ranges", (DL_FUNC) &_StreamFind_rcpp_ms_get_feature_groups_ranges, 2},

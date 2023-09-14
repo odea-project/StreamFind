@@ -760,7 +760,7 @@ A data.table.
 \subsection{Method \code{get_tic()}}{
 Gets the total ion chromatogram (TIC) of each analysis.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_tic(analyses = NULL, levels = 1)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_tic(analyses = NULL, levels = c(1, 2))}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -784,7 +784,7 @@ A data.table with the TIC chromatogram.
 \subsection{Method \code{get_bpc()}}{
 Gets the base peak chromatogram (BPC) of each analysis.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_bpc(analyses = NULL, levels = 1)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_bpc(analyses = NULL, levels = c(1, 2))}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -832,6 +832,7 @@ Gets spectra from each analysis.
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_spectra(
   analyses = NULL,
   levels = NULL,
+  mass = NULL,
   mz = NULL,
   rt = NULL,
   ppm = 20,
@@ -853,6 +854,17 @@ of the analyses.}
 
 \item{\code{levels}}{Integer value or vector of length one or two with the levels of
 MS data. Possible values are 1 and 2 for MS1 and MS2 data, respectively.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
+data.table or data.frame named \code{min} and \code{max} with minimum and maximum
+neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time values (in seconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt}. Then, the deviations given in
+the \code{ppm} and \code{sec} arguments are used to calculate the ranges.
+Also works with a data.table or data.frame with minimum and maximum values of
+neutral mass and retention time targets. In this case, the column names must
+be \code{min}, \code{max}, \code{rtmin} and \code{rtmax}. Note that when mass/time ranges
+are given, the \code{ppm} and \code{sec} arguments are not used.}
 
 \item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns
 data.table or data.frame named \code{mzmin} and \code{mzmax} with minimum and maximum
@@ -945,6 +957,7 @@ on targets.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_eic(
   analyses = NULL,
+  mass = NULL,
   mz = NULL,
   rt = NULL,
   ppm = 20,
@@ -959,6 +972,17 @@ on targets.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
+data.table or data.frame named \code{min} and \code{max} with minimum and maximum
+neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time values (in seconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt}. Then, the deviations given in
+the \code{ppm} and \code{sec} arguments are used to calculate the ranges.
+Also works with a data.table or data.frame with minimum and maximum values of
+neutral mass and retention time targets. In this case, the column names must
+be \code{min}, \code{max}, \code{rtmin} and \code{rtmax}. Note that when mass/time ranges
+are given, the \code{ppm} and \code{sec} arguments are not used.}
 
 \item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns
 data.table or data.frame named \code{mzmin} and \code{mzmax} with minimum and maximum
@@ -1001,13 +1025,14 @@ Gets MS1 data from the analyses based on targets.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_ms1(
   analyses = NULL,
+  mass = NULL,
   mz = NULL,
   rt = NULL,
   ppm = 20,
   sec = 60,
   id = NULL,
   mzClust = 0.003,
-  isInAllSpectra = TRUE,
+  presence = 0.8,
   verbose = FALSE,
   minIntensity = 1000,
   runParallel = FALSE
@@ -1019,6 +1044,17 @@ Gets MS1 data from the analyses based on targets.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
+data.table or data.frame named \code{min} and \code{max} with minimum and maximum
+neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time values (in seconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt}. Then, the deviations given in
+the \code{ppm} and \code{sec} arguments are used to calculate the ranges.
+Also works with a data.table or data.frame with minimum and maximum values of
+neutral mass and retention time targets. In this case, the column names must
+be \code{min}, \code{max}, \code{rtmin} and \code{rtmax}. Note that when mass/time ranges
+are given, the \code{ppm} and \code{sec} arguments are not used.}
 
 \item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns
 data.table or data.frame named \code{mzmin} and \code{mzmax} with minimum and maximum
@@ -1046,10 +1082,9 @@ combination of the \emph{m/z} and retention time ranges or values.}
 \item{\code{mzClust}}{Numeric value with the mass deviation threshold (in Da) to
 cluster mass traces. Highly dependent on the mass resolution of the MS data.}
 
-\item{\code{isInAllSpectra}}{Logical with length one. When \code{TRUE}, traces are kept
-if present in all spectra. For MS2 data and when applied multiple collision
-energies, the presence is evaluated for traces within spectra of each
-collision energy.}
+\item{\code{presence}}{Numeric of length one with the required presence ratio from
+0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
+present in all spectra) for traces during clustering of spectra.}
 
 \item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
 result messages. When \code{FALSE}, some messages are omitted.}
@@ -1074,6 +1109,7 @@ Gets MS2 data from the analyses based on targets.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_ms2(
   analyses = NULL,
+  mass = NULL,
   mz = NULL,
   rt = NULL,
   ppm = 20,
@@ -1081,7 +1117,7 @@ Gets MS2 data from the analyses based on targets.
   id = NULL,
   isolationWindow = 1.3,
   mzClust = 0.005,
-  isInAllSpectra = TRUE,
+  presence = 0.8,
   verbose = FALSE,
   minIntensity = 0,
   runParallel = FALSE
@@ -1093,6 +1129,17 @@ Gets MS2 data from the analyses based on targets.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
+data.table or data.frame named \code{min} and \code{max} with minimum and maximum
+neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time values (in seconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt}. Then, the deviations given in
+the \code{ppm} and \code{sec} arguments are used to calculate the ranges.
+Also works with a data.table or data.frame with minimum and maximum values of
+neutral mass and retention time targets. In this case, the column names must
+be \code{min}, \code{max}, \code{rtmin} and \code{rtmax}. Note that when mass/time ranges
+are given, the \code{ppm} and \code{sec} arguments are not used.}
 
 \item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns
 data.table or data.frame named \code{mzmin} and \code{mzmax} with minimum and maximum
@@ -1124,10 +1171,9 @@ data (i.e., MS2 data).}
 \item{\code{mzClust}}{Numeric value with the mass deviation threshold (in Da) to
 cluster mass traces. Highly dependent on the mass resolution of the MS data.}
 
-\item{\code{isInAllSpectra}}{Logical with length one. When \code{TRUE}, traces are kept
-if present in all spectra. For MS2 data and when applied multiple collision
-energies, the presence is evaluated for traces within spectra of each
-collision energy.}
+\item{\code{presence}}{Numeric of length one with the required presence ratio from
+0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
+present in all spectra) for traces during clustering of spectra.}
 
 \item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
 result messages. When \code{FALSE}, some messages are omitted.}
@@ -1342,7 +1388,7 @@ Gets an averaged MS1 spectrum for features in the analyses.
   rtWindow = c(-2, 2),
   mzWindow = c(-5, 100),
   mzClust = 0.003,
-  isInAllSpectra = TRUE,
+  presence = 0.8,
   minIntensity = 1000,
   verbose = FALSE,
   filtered = FALSE,
@@ -1405,10 +1451,9 @@ Note that the first element should be negative to expand to the left.}
 \item{\code{mzClust}}{Numeric value with the mass deviation threshold (in Da) to
 cluster mass traces. Highly dependent on the mass resolution of the MS data.}
 
-\item{\code{isInAllSpectra}}{Logical with length one. When \code{TRUE}, traces are kept
-if present in all spectra. For MS2 data and when applied multiple collision
-energies, the presence is evaluated for traces within spectra of each
-collision energy.}
+\item{\code{presence}}{Numeric of length one with the required presence ratio from
+0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
+present in all spectra) for traces during clustering of spectra.}
 
 \item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 
@@ -1446,7 +1491,7 @@ Gets an averaged MS2 spectrum for features in the analyses.
   sec = 60,
   isolationWindow = 1.3,
   mzClust = 0.003,
-  isInAllSpectra = TRUE,
+  presence = 0.8,
   minIntensity = 0,
   verbose = FALSE,
   filtered = FALSE,
@@ -1503,10 +1548,9 @@ data (i.e., MS2 data).}
 \item{\code{mzClust}}{Numeric value with the mass deviation threshold (in Da) to
 cluster mass traces. Highly dependent on the mass resolution of the MS data.}
 
-\item{\code{isInAllSpectra}}{Logical with length one. When \code{TRUE}, traces are kept
-if present in all spectra. For MS2 data and when applied multiple collision
-energies, the presence is evaluated for traces within spectra of each
-collision energy.}
+\item{\code{presence}}{Numeric of length one with the required presence ratio from
+0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
+present in all spectra) for traces during clustering of spectra.}
 
 \item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 
@@ -1626,11 +1670,11 @@ Gets an averaged MS1 spectrum for feature groups in the analyses.
   rtWindow = c(-2, 2),
   mzWindow = c(-5, 90),
   mzClustFeatures = 0.003,
-  isInAllSpectraFeatures = TRUE,
+  presenceFeatures = TRUE,
   minIntensityFeatures = 1000,
   loadedFeaturesMS1 = TRUE,
   mzClustGroups = 0.003,
-  isInAllSpectraGroups = TRUE,
+  presenceGroups = TRUE,
   minIntensityGroups = 1000,
   groupBy = "groups",
   verbose = FALSE,
@@ -1690,10 +1734,9 @@ Note that the first element should be negative to expand to the left.}
 (in Da) to cluster mass traces for features. Highly dependent on the mass
 resolution of the MS data.}
 
-\item{\code{isInAllSpectraFeatures}}{Logical with length one. When \code{TRUE}, traces
-from features are kept if present in all spectra. For MS2 data and when
-applied multiple collision energies, the presence is evaluated for traces
-within spectra of each collision energy.}
+\item{\code{presenceFeatures}}{Numeric of length one with the required presence
+ratio from 0 (i.e., doesn't need to be present in any spectra) to 1 (i.e.,
+must be present in all spectra) for traces during clustering of spectra.}
 
 \item{\code{minIntensityFeatures}}{Numeric value with the minimum intensity for
 features.}
@@ -1705,8 +1748,9 @@ loaded features MS1 data is used instead of extraction from raw data.}
 (in Da) to cluster mass traces for feature groups. Highly dependent on the
 mass resolution of the MS data.}
 
-\item{\code{isInAllSpectraGroups}}{Logical with length one. When \code{TRUE}, traces are
-kept if present in all spectra from features.}
+\item{\code{presenceGroups}}{Numeric of length one with the required presence ratio
+from 0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
+present in all spectra) for traces during clustering of spectra.}
 
 \item{\code{minIntensityGroups}}{Numeric value with the minimum intensity for
 feature groups.}
@@ -1748,11 +1792,11 @@ Gets an averaged MS2 spectrum for feature groups in the analyses.
   sec = 60,
   isolationWindow = 1.3,
   mzClustFeatures = 0.003,
-  isInAllSpectraFeatures = TRUE,
+  presenceFeatures = TRUE,
   minIntensityFeatures = 100,
   loadedFeaturesMS2 = TRUE,
   mzClustGroups = 0.003,
-  isInAllSpectraGroups = TRUE,
+  presenceGroups = TRUE,
   minIntensityGroups = 100,
   groupBy = "groups",
   verbose = FALSE,
@@ -1806,10 +1850,9 @@ data (i.e., MS2 data).}
 (in Da) to cluster mass traces for features. Highly dependent on the mass
 resolution of the MS data.}
 
-\item{\code{isInAllSpectraFeatures}}{Logical with length one. When \code{TRUE}, traces
-from features are kept if present in all spectra. For MS2 data and when
-applied multiple collision energies, the presence is evaluated for traces
-within spectra of each collision energy.}
+\item{\code{presenceFeatures}}{Numeric of length one with the required presence
+ratio from 0 (i.e., doesn't need to be present in any spectra) to 1 (i.e.,
+must be present in all spectra) for traces during clustering of spectra.}
 
 \item{\code{minIntensityFeatures}}{Numeric value with the minimum intensity for
 features.}
@@ -1821,8 +1864,9 @@ loaded features MS2 data is used instead of extraction from raw data.}
 (in Da) to cluster mass traces for feature groups. Highly dependent on the
 mass resolution of the MS data.}
 
-\item{\code{isInAllSpectraGroups}}{Logical with length one. When \code{TRUE}, traces are
-kept if present in all spectra from features.}
+\item{\code{presenceGroups}}{Numeric of length one with the required presence ratio
+from 0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
+present in all spectra) for traces during clustering of spectra.}
 
 \item{\code{minIntensityGroups}}{Numeric value with the minimum intensity for
 feature groups.}
@@ -2973,6 +3017,7 @@ Plots spectra for given MS analyses.
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$plot_spectra(
   analyses = NULL,
   levels = NULL,
+  mass = NULL,
   mz = NULL,
   rt = NULL,
   ppm = 20,
@@ -2996,6 +3041,17 @@ of the analyses.}
 
 \item{\code{levels}}{Integer value or vector of length one or two with the levels of
 MS data. Possible values are 1 and 2 for MS1 and MS2 data, respectively.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
+data.table or data.frame named \code{min} and \code{max} with minimum and maximum
+neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time values (in seconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt}. Then, the deviations given in
+the \code{ppm} and \code{sec} arguments are used to calculate the ranges.
+Also works with a data.table or data.frame with minimum and maximum values of
+neutral mass and retention time targets. In this case, the column names must
+be \code{min}, \code{max}, \code{rtmin} and \code{rtmax}. Note that when mass/time ranges
+are given, the \code{ppm} and \code{sec} arguments are not used.}
 
 \item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns
 data.table or data.frame named \code{mzmin} and \code{mzmax} with minimum and maximum
@@ -3041,7 +3097,7 @@ overhead.}
 \item{\code{legendNames}}{A character vector with the same length as the targets.}
 
 \item{\code{colorBy}}{A string of length 1. One of \code{analyses} (the default),
-\code{levels}, \code{targets} or \code{replicates}.}
+\code{polarities}, \code{levels}, \code{targets} or \code{replicates}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -3058,6 +3114,7 @@ retention time from the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$plot_xic(
   analyses = NULL,
+  mass = NULL,
   mz = NULL,
   rt = NULL,
   ppm = 20,
@@ -3078,6 +3135,17 @@ retention time from the analyses.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
+data.table or data.frame named \code{min} and \code{max} with minimum and maximum
+neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time values (in seconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt}. Then, the deviations given in
+the \code{ppm} and \code{sec} arguments are used to calculate the ranges.
+Also works with a data.table or data.frame with minimum and maximum values of
+neutral mass and retention time targets. In this case, the column names must
+be \code{min}, \code{max}, \code{rtmin} and \code{rtmax}. Note that when mass/time ranges
+are given, the \code{ppm} and \code{sec} arguments are not used.}
 
 \item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns
 data.table or data.frame named \code{mzmin} and \code{mzmax} with minimum and maximum
@@ -3138,6 +3206,7 @@ Plots extract ion chromatograms (EIC) from the analyses based on targets.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$plot_eic(
   analyses = NULL,
+  mass = NULL,
   mz = NULL,
   rt = NULL,
   ppm = 20,
@@ -3156,6 +3225,17 @@ Plots extract ion chromatograms (EIC) from the analyses based on targets.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
+data.table or data.frame named \code{min} and \code{max} with minimum and maximum
+neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time values (in seconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt}. Then, the deviations given in
+the \code{ppm} and \code{sec} arguments are used to calculate the ranges.
+Also works with a data.table or data.frame with minimum and maximum values of
+neutral mass and retention time targets. In this case, the column names must
+be \code{min}, \code{max}, \code{rtmin} and \code{rtmax}. Note that when mass/time ranges
+are given, the \code{ppm} and \code{sec} arguments are not used.}
 
 \item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns
 data.table or data.frame named \code{mzmin} and \code{mzmax} with minimum and maximum
@@ -3208,8 +3288,10 @@ Plots the total ion chromatogram (TIC) of the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$plot_tic(
   analyses = NULL,
+  levels = c(1, 2),
   title = NULL,
   colorBy = "analyses",
+  legendNames = NULL,
   interactive = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -3220,10 +3302,15 @@ Plots the total ion chromatogram (TIC) of the analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
+\item{\code{levels}}{Integer value or vector of length one or two with the levels of
+MS data. Possible values are 1 and 2 for MS1 and MS2 data, respectively.}
+
 \item{\code{title}}{A string with the title.}
 
 \item{\code{colorBy}}{A string of length 1. One of \code{analyses}, \code{targets} (the
 default) or \code{replicates}.}
+
+\item{\code{legendNames}}{A character vector with the same length as the targets.}
 
 \item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
 using \pkg{plotly}.}
@@ -3242,8 +3329,10 @@ Plots the base peak chromatogram (BPC) of the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$plot_bpc(
   analyses = NULL,
+  levels = c(1, 2),
   title = NULL,
   colorBy = "analyses",
+  legendNames = NULL,
   interactive = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -3254,10 +3343,15 @@ Plots the base peak chromatogram (BPC) of the analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
+\item{\code{levels}}{Integer value or vector of length one or two with the levels of
+MS data. Possible values are 1 and 2 for MS1 and MS2 data, respectively.}
+
 \item{\code{title}}{A string with the title.}
 
 \item{\code{colorBy}}{A string of length 1. One of \code{analyses}, \code{targets} (the
 default) or \code{replicates}.}
+
+\item{\code{legendNames}}{A character vector with the same length as the targets.}
 
 \item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
 using \pkg{plotly}.}
@@ -3276,6 +3370,7 @@ Plots MS2 spectra from the analyses based on targets.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$plot_ms2(
   analyses = NULL,
+  mass = NULL,
   mz = NULL,
   rt = NULL,
   ppm = 20,
@@ -3283,7 +3378,7 @@ Plots MS2 spectra from the analyses based on targets.
   id = NULL,
   isolationWindow = 1.3,
   mzClust = 0.005,
-  isInAllSpectra = TRUE,
+  presence = 0.8,
   verbose = FALSE,
   minIntensity = 0,
   runParallel = FALSE,
@@ -3299,6 +3394,17 @@ Plots MS2 spectra from the analyses based on targets.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
+data.table or data.frame named \code{min} and \code{max} with minimum and maximum
+neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time values (in seconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt}. Then, the deviations given in
+the \code{ppm} and \code{sec} arguments are used to calculate the ranges.
+Also works with a data.table or data.frame with minimum and maximum values of
+neutral mass and retention time targets. In this case, the column names must
+be \code{min}, \code{max}, \code{rtmin} and \code{rtmax}. Note that when mass/time ranges
+are given, the \code{ppm} and \code{sec} arguments are not used.}
 
 \item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns
 data.table or data.frame named \code{mzmin} and \code{mzmax} with minimum and maximum
@@ -3330,10 +3436,9 @@ data (i.e., MS2 data).}
 \item{\code{mzClust}}{Numeric value with the mass deviation threshold (in Da) to
 cluster mass traces. Highly dependent on the mass resolution of the MS data.}
 
-\item{\code{isInAllSpectra}}{Logical with length one. When \code{TRUE}, traces are kept
-if present in all spectra. For MS2 data and when applied multiple collision
-energies, the presence is evaluated for traces within spectra of each
-collision energy.}
+\item{\code{presence}}{Numeric of length one with the required presence ratio from
+0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
+present in all spectra) for traces during clustering of spectra.}
 
 \item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
 result messages. When \code{FALSE}, some messages are omitted.}
@@ -3368,13 +3473,14 @@ Plots MS1 spectra from the analyses based on targets.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$plot_ms1(
   analyses = NULL,
+  mass = NULL,
   mz = NULL,
   rt = NULL,
   ppm = 20,
   sec = 60,
   id = NULL,
-  mzClust = 0.001,
-  isInAllSpectra = TRUE,
+  mzClust = 0.003,
+  presence = 0.8,
   verbose = FALSE,
   minIntensity = 1000,
   runParallel = FALSE,
@@ -3390,6 +3496,17 @@ Plots MS1 spectra from the analyses based on targets.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
+data.table or data.frame named \code{min} and \code{max} with minimum and maximum
+neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time values (in seconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt}. Then, the deviations given in
+the \code{ppm} and \code{sec} arguments are used to calculate the ranges.
+Also works with a data.table or data.frame with minimum and maximum values of
+neutral mass and retention time targets. In this case, the column names must
+be \code{min}, \code{max}, \code{rtmin} and \code{rtmax}. Note that when mass/time ranges
+are given, the \code{ppm} and \code{sec} arguments are not used.}
 
 \item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns
 data.table or data.frame named \code{mzmin} and \code{mzmax} with minimum and maximum
@@ -3417,10 +3534,9 @@ combination of the \emph{m/z} and retention time ranges or values.}
 \item{\code{mzClust}}{Numeric value with the mass deviation threshold (in Da) to
 cluster mass traces. Highly dependent on the mass resolution of the MS data.}
 
-\item{\code{isInAllSpectra}}{Logical with length one. When \code{TRUE}, traces are kept
-if present in all spectra. For MS2 data and when applied multiple collision
-energies, the presence is evaluated for traces within spectra of each
-collision energy.}
+\item{\code{presence}}{Numeric of length one with the required presence ratio from
+0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
+present in all spectra) for traces during clustering of spectra.}
 
 \item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
 result messages. When \code{FALSE}, some messages are omitted.}
@@ -3650,7 +3766,7 @@ Plots MS1 spectra from features in the analyses.
   rtWindow = c(-2, 2),
   mzWindow = c(-5, 100),
   mzClust = 0.003,
-  isInAllSpectra = TRUE,
+  presence = 0.8,
   minIntensity = 1000,
   verbose = FALSE,
   filtered = FALSE,
@@ -3717,10 +3833,9 @@ Note that the first element should be negative to expand to the left.}
 \item{\code{mzClust}}{Numeric value with the mass deviation threshold (in Da) to
 cluster mass traces. Highly dependent on the mass resolution of the MS data.}
 
-\item{\code{isInAllSpectra}}{Logical with length one. When \code{TRUE}, traces are kept
-if present in all spectra. For MS2 data and when applied multiple collision
-energies, the presence is evaluated for traces within spectra of each
-collision energy.}
+\item{\code{presence}}{Numeric of length one with the required presence ratio from
+0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
+present in all spectra) for traces during clustering of spectra.}
 
 \item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 
@@ -3768,7 +3883,7 @@ Plots MS2 spectra from features in the analyses.
   sec = 60,
   isolationWindow = 1.3,
   mzClust = 0.005,
-  isInAllSpectra = TRUE,
+  presence = 0.8,
   minIntensity = 0,
   verbose = FALSE,
   filtered = FALSE,
@@ -3829,10 +3944,9 @@ data (i.e., MS2 data).}
 \item{\code{mzClust}}{Numeric value with the mass deviation threshold (in Da) to
 cluster mass traces. Highly dependent on the mass resolution of the MS data.}
 
-\item{\code{isInAllSpectra}}{Logical with length one. When \code{TRUE}, traces are kept
-if present in all spectra. For MS2 data and when applied multiple collision
-energies, the presence is evaluated for traces within spectra of each
-collision energy.}
+\item{\code{presence}}{Numeric of length one with the required presence ratio from
+0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
+present in all spectra) for traces during clustering of spectra.}
 
 \item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 
@@ -3982,7 +4096,7 @@ Plots MS1 spectra from feature groups in the analyses.
   rtWindow = c(-2, 2),
   mzWindow = c(-5, 90),
   mzClustFeatures = 0.005,
-  isInAllSpectraFeatures = TRUE,
+  presenceFeatures = TRUE,
   minIntensityFeatures = 1000,
   loadedFeaturesMS1 = TRUE,
   mzClustGroups = 0.005,
@@ -4048,10 +4162,9 @@ Note that the first element should be negative to expand to the left.}
 (in Da) to cluster mass traces for features. Highly dependent on the mass
 resolution of the MS data.}
 
-\item{\code{isInAllSpectraFeatures}}{Logical with length one. When \code{TRUE}, traces
-from features are kept if present in all spectra. For MS2 data and when
-applied multiple collision energies, the presence is evaluated for traces
-within spectra of each collision energy.}
+\item{\code{presenceFeatures}}{Numeric of length one with the required presence
+ratio from 0 (i.e., doesn't need to be present in any spectra) to 1 (i.e.,
+must be present in all spectra) for traces during clustering of spectra.}
 
 \item{\code{minIntensityFeatures}}{Numeric value with the minimum intensity for
 features.}
@@ -4109,11 +4222,11 @@ Plots MS1 spectra from feature groups in the analyses.
   sec = 60,
   isolationWindow = 1.3,
   mzClustFeatures = 0.003,
-  isInAllSpectraFeatures = TRUE,
+  presenceFeatures = TRUE,
   minIntensityFeatures = 100,
   loadedFeaturesMS2 = TRUE,
   mzClustGroups = 0.003,
-  isInAllSpectraGroups = TRUE,
+  presenceGroups = TRUE,
   minIntensityGroups = 100,
   verbose = FALSE,
   filtered = FALSE,
@@ -4170,10 +4283,9 @@ data (i.e., MS2 data).}
 (in Da) to cluster mass traces for features. Highly dependent on the mass
 resolution of the MS data.}
 
-\item{\code{isInAllSpectraFeatures}}{Logical with length one. When \code{TRUE}, traces
-from features are kept if present in all spectra. For MS2 data and when
-applied multiple collision energies, the presence is evaluated for traces
-within spectra of each collision energy.}
+\item{\code{presenceFeatures}}{Numeric of length one with the required presence
+ratio from 0 (i.e., doesn't need to be present in any spectra) to 1 (i.e.,
+must be present in all spectra) for traces during clustering of spectra.}
 
 \item{\code{minIntensityFeatures}}{Numeric value with the minimum intensity for
 features.}
@@ -4185,8 +4297,9 @@ loaded features MS2 data is used instead of extraction from raw data.}
 (in Da) to cluster mass traces for feature groups. Highly dependent on the
 mass resolution of the MS data.}
 
-\item{\code{isInAllSpectraGroups}}{Logical with length one. When \code{TRUE}, traces are
-kept if present in all spectra from features.}
+\item{\code{presenceGroups}}{Numeric of length one with the required presence ratio
+from 0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
+present in all spectra) for traces during clustering of spectra.}
 
 \item{\code{minIntensityGroups}}{Numeric value with the minimum intensity for
 feature groups.}

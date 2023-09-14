@@ -2864,7 +2864,7 @@ for both MS1 and MS2 data.</p>
 <code class="sourceCode R"><span><span class="co"># MS2 data of Diuron-d6 for analysis 1</span></span>
 <span><span class="va">ms</span><span class="op">$</span><span class="fu">get_ms2</span><span class="op">(</span>analyses <span class="op">=</span> <span class="fl">1</span>, mz <span class="op">=</span> <span class="va">targets1</span><span class="op">[</span><span class="fl">2</span>, <span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ℹ Spectra loaded from cache!</span></span>
-<span><span class="co">#&gt;                     analysis      id  pre_mz       rt        mz intensity isPre</span></span>
+<span><span class="co">#&gt;                     analysis      id  pre_mz       rt        mz intensity is_pre</span></span>
 <span><span class="co">#&gt; 1: 00_tof_s_is_pos_cent-r001 target2 239.062 1160.855  52.10307  880.1555 FALSE</span></span>
 <span><span class="co">#&gt; 2: 00_tof_s_is_pos_cent-r001 target2 239.062 1160.855  78.08215 3100.0801 FALSE</span></span>
 <span><span class="co">#&gt; 3: 00_tof_s_is_pos_cent-r001 target2 239.062 1160.855 239.06161  913.1291  TRUE</span></span></code></pre></div>
@@ -3254,7 +3254,7 @@ the <code>data.table</code> can also be directly performed with the
 <span>  minIntensity <span class="op">=</span> <span class="fl">500</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; ℹ Spectra loaded from cache!</span></span>
-<span><span class="co">#&gt;                     analysis                    id   pre_mz       rt       mz intensity isPre</span></span>
+<span><span class="co">#&gt;                     analysis                    id   pre_mz       rt       mz intensity is_pre</span></span>
 <span><span class="co">#&gt; 1: 00_tof_s_is_pos_cent-r003 mz247.166_rt1075_f110 247.1645 1075.703 202.1451  1215.399 FALSE</span></span>
 <span><span class="co">#&gt; 2: 00_tof_s_is_pos_cent-r003 mz247.166_rt1075_f110 247.1645 1075.703 204.1596  4718.950 FALSE</span></span>
 <span><span class="co">#&gt; 3: 00_tof_s_is_pos_cent-r003 mz247.166_rt1075_f110 247.1645 1075.703 247.1653  3205.468  TRUE</span></span>
@@ -3469,7 +3469,7 @@ recommended, the MS2 spectra can be obtained directly from the features
 <div class="sourceCode" id="cb76"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># The first 6 lines of the MS2 spectra</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">msTargets</span><span class="op">$</span><span class="fu">get_features_ms2</span><span class="op">(</span>analyses <span class="op">=</span> <span class="fl">1</span>, mz <span class="op">=</span> <span class="va">targets1</span>, loadedMS2 <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                     analysis                    id   pre_mz       rt        mz intensity isPre    name</span></span>
+<span><span class="co">#&gt;                     analysis                    id   pre_mz       rt        mz intensity is_pre    name</span></span>
 <span><span class="co">#&gt; 1: 00_tof_s_is_pos_cent-r001 mz247.166_rt1076_f106 247.1653 1077.018  93.06292  80.22612 FALSE target1</span></span>
 <span><span class="co">#&gt; 2: 00_tof_s_is_pos_cent-r001 mz247.166_rt1076_f106 247.1653 1077.018 104.05816 140.80147 FALSE target1</span></span>
 <span><span class="co">#&gt; 3: 00_tof_s_is_pos_cent-r001 mz247.166_rt1076_f106 247.1653 1077.018 121.07799 227.60043 FALSE target1</span></span>
@@ -3700,7 +3700,7 @@ the same values are used for both.</p>
 <span>  mzClustGroups <span class="op">=</span> <span class="fl">0.003</span>, minIntensityGroups <span class="op">=</span> <span class="fl">500</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; ℹ Spectra loaded from cache!</span></span>
-<span><span class="co">#&gt;                      id  pre_mz       rt       mz intensity isPre</span></span>
+<span><span class="co">#&gt;                      id  pre_mz       rt       mz intensity is_pre</span></span>
 <span><span class="co">#&gt; 1: mz247.166_rt1075_g83 247.165 1076.575 202.1445  1215.399 FALSE</span></span>
 <span><span class="co">#&gt; 2: mz247.166_rt1075_g83 247.165 1076.575 204.1592  4718.950 FALSE</span></span>
 <span><span class="co">#&gt; 3: mz247.166_rt1075_g83 247.165 1076.575 247.1652  3205.468  TRUE</span></span></code></pre></div>

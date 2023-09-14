@@ -22,7 +22,7 @@
 #' @template arg-ms-index
 #' @template arg-ms-minIntensity
 #' @template arg-ms-mzClust
-#' @template arg-ms-isInAllSpectra
+#' @template arg-ms-presence
 #' @template arg-verbose
 #' @template arg-ms-features
 #' @template arg-ms-mass
@@ -38,11 +38,11 @@
 #' @template arg-ms-average
 #' @template arg-ms-groupBy
 #' @template arg-ms-mzClustFeatures
-#' @template arg-ms-isInAllSpectraFeatures
+#' @template arg-ms-presenceFeatures
 #' @template arg-ms-minIntensityFeatures
 #' @template arg-ms-loadedFeaturesMS1
 #' @template arg-ms-mzClustGroups
-#' @template arg-ms-isInAllSpectraGroups
+#' @template arg-ms-presenceGroups
 #' @template arg-ms-minIntensityGroups
 #' @template arg-ms-loadedGroupsMS1
 #' @template arg-ms-loadedFeaturesMS2
@@ -1086,13 +1086,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
         minIntensityMS2 <- 0
       }
       
+      polarities <- unique(self$get_polarities(analyses))
+      
       if (!is.null(mass)) {
         neutral_targets <- make_ms_targets(mass, rt, ppm, sec, id)
         
         targets <- list()
-        
-        polarities <- unique(self$get_polarities())
-        
+
         for (i in polarities) {
           if (i %in% "positive") {
             temp_tar <- copy(neutral_targets)
@@ -1100,7 +1100,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             temp_tar$mzmax <- temp_tar$mzmax + 1.00726
             temp_tar$mzmin <- temp_tar$mzmin + 1.00726
             temp_tar$polarity <- 1
-            temp_tar$id <- paste0(temp_tar$id, "/positive")
+            temp_tar$id <- paste0("nm/", temp_tar$id) #"/positive"
             targets[[length(targets) + 1]] <- temp_tar
           } else if (i %in% "negative") {
             temp_tar <- copy(neutral_targets)
@@ -1108,7 +1108,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             temp_tar$mzmax <- temp_tar$mzmax - 1.00726
             temp_tar$mzmin <- temp_tar$mzmin - 1.00726
             temp_tar$polarity <- -1
-            temp_tar$id <- paste0(temp_tar$id, "/negative")
+            temp_tar$id <- paste0("nm/", temp_tar$id) #"/negative"
             targets[[length(targets) + 1]] <- temp_tar
           }
         }
@@ -1122,7 +1122,25 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
         
       } else {
-        targets <- make_ms_targets(mz, rt, ppm, sec, id)
+        mz_targets <- make_ms_targets(mz, rt, ppm, sec, id)
+        
+        targets <- list()
+        
+        for (i in polarities) {
+          if (i %in% "positive") {
+            temp_tar <- copy(mz_targets)
+            temp_tar$polarity <- 1
+            # temp_tar$id <- paste0(temp_tar$id, "/positive")
+            targets[[length(targets) + 1]] <- temp_tar
+          } else if (i %in% "negative") {
+            temp_tar <- copy(mz_targets)
+            temp_tar$polarity <- -1
+            # temp_tar$id <- paste0(temp_tar$id, "/negative")
+            targets[[length(targets) + 1]] <- temp_tar
+          }
+        }
+        
+        targets <- rbindlist(targets, fill = TRUE)
       }
 
       num_cols <- c("mz", "rt", "mzmin", "mzmax", "rtmin", "rtmax")
@@ -1463,7 +1481,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                        sec = 60,
                        id = NULL,
                        mzClust = 0.003,
-                       isInAllSpectra = TRUE,
+                       presence = 0.8,
                        verbose = FALSE,
                        minIntensity = 1000,
                        runParallel = FALSE) {
@@ -1486,6 +1504,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (nrow(ms1) == 0) return(ms1)
 
       if (!"id" %in% colnames(ms1)) {
+        pol_key <- c("positive", "negative", "nd")
+        names(pol_key) <- c("1", "-1", "0")
+        ms1$polarity <- as.character(ms1$polarity)
+        ms1$polarity <- pol_key[ms1$polarity]
+        
         ms1$id <- paste(
           round(min(ms1$mz), 4),
           "-",
@@ -1494,6 +1517,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           round(max(ms1$rt), 0),
           "-",
           round(min(ms1$rt), 0),
+          "/",
+          ms1$polarity,
           sep = ""
         )
       }
@@ -1501,7 +1526,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (!is.logical(verbose)) verbose = FALSE
       if (!is.numeric(mzClust)) mzClust = 0.01
       ms1$unique_id <- paste0(ms1$analysis, "_", ms1$id)
-      ms1_list <- rcpp_ms_cluster_spectra(ms1, mzClust, isInAllSpectra, verbose)
+      ms1_list <- rcpp_ms_cluster_spectra(ms1, mzClust, presence, verbose)
       ms1_df <- rbindlist(ms1_list, fill = TRUE)
 
       ms1_df <- ms1_df[order(ms1_df$mz), ]
@@ -1525,7 +1550,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                        id = NULL,
                        isolationWindow = 1.3,
                        mzClust = 0.005,
-                       isInAllSpectra = TRUE,
+                       presence = 0.8,
                        verbose = FALSE,
                        minIntensity = 0,
                        runParallel = FALSE) {
@@ -1549,6 +1574,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (nrow(ms2) == 0) return(ms2)
 
       if (!"id" %in% colnames(ms2)) {
+        pol_key <- c("positive", "negative", "nd")
+        names(pol_key) <- c("1", "-1", "0")
+        ms2$polarity <- as.character(ms2$polarity)
+        ms2$polarity <- pol_key[ms2$polarity]
+        
         ms2$id <- paste(
           round(min(ms2$mz), 4),
           "-",
@@ -1557,12 +1587,14 @@ MassSpecData <- R6::R6Class("MassSpecData",
           round(max(ms2$rt), 0),
           "-",
           round(min(ms2$rt), 0),
+          "/",
+          ms2$polarity,
           sep = ""
         )
       }
 
-      ms2$unique_id <- paste0(ms2$analysis, "_", ms2$id)
-      ms2_list <- rcpp_ms_cluster_ms2(ms2, mzClust, isInAllSpectra, verbose)
+      ms2$unique_id <- paste0(ms2$analysis, "_", ms2$id, "_", ms2$polarity)
+      ms2_list <- rcpp_ms_cluster_spectra(ms2, mzClust, presence, verbose)
       ms2_df <- rbindlist(ms2_list, fill = TRUE)
 
       ms2_df <- ms2_df[order(ms2_df$mz), ]
@@ -1773,7 +1805,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                 rtWindow = c(-2, 2),
                                 mzWindow = c(-5, 100),
                                 mzClust = 0.003,
-                                isInAllSpectra = TRUE,
+                                presence = 0.8,
                                 minIntensity = 1000,
                                 verbose = FALSE,
                                 filtered = FALSE,
@@ -1822,7 +1854,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           mz = fts,
           id = fts$feature,
           mzClust = mzClust,
-          isInAllSpectra = isInAllSpectra,
+          presence = presence,
           minIntensity = minIntensity,
           verbose = verbose,
           runParallel = runParallel
@@ -1858,7 +1890,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                 sec = 60,
                                 isolationWindow = 1.3,
                                 mzClust = 0.003,
-                                isInAllSpectra = TRUE,
+                                presence = 0.8,
                                 minIntensity = 0,
                                 verbose = FALSE,
                                 filtered = FALSE,
@@ -1898,7 +1930,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           id = fts$feature,
           isolationWindow = isolationWindow,
           mzClust = mzClust,
-          isInAllSpectra = isInAllSpectra,
+          presence = presence,
           minIntensity = minIntensity,
           verbose = verbose,
           runParallel = runParallel
@@ -2131,11 +2163,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
                               rtWindow = c(-2, 2),
                               mzWindow = c(-5, 90),
                               mzClustFeatures = 0.003,
-                              isInAllSpectraFeatures = TRUE,
+                              presenceFeatures = TRUE,
                               minIntensityFeatures = 1000,
                               loadedFeaturesMS1 = TRUE,
                               mzClustGroups = 0.003,
-                              isInAllSpectraGroups = TRUE,
+                              presenceGroups = TRUE,
                               minIntensityGroups = 1000,
                               groupBy = "groups",
                               verbose = FALSE,
@@ -2183,7 +2215,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         rtWindow = rtWindow,
         mzWindow = mzWindow,
         mzClust = mzClustFeatures,
-        isInAllSpectra = isInAllSpectraFeatures,
+        presence = presenceFeatures,
         minIntensity = minIntensityFeatures,
         verbose = verbose,
         filtered = filtered,
@@ -2213,7 +2245,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       ms1_list <- rcpp_ms_cluster_spectra(
-        ms1, mzClustGroups, isInAllSpectraGroups, verbose
+        ms1, mzClustGroups, presenceGroups, verbose
       )
 
       ms1_df <- rbindlist(ms1_list, fill = TRUE)
@@ -2243,11 +2275,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
                               sec = 60,
                               isolationWindow = 1.3,
                               mzClustFeatures = 0.003,
-                              isInAllSpectraFeatures = TRUE,
+                              presenceFeatures = TRUE,
                               minIntensityFeatures = 100,
                               loadedFeaturesMS2 = TRUE,
                               mzClustGroups = 0.003,
-                              isInAllSpectraGroups = TRUE,
+                              presenceGroups = TRUE,
                               minIntensityGroups = 100,
                               groupBy = "groups",
                               verbose = FALSE,
@@ -2294,7 +2326,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         features = fts$feature,
         isolationWindow = isolationWindow,
         mzClust = mzClustFeatures,
-        isInAllSpectra = isInAllSpectraFeatures,
+        presence = presenceFeatures,
         minIntensity = minIntensityFeatures,
         verbose = verbose,
         filtered = filtered,
@@ -2323,8 +2355,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         ms2$unique_id <- paste0(ms2$analysis, "_", ms2$id)
       }
 
-      ms2_list <- rcpp_ms_cluster_ms2(
-        ms2, mzClustGroups, isInAllSpectraGroups, verbose
+      ms2_list <- rcpp_ms_cluster_spectra(
+        ms2, mzClustGroups, presenceGroups, verbose
       )
 
       ms2_df <- rbindlist(ms2_list, fill = TRUE)
@@ -3580,7 +3612,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             rtWindow = parameters$rtWindow,
             mzWindow = parameters$mzWindow,
             mzClust = parameters$mzClust,
-            isInAllSpectra = parameters$isInAllSpectra,
+            presence = parameters$presence,
             minIntensity = parameters$minIntensity,
             verbose = parameters$verbose,
             filtered = parameters$filtered,
@@ -3706,7 +3738,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           ms2 <- self$get_features_ms2(
             isolationWindow =  parameters$isolationWindow,
             mzClust = parameters$mzClust,
-            isInAllSpectra = parameters$isInAllSpectra,
+            presence = parameters$presence,
             minIntensity = parameters$minIntensity,
             verbose = parameters$verbose,
             filtered = parameters$filtered,
@@ -3735,7 +3767,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             ft_ms2 <- ana_ms2[ana_ms2$id %in% x2, ]
 
             if (nrow(ft_ms2) > 0) {
-              cols <- c("pre_mz", "rt","mz", "intensity", "isPre")
+              cols <- c("pre_mz", "rt","mz", "intensity", "is_pre")
               ft_ms2 <- ft_ms2[, cols, with = FALSE]
               ft_ms2
             } else {
@@ -3865,7 +3897,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
               groupBy = "groups",
               loadedGroupsMS1 = FALSE,
               mzClustGroups = parameters$mzClust,
-              isInAllSpectraGroups = parameters$isInAllSpectra,
+              presenceGroups = parameters$presence,
               minIntensityGroups = parameters$minIntensity,
               verbose = parameters$verbose,
               filtered = parameters$filtered,
@@ -4004,13 +4036,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
             ms2 <- self$get_groups_ms2(
               isolationWindow = NULL,
               mzClustFeatures = NULL,
-              isInAllSpectraFeatures = NULL,
+              presenceFeatures = NULL,
               minIntensityFeatures = NULL,
               loadedFeaturesMS2 = TRUE,
               groupBy = "groups",
               loadedGroupsMS2 = FALSE,
               mzClustGroups = parameters$mzClust,
-              isInAllSpectraGroups = parameters$isInAllSpectra,
+              presenceGroups = parameters$presence,
               minIntensityGroups = parameters$minIntensity,
               verbose = parameters$verbose,
               filtered = parameters$filtered,
@@ -5090,6 +5122,28 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       
       if (!"id" %in% colnames(tic)) tic$id <- tic$analysis
+      
+      polarities <- self$get_polarities()
+      polarities_names <- unique(names(polarities))
+      
+      if (length(polarities) > length(polarities_names) & 
+        colorBy %in% c("analyses", "levels", "replicates")) {
+        
+        pol_key <- c("positive", "negative", "nd")
+        names(pol_key) <- c("1", "-1", "0")
+        tic$polarity <- as.character(tic$polarity)
+        tic$polarity <- pol_key[tic$polarity]
+        
+        if (colorBy %in% "analyses") {
+          tic$analysis <- paste0(tic$analysis, "/", tic$polarity)
+        } else if (colorBy %in% "replicates") {
+          tic$replicate <- paste0(tic$replicate, "/", tic$polarity)
+        } else {
+          tic$level <- paste("MS", tic$level, sep = "")
+          tic$level <- factor(tic$level)
+          tic$level <- paste0(tic$level, "/", tic$polarity)
+        }
+      }
 
       if (!interactive) {
         plot_eic_static(tic, legendNames, colorBy, title)
@@ -5122,6 +5176,28 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       
       if (!"id" %in% colnames(bpc)) bpc$id <- bpc$analysis
+      
+      polarities <- self$get_polarities()
+      polarities_names <- unique(names(polarities))
+      
+      if (length(polarities) > length(polarities_names) & 
+          colorBy %in% c("analyses", "levels", "replicates")) {
+        
+        pol_key <- c("positive", "negative", "nd")
+        names(pol_key) <- c("1", "-1", "0")
+        bpc$polarity <- as.character(bpc$polarity)
+        bpc$polarity <- pol_key[bpc$polarity]
+        
+        if (colorBy %in% "analyses") {
+          bpc$analysis <- paste0(bpc$analysis, "/", bpc$polarity)
+        } else if (colorBy %in% "replicates") {
+          bpc$replicate <- paste0(bpc$replicate, "/", bpc$polarity)
+        } else {
+          bpc$level <- paste("MS", bpc$level, sep = "")
+          bpc$level <- factor(bpc$level)
+          bpc$level <- paste0(bpc$level, "/", bpc$polarity)
+        }
+      }
 
       if (!interactive) {
         plot_eic_static(bpc, legendNames, colorBy, title)
@@ -5143,7 +5219,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                         id = NULL,
                         isolationWindow = 1.3,
                         mzClust = 0.005,
-                        isInAllSpectra = TRUE,
+                        presence = 0.8,
                         verbose = FALSE,
                         minIntensity = 0,
                         runParallel = FALSE,
@@ -5154,7 +5230,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       ms2 <- self$get_ms2(
         analyses, mass, mz, rt, ppm, sec, id, isolationWindow,
-        mzClust, isInAllSpectra, verbose, minIntensity, runParallel
+        mzClust, presence, verbose, minIntensity, runParallel
       )
 
       if (nrow(ms2) == 0) {
@@ -5186,7 +5262,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                         sec = 60,
                         id = NULL,
                         mzClust = 0.003,
-                        isInAllSpectra = TRUE,
+                        presence = 0.8,
                         verbose = FALSE,
                         minIntensity = 1000,
                         runParallel = FALSE,
@@ -5196,7 +5272,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                         interactive = TRUE) {
 
       ms1 <- self$get_ms1(
-        analyses, mass, mz, rt, ppm, sec, id, mzClust, isInAllSpectra,
+        analyses, mass, mz, rt, ppm, sec, id, mzClust, presence,
         verbose, minIntensity, runParallel
       )
 
@@ -5332,7 +5408,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                  rtWindow = c(-2, 2),
                                  mzWindow = c(-5, 100),
                                  mzClust = 0.003,
-                                 isInAllSpectra = TRUE,
+                                 presence = 0.8,
                                  minIntensity = 1000,
                                  verbose = FALSE,
                                  filtered = FALSE,
@@ -5345,7 +5421,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       ms1 <- self$get_features_ms1(
         analyses, features, mass, mz, rt, ppm, sec,
-        rtWindow, mzWindow, mzClust, isInAllSpectra, minIntensity,
+        rtWindow, mzWindow, mzClust, presence, minIntensity,
         verbose, filtered, loadedMS1, runParallel
       )
 
@@ -5379,7 +5455,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                  sec = 60,
                                  isolationWindow = 1.3,
                                  mzClust = 0.005,
-                                 isInAllSpectra = TRUE,
+                                 presence = 0.8,
                                  minIntensity = 0,
                                  verbose = FALSE,
                                  filtered = FALSE,
@@ -5392,7 +5468,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       ms2 <- self$get_features_ms2(
         analyses, features, mass, mz, rt, ppm, sec,
-        isolationWindow, mzClust, isInAllSpectra, minIntensity,
+        isolationWindow, mzClust, presence, minIntensity,
         verbose, filtered, loadedMS2, runParallel
       )
 
@@ -5537,7 +5613,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                rtWindow = c(-2, 2),
                                mzWindow = c(-5, 90),
                                mzClustFeatures = 0.005,
-                               isInAllSpectraFeatures = TRUE,
+                               presenceFeatures = TRUE,
                                minIntensityFeatures = 1000,
                                loadedFeaturesMS1 = TRUE,
                                mzClustGroups = 0.005,
@@ -5560,7 +5636,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       ms1 <- self$get_groups_ms1(
         groups, mass, mz, rt, ppm, sec,
         rtWindow, mzWindow,
-        mzClustFeatures, isInAllSpectraFeatures,
+        mzClustFeatures, presenceFeatures,
         minIntensityFeatures, loadedFeaturesMS1,
         mzClustGroups, minIntensityGroups, verbose,
         filtered, loadedGroupsMS1, runParallel
@@ -5593,11 +5669,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                sec = 60,
                                isolationWindow = 1.3,
                                mzClustFeatures = 0.003,
-                               isInAllSpectraFeatures = TRUE,
+                               presenceFeatures = TRUE,
                                minIntensityFeatures = 100,
                                loadedFeaturesMS2 = TRUE,
                                mzClustGroups = 0.003,
-                               isInAllSpectraGroups = TRUE,
+                               presenceGroups = TRUE,
                                minIntensityGroups = 100,
                                verbose = FALSE,
                                filtered = FALSE,
@@ -5618,11 +5694,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
         groups, mass, mz, rt, ppm, sec,
         isolationWindow,
         mzClustFeatures,
-        isInAllSpectraFeatures,
+        presenceFeatures,
         minIntensityFeatures,
         loadedFeaturesMS2,
         mzClustGroups,
-        isInAllSpectraGroups,
+        presenceGroups,
         minIntensityGroups,
         groupBy, verbose, filtered,
         loadedGroupsMS2, runParallel
@@ -6202,11 +6278,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
       
       ftindex <- data.table::data.table(rep(0, n_analyses))
       colnames(ftindex) <- groups_cols[1]
-      for(i in groups_cols) {
+      for (i in groups_cols) {
         ftindex[[i]] <- rep(0, n_analyses)
       }
       
-      for(i in seq_len(n_analyses)) {
+      for (i in seq_len(n_analyses)) {
         fts_temp <- features[[i]]
         if (nrow(fts_temp) > 0) {
           for (j in groups_cols) {
@@ -6224,7 +6300,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       
       if (TRUE %in% grepl("Set", is(pat_features))) {
-        polarity_set <- c("positive", "negatgive")
+        polarity_set <- c("positive", "negative")
         names(polarity_set) <- c("[M+H]+", "[M-H]-")
         
         neutralMasses <- groups_info$mzs
@@ -6283,11 +6359,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
             if (n_traces > 0) {
               s[[1]][["id"]] <- seq_len(n_traces)
               
-              if (!"isPre" %in% colnames(s[[1]])) {
-                s[[1]][["isPre"]] <- rep(FALSE, n_traces)
+              if (!"is_pre" %in% colnames(s[[1]])) {
+                s[[1]][["is_pre"]] <- rep(FALSE, n_traces)
               }
               
-              cols_to_keep <- c("id", "mz", "intensity", "isPre")
+              cols_to_keep <- c("id", "mz", "intensity", "is_pre")
               s[[1]] <- s[[1]][, cols_to_keep, with = FALSE]
               
               colnames(s[[1]]) <- c("ID", "mz", "intensity", "precursor")

@@ -2,50 +2,50 @@
 # resources --------------------------------------------------------------------
 
 ## files -----------------------------------------------------------------------
-# all_files <- StreamFindData::get_all_file_paths()
-# files_mrm <- all_files[grepl("mrm", all_files)]
+all_files <- StreamFindData::get_all_file_paths()
+# files <- all_files[grepl("mrm", all_files)]
 # files <- all_files[1:3]
-# files1 <- all_files[grepl("influent|blank", all_files)]
-# files2 <- all_files[grepl("o3sw", all_files)]
+# files <- all_files[grepl("influent|blank", all_files)]
+files <- all_files[grepl("o3sw", all_files)]
 
 path <- "C:/Users/Ricardo Cunha/Documents/Work/example_ms_files"
-files <- list.files(path, pattern = ".mzML", full.names = TRUE)
+# files <- list.files(path, pattern = ".mzML", full.names = TRUE)
 
 ## databases -------------------------------------------------------------------
-# db <- StreamFindData::get_tof_spiked_chemicals()
-# 
-# db_cols <- c("name", "mass", "rt")
-# carbamazepin_d10 <- db[db$name %in% "Carbamazepin-d10", db_cols, with = FALSE]
-# diuron_d6 <- db[db$name %in% "Diuron-d6", db_cols, with = FALSE]
-# carb_pos <- carbamazepin_d10$mass + 1.007276
-# carb <- carbamazepin_d10$mass
-# carb_rt <- carbamazepin_d10$rt
-# diu_pos <- diuron_d6$mass + 1.007276
-# diu <- diuron_d6$mass
-# diu_rt <- diuron_d6$rt
-# 
-# sec_dev <- 30
-# ppm_dev <- 10
-# 
-# targets <- make_ms_targets(
-#   mz = data.frame(
-#     id = c("tg1", "tg2"),
-#     mz = c(carb_pos, diu_pos),
-#     rt = c(carb_rt, diu_rt)
-#   ),
-#   ppm = ppm_dev,
-#   sec = sec_dev
-# )
-# 
-# neutral_targets <- make_ms_targets(
-#   mz = data.frame(
-#     name = c("tg1", "tg2"),
-#     mz = c(carb, diu),
-#     rt = c(carb_rt, diu_rt)
-#   ),
-#   ppm = ppm_dev,
-#   sec = sec_dev
-# )
+db <- StreamFindData::get_tof_spiked_chemicals()
+
+db_cols <- c("name", "mass", "rt")
+carbamazepin_d10 <- db[db$name %in% "Carbamazepin-d10", db_cols, with = FALSE]
+diuron_d6 <- db[db$name %in% "Diuron-d6", db_cols, with = FALSE]
+carb_pos <- carbamazepin_d10$mass + 1.007276
+carb <- carbamazepin_d10$mass
+carb_rt <- carbamazepin_d10$rt
+diu_pos <- diuron_d6$mass + 1.007276
+diu <- diuron_d6$mass
+diu_rt <- diuron_d6$rt
+
+sec_dev <- 30
+ppm_dev <- 10
+
+targets <- make_ms_targets(
+  mz = data.frame(
+    id = c("tg1", "tg2"),
+    mz = c(carb_pos, diu_pos),
+    rt = c(carb_rt, diu_rt)
+  ),
+  ppm = ppm_dev,
+  sec = sec_dev
+)
+
+neutral_targets <- make_ms_targets(
+  mz = data.frame(
+    name = c("tg1", "tg2"),
+    mz = c(carb, diu),
+    rt = c(carb_rt, diu_rt)
+  ),
+  ppm = ppm_dev,
+  sec = sec_dev
+)
 
 cols <- c("name", "formula", "mass", "rt")
 
@@ -74,26 +74,61 @@ patRoon::clearCache("all")
 
 # spectra ----------------------------------------------------------------------
 
-ms <- MassSpecData$new(files = files[9])
+ms <- MassSpecData$new(files = files)
+
+
+ms$plot_ms2(mass = diu, rt = diu_rt, ppm = 10, sec = 10, presence = 0.7, colorBy = "polarities")
+
+
+# ms$plot_bpc(levels = 1, colorBy = "analyses", interactive = F)
+
+ms$plot_eic(mass = afin_db$mass[66], colorBy = "targets")
+
+spec <- ms$get_spectra(mass = afin_db$mass[66], rt = 358, ppm = 3, sec = 10, levels = 1, allTraces = FALSE)
+spec$unique_id <- paste0(spec$analysis, "_", spec$id, "_", spec$polarity)
+spec
+
+spec <- ms$get_spectra(mass = diu, rt = diu_rt, ppm = 3, sec = 10, levels = 2, allTraces = FALSE)
+spec$unique_id <- paste0(spec$analysis, "_", spec$id, "_", spec$polarity)
+spec
+
+rcpp_ms_cluster_spectra(spec, mzClust = 0.001, presence = 0.8, verbose = TRUE)
+
+# TODO check what happens when all MS2 centroids are added to clustering
+# ms$get_ms2()
+
+rcpp_parse_ms_analysis_spectra(ms$get_analyses()[[1]])
+
+
+ms$get_run()
 
 ms$get_polarities()
+
+ms$get_spectra(mass = afin_db$mass[2])
+
+
 
 ms$plot_eic(mz = afin_db$mass[2] + 1.00726, colorBy = "targets")
 
 ms$get_ms2(mass = afin_db$mass[2])
 
-ms$plot_bpc(levels = 1, colorBy = "polarities")
+ms$plot_bpc(levels = 1, colorBy = "analyses")
+
+
+
+
+
+
+
+ms$get_spectra(analyses = c(2, 5), mass = diu, rt = diu_rt)
+
+
 
 
 
 
 
 ms$get_spectra(analyses = c(2, 5), mass = diu, rt = diu_rt, sec = 120, levels = 2, allTraces = FALSE)
-
-
-
-
-
 
 # ms$plot_spectra(mass = diu, rt = diu_rt, colorBy = "analyses")
 

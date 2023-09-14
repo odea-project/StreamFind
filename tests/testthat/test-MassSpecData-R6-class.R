@@ -156,7 +156,7 @@ test_that("get EIC, MS1 and MS2 spectra", {
     mz = targets, minIntensity = 10000
   )))
   expect_s3_class(ms$get_ms2(4, mz = targets), "data.table")
-  expect_true("isPre" %in% colnames(ms$get_ms2(4, mz = targets)))
+  expect_true("is_pre" %in% colnames(ms$get_ms2(4, mz = targets)))
 })
 
 # ms$plot_tic(colorBy = "replicates")
@@ -364,7 +364,7 @@ slfms1 <- Settings_load_features_ms1_StreamFind(
   rtWindow = c(-2, 2),
   mzWindow = c(-1, 6),
   mzClust = 0.003,
-  isInAllSpectra = FALSE,
+  presence = 0.8,
   minIntensity = 250,
   filtered = FALSE,
   runParallel = FALSE,
@@ -375,7 +375,7 @@ slfms1 <- Settings_load_features_ms1_StreamFind(
 slfms2 <- Settings_load_features_ms2_StreamFind(
   isolationWindow = 1.3,
   mzClust = 0.003,
-  isInAllSpectra = FALSE,
+  presence = 0.8,
   minIntensity = 0,
   filtered = FALSE,
   runParallel = FALSE,
@@ -442,7 +442,7 @@ ms5$load_features_ms2(settings = slfms2)
 
 slfgms1 <- Settings_load_groups_ms1_StreamFind(
   mzClust = 0.003,
-  isInAllSpectra = FALSE,
+  presence = 0.8,
   minIntensity = 1000,
   verbose = FALSE,
   filtered = FALSE,
@@ -451,7 +451,7 @@ slfgms1 <- Settings_load_groups_ms1_StreamFind(
 
 slfgms2 <- Settings_load_groups_ms2_StreamFind(
   mzClust = 0.003,
-  isInAllSpectra = FALSE,
+  presence = 0.8,
   minIntensity = 250,
   filtered = FALSE,
   runParallel = FALSE,

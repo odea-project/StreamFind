@@ -9,12 +9,8 @@ rcpp_centroid_spectra <- function(spectra) {
     .Call(`_StreamFind_rcpp_centroid_spectra`, spectra)
 }
 
-rcpp_ms_cluster_ms2 <- function(ms2, mzClust, isInAllSpectra, verbose) {
-    .Call(`_StreamFind_rcpp_ms_cluster_ms2`, ms2, mzClust, isInAllSpectra, verbose)
-}
-
-rcpp_ms_cluster_spectra <- function(spectra, mzClust, isInAllSpectra, verbose) {
-    .Call(`_StreamFind_rcpp_ms_cluster_spectra`, spectra, mzClust, isInAllSpectra, verbose)
+rcpp_ms_cluster_spectra <- function(spectra, mzClust = 0.005, presence = 0.8, verbose = FALSE) {
+    .Call(`_StreamFind_rcpp_ms_cluster_spectra`, spectra, mzClust, presence, verbose)
 }
 
 rcpp_ms_feature_groups_correspondence <- function(groups, features, verbose) {

@@ -24,17 +24,23 @@ make_colorBy_varkey <- function(data = NULL, colorBy = NULL, legendNames = NULL)
   data$analysis <- factor(data$analysis)
   
   if ("level" %in% colnames(data)) {
-    data$level <- paste("MS", data$level, sep = "")
-    data$level <- factor(data$level)
+    if (!is.character(data$level)) {
+      data$level <- paste("MS", data$level, sep = "")
+      data$level <- factor(data$level)
+    }
+    
   } else {
     data$level <- "not defined"
   }
   
   if ("polarity" %in% colnames(data)) {
-    pol_key <- c("positive", "negative", "not defined")
-    names(pol_key) <- c("1", "-1", "0")
-    data$polarity <- as.character(data$polarity)
-    data$polarity <- pol_key[data$polarity]
+    if (!is.character(data$polarity)) {
+      pol_key <- c("positive", "negative", "not defined")
+      names(pol_key) <- c("1", "-1", "0")
+      data$polarity <- as.character(data$polarity)
+      data$polarity <- pol_key[data$polarity]
+    }
+    
   } else {
     data$polarity <- "not defined"
   }
@@ -610,7 +616,7 @@ plot_bpc_interactive <- function(bpc = NULL, legendNames = NULL,
 #'
 #' @description Static plot of MSn spectra using the \pkg{base} package.
 #'
-#' @param ms2 A data table with the id, mz, intensity, pre_mz, isPre
+#' @param ms2 A data table with the id, mz, intensity, pre_mz, is_pre
 #' and var (i.e., the plotting variable for each entry) as columns.
 #' @param legendNames A character vector with the same length as the unique ids
 #' in the table given in `eic`.
@@ -650,7 +656,7 @@ plot_ms2_static <- function(ms2 = NULL,
     xaxt = "n"
   )
 
-  precursors <- ms2[ms2$isPre, ]
+  precursors <- ms2[ms2$is_pre, ]
 
   for (s in seq_len(nrow(precursors))) {
     lines(
@@ -692,7 +698,7 @@ plot_ms2_static <- function(ms2 = NULL,
 #' @description Interactive plot of MS2 spectra using the \pkg{plotly} package.
 #'
 #' @param ms2 A data.table with the id, pre_mz, mz, intensity,
-#' isPre and var (i.e., the plotting variable for each entry) as columns.
+#' is_pre and var (i.e., the plotting variable for each entry) as columns.
 #' @param legendNames A character vector with the same length as the unique ids
 #' in the table given in `eic`.
 #' @param colorBy A string (length 1). One of "analyses" (the default),
@@ -722,9 +728,9 @@ plot_ms2_interactive <- function(ms2 = NULL, legendNames = NULL,
 
     mz_text <- paste0(round(data$mz, digits = 4), "  ")
 
-    if (TRUE %in% data$isPre) {
-      mz_text[data$isPre] <- paste0("Pre ", mz_text[data$isPre])
-      bar_widths[data$isPre] <- 4
+    if (TRUE %in% data$is_pre) {
+      mz_text[data$is_pre] <- paste0("Pre ", mz_text[data$is_pre])
+      bar_widths[data$is_pre] <- 4
     }
 
     plot <- plot %>% add_trace(

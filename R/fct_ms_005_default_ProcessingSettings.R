@@ -820,7 +820,7 @@ Settings_group_features_xcms3_peakdensity_peakgroups <- function(
 #' @template arg-ms-rtWindow
 #' @template arg-ms-mzWindow
 #' @template arg-ms-mzClust
-#' @template arg-ms-isInAllSpectra
+#' @template arg-ms-presence
 #' @template arg-ms-minIntensity
 #' @template arg-ms-filtered
 #' @template arg-runParallel
@@ -835,7 +835,7 @@ Settings_load_features_ms1_StreamFind <- function(
     rtWindow = c(-2, 2),
     mzWindow = c(-1, 6),
     mzClust = 0.003,
-    isInAllSpectra = TRUE,
+    presence = 0.8,
     minIntensity = 250,
     filtered = FALSE,
     runParallel = FALSE,
@@ -848,7 +848,7 @@ Settings_load_features_ms1_StreamFind <- function(
       "rtWindow" = rtWindow,
       "mzWindow" = mzWindow,
       "mzClust" = mzClust,
-      "isInAllSpectra" = isInAllSpectra,
+      "presence" = presence,
       "minIntensity" = minIntensity,
       "filtered" = filtered,
       "runParallel" = runParallel,
@@ -895,7 +895,7 @@ validate.Settings_load_features_ms1_StreamFind <- function(x) {
 #'
 #' @template arg-ms-isolationWindow
 #' @template arg-ms-mzClust
-#' @template arg-ms-isInAllSpectra
+#' @template arg-ms-presence
 #' @template arg-ms-minIntensity
 #' @template arg-ms-filtered
 #' @template arg-runParallel
@@ -909,7 +909,7 @@ validate.Settings_load_features_ms1_StreamFind <- function(x) {
 Settings_load_features_ms2_StreamFind <- function(
     isolationWindow = 1.3,
     mzClust = 0.01,
-    isInAllSpectra = TRUE,
+    presence = 0.8,
     minIntensity = 0,
     filtered = FALSE,
     runParallel = FALSE,
@@ -921,7 +921,7 @@ Settings_load_features_ms2_StreamFind <- function(
     parameters = list(
       "isolationWindow" = isolationWindow,
       "mzClust" = mzClust,
-      "isInAllSpectra" = isInAllSpectra,
+      "presence" = presence,
       "minIntensity" = minIntensity,
       "filtered" = filtered,
       "runParallel" = runParallel,
@@ -966,7 +966,7 @@ validate.Settings_load_features_ms2_StreamFind <- function(x) {
 #' @description Settings for loading MS1 spectra for feature groups.
 #'
 #' @template arg-ms-mzClust
-#' @template arg-ms-isInAllSpectra
+#' @template arg-ms-presence
 #' @template arg-ms-minIntensity
 #' @template arg-ms-filtered
 #' @template arg-runParallel
@@ -979,7 +979,7 @@ validate.Settings_load_features_ms2_StreamFind <- function(x) {
 #'
 Settings_load_groups_ms1_StreamFind <- function(
     mzClust = 0.003,
-    isInAllSpectra = TRUE,
+    presence = 0.8,
     minIntensity = 1000,
     verbose = FALSE,
     filtered = FALSE,
@@ -990,7 +990,7 @@ Settings_load_groups_ms1_StreamFind <- function(
     algorithm = "StreamFind",
     parameters = list(
       "mzClust" = mzClust,
-      "isInAllSpectra" = isInAllSpectra,
+      "presence" = presence,
       "minIntensity" = minIntensity,
       "filtered" = filtered,
       "runParallel" = runParallel,
@@ -1034,7 +1034,7 @@ validate.Settings_load_groups_ms1_StreamFind <- function(x) {
 #' @description Settings for loading MS2 spectra for feature groups.
 #'
 #' @template arg-ms-mzClust
-#' @template arg-ms-isInAllSpectra
+#' @template arg-ms-presence
 #' @template arg-ms-minIntensity
 #' @template arg-ms-filtered
 #' @template arg-runParallel
@@ -1047,7 +1047,7 @@ validate.Settings_load_groups_ms1_StreamFind <- function(x) {
 #'
 Settings_load_groups_ms2_StreamFind <- function(
     mzClust = 0.01,
-    isInAllSpectra = TRUE,
+    presence = 0.8,
     minIntensity = 250,
     filtered = FALSE,
     runParallel = FALSE,
@@ -1058,7 +1058,7 @@ Settings_load_groups_ms2_StreamFind <- function(
     algorithm = "StreamFind",
     parameters = list(
       "mzClust" = mzClust,
-      "isInAllSpectra" = isInAllSpectra,
+      "presence" = presence,
       "minIntensity" = minIntensity,
       "filtered" = filtered,
       "runParallel" = runParallel,
