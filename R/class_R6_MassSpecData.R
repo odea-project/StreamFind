@@ -1997,177 +1997,56 @@ MassSpecData <- R6::R6Class("MassSpecData",
       
       fgroups <- fgroups[fgroups$group %in% groups, ]
       
-      
-      
-      if (self$has_groups()) {
-        if (!filtered) fgroups <- fgroups[!fgroups$filtered, ]
-
-        if (!is.null(groups)) {
-
-          if (is.numeric(groups)) {
-            fgroups <- fgroups[groups, ]
-          } else if (is.data.frame(groups)) {
-            if ("group" %in% colnames(groups)) {
-              fgroups <- fgroups[fgroups$group %in% groups$group, ]
-            }
-
-            if ("name" %in% colnames(groups)) {
-              gn <- groups$name
-              names(gn) <- groups$group
-              fgroups$name <- gn[fgroups$group]
-            }
-
-          } else {
-            fgroups <- fgroups[fgroups$group %in% groups, ]
-          }
-
-        } else if (!is.null(mass)) {
-          if (is.data.frame(mass)) {
-            colnames(mass) <- gsub("mass", "mz", colnames(mass))
-            colnames(mass) <- gsub("neutralMass", "mz", colnames(mass))
-          }
-          targets <- make_ms_targets(mass, rt, ppm, sec)
-          ids <- rep(NA_character_, nrow(fgroups))
-
-          for (i in seq_len(nrow(targets))) {
-            ids[between(
-              fgroups$mass,
-              targets$mzmin[i],
-              targets$mzmax[i]
-            ) &
-              between(
-                fgroups$rt,
-                targets$rtmin[i],
-                targets$rtmax[i]
-              )] <- targets$id[i]
-          }
-          fgroups$name <- ids
-          sel <- !is.na(ids)
-          fgroups <- fgroups[sel, ]
-
-        } else if (!is.null(mz)) {
-          targets <- make_ms_targets(mz, rt, ppm, sec)
-          ids <- rep(NA_character_, nrow(fgroups))
-          if (!"mz" %in% colnames(fgroups)) {
-            adduct <- paste(unique(fgroups$adduct), collapse = ",")
-
-            if (grepl("\\[M\\+H\\]\\+", adduct)) {
-              for (i in seq_len(nrow(targets))) {
-                if (targets$rtmax[i] > 0) {
-                  ids[between(
-                    fgroups$mass,
-                    targets$mzmin[i] - 1.007276,
-                    targets$mzmax[i] - 1.007276
-                  ) &
-                    between(
-                      fgroups$rt,
-                      targets$rtmin[i],
-                      targets$rtmax[i]
-                    )] <- targets$id[i]
-                } else {
-                  ids[between(
-                    fgroups$mass,
-                    targets$mzmin[i] - 1.007276,
-                    targets$mzmax[i] - 1.007276
-                  )] <- targets$id[i]
-                }
-              }
-            }
-
-            if (grepl("\\[M-H\\]-", adduct)) {
-              for (i in seq_len(nrow(targets))) {
-                if (targets$rtmax[i] > 0) {
-                  ids[between(
-                    fgroups$mass,
-                    targets$mzmin[i] + 1.007276,
-                    targets$mzmax[i] + 1.007276
-                  ) &
-                    between(
-                      fgroups$rt,
-                      targets$rtmin[i],
-                      targets$rtmax[i]
-                    )] <- targets$id[i]
-                } else {
-                  ids[between(
-                    fgroups$mass,
-                    targets$mzmin[i] + 1.007276,
-                    targets$mzmax[i] + 1.007276
-                  )] <- targets$id[i]
-                }
-              }
-            }
-          } else {
-            for (i in seq_len(nrow(targets))) {
-              if (targets$rtmax[i] > 0) {
-                ids[between(
-                  fgroups$mz,
-                  targets$mzmin[i],
-                  targets$mzmax[i]
-                ) &
-                  between(
-                    fgroups$rt,
-                    targets$rtmin[i],
-                    targets$rtmax[i]
-                  )] <- targets$id[i]
-              } else {
-                ids[between(
-                  feats@metadata$mz,
-                  targets$mzmin[i],
-                  targets$mzmax[i]
-                )] <- targets$id[i]
-              }
-            }
-          }
-
-          fgroups$name <- ids
-          sel <- !is.na(ids)
-          fgroups <- fgroups[sel, ]
-        }
-
-        if (onlyIntensities) {
-          cols_id_ints <- unname(c("group", self$get_analysis_names()))
-          if ("name" %in% colnames(fgroups)) {
-            cols_id_ints <- c(cols_id_ints, "name")
-          }
-          fgroups <- fgroups[, cols_id_ints, with = FALSE]
-        }
-
-        if (average) {
-          rpl_ana <- self$get_overview()[, c("analysis", "replicate")]
-          rpl_ana <- split(rpl_ana, rpl_ana$replicate)
-          rpl_ana <- lapply(rpl_ana, function(x) x$analysis)
-
-          sd_vals <- lapply(rpl_ana, function(x, fgroups) {
-            temp <- fgroups[, x, with = FALSE]
-            temp <- apply(temp, 1, function(x) sd(x) / mean(x) * 100)
-            temp[is.nan(temp)] <- 0
-            temp <- round(temp, digits = 0)
-            temp
-          }, fgroups = fgroups)
-
-          for (r in names(rpl_ana)) {
-            ana <- rpl_ana[[r]]
-            fgroups[[r]] <- apply(fgroups[, ana, with = FALSE], 1, mean)
-          }
-
-          if ("name" %in% colnames(fgroups)) {
-            target_names <- fgroups$name
-            fgroups$name <- NULL
-          } else {
-            target_names <- NULL
-          }
-
-          to_keep <- colnames(fgroups)
-          to_keep <- to_keep[!to_keep %in% self$get_analysis_names()]
-          fgroups <- fgroups[, to_keep, with = FALSE]
-
-          names(sd_vals) <- paste0(names(rpl_ana), "_sd")
-          fgroups <- cbind(fgroups, as.data.table(sd_vals))
-
-          if (!is.null(target_names)) fgroups$name <- target_names
-        }
+      if ("name" %in% colnames(fts)) {
+        g_names <- fts$name
+        names(g_names) <- fts$group
+        g_names <- g_names[!duplicated(names(g_names))]
+        fgroups$name <- g_names[fgroups$group]
       }
-      if (is.null(fgroups)) fgroups <- data.table()
+      
+      if (onlyIntensities) {
+        cols_id_ints <- unname(c("group", self$get_analysis_names()))
+        if ("name" %in% colnames(fgroups)) {
+          cols_id_ints <- c(cols_id_ints, "name")
+        }
+        fgroups <- fgroups[, cols_id_ints, with = FALSE]
+      }
+      
+      if (average) {
+        rpl_ana <- self$get_overview()[, c("analysis", "replicate")]
+        rpl_ana <- split(rpl_ana, rpl_ana$replicate)
+        rpl_ana <- lapply(rpl_ana, function(x) x$analysis)
+        
+        sd_vals <- lapply(rpl_ana, function(x, fgroups) {
+          temp <- fgroups[, x, with = FALSE]
+          temp <- apply(temp, 1, function(x) sd(x) / mean(x) * 100)
+          temp[is.nan(temp)] <- 0
+          temp <- round(temp, digits = 0)
+          temp
+        }, fgroups = fgroups)
+        
+        for (r in names(rpl_ana)) {
+          ana <- rpl_ana[[r]]
+          fgroups[[r]] <- apply(fgroups[, ana, with = FALSE], 1, mean)
+        }
+        
+        if ("name" %in% colnames(fgroups)) {
+          target_names <- fgroups$name
+          fgroups$name <- NULL
+        } else {
+          target_names <- NULL
+        }
+        
+        to_keep <- colnames(fgroups)
+        to_keep <- to_keep[!to_keep %in% self$get_analysis_names()]
+        fgroups <- fgroups[, to_keep, with = FALSE]
+        
+        names(sd_vals) <- paste0(names(rpl_ana), "_sd")
+        fgroups <- cbind(fgroups, as.data.table(sd_vals))
+        
+        if (!is.null(target_names)) fgroups$name <- target_names
+      }
+      
       fgroups
     },
 

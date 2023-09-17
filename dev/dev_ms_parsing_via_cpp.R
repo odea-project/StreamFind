@@ -100,9 +100,8 @@ ms$find_features()
 
 ms$group_features()
 
-ms$get_features(mz = diu_pos)
-
-ms$get_groups(mass = diu)
+ms$get_groups(mass = neutral_targets)
+ms$get_groups(groups = "m238.060_rt1157_g51", onlyIntensities = T)
 
 pat <- ms$as_featureGroups_patRoon()
 
