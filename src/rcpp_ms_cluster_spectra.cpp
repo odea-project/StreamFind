@@ -16,19 +16,22 @@ Rcpp::List rcpp_ms_cluster_spectra(Rcpp::DataFrame spectra,
   
   const std::vector<std::string>& names_spectra = spectra.names();
   
-  const std::vector<std::string> must_have_names = {"unique_id", "analysis", "polarity", "id", "rt", "pre_mz", "pre_ce", "mz", "intensity"};
+  const std::vector<std::string> must_have_names = {"unique_id", "analysis", "polarity", "id", "rt", "pre_mz", "mz", "intensity"};
   
   std::vector<bool> has_must_have_names(8, false);
+  
+  bool has_ce = false;
   
   for (size_t i = 0; i < must_have_names.size(); ++i) {
     for (size_t j = 0; j < names_spectra.size(); ++j) {
       if (must_have_names[i] == names_spectra[j]) has_must_have_names[i] = true;
+      if (names_spectra[j] == "pre_ce") has_ce = true;
     }
   }
   
   for (bool value : has_must_have_names) {
     if (!value) {
-      throw std::runtime_error("The DataFrame must have the columns unique_id, analysis, id, rt, pre_mz, pre_ce, mz and intensity!");
+      throw std::runtime_error("The DataFrame must have the columns unique_id, analysis, polarity, id, rt, pre_mz, mz and intensity!");
     }
   }
   
@@ -49,9 +52,6 @@ Rcpp::List rcpp_ms_cluster_spectra(Rcpp::DataFrame spectra,
   const std::vector<double>& all_pre_mz = spectra["pre_mz"];
   const double* all_pre_mz_ptr = all_pre_mz.data();
   
-  const std::vector<double>& all_pre_ce = spectra["pre_ce"];
-  const double* all_pre_ce_ptr = all_pre_ce.data();
-  
   const std::vector<double>& all_mz = spectra["mz"];
   const double* all_mz_ptr = all_mz.data();
   
@@ -71,9 +71,19 @@ Rcpp::List rcpp_ms_cluster_spectra(Rcpp::DataFrame spectra,
   const int n_unique_ids = all_unique_id.size();
   
   std::string* target_id;
+  
+  double* all_pre_ce_ptr;
+  
+  if (has_ce) {
+    std::vector<double> all_pre_ce = spectra["pre_ce"];
+    all_pre_ce_ptr = all_pre_ce.data();
+    
+  } else{
+    std::vector<double> all_pre_ce(n_unique_ids, 0);
+   all_pre_ce_ptr = all_pre_ce.data();
+  }
 
   Rcpp::List spectra_out(n_all_ids);
-  
   
   
   for (int i=0; i<n_all_ids; ++i) {

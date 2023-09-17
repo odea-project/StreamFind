@@ -72,6 +72,7 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \item \href{#method-MassSpecData-add_spectra}{\code{MassSpecData$add_spectra()}}
 \item \href{#method-MassSpecData-add_features_eic}{\code{MassSpecData$add_features_eic()}}
 \item \href{#method-MassSpecData-add_features}{\code{MassSpecData$add_features()}}
+\item \href{#method-MassSpecData-add_group_to_features}{\code{MassSpecData$add_group_to_features()}}
 \item \href{#method-MassSpecData-add_groups}{\code{MassSpecData$add_groups()}}
 \item \href{#method-MassSpecData-add_alignment}{\code{MassSpecData$add_alignment()}}
 \item \href{#method-MassSpecData-add_modules_data}{\code{MassSpecData$add_modules_data()}}
@@ -2298,6 +2299,27 @@ method \code{find_features()}.}
 
 \item{\code{replace}}{Logical. When \code{TRUE}, existing features are replaced by
 the new features.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-add_group_to_features"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-add_group_to_features}{}}}
+\subsection{Method \code{add_group_to_features()}}{
+Adds a group columns from correspondence analysis to the features
+data.table. Note that existing features groups are replaced!
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$add_group_to_features(feature_groups = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{feature_groups}}{A data.table with columns analysis, feature and group.}
 }
 \if{html}{\out{</div>}}
 }

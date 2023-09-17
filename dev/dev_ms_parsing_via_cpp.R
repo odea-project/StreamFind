@@ -94,21 +94,29 @@ settings <- list(
 
 # spectra ----------------------------------------------------------------------
 
-ms <- MassSpecData$new(files = files[4:6], settings = settings)
+ms <- MassSpecData$new(files = files, settings = settings)
 
 ms$find_features()
 
 ms$group_features()
 
-ms$get_groups(mass = neutral_targets)
-ms$get_groups(groups = "m238.060_rt1157_g51", onlyIntensities = T)
+tar_groups <- ms$get_groups(mass = neutral_targets)
 
-pat <- ms$as_featureGroups_patRoon()
+ms2 <- ms$subset_groups(groups = unique(tar_groups$group))
+
+
+
+
+pat_features <- ms$as_features_patRoon()
+
+pat_fgroups <- ms$as_featureGroups_patRoon()
+
+
 
 pat
 
 
-
+# TODO add stats to the groups (e.g., presence in each replicate, coverage)
 
 
 diu_fts <- ms$get_features(mass = diu, rt = diu_rt, ppm = 10, sec = 10)

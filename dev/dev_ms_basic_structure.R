@@ -50,7 +50,14 @@ ms$add_settings(
   )
 )
 
-ms$get_history()
+# patRoon::clearCache("parsed_ms_analyses")
+# patRoon::clearCache("parsed_ms_spectra")
+patRoon::clearCache("load_features_ms1")
+patRoon::clearCache("load_features_ms2")
+patRoon::clearCache("load_groups_ms1")
+patRoon::clearCache("load_groups_ms2")
+
+# ms$get_history()
 
 ms$find_features()$group_features()$filter_features()
 
@@ -58,12 +65,13 @@ suspects <- ms$get_suspects(database = db, ppm = 10, sec = 15)
 
 ms <- ms$subset_features(features = suspects)
 
+# ms$get_features_ms1(features = "mz268.191_rt915_f40")
+
 ms$load_features_ms1()$load_groups_ms1()
 
 ms$load_features_ms2()$load_groups_ms2()
 
-# View(ms$get_features())
-
+ms$get_features()
 
 pat_fg <- ms$as_featureGroups_patRoon()
 

@@ -11,6 +11,7 @@
 
 // [[Rcpp::export]]
 Rcpp::List rcpp_ms_groups_make_dataframe(Rcpp::DataFrame features,
+                                         Rcpp::CharacterVector analyses,
                                          bool mzAsMass = true,
                                          bool newGroupNames = true) {
 
@@ -66,8 +67,6 @@ Rcpp::List rcpp_ms_groups_make_dataframe(Rcpp::DataFrame features,
   
   std::vector<std::string> unique_analysis(unique_analysis_set.begin(), unique_analysis_set.end());
   
-  std::sort(unique_analysis.begin(), unique_analysis.end());
-  
   // list_out["unique_analysis"] = unique_analysis;
  
   const std::vector<double>& all_rt = features["rt"];
@@ -98,7 +97,16 @@ Rcpp::List rcpp_ms_groups_make_dataframe(Rcpp::DataFrame features,
   
   const int number_of_features = features.nrows();
   
-  const int number_of_analysis = unique_analysis.size();
+  int number_of_analysis = unique_analysis.size();
+  
+  int number_of_analyses_arg = analyses.size();
+
+  if (number_of_analysis < number_of_analyses_arg) {
+    number_of_analysis = number_of_analyses_arg;
+    unique_analysis = Rcpp::as<std::vector<std::string>>(analyses);
+  }
+  
+  std::sort(unique_analysis.begin(), unique_analysis.end());
   
   Rcpp::NumericMatrix ints(number_of_groups, number_of_analysis);
   Rcpp::CharacterVector colnames_analysis(unique_analysis.begin(), unique_analysis.end());

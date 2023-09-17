@@ -13,16 +13,12 @@ rcpp_ms_cluster_spectra <- function(spectra, mzClust = 0.005, presence = 0.8, ve
     .Call(`_StreamFind_rcpp_ms_cluster_spectra`, spectra, mzClust, presence, verbose)
 }
 
-rcpp_ms_get_feature_groups_ranges <- function(groups, features) {
-    .Call(`_StreamFind_rcpp_ms_get_feature_groups_ranges`, groups, features)
-}
-
 rcpp_ms_groups_correspondence <- function(groups, features, verbose) {
     .Call(`_StreamFind_rcpp_ms_groups_correspondence`, groups, features, verbose)
 }
 
-rcpp_ms_groups_make_dataframe <- function(features, mzAsMass = TRUE, newGroupNames = TRUE) {
-    .Call(`_StreamFind_rcpp_ms_groups_make_dataframe`, features, mzAsMass, newGroupNames)
+rcpp_ms_groups_make_dataframe <- function(features, analyses, mzAsMass = TRUE, newGroupNames = TRUE) {
+    .Call(`_StreamFind_rcpp_ms_groups_make_dataframe`, features, analyses, mzAsMass, newGroupNames)
 }
 
 rcpp_parse_chromatograms <- function(file_path, index = NA_integer_) {

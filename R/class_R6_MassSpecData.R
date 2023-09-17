@@ -1877,7 +1877,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         names(tar_ids) <- fts$feature
         ms1$name <- tar_ids[ms1$id]
       }
-
+      
       ms1
     },
 
@@ -2133,6 +2133,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         return(data.table())
       }
 
+      browser()
+      
       polarities <- unique(self$get_polarities(analyses = unique(ms1$analysis)))
       if (length(polarities) != 1 | "both" %in% polarities) groupBy <- NULL
 
@@ -2144,6 +2146,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         ms1$analysis <- rpls[ms1$analysis]
         ms1$unique_id <- paste0(ms1$analysis, "_", ms1$id)
       }
+      
+      # "unique_id", "analysis", "polarity", "id", "rt", "pre_mz", "pre_ce", "mz", "intensity"
 
       ms1_list <- rcpp_ms_cluster_spectra(
         ms1, mzClustGroups, presenceGroups, verbose
@@ -3612,8 +3616,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           fts_ms1 <- lapply(fts_all, function(x2, ana_ms1) {
             ft_ms1 <- ana_ms1[ana_ms1$id %in% x2, ]
             if (nrow(ft_ms1) > 0) {
-              cols <- c("rt","mz", "intensity")
-              ft_ms1 <- ft_ms1[, cols, with = FALSE]
+              # cols <- c("rt","mz", "intensity")
+              # ft_ms1 <- ft_ms1[, cols, with = FALSE]
               ft_ms1
             } else {
               NULL
@@ -3744,8 +3748,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
             ft_ms2 <- ana_ms2[ana_ms2$id %in% x2, ]
 
             if (nrow(ft_ms2) > 0) {
-              cols <- c("pre_mz", "rt","mz", "intensity", "is_pre")
-              ft_ms2 <- ft_ms2[, cols, with = FALSE]
+              # cols <- c("pre_mz", "rt","mz", "intensity", "is_pre")
+              # ft_ms2 <- ft_ms2[, cols, with = FALSE]
               ft_ms2
             } else {
               NULL
@@ -4225,7 +4229,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           if (self$has_groups()) {
             newFeatures <- lapply(analysesLeft, function(x) x$features)
             newFeatures <- rbindlist(newFeatures, idcol = "analysis")
-            newGroups <- rcpp_ms_groups_make_dataframe(newFeatures, FALSE, FALSE)
+            newGroups <- rcpp_ms_groups_make_dataframe(newFeatures, self$get_analysis_names(), FALSE, FALSE)
             
             if (nrow(newGroups) > 0) {
               suppressMessages(self$add_groups(newGroups))
@@ -4332,7 +4336,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           if (n_org_new < n_org) {
 
             if (self$has_groups()) {
-              new_groups <- rcpp_ms_groups_make_dataframe(org_fts, FALSE, FALSE)
+              new_groups <- rcpp_ms_groups_make_dataframe(org_fts, self$get_analysis_names(), FALSE, FALSE)
               private$.groups <- new_groups
             }
 
@@ -4613,7 +4617,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           if (self$has_groups()) {
             newFeatures <- new_ms$get_features()
-            newGroups <- rcpp_ms_groups_make_dataframe(newFeatures, FALSE, FALSE)
+            newGroups <- rcpp_ms_groups_make_dataframe(newFeatures, new_ms$get_analysis_names(), FALSE, FALSE)
             suppressMessages(new_ms$add_groups(newGroups))
           }
 

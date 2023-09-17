@@ -124,7 +124,7 @@
   
   mz_as_mass <- grepl("Set", class(pat))
   
-  groups <- rcpp_ms_groups_make_dataframe(pat_ft, mz_as_mass, TRUE)
+  groups <- rcpp_ms_groups_make_dataframe(pat_ft, self$get_analysis_names(), mz_as_mass, TRUE)
   
   if (self$has_groups()) self$remove_groups()
   
