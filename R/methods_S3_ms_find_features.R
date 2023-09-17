@@ -181,6 +181,7 @@
   analyses <- names(features)
 
   features <- lapply(analyses, function(x, extra, features, self, isSet) {
+    
     temp <- features[[x]]
 
     valid = TRUE
@@ -199,39 +200,40 @@
 
     under_rt_max <- temp$ret <= temp$retmax
     if (!all(under_rt_max)) {
-      warning("Feature/s with retention time value above the rtmax removed!")
+      warning(sum(under_rt_max), " feature/s with retention time value above the rtmax removed!")
       temp <- temp[under_rt_max, ]
     }
 
     under_rt_min <- temp$ret >= temp$retmin
     if (!all(under_rt_min)) {
-      warning("Feature/s with retention time value below the rtmin removed!")
+      warning(sum(under_rt_min), " feature/s with retention time value below the rtmin removed!")
       temp <- temp[under_rt_min, ]
     }
 
     under_mz_max <- temp$mz <= temp$mzmax
-    if (!all(under_rt_min)) {
-      warning("Feature/s with m/z value above the mzmax removed!")
+    if (!all(under_mz_max)) {
+      warning(sum(under_mz_max), " feature/s with m/z value above the mzmax removed!")
       temp <- temp[under_mz_max, ]
     }
 
     under_mz_min <- temp$mz >= temp$mzmin
-    if (!all(under_rt_min)) {
-      warning("Feature/s with m/z value below the mzmin removed!")
+    if (!all(under_mz_min)) {
+      warning(sum(under_mz_min), " feature/s with m/z value below the mzmin removed!")
       temp <- temp[under_mz_min, ]
     }
+    
+    run <- self$get_run(x)
+    
+    polarity <- unique(run$polarity)
 
-    polarity <- unique(self$get_polarities(x))
-
-    adduct <- NA_character_
-    adduct_val <- 0
+    # adduct <- NA_character_
+    # adduct_val <- 0
 
     if (length(polarity) > 1) {
-      run <- self$get_run()
-      polarity <- run$polarity
-
-      scans_pos <- length(polarity[polarity %in% "positive"])
-      scans_neg <- length(polarity[polarity %in% "negative"])
+      
+      scans_pos <- length(run$polarity[run$polarity == 1])
+      
+      scans_neg <- length(run$polarity[run$polarity == -1])
 
       ratio <- scans_pos/scans_neg
 
@@ -242,27 +244,20 @@
         per_pos_pol <- round((scans_pos / nrow(run)) * 100, digits = 0)
         warning("Multiple polarities detected but positive polarity is present in ", per_pos_pol, "% of the spectra!" )
 
-        adduct <- "[M+H]+"
+        polarity <- 1
         adduct_val <- -1.007276
 
       } else {
         per_neg_pol <- round((scans_neg / nrow(run)) * 100, digits = 0)
         warning("Multiple polarities detected but negative polarity is present in ", per_neg_pol, "% of the spectra!" )
 
-        adduct <- "[M-H]-"
+        polarity <- -1
         adduct_val <- 1.007276
       }
+      
     } else {
-
-      if (polarity %in% "positive") {
-        adduct <- "[M+H]+"
-        adduct_val <- -1.007276
-      }
-
-      if (polarity %in% "negative") {
-        adduct <- "[M-H]-"
-        adduct_val <- 1.007276
-      }
+      if (polarity == 1) adduct_val <- -1.007276
+      if (polarity == -1) adduct_val <- 1.007276
     }
 
     # required as when is set the mz value is neutralized from patRoon
@@ -272,6 +267,7 @@
         mzmax = (temp$mz - 1.007276) + (temp$mzmax - temp$mz),
         mz = temp$mz - 1.007276
       )]
+      
       temp[temp$adduct %in% "[M+H]+", `:=`(
         mzmin = (temp$mz + 1.007276) - (temp$mz - temp$mzmin),
         mzmax = (temp$mz + 1.007276) + (temp$mzmax - temp$mz),
@@ -279,14 +275,18 @@
       )]
     }
 
-    if (!"adduct" %in% colnames(temp)) temp$adduct <- adduct
+    if (!"polarity" %in% colnames(temp)) temp$polarity <- polarity
+    
     if (!"mass" %in% colnames(temp)) temp$mass <- temp$mz + adduct_val
+    
     if (!"filled" %in% colnames(temp)) {
       temp$filled <- FALSE
     } else {
       temp$filled <- as.logical(temp$filled)
     }
+    
     if (!"filtered" %in% colnames(temp)) temp$filtered <- FALSE
+    
     if (!"filter" %in% colnames(temp)) temp$filter <- NA_character_
     
     setnames(temp,
@@ -298,6 +298,7 @@
     # when grouping features are removed from grouping conditions in patRoon
     # therefore, old features are retained and tagged with filter "grouping"
     temp_org <- self$get_features(x)
+    
     build_feature_ids <- TRUE
 
     if (nrow(temp_org) > 0 && "featureGroups" %in% is(pat)) {
@@ -357,9 +358,21 @@
     setcolorder(
       temp,
       c(
-        "feature", "index", "rt", "mz", "intensity", "area",
-        "rtmin", "rtmax", "mzmin", "mzmax", "adduct", "mass",
-        "filled", "filtered", "filter"
+        "feature",
+        "polarity",
+        "index",
+        "rt",
+        "mz",
+        "mass", 
+        "intensity",
+        "area",
+        "rtmin",
+        "rtmax",
+        "mzmin",
+        "mzmax", 
+        "filled",
+        "filtered",
+        "filter"
       )
     )
 
@@ -368,9 +381,10 @@
     temp$rtmax <- round(temp$rtmax, 3)
 
     temp$mz <- round(temp$mz, 8)
+    temp$mass <- round(temp$mass, 8)
     temp$mzmin <- round(temp$mzmin, 8)
     temp$mzmax <- round(temp$mzmax, 8)
-
+    
     temp
   }, extra = extra, features = features, self = self, isSet = isSet)
 

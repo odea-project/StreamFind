@@ -304,6 +304,8 @@ make_ms_targets <- function(mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL)
     }
 
     if ("analysis" %in% colnames(mz)) mzrts$analysis <- mz$analysis
+    
+    if ("polarity" %in% colnames(mz)) mzrts$polarity <- mz$polarity
   }
 
   mzrts

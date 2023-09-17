@@ -61,7 +61,27 @@ afin_db <- afin_db[, cols, with = FALSE]
 # ude_db <- data.table::fread(ude_db)
 # ude_db <- ude_db[, cols, with = FALSE]
 
-# cached ---------------------------------------------------------------------
+## settings --------------------------------------------------------------------
+
+settings <- list(
+  Settings_find_features_xcms3_centwave(),
+  Settings_group_features_xcms3_peakdensity(),
+  Settings_filter_features_StreamFind(
+    minIntensity = 5000,
+    minSnRatio = 20,
+    maxGroupSd = 30,
+    blank = 5,
+    minGroupAbundance = 3,
+    excludeIsotopes = TRUE
+  ),
+  Settings_load_features_ms1_StreamFind(),
+  Settings_load_features_ms2_StreamFind(),
+  Settings_load_groups_ms1_StreamFind(),
+  Settings_load_groups_ms2_StreamFind()
+  
+)
+
+# cached -----------------------------------------------------------------------
 
 # patRoon::clearCache("parsed_ms_analyses")
 # patRoon::clearCache("parsed_ms_spectra")
@@ -70,15 +90,54 @@ afin_db <- afin_db[, cols, with = FALSE]
 # patRoon::clearCache("load_groups_ms1")
 # patRoon::clearCache("load_groups_ms2")
 
-patRoon::clearCache("all")
+# patRoon::clearCache("all")
 
 # spectra ----------------------------------------------------------------------
 
-ms <- MassSpecData$new(files = files)
+ms <- MassSpecData$new(files = files[4:6], settings = settings)
+
+ms$find_features()
+
+ms$group_features()
+
+ms$get_features(mz = diu_pos)
+
+ms$get_groups(mass = diu)
+
+pat <- ms$as_featureGroups_patRoon()
+
+pat
 
 
-ms$plot_ms2(mass = diu, rt = diu_rt, ppm = 10, sec = 10, presence = 0.7, colorBy = "polarities")
 
+
+
+diu_fts <- ms$get_features(mass = diu, rt = diu_rt, ppm = 10, sec = 10)
+
+# ms$remove_analyses(c(1, 6))
+
+
+
+
+
+View(ms$get_groups())
+
+View(ms$get_features())
+
+
+
+
+View(ms$get_features())
+
+
+
+
+
+
+
+
+
+ms$plot_eic(mass = diu, rt = diu_rt, ppm = 5, sec = 10)
 
 # ms$plot_bpc(levels = 1, colorBy = "analyses", interactive = F)
 
