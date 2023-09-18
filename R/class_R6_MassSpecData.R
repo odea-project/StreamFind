@@ -1833,7 +1833,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         analyses, features, mass, mz, rt, ppm, sec, filtered
       )
 
-      if (nrow(fts) == 0) return(data.frame())
+      if (nrow(fts) == 0) return(data.table())
 
       if (!is.null(rtWindow) & length(rtWindow) == 2 & is.numeric(rtWindow)) {
         fts$rtmin <- fts$rt + rtWindow[1]
@@ -1926,7 +1926,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         analyses, features, mass, mz, rt, ppm, sec, filtered
       )
 
-      if (nrow(fts) == 0) return(data.frame())
+      if (nrow(fts) == 0) return(data.table())
 
       analysis_names <- unique(fts$analysis)
 
@@ -2009,10 +2009,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                           onlyIntensities = FALSE,
                           average = FALSE) {
       
-      if (!self$has_groups()) {
-        warning("There is not groups!")
-        return(data.table())
-      }
+      if (!self$has_groups()) return(data.table())
       
       fts <- self$get_features(
         features = groups, mass = mass, mz = mz, rt = rt,
@@ -3663,9 +3660,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
           fts_ms1 <- lapply(fts_all, function(x2, ana_ms1) {
             ft_ms1 <- ana_ms1[ana_ms1$id %in% x2, ]
             if (nrow(ft_ms1) > 0) {
-              # cols <- c("rt","mz", "intensity")
-              # ft_ms1 <- ft_ms1[, cols, with = FALSE]
+              ft_ms1[["group"]] <- NULL
+              ft_ms1[["analysis"]] <- NULL
+              ft_ms1[["id"]] <- NULL
               ft_ms1
+              
             } else {
               NULL
             }
@@ -3745,7 +3744,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
           hash <- patRoon::makeHash(ana_feats, parameters)
           ms2 <- patRoon::loadCacheData("load_features_ms2", hash)
-
+          
           if (!is.null(ms2)) {
             if (all(ms2$id %in% ana_feats$feature)) {
               message("\U2139 Features MS2 spectra loaded from cache!")
@@ -3795,15 +3794,17 @@ MassSpecData <- R6::R6Class("MassSpecData",
             ft_ms2 <- ana_ms2[ana_ms2$id %in% x2, ]
 
             if (nrow(ft_ms2) > 0) {
-              # cols <- c("pre_mz", "rt","mz", "intensity", "is_pre")
-              # ft_ms2 <- ft_ms2[, cols, with = FALSE]
+              ft_ms2[["group"]] <- NULL
+              ft_ms2[["analysis"]] <- NULL
+              ft_ms2[["id"]] <- NULL
               ft_ms2
+              
             } else {
               NULL
             }
           }, ana_ms2 = ana_ms2)
           
-          x$features$ms2 <- fts_ms2
+          x$features[["ms2"]] <- fts_ms2
           
           x
         }, ms2 = ms2)
@@ -4342,6 +4343,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         )
 
         message("\U2713 Removed all features and feature groups!")
+        
+        return(invisible(self))
       }
 
       if (is.data.frame(features) | filtered) {
@@ -4486,8 +4489,24 @@ MassSpecData <- R6::R6Class("MassSpecData",
           x$features[["group"]] <- NULL
           x$features$filter[x$features$filter %in% "grouping"] <- NA_character_
           x$features$filtered[is.na(x$features$filter)] <- FALSE
+          
+          # TODO check if MS1 and MS2 spectra retain the group column
+          
           x
         })
+        
+        private$.register(
+          "removed",
+          "feature groups",
+          "all",
+          NA_character_,
+          NA_character_,
+          NA_character_
+        )
+        
+        message("\U2713 Removed all groups!")
+        
+        return(invisible(self))
       }
 
       if (is.numeric(groups) & self$has_groups()) {

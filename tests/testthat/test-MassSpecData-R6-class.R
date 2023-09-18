@@ -60,7 +60,6 @@ test_that("getter for features with empty object", {
   expect_equal(nrow(ms$get_groups_ms2()), 0)
 })
 
-
 test_that("getter for names and filePaths", {
   expect_equal(
     unname(ms$get_analysis_names()),
@@ -172,7 +171,7 @@ settings_ff <- Settings_find_features_xcms3_centwave(
   prefilter = c(5, 1500),
   mzCenterFun = "mean",
   integrate = 2,
-  mzdiff = -0.0001,
+  mzdiff = 0.0005,
   fitgauss = TRUE,
   noise = 500,
   verboseColumns = TRUE,
@@ -437,8 +436,16 @@ test_that("remove filtered features", {
   expect_equal(nrow(ms5$get_groups()), 2)
 })
 
+patRoon::clearCache("parsed_ms_spectra")
+patRoon::clearCache("load_features_ms1")
+patRoon::clearCache("load_features_ms2")
+patRoon::clearCache("load_groups_ms1")
+patRoon::clearCache("load_groups_ms2")
+
 ms5$load_features_ms1(settings = slfms1)
+
 ms5$load_features_ms2(settings = slfms2)
+
 
 slfgms1 <- Settings_load_groups_ms1_StreamFind(
   mzClust = 0.003,

@@ -198,25 +198,25 @@
       }
     }
 
-    under_rt_max <- temp$ret <= temp$retmax
+    under_rt_max <- temp$ret <= temp$retmax * 1.05
     if (!all(under_rt_max)) {
       warning(sum(under_rt_max), " feature/s with retention time value above the rtmax removed!")
       temp <- temp[under_rt_max, ]
     }
 
-    under_rt_min <- temp$ret >= temp$retmin
+    under_rt_min <- temp$ret >= temp$retmin * 0.95
     if (!all(under_rt_min)) {
       warning(sum(under_rt_min), " feature/s with retention time value below the rtmin removed!")
       temp <- temp[under_rt_min, ]
     }
 
-    under_mz_max <- temp$mz <= temp$mzmax
+    under_mz_max <- temp$mz <= temp$mzmax + (2 * temp$mzmax / 1E6)
     if (!all(under_mz_max)) {
       warning(sum(under_mz_max), " feature/s with m/z value above the mzmax removed!")
       temp <- temp[under_mz_max, ]
     }
 
-    under_mz_min <- temp$mz >= temp$mzmin
+    under_mz_min <- temp$mz >= temp$mzmin - (2 * temp$mzmax / 1E6)
     if (!all(under_mz_min)) {
       warning(sum(under_mz_min), " feature/s with m/z value below the mzmin removed!")
       temp <- temp[under_mz_min, ]
