@@ -54,6 +54,9 @@ make_colorBy_varkey <- function(data = NULL, colorBy = NULL, legendNames = NULL)
   } else if ("polarities" %in% colorBy & "polarity" %in% colnames(data)) {
     varkey <- data$polarity
     
+  } else if ("targets+polarities" %in% colorBy & "polarity" %in% colnames(data)) {
+    varkey <- paste0(data$id, "-", data$polarity)
+    
   } else if ("levels" %in% colorBy & "level" %in% colnames(data)) {
     varkey <- data$level
     

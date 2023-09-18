@@ -1671,11 +1671,11 @@ Gets an averaged MS1 spectrum for feature groups in the analyses.
   rtWindow = c(-2, 2),
   mzWindow = c(-5, 90),
   mzClustFeatures = 0.003,
-  presenceFeatures = TRUE,
+  presenceFeatures = 0.8,
   minIntensityFeatures = 1000,
   loadedFeaturesMS1 = TRUE,
   mzClustGroups = 0.003,
-  presenceGroups = TRUE,
+  presenceGroups = 0.8,
   minIntensityGroups = 1000,
   groupBy = "groups",
   verbose = FALSE,
@@ -1793,11 +1793,11 @@ Gets an averaged MS2 spectrum for feature groups in the analyses.
   sec = 60,
   isolationWindow = 1.3,
   mzClustFeatures = 0.003,
-  presenceFeatures = TRUE,
+  presenceFeatures = 0.8,
   minIntensityFeatures = 100,
   loadedFeaturesMS2 = TRUE,
   mzClustGroups = 0.003,
-  presenceGroups = TRUE,
+  presenceGroups = 0.8,
   minIntensityGroups = 100,
   groupBy = "groups",
   verbose = FALSE,
@@ -4118,11 +4118,13 @@ Plots MS1 spectra from feature groups in the analyses.
   rtWindow = c(-2, 2),
   mzWindow = c(-5, 90),
   mzClustFeatures = 0.005,
-  presenceFeatures = TRUE,
+  presenceFeatures = 0.8,
   minIntensityFeatures = 1000,
   loadedFeaturesMS1 = TRUE,
   mzClustGroups = 0.005,
+  presenceGroups = 0.8,
   minIntensityGroups = 1000,
+  groupBy = "groups",
   verbose = FALSE,
   filtered = FALSE,
   loadedGroupsMS1 = TRUE,
@@ -4198,8 +4200,16 @@ loaded features MS1 data is used instead of extraction from raw data.}
 (in Da) to cluster mass traces for feature groups. Highly dependent on the
 mass resolution of the MS data.}
 
+\item{\code{presenceGroups}}{Numeric of length one with the required presence ratio
+from 0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
+present in all spectra) for traces during clustering of spectra.}
+
 \item{\code{minIntensityGroups}}{Numeric value with the minimum intensity for
 feature groups.}
+
+\item{\code{groupBy}}{String with the way of grouping. Possible values are \code{groups}
+and \code{replicates} to groups by feature groups or feature groups and
+replicates, respectively.}
 
 \item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
 result messages. When \code{FALSE}, some messages are omitted.}
@@ -4244,12 +4254,13 @@ Plots MS1 spectra from feature groups in the analyses.
   sec = 60,
   isolationWindow = 1.3,
   mzClustFeatures = 0.003,
-  presenceFeatures = TRUE,
+  presenceFeatures = 0.8,
   minIntensityFeatures = 100,
   loadedFeaturesMS2 = TRUE,
   mzClustGroups = 0.003,
   presenceGroups = TRUE,
   minIntensityGroups = 100,
+  groupBy = "groups",
   verbose = FALSE,
   filtered = FALSE,
   loadedGroupsMS2 = TRUE,
@@ -4325,6 +4336,10 @@ present in all spectra) for traces during clustering of spectra.}
 
 \item{\code{minIntensityGroups}}{Numeric value with the minimum intensity for
 feature groups.}
+
+\item{\code{groupBy}}{String with the way of grouping. Possible values are \code{groups}
+and \code{replicates} to groups by feature groups or feature groups and
+replicates, respectively.}
 
 \item{\code{verbose}}{Logical with length one. Set \code{TRUE} to output diagnostic and
 result messages. When \code{FALSE}, some messages are omitted.}

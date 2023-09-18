@@ -29,7 +29,7 @@ files_df <- data.frame(
 
 ms <- MassSpecData$new(files = files_df)
 
-ms <- ms$subset_analyses(c(4:6, 10:12, 16:18))
+# ms <- ms$subset_analyses(c(4:6, 10:12, 16:18))
 
 ms$add_settings(
   list(
@@ -43,10 +43,10 @@ ms$add_settings(
       minGroupAbundance = 3,
       excludeIsotopes = TRUE
     ),
-    Settings_load_features_ms1_StreamFind(),
-    Settings_load_features_ms2_StreamFind(),
-    Settings_load_groups_ms1_StreamFind(),
-    Settings_load_groups_ms2_StreamFind()
+    Settings_load_features_ms1_StreamFind(presence = 0.5),
+    Settings_load_features_ms2_StreamFind(presence = 0.5),
+    Settings_load_groups_ms1_StreamFind(presence = 0.5),
+    Settings_load_groups_ms2_StreamFind(presence = 0.5)
   )
 )
 
@@ -59,28 +59,25 @@ patRoon::clearCache("load_groups_ms2")
 
 # ms$get_history()
 
-ms$find_features()$group_features()$filter_features()
+ms$find_features()$group_features()#$filter_features()
 
 suspects <- ms$get_suspects(database = db, ppm = 10, sec = 15)
 
 ms <- ms$subset_features(features = suspects)
 
-# ms$get_features_ms1(features = "mz268.191_rt915_f40")
+ms$load_features_ms1()
 
-ms$load_features_ms1()$load_groups_ms1()
+ms$load_groups_ms1()
 
-ms$load_features_ms2()$load_groups_ms2()
+ms$load_features_ms2()
 
-ms$get_features()
+ms$load_groups_ms2()
+
+ms$plot_groups_ms2(mass = diu, colorBy = "targets+polarities")
 
 pat_fg <- ms$as_featureGroups_patRoon()
 
 pat_pl <- ms$as_MSPeakLists_patRoon()
-
-
-
-
-
 
 
 formulas <- patRoon::generateFormulasGenForm(
@@ -109,6 +106,52 @@ formulas <- patRoon::generateFormulasGenForm(
 )
 
 
+
+# ms$plot_features_ms2(
+#   mass = diu, rt = diu_rt,
+#   presence = 0.8, minIntensity = 250,
+#   colorBy = "analyses"
+# )
+# 
+# ms$plot_features_ms1(
+#   mass = diu, rt = diu_rt, 
+#   presence = 0.8,
+#   mzWindow = c(-1, 6),
+#   rtWindow = c(-2, 2),
+#   minIntensity = 250,
+#   colorBy = "analyses"
+# )
+# 
+# ms$get_features_ms1(
+#   mass = diu, rt = diu_rt, 
+#   presence = 0.8,
+#   mzWindow = c(-1, 6),
+#   rtWindow = c(-2, 2),
+#   minIntensity = 250
+# )
+
+# ms$plot_groups_ms1(
+#   mass = diu, rt = diu_rt, 
+#   presenceFeatures = 0.8,
+#   presenceGroups = 0.8,
+#   mzWindow = c(-1, 6),
+#   rtWindow = c(-2, 2),
+#   minIntensityFeatures = 250,
+#   minIntensityGroups = 250,
+#   colorBy = "targets+polarities"
+# )
+# 
+# ms$plot_eic(mass = diu, rt = diu_rt, colorBy = "targets+polarities")
+# 
+# ms$get_groups_ms1(
+#   mass = diu, rt = diu_rt, 
+#   presenceFeatures = 0.8,
+#   presenceGroups = 0.8,
+#   mzWindow = c(-1, 6),
+#   rtWindow = c(-2, 2),
+#   minIntensityFeatures = 250,
+#   minIntensityGroups = 250
+# )
 
 #ms$get_features()
 #ms$get_groups()

@@ -230,8 +230,8 @@ validate.MassSpecAnalysis <- function(x = NULL) {
     if (length(x$type) != 1) {
       warning("Analysis type entry not conform!")
       valid <- FALSE
-    } else if (!(x$type %in% c("MS", "MS/MS", "SRM"))) {
-      warning("Analysis type must be 'MS', 'MS/MS' or 'SRM'!")
+    } else if (!(x$type %in% c("MS", "IM-MS", "MS/MS", "IM-MS/MS", "SRM"))) {
+      warning("Analysis type must be 'MS', 'IM-MS', 'MS/MS', 'IM-MS/MS' or 'SRM'!")
       valid <- FALSE
     }
 

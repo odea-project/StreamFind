@@ -324,7 +324,7 @@ test_that("remove 2 groups", {
 fts_to_rem <- ms5$get_features(mz = targets)
 ms5$remove_features(fts_to_rem)
 
-test_that("remove 12 featrues from targets", {
+test_that("remove 12 features from targets", {
   expect_lt(nrow(ms5$get_features()), n_fts_total)
   expect_equal(nrow(ms5$get_groups(groups = unique(fts_to_rem$group))), 0)
   expect_equal(nrow(ms5$get_features(mz = targets)), 0)
@@ -495,7 +495,7 @@ test_that("remove loaded MS2 groups", {
 
 file.remove("MassSpecData.json")
 
-
+patRoon::clearCache("all")
 
 
 

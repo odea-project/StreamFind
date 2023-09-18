@@ -1094,21 +1094,21 @@ MassSpecData <- R6::R6Class("MassSpecData",
         targets <- list()
 
         for (i in polarities) {
+          
           if (i %in% "positive") {
             temp_tar <- copy(neutral_targets)
             temp_tar$mz <- temp_tar$mz + 1.00726
             temp_tar$mzmax <- temp_tar$mzmax + 1.00726
             temp_tar$mzmin <- temp_tar$mzmin + 1.00726
             temp_tar$polarity <- 1
-            # temp_tar$id <- paste0("nm/", temp_tar$id) #"/positive"
             targets[[length(targets) + 1]] <- temp_tar
+            
           } else if (i %in% "negative") {
             temp_tar <- copy(neutral_targets)
             temp_tar$mz <- temp_tar$mz - 1.00726
             temp_tar$mzmax <- temp_tar$mzmax - 1.00726
             temp_tar$mzmin <- temp_tar$mzmin - 1.00726
             temp_tar$polarity <- -1
-            # temp_tar$id <- paste0("nm/", temp_tar$id) #"/negative"
             targets[[length(targets) + 1]] <- temp_tar
           }
         }
@@ -1128,15 +1128,15 @@ MassSpecData <- R6::R6Class("MassSpecData",
           targets <- list()
           
           for (i in polarities) {
+            
             if (i %in% "positive") {
               temp_tar <- copy(mz_targets)
               temp_tar$polarity <- 1
-              # temp_tar$id <- paste0(temp_tar$id, "/positive")
               targets[[length(targets) + 1]] <- temp_tar
+              
             } else if (i %in% "negative") {
               temp_tar <- copy(mz_targets)
               temp_tar$polarity <- -1
-              # temp_tar$id <- paste0(temp_tar$id, "/negative")
               targets[[length(targets) + 1]] <- temp_tar
             }
           }
@@ -1462,11 +1462,17 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (nrow(eic) > 0) {
         eic <- as.data.table(eic)
+        
         if (!"id" %in% colnames(eic)) eic$id <- NA_character_
+        
+        if (!"polarity" %in% colnames(eic)) eic$polarity <- 0
+        
         eic <- eic[, `:=`(intensity = sum(intensity)),
           by = c("analysis", "polarity", "id", "rt")
         ][]
+        
         eic <- eic[, c("analysis", "polarity", "id", "rt", "intensity"), with = FALSE]
+        
         eic <- unique(eic)
       }
 
@@ -1511,8 +1517,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (!"id" %in% colnames(ms1)) {
         pol_key <- c("positive", "negative", "nd")
         names(pol_key) <- c("1", "-1", "0")
-        ms1$polarity <- as.character(ms1$polarity)
-        ms1$polarity <- pol_key[ms1$polarity]
         
         ms1$id <- paste(
           round(min(ms1$mz), 4),
@@ -1523,15 +1527,19 @@ MassSpecData <- R6::R6Class("MassSpecData",
           "-",
           round(min(ms1$rt), 0),
           "/",
-          ms1$polarity,
+          pol_key[ms1$polarity],
           sep = ""
         )
       }
 
       if (!is.logical(verbose)) verbose = FALSE
+      
       if (!is.numeric(mzClust)) mzClust = 0.01
-      ms1$unique_id <- paste0(ms1$analysis, "_", ms1$id)
+      
+      ms1$unique_id <- paste0(ms1$analysis, "_", ms1$id, "_", ms1$polarity)
+      
       ms1_list <- rcpp_ms_cluster_spectra(ms1, mzClust, presence, verbose)
+      
       ms1_df <- rbindlist(ms1_list, fill = TRUE)
 
       ms1_df <- ms1_df[order(ms1_df$mz), ]
@@ -1581,8 +1589,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (!"id" %in% colnames(ms2)) {
         pol_key <- c("positive", "negative", "nd")
         names(pol_key) <- c("1", "-1", "0")
-        ms2$polarity <- as.character(ms2$polarity)
-        ms2$polarity <- pol_key[ms2$polarity]
         
         ms2$id <- paste(
           round(min(ms2$mz), 4),
@@ -1593,13 +1599,19 @@ MassSpecData <- R6::R6Class("MassSpecData",
           "-",
           round(min(ms2$rt), 0),
           "/",
-          ms2$polarity,
+          pol_key[ms2$polarity],
           sep = ""
         )
       }
+      
+      if (!is.logical(verbose)) verbose = FALSE
+      
+      if (!is.numeric(mzClust)) mzClust = 0.01
 
       ms2$unique_id <- paste0(ms2$analysis, "_", ms2$id, "_", ms2$polarity)
+      
       ms2_list <- rcpp_ms_cluster_spectra(ms2, mzClust, presence, verbose)
+      
       ms2_df <- rbindlist(ms2_list, fill = TRUE)
 
       ms2_df <- ms2_df[order(ms2_df$mz), ]
@@ -1837,20 +1849,28 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (loadedMS1 & any(self$has_loaded_features_ms1(analysis_names))) {
         ms1 <- fts$ms1
+        
         unique_ids <- paste0(fts$analysis, fts$index)
         names(ms1) <- unique_ids
+        
         ms1 <- lapply(ms1, function(x) {
           if (is.null(x)) x <- data.table()
           x
         })
+        
         ms1 <- rbindlist(ms1, idcol = "unique_id")
+        
         analysis_col <- fts$analysis
         names(analysis_col) <- unique_ids
+        
         id_col <- fts$feature
         names(id_col) <- unique_ids
+        
         ms1$analysis <- analysis_col[ms1$unique_id]
         ms1$id <- id_col[ms1$unique_id]
+        
         ms1$unique_id <- NULL
+        
         setcolorder(ms1, c("analysis", "id"))
 
       } else {
@@ -1912,20 +1932,28 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (loadedMS2 & any(self$has_loaded_features_ms2(analysis_names))) {
         ms2 <- fts$ms2
+        
         unique_ids <- paste0(fts$analysis, fts$index)
         names(ms2) <- unique_ids
+        
         ms2 <- lapply(ms2, function(x) {
           if (is.null(x)) x <- data.table()
           x
         })
+        
         ms2 <- rbindlist(ms2, idcol = "unique_id")
+        
         analysis_col <- fts$analysis
         names(analysis_col) <- unique_ids
+        
         id_col <- fts$feature
         names(id_col) <- unique_ids
+        
         ms2$analysis <- analysis_col[ms2$unique_id]
         ms2$id <- id_col[ms2$unique_id]
+        
         ms2$unique_id <- NULL
+        
         setcolorder(ms2, c("analysis", "id"))
 
       } else {
@@ -2064,11 +2092,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
                               rtWindow = c(-2, 2),
                               mzWindow = c(-5, 90),
                               mzClustFeatures = 0.003,
-                              presenceFeatures = TRUE,
+                              presenceFeatures = 0.8,
                               minIntensityFeatures = 1000,
                               loadedFeaturesMS1 = TRUE,
                               mzClustGroups = 0.003,
-                              presenceGroups = TRUE,
+                              presenceGroups = 0.8,
                               minIntensityGroups = 1000,
                               groupBy = "groups",
                               verbose = FALSE,
@@ -2085,22 +2113,19 @@ MassSpecData <- R6::R6Class("MassSpecData",
         return(data.table())
       }
 
-      polarities <- unique(self$get_polarities())
-
-      if (length(polarities) > 1) {
-        warning("Clustering ms1 for multiple polarities is not possible!")
-        return(data.table())
-      }
-
       if (loadedGroupsMS1 & self$has_loaded_groups_ms1()) {
         ms1 <- fgs$ms1
+        
         ids <- fgs$group
         names(ms1) <- ids
+        
         ms1 <- lapply(ms1, function(x) {
           if (is.null(x)) x <- data.table()
           x
         })
+        
         ms1 <- rbindlist(ms1, idcol = "id")
+        
         return(ms1)
       }
 
@@ -2132,22 +2157,34 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (nrow(ms1) == 0) {
         return(data.table())
       }
-
-      browser()
       
       polarities <- unique(self$get_polarities(analyses = unique(ms1$analysis)))
-      if (length(polarities) != 1 | "both" %in% polarities) groupBy <- NULL
+      
+      multiple_polarities <- FALSE
+      
+      if (length(polarities) > 1) multiple_polarities <- TRUE
 
       if ("groups" %in% groupBy) {
-        ms1$unique_id <- ms1$id
-        ms1$analysis <- NA_character_
+        
+        if (multiple_polarities) {
+          ms1$unique_id <- paste0(ms1$id, "_", ms1$polarity)
+          ms1$analysis <- NA_character_
+          
+        } else {
+          ms1$unique_id <- ms1$id
+          ms1$analysis <- NA_character_
+        }
+        
       } else {
         rpls <- self$get_replicate_names()
         ms1$analysis <- rpls[ms1$analysis]
-        ms1$unique_id <- paste0(ms1$analysis, "_", ms1$id)
+        
+        if (multiple_polarities) {
+          ms1$unique_id <- paste0(ms1$analysis, "_", ms1$id, "", ms1$polarity)
+        } else {
+          ms1$unique_id <- paste0(ms1$analysis, "_", ms1$id)
+        }
       }
-      
-      # "unique_id", "analysis", "polarity", "id", "rt", "pre_mz", "pre_ce", "mz", "intensity"
 
       ms1_list <- rcpp_ms_cluster_spectra(
         ms1, mzClustGroups, presenceGroups, verbose
@@ -2159,6 +2196,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if ("groups" %in% groupBy) {
         ms1_df[["analysis"]] <- NULL
+        
       } else {
         ms1_df <- ms1_df[order(ms1_df$analysis), ]
         setnames(ms1_df, "analysis", "replicate")
@@ -2180,11 +2218,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
                               sec = 60,
                               isolationWindow = 1.3,
                               mzClustFeatures = 0.003,
-                              presenceFeatures = TRUE,
+                              presenceFeatures = 0.8,
                               minIntensityFeatures = 100,
                               loadedFeaturesMS2 = TRUE,
                               mzClustGroups = 0.003,
-                              presenceGroups = TRUE,
+                              presenceGroups = 0.8,
                               minIntensityGroups = 100,
                               groupBy = "groups",
                               verbose = FALSE,
@@ -2198,13 +2236,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       )
 
       if (nrow(fgs) == 0) {
-        return(data.table())
-      }
-
-      polarities <- unique(self$get_polarities())
-
-      if (length(polarities) > 1) {
-        warning("Clustering ms1 for multiple polarities is not possible!")
         return(data.table())
       }
 
@@ -2247,17 +2278,32 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (nrow(ms2) == 0) {
         return(data.table())
       }
-
+      
       polarities <- unique(self$get_polarities(analyses = unique(ms2$analysis)))
-      if (length(polarities) != 1 | "both" %in% polarities) groupBy <- NULL
+      
+      multiple_polarities <- FALSE
+      
+      if (length(polarities) > 1) multiple_polarities <- TRUE
 
       if ("groups" %in% groupBy) {
-        ms2$unique_id <- ms2$id
-        ms2$analysis <- NA_character_
+        if (multiple_polarities) {
+          ms2$unique_id <- paste0(ms2$id, "_", ms2$polarity)
+          ms2$analysis <- NA_character_
+          
+        } else {
+          ms2$unique_id <- ms2$id
+          ms2$analysis <- NA_character_
+        }
+        
       } else {
         rpls <- self$get_replicate_names()
         ms2$analysis <- rpls[ms2$analysis]
-        ms2$unique_id <- paste0(ms2$analysis, "_", ms2$id)
+        
+        if (multiple_polarities) {
+          ms2$unique_id <- paste0(ms2$analysis, "_", ms2$id, "", ms2$polarity)
+        } else {
+          ms2$unique_id <- paste0(ms2$analysis, "_", ms2$id)
+        }
       }
 
       ms2_list <- rcpp_ms_cluster_spectra(
@@ -2270,6 +2316,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if ("groups" %in% groupBy) {
         ms2_df[["analysis"]] <- NULL
+        
       } else {
         ms2_df <- ms2_df[order(ms2_df$analysis), ]
         setnames(ms2_df, "analysis", "replicate")
@@ -3822,13 +3869,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         valid <- FALSE
       }
 
-      polarities <- unique(self$get_polarities())
-
-      if (length(polarities) > 1) {
-        warning("Clustering ms1 for multiple polarities is not possible!")
-        valid <- FALSE
-      }
-
       if (!valid) {
         return(invisible(self))
       }
@@ -3961,13 +4001,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
       } else {
         warning("Settings content or structure not conform!")
-        valid <- FALSE
-      }
-
-      polarities <- unique(self$get_polarities())
-
-      if (length(polarities) > 1) {
-        warning("Clustering ms2 for multiple polarities is not possible!")
         valid <- FALSE
       }
 
@@ -5571,11 +5604,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                rtWindow = c(-2, 2),
                                mzWindow = c(-5, 90),
                                mzClustFeatures = 0.005,
-                               presenceFeatures = TRUE,
+                               presenceFeatures = 0.8,
                                minIntensityFeatures = 1000,
                                loadedFeaturesMS1 = TRUE,
                                mzClustGroups = 0.005,
+                               presenceGroups = 0.8,
                                minIntensityGroups = 1000,
+                               groupBy = "groups",
                                verbose = FALSE,
                                filtered = FALSE,
                                loadedGroupsMS1 = TRUE,
@@ -5594,10 +5629,18 @@ MassSpecData <- R6::R6Class("MassSpecData",
       ms1 <- self$get_groups_ms1(
         groups, mass, mz, rt, ppm, sec,
         rtWindow, mzWindow,
-        mzClustFeatures, presenceFeatures,
-        minIntensityFeatures, loadedFeaturesMS1,
-        mzClustGroups, minIntensityGroups, verbose,
-        filtered, loadedGroupsMS1, runParallel
+        mzClustFeatures,
+        presenceFeatures,
+        minIntensityFeatures,
+        loadedFeaturesMS1,
+        presenceGroups,
+        mzClustGroups,
+        minIntensityGroups,
+        groupBy,
+        verbose,
+        filtered,
+        loadedGroupsMS1,
+        runParallel
       )
 
       if (nrow(ms1) == 0) {
@@ -5627,12 +5670,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                sec = 60,
                                isolationWindow = 1.3,
                                mzClustFeatures = 0.003,
-                               presenceFeatures = TRUE,
+                               presenceFeatures = 0.8,
                                minIntensityFeatures = 100,
                                loadedFeaturesMS2 = TRUE,
                                mzClustGroups = 0.003,
                                presenceGroups = TRUE,
                                minIntensityGroups = 100,
+                               groupBy = "groups",
                                verbose = FALSE,
                                filtered = FALSE,
                                loadedGroupsMS2 = TRUE,
@@ -5658,8 +5702,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
         mzClustGroups,
         presenceGroups,
         minIntensityGroups,
-        groupBy, verbose, filtered,
-        loadedGroupsMS2, runParallel
+        groupBy,
+        verbose,
+        filtered,
+        loadedGroupsMS2,
+        runParallel
       )
 
       if (nrow(ms2) == 0) {
