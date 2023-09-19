@@ -68,97 +68,171 @@ Rcpp::List rcpp_ms_cluster_spectra(Rcpp::DataFrame spectra,
   
   std::vector<std::string> unique_ids(unique_ids_set.begin(), unique_ids_set.end());
   
-  const int n_all_ids = unique_ids.size();
+  const int n_unique_ids = unique_ids.size();
   
-  const int n_unique_ids = all_unique_id.size();
+  const int n_all_unique_ids = all_unique_id.size();
+  
+  if (verbose) {
+    Rcpp::Rcout << "Clustering " << n_unique_ids << " ids from " << n_all_unique_ids << " spectra" << std::endl;
+    Rcpp::Rcout <<  std::endl;
+  }
+  
+  std::vector<double> all_pre_ce(n_all_unique_ids);
+  
+  if (has_pre_ce) {
+    
+    const std::vector<double>& all_pre_ce_origin = spectra["pre_ce"];
+    
+    std::set<double> unique_all_pre_ce_set;
+    
+    for (const double& ce : all_pre_ce) {
+      unique_all_pre_ce_set.insert(ce);
+    }
+    
+    std::vector<double> unique_all_pre_ce(unique_all_pre_ce_set.begin(), unique_all_pre_ce_set.end());
+    
+    if (verbose) {
+      Rcpp::Rcout << "Unique all pre_ce vals:  "; 
+      for (const double& x : unique_all_pre_ce) {
+        Rcpp::Rcout << x << " ";
+      }
+      Rcpp::Rcout << std::endl;
+    }
+    
+    const int n_unique_all_pre_ce = unique_all_pre_ce.size();
+    
+    if (n_unique_all_pre_ce == 1) {
+      if (std::isnan(unique_all_pre_ce[0])) {
+        has_pre_ce = false;
+      }
+    }
+    
+    if (has_pre_ce) {
+      for (int i=0; i<n_all_unique_ids; ++i) {
+        all_pre_ce[i] = all_pre_ce_origin[i];
+      }
+    }
+  }
+  
+  if (!has_pre_ce) {
+    if (verbose) Rcpp::Rcout << "Collision energy values not included!" << std::endl;
+    
+    double nan_val = std::nan("");
+    std::vector<double> all_pre_mz;
+    all_pre_ce.push_back(nan_val);
+  }
+  
+  std::vector<double> all_pre_mz(n_all_unique_ids);
+  
+  if (has_pre_mz) {
+    const std::vector<double>& all_pre_mz_origin = spectra["pre_mz"];
+    
+    std::set<double> unique_all_pre_mz_set;
+    
+    for (const double& m : all_pre_mz) {
+      unique_all_pre_mz_set.insert(m);
+    }
+    
+    std::vector<double> unique_all_pre_mz(unique_all_pre_mz_set.begin(), unique_all_pre_mz_set.end());
+    
+    if (verbose) {
+      Rcpp::Rcout << "Unique all pre_mz vals:  "; 
+      for (const double& x : unique_all_pre_mz) {
+        Rcpp::Rcout << x << " ";
+      }
+      Rcpp::Rcout << std::endl;
+    }
+    
+    const int n_unique_all_pre_mz = unique_all_pre_mz.size();
+    
+    if (n_unique_all_pre_mz == 1) {
+      if (std::isnan(unique_all_pre_mz[0])) {
+        has_pre_mz = false;
+      }
+    }
+    
+    if (has_pre_mz) {
+      for (int i=0; i<n_all_unique_ids; ++i) {
+        all_pre_mz[i] = all_pre_mz_origin[i];
+      }
+    }
+  }
+  
+  if (!has_pre_mz) {
+    if (verbose) Rcpp::Rcout << "Precursor m/z values not included!" << std::endl;
+    
+    double nan_val = std::nan("");
+    std::vector<double> all_pre_mz;
+    all_pre_mz.push_back(nan_val);
+  }
+
+  Rcpp::List spectra_out(n_unique_ids);
   
   std::string* target_id;
   
-  double* all_pre_ce_ptr;
   
-  if (has_pre_ce) {
-    std::vector<double> all_pre_ce = spectra["pre_ce"];
-    all_pre_ce_ptr = all_pre_ce.data();
-    
-  } else {
-    double nan_val = std::nan(""); 
-    all_pre_ce_ptr = &nan_val;
-  }
-  
-  double* all_pre_mz_ptr;
-  
-  if (has_pre_mz) {
-    std::vector<double> all_pre_mz = spectra["pre_mz"];
-    all_pre_mz_ptr = all_pre_mz.data();
-    
-  } else {
-    double nan_val = std::nan(""); 
-    all_pre_mz_ptr = &nan_val;
-  }
-
-  Rcpp::List spectra_out(n_all_ids);
-  
-  
-  for (int i=0; i<n_all_ids; ++i) {
+  for (int i=0; i<n_unique_ids; ++i) {
     
     target_id = &unique_ids[i];
     
+    if (verbose) Rcpp::Rcout << "Clustering " << *target_id << std::endl;
+    
     std::vector<int> which_idx;
     
-    for (int z=0; z<n_unique_ids; z++) {
+    for (int z=0; z<n_all_unique_ids; z++) {
       if (all_unique_id[z] == *target_id) which_idx.push_back(z);
     }
     
     const int n_idx = which_idx.size();
     
-    std::vector<std::string> analysis(n_idx);
-    std::string* analysis_ptr = analysis.data();
+    if (n_idx > 0) {
     
-    std::vector<int> polarity(n_idx);
-    int* polarity_ptr = polarity.data();
-    
-    std::vector<std::string> id(n_idx);
-    std::string* id_ptr = id.data();
-    
-    std::vector<double> u_rt(n_idx);
-    double* u_rt_ptr = u_rt.data();
-    
-    std::vector<double> u_pre_mz(n_idx);
-    double* u_pre_mz_ptr = u_pre_mz.data();
-    
-    std::vector<double> u_pre_ce(n_idx);
-    double* u_pre_ce_ptr = u_pre_ce.data();
-    
-    std::vector<double> u_mz(n_idx);
-    double* u_mz_ptr = u_mz.data();
-    
-    std::vector<double> u_intensity(n_idx);
-    double* u_intensity_ptr = u_intensity.data();
-
-    for (const int& x : which_idx) {
-      *(analysis_ptr++) = *(all_analysis_ptr + x);
-      *(polarity_ptr++) = *(all_polarity_ptr + x);
-      *(id_ptr++) = *(all_id_ptr + x);
-      *(u_rt_ptr++) = *(all_rt_ptr + x);
-      *(u_mz_ptr++) = *(all_mz_ptr + x);
-      *(u_intensity_ptr++) = *(all_intensity_ptr + x);
+      std::vector<std::string> analysis(n_idx);
+      std::string* analysis_ptr = analysis.data();
       
-      if (has_pre_ce) {
-        *(u_pre_ce_ptr++) = *(all_pre_ce_ptr + x);
-      } else {
-        *(u_pre_ce_ptr++) = *(all_pre_ce_ptr);
+      std::vector<int> polarity(n_idx);
+      int* polarity_ptr = polarity.data();
+      
+      std::vector<std::string> id(n_idx);
+      std::string* id_ptr = id.data();
+      
+      std::vector<double> u_rt(n_idx);
+      double* u_rt_ptr = u_rt.data();
+      
+      std::vector<double> u_pre_mz(n_idx);
+      double* u_pre_mz_ptr = u_pre_mz.data();
+      
+      std::vector<double> u_pre_ce(n_idx);
+      double* u_pre_ce_ptr = u_pre_ce.data();
+      
+      std::vector<double> u_mz(n_idx);
+      double* u_mz_ptr = u_mz.data();
+      
+      std::vector<double> u_intensity(n_idx);
+      double* u_intensity_ptr = u_intensity.data();
+  
+      for (const int& x : which_idx) {
+        *(analysis_ptr++) = *(all_analysis_ptr + x);
+        *(polarity_ptr++) = *(all_polarity_ptr + x);
+        *(id_ptr++) = *(all_id_ptr + x);
+        *(u_rt_ptr++) = *(all_rt_ptr + x);
+        *(u_mz_ptr++) = *(all_mz_ptr + x);
+        *(u_intensity_ptr++) = *(all_intensity_ptr + x);
+        
+        if (has_pre_ce) {
+          *(u_pre_ce_ptr++) = all_pre_ce[x];
+        } else {
+          *(u_pre_ce_ptr++) = all_pre_ce[0];
+        }
+        
+        if (has_pre_mz) {
+          *(u_pre_mz_ptr++) = all_pre_mz[x];
+        } else {
+          *(u_pre_mz_ptr++) = all_pre_mz[0];
+        }
       }
       
-      if (has_pre_mz) {
-        *(u_pre_mz_ptr++) = *(all_pre_mz_ptr + x);
-      } else {
-        *(u_pre_mz_ptr++) = *(all_pre_mz_ptr);
-      }
-    }
-    
-    // list_out["u_mz"] = u_mz;
-    
-    if (u_mz.size() > 0) {
+      // list_out["u_mz"] = u_mz;
       
       std::vector<int> idx(u_mz.size());
       std::iota(idx.begin(), idx.end(), 0);
@@ -170,7 +244,6 @@ Rcpp::List rcpp_ms_cluster_spectra(Rcpp::DataFrame spectra,
       // list_out["o_idx"] = idx;
       
       u_rt_ptr = u_rt.data();
-      u_pre_mz_ptr = u_pre_mz.data();
       u_pre_ce_ptr = u_pre_ce.data();
       u_mz_ptr = u_mz.data();
       u_intensity_ptr = u_intensity.data();
@@ -206,6 +279,14 @@ Rcpp::List rcpp_ms_cluster_spectra(Rcpp::DataFrame spectra,
       
       std::vector<double> unique_rt(unique_rt_set.begin(), unique_rt_set.end());
       
+      if (verbose) {
+        Rcpp::Rcout << "Unique rt vals:  "; 
+        for (const double& x : unique_rt) {
+          Rcpp::Rcout << x << " ";
+        }
+        Rcpp::Rcout << std::endl;
+      }
+      
       std::set<double> unique_pre_ce_set;
       
       for (const double& c : pre_ce) {
@@ -213,6 +294,14 @@ Rcpp::List rcpp_ms_cluster_spectra(Rcpp::DataFrame spectra,
       }
       
       std::vector<double> unique_pre_ce(unique_pre_ce_set.begin(), unique_pre_ce_set.end());
+      
+      if (verbose) {
+        Rcpp::Rcout << "Unique pre_ce vals:  "; 
+        for (const double& x : unique_pre_ce) {
+          Rcpp::Rcout << x << " ";
+        }
+        Rcpp::Rcout << std::endl;
+      }
       
       // list_out["unique_rt"] = unique_rt;
 
@@ -250,7 +339,7 @@ Rcpp::List rcpp_ms_cluster_spectra(Rcpp::DataFrame spectra,
         
         std::vector<double> new_intensity;
 
-        if (verbose) Rcpp::Rcout << "Clustering " << *target_id << " with " << itMzClust << " Da...";
+        if (verbose) Rcpp::Rcout << "Using an mzClust of  " << itMzClust << " Da" << std::endl;
 
         std::vector<int> all_clusters(mz_diff.size(), 0);
         
@@ -290,6 +379,8 @@ Rcpp::List rcpp_ms_cluster_spectra(Rcpp::DataFrame spectra,
         std::vector<bool> fromSameScan(n_clusters, true);
         
         for (int z=0; z<n_clusters; ++z) {
+          
+          if (verbose) Rcpp::Rcout << "Cluster  " << z << std::endl;
           
           // list_out["cluster"] = clusters[z];
           
@@ -332,6 +423,14 @@ Rcpp::List rcpp_ms_cluster_spectra(Rcpp::DataFrame spectra,
           
           std::vector<double> unique_temp_rt(unique_temp_rt_set.begin(), unique_temp_rt_set.end());
           
+          if (verbose) {
+            Rcpp::Rcout << "Unique temp rt vals:  "; 
+            for (const double& x : unique_temp_rt) {
+              Rcpp::Rcout << x << " ";
+            }
+            Rcpp::Rcout << std::endl;
+          }
+          
           // list_out["unique_temp_rt"] = unique_temp_rt;
           
           std::set<double> unique_temp_pre_ce_set;
@@ -341,6 +440,14 @@ Rcpp::List rcpp_ms_cluster_spectra(Rcpp::DataFrame spectra,
           }
           
           std::vector<double> unique_temp_pre_ce(unique_temp_pre_ce_set.begin(), unique_temp_pre_ce_set.end());
+          
+          if (verbose) {
+            Rcpp::Rcout << "Unique temp pre_ce vals:  "; 
+            for (const double& x : unique_temp_pre_ce) {
+              Rcpp::Rcout << x << " ";
+            }
+            Rcpp::Rcout << std::endl;
+          }
           
           // list_out["unique_temp_pre_ce"] = unique_temp_pre_ce;
 
@@ -417,6 +524,8 @@ Rcpp::List rcpp_ms_cluster_spectra(Rcpp::DataFrame spectra,
           
         } // end of clusters for loop
         
+        if (verbose) Rcpp::Rcout << "Cluster with " << new_mz.size() << " traces." << std::endl;
+        
         if (new_mz.size() > 0) {
 
           double rt_mean = 0;
@@ -426,6 +535,8 @@ Rcpp::List rcpp_ms_cluster_spectra(Rcpp::DataFrame spectra,
           }
           
           rt_mean = rt_mean / rt.size();
+          
+          if (verbose) Rcpp::Rcout << "Average rt of " << rt_mean << " seconds." << std::endl;
           
           bool pre_mzHasNaN = false;
           
@@ -442,11 +553,13 @@ Rcpp::List rcpp_ms_cluster_spectra(Rcpp::DataFrame spectra,
             
             std::vector<bool> is_pre(new_mz.size(), false);
             
-            for (double val : u_pre_mz) {
+            for (const double& val : u_pre_mz) {
               pre_mz_mean += val;
             }
             
             pre_mz_mean = pre_mz_mean / u_pre_mz.size();
+            
+            if (verbose) Rcpp::Rcout << "Average pre_mz of " << pre_mz_mean << " Da." << std::endl;
             
             // list_out["pre_mz"] = pre_mz_mean;
             

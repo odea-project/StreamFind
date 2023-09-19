@@ -51,7 +51,7 @@ ms$add_settings(
 )
 
 # patRoon::clearCache("parsed_ms_analyses")
-# patRoon::clearCache("parsed_ms_spectra")
+patRoon::clearCache("parsed_ms_spectra")
 patRoon::clearCache("load_features_ms1")
 patRoon::clearCache("load_features_ms2")
 patRoon::clearCache("load_groups_ms1")
@@ -65,13 +65,25 @@ suspects <- ms$get_suspects(database = db, ppm = 10, sec = 15)
 
 ms <- ms$subset_features(features = suspects)
 
-ms$load_features_ms1()
+# ms$get_features_ms2(loadedMS2 = F)
 
-ms$load_groups_ms1()
+# View(ms$get_ms2(mz = suspects$mz))
+
+ms$load_features_ms1()
 
 ms$load_features_ms2()
 
+ms$load_groups_ms1()
+
 ms$load_groups_ms2()
+
+# ms$get_features_ms1(loadedMS1 = T)
+
+# ms$get_features_ms2(loadedMS2 = T)
+
+ms$get_groups_ms1(loadedFeaturesMS1 = T, loadedGroupsMS1 = T)
+
+ms$get_groups_ms2(loadedFeaturesMS2 = T, loadedGroupsMS2 = T)
 
 ms$plot_groups_ms2(mass = diu, colorBy = "targets+polarities")
 
