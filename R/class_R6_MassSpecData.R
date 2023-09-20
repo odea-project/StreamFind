@@ -5327,6 +5327,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                              legendNames = NULL,
                              title = NULL,
                              colorBy = "targets",
+                             showLegend = TRUE,
                              interactive = TRUE) {
 
       fts <- self$get_features(
@@ -5356,9 +5357,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!interactive) {
-        plot_features_static(eic, fts, legendNames, colorBy, title)
+        plot_features_static(eic, fts, legendNames, colorBy, title, showLegend)
       } else {
-        plot_features_interactive(eic, fts, legendNames, colorBy, title)
+        plot_features_interactive(eic, fts, legendNames, colorBy, title, showLegend)
       }
     },
 
@@ -5593,6 +5594,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                            legendNames = NULL,
                            title = NULL,
                            colorBy = "targets",
+                           showLegend = TRUE,
                            interactive = TRUE) {
 
       fts <- self$get_features(
@@ -5605,13 +5607,16 @@ MassSpecData <- R6::R6Class("MassSpecData",
         if (is.null(legendNames)) legendNames <- TRUE
       }
 
-      #browser()
-
       self$plot_features(
         features = fts,
-        rtExpand = rtExpand, mzExpand = mzExpand,
-        runParallel = runParallel, legendNames = legendNames,
-        title = title, colorBy = colorBy, interactive = interactive
+        rtExpand = rtExpand,
+        mzExpand = mzExpand,
+        runParallel = runParallel,
+        legendNames = legendNames,
+        title = title,
+        colorBy = colorBy,
+        showLegend = showLegend,
+        interactive = interactive
       )
     },
 
@@ -6286,19 +6291,19 @@ MassSpecData <- R6::R6Class("MassSpecData",
         return(NULL)
       }
       
-      pat_features <- ms$as_features_patRoon(filtered)
+      pat_features <- self$as_features_patRoon(filtered)
       
       features <- pat_features@features
       
       n_analyses <- length(features)
       
-      groups <- ms$get_groups(filtered = filtered, onlyIntensities = TRUE)
+      groups <- self$get_groups(filtered = filtered, onlyIntensities = TRUE)
       groups_cols <- groups$group
       groups[["group"]] <- NULL
       groups_trans <- data.table::transpose(groups)
       colnames(groups_trans) <- groups_cols
       
-      groups_info <- ms$get_groups(filtered = filtered)
+      groups_info <- self$get_groups(filtered = filtered)
       groups_info <- groups_info[, 1:3]
       groups_info_rows <- groups_info$group
       groups_info[["group"]] <- NULL

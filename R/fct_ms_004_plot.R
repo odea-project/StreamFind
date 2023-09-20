@@ -969,7 +969,7 @@ plot_ms1_interactive <- function(ms1 = NULL,
 #'
 plot_features_static <- function(eic = NULL, features = NULL,
                                  legendNames = NULL, colorBy = "targets",
-                                 title = NULL) {
+                                 title = NULL, showLegend = TRUE) {
   if ("analyses" %in% colorBy) {
     leg <- unique(eic$analysis)
     varkey <- eic$analysis
@@ -998,6 +998,11 @@ plot_features_static <- function(eic = NULL, features = NULL,
   cl <- get_colors(leg)
 
   ids <- unique(eic$unique_ids)
+  
+  if (showLegend) {
+    par.default <- par(no.readonly=TRUE)
+    par(mar = c(5, 4, 4, 10), xpd = TRUE)
+  }
 
   plot(eic$rt,
     type = "n",
@@ -1055,14 +1060,20 @@ plot_features_static <- function(eic = NULL, features = NULL,
     }
   }
 
-  legend(
-    "topleft",
-    legend = names(cl),
-    col = cl,
-    lty = 1,
-    cex = 0.8,
-    bty = "n"
-  )
+  if (showLegend) {
+    legend(
+      "topright",
+      inset = c(-0.4, 0),
+      # xpd = TRUE,
+      legend = names(cl),
+      title = colorBy,
+      col = cl,
+      lty = 1,
+      cex = 0.8,
+      bty = "n"
+    )
+    par(par.default)
+  }
 }
 
 #' @title plot_features_interactive
@@ -1086,7 +1097,7 @@ plot_features_static <- function(eic = NULL, features = NULL,
 #'
 plot_features_interactive <- function(eic = NULL, features = NULL,
                                       legendNames = NULL, colorBy = "targets",
-                                      title = NULL) {
+                                      title = NULL, showLegend = TRUE) {
   if ("analyses" %in% colorBy) {
     leg <- unique(eic$analysis)
     varkey <- eic$analysis
@@ -1135,7 +1146,13 @@ plot_features_interactive <- function(eic = NULL, features = NULL,
   )
 
   plot <- plot_ly()
-  showL <- rep(TRUE, length(leg))
+  
+  if (showLegend) {
+    showL <- rep(TRUE, length(leg))
+  } else {
+    showL <- rep(FALSE, length(leg))
+  }
+  
   names(showL) <- leg
 
   for (t in ids) {
@@ -1208,13 +1225,22 @@ plot_features_interactive <- function(eic = NULL, features = NULL,
       )
     }
   }
-
-  plot <- plot %>% plotly::layout(
-    legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
-    xaxis = xaxis,
-    yaxis = yaxis,
-    title = title
-  )
+  
+  if (showLegend) {
+    plot <- plot %>% plotly::layout(
+      legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
+      xaxis = xaxis,
+      yaxis = yaxis,
+      title = title
+    )
+  } else {
+    plot <- plot %>% plotly::layout(
+      legend = NULL,
+      xaxis = xaxis,
+      yaxis = yaxis,
+      title = title
+    )
+  }
 
   return(plot)
 }

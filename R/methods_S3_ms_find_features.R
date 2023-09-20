@@ -198,36 +198,33 @@
       }
     }
 
-    under_rt_max <- temp$ret <= temp$retmax * 1.05
-    if (!all(under_rt_max)) {
-      warning(sum(under_rt_max), " feature/s with retention time value above the rtmax removed!")
-      temp <- temp[under_rt_max, ]
+    below_rt_max <- temp$ret <= temp$retmax * 1.05
+    if (!all(below_rt_max)) {
+      warning(sum(!below_rt_max), " feature/s with retention time value above the rtmax removed!")
+      temp <- temp[below_rt_max, ]
     }
 
-    under_rt_min <- temp$ret >= temp$retmin * 0.95
-    if (!all(under_rt_min)) {
-      warning(sum(under_rt_min), " feature/s with retention time value below the rtmin removed!")
-      temp <- temp[under_rt_min, ]
+    above_rt_min <- temp$ret >= temp$retmin * 0.95
+    if (!all(above_rt_min)) {
+      warning(sum(!above_rt_min), " feature/s with retention time value below the rtmin removed!")
+      temp <- temp[above_rt_min, ]
     }
 
-    under_mz_max <- temp$mz <= temp$mzmax + (2 * temp$mzmax / 1E6)
-    if (!all(under_mz_max)) {
-      warning(sum(under_mz_max), " feature/s with m/z value above the mzmax removed!")
-      temp <- temp[under_mz_max, ]
+    below_mz_max <- temp$mz <= temp$mzmax + (2 * temp$mzmax / 1E6)
+    if (!all(below_mz_max)) {
+      warning(sum(!below_mz_max), " feature/s with m/z value above the mzmax removed!")
+      temp <- temp[below_mz_max, ]
     }
 
-    under_mz_min <- temp$mz >= temp$mzmin - (2 * temp$mzmax / 1E6)
-    if (!all(under_mz_min)) {
-      warning(sum(under_mz_min), " feature/s with m/z value below the mzmin removed!")
-      temp <- temp[under_mz_min, ]
+    above_mz_min <- temp$mz >= temp$mzmin - (2 * temp$mzmax / 1E6)
+    if (!all(above_mz_min)) {
+      warning(sum(!above_mz_min), " feature/s with m/z value below the mzmin removed!")
+      temp <- temp[above_mz_min, ]
     }
     
     run <- self$get_run(x)
     
     polarity <- unique(run$polarity)
-
-    # adduct <- NA_character_
-    # adduct_val <- 0
 
     if (length(polarity) > 1) {
       
