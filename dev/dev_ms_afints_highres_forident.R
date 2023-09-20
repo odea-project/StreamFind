@@ -38,16 +38,16 @@ afs <- Settings_annotate_features_StreamFind(
 
 # tof --------------------------------------------------------------------------
 
-tof_fl <- files[9]
+tof_fl <- files[18]
 
 tof_ffs <- Settings_find_features_xcms3_centwave(
   ppm = 12,
   peakwidth = c(5, 40),
-  snthresh = 10,
-  prefilter = c(5, 2000),
+  snthresh = 5,
+  prefilter = c(5, 1500),
   mzCenterFun = "wMean",
-  integrate = 1,
-  mzdiff = 0.0008,
+  integrate = 2,
+  mzdiff = 0.0005,
   fitgauss = TRUE,
   noise = 500,
   verboseColumns = TRUE,
@@ -63,14 +63,14 @@ tof_ms <- MassSpecData$new(
 
 tof_ms$find_features()$annotate_features()
 
-tof_suspects <- tof_ms$get_suspects(database = tof_db, ppm = 5, sec = 10)
+tof_suspects <- tof_ms$get_suspects(database = tof_db, ppm = 8, sec = 10)
 
 
 
 
 # afin --------------------------------------------------------------------------
 
-afin_fl <- files[2]
+afin_fl <- files[5]
 
 afin_ffs <- Settings_find_features_xcms3_centwave(
   ppm = 3,
@@ -104,7 +104,7 @@ afin_ms$map_components(features = afin_suspects[c(11, 31), ], legendNames = TRUE
 
 # ude --------------------------------------------------------------------------
 
-ude_fl <- files[5]
+ude_fl <- files[8]
 
 ude_ffs <- Settings_find_features_xcms3_centwave(
   ppm = 4,
@@ -136,19 +136,18 @@ ude_suspects <- ude_ms$get_suspects(database = ude_db, ppm = 5, sec = 10)
 
 # forident showcase ------------------------------------------------------------
 
-suspects <- tof_ms$get_suspects(database = tof_db, ppm = 5, sec = 10)
-suspects_ms <- tof_ms$subset_features(features = suspects)
+suspects_ms <- tof_ms$subset_features(features = tof_suspects)
 
 slfms2 <- Settings_load_features_ms2_StreamFind(
   isolationWindow = 1.3,
   mzClust = 0.008,
-  isInAllSpectra = TRUE,
-  minIntensity = 10
+  presence = 0.9,
+  minIntensity = 200
 )
 
 suspects_ms$load_features_ms2(slfms2)
 
-suspects_fts <- suspects_ms$get_features()
+suspects_ms$plot_features_ms2(loadedMS2 = TRUE, colorBy = "targets")
 
 sssfi <- Settings_suspect_screening_forident(
   addMS2 = TRUE,

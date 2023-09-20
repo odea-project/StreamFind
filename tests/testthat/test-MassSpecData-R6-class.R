@@ -166,14 +166,14 @@ test_that("get EIC, MS1 and MS2 spectra", {
 
 settings_ff <- Settings_find_features_xcms3_centwave(
   ppm = 12,
-  peakwidth = c(5, 30),
+  peakwidth = c(5, 40),
   snthresh = 10,
-  prefilter = c(5, 1500),
+  prefilter = c(6, 5000),
   mzCenterFun = "mean",
   integrate = 2,
   mzdiff = 0.0005,
   fitgauss = TRUE,
-  noise = 500,
+  noise = 1500,
   verboseColumns = TRUE,
   firstBaselineCheck = FALSE,
   extendLengthMSW = TRUE
@@ -187,7 +187,7 @@ test_that("add and get settings", {
   expect_true(ms$has_settings("find_features"))
 })
 
-ms$find_features(settings = settings_ff)
+suppressWarnings(ms$find_features(settings = settings_ff))
 
 test_that("find and get features", {
   expect_s3_class(ms$get_features(mz = targets), "data.table")
@@ -418,7 +418,7 @@ groups_to_subset <- ms5$get_groups(mass = neutral_targets)
 ms5 <- ms5$subset_groups(groups = groups_to_subset$group)
 
 test_that("subset groups", {
-  expect_equal(nrow(ms5$get_features()), 18)
+  expect_equal(nrow(ms5$get_features()), 12)
   expect_equal(
     nrow(ms5$get_features(filtered = TRUE)),
     nrow(ms$get_features(filtered = TRUE))
