@@ -1103,39 +1103,36 @@ validate.Settings_load_groups_ms2_StreamFind <- function(x) {
 #'
 #' @description Settings for filtering of features and feature groups.
 #'
-#' @param minIntensity Numeric (length 1) with the minimum intensity.
-#' @param minSnRatio Numeric (length 1) with the minimum signal-to-noise ratio.
-#' The filter is only applied if the features data.table contains the column "sn".
-#' @param maxGroupSd Numeric (length 1) with the maximum intensity deviation
-#' within each analysis replicate (in percentage).
-#' @param blank Numeric (length 1) with the intensity threshold for blank
-#' subtraction. All features/feature groups not higher then the `blank` * its
-#' intensity are filtered.
-#' @param minGroupAbundance Numeric (length 1) with the minimum presence of a
-#' feature is a given analysis replicate.
-#' @param excludeIsotopes Logical (length 1) with `TRUE` for filtering
-#' annotated isotopes (only prevails the monoisotopic features).
-#' @param rtFilter Numeric (length 2) with the min and max retention time
-#' (in seconds) values to filter features. Features within the retention time
-#' range are filtered out.
-#' @param massFilter Numeric (length 2) with the min and max mass
-#' (in Da) values to filter features. Features within the mass range are
-#' filtered out.
+#' @param ... Ordered filters to be applied. Possible filter arguments are:
+#' \itemize{
+#'  \item{**minIntensity**}{  Numeric (length 1) with the minimum intensity.}
+#'  \item{**minSnRatio**}{  Numeric (length 1) with the minimum signal-to-noise 
+#'  ratio.}
+#'  \item{**maxGroupSd**}{  Numeric (length 1) with the maximum intensity 
+#'  deviation within each analysis replicate (in percentage).}
+#'  \item{**blank**}{  Numeric (length 1) with the intensity threshold for blank
+#'  subtraction. All features/feature groups not higher then the `blank` * its
+#'  intensity are filtered.}
+#'  \item{**minGroupAbundance**}{  Numeric (length 1) with the minimum presence 
+#'  of a feature is a given analysis replicate.}
+#'  \item{**excludeIsotopes**}{  Logical (length 1) with `TRUE` for filtering
+#'  annotated isotopes (only prevails the monoisotopic features).}
+#'  \item{**rtFilter**}{  Numeric (length 2) with the min and max retention time
+#'  (in seconds) values to filter features. Features within the retention time
+#'  range are filtered out.}
+#'  \item{**massFilter**}{  Numeric (length 2) with the min and max mass
+#'  (in Da) values to filter features. Features within the mass range are
+#'  filtered out.}
+#' }
 #'
 #' @return A ProcessingSettings S3 class object with subclass
 #' Settings_filter_features_StreamFind.
 #'
 #' @export
 #'
-Settings_filter_features_StreamFind <- function(
-    minIntensity = NULL,
-    minSnRatio = NULL,
-    maxGroupSd = NULL,
-    blank = NULL,
-    minGroupAbundance = NULL,
-    excludeIsotopes = NULL,
-    rtFilter = NULL,
-    massFilter = NULL) {
+Settings_filter_features_StreamFind <- function(...) {
+  
+  dots <- list(...)
 
   settings <- list(
     call = "filter_features",
@@ -1148,47 +1145,57 @@ Settings_filter_features_StreamFind <- function(
     link = NA_character_,
     doi = NA_character_
   )
-
-  if (!is.null(minIntensity)) {
-    checkmate::assert_double(minIntensity, max.len = 1)
-    settings$parameters[["minIntensity"]] <- minIntensity
+  
+  possible_feature_filters <- c(
+    "minIntensity",
+    "minSnRatio",
+    "blank",
+    "maxGroupSd",
+    "minGroupAbundance",
+    "excludeIsotopes",
+    "excludeAdducts",
+    "rtFilter",
+    "massFilter"
+  )
+  
+  if (!all(names(dots) %in% possible_feature_filters)) {
+    warning("Added filter arguments not recognized!")
   }
 
-  if (!is.null(minSnRatio)) {
-    checkmate::assert_double(minSnRatio, max.len = 1)
-    settings$parameters[["minSnRatio"]] <- minSnRatio
+  if ("minIntensity" %in% names(dots)) {
+    checkmate::assert_double(dots[["minIntensity"]], max.len = 1)
   }
 
-  if (!is.null(maxGroupSd)) {
-    checkmate::assert_double(maxGroupSd, max.len = 1)
-    settings$parameters[["maxGroupSd"]] <- maxGroupSd
+  if ("minSnRatio" %in% names(dots)) {
+    checkmate::assert_double(dots[["minSnRatio"]], max.len = 1)
   }
 
-  if (!is.null(blank)) {
-    checkmate::assert_double(blank, max.len = 1)
-    settings$parameters[["blank"]] <- blank
+  if ("maxGroupSd" %in% names(dots)) {
+    checkmate::assert_double(dots[["maxGroupSd"]], max.len = 1)
   }
 
-  if (!is.null(minGroupAbundance)) {
-    checkmate::assert_count(minGroupAbundance)
-    settings$parameters[["minGroupAbundance"]] <- minGroupAbundance
+  if ("blank" %in% names(dots)) {
+    checkmate::assert_double(dots[["blank"]], max.len = 1)
   }
 
-  if (!is.null(excludeIsotopes)) {
-    checkmate::assert_logical(excludeIsotopes, max.len = 1)
-    settings$parameters[["excludeIsotopes"]] <- excludeIsotopes
+  if ("minGroupAbundance" %in% names(dots)) {
+    checkmate::assert_count(dots[["minGroupAbundance"]])
   }
 
-  if (!is.null(rtFilter)) {
-    checkmate::assert_double(rtFilter, len = 2)
-    settings$parameters[["rtFilter"]] <- rtFilter
+  if ("excludeIsotopes" %in% names(dots)) {
+    checkmate::assert_logical(dots[["excludeIsotopes"]], max.len = 1)
   }
 
-  if (!is.null(massFilter)) {
-    checkmate::assert_double(massFilter, len = 2)
-    settings$parameters[["massFilter"]] <- massFilter
+  if ("rtFilter" %in% names(dots)) {
+    checkmate::assert_double(dots[["rtFilter"]], len = 2)
   }
 
+  if ("massFilter" %in% names(dots)) {
+    checkmate::assert_double(dots[["massFilter"]], len = 2)
+  }
+
+  settings$parameters <- dots
+  
   settings <- as.ProcessingSettings(settings)
 
   return(settings)

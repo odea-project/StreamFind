@@ -35,8 +35,8 @@ ms$add_settings(
     Settings_find_features_xcms3_centwave(),
     Settings_group_features_xcms3_peakdensity(),
     Settings_filter_features_StreamFind(
-      minIntensity = 5000,
       minSnRatio = 20,
+      minIntensity = 5000,
       maxGroupSd = 30,
       blank = 5,
       minGroupAbundance = 3,
@@ -58,8 +58,10 @@ ms$add_settings(
 patRoon::clearCache("MSPeakListsAvg")
 # ms$get_history()
 
+ms$find_features()$group_features()$filter_features()
 
-ms$find_features()$group_features()#$filter_features()
+
+
 
 suspects <- ms$get_suspects(database = db, ppm = 10, sec = 15)
 
@@ -89,6 +91,9 @@ pat_fg <- ms$as_featureGroups_patRoon()
 
 pat_pl <- ms$as_MSPeakLists_patRoon()
 
+
+
+
 mspl <- patRoon::generateMSPeakListsMzR(
   pat_fg,
   maxMSRtWindow = 5,
@@ -98,12 +103,18 @@ mspl <- patRoon::generateMSPeakListsMzR(
   avgFGroupParams = patRoon::getDefAvgPListParams()
 )
 
-# patRoon::report(pat_fg, pat_pl)
+saveRDS(pat_pl, "pat_pl.rds")
+
+rm(pat_pl)
+
+pat_pl <- readRDS("pat_pl.rds")
+
+patRoon::report(pat_fg, pat_pl)
 
 comp <- patRoon::generateCompoundsMetFrag(
   pat_fg,
-  # pat_pl,
-  mspl,
+  pat_pl,
+  # mspl,
   adduct = "[M+H]+",
   dbRelMzDev = 8,
   fragRelMzDev = 10,
@@ -115,7 +126,7 @@ formulas <- patRoon::generateFormulasGenForm(
   pat_pl,
   # mspl,
   relMzDev = 10,
-  adduct = NULL,
+  adduct = "[M+H]+",
   elements = "CHNOP",
   hetero = TRUE,
   oc = FALSE,

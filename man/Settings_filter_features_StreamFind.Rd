@@ -5,45 +5,32 @@
 \alias{validate.Settings_filter_features_StreamFind}
 \title{Settings_filter_features_StreamFind}
 \usage{
-Settings_filter_features_StreamFind(
-  minIntensity = NULL,
-  minSnRatio = NULL,
-  maxGroupSd = NULL,
-  blank = NULL,
-  minGroupAbundance = NULL,
-  excludeIsotopes = NULL,
-  rtFilter = NULL,
-  massFilter = NULL
-)
+Settings_filter_features_StreamFind(...)
 
 \method{validate}{Settings_filter_features_StreamFind}(x)
 }
 \arguments{
-\item{minIntensity}{Numeric (length 1) with the minimum intensity.}
-
-\item{minSnRatio}{Numeric (length 1) with the minimum signal-to-noise ratio.
-The filter is only applied if the features data.table contains the column "sn".}
-
-\item{maxGroupSd}{Numeric (length 1) with the maximum intensity deviation
-within each analysis replicate (in percentage).}
-
-\item{blank}{Numeric (length 1) with the intensity threshold for blank
+\item{...}{Ordered filters to be applied. Possible filter arguments are:
+\itemize{
+\item{\strong{minIntensity}}{  Numeric (length 1) with the minimum intensity.}
+\item{\strong{minSnRatio}}{  Numeric (length 1) with the minimum signal-to-noise
+ratio.}
+\item{\strong{maxGroupSd}}{  Numeric (length 1) with the maximum intensity
+deviation within each analysis replicate (in percentage).}
+\item{\strong{blank}}{  Numeric (length 1) with the intensity threshold for blank
 subtraction. All features/feature groups not higher then the \code{blank} * its
 intensity are filtered.}
-
-\item{minGroupAbundance}{Numeric (length 1) with the minimum presence of a
-feature is a given analysis replicate.}
-
-\item{excludeIsotopes}{Logical (length 1) with \code{TRUE} for filtering
+\item{\strong{minGroupAbundance}}{  Numeric (length 1) with the minimum presence
+of a feature is a given analysis replicate.}
+\item{\strong{excludeIsotopes}}{  Logical (length 1) with \code{TRUE} for filtering
 annotated isotopes (only prevails the monoisotopic features).}
-
-\item{rtFilter}{Numeric (length 2) with the min and max retention time
+\item{\strong{rtFilter}}{  Numeric (length 2) with the min and max retention time
 (in seconds) values to filter features. Features within the retention time
 range are filtered out.}
-
-\item{massFilter}{Numeric (length 2) with the min and max mass
+\item{\strong{massFilter}}{  Numeric (length 2) with the min and max mass
 (in Da) values to filter features. Features within the mass range are
 filtered out.}
+}}
 
 \item{x}{A Settings_filter_features_StreamFind S3 class object.}
 }
