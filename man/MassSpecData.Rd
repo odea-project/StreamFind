@@ -3238,6 +3238,7 @@ Plots extract ion chromatograms (EIC) from the analyses based on targets.
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
+  showLegend = TRUE,
   interactive = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -3293,6 +3294,8 @@ overhead.}
 \item{\code{colorBy}}{A string of length 1. One of \code{analyses}, \code{targets} (the
 default) or \code{replicates}.}
 
+\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
+
 \item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
 using \pkg{plotly}.}
 }
@@ -3314,6 +3317,7 @@ Plots the total ion chromatogram (TIC) of the analyses.
   title = NULL,
   colorBy = "analyses",
   legendNames = NULL,
+  showLegend = TRUE,
   interactive = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -3333,6 +3337,8 @@ MS data. Possible values are 1 and 2 for MS1 and MS2 data, respectively.}
 default) or \code{replicates}.}
 
 \item{\code{legendNames}}{A character vector with the same length as the targets.}
+
+\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
 
 \item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
 using \pkg{plotly}.}
@@ -3355,6 +3361,7 @@ Plots the base peak chromatogram (BPC) of the analyses.
   title = NULL,
   colorBy = "analyses",
   legendNames = NULL,
+  showLegend = TRUE,
   interactive = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -3374,6 +3381,8 @@ MS data. Possible values are 1 and 2 for MS1 and MS2 data, respectively.}
 default) or \code{replicates}.}
 
 \item{\code{legendNames}}{A character vector with the same length as the targets.}
+
+\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
 
 \item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
 using \pkg{plotly}.}
@@ -3606,6 +3615,7 @@ Plots features from analyses.
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
+  showLegend = TRUE,
   interactive = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -3669,6 +3679,8 @@ overhead.}
 
 \item{\code{colorBy}}{A string of length 1. One of \code{analyses}, \code{targets} (the
 default) or \code{replicates}.}
+
+\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
 
 \item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
 using \pkg{plotly}.}
@@ -4034,6 +4046,7 @@ Plots feature groups EIC.
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
+  showLegend = TRUE,
   interactive = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -4092,6 +4105,8 @@ overhead.}
 
 \item{\code{colorBy}}{A string of length 1. One of \code{analyses}, \code{targets} (the
 default) or \code{replicates}.}
+
+\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
 
 \item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
 using \pkg{plotly}.}

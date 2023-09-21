@@ -58,6 +58,7 @@
 #' @template arg-ms-save-path
 #' @template arg-ms-import-file
 #' @template arg-ms-xlim-ylim
+#' @template arg-ms-cex
 #' @template arg-ms-showLegend
 #' @template arg-ms-components
 #'
@@ -1089,6 +1090,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
       polarities <- unique(self$get_polarities(analyses))
       
       if (!is.null(mass)) {
+        
+        if (is.data.frame(mass)) {
+          if ("mass" %in% colnames(mass)) {
+            mass$mz = mass$mass
+          }
+        }
+        
         neutral_targets <- make_ms_targets(mass, rt, ppm, sec, id)
         
         targets <- list()
@@ -5094,6 +5102,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                         legendNames = NULL,
                         title = NULL,
                         colorBy = "targets",
+                        showLegend = TRUE,
+                        xlim = NULL,
+                        ylim = NULL,
+                        cex = 0.6,
                         interactive = TRUE) {
 
       eic <- self$get_eic(analyses, mass, mz, rt, ppm, sec, id, runParallel)
@@ -5108,9 +5120,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!interactive) {
-        plot_eic_static(eic, legendNames, colorBy, title)
+        plot_eic_static(eic, legendNames, colorBy, title, showLegend, xlim, ylim, cex)
       } else {
-        plot_eic_interactive(eic, legendNames, colorBy, title)
+        plot_eic_interactive(eic, legendNames, colorBy, title, showLegend)
       }
     },
 
@@ -5124,6 +5136,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                         title = NULL,
                         colorBy = "analyses",
                         legendNames = NULL,
+                        showLegend = TRUE,
+                        xlim = NULL,
+                        ylim = NULL,
+                        cex = 0.6,
                         interactive = TRUE) {
 
       tic <- self$get_tic(analyses, levels)
@@ -5162,9 +5178,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!interactive) {
-        plot_eic_static(tic, legendNames, colorBy, title)
+        plot_eic_static(tic, legendNames, colorBy, title, showLegend, xlim, ylim, cex)
       } else {
-        plot_eic_interactive(tic, legendNames, colorBy, title)
+        plot_eic_interactive(tic, legendNames, colorBy, title, showLegend)
       }
     },
 
@@ -5178,6 +5194,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                         title = NULL,
                         colorBy = "analyses",
                         legendNames = NULL,
+                        showLegend = TRUE,
+                        xlim = NULL,
+                        ylim = NULL,
+                        cex = 0.6,
                         interactive = TRUE) {
 
       bpc <- self$get_bpc(analyses, levels)
@@ -5216,9 +5236,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!interactive) {
-        plot_eic_static(bpc, legendNames, colorBy, title)
+        plot_eic_static(bpc, legendNames, colorBy, title, showLegend, xlim, ylim, cex)
       } else {
-        plot_bpc_interactive(bpc, legendNames, colorBy, title)
+        plot_bpc_interactive(bpc, legendNames, colorBy, title, showLegend)
       }
     },
 
@@ -5320,14 +5340,17 @@ MassSpecData <- R6::R6Class("MassSpecData",
                              rt = NULL,
                              ppm = 20,
                              sec = 60,
-                             rtExpand = 120,
-                             mzExpand = 0.005,
+                             rtExpand = 15,
+                             mzExpand = 0.008,
                              filtered = FALSE,
                              runParallel = FALSE,
                              legendNames = NULL,
                              title = NULL,
                              colorBy = "targets",
                              showLegend = TRUE,
+                             xlim = NULL,
+                             ylim = NULL,
+                             cex = 0.6,
                              interactive = TRUE) {
 
       fts <- self$get_features(
@@ -5357,7 +5380,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!interactive) {
-        plot_features_static(eic, fts, legendNames, colorBy, title, showLegend)
+        plot_features_static(eic, fts, legendNames, colorBy, title, showLegend, xlim, ylim, cex)
       } else {
         plot_features_interactive(eic, fts, legendNames, colorBy, title, showLegend)
       }
@@ -5376,12 +5399,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
                             ppm = 20,
                             sec = 60,
                             filtered = FALSE,
-                            xlim = 30,
-                            ylim = 0.05,
-                            showLegend = TRUE,
                             legendNames = NULL,
                             title = NULL,
                             colorBy = "targets",
+                            showLegend = TRUE,
+                            xlim = 30,
+                            ylim = 0.05,
+                            cex = 0.6,
                             interactive = TRUE) {
 
       fts <- self$get_features(
@@ -5398,15 +5422,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!interactive) {
-       map_features_static(
-          fts, colorBy, legendNames,
-          xlim, ylim, title, showLegend
-        )
+       map_features_static(fts, colorBy, legendNames, title, showLegend, xlim, ylim, cex)
       } else {
-       map_features_interactive(
-          fts, colorBy, legendNames,
-          xlim, ylim, title
-        )
+       map_features_interactive(fts, colorBy, legendNames, xlim, ylim, title)
       }
     },
 
@@ -5587,14 +5605,16 @@ MassSpecData <- R6::R6Class("MassSpecData",
                            rt = NULL,
                            ppm = 20,
                            sec = 60,
-                           rtExpand = 120,
-                           mzExpand = 0.005,
+                           rtExpand = 15,
+                           mzExpand = 0.008,
                            filtered = FALSE,
                            runParallel = FALSE,
                            legendNames = NULL,
                            title = NULL,
                            colorBy = "targets",
                            showLegend = TRUE,
+                           xlim = NULL,
+                           ylim = NULL,
                            interactive = TRUE) {
 
       fts <- self$get_features(
@@ -5602,7 +5622,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         groups, mass, mz, rt, ppm, sec, filtered
       )
 
-      if ("targets" %in% colorBy & !isTRUE(legendNames)) {
+      if (grepl("targets", colorBy) & !isTRUE(legendNames)) {
         fts$name <- fts$group
         if (is.null(legendNames)) legendNames <- TRUE
       }
@@ -5616,6 +5636,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         title = title,
         colorBy = colorBy,
         showLegend = showLegend,
+        xlim = xlim,
+        ylim = ylim,
         interactive = interactive
       )
     },

@@ -51,15 +51,17 @@ ms$add_settings(
 )
 
 # patRoon::clearCache("parsed_ms_analyses")
-patRoon::clearCache("parsed_ms_spectra")
-patRoon::clearCache("load_features_ms1")
-patRoon::clearCache("load_features_ms2")
-patRoon::clearCache("load_groups_ms1")
-patRoon::clearCache("load_groups_ms2")
+# patRoon::clearCache("parsed_ms_spectra")
+# patRoon::clearCache("load_features_ms1")
+# patRoon::clearCache("load_features_ms2")
+# patRoon::clearCache("load_groups_ms1")
+# patRoon::clearCache("load_groups_ms2")
 
 # ms$get_history()
 
+
 ms$find_features()$group_features()#$filter_features()
+
 
 suspects <- ms$get_suspects(database = db, ppm = 10, sec = 15)
 
