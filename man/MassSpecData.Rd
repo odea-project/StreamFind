@@ -3239,6 +3239,9 @@ Plots extract ion chromatograms (EIC) from the analyses based on targets.
   title = NULL,
   colorBy = "targets",
   showLegend = TRUE,
+  xlim = NULL,
+  ylim = NULL,
+  cex = 0.6,
   interactive = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -3296,6 +3299,15 @@ default) or \code{replicates}.}
 
 \item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
 
+\item{\code{xlim}}{A length one or two numeric vector for setting the \emph{x}
+limits (in seconds) of the plot.}
+
+\item{\code{ylim}}{A length one or two numeric vector for setting the \emph{m/z}
+limits of the plot.}
+
+\item{\code{cex}}{A length one numeric value defining the scale of the legend for
+non interactive plotting.}
+
 \item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
 using \pkg{plotly}.}
 }
@@ -3318,6 +3330,9 @@ Plots the total ion chromatogram (TIC) of the analyses.
   colorBy = "analyses",
   legendNames = NULL,
   showLegend = TRUE,
+  xlim = NULL,
+  ylim = NULL,
+  cex = 0.6,
   interactive = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -3339,6 +3354,15 @@ default) or \code{replicates}.}
 \item{\code{legendNames}}{A character vector with the same length as the targets.}
 
 \item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
+
+\item{\code{xlim}}{A length one or two numeric vector for setting the \emph{x}
+limits (in seconds) of the plot.}
+
+\item{\code{ylim}}{A length one or two numeric vector for setting the \emph{m/z}
+limits of the plot.}
+
+\item{\code{cex}}{A length one numeric value defining the scale of the legend for
+non interactive plotting.}
 
 \item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
 using \pkg{plotly}.}
@@ -3362,6 +3386,9 @@ Plots the base peak chromatogram (BPC) of the analyses.
   colorBy = "analyses",
   legendNames = NULL,
   showLegend = TRUE,
+  xlim = NULL,
+  ylim = NULL,
+  cex = 0.6,
   interactive = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -3383,6 +3410,15 @@ default) or \code{replicates}.}
 \item{\code{legendNames}}{A character vector with the same length as the targets.}
 
 \item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
+
+\item{\code{xlim}}{A length one or two numeric vector for setting the \emph{x}
+limits (in seconds) of the plot.}
+
+\item{\code{ylim}}{A length one or two numeric vector for setting the \emph{m/z}
+limits of the plot.}
+
+\item{\code{cex}}{A length one numeric value defining the scale of the legend for
+non interactive plotting.}
 
 \item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
 using \pkg{plotly}.}
@@ -3608,14 +3644,17 @@ Plots features from analyses.
   rt = NULL,
   ppm = 20,
   sec = 60,
-  rtExpand = 120,
-  mzExpand = 0.005,
+  rtExpand = 15,
+  mzExpand = 0.008,
   filtered = FALSE,
   runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
   showLegend = TRUE,
+  xlim = NULL,
+  ylim = NULL,
+  cex = 0.6,
   interactive = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -3682,6 +3721,15 @@ default) or \code{replicates}.}
 
 \item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
 
+\item{\code{xlim}}{A length one or two numeric vector for setting the \emph{x}
+limits (in seconds) of the plot.}
+
+\item{\code{ylim}}{A length one or two numeric vector for setting the \emph{m/z}
+limits of the plot.}
+
+\item{\code{cex}}{A length one numeric value defining the scale of the legend for
+non interactive plotting.}
+
 \item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
 using \pkg{plotly}.}
 }
@@ -3706,12 +3754,13 @@ Plots a map of the retention time vs \emph{m/z} of features from analyses.
   ppm = 20,
   sec = 60,
   filtered = FALSE,
-  xlim = 30,
-  ylim = 0.05,
-  showLegend = TRUE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
+  showLegend = TRUE,
+  xlim = 30,
+  ylim = 0.05,
+  cex = 0.6,
   interactive = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -3759,20 +3808,23 @@ time values (in seconds).}
 
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
 
-\item{\code{xlim}}{A length one or two numeric vector for setting the \emph{x}
-limits (in seconds) of the plot.}
-
-\item{\code{ylim}}{A length one or two numeric vector for setting the \emph{m/z}
-limits of the plot.}
-
-\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
-
 \item{\code{legendNames}}{A character vector with the same length as the targets.}
 
 \item{\code{title}}{A string with the title.}
 
 \item{\code{colorBy}}{A string of length 1. One of \code{analyses}, \code{targets} (the
 default) or \code{replicates}.}
+
+\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
+
+\item{\code{xlim}}{A length one or two numeric vector for setting the \emph{x}
+limits (in seconds) of the plot.}
+
+\item{\code{ylim}}{A length one or two numeric vector for setting the \emph{m/z}
+limits of the plot.}
+
+\item{\code{cex}}{A length one numeric value defining the scale of the legend for
+non interactive plotting.}
 
 \item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
 using \pkg{plotly}.}
@@ -4039,14 +4091,16 @@ Plots feature groups EIC.
   rt = NULL,
   ppm = 20,
   sec = 60,
-  rtExpand = 120,
-  mzExpand = 0.005,
+  rtExpand = 15,
+  mzExpand = 0.008,
   filtered = FALSE,
   runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
   showLegend = TRUE,
+  xlim = NULL,
+  ylim = NULL,
   interactive = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -4107,6 +4161,12 @@ overhead.}
 default) or \code{replicates}.}
 
 \item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
+
+\item{\code{xlim}}{A length one or two numeric vector for setting the \emph{x}
+limits (in seconds) of the plot.}
+
+\item{\code{ylim}}{A length one or two numeric vector for setting the \emph{m/z}
+limits of the plot.}
 
 \item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
 using \pkg{plotly}.}
@@ -4803,13 +4863,38 @@ Creates an object with S4 class \code{MSPeakLists} from the package
 \pkg{patRoon} with MS and MSMS data from features in the analyses and
 feature groups.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$as_MSPeakLists_patRoon(filtered = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$as_MSPeakLists_patRoon(
+  filtered = FALSE,
+  clusterMzWindow = 0.005,
+  topMost = 100,
+  minIntensityPre = 50,
+  minIntensityPost = 50,
+  avgFun = mean,
+  method = "hclust",
+  retainPrecursorMSMS = TRUE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
+
+\item{\code{clusterMzWindow}}{X.}
+
+\item{\code{topMost}}{X.}
+
+\item{\code{minIntensityPre}}{X.}
+
+\item{\code{minIntensityPost}}{X.}
+
+\item{\code{avgFun}}{X.}
+
+\item{\code{method}}{X.}
+
+\item{\code{retainPrecursorMSMS}}{X.}
+
+\item{\code{pruneMissingPrecursorMS}}{X.}
 }
 \if{html}{\out{</div>}}
 }

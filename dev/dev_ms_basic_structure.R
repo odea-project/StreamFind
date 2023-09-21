@@ -5,7 +5,6 @@ db <- StreamFindData::get_tof_spiked_chemicals()
 db <- db[grepl("S", db$tag), ]
 cols <- c("name", "formula", "mass", "rt")
 db <- db[, cols, with = FALSE]
-db
 
 files_df <- data.frame(
   "file" = all_files[grepl("blank|influent|o3sw", all_files)],
@@ -29,7 +28,7 @@ files_df <- data.frame(
 
 ms <- MassSpecData$new(files = files_df)
 
-# ms <- ms$subset_analyses(c(4:6, 10:12, 16:18))
+ms <- ms$subset_analyses(c(4:6, 10:12, 16:18))
 
 ms$add_settings(
   list(
@@ -56,20 +55,15 @@ ms$add_settings(
 # patRoon::clearCache("load_features_ms2")
 # patRoon::clearCache("load_groups_ms1")
 # patRoon::clearCache("load_groups_ms2")
-
+patRoon::clearCache("MSPeakListsAvg")
 # ms$get_history()
 
 
 ms$find_features()$group_features()#$filter_features()
 
-
 suspects <- ms$get_suspects(database = db, ppm = 10, sec = 15)
 
 ms <- ms$subset_features(features = suspects)
-
-# ms$get_features_ms2(loadedMS2 = F)
-
-# View(ms$get_ms2(mz = suspects$mz))
 
 ms$load_features_ms1()
 
@@ -80,26 +74,48 @@ ms$load_groups_ms1()
 ms$load_groups_ms2()
 
 # ms$get_features_ms1(loadedMS1 = T)
-
-# ms$get_features_ms2(loadedMS2 = T)
-
-ms$get_groups_ms1(loadedFeaturesMS1 = T, loadedGroupsMS1 = T)
-
-ms$get_groups_ms2(loadedFeaturesMS2 = T, loadedGroupsMS2 = T)
-
-ms$plot_groups_ms2(mass = diu, colorBy = "targets+polarities")
+# 
+# ms$plot_features_ms2(mass = db[7, ], loadedMS2 = T)
+#
+# ms$get_groups_ms1(loadedFeaturesMS1 = T, loadedGroupsMS1 = T)
+# 
+# ms$get_groups_ms2(loadedFeaturesMS2 = T, loadedGroupsMS2 = T)
+# 
+# ms$plot_groups_ms2(mass = db[7, ], colorBy = "targets+polarities")
+# 
+# ms$plot_groups_ms1(mass = db[7, ], colorBy = "targets+polarities")
 
 pat_fg <- ms$as_featureGroups_patRoon()
 
 pat_pl <- ms$as_MSPeakLists_patRoon()
 
+mspl <- patRoon::generateMSPeakListsMzR(
+  pat_fg,
+  maxMSRtWindow = 5,
+  precursorMzWindow = 4,
+  topMost = NULL,
+  avgFeatParams = patRoon::getDefAvgPListParams(),
+  avgFGroupParams = patRoon::getDefAvgPListParams()
+)
 
-formulas <- patRoon::generateFormulasGenForm(
+# patRoon::report(pat_fg, pat_pl)
+
+comp <- patRoon::generateCompoundsMetFrag(
   pat_fg,
   # pat_pl,
   mspl,
-  relMzDev = 10,
   adduct = "[M+H]+",
+  dbRelMzDev = 8,
+  fragRelMzDev = 10,
+  fragAbsMzDev = 0.008,
+)
+
+formulas <- patRoon::generateFormulasGenForm(
+  pat_fg,
+  pat_pl,
+  # mspl,
+  relMzDev = 10,
+  adduct = NULL,
   elements = "CHNOP",
   hetero = TRUE,
   oc = FALSE,
@@ -111,7 +127,7 @@ formulas <- patRoon::generateFormulasGenForm(
   calculateFeatures = FALSE,
   featThreshold = 0,
   featThresholdAnn = 0.75,
-  absAlignMzDev = 0.01,
+  absAlignMzDev = 0.008,
   MSMode = "both",
   isolatePrec = TRUE,
   timeout = 120,

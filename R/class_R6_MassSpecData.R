@@ -6416,12 +6416,30 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' Creates an object with S4 class `MSPeakLists` from the package 
     #' \pkg{patRoon} with MS and MSMS data from features in the analyses and 
     #' feature groups.
+    #' 
+    #' @param clusterMzWindow X.
+    #' @param topMost X.
+    #' @param minIntensityPre X.
+    #' @param minIntensityPost X.
+    #' @param avgFun X.
+    #' @param method X.
+    #' @param pruneMissingPrecursorMS X.
+    #' @param retainPrecursorMSMS X.
     #'
     #' @return An object with S4 class `MSPeakLists`.
     #'
-    as_MSPeakLists_patRoon = function(filtered = FALSE) {
+    as_MSPeakLists_patRoon = function(filtered = FALSE,
+                                      clusterMzWindow = 0.005,
+                                      topMost = 100,
+                                      minIntensityPre = 50,
+                                      minIntensityPost = 50,
+                                      avgFun = mean,
+                                      method = "hclust",
+                                      retainPrecursorMSMS = TRUE) {
       
       if (ms$has_groups()) {
+        
+        pruneMissingPrecursorMS = FALSE
         
         correct_spectrum <- function(s, t, out) {
           if (length(s) > 1) {
@@ -6453,6 +6471,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           out
         }
         
+        
+        
         plist <- lapply(ms$get_analyses(), function(x, filtered, correct_spectrum) {
           
           features <- x$features
@@ -6477,6 +6497,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           
           names(glist) <- groups
           
+          glist = glist[order(names(glist))]
+          
           glist
         }, filtered = filtered, correct_spectrum = correct_spectrum)
         
@@ -6484,49 +6506,119 @@ MassSpecData <- R6::R6Class("MassSpecData",
         
         plist <- plist[vapply(plist, function(x) length(x) > 0, FALSE)]
         
+        
+        
+        mlist <- lapply(ms$get_analyses(), function(x, filtered) {
+          
+          features <- x$features
+          
+          run <- x$run
+          
+          pol_col <- as.character(run$polarity)
+          pol_key = c(1, 0, -1)
+          names(pol_key) <- c("1", "-1", "0")
+          run$polarity <- pol_key[pol_col]
+          
+          setnames(run,
+            c("index", "level", "ce", "pre_mz"),
+            c("seqNum", "msLevel", "collisionEnergy", "precursorMZ"),
+            skip_absent = TRUE
+          )
+          
+          if (!filtered) features <- features[!features$filtered, ]
+          
+          groups <- unique(features$group)
+          groups <- groups[!is.na(groups)]
+          
+          glist <- lapply(groups, function(x2, features, run) {
+            out <- list()
+            
+            ft <- features[features$group %in% x2, ]
+            
+            if (nrow(ft) > 0) {
+              MS <- run[run$rt >= ft$rtmin & 
+                          run$rt <= ft$rtmax & 
+                            run$msLevel == 1, ]
+              
+              if (nrow(MS) > 0) out[["MS"]] <- MS
+              
+              MSMS <- run[run$rt >= ft$rtmin & 
+                            run$rt <= ft$rtmax & 
+                              run$precursorMZ >= ft$mzmin - 1.3/2 &
+                                run$precursorMZ <= ft$mzmax + 1.3/2 &
+                                  run$msLevel == 2, ]
+              
+              if (nrow(MSMS) > 0) out[["MSMS"]] <- MSMS
+            }
+            
+            out
+            
+          }, features = features, run = run)
+          
+          names(glist) <- groups
+          
+          glist = glist[order(names(glist))]
+          
+          glist
+        }, filtered = filtered)
+        
+        names(mlist) <- ms$get_analysis_names()
+        
+        mlist <- mlist[vapply(mlist, function(x) length(x) > 0, FALSE)]
+        
+        
         groups <- ms$get_groups(filtered = filtered)
         
+        group_names <- unique(groups$group)
+        
+        group_names = group_names[order(group_names)]
+
         aplist <- lapply(seq_len(nrow(groups)), function(x, groups, correct_spectrum) {
           out <- list()
-          
+
           MS <- groups$ms1[x]
           MSMS <- groups$ms2[x]
-          
+
           out <- correct_spectrum(MS, "MS", out)
           out <- correct_spectrum(MSMS, "MSMS", out)
-          
+
           out
-          
+
         }, groups = groups, correct_spectrum = correct_spectrum)
-        
+
         names(aplist) <- groups$group
         
-        settings <- self$get_settings("load_groups_ms2")
-        parameters <- settings$load_groups_ms2$parameters
+        aplist <- aplist[vapply(aplist, function(x) length(x) > 0, FALSE)]
+        
+        aplist = aplist[order(names(aplist))]
+        
+        # settings <- self$get_settings("load_groups_ms2")
+        # parameters <- settings$load_groups_ms2$parameters
         
         pat_param <- list(
-          "clusterMzWindow" = 0.005,
-          "topMost" = 100,
-          "minIntensityPre" = 50,
-          "minIntensityPost" = 50,
-          "avgFun" = mean,
-          "method" = "hclust",
-          "pruneMissingPrecursorMS" = TRUE,
-          "retainPrecursorMSMS" = TRUE
+          "clusterMzWindow" = clusterMzWindow,
+          "topMost" = topMost,
+          "minIntensityPre" = minIntensityPre,
+          "minIntensityPost" = minIntensityPost,
+          "avgFun" = avgFun,
+          "method" = method,
+          "pruneMissingPrecursorMS" = pruneMissingPrecursorMS,
+          "retainPrecursorMSMS" = retainPrecursorMSMS
         )
         
-        if ("mzClust" %in% names(parameters)) {
-          pat_param$clusterMzWindow <- parameters$mzClust
-        }
+        # if ("mzClust" %in% names(parameters)) {
+        #   pat_param$clusterMzWindow <- parameters$mzClust
+        # }
         
-        if ("minIntensity" %in% names(parameters)) {
-          pat_param$minIntensityPre <- parameters$minIntensity
-          pat_param$minIntensityPost <- parameters$minIntensity
-        }
+        # if ("minIntensity" %in% names(parameters)) {
+        #   pat_param$minIntensityPre <- parameters$minIntensity
+        #   pat_param$minIntensityPost <- parameters$minIntensity
+        # }
 
         plfinal <- new("MSPeakLists",
           peakLists = plist,
-          averagedPeakLists = aplist,
+          metadata = mlist,
+          # averagedPeakLists = aplist,
           avgPeakListArgs = pat_param,
           origFGNames = groups$group,
           algorithm = "mzr"
