@@ -1,20 +1,20 @@
 
 library(StreamFind)
 
-# create -----------------------------------------------------------------------
+# Create -----------------------------------------------------------------------
 
 all_files <- StreamFindData::get_all_file_paths()
-
 files <- all_files[grepl("blank|influent|o3sw", all_files)]
 
 headers <- ProjectHeaders(
-  name = "Example wastewater ozonation",
-  author = "Ricardo Cunha"
+  name = "Wastewater Ozonation",
+  author = "Ricardo Cunha",
+  description = "StreamFind Demonstration project"
 )
 
 ms <- MassSpecData$new(files = files, headers = headers)
 
-# print method and access methods
+# Print method and access methods
 ms
 
 
@@ -22,7 +22,7 @@ ms
 
 
 
-# change -----------------------------------------------------------------------
+# Change -----------------------------------------------------------------------
 
 rpls <- c(
   rep("blank_neg", 3),
@@ -51,26 +51,28 @@ ms
 
 
 
-# processing settings ----------------------------------------------------------
-
-# saves an example of settings on disk
-# save_default_ProcessingSettings(
-#   call = "find_features",
-#   algorithm = "xcms3_centwave",
-#   format = "json",
-#   name = "ffs"
-# )
-# 
-# ms$import_settings("ffs.json")
+# Processing settings ----------------------------------------------------------
 
 ffs <- Settings_find_features_xcms3_centwave()
 
 
+# Settings documentation
+?Settings_find_features_xcms3_centwave
+
+browseURL(ffs$link)
 
 
-# process ----------------------------------------------------------------------
+# Saves an example of settings on disk
+save_default_ProcessingSettings(
+  call = "find_features",
+  algorithm = "xcms3_centwave",
+  format = "json",
+  name = "ffs"
+)
 
-# gets settings as object
+ms$import_settings("ffs.json")
+
+# Other module processing settings
 fls <- Settings_filter_features_StreamFind(
   minIntensity = 5000,
   minSnRatio = 20,
@@ -80,14 +82,18 @@ fls <- Settings_filter_features_StreamFind(
   excludeIsotopes = TRUE
 )
 
-fls
-
-# other module settings
 afs <- Settings_annotate_features_StreamFind()
+
 gfs <- Settings_group_features_xcms3_peakdensity()
 
 
-ms$find_features(ffs)$annotate_features(afs)$group_features(gfs)$filter_features(fls)
+
+
+
+
+# Process data -----------------------------------------------------------------
+
+ms$find_features()$annotate_features(afs)$group_features(gfs)$filter_features(fls)
 
 ms
 
@@ -96,9 +102,9 @@ ms
 
 
 
-# plot -------------------------------------------------------------------------
+# Access and plot data ---------------------------------------------------------
 
-# database
+# Database
 db <- StreamFindData::get_tof_spiked_chemicals()
 db <- db[grepl("S", db$tag), ]
 cols <- c("name", "formula", "mass", "rt", "tag")
@@ -107,17 +113,17 @@ db
 
 
 
-# getting feature groups from the database
+# Getting feature groups from the database
 ms$get_groups(mass = db, ppm = 8, sec = 10, average = TRUE)
 
 
 
-# change filtered to TRUE to show hidden data
-ms$get_features(analyses = 10, mass = db, ppm = 8, sec = 10, filtered = TRUE)
+# Change filtered to TRUE to show hidden data
+ms$get_groups(mass = db, ppm = 8, sec = 10, filtered = TRUE, average = TRUE)
 
 
 
-# overview plot
+# Plot overview of feature groups
 ms$plot_groups_overview(
   mass = db,
   ppm = 8, sec = 10,
@@ -127,7 +133,7 @@ ms$plot_groups_overview(
 
 
 
-# extracted ion chromatogram
+# Raw extracted ion chromatogram
 ms$plot_eic(
   mz = 434.22, # Valsartan m/z as [M+H]+
   rt = 1176,
@@ -138,7 +144,7 @@ ms$plot_eic(
 
 
 
-# isotopic chains
+# Isotopic chains
 ms$map_components(
   analyses = 10,
   mass = db,
@@ -151,10 +157,25 @@ ms$map_components(
 
 
 
-# history ----------------------------------------------------------------------
+# Audit trail ------------------------------------------------------------------
 
 ms$get_history()
 
-# extra ------------------------------------------------------------------------
 
+
+
+
+
+# Export -----------------------------------------------------------------------
+
+# Saves processing settings
 ms$save_settings(format = "json", name = "settings")
+
+# Saves the hole project
+ms$save(format = "json", name = "MassSpecData_example")
+
+
+
+
+
+

@@ -203,10 +203,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
     ## ___ .filters -----
 
     #' @description
-    #' Filters features and feature groups with minimum intensity.
+    #' Tags features and feature groups with filter based on logical vector of 
+    #' feature groups.
     #'
     .tag_filtered = function(groups_sel, tag) {
+      
       filtered_g <- copy(private$.groups)
+      
       filtered_g <- filtered_g$group[groups_sel & !filtered_g$filtered]
 
       private$.analyses <- lapply(private$.analyses,
@@ -220,6 +223,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       )
 
       private$.groups$filtered[groups_sel] <- TRUE
+      
       private$.groups$filter[groups_sel & is.na(private$.groups$filter)] <- tag
     },
 
@@ -228,36 +232,44 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     .filter_minIntensity = function(value = 5000) {
 
-      if (is.numeric(value)) {
-        private$.analyses <- lapply(private$.analyses, function(x) {
-          sel <- (x$features$intensity <= value) & (!x$features$filtered)
-          x$features$filtered[sel] <- TRUE
-          x$features$filter[sel] <- "minIntensity"
-          x
-        })
-
-        if (self$has_groups()) {
-          rpl <- self$get_replicate_names()
-
-          groups <- self$get_groups(
-            filtered = TRUE, onlyIntensities = TRUE, average = TRUE
+      if (any(self$has_features())) {
+        
+        if (is.numeric(value) & length(value) == 1) {
+          
+          if (self$has_groups()) {
+            rpl <- self$get_replicate_names()
+            
+            groups <- self$get_groups(filtered = TRUE, onlyIntensities = TRUE, average = TRUE)
+            
+            groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1,
+                                function(x) { max(x) <= value }
+            )
+            
+            private$.tag_filtered(groups_sel, "minIntensity")
+            
+          } else {
+            private$.analyses <- lapply(private$.analyses, function(x) {
+              sel <- (x$features$intensity <= value) & (!x$features$filtered)
+              x$features$filtered[sel] <- TRUE
+              x$features$filter[sel] <- "minIntensity"
+              x
+            })
+          }
+          
+          private$.register(
+            "filter_features",
+            "features",
+            "minIntensity",
+            "StreamFind",
+            as.character(packageVersion("StreamFind")),
+            paste0(value, " counts")
           )
           
-          groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1,
-                              function(x) { max(x) <= value }
-          )
-
-          private$.tag_filtered(groups_sel, "minIntensity")
+        } else {
+          warning("The value for minimum intensity filtering must be numeric and of length one!")
         }
-
-        private$.register(
-          "filter_features",
-          "features",
-          "minIntensity",
-          "StreamFind",
-          as.character(packageVersion("StreamFind")),
-          paste0(value, " counts")
-        )
+      } else {
+        warning("There are no features in the MassSpecData!")
       }
     },
 
@@ -267,39 +279,56 @@ MassSpecData <- R6::R6Class("MassSpecData",
     .filter_minSnRatio = function(value = 3) {
 
       features <- self$get_features(filtered = TRUE)
-
-      if ("sn" %in% colnames(features) & is.numeric(value)) {
-        private$.analyses <- lapply(private$.analyses, function(x) {
-          sel <- x$features$sn <= value & !x$features$filtered
-          x$features$filtered[sel] <- TRUE
-          x$features$filter[sel] <- "minSnRatio"
-          x
-        })
-
-        if (self$has_groups()) {
-          groups <- self$get_groups(filtered = TRUE)
-          groups <- groups$group
-
-          index <- lapply(groups, function(x, features) {
-            which(features$group == x)
-          }, features = features)
-
-          groups_sel <- vapply(index, function(x, value) {
-            max(features$sn[x]) <= value
-          }, value = value, FALSE)
-
-          private$.tag_filtered(groups_sel, "minSnRatio")
+      
+      if (nrow(features) > 0) {
+        
+        if ("sn" %in% colnames(features)) {
+          
+          if (is.numeric(value) & length(value) == 1) {
+            
+            if (self$has_groups()) {
+              groups <- self$get_groups(filtered = TRUE)
+              groups <- groups$group
+              
+              index <- lapply(groups, function(x, features) {
+                which(features$group == x)
+              }, features = features)
+              
+              groups_sel <- vapply(index, function(x, value) {
+                max(features$sn[x]) <= value
+              }, value = value, FALSE)
+              
+              private$.tag_filtered(groups_sel, "minSnRatio")
+              
+            } else {
+              private$.analyses <- lapply(private$.analyses, function(x) {
+                sel <- x$features$sn <= value & !x$features$filtered
+                x$features$filtered[sel] <- TRUE
+                x$features$filter[sel] <- "minSnRatio"
+                x
+              })
+            }
+            
+            private$.register(
+              "filter_features",
+              "features",
+              "minSnRatio",
+              "StreamFind",
+              as.character(packageVersion("StreamFind")),
+              value
+            )
+            
+          } else {
+            warning("The value for sn filtering must be numeric and of length one!")
+          }
+        } else {
+          warning("The sn column was not found in the features data.table!")
         }
-
-        private$.register(
-          "filter_features",
-          "features",
-          "minSnRatio",
-          "StreamFind",
-          as.character(packageVersion("StreamFind")),
-          value
-        )
+      } else {
+        warning("There are no features in the MassSpecData!")
       }
+
+      
     },
 
     #' @description
@@ -309,38 +338,48 @@ MassSpecData <- R6::R6Class("MassSpecData",
     .filter_excludeIsotopes = function(value = TRUE) {
 
       features <- self$get_features(filtered = TRUE)
-
-      if ("iso_step" %in% colnames(features) & isTRUE(value)) {
-        private$.analyses <- lapply(private$.analyses, function(x) {
-          sel <- x$features$iso_step > 0 & !x$features$filtered
-          x$features$filtered[sel] <- TRUE
-          x$features$filter[sel] <- "isotope"
-          x
-        })
-
-        if (self$has_groups()) {
-          groups <- self$get_groups(filtered = TRUE)
-          groups <- groups$group
-
-          index <- lapply(groups, function(x, features) {
-            which(features$group == x)
-          }, features = features)
-
-          groups_sel <- vapply(index, function(x) {
-            all(features$iso_step[x] > 0)
-          }, FALSE)
-
-          private$.tag_filtered(groups_sel, "isotope")
+      
+      if (nrow(features) > 0) {
+        
+        if ("iso_step" %in% colnames(features) & isTRUE(value)) {
+          
+          if (self$has_groups()) {
+            groups <- self$get_groups(filtered = TRUE)
+            groups <- groups$group
+            
+            index <- lapply(groups, function(x, features) {
+              which(features$group == x)
+            }, features = features)
+            
+            groups_sel <- vapply(index, function(x) {
+              all(features$iso_step[x] > 0)
+            }, FALSE)
+            
+            private$.tag_filtered(groups_sel, "isotope")
+            
+          } else {
+            private$.analyses <- lapply(private$.analyses, function(x) {
+              sel <- x$features$iso_step > 0 & !x$features$filtered
+              x$features$filtered[sel] <- TRUE
+              x$features$filter[sel] <- "isotope"
+              x
+            })
+          }
+          
+          private$.register(
+            "filter_features",
+            "features",
+            "excludeIsotopes",
+            "StreamFind",
+            as.character(packageVersion("StreamFind")),
+            TRUE
+          )
+          
+        } else {
+          warning("Isotopic step column was not found in the features data.table!")
         }
-
-        private$.register(
-          "filter_features",
-          "features",
-          "excludeIsotopes",
-          "StreamFind",
-          as.character(packageVersion("StreamFind")),
-          TRUE
-        )
+      } else {
+        warning("There are no features in the MassSpecData!")
       }
     },
 
@@ -349,32 +388,40 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     .filter_maxGroupSd = function(value = 30) {
 
-      if (self$has_groups() & is.numeric(value)) {
-        rpl <- self$get_replicate_names()
-        blk <- self$get_blank_names()
-        rpl <- rpl[!rpl %in% blk]
-        rpl <- paste0(rpl, "_sd")
-
-        groups <- self$get_groups(
-          filtered = TRUE, onlyIntensities = TRUE, average = TRUE
-        )
-
-        groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1,
-          function(x, value) {
-            all(x >= value | x == 0, na.rm = TRUE)
-          }, value = value
-        )
-
-        private$.tag_filtered(groups_sel, "maxGroupSd")
-
-        private$.register(
-          "filter_features",
-          "features",
-          "maxGroupSd",
-          "StreamFind",
-          as.character(packageVersion("StreamFind")),
-          paste0(value, "%")
-        )
+      if (self$has_groups()) {
+        
+        if (is.numeric(value) & length(value) == 1) {
+          rpl <- self$get_replicate_names()
+          blk <- self$get_blank_names()
+          rpl <- rpl[!rpl %in% blk]
+          rpl <- paste0(rpl, "_sd")
+          
+          groups <- self$get_groups(
+            filtered = TRUE, onlyIntensities = TRUE, average = TRUE
+          )
+          
+          groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1,
+            function(x, value) {
+              all(x >= value | x == 0, na.rm = TRUE)
+            }, value = value
+          )
+          
+          private$.tag_filtered(groups_sel, "maxGroupSd")
+          
+          private$.register(
+            "filter_features",
+            "features",
+            "maxGroupSd",
+            "StreamFind",
+            as.character(packageVersion("StreamFind")),
+            paste0(value, "%")
+          )
+          
+        } else {
+          warning("The value for maxGroupSd filtering must be numeric and of length one!")
+        }
+      } else {
+        warning("There are no feature groups in the MassSpecData!")
       }
     },
 
@@ -383,34 +430,42 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     .filter_minGroupAbundance = function(value = 3) {
 
-      if (self$has_groups() & is.numeric(value)) {
-        groups <- self$get_groups(filtered = TRUE)
-        features <- self$get_features(filtered = TRUE)
-
-        groups_sel <- vapply(groups$group,
-          function(x, features, rpl, value) {
-            which_fts <- which(features$group %in% x)
-            analyses <- features$analysis[which_fts]
-            r <- rpl[analyses]
-            r <- table(r)
-            !any(apply(r, 1, function(x) max(x) >= value))
-          },
-          features = features,
-          rpl = self$get_replicate_names(),
-          value = value,
-          FALSE
-        )
-
-        private$.tag_filtered(groups_sel, "minGroupAbundance")
-
-        private$.register(
-          "filter_features",
-          "features",
-          "minGroupAbundance",
-          "StreamFind",
-          as.character(packageVersion("StreamFind")),
-          value
-        )
+      if (self$has_groups()) {
+        
+        if (is.numeric(value) & length(value) == 1) {
+          groups <- self$get_groups(filtered = TRUE)
+          features <- self$get_features(filtered = TRUE)
+          
+          groups_sel <- vapply(groups$group,
+            function(x, features, rpl, value) {
+              which_fts <- which(features$group %in% x)
+              analyses <- features$analysis[which_fts]
+              r <- rpl[analyses]
+              r <- table(r)
+              !any(apply(r, 1, function(x) max(x) >= value))
+            },
+            features = features,
+            rpl = self$get_replicate_names(),
+            value = value,
+            FALSE
+          )
+          
+          private$.tag_filtered(groups_sel, "minGroupAbundance")
+          
+          private$.register(
+            "filter_features",
+            "features",
+            "minGroupAbundance",
+            "StreamFind",
+            as.character(packageVersion("StreamFind")),
+            value
+          )
+          
+        } else {
+          warning("The value for minGroupAbundance filtering must be numeric and of length one!")
+        }
+      } else {
+        warning("There are no feature groups in the MassSpecData!")
       }
     },
 
@@ -420,37 +475,54 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     .filter_blank = function(value = 30) {
 
-      if (self$has_groups() & is.numeric(value)) {
-        rpl <- self$get_replicate_names()
-        blk <- self$get_blank_names()
-        names(blk) <- rpl
-        blk <- blk[!rpl %in% unique(blk)]
-        blk <- blk[!duplicated(names(blk))]
-
-        groups <- self$get_groups(
-          filtered = TRUE, onlyIntensities = TRUE, average = TRUE
-        )
-
-        for (r in seq_len(length(blk))) {
-          rp <- names(blk)[r]
-          bl <- blk[r]
-          groups[, (rp) := groups[[rp]] <= (groups[[bl]] * value)][]
+      if (self$has_groups()) {
+        
+        if (is.numeric(value) & length(value) == 1) {
+          rpl <- self$get_replicate_names()
+          blk <- self$get_blank_names()
+          
+          names(blk) <- rpl
+          blk <- blk[!rpl %in% unique(blk)]
+          
+          blk <- blk[!duplicated(names(blk))]
+          
+          if (length(blk) == 0) {
+            warning("There are no blank analysis replicates associated for blank filtering!")
+            return()
+          }
+          
+          groups <- copy(
+            self$get_groups(
+              filtered = TRUE, onlyIntensities = TRUE, average = TRUE
+            )
+          )
+          
+          for (r in seq_len(length(blk))) {
+            rp <- names(blk)[r]
+            bl <- blk[r]
+            groups[, (rp) := groups[[rp]] <= (groups[[bl]] * value)][]
+          }
+          
+          groups_sel <- apply(groups[, names(blk), with = FALSE], MARGIN = 1,
+            function(x) { all(x, na.rm = TRUE) }
+          )
+          
+          private$.tag_filtered(groups_sel, "blank")
+          
+          private$.register(
+            "filter_features",
+            "features",
+            "blank",
+            "StreamFind",
+            as.character(packageVersion("StreamFind")),
+            paste0("multiplier ", value)
+          )
+          
+        } else {
+          warning("The value for blank filtering must be numeric and of length one!")
         }
-
-        groups_sel <- apply(groups[, names(blk), with = FALSE], MARGIN = 1,
-          function(x) { all(x, na.rm = TRUE) }
-        )
-
-        private$.tag_filtered(groups_sel, "blank")
-
-        private$.register(
-          "filter_features",
-          "features",
-          "blank",
-          "StreamFind",
-          as.character(packageVersion("StreamFind")),
-          paste0("multiplier ", value)
-        )
+      } else {
+        warning("There are no feature groups in the MassSpecData!")
       }
     },
 
@@ -459,36 +531,45 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     .filter_rtFilter = function(value = c(0, 0)) {
 
-      if (is.numeric(value) & length(value) == 2) {
-        value <- sort(value)
-
-        private$.analyses <- lapply(private$.analyses, function(x) {
-          sel <- (x$features$rt <= value[2]) & (x$features$rt >= value[1]) & (!x$features$filtered)
-          x$features$filtered[sel] <- TRUE
-          x$features$filter[sel] <- "rtFilter"
-          x
-        })
-
-        if (self$has_groups()) {
-          rpl <- self$get_replicate_names()
-
-          groups <- self$get_groups(
-            filtered = TRUE, onlyIntensities = TRUE, average = TRUE
+      if (any(self$has_features())) {
+        
+        if (is.numeric(value) & length(value) == 2) {
+          value <- sort(value)
+          
+          if (self$has_groups()) {
+            rpl <- self$get_replicate_names()
+            
+            groups <- self$get_groups(
+              filtered = TRUE, onlyIntensities = TRUE, average = TRUE
+            )
+            
+            groups_sel <- (groups$rt <= value[2]) & (groups$rt >= value[1])
+            
+            private$.tag_filtered(groups_sel, "rtFilter")
+            
+          } else {
+            private$.analyses <- lapply(private$.analyses, function(x) {
+              sel <- (x$features$rt <= value[2]) & (x$features$rt >= value[1]) & (!x$features$filtered)
+              x$features$filtered[sel] <- TRUE
+              x$features$filter[sel] <- "rtFilter"
+              x
+            })
+          }
+          
+          private$.register(
+            "filter_features",
+            "features",
+            "rtFilter",
+            "StreamFind",
+            as.character(packageVersion("StreamFind")),
+            paste(value, collapse = "; ")
           )
-
-          groups_sel <- (groups$rt <= value[2]) & (groups$rt >= value[1])
-
-          private$.tag_filtered(groups_sel, "rtFilter")
+          
+        } else {
+          warning("The value for rt filtering must be numeric and of length two!")
         }
-
-        private$.register(
-          "filter_features",
-          "features",
-          "rtFilter",
-          "StreamFind",
-          as.character(packageVersion("StreamFind")),
-          paste(value, collapse = "; ")
-        )
+      } else {
+        warning("There are no features in the MassSpecData!")
       }
     },
 
@@ -497,37 +578,46 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     .filter_massFilter = function(value = c(0, 0)) {
 
-      if (is.numeric(value) & length(value) == 2) {
-
-        value <- sort(value)
-
-        private$.analyses <- lapply(private$.analyses, function(x) {
-          sel <- (x$features$mass <= value[2]) &
-                          (x$features$mass >= value[1]) &
-                                    (!x$features$filtered)
-          x$features$filtered[sel] <- TRUE
-          x$features$filter[sel] <- "massFilter"
-          x
-        })
-
-        if (self$has_groups()) {
-          rpl <- self$get_replicate_names()
-
-          groups <- self$get_groups(filtered = TRUE)
-
-          groups_sel <- (groups$mass <= value[2]) & (groups$mass >= value[1])
-
-          private$.tag_filtered(groups_sel, "massFilter")
+      if (any(self$has_features())) {
+        
+        if (is.numeric(value) & length(value) == 2) {
+          
+          value <- sort(value)
+          
+          if (self$has_groups()) {
+            rpl <- self$get_replicate_names()
+            
+            groups <- self$get_groups(filtered = TRUE)
+            
+            groups_sel <- (groups$mass <= value[2]) & (groups$mass >= value[1])
+            
+            private$.tag_filtered(groups_sel, "massFilter")
+            
+          } else {
+            private$.analyses <- lapply(private$.analyses, function(x) {
+              sel <- (x$features$mass <= value[2]) &
+                (x$features$mass >= value[1]) &
+                (!x$features$filtered)
+              x$features$filtered[sel] <- TRUE
+              x$features$filter[sel] <- "massFilter"
+              x
+            })
+          }
+          
+          private$.register(
+            "filter_features",
+            "features",
+            "massFilter",
+            "StreamFind",
+            as.character(packageVersion("StreamFind")),
+            paste(value, collapse = "; ")
+          )
+          
+        } else {
+          warning("The value for neutral mass filtering must be numeric and of length two!")
         }
-
-        private$.register(
-          "filter_features",
-          "features",
-          "massFilter",
-          "StreamFind",
-          as.character(packageVersion("StreamFind")),
-          paste(value, collapse = "; ")
-        )
+      } else {
+        warning("There are no features in the MassSpecData!")
       }
     }
   ),
@@ -621,8 +711,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (self$has_settings()) {
         cat("settings: \n")
         names_settings <- names(private$.settings)
+        algorithms <- vapply(private$.settings, function(x) x$algorithm, "")
         cat(
-          paste0(" ", seq_len(length(names_settings)), ": ", names_settings),
+          paste0(" ", seq_len(length(names_settings)), ": ", names_settings, " (", algorithms, ")"),
           sep = "\n"
         )
         cat("\n")
@@ -2671,9 +2762,41 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }, FALSE)
 
         if (all(valid)) {
+          
+          only_one_possible <- c(
+            "centroid_spectra",
+            "bin_spectra",
+            "find_features",
+            "annotate_features",
+            "load_features_ms1",
+            "load_features_ms2",
+            "load_groups_ms1",
+            "load_groups_ms2",
+            "group_features",
+            "fill_features"
+          )
+          
           settings <- lapply(settings, as.ProcessingSettings)
 
           call_names <- vapply(settings, function(x) x$call, NA_character_)
+          
+          duplicated_names <- call_names[duplicated(call_names)]
+          
+          if (any(duplicated_names %in% only_one_possible)) {
+            
+            if (length(duplicated_names) == 1) {
+              message("\U2139 ", duplicated_names, " duplicate not added as only one is possible!")
+              
+            } else {
+              message(paste0("\U2713 Duplicate settings for the following not added as only one is possible!\n",
+                             paste(duplicated_names, collapse = "\n"))
+              )
+            }
+            
+            settings <- settings[!duplicated(call_names)]
+            
+            call_names <- call_names[!duplicated(call_names)]
+          }
 
           if (is.null(private$.settings)) private$.settings <- list()
 
@@ -2681,7 +2804,29 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           if (replace) {
             private$.settings[call_names] <- settings
+            
           } else {
+            
+            if (any(call_names %in% only_one_possible)) {
+              
+              replace_calls <- call_names[call_names %in% only_one_possible]
+              
+              if (length(replace_calls) == 1) {
+                message("\U2139 ", replace_calls, " replaced as only one is possible!")
+                
+              } else {
+                message(paste0("\U2713 Replaced settings as only one is possible:\n",
+                  paste(replace_calls, collapse = "\n"))
+                )
+              }
+
+              replace_settings <- settings[replace_calls]
+              
+              private$.settings[replace_calls] <- settings[replace_calls]
+              
+              settings <- settings[!call_names %in% only_one_possible]
+            } 
+            
             private$.settings <- c(private$.settings, settings)
           }
 
@@ -2712,7 +2857,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             })
 
             message(paste0("\U2713 Added settings for:\n",
-                           paste(call_names, collapse = "\n"))
+              paste(call_names, collapse = "\n"))
             )
           }
 
@@ -3282,6 +3427,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           
           feature_groups <- feature_groups[analyses]
           
+          # TODO maybe add_group_to_features can be applied in parallel
           private$.analyses <- Map(
             function(x, y) {
               
@@ -3299,9 +3445,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
               
               x$features$group[x_f_in_y] <- g_id[f_to_group]
               
-              x$features$filtered[is.na(x$features$group)] <- TRUE
+              reg_filter <- is.na(x$features$group) & !x$features$filtered
               
-              x$features$filter[is.na(x$features$group)] <- "grouping"
+              x$features$filtered[reg_filter] <- TRUE
+              
+              x$features$filter[reg_filter] <- "grouping"
               
               x
             },
@@ -3317,7 +3465,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             NA_character_
           )
           
-          message(paste0("\U2713 ", "Added feature groups to features!"))
+          message(paste0("\U2713 ", "Feature group added to features!"))
         }
       }
       invisible(self) 
@@ -5887,6 +6035,32 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
     ## ___ processing -----
 
+    #' @description Runs all modules represented by the added ProcessingSettings.
+    #'
+    #' @return Invisible.
+    #'
+    run_workflow = function() {
+      
+      if (self$has_settings()) {
+        
+        lapply(self$get_settings(), function(x) {
+          
+          call <- x$call
+          
+          browser()
+          
+          do.call(self[[call]], list(settings = NULL))
+          
+        })
+
+      } else {
+        warning("There are no processing settings to run!")
+      }
+      
+      invisible(self)
+    },
+    
+    
     ### ___ basic -----
 
     #' @description Centroids profile spectra data for each MS analysis.
@@ -5975,10 +6149,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
       processed <- .s3_ms_find_features(settings, self)
 
       if (processed) {
+        
         if (add_settings) self$add_settings(settings)
 
         if (requireNamespace(settings$software, quietly = TRUE)) {
           version <- as.character(packageVersion(settings$software))
+          
         } else {
           version <- NA_character_
         }
@@ -6078,15 +6254,24 @@ MassSpecData <- R6::R6Class("MassSpecData",
         n_features <- nrow(self$get_features(filtered = FALSE))
 
         for (i in seq_len(length(filters))) {
+          
           switch(filters[i],
             minIntensity = (private$.filter_minIntensity(parameters[[filters[i]]])),
+            
             minSnRatio = (private$.filter_minSnRatio(parameters[[filters[i]]])),
+            
             maxGroupSd = (private$.filter_maxGroupSd(parameters[[filters[i]]])),
+            
             blank = (private$.filter_blank(parameters[[filters[i]]])),
+            
             minGroupAbundance = (private$.filter_minGroupAbundance(parameters[[filters[i]]])),
+            
             excludeIsotopes = (private$.filter_excludeIsotopes(parameters[[filters[i]]])),
+            
             rtFilter = private$.filter_rtFilter(parameters[[filters[i]]]),
+            
             massFilter = private$.filter_massFilter(parameters[[filters[i]]])
+            
             # TODO add more filters, e.g., mass and time widths and limits
           )
         }
@@ -6096,6 +6281,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         if (n_features_filtered < 0) n_features_filtered <- 0
 
         message(paste0("\U2713 ", n_features_filtered, " features filtered!"))
+        
         processed <- TRUE
 
       } else {

@@ -35,12 +35,7 @@ ms$add_settings(
     Settings_find_features_xcms3_centwave(),
     Settings_group_features_xcms3_peakdensity(),
     Settings_filter_features_StreamFind(
-      minSnRatio = 20,
-      minIntensity = 5000,
-      maxGroupSd = 30,
-      blank = 5,
-      minGroupAbundance = 3,
-      excludeIsotopes = TRUE
+      minIntensity = 20000
     ),
     Settings_load_features_ms1_StreamFind(presence = 0.5),
     Settings_load_features_ms2_StreamFind(presence = 0.5),
@@ -49,17 +44,45 @@ ms$add_settings(
   )
 )
 
+ms
+
+
 # patRoon::clearCache("parsed_ms_analyses")
 # patRoon::clearCache("parsed_ms_spectra")
 # patRoon::clearCache("load_features_ms1")
 # patRoon::clearCache("load_features_ms2")
 # patRoon::clearCache("load_groups_ms1")
 # patRoon::clearCache("load_groups_ms2")
-patRoon::clearCache("MSPeakListsAvg")
+# patRoon::clearCache("MSPeakListsAvg")
 # ms$get_history()
 
-ms$find_features()$group_features()$filter_features()
+ms$find_features()
 
+ms$filter_features()
+
+# ms$group_features()
+
+
+
+f <- "ms[['get_analysis_names']]"
+do.call(f, list())
+
+
+
+
+ms$get_analysis_names()
+
+
+filters2 <- Settings_filter_features_StreamFind(
+  minSnRatio = 20,
+  maxGroupSd = 30,
+  blank = 5,
+  minGroupAbundance = 3
+)
+
+ms$filter_features(filters2)
+
+View(ms$get_features(filtered = TRUE))
 
 
 

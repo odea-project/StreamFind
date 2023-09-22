@@ -136,7 +136,8 @@
 #' @param self A `MassSpecData` object. When applied within the R6, the self
 #' object.
 #'
-#' @return A list with a features \linkS4class{data.table} for each analysis.
+#' @return A named list with a features \linkS4class{data.table} for each 
+#' analysis. The names should match the names of analyses in the `MassSpecData`.
 #'
 #' @noRd
 #'
@@ -144,8 +145,11 @@
 
   if ("features" %in% is(pat)) {
     anaInfo <- pat@analysisInfo
+    
     isSet <- TRUE %in% grepl("Set", is(pat))
+    
     features <- pat@features
+    
     if ("featuresXCMS3" %in% is(pat)) {
       if (xcms::hasFilledChromPeaks(pat@xdata)) {
         extra <- xcms::chromPeaks(pat@xdata, isFilledColumn = TRUE)
@@ -155,24 +159,7 @@
       } else {
         extra <- NULL
       }
-    } else {
-      extra <- NULL
-    }
-  }
-
-  if ("featureGroups" %in% is(pat)) {
-    anaInfo <- pat@analysisInfo
-    features <- copy(pat@features@features)
-    isSet <- TRUE %in% grepl("Set", is(pat))
-    if ("featureGroupsXCMS3" %in% is(pat)) {
-      if (xcms::hasFilledChromPeaks(pat@xdata)) {
-        extra <- xcms::chromPeaks(pat@xdata, isFilledColumn = TRUE)
-        extra$is_filled <- as.logical(extra$is_filled)
-        extra$analysis <- anaInfo$analysis[extra$sample]
-        extra <- split(extra, extra$analysis)
-      } else {
-        extra <- NULL
-      }
+      
     } else {
       extra <- NULL
     }
@@ -292,65 +279,31 @@
       skip_absent = TRUE
     )
 
-    # when grouping features are removed from grouping conditions in patRoon
-    # therefore, old features are retained and tagged with filter "grouping"
-    temp_org <- self$get_features(x)
-    
-    build_feature_ids <- TRUE
-
-    if (nrow(temp_org) > 0 && "featureGroups" %in% is(pat)) {
-
-      temp_org$analysis <- NULL
-
-      if (nrow(temp_org) != nrow(temp)) {
-        
-        build_feature_ids <- FALSE
-
-        # TODO modify the feature ids from original ids when numeric
-        # but other data specially from modules might be outdated then
-        if (is.numeric(temp$feature)) {
-          temp$feature <- temp_org$feature[temp$feature]
-          build_feature_ids <- TRUE
-        }
-
-        temp_org_not_grouped <- temp_org[!temp_org$feature %in% temp$feature, ]
-
-        temp_list <- list(temp, temp_org_not_grouped)
-        temp <- rbindlist(temp_list, fill = TRUE)
-      }
-    }
-
-    if ("group" %in% colnames(temp)) {
-      temp$filter[is.na(temp$group)] <- "grouping"
-      temp$filtered[is.na(temp$group)] <- TRUE
-    }
-
-    # updates the order and index but not necessary changes the ID
     temp <- temp[order(temp$mz), ]
     temp <- temp[order(temp$rt), ]
-    temp <- temp[order(temp$filtered), ]
     temp$index <- seq_len(nrow(temp))
 
-    if (build_feature_ids) {
-      d_dig <- max(temp$mzmax - temp$mzmin)
-      if (d_dig < 0.1) {
-        d_dig <- sub('.*\\.(0+)[1-9].*', '\\1', as.character(d_dig))
-        d_dig <- nchar(d_dig) + 1
-      } else if (d_dig >= 1) {
-        d_dig <- 0
-      } else {
-        d_dig <- 1
-      }
-
-      temp$feature <- paste0(
-        "mz",
-        round(temp$mz, digits = d_dig),
-        "_rt",
-        round(temp$rt, digits = 0),
-        "_f",
-        temp$index
-      )
+    d_dig <- max(temp$mzmax - temp$mzmin)
+    
+    if (d_dig < 0.1) {
+      d_dig <- sub('.*\\.(0+)[1-9].*', '\\1', as.character(d_dig))
+      d_dig <- nchar(d_dig) + 1
+      
+    } else if (d_dig >= 1) {
+      d_dig <- 0
+      
+    } else {
+      d_dig <- 1
     }
+
+    temp$feature <- paste0(
+      "mz",
+      round(temp$mz, digits = d_dig),
+      "_rt",
+      round(temp$rt, digits = 0),
+      "_f",
+      temp$index
+    )
 
     setcolorder(
       temp,

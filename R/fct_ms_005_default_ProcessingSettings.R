@@ -1127,6 +1127,13 @@ validate.Settings_load_groups_ms2_StreamFind <- function(x) {
 #'
 #' @return A ProcessingSettings S3 class object with subclass
 #' Settings_filter_features_StreamFind.
+#' 
+#' @details 
+#' When feature groups exist the filtering is done on feature groups, meaning 
+#' that the filters are applied per feature group not individual features. For 
+#' instance, if feature groups exist the minimum intensity is applied on the 
+#' maximum intensity observed for a feature group and not the intensity of each
+#' individual feature.
 #'
 #' @export
 #'

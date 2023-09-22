@@ -12,7 +12,7 @@
     return(FALSE)
   }
 
-  pat_features <- self$as_features_patRoon()
+  pat_features <- self$as_features_patRoon(filtered = FALSE)
 
   if (length(pat_features) == 0) {
     warning("Features were not found! Run find_features method first!")
@@ -124,7 +124,9 @@
   
   mz_as_mass <- grepl("Set", class(pat))
   
-  groups <- rcpp_ms_groups_make_dataframe(pat_ft, self$get_analysis_names(), mz_as_mass, TRUE)
+  groups <- rcpp_ms_groups_make_dataframe(
+    pat_ft, self$get_analysis_names(), mz_as_mass, TRUE
+  )
   
   if (self$has_groups()) self$remove_groups()
   
