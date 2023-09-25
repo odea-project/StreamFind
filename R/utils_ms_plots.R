@@ -1,19 +1,49 @@
-#' @title make_colorBy_varkey
-#'
-#' @description Makes a var key vector to use a plot legend.
-#'
-#' @param data A `data.table` with the data for plotting.
-#' @param colorBy A string (length 1). One of "analyses" (the default),
-#' "polarities", "levels", "targets" or "replicates".
-#' @param legendNames A character vector with the same length as the unique ids
-#' in the data table given. Alternatively, set to `TRUE` to use the columns names
-#' for legend the plot when available.
-#'
-#' @return A variable key vector.
+
+#' .get_colors
 #'
 #' @noRd
 #'
-make_colorBy_varkey <- function(data = NULL, colorBy = NULL, legendNames = NULL) {
+.get_colors <- function(obj) {
+  colors <- c(
+    brewer.pal(8, "Greys")[6],
+    brewer.pal(8, "Greens")[6],
+    brewer.pal(8, "Blues")[6],
+    brewer.pal(8, "Oranges")[6],
+    brewer.pal(8, "Purples")[6],
+    brewer.pal(8, "PuRd")[6],
+    brewer.pal(8, "YlOrRd")[6],
+    brewer.pal(8, "PuBuGn")[6],
+    brewer.pal(8, "GnBu")[6],
+    brewer.pal(8, "BuPu")[6],
+    brewer.pal(8, "Dark2")
+  )
+  
+  Ncol <- length(unique(obj))
+  
+  if (Ncol > 18) {
+    colors <- colorRampPalette(colors)(Ncol)
+  }
+  
+  if (length(unique(obj)) < length(obj)) {
+    Vcol <- colors[seq_len(Ncol)]
+    Ncol <- length(obj)
+    char <- NULL
+    count <- dplyr::count(data.frame(n = seq_len(Ncol), char = obj), char)
+    Vcol <- rep(Vcol, times = count[, "n"])
+    names(Vcol) <- obj
+  } else {
+    Vcol <- colors[seq_len(Ncol)]
+    names(Vcol) <- obj
+  }
+  
+  Vcol
+}
+
+#' .make_colorBy_varkey
+#'
+#' @noRd
+#'
+.make_colorBy_varkey <- function(data = NULL, colorBy = NULL, legendNames = NULL) {
   
   if (!"id" %in% colnames(data)) {
     if ("feature" %in% colnames(data)) {
@@ -89,25 +119,37 @@ make_colorBy_varkey <- function(data = NULL, colorBy = NULL, legendNames = NULL)
 }
 
 
-#' @title plot_spectra_interactive
-#'
-#' @description 3D interactive plot for spectra using the \pkg{plotly} package.
-#'
-#' @param spectra A `data.table` with the at least columns *analysis*, *level*,
-#' *rt*, *mz* and *intensity*.
-#' @param colorBy A string (length 1). One of "analyses" (the default),
-#' "levels", "targets" or "replicates". For "replicates", a column with
-#' replicate names should be given.
-#'
-#' @return An interactive 3D plot.
+#' .plot_spectra_interactive
 #'
 #' @noRd
 #'
-plot_spectra_interactive <- function(spectra = NULL,
-                                     colorBy = "analyses",
-                                     legendNames = NULL) {
+.plot_spectra_interactive <- function(spectra = NULL,
+                                      colorBy = "analyses",
+                                      legendNames = NULL,
+                                      xVal = "rt",
+                                      yVal = "mz") {
   
-  spectra <- make_colorBy_varkey(spectra, colorBy, legendNames)
+  checkmate::assert_choice(xVal, c("rt", "mz", "drift"))
+  
+  checkmate::assert_choice(yVal, c("rt", "mz", "drift"))
+  
+  if (any(duplicated(c(xVal, yVal)))) {
+    stop("Duplicated x and y values are not possible!")
+  }
+  
+  xLab <- switch(xVal,
+    "mz" = "<i>m/z</i> / Da",
+    "rt" = "Retention time / seconds",
+    "drift" = "Drift time / milliseconds"
+  )
+  
+  yLab <- switch(yVal,
+    "mz" = "<i>m/z</i> / Da",
+    "rt" = "Retention time / seconds",
+    "drift" = "Drift time / milliseconds"
+  )
+  
+  spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames)
 
   spectra$rtmz <- paste(
     spectra$id,
@@ -115,57 +157,41 @@ plot_spectra_interactive <- function(spectra = NULL,
     spectra$polarity,
     spectra$mz,
     spectra$rt,
+    spectra$drift,
     spectra$analysis,
     sep = ""
   )
   
   spec_temp <- spectra
+  
   spec_temp$intensity <- 0
+  
   spectra <- rbind(spectra, spec_temp)
+  
+  spectra[["x"]] <- spectra[[xVal[1]]]
+  
+  spectra[["y"]] <- spectra[[yVal[1]]]
 
-  colors_var <- get_colors(unique(spectra$var))
+  colors_var <- .get_colors(unique(spectra$var))
 
-  fig <- plot_ly(spectra, x = ~rt, y = ~mz, z = ~intensity) %>%
+  fig <- plot_ly(spectra, x = ~x, y = ~y, z = ~intensity) %>%
     group_by(spectra$rtmz) %>%
     add_lines(color = ~var, colors = colors_var)
 
   fig <- fig %>% plotly::layout(scene = list(
-    xaxis = list(title = "Retention time / seconds"),
-    yaxis = list(title = "<i>m/z</i> / Da"),
+    xaxis = list(title = xLab),
+    yaxis = list(title = yLab),
     zaxis = list(title = "Intensity / counts")
   ))
 
   fig
 }
 
-#' @title plot_xic_interactive
-#'
-#' @description Plot traces or profile data for targets using expected
-#' \emph{m/z} and retention time pairs, including deviations.
-#'
-#' @param xic A data.table with at least columns: *mz*, *rt* and *intensity*.
-#' @param legendNames A character vector with the same length as the unique ids
-#' in the column *id* of the data.table `xic`.
-#' @param plotTargetMark Logical, set to \code{TRUE} (the default) to plot a
-#' target mark.
-#' @param targetsMark A data.frame with columns "mz" and "rt", defining the
-#' \emph{m/z} and retention time values of each targets (i.e., each unique id
-#' in the `xic` table). Note that the number of rows should match with the
-#' number of unique target ids.
-#' @param ppmMark A numeric vector of length one to define the mass deviation,
-#' in ppm, of the target mark. The default is 5 ppm.
-#' @param secMark A numeric vector of length one to define the time deviation,
-#' in seconds, of the target mark. The default is 10 ppm.
-#' @param numberRows A numeric vector of length one to define the number of
-#' rows to grid the plots. Note that each target is always plotted in one row
-#' for all selected analyses.
-#'
-#' @return An iterative plot of the traces for the requested \emph{m/z} and
-#' retention time pairs.
+#' .plot_xic_interactive
 #'
 #' @noRd
 #'
-plot_xic_interactive <- function(xic,
+.plot_xic_interactive <- function(xic,
                                  legendNames = NULL,
                                  plotTargetMark = TRUE,
                                  targetsMark = NULL,
@@ -383,25 +409,11 @@ plot_xic_interactive <- function(xic,
   finalplot
 }
 
-#' @title plot_eic_static
-#'
-#' @description Static plot of EIC using the \pkg{base} package.
-#'
-#' @param eic A data table with the analysis, id, rt, intensity and var
-#' (i.e., the plotting variable for each entry) as columns.
-#' @param legendNames A character vector with the same length as the unique ids
-#' in the table given in `eic`.
-#' @param colorBy A string (length 1). One of "analyses" (the default),
-#' "levels", "targets" or "replicates". For "replicates", a column with
-#' replicate names should be given.
-#' @param title A character vector to be used as title.
-#' @param showLegend Logical, set to TRUE to show legend.
-#'
-#' @return An EIC static plot.
+#' .plot_eic_static
 #'
 #' @noRd
 #'
-plot_eic_static <- function(eic = NULL,
+.plot_eic_static <- function(eic = NULL,
                             legendNames = NULL,
                             colorBy = "targets",
                             title = NULL,
@@ -410,9 +422,9 @@ plot_eic_static <- function(eic = NULL,
                             ylim = NULL,
                             cex = 0.6) {
   
-  eic <- make_colorBy_varkey(eic, colorBy, legendNames)
+  eic <- .make_colorBy_varkey(eic, colorBy, legendNames)
 
-  cl <- get_colors(unique(eic$var))
+  cl <- .get_colors(unique(eic$var))
   
   eic$loop <- paste0(eic$analysis, eic$id, eic$var)
   loop_key <- unique(eic$loop)
@@ -481,34 +493,20 @@ plot_eic_static <- function(eic = NULL,
   }
 }
 
-#' plot_eic_interactive
-#'
-#' @description Interactive plot of EIC using the \pkg{plotly} package.
-#'
-#' @param eic A data table with the analysis, id, rt, intensity and var
-#' (i.e., the plotting variable for each entry) as columns.
-#' @param legendNames A character vector with the same length as the unique ids
-#' in the table given in `eic`.
-#' @param colorBy A string (length 1). One of "analyses" (the default),
-#' "levels", "targets" or "replicates". For "replicates", a column with
-#' replicate names should be given.
-#' @param title A character vector to be used as title.
-#' @param showLegend Logical, set to TRUE to show legend.
-#'
-#' @return An EIC interactive plot.
+#' .plot_eic_interactive
 #'
 #' @noRd
 #'
-plot_eic_interactive <- function(eic = NULL,
+.plot_eic_interactive <- function(eic = NULL,
                                  legendNames = NULL,
                                  colorBy = "targets",
                                  title = NULL,
                                  showLegend = TRUE) {
   
-  eic <- make_colorBy_varkey(eic, colorBy, legendNames)
+  eic <- .make_colorBy_varkey(eic, colorBy, legendNames)
   
   leg <- unique(eic$var)
-  cl <- get_colors(leg)
+  cl <- .get_colors(leg)
   
   eic$loop <- paste0(eic$analysis, eic$id, eic$var)
   loop_key <- unique(eic$loop)
@@ -580,34 +578,20 @@ plot_eic_interactive <- function(eic = NULL,
   plot
 }
 
-#' @title plot_bpc_interactive
-#'
-#' @description Interactive plot of BPC using the \pkg{plotly} package.
-#'
-#' @param bpc A data table with the analysis, id, rt, intensity and var
-#' (i.e., the plotting variable for each entry) as columns.
-#' @param legendNames A character vector with the same length as the unique ids
-#' in the table given in `eic`.
-#' @param colorBy A string (length 1). One of "analyses" (the default),
-#' "levels", "targets" or "replicates". For "replicates", a column with
-#' replicate names should be given.
-#' @param title A character vector to be used as title.
-#' @param showLegend Logical, set to TRUE to show legend.
-#'
-#' @return A BPC interactive plot.
+#' .plot_bpc_interactive
 #'
 #' @noRd
 #'
-plot_bpc_interactive <- function(bpc = NULL,
+.plot_bpc_interactive <- function(bpc = NULL,
                                  legendNames = NULL,
                                  colorBy = "targets",
                                  title = NULL,
                                  showLegend = TRUE) {
   
-  bpc <- make_colorBy_varkey(bpc, colorBy, legendNames)
+  bpc <- .make_colorBy_varkey(bpc, colorBy, legendNames)
 
   leg <- unique(bpc$var)
-  cl <- get_colors(leg)
+  cl <- .get_colors(leg)
   
   bpc$loop <- paste0(bpc$analysis, bpc$id, bpc$var)
   loop_key <- unique(bpc$loop)
@@ -684,31 +668,18 @@ plot_bpc_interactive <- function(bpc = NULL,
   plot
 }
 
-#' @title plot_ms2_static
-#'
-#' @description Static plot of MSn spectra using the \pkg{base} package.
-#'
-#' @param ms2 A data table with the id, mz, intensity, pre_mz, is_pre
-#' and var (i.e., the plotting variable for each entry) as columns.
-#' @param legendNames A character vector with the same length as the unique ids
-#' in the table given in `eic`.
-#' @param colorBy A string (length 1). One of "analyses" (the default),
-#' "levels", "targets" or "replicates". For "replicates", a column with
-#' replicate names should be given.
-#' @param title A character vector to be used as title.
-#'
-#' @return An MSn plot.
+#' .plot_ms2_static
 #'
 #' @noRd
 #'
-plot_ms2_static <- function(ms2 = NULL,
+.plot_ms2_static <- function(ms2 = NULL,
                             legendNames = NULL,
                             colorBy = "targets",
                             title = NULL) {
   
-  ms2 <- make_colorBy_varkey(ms2, colorBy, legendNames)
+  ms2 <- .make_colorBy_varkey(ms2, colorBy, legendNames)
 
-  cl <- get_colors(unique(ms2$var))
+  cl <- .get_colors(unique(ms2$var))
 
   ms2$var <- as.factor(ms2$var)
 
@@ -765,31 +736,18 @@ plot_ms2_static <- function(ms2 = NULL,
   )
 }
 
-#' @title plot_ms2_interactive
-#'
-#' @description Interactive plot of MS2 spectra using the \pkg{plotly} package.
-#'
-#' @param ms2 A data.table with the id, pre_mz, mz, intensity,
-#' is_pre and var (i.e., the plotting variable for each entry) as columns.
-#' @param legendNames A character vector with the same length as the unique ids
-#' in the table given in `eic`.
-#' @param colorBy A string (length 1). One of "analyses" (the default),
-#' "levels", "targets" or "replicates". For "replicates", a column with
-#' replicate names should be given.
-#' @param title A character vector to be used as title.
-#'
-#' @return An MS2 spectra interactive plot.
+#' .plot_ms2_interactive
 #'
 #' @noRd
 #'
-plot_ms2_interactive <- function(ms2 = NULL, legendNames = NULL,
+.plot_ms2_interactive <- function(ms2 = NULL, legendNames = NULL,
                                  colorBy = "targets", title = NULL) {
   
-  ms2 <- make_colorBy_varkey(ms2, colorBy, legendNames)
+  ms2 <- .make_colorBy_varkey(ms2, colorBy, legendNames)
 
   leg <- unique(ms2$var)
 
-  cl <- get_colors(leg)
+  cl <- .get_colors(leg)
 
   plot <- plot_ly()
 
@@ -856,31 +814,18 @@ plot_ms2_interactive <- function(ms2 = NULL, legendNames = NULL,
   return(plot)
 }
 
-#' @title plot_ms1_static
-#'
-#' @description Static plot of spectra using the \pkg{base} package.
-#'
-#' @param ms1 A data.table with the analyses, id, mz, intensity and var
-#' (i.e., the plotting variable for each entry) as columns.
-#' @param legendNames A character vector with the same length as the unique ids
-#' in the table given in `eic`.
-#' @param colorBy A string (length 1). One of "analyses" (the default),
-#' "levels", "targets" or "replicates". For "replicates", a column with
-#' replicate names should be given.
-#' @param title A character vector to be used as title.
-#'
-#' @return An ms1 plot.
+#' .plot_ms1_static
 #'
 #' @noRd
 #'
-plot_ms1_static <- function(ms1 = NULL,
+.plot_ms1_static <- function(ms1 = NULL,
                             legendNames = NULL,
                             colorBy = "targets",
                             title = NULL) {
   
-  ms1 <- make_colorBy_varkey(ms1, colorBy, legendNames)
+  ms1 <- .make_colorBy_varkey(ms1, colorBy, legendNames)
 
-  cl <- get_colors(unique(ms1$var))
+  cl <- .get_colors(unique(ms1$var))
 
   ms1$var <- as.factor(ms1$var)
 
@@ -931,33 +876,20 @@ plot_ms1_static <- function(ms1 = NULL,
   )
 }
 
-#' @title plot_ms1_interactive
-#'
-#' @description Interactive plot of MS1 ms1 using the \pkg{plotly} package.
-#'
-#' @param ms1 A data.table with the analyses, id, mz, intensity and var
-#' (i.e., the plotting variable for each entry) as columns.
-#' @param legendNames A character vector with the same length as the unique ids
-#' in the table given in `eic`.
-#' @param colorBy A string (length 1). One of "analyses" (the default),
-#' "levels", "targets" or "replicates". For "replicates", a column with
-#' replicate names should be given.
-#' @param title A character vector to be used as title.
-#'
-#' @return An ms1 interactive plot.
+#' .plot_ms1_interactive
 #'
 #' @noRd
 #'
-plot_ms1_interactive <- function(ms1 = NULL,
+.plot_ms1_interactive <- function(ms1 = NULL,
                                  legendNames = NULL,
                                  colorBy = "targets",
                                  title = NULL) {
   
-  ms1 <- make_colorBy_varkey(ms1, colorBy, legendNames)
+  ms1 <- .make_colorBy_varkey(ms1, colorBy, legendNames)
 
   leg <- unique(ms1$var)
 
-  cl <- get_colors(leg)
+  cl <- .get_colors(leg)
 
   plot <- plot_ly()
 
@@ -1015,29 +947,11 @@ plot_ms1_interactive <- function(ms1 = NULL,
   return(plot)
 }
 
-#' @title plot_features_static
-#'
-#' @description Static plot of features using the \pkg{base} package.
-#'
-#' @param eic A data table with the analysis, replicate,
-#' id, rt, intensity and var (i.e., the plotting variables for each peak)
-#' as columns.
-#' @param features A data table with the individual features to plot.
-#' @param legendNames A character vector with the same length as the unique ids
-#' in the table given in `eic`.
-#' @param colorBy A string (length 1). One of "analyses" (the default),
-#' "levels", "targets" or "replicates". For "replicates", a column with
-#' replicate names should be given.
-#' @param title A character vector to be used as title.
-#' @param showLegend Logical, set to TRUE to show legend.
-#'
-#' @importFrom graphics axis legend lines points polygon
-#'
-#' @return A plot of chromatographic peaks.
+#' .plot_features_static
 #'
 #' @noRd
 #'
-plot_features_static <- function(eic = NULL,
+.plot_features_static <- function(eic = NULL,
                                  features = NULL,
                                  legendNames = NULL,
                                  colorBy = "targets",
@@ -1047,11 +961,11 @@ plot_features_static <- function(eic = NULL,
                                  ylim = NULL,
                                  cex = 0.6) {
   
-  eic <- make_colorBy_varkey(eic, colorBy, legendNames)
+  eic <- .make_colorBy_varkey(eic, colorBy, legendNames)
   
   leg <- unique(eic$var)
   
-  cl <- get_colors(leg)
+  cl <- .get_colors(leg)
 
   eic$unique_ids <- paste0(eic$id, eic$analysis)
 
@@ -1174,38 +1088,22 @@ plot_features_static <- function(eic = NULL,
   }
 }
 
-#' @title plot_features_interactive
-#'
-#' @description Plots chromatographic peaks with the package \pkg{plotly}.
-#'
-#' @param eic A data table with the analysis, replicate,
-#' id, rt, intensity and var (i.e., the plotting variables for each peak)
-#' as columns.
-#' @param features A data table with the individual peaks to plot.
-#' @param legendNames A character vector with the same length as the unique ids
-#' in the table given in `eic`.
-#' @param colorBy A string (length 1). One of "analyses" (the default),
-#' "levels", "targets" or "replicates". For "replicates", a column with
-#' replicate names should be given.
-#' @param title A character vector to be used as title.
-#' @param showLegend Logical, set to TRUE to show legend.
-#'
-#' @return A chromatographic peak plot through \pkg{plotly}.
+#' .plot_features_interactive
 #'
 #' @noRd
 #'
-plot_features_interactive <- function(eic = NULL,
+.plot_features_interactive <- function(eic = NULL,
                                       features = NULL,
                                       legendNames = NULL,
                                       colorBy = "targets",
                                       title = NULL,
                                       showLegend = TRUE) {
 
-  eic <- make_colorBy_varkey(eic, colorBy, legendNames)
+  eic <- .make_colorBy_varkey(eic, colorBy, legendNames)
   
   leg <- unique(eic$var)
   
-  cl <- get_colors(leg)
+  cl <- .get_colors(leg)
   
   eic$unique_ids <- paste0(eic$id, eic$analysis)
 
@@ -1331,29 +1229,11 @@ plot_features_interactive <- function(eic = NULL,
   plot
 }
 
-#' @title map_features_static
-#'
-#' @description Function for plotting peak spaces.
-#'
-#' @param features A data table with the individual peak details to plot.
-#' @param legendNames A character vector with the same length as the unique ids
-#' in the table given in `eic`.
-#' @param colorBy Possible values are \code{"targets"} (the default),
-#' \code{"analyses"} or \code{replicates}.
-#' @param xlim A length one or two numeric vector for setting the \emph{x}
-#' limits (in seconds) of the plot.
-#' @param ylim A length one or two numeric vector for setting the \emph{m/z}
-#' limits of the plot.
-#' @param cex X.
-#' @param title An optional character vector to be used as title.
-#' for coloring by target features, analyses or replicates, respectively.
-#' @param showLegend Logical, set to \code{TRUE} to show legend.
-#'
-#' @return A peak/s map plot produced through \pkg{base} plot.
+#' .map_features_static
 #'
 #' @noRd
 #'
-map_features_static <- function(features,
+.map_features_static <- function(features,
                                 colorBy = "targets",
                                 legendNames = NULL,
                                 title = NULL,
@@ -1362,11 +1242,11 @@ map_features_static <- function(features,
                                 ylim = NULL,
                                 cex = 0.6) {
   
-  features <- make_colorBy_varkey(features, colorBy, legendNames)
+  features <- .make_colorBy_varkey(features, colorBy, legendNames)
   
   leg <- unique(features$var)
 
-  cl <- get_colors(leg)
+  cl <- .get_colors(leg)
 
   if (length(xlim) == 1) {
     rtr <- c(min(features$rtmin) - xlim, max(features$rtmax) + xlim)
@@ -1438,38 +1318,22 @@ map_features_static <- function(features,
   }
 }
 
-#' @title map_features_interactive
-#'
-#' @description Function for plotting peak spaces.
-#'
-#' @param features A data table with the individual peak details to plot.
-#' @param legendNames A character vector with the same length as the unique ids
-#' in the table given in `eic`.
-#' @param colorBy Possible values are \code{"targets"} (the default),
-#' \code{"analyses"} or \code{replicates}.
-#' @param xlim A length one or two numeric vector for setting the \emph{x}
-#' limits (in seconds) of the plot.
-#' @param ylim A length one or two numeric vector for setting the \emph{m/z}
-#' limits of the plot.
-#' @param title An optional character vector to be used as title.
-#' @param showLegend Logical, set to \code{TRUE} to show legend.
-#'
-#' @return A peak/s map plot produced through \pkg{plotly}.
+#' .map_features_interactive
 #'
 #' @noRd
 #'
-map_features_interactive <- function(features,
+.map_features_interactive <- function(features,
                                      colorBy = "targets",
                                      legendNames = NULL,
                                      xlim = 60, ylim = 5,
                                      title = NULL,
                                      showLegend = TRUE) {
   
-  features <- make_colorBy_varkey(features, colorBy, legendNames)
+  features <- .make_colorBy_varkey(features, colorBy, legendNames)
   
   leg <- unique(features$var)
   
-  cl <- get_colors(leg)
+  cl <- .get_colors(leg)
 
   if (length(xlim) == 1) {
     rtr <- c(min(features$rtmin) - xlim, max(features$rtmax) + xlim)
@@ -1590,25 +1454,18 @@ map_features_interactive <- function(features,
   plot
 }
 
-#' plot_groups_overview_aux
-#'
-#' @description Plots features for each feature group.
-#'
-#' @param features A data table with the individual peak details to plot.
-#' @param eic A data table with the analysis, id, rt, intensity and var
-#' (i.e., the plotting variable for each entry) as columns.
-#' @param heights A numeric vector of length two to control the height of
-#' the first and second plot, respectively.
-#' @param analyses X.
-#'
-#' @return plot.
+#' .plot_groups_overview_aux
 #'
 #' @noRd
 #'
-plot_groups_overview_aux <- function(features, eic, heights, analyses) {
+.plot_groups_overview_aux <- function(features, eic, heights, analyses) {
+  
   leg <- unique(eic$var)
-  colors <- get_colors(leg)
+  
+  colors <- .get_colors(leg)
+  
   showleg <- rep(TRUE, length(leg))
+  
   names(showleg) <- names(leg)
 
   plot <- plot_ly()
@@ -1849,27 +1706,11 @@ plot_groups_overview_aux <- function(features, eic, heights, analyses) {
   return(plotf_2)
 }
 
-#' @title map_components_interactive
-#'
-#' @description Function to plot features annotation.
-#'
-#' @param components A data table with the individual peak details to plot.
-#' @param legendNames A character vector with the same length as the unique ids
-#' in the table given in `eic`.
-#' @param colorBy Possible values are \code{"targets"} (the default),
-#' \code{"analyses"} or \code{replicates}.
-#' @param xlim A length one or two numeric vector for setting the \emph{x}
-#' limits (in seconds) of the plot.
-#' @param ylim A length one or two numeric vector for setting the \emph{m/z}
-#' limits of the plot.
-#' @param title An optional character vector to be used as title.
-#' @param showLegend Logical, set to \code{TRUE} to show legend.
-#'
-#' @return A dotted plot with features annotation.
+#' .map_components_interactive
 #'
 #' @noRd
 #'
-map_components_interactive <- function(components, colorBy = "targets",
+.map_components_interactive <- function(components, colorBy = "targets",
                                       legendNames = NULL,
                                       xlim = 60, ylim = 5,
                                       title = NULL, showLegend = TRUE) {
@@ -1914,7 +1755,7 @@ map_components_interactive <- function(components, colorBy = "targets",
     mzr <- c(min(components$mzmin), max(components$mzmax))
   }
 
-  cl <- get_colors(unique(components$var))
+  cl <- .get_colors(unique(components$var))
 
   plotlegend <- rep(TRUE, length(cl))
   names(plotlegend) <- names(cl)
@@ -2019,28 +1860,11 @@ map_components_interactive <- function(components, colorBy = "targets",
   plot
 }
 
-#' @title map_components_static
-#'
-#' @description Function for plotting peak spaces.
-#'
-#' @param components A data table with the individual peak details to plot.
-#' @param legendNames A character vector with the same length as the unique ids
-#' in the table given in `eic`.
-#' @param colorBy Possible values are \code{"targets"} (the default),
-#' \code{"analyses"} or \code{replicates}.
-#' @param xlim A length one or two numeric vector for setting the \emph{x}
-#' limits (in seconds) of the plot.
-#' @param ylim A length one or two numeric vector for setting the \emph{m/z}
-#' limits of the plot.
-#' @param title An optional character vector to be used as title.
-#' for coloring by target features, analyses or replicates, respectively.
-#' @param showLegend Logical, set to \code{TRUE} to show legend.
-#'
-#' @return A peak/s map plot produced through \pkg{base} plot.
+#' .map_components_static
 #'
 #' @noRd
 #'
-map_components_static <- function(components, colorBy = "targets",
+.map_components_static <- function(components, colorBy = "targets",
                                   legendNames = NULL,
                                   xlim = 60, ylim = 5,
                                   title = NULL, showLegend = TRUE) {
@@ -2086,7 +1910,7 @@ map_components_static <- function(components, colorBy = "targets",
     mzr <- c(min(components$mzmin), max(components$mzmax) * ylim_oufset)
   }
 
-  cl <- get_colors(unique(components$var))
+  cl <- .get_colors(unique(components$var))
 
   plot(components$rt,
        components$mz,

@@ -12,8 +12,10 @@
 #' @template arg-ms-levels
 #' @template arg-ms-mz
 #' @template arg-ms-rt
+#' @template arg-ms-drift
 #' @template arg-ms-ppm
 #' @template arg-ms-sec
+#' @template arg-ms-millisec
 #' @template arg-ms-id
 #' @template arg-ms-allTraces
 #' @template arg-ms-isolationWindow
@@ -1158,8 +1160,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                            mass = NULL,
                            mz = NULL,
                            rt = NULL,
+                           drift = NULL,
                            ppm = 20,
                            sec = 60,
+                           millisec = 5,
                            id = NULL,
                            allTraces = TRUE,
                            isolationWindow = 1.3,
@@ -1188,7 +1192,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           }
         }
         
-        neutral_targets <- make_ms_targets(mass, rt, ppm, sec, id)
+        neutral_targets <- make_ms_targets(mass, rt, drift, ppm, sec, millisec, id)
         
         targets <- list()
 
@@ -1221,7 +1225,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
         
       } else {
-        mz_targets <- make_ms_targets(mz, rt, ppm, sec, id)
+        mz_targets <- make_ms_targets(mz, rt, drift, ppm, sec, millisec, id)
         
         if (!"polarity" %in% colnames(mz_targets)) {
           targets <- list()
@@ -1247,7 +1251,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
       }
 
-      num_cols <- c("mz", "rt", "mzmin", "mzmax", "rtmin", "rtmax")
+      num_cols <- c("mz", "rt", "drift", "mzmin", "mzmax", "rtmin", "rtmax", "driftmin", "driftmax")
 
       if (all(apply(targets[, num_cols, with = FALSE], 1, sum) != 0)) {
 
@@ -1257,6 +1261,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         if (TRUE %in% (targets$rtmax == 0)) {
           targets$rtmax[targets$rtmax == 0] <- max(self$get_rt_end(analyses))
+        }
+        
+        if (TRUE %in% (targets$driftmax == 0) & any(self$has_ion_mobility())) {
+          targets$driftmax[targets$driftmax == 0] <- max(self$get_run(analyses)[["drift"]], na.rm = TRUE)
         }
 
       } else {
@@ -1268,22 +1276,27 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (!is.logical(allTraces)) allTraces <- TRUE
 
       if (!allTraces & !is.null(targets)) {
+        
         if (!any(is.numeric(isolationWindow) | is.integer(isolationWindow))) {
           isolationWindow <- 0
         }
+        
+        # TODO make case for DIA when pre_mz is not available
         preMZr <- targets[, c("mzmin", "mzmax")]
         preMZr$mzmin <- preMZr$mzmin - (isolationWindow / 2)
         preMZr$mzmax <- preMZr$mzmax + (isolationWindow / 2)
+        
         if (nrow(preMZr) == 1 & TRUE %in% (targets$mzmax == 0)) {
           preMZr <- NULL
         }
+        
       } else {
         preMZr <- NULL
       }
 
       cached_spectra <- FALSE
 
-      if (caches_data()) {
+      if (.caches_data()) {
         hash <- patRoon::makeHash(
           analyses, levels, targets, allTraces,
           isolationWindow, minIntensityMS1, minIntensityMS2
@@ -1323,29 +1336,49 @@ MassSpecData <- R6::R6Class("MassSpecData",
       has_spectra <- self$has_loaded_spectra(analyses)
 
       if (all(has_spectra)) {
-        
-        # TODO add polarity check when getting spectra of targets
         spec_list <- lapply(self$get_analyses(analyses),
           function(x, levels, targets, preMZr) {
+            
             temp <- x$spectra
+            
+            with_im <- x$has_ion_mobility
+            
             if (!is.null(levels)) temp <- temp[temp$level %in% levels, ]
+            
             if (!is.null(targets)) {
+              
+              if ("polarity" %in% colnames(targets)) {
+                polarities_targets <- unique(targets$polarity)
+                
+                if (length(polarities_targets) == 1) {
+                  temp <- temp[temp$polarity == polarities_targets, ]
+                }
+              }
+              
               if ("analysis" %in% colnames(targets)) {
                 tp_tar <- targets[targets$analysis %in% x$name, ]
+                
                 if (!is.null(preMZr)) {
                   pre_tar <- preMZr[targets$analysis %in% x$name, ]
+                  
                 } else {
                   pre_tar <- NULL
                 }
+                
                 if (nrow(tp_tar) > 0) {
-                  temp <- trim_spectra_targets(temp, tp_tar, pre_tar)
+                  temp <- .trim_spectra_targets(temp, tp_tar, pre_tar, with_im)
+                  
                 } else {
                   temp <- data.frame()
                 }
               } else {
-                temp <- trim_spectra_targets(temp, targets, preMZr)
+                temp <- .trim_spectra_targets(temp, targets, preMZr, with_im)
               }
             }
+            
+            if (!with_im) temp[["drift"]] <- NULL
+            
+            temp
           },
           levels = levels,
           targets = targets,
@@ -1356,40 +1389,61 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         vars <- c(
           "rcpp_parse_ms_analysis_spectra",
-          "trim_spectra_targets"
+          ".trim_spectra_targets"
         )
 
-        spec_list <- foreach(i = self$get_analyses(analyses),
-                             .packages = "StreamFind", .export = vars) %dopar% {
+        spec_list <- foreach(
+          i = self$get_analyses(analyses),
+          .packages = "StreamFind", .export = vars) %dopar% {
 
           run <- i$run
 
           if (nrow(run) > 0) {
-              
+
             if (!is.null(levels)) run <- run[run$level %in% levels, ]
             
-            # TODO add polarity check when getting spectra of targets
             if (!is.null(targets)) {
 
               trim <- function(v, a, b) rowSums(mapply(function(a, b) v >= a & v <= b, a = a, b = b)) > 0
 
+              if ("polarity" %in% colnames(targets)) {
+                polarities_targets <- unique(targets$polarity)
+                
+                if (length(polarities_targets) == 1) {
+                  run <- run[run$polarity == polarities_targets, ]
+                }
+              }
+              
               if ("analysis" %in% colnames(targets)) {
                 tp_tar <- targets[targets$analysis %in% i$name, ]
+                
                 if (nrow(tp_tar) > 0) {
                   run <- run[trim(run$rt, tp_tar$rtmin, tp_tar$rtmax), ]
+                  
+                  if (i$has_ion_mobility) {
+                    run <- run[trim(run$drift, targets$driftmin, targets$driftmax), ]
+                  }
+                  
                 } else {
                   run <- data.frame()
                 }
+                
               } else {
                 run <- run[trim(run$rt, targets$rtmin, targets$rtmax), ]
+                
+                if (i$has_ion_mobility) {
+                  run <- run[trim(run$drift, targets$driftmin, targets$driftmax), ]
+                }
               }
             }
 
             if (!is.null(preMZr) & !is.null(targets)) {
+              
               if ("analysis" %in% colnames(targets)) {
                 pre_tar <- preMZr[targets$analysis %in% i$name, ]
                 preMZ_check <- trim(run$pre_mz, pre_tar$mzmin, pre_tar$mzmax)
                 run <- run[(preMZ_check %in% TRUE) | is.na(preMZ_check), ]
+                
               } else {
                 preMZ_check <- trim(run$pre_mz, preMZr$mzmin, preMZr$mzmax)
                 run <- run[(preMZ_check %in% TRUE) | is.na(preMZ_check), ]
@@ -1401,22 +1455,31 @@ MassSpecData <- R6::R6Class("MassSpecData",
               run <- rcpp_parse_ms_analysis_spectra(i, run$index)
 
               if (!is.null(targets)) {
+                
                 if ("analysis" %in% colnames(targets)) {
+                  
                   tp_tar <- targets[targets$analysis %in% i$name, ]
+                  
                   if (!is.null(preMZr)) {
                     pre_tar <- preMZr[targets$analysis %in% i$name, ]
+                    
                   } else {
                     pre_tar <- NULL
                   }
+                  
                   if (nrow(tp_tar) > 0) {
-                    run <- trim_spectra_targets(run, tp_tar, pre_tar)
+                    run <- .trim_spectra_targets(run, tp_tar, pre_tar, i$has_ion_mobility)
+                    
                   } else {
                     run <- data.frame()
                   }
+                  
                 } else {
-                  run <- trim_spectra_targets(run, targets, preMZr)
+                  run <- .trim_spectra_targets(run, targets, preMZr, i$has_ion_mobility)
                 }
               }
+              
+              if (!i$has_ion_mobility) run[["drift"]] <- NULL
 
               run
 
@@ -1542,16 +1605,16 @@ MassSpecData <- R6::R6Class("MassSpecData",
                        mass = NULL,
                        mz = NULL,
                        rt = NULL,
+                       drift = NULL,
                        ppm = 20,
                        sec = 60,
+                       millisec = 5,
                        id = NULL,
                        runParallel = FALSE) {
 
       eic <- self$get_spectra(
-        analyses,
-        levels = 1,
-        mass,
-        mz, rt, ppm, sec, id,
+        analyses, levels = 1,
+        mass, mz, rt, drift, ppm, sec, millisec, id,
         allTraces = TRUE,
         isolationWindow = 1.3,
         minIntensityMS1 = 0,
@@ -1587,8 +1650,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                        mass = NULL,
                        mz = NULL,
                        rt = NULL,
+                       drift = NULL,
                        ppm = 20,
                        sec = 60,
+                       millisec = 5,
                        id = NULL,
                        mzClust = 0.003,
                        presence = 0.8,
@@ -1597,14 +1662,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
                        runParallel = FALSE) {
 
       ms1 <- self$get_spectra(
-        analyses = analyses,
-        levels = 1,
-        mass = mass,
-        mz = mz,
-        rt = rt,
-        ppm = ppm,
-        sec = sec,
-        id = id,
+        analyses, levels = 1,
+        mass, mz, rt, drift, ppm, sec, millisec, id,
         allTraces = TRUE,
         minIntensityMS1 = minIntensity,
         minIntensityMS2 = 0,
@@ -1614,16 +1673,35 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (nrow(ms1) == 0) return(ms1)
 
       if (!"id" %in% colnames(ms1)) {
-        ms1$id <- paste(
-          round(min(ms1$mz), 4),
-          "-",
-          round(max(ms1$mz), 4),
-          "/",
-          round(max(ms1$rt), 0),
-          "-",
-          round(min(ms1$rt), 0),
-          sep = ""
-        )
+        
+        if (any(self$has_ion_mobility())) {
+          ms1$id <- paste(
+            round(min(ms1$mz), 4),
+            "-",
+            round(max(ms1$mz), 4),
+            "/",
+            round(max(ms1$rt), 0),
+            "-",
+            round(min(ms1$rt), 0),
+            "/",
+            round(max(ms1$drift), 0),
+            "-",
+            round(min(ms1$drift), 0),
+            sep = ""
+          )
+          
+        } else {
+          ms1$id <- paste(
+            round(min(ms1$mz), 4),
+            "-",
+            round(max(ms1$mz), 4),
+            "/",
+            round(max(ms1$rt), 0),
+            "-",
+            round(min(ms1$rt), 0),
+            sep = ""
+          )
+        }
       }
 
       if (!is.logical(verbose)) verbose = FALSE
@@ -1637,7 +1715,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       ms1_df <- rbindlist(ms1_list, fill = TRUE)
 
       ms1_df <- ms1_df[order(ms1_df$mz), ]
+      
       ms1_df <- ms1_df[order(ms1_df$id), ]
+      
       ms1_df <- ms1_df[order(ms1_df$analysis), ]
 
       ms1_df
@@ -1652,8 +1732,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                        mass = NULL,
                        mz = NULL,
                        rt = NULL,
+                       drift = NULL,
                        ppm = 20,
                        sec = 60,
+                       millisec = 5,
                        id = NULL,
                        isolationWindow = 1.3,
                        mzClust = 0.005,
@@ -1663,14 +1745,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
                        runParallel = FALSE) {
 
       ms2 <- self$get_spectra(
-        analyses = analyses,
-        levels = 2,
-        mass = mass,
-        mz = mz,
-        rt = rt,
-        ppm = ppm,
-        sec = sec,
-        id = id,
+        analyses, levels = 2,
+        mass, mz, rt, drift, ppm, sec, millisec, id,
         isolationWindow = isolationWindow,
         allTraces = FALSE,
         minIntensityMS1 = 0,
@@ -1681,16 +1757,34 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (nrow(ms2) == 0) return(ms2)
 
       if (!"id" %in% colnames(ms2)) {
-        ms2$id <- paste(
-          round(min(ms2$mz), 4),
-          "-",
-          round(max(ms2$mz), 4),
-          "/",
-          round(max(ms2$rt), 0),
-          "-",
-          round(min(ms2$rt), 0),
-          sep = ""
-        )
+        if (any(self$has_ion_mobility())) {
+          ms2$id <- paste(
+            round(min(ms2$mz), 4),
+            "-",
+            round(max(ms2$mz), 4),
+            "/",
+            round(max(ms2$rt), 0),
+            "-",
+            round(min(ms2$rt), 0),
+            "/",
+            round(max(ms2$drift), 0),
+            "-",
+            round(min(ms2$drift), 0),
+            sep = ""
+          )
+          
+        } else {
+          ms2$id <- paste(
+            round(min(ms2$mz), 4),
+            "-",
+            round(max(ms2$mz), 4),
+            "/",
+            round(max(ms2$rt), 0),
+            "-",
+            round(min(ms2$rt), 0),
+            sep = ""
+          )
+        }
       }
       
       if (!is.logical(verbose)) verbose = FALSE
@@ -1704,7 +1798,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       ms2_df <- rbindlist(ms2_list, fill = TRUE)
 
       ms2_df <- ms2_df[order(ms2_df$mz), ]
+      
       ms2_df <- ms2_df[order(ms2_df$id), ]
+      
       ms2_df <- ms2_df[order(ms2_df$analysis), ]
 
       ms2_df
@@ -1745,14 +1841,18 @@ MassSpecData <- R6::R6Class("MassSpecData",
                             mass = NULL,
                             mz = NULL,
                             rt = NULL,
+                            drift = NULL,
                             ppm = 20,
                             sec = 60,
+                            millisec = 5,
                             filtered = FALSE) {
 
       analyses <- private$.check_analyses_argument(analyses)
+      
       if (is.null(analyses)) return(data.frame())
 
       fts <- lapply(private$.analyses[analyses], function(x) x$features)
+      
       fts <- rbindlist(fts, idcol = "analysis", fill = TRUE)
 
       if (!filtered) fts <- fts[!fts$filtered, ]
@@ -1761,30 +1861,37 @@ MassSpecData <- R6::R6Class("MassSpecData",
         target_id <- features
 
         if (is.character(target_id)) {
+          
           if ("group" %in% colnames(fts)) {
             fts <- fts[fts$feature %in% target_id | fts$group %in% target_id, ]
+            
           } else {
             fts <- fts[fts$feature %in% target_id, ]
           }
+          
           return(fts)
+          
         } else if (is.numeric(target_id)) {
           fts <- fts[target_id, ]
+          
           return(fts)
         }
 
         if (is.data.frame(target_id)) {
-          if (all(colnames(fts) %in% colnames(target_id))) {
-            return(target_id)
-          }
+          
+          if (all(colnames(fts) %in% colnames(target_id))) return(target_id)
 
           if ("analysis" %in% colnames(target_id)) {
             sel <- rep(FALSE, nrow(fts))
+            
             for (i in seq_len(nrow(target_id))) {
               sel[(fts$feature %in% target_id$feature[i] &
                 fts$analysis %in% target_id$analysis[i]) |
                 fts$group %in% target_id$group] <- TRUE
             }
+            
             fts <- fts[sel, ]
+            
             return(fts)
           }
         }
@@ -1801,46 +1908,88 @@ MassSpecData <- R6::R6Class("MassSpecData",
           colnames(mass) <- gsub("max", "mzmax", colnames(mass))
         }
 
-        targets <- make_ms_targets(mass, rt, ppm, sec)
+        targets <- make_ms_targets(mass, rt, drift, ppm, sec, millisec)
 
         for (i in seq_len(nrow(targets))) {
+          
           if (targets$rtmax[i] == 0) targets$rtmax[i] <- max(fts$rtmax)
+          
           if (targets$mzmax[i] == 0) targets$mzmax[i] <- max(fts$mass)
+          
+          if ("drift" %in% colnames(fts)) {
+            if (targets$driftmax[i] == 0) targets$driftmax[i] <- max(fts$drift)
+          }
         }
 
         sel <- rep(FALSE, nrow(fts))
+        
         ids <- rep(NA_character_, nrow(fts))
+        
         for (i in seq_len(nrow(targets))) {
-          sel[between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
-            between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
-
-          ids[between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
-            between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- targets$id[i]
+          
+          if ("drift" %in% colnames(fts)) {
+            sel[between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
+                  between(fts$rt, targets$rtmin[i], targets$rtmax[i]) &
+                    between(fts$drift, targets$driftmin[i], targets$driftmax[i])] <- TRUE
+            
+            ids[between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
+                  between(fts$rt, targets$rtmin[i], targets$rtmax[i]) &
+                    between(fts$drift, targets$driftmin[i], targets$driftmax[i])] <- targets$id[i]
+            
+          } else {
+            sel[between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
+                  between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
+            
+            ids[between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
+                  between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- targets$id[i]
+          }
         }
 
         fts$name <- ids
+        
         return(fts[sel])
       }
 
       if (!is.null(mz)) {
-        targets <- make_ms_targets(mz, rt, ppm, sec)
+        targets <- make_ms_targets(mz, rt, drift, ppm, sec, millisec)
 
         for (i in seq_len(nrow(targets))) {
+          
           if (targets$rtmax[i] == 0) targets$rtmax[i] <- max(fts$rtmax)
-          if (targets$mzmax[i] == 0) targets$mzmax[i] <- max(fts$mass)
+          
+          if (targets$mzmax[i] == 0) targets$mzmax[i] <- max(fts$mzmax)
+          
+          if ("drift" %in% colnames(fts)) {
+            if (targets$driftmax[i] == 0) targets$driftmax[i] <- max(fts$drift)
+          }
         }
 
         sel <- rep(FALSE, nrow(fts))
+        
         ids <- rep(NA_character_, nrow(fts))
+        
         for (i in seq_len(nrow(targets))) {
-          sel[between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
-            between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
-
-          ids[between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
-            between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- targets$id[i]
+          
+          if ("drift" %in% colnames(fts)) {
+            sel[between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
+                  between(fts$rt, targets$rtmin[i], targets$rtmax[i]) &
+                  between(fts$drift, targets$driftmin[i], targets$driftmax[i])] <- TRUE
+            
+            ids[between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
+                  between(fts$rt, targets$rtmin[i], targets$rtmax[i]) &
+                  between(fts$drift, targets$driftmin[i], targets$driftmax[i])] <- targets$id[i]
+            
+          } else {
+            sel[between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
+                  between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
+            
+            ids[between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
+                  between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- targets$id[i]
+          }
         }
 
         fts$name <- ids
+        
         return(fts[sel])
       }
 
@@ -1857,15 +2006,17 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                 mass = NULL,
                                 mz = NULL,
                                 rt = NULL,
+                                drift = NULL,
                                 ppm = 20,
                                 sec = 60,
+                                millisec = 5,
                                 rtExpand = 120,
                                 mzExpand = 0.005,
                                 filtered = FALSE,
                                 runParallel = FALSE) {
 
       fts <- self$get_features(
-        analyses, features, mass, mz, rt, ppm, sec, filtered
+        analyses, features, mass, mz, rt, drift, ppm, sec, millisec, filtered
       )
 
       if (nrow(fts) == 0) return(data.table())
@@ -1906,8 +2057,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                 mass = NULL,
                                 mz = NULL,
                                 rt = NULL,
+                                drift = NULL,
                                 ppm = 20,
                                 sec = 60,
+                                millisec = 5,
                                 rtWindow = c(-2, 2),
                                 mzWindow = c(-5, 100),
                                 mzClust = 0.003,
@@ -1919,7 +2072,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                 runParallel = FALSE) {
 
       fts <- self$get_features(
-        analyses, features, mass, mz, rt, ppm, sec, filtered
+        analyses, features, mass, mz, rt, drift, ppm, sec, millisec, filtered
       )
 
       if (nrow(fts) == 0) return(data.table())
@@ -1998,8 +2151,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                 mass = NULL,
                                 mz = NULL,
                                 rt = NULL,
+                                drift = NULL,
                                 ppm = 20,
                                 sec = 60,
+                                millisec = 5,
                                 isolationWindow = 1.3,
                                 mzClust = 0.003,
                                 presence = 0.8,
@@ -2010,7 +2165,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                 runParallel = FALSE) {
 
       fts <- self$get_features(
-        analyses, features, mass, mz, rt, ppm, sec, filtered
+        analyses, features, mass, mz, rt, drift, ppm, sec, millisec, filtered
       )
 
       if (nrow(fts) == 0) return(data.table())
@@ -2090,8 +2245,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                           mass = NULL,
                           mz = NULL,
                           rt = NULL,
+                          drift = NULL,
                           ppm = 20,
                           sec = 60,
+                          millisec = 5,
                           filtered = FALSE,
                           onlyIntensities = FALSE,
                           average = FALSE) {
@@ -2099,8 +2256,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (!self$has_groups()) return(data.table())
       
       fts <- self$get_features(
-        features = groups, mass = mass, mz = mz, rt = rt,
-        ppm = ppm, sec = sec,filtered = filtered
+        analyses = NULL, features = groups,
+        mass, mz, rt, drift, ppm, sec, millisec,
+        filtered = filtered
       )
       
       groups <- unique(fts$group)
@@ -2171,8 +2329,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                               mass = NULL,
                               mz = NULL,
                               rt = NULL,
+                              drift = NULL,
                               ppm = 20,
                               sec = 60,
+                              millisec = 5,
                               rtWindow = c(-2, 2),
                               mzWindow = c(-5, 90),
                               mzClustFeatures = 0.003,
@@ -2189,7 +2349,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                               runParallel = FALSE) {
 
       fgs <- self$get_groups(
-        groups, mass, mz, rt, ppm, sec, filtered,
+        groups, mass, mz, rt, drift, ppm, sec, millisec, filtered,
         onlyIntensities = FALSE, average = FALSE
       )
 
@@ -2275,7 +2435,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       )
 
       ms1_df <- rbindlist(ms1_list, fill = TRUE)
+      
       ms1_df <- ms1_df[order(ms1_df$mz), ]
+      
       ms1_df <- ms1_df[order(ms1_df$id), ]
 
       if ("groups" %in% groupBy) {
@@ -2298,8 +2460,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                               mass = NULL,
                               mz = NULL,
                               rt = NULL,
+                              drift = NULL,
                               ppm = 20,
                               sec = 60,
+                              millisec = 5,
                               isolationWindow = 1.3,
                               mzClustFeatures = 0.003,
                               presenceFeatures = 0.8,
@@ -2315,7 +2479,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                               runParallel = FALSE) {
 
       fgs <- self$get_groups(
-        groups, mass, mz, rt, ppm, sec, filtered,
+        groups, mass, mz, rt, drift, ppm, sec, millisec, filtered,
         onlyIntensities = FALSE, average = FALSE
       )
 
@@ -2400,7 +2564,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       )
 
       ms2_df <- rbindlist(ms2_list, fill = TRUE)
+      
       ms2_df <- ms2_df[order(ms2_df$mz), ]
+      
       ms2_df <- ms2_df[order(ms2_df$id), ]
 
       if ("groups" %in% groupBy) {
@@ -2424,12 +2590,16 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                    mass = NULL,
                                    mz = NULL,
                                    rt = NULL,
+                                   drift = NULL,
                                    ppm = 20,
                                    sec = 60,
+                                   millisec = 5,
                                    filtered = FALSE,
                                    minIntensity = 0) {
 
-      groups <- self$get_groups(groups, mass, mz, rt, ppm, sec, filtered)
+      groups <- self$get_groups(
+        groups, mass, mz, rt, drift, ppm, sec, millisec, filtered
+      )
 
       cols_id_ints <- unname(self$get_analysis_names())
 
@@ -2468,12 +2638,14 @@ MassSpecData <- R6::R6Class("MassSpecData",
                               mass = NULL,
                               mz = NULL,
                               rt = NULL,
+                              drift = NULL,
                               ppm = 20,
                               sec = 60,
+                              millisec = 5,
                               filtered = FALSE) {
 
       fts <- self$get_features(
-        analyses, features, mass, mz, rt, ppm, sec, filtered
+        analyses, features, mass, mz, rt, drift, ppm, sec, millisec, filtered
       )
 
       if (!("iso_gr" %in% colnames(fts))) {
@@ -3759,7 +3931,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         cached_ms1 <- FALSE
 
-        if (caches_data()) {
+        if (.caches_data()) {
           ana_feats <- self$get_features(filtered = TRUE)
           ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
           hash <- patRoon::makeHash(ana_feats, parameters)
@@ -3891,7 +4063,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         cached_ms2 <- FALSE
 
-        if (caches_data()) {
+        if (.caches_data()) {
           ana_feats <- self$get_features(filtered = TRUE)
           ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
           hash <- patRoon::makeHash(ana_feats, parameters)
@@ -4036,7 +4208,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         cached_ms1 <- FALSE
 
-        if (caches_data()) {
+        if (.caches_data()) {
           ana_feats <- self$get_features(filtered = TRUE)
           ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
           cols_to_hash <- c("group", "rt", "mass", "rtdev", "massdev")
@@ -4176,7 +4348,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         cached_ms2 <- FALSE
 
-        if (caches_data()) {
+        if (.caches_data()) {
           ana_feats <- self$get_features(filtered = TRUE)
           ana_feats <- ana_feats[, c("analysis", "feature"), with = FALSE]
           cols_to_hash <- c("group", "rt", "mass", "rtdev", "massdev")
@@ -4919,6 +5091,26 @@ MassSpecData <- R6::R6Class("MassSpecData",
     ## ___ has -----
 
     #' @description
+    #' Checks if analyses have have drift time from ion mobility.
+    #'
+    #' @return Logical value.
+    #'
+    has_ion_mobility = function(analyses = NULL) {
+      analyses <- private$.check_analyses_argument(analyses)
+      
+      if (is.null(analyses)) return(FALSE)
+      
+      has_im <- vapply(
+        private$.analyses[analyses],
+        function(x) x$has_ion_mobility, FALSE
+      )
+      
+      names(has_im) <- self$get_analysis_names(analyses)
+      
+      has_im
+    },
+    
+    #' @description
     #' Checks if analyses are present.
     #'
     #' @return Logical value.
@@ -5129,6 +5321,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @param colorBy A string of length 1. One of `analyses` (the default),
     #' `polarities`, `levels`, `targets` or `replicates`.
+    #' @param xVal Character length one. Possible values are "mz", "rt" or "drift".
+    #' @param yVal Character length one. Possible values are "mz", "rt" or "drift".
+    #' 
+    #' 
     #'
     #' @return A 3D interactive plot.
     #'
@@ -5137,8 +5333,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                             mass = NULL,
                             mz = NULL,
                             rt = NULL,
+                            drift = NULL,
                             ppm = 20,
                             sec = 60,
+                            millisec = 5,
                             id = NULL,
                             allTraces = TRUE,
                             isolationWindow = 1.3,
@@ -5146,12 +5344,17 @@ MassSpecData <- R6::R6Class("MassSpecData",
                             minIntensityMS2 = 0,
                             runParallel = FALSE,
                             legendNames = NULL,
-                            colorBy = "analyses") {
+                            colorBy = "analyses",
+                            xVal = "rt",
+                            yVal = "mz") {
 
       spec <- self$get_spectra(
-        analyses, levels, mass, mz, rt, ppm, sec, id,
-        allTraces = allTraces, isolationWindow,
-        minIntensityMS1, minIntensityMS2,
+        analyses, levels,
+        mass, mz, rt, drift, ppm, sec, millisec, id,
+        allTraces = allTraces,
+        isolationWindow,
+        minIntensityMS1,
+        minIntensityMS2,
         runParallel
       )
 
@@ -5160,13 +5363,20 @@ MassSpecData <- R6::R6Class("MassSpecData",
         return(NULL)
       }
       
+      if ("drift" %in% c(xVal, yVal)) {
+        if (!"drift" %in% colnames(spec)) {
+          warning("Drift time values not found!")
+          return(NULL)
+        }
+      }
+      
       if ("feature" %in% colnames(spec)) spec$id <- spec$feature
 
       if ("replicates" %in% colorBy) {
         spec$replicate <- self$get_replicate_names()[spec$analysis]
       }
 
-      plot_spectra_interactive(spec, colorBy, legendNames)
+      .plot_spectra_interactive(spec, colorBy, legendNames, xVal, yVal)
     },
 
     #' @description
@@ -5195,8 +5405,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                         mass = NULL,
                         mz = NULL,
                         rt = NULL,
+                        drift = NULL,
                         ppm = 20,
                         sec = 60,
+                        millisec = 5,
                         id = NULL,
                         runParallel = FALSE,
                         legendNames = NULL,
@@ -5210,7 +5422,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         analyses,
         levels = 1,
         mass,
-        mz, rt, ppm, sec, id,
+        mz, rt, drift, ppm, sec, millisec, id,
         allTraces = TRUE,
         isolationWindow = 1.3,
         minIntensityMS1 = 0,
@@ -5223,7 +5435,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         return(NULL)
       }
 
-      plot_xic_interactive(
+      .plot_xic_interactive(
         xic,
         legendNames,
         plotTargetMark,
@@ -5243,8 +5455,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                         mass = NULL,
                         mz = NULL,
                         rt = NULL,
+                        drift = NULL,
                         ppm = 20,
                         sec = 60,
+                        millisec = 5,
                         id = NULL,
                         runParallel = FALSE,
                         legendNames = NULL,
@@ -5256,7 +5470,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                         cex = 0.6,
                         interactive = TRUE) {
 
-      eic <- self$get_eic(analyses, mass, mz, rt, ppm, sec, id, runParallel)
+      eic <- self$get_eic(analyses, mass, mz, rt, drift, ppm, sec, millisec, id, runParallel)
 
       if (nrow(eic) == 0) {
         message("\U2717 Traces not found for the targets!")
@@ -5268,9 +5482,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!interactive) {
-        plot_eic_static(eic, legendNames, colorBy, title, showLegend, xlim, ylim, cex)
+        .plot_eic_static(eic, legendNames, colorBy, title, showLegend, xlim, ylim, cex)
       } else {
-        plot_eic_interactive(eic, legendNames, colorBy, title, showLegend)
+        .plot_eic_interactive(eic, legendNames, colorBy, title, showLegend)
       }
     },
 
@@ -5326,9 +5540,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!interactive) {
-        plot_eic_static(tic, legendNames, colorBy, title, showLegend, xlim, ylim, cex)
+        .plot_eic_static(tic, legendNames, colorBy, title, showLegend, xlim, ylim, cex)
       } else {
-        plot_eic_interactive(tic, legendNames, colorBy, title, showLegend)
+        .plot_eic_interactive(tic, legendNames, colorBy, title, showLegend)
       }
     },
 
@@ -5384,9 +5598,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!interactive) {
-        plot_eic_static(bpc, legendNames, colorBy, title, showLegend, xlim, ylim, cex)
+        .plot_eic_static(bpc, legendNames, colorBy, title, showLegend, xlim, ylim, cex)
       } else {
-        plot_bpc_interactive(bpc, legendNames, colorBy, title, showLegend)
+        .plot_bpc_interactive(bpc, legendNames, colorBy, title, showLegend)
       }
     },
 
@@ -5399,7 +5613,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                         mass = NULL,
                         mz = NULL,
                         rt = NULL,
-                        ppm = 20, sec = 60,
+                        drift = NULL,
+                        ppm = 20,
+                        sec = 60,
+                        millisec = 5,
                         id = NULL,
                         isolationWindow = 1.3,
                         mzClust = 0.005,
@@ -5413,7 +5630,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                         interactive = TRUE) {
 
       ms2 <- self$get_ms2(
-        analyses, mass, mz, rt, ppm, sec, id, isolationWindow,
+        analyses, mass, mz, rt, drift, ppm, sec, millisec, id, isolationWindow,
         mzClust, presence, verbose, minIntensity, runParallel
       )
 
@@ -5427,9 +5644,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!interactive) {
-        plot_ms2_static(ms2, legendNames, colorBy, title)
+        .plot_ms2_static(ms2, legendNames, colorBy, title)
       } else {
-        plot_ms2_interactive(ms2, legendNames, colorBy, title)
+        .plot_ms2_interactive(ms2, legendNames, colorBy, title)
       }
     },
 
@@ -5442,8 +5659,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                         mass = NULL,
                         mz = NULL,
                         rt = NULL,
+                        drift = NULL,
                         ppm = 20,
                         sec = 60,
+                        millisec = 5,
                         id = NULL,
                         mzClust = 0.003,
                         presence = 0.8,
@@ -5456,7 +5675,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                         interactive = TRUE) {
 
       ms1 <- self$get_ms1(
-        analyses, mass, mz, rt, ppm, sec, id, mzClust, presence,
+        analyses, mass, mz, rt, drift, ppm, sec, millisec, id, mzClust, presence,
         verbose, minIntensity, runParallel
       )
 
@@ -5470,9 +5689,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!interactive) {
-        plot_ms1_static(ms1, legendNames, colorBy, title)
+        .plot_ms1_static(ms1, legendNames, colorBy, title)
       } else {
-        plot_ms1_interactive(ms1, legendNames, colorBy, title)
+        .plot_ms1_interactive(ms1, legendNames, colorBy, title)
       }
     },
 
@@ -5486,8 +5705,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                              mass = NULL,
                              mz = NULL,
                              rt = NULL,
+                             drift = NULL,
                              ppm = 20,
                              sec = 60,
+                             millisec = 5,
                              rtExpand = 15,
                              mzExpand = 0.008,
                              filtered = FALSE,
@@ -5502,7 +5723,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                              interactive = TRUE) {
 
       fts <- self$get_features(
-        analyses, features, mass, mz, rt, ppm, sec, filtered
+        analyses, features, mass, mz, rt, drift, ppm, sec, millisec, filtered
       )
 
       if (nrow(fts) == 0) {
@@ -5528,9 +5749,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!interactive) {
-        plot_features_static(eic, fts, legendNames, colorBy, title, showLegend, xlim, ylim, cex)
+        .plot_features_static(eic, fts, legendNames, colorBy, title, showLegend, xlim, ylim, cex)
       } else {
-        plot_features_interactive(eic, fts, legendNames, colorBy, title, showLegend)
+        .plot_features_interactive(eic, fts, legendNames, colorBy, title, showLegend)
       }
     },
 
@@ -5544,8 +5765,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                             mass = NULL,
                             mz = NULL,
                             rt = NULL,
+                            drift = NULL,
                             ppm = 20,
                             sec = 60,
+                            millisec = 5,
                             filtered = FALSE,
                             legendNames = NULL,
                             title = NULL,
@@ -5557,7 +5780,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                             interactive = TRUE) {
 
       fts <- self$get_features(
-        analyses, features, mass, mz, rt, ppm, sec, filtered
+        analyses, features, mass, mz, rt, drift, ppm, sec, millisec, filtered
       )
 
       if (nrow(fts) == 0) {
@@ -5570,9 +5793,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!interactive) {
-       map_features_static(fts, colorBy, legendNames, title, showLegend, xlim, ylim, cex)
+       .map_features_static(fts, colorBy, legendNames, title, showLegend, xlim, ylim, cex)
       } else {
-       map_features_interactive(fts, colorBy, legendNames, xlim, ylim, title)
+       .map_features_interactive(fts, colorBy, legendNames, xlim, ylim, title)
       }
     },
 
@@ -5586,8 +5809,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                  mass = NULL,
                                  mz = NULL,
                                  rt = NULL,
+                                 drift = NULL,
                                  ppm = 20,
                                  sec = 60,
+                                 millisec = 5,
                                  rtWindow = c(-2, 2),
                                  mzWindow = c(-5, 100),
                                  mzClust = 0.003,
@@ -5603,7 +5828,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                  interactive = TRUE) {
 
       ms1 <- self$get_features_ms1(
-        analyses, features, mass, mz, rt, ppm, sec,
+        analyses, features, mass, mz, rt, drift, ppm, sec, millisec,
         rtWindow, mzWindow, mzClust, presence, minIntensity,
         verbose, filtered, loadedMS1, runParallel
       )
@@ -5618,9 +5843,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!interactive) {
-        plot_ms1_static(ms1, legendNames, colorBy, title)
+        .plot_ms1_static(ms1, legendNames, colorBy, title)
       } else {
-        plot_ms1_interactive(ms1, legendNames, colorBy, title)
+        .plot_ms1_interactive(ms1, legendNames, colorBy, title)
       }
     },
 
@@ -5634,8 +5859,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                  mass = NULL,
                                  mz = NULL,
                                  rt = NULL,
+                                 drift = NULL,
                                  ppm = 20,
                                  sec = 60,
+                                 millisec = 5,
                                  isolationWindow = 1.3,
                                  mzClust = 0.005,
                                  presence = 0.8,
@@ -5650,7 +5877,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                  interactive = TRUE) {
 
       ms2 <- self$get_features_ms2(
-        analyses, features, mass, mz, rt, ppm, sec,
+        analyses, features, mass, mz, rt, drift, ppm, sec, millisec,
         isolationWindow, mzClust, presence, minIntensity,
         verbose, filtered, loadedMS2, runParallel
       )
@@ -5664,9 +5891,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!interactive) {
-        plot_ms2_static(ms2, legendNames, colorBy, title)
+        .plot_ms2_static(ms2, legendNames, colorBy, title)
       } else {
-        plot_ms2_interactive(ms2, legendNames, colorBy, title)
+        .plot_ms2_interactive(ms2, legendNames, colorBy, title)
       }
     },
 
@@ -5683,7 +5910,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       alignment <- private$.alignment
-      colors <- get_colors(names(alignment))
+      colors <- .get_colors(names(alignment))
 
       xaxis <- list(
         linecolor = toRGB("black"),
@@ -5751,8 +5978,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                            mass = NULL,
                            mz = NULL,
                            rt = NULL,
+                           drift = NULL,
                            ppm = 20,
                            sec = 60,
+                           millisec = 5,
                            rtExpand = 15,
                            mzExpand = 0.008,
                            filtered = FALSE,
@@ -5767,7 +5996,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       fts <- self$get_features(
         analyses = NULL,
-        groups, mass, mz, rt, ppm, sec, filtered
+        groups, mass, mz, rt, drift, ppm, sec, millisec, filtered
       )
 
       if (grepl("targets", colorBy) & !isTRUE(legendNames)) {
@@ -5799,8 +6028,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                mass = NULL,
                                mz = NULL,
                                rt = NULL,
+                               drift = NULL,
                                ppm = 20,
                                sec = 60,
+                               millisec = 5,
                                rtWindow = c(-2, 2),
                                mzWindow = c(-5, 90),
                                mzClustFeatures = 0.005,
@@ -5827,7 +6058,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       ms1 <- self$get_groups_ms1(
-        groups, mass, mz, rt, ppm, sec,
+        groups, mass, mz, rt, drift, ppm, sec, millisec,
         rtWindow, mzWindow,
         mzClustFeatures,
         presenceFeatures,
@@ -5851,9 +6082,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if ("analyses" %in% colorBy) colorBy <- "replicates"
 
       if (!interactive) {
-        plot_ms1_static(ms1, legendNames, colorBy, title)
+        .plot_ms1_static(ms1, legendNames, colorBy, title)
       } else {
-        plot_ms1_interactive(ms1, legendNames, colorBy, title)
+        .plot_ms1_interactive(ms1, legendNames, colorBy, title)
       }
     },
 
@@ -5866,8 +6097,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                mass = NULL,
                                mz = NULL,
                                rt = NULL,
+                               drift = NULL,
                                ppm = 20,
                                sec = 60,
+                               millisec = 5,
                                isolationWindow = 1.3,
                                mzClustFeatures = 0.003,
                                presenceFeatures = 0.8,
@@ -5893,7 +6126,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       ms2 <- self$get_groups_ms2(
-        groups, mass, mz, rt, ppm, sec,
+        groups, mass, mz, rt, drift, ppm, sec, millisec,
         isolationWindow,
         mzClustFeatures,
         presenceFeatures,
@@ -5917,9 +6150,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if ("analyses" %in% colorBy) colorBy <- "replicates"
 
       if (!interactive) {
-       plot_ms2_static(ms2, legendNames, colorBy, title)
+        .plot_ms2_static(ms2, legendNames, colorBy, title)
       } else {
-        plot_ms2_interactive(ms2, legendNames, colorBy, title)
+        .plot_ms2_interactive(ms2, legendNames, colorBy, title)
       }
     },
 
@@ -5937,8 +6170,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                     mass = NULL,
                                     mz = NULL,
                                     rt = NULL,
+                                    drift = NULL,
                                     ppm = 20,
                                     sec = 60,
+                                    millisec = 5,
                                     rtExpand = 120,
                                     mzExpand = 0.005,
                                     filtered = FALSE,
@@ -5947,7 +6182,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                     title = NULL,
                                     heights = c(0.35, 0.5, 0.15)) {
 
-      fts <- self$get_features(analyses, groups, mass, mz, rt, ppm, sec, filtered)
+      fts <- self$get_features(analyses, groups, mass, mz, rt, drift, ppm, sec, millisec, filtered)
 
       eic <- self$get_features_eic(
         analyses = unique(fts$analysis), features = fts,
@@ -5980,7 +6215,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       analyses <- private$.check_analyses_argument(analyses)
 
-      plot_groups_overview_aux(fts, eic, heights, analyses)
+      .plot_groups_overview_aux(fts, eic, heights, analyses)
     },
 
     #' @description
@@ -5995,8 +6230,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                               mass = NULL,
                               mz = NULL,
                               rt = NULL,
+                              drift = NULL,
                               ppm = 20,
                               sec = 60,
+                              millisec = 5,
                               filtered = FALSE,
                               xlim = 30,
                               ylim = 0.05,
@@ -6008,7 +6245,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       components <- self$get_components(
         analyses, groups, features, components,
-        mass, mz, rt, ppm, sec, filtered
+        mass, mz, rt, drift, ppm, sec, millisec, filtered
       )
 
       if (nrow(components) == 0) {
@@ -6021,12 +6258,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!interactive) {
-        map_components_static(
+        .map_components_static(
           components, colorBy, legendNames,
           xlim, ylim, title, showLegend
         )
       } else {
-        map_components_interactive(
+        .map_components_interactive(
           components, colorBy, legendNames,
           xlim, ylim, title
         )
@@ -6044,13 +6281,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (self$has_settings()) {
         
         lapply(self$get_settings(), function(x) {
-          
           call <- x$call
-          
-          browser()
-          
+          message("\U2699 Running ", call, " with ", x$algorithm)
           do.call(self[[call]], list(settings = NULL))
-          
         })
 
       } else {
@@ -6059,7 +6292,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       
       invisible(self)
     },
-    
     
     ### ___ basic -----
 

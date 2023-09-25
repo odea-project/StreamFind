@@ -41,6 +41,13 @@ Settings_filter_features_StreamFind.
 \description{
 Settings for filtering of features and feature groups.
 }
+\details{
+When feature groups exist the filtering is done on feature groups, meaning
+that the filters are applied per feature group not individual features. For
+instance, if feature groups exist the minimum intensity is applied on the
+maximum intensity observed for a feature group and not the intensity of each
+individual feature.
+}
 \section{Methods (by generic)}{
 \itemize{
 \item \code{validate(Settings_filter_features_StreamFind)}: Validates the Settings_filter_features_StreamFind S3 class object, returning

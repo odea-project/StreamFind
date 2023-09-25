@@ -47,6 +47,14 @@ export <- function(x, ...) {
   UseMethod(".s3_ms_fill_features")
 }
 
+.s3_ms_control_standards <- function(settings, self) {
+  UseMethod(".s3_ms_control_standards")
+}
+
+.s3_ms_correct_intensity <- function(settings, self) {
+  UseMethod(".s3_ms_correct_intensity")
+}
+
 .s3_ms_suspect_screening <- function(settings, self) {
   UseMethod(".s3_ms_suspect_screening")
 }

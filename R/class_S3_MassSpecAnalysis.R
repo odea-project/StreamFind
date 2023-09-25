@@ -157,8 +157,8 @@ MassSpecAnalysis <- function(name = NA_character_,
   x$instrument <- as.data.table(x$instrument)
 
   x$run <- as.data.table(x$run)
-  x$run$pre_loweroffset <- as.numeric(x$run$pre_loweroffset)
-  x$run$pre_upperoffset <- as.numeric(x$run$pre_upperoffset)
+  x$run$pre_mzlow <- as.numeric(x$run$pre_mzlow)
+  x$run$pre_mzhigh <- as.numeric(x$run$pre_mzhigh)
   x$run$drift <- as.numeric(x$run$drift)
 
   x$spectra <- as.data.table(x$spectra)
@@ -475,7 +475,7 @@ parse.MassSpecAnalysis <- function(files = NULL, runParallel = FALSE) {
 
   cached_analyses <- FALSE
 
-  if (caches_data()) {
+  if (.caches_data()) {
     hash <- patRoon::makeHash(files)
     analyses <- patRoon::loadCacheData("parsed_ms_analyses", hash)
 

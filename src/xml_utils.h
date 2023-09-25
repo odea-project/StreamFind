@@ -48,8 +48,8 @@ namespace xml_utils {
     std::vector<double> drift;
     std::vector<int> pre_scan;
     std::vector<double> pre_mz;
-    std::vector<double> pre_loweroffset;
-    std::vector<double> pre_upperoffset;
+    std::vector<double> pre_mzlow;
+    std::vector<double> pre_mzhigh;
     std::vector<double> pre_ce;
   }; // spectraHeaders
 
@@ -105,8 +105,8 @@ namespace xml_utils {
     std::vector<double> scan_injectionIonTime;
     std::vector<int> pre_scan;
     std::vector<double> pre_mz;
-    std::vector<double> pre_loweroffset;
-    std::vector<double> pre_upperoffset;
+    std::vector<double> pre_mzlow;
+    std::vector<double> pre_mzhigh;
     std::vector<double> ion_mz;
     std::vector<double> ion_charge;
     std::vector<double> ion_intensity;

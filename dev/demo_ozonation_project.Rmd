@@ -36,7 +36,7 @@ path_wd <- getwd()
 
 # Add logo file
 path_extdata <- system.file(package = "StreamFindData", dir = "extdata")
-logo <- file.path(path_extdata, "logo_StreamFind.png") #207 x 216 px
+logo <- file.path(path_extdata, "logo_StreamFind.png")
 ```
 
 ```{r logo, echo=FALSE}
@@ -48,13 +48,13 @@ if (!is.na(logo)) {
     paste0("
       margin-left:inherit;
       position:absolute;
-      top:100px;
-      left:610px;
+      top:150px;
+      left:600px;
       width:", 250, "px;
       height:", 250*(1633/3070), "px;"
     )
-  ) 
-} # height:", 100*(216/207), "px;"
+  )
+}
 ```
 
 <br>
@@ -197,15 +197,16 @@ ms$get_settings_names()
 
 ## Apply the workflow
 
-The workflow can be run by chaining all the modules as demonstrated below or by running the method `run_workflow()`. 
+The modules assidadded *ProcessingSettings* can be processed by `run_workflow()` as demonstrated below or by chaining all the modules. With `run_workflow()`, the processing modules are applied with the same order they were added. By chaining the order can be modified as the modules are individually called, as shown below.
 
 ```{r do-workflow, results='markup', warning=FALSE}
-
+# Run all ProcessingSettings added to the MassSpecData
 ms$run_workflow()
+```
 
-ms
-
-#ms$find_features()$annotate_features()$group_features()$filter_features()
+```{r do-workflow-chain, eval=FALSE}
+# Alternatively, the modules can be chained
+ms$find_features()$annotate_features()$group_features()$filter_features()
 ```
 
 

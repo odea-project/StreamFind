@@ -47,8 +47,11 @@ Rcpp::List rcpp_parse_ms_analysis_spectra(Rcpp::List analysis, Rcpp::IntegerVect
       const Rcpp::IntegerVector& level = run["level"];
       const Rcpp::IntegerVector& pre_scan = run["pre_scan"];
       const Rcpp::NumericVector& pre_mz = run["pre_mz"];
+      const Rcpp::NumericVector& pre_mzlow = run["pre_mzlow"];
+      const Rcpp::NumericVector& pre_mzhigh = run["pre_mzhigh"];
       const Rcpp::NumericVector& pre_ce = run["pre_ce"];
       const Rcpp::NumericVector& rt = run["rt"];
+      const Rcpp::NumericVector& drift = run["drift"];
 
       Rcpp::ListOf<Rcpp::NumericMatrix> bins;
 
@@ -78,7 +81,7 @@ Rcpp::List rcpp_parse_ms_analysis_spectra(Rcpp::List analysis, Rcpp::IntegerVect
 
         if (n_cols_bin == 0) return empty_df;
 
-        int n_cols = n_cols_bin + 8;
+        int n_cols = n_cols_bin + 11;
 
         int n_rows = 0;
         for (int i = 0; i < number_spectra; i++) {
@@ -93,8 +96,18 @@ Rcpp::List rcpp_parse_ms_analysis_spectra(Rcpp::List analysis, Rcpp::IntegerVect
         Rcpp::IntegerVector level_out(n_rows);
         Rcpp::IntegerVector pre_scan_out(n_rows);
         Rcpp::NumericVector pre_mz_out(n_rows);
+        Rcpp::NumericVector pre_mzlow_out(n_rows);
+        Rcpp::NumericVector pre_mzhigh_out(n_rows);
         Rcpp::NumericVector pre_ce_out(n_rows);
         Rcpp::NumericVector rt_out(n_rows);
+        Rcpp::NumericVector drift_out(n_rows);
+        
+        // bool has_ion_mobility = run["has_ion_mobility"];
+        // Rcpp::NumericVector drift_out;
+        // 
+        // if (has_ion_mobility) {
+        //   
+        // }
 
         int b = 0;
         int rowOffset = 0;
@@ -117,7 +130,10 @@ Rcpp::List rcpp_parse_ms_analysis_spectra(Rcpp::List analysis, Rcpp::IntegerVect
               pre_scan_out[offset] = pre_scan[i];
               pre_ce_out[offset] = pre_ce[i];
               pre_mz_out[offset] = pre_mz[i];
+              pre_mzlow_out[offset] = pre_mzlow[i];
+              pre_mzhigh_out[offset] = pre_mzhigh[i];
               rt_out[offset] = rt[i];
+              drift_out[offset] = drift[i];
 
               for (int j = 0; j < n_cols_bin; j++) {
                 out_mat(offset, j) = bin(r, j);
@@ -138,15 +154,32 @@ Rcpp::List rcpp_parse_ms_analysis_spectra(Rcpp::List analysis, Rcpp::IntegerVect
         output[4] = pre_scan_out;
         output[5] = pre_ce_out;
         output[6] = pre_mz_out;
-        output[7] = rt_out;
+        output[7] = pre_mzlow_out;
+        output[8] = pre_mzhigh_out;
+        output[9] = rt_out;
+        output[10] = drift_out;
 
         for (int i = 0; i < n_cols_bin; ++i) {
-          output[i + 8] = out_mat(Rcpp::_, i);
+          output[i + 11] = out_mat(Rcpp::_, i);
         }
 
-        const Rcpp::CharacterVector cols = {"index", "scan", "polarity", "level", "pre_scan", "pre_ce", "pre_mz", "rt", "mz", "intensity"};
+        const Rcpp::CharacterVector cols = {
+          "index",
+          "scan",
+          "polarity",
+          "level",
+          "pre_scan",
+          "pre_ce",
+          "pre_mz",
+          "pre_mzlow",
+          "pre_mzhigh",
+          "rt",
+          "drift",
+          "mz",
+          "intensity"
+        };
+        
         output.attr("names") = cols;
-
 
         output.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
 

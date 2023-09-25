@@ -267,8 +267,8 @@ void xml_utils::mzml_spectra_headers_parser(const pugi::xml_node& node_mzml, xml
     output.drift.resize(number_spectra);
     output.pre_scan.resize(number_spectra);
     output.pre_mz.resize(number_spectra);
-    output.pre_loweroffset.resize(number_spectra);
-    output.pre_upperoffset.resize(number_spectra);
+    output.pre_mzlow.resize(number_spectra);
+    output.pre_mzhigh.resize(number_spectra);
     output.pre_ce.resize(number_spectra);
 
     for (int i = 0; i < number_spectra; i++) {
@@ -370,14 +370,14 @@ void xml_utils::mzml_spectra_headers_parser(const pugi::xml_node& node_mzml, xml
         output.pre_mz[i] = pre_mz_node.attribute("value").as_double();
         if (std::isnan(output.pre_mz[i])) output.pre_mz[i] = NA_REAL;
 
-        pugi::xml_node pre_loweroffset_node = isolation.find_child_by_attribute("cvParam", "name", "isolation window lower offset");
-        output.pre_loweroffset[i] = pre_loweroffset_node.attribute("value").as_double();
-        if (std::isnan(output.pre_loweroffset[i])) output.pre_loweroffset[i] = NA_REAL;
+        pugi::xml_node pre_mzlow_node = isolation.find_child_by_attribute("cvParam", "name", "isolation window lower offset");
+        output.pre_mzlow[i] = pre_mzlow_node.attribute("value").as_double();
+        if (std::isnan(output.pre_mzlow[i])) output.pre_mzlow[i] = NA_REAL;
 
 
-        pugi::xml_node pre_upperoffset_node = isolation.find_child_by_attribute("cvParam", "name", "isolation window upper offset");
-        output.pre_upperoffset[i] = pre_upperoffset_node.attribute("value").as_double();
-        if (std::isnan(output.pre_upperoffset[i])) output.pre_upperoffset[i] = NA_REAL;
+        pugi::xml_node pre_mzhigh_node = isolation.find_child_by_attribute("cvParam", "name", "isolation window upper offset");
+        output.pre_mzhigh[i] = pre_mzhigh_node.attribute("value").as_double();
+        if (std::isnan(output.pre_mzhigh[i])) output.pre_mzhigh[i] = NA_REAL;
 
         pugi::xml_node activation = precursor.child("activation");
 
@@ -388,8 +388,8 @@ void xml_utils::mzml_spectra_headers_parser(const pugi::xml_node& node_mzml, xml
       } else {
         output.pre_scan[i] = NA_INTEGER;
         output.pre_mz[i] = NA_REAL;
-        output.pre_loweroffset[i] = NA_REAL;
-        output.pre_upperoffset[i] = NA_REAL;
+        output.pre_mzlow[i] = NA_REAL;
+        output.pre_mzhigh[i] = NA_REAL;
         output.pre_ce[i] = NA_REAL;
       }
     }
@@ -428,8 +428,8 @@ void xml_utils::mzxml_spectra_headers_parser(const pugi::xml_node& node_mzxml, x
   output.drift.resize(number_spectra);
   output.pre_scan.resize(number_spectra);
   output.pre_mz.resize(number_spectra);
-  output.pre_loweroffset.resize(number_spectra);
-  output.pre_upperoffset.resize(number_spectra);
+  output.pre_mzlow.resize(number_spectra);
+  output.pre_mzhigh.resize(number_spectra);
   output.pre_ce.resize(number_spectra);
 
   for (int i = 0; i < number_spectra; i++) {
@@ -506,8 +506,8 @@ void xml_utils::mzxml_spectra_headers_parser(const pugi::xml_node& node_mzxml, x
     }
 
     output.pre_scan[i] = NA_INTEGER;
-    output.pre_loweroffset[i] = NA_REAL;
-    output.pre_upperoffset[i] = NA_REAL;
+    output.pre_mzlow[i] = NA_REAL;
+    output.pre_mzhigh[i] = NA_REAL;
   }
 }
 
@@ -556,8 +556,8 @@ Rcpp::List xml_utils::spectraHeaders_to_list(const xml_utils::spectraHeaders& he
   headers["pre_scan"] = headers_cpp.pre_scan;
   headers["pre_mz"] = headers_cpp.pre_mz;
   headers["pre_ce"] = headers_cpp.pre_ce;
-  headers["pre_loweroffset"] = headers_cpp.pre_loweroffset;
-  headers["pre_upperoffset"] = headers_cpp.pre_upperoffset;
+  headers["pre_mzlow"] = headers_cpp.pre_mzlow;
+  headers["pre_mzhigh"] = headers_cpp.pre_mzhigh;
 
   headers.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
 
@@ -576,21 +576,31 @@ xml_utils::spectraHeaders xml_utils::list_to_spectraHeaders(const Rcpp::List& ru
 
   Rcpp::IntegerVector pre_scan = run["pre_scan"];
   Rcpp::NumericVector pre_mz = run["pre_mz"];
+  Rcpp::NumericVector pre_mzlow = run["pre_mzlow"];
+  Rcpp::NumericVector pre_mzhigh = run["pre_mzhigh"];
   Rcpp::NumericVector pre_ce = run["pre_ce"];
 
   for (int i = 0; i < number_spectra; i++) {
 
-      if (pre_scan[i] == NA_INTEGER) {
-        pre_scan[i] = -1;
-      }
+    if (pre_scan[i] == NA_INTEGER) {
+      pre_scan[i] = -1;
+    }
 
-      if (pre_mz[i] == NA_REAL) {
-        pre_mz[i] = nan("");
-      }
+    if (pre_mz[i] == NA_REAL) {
+      pre_mz[i] = nan("");
+    }
+    
+    if (pre_mzlow[i] == NA_REAL) {
+      pre_mzlow[i] = nan("");
+    }
+    
+    if (pre_mzhigh[i] == NA_REAL) {
+      pre_mzhigh[i] = nan("");
+    }
 
-      if (pre_ce[i] == NA_REAL) {
-      pre_ce[i] = nan("");
-      }
+    if (pre_ce[i] == NA_REAL) {
+    pre_ce[i] = nan("");
+    }
   }
 
   output.index.resize(number_spectra);
@@ -608,8 +618,8 @@ xml_utils::spectraHeaders xml_utils::list_to_spectraHeaders(const Rcpp::List& ru
   output.drift.resize(number_spectra);
   output.pre_scan.resize(number_spectra);
   output.pre_mz.resize(number_spectra);
-  output.pre_loweroffset.resize(number_spectra);
-  output.pre_upperoffset.resize(number_spectra);
+  output.pre_mzlow.resize(number_spectra);
+  output.pre_mzhigh.resize(number_spectra);
   output.pre_ce.resize(number_spectra);
 
   output.index = index;
@@ -625,6 +635,8 @@ xml_utils::spectraHeaders xml_utils::list_to_spectraHeaders(const Rcpp::List& ru
   output.ticint = Rcpp::as<std::vector<double>>(run["tic_intensity"]);
   output.pre_scan = Rcpp::as<std::vector<int>>(pre_scan);
   output.pre_mz = Rcpp::as<std::vector<double>>(pre_mz);
+  output.pre_mzlow = Rcpp::as<std::vector<double>>(pre_mzlow);
+  output.pre_mzhigh = Rcpp::as<std::vector<double>>(pre_mzhigh);
   output.pre_ce = Rcpp::as<std::vector<double>>(pre_ce);
 
   return output;

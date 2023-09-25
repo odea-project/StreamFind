@@ -28,6 +28,8 @@ files_df <- data.frame(
 
 ms <- MassSpecData$new(files = files_df)
 
+ms$get_run(analyses = 1)
+
 ms <- ms$subset_analyses(c(4:6, 10:12, 16:18))
 
 ms$add_settings(
@@ -35,7 +37,11 @@ ms$add_settings(
     Settings_find_features_xcms3_centwave(),
     Settings_group_features_xcms3_peakdensity(),
     Settings_filter_features_StreamFind(
-      minIntensity = 20000
+      minIntensity = 10000,
+      minSnRatio = 20,
+      maxGroupSd = 30,
+      blank = 5,
+      minGroupAbundance = 3
     ),
     Settings_load_features_ms1_StreamFind(presence = 0.5),
     Settings_load_features_ms2_StreamFind(presence = 0.5),
@@ -48,7 +54,7 @@ ms
 
 
 # patRoon::clearCache("parsed_ms_analyses")
-# patRoon::clearCache("parsed_ms_spectra")
+patRoon::clearCache("parsed_ms_spectra")
 # patRoon::clearCache("load_features_ms1")
 # patRoon::clearCache("load_features_ms2")
 # patRoon::clearCache("load_groups_ms1")
@@ -56,37 +62,20 @@ ms
 # patRoon::clearCache("MSPeakListsAvg")
 # ms$get_history()
 
-ms$find_features()
-
-ms$filter_features()
-
+# ms$find_features()
+# 
 # ms$group_features()
+# 
+# ms$filter_features()
 
-
-
-f <- "ms[['get_analysis_names']]"
-do.call(f, list())
-
-
-
-
-ms$get_analysis_names()
-
-
-filters2 <- Settings_filter_features_StreamFind(
-  minSnRatio = 20,
-  maxGroupSd = 30,
-  blank = 5,
-  minGroupAbundance = 3
-)
-
-ms$filter_features(filters2)
-
-View(ms$get_features(filtered = TRUE))
-
+ms$plot_spectra(1, xVal = "drift")
 
 
 suspects <- ms$get_suspects(database = db, ppm = 10, sec = 15)
+
+suspects
+
+
 
 ms <- ms$subset_features(features = suspects)
 
@@ -171,21 +160,21 @@ formulas <- patRoon::generateFormulasGenForm(
 
 
 
-# ms$plot_features_ms2(
-#   mass = diu, rt = diu_rt,
-#   presence = 0.8, minIntensity = 250,
-#   colorBy = "analyses"
-# )
+ms$get_features_ms2(
+  mass = db[11, ],
+  presence = 0.8,
+  minIntensity = 250
+)
 # 
-# ms$plot_features_ms1(
-#   mass = diu, rt = diu_rt, 
-#   presence = 0.8,
-#   mzWindow = c(-1, 6),
-#   rtWindow = c(-2, 2),
-#   minIntensity = 250,
-#   colorBy = "analyses"
-# )
-# 
+ms$plot_features_ms1(
+  mass = db[11, ],
+  presence = 0.8,
+  mzWindow = c(-1, 6),
+  rtWindow = c(-2, 2),
+  minIntensity = 250,
+  colorBy = "analyses"
+)
+
 # ms$get_features_ms1(
 #   mass = diu, rt = diu_rt, 
 #   presence = 0.8,
@@ -194,16 +183,16 @@ formulas <- patRoon::generateFormulasGenForm(
 #   minIntensity = 250
 # )
 
-# ms$plot_groups_ms1(
-#   mass = diu, rt = diu_rt, 
-#   presenceFeatures = 0.8,
-#   presenceGroups = 0.8,
-#   mzWindow = c(-1, 6),
-#   rtWindow = c(-2, 2),
-#   minIntensityFeatures = 250,
-#   minIntensityGroups = 250,
-#   colorBy = "targets+polarities"
-# )
+ms$plot_groups_ms1(
+  mass = db[11, ],
+  presenceFeatures = 0.8,
+  presenceGroups = 0.8,
+  mzWindow = c(-1, 4),
+  rtWindow = c(-2, 2),
+  minIntensityFeatures = 250,
+  minIntensityGroups = 250,
+  colorBy = "targets+polarities"
+)
 # 
 # ms$plot_eic(mass = diu, rt = diu_rt, colorBy = "targets+polarities")
 # 
