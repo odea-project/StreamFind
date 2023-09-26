@@ -1,5 +1,10 @@
 ---
-title: "StreamFind for mass spectrometry with R"
+title: "StreamFind for mass spectrometry"
+author:
+  name: Ricardo Cunha
+  email: cunha@iuta.de
+  # affiliation: "Institut für Umwelt & Energie, Technik & Analytik e. V. (IUTA) <br> Bliersheimer Str. 58 - 60, 47229 Duisburg"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   bookdown::html_document2:
     fig_caption: true
@@ -9,13 +14,30 @@ output:
     toc_depth: 4
 vignette: >
   %\VignetteEncoding{UTF-8}
-  %\VignetteIndexEntry{StreamFind for mass spectrometry with R}
+  %\VignetteIndexEntry{StreamFind for mass spectrometry}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options:
   chunk_output_type: console
 ---
 
 ```{r, include = FALSE}
+# Libraries
+library(knitr)
+library(kableExtra)
+library(magrittr)
+library(mzR)
+library(patRoon)
+library(StreamFind)
+
+# Variables
+logo <- NA_character_
+
+# Working directory
+path_wd <- getwd()
+
+# Path StreamFindData
+path_extdata <- system.file(package = "StreamFindData", dir = "extdata")
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -26,7 +48,29 @@ knitr::opts_chunk$set(
   cache = TRUE,
   size = 'small'
 )
+
 options(width = 110)
+
+logo <- file.path(path_extdata, "logo_StreamFind.png")
+# logo <- "man/figures/logo_StreamFind.png"
+```
+
+```{r logo, echo=FALSE}
+if (!is.na(logo)) {
+  htmltools::img(
+  src = knitr::image_uri(logo),
+  alt = "logo",
+  style =
+    paste0("
+      margin-left:inherit;
+      position:absolute;
+      top:150px;
+      left:600px;
+      width:", 250, "px;
+      height:", 250*(1633/3070), "px;"
+    )
+  )
+}
 ```
 
 <style>
@@ -39,14 +83,11 @@ pre code {
 }
 </style>
 
-```{r libraries, include=FALSE}
-library(knitr)
-library(kableExtra)
-library(magrittr)
-library(mzR)
-library(patRoon)
-library(StreamFind)
-```
+<br>
+
+<br>
+
+***
 
 # Introduction
 
@@ -765,7 +806,7 @@ slfms1 <- Settings_load_features_ms1_StreamFind(
   rtWindow = c(-2, 2),
   mzWindow = c(-1, 6),
   mzClust = 0.003,
-  isInAllSpectra = FALSE,
+  presence = 0.9,
   minIntensity = 250,
   filtered = FALSE,
   runParallel = FALSE,
@@ -778,7 +819,7 @@ ms$add_settings(settings = slfms1)
 slfms2 <- Settings_load_features_ms2_StreamFind(
   isolationWindow = 1.3,
   mzClust = 0.003,
-  isInAllSpectra = FALSE,
+  presence = 0.9,
   minIntensity = 0,
   filtered = FALSE,
   runParallel = FALSE,
@@ -992,7 +1033,7 @@ slfgms1 <- Settings_load_features_ms1_StreamFind(
   rtWindow = c(-2, 2),
   mzWindow = c(-1, 6),
   mzClust = 0.003,
-  isInAllSpectra = FALSE,
+  presence = 0.9,
   minIntensity = 250,
   filtered = FALSE,
   runParallel = FALSE,
@@ -1005,7 +1046,7 @@ msTargets$add_settings(settings = slfgms1)
 slfgms2 <- Settings_load_features_ms2_StreamFind(
   isolationWindow = 1.3,
   mzClust = 0.003,
-  isInAllSpectra = FALSE,
+  presence = 0.9,
   minIntensity = 0,
   filtered = FALSE,
   runParallel = FALSE,

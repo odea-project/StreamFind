@@ -1,16 +1,23 @@
 ---
-title: 'StreamFind: Wastewater Ozonation'
-subtitle: Mass spectrometry project example
+title: 'Wastewater ozonation showcase'
+subtitle: |
+  | Mass spectrometry project example
+  | <br>
 author:
   name: Ricardo Cunha
   email: cunha@iuta.de
-  affiliation: "Institut für Umwelt & Energie, Technik & Analytik e. V. (IUTA) <br> Bliersheimer Str. 58 - 60, 47229 Duisburg"
+  # affiliation: "Institut für Umwelt & Energie, Technik & Analytik e. V. (IUTA) <br> Bliersheimer Str. 58 - 60, 47229 Duisburg"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   bookdown::html_document2:
-    toc: yes
-    toc_float: yes
-    theme: paper
+    fig_caption: true
+    toc: true
+    number_sections: true
+    toc_float: true
+vignette: >
+  %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{Developer guide for mass spectrometry}
+  %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
   chunk_output_type: console
 ---
@@ -37,6 +44,7 @@ path_wd <- getwd()
 # Add logo file
 path_extdata <- system.file(package = "StreamFindData", dir = "extdata")
 logo <- file.path(path_extdata, "logo_StreamFind.png")
+# logo <- "man/figures/logo_StreamFind.png"
 ```
 
 ```{r logo, echo=FALSE}
@@ -57,8 +65,6 @@ if (!is.na(logo)) {
 }
 ```
 
-<br>
-
 ```{r resources, include=FALSE}
 # MS files
 all_files <- StreamFindData::get_all_file_paths()
@@ -72,6 +78,19 @@ db <- db[, cols, with = FALSE]
 db
 ```
 
+<style>
+pre {
+  overflow-x: auto;
+}
+pre code {
+  word-wrap: normal;
+  white-space: pre;
+}
+</style>
+
+<br>
+
+<br>
 
 ***
 
@@ -114,7 +133,7 @@ ms$get_headers(value = "name")
 
 ## Associate blanks
 
-The analysis replicate names and the associated blank replicate name can be ammended in the MassSpecData as shown below. 
+The analysis replicate names and the associated blank replicate name can be amended in the MassSpecData as shown below. 
 
 ```{r add-replicates, results='markup'}
 
@@ -209,118 +228,32 @@ ms$run_workflow()
 ms$find_features()$annotate_features()$group_features()$filter_features()
 ```
 
-
-
-# Instructions
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents.
-For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-Diverse cheatsheets can be found in <https://www.rstudio.com/resources/cheatsheets/>.
-This section gives quick instructions to display text, code, tables and figures.  
-
-## Text
-
-Text in R markdown has several inline codes for costumization.
-The book in <https://bookdown.org/yihui/rmarkdown/> offers a detailed guideline.
-Moreover, a cheatsheet can be downdloaded with the following link <https://raw.githubusercontent.com/rstudio/cheatsheets/main/rmarkdown.pdf>.
-
-## Code
-
-Code is automaticelly embedded unless `echo` chunk option is set to `FALSE`.
-Evaluation of code in a given chunk can be skiped by setting `eval` to `FALSE`.
-Code chunks should always be unically named.  
-
-```{r exampleCode}
-
-#Example of code chunk
-
-list(a = 1:6, b = 1:10)
-
-```
-
-<br>
-
-## Tables
-
-The `knitr::kable` function can be used for displaying tables, see table \@ref(tab:exampleTable). Consult <https://haozhu233.github.io/kableExtra/awesome_table_in_html.html> for other costumization options.
-Table caption is added with the argument `caption` of the `kable` function.   
-
-```{r exampleTable}
-
-df <- data.frame(name = c("a", "b", "c", "d", "e", "f"), col1 = 1:6, col2 = 1:6)
-
-knitr::kable(df, caption = "Example of table caption.") %>%
-kable_styling(
-  font_size = 12,
-  bootstrap_options = c("striped", "hover", "condensed", "responsive"),
-  fixed_thead = TRUE
-) %>%
-  scroll_box(width = "100%", height = "350px")
-
-```
-
-<br>
-
-## Figures
-
-Figures/plots can also by embedded using diverse packages.
-The packages `ggplot2` and `plotly` (interactive) are recommended as they are versatile and easy to use.
-Cheatsheet for `ggplot2` can be found in <https://raw.githubusercontent.com/rstudio/cheatsheets/main/data-visualization.pdf>.
-For `plotly` the website <https://plotly.com/r/> offers examples and a cheatsheet can be downdloaded in <https://images.plot.ly/plotly-documentation/images/r_cheat_sheet.pdf>.
-Note that the `echo = FALSE` parameter can be added to the code chunk to prevent printing of the R code that generate the plots.  
-
-### Example `ggplot2`
-
-```{r examplePlot, fig.cap="Plot caption example"}
-
-ggplot(pressure, aes(temperature, pressure)) +
-geom_point() +
-theme_bw()
-
-```
-
-### Example `plotly`
-
-```{r examplePlotly, fig.cap="Plot caption example"}
-
-plot_ly(pressure, x = ~temperature, y = ~pressure, type = "scatter", mode = "markers+lines")
-
-```
-
-<br> <br>
-
-# Signature
-
-The report was produced on `r Sys.time()`. The data and report are stored in ``r path_wd`` of the workstation *`r Sys.info()["nodename"]`* under the user *`r Sys.info()["user"]`*.
-
 ***
 
-<br>
-
-<style>
-body, p {
-  color: black;
-  font-family: Arial;
-  text-align: justify;
-  font-size: 12pt;
-}
-h1{
-  font-size: 20pt;
-  font-style: bold;
-}
-h2{
-  font-size:18pt;
-  font-style: bold;
-}
-h3{
-  font-size:14pt;
-  font-style: bold;
-}
-.list-group-item.active, .list-group-item.active:focus, .list-group-item.active:hover {
-    background-color: #177013;
-}
-caption {
-  color: black;
-  font-size: 1.0em;
-}
-</style>
+<!-- <style> -->
+<!-- body, p { -->
+<!--   color: black; -->
+<!--   font-family: Arial; -->
+<!--   text-align: justify; -->
+<!--   font-size: 12pt; -->
+<!-- } -->
+<!-- h1{ -->
+<!--   font-size: 20pt; -->
+<!--   font-style: bold; -->
+<!-- } -->
+<!-- h2{ -->
+<!--   font-size:18pt; -->
+<!--   font-style: bold; -->
+<!-- } -->
+<!-- h3{ -->
+<!--   font-size:14pt; -->
+<!--   font-style: bold; -->
+<!-- } -->
+<!-- .list-group-item.active, .list-group-item.active:focus, .list-group-item.active:hover { -->
+<!--     background-color: #177013; -->
+<!-- } -->
+<!-- caption { -->
+<!--   color: black; -->
+<!--   font-size: 1.0em; -->
+<!-- } -->
+<!-- </style> -->

@@ -510,6 +510,29 @@ Settings_find_features_openms <- function(
   return(settings)
 }
 
+#' @describeIn Settings_find_features_openms
+#' Validates the Settings_find_features_openms S3 class object, returning a 
+#' logical value of length one.
+#'
+#' @param x A Settings_find_features_openms S3 class object.
+#'
+#' @export
+#'
+validate.Settings_find_features_openms <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "find_features"),
+    checkmate::test_choice(x$algorithm, "openms")
+    # checkmate::test_count(x$parameters$maxIsotopes),
+    # checkmate::test_count(x$parameters$maxCharge),
+    # checkmate::test_count(x$parameters$maxGaps),
+    # checkmate::test_double(x$parameters$rtWindowAlignment, max.len = 1),
+    # checkmate::test_choice(x$parameters$mode, "small molecules"),
+    # checkmate::test_vector(x$parameters$elements, any.missing = FALSE, min.len = 1),
+    # vapply(x$parameters$elements, function(i) checkmate::test_choice(i, c("C","H", "N", "O", "S", "Cl", "Br")), FALSE),
+    # checkmate::test_logical(x$parameters$runParallel, max.len = 1)
+  )
+}
+
 #' @title Settings_find_features_kpic2
 #'
 #' @description Settings for finding features (i.e., chromatographic peaks)
@@ -1499,7 +1522,7 @@ Settings_suspect_screening_forident <- function(
 #' returning a logical value of length one.
 #'
 #' @param x A Settings_suspect_screening_forident S3 class object.
-#'
+#' 
 #' @export
 #'
 validate.Settings_suspect_screening_forident <- function(x) {

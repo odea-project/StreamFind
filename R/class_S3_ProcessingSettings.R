@@ -247,7 +247,7 @@ export.ProcessingSettings <- function(x,
                                       name = "settings",
                                       path = getwd(), ...) {
 
-  if (class(x) %in% "ProcessingSettings") {
+  if ("ProcessingSettings" %in% class(x)) {
     if (validate(x)) {
       if (format %in% "json") {
         settings <- toJSON(
