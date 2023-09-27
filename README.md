@@ -9,7 +9,9 @@
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-<img src="man/figures/logo_StreamFind.png" width="60%" style="display: block; margin: auto;" />
+<p align="center" width="100%">
+<img width="60%" src="man/figures/logo_StreamFind.png" alt="Logo" />
+</p>
 
 The StreamFind project, entitled “Flexible data analysis and workflow
 designer to identify chemicals in the water cycle”, is funded by the
