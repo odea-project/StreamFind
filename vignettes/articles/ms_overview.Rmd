@@ -1,5 +1,8 @@
 ---
 title: "StreamFind for mass spectrometry"
+subtitle: |
+  | Overview of the methods in the R6 MassSpecData class
+  | <br>
 author:
   name: Ricardo Cunha
   email: cunha@iuta.de
@@ -56,21 +59,21 @@ logo <- file.path(path_extdata, "logo_StreamFind.png")
 ```
 
 ```{r logo, echo=FALSE}
-if (!is.na(logo)) {
-  htmltools::img(
-  src = knitr::image_uri(logo),
-  alt = "logo",
-  style =
-    paste0("
-      margin-left:inherit;
-      position:absolute;
-      top:150px;
-      left:600px;
-      width:", 250, "px;
-      height:", 250*(1633/3070), "px;"
-    )
-  )
-}
+# if (!is.na(logo)) {
+#   htmltools::img(
+#   src = knitr::image_uri(logo),
+#   alt = "logo",
+#   style =
+#     paste0("
+#       margin-left:inherit;
+#       position:absolute;
+#       top:150px;
+#       left:600px;
+#       width:", 250, "px;
+#       height:", 250*(1633/3070), "px;"
+#     )
+#   )
+# }
 ```
 
 <style>

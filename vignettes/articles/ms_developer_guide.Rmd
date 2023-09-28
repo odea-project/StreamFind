@@ -47,21 +47,21 @@ logo <- file.path(path_extdata, "logo_StreamFind.png")
 ```
 
 ```{r logo, echo=FALSE}
-if (!is.na(logo)) {
-  htmltools::img(
-  src = knitr::image_uri(logo),
-  alt = "logo",
-  style =
-    paste0("
-      margin-left:inherit;
-      position:absolute;
-      top:150px;
-      left:600px;
-      width:", 250, "px;
-      height:", 250*(1633/3070), "px;"
-    )
-  )
-}
+# if (!is.na(logo)) {
+#   htmltools::img(
+#   src = knitr::image_uri(logo),
+#   alt = "logo",
+#   style =
+#     paste0("
+#       margin-left:inherit;
+#       position:absolute;
+#       top:150px;
+#       left:600px;
+#       width:", 250, "px;
+#       height:", 250*(1633/3070), "px;"
+#     )
+#   )
+# }
 ```
 
 ```{r resources, include=FALSE}
@@ -187,6 +187,10 @@ Under definition.
 ## New algorithms
 
 Under definition.
+
+```{r remove-ffs, include=FALSE}
+file.remove("ffs.json")
+```
 
 ***
 

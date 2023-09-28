@@ -27,7 +27,9 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/ms_overview.html">StreamFind for mass spectrometry with R</a>
+    <a class="dropdown-item" href="../articles/demo_ozonation_project.html">Wastewater ozonation showcase</a>
+    <a class="dropdown-item" href="../articles/ms_developer_guide.html">Developer guide for mass spectrometry</a>
+    <a class="dropdown-item" href="../articles/ms_overview.html">StreamFind for mass spectrometry</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -47,7 +49,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Settings_load_features_ms2_StreamFind</h1>
-      <small class="dont-index">Source: <a href="https://github.com/odea-project/StreamFind/blob/HEAD/R/fct_ms_005_default_ProcessingSettings.R" class="external-link"><code>R/fct_ms_005_default_ProcessingSettings.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/odea-project/StreamFind/blob/HEAD/R/fct_ms_default_ProcessingSettings.R" class="external-link"><code>R/fct_ms_default_ProcessingSettings.R</code></a></small>
       <div class="d-none name"><code>Settings_load_features_ms2_StreamFind.Rd</code></div>
     </div>
 
@@ -60,7 +62,7 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">Settings_load_features_ms2_StreamFind</span><span class="op">(</span></span>
 <span>  isolationWindow <span class="op">=</span> <span class="fl">1.3</span>,</span>
 <span>  mzClust <span class="op">=</span> <span class="fl">0.01</span>,</span>
-<span>  isInAllSpectra <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  presence <span class="op">=</span> <span class="fl">0.8</span>,</span>
 <span>  minIntensity <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  filtered <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  runParallel <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -84,11 +86,10 @@ data (i.e., MS2 data).</p></dd>
 cluster mass traces. Highly dependent on the mass resolution of the MS data.</p></dd>
 
 
-<dt>isInAllSpectra</dt>
-<dd><p>Logical with length one. When <code>TRUE</code>, traces are kept
-if present in all spectra. For MS2 data and when applied multiple collision
-energies, the presence is evaluated for traces within spectra of each
-collision energy.</p></dd>
+<dt>presence</dt>
+<dd><p>Numeric of length one with the required presence ratio from
+0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
+present in all spectra) for traces during clustering of spectra.</p></dd>
 
 
 <dt>minIntensity</dt>

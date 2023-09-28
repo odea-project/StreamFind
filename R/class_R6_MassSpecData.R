@@ -99,9 +99,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
     ## ___ .utils -----
 
-    #' @description
-    #' Registers changes in the history private field.
-    #'
+    # Registers changes in the history private field.
+    # 
     .register = function(
       action = NA_character_,
       object = NA_character_,
@@ -126,11 +125,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
-    #' @description
-    #' Checks the analyses argument as a character/integer vector to match
-    #' analyses names or indices from the `MassSpecData` object. Returns a valid
-    #' character vector with analysis names or `NULL` for non-matching.
-    #'
+    # Checks the analyses argument as a character/integer vector to match
+    # analyses names or indices from the `MassSpecData` object. Returns a valid
+    # character vector with analysis names or `NULL` for non-matching.
+    #
     .check_analyses_argument = function(analyses = NULL) {
       if (is.null(analyses)) {
         self$get_analysis_names()
@@ -145,9 +143,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    #' @description
-    #' Gets an entry from the analyses private field.
-    #'
+    # Gets an entry from the analyses private field.
+    #
     .get_analyses_entry = function(analyses = NULL, value = NA_character_) {
       analyses <- private$.check_analyses_argument(analyses)
 
@@ -167,9 +164,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       output[names(output) %in% analyses]
     },
 
-    #' @description
-    #' Extracts and validates ProcessingSettings for a given call.
-    #'
+    # Extracts and validates ProcessingSettings for a given call.
+    #
     .get_call_settings = function(settings = NULL, call = NULL) {
 
       valid <- TRUE
@@ -204,10 +200,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
     ## ___ .filters -----
 
-    #' @description
-    #' Tags features and feature groups with filter based on logical vector of 
-    #' feature groups.
-    #'
+    # Tags features and feature groups with filter based on logical vector of 
+    # feature groups.
+    #
     .tag_filtered = function(groups_sel, tag) {
       
       filtered_g <- copy(private$.groups)
@@ -229,9 +224,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       private$.groups$filter[groups_sel & is.na(private$.groups$filter)] <- tag
     },
 
-    #' @description
-    #' Filters features and feature groups with minimum intensity.
-    #'
+    # Filters features and feature groups with minimum intensity.
+    #
     .filter_minIntensity = function(value = 5000) {
 
       if (any(self$has_features())) {
@@ -275,9 +269,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    #' @description
-    #' Filters features and feature groups with minimum signal-to-noise ratio.
-    #'
+    # Filters features and feature groups with minimum signal-to-noise ratio.
+    #
     .filter_minSnRatio = function(value = 3) {
 
       features <- self$get_features(filtered = TRUE)
@@ -333,10 +326,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       
     },
 
-    #' @description
-    #' Filters features annotated as isotopes when groups are present the
-    #' isotopes are filtered if present in the all samples of a replicate.
-    #'
+    # Filters features annotated as isotopes when groups are present the
+    # isotopes are filtered if present in the all samples of a replicate.
+    #
     .filter_excludeIsotopes = function(value = TRUE) {
 
       features <- self$get_features(filtered = TRUE)
@@ -385,9 +377,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    #' @description
-    #' Filters feature groups with max replicate group intensity deviation.
-    #'
+    # Filters feature groups with max replicate group intensity deviation.
+    #
     .filter_maxGroupSd = function(value = 30) {
 
       if (self$has_groups()) {
@@ -427,9 +418,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    #' @description
-    #' Filters feature groups with max replicate group abundance.
-    #'
+    # Filters feature groups with max replicate group abundance.
+    #
     .filter_minGroupAbundance = function(value = 3) {
 
       if (self$has_groups()) {
@@ -471,10 +461,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    #' @description
-    #' Filters feature groups which not higher then the defined threshold of the
-    #' corresponding blank replicate group.
-    #'
+    # Filters feature groups which not higher then the defined threshold of the
+    # corresponding blank replicate group.
+    #
     .filter_blank = function(value = 30) {
 
       if (self$has_groups()) {
@@ -528,9 +517,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    #' @description
-    #' Filters features and feature groups within a retention time range.
-    #'
+    # Filters features and feature groups within a retention time range.
+    #
     .filter_rtFilter = function(value = c(0, 0)) {
 
       if (any(self$has_features())) {
@@ -575,9 +563,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    #' @description
-    #' Filters features and feature groups within a mass range.
-    #'
+    # Filters features and feature groups within a mass range.
+    #
     .filter_massFilter = function(value = c(0, 0)) {
 
       if (any(self$has_features())) {
@@ -6626,12 +6613,22 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @return An object with S4 class `features`.
     #'
-    as_features_patRoon = function(filtered = FALSE) {
+    as_patRoon_features = function(filtered = FALSE) {
       
       if (!requireNamespace("patRoon", quietly = TRUE)) {
         return(NULL)
       }
 
+      if (self$get_number_analyses() == 0) {
+        warning("There are no MS analyses!")
+        return(NULL)
+      }
+      
+      if (!any(self$has_features())) {
+        warning("There are no features in the MS analyses!")
+        return(NULL)
+      }
+      
       anaInfo <- self$get_overview()
       
       anaInfo <- data.frame(
@@ -6690,7 +6687,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
       
       if (multiple_polarities) {
         
-        features <- lapply(features, function(x) {
+        pol_key <- c("[M+H]+", "[M-H]-", "[M]")
+        names(pol_key) <- c("1", "-1", "0")
+        
+        features <- lapply(features, function(x, pol_key) {
           
           if (nrow(x) == 0) {
             x$mass <- NULL
@@ -6702,8 +6702,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
           x$mz <- x$mass
           x$mass <- NULL
           
+          pol_char <- as.character(x$polarity)
+          x$adduct <- pol_key[pol_char]
+          
           x
-        })
+        }, pol_key = pol_key)
         
         features_obj <- new("featuresSet",
           features = features, analysisInfo = anaInfo,
@@ -6725,13 +6728,28 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @return An object with S4 class `featureGroups`.
     #'
-    as_featureGroups_patRoon = function(filtered = FALSE) {
+    as_patRoon_featureGroups = function(filtered = FALSE) {
       
       if (!requireNamespace("patRoon", quietly = TRUE)) {
         return(NULL)
       }
       
-      pat_features <- self$as_features_patRoon(filtered)
+      if (self$get_number_analyses() == 0) {
+        warning("There are no MS analyses!")
+        return(NULL)
+      }
+      
+      if (!any(self$has_features())) {
+        warning("There are no features in the MS analyses!")
+        return(NULL)
+      }
+      
+      if (!ms$has_groups()) {
+        warning("No feature groups found!")
+        return(NULL)
+      }
+      
+      pat_features <- self$as_patRoon_features(filtered)
       
       features <- pat_features@features
       
@@ -6762,7 +6780,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         fts_temp <- features[[i]]
         if (nrow(fts_temp) > 0) {
           for (j in groups_cols) {
-            # takes that feature index column was updated with as_features_patRoon
+            # takes that feature index column was updated with as_patRoon_features
             idx_temp <- fts_temp$index[fts_temp$group %in% j]
             if (length(idx_temp) > 0) {
               if (length(idx_temp) > 1) {
@@ -6832,21 +6850,48 @@ MassSpecData <- R6::R6Class("MassSpecData",
     
     #' @description
     #' Creates an object with S4 class `MSPeakLists` from the package 
-    #' \pkg{patRoon} with MS and MSMS data from features in the analyses and 
-    #' feature groups.
+    #' \pkg{patRoon} with MS and MSMS data from features in the analyses.
+    #' Note that feature groups are required. The MS and MSMS spectra of each
+    #' feature are then average by \pkg{patRoon} to produce the feature group 
+    #' spectra using the parameters of the function 
+    #' \link[patRoon]{getDefAvgPListParams}. The arguments described below are 
+    #' taken from the documentation available in \pkg{patRoon}.
     #' 
-    #' @param clusterMzWindow X.
-    #' @param topMost X.
-    #' @param minIntensityPre X.
-    #' @param minIntensityPost X.
-    #' @param avgFun X.
-    #' @param method X.
-    #' @param pruneMissingPrecursorMS X.
-    #' @param retainPrecursorMSMS X.
+    #' @param clusterMzWindow m/z window (in Da) used for clustering m/z values 
+    #' when spectra are averaged. For method="hclust" this corresponds to the 
+    #' cluster height, while for method="distance" this value is used to find 
+    #' nearby masses (+/- window). Too small windows will prevent clustering 
+    #' m/z values (thus erroneously treating equal masses along spectra as 
+    #' different), whereas too big windows may cluster unrelated m/z values 
+    #' from different or even the same spectrum together.
+    #' @param topMost Only retain this maximum number of MS peaks when generating 
+    #' averaged spectra. Lowering this number may exclude more irrelevant (noisy) 
+    #' MS peaks and decrease processing time, whereas higher values may avoid 
+    #' excluding lower intense MS peaks that may still be of interest.
+    #' @param minIntensityPre MS peaks with intensities below this value will 
+    #' be removed (applied prior to selection by `topMost`) before averaging.
+    #' @param minIntensityPost MS peaks with intensities below this value will 
+    #' be removed after averaging.
+    #' @param avgFun Function that is used to calculate average m/z values.
+    #' @param method Method used for producing averaged MS spectra. Valid 
+    #' values are "hclust", used for hierarchical clustering (using the 
+    #' fastcluster package), and "distance", to use the between peak distance. 
+    #' The latter method may reduces processing time and memory requirements, 
+    #' at the potential cost of reduced accuracy.
+    #' @param pruneMissingPrecursorMS For MS data only: if TRUE then peak lists 
+    #' without a precursor peak are removed. Note that even when this is set to 
+    #' FALSE, functionality that relies on MS (not MS/MS) peak lists (e.g. 
+    #' formulae calculation) will still skip calculation if a precursor is not 
+    #' found.
+    #' @param retainPrecursorMSMS For MS/MS data only: if TRUE then always 
+    #' retain the precursor mass peak even if is not among the `topMost` peaks. 
+    #' Note that MS precursor mass peaks are always kept. Furthermore, note 
+    #' that precursor peaks in both MS and MS/MS data may still be removed by 
+    #' intensity thresholds (this is unlike the filter method function).
     #'
     #' @return An object with S4 class `MSPeakLists`.
     #'
-    as_MSPeakLists_patRoon = function(filtered = FALSE,
+    as_patRoon_MSPeakLists = function(filtered = FALSE,
                                       clusterMzWindow = 0.005,
                                       topMost = 100,
                                       minIntensityPre = 50,
@@ -6860,10 +6905,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         pruneMissingPrecursorMS = FALSE
         
         correct_spectrum <- function(s, t, out) {
-          if (length(s) > 1) {
-            warning("")
-            s <- s[1]
-          }
+          
+          if (length(s) > 1) s <- s[1]
           
           names(s) <- t
           
@@ -6904,9 +6947,30 @@ MassSpecData <- R6::R6Class("MassSpecData",
             out <- list()
             
             MS <- features$ms1[features$group %in% x2]
+            
+            if (length(MS) > 1) MS <- MS[1]
+            
+            if (!is.null(MS[[1]])) {
+              
+              if (!"is_pre" %in% colnames(MS[[1]])) {
+                
+                t_mz_min <- features$mzmin[features$group %in% x2]
+                t_mz_max <- features$mzmax[features$group %in% x2]
+                
+                MS[[1]][["is_pre"]] <- vapply(MS[[1]][["mz"]], 
+                  function(x, t_mz_min, t_mz_max) {
+                    x >= t_mz_min & x <= t_mz_max
+                  }, t_mz_min = t_mz_min,
+                  t_mz_max = t_mz_max,
+                  FALSE
+                )
+              }
+            }
+            
             MSMS <- features$ms2[features$group %in% x2]
             
             out <- correct_spectrum(MS, "MS", out)
+            
             out <- correct_spectrum(MSMS, "MSMS", out)
             
             out
@@ -6987,31 +7051,35 @@ MassSpecData <- R6::R6Class("MassSpecData",
         
         groups <- ms$get_groups(filtered = filtered)
         
-        group_names <- unique(groups$group)
+        # group_names <- unique(groups$group)
+        # 
+        # group_names = group_names[order(group_names)]
+        # 
+        # aplist <- lapply(seq_len(nrow(groups)), function(x, groups, correct_spectrum) {
+        #   
+        #   out <- list()
+        # 
+        #   MS <- groups$ms1[x]
+        #   
+        #   MSMS <- groups$ms2[x]
+        # 
+        #   out <- correct_spectrum(MS, "MS", out)
+        #   
+        #   out <- correct_spectrum(MSMS, "MSMS", out)
+        # 
+        #   out
+        # 
+        # }, groups = groups, correct_spectrum = correct_spectrum)
+        # 
+        # names(aplist) <- groups$group
+        # 
+        # aplist <- aplist[vapply(aplist, function(x) length(x) > 0, FALSE)]
+        # 
+        # aplist = aplist[order(names(aplist))]
         
-        group_names = group_names[order(group_names)]
-
-        aplist <- lapply(seq_len(nrow(groups)), function(x, groups, correct_spectrum) {
-          out <- list()
-
-          MS <- groups$ms1[x]
-          MSMS <- groups$ms2[x]
-
-          out <- correct_spectrum(MS, "MS", out)
-          out <- correct_spectrum(MSMS, "MSMS", out)
-
-          out
-
-        }, groups = groups, correct_spectrum = correct_spectrum)
-
-        names(aplist) <- groups$group
+        settings <- self$get_settings("load_groups_ms2")
         
-        aplist <- aplist[vapply(aplist, function(x) length(x) > 0, FALSE)]
-        
-        aplist = aplist[order(names(aplist))]
-        
-        # settings <- self$get_settings("load_groups_ms2")
-        # parameters <- settings$load_groups_ms2$parameters
+        parameters <- settings$load_groups_ms2$parameters
         
         pat_param <- list(
           "clusterMzWindow" = clusterMzWindow,
@@ -7024,14 +7092,14 @@ MassSpecData <- R6::R6Class("MassSpecData",
           "retainPrecursorMSMS" = retainPrecursorMSMS
         )
         
-        # if ("mzClust" %in% names(parameters)) {
-        #   pat_param$clusterMzWindow <- parameters$mzClust
-        # }
+        if ("mzClust" %in% names(parameters)) {
+          pat_param$clusterMzWindow <- parameters$mzClust
+        }
         
-        # if ("minIntensity" %in% names(parameters)) {
-        #   pat_param$minIntensityPre <- parameters$minIntensity
-        #   pat_param$minIntensityPost <- parameters$minIntensity
-        # }
+        if ("minIntensity" %in% names(parameters)) {
+          pat_param$minIntensityPre <- parameters$minIntensity
+          pat_param$minIntensityPost <- parameters$minIntensity
+        }
 
         plfinal <- new("MSPeakLists",
           peakLists = plist,
@@ -7042,7 +7110,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           algorithm = "mzr"
         )
         
-        plfinal@averagedPeakLists <- aplist
+        # plfinal@averagedPeakLists <- aplist
         
         plfinal
         
@@ -7402,6 +7470,97 @@ MassSpecData <- R6::R6Class("MassSpecData",
         NULL
       }
 
+      invisible(self)
+    },
+    
+    ## ___ report -----
+    
+    #' @description
+    #' Saves the HTML report from the function \link[patRoon]{report} from the 
+    #' package \pkg{patRoon}. The interface is exactly the same and the 
+    #' arguments description are taken from the documentation in \pkg{patRoon}.
+    #' Therefore, for further information, we recommend to consult directly the 
+    #' function \link[patRoon]{report} in \pkg{patRoon}.
+    #' 
+    #' @param settingsFile The path to the report settings file used for report 
+    #' configuration (see Report settings in \link[patRoon]{report}).
+    #' @param EICParams A named list with parameters used for extracted ion 
+    #' chromatogram (EIC) creation. See \link[patRoon]{getDefEICParams}.
+    #' @param specSimParams A named list with parameters that influence the 
+    #' calculation of MS spectra similarities. See \link[patRoon]{getDefSpecSimParams}.
+    #' @param clearPath If TRUE then the report destination path will be 
+    #' (recursively) removed prior to reporting.
+    #' @param openReport If set to TRUE then the output report file will be 
+    #' opened with the system browser.
+    #' @param parallel If set to TRUE then code is executed in parallel.
+    #' @param overrideSettings A list with settings that override those from 
+    #' the report settings file. See \link[patRoon]{report}.
+    #'
+    #' @return An interactive HTML report from the package \pkg{patRoon}.
+    #'
+    patRoon_report = function(path = paste0(getwd(), "/report"),
+                              filtered = FALSE,
+                              settingsFile = system.file("report", "settings.yml", package = "patRoon"),
+                              EICParams = patRoon::getDefEICParams(topMost = 1, topMostByRGroup = TRUE),
+                              specSimParams = patRoon::getDefSpecSimParams(),
+                              clearPath = FALSE,
+                              openReport = TRUE,
+                              parallel = TRUE,
+                              overrideSettings = list()) {
+      
+      if (!requireNamespace("patRoon", quietly = TRUE)) {
+        return(invisible(self))
+      }
+      
+      if (self$get_number_analyses() == 0) {
+        warning("There are no MS analyses!")
+        return(invisible(self))
+      }
+      
+      if (!any(self$has_features())) {
+        warning("There are no features in the MS analyses!")
+        return(invisible(self))
+      }
+      
+      if (!ms$has_groups()) {
+        warning("No feature groups found!")
+        return(invisible(self))
+      }
+      
+      fGroups <- self$as_patRoon_featureGroups(filtered)
+      
+      if (is.null(fGroups) | length(fGroups) == 0) {
+        warning("Feature groups empty!")
+        return(invisible(self))
+      }
+      
+      if (!(any(self$has_loaded_features_ms2()) | any(self$has_loaded_features_ms1()))) {
+        warning("MS or MSMS spectra for features not loaded!")
+        # TODO add possibility to generate using patRoon
+        MSPeakLists <- NULL
+        
+      } else {
+        MSPeakLists <- self$as_patRoon_MSPeakLists(filtered)
+      }
+
+      patRoon::report(
+        fGroups,
+        MSPeakLists,
+        formulas = NULL,
+        compounds = NULL,
+        compsCluster = NULL,
+        components = NULL,
+        TPs = NULL,
+        settingsFile = settingsFile,
+        path = path,
+        EICParams = EICParams,
+        specSimParams = specSimParams,
+        clearPath = clearPath,
+        openReport = openReport,
+        parallel = parallel,
+        overrideSettings = overrideSettings
+      )
+      
       invisible(self)
     },
 

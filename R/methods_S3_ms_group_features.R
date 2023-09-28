@@ -12,8 +12,8 @@
     return(FALSE)
   }
 
-  pat_features <- self$as_features_patRoon(filtered = FALSE)
-
+  pat_features <- self$as_patRoon_features(filtered = FALSE)
+  
   if (length(pat_features) == 0) {
     warning("Features were not found! Run find_features method first!")
     return(FALSE)

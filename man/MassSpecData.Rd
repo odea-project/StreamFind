@@ -133,9 +133,9 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \item \href{#method-MassSpecData-filter_features}{\code{MassSpecData$filter_features()}}
 \item \href{#method-MassSpecData-annotate_features}{\code{MassSpecData$annotate_features()}}
 \item \href{#method-MassSpecData-suspect_screening}{\code{MassSpecData$suspect_screening()}}
-\item \href{#method-MassSpecData-as_features_patRoon}{\code{MassSpecData$as_features_patRoon()}}
-\item \href{#method-MassSpecData-as_featureGroups_patRoon}{\code{MassSpecData$as_featureGroups_patRoon()}}
-\item \href{#method-MassSpecData-as_MSPeakLists_patRoon}{\code{MassSpecData$as_MSPeakLists_patRoon()}}
+\item \href{#method-MassSpecData-as_patRoon_features}{\code{MassSpecData$as_patRoon_features()}}
+\item \href{#method-MassSpecData-as_patRoon_featureGroups}{\code{MassSpecData$as_patRoon_featureGroups()}}
+\item \href{#method-MassSpecData-as_patRoon_MSPeakLists}{\code{MassSpecData$as_patRoon_MSPeakLists()}}
 \item \href{#method-MassSpecData-check_correspondence}{\code{MassSpecData$check_correspondence()}}
 \item \href{#method-MassSpecData-save_headers}{\code{MassSpecData$save_headers()}}
 \item \href{#method-MassSpecData-save_settings}{\code{MassSpecData$save_settings()}}
@@ -147,6 +147,7 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \item \href{#method-MassSpecData-import_analyses}{\code{MassSpecData$import_analyses()}}
 \item \href{#method-MassSpecData-import_groups}{\code{MassSpecData$import_groups()}}
 \item \href{#method-MassSpecData-import_all}{\code{MassSpecData$import_all()}}
+\item \href{#method-MassSpecData-patRoon_report}{\code{MassSpecData$patRoon_report()}}
 \item \href{#method-MassSpecData-processing_function_calls}{\code{MassSpecData$processing_function_calls()}}
 \item \href{#method-MassSpecData-clone}{\code{MassSpecData$clone()}}
 }
@@ -155,50 +156,6 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \if{html}{\out{<a id="method-MassSpecData-new"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-new}{}}}
 \subsection{Method \code{new()}}{
-Registers changes in the history private field.
-
-
-Checks the analyses argument as a character/integer vector to match
-analyses names or indices from the \code{MassSpecData} object. Returns a valid
-character vector with analysis names or \code{NULL} for non-matching.
-
-
-Gets an entry from the analyses private field.
-
-
-Extracts and validates ProcessingSettings for a given call.
-
-
-Tags features and feature groups with filter based on logical vector of
-feature groups.
-
-
-Filters features and feature groups with minimum intensity.
-
-
-Filters features and feature groups with minimum signal-to-noise ratio.
-
-
-Filters features annotated as isotopes when groups are present the
-isotopes are filtered if present in the all samples of a replicate.
-
-
-Filters feature groups with max replicate group intensity deviation.
-
-
-Filters feature groups with max replicate group abundance.
-
-
-Filters feature groups which not higher then the defined threshold of the
-corresponding blank replicate group.
-
-
-Filters features and feature groups within a retention time range.
-
-
-Filters features and feature groups within a mass range.
-
-
 Creates an R6 MassSpecData class object. When \code{headers} are not given
 (i.e., \code{NULL}), a default ProjectHeaders S3 class object is generated with name
 as \code{NA_character}, path as \code{get_wd()} and date as \code{Sys.time()}.
@@ -5208,13 +5165,13 @@ processing method will be searched within the \code{MassSpecData} object.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecData-as_features_patRoon"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecData-as_features_patRoon}{}}}
-\subsection{Method \code{as_features_patRoon()}}{
+\if{html}{\out{<a id="method-MassSpecData-as_patRoon_features"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-as_patRoon_features}{}}}
+\subsection{Method \code{as_patRoon_features()}}{
 Creates an object with S4 class \code{features} from the package \pkg{patRoon}
 with the features in the analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$as_features_patRoon(filtered = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$as_patRoon_features(filtered = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -5229,13 +5186,13 @@ An object with S4 class \code{features}.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecData-as_featureGroups_patRoon"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecData-as_featureGroups_patRoon}{}}}
-\subsection{Method \code{as_featureGroups_patRoon()}}{
+\if{html}{\out{<a id="method-MassSpecData-as_patRoon_featureGroups"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-as_patRoon_featureGroups}{}}}
+\subsection{Method \code{as_patRoon_featureGroups()}}{
 Creates an object with S4 class \code{featureGroups} from the package
 \pkg{patRoon} with the features in the analyses and feature groups.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$as_featureGroups_patRoon(filtered = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$as_patRoon_featureGroups(filtered = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -5250,14 +5207,18 @@ An object with S4 class \code{featureGroups}.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecData-as_MSPeakLists_patRoon"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecData-as_MSPeakLists_patRoon}{}}}
-\subsection{Method \code{as_MSPeakLists_patRoon()}}{
+\if{html}{\out{<a id="method-MassSpecData-as_patRoon_MSPeakLists"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-as_patRoon_MSPeakLists}{}}}
+\subsection{Method \code{as_patRoon_MSPeakLists()}}{
 Creates an object with S4 class \code{MSPeakLists} from the package
-\pkg{patRoon} with MS and MSMS data from features in the analyses and
-feature groups.
+\pkg{patRoon} with MS and MSMS data from features in the analyses.
+Note that feature groups are required. The MS and MSMS spectra of each
+feature are then average by \pkg{patRoon} to produce the feature group
+spectra using the parameters of the function
+\link[patRoon]{getDefAvgPListParams}. The arguments described below are
+taken from the documentation available in \pkg{patRoon}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$as_MSPeakLists_patRoon(
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$as_patRoon_MSPeakLists(
   filtered = FALSE,
   clusterMzWindow = 0.005,
   topMost = 100,
@@ -5274,21 +5235,44 @@ feature groups.
 \describe{
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
 
-\item{\code{clusterMzWindow}}{X.}
+\item{\code{clusterMzWindow}}{m/z window (in Da) used for clustering m/z values
+when spectra are averaged. For method="hclust" this corresponds to the
+cluster height, while for method="distance" this value is used to find
+nearby masses (+/- window). Too small windows will prevent clustering
+m/z values (thus erroneously treating equal masses along spectra as
+different), whereas too big windows may cluster unrelated m/z values
+from different or even the same spectrum together.}
 
-\item{\code{topMost}}{X.}
+\item{\code{topMost}}{Only retain this maximum number of MS peaks when generating
+averaged spectra. Lowering this number may exclude more irrelevant (noisy)
+MS peaks and decrease processing time, whereas higher values may avoid
+excluding lower intense MS peaks that may still be of interest.}
 
-\item{\code{minIntensityPre}}{X.}
+\item{\code{minIntensityPre}}{MS peaks with intensities below this value will
+be removed (applied prior to selection by \code{topMost}) before averaging.}
 
-\item{\code{minIntensityPost}}{X.}
+\item{\code{minIntensityPost}}{MS peaks with intensities below this value will
+be removed after averaging.}
 
-\item{\code{avgFun}}{X.}
+\item{\code{avgFun}}{Function that is used to calculate average m/z values.}
 
-\item{\code{method}}{X.}
+\item{\code{method}}{Method used for producing averaged MS spectra. Valid
+values are "hclust", used for hierarchical clustering (using the
+fastcluster package), and "distance", to use the between peak distance.
+The latter method may reduces processing time and memory requirements,
+at the potential cost of reduced accuracy.}
 
-\item{\code{retainPrecursorMSMS}}{X.}
+\item{\code{retainPrecursorMSMS}}{For MS/MS data only: if TRUE then always
+retain the precursor mass peak even if is not among the \code{topMost} peaks.
+Note that MS precursor mass peaks are always kept. Furthermore, note
+that precursor peaks in both MS and MS/MS data may still be removed by
+intensity thresholds (this is unlike the filter method function).}
 
-\item{\code{pruneMissingPrecursorMS}}{X.}
+\item{\code{pruneMissingPrecursorMS}}{For MS data only: if TRUE then peak lists
+without a precursor peak are removed. Note that even when this is set to
+FALSE, functionality that relies on MS (not MS/MS) peak lists (e.g.
+formulae calculation) will still skip calculation if a precursor is not
+found.}
 }
 \if{html}{\out{</div>}}
 }
@@ -5562,6 +5546,62 @@ Imports all fields from a \code{MassSpecData} object saved as \emph{json}.
 }
 \subsection{Returns}{
 Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-patRoon_report"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-patRoon_report}{}}}
+\subsection{Method \code{patRoon_report()}}{
+Saves the HTML report from the function \link[patRoon]{report} from the
+package \pkg{patRoon}. The interface is exactly the same and the
+arguments description are taken from the documentation in \pkg{patRoon}.
+Therefore, for further information, we recommend to consult directly the
+function \link[patRoon]{report} in \pkg{patRoon}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$patRoon_report(
+  path = paste0(getwd(), "/report"),
+  filtered = FALSE,
+  settingsFile = system.file("report", "settings.yml", package = "patRoon"),
+  EICParams = patRoon::getDefEICParams(topMost = 1, topMostByRGroup = TRUE),
+  specSimParams = patRoon::getDefSpecSimParams(),
+  clearPath = FALSE,
+  openReport = TRUE,
+  parallel = TRUE,
+  overrideSettings = list()
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{path}}{String with the directory of the file to be saved.}
+
+\item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
+
+\item{\code{settingsFile}}{The path to the report settings file used for report
+configuration (see Report settings in \link[patRoon]{report}).}
+
+\item{\code{EICParams}}{A named list with parameters used for extracted ion
+chromatogram (EIC) creation. See \link[patRoon]{getDefEICParams}.}
+
+\item{\code{specSimParams}}{A named list with parameters that influence the
+calculation of MS spectra similarities. See \link[patRoon]{getDefSpecSimParams}.}
+
+\item{\code{clearPath}}{If TRUE then the report destination path will be
+(recursively) removed prior to reporting.}
+
+\item{\code{openReport}}{If set to TRUE then the output report file will be
+opened with the system browser.}
+
+\item{\code{parallel}}{If set to TRUE then code is executed in parallel.}
+
+\item{\code{overrideSettings}}{A list with settings that override those from
+the report settings file. See \link[patRoon]{report}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+An interactive HTML report from the package \pkg{patRoon}.
 }
 }
 \if{html}{\out{<hr>}}

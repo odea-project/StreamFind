@@ -39,3 +39,5 @@ settings_group_features.json
 /dev/template_report.html
 /dev/demo_ozonation_project.html
 inst/doc
+/report
+report.yml

@@ -53,29 +53,26 @@ ms$add_settings(
 ms
 
 
-# patRoon::clearCache("parsed_ms_analyses")
+patRoon::clearCache("parsed_ms_analyses")
 patRoon::clearCache("parsed_ms_spectra")
-# patRoon::clearCache("load_features_ms1")
-# patRoon::clearCache("load_features_ms2")
-# patRoon::clearCache("load_groups_ms1")
-# patRoon::clearCache("load_groups_ms2")
+patRoon::clearCache("load_features_ms1")
+patRoon::clearCache("load_features_ms2")
+patRoon::clearCache("load_groups_ms1")
+patRoon::clearCache("load_groups_ms2")
 # patRoon::clearCache("MSPeakListsAvg")
 # ms$get_history()
 
-# ms$find_features()
-# 
-# ms$group_features()
-# 
-# ms$filter_features()
+ms$find_features()
 
-ms$plot_spectra(1, xVal = "drift")
+ms$group_features()
 
+ms$filter_features()
+
+# ms$plot_spectra(1, xVal = "drift")
 
 suspects <- ms$get_suspects(database = db, ppm = 10, sec = 15)
 
 suspects
-
-
 
 ms <- ms$subset_features(features = suspects)
 
@@ -99,38 +96,31 @@ ms$load_groups_ms2()
 # 
 # ms$plot_groups_ms1(mass = db[7, ], colorBy = "targets+polarities")
 
-pat_fg <- ms$as_featureGroups_patRoon()
+# pat_fg <- ms$as_patRoon_featureGroups()
+# 
+# pat_pl <- ms$as_patRoon_MSPeakLists()
+# 
+# ms$patRoon_report()
 
-pat_pl <- ms$as_MSPeakLists_patRoon()
 
 
 
 
-mspl <- patRoon::generateMSPeakListsMzR(
-  pat_fg,
-  maxMSRtWindow = 5,
-  precursorMzWindow = 4,
-  topMost = NULL,
-  avgFeatParams = patRoon::getDefAvgPListParams(),
-  avgFGroupParams = patRoon::getDefAvgPListParams()
-)
 
-saveRDS(pat_pl, "pat_pl.rds")
 
-rm(pat_pl)
 
-pat_pl <- readRDS("pat_pl.rds")
 
-patRoon::report(pat_fg, pat_pl)
+
 
 comp <- patRoon::generateCompoundsMetFrag(
   pat_fg,
   pat_pl,
   # mspl,
   adduct = "[M+H]+",
-  dbRelMzDev = 8,
+  dbRelMzDev = 5,
   fragRelMzDev = 10,
-  fragAbsMzDev = 0.008,
+  fragAbsMzDev = 0.005,
+  maxCandidatesToStop = 10000
 )
 
 formulas <- patRoon::generateFormulasGenForm(
@@ -150,7 +140,7 @@ formulas <- patRoon::generateFormulasGenForm(
   calculateFeatures = FALSE,
   featThreshold = 0,
   featThresholdAnn = 0.75,
-  absAlignMzDev = 0.008,
+  absAlignMzDev = 0.005,
   MSMode = "both",
   isolatePrec = TRUE,
   timeout = 120,
@@ -215,7 +205,7 @@ patRoon::clearCache("load_features_ms2")
 
 library(patRoon)
 
-pat_fg <- ms$as_featureGroups_patRoon()
+pat_fg <- ms$as_patRoon_featureGroups()
 
 pat_fg@features@features
 

@@ -37,7 +37,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(
   std::vector<double> all_mzmin_unsorted = features["mzmin"];
   std::vector<double> all_mzmax_unsorted = features["mzmax"];
   std::vector<double> all_intensity_unsorted = features["intensity"];
-  std::vector<double> all_sn_unsorted = features["sn"];
+  // std::vector<double> all_sn_unsorted = features["sn"];
 
   const std::string* all_ids_unsorted_ptr = all_ids_unsorted.data();
   const int* all_idx_unsorted_ptr = all_idx_unsorted.data();
@@ -48,7 +48,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(
   const double* all_rtmax_unsorted_ptr = all_rtmax_unsorted.data();
   const double* all_mzmax_unsorted_ptr = all_mzmax_unsorted.data();
   const double* all_intensity_unsorted_ptr = all_intensity_unsorted.data();
-  const double* all_sn_unsorted_ptr = all_sn_unsorted.data();
+  // const double* all_sn_unsorted_ptr = all_sn_unsorted.data();
 
   std::vector<int> sort_features_idx(number_of_features);
   std::iota(sort_features_idx.begin(), sort_features_idx.end(), 0);
@@ -64,7 +64,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(
   std::vector<double> all_mzmin(number_of_features);
   std::vector<double> all_mzmax(number_of_features);
   std::vector<double> all_intensity(number_of_features);
-  std::vector<double> all_sn(number_of_features);
+  // std::vector<double> all_sn(number_of_features);
 
   std::string* all_ids_ptr = all_ids.data();
   int* all_idx_ptr = all_idx.data();
@@ -75,7 +75,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(
   double* all_rtmax_ptr = all_rtmax.data();
   double* all_mzmax_ptr = all_mzmax.data();
   double* all_intensity_ptr = all_intensity.data();
-  double* all_sn_ptr = all_sn.data();
+  // double* all_sn_ptr = all_sn.data();
 
   for (const int& x : sort_features_idx) {
     *(all_ids_ptr++) = *(all_ids_unsorted_ptr + x);
@@ -87,7 +87,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     *(all_rtmax_ptr++) = *(all_rtmax_unsorted_ptr + x);
     *(all_mzmax_ptr++) = *(all_mzmax_unsorted_ptr + x);
     *(all_intensity_ptr++) = *(all_intensity_unsorted_ptr + x);
-    *(all_sn_ptr++) = *(all_sn_unsorted_ptr + x);
+    // *(all_sn_ptr++) = *(all_sn_unsorted_ptr + x);
   }
 
   Rcpp::DataFrame sorted_features_df = Rcpp::DataFrame::create(

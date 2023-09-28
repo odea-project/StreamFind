@@ -1,14 +1,15 @@
 
-path <- "C:/Users/Ricardo Cunha/Documents/Work/example_ms_files"
+path <- "F:/example_ms_files"
+# path <- "C:/Users/Ricardo Cunha/Documents/Work/example_ms_files"
 files <- list.files(path, pattern = "im_tof", full.names = TRUE)
 cols <- c("name", "formula", "mz", "rt")
 db <- paste0(path, "/qc_MS2_pos.csv")
 db <- data.table::fread(db)
-db <- db[1, cols, with = FALSE]
+db <- db[, cols, with = FALSE]
 
 # patRoon::clearCache("parsed_ms_analyses")
 
-ms <- MassSpecData$new(files[3])
+ms <- MassSpecData$new(files[2])
 
 # ms$get_run()
 
@@ -30,18 +31,31 @@ ms$plot_eic(mz = db$mz, drift = 20, millisec = 5)
 
 patRoon::clearCache("parsed_ms_spectra")
 
-spectra <- ms$get_spectra(
-  mz = data.table(mzmin = 0, mzmax = 300),
-  rt = data.table(rtmin = 180, rtmax = 210),
-  levels = 1)
+ms$plot_spectra(
+  # mz = data.table(mzmin = 0, mzmax = 300),
+  rt = data.table(rtmin = 190, rtmax = 200),
+  drift = data.table(driftmin = 15, driftmax = 25),
+  levels = c(1, 2),
+  colorBy = "levels",
+  xVal = "mz", yVal = "drift"
+)
 
-spectra
+ms$plot_spectra(
+  # mz = data.table(mzmin = 232.5, mzmax = 238),
+  # rt = data.table(rtmin = 920, rtmax = 960),
+  drift = data.table(driftmin = 15, driftmax = 30),
+  levels = c(1, 2),
+  colorBy = "levels",
+  xVal = "drift", yVal = "rt"
+)
+
+spectra <- ms$get_spectra()
 
 make_ms_targets(mz = 10, rt = 100)
 
-plot_im_map(ms$get_spectra(), xval = "rt")
+plot_im_map(spectra, xval = "mz")
 
-plot_im_surface(spectra, xval = "rt")
+plot_im_surface(spectra, xval = "mz")
 
 plot_im_map <- function(spectra = NULL, xval = "rt") {
   
@@ -74,7 +88,7 @@ plot_im_map <- function(spectra = NULL, xval = "rt") {
   
   dt_heat <- dt_heat[, c("x", "drift", "intensity"), with = FALSE]
   
-  # dt_heat$intensity <- log(dt_heat$intensity)
+  dt_heat$intensity <- log(dt_heat$intensity)
   
   dt_heat <- dt_heat[, .(intensity = sum(intensity)), by = c("x", "drift")]
   
@@ -156,6 +170,8 @@ plot_im_surface <- function(spectra = NULL, xval = "rt") {
   row.names(dt_heat_mat) <- dt_heat_mat[, 1]
   
   dt_heat_mat <- dt_heat_mat[, -1]
+  
+  browser()
   
   fig <- plotly::plot_ly(
     x = as.numeric(colnames(dt_heat_mat)),

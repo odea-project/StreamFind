@@ -107,9 +107,9 @@ ms2 <- ms$subset_groups(groups = unique(tar_groups$group))
 
 
 
-pat_features <- ms$as_features_patRoon()
+pat_features <- ms$as_patRoon_features()
 
-pat_fgroups <- ms$as_featureGroups_patRoon()
+pat_fgroups <- ms$as_patRoon_featureGroups()
 
 
 
