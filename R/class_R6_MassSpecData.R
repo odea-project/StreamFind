@@ -2904,23 +2904,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
         if (all(cols_check %in% names(settings))) {
           settings <- list(settings)
         }
+        
+        settings <- lapply(settings, as.ProcessingSettings)
 
-        valid <- vapply(settings, function(x) {
-
-          eval <- validate.ProcessingSettings(x)
-
-          if (eval) {
-            processingFunctionCalls <- self$processing_function_calls()
-
-            if (!any(processingFunctionCalls %in% x$call)) {
-              warning("Call name not present in MassSpecData class processing methods!")
-              eval <- FALSE
-            }
-          }
-          eval
-        }, FALSE)
-
-        if (all(valid)) {
+        all_ps <- vapply(settings, function(x) class(x)[1], "")
+        
+        if (all(all_ps %in% "ProcessingSettings")) {
           
           only_one_possible <- c(
             "centroid_spectra",
@@ -2934,8 +2923,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
             "group_features",
             "fill_features"
           )
-          
-          settings <- lapply(settings, as.ProcessingSettings)
 
           call_names <- vapply(settings, function(x) x$call, NA_character_)
           
