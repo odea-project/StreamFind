@@ -3890,7 +3890,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         settings <- settings[["load_features_ms1"]]
       }
 
-      if (validate.ProcessingSettings(settings)) {
+      if (validate(settings)) {
         if (!"load_features_ms1" %in% settings$call) {
           warning("Settings call must be load_features_ms1!")
           valid <- FALSE
@@ -4022,7 +4022,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         settings <- settings[["load_features_ms2"]]
       }
 
-      if (validate.ProcessingSettings(settings)) {
+      if (validate(settings)) {
         if (!"load_features_ms2" %in% settings$call) {
           warning("Settings call must be 'load_features_ms2'!")
           valid <- FALSE
@@ -4167,7 +4167,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         settings <- settings[["load_groups_ms1"]]
       }
 
-      if (validate.ProcessingSettings(settings)) {
+      if (validate(settings)) {
         if (!"load_groups_ms1" %in% settings$call) {
           warning("Settings call must be 'load_groups_ms1'!")
           valid <- FALSE
@@ -4307,7 +4307,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         settings <- settings[["load_groups_ms2"]]
       }
 
-      if (validate.ProcessingSettings(settings)) {
+      if (validate(settings)) {
         if (!"load_groups_ms2" %in% settings$call) {
           warning("Settings call must be 'load_groups_ms2'!")
           valid <- FALSE
