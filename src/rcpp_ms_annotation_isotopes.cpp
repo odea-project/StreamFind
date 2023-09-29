@@ -123,13 +123,13 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     "S",
     // "S",
     "Cl",
-    "Br"
-    // "Si",
-    // "Si",
-    // "Ge",
-    // "Ge",
-    // "Ge",
-    // "Ge"
+    "Br",
+    "Si",
+    "Si",
+    "Ge",
+    "Ge",
+    "Ge",
+    "Ge"
   };
 
   std::vector<std::string> all_iso_elements = {
@@ -142,13 +142,13 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     "34S",
     // "36S",
     "37Cl",
-    "81Br"
-    // "29Si",
-    // "30Si",
-    // "72Ge",
-    // "73Ge",
-    // "74Ge",
-    // "76Ge"
+    "81Br",
+    "29Si",
+    "30Si",
+    "72Ge",
+    "73Ge",
+    "74Ge",
+    "76Ge"
   };
 
   // iso mass difference from first isotope
@@ -162,13 +162,13 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     1.995796, // 34S
     // 3.99501, // 36S
     1.9970499, // 37Cl
-    1.9979534 // 81Br
-    // 0.99956819, // 29Si
-    // 1.99684369, // 30Si
-    // 1.9978284, // 72Ge
-    // 2.9992115, // 73Ge
-    // 3.9969304, // 74Ge
-    // 5.9971552, // 76Ge
+    1.9979534, // 81Br
+    0.99956819, // 29Si
+    1.99684369, // 30Si
+    1.9978284, // 72Ge
+    2.9992115, // 73Ge
+    3.9969304, // 74Ge
+    5.9971552 // 76Ge
   };
 
   // iso relative abundance from first isotope
@@ -182,13 +182,13 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     0.04215000, // 34S
     // 0.00017000, // 36S
     0.24229000, // 37Cl
-    0.49314000 // 81Br
-    // 0.0468316, // 29Si
-    // 0.0308716, // 30Si
-    // 0.27662, // 72Ge
-    // 0.07717, // 73Ge
-    // 0.35943, // 74Ge
-    // 0.07444, // 76Ge
+    0.49314000, // 81Br
+    0.0468316, // 29Si
+    0.0308716, // 30Si
+    0.27662, // 72Ge
+    0.07717, // 73Ge
+    0.35943, // 74Ge
+    0.07444 // 76Ge
   };
 
   // iso relative abundance from first isotope (for the majority the monoisotope)
@@ -202,13 +202,13 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     0.95018, // S
     // 0.95018, // S
     0.75771, // Cl
-    0.50686 // Br
-    // 0.9222968, // Si
-    // 0.9222968// Si
-    // 0.21234, // Ge
-    // 0.21234, // Ge
-    // 0.21234, // Ge
-    // 0.21234, // Ge
+    0.50686, // Br
+    0.9222968, // Si
+    0.9222968, // Si
+    0.21234, // Ge
+    0.21234, // Ge
+    0.21234, // Ge
+    0.21234 // Ge
   };
 
   // iso minimum number of elements
@@ -222,10 +222,13 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     1, // S
     // 0.00017000, // S
     1, // Cl
-    1 // Br
-    // 1, // Si
-    // 1// Si
-    // 1 // Ge 
+    1,  // Br
+    1, // Si
+    1, // Si
+    1, // Ge
+    1, // Ge
+    1, // Ge
+    1 // Ge
   };
 
   // iso maximum number of elements
@@ -239,10 +242,13 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     maxHalogens, // S
     // maxHalogens, // S
     maxHalogens, // Cl
-    maxHalogens // Br
-    // maxHalogens, // Si
-    // maxHalogens// Si
-    // maxHalogens, // Ge
+    maxHalogens, // Br
+    maxHalogens, // Si
+    maxHalogens, // Si
+    maxHalogens, // Ge
+    maxHalogens, // Ge
+    maxHalogens, // Ge
+    maxHalogens // Ge
   };
 
 

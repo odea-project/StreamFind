@@ -1447,7 +1447,7 @@ Settings_annotate_features_StreamFind <- function(
   checkmate::assert_number(rtWindowAlignment)
   checkmate::assert_choice(mode, "small molecules")
   checkmate::assert_vector(elements, any.missing = FALSE, min.len = 1)
-  lapply(elements, function(i) checkmate::assert_choice(i, c("C","H", "N", "O", "S", "Cl", "Br")))
+  lapply(elements, function(i) checkmate::assert_choice(i, c("C","H", "N", "O", "S", "Cl", "Br", "Si", "Ge")))
   checkmate::assert_logical(runParallel, max.len = 1)
 
   settings <- list(
@@ -1492,7 +1492,7 @@ validate.Settings_annotate_features_StreamFind <- function(x) {
     checkmate::test_double(x$parameters$rtWindowAlignment, max.len = 1),
     checkmate::test_choice(x$parameters$mode, "small molecules"),
     checkmate::test_vector(x$parameters$elements, any.missing = FALSE, min.len = 1),
-    vapply(x$parameters$elements, function(i) checkmate::test_choice(i, c("C","H", "N", "O", "S", "Cl", "Br")), FALSE),
+    vapply(x$parameters$elements, function(i) checkmate::test_choice(i, c("C","H", "N", "O", "S", "Cl", "Br", "Si", "Ge")), FALSE),
     checkmate::test_logical(x$parameters$runParallel, max.len = 1)
   )
 }

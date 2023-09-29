@@ -57,9 +57,9 @@ ffs <- Settings_find_features_xcms3_centwave()
 
 
 # Settings documentation
-?Settings_find_features_xcms3_centwave
+# ?Settings_find_features_xcms3_centwave
 
-browseURL(ffs$link)
+# browseURL(ffs$link)
 
 
 # Saves an example of settings on disk
@@ -82,7 +82,15 @@ fls <- Settings_filter_features_StreamFind(
   excludeIsotopes = TRUE
 )
 
-afs <- Settings_annotate_features_StreamFind()
+afs <- Settings_annotate_features_StreamFind(
+  maxIsotopes = 5,
+  elements = c("C", "H", "N", "O", "S", "Cl", "Br", "Ge"),
+  mode = "small molecules",
+  maxCharge = 2,
+  rtWindowAlignment = 0.3,
+  maxGaps = 1,
+  runParallel = FALSE
+)
 
 gfs <- Settings_group_features_xcms3_peakdensity()
 
@@ -98,7 +106,7 @@ ms$find_features()$annotate_features(afs)$group_features(gfs)$filter_features(fl
 ms
 
 
-
+View(ms$get_features(filtered = T))
 
 
 
