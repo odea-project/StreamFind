@@ -21,7 +21,7 @@ ProcessingSettings(
   doi = NA_character_
 )
 
-\method{validate}{ProcessingSettings}(x = NULL)
+\method{validate}{ProcessingSettings}(x)
 
 \method{print}{ProcessingSettings}(x, ...)
 

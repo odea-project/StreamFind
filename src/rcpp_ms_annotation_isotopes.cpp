@@ -121,11 +121,15 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     "O",
     "S",
     "S",
-    // "36S",
+    // "S",
     "Cl",
     "Br"
-    // "29Si",
-    // "30Si"
+    // "Si",
+    // "Si",
+    // "Ge",
+    // "Ge",
+    // "Ge",
+    // "Ge"
   };
 
   std::vector<std::string> all_iso_elements = {
@@ -140,10 +144,14 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     "37Cl",
     "81Br"
     // "29Si",
-    // "30Si"
+    // "30Si",
+    // "72Ge",
+    // "73Ge",
+    // "74Ge",
+    // "76Ge"
   };
 
-  // iso mass difference from monoisotopic ion
+  // iso mass difference from first isotope
   std::vector<double> all_iso_md = {
     1.0033548378, // 13C
     1.0062767, // 2H
@@ -156,10 +164,14 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     1.9970499, // 37Cl
     1.9979534 // 81Br
     // 0.99956819, // 29Si
-    // 1.99684369 // 30Si
+    // 1.99684369, // 30Si
+    // 1.9978284, // 72Ge
+    // 2.9992115, // 73Ge
+    // 3.9969304, // 74Ge
+    // 5.9971552, // 76Ge
   };
 
-  // iso relative abundance from monoisotopic ion
+  // iso relative abundance from first isotope
   std::vector<double> all_iso_ab = {
     0.0107800, // 13C
     0.00015574, // 2H
@@ -172,10 +184,14 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     0.24229000, // 37Cl
     0.49314000 // 81Br
     // 0.0468316, // 29Si
-    // 0.0308716 // 30Si
+    // 0.0308716, // 30Si
+    // 0.27662, // 72Ge
+    // 0.07717, // 73Ge
+    // 0.35943, // 74Ge
+    // 0.07444, // 76Ge
   };
 
-  // iso relative abundance from monoisotopic ion
+  // iso relative abundance from first isotope (for the majority the monoisotope)
   std::vector<double> all_iso_mono = {
     0.988922, // C
     0.99984426, // H
@@ -189,6 +205,10 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     0.50686 // Br
     // 0.9222968, // Si
     // 0.9222968// Si
+    // 0.21234, // Ge
+    // 0.21234, // Ge
+    // 0.21234, // Ge
+    // 0.21234, // Ge
   };
 
   // iso minimum number of elements
@@ -205,6 +225,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     1 // Br
     // 1, // Si
     // 1// Si
+    // 1 // Ge 
   };
 
   // iso maximum number of elements
@@ -221,6 +242,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     maxHalogens // Br
     // maxHalogens, // Si
     // maxHalogens// Si
+    // maxHalogens, // Ge
   };
 
 

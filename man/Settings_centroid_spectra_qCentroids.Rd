@@ -2,9 +2,15 @@
 % Please edit documentation in R/fct_ms_default_ProcessingSettings.R
 \name{Settings_centroid_spectra_qCentroids}
 \alias{Settings_centroid_spectra_qCentroids}
+\alias{validate.Settings_centroid_spectra_qCentroids}
 \title{Settings_centroid_spectra_qCentroids}
 \usage{
 Settings_centroid_spectra_qCentroids()
+
+\method{validate}{Settings_centroid_spectra_qCentroids}(x)
+}
+\arguments{
+\item{x}{A Settings_centroid_spectra_qCentroids S3 class object.}
 }
 \value{
 X.
@@ -12,3 +18,8 @@ X.
 \description{
 X.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate(Settings_centroid_spectra_qCentroids)}: Validates the object structure, returning a logical value of length one.
+
+}}

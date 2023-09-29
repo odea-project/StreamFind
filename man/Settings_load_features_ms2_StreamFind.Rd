@@ -51,7 +51,6 @@ Settings for loading MS2 spectra for features.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{validate(Settings_load_features_ms2_StreamFind)}: Validates the Settings_load_features_ms1_StreamFind S3 class object,
-returning a logical value of length one.
+\item \code{validate(Settings_load_features_ms2_StreamFind)}: Validates the object structure, returning a logical value of length one.
 
 }}

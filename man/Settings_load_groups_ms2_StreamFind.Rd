@@ -46,7 +46,6 @@ Settings for loading MS2 spectra for feature groups.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{validate(Settings_load_groups_ms2_StreamFind)}: Validates the Settings_load_groups_ms2_StreamFind S3 class object,
-returning a logical value of length one.
+\item \code{validate(Settings_load_groups_ms2_StreamFind)}: Validates the object structure, returning a logical value of length one.
 
 }}

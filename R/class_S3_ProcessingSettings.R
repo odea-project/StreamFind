@@ -50,38 +50,34 @@ ProcessingSettings <- function(call = NA_character_,
   )
 
   if (is.data.frame(x$parameters)) x$parameters <- as.list(x$parameters)
+  
   if (is.numeric(x$version)) x$version <- as.character(x$version)
 
-  if (validate.ProcessingSettings(x)) {
+  s3_classes <- c(
+    "ProcessingSettings",
+    paste0("Settings_", x$call, "_" , x$algorithm)
+  )
 
-    s3_classes <- c(
-      paste0("Settings_", x$call, "_" , x$algorithm),
-      "ProcessingSettings"
-    )
+  patRoon_algorithms <- c(
+    "openms", "xcms", "xcms3", "envipick", "sirius", "kpic2", "safd"
+  )
 
-    patRoon_algorithms <- c(
-      "openms", "xcms", "xcms3", "envipick", "sirius", "kpic2", "safd"
-    )
+  if (any(vapply(patRoon_algorithms, function(a) {
+    grepl(a, x$algorithm, fixed = FALSE)
+  }, FALSE))) {
+    s3_classes <- append(s3_classes, "patRoon")
+  }
 
-    if (any(vapply(patRoon_algorithms, function(a) {
-      grepl(a, x$algorithm, fixed = FALSE)
-    }, FALSE))) {
-      s3_classes <- append(s3_classes, "patRoon", after = 0)
-    }
+  if (is.na(x$link)) {
+    page <- "https://odea-project.github.io/StreamFind/reference/"
+    algo <- paste0("Settings_", x$call, "_" , x$algorithm)
+    x$link <- paste0(page, algo, ".html")
+  }
 
-    if (is.na(x$link)) {
-      page <- "https://odea-project.github.io/StreamFind/reference/"
-      algo <- paste0("Settings_", x$call, "_" , x$algorithm)
-      x$link <- paste0(page, algo, ".html")
-    }
+  x <- structure(x, class = s3_classes)
 
-    x <- structure(x, class = s3_classes)
-
-    if (validate(x)) {
-      x
-    } else {
-      NULL
-    }
+  if (validate(x)) {
+    x
   } else {
     NULL
   }
@@ -95,9 +91,8 @@ ProcessingSettings <- function(call = NA_character_,
 #'
 #' @export
 #'
-validate.ProcessingSettings <- function(x = NULL) {
-  valid <- FALSE
-
+validate.ProcessingSettings <- function(x) {
+  
   if (is.list(x)) {
     if (all(c("call", "algorithm", "parameters") %in% names(x))) {
       valid <- TRUE
@@ -127,12 +122,12 @@ validate.ProcessingSettings <- function(x = NULL) {
     }
   }
 
-  # TODO add validate for settings specific class
-  # if (length(class(x)) > 1) {
-  #   valid <- NextMethod()
-  # }
-
-  valid
+  if (valid) {
+    NextMethod()
+    
+  } else {
+    FALSE
+  }
 }
 
 #' @describeIn ProcessingSettings
@@ -143,7 +138,7 @@ validate.ProcessingSettings <- function(x = NULL) {
 #' @export
 print.ProcessingSettings <- function(x, ...) {
   cat("\n")
-  cat("", class(x)[length(class(x))], "\n")
+  cat("", class(x)[1], "\n")
   cat(
     " call         ", x$call, "\n",
     " algorithm    ", x$algorithm, "\n",

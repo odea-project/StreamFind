@@ -1,4 +1,11 @@
 
+# TODO add stats to the groups (e.g., presence in each replicate, coverage)
+# TODO check what happens when all MS2 centroids are added to clustering
+# TODO clustering does not see polarity yet and it should be split.
+# TODO add possibility to add_files in MassSpecData
+# TODO add is_pre to MS1 spectra
+
+
 all_files <- StreamFindData::get_all_file_paths()
 
 db <- StreamFindData::get_tof_spiked_chemicals()
@@ -103,11 +110,16 @@ ms$load_groups_ms2()
 # ms$patRoon_report()
 
 
+View(ms$get_features())
 
 
+ffs <- Settings_find_features_xcms3_centwave()
 
+ffs <- Settings_filter_features_StreamFind()
 
+sloop::s3_dispatch(validate(ffs))
 
+validate(ffs)
 
 
 
@@ -319,7 +331,7 @@ if (ms$has_groups()) {
 
 
 ms$plot_spectra(analyses = 10:12, mz = 254.0594, ppm = 20, allTraces = FALSE, levels = c(1, 2), colorBy = "levels")
-# TODO make feature ms1 and feature group MS2 for PPT
+
 
 
 ms$get_groups(mass = db)

@@ -42,8 +42,7 @@ Settings for performing suspect screening using the
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{validate(Settings_suspect_screening_forident)}: Validates the Settings_suspect_screening_forident S3 class object,
-returning a logical value of length one.
+\item \code{validate(Settings_suspect_screening_forident)}: Validates the object structure, returning a logical value of length one.
 
 }}
 \note{

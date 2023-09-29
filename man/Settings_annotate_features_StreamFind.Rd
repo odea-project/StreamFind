@@ -56,7 +56,6 @@ range as defined by the \code{mode}.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{validate(Settings_annotate_features_StreamFind)}: Validates the Settings_annotate_features_StreamFind S3 class object, returning a logical
-value of length one.
+\item \code{validate(Settings_annotate_features_StreamFind)}: Validates the object structure, returning a logical value of length one.
 
 }}

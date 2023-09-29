@@ -116,7 +116,7 @@ pat_fgroups <- ms$as_patRoon_featureGroups()
 pat
 
 
-# TODO add stats to the groups (e.g., presence in each replicate, coverage)
+
 
 
 diu_fts <- ms$get_features(mass = diu, rt = diu_rt, ppm = 10, sec = 10)
@@ -160,7 +160,7 @@ spec
 
 rcpp_ms_cluster_spectra(spec, mzClust = 0.001, presence = 0.8, verbose = TRUE)
 
-# TODO check what happens when all MS2 centroids are added to clustering
+
 # ms$get_ms2()
 
 rcpp_parse_ms_analysis_spectra(ms$get_analyses()[[1]])
@@ -203,8 +203,6 @@ ms$get_spectra(analyses = c(2, 5), mass = diu, rt = diu_rt, sec = 120, levels = 
 ms$plot_ms1(analyses = c(2, 5), mass = diu, rt = diu_rt, interactive = F)
 
 ms$get_ms1(analyses = c(2, 5), mass = diu, rt = diu_rt)
-
-# TODO clustering does not see polarity yet and it should be split.
 
 ms$get_tic()
 

@@ -99,6 +99,20 @@ Settings_centroid_spectra_qCentroids <- function() {
   as.ProcessingSettings(settings)
 }
 
+#' @describeIn Settings_centroid_spectra_qCentroids
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_centroid_spectra_qCentroids S3 class object.
+#'
+#' @export
+#'
+validate.Settings_centroid_spectra_qCentroids <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "centroid_spectra"),
+    checkmate::test_choice(x$algorithm, "qCentroids")
+  )
+}
+
 ## bin_spectra -----
 
 #' @title Settings_bin_spectra_qBinning
@@ -126,6 +140,20 @@ Settings_bin_spectra_qBinning <- function() {
   )
 
   as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_bin_spectra_qBinning
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_bin_spectra_qBinning S3 class object.
+#'
+#' @export
+#'
+validate.Settings_bin_spectra_qBinning <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "bin_spectra"),
+    checkmate::test_choice(x$algorithm, "qBinning")
+  )
 }
 
 ## find_features -----
@@ -156,6 +184,20 @@ Settings_find_features_qPeaks <- function() {
 
   as.ProcessingSettings(settings)
 
+}
+
+#' @describeIn Settings_find_features_qPeaks
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_find_features_qPeaks S3 class object.
+#'
+#' @export
+#'
+validate.Settings_find_features_qPeaks <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "find_features"),
+    checkmate::test_choice(x$algorithm, "qPeaks")
+  )
 }
 
 #' @title Settings_find_features_xcms3_centwave
@@ -271,6 +313,20 @@ Settings_find_features_xcms3_centwave <- function(
   return(settings)
 }
 
+#' @describeIn Settings_find_features_xcms3_centwave
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_find_features_xcms3_centwave S3 class object.
+#'
+#' @export
+#'
+validate.Settings_find_features_xcms3_centwave <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "find_features"),
+    checkmate::test_choice(x$algorithm, "xcms3_centwave")
+  )
+}
+
 #' @title Settings_find_features_xcms3_matchedfilter
 #'
 #' @description Settings for finding features (i.e., chromatographic peaks)
@@ -367,6 +423,20 @@ Settings_find_features_xcms3_matchedfilter <- function(
   settings <- as.ProcessingSettings(settings)
 
   return(settings)
+}
+
+#' @describeIn Settings_find_features_xcms3_matchedfilter
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_find_features_xcms3_matchedfilter S3 class object.
+#'
+#' @export
+#'
+validate.Settings_find_features_xcms3_matchedfilter <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "find_features"),
+    checkmate::test_choice(x$algorithm, "xcms3_matchedfilter")
+  )
 }
 
 #' @title Settings_find_features_openms
@@ -511,8 +581,7 @@ Settings_find_features_openms <- function(
 }
 
 #' @describeIn Settings_find_features_openms
-#' Validates the Settings_find_features_openms S3 class object, returning a 
-#' logical value of length one.
+#' Validates the object structure, returning a logical value of length one.
 #'
 #' @param x A Settings_find_features_openms S3 class object.
 #'
@@ -522,14 +591,6 @@ validate.Settings_find_features_openms <- function(x) {
   all(
     checkmate::test_choice(x$call, "find_features"),
     checkmate::test_choice(x$algorithm, "openms")
-    # checkmate::test_count(x$parameters$maxIsotopes),
-    # checkmate::test_count(x$parameters$maxCharge),
-    # checkmate::test_count(x$parameters$maxGaps),
-    # checkmate::test_double(x$parameters$rtWindowAlignment, max.len = 1),
-    # checkmate::test_choice(x$parameters$mode, "small molecules"),
-    # checkmate::test_vector(x$parameters$elements, any.missing = FALSE, min.len = 1),
-    # vapply(x$parameters$elements, function(i) checkmate::test_choice(i, c("C","H", "N", "O", "S", "Cl", "Br")), FALSE),
-    # checkmate::test_logical(x$parameters$runParallel, max.len = 1)
   )
 }
 
@@ -604,6 +665,20 @@ Settings_find_features_kpic2 <- function(
   settings <- as.ProcessingSettings(settings)
 
   return(settings)
+}
+
+#' @describeIn Settings_find_features_kpic2
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_find_features_kpic2 S3 class object.
+#'
+#' @export
+#'
+validate.Settings_find_features_kpic2 <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "find_features"),
+    checkmate::test_choice(x$algorithm, "kpic2")
+  )
 }
 
 ## group_features -----
@@ -683,6 +758,20 @@ Settings_group_features_xcms3_peakdensity <- function(
   settings <- as.ProcessingSettings(settings)
 
   return(settings)
+}
+
+#' @describeIn Settings_group_features_xcms3_peakdensity
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_group_features_xcms3_peakdensity S3 class object.
+#'
+#' @export
+#'
+validate.Settings_group_features_xcms3_peakdensity <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "group_features"),
+    checkmate::test_choice(x$algorithm, "xcms3_peakdensity")
+  )
 }
 
 #' @title Settings_group_features_xcms3_peakdensity_peakgroups
@@ -834,6 +923,20 @@ Settings_group_features_xcms3_peakdensity_peakgroups <- function(
   return(settings)
 }
 
+#' @describeIn Settings_group_features_xcms3_peakdensity_peakgroups
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_group_features_xcms3_peakdensity_peakgroups S3 class object.
+#'
+#' @export
+#'
+validate.Settings_group_features_xcms3_peakdensity_peakgroups <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "group_features"),
+    checkmate::test_choice(x$algorithm, "xcms3_peakdensity_peakgroups")
+  )
+}
+
 ## load_features -----
 
 #' @title Settings_load_features_ms1_StreamFind
@@ -891,8 +994,7 @@ Settings_load_features_ms1_StreamFind <- function(
 }
 
 #' @describeIn Settings_load_features_ms1_StreamFind
-#' Validates the Settings_load_features_ms1_StreamFind S3 class object,
-#' returning a logical value of length one.
+#' Validates the object structure, returning a logical value of length one.
 #'
 #' @param x A Settings_load_features_ms1_StreamFind S3 class object.
 #'
@@ -964,8 +1066,7 @@ Settings_load_features_ms2_StreamFind <- function(
 }
 
 #' @describeIn Settings_load_features_ms2_StreamFind
-#' Validates the Settings_load_features_ms1_StreamFind S3 class object,
-#' returning a logical value of length one.
+#' Validates the object structure, returning a logical value of length one.
 #'
 #' @param x A Settings_load_features_ms2_StreamFind S3 class object.
 #'
@@ -1033,8 +1134,7 @@ Settings_load_groups_ms1_StreamFind <- function(
 }
 
 #' @describeIn Settings_load_groups_ms1_StreamFind
-#' Validates the Settings_load_groups_ms1_StreamFind S3 class object,
-#' returning a logical value of length one.
+#' Validates the object structure, returning a logical value of length one.
 #'
 #' @param x A Settings_load_groups_ms1_StreamFind S3 class object.
 #'
@@ -1101,8 +1201,7 @@ Settings_load_groups_ms2_StreamFind <- function(
 }
 
 #' @describeIn Settings_load_groups_ms2_StreamFind
-#' Validates the Settings_load_groups_ms2_StreamFind S3 class object,
-#' returning a logical value of length one.
+#' Validates the object structure, returning a logical value of length one.
 #'
 #' @param x A Settings_load_groups_ms2_StreamFind S3 class object.
 #'
@@ -1232,8 +1331,7 @@ Settings_filter_features_StreamFind <- function(...) {
 }
 
 #' @describeIn Settings_filter_features_StreamFind
-#' Validates the Settings_filter_features_StreamFind S3 class object, returning
-#' a logical value of length one.
+#' Validates the object structure, returning a logical value of length one.
 #'
 #' @param x A Settings_filter_features_StreamFind S3 class object.
 #'
@@ -1378,8 +1476,7 @@ Settings_annotate_features_StreamFind <- function(
 }
 
 #' @describeIn Settings_annotate_features_StreamFind
-#' Validates the Settings_annotate_features_StreamFind S3 class object, returning a logical
-#' value of length one.
+#' Validates the object structure, returning a logical value of length one.
 #'
 #' @param x A Settings_annotate_features_StreamFind S3 class object.
 #'
@@ -1445,8 +1542,7 @@ Settings_suspect_screening_StreamFind <- function(
 }
 
 #' @describeIn Settings_suspect_screening_StreamFind
-#' Validates the Settings_suspect_screening_StreamFind S3 class object,
-#' returning a logical value of length one.
+#' Validates the object structure, returning a logical value of length one.
 #'
 #' @param x A Settings_suspect_screening_StreamFind S3 class object.
 #'
@@ -1518,8 +1614,7 @@ Settings_suspect_screening_forident <- function(
 }
 
 #' @describeIn Settings_suspect_screening_forident
-#' Validates the Settings_suspect_screening_forident S3 class object,
-#' returning a logical value of length one.
+#' Validates the object structure, returning a logical value of length one.
 #'
 #' @param x A Settings_suspect_screening_forident S3 class object.
 #' 

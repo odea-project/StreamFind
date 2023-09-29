@@ -3040,8 +3040,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     add_analyses = function(analyses = NULL) {
 
-      # TODO add possibility to add from files
-
       if (is.list(analyses)) {
         if (all(c("name", "file") %in% names(analyses))) {
           analyses <- as.MassSpecAnalysis(analyses)
@@ -3279,8 +3277,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return Invisible.
     #'
     add_spectra = function(spectra = NULL, replace = TRUE) {
+      
       valid <- FALSE
+      
       org_analysis_names <- unname(self$get_analysis_names())
+      
       must_have_cols <- c(
         "index", "scan", "level", "pre_scan", "pre_ce",
         "pre_mz", "rt", "mz", "intensity"
@@ -3329,7 +3330,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         org_spectra <- lapply(private$.analyses, function(x) x$spectra)
         names(org_spectra) <- names(private$.analyses)
 
-        if (replace) {
+        if (replace | n_data == 0) {
           org_spectra[names(spectra)] <- spectra
 
           private$.analyses <- Map(
@@ -3352,9 +3353,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           message("\U2713 ", n_data, " spectra added!")
 
         } else {
-          warning("rbind for spectra not implemented yet!")
-          # TODO add rbind option for features
-          # Possibly needed to redo the index and amend the features ID
+          warning("Spectra already presence and not replaced!")
         }
       } else {
         warning("Invalid spectra content or structure! Not added.")
@@ -3374,9 +3373,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return Invisible.
     #'
     add_features_eic = function(eics = NULL, replace = TRUE) {
+      
       valid <- FALSE
+      
       org_analysis_names <- unname(self$get_analysis_names())
-      must_have_cols <- c("feature", "index", "mz", "rt", "intensity")
+      
+      must_have_cols <- c("feature", "index", "polarity", "mz", "rt", "intensity")
 
       if (is.data.frame(eics)) {
         must_have_cols <- c("analysis", must_have_cols)
@@ -3416,12 +3418,16 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (valid) {
+        # TODO validate the features ID in the features data.table
+      }
+      
+      if (valid) {
         n_fts <- sum(vapply(eics, function(x) length(x), 0))
 
         org_features_eic <- lapply(private$.analyses, function(x) x$features_eic)
         names(org_features_eic) <- names(private$.analyses)
 
-        if (replace) {
+        if (replace | n_fts == 0) {
           org_features_eic[names(eics)] <- eics
 
           private$.analyses <- Map(
@@ -3445,7 +3451,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         } else {
           warning("rbind for feature EICs not implemented yet!")
-          # TODO add rbind option for features
+          # TODO add rbind option for features_eic
           # Possibly needed to redo the index and amend the features ID
         }
       } else {
@@ -4810,9 +4816,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
           x$features[["group"]] <- NULL
           x$features$filter[x$features$filter %in% "grouping"] <- NA_character_
           x$features$filtered[is.na(x$features$filter)] <- FALSE
-          
-          # TODO check if MS1 and MS2 spectra retain the group column
-          
           x
         })
         
@@ -6491,7 +6494,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             
             massFilter = private$.filter_massFilter(parameters[[filters[i]]])
             
-            # TODO add more filters, e.g., mass and time widths and limits
+            # TODO add more filters
           )
         }
 
@@ -7616,7 +7619,7 @@ import_MassSpecData <- function(file) {
 
     if (file_ext(file) %in% "rds") {
       new_ms <- readRDS(file)
-      # TODO validate object
+      # TODO is it important to validate object
       message("\U2713 MassSpecData class object imported from rds file!")
     }
 

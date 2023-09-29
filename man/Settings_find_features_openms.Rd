@@ -127,8 +127,7 @@ See the \link[patRoon]{findFeaturesOpenMS} function from the
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{validate(Settings_find_features_openms)}: Validates the Settings_find_features_openms S3 class object, returning a
-logical value of length one.
+\item \code{validate(Settings_find_features_openms)}: Validates the object structure, returning a logical value of length one.
 
 }}
 \references{
