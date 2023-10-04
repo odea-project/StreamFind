@@ -87,7 +87,10 @@ The function uses the package <span class="pkg">patRoon</span> in the background
 <span>  verboseColumns <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  firstBaselineCheck <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  extendLengthMSW <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for Settings_find_features_xcms3_centwave</span></span>
+<span><span class="fu">validate</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -164,6 +167,10 @@ running centWave rather than truncating with the EIC length. Uses the
 passed to convolve rather than the default "reflect" method.
 See https://github.com/sneumann/xcms/issues/445 for more information.</p></dd>
 
+
+<dt>x</dt>
+<dd><p>A Settings_find_features_xcms3_centwave S3 class object.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -177,6 +184,11 @@ Settings_find_features_xcms3_centwave.</p>
     <p>See the <a href="https://rdrr.io/pkg/patRoon/man/findFeaturesXCMS3.html" class="external-link">findFeaturesXCMS3</a> function from the
 <span class="pkg">patRoon</span> package for more information and requirements.</p>
     </div>
+    <div class="section level2">
+    <h2 id="methods-by-generic-">Methods (by generic)<a class="anchor" aria-label="anchor" href="#methods-by-generic-"></a></h2>
+    
+<ul><li><p><code>validate(Settings_find_features_xcms3_centwave)</code>: Validates the object structure, returning a logical value of length one.</p></li>
+</ul></div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Helmus R, ter Laak TL, van Wezel AP, de Voogt P, Schymanski EL (2021).

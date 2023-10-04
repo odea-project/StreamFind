@@ -6215,7 +6215,9 @@ with the features in the analyses.</p><div class="section">
 <span class="pkg">patRoon</span> with MS and MSMS data from features in the analyses.
 Note that feature groups are required. The MS and MSMS spectra of each
 feature are then average by <span class="pkg">patRoon</span> to produce the feature group
-spectra.</p><div class="section">
+spectra using the parameters of the function
+<a href="https://rdrr.io/pkg/patRoon/man/getDefAvgPListParams.html" class="external-link">getDefAvgPListParams</a>. The arguments described below are
+taken from the documentation available in <span class="pkg">patRoon</span>.</p><div class="section">
 <h4 id="usage-120">Usage<a class="anchor" aria-label="anchor" href="#usage-120"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">as_patRoon_MSPeakLists</span><span class="op">(</span></span>
 <span>  filtered <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -6236,35 +6238,58 @@ spectra.</p><div class="section">
 
 
 <dt><code>clusterMzWindow</code></dt>
-<dd><p>X.</p></dd>
+<dd><p>m/z window (in Da) used for clustering m/z values
+when spectra are averaged. For method="hclust" this corresponds to the
+cluster height, while for method="distance" this value is used to find
+nearby masses (+/- window). Too small windows will prevent clustering
+m/z values (thus erroneously treating equal masses along spectra as
+different), whereas too big windows may cluster unrelated m/z values
+from different or even the same spectrum together.</p></dd>
 
 
 <dt><code>topMost</code></dt>
-<dd><p>X.</p></dd>
+<dd><p>Only retain this maximum number of MS peaks when generating
+averaged spectra. Lowering this number may exclude more irrelevant (noisy)
+MS peaks and decrease processing time, whereas higher values may avoid
+excluding lower intense MS peaks that may still be of interest.</p></dd>
 
 
 <dt><code>minIntensityPre</code></dt>
-<dd><p>X.</p></dd>
+<dd><p>MS peaks with intensities below this value will
+be removed (applied prior to selection by <code>topMost</code>) before averaging.</p></dd>
 
 
 <dt><code>minIntensityPost</code></dt>
-<dd><p>X.</p></dd>
+<dd><p>MS peaks with intensities below this value will
+be removed after averaging.</p></dd>
 
 
 <dt><code>avgFun</code></dt>
-<dd><p>X.</p></dd>
+<dd><p>Function that is used to calculate average m/z values.</p></dd>
 
 
 <dt><code>method</code></dt>
-<dd><p>X.</p></dd>
+<dd><p>Method used for producing averaged MS spectra. Valid
+values are "hclust", used for hierarchical clustering (using the
+fastcluster package), and "distance", to use the between peak distance.
+The latter method may reduces processing time and memory requirements,
+at the potential cost of reduced accuracy.</p></dd>
 
 
 <dt><code>retainPrecursorMSMS</code></dt>
-<dd><p>X.</p></dd>
+<dd><p>For MS/MS data only: if TRUE then always
+retain the precursor mass peak even if is not among the <code>topMost</code> peaks.
+Note that MS precursor mass peaks are always kept. Furthermore, note
+that precursor peaks in both MS and MS/MS data may still be removed by
+intensity thresholds (this is unlike the filter method function).</p></dd>
 
 
 <dt><code>pruneMissingPrecursorMS</code></dt>
-<dd><p>X.</p></dd>
+<dd><p>For MS data only: if TRUE then peak lists
+without a precursor peak are removed. Note that even when this is set to
+FALSE, functionality that relies on MS (not MS/MS) peak lists (e.g.
+formulae calculation) will still skip calculation if a precursor is not
+found.</p></dd>
 
 
 </dl><p></p></div>
@@ -6569,8 +6594,11 @@ method <code><a href="https://rdrr.io/r/base/save.html" class="external-link">sa
 
 </div><p></p><hr><a id="method-MassSpecData-patRoon_report"></a><div class="section">
 <h3 id="method-patroon-report-">Method <code>patRoon_report()</code><a class="anchor" aria-label="anchor" href="#method-patroon-report-"></a></h3>
-<p>Saves the HTML report from the <span class="pkg">patRoon</span> produced by the function
-<a href="https://rdrr.io/pkg/patRoon/man/reporting.html" class="external-link">report</a>.</p><div class="section">
+<p>Saves the HTML report from the function <a href="https://rdrr.io/pkg/patRoon/man/reporting.html" class="external-link">report</a> from the
+package <span class="pkg">patRoon</span>. The interface is exactly the same and the
+arguments description are taken from the documentation in <span class="pkg">patRoon</span>.
+Therefore, for further information, we recommend to consult directly the
+function <a href="https://rdrr.io/pkg/patRoon/man/reporting.html" class="external-link">report</a> in <span class="pkg">patRoon</span>.</p><div class="section">
 <h4 id="usage-132">Usage<a class="anchor" aria-label="anchor" href="#usage-132"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">patRoon_report</span><span class="op">(</span></span>
 <span>  path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"/report"</span><span class="op">)</span>,</span>
@@ -6596,38 +6624,44 @@ method <code><a href="https://rdrr.io/r/base/save.html" class="external-link">sa
 
 
 <dt><code>settingsFile</code></dt>
-<dd><p>X.</p></dd>
+<dd><p>The path to the report settings file used for report
+configuration (see Report settings in <a href="https://rdrr.io/pkg/patRoon/man/reporting.html" class="external-link">report</a>).</p></dd>
 
 
 <dt><code>EICParams</code></dt>
-<dd><p>X.</p></dd>
+<dd><p>A named list with parameters used for extracted ion
+chromatogram (EIC) creation. See <a href="https://rdrr.io/pkg/patRoon/man/EICParams.html" class="external-link">getDefEICParams</a>.</p></dd>
 
 
 <dt><code>specSimParams</code></dt>
-<dd><p>X.</p></dd>
+<dd><p>A named list with parameters that influence the
+calculation of MS spectra similarities. See <a href="https://rdrr.io/pkg/patRoon/man/specSimParams.html" class="external-link">getDefSpecSimParams</a>.</p></dd>
 
 
 <dt><code>clearPath</code></dt>
-<dd><p>X.</p></dd>
+<dd><p>If TRUE then the report destination path will be
+(recursively) removed prior to reporting.</p></dd>
 
 
 <dt><code>openReport</code></dt>
-<dd><p>X.</p></dd>
+<dd><p>If set to TRUE then the output report file will be
+opened with the system browser.</p></dd>
 
 
 <dt><code>parallel</code></dt>
-<dd><p>X.</p></dd>
+<dd><p>If set to TRUE then code is executed in parallel.</p></dd>
 
 
 <dt><code>overrideSettings</code></dt>
-<dd><p>X.</p></dd>
+<dd><p>A list with settings that override those from
+the report settings file. See <a href="https://rdrr.io/pkg/patRoon/man/reporting.html" class="external-link">report</a>.</p></dd>
 
 
 </dl><p></p></div>
 </div>
 <div class="section">
 <h4 id="returns-131">Returns<a class="anchor" aria-label="anchor" href="#returns-131"></a></h4>
-<p>An interactive HTML report.</p>
+<p>An interactive HTML report from the package <span class="pkg">patRoon</span>.</p>
 </div>
 
 </div><p></p><hr><a id="method-MassSpecData-processing_function_calls"></a><div class="section">
