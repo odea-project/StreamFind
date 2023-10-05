@@ -1,11 +1,17 @@
 
+# TODO add stats to the groups (e.g., presence in each replicate, coverage)
+# TODO check what happens when all MS2 centroids are added to clustering
+# TODO clustering does not see polarity yet and it should be split.
+# TODO add possibility to add_files in MassSpecData
+# TODO add is_pre to MS1 spectra
+
+
 all_files <- StreamFindData::get_all_file_paths()
 
 db <- StreamFindData::get_tof_spiked_chemicals()
 db <- db[grepl("S", db$tag), ]
 cols <- c("name", "formula", "mass", "rt")
 db <- db[, cols, with = FALSE]
-db
 
 files_df <- data.frame(
   "file" = all_files[grepl("blank|influent|o3sw", all_files)],
@@ -29,31 +35,303 @@ files_df <- data.frame(
 
 ms <- MassSpecData$new(files = files_df)
 
+ms$get_run(analyses = 1)
+
+ms <- ms$subset_analyses(c(4:6, 10:12, 16:18))
+
 ms$add_settings(
   list(
     Settings_find_features_xcms3_centwave(),
     Settings_group_features_xcms3_peakdensity(),
     Settings_filter_features_StreamFind(
-      minIntensity = 5000,
+      minIntensity = 10000,
       minSnRatio = 20,
       maxGroupSd = 30,
       blank = 5,
-      minGroupAbundance = 3,
-      excludeIsotopes = TRUE
+      minGroupAbundance = 3
     ),
-    Settings_load_features_ms2_StreamFind(),
-    Settings_load_groups_ms2_StreamFind()
+    Settings_load_features_ms1_StreamFind(presence = 0.5),
+    Settings_load_features_ms2_StreamFind(presence = 0.5),
+    Settings_load_groups_ms1_StreamFind(presence = 0.5),
+    Settings_load_groups_ms2_StreamFind(presence = 0.5)
   )
 )
 
-ms$get_history()
-
-ms$find_features()$group_features()$filter_features()
-
 ms
 
+
+patRoon::clearCache("parsed_ms_analyses")
+patRoon::clearCache("parsed_ms_spectra")
+patRoon::clearCache("load_features_ms1")
+patRoon::clearCache("load_features_ms2")
+patRoon::clearCache("load_groups_ms1")
+patRoon::clearCache("load_groups_ms2")
+# patRoon::clearCache("MSPeakListsAvg")
+# ms$get_history()
+
+ms$find_features()
+
+ms$group_features()
+
+ms$filter_features()
+
+# ms$plot_spectra(1, xVal = "drift")
+
+suspects <- ms$get_suspects(database = db, ppm = 10, sec = 15)
+
+suspects
+
+ms <- ms$subset_features(features = suspects)
+
+ms$load_features_ms1()
+
+ms$load_features_ms2()
+
+ms$load_groups_ms1()
+
+ms$load_groups_ms2()
+
+# ms$get_features_ms1(loadedMS1 = T)
+# 
+# ms$plot_features_ms2(mass = db[7, ], loadedMS2 = T)
+#
+# ms$get_groups_ms1(loadedFeaturesMS1 = T, loadedGroupsMS1 = T)
+# 
+# ms$get_groups_ms2(loadedFeaturesMS2 = T, loadedGroupsMS2 = T)
+# 
+# ms$plot_groups_ms2(mass = db[7, ], colorBy = "targets+polarities")
+# 
+# ms$plot_groups_ms1(mass = db[7, ], colorBy = "targets+polarities")
+
+# pat_fg <- ms$as_patRoon_featureGroups()
+# 
+# pat_pl <- ms$as_patRoon_MSPeakLists()
+# 
+# ms$patRoon_report()
+
+
+View(ms$get_features())
+
+
+ffs <- Settings_find_features_xcms3_centwave()
+
+ffs <- Settings_filter_features_StreamFind()
+
+sloop::s3_dispatch(validate(ffs))
+
+validate(ffs)
+
+
+
+
+comp <- patRoon::generateCompoundsMetFrag(
+  pat_fg,
+  pat_pl,
+  # mspl,
+  adduct = "[M+H]+",
+  dbRelMzDev = 5,
+  fragRelMzDev = 10,
+  fragAbsMzDev = 0.005,
+  maxCandidatesToStop = 10000
+)
+
+formulas <- patRoon::generateFormulasGenForm(
+  pat_fg,
+  pat_pl,
+  # mspl,
+  relMzDev = 10,
+  adduct = "[M+H]+",
+  elements = "CHNOP",
+  hetero = TRUE,
+  oc = FALSE,
+  thrMS = NULL,
+  thrMSMS = NULL,
+  thrComb = NULL,
+  maxCandidates = Inf,
+  extraOpts = NULL,
+  calculateFeatures = FALSE,
+  featThreshold = 0,
+  featThresholdAnn = 0.75,
+  absAlignMzDev = 0.005,
+  MSMode = "both",
+  isolatePrec = TRUE,
+  timeout = 120,
+  topMost = 50,
+  batchSize = 8
+)
+
+
+
+ms$get_features_ms2(
+  mass = db[11, ],
+  presence = 0.8,
+  minIntensity = 250
+)
+# 
+ms$plot_features_ms1(
+  mass = db[11, ],
+  presence = 0.8,
+  mzWindow = c(-1, 6),
+  rtWindow = c(-2, 2),
+  minIntensity = 250,
+  colorBy = "analyses"
+)
+
+# ms$get_features_ms1(
+#   mass = diu, rt = diu_rt, 
+#   presence = 0.8,
+#   mzWindow = c(-1, 6),
+#   rtWindow = c(-2, 2),
+#   minIntensity = 250
+# )
+
+ms$plot_groups_ms1(
+  mass = db[11, ],
+  presenceFeatures = 0.8,
+  presenceGroups = 0.8,
+  mzWindow = c(-1, 4),
+  rtWindow = c(-2, 2),
+  minIntensityFeatures = 250,
+  minIntensityGroups = 250,
+  colorBy = "targets+polarities"
+)
+# 
+# ms$plot_eic(mass = diu, rt = diu_rt, colorBy = "targets+polarities")
+# 
+# ms$get_groups_ms1(
+#   mass = diu, rt = diu_rt, 
+#   presenceFeatures = 0.8,
+#   presenceGroups = 0.8,
+#   mzWindow = c(-1, 6),
+#   rtWindow = c(-2, 2),
+#   minIntensityFeatures = 250,
+#   minIntensityGroups = 250
+# )
+
+#ms$get_features()
+#ms$get_groups()
+
+patRoon::clearCache("load_features_ms2")
+
+
+
+library(patRoon)
+
+pat_fg <- ms$as_patRoon_featureGroups()
+
+pat_fg@features@features
+
+?generateMSPeakList
+
+mspl <- generateMSPeakListsMzR(
+  pat_fg,
+  maxMSRtWindow = 5,
+  precursorMzWindow = 4,
+  topMost = NULL,
+  avgFeatParams = getDefAvgPListParams(),
+  avgFGroupParams = getDefAvgPListParams()
+)
+
+# patRoon::report(pat_fg)
+# pat <- readRDS("example_pat.rds")
+
+
+if (ms$has_groups()) {
+  
+  plist <- lapply(ms$get_analyses(), function(x) {
+    
+    features <- x$features
+    features <- features[!features$filtered, ]
+    
+    groups <- unique(features$group)
+    groups <- groups[!is.na(groups)]
+    
+    glist <- lapply(groups, function(x2, features) {
+      out <- list()
+      
+      MS <- features$ms1[features$group %in% x2]
+      MSMS <- features$ms2[features$group %in% x2]
+      
+      if (length(MS) > 1) {
+        warning("")
+        MS <- MS[1]
+      }
+      
+      if (length(MSMS) > 1) {
+        warning("")
+        MSMS <- MSMS[1]
+      }
+      
+      if (!is.null(MS[[1]])) {
+        names(MS) <- "MS"
+        out <- c(out, MS)
+      }
+      
+      if (!is.null(MSMS[[1]])) {
+        names(MSMS) <- "MSMS"
+        out <- c(out, MSMS)
+      }
+      
+      out
+      
+    }, features = features)
+    
+    names(glist) <- groups
+    
+    glist
+  })
+  
+  names(plist) <- ms$get_analysis_names()
+  
+  groups <- ms$get_groups()
+  
+  aplist <- lapply(seq_len(nrow(groups)), function(x, groups) {
+    out <- list()
+    
+    MS <- groups$ms1[x]
+    MSMS <- groups$ms2[x]
+    
+    if (length(MS) > 1) {
+      warning("")
+      MS <- MS[1]
+    }
+    
+    if (length(MSMS) > 1) {
+      warning("")
+      MSMS <- MSMS[1]
+    }
+    
+    if (!is.null(MS[[1]])) {
+      names(MS) <- "MS"
+      out <- c(out, MS)
+    }
+    
+    if (!is.null(MSMS[[1]])) {
+      names(MSMS) <- "MSMS"
+      out <- c(out, MSMS)
+    }
+    
+    out
+    
+    
+  }, groups = groups)
+  
+  names(aplist) <- groups$group
+  
+  new("MSPeakLists",
+      peakLists = plist,
+      averagedPeakLists = aplist,
+      algorithm = "StreamFind"
+  )
+}
+
+
+
+
+
+
 ms$plot_spectra(analyses = 10:12, mz = 254.0594, ppm = 20, allTraces = FALSE, levels = c(1, 2), colorBy = "levels")
-# TODO make feature ms1 and feature group MS2 for PPT
+
 
 
 ms$get_groups(mass = db)

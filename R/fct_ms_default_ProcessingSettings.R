@@ -99,6 +99,20 @@ Settings_centroid_spectra_qCentroids <- function() {
   as.ProcessingSettings(settings)
 }
 
+#' @describeIn Settings_centroid_spectra_qCentroids
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_centroid_spectra_qCentroids S3 class object.
+#'
+#' @export
+#'
+validate.Settings_centroid_spectra_qCentroids <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "centroid_spectra"),
+    checkmate::test_choice(x$algorithm, "qCentroids")
+  )
+}
+
 ## bin_spectra -----
 
 #' @title Settings_bin_spectra_qBinning
@@ -126,6 +140,20 @@ Settings_bin_spectra_qBinning <- function() {
   )
 
   as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_bin_spectra_qBinning
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_bin_spectra_qBinning S3 class object.
+#'
+#' @export
+#'
+validate.Settings_bin_spectra_qBinning <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "bin_spectra"),
+    checkmate::test_choice(x$algorithm, "qBinning")
+  )
 }
 
 ## find_features -----
@@ -156,6 +184,20 @@ Settings_find_features_qPeaks <- function() {
 
   as.ProcessingSettings(settings)
 
+}
+
+#' @describeIn Settings_find_features_qPeaks
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_find_features_qPeaks S3 class object.
+#'
+#' @export
+#'
+validate.Settings_find_features_qPeaks <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "find_features"),
+    checkmate::test_choice(x$algorithm, "qPeaks")
+  )
 }
 
 #' @title Settings_find_features_xcms3_centwave
@@ -271,6 +313,20 @@ Settings_find_features_xcms3_centwave <- function(
   return(settings)
 }
 
+#' @describeIn Settings_find_features_xcms3_centwave
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_find_features_xcms3_centwave S3 class object.
+#'
+#' @export
+#'
+validate.Settings_find_features_xcms3_centwave <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "find_features"),
+    checkmate::test_choice(x$algorithm, "xcms3_centwave")
+  )
+}
+
 #' @title Settings_find_features_xcms3_matchedfilter
 #'
 #' @description Settings for finding features (i.e., chromatographic peaks)
@@ -367,6 +423,20 @@ Settings_find_features_xcms3_matchedfilter <- function(
   settings <- as.ProcessingSettings(settings)
 
   return(settings)
+}
+
+#' @describeIn Settings_find_features_xcms3_matchedfilter
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_find_features_xcms3_matchedfilter S3 class object.
+#'
+#' @export
+#'
+validate.Settings_find_features_xcms3_matchedfilter <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "find_features"),
+    checkmate::test_choice(x$algorithm, "xcms3_matchedfilter")
+  )
 }
 
 #' @title Settings_find_features_openms
@@ -510,6 +580,20 @@ Settings_find_features_openms <- function(
   return(settings)
 }
 
+#' @describeIn Settings_find_features_openms
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_find_features_openms S3 class object.
+#'
+#' @export
+#'
+validate.Settings_find_features_openms <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "find_features"),
+    checkmate::test_choice(x$algorithm, "openms")
+  )
+}
+
 #' @title Settings_find_features_kpic2
 #'
 #' @description Settings for finding features (i.e., chromatographic peaks)
@@ -581,6 +665,20 @@ Settings_find_features_kpic2 <- function(
   settings <- as.ProcessingSettings(settings)
 
   return(settings)
+}
+
+#' @describeIn Settings_find_features_kpic2
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_find_features_kpic2 S3 class object.
+#'
+#' @export
+#'
+validate.Settings_find_features_kpic2 <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "find_features"),
+    checkmate::test_choice(x$algorithm, "kpic2")
+  )
 }
 
 ## group_features -----
@@ -660,6 +758,20 @@ Settings_group_features_xcms3_peakdensity <- function(
   settings <- as.ProcessingSettings(settings)
 
   return(settings)
+}
+
+#' @describeIn Settings_group_features_xcms3_peakdensity
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_group_features_xcms3_peakdensity S3 class object.
+#'
+#' @export
+#'
+validate.Settings_group_features_xcms3_peakdensity <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "group_features"),
+    checkmate::test_choice(x$algorithm, "xcms3_peakdensity")
+  )
 }
 
 #' @title Settings_group_features_xcms3_peakdensity_peakgroups
@@ -811,6 +923,20 @@ Settings_group_features_xcms3_peakdensity_peakgroups <- function(
   return(settings)
 }
 
+#' @describeIn Settings_group_features_xcms3_peakdensity_peakgroups
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_group_features_xcms3_peakdensity_peakgroups S3 class object.
+#'
+#' @export
+#'
+validate.Settings_group_features_xcms3_peakdensity_peakgroups <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "group_features"),
+    checkmate::test_choice(x$algorithm, "xcms3_peakdensity_peakgroups")
+  )
+}
+
 ## load_features -----
 
 #' @title Settings_load_features_ms1_StreamFind
@@ -820,7 +946,7 @@ Settings_group_features_xcms3_peakdensity_peakgroups <- function(
 #' @template arg-ms-rtWindow
 #' @template arg-ms-mzWindow
 #' @template arg-ms-mzClust
-#' @template arg-ms-isInAllSpectra
+#' @template arg-ms-presence
 #' @template arg-ms-minIntensity
 #' @template arg-ms-filtered
 #' @template arg-runParallel
@@ -835,7 +961,7 @@ Settings_load_features_ms1_StreamFind <- function(
     rtWindow = c(-2, 2),
     mzWindow = c(-1, 6),
     mzClust = 0.003,
-    isInAllSpectra = TRUE,
+    presence = 0.8,
     minIntensity = 250,
     filtered = FALSE,
     runParallel = FALSE,
@@ -848,7 +974,7 @@ Settings_load_features_ms1_StreamFind <- function(
       "rtWindow" = rtWindow,
       "mzWindow" = mzWindow,
       "mzClust" = mzClust,
-      "isInAllSpectra" = isInAllSpectra,
+      "presence" = presence,
       "minIntensity" = minIntensity,
       "filtered" = filtered,
       "runParallel" = runParallel,
@@ -868,8 +994,7 @@ Settings_load_features_ms1_StreamFind <- function(
 }
 
 #' @describeIn Settings_load_features_ms1_StreamFind
-#' Validates the Settings_load_features_ms1_StreamFind S3 class object,
-#' returning a logical value of length one.
+#' Validates the object structure, returning a logical value of length one.
 #'
 #' @param x A Settings_load_features_ms1_StreamFind S3 class object.
 #'
@@ -895,7 +1020,7 @@ validate.Settings_load_features_ms1_StreamFind <- function(x) {
 #'
 #' @template arg-ms-isolationWindow
 #' @template arg-ms-mzClust
-#' @template arg-ms-isInAllSpectra
+#' @template arg-ms-presence
 #' @template arg-ms-minIntensity
 #' @template arg-ms-filtered
 #' @template arg-runParallel
@@ -909,7 +1034,7 @@ validate.Settings_load_features_ms1_StreamFind <- function(x) {
 Settings_load_features_ms2_StreamFind <- function(
     isolationWindow = 1.3,
     mzClust = 0.01,
-    isInAllSpectra = TRUE,
+    presence = 0.8,
     minIntensity = 0,
     filtered = FALSE,
     runParallel = FALSE,
@@ -921,7 +1046,7 @@ Settings_load_features_ms2_StreamFind <- function(
     parameters = list(
       "isolationWindow" = isolationWindow,
       "mzClust" = mzClust,
-      "isInAllSpectra" = isInAllSpectra,
+      "presence" = presence,
       "minIntensity" = minIntensity,
       "filtered" = filtered,
       "runParallel" = runParallel,
@@ -941,8 +1066,7 @@ Settings_load_features_ms2_StreamFind <- function(
 }
 
 #' @describeIn Settings_load_features_ms2_StreamFind
-#' Validates the Settings_load_features_ms1_StreamFind S3 class object,
-#' returning a logical value of length one.
+#' Validates the object structure, returning a logical value of length one.
 #'
 #' @param x A Settings_load_features_ms2_StreamFind S3 class object.
 #'
@@ -966,7 +1090,7 @@ validate.Settings_load_features_ms2_StreamFind <- function(x) {
 #' @description Settings for loading MS1 spectra for feature groups.
 #'
 #' @template arg-ms-mzClust
-#' @template arg-ms-isInAllSpectra
+#' @template arg-ms-presence
 #' @template arg-ms-minIntensity
 #' @template arg-ms-filtered
 #' @template arg-runParallel
@@ -979,7 +1103,7 @@ validate.Settings_load_features_ms2_StreamFind <- function(x) {
 #'
 Settings_load_groups_ms1_StreamFind <- function(
     mzClust = 0.003,
-    isInAllSpectra = TRUE,
+    presence = 0.8,
     minIntensity = 1000,
     verbose = FALSE,
     filtered = FALSE,
@@ -990,7 +1114,7 @@ Settings_load_groups_ms1_StreamFind <- function(
     algorithm = "StreamFind",
     parameters = list(
       "mzClust" = mzClust,
-      "isInAllSpectra" = isInAllSpectra,
+      "presence" = presence,
       "minIntensity" = minIntensity,
       "filtered" = filtered,
       "runParallel" = runParallel,
@@ -1010,8 +1134,7 @@ Settings_load_groups_ms1_StreamFind <- function(
 }
 
 #' @describeIn Settings_load_groups_ms1_StreamFind
-#' Validates the Settings_load_groups_ms1_StreamFind S3 class object,
-#' returning a logical value of length one.
+#' Validates the object structure, returning a logical value of length one.
 #'
 #' @param x A Settings_load_groups_ms1_StreamFind S3 class object.
 #'
@@ -1034,7 +1157,7 @@ validate.Settings_load_groups_ms1_StreamFind <- function(x) {
 #' @description Settings for loading MS2 spectra for feature groups.
 #'
 #' @template arg-ms-mzClust
-#' @template arg-ms-isInAllSpectra
+#' @template arg-ms-presence
 #' @template arg-ms-minIntensity
 #' @template arg-ms-filtered
 #' @template arg-runParallel
@@ -1047,7 +1170,7 @@ validate.Settings_load_groups_ms1_StreamFind <- function(x) {
 #'
 Settings_load_groups_ms2_StreamFind <- function(
     mzClust = 0.01,
-    isInAllSpectra = TRUE,
+    presence = 0.8,
     minIntensity = 250,
     filtered = FALSE,
     runParallel = FALSE,
@@ -1058,7 +1181,7 @@ Settings_load_groups_ms2_StreamFind <- function(
     algorithm = "StreamFind",
     parameters = list(
       "mzClust" = mzClust,
-      "isInAllSpectra" = isInAllSpectra,
+      "presence" = presence,
       "minIntensity" = minIntensity,
       "filtered" = filtered,
       "runParallel" = runParallel,
@@ -1078,8 +1201,7 @@ Settings_load_groups_ms2_StreamFind <- function(
 }
 
 #' @describeIn Settings_load_groups_ms2_StreamFind
-#' Validates the Settings_load_groups_ms2_StreamFind S3 class object,
-#' returning a logical value of length one.
+#' Validates the object structure, returning a logical value of length one.
 #'
 #' @param x A Settings_load_groups_ms2_StreamFind S3 class object.
 #'
@@ -1103,39 +1225,43 @@ validate.Settings_load_groups_ms2_StreamFind <- function(x) {
 #'
 #' @description Settings for filtering of features and feature groups.
 #'
-#' @param minIntensity Numeric (length 1) with the minimum intensity.
-#' @param minSnRatio Numeric (length 1) with the minimum signal-to-noise ratio.
-#' The filter is only applied if the features data.table contains the column "sn".
-#' @param maxGroupSd Numeric (length 1) with the maximum intensity deviation
-#' within each analysis replicate (in percentage).
-#' @param blank Numeric (length 1) with the intensity threshold for blank
-#' subtraction. All features/feature groups not higher then the `blank` * its
-#' intensity are filtered.
-#' @param minGroupAbundance Numeric (length 1) with the minimum presence of a
-#' feature is a given analysis replicate.
-#' @param excludeIsotopes Logical (length 1) with `TRUE` for filtering
-#' annotated isotopes (only prevails the monoisotopic features).
-#' @param rtFilter Numeric (length 2) with the min and max retention time
-#' (in seconds) values to filter features. Features within the retention time
-#' range are filtered out.
-#' @param massFilter Numeric (length 2) with the min and max mass
-#' (in Da) values to filter features. Features within the mass range are
-#' filtered out.
+#' @param ... Ordered filters to be applied. Possible filter arguments are:
+#' \itemize{
+#'  \item{**minIntensity**}{  Numeric (length 1) with the minimum intensity.}
+#'  \item{**minSnRatio**}{  Numeric (length 1) with the minimum signal-to-noise 
+#'  ratio.}
+#'  \item{**maxGroupSd**}{  Numeric (length 1) with the maximum intensity 
+#'  deviation within each analysis replicate (in percentage).}
+#'  \item{**blank**}{  Numeric (length 1) with the intensity threshold for blank
+#'  subtraction. All features/feature groups not higher then the `blank` * its
+#'  intensity are filtered.}
+#'  \item{**minGroupAbundance**}{  Numeric (length 1) with the minimum presence 
+#'  of a feature is a given analysis replicate.}
+#'  \item{**excludeIsotopes**}{  Logical (length 1) with `TRUE` for filtering
+#'  annotated isotopes (only prevails the monoisotopic features).}
+#'  \item{**rtFilter**}{  Numeric (length 2) with the min and max retention time
+#'  (in seconds) values to filter features. Features within the retention time
+#'  range are filtered out.}
+#'  \item{**massFilter**}{  Numeric (length 2) with the min and max mass
+#'  (in Da) values to filter features. Features within the mass range are
+#'  filtered out.}
+#' }
 #'
 #' @return A ProcessingSettings S3 class object with subclass
 #' Settings_filter_features_StreamFind.
+#' 
+#' @details 
+#' When feature groups exist the filtering is done on feature groups, meaning 
+#' that the filters are applied per feature group not individual features. For 
+#' instance, if feature groups exist the minimum intensity is applied on the 
+#' maximum intensity observed for a feature group and not the intensity of each
+#' individual feature.
 #'
 #' @export
 #'
-Settings_filter_features_StreamFind <- function(
-    minIntensity = NULL,
-    minSnRatio = NULL,
-    maxGroupSd = NULL,
-    blank = NULL,
-    minGroupAbundance = NULL,
-    excludeIsotopes = NULL,
-    rtFilter = NULL,
-    massFilter = NULL) {
+Settings_filter_features_StreamFind <- function(...) {
+  
+  dots <- list(...)
 
   settings <- list(
     call = "filter_features",
@@ -1148,55 +1274,64 @@ Settings_filter_features_StreamFind <- function(
     link = NA_character_,
     doi = NA_character_
   )
-
-  if (!is.null(minIntensity)) {
-    checkmate::assert_double(minIntensity, max.len = 1)
-    settings$parameters[["minIntensity"]] <- minIntensity
+  
+  possible_feature_filters <- c(
+    "minIntensity",
+    "minSnRatio",
+    "blank",
+    "maxGroupSd",
+    "minGroupAbundance",
+    "excludeIsotopes",
+    "excludeAdducts",
+    "rtFilter",
+    "massFilter"
+  )
+  
+  if (!all(names(dots) %in% possible_feature_filters)) {
+    warning("Added filter arguments not recognized!")
   }
 
-  if (!is.null(minSnRatio)) {
-    checkmate::assert_double(minSnRatio, max.len = 1)
-    settings$parameters[["minSnRatio"]] <- minSnRatio
+  if ("minIntensity" %in% names(dots)) {
+    checkmate::assert_double(dots[["minIntensity"]], max.len = 1)
   }
 
-  if (!is.null(maxGroupSd)) {
-    checkmate::assert_double(maxGroupSd, max.len = 1)
-    settings$parameters[["maxGroupSd"]] <- maxGroupSd
+  if ("minSnRatio" %in% names(dots)) {
+    checkmate::assert_double(dots[["minSnRatio"]], max.len = 1)
   }
 
-  if (!is.null(blank)) {
-    checkmate::assert_double(blank, max.len = 1)
-    settings$parameters[["blank"]] <- blank
+  if ("maxGroupSd" %in% names(dots)) {
+    checkmate::assert_double(dots[["maxGroupSd"]], max.len = 1)
   }
 
-  if (!is.null(minGroupAbundance)) {
-    checkmate::assert_count(minGroupAbundance)
-    settings$parameters[["minGroupAbundance"]] <- minGroupAbundance
+  if ("blank" %in% names(dots)) {
+    checkmate::assert_double(dots[["blank"]], max.len = 1)
   }
 
-  if (!is.null(excludeIsotopes)) {
-    checkmate::assert_logical(excludeIsotopes, max.len = 1)
-    settings$parameters[["excludeIsotopes"]] <- excludeIsotopes
+  if ("minGroupAbundance" %in% names(dots)) {
+    checkmate::assert_count(dots[["minGroupAbundance"]])
   }
 
-  if (!is.null(rtFilter)) {
-    checkmate::assert_double(rtFilter, len = 2)
-    settings$parameters[["rtFilter"]] <- rtFilter
+  if ("excludeIsotopes" %in% names(dots)) {
+    checkmate::assert_logical(dots[["excludeIsotopes"]], max.len = 1)
   }
 
-  if (!is.null(massFilter)) {
-    checkmate::assert_double(massFilter, len = 2)
-    settings$parameters[["massFilter"]] <- massFilter
+  if ("rtFilter" %in% names(dots)) {
+    checkmate::assert_double(dots[["rtFilter"]], len = 2)
   }
 
+  if ("massFilter" %in% names(dots)) {
+    checkmate::assert_double(dots[["massFilter"]], len = 2)
+  }
+
+  settings$parameters <- dots
+  
   settings <- as.ProcessingSettings(settings)
 
   return(settings)
 }
 
 #' @describeIn Settings_filter_features_StreamFind
-#' Validates the Settings_filter_features_StreamFind S3 class object, returning
-#' a logical value of length one.
+#' Validates the object structure, returning a logical value of length one.
 #'
 #' @param x A Settings_filter_features_StreamFind S3 class object.
 #'
@@ -1312,7 +1447,7 @@ Settings_annotate_features_StreamFind <- function(
   checkmate::assert_number(rtWindowAlignment)
   checkmate::assert_choice(mode, "small molecules")
   checkmate::assert_vector(elements, any.missing = FALSE, min.len = 1)
-  lapply(elements, function(i) checkmate::assert_choice(i, c("C","H", "N", "O", "S", "Cl", "Br")))
+  lapply(elements, function(i) checkmate::assert_choice(i, c("C","H", "N", "O", "S", "Cl", "Br", "Si", "Ge")))
   checkmate::assert_logical(runParallel, max.len = 1)
 
   settings <- list(
@@ -1341,8 +1476,7 @@ Settings_annotate_features_StreamFind <- function(
 }
 
 #' @describeIn Settings_annotate_features_StreamFind
-#' Validates the Settings_annotate_features_StreamFind S3 class object, returning a logical
-#' value of length one.
+#' Validates the object structure, returning a logical value of length one.
 #'
 #' @param x A Settings_annotate_features_StreamFind S3 class object.
 #'
@@ -1358,7 +1492,7 @@ validate.Settings_annotate_features_StreamFind <- function(x) {
     checkmate::test_double(x$parameters$rtWindowAlignment, max.len = 1),
     checkmate::test_choice(x$parameters$mode, "small molecules"),
     checkmate::test_vector(x$parameters$elements, any.missing = FALSE, min.len = 1),
-    vapply(x$parameters$elements, function(i) checkmate::test_choice(i, c("C","H", "N", "O", "S", "Cl", "Br")), FALSE),
+    vapply(x$parameters$elements, function(i) checkmate::test_choice(i, c("C","H", "N", "O", "S", "Cl", "Br", "Si", "Ge")), FALSE),
     checkmate::test_logical(x$parameters$runParallel, max.len = 1)
   )
 }
@@ -1408,8 +1542,7 @@ Settings_suspect_screening_StreamFind <- function(
 }
 
 #' @describeIn Settings_suspect_screening_StreamFind
-#' Validates the Settings_suspect_screening_StreamFind S3 class object,
-#' returning a logical value of length one.
+#' Validates the object structure, returning a logical value of length one.
 #'
 #' @param x A Settings_suspect_screening_StreamFind S3 class object.
 #'
@@ -1481,11 +1614,10 @@ Settings_suspect_screening_forident <- function(
 }
 
 #' @describeIn Settings_suspect_screening_forident
-#' Validates the Settings_suspect_screening_forident S3 class object,
-#' returning a logical value of length one.
+#' Validates the object structure, returning a logical value of length one.
 #'
 #' @param x A Settings_suspect_screening_forident S3 class object.
-#'
+#' 
 #' @export
 #'
 validate.Settings_suspect_screening_forident <- function(x) {

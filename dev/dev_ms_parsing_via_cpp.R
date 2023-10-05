@@ -1,14 +1,20 @@
 
 # resources --------------------------------------------------------------------
 
+## files -----------------------------------------------------------------------
 all_files <- StreamFindData::get_all_file_paths()
-db <- StreamFindData::get_tof_spiked_chemicals()
-files_mrm <- all_files[grepl("mrm", all_files)]
-files <- all_files[1:3]
-files1 <- all_files[grepl("influent|blank", all_files)]
-files2 <- all_files[grepl("o3sw", all_files)]
-db_cols <- c("name", "mass", "rt")
+# files <- all_files[grepl("mrm", all_files)]
+# files <- all_files[1:3]
+# files <- all_files[grepl("influent|blank", all_files)]
+files <- all_files[grepl("o3sw", all_files)]
 
+path <- "C:/Users/Ricardo Cunha/Documents/Work/example_ms_files"
+# files <- list.files(path, pattern = ".mzML", full.names = TRUE)
+
+## databases -------------------------------------------------------------------
+db <- StreamFindData::get_tof_spiked_chemicals()
+
+db_cols <- c("name", "mass", "rt")
 carbamazepin_d10 <- db[db$name %in% "Carbamazepin-d10", db_cols, with = FALSE]
 diuron_d6 <- db[db$name %in% "Diuron-d6", db_cols, with = FALSE]
 carb_pos <- carbamazepin_d10$mass + 1.007276
@@ -33,7 +39,7 @@ targets <- make_ms_targets(
 
 neutral_targets <- make_ms_targets(
   mz = data.frame(
-    id = c("tg1", "tg2"),
+    name = c("tg1", "tg2"),
     mz = c(carb, diu),
     rt = c(carb_rt, diu_rt)
   ),
@@ -41,90 +47,41 @@ neutral_targets <- make_ms_targets(
   sec = sec_dev
 )
 
-# settings ---------------------------------------------------------------------
+cols <- c("name", "formula", "mass", "rt")
 
-settings_ff <- list(
-  call = "find_features",
-  algorithm = "xcms3",
-  parameters = list(xcms::CentWaveParam(
-    ppm = 12, peakwidth = c(5, 30),
-    snthresh = 10, prefilter = c(5, 1500),
-    mzCenterFun = "wMean", integrate = 1,
-    mzdiff = -0.0005, fitgauss = TRUE,
-    noise = 500, verboseColumns = TRUE,
-    firstBaselineCheck = TRUE,
-    extendLengthMSW = FALSE
-  ))
+# tof_db <- paste0(path, "/qc_MS2_pos.csv")
+# tof_db <- data.table::fread(tof_db)
+# tof_db <- tof_db[, cols, with = FALSE]
+
+afin_db <- paste0(path, "/Composition_Mix-Fusion.csv")
+afin_db <- data.table::fread(afin_db)
+afin_db <- afin_db[, cols, with = FALSE]
+
+# ude_db <- paste0(path, "/mix1_orbitrap_ude.csv")
+# ude_db <- data.table::fread(ude_db)
+# ude_db <- ude_db[, cols, with = FALSE]
+
+## settings --------------------------------------------------------------------
+
+settings <- list(
+  Settings_find_features_xcms3_centwave(),
+  Settings_group_features_xcms3_peakdensity(),
+  Settings_filter_features_StreamFind(
+    minIntensity = 5000,
+    minSnRatio = 20,
+    maxGroupSd = 30,
+    blank = 5,
+    minGroupAbundance = 3,
+    excludeIsotopes = TRUE
+  ),
+  Settings_load_features_ms1_StreamFind(),
+  Settings_load_features_ms2_StreamFind(),
+  Settings_load_groups_ms1_StreamFind(),
+  Settings_load_groups_ms2_StreamFind()
+  
 )
 
-settings_gf <- list(
-  "call" = "group_features",
-  "algorithm" = "xcms3",
-  "parameters" = list(
-    # rtalign = FALSE,
-    groupParam = xcms::PeakDensityParam(
-      sampleGroups = "holder",
-      bw = 5,
-      minFraction = 0.5,
-      minSamples = 1,
-      binSize = 0.008,
-      maxFeatures = 100
-    )
-  )
-)
-
-settingsSettings_load_features_ms1_StreamFind <- list(
-  "call" = "load_features_ms1",
-  "algorithm" = "StreamFind",
-  "parameters" = list(
-    rtWindow = c(-2, 2),
-    mzWindow = c(-1, 6),
-    mzClust = 0.003,
-    minIntensity = 250,
-    filtered = FALSE,
-    runParallel = TRUE,
-    verbose = FALSE
-  )
-)
-
-settingsSettings_load_features_ms2_StreamFind <- list(
-  "call" = "load_features_ms2",
-  "algorithm" = "StreamFind",
-  "parameters" = list(
-    isolationWindow = 1.3,
-    mzClust = 0.003,
-    minIntensity = 0,
-    filtered = FALSE,
-    runParallel = TRUE,
-    verbose = FALSE
-  )
-)
-
-settingsSettings_load_groups_ms1_StreamFind <- list(
-  "call" = "load_groups_ms1",
-  "algorithm" = "StreamFind",
-  "parameters" = list(
-    mzClust = 0.003,
-    minIntensity = 1000,
-    verbose = FALSE,
-    filtered = FALSE,
-    runParallel = TRUE
-  )
-)
-
-settingsSettings_load_groups_ms2_StreamFind <- list(
-  "call" = "load_groups_ms2",
-  "algorithm" = "StreamFind",
-  "parameters" = list(
-    mzClust = 0.003,
-    minIntensity = 250,
-    filtered = FALSE,
-    runParallel = TRUE,
-    verbose = FALSE
-  )
-)
-
-# r6 test ----------------------------------------------------------------------
+# cached -----------------------------------------------------------------------
 
 # patRoon::clearCache("parsed_ms_analyses")
 # patRoon::clearCache("parsed_ms_spectra")
@@ -132,6 +89,156 @@ settingsSettings_load_groups_ms2_StreamFind <- list(
 # patRoon::clearCache("load_features_ms2")
 # patRoon::clearCache("load_groups_ms1")
 # patRoon::clearCache("load_groups_ms2")
+
+# patRoon::clearCache("all")
+
+# spectra ----------------------------------------------------------------------
+
+ms <- MassSpecData$new(files = files, settings = settings)
+
+ms$find_features()
+
+ms$group_features()
+
+tar_groups <- ms$get_groups(mass = neutral_targets)
+
+ms2 <- ms$subset_groups(groups = unique(tar_groups$group))
+
+
+
+
+pat_features <- ms$as_patRoon_features()
+
+pat_fgroups <- ms$as_patRoon_featureGroups()
+
+
+
+pat
+
+
+
+
+
+diu_fts <- ms$get_features(mass = diu, rt = diu_rt, ppm = 10, sec = 10)
+
+# ms$remove_analyses(c(1, 6))
+
+
+
+
+
+View(ms$get_groups())
+
+View(ms$get_features())
+
+
+
+
+View(ms$get_features())
+
+
+
+
+
+
+
+
+
+ms$plot_eic(mass = diu, rt = diu_rt, ppm = 5, sec = 10)
+
+# ms$plot_bpc(levels = 1, colorBy = "analyses", interactive = F)
+
+ms$plot_eic(mass = afin_db$mass[66], colorBy = "targets")
+
+spec <- ms$get_spectra(mass = afin_db$mass[66], rt = 358, ppm = 3, sec = 10, levels = 1, allTraces = FALSE)
+spec$unique_id <- paste0(spec$analysis, "_", spec$id, "_", spec$polarity)
+spec
+
+spec <- ms$get_spectra(mass = diu, rt = diu_rt, ppm = 3, sec = 10, levels = 2, allTraces = FALSE)
+spec$unique_id <- paste0(spec$analysis, "_", spec$id, "_", spec$polarity)
+spec
+
+rcpp_ms_cluster_spectra(spec, mzClust = 0.001, presence = 0.8, verbose = TRUE)
+
+
+# ms$get_ms2()
+
+rcpp_parse_ms_analysis_spectra(ms$get_analyses()[[1]])
+
+
+ms$get_run()
+
+ms$get_polarities()
+
+ms$get_spectra(mass = afin_db$mass[2])
+
+
+
+ms$plot_eic(mz = afin_db$mass[2] + 1.00726, colorBy = "targets")
+
+ms$get_ms2(mass = afin_db$mass[2])
+
+ms$plot_bpc(levels = 1, colorBy = "analyses")
+
+
+
+
+
+
+
+ms$get_spectra(analyses = c(2, 5), mass = diu, rt = diu_rt)
+
+
+
+
+
+
+
+ms$get_spectra(analyses = c(2, 5), mass = diu, rt = diu_rt, sec = 120, levels = 2, allTraces = FALSE)
+
+# ms$plot_spectra(mass = diu, rt = diu_rt, colorBy = "analyses")
+
+# ms$plot_ms2(analyses = c(2, 5), mass = diu, rt = diu_rt, colorBy = "targets", interactive = T)
+
+ms$plot_ms1(analyses = c(2, 5), mass = diu, rt = diu_rt, interactive = F)
+
+ms$get_ms1(analyses = c(2, 5), mass = diu, rt = diu_rt)
+
+ms$get_tic()
+
+ms$plot_tic(levels = 1, colorBy = "polarities", interactive = F)
+
+ms$plot_eic(mass = neutral_targets, colorBy = "targets", interactive = F, legendNames = TRUE)
+
+#ms$get_eic(mass = diu)
+
+#ms$get_eic(mz = diu_pos)
+
+
+
+
+
+
+ms$get_analyses(1)[[1]]$run
+
+rcpp_parse_ms_analysis(all_files[7])
+
+rcpp_parse_spectra_headers(all_files[7])
+
+rcpp_parse_ms_analysis_spectra(ms$get_analyses(1)[[1]])
+
+rcpp_parse_spectra_headers(files2[1])
+
+rcpp_parse_spectra(files2[1])
+
+
+
+
+
+
+
+
+
 
 
 ms <- MassSpecData$new(files = all_files[10:21],

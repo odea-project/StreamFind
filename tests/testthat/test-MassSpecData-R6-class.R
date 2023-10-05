@@ -60,7 +60,6 @@ test_that("getter for features with empty object", {
   expect_equal(nrow(ms$get_groups_ms2()), 0)
 })
 
-
 test_that("getter for names and filePaths", {
   expect_equal(
     unname(ms$get_analysis_names()),
@@ -156,7 +155,7 @@ test_that("get EIC, MS1 and MS2 spectra", {
     mz = targets, minIntensity = 10000
   )))
   expect_s3_class(ms$get_ms2(4, mz = targets), "data.table")
-  expect_true("isPre" %in% colnames(ms$get_ms2(4, mz = targets)))
+  expect_true("is_pre" %in% colnames(ms$get_ms2(4, mz = targets)))
 })
 
 # ms$plot_tic(colorBy = "replicates")
@@ -167,14 +166,14 @@ test_that("get EIC, MS1 and MS2 spectra", {
 
 settings_ff <- Settings_find_features_xcms3_centwave(
   ppm = 12,
-  peakwidth = c(5, 30),
+  peakwidth = c(5, 40),
   snthresh = 10,
-  prefilter = c(5, 1500),
+  prefilter = c(6, 5000),
   mzCenterFun = "mean",
   integrate = 2,
-  mzdiff = -0.0001,
+  mzdiff = 0.0005,
   fitgauss = TRUE,
-  noise = 500,
+  noise = 1500,
   verboseColumns = TRUE,
   firstBaselineCheck = FALSE,
   extendLengthMSW = TRUE
@@ -188,7 +187,7 @@ test_that("add and get settings", {
   expect_true(ms$has_settings("find_features"))
 })
 
-ms$find_features(settings = settings_ff)
+suppressWarnings(ms$find_features(settings = settings_ff))
 
 test_that("find and get features", {
   expect_s3_class(ms$get_features(mz = targets), "data.table")
@@ -324,7 +323,7 @@ test_that("remove 2 groups", {
 fts_to_rem <- ms5$get_features(mz = targets)
 ms5$remove_features(fts_to_rem)
 
-test_that("remove 12 featrues from targets", {
+test_that("remove 12 features from targets", {
   expect_lt(nrow(ms5$get_features()), n_fts_total)
   expect_equal(nrow(ms5$get_groups(groups = unique(fts_to_rem$group))), 0)
   expect_equal(nrow(ms5$get_features(mz = targets)), 0)
@@ -364,7 +363,7 @@ slfms1 <- Settings_load_features_ms1_StreamFind(
   rtWindow = c(-2, 2),
   mzWindow = c(-1, 6),
   mzClust = 0.003,
-  isInAllSpectra = FALSE,
+  presence = 0.8,
   minIntensity = 250,
   filtered = FALSE,
   runParallel = FALSE,
@@ -375,7 +374,7 @@ slfms1 <- Settings_load_features_ms1_StreamFind(
 slfms2 <- Settings_load_features_ms2_StreamFind(
   isolationWindow = 1.3,
   mzClust = 0.003,
-  isInAllSpectra = FALSE,
+  presence = 0.8,
   minIntensity = 0,
   filtered = FALSE,
   runParallel = FALSE,
@@ -419,7 +418,7 @@ groups_to_subset <- ms5$get_groups(mass = neutral_targets)
 ms5 <- ms5$subset_groups(groups = groups_to_subset$group)
 
 test_that("subset groups", {
-  expect_equal(nrow(ms5$get_features()), 18)
+  expect_equal(nrow(ms5$get_features()), 12)
   expect_equal(
     nrow(ms5$get_features(filtered = TRUE)),
     nrow(ms$get_features(filtered = TRUE))
@@ -437,12 +436,20 @@ test_that("remove filtered features", {
   expect_equal(nrow(ms5$get_groups()), 2)
 })
 
+patRoon::clearCache("parsed_ms_spectra")
+patRoon::clearCache("load_features_ms1")
+patRoon::clearCache("load_features_ms2")
+patRoon::clearCache("load_groups_ms1")
+patRoon::clearCache("load_groups_ms2")
+
 ms5$load_features_ms1(settings = slfms1)
+
 ms5$load_features_ms2(settings = slfms2)
+
 
 slfgms1 <- Settings_load_groups_ms1_StreamFind(
   mzClust = 0.003,
-  isInAllSpectra = FALSE,
+  presence = 0.8,
   minIntensity = 1000,
   verbose = FALSE,
   filtered = FALSE,
@@ -451,7 +458,7 @@ slfgms1 <- Settings_load_groups_ms1_StreamFind(
 
 slfgms2 <- Settings_load_groups_ms2_StreamFind(
   mzClust = 0.003,
-  isInAllSpectra = FALSE,
+  presence = 0.8,
   minIntensity = 250,
   filtered = FALSE,
   runParallel = FALSE,
@@ -495,7 +502,7 @@ test_that("remove loaded MS2 groups", {
 
 file.remove("MassSpecData.json")
 
-
+patRoon::clearCache("all")
 
 
 

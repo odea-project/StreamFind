@@ -136,7 +136,8 @@
 #' @param self A `MassSpecData` object. When applied within the R6, the self
 #' object.
 #'
-#' @return A list with a features \linkS4class{data.table} for each analysis.
+#' @return A named list with a features \linkS4class{data.table} for each 
+#' analysis. The names should match the names of analyses in the `MassSpecData`.
 #'
 #' @noRd
 #'
@@ -144,8 +145,11 @@
 
   if ("features" %in% is(pat)) {
     anaInfo <- pat@analysisInfo
+    
     isSet <- TRUE %in% grepl("Set", is(pat))
+    
     features <- pat@features
+    
     if ("featuresXCMS3" %in% is(pat)) {
       if (xcms::hasFilledChromPeaks(pat@xdata)) {
         extra <- xcms::chromPeaks(pat@xdata, isFilledColumn = TRUE)
@@ -155,24 +159,7 @@
       } else {
         extra <- NULL
       }
-    } else {
-      extra <- NULL
-    }
-  }
-
-  if ("featureGroups" %in% is(pat)) {
-    anaInfo <- pat@analysisInfo
-    features <- copy(pat@features@features)
-    isSet <- TRUE %in% grepl("Set", is(pat))
-    if ("featureGroupsXCMS3" %in% is(pat)) {
-      if (xcms::hasFilledChromPeaks(pat@xdata)) {
-        extra <- xcms::chromPeaks(pat@xdata, isFilledColumn = TRUE)
-        extra$is_filled <- as.logical(extra$is_filled)
-        extra$analysis <- anaInfo$analysis[extra$sample]
-        extra <- split(extra, extra$analysis)
-      } else {
-        extra <- NULL
-      }
+      
     } else {
       extra <- NULL
     }
@@ -181,6 +168,7 @@
   analyses <- names(features)
 
   features <- lapply(analyses, function(x, extra, features, self, isSet) {
+    
     temp <- features[[x]]
 
     valid = TRUE
@@ -197,37 +185,39 @@
       }
     }
 
-    under_rt_max <- temp$rt <= temp$rtmax
-    if (!all(under_rt_max)) {
-      warning("Feature retention time value/s above the rtmax!")
+    below_rt_max <- temp$ret <= temp$retmax * 1.05
+    if (!all(below_rt_max)) {
+      warning(sum(!below_rt_max), " feature/s with retention time value above the rtmax removed!")
+      temp <- temp[below_rt_max, ]
     }
 
-    under_rt_min <- temp$rt >= temp$rtmin
-    if (!all(under_rt_min)) {
-      warning("Feature retention time value/s under the rtmin!")
+    above_rt_min <- temp$ret >= temp$retmin * 0.95
+    if (!all(above_rt_min)) {
+      warning(sum(!above_rt_min), " feature/s with retention time value below the rtmin removed!")
+      temp <- temp[above_rt_min, ]
     }
 
-    under_mz_max <- temp$mz <= temp$mzmax
-    if (!all(under_rt_min)) {
-      warning("Feature m/z value/s above the mzmax!")
+    below_mz_max <- temp$mz <= temp$mzmax + (2 * temp$mzmax / 1E6)
+    if (!all(below_mz_max)) {
+      warning(sum(!below_mz_max), " feature/s with m/z value above the mzmax removed!")
+      temp <- temp[below_mz_max, ]
     }
 
-    under_mz_min <- temp$mz >= temp$mzmin
-    if (!all(under_rt_min)) {
-      warning("Feature m/z value/s under the mzmin!")
+    above_mz_min <- temp$mz >= temp$mzmin - (2 * temp$mzmax / 1E6)
+    if (!all(above_mz_min)) {
+      warning(sum(!above_mz_min), " feature/s with m/z value below the mzmin removed!")
+      temp <- temp[above_mz_min, ]
     }
-
-    polarity <- unique(self$get_polarities(x))
-
-    adduct <- NA_character_
-    adduct_val <- 0
+    
+    run <- self$get_run(x)
+    
+    polarity <- unique(run$polarity)
 
     if (length(polarity) > 1) {
-      run <- self$get_run()
-      polarity <- run$polarity
-
-      scans_pos <- length(polarity[polarity %in% "positive"])
-      scans_neg <- length(polarity[polarity %in% "negative"])
+      
+      scans_pos <- length(run$polarity[run$polarity == 1])
+      
+      scans_neg <- length(run$polarity[run$polarity == -1])
 
       ratio <- scans_pos/scans_neg
 
@@ -238,27 +228,20 @@
         per_pos_pol <- round((scans_pos / nrow(run)) * 100, digits = 0)
         warning("Multiple polarities detected but positive polarity is present in ", per_pos_pol, "% of the spectra!" )
 
-        adduct <- "[M+H]+"
+        polarity <- 1
         adduct_val <- -1.007276
 
       } else {
         per_neg_pol <- round((scans_neg / nrow(run)) * 100, digits = 0)
         warning("Multiple polarities detected but negative polarity is present in ", per_neg_pol, "% of the spectra!" )
 
-        adduct <- "[M-H]-"
+        polarity <- -1
         adduct_val <- 1.007276
       }
+      
     } else {
-
-      if (polarity %in% "positive") {
-        adduct <- "[M+H]+"
-        adduct_val <- -1.007276
-      }
-
-      if (polarity %in% "negative") {
-        adduct <- "[M-H]-"
-        adduct_val <- 1.007276
-      }
+      if (polarity == 1) adduct_val <- -1.007276
+      if (polarity == -1) adduct_val <- 1.007276
     }
 
     # required as when is set the mz value is neutralized from patRoon
@@ -268,6 +251,7 @@
         mzmax = (temp$mz - 1.007276) + (temp$mzmax - temp$mz),
         mz = temp$mz - 1.007276
       )]
+      
       temp[temp$adduct %in% "[M+H]+", `:=`(
         mzmin = (temp$mz + 1.007276) - (temp$mz - temp$mzmin),
         mzmax = (temp$mz + 1.007276) + (temp$mzmax - temp$mz),
@@ -275,85 +259,70 @@
       )]
     }
 
-    if (!"adduct" %in% colnames(temp)) temp$adduct <- adduct
+    if (!"polarity" %in% colnames(temp)) temp$polarity <- polarity
+    
     if (!"mass" %in% colnames(temp)) temp$mass <- temp$mz + adduct_val
+    
     if (!"filled" %in% colnames(temp)) {
       temp$filled <- FALSE
     } else {
       temp$filled <- as.logical(temp$filled)
     }
+    
     if (!"filtered" %in% colnames(temp)) temp$filtered <- FALSE
+    
     if (!"filter" %in% colnames(temp)) temp$filter <- NA_character_
-
+    
     setnames(temp,
-             c("ID", "ret", "retmin", "retmax"),
-             c("feature", "rt", "rtmin", "rtmax"),
-             skip_absent = TRUE
+      c("ID", "ret", "retmin", "retmax"),
+      c("feature", "rt", "rtmin", "rtmax"),
+      skip_absent = TRUE
     )
-
-    # when grouping features are removed from grouping conditions in patRoon
-    # therefore, old features are retained and tagged with filter "grouping"
-    temp_org <- self$get_features(x)
-    build_feature_ids <- TRUE
-
-    if (nrow(temp_org) > 0 && "featureGroups" %in% is(pat)) {
-
-      temp_org$analysis <- NULL
-
-      if (nrow(temp_org) != nrow(temp)) {
-
-        build_feature_ids <- FALSE
-
-        #modify the feature ids from original ids when numeric
-        if (is.numeric(temp$feature)) {
-          temp$feature <- temp_org$feature[temp$feature]
-        }
-
-        temp_org_not_grouped <- temp_org[!temp_org$feature %in% temp$feature, ]
-
-        temp_list <- list(temp, temp_org_not_grouped)
-        temp <- rbindlist(temp_list, fill = TRUE)
-      }
-    }
-
-    if ("group" %in% colnames(temp)) {
-      temp$filter[is.na(temp$group)] <- "grouping"
-      temp$filtered[is.na(temp$group)] <- TRUE
-    }
 
     temp <- temp[order(temp$mz), ]
     temp <- temp[order(temp$rt), ]
-    temp <- temp[order(temp$filtered), ]
+    temp$index <- seq_len(nrow(temp))
 
-    if (build_feature_ids) {
-      temp$index <- seq_len(nrow(temp))
-
-      d_dig <- max(temp$mzmax - temp$mzmin)
-      if (d_dig < 0.1) {
-        d_dig <- sub('.*\\.(0+)[1-9].*', '\\1', as.character(d_dig))
-        d_dig <- nchar(d_dig) + 1
-      } else if (d_dig >= 1) {
-        d_dig <- 0
-      } else {
-        d_dig <- 1
-      }
-
-      temp$feature <- paste0(
-        "mz",
-        round(temp$mz, digits = d_dig),
-        "_rt",
-        round(temp$rt, digits = 0),
-        "_f",
-        temp$index
-      )
+    d_dig <- max(temp$mzmax - temp$mzmin)
+    
+    if (d_dig < 0.1) {
+      d_dig <- sub('.*\\.(0+)[1-9].*', '\\1', as.character(d_dig))
+      d_dig <- nchar(d_dig) + 1
+      
+    } else if (d_dig >= 1) {
+      d_dig <- 0
+      
+    } else {
+      d_dig <- 1
     }
+
+    temp$feature <- paste0(
+      "mz",
+      round(temp$mz, digits = d_dig),
+      "_rt",
+      round(temp$rt, digits = 0),
+      "_f",
+      temp$index
+    )
 
     setcolorder(
       temp,
       c(
-        "feature", "index", "rt", "mz", "intensity", "area",
-        "rtmin", "rtmax", "mzmin", "mzmax", "adduct", "mass",
-        "filled", "filtered", "filter"
+        "feature",
+        "polarity",
+        "index",
+        "rt",
+        "mz",
+        "mass", 
+        "intensity",
+        "area",
+        "rtmin",
+        "rtmax",
+        "mzmin",
+        "mzmax", 
+        "filled",
+        "filtered",
+        "filter"
       )
     )
 
@@ -362,9 +331,10 @@
     temp$rtmax <- round(temp$rtmax, 3)
 
     temp$mz <- round(temp$mz, 8)
+    temp$mass <- round(temp$mass, 8)
     temp$mzmin <- round(temp$mzmin, 8)
     temp$mzmax <- round(temp$mzmax, 8)
-
+    
     temp
   }, extra = extra, features = features, self = self, isSet = isSet)
 

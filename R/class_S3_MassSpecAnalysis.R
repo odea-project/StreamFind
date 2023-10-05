@@ -71,7 +71,7 @@ MassSpecAnalysis <- function(name = NA_character_,
                              mz_high = NA_real_,
                              rt_start = NA_real_,
                              rt_end = NA_real_,
-                             polarity = NA_character_,
+                             polarity = NA_integer_,
                              has_ion_mobility = FALSE,
                              chromatograms_number = NA_integer_,
                              software = data.table(),
@@ -150,19 +150,21 @@ MassSpecAnalysis <- function(name = NA_character_,
   x$mz_high <- as.numeric(x$mz_high)
   x$rt_start <- as.numeric(x$rt_start)
   x$rt_end <- as.numeric(x$rt_end)
-  x$polarity <- as.character(x$polarity)
+  # x$polarity <- as.integer(x$polarity)
   x$has_ion_mobility <- as.logical(x$has_ion_mobility)
   x$chromatograms_number <- as.integer(x$chromatograms_number)
   x$software <- as.data.table(x$software)
   x$instrument <- as.data.table(x$instrument)
 
   x$run <- as.data.table(x$run)
-  x$run$pre_loweroffset <- as.numeric(x$run$pre_loweroffset)
-  x$run$pre_upperoffset <- as.numeric(x$run$pre_upperoffset)
+  x$run$pre_mzlow <- as.numeric(x$run$pre_mzlow)
+  x$run$pre_mzhigh <- as.numeric(x$run$pre_mzhigh)
   x$run$drift <- as.numeric(x$run$drift)
 
   x$spectra <- as.data.table(x$spectra)
   x$chromatograms <- as.data.table(x$chromatograms)
+  
+  x$features_eic <- as.list(x$features_eic)
   x$features <- as.data.table(x$features)
 
   x$version <- as.character(x$version)
@@ -228,8 +230,8 @@ validate.MassSpecAnalysis <- function(x = NULL) {
     if (length(x$type) != 1) {
       warning("Analysis type entry not conform!")
       valid <- FALSE
-    } else if (!(x$type %in% c("MS", "MS/MS", "SRM"))) {
-      warning("Analysis type must be 'MS', 'MS/MS' or 'SRM'!")
+    } else if (!(x$type %in% c("MS", "IM-MS", "MS/MS", "IM-MS/MS", "SRM"))) {
+      warning("Analysis type must be 'MS', 'IM-MS', 'MS/MS', 'IM-MS/MS' or 'SRM'!")
       valid <- FALSE
     }
 
@@ -286,14 +288,14 @@ validate.MassSpecAnalysis <- function(x = NULL) {
       valid <- FALSE
     }
 
-    if (!is.character(x$polarity)) {
-      warning("Analysis polarity entry not conform!")
-      valid <- FALSE
-    } else if (FALSE %in%
-        (x$polarity %in% c("positive", "negative", NA_character_))) {
-      warning("Analysis polarity entry not conform!")
-      valid <- FALSE
-    }
+    # if (!is.integer(x$polarity)) {
+    #   warning("Analysis polarity entry not conform!")
+    #   valid <- FALSE
+    # } else if (FALSE %in%
+    #     (x$polarity %in% c("positive", "negative", NA_character_))) {
+    #   warning("Analysis polarity entry not conform!")
+    #   valid <- FALSE
+    # }
 
     if (length(x$has_ion_mobility) != 1 &
         !is.logical(x$has_ion_mobility)) {
@@ -473,7 +475,7 @@ parse.MassSpecAnalysis <- function(files = NULL, runParallel = FALSE) {
 
   cached_analyses <- FALSE
 
-  if (caches_data()) {
+  if (.caches_data()) {
     hash <- patRoon::makeHash(files)
     analyses <- patRoon::loadCacheData("parsed_ms_analyses", hash)
 

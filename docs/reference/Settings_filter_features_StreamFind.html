@@ -27,7 +27,9 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/ms_overview.html">StreamFind for mass spectrometry with R</a>
+    <a class="dropdown-item" href="../articles/demo_ozonation_project.html">Wastewater ozonation showcase</a>
+    <a class="dropdown-item" href="../articles/ms_developer_guide.html">Developer guide for mass spectrometry</a>
+    <a class="dropdown-item" href="../articles/ms_overview.html">StreamFind for mass spectrometry</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -47,7 +49,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Settings_filter_features_StreamFind</h1>
-      <small class="dont-index">Source: <a href="https://github.com/odea-project/StreamFind/blob/HEAD/R/fct_ms_005_default_ProcessingSettings.R" class="external-link"><code>R/fct_ms_005_default_ProcessingSettings.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/odea-project/StreamFind/blob/HEAD/R/fct_ms_default_ProcessingSettings.R" class="external-link"><code>R/fct_ms_default_ProcessingSettings.R</code></a></small>
       <div class="d-none name"><code>Settings_filter_features_StreamFind.Rd</code></div>
     </div>
 
@@ -57,16 +59,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">Settings_filter_features_StreamFind</span><span class="op">(</span></span>
-<span>  minIntensity <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  minSnRatio <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  maxGroupSd <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  blank <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  minGroupAbundance <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  excludeIsotopes <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  rtFilter <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  massFilter <span class="op">=</span> <span class="cn">NULL</span></span>
-<span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">Settings_filter_features_StreamFind</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for Settings_filter_features_StreamFind</span></span>
 <span><span class="fu">validate</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
@@ -74,46 +67,26 @@
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>minIntensity</dt>
-<dd><p>Numeric (length 1) with the minimum intensity.</p></dd>
-
-
-<dt>minSnRatio</dt>
-<dd><p>Numeric (length 1) with the minimum signal-to-noise ratio.
-The filter is only applied if the features data.table contains the column "sn".</p></dd>
-
-
-<dt>maxGroupSd</dt>
-<dd><p>Numeric (length 1) with the maximum intensity deviation
-within each analysis replicate (in percentage).</p></dd>
-
-
-<dt>blank</dt>
-<dd><p>Numeric (length 1) with the intensity threshold for blank
+    <dl><dt>...</dt>
+<dd><p>Ordered filters to be applied. Possible filter arguments are:</p><ul><li><p><strong>minIntensity</strong>  Numeric (length 1) with the minimum intensity.</p></li>
+<li><p><strong>minSnRatio</strong>  Numeric (length 1) with the minimum signal-to-noise
+ratio.</p></li>
+<li><p><strong>maxGroupSd</strong>  Numeric (length 1) with the maximum intensity
+deviation within each analysis replicate (in percentage).</p></li>
+<li><p><strong>blank</strong>  Numeric (length 1) with the intensity threshold for blank
 subtraction. All features/feature groups not higher then the <code>blank</code> * its
-intensity are filtered.</p></dd>
-
-
-<dt>minGroupAbundance</dt>
-<dd><p>Numeric (length 1) with the minimum presence of a
-feature is a given analysis replicate.</p></dd>
-
-
-<dt>excludeIsotopes</dt>
-<dd><p>Logical (length 1) with <code>TRUE</code> for filtering
-annotated isotopes (only prevails the monoisotopic features).</p></dd>
-
-
-<dt>rtFilter</dt>
-<dd><p>Numeric (length 2) with the min and max retention time
+intensity are filtered.</p></li>
+<li><p><strong>minGroupAbundance</strong>  Numeric (length 1) with the minimum presence
+of a feature is a given analysis replicate.</p></li>
+<li><p><strong>excludeIsotopes</strong>  Logical (length 1) with <code>TRUE</code> for filtering
+annotated isotopes (only prevails the monoisotopic features).</p></li>
+<li><p><strong>rtFilter</strong>  Numeric (length 2) with the min and max retention time
 (in seconds) values to filter features. Features within the retention time
-range are filtered out.</p></dd>
-
-
-<dt>massFilter</dt>
-<dd><p>Numeric (length 2) with the min and max mass
+range are filtered out.</p></li>
+<li><p><strong>massFilter</strong>  Numeric (length 2) with the min and max mass
 (in Da) values to filter features. Features within the mass range are
-filtered out.</p></dd>
+filtered out.</p></li>
+</ul></dd>
 
 
 <dt>x</dt>
@@ -128,10 +101,17 @@ filtered out.</p></dd>
 Settings_filter_features_StreamFind.</p>
     </div>
     <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>When feature groups exist the filtering is done on feature groups, meaning
+that the filters are applied per feature group not individual features. For
+instance, if feature groups exist the minimum intensity is applied on the
+maximum intensity observed for a feature group and not the intensity of each
+individual feature.</p>
+    </div>
+    <div class="section level2">
     <h2 id="methods-by-generic-">Methods (by generic)<a class="anchor" aria-label="anchor" href="#methods-by-generic-"></a></h2>
     
-<ul><li><p><code>validate(Settings_filter_features_StreamFind)</code>: Validates the Settings_filter_features_StreamFind S3 class object, returning
-a logical value of length one.</p></li>
+<ul><li><p><code>validate(Settings_filter_features_StreamFind)</code>: Validates the object structure, returning a logical value of length one.</p></li>
 </ul></div>
 
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

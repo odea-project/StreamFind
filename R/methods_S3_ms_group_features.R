@@ -12,8 +12,8 @@
     return(FALSE)
   }
 
-  pat_features <- self$as_features_patRoon()
-
+  pat_features <- self$as_patRoon_features(filtered = FALSE)
+  
   if (length(pat_features) == 0) {
     warning("Features were not found! Run find_features method first!")
     return(FALSE)
@@ -111,23 +111,38 @@
   gr_fun <- patRoon::groupFeatures
 
   pat <- do.call(gr_fun, c(ag, parameters))
+  
+  pat_ft <- pat@features@features
+  
+  pat_ft <- rbindlist(pat_ft, idcol = "analysis")
+  
+  setnames(pat_ft,
+    c("ID", "ret", "retmin", "retmax"),
+    c("feature", "rt", "rtmin", "rtmax"),
+    skip_absent = TRUE
+  )
+  
+  mz_as_mass <- grepl("Set", class(pat))
+  
+  groups <- rcpp_ms_groups_make_dataframe(
+    pat_ft, self$get_analysis_names(), mz_as_mass, TRUE
+  )
+  
+  if (self$has_groups()) self$remove_groups()
+  
+  new_groups_id <- groups$group
+  names(new_groups_id) <- groups$old_group
+  pat_ft$group <- new_groups_id[pat_ft$group] 
+  
+  self$add_group_to_features(pat_ft)
 
-  features <- .build_features_table_from_patRoon(pat, self)
-
-  features <- rbindlist(features, idcol = "analysis")
-
-  out_list <- rcpp_ms_make_groups_update_features(features)
-
+  groups$old_group <- NULL
+  
+  self$add_groups(groups)
+  
   alignment <- .extract_time_alignment(pat, self)
 
-  if (self$has_groups()) self$remove_groups()
-
-  suppressMessages(self$add_features(out_list[["features"]], replace = TRUE))
-
-  self$add_groups(out_list[["groups"]])
-
   if (!is.null(alignment)) {
-    # private$.register("added alignment")
     self$add_alignment(alignment)
     message("\U2713 Added alignment of retention time for each analysis!")
   }

@@ -70,7 +70,7 @@
 
     i <- NULL
 
-    vars <- c("rcpp_ms_annotation_isotopes", "parameters")
+    vars <- c("rcpp_ms_annotation_isotopes")
 
     iso_output <- foreach(i = features,
                           .packages = "StreamFind",

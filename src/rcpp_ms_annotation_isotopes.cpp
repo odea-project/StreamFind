@@ -25,6 +25,8 @@ Rcpp::List rcpp_ms_annotation_isotopes(
 
   int number_of_features = features.nrows();
 
+  
+  
   // Order Input data by mz //////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -37,7 +39,6 @@ Rcpp::List rcpp_ms_annotation_isotopes(
   std::vector<double> all_mzmin_unsorted = features["mzmin"];
   std::vector<double> all_mzmax_unsorted = features["mzmax"];
   std::vector<double> all_intensity_unsorted = features["intensity"];
-  std::vector<double> all_sn_unsorted = features["sn"];
 
   const std::string* all_ids_unsorted_ptr = all_ids_unsorted.data();
   const int* all_idx_unsorted_ptr = all_idx_unsorted.data();
@@ -48,7 +49,6 @@ Rcpp::List rcpp_ms_annotation_isotopes(
   const double* all_rtmax_unsorted_ptr = all_rtmax_unsorted.data();
   const double* all_mzmax_unsorted_ptr = all_mzmax_unsorted.data();
   const double* all_intensity_unsorted_ptr = all_intensity_unsorted.data();
-  const double* all_sn_unsorted_ptr = all_sn_unsorted.data();
 
   std::vector<int> sort_features_idx(number_of_features);
   std::iota(sort_features_idx.begin(), sort_features_idx.end(), 0);
@@ -64,7 +64,6 @@ Rcpp::List rcpp_ms_annotation_isotopes(
   std::vector<double> all_mzmin(number_of_features);
   std::vector<double> all_mzmax(number_of_features);
   std::vector<double> all_intensity(number_of_features);
-  std::vector<double> all_sn(number_of_features);
 
   std::string* all_ids_ptr = all_ids.data();
   int* all_idx_ptr = all_idx.data();
@@ -75,7 +74,6 @@ Rcpp::List rcpp_ms_annotation_isotopes(
   double* all_rtmax_ptr = all_rtmax.data();
   double* all_mzmax_ptr = all_mzmax.data();
   double* all_intensity_ptr = all_intensity.data();
-  double* all_sn_ptr = all_sn.data();
 
   for (const int& x : sort_features_idx) {
     *(all_ids_ptr++) = *(all_ids_unsorted_ptr + x);
@@ -87,7 +85,6 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     *(all_rtmax_ptr++) = *(all_rtmax_unsorted_ptr + x);
     *(all_mzmax_ptr++) = *(all_mzmax_unsorted_ptr + x);
     *(all_intensity_ptr++) = *(all_intensity_unsorted_ptr + x);
-    *(all_sn_ptr++) = *(all_sn_unsorted_ptr + x);
   }
 
   Rcpp::DataFrame sorted_features_df = Rcpp::DataFrame::create(
@@ -108,7 +105,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(
 
 
   if (mode == "small molecules") {
-    // maxCarbons = 80;
+    maxCarbons = 80;
     maxHetero = 15;
     maxHalogens = 10;
   }
@@ -121,11 +118,15 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     "O",
     "S",
     "S",
-    // "36S",
+    "S",
     "Cl",
-    "Br"
-    // "29Si",
-    // "30Si"
+    "Br",
+    "Si",
+    "Si",
+    "Ge",
+    "Ge",
+    "Ge",
+    "Ge"
   };
 
   std::vector<std::string> all_iso_elements = {
@@ -136,14 +137,18 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     "18O",
     "33S",
     "34S",
-    // "36S",
+    "36S",
     "37Cl",
-    "81Br"
-    // "29Si",
-    // "30Si"
+    "81Br",
+    "29Si",
+    "30Si",
+    "72Ge",
+    "73Ge",
+    "74Ge",
+    "76Ge"
   };
 
-  // iso mass difference from monoisotopic ion
+  // iso mass difference from first isotope
   std::vector<double> all_iso_md = {
     1.0033548378, // 13C
     1.0062767, // 2H
@@ -152,14 +157,18 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     2.004246, //18O
     0.9993878, // 33S
     1.995796, // 34S
-    // 3.99501, // 36S
+    3.99501, // 36S
     1.9970499, // 37Cl
-    1.9979534 // 81Br
-    // 0.99956819, // 29Si
-    // 1.99684369 // 30Si
+    1.9979534, // 81Br
+    0.99956819, // 29Si
+    1.99684369, // 30Si
+    1.9978284, // 72Ge
+    2.9992115, // 73Ge
+    3.9969304, // 74Ge
+    5.9971552 // 76Ge
   };
 
-  // iso relative abundance from monoisotopic ion
+  // iso relative abundance from first isotope
   std::vector<double> all_iso_ab = {
     0.0107800, // 13C
     0.00015574, // 2H
@@ -168,14 +177,18 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     0.00200040, // 18O
     0.00750000, // 33S
     0.04215000, // 34S
-    // 0.00017000, // 36S
+    0.00017000, // 36S
     0.24229000, // 37Cl
-    0.49314000 // 81Br
-    // 0.0468316, // 29Si
-    // 0.0308716 // 30Si
+    0.49314000, // 81Br
+    0.0468316, // 29Si
+    0.0308716, // 30Si
+    0.27662, // 72Ge
+    0.07717, // 73Ge
+    0.35943, // 74Ge
+    0.07444 // 76Ge
   };
 
-  // iso relative abundance from monoisotopic ion
+  // iso relative abundance from first isotope (for the majority the monoisotope)
   std::vector<double> all_iso_mono = {
     0.988922, // C
     0.99984426, // H
@@ -184,11 +197,15 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     0.997628, // O
     0.95018, // S
     0.95018, // S
-    // 0.95018, // S
+    0.95018, // S
     0.75771, // Cl
-    0.50686 // Br
-    // 0.9222968, // Si
-    // 0.9222968// Si
+    0.50686, // Br
+    0.9222968, // Si
+    0.9222968, // Si
+    0.21234, // Ge
+    0.21234, // Ge
+    0.21234, // Ge
+    0.21234 // Ge
   };
 
   // iso minimum number of elements
@@ -200,11 +217,15 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     1, // O
     1, // S
     1, // S
-    // 0.00017000, // S
+    1, // S
     1, // Cl
-    1 // Br
-    // 1, // Si
-    // 1// Si
+    1,  // Br
+    1, // Si
+    1, // Si
+    1, // Ge
+    1, // Ge
+    1, // Ge
+    1 // Ge
   };
 
   // iso maximum number of elements
@@ -216,11 +237,15 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     maxHetero, // O
     maxHalogens, // S
     maxHalogens, // S
-    // maxHalogens, // S
+    maxHalogens, // S
     maxHalogens, // Cl
-    maxHalogens // Br
-    // maxHalogens, // Si
-    // maxHalogens// Si
+    maxHalogens, // Br
+    maxHalogens, // Si
+    maxHalogens, // Si
+    maxHalogens, // Ge
+    maxHalogens, // Ge
+    maxHalogens, // Ge
+    maxHalogens // Ge
   };
 
 
@@ -411,6 +436,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(
   ////////////////////////////////////////////////////////////////////////////////////////////////
 
   int iso_gr = 1;
+  
   std::vector<int> feat_iso_gr(number_of_features);
   std::vector<int> feat_iso_z(number_of_features);
   std::vector<std::string> feat_iso_cat(number_of_features);
@@ -515,6 +541,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(
       double right_rt = rtmax - rt;
 
       double rtW;
+      
       if (left_rt < right_rt) {
         rtW = left_rt;
       } else {
@@ -529,6 +556,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(
       double maxisomz = (mz + maxIsotopes) * 1.05;
 
       std::vector<int> which_fts;
+      
       for (int z = 0; z < number_of_features; ++z) {
         if (all_rt[z] >= rtmin && all_rt[z] <= rtmax && all_mz[z] >= mz && all_mz[z] <= maxisomz) {
           which_fts.push_back(z);

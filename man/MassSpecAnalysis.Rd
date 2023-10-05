@@ -24,7 +24,7 @@ MassSpecAnalysis(
   mz_high = NA_real_,
   rt_start = NA_real_,
   rt_end = NA_real_,
-  polarity = NA_character_,
+  polarity = NA_integer_,
   has_ion_mobility = FALSE,
   chromatograms_number = NA_integer_,
   software = data.table(),

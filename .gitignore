@@ -28,6 +28,7 @@ StreamFind.Rproj
 /handbooks/Handbook_backend_StreamFind_cache
 /handbooks/Handbook_backend_StreamFind_files
 settings_pp.rds
+MassSpecData_example.json
 settings_pp_2.json
 settings.json
 ffs.json
@@ -36,4 +37,7 @@ fls.json
 settings_find_features.json
 settings_group_features.json
 /dev/template_report.html
+/dev/demo_ozonation_project.html
 inst/doc
+/report
+report.yml
