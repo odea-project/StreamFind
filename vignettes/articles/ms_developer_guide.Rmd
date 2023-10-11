@@ -95,7 +95,7 @@ pre code {
 
 # StreamFind
 
-The backend of StreamFind is an R package and can be used for data management, processing, visualization and reporting. This guide focuses on mass spectrometry (MS) data and aims to instruct developers to implement new processing modules and additional processing algorithms for new or existing processing modules in the backend of StreamFind.
+The library of StreamFind is an R package and can be used for data management, processing, visualization and reporting. This guide focuses on mass spectrometry (MS) data and aims to instruct developers to implement new processing modules and additional processing algorithms for new or existing processing modules in the StreamFind library.
 
 ## Setup
 

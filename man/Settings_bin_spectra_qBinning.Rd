@@ -16,7 +16,7 @@ Settings_bin_spectra_qBinning()
 X.
 }
 \description{
-X.
+Not yet implemented.
 }
 \section{Methods (by generic)}{
 \itemize{

@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# StreamFind
+# StreamFind (R package)
 
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
@@ -25,15 +25,13 @@ knitr::opts_chunk$set(
   <img width="60%" src="man/figures/logo_StreamFind.png" alt="Logo" />
 </p>
 
-The StreamFind project, entitled "Flexible data analysis and workflow designer to identify chemicals in the water cycle", is funded by the [Bundesministerium für Bildung und Forschung (BMBF)](https://www.bmbf.de) and is a cooperation between the [Institut für Umwelt & Energie, Technik & Analytik e. V. (IUTA)](https://www.iuta.de), the [Forschungszentrum Informatik (FZI)](https://www.fzi.de/) and supporting partners. The goal of the StreamFind project is the development and assembly of data processing workflows for mass spectrometry and spectroscopy and the application of the workflows in environmental and quality studies of the water cycle. The StreamFind aims to stimulate the use of advanced data analysis (e.g., non-target screening, statistical analysis, etc.) in routine studies, promoting standardization of data processing and structure and easing the retrospective evaluation of data. The StreamFind platform is directed to academics but also technicians, due to the aspired comprehensive documentation, well categorized set of integrated modular functions and the graphical user interface. The StreamFind development is ongoing, please [contact us](mailto:cunha@iuta.de) for questions  or collaboration.
+The StreamFind project, entitled "Flexible data analysis and workflow designer to identify chemicals in the water cycle", is funded by the [Bundesministerium für Bildung und Forschung (BMBF)](https://www.bmbf.de) and is a cooperation between the [Institut für Umwelt & Energie, Technik & Analytik e. V. (IUTA)](https://www.iuta.de), the [Forschungszentrum Informatik (FZI)](https://www.fzi.de/) and supporting partners. The goal of the StreamFind project is the development and assembly of data processing workflows for mass spectrometry and spectroscopy and the application of the workflows in environmental and quality studies of the water cycle. The StreamFind aims to stimulate the use of advanced data analysis (e.g., non-target screening, statistical analysis, etc.) in routine studies, promoting standardization of data processing and structure and easing the retrospective evaluation of data. The StreamFind platform is directed to academics but also technicians, due to the aspired comprehensive documentation, well categorized set of integrated modular functions and the graphical user interface.  
+<br>
+The library of [StreamFind](https://github.com/odea-project/StreamFind) is an R package (this repository). The graphical user interface (GUI) is a Web App developed in JavaScript and can be found in the [StreamFind-App](https://github.com/odea-project/StreamFind-App) repository. The StreamFind development is ongoing, please [contact us](mailto:cunha@iuta.de) for questions  or collaboration.
 
 ```{r, echo=FALSE, out.width = '100%', fig.align='center'}
 knitr::include_graphics("man/figures/logo_group.png")
 ```
-
-# StreamFind R package
-
-The back-end framework of [StreamFind](https://github.com/odea-project/StreamFind) is an R package.
 
 ## Installation
 
@@ -56,6 +54,9 @@ remotes::install_github("odea-project/StreamFindData")
 The documentation and usage examples of the StreamFind R package can be found in the [reference page](https://odea-project.github.io/StreamFind/reference/index.html) and [articles](https://odea-project.github.io/StreamFind/articles/index.html) of the [webpage](https://odea-project.github.io/StreamFind/index.html).
 
 # References
+
+The StreamFind is open source due public fundsing and to the extensive contribution from scientific literature as well as existing open source software. Below we reference to the research and software that is used within StreamFind. Please note that each open source software or research that StreamFind depends on uses itself other contributions that is not possible the reference here. Therefore, we recommend to search within each citation for other contributions.  
+<br>
 
 ---
 nocite: '@*'

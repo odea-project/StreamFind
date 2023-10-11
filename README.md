@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# StreamFind
+# StreamFind (R package)
 
 <!-- badges: start -->
 
@@ -29,17 +29,16 @@ studies, promoting standardization of data processing and structure and
 easing the retrospective evaluation of data. The StreamFind platform is
 directed to academics but also technicians, due to the aspired
 comprehensive documentation, well categorized set of integrated modular
-functions and the graphical user interface. The StreamFind development
-is ongoing, please [contact us](mailto:cunha@iuta.de) for questions or
-collaboration.
+functions and the graphical user interface.  
+<br> The library of
+[StreamFind](https://github.com/odea-project/StreamFind) is an R package
+(this repository). The graphical user interface (GUI) is a Web App
+developed in JavaScript and can be found in the
+[StreamFind-App](https://github.com/odea-project/StreamFind-App)
+repository. The StreamFind development is ongoing, please [contact
+us](mailto:cunha@iuta.de) for questions or collaboration.
 
 <img src="man/figures/logo_group.png" width="100%" style="display: block; margin: auto;" />
-
-# StreamFind R package
-
-The back-end framework of
-[StreamFind](https://github.com/odea-project/StreamFind) is an R
-package.
 
 ## Installation
 
@@ -81,6 +80,15 @@ and
 of the [webpage](https://odea-project.github.io/StreamFind/index.html).
 
 # References
+
+The StreamFind is open source due public fundsing and to the extensive
+contribution from scientific literature as well as existing open source
+software. Below we reference to the research and software that is used
+within StreamFind. Please note that each open source software or
+research that StreamFind depends on uses itself other contributions that
+is not possible the reference here. Therefore, we recommend to search
+within each citation for other contributions.  
+<br>
 
 <div id="refs" class="references csl-bib-body hanging-indent">
 
@@ -155,6 +163,14 @@ Metabolomics Using Pure Ion Chromatograms.” *Anal Chem.* 14 (89):
 
 </div>
 
+<div id="ref-pugixml01" class="csl-entry">
+
+Kapoulkine, Arseny. n.d. “Pugixml: Light-Weight, Simple and Fast XML
+Parser for c++ with XPath Support.” *Copyright (C) 2006-2018*.
+<http://pugixml.org>.
+
+</div>
+
 <div id="ref-mzr02" class="csl-entry">
 
 Keller, Andrew, Jimmy Eng, Ning Zhang, Xiao-jun Li, and Ruedi Aebersold.
@@ -198,6 +214,16 @@ Eric W Deutsch, Brian Raught, Brian Pratt, et al. 2004. “A Common Open
 Representation of Mass Spectrometry Data and Its Application to
 Proteomics Research.” *Nat Biotechnol* 22 (11): 1459–66.
 <https://doi.org/10.1038/nbt1031>.
+
+</div>
+
+<div id="ref-qcentroids01" class="csl-entry">
+
+Reuschenbach, Max, Lotta L. Hohrenk-Danzouma, Torsten C. Schmidt, and
+Gerrit Renner. 2022. “Development of a Scoring Parameter to Characterize
+Data Quality of Centroids in High-Resolution Mass Spectra.” *Analytical
+and Bioanalytical Chemistry* 414 (July): 6635–45.
+<https://doi.org/10.1007/s00216-022-04224-y>.
 
 </div>
 

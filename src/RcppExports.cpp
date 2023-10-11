@@ -10,6 +10,17 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// rcpp_centroid_spectra_qCentroids
+Rcpp::List rcpp_centroid_spectra_qCentroids(Rcpp::DataFrame spectra);
+RcppExport SEXP _StreamFind_rcpp_centroid_spectra_qCentroids(SEXP spectraSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type spectra(spectraSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_centroid_spectra_qCentroids(spectra));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpp_ms_annotation_isotopes
 Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes, Rcpp::CharacterVector elements, std::string mode, int maxCharge, double rtWindowAlignment, int maxGaps, double maxCarbons, double maxHetero, double maxHalogens);
 RcppExport SEXP _StreamFind_rcpp_ms_annotation_isotopes(SEXP featuresSEXP, SEXP maxIsotopesSEXP, SEXP elementsSEXP, SEXP modeSEXP, SEXP maxChargeSEXP, SEXP rtWindowAlignmentSEXP, SEXP maxGapsSEXP, SEXP maxCarbonsSEXP, SEXP maxHeteroSEXP, SEXP maxHalogensSEXP) {
@@ -27,17 +38,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type maxHetero(maxHeteroSEXP);
     Rcpp::traits::input_parameter< double >::type maxHalogens(maxHalogensSEXP);
     rcpp_result_gen = Rcpp::wrap(rcpp_ms_annotation_isotopes(features, maxIsotopes, elements, mode, maxCharge, rtWindowAlignment, maxGaps, maxCarbons, maxHetero, maxHalogens));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpp_centroid_spectra
-Rcpp::List rcpp_centroid_spectra(Rcpp::DataFrame spectra);
-RcppExport SEXP _StreamFind_rcpp_centroid_spectra(SEXP spectraSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type spectra(spectraSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_centroid_spectra(spectra));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -176,8 +176,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_StreamFind_rcpp_centroid_spectra_qCentroids", (DL_FUNC) &_StreamFind_rcpp_centroid_spectra_qCentroids, 1},
     {"_StreamFind_rcpp_ms_annotation_isotopes", (DL_FUNC) &_StreamFind_rcpp_ms_annotation_isotopes, 10},
-    {"_StreamFind_rcpp_centroid_spectra", (DL_FUNC) &_StreamFind_rcpp_centroid_spectra, 1},
     {"_StreamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_StreamFind_rcpp_ms_cluster_spectra, 4},
     {"_StreamFind_rcpp_ms_groups_correspondence", (DL_FUNC) &_StreamFind_rcpp_ms_groups_correspondence, 3},
     {"_StreamFind_rcpp_ms_groups_make_dataframe", (DL_FUNC) &_StreamFind_rcpp_ms_groups_make_dataframe, 4},

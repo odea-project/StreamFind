@@ -74,26 +74,35 @@ save_default_ProcessingSettings <- function(call = NA_character_,
 
 #' @title Settings_centroid_spectra_qCentroids
 #'
-#' @description X.
+#' @description Centroids profile spectra using the 
+#' \href{https://link.springer.com/article/10.1007/s00216-022-04224-y}{qCentroids}
+#' algorithm, which is part of the 
+#' \href{https://github.com/odea-project/qAlgorithms}{qAlgorithms} library.
+#' 
+#' @template arg-runParallel
 #'
-#' @return X.
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_centroid_spectra_qCentroids.
+#' 
+#' @references
+#' \insertRef{qcentroids01}{StreamFind}
 #'
 #' @export
 #'
-Settings_centroid_spectra_qCentroids <- function() {
-
-  # TODO Gerrit - update settings info
+Settings_centroid_spectra_qCentroids <- function(runParallel = FALSE) {
 
   settings <- list(
     call = "centroid_spectra",
     algorithm = "qCentroids",
-    parameters = list(),
+    parameters = list(
+      runParallel = runParallel
+    ),
     version = as.character(packageVersion("StreamFind")),
-    software = "q",
-    developer = "Max, Gerrit",
-    contact = "gerrit@email.de",
-    link = NA_character_,
-    doi = NA_character_
+    software = "qAlgorithms",
+    developer = "Max Reuschenbach, Gerrit Renner, ",
+    contact = "gerrit.renner@uni-due.de",
+    link = "https://github.com/odea-project/qAlgorithms",
+    doi = "https://doi.org/10.1007/s00216-022-04224-y"
   )
 
   as.ProcessingSettings(settings)
@@ -109,7 +118,8 @@ Settings_centroid_spectra_qCentroids <- function() {
 validate.Settings_centroid_spectra_qCentroids <- function(x) {
   all(
     checkmate::test_choice(x$call, "centroid_spectra"),
-    checkmate::test_choice(x$algorithm, "qCentroids")
+    checkmate::test_choice(x$algorithm, "qCentroids"),
+    checkmate::test_logical(x$parameters$runParallel, max.len = 1)
   )
 }
 
@@ -117,7 +127,7 @@ validate.Settings_centroid_spectra_qCentroids <- function(x) {
 
 #' @title Settings_bin_spectra_qBinning
 #'
-#' @description X.
+#' @description Not yet implemented.
 #'
 #' @return X.
 #'
@@ -160,7 +170,7 @@ validate.Settings_bin_spectra_qBinning <- function(x) {
 
 #' @title Settings_find_features_qPeaks
 #'
-#' @description X.
+#' @description Not yet implemented.
 #'
 #' @return X.
 #'
