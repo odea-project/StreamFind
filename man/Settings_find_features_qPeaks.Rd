@@ -16,7 +16,7 @@ Settings_find_features_qPeaks()
 X.
 }
 \description{
-X.
+Not yet implemented.
 }
 \section{Methods (by generic)}{
 \itemize{

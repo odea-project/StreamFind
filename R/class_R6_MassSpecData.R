@@ -68,6 +68,8 @@
 #' \insertRef{patroon01}{StreamFind}
 #'
 #' \insertRef{patroon02}{StreamFind}
+#' 
+#' \insertRef{pugixml01}{StreamFind}
 #'
 #' @export
 #'
@@ -813,7 +815,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           "polarity" = vapply(private$.analyses, function(x) {
             paste(x$polarity, collapse = "; ")
           }, ""),
-          "traces" = vapply(private$.analyses, function(x) {
+          "spectra" = vapply(private$.analyses, function(x) {
             x$spectra_number
           }, 0),
           "features" = features,

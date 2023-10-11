@@ -1,21 +1,24 @@
 
 library(StreamFind)
 
+
+
+
 # Create -----------------------------------------------------------------------
 
 all_files <- StreamFindData::get_all_file_paths()
+
 files <- all_files[grepl("blank|influent|o3sw", all_files)]
 
-headers <- ProjectHeaders(
-  name = "Wastewater Ozonation",
-  author = "Ricardo Cunha",
-  description = "StreamFind Demonstration project"
-)
+ms <- MassSpecData$new(files = files)
 
-ms <- MassSpecData$new(files = files, headers = headers)
+ms$add_headers(name = "Wastewater Project")
 
 # Print method and access methods
 ms
+
+# ms$plot_bpc(levels = 1, colorBy = "replicates")
+
 
 
 
@@ -55,7 +58,6 @@ ms
 
 ffs <- Settings_find_features_xcms3_centwave()
 
-
 # Settings documentation
 # ?Settings_find_features_xcms3_centwave
 
@@ -84,7 +86,7 @@ fls <- Settings_filter_features_StreamFind(
 
 afs <- Settings_annotate_features_StreamFind(
   maxIsotopes = 5,
-  elements = c("C", "H", "N", "O", "S", "Cl", "Br", "Ge"),
+  elements = c("C", "H", "N", "O", "S", "Cl", "Br"),
   mode = "small molecules",
   maxCharge = 2,
   rtWindowAlignment = 0.3,
@@ -103,12 +105,10 @@ gfs <- Settings_group_features_xcms3_peakdensity()
 
 ms$find_features()$annotate_features(afs)$group_features(gfs)$filter_features(fls)
 
+# Alternative to chaining the processing modules
+# ms$run_workflow()
+
 ms
-
-
-View(ms$get_features(filtered = T))
-
-
 
 # Access and plot data ---------------------------------------------------------
 
@@ -153,11 +153,10 @@ ms$plot_eic(
 
 
 # Isotopic chains
-ms$map_components(
+ms$get_components(
   analyses = 10,
   mass = db,
-  ppm = 8, sec = 10,
-  legendNames = TRUE
+  ppm = 8, sec = 10
 )
 
 
@@ -174,10 +173,13 @@ ms$get_history()
 
 
 
+
 # Export -----------------------------------------------------------------------
 
 # Saves processing settings
 ms$save_settings(format = "json", name = "settings")
+
+
 
 # Saves the hole project
 ms$save(format = "json", name = "MassSpecData_example")
@@ -187,3 +189,28 @@ ms$save(format = "json", name = "MassSpecData_example")
 
 
 
+
+
+
+
+file.remove("ffs.json")
+file.remove("settings.json")
+file.remove("MassSpecData_example.json")
+
+
+
+
+
+# files <- files[c(1:2, 4:5, 7:8, 10:11)]
+
+# sss <- Settings_suspect_screening_forident(addMS2 = TRUE)
+# ms$add_settings(list(afs, gfs, fls, sss))
+
+# ms2 <- ms$subset_groups(groups = c("m440.160_rt1098_g1126", "m267.180_rt916_g374", "m295.020_rt1256_g527"))
+# ms2 <- ms2$subset_analyses(analyses = 7:8)
+# ms2
+# ms2$load_features_ms2(Settings_load_features_ms2_StreamFind())
+# ms2$load_groups_ms2(Settings_load_groups_ms2_StreamFind())
+# ms2$plot_groups()
+# ms2$suspect_screening()
+# ms2

@@ -1,15 +1,16 @@
 # resources --------------------------------------------------------------------
 
-all_files <- StreamFindData::get_all_file_paths()
-tof_file <- all_files[2]
+ex_file_path <- "C:/Users/Ricardo Cunha/Documents/Work/example_ms_files"
+
+ex_files <- list.files(
+  ex_file_path,
+  pattern = ".mzML|.mzXML",
+  full.names = TRUE
+)
 
 db <- StreamFindData::get_tof_spiked_chemicals()
 db_cols <- c("name", "formula", "mass", "rt")
 db <- db[, db_cols, with = FALSE]
-
-ex_file_path <- "C:/Users/Ricardo Cunha/Documents/Work/example_ms_files"
-ex_files <- list.files(ex_file_path, pattern = ".mzML|.mzXML", full.names = TRUE)
-orb_file <- ex_files[2]
 
 db2 <- paste0(ex_file_path, "/Composition_Mix-Fusion.csv")
 db2 <- data.table::fread(db2)
@@ -26,13 +27,18 @@ db3 <- db3[, cols, with = FALSE]
 
 tof_ffs <- ProcessingSettings(
   call = "find_features",
-  algorithm = "xcms3",
-  parameters = xcms::CentWaveParam(
-    ppm = 12, peakwidth = c(5, 40),
-    snthresh = 10, prefilter = c(5, 2000),
-    mzCenterFun = "wMean", integrate = 1,
-    mzdiff = 0.0008, fitgauss = TRUE,
-    noise = 500, verboseColumns = TRUE,
+  algorithm = "xcms3_centwave",
+  parameters = list(
+    ppm = 12,
+    peakwidth = c(5, 40),
+    snthresh = 10,
+    prefilter = c(5, 2000),
+    mzCenterFun = "wMean",
+    integrate = 1,
+    mzdiff = 0.0008,
+    fitgauss = TRUE,
+    noise = 500,
+    verboseColumns = TRUE,
     firstBaselineCheck = FALSE,
     extendLengthMSW = FALSE
   )
@@ -40,8 +46,8 @@ tof_ffs <- ProcessingSettings(
 
 orb_ffs <- ProcessingSettings(
   call = "find_features",
-  algorithm = "xcms3",
-  parameters = xcms::CentWaveParam(
+  algorithm = "xcms3_centwave",
+  parameters = list(
     ppm = 3,
     peakwidth = c(5, 80),
     snthresh = 10,
@@ -59,8 +65,8 @@ orb_ffs <- ProcessingSettings(
 
 orb_ffs_2 <- ProcessingSettings(
   call = "find_features",
-  algorithm = "xcms3",
-  parameters = xcms::CentWaveParam(
+  algorithm = "xcms3_centwave",
+  parameters = list(
     ppm = 4,
     peakwidth = c(5, 80),
     snthresh = 10,
@@ -69,7 +75,7 @@ orb_ffs_2 <- ProcessingSettings(
     integrate = 2,
     mzdiff = 0.0002,
     fitgauss = TRUE,
-    noise = 50000/3,
+    noise = 50000 / 3,
     verboseColumns = TRUE,
     firstBaselineCheck = FALSE,
     extendLengthMSW = FALSE
@@ -81,25 +87,100 @@ afs <- get_default_ProcessingSettings(
   algorithm = "StreamFind"
 )
 
-afs$parameters$maxCharge = 1
-afs$parameters$rtWindowAlignment = 0.5
+afs$parameters$maxCharge <- 1
+afs$parameters$rtWindowAlignment <- 0.3
 
 # MassSpecData -----------------------------------------------------------------
 
-tof_ms <- MassSpecData$new(files = tof_file,headers = list(name = "tof"))
+tof_ms <- MassSpecData$new(
+  files = ex_files[18], headers = list(name = "tof")
+)
+
 tof_ms$find_features(tof_ffs)$annotate_features(afs)
 
-orb_ms <- MassSpecData$new(files = orb_file,headers = list(name = "orb"))
+orb_ms <- MassSpecData$new(
+  files = orb_file[9], headers = list(name = "orb")
+)
+
 orb_ms$find_features(orb_ffs)$annotate_features(afs)
 
-ms_120k <- MassSpecData$new(files = ex_files[2], headers = list(name = "Res 120k"))
+ms_120k <- MassSpecData$new(
+  files = ex_files[5], headers = list(name = "Res 120k")
+)
+
 ms_120k$find_features(orb_ffs)$annotate_features(afs)
 
-ms_60k <- MassSpecData$new(files = ex_files[c(5, 7)], headers = list(name = "Res 60k"))
+ms_60k <- MassSpecData$new(
+  files = ex_files[9], headers = list(name = "Res 60k")
+)
+
 ms_60k$find_features(orb_ffs_2)$annotate_features(afs)
 
-ms_25k <- MassSpecData$new(files = ex_files[9], headers = list(name = "Res 25k"))
+ms_25k <- MassSpecData$new(
+  files = ex_files[9], headers = list(name = "Res 25k")
+)
+
 ms_25k$find_features(tof_ffs)$annotate_features(afs)
+
+
+# code dev ---------------------------------------------------------------------
+
+peaklist <- ms_25k$get_features(filtered = TRUE)
+peaklist <- peaklist[, c("mz", "intensity", "rt"), with = FALSE]
+data.table::setnames(peaklist, "mz", "mass")
+peaklist$rt <- peaklist$rt / 60
+
+library(enviPat)
+library(nontarget)
+
+# nontarget::homol.search(
+#   peaklist = pl,
+#   isotopes, #data(isotopes)
+#   elements = c("C", "H", "O"),
+#   use_C = FALSE,
+#   minmz = 5,
+#   maxmz = 120,
+#   minrt = -2,
+#   maxrt = 2,
+#   ppm = TRUE,
+#   mztol = 3.5,
+#   rttol = 0.5,
+#   minlength = 5,
+#   mzfilter = FALSE,
+#   vec_size = 3E6,
+#   mat_size = 3,
+#   R2 = .98,
+#   spar = .45,
+#   plotit = FALSE,
+#   deb = 0
+# )
+
+data(peaklist);
+data(adducts);
+data(isotopes);
+
+iso <- nontarget::make.isos(
+  isotopes,
+  use_isotopes=c("13C","15N","34S","37Cl","81Br","41K","13C","15N","34S","37Cl","81Br","41K"),
+  use_charges=c(1,1,1,1,1,1,2,2,2,2,2,2)
+)
+
+pattern <- nontarget::pattern.search(
+peaklist,
+iso,
+cutint=500,
+rttol=c(-0.05,0.05),
+mztol=5,
+mzfrac=0.1,
+ppm=TRUE,
+inttol=0.4,
+rules=c(TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE),
+deter=FALSE,
+entry=50
+);
+
+plotall(pattern)
+plotisotopes(pattern)
 
 
 # annotation results -----------------------------------------------------------
@@ -374,3 +455,4 @@ ms_25k$find_features(tof_ffs)$annotate_features(afs)
 #
 #
 # View(output$output)
+

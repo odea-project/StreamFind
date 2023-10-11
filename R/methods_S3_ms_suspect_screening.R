@@ -108,10 +108,10 @@
 
       if (!"mz" %in% colnames(out_list)) {
         warning("m/z values not found in the feature groups data.table but it is required for inclusion of fragments! .txt files not exported.")
-        return(FALSE)
+        # return(FALSE)
+      } else {
+        out_list$Mass <- out_list$mz
       }
-
-      out_list$Mass <- out_list$mz
 
       sink(paste0(settings$parameters$path,"/", settings$parameters$name, ".txt"))
       cat("\n")

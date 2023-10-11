@@ -5,21 +5,32 @@
 \alias{validate.Settings_centroid_spectra_qCentroids}
 \title{Settings_centroid_spectra_qCentroids}
 \usage{
-Settings_centroid_spectra_qCentroids()
+Settings_centroid_spectra_qCentroids(runParallel = FALSE)
 
 \method{validate}{Settings_centroid_spectra_qCentroids}(x)
 }
 \arguments{
+\item{runParallel}{Logical of length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
 \item{x}{A Settings_centroid_spectra_qCentroids S3 class object.}
 }
 \value{
-X.
+A ProcessingSettings S3 class object with subclass
+Settings_centroid_spectra_qCentroids.
 }
 \description{
-X.
+Centroids profile spectra using the
+\href{https://link.springer.com/article/10.1007/s00216-022-04224-y}{qCentroids}
+algorithm, which is part of the
+\href{https://github.com/odea-project/qAlgorithms}{qAlgorithms} library.
 }
 \section{Methods (by generic)}{
 \itemize{
 \item \code{validate(Settings_centroid_spectra_qCentroids)}: Validates the object structure, returning a logical value of length one.
 
 }}
+\references{
+\insertRef{qcentroids01}{StreamFind}
+}

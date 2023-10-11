@@ -11,6 +11,8 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \insertRef{patroon01}{StreamFind}
 
 \insertRef{patroon02}{StreamFind}
+
+\insertRef{pugixml01}{StreamFind}
 }
 \section{Methods}{
 \subsection{Public methods}{
