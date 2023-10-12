@@ -7,7 +7,6 @@
 #include <list>
 #include <set>
 #include <algorithm>
-#include "pugixml.h"
 #include "xml_utils.h"
 #include <Rcpp.h>
 

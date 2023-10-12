@@ -1,4 +1,6 @@
 
+# Tasks -----------------------------------------------------------------------
+
 # TODO add stats to the groups (e.g., presence in each replicate, coverage)
 # TODO check what happens when all MS2 centroids are added to clustering
 # TODO clustering does not see polarity yet and it should be split.
@@ -6,12 +8,28 @@
 # TODO add is_pre to MS1 spectra
 
 
+# Resources -------------------------------------------------------------------
+
 all_files <- StreamFindData::get_all_file_paths()
 
 db <- StreamFindData::get_tof_spiked_chemicals()
 db <- db[grepl("S", db$tag), ]
 cols <- c("name", "formula", "mass", "rt")
 db <- db[, cols, with = FALSE]
+
+
+# Test SIRIUS -----------------------------------------------------------------
+
+ms <- MassSpecData$new(all_files[1:3])
+
+
+
+
+
+
+
+
+# MSPeaksLists ----------------------------------------------------------------
 
 files_df <- data.frame(
   "file" = all_files[grepl("blank|influent|o3sw", all_files)],

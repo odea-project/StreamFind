@@ -1,5 +1,4 @@
 #include <iostream>
-#include "pugixml.h"
 #include "xml_utils.h"
 #include <string>
 #include <Rcpp.h>

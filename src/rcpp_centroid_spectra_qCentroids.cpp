@@ -36,10 +36,10 @@ Rcpp::List rcpp_centroid_spectra_qCentroids(Rcpp::DataFrame spectra) {
   const std::vector<double>& all_mz = spectra["mz"];
   const std::vector<double>& all_intensity = spectra["intensity"];
   
-  int number_traces = all_scan.size();
+  int number_spectra = all_scan.size();
 
   Rcpp::Rcout << std::endl;
-  Rcpp::Rcout << "Analyses with " << number_traces << " traces!" << std::endl;
+  Rcpp::Rcout << "Analyses with " << number_spectra << " spectra!" << std::endl;
   Rcpp::Rcout << std::endl;
   
   

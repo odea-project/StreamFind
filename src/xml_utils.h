@@ -1,11 +1,13 @@
 #ifndef XML_UTILS_H
 #define XML_UTILS_H
 
+#define PUGIXML_HEADER_ONLY
+#include "pugixml-1.14/src/pugixml.hpp"
+
 #include <iostream>
 #include <string>
 #include <vector>
 #include <list>
-#include "pugixml.h"
 #include <Rcpp.h>
 
 namespace xml_utils {

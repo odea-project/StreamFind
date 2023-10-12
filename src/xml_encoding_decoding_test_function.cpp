@@ -1,4 +1,3 @@
-
 #include "xml_utils.h"
 #include <Rcpp.h>
 
