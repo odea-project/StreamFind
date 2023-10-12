@@ -3,7 +3,7 @@ files <- list.files("D:/Jana/", full.names = TRUE)
 files <- files[1:2]
 
 
-r1 <- RamanData$new(files, headers = list(
+r1 <- RamanData$new(headers = list(
   "name" = "Example files",
   "description" = "Test Raman class."
 ))

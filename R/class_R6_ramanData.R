@@ -1,8 +1,8 @@
-#' **ramanData** R6 class and methods
+#' **RamanData** R6 class and methods
 #'
 #' @description
 #' The RamanData R6 class is a framework with methods for parsing, processing,
-#' visualizing and storing RAMAN data.
+#' inspecting and storing RAMAN data.
 #'
 #' @template arg-headers
 #'
@@ -27,11 +27,10 @@ RamanData <- R6::R6Class("RamanData",
 
     ## ___ .utils -----
 
-    #' @description
-    #' Checks the analyses argument as a character/integer vector to match
-    #' analyses names or indices from the `RamanData` object. Returns a valid
-    #' character vector with analysis names or `NULL` for non-matching.
-    #'
+    # Checks the analyses argument as a character/integer vector to match
+    # analyses names or indices from the `RamanData` object. Returns a valid
+    # character vector with analysis names or `NULL` for non-matching.
+    #
     .check_analyses_argument = function(analyses = NULL) {
       if (is.null(analyses)) {
         self$get_analysis_names()
@@ -46,9 +45,8 @@ RamanData <- R6::R6Class("RamanData",
       }
     },
 
-    #' @description
-    #' Gets an entry from the analyses private field.
-    #'
+    # Gets an entry from the analyses private field.
+    #
     .get_analyses_entry = function(analyses = NULL, value = NA_character_) {
       analyses <- private$.check_analyses_argument(analyses)
 
@@ -86,7 +84,7 @@ RamanData <- R6::R6Class("RamanData",
       if (!is.null(headers)) suppressMessages(self$add_headers(headers))
 
       if (is.null(private$.headers)) {
-        private$.headers <- Headers(
+        private$.headers <- ProjectHeaders(
           name = NA_character_,
           path = getwd(),
           date = Sys.time()
@@ -103,16 +101,16 @@ RamanData <- R6::R6Class("RamanData",
             sep = ";"
           )
           sf <- as.numeric(colnames(spec$spc))
-          int <- as.numeric(spec$spc[1,])
+          int <- as.numeric(spec$spc[1, ])
           df <- data.table("shift" = sf, "intensity" = int)
 
-          f.name <- basename(x)
-          f.ext <- file_ext(f.name)
-          f.name <- sub(paste0(".",f.ext), "", f.name)
+          f_name <- basename(x)
+          f_ext <- file_ext(f_name)
+          f_name <- sub(paste0(".", f_ext), "", f_name)
 
           list(
-            "name" = f.name,
-            "replicate" = f.name,
+            "name" = f_name,
+            "replicate" = f_name,
             "blank" = NA_character_,
             "file" = x,
             "spectrum" = df,
@@ -135,32 +133,25 @@ RamanData <- R6::R6Class("RamanData",
     #'
     print = function() {
       cat(
-        "Class         ", paste(is(self), collapse = "; "), "\n",
-        "Name          ", private$.headers$name, "\n",
-        "Date          ", as.character(private$.headers$date), "\n",
+        paste(is(self), collapse = "; "), "\n",
+        "name          ", private$.headers$name, "\n",
+        "author        ", private$.headers$author, "\n",
+        "path          ", private$.headers$path, "\n",
+        "date          ", as.character(private$.headers$date), "\n",
         sep = ""
       )
 
       cat("\n")
 
-      # if (self$has_settings()) {
-      #   cat("Settings: \n")
-      #   names_settings <- names(private$.settings)
-      #   cat(
-      #     paste0(" ", seq_len(length(names_settings)), ": ", names_settings),
-      #     sep = "\n"
-      #   )
-      #   cat("\n")
-      # }
-
       if (length(private$.analyses) > 0) {
         overview <- self$get_overview()
         overview$file <- NULL
-        row.names(overview) <- paste0("Analyses ", seq_len(nrow(overview)), ":")
+        cat("Analyses: \n")
+        row.names(overview) <- paste0(" ", seq_len(nrow(overview)), ":")
         print(overview)
 
       } else {
-        cat("Analyses      ", 0, "\n", sep = "")
+        cat("Analyses: ", 0, "\n", sep = "")
       }
       cat("\n")
     },
@@ -182,6 +173,12 @@ RamanData <- R6::R6Class("RamanData",
       }
     },
 
+    #' @description
+    #' Gets analyses.
+    #'
+    #' @return The list of analyses or the analyses as defined by `analyses`
+    #' argument.
+    #'
     get_analyses = function() {
       private$.analyses
     },
@@ -197,6 +194,8 @@ RamanData <- R6::R6Class("RamanData",
 
     #' @description
     #' Gets the analysis names.
+    #'
+    #' @param analyses X.
     #'
     #' @return A character vector.
     #'
@@ -217,6 +216,8 @@ RamanData <- R6::R6Class("RamanData",
     #' @description
     #' Gets the full file paths of the analyses.
     #'
+    #' @param analyses X.
+    #'
     #' @return A character vector.
     #'
     get_files = function(analyses = NULL) {
@@ -226,6 +227,7 @@ RamanData <- R6::R6Class("RamanData",
     #' @description
     #' Gets spectra from analyses.
     #'
+    #' @param analyses X.
     #' @param shift X.
     #'
     #' @return A data.frame.
@@ -284,9 +286,9 @@ RamanData <- R6::R6Class("RamanData",
     #'
     add_headers = function(...) {
 
-      headers <- Headers(...)
+      headers <- ProjectHeaders(...)
 
-      if (is(headers, "Headers")) {
+      if (is(headers, "ProjectHeaders")) {
         old_headers <- private$.headers
         if (is.null(old_headers)) old_headers <- list()
 
@@ -297,9 +299,10 @@ RamanData <- R6::R6Class("RamanData",
           new_headers <- headers
         }
 
-        new_headers <- as.Headers(new_headers)
+        new_headers <- as.ProjectHeaders(new_headers)
 
-        if (!identical(new_headers, old_headers) & is(new_headers, "Headers")) {
+        if (!identical(new_headers, old_headers) &
+              is(new_headers, "ProjectHeaders")) {
           private$.headers <- new_headers
           message("\U2713 Added headers!")
         }

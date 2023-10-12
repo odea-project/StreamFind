@@ -68,7 +68,7 @@
 #' \insertRef{patroon01}{StreamFind}
 #'
 #' \insertRef{patroon02}{StreamFind}
-#' 
+#'
 #' \insertRef{pugixml01}{StreamFind}
 #'
 #' @export
@@ -713,12 +713,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (length(private$.analyses) > 0) {
         overview <- self$get_overview()
         overview$file <- NULL
-        cat("analyses: \n")
+        cat("Analyses: \n")
         row.names(overview) <- paste0(" ", seq_len(nrow(overview)), ":")
         print(overview)
 
       } else {
-        cat("analyses      ", 0, "\n", sep = "")
+        cat("Analyses: ", 0, "\n", sep = "")
       }
       cat("\n")
     },
