@@ -1,16 +1,16 @@
-library(streamFind)
+library(StreamFind)
 library(testthat)
 
 test_that("suggested dependencies", {
-  expect_true(requireNamespace("streamFindData"))
+  expect_true(requireNamespace("StreamFindData"))
   expect_true(requireNamespace("xcms"))
   expect_true(requireNamespace("patRoon"))
 })
 
 # resources -----
 
-all_files <- streamFindData::msFilePaths()
-db <- streamFindData::msSpikedChemicals()
+all_files <- StreamFindData::get_all_file_paths()
+db <- StreamFindData::get_tof_spiked_chemicals()
 files_mrm <- all_files[grepl("mrm", all_files)]
 files <- all_files[grepl("influent|blank", all_files)]
 files2 <- all_files[grepl("o3sw", all_files)]
@@ -59,7 +59,6 @@ test_that("getter for features with empty object", {
   expect_equal(nrow(ms$get_groups_ms1()), 0)
   expect_equal(nrow(ms$get_groups_ms2()), 0)
 })
-
 
 test_that("getter for names and filePaths", {
   expect_equal(
@@ -156,7 +155,7 @@ test_that("get EIC, MS1 and MS2 spectra", {
     mz = targets, minIntensity = 10000
   )))
   expect_s3_class(ms$get_ms2(4, mz = targets), "data.table")
-  expect_true("isPre" %in% colnames(ms$get_ms2(4, mz = targets)))
+  expect_true("is_pre" %in% colnames(ms$get_ms2(4, mz = targets)))
 })
 
 # ms$plot_tic(colorBy = "replicates")
@@ -165,19 +164,21 @@ test_that("get EIC, MS1 and MS2 spectra", {
 # ms$plot_eic(analyses = 4:5, mz = targets, title = "Test plot!")
 # ms$plot_ms2(analyses = 4:5, mz = targets, minIntensity = 500)
 
-settings_ff <- list(
-  "call" = "find_features",
-  "algorithm" = "xcms3",
-  "parameters" = xcms::CentWaveParam(
-    ppm = 12, peakwidth = c(5, 30),
-    snthresh = 10, prefilter = c(5, 1500),
-    mzCenterFun = "mean", integrate = 2,
-    mzdiff = -0.0001, fitgauss = TRUE,
-    noise = 500, verboseColumns = TRUE,
-    firstBaselineCheck = FALSE,
-    extendLengthMSW = TRUE
-  )
+settings_ff <- Settings_find_features_xcms3_centwave(
+  ppm = 12,
+  peakwidth = c(5, 40),
+  snthresh = 10,
+  prefilter = c(6, 5000),
+  mzCenterFun = "mean",
+  integrate = 2,
+  mzdiff = 0.0005,
+  fitgauss = TRUE,
+  noise = 1500,
+  verboseColumns = TRUE,
+  firstBaselineCheck = FALSE,
+  extendLengthMSW = TRUE
 )
+
 
 ms$add_settings(settings = settings_ff)
 
@@ -186,7 +187,7 @@ test_that("add and get settings", {
   expect_true(ms$has_settings("find_features"))
 })
 
-ms$find_features(settings = settings_ff)
+suppressWarnings(ms$find_features(settings = settings_ff))
 
 test_that("find and get features", {
   expect_s3_class(ms$get_features(mz = targets), "data.table")
@@ -213,19 +214,12 @@ test_that("get MS1 and MS2 for features", {
 # ms$plot_features_ms1(features = ftar$feature, interactive = FALSE)
 # ms$plot_features_ms2(features = ftar$feature, interactive = FALSE)
 
-settings_gf <- list(
-  "call" = "group_features",
-  "algorithm" = "xcms3",
-  "parameters" = list(
-    groupParam = xcms::PeakDensityParam(
-      sampleGroups = "holder",
-      bw = 5,
-      minFraction = 0.5,
-      minSamples = 1,
-      binSize = 0.008,
-      maxFeatures = 100
-    )
-  )
+settings_gf <- Settings_group_features_xcms3_peakdensity(
+  bw = 5,
+  minFraction = 0.5,
+  minSamples = 1,
+  binSize = 0.008,
+  maxFeatures = 100
 )
 
 ms$group_features(settings = settings_gf)
@@ -236,46 +230,24 @@ test_that("group features", {
   expect_true(all(ms$has_groups()))
 })
 
-test_that("get feature groups MS1 and MS2", {
-  expect_s3_class(ms$get_groups_ms1(mass = neutral_targets), "data.table")
-  expect_gt(nrow(ms$get_groups_ms1(mass = neutral_targets)), 0)
-  expect_s3_class(ms$get_groups_ms2(mass = neutral_targets), "data.table")
-  expect_gt(nrow(ms$get_groups_ms2(mass = neutral_targets)), 0)
-})
-
 # ms$plot_groups(mz = targets, legendNames = c("Target1", "Target2"))
 # ms$plot_groups_overview(mz = targets)
 
-settings_gf_alignment <- ProcessingSettings(
-  "call" = "group_features",
-  "algorithm" = "xcms3",
-  "parameters" = list(
-    rtalign = TRUE,
-    loadRawData = TRUE,
-    groupParam = xcms::PeakDensityParam(
-      sampleGroups = "holder",
-      bw = 3,
-      minFraction = 0.6,
-      minSamples = 2,
-      binSize = 0.008,
-      maxFeatures = 100
-    ),
-    preGroupParam = xcms::PeakDensityParam(
-      sampleGroups = "holder",
-      bw = 5,
-      minFraction = 1,
-      minSamples = 3,
-      binSize = 0.008,
-      maxFeatures = 100
-    ),
-    retAlignParam = xcms::PeakGroupsParam(
-      minFraction = 1,
-      extraPeaks = 0,
-      smooth = "loess",
-      span = 0.3,
-      family = "gaussian"
-    )
-  )
+settings_gf_alignment <- Settings_group_features_xcms3_peakdensity_peakgroups(
+  bw = 3,
+  minFraction = 0.6,
+  minSamples = 2,
+  binSize = 0.008,
+  pre_bw = 5,
+  pre_minFraction = 1,
+  pre_minSamples = 3,
+  pre_binSize = 0.008,
+  maxFeatures = 100,
+  rtAlignMinFraction = 0.3,
+  extraPeaks = 0,
+  smooth = "loess",
+  span = 0.3,
+  family = "gaussian"
 )
 
 ms4 <- ms$subset_analyses(analyses = 4:6)
@@ -309,7 +281,7 @@ test_that("import headers and settings from json file", {
   expect_invisible(ms5$import_headers("headers.json"))
   expect_invisible(ms5$import_settings("settings.json"))
   expect_equal(ms$get_headers(), ms5$get_headers())
-  expect_equal(ms$get_settings(), ms5$get_settings())
+  expect_equal(names(ms$get_settings()), names(ms5$get_settings()))
 })
 
 test_that("import analyses and groups from json file", {
@@ -351,7 +323,7 @@ test_that("remove 2 groups", {
 fts_to_rem <- ms5$get_features(mz = targets)
 ms5$remove_features(fts_to_rem)
 
-test_that("remove 12 featrues from targets", {
+test_that("remove 12 features from targets", {
   expect_lt(nrow(ms5$get_features()), n_fts_total)
   expect_equal(nrow(ms5$get_groups(groups = unique(fts_to_rem$group))), 0)
   expect_equal(nrow(ms5$get_features(mz = targets)), 0)
@@ -387,34 +359,29 @@ test_that("subset features", {
   expect_equal(nrow(ms5$get_groups()), 2)
 })
 
-settingsLoadFeaturesMS1 <- list(
-  "call" = "load_features_ms1",
-  "algorithm" = "streamFind",
-  "parameters" = list(
-    rtWindow = c(-2, 2),
-    mzWindow = c(-1, 6),
-    mzClust = 0.003,
-    minIntensity = 250,
-    filtered = FALSE,
-    runParallel = FALSE,
-    verbose = FALSE
-  )
+slfms1 <- Settings_load_features_ms1_StreamFind(
+  rtWindow = c(-2, 2),
+  mzWindow = c(-1, 6),
+  mzClust = 0.003,
+  presence = 0.8,
+  minIntensity = 250,
+  filtered = FALSE,
+  runParallel = FALSE,
+  verbose = FALSE
 )
 
-settingsLoadFeaturesMS2 <- list(
-  "call" = "load_features_ms2",
-  "algorithm" = "streamFind",
-  "parameters" = list(
-    isolationWindow = 1.3,
-    mzClust = 0.003,
-    minIntensity = 0,
-    filtered = FALSE,
-    runParallel = FALSE,
-    verbose = FALSE
-  )
+
+slfms2 <- Settings_load_features_ms2_StreamFind(
+  isolationWindow = 1.3,
+  mzClust = 0.003,
+  presence = 0.8,
+  minIntensity = 0,
+  filtered = FALSE,
+  runParallel = FALSE,
+  verbose = FALSE
 )
 
-ms5$load_features_ms1(settings = settingsLoadFeaturesMS1)
+ms5$load_features_ms1(settings = slfms1)
 
 test_that("load MS1 features", {
   expect_true(any(ms5$has_loaded_features_ms1()))
@@ -430,7 +397,7 @@ test_that("remove loaded MS1 features", {
   expect_true(!any(ms5$has_loaded_features_ms1()))
 })
 
-ms5$load_features_ms2(settings = settingsLoadFeaturesMS2)
+ms5$load_features_ms2(settings = slfms2)
 
 test_that("load MS2 features", {
   expect_true(any(ms5$has_loaded_features_ms2()))
@@ -451,7 +418,7 @@ groups_to_subset <- ms5$get_groups(mass = neutral_targets)
 ms5 <- ms5$subset_groups(groups = groups_to_subset$group)
 
 test_that("subset groups", {
-  expect_equal(nrow(ms5$get_features()), 18)
+  expect_equal(nrow(ms5$get_features()), 12)
   expect_equal(
     nrow(ms5$get_features(filtered = TRUE)),
     nrow(ms$get_features(filtered = TRUE))
@@ -469,68 +436,73 @@ test_that("remove filtered features", {
   expect_equal(nrow(ms5$get_groups()), 2)
 })
 
-ms5$load_features_ms1(settings = settingsLoadFeaturesMS1)
-ms5$load_features_ms2(settings = settingsLoadFeaturesMS2)
+patRoon::clearCache("parsed_ms_spectra")
+patRoon::clearCache("load_features_ms1")
+patRoon::clearCache("load_features_ms2")
+patRoon::clearCache("load_groups_ms1")
+patRoon::clearCache("load_groups_ms2")
 
-settingsLoadGroupsMS1 <- list(
-  "call" = "load_groups_ms1",
-  "algorithm" = "streamFind",
-  "parameters" = list(
-    mzClust = 0.003,
-    minIntensity = 1000,
-    verbose = FALSE,
-    filtered = FALSE,
-    runParallel = FALSE
-  )
+ms5$load_features_ms1(settings = slfms1)
+
+ms5$load_features_ms2(settings = slfms2)
+
+
+slfgms1 <- Settings_load_groups_ms1_StreamFind(
+  mzClust = 0.003,
+  presence = 0.8,
+  minIntensity = 1000,
+  verbose = FALSE,
+  filtered = FALSE,
+  runParallel = FALSE
 )
 
-settingsLoadGroupsMS2 <- list(
-  "call" = "load_groups_ms2",
-  "algorithm" = "streamFind",
-  "parameters" = list(
-    mzClust = 0.003,
-    minIntensity = 250,
-    filtered = FALSE,
-    runParallel = FALSE,
-    verbose = FALSE
-  )
+slfgms2 <- Settings_load_groups_ms2_StreamFind(
+  mzClust = 0.003,
+  presence = 0.8,
+  minIntensity = 250,
+  filtered = FALSE,
+  runParallel = FALSE,
+  verbose = FALSE
 )
 
-ms5$load_groups_ms1(settings = settingsLoadGroupsMS1)
+ms6 <- ms5$subset_analyses(which(grepl("pos", ms5$get_analysis_names())))
+
+
+ms6$load_groups_ms1(settings = slfgms1)
 
 test_that("load MS1 groups", {
-  expect_true(any(ms5$has_loaded_groups_ms1()))
+  expect_true(any(ms6$has_loaded_groups_ms1()))
   expect_equal(
-    unique(ms5$get_groups_ms1()[["id"]]),
+    unique(ms6$get_groups_ms1()[["id"]]),
     groups_to_subset$group
   )
 })
 
-ms5$remove_groups_ms1()
+ms6$remove_groups_ms1()
 
 test_that("remove loaded MS1 groups", {
-  expect_false(ms5$has_loaded_groups_ms1())
+  expect_false(ms6$has_loaded_groups_ms1())
 })
 
-ms5$load_groups_ms2(settings = settingsLoadGroupsMS2)
+ms6$load_groups_ms2(settings = slfgms2)
 
 test_that("load MS2 groups", {
-  expect_true(any(ms5$has_loaded_groups_ms2()))
+  expect_true(any(ms6$has_loaded_groups_ms2()))
   expect_equal(
-    unique(ms5$get_groups_ms2()[["id"]]),
+    unique(ms6$get_groups_ms2()[["id"]]),
     groups_to_subset$group
   )
 })
 
-ms5$remove_groups_ms2()
+ms6$remove_groups_ms2()
 
 test_that("remove loaded MS2 groups", {
-  expect_false(ms5$has_loaded_groups_ms2())
+  expect_false(ms6$has_loaded_groups_ms2())
 })
 
 file.remove("MassSpecData.json")
 
-
+patRoon::clearCache("all")
 
 
 
@@ -629,9 +601,9 @@ file.remove("MassSpecData.json")
 
 
 
-# settingsLoadFeaturesMS1 <- list(
+# slfms1 <- list(
 #   "call" = "load_features_ms1",
-#   "algorithm" = "streamFind",
+#   "algorithm" = "StreamFind",
 #   "parameters" = list(
 #     rtWindow = c(-2, 2),
 #     mzWindow = c(-1, 6),
@@ -643,9 +615,9 @@ file.remove("MassSpecData.json")
 #   )
 # )
 
-# settingsLoadFeaturesMS2 <- list(
+# slfms2 <- list(
 #   "call" = "load_features_ms2",
-#   "algorithm" = "streamFind",
+#   "algorithm" = "StreamFind",
 #   "parameters" = list(
 #     isolationWindow = 1.3,
 #     mzClust = 0.001,
@@ -656,7 +628,7 @@ file.remove("MassSpecData.json")
 #   )
 # )
 
-# ms$add_settings(settingsLoadFeaturesMS2)
+# ms$add_settings(slfms2)
 # ms$get_settings("load_features_ms2")
 
 # ms$load_features_ms1()

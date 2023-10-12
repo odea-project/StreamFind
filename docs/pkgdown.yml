@@ -1,11 +1,13 @@
-pandoc: 3.1.2
+pandoc: 3.1.1
 pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
+  demo_ozonation_project: demo_ozonation_project.html
+  ms_developer_guide: ms_developer_guide.html
   ms_overview: ms_overview.html
-  streamFind: streamFind.html
-last_built: 2023-07-18T14:56Z
+  StreamFind: StreamFind.html
+last_built: 2023-10-11T18:37Z
 urls:
-  reference: https://ricardobachertdacunha.github.io/streamFind/reference
-  article: https://ricardobachertdacunha.github.io/streamFind/articles
+  reference: https://odea-project.github.io/StreamFind/reference
+  article: https://odea-project.github.io/StreamFind/articles
 

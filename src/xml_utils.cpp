@@ -267,8 +267,8 @@ void xml_utils::mzml_spectra_headers_parser(const pugi::xml_node& node_mzml, xml
     output.drift.resize(number_spectra);
     output.pre_scan.resize(number_spectra);
     output.pre_mz.resize(number_spectra);
-    output.pre_loweroffset.resize(number_spectra);
-    output.pre_upperoffset.resize(number_spectra);
+    output.pre_mzlow.resize(number_spectra);
+    output.pre_mzhigh.resize(number_spectra);
     output.pre_ce.resize(number_spectra);
 
     for (int i = 0; i < number_spectra; i++) {
@@ -313,22 +313,22 @@ void xml_utils::mzml_spectra_headers_parser(const pugi::xml_node& node_mzml, xml
       pugi::xml_node pol_neg = spec.find_child_by_attribute("cvParam", "accession", "MS:1000129");
 
       if (pol_pos != NULL) {
-        output.polarity[i] = "positive";
+        output.polarity[i] = 1;
       } else if (pol_neg != NULL) {
-        output.polarity[i] = "negative";
+        output.polarity[i] = -1;
       } else {
-        output.polarity[i] = "NA";
+        output.polarity[i] = 0;
       }
 
       pugi::xml_node centroid = spec.find_child_by_attribute("cvParam", "accession", "MS:1000127");
       pugi::xml_node profile = spec.find_child_by_attribute("cvParam", "accession", "MS:1000128");
 
       if (centroid != NULL) {
-        output.mode[i] = "centroid";
+        output.mode[i] = 2;
       } else if (profile != NULL) {
-        output.mode[i] = "profile";
+        output.mode[i] = 1;
       } else {
-        output.mode[i] = "NA";
+        output.mode[i] = 0;
       }
 
       pugi::xml_node mzlow_node = spec.find_child_by_attribute("cvParam", "name", "lowest observed m/z");
@@ -370,14 +370,14 @@ void xml_utils::mzml_spectra_headers_parser(const pugi::xml_node& node_mzml, xml
         output.pre_mz[i] = pre_mz_node.attribute("value").as_double();
         if (std::isnan(output.pre_mz[i])) output.pre_mz[i] = NA_REAL;
 
-        pugi::xml_node pre_loweroffset_node = isolation.find_child_by_attribute("cvParam", "name", "isolation window lower offset");
-        output.pre_loweroffset[i] = pre_loweroffset_node.attribute("value").as_double();
-        if (std::isnan(output.pre_loweroffset[i])) output.pre_loweroffset[i] = NA_REAL;
+        pugi::xml_node pre_mzlow_node = isolation.find_child_by_attribute("cvParam", "name", "isolation window lower offset");
+        output.pre_mzlow[i] = pre_mzlow_node.attribute("value").as_double();
+        if (std::isnan(output.pre_mzlow[i])) output.pre_mzlow[i] = NA_REAL;
 
 
-        pugi::xml_node pre_upperoffset_node = isolation.find_child_by_attribute("cvParam", "name", "isolation window upper offset");
-        output.pre_upperoffset[i] = pre_upperoffset_node.attribute("value").as_double();
-        if (std::isnan(output.pre_upperoffset[i])) output.pre_upperoffset[i] = NA_REAL;
+        pugi::xml_node pre_mzhigh_node = isolation.find_child_by_attribute("cvParam", "name", "isolation window upper offset");
+        output.pre_mzhigh[i] = pre_mzhigh_node.attribute("value").as_double();
+        if (std::isnan(output.pre_mzhigh[i])) output.pre_mzhigh[i] = NA_REAL;
 
         pugi::xml_node activation = precursor.child("activation");
 
@@ -388,8 +388,8 @@ void xml_utils::mzml_spectra_headers_parser(const pugi::xml_node& node_mzml, xml
       } else {
         output.pre_scan[i] = NA_INTEGER;
         output.pre_mz[i] = NA_REAL;
-        output.pre_loweroffset[i] = NA_REAL;
-        output.pre_upperoffset[i] = NA_REAL;
+        output.pre_mzlow[i] = NA_REAL;
+        output.pre_mzhigh[i] = NA_REAL;
         output.pre_ce[i] = NA_REAL;
       }
     }
@@ -428,8 +428,8 @@ void xml_utils::mzxml_spectra_headers_parser(const pugi::xml_node& node_mzxml, x
   output.drift.resize(number_spectra);
   output.pre_scan.resize(number_spectra);
   output.pre_mz.resize(number_spectra);
-  output.pre_loweroffset.resize(number_spectra);
-  output.pre_upperoffset.resize(number_spectra);
+  output.pre_mzlow.resize(number_spectra);
+  output.pre_mzhigh.resize(number_spectra);
   output.pre_ce.resize(number_spectra);
 
   for (int i = 0; i < number_spectra; i++) {
@@ -459,21 +459,21 @@ void xml_utils::mzxml_spectra_headers_parser(const pugi::xml_node& node_mzxml, x
     std::string pol_sign = spec.attribute("polarity").as_string();
 
     if (pol_sign == "+") {
-      output.polarity[i] = "positive";
+      output.polarity[i] = 1;
     } else if (pol_sign == "-") {
-      output.polarity[i] = "negative";
+      output.polarity[i] = -1;
     } else {
-      output.polarity[i] = "NA";
+      output.polarity[i] = 0;
     }
 
     int centroided = spec.attribute("centroided").as_int();
 
     if (centroided == 1) {
-      output.mode[i] = "centroid";
+      output.mode[i] = 2;
     } else if (centroided == 0) {
-      output.mode[i] = "profile";
+      output.mode[i] = 1;
     } else {
-      output.mode[i] = "NA";
+      output.mode[i] = 0;
     }
 
     output.mzlow[i] = spec.attribute("lowMz").as_double();
@@ -506,8 +506,8 @@ void xml_utils::mzxml_spectra_headers_parser(const pugi::xml_node& node_mzxml, x
     }
 
     output.pre_scan[i] = NA_INTEGER;
-    output.pre_loweroffset[i] = NA_REAL;
-    output.pre_upperoffset[i] = NA_REAL;
+    output.pre_mzlow[i] = NA_REAL;
+    output.pre_mzhigh[i] = NA_REAL;
   }
 }
 
@@ -538,25 +538,13 @@ xml_utils::spectraHeaders xml_utils::parse_spectra_headers(const pugi::xml_node&
 
 Rcpp::List xml_utils::spectraHeaders_to_list(const xml_utils::spectraHeaders& headers_cpp) {
 
-  Rcpp::StringVector polarity = Rcpp::wrap(headers_cpp.polarity);
-  Rcpp::StringVector mode = Rcpp::wrap(headers_cpp.mode);
-
-  for (int i = 0; i < polarity.size(); i++) {
-    if (polarity(i) == "NA") {
-      polarity(i) = NA_STRING;
-    }
-    if (mode(i) == "NA") {
-      mode(i) = NA_STRING;
-    }
-  }
-
   Rcpp::List headers;
 
   headers["index"] = headers_cpp.index;
   headers["scan"] = headers_cpp.scan;
   headers["traces"] = headers_cpp.traces;
-  headers["polarity"] = polarity;
-  headers["mode"] = mode;
+  headers["polarity"] = headers_cpp.polarity;
+  headers["mode"] = headers_cpp.mode;
   headers["level"] = headers_cpp.level;
   headers["rt"] = headers_cpp.rt;
   headers["drift"] = headers_cpp.drift;
@@ -568,8 +556,8 @@ Rcpp::List xml_utils::spectraHeaders_to_list(const xml_utils::spectraHeaders& he
   headers["pre_scan"] = headers_cpp.pre_scan;
   headers["pre_mz"] = headers_cpp.pre_mz;
   headers["pre_ce"] = headers_cpp.pre_ce;
-  headers["pre_loweroffset"] = headers_cpp.pre_loweroffset;
-  headers["pre_upperoffset"] = headers_cpp.pre_upperoffset;
+  headers["pre_mzlow"] = headers_cpp.pre_mzlow;
+  headers["pre_mzhigh"] = headers_cpp.pre_mzhigh;
 
   headers.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
 
@@ -588,53 +576,67 @@ xml_utils::spectraHeaders xml_utils::list_to_spectraHeaders(const Rcpp::List& ru
 
   Rcpp::IntegerVector pre_scan = run["pre_scan"];
   Rcpp::NumericVector pre_mz = run["pre_mz"];
+  Rcpp::NumericVector pre_mzlow = run["pre_mzlow"];
+  Rcpp::NumericVector pre_mzhigh = run["pre_mzhigh"];
   Rcpp::NumericVector pre_ce = run["pre_ce"];
 
   for (int i = 0; i < number_spectra; i++) {
 
-      if (pre_scan[i] == NA_INTEGER) {
-        pre_scan[i] = -1;
-      }
+    if (pre_scan[i] == NA_INTEGER) {
+      pre_scan[i] = -1;
+    }
 
-      if (pre_mz[i] == NA_REAL) {
-        pre_mz[i] = nan("");
-      }
+    if (pre_mz[i] == NA_REAL) {
+      pre_mz[i] = nan("");
+    }
+    
+    if (pre_mzlow[i] == NA_REAL) {
+      pre_mzlow[i] = nan("");
+    }
+    
+    if (pre_mzhigh[i] == NA_REAL) {
+      pre_mzhigh[i] = nan("");
+    }
 
-      if (pre_ce[i] == NA_REAL) {
-      pre_ce[i] = nan("");
-      }
+    if (pre_ce[i] == NA_REAL) {
+    pre_ce[i] = nan("");
+    }
   }
 
   output.index.resize(number_spectra);
   output.scan.resize(number_spectra);
   output.traces.resize(number_spectra);
-  // output.polarity.resize(number_spectra);
+  output.polarity.resize(number_spectra);
   output.bpcmz.resize(number_spectra);
   output.bpcint.resize(number_spectra);
   output.ticint.resize(number_spectra);
   output.level.resize(number_spectra);
-  // output.mode.resize(number_spectra);
-  // output.mzlow.resize(number_spectra);
-  // output.mzhigh.resize(number_spectra);
+  output.mode.resize(number_spectra);
+  output.mzlow.resize(number_spectra);
+  output.mzhigh.resize(number_spectra);
   output.rt.resize(number_spectra);
-  // output.drift.resize(number_spectra);
+  output.drift.resize(number_spectra);
   output.pre_scan.resize(number_spectra);
   output.pre_mz.resize(number_spectra);
-  // output.pre_loweroffset.resize(number_spectra);
-  // output.pre_upperoffset.resize(number_spectra);
+  output.pre_mzlow.resize(number_spectra);
+  output.pre_mzhigh.resize(number_spectra);
   output.pre_ce.resize(number_spectra);
 
   output.index = index;
   output.scan = Rcpp::as<std::vector<int>>(run["scan"]);
   output.traces = Rcpp::as<std::vector<int>>(run["traces"]);
   output.level = Rcpp::as<std::vector<int>>(run["level"]);
+  output.polarity = Rcpp::as<std::vector<int>>(run["polarity"]);
+  output.mode = Rcpp::as<std::vector<int>>(run["mode"]);
   output.rt = Rcpp::as<std::vector<double>>(run["rt"]);
-  // output.drift = Rcpp::as<std::vector<double>>(run["drift"]);
+  output.drift = Rcpp::as<std::vector<double>>(run["drift"]);
   output.bpcmz = Rcpp::as<std::vector<double>>(run["bpc_mz"]);
   output.bpcint = Rcpp::as<std::vector<double>>(run["bpc_intensity"]);
   output.ticint = Rcpp::as<std::vector<double>>(run["tic_intensity"]);
   output.pre_scan = Rcpp::as<std::vector<int>>(pre_scan);
   output.pre_mz = Rcpp::as<std::vector<double>>(pre_mz);
+  output.pre_mzlow = Rcpp::as<std::vector<double>>(pre_mzlow);
+  output.pre_mzhigh = Rcpp::as<std::vector<double>>(pre_mzhigh);
   output.pre_ce = Rcpp::as<std::vector<double>>(pre_ce);
 
   return output;
@@ -688,11 +690,11 @@ void xml_utils::mzml_chromatograms_headers_parser(
         pugi::xml_node pol_neg = chrom.find_child_by_attribute("cvParam", "accession", "MS:1000129");
 
         if (pol_pos != NULL) {
-          output.polarity[i] = "positive";
+          output.polarity[i] = 1;
         } else if (pol_neg != NULL) {
-          output.polarity[i] = "negative";
+          output.polarity[i] = -1;
         } else {
-          output.polarity[i] = "NA";
+          output.polarity[i] = 0;
         }
 
         pugi::xml_node precursor = chrom.child("precursor");
@@ -760,20 +762,12 @@ xml_utils::chromatogramsHeaders xml_utils::parse_chromatograms_headers(const pug
 
 Rcpp::List xml_utils::chromatogramsHeaders_to_list(const xml_utils::chromatogramsHeaders& headers_cpp) {
 
-  Rcpp::StringVector polarity = Rcpp::wrap(headers_cpp.polarity);
-
-  for (int i = 0; i < polarity.size(); i++) {
-    if (polarity(i) == "NA") {
-      polarity(i) = NA_STRING;
-    }
-  }
-
   Rcpp::List headers;
 
   headers["index"] = headers_cpp.index;
   headers["id"] = headers_cpp.id;
   headers["traces"] = headers_cpp.traces;
-  headers["polarity"] = polarity;
+  headers["polarity"] = headers_cpp.polarity;
   headers["pre_ce"] = headers_cpp.pre_ce;
   headers["pre_mz"] = headers_cpp.pre_mz;
   headers["pro_mz"] = headers_cpp.pro_mz;
@@ -803,13 +797,21 @@ xml_utils::runSummary xml_utils::run_summary(
 
   if (output.spectra_number > 0) {
 
-    std::set<std::string> mode(spec_headers.mode.begin(), spec_headers.mode.end());
-    std::vector<std::string> mode_v(mode.begin(), mode.end());
-
-    if (mode_v.size() == 1 && mode_v[0] == "NA") {
-      output.mode = na_charvec;
+    std::set<int> mode(spec_headers.mode.begin(), spec_headers.mode.end());
+    std::vector<int> mode_v(mode.begin(), mode.end());
+    
+    if (mode_v.size() > 0) {
+      for(size_t i = 0; i < mode_v.size(); ++i) {
+        if (mode_v[i] == 2) {
+          output.mode.push_back("centroid");
+        } else if (mode_v[i] == 1) {
+          output.mode.push_back("profile");
+        } else {
+          output.mode.push_back(na_charvec[0]);
+        }
+      }
     } else {
-      output.mode = Rcpp::wrap(mode_v);
+      output.mode.push_back(na_charvec[0]);
     }
 
     std::set<int> level(spec_headers.level.begin(), spec_headers.level.end());
@@ -828,27 +830,34 @@ xml_utils::runSummary xml_utils::run_summary(
     auto rtmax = std::max_element(spec_headers.rt.begin(), spec_headers.rt.end());
     output.rt_end = *rtmax;
 
-    std::set<std::string> polarity(spec_headers.polarity.begin(), spec_headers.polarity.end());
-    std::vector<std::string> polarity_v(polarity.begin(), polarity.end());
+    std::set<int> polarity(spec_headers.polarity.begin(), spec_headers.polarity.end());
+    std::vector<int> polarity_v(polarity.begin(), polarity.end());
 
-    if (polarity_v.size() == 1 && polarity_v[0] == "NA") {
-      output.polarity = na_charvec;
+    if (mode_v.size() > 0) {
+      for(size_t i = 0; i < polarity_v.size(); ++i) {
+        if (polarity_v[i] == 1) {
+          output.polarity.push_back("positive");
+        } else if (polarity_v[i] == -1) {
+          output.polarity.push_back("negative");
+        } else {
+          output.polarity.push_back(na_charvec[0]);
+        }
+      }
     } else {
-      output.polarity = Rcpp::wrap(polarity_v);
+      output.polarity.push_back(na_charvec[0]);
     }
 
     bool has_im = std::all_of(spec_headers.drift.begin(), spec_headers.drift.end(), [](double d) { return std::isnan(d); });
     output.has_ion_mobility = !has_im;
 
   } else {
-
     output.mode = na_charvec;
     output.levels = empty_int_vec;
     output.mz_low = NA_REAL;
     output.mz_high = NA_REAL;
     output.rt_start = NA_REAL;
     output.rt_end = NA_REAL;
-    output.polarity = na_charvec;
+    output.polarity = empty_int_vec;
     output.has_ion_mobility = false;
   }
 
@@ -1123,6 +1132,7 @@ std::string xml_utils::encode_little_endian(const Rcpp::NumericVector& input) {
 
   uint8_t* output_bytes = reinterpret_cast<uint8_t*>(&result[0]);
 
+  // encodes to 64-bit float
   for (size_t i = 0; i < n; ++i) {
     uint64_t little_endian_value;
     std::memcpy(&little_endian_value, bytes + i * sizeof(double), sizeof(double));
@@ -1144,7 +1154,18 @@ Rcpp::NumericVector xml_utils::decode_little_endian(const std::string& str, cons
   Rcpp::NumericVector result(array_len);
 
   for (int i = 0; i < array_len; ++i) {
-    result[i] = reinterpret_cast<double&>(byteVec[i * precision]);
+
+    if (precision == 8) { //64-bit float
+      result[i] = reinterpret_cast<double&>(byteVec[i * precision]);
+
+    } else if (precision == 4) { //32-bit float
+      float floatValue;
+      std::memcpy(&floatValue, &byteVec[i * precision], sizeof(float));
+      result[i] = static_cast<double>(floatValue);
+
+    } else {
+      Rcpp::stop("Precision must be 4 (32-bit) or 8 (64-bit)!");
+    }
   }
 
   return result;
@@ -1217,13 +1238,18 @@ std::vector<int> xml_utils::mzml_get_precision(pugi::xml_node& node) {
     std::string precision_str;
     int precision_int;
 
-    pugi::xml_node node_float = bin.find_child_by_attribute("cvParam", "accession", "MS:1000523");
+    pugi::xml_node node_float_32 = bin.find_child_by_attribute("cvParam", "accession", "MS:1000521");
     pugi::xml_node node_integer = bin.find_child_by_attribute("cvParam", "accession", "MS:1000522");
+    pugi::xml_node node_float_64 = bin.find_child_by_attribute("cvParam", "accession", "MS:1000523");
 
-    if (node_float != NULL) {
-      precision_str = node_float.attribute("name").as_string();
-    } else {
+    if (node_float_64 != NULL) {
+      precision_str = node_float_64.attribute("name").as_string();
+    } else if (node_float_32 != NULL) {
+      precision_str = node_float_32.attribute("name").as_string();
+    } else if (node_integer != NULL){
       precision_str = node_integer.attribute("name").as_string();
+    } else {
+      Rcpp::stop("Encoding precision with accession MS:1000521, MS:1000522 or MS:1000523 not found!");
     }
 
     std::sscanf(precision_str.c_str(), "%d%*c", &precision_int);
@@ -1301,22 +1327,26 @@ std::string xml_utils::mzxml_get_compression(pugi::xml_node& node) {
 
 
 Rcpp::CharacterVector xml_utils::mzml_get_binary_type(pugi::xml_node& node) {
+
   pugi::xml_node node_binary_list = node.child("binaryDataArrayList");
 
   Rcpp::CharacterVector type;
 
   for (pugi::xml_node bin: node_binary_list.children("binaryDataArray")) {
-    pugi::xml_node node_float = bin.find_child_by_attribute("cvParam", "accession", "MS:1000523");
+    pugi::xml_node node_float_32 = bin.find_child_by_attribute("cvParam", "accession", "MS:1000521");
     pugi::xml_node node_integer = bin.find_child_by_attribute("cvParam", "accession", "MS:1000522");
+    pugi::xml_node node_float_64 = bin.find_child_by_attribute("cvParam", "accession", "MS:1000523");
 
-    if (node_float != NULL) {
+    if (node_float_64 != NULL) {
       type.push_back("double");
 
     } else if (node_integer != NULL) {
       type.push_back("integer");
 
+    } else if (node_float_32 != NULL) {
+      type.push_back("float");
     } else {
-      type.push_back("double");
+      Rcpp::stop("Encoding precision with accession MS:1000521, MS:1000522 or MS:1000523 not found!");
     }
   }
 

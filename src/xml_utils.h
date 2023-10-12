@@ -36,20 +36,20 @@ namespace xml_utils {
     std::vector<int> index;
     std::vector<int> scan;
     std::vector<int> traces;
-    std::vector<std::string> polarity;
+    std::vector<int> polarity;
     std::vector<double> bpcmz;
     std::vector<double> bpcint;
     std::vector<double> ticint;
     std::vector<int> level;
-    std::vector<std::string> mode;
+    std::vector<int> mode;
     std::vector<double> mzlow;
     std::vector<double> mzhigh;
     std::vector<double> rt;
     std::vector<double> drift;
     std::vector<int> pre_scan;
     std::vector<double> pre_mz;
-    std::vector<double> pre_loweroffset;
-    std::vector<double> pre_upperoffset;
+    std::vector<double> pre_mzlow;
+    std::vector<double> pre_mzhigh;
     std::vector<double> pre_ce;
   }; // spectraHeaders
 
@@ -57,7 +57,7 @@ namespace xml_utils {
     std::vector<int> index;
     std::vector<std::string> id;
     std::vector<int> traces;
-    std::vector<std::string> polarity;
+    std::vector<int> polarity;
     std::vector<double> pre_mz;
     std::vector<double> pre_ce;
     std::vector<double> pro_mz;
@@ -90,7 +90,7 @@ namespace xml_utils {
     std::vector<int> spec_id;
     std::vector<int> scan;
     std::vector<int> spec_defaultArrayLength;
-    std::vector<std::string> spec_polarity;
+    std::vector<int> spec_polarity;
     std::vector<double> spec_bpcmz;
     std::vector<double> spec_bpcint;
     std::vector<double> spec_ticint;
@@ -105,8 +105,8 @@ namespace xml_utils {
     std::vector<double> scan_injectionIonTime;
     std::vector<int> pre_scan;
     std::vector<double> pre_mz;
-    std::vector<double> pre_loweroffset;
-    std::vector<double> pre_upperoffset;
+    std::vector<double> pre_mzlow;
+    std::vector<double> pre_mzhigh;
     std::vector<double> ion_mz;
     std::vector<double> ion_charge;
     std::vector<double> ion_intensity;

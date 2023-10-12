@@ -1,3 +1,7 @@
+.idea
+app/frontend/node_modules
+app/frontend/public
+
 # R project files -------------------------------------------------------------
 .Rproj.user
 .Rhistory
@@ -5,7 +9,7 @@
 .RData
 .httr-oauth
 .DS_Store
-streamFind.Rproj
+StreamFind.Rproj
 .vscode
 
 # Excluded project folders ----------------------------------------------------
@@ -20,10 +24,20 @@ streamFind.Rproj
 **/log
 
 # Excluded rds, cache and html files ------------------------------------------
-/handbooks/Handbook_backend_streamFind.html
-/handbooks/Handbook_backend_streamFind_cache
-/handbooks/Handbook_backend_streamFind_files
+/handbooks/Handbook_backend_StreamFind.html
+/handbooks/Handbook_backend_StreamFind_cache
+/handbooks/Handbook_backend_StreamFind_files
 settings_pp.rds
+MassSpecData_example.json
 settings_pp_2.json
+settings.json
+ffs.json
+gfs.json
+fls.json
+settings_find_features.json
+settings_group_features.json
 /dev/template_report.html
+/dev/demo_ozonation_project.html
 inst/doc
+/report
+report.yml

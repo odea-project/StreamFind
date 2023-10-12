@@ -41,7 +41,7 @@ todor::todor()
 
 # Others -----------------------------------------------------------------------
 
-system.file(package = "streamFind", dir = "extdata")
+system.file(package = "StreamFind", dir = "extdata")
 
 usethis::use_build_ignore("man-roxygen")
 
@@ -56,7 +56,7 @@ usethis::use_test("app")
 # Documentation
 
 ## Vignette ----
-usethis::use_vignette("streamFind")
+usethis::use_vignette("StreamFind")
 devtools::build_vignettes()
 
 ## Code Coverage ----

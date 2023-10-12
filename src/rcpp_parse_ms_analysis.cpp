@@ -67,7 +67,11 @@ Rcpp::List rcpp_parse_ms_analysis(std::string file_path) {
             list_out["type"] = "MS/MS";
           }
         } else {
-          list_out["type"] = "MS";
+          if (summary.has_ion_mobility) {
+            list_out["type"] = "IM-MS";
+          } else {
+            list_out["type"] = "MS";
+          }
         }
       } else if (summary.chromatograms_number > 0) {
         list_out["type"] = "SRM";
@@ -121,6 +125,7 @@ Rcpp::List rcpp_parse_ms_analysis(std::string file_path) {
 
       list_out["spectra"] = empty_df;
       list_out["chromatograms"] = empty_df;
+      list_out["features_eic"] = empty_list;
       list_out["features"] = empty_df;
       list_out["metadata"] = empty_list;
 

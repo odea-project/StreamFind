@@ -3,6 +3,7 @@
 \name{ProcessingSettings}
 \alias{ProcessingSettings}
 \alias{validate.ProcessingSettings}
+\alias{print.ProcessingSettings}
 \alias{asJSON.ProcessingSettings}
 \alias{export.ProcessingSettings}
 \alias{as.ProcessingSettings}
@@ -12,6 +13,7 @@ ProcessingSettings(
   call = NA_character_,
   algorithm = NA_character_,
   parameters = NULL,
+  version = NA_character_,
   software = NA_character_,
   developer = NA_character_,
   contact = NA_character_,
@@ -19,11 +21,13 @@ ProcessingSettings(
   doi = NA_character_
 )
 
-\method{validate}{ProcessingSettings}(x = NULL)
+\method{validate}{ProcessingSettings}(x)
+
+\method{print}{ProcessingSettings}(x, ...)
 
 \method{asJSON}{ProcessingSettings}(x)
 
-\method{export}{ProcessingSettings}(x, format = "json", name = "settings", path = getwd())
+\method{export}{ProcessingSettings}(x, format = "json", name = "settings", path = getwd(), ...)
 
 as.ProcessingSettings(value)
 }
@@ -36,6 +40,9 @@ be used.}
 
 \item{parameters}{List with parameters specific for the method \code{call} and
 \code{algorithm}.}
+
+\item{version}{Character of length one with the version of the processing
+settings.}
 
 \item{software}{Character of length one with the name of the software or
 package.}
@@ -50,11 +57,14 @@ package.}
 
 \item{x}{A ProcessingSettings S3 class object.}
 
-\item{format}{X.}
+\item{...}{Not used.}
 
-\item{name}{X.}
+\item{format}{A string. Possible values are \code{json} and \code{rds} for saving as
+JSON or RDS formats, respectively.}
 
-\item{path}{X.}
+\item{name}{String with the name of the file to be saved.}
+
+\item{path}{String with the directory of the file to be saved.}
 
 \item{value}{A list to be checked and/or converted to ProcessingSettings S3
 class.}
@@ -64,7 +74,7 @@ A ProcessingSettings S3 class
 }
 \description{
 Creates a ProcessingSettings S3 class object. The ProcessingSettings are used
-in \pkg{streamFind} for processing data in a given data class method.
+in \pkg{StreamFind} for processing data in a given data class method.
 }
 \details{
 See the documentation of the method where the processing settings
@@ -75,6 +85,8 @@ parameters.
 \itemize{
 \item \code{validate(ProcessingSettings)}: Validates a ProcessingSettings S3 class object, returning a logical value of
 length one.
+
+\item \code{print(ProcessingSettings)}: Prints the ProcessingSettings S3 class object in the console.
 
 \item \code{asJSON(ProcessingSettings)}: Converts a ProcessingSettings S3 class object to a JSON string.
 

@@ -1,0 +1,23 @@
+---
+title: "StreamFind"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{StreamFind}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Introduction to StreamFind
+
+The goal of the StreamFind is to boost competences of researchers for data analysis. The focus is the development and assembly of data processing workflows for mass spectrometry (MS) and spectroscopy (e.g., Raman) and the application of the workflows in environmental and quality studies of the water cycle. For the moment, the StreamFind can be used via the experimental [StreamFind R package](https://github.com/odea-project?tab=repositories) with preliminary framework for mass spectrometry. For more information and usage see the [articles](https://odea-project.github.io/StreamFind/articles/index.html) section.
+
+# Development in progress
+
+The life cycle of the StreamFind R package is [experimental](https://lifecycle.r-lib.org/articles/stages.html). Please [contact us](mailto:cunha@iuta.de) for questions, suggestions, issues or collaboration. Besides further development of the R package, a [graphical user interface](https://github.com/odea-project/StreamFind-App) (GUI) is planned to facilitate data analysis and assembly of workflows. **Stay tuned!**

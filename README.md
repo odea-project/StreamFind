@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# streamFind
+# StreamFind (R package)
 
 <!-- badges: start -->
 
@@ -9,74 +9,86 @@
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-The streamFind project, entitled “Flexible data analysis and workflow
+<p align="center" width="100%">
+<img width="60%" src="man/figures/logo_StreamFind.png" alt="Logo" />
+</p>
+
+The StreamFind project, entitled “Flexible data analysis and workflow
 designer to identify chemicals in the water cycle”, is funded by the
 [Bundesministerium für Bildung und Forschung
 (BMBF)](https://www.bmbf.de) and is a cooperation between the [Institut
-für Energie- und Umwelttechnik e. V. (IUTA)](https://www.iuta.de), the
-[Forschungszentrum Informatik (FZI)](https://www.fzi.de/) and supporting
-partners. The goal of the streamFind project is the development and
-assembly of data processing workflows for mass spectrometry and
-spectroscopy and the application of the workflows in environmental and
-quality studies of the water cycle. The streamFind aims to stimulate the
-use of advanced data analysis (e.g., non-target screening, statistical
-analysis, etc.) in routine studies, promoting standardization of data
-processing and structure and easing the retrospective evaluation of
-data. The streamFind platform is directed to academics but also
-technicians, due to the aspired comprehensive documentation, well
-categorized set of integrated modular functions and the graphical user
-interface. The streamFind development is ongoing, please [contact
+für Umwelt & Energie, Technik & Analytik e. V.
+(IUTA)](https://www.iuta.de), the [Forschungszentrum Informatik
+(FZI)](https://www.fzi.de/) and supporting partners. The goal of the
+StreamFind project is the development and assembly of data processing
+workflows for mass spectrometry and spectroscopy and the application of
+the workflows in environmental and quality studies of the water cycle.
+The StreamFind aims to stimulate the use of advanced data analysis
+(e.g., non-target screening, statistical analysis, etc.) in routine
+studies, promoting standardization of data processing and structure and
+easing the retrospective evaluation of data. The StreamFind platform is
+directed to academics but also technicians, due to the aspired
+comprehensive documentation, well categorized set of integrated modular
+functions and the graphical user interface.  
+<br> The library of
+[StreamFind](https://github.com/odea-project/StreamFind) is an R package
+(this repository). The graphical user interface (GUI) is a Web App
+developed in JavaScript and can be found in the
+[StreamFind-App](https://github.com/odea-project/StreamFind-App)
+repository. The StreamFind development is ongoing, please [contact
 us](mailto:cunha@iuta.de) for questions or collaboration.
 
 <img src="man/figures/logo_group.png" width="100%" style="display: block; margin: auto;" />
 
-# streamFind R package
-
-The back-end framework of
-[streamFind](https://github.com/ricardobachertdacunha/streamFind) is an
-R package.
-
 ## Installation
 
-For installation of the streamFind R package, it is recommended to first
+For installation of the StreamFind R package, it is recommended to first
 install the dependencies. Besides [R](https://cran.r-project.org/) and
 [RTools](https://cran.r-project.org/bin/windows/Rtools/) (the latter is
-only recommended for Windows users), the streamFind depends on the
+only recommended for Windows users), the StreamFind depends on the
 [patRoon](https://github.com/rickhelmus/patRoon) R package and its
 dependencies. The patRoon R package combines several tools for basic and
 advanced data processing and can be used interchangeably with the
-streamFind R package. Installation instructions for patRoon and its
+StreamFind R package. Installation instructions for patRoon and its
 dependencies can be found
 [here](https://rickhelmus.github.io/patRoon/handbook_bd/manual-installation.html#r-prerequisites).
 
-Then, the streamFind R package can be installed from the GitHub
+Then, the StreamFind R package can be installed from the GitHub
 repository.
 
 ``` r
-remotes::install_github("ricardobachertdacunha/streamFind", dependencies = TRUE)
+remotes::install_github("odea-project/StreamFind", dependencies = TRUE)
 ```
 
 The supplementary
-[streamFindData](https://github.com/ricardobachertdacunha/streamFindData)
-R package holds the data used in examples and other documentation assets
-of the streamFind R package and can also be installed from the GitHub
+[StreamFindData](https://github.com/odea-project/StreamFindData) R
+package holds the data used in examples and other documentation assets
+of the StreamFind R package and can also be installed from the GitHub
 repository.
 
 ``` r
-remotes::install_github("ricardobachertdacunha/streamFindData")
+remotes::install_github("odea-project/StreamFindData")
 ```
 
 ### Documentation
 
-The documentation and usage examples of the streamFind R package can be
+The documentation and usage examples of the StreamFind R package can be
 found in the [reference
-page](https://ricardobachertdacunha.github.io/streamFind/reference/index.html)
+page](https://odea-project.github.io/StreamFind/reference/index.html)
 and
-[articles](https://ricardobachertdacunha.github.io/streamFind/articles/index.html)
-of the
-[webpage](https://ricardobachertdacunha.github.io/streamFind/index.html).
+[articles](https://odea-project.github.io/StreamFind/articles/index.html)
+of the [webpage](https://odea-project.github.io/StreamFind/index.html).
 
 # References
+
+The StreamFind is open source due public fundsing and to the extensive
+contribution from scientific literature as well as existing open source
+software. Below we reference to the research and software that is used
+within StreamFind. Please note that each open source software or
+research that StreamFind depends on uses itself other contributions that
+is not possible the reference here. Therefore, we recommend to search
+within each citation for other contributions.  
+<br>
 
 <div id="refs" class="references csl-bib-body hanging-indent">
 
@@ -142,6 +154,23 @@ Transformation Product Screening.” *Journal of Open Source Software* 7
 
 </div>
 
+<div id="ref-kpic01" class="csl-entry">
+
+Ji, Hongchao, Fanjuan Zeng, Yamei Xu, Hongmei Lu, and Zhimin Zhang.
+2017. “KPIC2: An Effective Framework for Mass Spectrometry-Based
+Metabolomics Using Pure Ion Chromatograms.” *Anal Chem.* 14 (89):
+7631–40. <https://doi.org/10.1021/acs.analchem.7b01547>.
+
+</div>
+
+<div id="ref-pugixml01" class="csl-entry">
+
+Kapoulkine, Arseny. n.d. “Pugixml: Light-Weight, Simple and Fast XML
+Parser for c++ with XPath Support.” *Copyright (C) 2006-2018*.
+<http://pugixml.org>.
+
+</div>
+
 <div id="ref-mzr02" class="csl-entry">
 
 Keller, Andrew, Jimmy Eng, Ning Zhang, Xiao-jun Li, and Ruedi Aebersold.
@@ -185,6 +214,26 @@ Eric W Deutsch, Brian Raught, Brian Pratt, et al. 2004. “A Common Open
 Representation of Mass Spectrometry Data and Its Application to
 Proteomics Research.” *Nat Biotechnol* 22 (11): 1459–66.
 <https://doi.org/10.1038/nbt1031>.
+
+</div>
+
+<div id="ref-qcentroids01" class="csl-entry">
+
+Reuschenbach, Max, Lotta L. Hohrenk-Danzouma, Torsten C. Schmidt, and
+Gerrit Renner. 2022. “Development of a Scoring Parameter to Characterize
+Data Quality of Centroids in High-Resolution Mass Spectra.” *Analytical
+and Bioanalytical Chemistry* 414 (July): 6635–45.
+<https://doi.org/10.1007/s00216-022-04224-y>.
+
+</div>
+
+<div id="ref-openms01" class="csl-entry">
+
+Röst, Hannes L., Timo Sachsenberg, Stephan Aiche, Chris Bielow, Hendrik
+Weisser, Fabian Aicheler, Sandro Andreotti, et al. 2016. “OpenMS: A
+Flexible Open-Source Software Platform for Mass Spectrometry Data
+Analysis.” *Nature Methods* 13 (9): 741–48.
+<https://doi.org/10.1038/nmeth.3959>.
 
 </div>
 
