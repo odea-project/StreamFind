@@ -82,9 +82,9 @@ Cunha</h4>
                   <a class="author_email" href="mailto:#"></a><a href="mailto:cunha@iuta.de" class="email">cunha@iuta.de</a>
       
                   
-            <h4 data-toc-skip class="date">11 October, 2023</h4>
+            <h4 data-toc-skip class="date">12 October, 2023</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/odea-project/StreamFind/blob/HEAD/../StreamFind/vignettes/articles/ms_developer_guide.Rmd" class="external-link"><code>../StreamFind/vignettes/articles/ms_developer_guide.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/odea-project/StreamFind/blob/HEAD/vignettes/articles/ms_developer_guide.Rmd" class="external-link"><code>vignettes/articles/ms_developer_guide.Rmd</code></a></small>
       <div class="d-none name"><code>ms_developer_guide.Rmd</code></div>
     </div>
 
@@ -169,7 +169,7 @@ briefly shown.</p>
 <span><span class="co">## [1] "C:/Users/Ricardo Cunha/Documents/GitHub/StreamFind/vignettes/articles"</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $date</span></span>
-<span><span class="co">## [1] "2023-10-11 20:40:39 CEST"</span></span>
+<span><span class="co">## [1] "2023-10-12 12:30:03 CEST"</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## attr(,"class")</span></span>
 <span><span class="co">## [1] "ProjectHeaders"</span></span></code></pre>
@@ -181,9 +181,9 @@ briefly shown.</p>
 <span><span class="co">## name          Example</span></span>
 <span><span class="co">## author        Person A</span></span>
 <span><span class="co">## path          C:/Users/Ricardo Cunha/Documents/GitHub/StreamFind/vignettes/articles</span></span>
-<span><span class="co">## date          2023-10-11 20:40:39.23474</span></span>
+<span><span class="co">## date          2023-10-12 12:30:03.183258</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## analyses      0</span></span></code></pre>
+<span><span class="co">## Analyses: 0</span></span></code></pre>
 <p>For implementation of processing modules and algorithms, the <a href="https://rstudio-education.github.io/hopr/s3.html" class="external-link">S3</a> class <a href="https://odea-project.github.io/StreamFind/reference/ProcessingSettings.html">ProcessingSettings</a>
 is used to dispatch settings to processing modules. See article <a href="XXX">Wastewater ozonation showcase</a> for demonstration of usage.
 In essence, a given algorithm to be applied to a processing method is
@@ -246,12 +246,12 @@ MassSpecData.</p>
 <span><span class="co">## name          Example</span></span>
 <span><span class="co">## author        Person A</span></span>
 <span><span class="co">## path          C:/Users/Ricardo Cunha/Documents/GitHub/StreamFind/vignettes/articles</span></span>
-<span><span class="co">## date          2023-10-11 20:40:39.23474</span></span>
+<span><span class="co">## date          2023-10-12 12:30:03.183258</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## settings: </span></span>
 <span><span class="co">##  1: find_features (openms)</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## analyses      0</span></span></code></pre>
+<span><span class="co">## Analyses: 0</span></span></code></pre>
 <p>Alternatively, the <em>ProcessingSettings</em> can be saved as a JSON
 string and imported from a JSON file, as demonstrated below.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
@@ -350,12 +350,12 @@ string and imported from a JSON file, as demonstrated below.</p>
 <span><span class="co">## name          Example</span></span>
 <span><span class="co">## author        Person A</span></span>
 <span><span class="co">## path          C:/Users/Ricardo Cunha/Documents/GitHub/StreamFind/vignettes/articles</span></span>
-<span><span class="co">## date          2023-10-11 20:40:39.23474</span></span>
+<span><span class="co">## date          2023-10-12 12:30:03.183258</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## settings: </span></span>
 <span><span class="co">##  1: find_features (xcms3_centwave)</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## analyses      0</span></span></code></pre>
+<span><span class="co">## Analyses: 0</span></span></code></pre>
 <p>The use of the S3 object system for <em>ProcessingSettings</em> gives
 flexibility to the list of parameters, meaning that each parameter entry
 can be a single numeric value, a vector of strings or even a full

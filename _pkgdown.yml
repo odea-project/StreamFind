@@ -10,6 +10,7 @@ reference:
     and storing Mass Spectrometry (MS) and Spectroscopy data.
   contents:
     - MassSpecData
+    - RamanData
 - title: S3 classes
   desc: >
     S3 classes are implemented to harmonize, verify and dispatch data within

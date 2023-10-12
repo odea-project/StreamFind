@@ -35,7 +35,8 @@ Imports:
     parallel,
     foreach,
     methods,
-    checkmate
+    checkmate,
+    hyperSpec
 Suggests: 
     knitr,
     kableExtra,
