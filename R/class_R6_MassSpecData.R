@@ -6736,7 +6736,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         return(NULL)
       }
       
-      if (!ms$has_groups()) {
+      if (!self$has_groups()) {
         warning("No feature groups found!")
         return(NULL)
       }
@@ -6892,7 +6892,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                       method = "hclust",
                                       retainPrecursorMSMS = TRUE) {
       
-      if (ms$has_groups()) {
+      if (self$has_groups()) {
         
         pruneMissingPrecursorMS = FALSE
         
@@ -6926,7 +6926,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         
         
         
-        plist <- lapply(ms$get_analyses(), function(x, filtered, correct_spectrum) {
+        plist <- lapply(self$get_analyses(), function(x, filtered, correct_spectrum) {
           
           features <- x$features
           
@@ -6976,13 +6976,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
           glist
         }, filtered = filtered, correct_spectrum = correct_spectrum)
         
-        names(plist) <- ms$get_analysis_names()
+        names(plist) <- self$get_analysis_names()
         
         plist <- plist[vapply(plist, function(x) length(x) > 0, FALSE)]
         
         
         
-        mlist <- lapply(ms$get_analyses(), function(x, filtered) {
+        mlist <- lapply(self$get_analyses(), function(x, filtered) {
           
           features <- x$features
           
@@ -7036,12 +7036,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
           glist
         }, filtered = filtered)
         
-        names(mlist) <- ms$get_analysis_names()
+        names(mlist) <- self$get_analysis_names()
         
         mlist <- mlist[vapply(mlist, function(x) length(x) > 0, FALSE)]
         
         
-        groups <- ms$get_groups(filtered = filtered)
+        groups <- self$get_groups(filtered = filtered)
         
         # group_names <- unique(groups$group)
         # 
@@ -7514,7 +7514,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         return(invisible(self))
       }
       
-      if (!ms$has_groups()) {
+      if (!self$has_groups()) {
         warning("No feature groups found!")
         return(invisible(self))
       }
