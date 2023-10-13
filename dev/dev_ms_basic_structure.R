@@ -10,9 +10,9 @@
 
 # Resources -------------------------------------------------------------------
 
-all_files <- StreamFindData::get_all_file_paths()
+all_files <- StreamFindData::get_ms_file_paths()
 
-db <- StreamFindData::get_tof_spiked_chemicals()
+db <- StreamFindData::get_ms_tof_spiked_chemicals()
 db <- db[grepl("S", db$tag), ]
 cols <- c("name", "formula", "mass", "rt")
 db <- db[, cols, with = FALSE]

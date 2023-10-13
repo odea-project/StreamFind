@@ -114,14 +114,14 @@ remotes::install_github("odea-project/StreamFindData")
 Once [StreamFindData](https://github.com/odea-project/StreamFindData) is installed, the full file paths of example MS data files can be obtained as shown below. The files available are described in the table below. Note, the MS files (.mzML and .mzXML) were trimmed with the function `trim_ms_files_spectra()` from StreamFind to reduce their size. The centroided Agilent Q-TOF files were trimmed with retention time between 900 and 1350 seconds, *m/z* for MS1 data between 200 and 450 Da and *m/z* for MS2 between 35 and 450 Da. Additionally, MS1 and MS2 traces below 100 and 50 counts were removed, respectively. The profile Agilent Q-TOF files were trimmed with retention time between 1000 and 1200 seconds, *m/z* for MS1 data between 200 and 300 Da and *m/z* for MS2 between 35 and 300 Da. Additionally, MS1 and MS2 traces below 1 count were removed to exclude empty spectra. The files are used within the document for demonstration of the framework.
 
 ```{r resource-files, cache=FALSE}
-files <- StreamFindData::get_all_file_paths()
+files <- StreamFindData::get_ms_file_paths()
 # files is a vector with all file full paths
 ```
 
 <br>
 
 ```{r description-files, echo=FALSE}
-df_files_desc <- StreamFindData::get_all_file_descriptions()
+df_files_desc <- StreamFindData::get_ms_file_descriptions()
 
 knitr::kable(df_files_desc, caption = "Files included in the StreamFind R package.") %>%
   column_spec(column = 3, width = "100px") %>%
@@ -137,7 +137,7 @@ knitr::kable(df_files_desc, caption = "Files included in the StreamFind R packag
 The chemicals spiked in the MS files are described below in the table. The internal standards (IS) are spiked to all Agilent Q-TOF files. The chemical standards (S) were only spiked for the first 6 Agilent Q-TOF files. Note that not all IS and S are visible in the profile Agilent Q-TOF files as a narrower trimming was applied.
 
 ```{r load-table-chemicals}
-db <- StreamFindData::get_tof_spiked_chemicals()
+db <- StreamFindData::get_ms_tof_spiked_chemicals()
 ```
 
 <br>

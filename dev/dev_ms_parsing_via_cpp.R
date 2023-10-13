@@ -2,7 +2,7 @@
 # resources --------------------------------------------------------------------
 
 ## files -----------------------------------------------------------------------
-all_files <- StreamFindData::get_all_file_paths()
+all_files <- StreamFindData::get_ms_file_paths()
 # files <- all_files[grepl("mrm", all_files)]
 # files <- all_files[1:3]
 # files <- all_files[grepl("influent|blank", all_files)]
@@ -12,7 +12,7 @@ path <- "C:/Users/Ricardo Cunha/Documents/Work/example_ms_files"
 # files <- list.files(path, pattern = ".mzML", full.names = TRUE)
 
 ## databases -------------------------------------------------------------------
-db <- StreamFindData::get_tof_spiked_chemicals()
+db <- StreamFindData::get_ms_tof_spiked_chemicals()
 
 db_cols <- c("name", "mass", "rt")
 carbamazepin_d10 <- db[db$name %in% "Carbamazepin-d10", db_cols, with = FALSE]
@@ -317,7 +317,7 @@ ms$get_number_analyses()
 
 # tests ------------------------------------------------------------------------
 
-all_files <- StreamFindData::get_all_file_paths()
+all_files <- StreamFindData::get_ms_file_paths()
 big_file_test <- "E:\\Dev_20230126_IonMobilityDataFirstTraining\\WorklistData-0001.mzML"
 big_file_test <- "E:\\20230126_DA_EDA_background_evaluation\\221118_DA-EDA_solid phase background_centrifuged\\mzml\\02_QC_pos-r001.mzML"
 big_file_test <- all_files[8]
@@ -391,7 +391,7 @@ unique(ms_chrom$get_chromatograms()$index)
 ms_chrom$has_loaded_chromatograms()
 ms_chrom$load_chromatograms()
 
-all_files <- StreamFindData::get_all_file_paths()
+all_files <- StreamFindData::get_ms_file_paths()
 
 rcpp_parse_spectra(all_files[1], index = c(1, 2))
 rcpp_parse_spectra(all_files[1], index = c(2, 1))

@@ -6,7 +6,7 @@ library(StreamFind)
 
 # Create -----------------------------------------------------------------------
 
-all_files <- StreamFindData::get_all_file_paths()
+all_files <- StreamFindData::get_ms_file_paths()
 
 files <- all_files[grepl("blank|influent|o3sw", all_files)]
 
@@ -113,7 +113,7 @@ ms
 # Access and plot data ---------------------------------------------------------
 
 # Database
-db <- StreamFindData::get_tof_spiked_chemicals()
+db <- StreamFindData::get_ms_tof_spiked_chemicals()
 db <- db[grepl("S", db$tag), ]
 cols <- c("name", "formula", "mass", "rt", "tag")
 db <- db[, cols, with = FALSE]

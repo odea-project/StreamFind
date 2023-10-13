@@ -8,7 +8,7 @@ ex_files <- list.files(
   full.names = TRUE
 )
 
-db <- StreamFindData::get_tof_spiked_chemicals()
+db <- StreamFindData::get_ms_tof_spiked_chemicals()
 db_cols <- c("name", "formula", "mass", "rt")
 db <- db[, db_cols, with = FALSE]
 
