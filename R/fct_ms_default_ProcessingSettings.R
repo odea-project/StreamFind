@@ -145,7 +145,7 @@ Settings_bin_spectra_qBinning <- function() {
     software = "q",
     developer = "Max, Gerrit",
     contact = "max@email.de",
-    link = NA_character_,
+    link = "https://github.com/odea-project/qAlgorithms",
     doi = NA_character_
   )
 
@@ -188,7 +188,7 @@ Settings_find_features_qPeaks <- function() {
     software = "q",
     developer = "Max, Gerrit",
     contact = "max@email.de",
-    link = NA_character_,
+    link = "https://github.com/odea-project/qAlgorithms",
     doi = NA_character_
   )
 
@@ -314,7 +314,7 @@ Settings_find_features_xcms3_centwave <- function(
     software = "xcms",
     developer = "Ralf Tautenhahn, Johannes Rainer",
     contact = "rtautenh@ipb-halle.de",
-    link = NA_character_,
+    link = "https://bioconductor.org/packages/release/bioc/html/xcms.html",
     doi = "https://doi.org/10.1186/1471-2105-9-504"
   )
 
@@ -426,7 +426,7 @@ Settings_find_features_xcms3_matchedfilter <- function(
     software = "xcms",
     developer = "Ralf Tautenhahn, Johannes Rainer",
     contact = "rtautenh@ipb-halle.de",
-    link = NA_character_,
+    link = "https://bioconductor.org/packages/release/bioc/html/xcms.html",
     doi = "https://doi.org/10.1186/1471-2105-9-504"
   )
 
@@ -761,7 +761,7 @@ Settings_group_features_xcms3_peakdensity <- function(
     software = "xcms",
     developer = "Colin Smith, Johannes Rainer",
     contact = "siuzdak@scripps.edu",
-    link = NA_character_,
+    link = "https://bioconductor.org/packages/release/bioc/html/xcms.html",
     doi = "https://doi.org/10.1021/ac051437y"
   )
 
@@ -924,7 +924,7 @@ Settings_group_features_xcms3_peakdensity_peakgroups <- function(
     software = "xcms",
     developer = "Colin Smith, Johannes Rainer",
     contact = "siuzdak@scripps.edu",
-    link = NA_character_,
+    link = "https://bioconductor.org/packages/release/bioc/html/xcms.html",
     doi = "https://doi.org/10.1021/ac051437y"
   )
 
@@ -994,7 +994,7 @@ Settings_load_features_ms1_StreamFind <- function(
     software = "StreamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = NA_character_,
+    link = "https://odea-project.github.io/StreamFind/reference/index.html",
     doi = NA_character_
   )
 
@@ -1066,7 +1066,7 @@ Settings_load_features_ms2_StreamFind <- function(
     software = "StreamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = NA_character_,
+    link = "https://odea-project.github.io/StreamFind/reference/index.html",
     doi = NA_character_
   )
 
@@ -1134,7 +1134,7 @@ Settings_load_groups_ms1_StreamFind <- function(
     software = "StreamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = NA_character_,
+    link = "https://odea-project.github.io/StreamFind/reference/index.html",
     doi = NA_character_
   )
 
@@ -1201,7 +1201,7 @@ Settings_load_groups_ms2_StreamFind <- function(
     software = "StreamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = NA_character_,
+    link = "https://odea-project.github.io/StreamFind/reference/index.html",
     doi = NA_character_
   )
 
@@ -1281,7 +1281,7 @@ Settings_filter_features_StreamFind <- function(...) {
     software = "StreamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = NA_character_,
+    link = "https://odea-project.github.io/StreamFind/reference/index.html",
     doi = NA_character_
   )
   
@@ -1476,7 +1476,7 @@ Settings_annotate_features_StreamFind <- function(
     software = "StreamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = NA_character_,
+    link = "https://odea-project.github.io/StreamFind/reference/index.html",
     doi = NA_character_
   )
 
@@ -1542,7 +1542,7 @@ Settings_suspect_screening_StreamFind <- function(
     software = "StreamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = NA_character_,
+    link = "https://odea-project.github.io/StreamFind/reference/index.html",
     doi = NA_character_
   )
 
@@ -1614,7 +1614,7 @@ Settings_suspect_screening_forident <- function(
     software = "forident",
     developer = "Sylvia Grosse, Thomas Letzel",
     contact = "support@for-ident.org",
-    link = NA_character_,
+    link = "https://water.for-ident.org/#!home",
     doi = NA_character_
   )
 

@@ -383,6 +383,14 @@ void xml_utils::mzml_spectra_headers_parser(const pugi::xml_node& node_mzml, xml
         pugi::xml_node pre_ce_node = activation.find_child_by_attribute("cvParam", "name", "collision energy");
         output.pre_ce[i] = pre_ce_node.attribute("value").as_double();
         if (std::isnan(output.pre_ce[i])) output.pre_ce[i] = NA_REAL;
+        
+        // check is DIA in all ions mode was applied
+        if (output.pre_mzhigh[i] == output.pre_mzlow[i]) {
+          output.pre_mzhigh[i] = NA_REAL;
+          output.pre_mzlow[i] = NA_REAL;
+          output.pre_mz[i] = NA_REAL;
+          output.pre_scan[i] = NA_INTEGER;
+        }
 
       } else {
         output.pre_scan[i] = NA_INTEGER;
@@ -846,12 +854,86 @@ xml_utils::runSummary xml_utils::run_summary(
       output.polarity.push_back(na_charvec[0]);
     }
 
-    bool has_im = std::all_of(spec_headers.drift.begin(), spec_headers.drift.end(), [](double d) { return std::isnan(d); });
+    bool has_im = std::all_of(
+      spec_headers.drift.begin(),
+      spec_headers.drift.end(), [](double d) { 
+        return std::isnan(d); 
+      });
+    
     output.has_ion_mobility = !has_im;
+    
+    bool no_pre_mz = std::all_of(
+      spec_headers.pre_mz.begin(),
+      spec_headers.pre_mz.end(), [](double d) { 
+        return std::isnan(d);
+      });
+    
+    bool no_pre_mzhigh = std::all_of(
+      spec_headers.pre_mzhigh.begin(),
+      spec_headers.pre_mzhigh.end(), [](double d) {
+        return std::isnan(d);
+      });
+    
+    if (output.spectra_number > 0) {
+      Rcpp::IntegerVector levels = Rcpp::wrap(output.levels);
+      levels = Rcpp::unique(levels);
+      
+      if (levels.size() > 1) {
+        
+        if (output.has_ion_mobility) {
+          
+          if (no_pre_mz) {
+            
+            if (no_pre_mzhigh) {
+              output.type = "IM-MS/MS-AllIons";
+              
+            } else {
+              output.type = "IM-MS/MS-DIA";
+            }
+            
+          } else {
+            output.type = "IM-MS/MS-DDA";
+          }
+          
+        } else {
+          
+          if (no_pre_mz) {
+            
+            if (no_pre_mzhigh) {
+              output.type = "MS/MS-AllIons";
+              
+            } else {
+              output.type = "MS/MS-DIA";
+            }
+            
+          } else {
+            output.type = "MS/MS-DDA";
+          }
+        }
+        
+      } else if (levels[0] == 1) {
+        
+        if (output.has_ion_mobility) {
+          output.type = "IM-MS";
+          
+        } else {
+          output.type = "MS";
+        }
+      } else {
+        output.type = "MSn";
+      }
+      
+    } else if (output.chromatograms_number > 0) {
+      output.type = "SRM";
+      
+    } else {
+      output.type = na_charvec;
+    }
 
   } else {
     output.mode = na_charvec;
     output.levels = empty_int_vec;
+    output.type = NA_STRING;
     output.mz_low = NA_REAL;
     output.mz_high = NA_REAL;
     output.rt_start = NA_REAL;

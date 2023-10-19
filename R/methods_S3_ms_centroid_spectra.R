@@ -25,6 +25,8 @@
     return(FALSE)
   }
   
+  run_list <- lapply(self$get_analyses(), function(x) x$run)
+  
   spectra_list <- lapply(self$get_analyses(), function(x) x$spectra)
   
   parameters <- settings$parameters
@@ -36,6 +38,7 @@
     if (parallelly::supportsMulticore()) par_type <- "FORK"
     cl <- parallel::makeCluster(workers, type = par_type)
     doParallel::registerDoParallel(cl)
+    
   } else {
     registerDoSEQ()
   }
@@ -60,7 +63,7 @@
     
     names(centroided_spectra_list) <- self$get_analysis_names()
     
-    # self$add_spectra(centroided_spectra, replace = TRUE)
+    self$add_spectra(centroided_spectra_list, replace = TRUE)
     
     message(" Done!")
   }

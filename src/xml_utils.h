@@ -70,6 +70,7 @@ namespace xml_utils {
     Rcpp::CharacterVector polarity;
     Rcpp::CharacterVector mode;
     std::vector<int> levels;
+    Rcpp::String type;
     double mz_low;
     double mz_high;
     double rt_start;

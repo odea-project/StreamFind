@@ -3,9 +3,10 @@
 
 # TODO add stats to the groups (e.g., presence in each replicate, coverage)
 # TODO check what happens when all MS2 centroids are added to clustering
-# TODO clustering does not see polarity yet and it should be split.
+# TODO Features and groups MS1 could have a is_pre.
 # TODO add possibility to add_files in MassSpecData
 # TODO add is_pre to MS1 spectra
+# TODO add filter for features/groups with more than 1 representation in components
 
 
 # Resources -------------------------------------------------------------------
@@ -18,12 +19,14 @@ cols <- c("name", "formula", "mass", "rt")
 db <- db[, cols, with = FALSE]
 
 
+
+
+
 # Test SIRIUS -----------------------------------------------------------------
 
-ms <- MassSpecData$new(all_files[1:3])
+# ms <- MassSpecData$new(all_files[1:3])
 
-
-
+ms2 <- MassSpecData$new(all_files[1:3])
 
 
 
@@ -53,9 +56,7 @@ files_df <- data.frame(
 
 ms <- MassSpecData$new(files = files_df)
 
-ms$get_run(analyses = 1)
-
-ms <- ms$subset_analyses(c(4:6, 10:12, 16:18))
+# ms <- ms$subset_analyses(c(4:6, 10:12, 16:18))
 
 ms$add_settings(
   list(
@@ -75,10 +76,14 @@ ms$add_settings(
   )
 )
 
-ms
+ms$find_features()
+ms$group_features()
+ms$filter_features()
+
+combine_MassSpecData(ms, ms2)
 
 
-patRoon::clearCache("parsed_ms_analyses")
+# patRoon::clearCache("parsed_ms_analyses")
 patRoon::clearCache("parsed_ms_spectra")
 patRoon::clearCache("load_features_ms1")
 patRoon::clearCache("load_features_ms2")
@@ -87,27 +92,22 @@ patRoon::clearCache("load_groups_ms2")
 # patRoon::clearCache("MSPeakListsAvg")
 # ms$get_history()
 
-ms$find_features()
 
-ms$group_features()
-
-ms$filter_features()
 
 # ms$plot_spectra(1, xVal = "drift")
 
 suspects <- ms$get_suspects(database = db, ppm = 10, sec = 15)
-
-suspects
-
 ms <- ms$subset_features(features = suspects)
 
 ms$load_features_ms1()
-
 ms$load_features_ms2()
-
 ms$load_groups_ms1()
-
 ms$load_groups_ms2()
+
+View(ms$get_groups_ms2())
+
+ms$plot_groups_ms1(colorBy = "targets+polarities")
+
 
 # ms$get_features_ms1(loadedMS1 = T)
 # 

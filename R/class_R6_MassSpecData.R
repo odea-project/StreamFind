@@ -712,9 +712,17 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (length(private$.analyses) > 0) {
         overview <- self$get_overview()
+        
         overview$file <- NULL
+        
+        if (all(self$has_loaded_spectra())) {
+          overview$spectra <- paste(overview$spectra, "loaded", sep = " ")
+        }
+        
         cat("Analyses: \n")
+        
         row.names(overview) <- paste0(" ", seq_len(nrow(overview)), ":")
+        
         print(overview)
 
       } else {
@@ -1284,8 +1292,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       cached_spectra <- FALSE
+      
+      has_spectra <- self$has_loaded_spectra(analyses)
 
-      if (.caches_data()) {
+      if (.caches_data() & !all(has_spectra)) {
         hash <- patRoon::makeHash(
           analyses, levels, targets, allTraces,
           isolationWindow, minIntensityMS1, minIntensityMS2
@@ -1308,8 +1318,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
       )
 
       if (!is.logical(runParallel)) runParallel <- FALSE
+      
+      has_spectra <- all(self$has_loaded_spectra(analyses))
 
-      if (runParallel & length(analyses) > 1) {
+      if (runParallel & length(analyses) > 1 & !has_spectra) {
         workers <- parallel::detectCores() - 1
         if (length(analyses) < workers) workers <- length(analyses)
         par_type <- "PSOCK"
@@ -1322,13 +1334,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       i <- NULL
 
-      has_spectra <- self$has_loaded_spectra(analyses)
-
-      if (all(has_spectra)) {
+      if (has_spectra) {
         spec_list <- lapply(self$get_analyses(analyses),
           function(x, levels, targets, preMZr) {
             
-            temp <- x$spectra
+            temp <- x$run
             
             with_im <- x$has_ion_mobility
             
@@ -1355,12 +1365,14 @@ MassSpecData <- R6::R6Class("MassSpecData",
                 }
                 
                 if (nrow(tp_tar) > 0) {
+                  temp <- temp[x$spectra, on = .(scan)]
                   temp <- .trim_spectra_targets(temp, tp_tar, pre_tar, with_im)
                   
                 } else {
                   temp <- data.frame()
                 }
               } else {
+                temp <- temp[x$spectra, on = .(scan)]
                 temp <- .trim_spectra_targets(temp, targets, preMZr, with_im)
               }
             }
@@ -3071,7 +3083,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         new_names <- c(old_names, vapply(analyses, function(x) x$name, ""))
 
-        if (!any(duplicated(c(new_names)))) {
+        if (!any(duplicated(new_names))) {
           new_analyses <- c(old_analyses, analyses)
           names(new_analyses) <- new_names
           new_analyses <- new_analyses[order(names(new_analyses))]
@@ -3099,16 +3111,75 @@ MassSpecData <- R6::R6Class("MassSpecData",
           )
 
           if (old_size < length(new_analyses)) {
-            if (self$has_groups()) {
+            
+            if (any(self$has_features())) {
+              n_feats_old <- vapply(old_analyses, function(x) nrow(x$features), 0)
+              n_feats_new <- vapply(analyses, function(x) nrow(x$features), 0)
+              
+              if (sum(n_feats_old) == 0 & sum(n_feats_new) != 0 & old_size != 0) {
+                warning("New analyses have features but there are no features in the MassSpecData! Consider running find_features.")
+                
+              } else if (sum(n_feats_old) != 0 & sum(n_feats_new) == 0 & old_size != 0) {
+                warning("New analyses do not have features but there are features in the MassSpecData! Consider running the find_features.")
+                
+              } else if (any(c(n_feats_old, n_feats_new) %in% 0) & sum(c(n_feats_old, n_feats_new)) > 0) {
+                warning("There are analyses without features! Consider running find_features.")
+              }
+            }
+            
+            has_features <- all(self$has_features())
+            
+            no_groups_in_all_analyses <- !all(vapply(new_analyses,
+              function(x) "group" %in% colnames(x$features), FALSE)
+            )
+            
+            if (self$has_groups() && old_size != 0) {
               warning("Feature groups cleared as new analyses were added!")
+              suppressMessages(self$remove_groups())
+              
+            } else if (has_features && no_groups_in_all_analyses) {
+              warning("Feature groups cleared as were not present in all the analyses!")
+              suppressMessages(self$remove_groups())
+              
+            } else if (has_features && !self$check_correspondence()) {
+              warning("Feature groups cleared as correspondence over the analyses did not match!")
               suppressMessages(self$remove_groups())
             }
           }
-
         } else {
           warning("Duplicated analysis names not allowed! Not done.")
         }
       }
+      invisible(self)
+    },
+    
+    #' @description
+    #' Adds *MassSpecAnalysis* objects based on mzML/mzXML files. Note that 
+    #' when adding new mzML/mzXML files or *MassSpecAnalysis* are added any 
+    #' existing grouping of features is removed.
+    #'
+    #' @return Invisible.
+    #'
+    add_files = function(files = NULL, runParallel = FALSE) {
+      
+      if (!is.null(files)) {
+        
+        new_analyses <- parse.MassSpecAnalysis(files, runParallel)
+        
+        if (all(vapply(new_analyses,
+          function(x) "MassSpecAnalysis" %in% is(x), FALSE
+          ))) {
+          
+          self$add_analyses(new_analyses)
+          
+        } else {
+          warning("Not all added files could be converted as MassSpecAnalysis!")
+        }
+        
+      } else {
+        warning("Files were not added!")
+      }
+      
       invisible(self)
     },
 
@@ -3258,7 +3329,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' Adds spectra to analyses.
     #'
     #' @param spectra A data.table with spectra from MS analyses as obtained
-    #' by the method `get_spectra()`.
+    #' by the method `get_spectra()` with columns "scan", "mz" and "intensity". 
+    #' Other columns might be added from specific processing algorithms!
     #'
     #' @param replace Logical. When `TRUE`, existing spectra are replaced by
     #' the new features.
@@ -3271,10 +3343,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       
       org_analysis_names <- unname(self$get_analysis_names())
       
-      must_have_cols <- c(
-        "index", "scan", "level", "pre_scan", "pre_ce",
-        "pre_mz", "rt", "mz", "intensity"
-      )
+      must_have_cols <- c("scan", "mz", "intensity")
 
       if (is.data.frame(spectra)) {
         must_have_cols <- c("analysis", must_have_cols)
@@ -3320,6 +3389,17 @@ MassSpecData <- R6::R6Class("MassSpecData",
         names(org_spectra) <- names(private$.analyses)
 
         if (replace | n_data == 0) {
+          rem_run_cols <- lapply(private$.analyses, function(x) colnames(x$run))
+          rem_run_cols <- unique(unname(unlist(rem_run_cols)))
+          rem_run_cols <- rem_run_cols[!rem_run_cols %in% "scan"]
+          
+          spectra <- lapply(spectra, function(x, rem_run_cols) {
+            if (nrow(x) == 0) return(data.table())
+            keep_cols <- colnames(x)[!colnames(x) %in% rem_run_cols]
+            x <- x[, keep_cols, with = FALSE]
+            x
+          }, rem_run_cols = rem_run_cols)
+          
           org_spectra[names(spectra)] <- spectra
 
           private$.analyses <- Map(
@@ -3804,13 +3884,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       spec_list <- split(spec, split_vector)
 
       if (length(spec_list) == self$get_number_analyses()) {
-        private$.analyses <- Map(
-          function(x, y) {
-            x$spectra <- y
-            x
-          },
-          private$.analyses, spec_list
-        )
+        suppressMessages(self$add_spectra(spec_list, replace = TRUE))
 
         private$.register(
           "loaded",
@@ -7585,7 +7659,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
 # _ import MassSpecData class -----
 
-#' Function to import a MassSpecData class object from a *json* or *rds* file
+#' Function to import a MassSpecData class object from a *json* or *rds* file.
 #'
 #' @description Function to import a `MassSpecData` class object from a saved
 #' *json* or *rds* file.
@@ -7618,4 +7692,30 @@ import_MassSpecData <- function(file) {
     warning("File not found in given path!")
     NULL
   }
+}
+
+
+#' Function to combine MassSpecData class objects.
+#'
+#' @param ... *MassSpecData* class object.
+#'
+#' @return A *MassSpecData* class object.
+#'
+combine_MassSpecData <- function(combineFeatureLists = TRUE, ...) {
+  
+  combined_analyses <- list()
+  
+  for (obj in list(...)) {
+    
+    if (inherits(obj, "MassSpecData")) {
+      combined_analyses <- c(combined_analyses, obj$get_analyses())
+    }
+    
+    # if duplicated files, and cflists is TRUE {
+    #  each duplicated files return grouped feature list.
+    #  how to combine, using the first group_features settings?
+    #}
+  }
+  
+  return(MassSpecData$new(analyses = combined_analyses))
 }

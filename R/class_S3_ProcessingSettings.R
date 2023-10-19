@@ -16,7 +16,7 @@
 #' package.
 #' @param developer Character of length one with the name of the developer/s.
 #' @param contact Character of length one with the email of the developer.
-#' @param link Character of length one with the documentation web link.
+#' @param link Character of length one with the a web link.
 #' @param doi Character of length one with the DOI of algorithm.
 #'
 #' @details See the documentation of the method where the processing settings

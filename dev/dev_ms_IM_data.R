@@ -1,6 +1,6 @@
 
-path <- "F:/example_ms_files"
-# path <- "C:/Users/Ricardo Cunha/Documents/Work/example_ms_files"
+# path <- "F:/example_ms_files"
+path <- "C:/Users/Ricardo Cunha/Documents/example_ms_files"
 files <- list.files(path, pattern = "im_tof", full.names = TRUE)
 cols <- c("name", "formula", "mz", "rt")
 db <- paste0(path, "/qc_MS2_pos.csv")
@@ -8,18 +8,22 @@ db <- data.table::fread(db)
 db <- db[, cols, with = FALSE]
 
 # patRoon::clearCache("parsed_ms_analyses")
+View(rcpp_parse_ms_analysis(files[3]))
 
-ms <- MassSpecData$new(files[2])
+patRoon::clearCache("parsed_ms_analyses")
+ms <- MassSpecData$new(files[3])
+ms
 
 # ms$get_run()
 
 # ms$has_ion_mobility()
 
+patRoon::clearCache("parsed_ms_analyses")
 patRoon::clearCache("parsed_ms_spectra")
 
 # ms$get_eic(mz = db$mz, drift = 20, millisec = 5)
 
-ms$get_eic(mz = db$mz, drift = 20, millisec = 5)
+ms$plot_eic(mz = db$mz, drift = 20, millisec = 5)
 
 ms$get_ms1(mz = db$mz, drift = 20, millisec = 5)
 

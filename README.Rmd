@@ -55,7 +55,7 @@ The documentation and usage examples of the StreamFind R package can be found in
 
 # References
 
-The StreamFind is open source due public fundsing and to the extensive contribution from scientific literature as well as existing open source software. Below we reference to the research and software that is used within StreamFind. Please note that each open source software or research that StreamFind depends on uses itself other contributions that is not possible the reference here. Therefore, we recommend to search within each citation for other contributions.  
+The StreamFind is open source due to public funding and the extensive contribution from scientific literature as well as existing open source software. Below, we reference the research and software that is used within StreamFind. Please note that each open source software or research that StreamFind uses relies on other contributions. Therefore, we recommend to search within each citation for other contributions.  
 <br>
 
 ---

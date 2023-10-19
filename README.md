@@ -81,16 +81,16 @@ of the [webpage](https://odea-project.github.io/StreamFind/index.html).
 
 # References
 
-The StreamFind is open source due public fundsing and to the extensive
+The StreamFind is open source due to public funding and the extensive
 contribution from scientific literature as well as existing open source
-software. Below we reference to the research and software that is used
+software. Below, we reference the research and software that is used
 within StreamFind. Please note that each open source software or
-research that StreamFind depends on uses itself other contributions that
-is not possible the reference here. Therefore, we recommend to search
-within each citation for other contributions.  
+research that StreamFind uses relies on other contributions. Therefore,
+we recommend to search within each citation for other contributions.  
 <br>
 
-<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="refs" class="references csl-bib-body hanging-indent"
+entry-spacing="0">
 
 <div id="ref-xcms03" class="csl-entry">
 
@@ -165,8 +165,8 @@ Metabolomics Using Pure Ion Chromatograms.” *Anal Chem.* 14 (89):
 
 <div id="ref-pugixml01" class="csl-entry">
 
-Kapoulkine, Arseny. n.d. “Pugixml: Light-Weight, Simple and Fast XML
-Parser for c++ with XPath Support.” *Copyright (C) 2006-2018*.
+Kapoulkine, Arseny. 2022. “Pugixml 1.13: Light-Weight, Simple and Fast
+XML Parser for c++ with XPath Support.” *Copyright (C) 2006-2018*.
 <http://pugixml.org>.
 
 </div>

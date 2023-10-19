@@ -187,31 +187,8 @@ Rcpp::List rcpp_parse_ms_analysis(std::string file_path) {
       xml_utils::chromatogramsHeaders chrom_headers_cpp = xml_utils::parse_chromatograms_headers(root);
       
       xml_utils::runSummary summary = xml_utils::run_summary(spec_headers_cpp, chrom_headers_cpp);
-      
-      if (summary.spectra_number > 0) {
-        Rcpp::IntegerVector levels = Rcpp::wrap(spec_headers_cpp.level);
-        levels = Rcpp::unique(levels);
-        if (levels.size() > 1) {
-          if (summary.has_ion_mobility) {
-            list_out["type"] = "IM-MS/MS";
-          } else {
-            list_out["type"] = "MS/MS";
-          }
-        } else {
-          if (summary.has_ion_mobility) {
-            list_out["type"] = "IM-MS";
-          } else {
-            list_out["type"] = "MS";
-          }
-        }
-      } else if (summary.chromatograms_number > 0) {
-        list_out["type"] = "SRM";
-        
-      } else {
-        list_out["type"] = na_charvec;
-      }
-      
-      //TODO make case polarity switching
+
+      list_out["type"] = summary.type;
       
       std::string search_run = "//run";
       pugi::xpath_node xps_run = root.select_node(search_run.c_str());
@@ -255,9 +232,13 @@ Rcpp::List rcpp_parse_ms_analysis(std::string file_path) {
       Rcpp::List empty_list;
       
       list_out["spectra"] = empty_df;
+      
       list_out["chromatograms"] = empty_df;
+      
       list_out["features_eic"] = empty_list;
+      
       list_out["features"] = empty_df;
+      
       list_out["metadata"] = empty_list;
       
       list_out.attr("class") = Rcpp::CharacterVector::create("MassSpecAnalysis");
