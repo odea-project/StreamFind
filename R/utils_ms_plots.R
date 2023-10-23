@@ -1961,3 +1961,250 @@
     )
   }
 }
+
+.plot_internal_standards_qc_static <- function(istd, analyses) {
+  
+  if (!is.data.frame(istd)) {
+    return(NULL)
+  }
+  
+  if (nrow(istd) == 0) {
+    return(NULL)
+  }
+  
+  leg <- unique(istd$name)
+  
+  colors <- .get_colors(leg)
+  
+  if (!"feature" %in% colnames(istd)) {
+    
+    p1 <- plot_ly(istd, x = analyses)
+    
+    p2 <- plot_ly(istd, x = analyses)
+    
+    p3 <- plot_ly(istd, x = analyses)
+    
+    p4 <- plot_ly(istd, x = analyses)
+    
+    p5 <- plot_ly(istd, x = analyses)
+    
+    for (i in unique(istd$name)) {
+      df <- istd[istd$name == i, ]
+      
+      # if (!all(analyses %in% df$replicate)) {
+      #   extra <- data.frame(
+      #     "replicate" = analyses[!analyses %in% df$replicate],
+      #     "name" = i,
+      #     "rte" = -15,
+      #     "mze" = -10,
+      #     "intensity" = 0
+      #   )
+      #   df <- rbind(df[, c("replicate", "var", "intensity")], extra)
+      #   df_3 <- df_3[order(df_3$analysis), ]
+      # }
+      
+      p1 <- p1 %>% add_trace(df,
+        x = df$replicate,
+        y = df$rte,
+        type = "scatter", mode = "markers",
+        marker = list(size = 5, color = colors[i]),
+        error_y = list(
+          type = "data",
+          symmetric = FALSE,
+          arrayminus = df$rte_sd,
+          array = df$rte_sd,
+          color = colors[i],
+          width = 5
+        ),
+        connectgaps = FALSE,
+        name = i,
+        legendgroup = i,
+        showlegend = TRUE
+      )
+      
+      p2 <- p2 %>% add_trace(df,
+        x = df$replicate,
+        y = df$mze,
+        type = "scatter", mode = "markers",
+        marker = list(size = 5, color = colors[i]),
+        error_y = list(
+          type = "data",
+          symmetric = FALSE,
+          arrayminus = df$mze_sd,
+          array = df$mze_sd,
+          color = colors[i],
+          width = 5
+        ),
+        connectgaps = FALSE,
+        name = i,
+        legendgroup = i,
+        showlegend = FALSE
+      )
+      
+      p3 <- p3 %>% add_trace(df,
+        x = df$replicate,
+        y = df$rec * 100,
+        type = "scatter", mode = "markers",
+        marker = list(size = 5, color = colors[i]),
+        error_y = list(
+          type = "data",
+          symmetric = FALSE,
+          arrayminus = df$rec_sd * 100,
+          array = df$rec_sd * 100,
+          color = colors[i],
+          width = 5
+        ),
+        connectgaps = TRUE,
+        name = i,
+        legendgroup = i,
+        showlegend = FALSE
+      )
+      
+      p4 <- p4 %>% add_trace(df,
+        x = df$replicate,
+        y = df$rtr,
+        type = "scatter", mode = "markers",
+        marker = list(size = 5, color = colors[i]),
+        error_y = list(
+          type = "data",
+          symmetric = FALSE,
+          arrayminus = df$rtr_sd,
+          array = df$rtr_sd,
+          color = colors[i],
+          width = 5
+        ),
+        connectgaps = TRUE,
+        name = i,
+        legendgroup = i,
+        showlegend = FALSE
+      )
+      
+      p5 <- p5 %>% add_trace(df,
+        x = df$replicate,
+        y = df$mzr,
+        type = "scatter", mode = "markers",
+        marker = list(size = 5, color = colors[i]),
+        error_y = list(
+          type = "data",
+          symmetric = FALSE,
+          arrayminus = df$mzr_sd,
+          array = df$mzr_sd,
+          color = colors[i],
+          width = 5
+        ),
+        connectgaps = TRUE,
+        name = i,
+        legendgroup = i,
+        showlegend = FALSE
+      )
+    }
+    
+  } else {
+    
+    
+    
+  }
+  
+  xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = NULL)
+  
+  yaxis1 <- list(
+    linecolor = toRGB("black"), linewidth = 2,
+    title = "RT / s",
+    titlefont = list(size = 12, color = "black"),
+    range = c(-15, 15)
+  )
+  
+  yaxis2 <- list(
+    linecolor = toRGB("black"), linewidth = 2,
+    title = "MZ / ppm",
+    titlefont = list(size = 12, color = "black"),
+    range = c(-10, 10)
+  )
+  
+  yaxis3 <- list(
+    linecolor = toRGB("black"), linewidth = 2,
+    title = "Recovery / %",
+    titlefont = list(size = 12, color = "black"),
+    range = c(0, 200)
+  )
+  
+  yaxis4 <- list(
+    linecolor = toRGB("black"), linewidth = 2,
+    title = "Width / s",
+    titlefont = list(size = 12, color = "black"),
+    range = c(0, 60)
+  )
+  
+  yaxis5 <- list(
+    linecolor = toRGB("black"), linewidth = 2,
+    title = "Width / Da",
+    titlefont = list(size = 12, color = "black"),
+    range = c(0, 0.01)
+  )
+  
+  plotList <- list()
+  
+  hrect <- function(y0 = 0, y1 = 1, fillcolor = "lightgreen", opacity = 0.2) {
+    list(
+      type = "rect",
+      x0 = 0,
+      x1 = 1,
+      xref = "paper",
+      y0 = y0,
+      y1 = y1,
+      line_width = 0,
+      fillcolor = fillcolor,
+      opacity = opacity,
+      layer = "below"
+    )
+  }
+  
+  p1 <- p1 %>% plotly::layout(xaxis = xaxis, yaxis = yaxis1, shapes = hrect(10, -10))
+  plotList[["p1"]] <- p1
+  
+  p2 <- p2 %>% plotly::layout(xaxis = xaxis, yaxis = yaxis2, shapes = hrect(5, -5))
+  plotList[["p2"]] <- p2
+  
+  p3 <- p3 %>% plotly::layout(xaxis = xaxis, yaxis = yaxis3, shapes = hrect(50, 150))
+  plotList[["p3"]] <- p3
+  
+  p4 <- p4 %>% plotly::layout(xaxis = xaxis, yaxis = yaxis4)
+  plotList[["p4"]] <- p4
+  
+  p5 <- p5 %>% plotly::layout(xaxis = xaxis, yaxis = yaxis5)
+  plotList[["p5"]] <- p5
+  
+  # plot3 <- plot3 %>% plotly::layout(xaxis = xaxis3, yaxis = yaxis3)
+  
+  plotf <- subplot(
+    plotList,
+    nrows = length(plotList),
+    titleY = TRUE, titleX = TRUE,
+    # heights = heights[1:2],
+    margin = 0.05,
+    shareX = TRUE,
+    which_layout = "merge"
+  )
+  
+  
+  # plotf_2 <- subplot(
+  #   list(plotf, plot3),
+  #   nrows = 2,
+  #   titleY = TRUE, titleX = TRUE,
+  #   heights = c(sum(heights[1:2]), heights[3]),
+  #   margin = 0.01,
+  #   shareX = FALSE,
+  #   which_layout = "merge"
+  # )
+  # 
+  # plotf_2 <- plotf_2 %>% plotly::layout(
+  #   legend = list(title = list(text = paste("<b>", "targets", "</b>")))
+  # )
+  
+  
+  
+  
+  plotf
+  
+}
+

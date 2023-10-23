@@ -7,14 +7,15 @@
 # TODO add possibility to add_files in MassSpecData
 # TODO add is_pre to MS1 spectra
 # TODO add filter for features/groups with more than 1 representation in components
+# TODO add signal to noise ratio to internal standards report, calculated on demand
 
 
 # Resources -------------------------------------------------------------------
 
 all_files <- StreamFindData::get_ms_file_paths()
 
-db <- StreamFindData::get_ms_tof_spiked_chemicals()
-db <- db[grepl("S", db$tag), ]
+all_db <- StreamFindData::get_ms_tof_spiked_chemicals()
+db <- all_db[grepl("S", all_db$tag), ]
 cols <- c("name", "formula", "mass", "rt")
 db <- db[, cols, with = FALSE]
 
@@ -22,13 +23,98 @@ db <- db[, cols, with = FALSE]
 
 
 
-# Test SIRIUS -----------------------------------------------------------------
+# Test find_internal_standards -------------------------------------------------
 
-# ms <- MassSpecData$new(all_files[1:3])
+dbis <- all_db[grepl("IS", all_db$tag), ]
+cols <- c("name", "formula", "mass", "rt")
+dbis <- dbis[, cols, with = FALSE]
 
-ms2 <- MassSpecData$new(all_files[1:3])
+files_df <- data.frame(
+  "file" = all_files[grepl("blank|influent|o3sw", all_files)],
+  "replicate" = c(
+    rep("blank_neg", 3),
+    rep("blank_pos", 3),
+    rep("in_neg", 3),
+    rep("in_pos", 3),
+    rep("out_neg", 3),
+    rep("out_pos", 3)
+  ),
+  "blank" = c(
+    rep("blank_neg", 3),
+    rep("blank_pos", 3),
+    rep("blank_neg", 3),
+    rep("blank_pos", 3),
+    rep("blank_neg", 3),
+    rep("blank_pos", 3)
+  )
+)
+
+ms <- MassSpecData$new(files_df)
+
+ms$add_settings(list(
+    Settings_find_features_openms(localRTRange = 0, localMZRange = 0),
+    Settings_annotate_features_StreamFind(rtWindowAlignment = 0.3),
+    Settings_group_features_openms(),
+    Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10)
+))
+
+ms$run_workflow()
+
+istd <- ms$get_internal_standards(average = T)
+istd
+
+analyses <- ms$get_analysis_names()
+analyses <- unique(ms$get_replicate_names())
+
+.plot_internal_standards_qc_static(istd, analyses)
 
 
+
+
+suspects <- ms$get_features(mass = db, ppm = 10)
+
+# fts <- ms$get_features(analyses = 1)
+# fts <- fts[order(fts$mz), ]
+# which(fts$feature %in% "mz300.05_rt1255_f175")
+# output <- rcpp_ms_annotation_isotopes(fts, rtWindowAlignment = 0.3, verbose = TRUE)
+
+
+
+
+
+fg <- ms$as_patRoon_featureGroups()
+
+db2 <- data.table::copy(all_db)
+db2 <- db2[grepl("IS", db2$tag), ]
+cols <- c("name", "formula", "mass", "rt")
+db2 <- db2[, cols, with = FALSE]
+db2[["formula"]] <- NULL
+data.table::setnames(db2, "mass", "neutralMass")
+
+
+?patRoon::normInts
+
+fgn <- patRoon::normInts(
+  fg, 
+  featNorm = "istd",
+  standards = db2, #patRoonData::ISTDListPos
+  adduct = "[M+H]+",
+  ISTDRTWindow = 20,
+  ISTDMZWindow = 200,
+  minISTDs = 2
+)
+
+fgn <- patRoon::normInts(
+  fg, 
+  featNorm = "tic",
+  standards = db2, #patRoonData::ISTDListPos
+  adduct = "[M+H]+",
+  ISTDRTWindow = 20,
+  ISTDMZWindow = 200,
+  minISTDs = 2
+)
+
+patRoon::plotGraph(fgn)
 
 
 

@@ -1893,6 +1893,30 @@ MassSpecData <- R6::R6Class("MassSpecData",
             
             fts <- fts[sel, ]
             
+            if ("name" %in% colnames(target_id)) {
+              ids <- target_id$name
+              names(ids) <- target_id$feature
+              fts$name <- ids[fts$feature]
+            }
+            
+            return(fts)
+            
+          } else if ("group" %in% colnames(target_id)) {
+            sel <- rep(FALSE, nrow(fts))
+            
+            for (i in seq_len(nrow(target_id))) {
+              sel[fts$feature %in% target_id$feature[i] |
+                fts$group %in% target_id$group] <- TRUE
+            }
+            
+            fts <- fts[sel, ]
+            
+            if ("name" %in% colnames(target_id)) {
+              ids <- unique(target_id$name)
+              names(ids) <- unique(target_id$group)
+              fts$name <- ids[fts$group]
+            }
+            
             return(fts)
           }
         }
@@ -2645,6 +2669,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                               millisec = 5,
                               filtered = FALSE) {
 
+      if (is.null(features) & !is.null(groups)) {
+        features <- groups
+      }
+      
       fts <- self$get_features(
         analyses, features, mass, mz, rt, drift, ppm, sec, millisec, filtered
       )
@@ -2654,14 +2682,14 @@ MassSpecData <- R6::R6Class("MassSpecData",
         return(data.table())
       }
 
-      if (!is.null(groups) & "group" %in% colnames(fts)) {
-        if (is.numeric(groups)) {
-          all_groups <- self$get_groups()
-          all_groups <- all_groups[[group]]
-          groups <- all_groups[groups]
-        }
-        fts <- fts[fts$group == groups, ]
-      }
+      # if (!is.null(groups) & "group" %in% colnames(fts)) {
+      #   if (is.numeric(groups)) {
+      #     all_groups <- self$get_groups()
+      #     all_groups <- all_groups[[group]]
+      #     groups <- all_groups[groups]
+      #   }
+      #   fts <- fts[fts$group == groups, ]
+      # }
 
       if (!is.null(components)) {
         if (is.numeric(components)) {
@@ -2704,7 +2732,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
     get_suspects = function(analyses = NULL,
                             database = NULL,
                             ppm = 4,
-                            sec = 10) {
+                            sec = 10,
+                            filtered = FALSE) {
 
       if (!any(self$has_features(analyses))) {
         warning("Features not found in the MassSpecData object!")
@@ -2774,7 +2803,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
               mz = x_mz,
               rt = x_rt,
               ppm = ppm,
-              sec = sec
+              sec = sec,
+              filtered = filtered
             )
 
             if (nrow(temp) > 0) {
@@ -2788,7 +2818,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
               temp$id_level <- NA_character_
               temp$mz_error <- round(
-                (abs(temp$mz - x_mz) / temp$mz) * 1E6, digits = 1
+                ((temp$mz - x_mz) / temp$mz) * 1E6, digits = 1
               )
               temp$rt_error <- NA_real_
               cols_front <- c(cols_front, "id_level", "mz_error", "rt_error")
@@ -2800,7 +2830,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
                 if (!is.null(x_rt)) {
                   temp$id_level[i] = "3b"
-                  temp$rt_error[i] = round(temp$rt[i] - x_rt, digits = 0)
+                  temp$rt_error[i] = round(temp$rt[i] - x_rt, digits = 1)
                 }
 
                 # TODO add check for MS2 data in suspect screening
@@ -2839,6 +2869,127 @@ MassSpecData <- R6::R6Class("MassSpecData",
     get_modules_data = function(modules = NULL) {
       if (is.null(modules)) modules <- names(private$.modules)
       private$.modules[modules]
+    },
+    
+    #' @description
+    #' Gets modules data.
+    #'
+    #' @param modules X.
+    #'
+    #' @return The list of modules data as defined by `modules` argument when
+    #' `NULL` all data in modules is returned.
+    #'
+    get_internal_standards = function(average = TRUE) {
+      istd <- self$get_features(filtered = TRUE)
+      
+      if ("istd_name" %in% colnames(istd)) {
+        
+        istd <- istd[!is.na(istd$istd_name), ]
+        
+        if (nrow(istd) > 0) {
+          
+          setnames(istd,
+            c("istd_name", "istd_rte", "istd_mze", "istd_rec"),
+            c("name", "rte", "mze","rec")
+          )
+          
+          istd$rtr <- round(istd$rtmax - istd$rtmin, digits = 1)
+          
+          istd$mzr <- round(istd$mzmax - istd$mzmin, digits = 4)
+          
+          if ("iso_gr" %in% colnames(istd)) {
+            istd$iso_n <- istd$iso_size
+            istd$iso_c <- istd$iso_n_carbons  
+          } else {
+            istd$iso_n <- NA
+            istd$iso_c <- NA  
+          }
+          
+          if (self$has_groups() & average) {
+            
+            rpl <- self$get_replicate_names()
+            
+            istd$replicate <- rpl[istd$analysis]
+            
+            cols <- c(
+              "name",
+              "intensity",
+              "area",
+              "rtr",
+              "mzr",
+              "rte",
+              "mze",
+              "rec",
+              "iso_n",
+              "iso_c",
+              "replicate",
+              "group"
+            )
+            
+            istd <- istd[, cols, with = FALSE]
+            
+            istd <- istd[, `:=`(
+              freq = length(area),
+              intensity = round(mean(intensity, na.rm = TRUE), digits = 0),
+              intensity_sd = round(sd(intensity, na.rm = TRUE), digits = 0),
+              area = round(mean(area, na.rm = TRUE), digits = 0),
+              area_sd = round(sd(area, na.rm = TRUE), digits = 0),
+              rtr = round(mean(rtr, na.rm = TRUE), digits = 1),
+              rtr_sd = round(sd(rtr, na.rm = TRUE), digits = 1),
+              mzr = round(mean(mzr, na.rm = TRUE), digits = 4),
+              mzr_sd = round(sd(mzr, na.rm = TRUE), digits = 4),
+              rte = round(mean(rte, na.rm = TRUE), digits = 1),
+              rte_sd = round(sd(rte, na.rm = TRUE), digits = 1),
+              mze = round(mean(mze, na.rm = TRUE), digits = 1),
+              mze_sd = round(sd(mze, na.rm = TRUE), digits = 1),
+              rec = round(mean(rec, na.rm = TRUE), digits = 1),
+              rec_sd = round(sd(rec, na.rm = TRUE), digits = 1),
+              iso_n = round(mean(iso_n, na.rm = TRUE), digits = 0),
+              iso_n_sd = round(sd(iso_n, na.rm = TRUE), digits = 0),
+              iso_c = round(mean(iso_c, na.rm = TRUE), digits = 0),
+              iso_c_sd = round(sd(iso_c, na.rm = TRUE), digits = 0)),
+              by = c("name", "group", "replicate")
+            ][]
+            
+            istd <- unique(istd)
+            
+            istd$rec[is.nan(istd$rec)] <- NA_real_
+            
+          } else {
+            cols <- c(
+              "name",
+              "intensity",
+              "area",
+              "rtr",
+              "mzr",
+              "rte",
+              "mze",
+              "rec",
+              "iso_n",
+              "iso_c",
+              "analysis",
+              "feature",
+              "group"
+            )
+            
+            istd <- istd[, cols, with = FALSE]
+            istd$intensity <- round(istd$intensity, digits = 0)
+            istd$area <- round(istd$area, digits = 0)
+          }
+          
+          setorder(istd, "name")
+          
+          istd
+          
+        } else {
+          warning("Internal standards not found!")
+          data.table()
+        }
+
+      } else {
+        warning("Not present! Run find_internal_standards method to tag the internal standards!")
+        data.table()
+      }
     },
 
     ## ___ add -----
@@ -6270,6 +6421,22 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       .plot_groups_overview_aux(fts, eic, heights, analyses)
     },
+    
+    #' @description
+    #' Plots the quality control assessment of internal standards.
+    #'
+    #' @return A plot.
+    #'
+    plot_internal_standards_qc = function() {
+      
+      
+      
+      
+      
+      
+      
+      
+    },
 
     #' @description
     #' Maps components (i.e., isotope clusters and adducts) in the analyses.
@@ -6637,6 +6804,40 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
     ### ___ advanced -----
 
+    #' @description Finds internal standards in features according to defined
+    #' settings.
+    #'
+    find_internal_standards = function(settings = NULL) {
+      add_settings <- TRUE
+      if (is.null(settings)) add_settings <- FALSE
+      
+      settings <- private$.get_call_settings(settings, "find_internal_standards")
+      if (is.null(settings)) return(invisible(self))
+      
+      processed <- .s3_ms_find_internal_standards(settings, self)
+      
+      if (processed) {
+        if (add_settings) self$add_settings(settings)
+        
+        if (requireNamespace(settings$software, quietly = TRUE)) {
+          version <- as.character(packageVersion(settings$software))
+        } else {
+          version <- NA_character_
+        }
+        
+        private$.register(
+          "processed",
+          "features",
+          settings$call,
+          settings$software,
+          version,
+          settings$algorithm
+        )
+      }
+      
+      invisible(self)
+    },
+    
     #' @description Screens for suspect targets in features according to defined
     #' settings.
     #'
@@ -7651,10 +7852,15 @@ MassSpecData <- R6::R6Class("MassSpecData",
         "group_features",
         "fill_features",
         "filter_features",
-        "suspect_screening"
+        "suspect_screening",
+        "find_internal_standards"
       )
     }
-  )
+  ),
+  
+  lock_class = FALSE,
+  
+  lock_objects = FALSE
 )
 
 # _ import MassSpecData class -----

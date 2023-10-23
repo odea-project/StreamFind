@@ -70,6 +70,11 @@ reference:
     Settings for the processing method suspect_screening.
   contents:
     - starts_with("Settings_suspect_screening")
+- subtitle: find_internal_standards
+  desc: >
+    Settings for the processing method find_internal_standards.
+  contents:
+    - starts_with("Settings_find_internal_standards")
 - subtitle: General get and save default settings
   desc: >
     Funtions to uniformily get and save _ProcessingSettings_ are available.

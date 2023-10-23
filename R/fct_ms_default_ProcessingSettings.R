@@ -510,6 +510,8 @@ validate.Settings_find_features_xcms3_matchedfilter <- function(x) {
 #' with many analyses files. However, useFFMIntensities=TRUE is still somewhat
 #' experimental, may be less accurate and requires a recent version of OpenMS
 #' (>=2.7).
+#' @param verbose Logical of length one. When TRUE adds processing information
+#' to the console.
 #'
 #' @details See the \link[patRoon]{findFeaturesOpenMS} function from the
 #' \pkg{patRoon} package for more information and requirements.
@@ -543,12 +545,13 @@ Settings_find_features_openms <- function(
     traceSNRFiltering = TRUE,
     localRTRange = 10,
     localMZRange = 6.5,
-    isotopeFilteringModel = "metabolites (5% RMS)",
+    isotopeFilteringModel = "none",
     MZScoring13C = FALSE,
     useSmoothedInts = FALSE,
     extraOpts = NULL,
     intSearchRTWindow = 3,
-    useFFMIntensities = FALSE) {
+    useFFMIntensities = FALSE,
+    verbose = FALSE) {
 
   settings <- list(
     call = "find_features",
@@ -575,13 +578,14 @@ Settings_find_features_openms <- function(
       useSmoothedInts = useSmoothedInts,
       extraOpts = extraOpts,
       intSearchRTWindow = intSearchRTWindow,
-      useFFMIntensities = useFFMIntensities
+      useFFMIntensities = useFFMIntensities,
+      verbose = verbose
     ),
     version = as.character(packageVersion("StreamFind")),
     software = "openms",
     developer = "Rost HL, Sachsenberg T, Aiche S, Bielow C et al.",
     contact = "oliver.kohlbacher@uni-tuebingen.de",
-    link = NA_character_,
+    link = "https://openms.de/",
     doi = "https://doi.org/10.1038/nmeth.3959"
   )
 
@@ -947,6 +951,101 @@ validate.Settings_group_features_xcms3_peakdensity_peakgroups <- function(x) {
   )
 }
 
+#' @title Settings_group_features_openms
+#'
+#' @description Settings for grouping features (i.e., chromatographic peaks)
+#' in mzML/mzXML files using the \href{https://www.openms.org/}{OpenMS}
+#' (\url{https://abibuilder.cs.uni-tuebingen.de/archive/openms/}) software
+#' with the algorithm
+#' \href{https://abibuilder.cs.uni-tuebingen.de/archive/openms/Documentation/release/3.0.0/html/TOPP_FeatureLinkerUnlabeled.html}{FeatureLinkerUnlabeled}.
+#' The function uses the package \pkg{patRoon} in the background.
+#'
+#' @param rtalign Logical length one. Set to TRUE to enable retention time 
+#' alignment.
+#' @param QT Logical length one. When TRUE the FeatureLinkerUnlabeledQT is used 
+#' instead of FeatureLinkerUnlabeled for grouping features.
+#' @param maxAlignRT Numeric length one. Maximum retention time (in seconds) for 
+#' feature pairing when performing retention time alignment. 
+#' @param maxAlignMZ Numeric length one. Maximum *m/z* (in Da) for 
+#' feature pairing when performing retention time alignment.
+#' @param maxGroupRT Numeric length one. Maximum retention time (in seconds) for 
+#' feature pairing when performing grouping.
+#' @param maxGroupMZ Numeric length one. Maximum *m/z* (in Da) for 
+#' feature pairing when performing grouping.
+#' @param extraOptsRT Named list containing extra options that will be passed 
+#' to MapAlignerPoseClustering.
+#' @param extraOptsGroup Named list containing extra options that will be passed 
+#' to FeatureLinkerUnlabeledQT/FeatureLinkerUnlabeled.
+#' @param verbose Logical of length one. When TRUE adds processing information
+#' to the console.
+#'
+#' @details See the \link[patRoon]{groupFeaturesOpenMS} function from the
+#' \pkg{patRoon} package for more information and requirements.
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_group_features_openms.
+#'
+#' @references
+#' \insertRef{patroon01}{StreamFind}
+#'
+#' \insertRef{patroon02}{StreamFind}
+#'
+#' \insertRef{openms01}{StreamFind}
+#'
+#' @export
+#'
+Settings_group_features_openms <- function(
+    rtalign = FALSE,
+    QT = FALSE,
+    maxAlignRT = 5,
+    maxAlignMZ = 0.008,
+    maxGroupRT = 5,
+    maxGroupMZ = 0.008,
+    extraOptsRT = NULL,
+    extraOptsGroup = NULL,
+    verbose = FALSE) {
+  
+  settings <- list(
+    call = "group_features",
+    algorithm = "openms",
+    parameters = list(
+      rtalign = rtalign,
+      QT = QT,
+      maxAlignRT = maxAlignRT,
+      maxAlignMZ = maxAlignMZ,
+      maxGroupRT = maxGroupRT,
+      maxGroupMZ = maxGroupMZ,
+      extraOptsRT = extraOptsRT,
+      extraOptsGroup = extraOptsGroup,
+      verbose = verbose
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "openms",
+    developer = "Rost HL, Sachsenberg T, Aiche S, Bielow C et al.",
+    contact = "oliver.kohlbacher@uni-tuebingen.de",
+    link = "https://openms.de/",
+    doi = "https://doi.org/10.1038/nmeth.3959"
+  )
+  
+  settings <- as.ProcessingSettings(settings)
+  
+  return(settings)
+}
+
+#' @describeIn Settings_group_features_openms
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_group_features_openms S3 class object.
+#'
+#' @export
+#'
+validate.Settings_group_features_openms <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "group_features"),
+    checkmate::test_choice(x$algorithm, "openms")
+  )
+}
+
 ## load_features -----
 
 #' @title Settings_load_features_ms1_StreamFind
@@ -994,7 +1093,7 @@ Settings_load_features_ms1_StreamFind <- function(
     software = "StreamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = "https://odea-project.github.io/StreamFind/reference/index.html",
+    link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_
   )
 
@@ -1066,7 +1165,7 @@ Settings_load_features_ms2_StreamFind <- function(
     software = "StreamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = "https://odea-project.github.io/StreamFind/reference/index.html",
+    link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_
   )
 
@@ -1134,7 +1233,7 @@ Settings_load_groups_ms1_StreamFind <- function(
     software = "StreamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = "https://odea-project.github.io/StreamFind/reference/index.html",
+    link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_
   )
 
@@ -1201,7 +1300,7 @@ Settings_load_groups_ms2_StreamFind <- function(
     software = "StreamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = "https://odea-project.github.io/StreamFind/reference/index.html",
+    link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_
   )
 
@@ -1281,7 +1380,7 @@ Settings_filter_features_StreamFind <- function(...) {
     software = "StreamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = "https://odea-project.github.io/StreamFind/reference/index.html",
+    link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_
   )
   
@@ -1476,7 +1575,7 @@ Settings_annotate_features_StreamFind <- function(
     software = "StreamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = "https://odea-project.github.io/StreamFind/reference/index.html",
+    link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_
   )
 
@@ -1542,7 +1641,7 @@ Settings_suspect_screening_StreamFind <- function(
     software = "StreamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = "https://odea-project.github.io/StreamFind/reference/index.html",
+    link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_
   )
 
@@ -1639,4 +1738,68 @@ validate.Settings_suspect_screening_forident <- function(x) {
     length(x$parameters$name) == 1,
     checkmate::test_logical(x$parameters$addMS2, max.len = 1)
   )
+}
+
+## find_internal_standards -----
+
+#' @title Settings_find_internal_standards_StreamFind
+#'
+#' @description
+#' Settings for finding internal standards using a data.frame.
+#'
+#' @param database A data.frame with at least the columns name, mass, and rt
+#' indicating the name, neutral monoisotopic mass and retention time of the 
+#' internal standards, respectively.
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_find_internal_standards_StreamFind.
+#'
+#' @export
+#'
+Settings_find_internal_standards_StreamFind <- function(
+    database = NULL,
+    ppm = 5,
+    sec = 10) {
+  
+  settings <- list(
+    call = "find_internal_standards",
+    algorithm = "StreamFind",
+    algorithm = "StreamFind",
+    parameters = list(
+      "database" = database,
+      "ppm" = ppm,
+      "sec" = sec
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  
+  settings <- as.ProcessingSettings(settings)
+  
+  return(settings)
+}
+
+#' @describeIn Settings_find_internal_standards_StreamFind
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_find_internal_standards_StreamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_find_internal_standards_StreamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "find_internal_standards"),
+    checkmate::test_choice(x$algorithm, "StreamFind"),
+    checkmate::test_double(x$parameters$ppm, max.len = 1),
+    checkmate::test_double(x$parameters$sec, max.len = 1),
+    checkmate::test_class(x$parameters$database, "data.frame")
+  ) && if (is.data.frame(x$parameters$database)) {
+    all(c("name", "mass", "rt") %in% colnames(x$parameters$database))
+  } else { FALSE }
 }

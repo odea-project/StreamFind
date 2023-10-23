@@ -51,7 +51,7 @@ package.}
 
 \item{contact}{Character of length one with the email of the developer.}
 
-\item{link}{Character of length one with the documentation web link.}
+\item{link}{Character of length one with the a web link.}
 
 \item{doi}{Character of length one with the DOI of algorithm.}
 

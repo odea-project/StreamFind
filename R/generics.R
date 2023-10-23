@@ -64,6 +64,14 @@ export <- function(x, ...) {
   UseMethod(".s3_ms_correct_intensity")
 }
 
+.s3_ms_normalise_intensity <- function(settings, self) {
+  UseMethod(".s3_ms_normalise_intensity")
+}
+
 .s3_ms_suspect_screening <- function(settings, self) {
   UseMethod(".s3_ms_suspect_screening")
+}
+
+.s3_ms_find_internal_standards <- function(settings, self) {
+  UseMethod(".s3_ms_find_internal_standards")
 }

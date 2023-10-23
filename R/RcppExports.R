@@ -5,8 +5,8 @@ rcpp_dev_parse_xml <- function(input) {
     .Call(`_StreamFind_rcpp_dev_parse_xml`, input)
 }
 
-rcpp_ms_annotation_isotopes <- function(features, maxIsotopes = 5L, elements = as.character( c("C","H", "N", "O", "S", "Cl", "Br")), mode = "small molecules", maxCharge = 1L, rtWindowAlignment = 0.2, maxGaps = 1L, maxCarbons = 80, maxHetero = 15, maxHalogens = 10) {
-    .Call(`_StreamFind_rcpp_ms_annotation_isotopes`, features, maxIsotopes, elements, mode, maxCharge, rtWindowAlignment, maxGaps, maxCarbons, maxHetero, maxHalogens)
+rcpp_ms_annotation_isotopes <- function(features, maxIsotopes = 5L, elements = as.character( c("C","H", "N", "O", "S", "Cl", "Br")), mode = "small molecules", maxCharge = 1L, rtWindowAlignment = 0.3, maxGaps = 1L, maxCarbons = 80, maxHetero = 15, maxHalogens = 10, verbose = FALSE) {
+    .Call(`_StreamFind_rcpp_ms_annotation_isotopes`, features, maxIsotopes, elements, mode, maxCharge, rtWindowAlignment, maxGaps, maxCarbons, maxHetero, maxHalogens, verbose)
 }
 
 rcpp_centroid_spectra_qCentroids <- function(spectra) {

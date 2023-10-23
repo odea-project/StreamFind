@@ -18,9 +18,8 @@
 
   if (nrow(suspect_features) > 0) {
     suspects_data <- list(
-      "suspect_features" = suspect_features,
-      "suspect_groups" = suspect_groups,
-      "database" = settings$parameters$database
+      "features" = suspect_features,
+      "groups" = suspect_groups
     )
 
     output <- list(suspects_data)

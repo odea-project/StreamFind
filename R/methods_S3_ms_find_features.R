@@ -116,8 +116,12 @@
   ag <- list(analysisInfo = anaInfo, algorithm = algorithm)
 
   pp_fun <- patRoon::findFeatures
-
-  pat <- do.call(pp_fun, c(ag, parameters, verbose = FALSE))
+  
+  if (!"verbose" %in% names(parameters)) {
+    parameters[["verbose"]] <- TRUE
+  }
+  
+  pat <- do.call(pp_fun, c(ag, parameters))
 
   features <- .build_features_table_from_patRoon(pat, self)
 

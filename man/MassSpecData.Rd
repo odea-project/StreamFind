@@ -65,9 +65,11 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \item \href{#method-MassSpecData-get_components}{\code{MassSpecData$get_components()}}
 \item \href{#method-MassSpecData-get_suspects}{\code{MassSpecData$get_suspects()}}
 \item \href{#method-MassSpecData-get_modules_data}{\code{MassSpecData$get_modules_data()}}
+\item \href{#method-MassSpecData-get_internal_standards}{\code{MassSpecData$get_internal_standards()}}
 \item \href{#method-MassSpecData-add_headers}{\code{MassSpecData$add_headers()}}
 \item \href{#method-MassSpecData-add_settings}{\code{MassSpecData$add_settings()}}
 \item \href{#method-MassSpecData-add_analyses}{\code{MassSpecData$add_analyses()}}
+\item \href{#method-MassSpecData-add_files}{\code{MassSpecData$add_files()}}
 \item \href{#method-MassSpecData-add_replicate_names}{\code{MassSpecData$add_replicate_names()}}
 \item \href{#method-MassSpecData-add_blank_names}{\code{MassSpecData$add_blank_names()}}
 \item \href{#method-MassSpecData-add_metadata}{\code{MassSpecData$add_metadata()}}
@@ -126,6 +128,7 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \item \href{#method-MassSpecData-plot_groups_ms1}{\code{MassSpecData$plot_groups_ms1()}}
 \item \href{#method-MassSpecData-plot_groups_ms2}{\code{MassSpecData$plot_groups_ms2()}}
 \item \href{#method-MassSpecData-plot_groups_overview}{\code{MassSpecData$plot_groups_overview()}}
+\item \href{#method-MassSpecData-plot_internal_standards_qc}{\code{MassSpecData$plot_internal_standards_qc()}}
 \item \href{#method-MassSpecData-map_components}{\code{MassSpecData$map_components()}}
 \item \href{#method-MassSpecData-run_workflow}{\code{MassSpecData$run_workflow()}}
 \item \href{#method-MassSpecData-centroid_spectra}{\code{MassSpecData$centroid_spectra()}}
@@ -134,6 +137,7 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \item \href{#method-MassSpecData-group_features}{\code{MassSpecData$group_features()}}
 \item \href{#method-MassSpecData-filter_features}{\code{MassSpecData$filter_features()}}
 \item \href{#method-MassSpecData-annotate_features}{\code{MassSpecData$annotate_features()}}
+\item \href{#method-MassSpecData-find_internal_standards}{\code{MassSpecData$find_internal_standards()}}
 \item \href{#method-MassSpecData-suspect_screening}{\code{MassSpecData$suspect_screening()}}
 \item \href{#method-MassSpecData-as_patRoon_features}{\code{MassSpecData$as_patRoon_features()}}
 \item \href{#method-MassSpecData-as_patRoon_featureGroups}{\code{MassSpecData$as_patRoon_featureGroups()}}
@@ -2172,7 +2176,13 @@ A data.table.
 Gets suspects from features according to a defined database
 and mass (\code{ppm}) and time (\code{sec}) deviations.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_suspects(analyses = NULL, database = NULL, ppm = 4, sec = 10)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_suspects(
+  analyses = NULL,
+  database = NULL,
+  ppm = 4,
+  sec = 10,
+  filtered = FALSE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -2188,6 +2198,8 @@ mass of the suspect targets.}
 \item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
 
 \item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+
+\item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2213,6 +2225,30 @@ Gets modules data.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{modules}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+The list of modules data as defined by \code{modules} argument when
+\code{NULL} all data in modules is returned.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-get_internal_standards"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-get_internal_standards}{}}}
+\subsection{Method \code{get_internal_standards()}}{
+Gets modules data.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_internal_standards(average = TRUE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{average}}{Logical. When \code{TRUE}, feature intensities from each group are
+averaged and returned for each analysis replicate group.}
+
 \item{\code{modules}}{X.}
 }
 \if{html}{\out{</div>}}
@@ -2300,6 +2336,37 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-add_files"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-add_files}{}}}
+\subsection{Method \code{add_files()}}{
+Adds \emph{MassSpecAnalysis} objects based on mzML/mzXML files. Note that
+when adding new mzML/mzXML files or \emph{MassSpecAnalysis} are added any
+existing grouping of features is removed.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$add_files(files = NULL, runParallel = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{files}}{A character vector with full file path/s of \emph{mzML}
+or \emph{mzXML} file/s or a data.frame with the columns \emph{file}, \emph{replicate}
+and \emph{blank} with the full file path of \emph{mzML} or \emph{mzXML} file/s
+(character), the replicate group name (character) and the associated blank
+replicate group name (character). Note the file paths must have the extension
+\emph{.mzML} or \emph{.mzXML}.}
+
+\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecData-add_replicate_names"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-add_replicate_names}{}}}
 \subsection{Method \code{add_replicate_names()}}{
@@ -2377,7 +2444,8 @@ Adds spectra to analyses.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{spectra}}{A data.table with spectra from MS analyses as obtained
-by the method \code{get_spectra()}.}
+by the method \code{get_spectra()} with columns "scan", "mz" and "intensity".
+Other columns might be added from specific processing algorithms!}
 
 \item{\code{replace}}{Logical. When \code{TRUE}, existing spectra are replaced by
 the new features.}
@@ -4861,6 +4929,19 @@ A plot.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-plot_internal_standards_qc"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-plot_internal_standards_qc}{}}}
+\subsection{Method \code{plot_internal_standards_qc()}}{
+Plots the quality control assessment of internal standards.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$plot_internal_standards_qc()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+A plot.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecData-map_components"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-map_components}{}}}
 \subsection{Method \code{map_components()}}{
@@ -5142,6 +5223,28 @@ analysis.
 
 \subsection{Returns}{
 Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-find_internal_standards"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-find_internal_standards}{}}}
+\subsection{Method \code{find_internal_standards()}}{
+Finds internal standards in features according to defined
+settings.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$find_internal_standards(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the \code{MassSpecData} object.}
+}
+\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
