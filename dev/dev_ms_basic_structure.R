@@ -51,34 +51,47 @@ files_df <- data.frame(
 
 ms <- MassSpecData$new(files_df)
 
-ms$add_settings(list(
-    Settings_find_features_openms(localRTRange = 0, localMZRange = 0),
-    Settings_annotate_features_StreamFind(rtWindowAlignment = 0.3),
-    Settings_group_features_openms(),
-    Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10)
-))
+ms$add_settings(
+  list(
+    Settings_find_features_openms(),
+    # Settings_annotate_features_StreamFind(),
+    Settings_group_features_openms()
+    # Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
+    # Settings_filter_features_StreamFind(
+    #   minIntensity = 5000,
+    #   minSnRatio = 20,
+    #   maxGroupSd = 30,
+    #   blank = 5,
+    #   minGroupAbundance = 3,
+    #   excludeIsotopes = TRUE
+    # )
+  )
+)
 
 ms$run_workflow()
 
-istd <- ms$get_internal_standards(average = T)
-istd
+suspects <- ms$get_suspects(database = db, ppm = 10, sec = 15)
 
-analyses <- ms$get_analysis_names()
-analyses <- unique(ms$get_replicate_names())
+ms2 <- ms$subset_features(suspects)
 
-.plot_internal_standards_qc_static(istd, analyses)
+feat_eics <- ms2$get_features_eic(runParallel = TRUE)
 
+feat_eics_list <- split(feat_eics, feat_eics$analysis)
+feat_eics_list <- lapply(feat_eics_list, function(x) split(x, x$feature))
 
+View(feat_eics_list$`01_tof_ww_is_neg_blank-r001`$mz237.05_rt1158_f227)
 
+plot(
+  feat_eics_list$`01_tof_ww_is_neg_blank-r001`$mz237.05_rt1158_f227$rt,
+  feat_eics_list$`01_tof_ww_is_neg_blank-r001`$mz237.05_rt1158_f227$intensity
+)
 
-suspects <- ms$get_features(mass = db, ppm = 10)
+ms$plot_features(mass = db[c(11, 24), ], ppm = 10, legendNames = TRUE)
 
 # fts <- ms$get_features(analyses = 1)
 # fts <- fts[order(fts$mz), ]
 # which(fts$feature %in% "mz300.05_rt1255_f175")
 # output <- rcpp_ms_annotation_isotopes(fts, rtWindowAlignment = 0.3, verbose = TRUE)
-
-
 
 
 

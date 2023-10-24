@@ -2051,22 +2051,27 @@ MassSpecData <- R6::R6Class("MassSpecData",
       fts$mzmin <- fts$mzmin - mzExpand
       fts$mzmax <- fts$mzmax + mzExpand
 
-      eic <- self$get_eic(
+      eic <- self$get_spectra(
         analyses = analyses,
+        levels = 1,
         mz = fts, id = fts$feature,
         runParallel = runParallel
       )
+      
+      eic <- eic[, c("analysis", "polarity", "id", "rt", "mz", "intensity"), with = FALSE]
+      
+      setnames(eic, "id", "feature")
 
       if ("group" %in% colnames(fts)) {
         fgs <- fts$group
         names(fgs) <- fts$feature
-        eic$group <- fgs[eic$id]
+        eic$group <- fgs[eic$feature]
       }
 
       if ("name" %in% colnames(fts)) {
         tar_ids <- fts$name
         names(tar_ids) <- fts$feature
-        eic$name <- tar_ids[eic$id]
+        eic$name <- tar_ids[eic$feature]
       }
 
       eic
@@ -2968,9 +2973,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
               "iso_n",
               "iso_c",
               "analysis",
-              "feature",
-              "group"
+              "feature"
             )
+            
+            if (self$has_groups()) cols <- c(cols, "group")
             
             istd <- istd[, cols, with = FALSE]
             istd$intensity <- round(istd$intensity, digits = 0)
@@ -3598,7 +3604,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       
       org_analysis_names <- unname(self$get_analysis_names())
       
-      must_have_cols <- c("feature", "index", "polarity", "mz", "rt", "intensity")
+      must_have_cols <- c("feature", "polarity", "mz", "rt", "intensity")
 
       if (is.data.frame(eics)) {
         must_have_cols <- c("analysis", must_have_cols)
@@ -5942,6 +5948,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
         mzExpand = mzExpand,
         runParallel = runParallel
       )
+      
+      eic <- eic[, `:=`(intensity = sum(intensity)),
+        by = c("analysis", "polarity", "feature", "rt")
+      ][]
 
       if (nrow(eic) == 0) {
         message("\U2717 Traces not found for the targets!")
@@ -6393,6 +6403,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
         rtExpand = rtExpand, mzExpand = mzExpand,
         filtered = TRUE, runParallel = runParallel
       )
+      
+      eic <- eic[, `:=`(intensity = sum(intensity)),
+        by = c("analysis", "polarity", "feature", "rt")
+      ][]
 
       if (nrow(eic) == 0) {
         message("\U2717 Traces and/or features not found for targets!")
@@ -6412,7 +6426,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       names(leg) <- paste0(fts$feature, "_", fts$analysis)
-      eic$uid <- paste0(eic$id, "_", eic$analysis)
+      eic$uid <- paste0(eic$feature, "_", eic$analysis)
       fts$uid <- paste0(fts$feature, "_", fts$analysis)
       eic$var <- leg[eic$uid]
       fts$var <- leg
@@ -6429,13 +6443,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     plot_internal_standards_qc = function() {
       
-      
-      
-      
-      
-      
-      
-      
+      if (self$has_groups()) {
+        istd <- self$get_internal_standards(average = TRUE)
+        .plot_internal_standards_qc_interactive(istd, self$get_replicate_names())
+      } else {
+        istd <- self$get_internal_standards(average = FALSE)
+        .plot_internal_standards_qc_interactive(istd, self$get_analysis_names())
+      }
     },
 
     #' @description

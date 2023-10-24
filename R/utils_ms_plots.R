@@ -1962,7 +1962,7 @@
   }
 }
 
-.plot_internal_standards_qc_static <- function(istd, analyses) {
+.plot_internal_standards_qc_interactive <- function(istd, analyses) {
   
   if (!is.data.frame(istd)) {
     return(NULL)
@@ -1972,126 +1972,176 @@
     return(NULL)
   }
   
+  if (!("analysis" %in% colnames(istd)) & "replicate" %in% colnames(istd)) {
+    istd$analysis <- istd$replicate
+  }
+  
   leg <- unique(istd$name)
   
   colors <- .get_colors(leg)
+ 
+  if ("freq" %in% colnames(istd)) p0 <- plot_ly(istd, x = analyses)
   
-  if (!"feature" %in% colnames(istd)) {
-    
-    p1 <- plot_ly(istd, x = analyses)
-    
-    p2 <- plot_ly(istd, x = analyses)
-    
+  p1 <- plot_ly(istd, x = analyses)
+  
+  p2 <- plot_ly(istd, x = analyses)
+  
+  if (!all(is.na(istd$rec))) {
     p3 <- plot_ly(istd, x = analyses)
+    do_rec <- TRUE
+  } else {
+    do_rec <- FALSE
+  }
+  
+  p4 <- plot_ly(istd, x = analyses)
+  
+  p5 <- plot_ly(istd, x = analyses)
+  
+  for (i in unique(istd$name)) {
+    df <- istd[istd$name == i, ]
     
-    p4 <- plot_ly(istd, x = analyses)
+    showLegendInSecond <- FALSE
     
-    p5 <- plot_ly(istd, x = analyses)
-    
-    for (i in unique(istd$name)) {
-      df <- istd[istd$name == i, ]
-      
-      # if (!all(analyses %in% df$replicate)) {
-      #   extra <- data.frame(
-      #     "replicate" = analyses[!analyses %in% df$replicate],
-      #     "name" = i,
-      #     "rte" = -15,
-      #     "mze" = -10,
-      #     "intensity" = 0
-      #   )
-      #   df <- rbind(df[, c("replicate", "var", "intensity")], extra)
-      #   df_3 <- df_3[order(df_3$analysis), ]
-      # }
-      
-      p1 <- p1 %>% add_trace(df,
-        x = df$replicate,
-        y = df$rte,
+    if ("freq" %in% colnames(istd)) {
+      p0 <- p0 %>% add_trace(df,
+        x = df$analysis,
+        y = df$freq / max(istd$freq, na.rm = TRUE) * 100,
         type = "scatter", mode = "markers",
         marker = list(size = 5, color = colors[i]),
-        error_y = list(
-          type = "data",
-          symmetric = FALSE,
-          arrayminus = df$rte_sd,
-          array = df$rte_sd,
-          color = colors[i],
-          width = 5
-        ),
         connectgaps = FALSE,
         name = i,
         legendgroup = i,
         showlegend = TRUE
       )
+    } else {
+      showLegendInSecond <- TRUE
+    }
+    
+    df1 <- df[!is.na(df$rte), ]
+    
+    if (nrow(df1) > 0) {
       
-      p2 <- p2 %>% add_trace(df,
-        x = df$replicate,
-        y = df$mze,
-        type = "scatter", mode = "markers",
-        marker = list(size = 5, color = colors[i]),
-        error_y = list(
+      if (!"rte_sd" %in% colnames(df1)) {
+        error_rte <- NULL
+        
+      } else {
+        df1$rte_sd[is.na(df1$rte_sd)] <- 0
+        
+        error_rte <- list(
           type = "data",
           symmetric = FALSE,
-          arrayminus = df$mze_sd,
-          array = df$mze_sd,
+          arrayminus = df1$rte_sd,
+          array = df1$rte_sd,
           color = colors[i],
           width = 5
-        ),
+        )
+      }
+      
+      p1 <- p1 %>% add_trace(df1,
+        x = df1$analysis,
+        y = df1$rte,
+        type = "scatter", mode = "markers",
+        marker = list(size = 5, color = colors[i]),
+        error_y = error_rte,
+        connectgaps = FALSE,
+        name = i,
+        legendgroup = i,
+        showlegend = showLegendInSecond
+      )
+    }
+    
+    df2 <- df[!is.na(df$mze), ]
+    
+    if (nrow(df2) > 0) {
+      
+      if (!"mze_sd" %in% colnames(df2)) {
+        error_mze <- NULL
+        
+      } else {
+        df2$mze_sd[is.na(df2$mze_sd)] <- 0
+        
+        error_mze <- list(
+          type = "data",
+          symmetric = FALSE,
+          arrayminus = df2$mze_sd,
+          array = df2$mze_sd,
+          color = colors[i],
+          width = 5
+        )
+      }
+      
+      p2 <- p2 %>% add_trace(df2,
+        x = df2$analysis,
+        y = df2$mze,
+        type = "scatter", mode = "markers",
+        marker = list(size = 5, color = colors[i]),
+        error_y = error_mze,
         connectgaps = FALSE,
         name = i,
         legendgroup = i,
         showlegend = FALSE
       )
+    }
+    
+    if (do_rec) {
+      df3 <- df[!is.na(df$rec), ]
       
-      p3 <- p3 %>% add_trace(df,
-        x = df$replicate,
-        y = df$rec * 100,
-        type = "scatter", mode = "markers",
-        marker = list(size = 5, color = colors[i]),
-        error_y = list(
+      if (nrow(df3) > 0) {
+        
+        if (!"rec_sd" %in% colnames(df3)) {
+          error_rec <- NULL
+        } else {
+          df3$rec_sd[is.na(df3$rec_sd)] <- 0
+          
+          error_rec <- list(
+            type = "data",
+            symmetric = FALSE,
+            arrayminus = df3$rec_sd,
+            array = df3$rec_sd,
+            color = colors[i],
+            width = 5
+          )
+        }
+        
+        p3 <- p3 %>% add_trace(df3,
+          x = df3$analysis,
+          y = df3$rec * 100,
+          type = "scatter", mode = "markers",
+          marker = list(size = 5, color = colors[i]),
+          error_y = error_rec,
+          connectgaps = TRUE,
+          name = i,
+          legendgroup = i,
+          showlegend = FALSE
+        )
+      }  
+    }
+    
+    df4 <- df[!is.na(df$rtr), ]
+    
+    if (nrow(df4) > 0) {
+      
+      if (!"rtr_sd" %in% colnames(df4)) {
+        error_rtr <- NULL
+      } else {
+        df4$rtr_sd[is.na(df4$rtr_sd)] <- 0
+        
+        error_rtr <- list(
           type = "data",
           symmetric = FALSE,
-          arrayminus = df$rec_sd * 100,
-          array = df$rec_sd * 100,
+          arrayminus = df4$rtr_sd,
+          array = df4$rtr_sd,
           color = colors[i],
           width = 5
-        ),
-        connectgaps = TRUE,
-        name = i,
-        legendgroup = i,
-        showlegend = FALSE
-      )
+        )
+      }
       
-      p4 <- p4 %>% add_trace(df,
-        x = df$replicate,
-        y = df$rtr,
+      p4 <- p4 %>% add_trace(df4,
+        x = df4$analysis,
+        y = df4$rtr,
         type = "scatter", mode = "markers",
         marker = list(size = 5, color = colors[i]),
-        error_y = list(
-          type = "data",
-          symmetric = FALSE,
-          arrayminus = df$rtr_sd,
-          array = df$rtr_sd,
-          color = colors[i],
-          width = 5
-        ),
-        connectgaps = TRUE,
-        name = i,
-        legendgroup = i,
-        showlegend = FALSE
-      )
-      
-      p5 <- p5 %>% add_trace(df,
-        x = df$replicate,
-        y = df$mzr,
-        type = "scatter", mode = "markers",
-        marker = list(size = 5, color = colors[i]),
-        error_y = list(
-          type = "data",
-          symmetric = FALSE,
-          arrayminus = df$mzr_sd,
-          array = df$mzr_sd,
-          color = colors[i],
-          width = 5
-        ),
+        error_y = error_rtr,
         connectgaps = TRUE,
         name = i,
         legendgroup = i,
@@ -2099,13 +2149,47 @@
       )
     }
     
-  } else {
+    df5 <- df[!is.na(df$mzr), ]
     
-    
-    
+    if (nrow(df5) > 0) {
+
+      if (!"mzr_sd" %in% colnames(df5)) {
+        error_mzr <- NULL
+      } else {
+        df5$mzr_sd[is.na(df5$mzr_sd)] <- 0
+        
+        error_mzr <- list(
+          type = "data",
+          symmetric = FALSE,
+          arrayminus = df5$mzr_sd,
+          array = df5$mzr_sd,
+          color = colors[i],
+          width = 5
+        )
+      }
+      
+      p5 <- p5 %>% add_trace(df5,
+        x = df5$analysis,
+        y = df5$mzr,
+        type = "scatter", mode = "markers",
+        marker = list(size = 5, color = colors[i]),
+        error_y = error_mzr,
+        connectgaps = TRUE,
+        name = i,
+        legendgroup = i,
+        showlegend = FALSE
+      )
+    }
   }
   
   xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = NULL)
+  
+  yaxis0 <- list(
+    linecolor = toRGB("black"), linewidth = 2,
+    title = "Presence / %",
+    titlefont = list(size = 12, color = "black"),
+    range = c(0, 110)
+  )
   
   yaxis1 <- list(
     linecolor = toRGB("black"), linewidth = 2,
@@ -2159,19 +2243,28 @@
     )
   }
   
+  if ("freq" %in% colnames(istd)) {
+    p0 <- p0 %>% plotly::layout(xaxis = xaxis, yaxis = yaxis0, shapes = hrect(90, 110))
+    plotList[["p0"]] <- p0  
+  }
+  
   p1 <- p1 %>% plotly::layout(xaxis = xaxis, yaxis = yaxis1, shapes = hrect(10, -10))
   plotList[["p1"]] <- p1
   
   p2 <- p2 %>% plotly::layout(xaxis = xaxis, yaxis = yaxis2, shapes = hrect(5, -5))
   plotList[["p2"]] <- p2
   
-  p3 <- p3 %>% plotly::layout(xaxis = xaxis, yaxis = yaxis3, shapes = hrect(50, 150))
-  plotList[["p3"]] <- p3
+  if (do_rec) {
+    p3 <- p3 %>% plotly::layout(xaxis = xaxis, yaxis = yaxis3, shapes = hrect(50, 150))
+    plotList[["p3"]] <- p3
+  }
   
-  p4 <- p4 %>% plotly::layout(xaxis = xaxis, yaxis = yaxis4)
+  p4 <- p4 %>% plotly::layout(xaxis = xaxis, yaxis = yaxis4,
+    shapes = hrect(mean(istd$rtr) - sd(istd$rtr), mean(istd$rtr) + sd(istd$rtr)))
   plotList[["p4"]] <- p4
   
-  p5 <- p5 %>% plotly::layout(xaxis = xaxis, yaxis = yaxis5)
+  p5 <- p5 %>% plotly::layout(xaxis = xaxis, yaxis = yaxis5,
+    shapes = hrect(mean(istd$mzr) - sd(istd$mzr), mean(istd$mzr) + sd(istd$mzr)))
   plotList[["p5"]] <- p5
   
   # plot3 <- plot3 %>% plotly::layout(xaxis = xaxis3, yaxis = yaxis3)
