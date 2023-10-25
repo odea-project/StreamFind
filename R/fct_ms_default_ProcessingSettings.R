@@ -415,7 +415,7 @@ Settings_find_features_xcms3_matchedfilter <- function(
       baseValue = baseValue,
       distance = distance,
       fwhm = fwhm,
-      sigma = fwhm/2.3548,
+      sigma = fwhm / 2.3548,
       max = max,
       snthresh = snthresh,
       steps = steps,
@@ -1328,6 +1328,66 @@ validate.Settings_load_groups_ms2_StreamFind <- function(x) {
   )
 }
 
+#' @title Settings_load_features_eic_StreamFind
+#'
+#' @description Settings for loading MS2 spectra for feature groups.
+#'
+#' @template arg-ms-rtExpand
+#' @template arg-ms-mzExpand
+#' @template arg-ms-filtered
+#' @template arg-runParallel
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_load_features_eic_StreamFind.
+#'
+#' @export
+#'
+Settings_load_features_eic_StreamFind <- function(
+    rtExpand = 120,
+    mzExpand = 0,
+    filtered = FALSE,
+    runParallel = TRUE) {
+
+  settings <- list(
+    call = "load_features_eic",
+    algorithm = "StreamFind",
+    parameters = list(
+      "rtExpand" = rtExpand,
+      "mzExpand" = mzExpand,
+      "filtered" = filtered,
+      "runParallel" = runParallel
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+
+  settings <- as.ProcessingSettings(settings)
+
+  return(settings)
+}
+
+#' @describeIn Settings_load_features_eic_StreamFind
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_load_features_eic_StreamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_load_features_eic_StreamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "load_features_eic"),
+    checkmate::test_choice(x$algorithm, "StreamFind"),
+    checkmate::test_double(x$parameters$rtExpand, max.len = 1),
+    checkmate::test_double(x$parameters$mzExpand, max.len = 1),
+    checkmate::test_logical(x$parameters$filtered, max.len = 1),
+    checkmate::test_logical(x$parameters$runParallel, max.len = 1)
+  )
+}
+
 ## filter_features -----
 
 #' @title Settings_filter_features_StreamFind
@@ -1543,7 +1603,7 @@ validate.Settings_filter_features_StreamFind <- function(x) {
 #'
 Settings_annotate_features_StreamFind <- function(
     maxIsotopes = 5,
-    elements = c("C","H", "N", "O", "S", "Cl", "Br"),
+    elements = c("C", "H", "N", "O", "S", "Cl", "Br"),
     mode = "small molecules",
     maxCharge = 1,
     rtWindowAlignment = 0.3,
@@ -1556,7 +1616,7 @@ Settings_annotate_features_StreamFind <- function(
   checkmate::assert_number(rtWindowAlignment)
   checkmate::assert_choice(mode, "small molecules")
   checkmate::assert_vector(elements, any.missing = FALSE, min.len = 1)
-  lapply(elements, function(i) checkmate::assert_choice(i, c("C","H", "N", "O", "S", "Cl", "Br", "Si", "Ge")))
+  lapply(elements, function(i) checkmate::assert_choice(i, c("C", "H", "N", "O", "S", "Cl", "Br", "Si", "Ge")))
   checkmate::assert_logical(runParallel, max.len = 1)
 
   settings <- list(
@@ -1601,7 +1661,9 @@ validate.Settings_annotate_features_StreamFind <- function(x) {
     checkmate::test_double(x$parameters$rtWindowAlignment, max.len = 1),
     checkmate::test_choice(x$parameters$mode, "small molecules"),
     checkmate::test_vector(x$parameters$elements, any.missing = FALSE, min.len = 1),
-    vapply(x$parameters$elements, function(i) checkmate::test_choice(i, c("C","H", "N", "O", "S", "Cl", "Br", "Si", "Ge")), FALSE),
+    vapply(x$parameters$elements, function(i) {
+      checkmate::test_choice(i, c("C", "H", "N", "O", "S", "Cl", "Br", "Si", "Ge"))
+    }, FALSE),
     checkmate::test_logical(x$parameters$runParallel, max.len = 1)
   )
 }
@@ -1801,5 +1863,7 @@ validate.Settings_find_internal_standards_StreamFind <- function(x) {
     checkmate::test_class(x$parameters$database, "data.frame")
   ) && if (is.data.frame(x$parameters$database)) {
     all(c("name", "mass", "rt") %in% colnames(x$parameters$database))
-  } else { FALSE }
+  } else {
+    FALSE
+  }
 }

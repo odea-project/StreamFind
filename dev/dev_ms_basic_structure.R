@@ -8,6 +8,8 @@
 # TODO add is_pre to MS1 spectra
 # TODO add filter for features/groups with more than 1 representation in components
 # TODO add signal to noise ratio to internal standards report, calculated on demand
+# TODO add check for filtered features in loaded eic/MS1 and MS2, perhaps check ID presence
+# TODO when subsetting on features/groups check/add if features_eics are also changed
 
 
 # Resources -------------------------------------------------------------------
@@ -54,17 +56,18 @@ ms <- MassSpecData$new(files_df)
 ms$add_settings(
   list(
     Settings_find_features_openms(),
-    # Settings_annotate_features_StreamFind(),
-    Settings_group_features_openms()
-    # Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
-    # Settings_filter_features_StreamFind(
-    #   minIntensity = 5000,
-    #   minSnRatio = 20,
-    #   maxGroupSd = 30,
-    #   blank = 5,
-    #   minGroupAbundance = 3,
-    #   excludeIsotopes = TRUE
-    # )
+    Settings_annotate_features_StreamFind(),
+    Settings_group_features_openms(),
+    Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
+    Settings_load_features_eic_StreamFind(),
+    Settings_filter_features_StreamFind(
+      minIntensity = 5000,
+      minSnRatio = 20,
+      maxGroupSd = 30,
+      blank = 5,
+      minGroupAbundance = 3,
+      excludeIsotopes = TRUE
+    )
   )
 )
 
@@ -72,21 +75,39 @@ ms$run_workflow()
 
 suspects <- ms$get_suspects(database = db, ppm = 10, sec = 15)
 
+ms$has_features_eic()
+
+
+
+ms$plot_groups_overview(mass = db[1:3, ], filtered = TRUE, legendNames = TRUE)
+
 ms2 <- ms$subset_features(suspects)
 
-feat_eics <- ms2$get_features_eic(runParallel = TRUE)
+ms2$add_settings(Settings_load_features_eic_StreamFind())
 
-feat_eics_list <- split(feat_eics, feat_eics$analysis)
-feat_eics_list <- lapply(feat_eics_list, function(x) split(x, x$feature))
+ms2$add_features_eic(ms2$load_features_eic())
 
-View(feat_eics_list$`01_tof_ww_is_neg_blank-r001`$mz237.05_rt1158_f227)
+ms2$get_features_eic(mass = db)
 
-plot(
-  feat_eics_list$`01_tof_ww_is_neg_blank-r001`$mz237.05_rt1158_f227$rt,
-  feat_eics_list$`01_tof_ww_is_neg_blank-r001`$mz237.05_rt1158_f227$intensity
-)
 
-ms$plot_features(mass = db[c(11, 24), ], ppm = 10, legendNames = TRUE)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ms$plot_features(features = "mz237.05_rt1158_f227")
+
+ms$plot_features(mass = db, ppm = 10, sec = 15, rtExpand = 120, legendNames = TRUE)
 
 # fts <- ms$get_features(analyses = 1)
 # fts <- fts[order(fts$mz), ]
@@ -108,7 +129,7 @@ data.table::setnames(db2, "mass", "neutralMass")
 ?patRoon::normInts
 
 fgn <- patRoon::normInts(
-  fg, 
+  fg,
   featNorm = "istd",
   standards = db2, #patRoonData::ISTDListPos
   adduct = "[M+H]+",
@@ -118,7 +139,7 @@ fgn <- patRoon::normInts(
 )
 
 fgn <- patRoon::normInts(
-  fg, 
+  fg,
   featNorm = "tic",
   standards = db2, #patRoonData::ISTDListPos
   adduct = "[M+H]+",
@@ -209,21 +230,21 @@ ms$plot_groups_ms1(colorBy = "targets+polarities")
 
 
 # ms$get_features_ms1(loadedMS1 = T)
-# 
+#
 # ms$plot_features_ms2(mass = db[7, ], loadedMS2 = T)
 #
 # ms$get_groups_ms1(loadedFeaturesMS1 = T, loadedGroupsMS1 = T)
-# 
+#
 # ms$get_groups_ms2(loadedFeaturesMS2 = T, loadedGroupsMS2 = T)
-# 
+#
 # ms$plot_groups_ms2(mass = db[7, ], colorBy = "targets+polarities")
-# 
+#
 # ms$plot_groups_ms1(mass = db[7, ], colorBy = "targets+polarities")
 
 # pat_fg <- ms$as_patRoon_featureGroups()
-# 
+#
 # pat_pl <- ms$as_patRoon_MSPeakLists()
-# 
+#
 # ms$patRoon_report()
 
 
@@ -284,7 +305,7 @@ ms$get_features_ms2(
   presence = 0.8,
   minIntensity = 250
 )
-# 
+#
 ms$plot_features_ms1(
   mass = db[11, ],
   presence = 0.8,
@@ -295,7 +316,7 @@ ms$plot_features_ms1(
 )
 
 # ms$get_features_ms1(
-#   mass = diu, rt = diu_rt, 
+#   mass = diu, rt = diu_rt,
 #   presence = 0.8,
 #   mzWindow = c(-1, 6),
 #   rtWindow = c(-2, 2),
@@ -312,11 +333,11 @@ ms$plot_groups_ms1(
   minIntensityGroups = 250,
   colorBy = "targets+polarities"
 )
-# 
+#
 # ms$plot_eic(mass = diu, rt = diu_rt, colorBy = "targets+polarities")
-# 
+#
 # ms$get_groups_ms1(
-#   mass = diu, rt = diu_rt, 
+#   mass = diu, rt = diu_rt,
 #   presenceFeatures = 0.8,
 #   presenceGroups = 0.8,
 #   mzWindow = c(-1, 6),
@@ -354,91 +375,91 @@ mspl <- generateMSPeakListsMzR(
 
 
 if (ms$has_groups()) {
-  
+
   plist <- lapply(ms$get_analyses(), function(x) {
-    
+
     features <- x$features
     features <- features[!features$filtered, ]
-    
+
     groups <- unique(features$group)
     groups <- groups[!is.na(groups)]
-    
+
     glist <- lapply(groups, function(x2, features) {
       out <- list()
-      
+
       MS <- features$ms1[features$group %in% x2]
       MSMS <- features$ms2[features$group %in% x2]
-      
+
       if (length(MS) > 1) {
         warning("")
         MS <- MS[1]
       }
-      
+
       if (length(MSMS) > 1) {
         warning("")
         MSMS <- MSMS[1]
       }
-      
+
       if (!is.null(MS[[1]])) {
         names(MS) <- "MS"
         out <- c(out, MS)
       }
-      
+
       if (!is.null(MSMS[[1]])) {
         names(MSMS) <- "MSMS"
         out <- c(out, MSMS)
       }
-      
+
       out
-      
+
     }, features = features)
-    
+
     names(glist) <- groups
-    
+
     glist
   })
-  
+
   names(plist) <- ms$get_analysis_names()
-  
+
   groups <- ms$get_groups()
-  
+
   aplist <- lapply(seq_len(nrow(groups)), function(x, groups) {
     out <- list()
-    
+
     MS <- groups$ms1[x]
     MSMS <- groups$ms2[x]
-    
+
     if (length(MS) > 1) {
       warning("")
       MS <- MS[1]
     }
-    
+
     if (length(MSMS) > 1) {
       warning("")
       MSMS <- MSMS[1]
     }
-    
+
     if (!is.null(MS[[1]])) {
       names(MS) <- "MS"
       out <- c(out, MS)
     }
-    
+
     if (!is.null(MSMS[[1]])) {
       names(MSMS) <- "MSMS"
       out <- c(out, MSMS)
     }
-    
+
     out
-    
-    
+
+
   }, groups = groups)
-  
+
   names(aplist) <- groups$group
-  
+
   new("MSPeakLists",
-      peakLists = plist,
-      averagedPeakLists = aplist,
-      algorithm = "StreamFind"
+    peakLists = plist,
+    averagedPeakLists = aplist,
+    algorithm = "StreamFind"
   )
 }
 
@@ -470,39 +491,6 @@ msbp$suspect_screening(sssfi)
 
 
 file.remove("feature_list.txt")
-
-
-
-
-
-
-
-write.csv(suspects_g, "C:/Users/Ricardo Cunha/Desktop/suspects_g.csv", row.names = FALSE)
-
-sink("C:/Users/Ricardo Cunha/Desktop/suspects_g.txt")
-cat("\n")
-cat("\n")
-
-for (i in 1:nrow(suspects_g)) {
-  cat("NAME: ")
-  cat(suspects_g$Label[i])
-  cat("\n")
-  cat("RETENTIONTIME: ")
-  cat(round(suspects_g$RT[i], digits = 3))
-  cat("\n")
-  cat("Mass: ")
-  cat(round(suspects_g$Mass[i], digits = 4))
-  cat("\n")
-  cat("Formula: ")
-  cat("\n")
-  cat("//")
-  cat("\n")
-  cat("\n")
-}
-sink()
-
-
-
 
 
 # sink(paste0(getwd(),"/", "forident",".txt"))
@@ -591,7 +579,11 @@ ms$get_ms2(analyses = 4, mz = 267.0702, rt = 1007.222, ppm = 20, sec = 30, mzClu
 ms$get_ms2(analyses = 5, mz = 267.0702, rt = 1007.222, ppm = 20, sec = 30, mzClust = 0.01, isInAllSpectra = TRUE)
 
 
-ms$plot_ms1(analyses = 4, mz = data.frame(mzmin = 239, mzmax = 245, rtmin = 1156, rtmax = 1158), isInAllSpectra = TRUE, verbose = TRUE)
+ms$plot_ms1(analyses = 4,
+  mz = data.frame(mzmin = 239, mzmax = 245, rtmin = 1156, rtmax = 1158),
+  isInAllSpectra = TRUE, verbose = TRUE
+)
+
 ms1
 
 
@@ -658,4 +650,3 @@ ms$get_history()
 # other ------------------------------------------------------------------------
 
 # ms$save_settings(format = "json", name = "settings")
-

@@ -82,6 +82,7 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \item \href{#method-MassSpecData-add_modules_data}{\code{MassSpecData$add_modules_data()}}
 \item \href{#method-MassSpecData-load_spectra}{\code{MassSpecData$load_spectra()}}
 \item \href{#method-MassSpecData-load_chromatograms}{\code{MassSpecData$load_chromatograms()}}
+\item \href{#method-MassSpecData-load_features_eic}{\code{MassSpecData$load_features_eic()}}
 \item \href{#method-MassSpecData-load_features_ms1}{\code{MassSpecData$load_features_ms1()}}
 \item \href{#method-MassSpecData-load_features_ms2}{\code{MassSpecData$load_features_ms2()}}
 \item \href{#method-MassSpecData-load_groups_ms1}{\code{MassSpecData$load_groups_ms1()}}
@@ -1340,8 +1341,9 @@ Gets EIC of features from analyses.
   sec = 60,
   millisec = 5,
   rtExpand = 120,
-  mzExpand = 0.005,
+  mzExpand = NULL,
   filtered = FALSE,
+  loaded = TRUE,
   runParallel = FALSE
 )}\if{html}{\out{</div>}}
 }
@@ -1405,6 +1407,9 @@ expanding left and right the mass range.}
 (\emph{m/z}) (in Da) for expanding left and right the mass range.}
 
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
+
+\item{\code{loaded}}{Logical. When \code{TRUE} and if available, previously
+loaded data will be used instead of extraction from raw data.}
 
 \item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
 processing. Note that parallel processing is not always faster due to
@@ -2629,6 +2634,30 @@ Loads all chromatograms from all analyses.
 \item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
 processing. Note that parallel processing is not always faster due to
 overhead.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-load_features_eic"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-load_features_eic}{}}}
+\subsection{Method \code{load_features_eic()}}{
+Loads features EICs in each analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$load_features_eic(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the \code{MassSpecData} object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -3937,8 +3966,8 @@ Plots features from analyses.
   ppm = 20,
   sec = 60,
   millisec = 5,
-  rtExpand = 15,
-  mzExpand = 0.008,
+  rtExpand = 120,
+  mzExpand = NULL,
   filtered = FALSE,
   runParallel = FALSE,
   legendNames = NULL,
