@@ -74,16 +74,16 @@ save_default_ProcessingSettings <- function(call = NA_character_,
 
 #' @title Settings_centroid_spectra_qCentroids
 #'
-#' @description Centroids profile spectra using the 
+#' @description Centroids profile spectra using the
 #' \href{https://link.springer.com/article/10.1007/s00216-022-04224-y}{qCentroids}
-#' algorithm, which is part of the 
+#' algorithm, which is part of the
 #' \href{https://github.com/odea-project/qAlgorithms}{qAlgorithms} library.
-#' 
+#'
 #' @template arg-runParallel
 #'
 #' @return A ProcessingSettings S3 class object with subclass
 #' Settings_centroid_spectra_qCentroids.
-#' 
+#'
 #' @references
 #' \insertRef{qcentroids01}{StreamFind}
 #'
@@ -960,21 +960,21 @@ validate.Settings_group_features_xcms3_peakdensity_peakgroups <- function(x) {
 #' \href{https://abibuilder.cs.uni-tuebingen.de/archive/openms/Documentation/release/3.0.0/html/TOPP_FeatureLinkerUnlabeled.html}{FeatureLinkerUnlabeled}.
 #' The function uses the package \pkg{patRoon} in the background.
 #'
-#' @param rtalign Logical length one. Set to TRUE to enable retention time 
+#' @param rtalign Logical length one. Set to TRUE to enable retention time
 #' alignment.
-#' @param QT Logical length one. When TRUE the FeatureLinkerUnlabeledQT is used 
+#' @param QT Logical length one. When TRUE the FeatureLinkerUnlabeledQT is used
 #' instead of FeatureLinkerUnlabeled for grouping features.
-#' @param maxAlignRT Numeric length one. Maximum retention time (in seconds) for 
-#' feature pairing when performing retention time alignment. 
-#' @param maxAlignMZ Numeric length one. Maximum *m/z* (in Da) for 
+#' @param maxAlignRT Numeric length one. Maximum retention time (in seconds) for
 #' feature pairing when performing retention time alignment.
-#' @param maxGroupRT Numeric length one. Maximum retention time (in seconds) for 
+#' @param maxAlignMZ Numeric length one. Maximum *m/z* (in Da) for
+#' feature pairing when performing retention time alignment.
+#' @param maxGroupRT Numeric length one. Maximum retention time (in seconds) for
 #' feature pairing when performing grouping.
-#' @param maxGroupMZ Numeric length one. Maximum *m/z* (in Da) for 
+#' @param maxGroupMZ Numeric length one. Maximum *m/z* (in Da) for
 #' feature pairing when performing grouping.
-#' @param extraOptsRT Named list containing extra options that will be passed 
+#' @param extraOptsRT Named list containing extra options that will be passed
 #' to MapAlignerPoseClustering.
-#' @param extraOptsGroup Named list containing extra options that will be passed 
+#' @param extraOptsGroup Named list containing extra options that will be passed
 #' to FeatureLinkerUnlabeledQT/FeatureLinkerUnlabeled.
 #' @param verbose Logical of length one. When TRUE adds processing information
 #' to the console.
@@ -1004,7 +1004,7 @@ Settings_group_features_openms <- function(
     extraOptsRT = NULL,
     extraOptsGroup = NULL,
     verbose = FALSE) {
-  
+
   settings <- list(
     call = "group_features",
     algorithm = "openms",
@@ -1026,9 +1026,9 @@ Settings_group_features_openms <- function(
     link = "https://openms.de/",
     doi = "https://doi.org/10.1038/nmeth.3959"
   )
-  
+
   settings <- as.ProcessingSettings(settings)
-  
+
   return(settings)
 }
 
@@ -1397,14 +1397,14 @@ validate.Settings_load_features_eic_StreamFind <- function(x) {
 #' @param ... Ordered filters to be applied. Possible filter arguments are:
 #' \itemize{
 #'  \item{**minIntensity**}{  Numeric (length 1) with the minimum intensity.}
-#'  \item{**minSnRatio**}{  Numeric (length 1) with the minimum signal-to-noise 
+#'  \item{**minSnRatio**}{  Numeric (length 1) with the minimum signal-to-noise
 #'  ratio.}
-#'  \item{**maxGroupSd**}{  Numeric (length 1) with the maximum intensity 
+#'  \item{**maxGroupSd**}{  Numeric (length 1) with the maximum intensity
 #'  deviation within each analysis replicate (in percentage).}
 #'  \item{**blank**}{  Numeric (length 1) with the intensity threshold for blank
 #'  subtraction. All features/feature groups not higher then the `blank` * its
 #'  intensity are filtered.}
-#'  \item{**minGroupAbundance**}{  Numeric (length 1) with the minimum presence 
+#'  \item{**minGroupAbundance**}{  Numeric (length 1) with the minimum presence
 #'  of a feature is a given analysis replicate.}
 #'  \item{**excludeIsotopes**}{  Logical (length 1) with `TRUE` for filtering
 #'  annotated isotopes (only prevails the monoisotopic features).}
@@ -1418,18 +1418,18 @@ validate.Settings_load_features_eic_StreamFind <- function(x) {
 #'
 #' @return A ProcessingSettings S3 class object with subclass
 #' Settings_filter_features_StreamFind.
-#' 
-#' @details 
-#' When feature groups exist the filtering is done on feature groups, meaning 
-#' that the filters are applied per feature group not individual features. For 
-#' instance, if feature groups exist the minimum intensity is applied on the 
+#'
+#' @details
+#' When feature groups exist the filtering is done on feature groups, meaning
+#' that the filters are applied per feature group not individual features. For
+#' instance, if feature groups exist the minimum intensity is applied on the
 #' maximum intensity observed for a feature group and not the intensity of each
 #' individual feature.
 #'
 #' @export
 #'
 Settings_filter_features_StreamFind <- function(...) {
-  
+
   dots <- list(...)
 
   settings <- list(
@@ -1443,7 +1443,7 @@ Settings_filter_features_StreamFind <- function(...) {
     link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_
   )
-  
+
   possible_feature_filters <- c(
     "minIntensity",
     "minSnRatio",
@@ -1455,7 +1455,7 @@ Settings_filter_features_StreamFind <- function(...) {
     "rtFilter",
     "massFilter"
   )
-  
+
   if (!all(names(dots) %in% possible_feature_filters)) {
     warning("Added filter arguments not recognized!")
   }
@@ -1493,7 +1493,7 @@ Settings_filter_features_StreamFind <- function(...) {
   }
 
   settings$parameters <- dots
-  
+
   settings <- as.ProcessingSettings(settings)
 
   return(settings)
@@ -1788,7 +1788,7 @@ Settings_suspect_screening_forident <- function(
 #' Validates the object structure, returning a logical value of length one.
 #'
 #' @param x A Settings_suspect_screening_forident S3 class object.
-#' 
+#'
 #' @export
 #'
 validate.Settings_suspect_screening_forident <- function(x) {
@@ -1810,7 +1810,7 @@ validate.Settings_suspect_screening_forident <- function(x) {
 #' Settings for finding internal standards using a data.frame.
 #'
 #' @param database A data.frame with at least the columns name, mass, and rt
-#' indicating the name, neutral monoisotopic mass and retention time of the 
+#' indicating the name, neutral monoisotopic mass and retention time of the
 #' internal standards, respectively.
 #' @template arg-ms-ppm
 #' @template arg-ms-sec
@@ -1824,7 +1824,7 @@ Settings_find_internal_standards_StreamFind <- function(
     database = NULL,
     ppm = 5,
     sec = 10) {
-  
+
   settings <- list(
     call = "find_internal_standards",
     algorithm = "StreamFind",
@@ -1841,9 +1841,9 @@ Settings_find_internal_standards_StreamFind <- function(
     link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_
   )
-  
+
   settings <- as.ProcessingSettings(settings)
-  
+
   return(settings)
 }
 
@@ -1866,4 +1866,56 @@ validate.Settings_find_internal_standards_StreamFind <- function(x) {
   } else {
     FALSE
   }
+}
+
+## calculate_quality -----
+
+#' @title Settings_calculate_quality_StreamFind
+#'
+#' @description
+#' Settings for calculating quality parameters of features (e.g., signal-to-noise (sn) ratio).
+#'
+#' @template arg-ms-filtered
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_calculate_quality_StreamFind.
+#'
+#' @export
+#'
+Settings_calculate_quality_StreamFind <- function(
+    filtered = FALSE) {
+
+  settings <- list(
+    call = "calculate_quality",
+    algorithm = "StreamFind",
+    algorithm = "StreamFind",
+    parameters = list(
+      "filtered" = filtered
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+
+  settings <- as.ProcessingSettings(settings)
+
+  return(settings)
+}
+
+#' @describeIn Settings_calculate_quality_StreamFind
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_calculate_quality_StreamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_calculate_quality_StreamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "calculate_quality"),
+    checkmate::test_choice(x$algorithm, "StreamFind"),
+    checkmate::test_logical(x$parameters$filtered, max.len = 1)
+  )
 }

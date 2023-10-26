@@ -3968,6 +3968,7 @@ Plots features from analyses.
   millisec = 5,
   rtExpand = 120,
   mzExpand = NULL,
+  loaded = TRUE,
   filtered = FALSE,
   runParallel = FALSE,
   legendNames = NULL,
@@ -4038,6 +4039,9 @@ expanding left and right the mass range.}
 
 \item{\code{mzExpand}}{Numeric value with the mass or mass-to-charge ratio
 (\emph{m/z}) (in Da) for expanding left and right the mass range.}
+
+\item{\code{loaded}}{Logical. When \code{TRUE} and if available, previously
+loaded data will be used instead of extraction from raw data.}
 
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
 
@@ -4475,6 +4479,7 @@ Plots feature groups EIC.
   showLegend = TRUE,
   xlim = NULL,
   ylim = NULL,
+  cex = 0.6,
   interactive = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -4552,6 +4557,9 @@ limits (in seconds) of the plot.}
 
 \item{\code{ylim}}{A length one or two numeric vector for setting the \emph{m/z}
 limits of the plot.}
+
+\item{\code{cex}}{A length one numeric value defining the scale of the legend for
+non interactive plotting.}
 
 \item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
 using \pkg{plotly}.}
@@ -4874,6 +4882,7 @@ from features within target feature groups.
   millisec = 5,
   rtExpand = 120,
   mzExpand = 0.005,
+  loaded = TRUE,
   filtered = FALSE,
   runParallel = FALSE,
   legendNames = NULL,
@@ -4937,6 +4946,9 @@ expanding left and right the mass range.}
 
 \item{\code{mzExpand}}{Numeric value with the mass or mass-to-charge ratio
 (\emph{m/z}) (in Da) for expanding left and right the mass range.}
+
+\item{\code{loaded}}{Logical. When \code{TRUE} and if available, previously
+loaded data will be used instead of extraction from raw data.}
 
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
 

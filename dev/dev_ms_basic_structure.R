@@ -8,7 +8,7 @@
 # TODO add is_pre to MS1 spectra
 # TODO add filter for features/groups with more than 1 representation in components
 # TODO add signal to noise ratio to internal standards report, calculated on demand
-# TODO add check for filtered features in loaded eic/MS1 and MS2, perhaps check ID presence
+# TODO check patRoon MSPeakLists and add is_pre in MS1
 # TODO when subsetting on features/groups check/add if features_eics are also changed
 
 
@@ -59,29 +59,62 @@ ms$add_settings(
     Settings_annotate_features_StreamFind(),
     Settings_group_features_openms(),
     Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
-    Settings_load_features_eic_StreamFind(),
     Settings_filter_features_StreamFind(
       minIntensity = 5000,
-      minSnRatio = 20,
+      #minSnRatio = 20,
       maxGroupSd = 30,
       blank = 5,
       minGroupAbundance = 3,
       excludeIsotopes = TRUE
-    )
+    ),
+    Settings_load_features_eic_StreamFind(),
+    Settings_load_features_ms1_StreamFind(),
+    Settings_load_features_ms2_StreamFind(),
+    Settings_load_groups_ms1_StreamFind(),
+    Settings_load_groups_ms2_StreamFind()
   )
 )
 
 ms$run_workflow()
 
-suspects <- ms$get_suspects(database = db, ppm = 10, sec = 15)
 
-ms$has_features_eic()
+# suspects <- ms$get_suspects(database = db, ppm = 10, sec = 15, filtered = TRUE)
+
+# ms$plot_groups(
+#   groups = suspects,
+#   filtered = TRUE,
+#   interactive = FALSE,
+#   cex = 1,
+# )
+
+ms$get_groups_ms1(mass = db, filtered = TRUE)
+
+ms$plot_groups_ms2(mass = db, filtered = TRUE, legendNames = TRUE)
+
+
+
+
+Settings_calculate_quality_StreamFind()
+
+
+
+
+ms2 <- ms$subset_features(suspects)
+
+anas <- ms2$get_analyses()
+
+View(anas[[10]])
+
+
+
 
 
 
 ms$plot_groups_overview(mass = db[1:3, ], filtered = TRUE, legendNames = TRUE)
 
-ms2 <- ms$subset_features(suspects)
+
+
+
 
 ms2$add_settings(Settings_load_features_eic_StreamFind())
 

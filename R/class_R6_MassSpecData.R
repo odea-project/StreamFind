@@ -1147,6 +1147,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       metadata
     },
 
+    ### ___ get_spectra -----
+
     #' @description
     #' Gets spectra from each analysis.
     #'
@@ -1186,7 +1188,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         if (is.data.frame(mass)) {
           if ("mass" %in% colnames(mass)) {
-            mass$mz = mass$mass
+            mass$mz <- mass$mass
           }
         }
 
@@ -1522,6 +1524,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
+    ### ___ get_chromatograms -----
+
     #' @description
     #' Gets chromatograms from each analysis.
     #'
@@ -1594,6 +1598,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
+    ### ___ get_eic -----
+
     #' @description
     #' Gets extract ion chromatograms (EIC) from the analyses based
     #' on targets.
@@ -1639,6 +1645,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       eic
     },
+
+    ### ___ get_ms1 -----
 
     #' @description
     #' Gets MS1 data from the analyses based on targets.
@@ -1721,6 +1729,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       ms1_df
     },
+
+    ### ___ get_ms2 -----
 
     #' @description
     #' Gets MS2 data from the analyses based on targets.
@@ -1805,6 +1815,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       ms2_df
     },
 
+    ### ___ get_settings -----
+
     #' @description
     #' Gets processing settings.
     #'
@@ -1821,6 +1833,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
+    ### ___ get_settings_names -----
+
     #' @description
     #' Gets the names of all present processing settings.
     #'
@@ -1829,6 +1843,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
     get_settings_names = function() {
       names(private$.settings)
     },
+
+    ### ___ get_features -----
 
     #' @description
     #' Gets features from analyses.
@@ -2019,6 +2035,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       fts
     },
 
+    ### ___ get_features_eic -----
+
     #' @description
     #' Gets EIC of features from analyses.
     #'
@@ -2064,6 +2082,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           if (length(x) > 0) {
             x <- rbindlist(x, idcol = "feature", fill = TRUE)
 
+            if (nrow(x) > 0) x[["analysis"]] <- ana
+
           } else {
             x <- data.table()
           }
@@ -2071,9 +2091,65 @@ MassSpecData <- R6::R6Class("MassSpecData",
           x
         }, fts = fts)
 
-        eic <- rbindlist(eic_list, idcol = "analysis", fill = TRUE)
+        eic <- rbindlist(eic_list, fill = TRUE)
+
+        add_eic_filtered <- FALSE
+
+        if (any(fts$filtered)) {
+          if (nrow(eic) == 0) {
+            add_eic_filtered <- TRUE
+          } else if (any(!(fts$feature[fts$filtered] %in% eic$feature))) {
+            add_eic_filtered <- TRUE
+          }
+        }
+
+        if (add_eic_filtered) {
+          fts_filtered <- fts[fts$filtered, ]
+          fts_filtered <- fts_filtered[!(fts_filtered$feature %in% eic$feature), ]
+
+          settings <- self$get_settings("load_features_eic")
+
+          if ("load_features_eic" %in% names(settings)) {
+            parameters <- settings[["load_features_eic"]][["parameters"]]
+          }
+
+          if ("rtExpand" %in% names(parameters)) {
+            rtExpand <- parameters[["rtExpand"]]
+          } else {
+            if (is.null(rtExpand)) rtExpand <- 0
+          }
+
+          if ("mzExpand" %in% names(parameters)) {
+            mzExpand <- parameters[["mzExpand"]]
+          } else {
+            if (is.null(mzExpand)) mzExpand <- 0
+          }
+
+          fts_filtered$rtmin <- fts_filtered$rtmin - rtExpand
+          fts_filtered$rtmax <- fts_filtered$rtmax + rtExpand
+          fts_filtered$mzmin <- fts_filtered$mzmin - mzExpand
+          fts_filtered$mzmax <- fts_filtered$mzmax + mzExpand
+
+          eic_2 <- self$get_spectra(
+            analyses = analyses,
+            levels = 1,
+            mz = fts_filtered, id = fts_filtered$feature,
+            runParallel = runParallel
+          )
+
+          eic_2 <- eic_2[, c("analysis", "polarity", "id", "rt", "mz", "intensity"), with = FALSE]
+
+          setnames(eic_2, "id", "feature")
+
+          eic <- list(eic, eic_2)
+
+          eic <- rbindlist(eic, fill = TRUE)
+        }
+
+        if (nrow(eic) == 0) return(data.table())
 
       } else {
+
         if (is.null(rtExpand)) rtExpand <- 0
         if (is.null(mzExpand)) mzExpand <- 0
 
@@ -2108,6 +2184,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       eic
     },
+
+    ### ___ get_features_ms1 -----
 
     #' @description
     #' Gets an averaged MS1 spectrum for features in the analyses.
@@ -2162,14 +2240,66 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           temp_ms$analysis <- temp$analysis
 
-          temp_ms$id <- temp$feature
+          temp_ms$feature <- temp$feature
 
           temp_ms
         }, fts = fts)
 
         ms1 <- rbindlist(ms1_list, fill = TRUE)
 
-        setcolorder(ms1, c("analysis", "id"))
+        add_filtered <- FALSE
+
+        if (any(fts$filtered)) {
+          if (nrow(ms1) == 0) {
+            add_filtered <- TRUE
+          } else if (any(!(fts$feature[fts$filtered] %in% ms1$feature))) {
+            add_filtered <- TRUE
+          }
+        }
+
+        if (add_filtered) {
+          fts_filtered <- fts[fts$filtered, ]
+          fts_filtered <- fts_filtered[!(fts_filtered$feature %in% ms1$feature), ]
+
+          settings <- self$get_settings("load_features_ms1")
+
+          if ("load_features_ms1" %in% names(settings)) {
+            parameters <- settings[["load_features_ms1"]][["parameters"]]
+          } else {
+            parameters <- list()
+          }
+
+          if ("mzClust" %in% names(parameters)) {
+            mzClust <- parameters[["mzClust"]]
+          }
+
+          if ("presence" %in% names(parameters)) {
+            presence <- parameters[["presence"]]
+          }
+
+          if ("minIntensity" %in% names(parameters)) {
+            minIntensity <- parameters[["minIntensity"]]
+          }
+
+          ms1_2 <- self$get_ms1(
+            analyses = unique(fts$analysis),
+            mz = fts_filtered,
+            id = fts_filtered$feature,
+            mzClust = mzClust,
+            presence = presence,
+            minIntensity = minIntensity,
+            verbose = verbose,
+            runParallel = runParallel
+          )
+
+          setnames(ms1_2, "id", "feature")
+
+          ms1 <- list(ms1, ms1_2)
+
+          ms1 <- rbindlist(ms1, fill = TRUE)
+        }
+
+        if (nrow(ms1) == 0) return(data.table())
 
       } else {
         ms1 <- self$get_ms1(
@@ -2182,11 +2312,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
           verbose = verbose,
           runParallel = runParallel
         )
+
+        setnames(ms1, "id", "feature")
       }
 
       unique_fts_id <- paste0(fts$analysis, "-", fts$feature)
 
-      unique_ms1_id <- paste0(ms1$analysis, "-", ms1$id)
+      unique_ms1_id <- paste0(ms1$analysis, "-", ms1$feature)
 
       if ("group" %in% colnames(fts)) {
         fgs <- fts$group
@@ -2202,6 +2334,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       copy(ms1)
     },
+
+    ### ___ get_features_ms2 -----
 
     #' @description
     #' Gets an averaged MS2 spectrum for features in the analyses.
@@ -2245,22 +2379,78 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           temp_ms$analysis <- temp$analysis
 
-          temp_ms$id <- temp$feature
+          temp_ms$feature <- temp$feature
 
           temp_ms
         }, fts = fts)
 
         ms2 <- rbindlist(ms2_list, fill = TRUE)
 
-        setcolorder(ms2, c("analysis", "id"))
+        add_filtered <- FALSE
+
+        if (any(fts$filtered)) {
+          if (nrow(ms2) == 0) {
+            add_filtered <- TRUE
+          } else if (any(!(fts$feature[fts$filtered] %in% ms2$feature))) {
+            add_filtered <- TRUE
+          }
+        }
+
+        if (add_filtered) {
+          fts_filtered <- fts[fts$filtered, ]
+          fts_filtered <- fts_filtered[!(fts_filtered$feature %in% ms2$feature), ]
+
+          settings <- self$get_settings("load_features_ms2")
+
+          if ("load_features_ms2" %in% names(settings)) {
+            parameters <- settings[["load_features_ms2"]][["parameters"]]
+          } else {
+            parameters <- list()
+          }
+
+          if ("isolationWindow" %in% names(parameters)) {
+            isolationWindow <- parameters[["isolationWindow"]]
+          }
+
+          if ("mzClust" %in% names(parameters)) {
+            mzClust <- parameters[["mzClust"]]
+          }
+
+          if ("presence" %in% names(parameters)) {
+            presence <- parameters[["presence"]]
+          }
+
+          if ("minIntensity" %in% names(parameters)) {
+            minIntensity <- parameters[["minIntensity"]]
+          }
+
+          ms2_2 <- self$get_ms2(
+            analyses = unique(fts$analysis),
+            mz = fts_filtered,
+            id = fts_filtered$feature,
+            isolationWindow = isolationWindow,
+            mzClust = mzClust,
+            presence = presence,
+            minIntensity = minIntensity,
+            verbose = verbose,
+            runParallel = runParallel
+          )
+
+          setnames(ms2_2, "id", "feature")
+
+          ms2 <- list(ms2, ms2_2)
+
+          ms2 <- rbindlist(ms2, fill = TRUE)
+        }
+
+        if (nrow(ms2) == 0) return(data.table())
 
       } else {
-
-        fts$id <- fts$feature
 
         ms2 <- self$get_ms2(
           analyses = unique(fts$analysis),
           mz = fts,
+          id = fts$feature,
           isolationWindow = isolationWindow,
           mzClust = mzClust,
           presence = presence,
@@ -2268,11 +2458,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
           verbose = verbose,
           runParallel = runParallel
         )
+
+        setnames(ms2, "id", "feature")
       }
 
       unique_fts_id <- paste0(fts$analysis, "-", fts$feature)
 
-      unique_ms2_id <- paste0(ms2$analysis, "-", ms2$id)
+      unique_ms2_id <- paste0(ms2$analysis, "-", ms2$feature)
 
       if ("group" %in% colnames(fts)) {
         fgs <- fts$group
@@ -2289,6 +2481,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       copy(ms2)
     },
 
+    ### ___ get_alignment -----
+
     #' @description
     #' Gets alignment.
     #'
@@ -2297,6 +2491,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
     get_alignment = function() {
       private$.alignment
     },
+
+    ### ___ get_groups -----
 
     #' @description
     #' Gets feature groups from the analyses.
@@ -2382,6 +2578,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       fgroups
     },
 
+    ### ___ get_groups_ms1 -----
+
     #' @description
     #' Gets an averaged MS1 spectrum for feature groups in the analyses.
     #'
@@ -2417,7 +2615,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (nrow(fgs) == 0) return(data.table())
 
-      if (loadedGroupsMS1 & self$has_loaded_groups_ms1()) {
+      if (loadedGroupsMS1 && self$has_loaded_groups_ms1()) {
 
         ms1_list <- lapply(seq_len(nrow(fgs)), function(x, fgs) {
           temp <- fgs[x, ]
@@ -2426,19 +2624,163 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           if (is.null(temp_ms)) return(data.table())
 
-          temp_ms$id <- temp$group
+          temp_ms$group <- temp$group
 
           temp_ms
         }, fgs = fgs)
 
         ms1 <- rbindlist(ms1_list, fill = TRUE)
 
-        setcolorder(ms1, c("id"))
+        add_filtered <- FALSE
+
+        if (any(fgs$filtered)) {
+          if (nrow(ms1) == 0) {
+            add_filtered <- TRUE
+          } else if (any(!(fgs$group[fgs$filtered] %in% ms1$group))) {
+            add_filtered <- TRUE
+          }
+        }
+
+        if (add_filtered) {
+          fgs_filtered <- fgs[fgs$filtered, ]
+          fgs_filtered <- fgs_filtered[!(fgs_filtered$group %in% ms1$group), ]
+
+          fts_filtered <- self$get_features(features = fgs_filtered$group, filtered = TRUE)
+
+          if (nrow(fts_filtered) > 0) {
+
+            settings_lf <- self$get_settings("load_features_ms1")
+
+            if ("load_features_ms1" %in% names(settings_lf)) {
+              parameters_lf <- settings_lf[["load_features_ms1"]][["parameters"]]
+            } else {
+              parameters_lf <- list()
+            }
+
+            settings <- self$get_settings("load_groups_ms1")
+
+            if ("load_groups_ms1" %in% names(settings)) {
+              parameters <- settings[["load_groups_ms1"]][["parameters"]]
+            } else {
+              parameters <- list()
+            }
+
+            if ("rtWindow" %in% names(parameters_lf)) {
+              rtWindowFeatures <- parameters_lf[["rtWindow"]]
+            }
+
+            if ("mzWindow" %in% names(parameters_lf)) {
+              mzWindowFeatures <- parameters_lf[["mzWindow"]]
+            }
+
+            if ("mzClust" %in% names(parameters_lf)) {
+              mzClustFeatures <- parameters_lf[["mzClust"]]
+            }
+
+            if ("presence" %in% names(parameters_lf)) {
+              presenceFeatures <- parameters_lf[["presence"]]
+            }
+
+            if ("minIntensity" %in% names(parameters_lf)) {
+              minIntensityFeatures <- parameters_lf[["minIntensity"]]
+            }
+
+            if ("mzClust" %in% names(parameters)) {
+              mzClustGroups <- parameters[["mzClust"]]
+            }
+
+            if ("presence" %in% names(parameters)) {
+              presenceGroups <- parameters[["presence"]]
+            }
+
+            if ("minIntensity" %in% names(parameters)) {
+              minIntensityGroups <- parameters[["minIntensity"]]
+            }
+
+            feat_ms1 <- self$get_features_ms1(
+              analyses = unique(fts_filtered$analysis),
+              features = fts_filtered$feature,
+              rtWindow = rtWindow,
+              mzWindow = mzWindow,
+              mzClust = mzClustFeatures,
+              presence = presenceFeatures,
+              minIntensity = minIntensityFeatures,
+              verbose = verbose,
+              filtered = filtered,
+              loadedMS1 = loadedFeaturesMS1,
+              runParallel = runParallel
+            )
+
+            feat_ms1 <- feat_ms1[feat_ms1$intensity > minIntensityGroups, ]
+
+            if (nrow(feat_ms1) > 0) {
+              polarities <- unique(self$get_polarities(analyses = unique(feat_ms1$analysis)))
+              multiple_polarities <- FALSE
+
+              if (length(polarities) > 1) multiple_polarities <- TRUE
+
+              if ("groups" %in% groupBy) {
+
+                if (multiple_polarities) {
+                  feat_ms1$unique_id <- paste0(feat_ms1$group, "_", feat_ms1$polarity)
+                  feat_ms1$analysis <- NA_character_
+
+                } else {
+                  feat_ms1$unique_id <- feat_ms1$group
+                  feat_ms1$analysis <- NA_character_
+                }
+
+              } else {
+                rpls <- self$get_replicate_names()
+                feat_ms1$analysis <- rpls[feat_ms1$analysis]
+
+                if (multiple_polarities) {
+                  feat_ms1$unique_id <- paste0(feat_ms1$analysis, "_", feat_ms1$group, "", feat_ms1$polarity)
+
+                } else {
+                  feat_ms1$unique_id <- paste0(feat_ms1$analysis, "_", feat_ms1$group)
+                }
+              }
+
+              feat_ms1$id <- feat_ms1$group
+
+              ms1_2_list <- rcpp_ms_cluster_spectra(feat_ms1, mzClustGroups, presenceGroups, verbose)
+
+              ms1_2 <- rbindlist(ms1_2_list, fill = TRUE)
+
+              setnames(ms1_2, "id", "group")
+
+              ms1 <- list(ms1, ms1_2)
+
+              ms1 <- rbindlist(ms1, fill = TRUE)
+            }
+          }
+        }
+
+        if (nrow(ms1) == 0) return(data.table())
+
+        ms1 <- ms1[order(ms1$mz), ]
+
+        ms1 <- ms1[order(ms1$group), ]
+
+        if ("groups" %in% groupBy) {
+          ms1[["analysis"]] <- NULL
+
+        } else {
+          ms1 <- ms1[order(ms1$analysis), ]
+          setnames(ms1, "analysis", "replicate")
+        }
+
+        if ("name" %in% colnames(fgs)) {
+          tar_ids <- fgs$name
+          names(tar_ids) <- fgs$group
+          ms1$name <- tar_ids[ms1$group]
+        }
 
         return(copy(ms1))
       }
 
-      fts <- self$get_features(features = fgs$group)
+      fts <- self$get_features(features = fgs$group, filtered = filtered)
 
       if (nrow(fts) == 0) return(data.table())
 
@@ -2456,10 +2798,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         runParallel = runParallel
       )
 
-      ms1$id <- ms1$group
-
-      ms1$group <- NULL
-
       ms1 <- ms1[ms1$intensity > minIntensityGroups, ]
 
       if (nrow(ms1) == 0) return(data.table())
@@ -2473,11 +2811,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if ("groups" %in% groupBy) {
 
         if (multiple_polarities) {
-          ms1$unique_id <- paste0(ms1$id, "_", ms1$polarity)
+          ms1$unique_id <- paste0(ms1$group, "_", ms1$polarity)
           ms1$analysis <- NA_character_
 
         } else {
-          ms1$unique_id <- ms1$id
+          ms1$unique_id <- ms1$group
           ms1$analysis <- NA_character_
         }
 
@@ -2486,11 +2824,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
         ms1$analysis <- rpls[ms1$analysis]
 
         if (multiple_polarities) {
-          ms1$unique_id <- paste0(ms1$analysis, "_", ms1$id, "", ms1$polarity)
+          ms1$unique_id <- paste0(ms1$analysis, "_", ms1$group, "", ms1$polarity)
         } else {
-          ms1$unique_id <- paste0(ms1$analysis, "_", ms1$id)
+          ms1$unique_id <- paste0(ms1$analysis, "_", ms1$group)
         }
       }
+
+      ms1$id <- ms1$group
 
       ms1_list <- rcpp_ms_cluster_spectra(
         ms1, mzClustGroups, presenceGroups, verbose
@@ -2498,9 +2838,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       ms1_df <- rbindlist(ms1_list, fill = TRUE)
 
+      ms1_df$group <- ms1_df$id
+
+      ms1_df[["id"]] <- NULL
+
       ms1_df <- ms1_df[order(ms1_df$mz), ]
 
-      ms1_df <- ms1_df[order(ms1_df$id), ]
+      ms1_df <- ms1_df[order(ms1_df$group), ]
 
       if ("groups" %in% groupBy) {
         ms1_df[["analysis"]] <- NULL
@@ -2510,8 +2854,16 @@ MassSpecData <- R6::R6Class("MassSpecData",
         setnames(ms1_df, "analysis", "replicate")
       }
 
+      if ("name" %in% colnames(fgs)) {
+        tar_ids <- fgs$name
+        names(tar_ids) <- fgs$group
+        ms1_df$name <- tar_ids[ms1_df$group]
+      }
+
       copy(ms1_df)
     },
+
+    ### ___ get_groups_ms2 -----
 
     #' @description
     #' Gets an averaged MS2 spectrum for feature groups in the analyses.
@@ -2555,23 +2907,160 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           if (is.null(temp_ms)) return(data.table())
 
-          temp_ms$id <- temp$group
+          temp_ms$group <- temp$group
 
           temp_ms
         }, fgs = fgs)
 
         ms2 <- rbindlist(ms2_list, fill = TRUE)
 
-        setcolorder(ms2, c("id"))
+        add_filtered <- FALSE
+
+        if (any(fgs$filtered)) {
+          if (nrow(ms2) == 0) {
+            add_filtered <- TRUE
+          } else if (any(!(fgs$group[fgs$filtered] %in% ms2$group))) {
+            add_filtered <- TRUE
+          }
+        }
+
+        if (add_filtered) {
+          fgs_filtered <- fgs[fgs$filtered, ]
+          fgs_filtered <- fgs_filtered[!(fgs_filtered$group %in% ms2$group), ]
+
+          fts_filtered <- self$get_features(features = fgs_filtered$group, filtered = TRUE)
+
+          if (nrow(fts_filtered) > 0) {
+
+            settings_lf <- self$get_settings("load_features_ms2")
+
+            if ("load_features_ms2" %in% names(settings_lf)) {
+              parameters_lf <- settings_lf[["load_features_ms2"]][["parameters"]]
+            } else {
+              parameters_lf <- list()
+            }
+
+            settings <- self$get_settings("load_groups_ms2")
+
+            if ("load_groups_ms2" %in% names(settings)) {
+              parameters <- settings[["load_groups_ms2"]][["parameters"]]
+            } else {
+              parameters <- list()
+            }
+
+            if ("isolationWindow" %in% names(parameters_lf)) {
+              isolationWindow <- parameters_lf[["isolationWindow"]]
+            }
+
+            if ("mzClust" %in% names(parameters_lf)) {
+              mzClustFeatures <- parameters_lf[["mzClust"]]
+            }
+
+            if ("presence" %in% names(parameters_lf)) {
+              presenceFeatures <- parameters_lf[["presence"]]
+            }
+
+            if ("minIntensity" %in% names(parameters_lf)) {
+              minIntensityFeatures <- parameters_lf[["minIntensity"]]
+            }
+
+            if ("mzClust" %in% names(parameters)) {
+              mzClustGroups <- parameters[["mzClust"]]
+            }
+
+            if ("presence" %in% names(parameters)) {
+              presenceGroups <- parameters[["presence"]]
+            }
+
+            if ("minIntensity" %in% names(parameters)) {
+              minIntensityGroups <- parameters[["minIntensity"]]
+            }
+
+            feat_ms2 <- self$get_features_ms2(
+              analyses = unique(fts_filtered$analysis),
+              features = fts_filtered$feature,
+              isolationWindow = isolationWindow,
+              mzClust = mzClustFeatures,
+              presence = presenceFeatures,
+              minIntensity = minIntensityFeatures,
+              verbose = verbose,
+              filtered = filtered,
+              loadedMS2 = loadedFeaturesMS2,
+              runParallel = runParallel
+            )
+
+            feat_ms2 <- feat_ms2[feat_ms2$intensity > minIntensityGroups, ]
+
+            if (nrow(feat_ms2) > 0) {
+              polarities <- unique(self$get_polarities(analyses = unique(feat_ms2$analysis)))
+              multiple_polarities <- FALSE
+
+              if (length(polarities) > 1) multiple_polarities <- TRUE
+
+              if ("groups" %in% groupBy) {
+
+                if (multiple_polarities) {
+                  feat_ms2$unique_id <- paste0(feat_ms2$group, "_", feat_ms2$polarity)
+                  feat_ms2$analysis <- NA_character_
+
+                } else {
+                  feat_ms2$unique_id <- feat_ms2$group
+                  feat_ms2$analysis <- NA_character_
+                }
+
+              } else {
+                rpls <- self$get_replicate_names()
+                feat_ms2$analysis <- rpls[feat_ms2$analysis]
+
+                if (multiple_polarities) {
+                  feat_ms2$unique_id <- paste0(feat_ms2$analysis, "_", feat_ms2$group, "", feat_ms2$polarity)
+
+                } else {
+                  feat_ms2$unique_id <- paste0(feat_ms2$analysis, "_", feat_ms2$group)
+                }
+              }
+
+              feat_ms2$id <- feat_ms2$group
+
+              ms2_2_list <- rcpp_ms_cluster_spectra(feat_ms2, mzClustGroups, presenceGroups, verbose)
+
+              ms2_2 <- rbindlist(ms2_2_list, fill = TRUE)
+
+              setnames(ms2_2, "id", "group")
+
+              ms2 <- list(ms2, ms2_2)
+
+              ms2 <- rbindlist(ms2, fill = TRUE)
+            }
+          }
+        }
+
+        if (nrow(ms2) == 0) return(data.table())
+
+        ms2 <- ms2[order(ms2$mz), ]
+
+        ms2 <- ms2[order(ms2$group), ]
+
+        if ("groups" %in% groupBy) {
+          ms2[["analysis"]] <- NULL
+
+        } else {
+          ms2 <- ms2[order(ms2$analysis), ]
+          setnames(ms2, "analysis", "replicate")
+        }
+
+        if ("name" %in% colnames(fgs)) {
+          tar_ids <- fgs$name
+          names(tar_ids) <- fgs$group
+          ms2$name <- tar_ids[ms2$group]
+        }
 
         return(copy(ms2))
       }
 
-      fts <- self$get_features(features = fgs$group)
+      fts <- self$get_features(features = fgs$group, filtered = filtered)
 
-      if (nrow(fts) == 0) {
-        return(data.table())
-      }
+      if (nrow(fts) == 0) return(data.table())
 
       ms2 <- self$get_features_ms2(
         analyses = unique(fts$analysis),
@@ -2586,10 +3075,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         runParallel = runParallel
       )
 
-      ms2$id <- ms2$group
-
-      ms2$group <- NULL
-
       ms2 <- ms2[ms2$intensity > minIntensityGroups, ]
 
       if (nrow(ms2) == 0) return(data.table())
@@ -2602,11 +3087,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if ("groups" %in% groupBy) {
         if (multiple_polarities) {
-          ms2$unique_id <- paste0(ms2$id, "_", ms2$polarity)
+          ms2$unique_id <- paste0(ms2$group, "_", ms2$polarity)
           ms2$analysis <- NA_character_
 
         } else {
-          ms2$unique_id <- ms2$id
+          ms2$unique_id <- ms2$group
           ms2$analysis <- NA_character_
         }
 
@@ -2615,11 +3100,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
         ms2$analysis <- rpls[ms2$analysis]
 
         if (multiple_polarities) {
-          ms2$unique_id <- paste0(ms2$analysis, "_", ms2$id, "", ms2$polarity)
+          ms2$unique_id <- paste0(ms2$analysis, "_", ms2$group, "", ms2$polarity)
         } else {
-          ms2$unique_id <- paste0(ms2$analysis, "_", ms2$id)
+          ms2$unique_id <- paste0(ms2$analysis, "_", ms2$group)
         }
       }
+
+      ms2$id <- ms2$group
 
       ms2_list <- rcpp_ms_cluster_spectra(
         ms2, mzClustGroups, presenceGroups, verbose
@@ -2627,9 +3114,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       ms2_df <- rbindlist(ms2_list, fill = TRUE)
 
+      ms2_df$group <- ms2_df$id
+
+      ms2_df[["id"]] <- NULL
+
       ms2_df <- ms2_df[order(ms2_df$mz), ]
 
-      ms2_df <- ms2_df[order(ms2_df$id), ]
+      ms2_df <- ms2_df[order(ms2_df$group), ]
 
       if ("groups" %in% groupBy) {
         ms2_df[["analysis"]] <- NULL
@@ -2639,8 +3130,16 @@ MassSpecData <- R6::R6Class("MassSpecData",
         setnames(ms2_df, "analysis", "replicate")
       }
 
+      if ("name" %in% colnames(fgs)) {
+        tar_ids <- fgs$name
+        names(tar_ids) <- fgs$group
+        ms2_df$name <- tar_ids[ms2_df$group]
+      }
+
       copy(ms2_df)
     },
+
+    ### ___ get_groups_coverage -----
 
     #' @description
     #' Gets the percentage coverage of feature groups in the analyses (i.e.
@@ -2686,6 +3185,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       res
     },
+
+    ### ___ get_components -----
 
     #' @description
     #' Gets feature components (i.e., isotope clusters and adducts) in the
@@ -2753,6 +3254,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       components
     },
 
+    ### ___ get_suspects -----
+
     #' @description Gets suspects from features according to a defined database
     #' and mass (`ppm`) and time (`sec`) deviations.
     #'
@@ -2808,32 +3311,28 @@ MassSpecData <- R6::R6Class("MassSpecData",
       analyses <- lapply(self$get_analysis_names(analyses),
         function(analysis, database, ppm, sec) {
 
-         cols_db <- colnames(database)
+          cols_db <- colnames(database)
 
-         if (!("mz" %in% cols_db) && "mass" %in% cols_db) {
-           pol <- self$get_polarities(analysis)
+          if (!("mz" %in% cols_db) && "mass" %in% cols_db) {
+            pol <- self$get_polarities(analysis)
 
-           if ("positive" %in% pol) {
-             database$mz <- database$mass + 1.007276
-           }
-
-           if ("negative" %in% pol) {
-             database$mz <- database$mass - 1.007276
-           }
-         }
-
-         database$mz <- as.numeric(database$mz)
-
-         it <- seq_len(nrow(database))
-
-         suspects <- lapply(it,
-          function(x, analysis, database, ppm, sec) {
-
-            x_mz = database$mz[x]
-            x_rt = database$rt[x]
-            if (is.na(x_rt)) {
-              x_rt = NULL
+            if ("positive" %in% pol) {
+              database$mz <- database$mass + 1.007276
             }
+
+            if ("negative" %in% pol) {
+              database$mz <- database$mass - 1.007276
+            }
+          }
+
+          database$mz <- as.numeric(database$mz)
+
+          it <- seq_len(nrow(database))
+
+          suspects <- lapply(it, function(x, analysis, database, ppm, sec) {
+            x_mz <- database$mz[x]
+            x_rt <- database$rt[x]
+            if (is.na(x_rt)) x_rt <- NULL
 
             temp <- self$get_features(
               analyses = analysis,
@@ -2889,11 +3388,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
         ppm = ppm,
         sec = sec
       )
-      analyses <- rbindlist(analyses, fill = TRUE)
 
+      analyses <- rbindlist(analyses, fill = TRUE)
 
       analyses
     },
+
+    ### ___ get_modules_data -----
 
     #' @description
     #' Gets modules data.
@@ -2907,6 +3408,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (is.null(modules)) modules <- names(private$.modules)
       private$.modules[modules]
     },
+
+    ### ___ get_internal_standards -----
 
     #' @description
     #' Gets modules data.
@@ -2966,25 +3469,26 @@ MassSpecData <- R6::R6Class("MassSpecData",
             istd <- istd[, cols, with = FALSE]
 
             istd <- istd[, `:=`(
-              freq = length(area),
-              intensity = round(mean(intensity, na.rm = TRUE), digits = 0),
-              intensity_sd = round(sd(intensity, na.rm = TRUE), digits = 0),
-              area = round(mean(area, na.rm = TRUE), digits = 0),
-              area_sd = round(sd(area, na.rm = TRUE), digits = 0),
-              rtr = round(mean(rtr, na.rm = TRUE), digits = 1),
-              rtr_sd = round(sd(rtr, na.rm = TRUE), digits = 1),
-              mzr = round(mean(mzr, na.rm = TRUE), digits = 4),
-              mzr_sd = round(sd(mzr, na.rm = TRUE), digits = 4),
-              rte = round(mean(rte, na.rm = TRUE), digits = 1),
-              rte_sd = round(sd(rte, na.rm = TRUE), digits = 1),
-              mze = round(mean(mze, na.rm = TRUE), digits = 1),
-              mze_sd = round(sd(mze, na.rm = TRUE), digits = 1),
-              rec = round(mean(rec, na.rm = TRUE), digits = 1),
-              rec_sd = round(sd(rec, na.rm = TRUE), digits = 1),
-              iso_n = round(mean(iso_n, na.rm = TRUE), digits = 0),
-              iso_n_sd = round(sd(iso_n, na.rm = TRUE), digits = 0),
-              iso_c = round(mean(iso_c, na.rm = TRUE), digits = 0),
-              iso_c_sd = round(sd(iso_c, na.rm = TRUE), digits = 0)),
+                freq = length(area),
+                intensity = round(mean(intensity, na.rm = TRUE), digits = 0),
+                intensity_sd = round(sd(intensity, na.rm = TRUE), digits = 0),
+                area = round(mean(area, na.rm = TRUE), digits = 0),
+                area_sd = round(sd(area, na.rm = TRUE), digits = 0),
+                rtr = round(mean(rtr, na.rm = TRUE), digits = 1),
+                rtr_sd = round(sd(rtr, na.rm = TRUE), digits = 1),
+                mzr = round(mean(mzr, na.rm = TRUE), digits = 4),
+                mzr_sd = round(sd(mzr, na.rm = TRUE), digits = 4),
+                rte = round(mean(rte, na.rm = TRUE), digits = 1),
+                rte_sd = round(sd(rte, na.rm = TRUE), digits = 1),
+                mze = round(mean(mze, na.rm = TRUE), digits = 1),
+                mze_sd = round(sd(mze, na.rm = TRUE), digits = 1),
+                rec = round(mean(rec, na.rm = TRUE), digits = 1),
+                rec_sd = round(sd(rec, na.rm = TRUE), digits = 1),
+                iso_n = round(mean(iso_n, na.rm = TRUE), digits = 0),
+                iso_n_sd = round(sd(iso_n, na.rm = TRUE), digits = 0),
+                iso_c = round(mean(iso_c, na.rm = TRUE), digits = 0),
+                iso_c_sd = round(sd(iso_c, na.rm = TRUE), digits = 0)
+              ),
               by = c("name", "group", "replicate")
             ][]
 
@@ -3031,6 +3535,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     ## ___ add -----
+
+    ### ___ add_headers -----
 
     #' @description
     #' Adds headers. If an argument or element "name" is given, it must
@@ -3084,6 +3590,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
+
+    ### ___ add_settings -----
 
     #' @description
     #' Adds processing settings.
@@ -3225,6 +3733,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
+    ### ___ add_analyses -----
+
     #' @description
     #' Adds analyses.
     #'
@@ -3348,6 +3858,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
+    ### ___ add_files -----
+
     #' @description
     #' Adds *MassSpecAnalysis* objects based on mzML/mzXML files. Note that
     #' when adding new mzML/mzXML files or *MassSpecAnalysis* are added any
@@ -3374,6 +3886,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       invisible(self)
     },
+
+    ### ___ add_replicate_names -----
 
     #' @description
     #' Adds or redefines the analysis replicate names.
@@ -3409,6 +3923,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
+
+    ### ___ add_blank_names -----
 
     #' @description
     #' Adds or redefines the analysis blank replicate names.
@@ -3450,6 +3966,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
+
+    ### ___ add_metadata -----
 
     #' @description
     #' Adds metadata to analyses.
@@ -3514,6 +4032,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
+
+    ### ___ add_spectra -----
 
     #' @description
     #' Adds spectra to analyses.
@@ -3619,6 +4139,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
+
+    ### ___ add_features_eic -----
 
     #' @description
     #' Adds extracted ion chromatograms (EICs) of features to analyses.
@@ -3810,6 +4332,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
+    ### ___ add_features -----
+
     #' @description
     #' Adds features to analyses.
     #'
@@ -3922,6 +4446,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
+    ### ___ add_group_to_features -----
+
     #' @description
     #' Adds a group columns from correspondence analysis to the features
     #' data.table. Note that existing features groups are replaced!
@@ -3985,6 +4511,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
+
+    ### ___ add_groups -----
 
     #' @description
     #' Adds feature groups. Note that existing features groups are
@@ -4058,6 +4586,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
+    ### ___ add_alignment -----
+
     #' @description
     #' Adds time alignment results.
     #'
@@ -4101,6 +4631,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
+
+    ### ___ add_modules_data -----
 
     #' @description
     #' Adds data from modules to the MassSpecData.
@@ -4146,6 +4678,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
     ## ___ load -----
 
+    ### ___ load_spectra -----
+
     #' @description
     #' Loads all spectra from all analyses.
     #'
@@ -4183,6 +4717,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
+
+    ### ___ load_chromatograms -----
 
     #' @description
     #' Loads all chromatograms from all analyses.
@@ -4230,6 +4766,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
+
+    ### ___ load_features_eic -----
 
     #' @description
     #' Loads features EICs in each analyses.
@@ -4304,6 +4842,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       invisible(self)
     },
+
+    ### ___ load_features_ms1 -----
 
     #' @description
     #' Loads and average MS1 spectra from features in the analyses.
@@ -4381,15 +4921,21 @@ MassSpecData <- R6::R6Class("MassSpecData",
         analyses <- self$get_analyses()
 
         analyses <- lapply(analyses, function(x, ms1) {
+
           ana <- x$name
+
           ana_ms1 <- ms1[ms1$analysis %in% ana, ]
+
           fts_all <- x$features$feature
+
           fts_ms1 <- lapply(fts_all, function(x2, ana_ms1) {
-            ft_ms1 <- ana_ms1[ana_ms1$id %in% x2, ]
+
+            ft_ms1 <- ana_ms1[ana_ms1$feature %in% x2, ]
+
             if (nrow(ft_ms1) > 0) {
               ft_ms1[["group"]] <- NULL
               ft_ms1[["analysis"]] <- NULL
-              ft_ms1[["id"]] <- NULL
+              ft_ms1[["feature"]] <- NULL
               ft_ms1
 
             } else {
@@ -4436,6 +4982,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
+
+    ### ___ load_features_ms2 -----
 
     #' @description
     #' Loads and average MS2 spectra from features in the analyses.
@@ -4521,12 +5069,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           fts_ms2 <- lapply(fts_all, function(x2, ana_ms2) {
 
-            ft_ms2 <- ana_ms2[ana_ms2$id %in% x2, ]
+            ft_ms2 <- ana_ms2[ana_ms2$feature %in% x2, ]
 
             if (nrow(ft_ms2) > 0) {
               ft_ms2[["group"]] <- NULL
               ft_ms2[["analysis"]] <- NULL
-              ft_ms2[["id"]] <- NULL
+              ft_ms2[["feature"]] <- NULL
               ft_ms2
 
             } else {
@@ -4575,6 +5123,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
+
+    ### ___ load_groups_ms1 -----
 
     #' @description
     #' Loads and average MS1 spectra from feature groups. If MS1
@@ -4629,7 +5179,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           ms1 <- patRoon::loadCacheData("load_groups_ms1", hash)
 
           if (!is.null(ms1)) {
-            if (all(ms1$id %in% group_ids$group)) {
+            if (all(ms1$group %in% group_ids$group)) {
               message("\U2139 Groups MS1 spectra loaded from cache!")
               cached_ms1 <- TRUE
             } else {
@@ -4672,24 +5222,25 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
 
         if (nrow(ms1) > 0) {
-          ms1 <- split(ms1, ms1$id)
+          ms1_groups_vector <- ms1$group
+          ms1[["group"]] <- NULL
+          ms1_list <- split(ms1, ms1_groups_vector)
 
           groups <- self$get_groups(filtered = TRUE)
           groups <- groups$group
 
-          groups_ms1 <- lapply(groups, function(x, ms1) {
-            temp <- ms1[[x]]
+          groups_ms1 <- lapply(groups, function(x, ms1_list) {
+            temp <- ms1_list[[x]]
             temp
-          }, ms1 = ms1)
+          }, ms1_list = ms1_list)
 
           if (add_settings) self$add_settings(settings)
 
           private$.groups$ms1 <- groups_ms1
 
           if (!cached_ms1 & !is.null(hash)) {
-            ms1_for_cache <- self$get_groups_ms1(loadedGroupsMS1 = TRUE)
             message("\U1f5ab Groups MS1 spectra cached!")
-            patRoon::saveCacheData("load_groups_ms1", ms1_for_cache, hash)
+            patRoon::saveCacheData("load_groups_ms1", ms1, hash)
           }
 
           if (requireNamespace(settings$software, quietly = TRUE)) {
@@ -4715,6 +5266,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
+
+    ### ___ load_groups_ms2 -----
 
     #' @description
     #' Loads and average MS2 spectra from feature groups. If MS2
@@ -4769,7 +5322,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           ms2 <- patRoon::loadCacheData("load_groups_ms2", hash)
 
           if (!is.null(ms2)) {
-            if (all(ms2$id %in% group_ids$group)) {
+            if (all(ms2$group %in% group_ids$group)) {
               message("\U2139 Groups MS2 spectra loaded from cache!")
               cached_ms2 <- TRUE
             } else {
@@ -4812,24 +5365,25 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
 
         if (nrow(ms2) > 0) {
-          ms2 <- split(ms2, ms2$id)
+          ms2_groups_vector <- ms2$group
+          ms2[["group"]] <- NULL
+          ms2_list <- split(ms2, ms2_groups_vector)
 
           groups <- self$get_groups(filtered = TRUE)
           groups <- groups$group
 
-          groups_ms2 <- lapply(groups, function(x, ms2) {
-            temp <- ms2[[x]]
+          groups_ms2 <- lapply(groups, function(x, ms2_list) {
+            temp <- ms2_list[[x]]
             temp
-          }, ms2 = ms2)
+          }, ms2_list = ms2_list)
 
           if (add_settings) self$add_settings(settings)
 
           private$.groups$ms2 <- groups_ms2
 
           if (!cached_ms2 & !is.null(hash)) {
-            ms2_for_cache <- self$get_groups_ms2(loadedGroupsMS2 = TRUE)
             message("\U1f5ab Groups MS2 spectra cached!")
-            patRoon::saveCacheData("load_groups_ms2", ms2_for_cache, hash)
+            patRoon::saveCacheData("load_groups_ms2", ms2, hash)
           }
 
           if (requireNamespace(settings$software, quietly = TRUE)) {
@@ -5062,10 +5616,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
     remove_features = function(features = NULL, filtered = FALSE) {
 
       if (is.null(features) & !filtered) {
-        private$.groups <- NULL
-        private$.alignment <- NULL
+
         private$.analyses <- lapply(private$.analyses, function(x) {
           x$features <- data.table()
+          x$features_eic <- list()
           x
         })
 
@@ -5078,16 +5632,21 @@ MassSpecData <- R6::R6Class("MassSpecData",
           NA_character_
         )
 
-        private$.register(
-          "removed",
-          "feature groups",
-          "all",
-          NA_character_,
-          NA_character_,
-          NA_character_
-        )
+        if (self$has_groups()) {
+          private$.groups <- NULL
+          private$.alignment <- NULL
 
-        message("\U2713 Removed all features and feature groups!")
+          private$.register(
+            "removed",
+            "feature groups",
+            "all",
+            NA_character_,
+            NA_character_,
+            NA_character_
+          )
+        }
+
+        message("\U2713 Removed all features!")
 
         return(invisible(self))
       }
@@ -5125,6 +5684,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
               temp <- org_fts[org_fts$analysis %in% x$name, ]
               temp[["analysis"]] <- NULL
               x$features <- temp
+              if (length(x$features_eic) > 0) x$features_eic <- x$features_eic[temp$feature]
               x
             }, org_fts = org_fts)
 
@@ -5276,6 +5836,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             x$features <- x$features[order(x$features$mz), ]
             x$features <- x$features[order(x$features$rt), ]
             x$features <- x$features[order(x$features$filtered), ]
+            if (length(x$features_eic) > 0) x$features_eic <- x$features_eic[x$features$feature]
             x
           }, groups = groups)
           n_g <- nrow(private$.groups)
@@ -5734,6 +6295,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
     ## ___ plot -----
 
+    ### ___ plot_spectra -----
+
     #' @description
     #' Plots spectra for given MS analyses.
     #'
@@ -5796,6 +6359,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       .plot_spectra_interactive(spec, colorBy, legendNames, xVal, yVal)
     },
+
+    ### ___ plot_xic -----
 
     #' @description
     #' Plots extract ion chromatograms (EIC) and \emph{m/z} vs
@@ -5864,6 +6429,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       )
     },
 
+    ### ___ plot_eic -----
+
     #' @description
     #' Plots extract ion chromatograms (EIC) from the analyses based on targets.
     #'
@@ -5905,6 +6472,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         .plot_eic_interactive(eic, legendNames, colorBy, title, showLegend)
       }
     },
+
+    ### ___ plot_tic -----
 
     #' @description
     #' Plots the total ion chromatogram (TIC) of the analyses.
@@ -5964,6 +6533,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
+    ### ___ plot_bpc -----
+
     #' @description
     #' Plots the base peak chromatogram (BPC) of the analyses.
     #'
@@ -6022,6 +6593,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
+    ### ___ plot_ms2 -----
+
     #' @description
     #' Plots MS2 spectra from the analyses based on targets.
     #'
@@ -6068,6 +6641,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
+    ### ___ plot_ms1 -----
+
     #' @description
     #' Plots MS1 spectra from the analyses based on targets.
     #'
@@ -6113,6 +6688,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
+    ### ___ plot_features -----
+
     #' @description
     #' Plots features from analyses.
     #'
@@ -6155,6 +6732,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         features = fts,
         rtExpand = rtExpand,
         mzExpand = mzExpand,
+        filtered = filtered,
         loaded = loaded,
         runParallel = runParallel
       )
@@ -6178,6 +6756,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         .plot_features_interactive(eic, fts, legendNames, colorBy, title, showLegend)
       }
     },
+
+    ### ___ map_features -----
 
     #' @description
     #' Plots a map of the retention time vs \emph{m/z} of features from analyses.
@@ -6222,6 +6802,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         .map_features_interactive(fts, colorBy, legendNames, xlim, ylim, title)
       }
     },
+
+    ### ___ plot_features_ms1 -----
 
     #' @description
     #' Plots MS1 spectra from features in the analyses.
@@ -6273,6 +6855,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
+    ### ___ plot_features_ms2 -----
+
     #' @description
     #' Plots MS2 spectra from features in the analyses.
     #'
@@ -6320,6 +6904,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         .plot_ms2_interactive(ms2, legendNames, colorBy, title)
       }
     },
+
+    ### ___ plot_alignment -----
 
     #' @description
     #' Plots the results from the retention time alignment across analyses.
@@ -6393,6 +6979,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       plot
     },
 
+    ### ___ plot_groups -----
+
     #' @description
     #' Plots feature groups EIC.
     #'
@@ -6416,6 +7004,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                            showLegend = TRUE,
                            xlim = NULL,
                            ylim = NULL,
+                           cex = 0.6,
                            interactive = TRUE) {
 
       fts <- self$get_features(
@@ -6432,6 +7021,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         features = fts,
         rtExpand = rtExpand,
         mzExpand = mzExpand,
+        filtered = filtered,
         runParallel = runParallel,
         legendNames = legendNames,
         title = title,
@@ -6439,9 +7029,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
         showLegend = showLegend,
         xlim = xlim,
         ylim = ylim,
+        cex = cex,
         interactive = interactive
       )
     },
+
+    ### ___ plot_groups_ms1 -----
 
     #' @description
     #' Plots MS1 spectra from feature groups in the analyses.
@@ -6512,6 +7105,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
+    ### ___ plot_groups_ms2 -----
+
     #' @description
     #' Plots MS1 spectra from feature groups in the analyses.
     #'
@@ -6580,6 +7175,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
+    ### ___ plot_groups_overview -----
+
     #' @description
     #' Method to give an overview of the EIC, alignment and intensity variance
     #' from features within target feature groups.
@@ -6614,6 +7211,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         features = fts,
         rtExpand = rtExpand,
         mzExpand = mzExpand,
+        filtered = filtered,
         loaded = loaded,
         filtered = TRUE,
         runParallel = runParallel
@@ -6629,8 +7227,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
 
-      if (is.character(legendNames) &
-        length(legendNames) == length(unique(fts$group))) {
+      if (is.character(legendNames) & length(legendNames) == length(unique(fts$group))) {
         leg <- legendNames
         names(leg) <- unique(fts$group)
         leg <- leg[fts$group]
@@ -6651,6 +7248,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       .plot_groups_overview_aux(fts, eic, heights, analyses)
     },
 
+    ### ___ plot_internal_standards_qc -----
+
     #' @description
     #' Plots the quality control assessment of internal standards.
     #'
@@ -6666,6 +7265,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         .plot_internal_standards_qc_interactive(istd, self$get_analysis_names())
       }
     },
+
+    ### ___ map_components -----
 
     #' @description
     #' Maps components (i.e., isotope clusters and adducts) in the analyses.

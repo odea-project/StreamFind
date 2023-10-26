@@ -75,6 +75,11 @@ reference:
     Settings for the processing method find_internal_standards.
   contents:
     - starts_with("Settings_find_internal_standards")
+- subtitle: calculate_quality
+  desc: >
+    Settings for calculating quality parameters of features.
+  contents:
+    - starts_with("Settings_calculate_quality")
 - subtitle: General get and save default settings
   desc: >
     Funtions to uniformily get and save _ProcessingSettings_ are available.
