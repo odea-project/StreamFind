@@ -101,17 +101,15 @@
       
       i <- NULL
       
-      quality <- foreach(i = fts_eics, .packages = "StreamFind") %dopar% { #.export = c("fts_eics", "analyses")
+      quality <- foreach(i = analyses, .packages = "StreamFind", .export = "fts_eics") %dopar% { 
         
-        # ana <- analyses[i]
+        ft_df <- fts_eics[[i]][["f"]]
+
+        et_df <- fts_eics[[i]][["e"]]
+        
+        # ft_df <- i[["f"]]
         # 
-        # ft_df <- fts_eics[[ana]][["f"]]
-        # 
-        # et_df <- fts_eics[[ana]][["e"]]
-        
-        ft_df <- i[["f"]]
-        
-        et_df <- i[["e"]]
+        # et_df <- i[["e"]]
         
         if (!(is.data.frame(ft_df) && is.data.frame(et_df))) {
           return(NULL)
@@ -143,6 +141,19 @@
           
           out_ft <- et[et$rt <= ft$rtmin | et$rt >= ft$rtmax, ]
           
+          if (nrow(out_ft) > 0) {
+            other_ft <- ft_df[
+              ft_df$rtmin >= min(out_ft$rt) & ft_df$rtmax < ft$rtmin & ft_df$mzmin >= ft$mzmin & ft_df$mzmax <= ft$mzmax  |
+              ft_df$rtmax <= max(out_ft$rt) & ft_df$rtmin > ft$rtmax & ft_df$mzmin >= ft$mzmin & ft_df$mzmax <= ft$mzmax
+            ]
+            
+            if (nrow(other_ft) > 0) {
+              for (it2 in seq_len(nrow(other_ft))) {
+                out_ft <- out_ft[!(out_ft$rt >= other_ft$rtmin[it2] & out_ft$rt <= other_ft$rtmax[it2]), ]
+              }
+            }
+          }
+          
           # estimated sn based on lower ends of the pk
           if (nrow(out_ft) == 0) {
             noise <- mean(sort(pk_ft$intensity)[1:2])
@@ -152,7 +163,6 @@
           # estimated sn from outer traces
           } else {
             noise <- mean(out_ft$intensity)
-            # TODO remove other features within the same time & mass
             results$qlt_sn[it] <- round(ft$intensity / noise, digits = 1)
             results$qlt_noise[it] <- round(noise, digits = 0)
           }
@@ -167,9 +177,17 @@
             "sigma" = (max(pk_x) - min(pk_x)) / 4#sd(pk_x) # alternative as a fraction: (max(pk_x) - min(pk_x)) / 4
           )
           
-          fit <- nls(pk_ints ~ gaussian(pk_x, A, mu, sigma),
-            start = pk_model_init,
-            control = list(warnOnly = TRUE) # TODO set trycatch for warning and give more information
+          tryCatch(
+            {
+              fit <- nls(pk_ints ~ gaussian(pk_x, A, mu, sigma),
+                start = pk_model_init,
+                control = list(warnOnly = TRUE)
+              ) # TODO set trycatch for warning and give more information
+            },
+            warning = function(warn) {
+              warning(paste0("Feature ", ft$feature, " in analysis ", i, " exceeded 50 iterations to converge!"))
+              return(fit)
+            }
           )
           
           predicted_values <- gaussian(pk_x, coef(fit)["A"], coef(fit)["mu"], coef(fit)["sigma"])
@@ -191,7 +209,6 @@
           )
           
           results[["qlt_model"]][it] <- list(pk_model)
-            
 
           # plotly::plot_ly() %>%
           #   plotly::add_trace(x = pk_x, y = pk_ints, name = 'real', type = 'scatter', mode = 'markers', marker = list(color = "black")) %>%

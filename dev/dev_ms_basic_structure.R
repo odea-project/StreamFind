@@ -82,7 +82,6 @@ qlt <- ms$calculate_quality(Settings_calculate_quality_StreamFind())
 
 suspects <- ms$get_suspects(database = db, ppm = 10, sec = 15, filtered = FALSE)
 
-
 test <- qlt[qlt$feature %in% suspects$feature, ]
 
 ft <- qlt[qlt$feature %in% "mz268.19_rt916_f50" & qlt$analysis %in% "02_tof_ww_is_pos_influent-r003", ]
