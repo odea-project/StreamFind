@@ -1073,7 +1073,7 @@ Settings_load_features_ms1_StreamFind <- function(
     presence = 0.8,
     minIntensity = 250,
     filtered = FALSE,
-    runParallel = FALSE,
+    runParallel = TRUE,
     verbose = FALSE) {
 
   settings <- list(
@@ -1146,7 +1146,7 @@ Settings_load_features_ms2_StreamFind <- function(
     presence = 0.8,
     minIntensity = 0,
     filtered = FALSE,
-    runParallel = FALSE,
+    runParallel = TRUE,
     verbose = FALSE) {
 
   settings <- list(
@@ -1216,7 +1216,7 @@ Settings_load_groups_ms1_StreamFind <- function(
     minIntensity = 1000,
     verbose = FALSE,
     filtered = FALSE,
-    runParallel = FALSE) {
+    runParallel = TRUE) {
 
   settings <- list(
     call = "load_groups_ms1",
@@ -1282,7 +1282,7 @@ Settings_load_groups_ms2_StreamFind <- function(
     presence = 0.8,
     minIntensity = 250,
     filtered = FALSE,
-    runParallel = FALSE,
+    runParallel = TRUE,
     verbose = FALSE) {
 
   settings <- list(
@@ -1876,6 +1876,7 @@ validate.Settings_find_internal_standards_StreamFind <- function(x) {
 #' Settings for calculating quality parameters of features (e.g., signal-to-noise (sn) ratio).
 #'
 #' @template arg-ms-filtered
+#' @template arg-runParallel
 #'
 #' @return A ProcessingSettings S3 class object with subclass
 #' Settings_calculate_quality_StreamFind.
@@ -1883,14 +1884,16 @@ validate.Settings_find_internal_standards_StreamFind <- function(x) {
 #' @export
 #'
 Settings_calculate_quality_StreamFind <- function(
-    filtered = FALSE) {
+    filtered = FALSE,
+    runParallel = TRUE) {
 
   settings <- list(
     call = "calculate_quality",
     algorithm = "StreamFind",
     algorithm = "StreamFind",
     parameters = list(
-      "filtered" = filtered
+      "filtered" = filtered,
+      "runParallel" = runParallel
     ),
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",

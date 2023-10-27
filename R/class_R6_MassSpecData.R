@@ -5222,6 +5222,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
 
         if (nrow(ms1) > 0) {
+          
+          if (!cached_ms1 & !is.null(hash)) {
+            message("\U1f5ab Groups MS1 spectra cached!")
+            patRoon::saveCacheData("load_groups_ms1", ms1, hash)
+          }
+          
           ms1_groups_vector <- ms1$group
           ms1[["group"]] <- NULL
           ms1_list <- split(ms1, ms1_groups_vector)
@@ -5237,11 +5243,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
           if (add_settings) self$add_settings(settings)
 
           private$.groups$ms1 <- groups_ms1
-
-          if (!cached_ms1 & !is.null(hash)) {
-            message("\U1f5ab Groups MS1 spectra cached!")
-            patRoon::saveCacheData("load_groups_ms1", ms1, hash)
-          }
 
           if (requireNamespace(settings$software, quietly = TRUE)) {
             version <- as.character(packageVersion(settings$software))
@@ -5365,6 +5366,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
 
         if (nrow(ms2) > 0) {
+
+          if (!cached_ms2 & !is.null(hash)) {
+            message("\U1f5ab Groups MS2 spectra cached!")
+            patRoon::saveCacheData("load_groups_ms2", ms2, hash)
+          }
+
           ms2_groups_vector <- ms2$group
           ms2[["group"]] <- NULL
           ms2_list <- split(ms2, ms2_groups_vector)
@@ -5380,11 +5387,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
           if (add_settings) self$add_settings(settings)
 
           private$.groups$ms2 <- groups_ms2
-
-          if (!cached_ms2 & !is.null(hash)) {
-            message("\U1f5ab Groups MS2 spectra cached!")
-            patRoon::saveCacheData("load_groups_ms2", ms2, hash)
-          }
 
           if (requireNamespace(settings$software, quietly = TRUE)) {
             version <- as.character(packageVersion(settings$software))
@@ -7342,18 +7344,21 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       invisible(self)
     },
-
-    ### ___ basic -----
+    
+    ### ___ centroid_spectra -----
 
     #' @description Centroids profile spectra data for each MS analysis.
     #'
     #' @return Invisible.
     #'
     centroid_spectra = function(settings = NULL) {
+      
       add_settings <- TRUE
+      
       if (is.null(settings)) add_settings <- FALSE
 
       settings <- private$.get_call_settings(settings, "centroid_spectra")
+      
       if (is.null(settings)) return(invisible(self))
 
       processed <- .s3_ms_centroid_spectra(settings, self)
@@ -7379,16 +7384,21 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       invisible(self)
     },
+    
+    ### ___ bin_spectra -----
 
     #' @description Bins centroided spectra for each MS analysis.
     #'
     #' @return Invisible.
     #'
     bin_spectra = function(settings = NULL) {
+      
       add_settings <- TRUE
+      
       if (is.null(settings)) add_settings <- FALSE
 
       settings <- private$.get_call_settings(settings, "bin_spectra")
+      
       if (is.null(settings)) return(invisible(self))
 
       processed <- .s3_ms_bin_spectra(settings, self)
@@ -7414,6 +7424,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       invisible(self)
     },
+    
+    ### ___ find_features -----
 
     #' @description Finds features (i.e., chromatographic peaks) in the spectra
     #' data of the analyses. Note, MS data structure requirements vary between
@@ -7422,10 +7434,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return Invisible.
     #'
     find_features = function(settings = NULL) {
+      
       add_settings <- TRUE
+      
       if (is.null(settings)) add_settings <- FALSE
 
       settings <- private$.get_call_settings(settings, "find_features")
+      
       if (is.null(settings)) return(invisible(self))
 
       processed <- .s3_ms_find_features(settings, self)
@@ -7453,16 +7468,21 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       invisible(self)
     },
+    
+    ### ___ group_features -----
 
     #' @description Groups and possibly aligns features across analyses.
     #'
     #' @return Invisible.
     #'
     group_features = function(settings = NULL) {
+      
       add_settings <- TRUE
+      
       if (is.null(settings)) add_settings <- FALSE
 
       settings <- private$.get_call_settings(settings, "group_features")
+      
       if (is.null(settings)) return(invisible(self))
 
       processed <- .s3_ms_group_features(settings, self)
@@ -7488,6 +7508,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       invisible(self)
     },
+    
+    ### ___ filter_features -----
 
     #' @description Filters features and feature groups according to defined
     #' settings.
@@ -7500,11 +7522,15 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' methods `get_features()` and `get_groups()`, respectively.
     #'
     filter_features = function(settings = NULL) {
+      
       processed <- FALSE
+      
       add_settings <- TRUE
+      
       if (is.null(settings)) add_settings <- FALSE
 
       settings <- private$.get_call_settings(settings, "filter_features")
+      
       if (is.null(settings)) return(invisible(self))
 
       if ("Settings_filter_features_StreamFind" %in% class(settings)) {
@@ -7591,6 +7617,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       invisible(self)
     },
+    
+    ### ___ annotate_features -----
 
     #' @description Annotates isotopic features according to defined settings.
     #'
@@ -7600,10 +7628,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' analysis.
     #'
     annotate_features = function(settings = NULL) {
+      
       add_settings <- TRUE
+      
       if (is.null(settings)) add_settings <- FALSE
 
       settings <- private$.get_call_settings(settings, "annotate_features")
+      
       if (is.null(settings)) return(invisible(self))
 
       processed <- .s3_ms_annotate_features(settings, self)
@@ -7631,17 +7662,20 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       invisible(self)
     },
-
-    ### ___ advanced -----
+    
+    ### ___ find_internal_standards -----
 
     #' @description Finds internal standards in features according to defined
     #' settings.
     #'
     find_internal_standards = function(settings = NULL) {
+      
       add_settings <- TRUE
+      
       if (is.null(settings)) add_settings <- FALSE
 
       settings <- private$.get_call_settings(settings, "find_internal_standards")
+      
       if (is.null(settings)) return(invisible(self))
 
       processed <- .s3_ms_find_internal_standards(settings, self)
@@ -7667,15 +7701,20 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       invisible(self)
     },
+    
+    ### ___ suspect_screening -----
 
     #' @description Screens for suspect targets in features according to defined
     #' settings.
     #'
     suspect_screening = function(settings = NULL) {
+      
       add_settings <- TRUE
+      
       if (is.null(settings)) add_settings <- FALSE
 
       settings <- private$.get_call_settings(settings, "suspect_screening")
+      
       if (is.null(settings)) return(invisible(self))
 
       processed <- .s3_ms_suspect_screening(settings, self)
@@ -7699,6 +7738,51 @@ MassSpecData <- R6::R6Class("MassSpecData",
         )
       }
 
+      invisible(self)
+    },
+    
+    ### ___ calculate_quality -----
+    
+    #' @description Calculates quality parameters of features that can be used
+    #' for filtering/prioritization.
+    #'
+    calculate_quality = function(settings = NULL) {
+      
+      add_settings <- TRUE
+      
+      if (is.null(settings)) add_settings <- FALSE
+      
+      settings <- private$.get_call_settings(settings, "calculate_quality")
+      
+      if (is.null(settings)) {
+        warning("Settings not found to calculate quality of features!")
+        return(invisible(self))  
+      }
+      
+      processed <- .s3_ms_calculate_quality(settings, self)
+      
+      return(processed)
+      
+      if (processed) {
+        
+        if (add_settings) self$add_settings(settings)
+        
+        if (requireNamespace(settings$software, quietly = TRUE)) {
+          version <- as.character(packageVersion(settings$software))
+        } else {
+          version <- NA_character_
+        }
+        
+        private$.register(
+          "processed",
+          "features",
+          settings$call,
+          settings$software,
+          version,
+          settings$algorithm
+        )
+      }
+      
       invisible(self)
     },
 
@@ -8683,7 +8767,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         "fill_features",
         "filter_features",
         "suspect_screening",
-        "find_internal_standards"
+        "find_internal_standards",
+        "calculate_quality"
       )
     }
   ),

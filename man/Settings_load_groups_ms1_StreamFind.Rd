@@ -11,7 +11,7 @@ Settings_load_groups_ms1_StreamFind(
   minIntensity = 1000,
   verbose = FALSE,
   filtered = FALSE,
-  runParallel = FALSE
+  runParallel = TRUE
 )
 
 \method{validate}{Settings_load_groups_ms1_StreamFind}(x)

@@ -140,6 +140,7 @@ processing, visualizing and storing mass spectrometry (MS) data.
 \item \href{#method-MassSpecData-annotate_features}{\code{MassSpecData$annotate_features()}}
 \item \href{#method-MassSpecData-find_internal_standards}{\code{MassSpecData$find_internal_standards()}}
 \item \href{#method-MassSpecData-suspect_screening}{\code{MassSpecData$suspect_screening()}}
+\item \href{#method-MassSpecData-calculate_quality}{\code{MassSpecData$calculate_quality()}}
 \item \href{#method-MassSpecData-as_patRoon_features}{\code{MassSpecData$as_patRoon_features()}}
 \item \href{#method-MassSpecData-as_patRoon_featureGroups}{\code{MassSpecData$as_patRoon_featureGroups()}}
 \item \href{#method-MassSpecData-as_patRoon_MSPeakLists}{\code{MassSpecData$as_patRoon_MSPeakLists()}}
@@ -5296,6 +5297,28 @@ Screens for suspect targets in features according to defined
 settings.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$suspect_screening(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the \code{MassSpecData} object.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-calculate_quality"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-calculate_quality}{}}}
+\subsection{Method \code{calculate_quality()}}{
+Calculates quality parameters of features that can be used
+for filtering/prioritization.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$calculate_quality(settings = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

@@ -67,18 +67,47 @@ ms$add_settings(
       minGroupAbundance = 3,
       excludeIsotopes = TRUE
     ),
-    Settings_load_features_eic_StreamFind(),
-    Settings_load_features_ms1_StreamFind(),
-    Settings_load_features_ms2_StreamFind(),
-    Settings_load_groups_ms1_StreamFind(),
-    Settings_load_groups_ms2_StreamFind()
+    Settings_load_features_eic_StreamFind()
+    # Settings_load_features_ms1_StreamFind(),
+    # Settings_load_features_ms2_StreamFind(),
+    # Settings_load_groups_ms1_StreamFind(),
+    # Settings_load_groups_ms2_StreamFind()
   )
 )
 
 ms$run_workflow()
 
+qlt <- ms$calculate_quality(Settings_calculate_quality_StreamFind())
 
-# suspects <- ms$get_suspects(database = db, ppm = 10, sec = 15, filtered = TRUE)
+
+suspects <- ms$get_suspects(database = db, ppm = 10, sec = 15, filtered = FALSE)
+
+
+test <- qlt[qlt$feature %in% suspects$feature, ]
+
+ft <- qlt[qlt$feature %in% "mz268.19_rt916_f50" & qlt$analysis %in% "02_tof_ww_is_pos_influent-r003", ]
+ft_m <- ft$qlt_model[[1]]
+plotly::plot_ly() %>%
+plotly::add_trace(
+  x = seq_along(ft_m$real_values),
+  y = ft_m$real_values,
+  name = 'real', type = 'scatter',
+  mode = 'markers', marker = list(color = "black")
+) %>%
+plotly::add_trace(
+  x = seq_along(ft_m$real_values),
+  y = ft_m$predicted_values,
+  type = 'scatter', name = 'predicted',
+  mode = 'lines', line = list(color = "red")
+)
+ft$qlt_noise
+ft$qlt_sn
+ft$qlt_gaufit
+
+
+
+
+
 
 # ms$plot_groups(
 #   groups = suspects,
@@ -87,14 +116,9 @@ ms$run_workflow()
 #   cex = 1,
 # )
 
-ms$get_groups_ms1(mass = db, filtered = TRUE)
-
-ms$plot_groups_ms2(mass = db, filtered = TRUE, legendNames = TRUE)
-
-
-
-
-Settings_calculate_quality_StreamFind()
+ms$get_groups_ms1(mass = db, filtered = FALSE)
+ms$plot_groups_ms2(mass = db, filtered = FALSE, legendNames = TRUE)
+ms$get_components(mass = db)
 
 
 

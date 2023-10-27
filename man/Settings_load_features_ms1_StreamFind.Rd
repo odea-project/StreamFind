@@ -12,7 +12,7 @@ Settings_load_features_ms1_StreamFind(
   presence = 0.8,
   minIntensity = 250,
   filtered = FALSE,
-  runParallel = FALSE,
+  runParallel = TRUE,
   verbose = FALSE
 )
 

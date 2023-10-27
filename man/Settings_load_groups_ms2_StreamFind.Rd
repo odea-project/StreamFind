@@ -10,7 +10,7 @@ Settings_load_groups_ms2_StreamFind(
   presence = 0.8,
   minIntensity = 250,
   filtered = FALSE,
-  runParallel = FALSE,
+  runParallel = TRUE,
   verbose = FALSE
 )
 
