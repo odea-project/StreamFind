@@ -1919,6 +1919,7 @@ validate.Settings_calculate_quality_StreamFind <- function(x) {
   all(
     checkmate::test_choice(x$call, "calculate_quality"),
     checkmate::test_choice(x$algorithm, "StreamFind"),
-    checkmate::test_logical(x$parameters$filtered, max.len = 1)
+    checkmate::test_logical(x$parameters$filtered, max.len = 1),
+    checkmate::test_logical(x$parameters$runParallel, max.len = 1)
   )
 }

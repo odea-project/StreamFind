@@ -7781,6 +7781,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           version,
           settings$algorithm
         )
+        
+        message(paste0("\U2713 ", "Features quality added!"))
       }
       
       invisible(self)

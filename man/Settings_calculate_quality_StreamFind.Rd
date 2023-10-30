@@ -5,12 +5,16 @@
 \alias{validate.Settings_calculate_quality_StreamFind}
 \title{Settings_calculate_quality_StreamFind}
 \usage{
-Settings_calculate_quality_StreamFind(filtered = FALSE)
+Settings_calculate_quality_StreamFind(filtered = FALSE, runParallel = TRUE)
 
 \method{validate}{Settings_calculate_quality_StreamFind}(x)
 }
 \arguments{
 \item{filtered}{Logical. When \code{TRUE}, filtered features/groups are considered.}
+
+\item{runParallel}{Logical of length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
 
 \item{x}{A Settings_calculate_quality_StreamFind S3 class object.}
 }
