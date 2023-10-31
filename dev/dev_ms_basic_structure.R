@@ -143,12 +143,17 @@ features <- suspects
   n_fts <- length(qlt)
   
   qlt <- lapply(seq_len(n_fts), function(x, features, qlt) {
+    
     temp <- qlt[[x]]$data
+    
     temp$analysis <- features$analysis[x]
+    
     temp$feature <- features$feature[x]
+    
     if ("group" %in% colnames(features)) {
       temp$group <- features$group[x]
     }
+    
     temp
   }, features = features, qlt = qlt)
   
@@ -163,41 +168,60 @@ features <- suspects
     dt <- qlt[[i]]
     
     plot <- plot %>%  plotly::add_trace(
-        x = dt$rt,
-        y = dt$original,
-        name = ft,
-        legendgroup = ft,
-        type = 'scatter',
-        mode = 'markers',
-        marker = list(
-          type = "diamond",
-          color = colors_vec[ft]
-        )
-      ) %>%
-      plotly::add_trace(
-        x = dt$rt,
-        y = dt$corrected,
-        name = ft,
-        legendgroup = ft,
-        type = 'scatter',
-        mode = 'markers',
-        marker = list(
-          color = colors_vec[ft]
-        ),
-        showlegend = FALSE
-      ) %>%
-      plotly::add_trace(
-        x = dt$rt,
-        y = dt$predicted,
-        type = 'scatter',
-        name = ft,
-        legendgroup = ft,
-        mode = 'lines',
-        line = list(
-          color = colors_vec[ft]
-        ),
-        showlegend = FALSE
+      x = dt$rt,
+      y = dt$original,
+      name = ft,
+      legendgroup = ft,
+      type = 'scatter',
+      mode = 'markers',
+      marker = list(
+        type = "diamond",
+        color = colors_vec[ft]
       )
+    )
+    
+    plot <- plot %>%  plotly::add_trace(
+      x = dt$rt,
+      y = dt$corrected,
+      name = ft,
+      legendgroup = ft,
+      type = 'scatter',
+      mode = 'markers',
+      marker = list(
+        color = colors_vec[ft]
+      ),
+      showlegend = FALSE
+    )
+    
+    plot <- plot %>%  plotly::add_trace(
+      x = dt$rt,
+      y = dt$predicted,
+      type = 'scatter',
+      name = ft,
+      legendgroup = ft,
+      mode = 'lines',
+      line = list(
+        dash = 'dash',
+        color = colors_vec[ft]
+      ),
+      showlegend = FALSE
+    )
+    
+    plot <- plot %>%  plotly::add_trace(
+      x = dt$rt,
+      y = rep(features$qlt_noise[i], length(dt$rt)),
+      type = 'scatter',
+      name = ft,
+      legendgroup = ft,
+      mode = 'lines',
+      line = list(
+        dash = 'dot',
+        color = colors_vec[ft]
+      ),
+      showlegend = FALSE
+    )
+    
+    
   }
   
   plot
