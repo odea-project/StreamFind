@@ -132,41 +132,41 @@ features <- suspects
 
 
 .plot_features_quality <- function(features) {
-  
+
   if (!"qlt_model" %in% colnames(features)) {
     warning("Features quality data not present!")
     return(NULL)
   }
-  
+
   qlt <- features$qlt_model
-  
+
   n_fts <- length(qlt)
-  
+
   qlt <- lapply(seq_len(n_fts), function(x, features, qlt) {
-    
+
     temp <- qlt[[x]]$data
-    
+
     temp$analysis <- features$analysis[x]
-    
+
     temp$feature <- features$feature[x]
-    
+
     if ("group" %in% colnames(features)) {
       temp$group <- features$group[x]
     }
-    
+
     temp
   }, features = features, qlt = qlt)
-  
+
   colors_vec <- .get_colors(features$feature)
-  
+
   plot <- plotly::plot_ly()
-  
+
   for (i in seq_len(n_fts)) {
-    
+
     ft <- features$feature[i]
-    
+
     dt <- qlt[[i]]
-    
+
     plot <- plot %>%  plotly::add_trace(
       x = dt$rt,
       y = dt$original,
@@ -179,7 +179,7 @@ features <- suspects
         color = colors_vec[ft]
       )
     )
-    
+
     plot <- plot %>%  plotly::add_trace(
       x = dt$rt,
       y = dt$corrected,
@@ -192,7 +192,7 @@ features <- suspects
       ),
       showlegend = FALSE
     )
-    
+
     plot <- plot %>%  plotly::add_trace(
       x = dt$rt,
       y = dt$predicted,
@@ -206,7 +206,7 @@ features <- suspects
       ),
       showlegend = FALSE
     )
-    
+
     plot <- plot %>%  plotly::add_trace(
       x = dt$rt,
       y = rep(features$qlt_noise[i], length(dt$rt)),
@@ -220,10 +220,10 @@ features <- suspects
       ),
       showlegend = FALSE
     )
-    
-    
+
+
   }
-  
+
   plot
 }
 
