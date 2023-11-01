@@ -756,8 +756,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return The history list of processing steps applied.
     #'
     get_history = function() {
+      
       if (is.list(private$.history)) {
         rbindlist(private$.history, fill = TRUE)
+        
       } else {
         private$.history
       }
@@ -4825,6 +4827,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
           })
           x_l
         })
+        
+        if (requireNamespace(settings$software, quietly = TRUE)) {
+          version <- as.character(packageVersion(settings$software))
+        } else {
+          version <- NA_character_
+        }
 
         private$.register(
           "loaded",
@@ -7215,7 +7223,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         mzExpand = mzExpand,
         filtered = filtered,
         loaded = loaded,
-        filtered = TRUE,
         runParallel = runParallel
       )
 
@@ -8747,6 +8754,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
     ## ___ info -----
 
+    ### ___ processing_function_calls -----
+
     #' @description
     #' Possible processing function calls.
     #'
@@ -8770,12 +8779,69 @@ MassSpecData <- R6::R6Class("MassSpecData",
         "find_internal_standards",
         "calculate_quality"
       )
-    }
-  ),
+    },
 
-  lock_class = FALSE,
+    ### ___ help -----
 
-  lock_objects = FALSE
+    #' @description
+    #' Shortcut to reference help pages.
+    #'
+    #' @return Opens a reference help page.
+    #'
+    help = list(
+      methods = function() {
+        browseURL("https://odea-project.github.io/StreamFind/reference/MassSpecData.html#methods")
+      },
+      get_groups = function() {
+        browseURL("https://odea-project.github.io/StreamFind/reference/MassSpecData.html#method-MassSpecData-get_groups")
+      },
+      get_features = function() {
+        browseURL("https://odea-project.github.io/StreamFind/reference/MassSpecData.html#method-MassSpecData-get_features")
+      },
+      settings_centroid_spectra = function() {
+        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#centroid-spectra")
+      },
+      settings_bin_spectra = function() {
+        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#bin-spectra")
+      },
+      settings_find_features = function() {
+        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#find-features")
+      },
+      settings_annotate_features = function() {
+        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#annotate-features")
+      },
+      settings_load_features_ms1 = function() {
+        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#load-features-ms1")
+      },
+      settings_load_features_ms2 = function() {
+        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#load-features-ms2")
+      },
+      settings_load_groups_ms1 = function() {
+        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#load-groups-ms1")
+      },
+      settings_load_groups_ms2 = function() {
+        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#load-groups-ms2")
+      },
+      settings_group_features = function() {
+        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#group-features")
+      },
+      settings_fill_features = function() {
+        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#fill-features")
+      },
+      settings_filter_features = function() {
+        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#filter-features")
+      },
+      settings_suspect_screening = function() {
+        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#suspect-screening")
+      },
+      settings_find_internal_standards = function() {
+        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#find-internal-standards")
+      },
+      settings_calculate_quality = function() {
+        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#calculate-quality")
+      }
+    )
+  )
 )
 
 # _ import MassSpecData class -----
