@@ -14,6 +14,14 @@ processing, visualizing and storing mass spectrometry (MS) data.
 
 \insertRef{pugixml01}{StreamFind}
 }
+\section{Public fields}{
+\if{html}{\out{<div class="r6-fields">}}
+\describe{
+\item{\code{help}}{(\code{list()})\cr
+List of function elements to access specific reference help pages.}
+}
+\if{html}{\out{</div>}}
+}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{

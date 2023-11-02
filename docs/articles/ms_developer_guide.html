@@ -82,9 +82,9 @@ Cunha</h4>
                   <a class="author_email" href="mailto:#"></a><a href="mailto:cunha@iuta.de" class="email">cunha@iuta.de</a>
       
                   
-            <h4 data-toc-skip class="date">12 October, 2023</h4>
+            <h4 data-toc-skip class="date">02 November, 2023</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/odea-project/StreamFind/blob/HEAD/vignettes/articles/ms_developer_guide.Rmd" class="external-link"><code>vignettes/articles/ms_developer_guide.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/odea-project/StreamFind/blob/HEAD/../StreamFind/vignettes/articles/ms_developer_guide.Rmd" class="external-link"><code>../StreamFind/vignettes/articles/ms_developer_guide.Rmd</code></a></small>
       <div class="d-none name"><code>ms_developer_guide.Rmd</code></div>
     </div>
 
@@ -166,10 +166,10 @@ briefly shown.</p>
 <span><span class="co">## [1] "Person A"</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $path</span></span>
-<span><span class="co">## [1] "C:/Users/Ricardo Cunha/Documents/GitHub/StreamFind/vignettes/articles"</span></span>
+<span><span class="co">## [1] "C:/Users/cunha/Documents/007_CodeProjects/StreamFind/vignettes/articles"</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $date</span></span>
-<span><span class="co">## [1] "2023-10-12 12:30:03 CEST"</span></span>
+<span><span class="co">## [1] "2023-11-02 11:57:04 CET"</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## attr(,"class")</span></span>
 <span><span class="co">## [1] "ProjectHeaders"</span></span></code></pre>
@@ -180,8 +180,8 @@ briefly shown.</p>
 <span><span class="co">## MassSpecData</span></span>
 <span><span class="co">## name          Example</span></span>
 <span><span class="co">## author        Person A</span></span>
-<span><span class="co">## path          C:/Users/Ricardo Cunha/Documents/GitHub/StreamFind/vignettes/articles</span></span>
-<span><span class="co">## date          2023-10-12 12:30:03.183258</span></span>
+<span><span class="co">## path          C:/Users/cunha/Documents/007_CodeProjects/StreamFind/vignettes/articles</span></span>
+<span><span class="co">## date          2023-11-02 11:57:04.599286</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Analyses: 0</span></span></code></pre>
 <p>For implementation of processing modules and algorithms, the <a href="https://rstudio-education.github.io/hopr/s3.html" class="external-link">S3</a> class <a href="https://odea-project.github.io/StreamFind/reference/ProcessingSettings.html">ProcessingSettings</a>
@@ -204,7 +204,7 @@ the module <code>MassSpecData$find_features()</code>.</p>
 <span><span class="co">##  software     openms</span></span>
 <span><span class="co">##  developer    Rost HL, Sachsenberg T, Aiche S, Bielow C et al.</span></span>
 <span><span class="co">##  contact      oliver.kohlbacher@uni-tuebingen.de</span></span>
-<span><span class="co">##  link         https://odea-project.github.io/StreamFind/reference/Settings_find_features_openms.html</span></span>
+<span><span class="co">##  link         https://openms.de/</span></span>
 <span><span class="co">##  doi          https://doi.org/10.1038/nmeth.3959</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##  parameters  </span></span>
@@ -222,14 +222,15 @@ the module <code>MassSpecData$find_features()</code>.</p>
 <span><span class="co">##   -  minFWHM 5 </span></span>
 <span><span class="co">##   -  maxFWHM 40 </span></span>
 <span><span class="co">##   -  traceSNRFiltering TRUE </span></span>
-<span><span class="co">##   -  localRTRange 10 </span></span>
-<span><span class="co">##   -  localMZRange 6.5 </span></span>
-<span><span class="co">##   -  isotopeFilteringModel metabolites (5% RMS) </span></span>
+<span><span class="co">##   -  localRTRange 0 </span></span>
+<span><span class="co">##   -  localMZRange 0 </span></span>
+<span><span class="co">##   -  isotopeFilteringModel none </span></span>
 <span><span class="co">##   -  MZScoring13C FALSE </span></span>
 <span><span class="co">##   -  useSmoothedInts FALSE </span></span>
 <span><span class="co">##   -  extraOpts </span></span>
 <span><span class="co">##   -  intSearchRTWindow 3 </span></span>
-<span><span class="co">##   -  useFFMIntensities FALSE</span></span></code></pre>
+<span><span class="co">##   -  useFFMIntensities FALSE </span></span>
+<span><span class="co">##   -  verbose FALSE</span></span></code></pre>
 <p>As shown, the constructor of a <em>ProcessingSettings</em> is a
 function always including
 <code>Settings_[module name]_[algorithm name]</code>; More details are
@@ -245,8 +246,8 @@ MassSpecData.</p>
 <span><span class="co">## MassSpecData</span></span>
 <span><span class="co">## name          Example</span></span>
 <span><span class="co">## author        Person A</span></span>
-<span><span class="co">## path          C:/Users/Ricardo Cunha/Documents/GitHub/StreamFind/vignettes/articles</span></span>
-<span><span class="co">## date          2023-10-12 12:30:03.183258</span></span>
+<span><span class="co">## path          C:/Users/cunha/Documents/007_CodeProjects/StreamFind/vignettes/articles</span></span>
+<span><span class="co">## date          2023-11-02 11:57:04.599286</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## settings: </span></span>
 <span><span class="co">##  1: find_features (openms)</span></span>
@@ -332,7 +333,7 @@ string and imported from a JSON file, as demonstrated below.</p>
 <span><span class="co">##         "rtautenh@ipb-halle.de"</span></span>
 <span><span class="co">##     ],</span></span>
 <span><span class="co">##     "link": [</span></span>
-<span><span class="co">##         "https://odea-project.github.io/StreamFind/reference/Settings_find_features_xcms3_centwave.html"</span></span>
+<span><span class="co">##         "https://bioconductor.org/packages/release/bioc/html/xcms.html"</span></span>
 <span><span class="co">##     ],</span></span>
 <span><span class="co">##     "doi": [</span></span>
 <span><span class="co">##         "https://doi.org/10.1186/1471-2105-9-504"</span></span>
@@ -349,8 +350,8 @@ string and imported from a JSON file, as demonstrated below.</p>
 <span><span class="co">## MassSpecData</span></span>
 <span><span class="co">## name          Example</span></span>
 <span><span class="co">## author        Person A</span></span>
-<span><span class="co">## path          C:/Users/Ricardo Cunha/Documents/GitHub/StreamFind/vignettes/articles</span></span>
-<span><span class="co">## date          2023-10-12 12:30:03.183258</span></span>
+<span><span class="co">## path          C:/Users/cunha/Documents/007_CodeProjects/StreamFind/vignettes/articles</span></span>
+<span><span class="co">## date          2023-11-02 11:57:04.599286</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## settings: </span></span>
 <span><span class="co">##  1: find_features (xcms3_centwave)</span></span>
@@ -464,7 +465,6 @@ sections.</p>
 </h3>
 <p>Under definition.</p>
 <hr>
-<!-- <style> --><!-- body, p { --><!--   color: black; --><!--   font-family: Arial; --><!--   text-align: justify; --><!--   font-size: 12pt; --><!-- } --><!-- h1{ --><!--   font-size: 20pt; --><!--   font-style: bold; --><!-- } --><!-- h2{ --><!--   font-size:18pt; --><!--   font-style: bold; --><!-- } --><!-- h3{ --><!--   font-size:14pt; --><!--   font-style: bold; --><!-- } --><!-- .list-group-item.active, .list-group-item.active:focus, .list-group-item.active:hover { --><!--     background-color: #177013; --><!-- } --><!-- caption { --><!--   color: black; --><!--   font-size: 1.0em; --><!-- } --><!-- </style> -->
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

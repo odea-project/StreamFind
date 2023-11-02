@@ -8813,11 +8813,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
     ### ___ help -----
 
-    #' @description
-    #' Shortcut to reference help pages.
-    #'
-    #' @return Opens a reference help page.
-    #'
+    #' @field help (`list()`)\cr
+    #' List of function elements to access specific reference help pages.
     help = list(
       methods = function() {
         browseURL("https://odea-project.github.io/StreamFind/reference/MassSpecData.html#methods")

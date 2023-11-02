@@ -55,6 +55,11 @@ reference:
   contents:
     - starts_with("Settings_load_features_ms")
     - starts_with("Settings_load_groups_ms")
+- subtitle: load_features_eic
+  desc: >
+    Settings for loading the extracted ion chromatogram (EIC) of features.
+  contents:
+    - starts_with("Settings_load_features_eic")
 - subtitle: filter_features
   desc: >
     Settings for the processing method filter_features.
@@ -93,4 +98,5 @@ reference:
     - convert_ms_files
     - trim_ms_files_spectra
     - import_MassSpecData
+    - combine_MassSpecData
     - make_ms_targets

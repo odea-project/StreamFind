@@ -197,7 +197,6 @@ ms$plot_eic(
 )
 
 
-
 # Isotopic chains
 ms$map_components(
   analyses = 10,
