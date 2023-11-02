@@ -9,10 +9,12 @@ library(StreamFind)
 # Load file paths
 all_files <- StreamFindData::get_ms_file_paths()
 files <- all_files[grepl("blank|influent|o3sw", all_files)]
+files
 
 # Make project headers
 headers <- ProjectHeaders(
-  name = "Wastewater project"
+  name = "Wastewater project",
+  description = "Project example"
 )
 
 # Create the "Engine"
@@ -33,8 +35,8 @@ ms$plot_bpc(analyses = c(4, 10), levels = 1)
 # Replicate names
 rpls <- c(
   rep("blank_neg", 3), rep("blank_pos", 3),
-  rep("in_neg", 3), rep("in_pos", 3),
-  rep("out_neg", 3), rep("out_pos", 3)
+  rep("influent_neg", 3), rep("influent_pos", 3),
+  rep("effluent_neg", 3), rep("effluent_pos", 3)
 )
 
 # Respective blank replicate names
@@ -93,15 +95,15 @@ dbis
 ms$add_settings(
   list(
     Settings_annotate_features_StreamFind(),
-    
+
     Settings_group_features_openms(),
-    
+
     Settings_find_internal_standards_StreamFind(
       database = dbis,
       ppm = 8,
       sec = 10
     ),
-    
+
     Settings_filter_features_StreamFind(
       minIntensity = 5000,
       maxGroupSd = 30,
@@ -109,20 +111,20 @@ ms$add_settings(
       minGroupAbundance = 3,
       excludeIsotopes = TRUE
     ),
-    
+
     Settings_load_features_eic_StreamFind(
       rtExpand = 60,
       mzExpand = 0.0005
     ),
-    
+
     Settings_load_features_ms1_StreamFind(),
-    
+
     Settings_load_features_ms2_StreamFind(),
-    
+
     Settings_load_groups_ms1_StreamFind(),
-    
+
     Settings_load_groups_ms2_StreamFind(),
-    
+
     Settings_calculate_quality_StreamFind()
   )
 )
