@@ -9,8 +9,8 @@ test_that("suggested dependencies", {
 
 # resources -----
 
-all_files <- StreamFindData::get_all_file_paths()
-db <- StreamFindData::get_tof_spiked_chemicals()
+all_files <- StreamFindData::get_ms_file_paths()
+db <- StreamFindData::get_ms_tof_spiked_chemicals()
 files_mrm <- all_files[grepl("mrm", all_files)]
 files <- all_files[grepl("influent|blank", all_files)]
 files2 <- all_files[grepl("o3sw", all_files)]

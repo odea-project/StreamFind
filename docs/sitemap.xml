@@ -4,6 +4,15 @@
     <loc>https://odea-project.github.io/StreamFind/404.html</loc>
   </url>
   <url>
+    <loc>https://odea-project.github.io/StreamFind/articles/articles/demo_ozonation_project.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/articles/articles/ms_developer_guide.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/articles/articles/ms_overview.html</loc>
+  </url>
+  <url>
     <loc>https://odea-project.github.io/StreamFind/articles/demo_ozonation_project.html</loc>
   </url>
   <url>
@@ -26,6 +35,9 @@
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/LICENSE.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/combine_MassSpecData.html</loc>
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/convert_ms_files.html</loc>
@@ -70,6 +82,9 @@
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_bin_spectra_qBinning.html</loc>
   </url>
   <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/Settings_calculate_quality_StreamFind.html</loc>
+  </url>
+  <url>
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_centroid_spectra_qCentroids.html</loc>
   </url>
   <url>
@@ -91,10 +106,19 @@
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_find_features_xcms3_matchedfilter.html</loc>
   </url>
   <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/Settings_find_internal_standards_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/Settings_group_features_openms.html</loc>
+  </url>
+  <url>
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_group_features_xcms3_peakdensity.html</loc>
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_group_features_xcms3_peakdensity_peakgroups.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/Settings_load_features_eic_StreamFind.html</loc>
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_load_features_ms1_StreamFind.html</loc>

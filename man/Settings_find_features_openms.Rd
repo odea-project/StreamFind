@@ -20,14 +20,15 @@ Settings_find_features_openms(
   minFWHM = 5,
   maxFWHM = 40,
   traceSNRFiltering = TRUE,
-  localRTRange = 10,
-  localMZRange = 6.5,
-  isotopeFilteringModel = "metabolites (5\% RMS)",
+  localRTRange = 0,
+  localMZRange = 0,
+  isotopeFilteringModel = "none",
   MZScoring13C = FALSE,
   useSmoothedInts = FALSE,
   extraOpts = NULL,
   intSearchRTWindow = 3,
-  useFFMIntensities = FALSE
+  useFFMIntensities = FALSE,
+  verbose = FALSE
 )
 
 \method{validate}{Settings_find_features_openms}(x)
@@ -106,6 +107,9 @@ from the input ‘mzML’ files, which is potentially much slower, especially
 with many analyses files. However, useFFMIntensities=TRUE is still somewhat
 experimental, may be less accurate and requires a recent version of OpenMS
 (>=2.7).}
+
+\item{verbose}{Logical of length one. When TRUE adds processing information
+to the console.}
 
 \item{x}{A Settings_find_features_openms S3 class object.}
 }

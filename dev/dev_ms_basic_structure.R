@@ -1,17 +1,342 @@
 
+# Tasks -----------------------------------------------------------------------
+
 # TODO add stats to the groups (e.g., presence in each replicate, coverage)
 # TODO check what happens when all MS2 centroids are added to clustering
-# TODO clustering does not see polarity yet and it should be split.
+# TODO Features and groups MS1 could have a is_pre.
 # TODO add possibility to add_files in MassSpecData
 # TODO add is_pre to MS1 spectra
+# TODO add filter for features/groups with more than 1 representation in components
+# TODO add signal to noise ratio to internal standards report, calculated on demand
+# TODO check patRoon MSPeakLists and add is_pre in MS1
+# TODO when subsetting on features/groups check/add if features_eics are also changed
 
 
-all_files <- StreamFindData::get_all_file_paths()
+# Resources -------------------------------------------------------------------
 
-db <- StreamFindData::get_tof_spiked_chemicals()
-db <- db[grepl("S", db$tag), ]
+all_files <- StreamFindData::get_ms_file_paths()
+
+all_db <- StreamFindData::get_ms_tof_spiked_chemicals()
+db <- all_db[grepl("S", all_db$tag), ]
 cols <- c("name", "formula", "mass", "rt")
 db <- db[, cols, with = FALSE]
+
+
+
+
+
+# Test find_internal_standards -------------------------------------------------
+
+dbis <- all_db[grepl("IS", all_db$tag), ]
+cols <- c("name", "formula", "mass", "rt")
+dbis <- dbis[, cols, with = FALSE]
+
+files_df <- data.frame(
+  "file" = all_files[grepl("blank|influent|o3sw", all_files)],
+  "replicate" = c(
+    rep("blank_neg", 3),
+    rep("blank_pos", 3),
+    rep("in_neg", 3),
+    rep("in_pos", 3),
+    rep("out_neg", 3),
+    rep("out_pos", 3)
+  ),
+  "blank" = c(
+    rep("blank_neg", 3),
+    rep("blank_pos", 3),
+    rep("blank_neg", 3),
+    rep("blank_pos", 3),
+    rep("blank_neg", 3),
+    rep("blank_pos", 3)
+  )
+)
+
+ms <- MassSpecData$new(files_df)
+
+ms$add_settings(
+  list(
+    Settings_find_features_openms(),
+    Settings_annotate_features_StreamFind(),
+    Settings_group_features_openms(),
+    Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
+    Settings_filter_features_StreamFind(
+      minIntensity = 5000,
+      #minSnRatio = 20,
+      maxGroupSd = 30,
+      blank = 5,
+      minGroupAbundance = 3,
+      excludeIsotopes = TRUE
+    ),
+    Settings_load_features_eic_StreamFind(
+      rtExpand = 60,
+      mzExpand = 0.0005
+    )
+    # Settings_load_features_ms1_StreamFind(),
+    # Settings_load_features_ms2_StreamFind(),
+    # Settings_load_groups_ms1_StreamFind(),
+    # Settings_load_groups_ms2_StreamFind()
+  )
+)
+
+# patRoon::clearCache("all")
+
+ms$run_workflow()
+
+sqlt <- Settings_calculate_quality_StreamFind(runParallel = TRUE)
+
+patRoon::clearCache("calculate_quality")
+
+ms$calculate_quality(sqlt)
+
+
+suspects <- ms$get_suspects(database = db, ppm = 10, sec = 15, filtered = FALSE)
+
+
+
+
+
+
+
+
+
+
+
+
+qlt <- .s3_ms_calculate_quality.Settings_calculate_quality_StreamFind(sqlt, ms)
+
+qlt[qlt$qlt_warning & qlt$qlt_sn >= 3, ]
+
+ms$plot_features(
+  features = qlt[qlt$qlt_warning & qlt$qlt_sn >= 3, ],  #qlt[qlt$qlt_warning, ],  #qlt[qlt$qlt_traces < 5, ],
+  filtered = TRUE,
+  rtExpand = 60,
+  mzExpand = 0.001,
+  loaded = F
+)
+
+
+
+
+id_T = "mz279.12_rt1007_f279"
+ana_T = "02_tof_ww_is_neg_influent-r002"
+
+id_T = "mz364.21_rt1067_f416"
+ana_T = "03_tof_ww_is_pos_o3sw_effluent-r002"
+
+ms$plot_features(analyses = ana_T, features = id_T, filtered = TRUE, mzExpand = 0.001, loaded = F)
+
+features <- suspects
+
+
+.plot_features_quality(features[1:2, ])
+
+
+.plot_features_quality <- function(features) {
+
+  if (!"qlt_model" %in% colnames(features)) {
+    warning("Features quality data not present!")
+    return(NULL)
+  }
+
+  qlt <- features$qlt_model
+
+  n_fts <- length(qlt)
+
+  qlt <- lapply(seq_len(n_fts), function(x, features, qlt) {
+
+    temp <- qlt[[x]]$data
+
+    temp$analysis <- features$analysis[x]
+
+    temp$feature <- features$feature[x]
+
+    if ("group" %in% colnames(features)) {
+      temp$group <- features$group[x]
+    }
+
+    temp
+  }, features = features, qlt = qlt)
+
+  colors_vec <- .get_colors(features$feature)
+
+  plot <- plotly::plot_ly()
+
+  for (i in seq_len(n_fts)) {
+
+    ft <- features$feature[i]
+
+    dt <- qlt[[i]]
+
+    plot <- plot %>%  plotly::add_trace(
+      x = dt$rt,
+      y = dt$original,
+      name = ft,
+      legendgroup = ft,
+      type = 'scatter',
+      mode = 'markers',
+      marker = list(
+        type = "diamond",
+        color = colors_vec[ft]
+      )
+    )
+
+    plot <- plot %>%  plotly::add_trace(
+      x = dt$rt,
+      y = dt$corrected,
+      name = ft,
+      legendgroup = ft,
+      type = 'scatter',
+      mode = 'markers',
+      marker = list(
+        color = colors_vec[ft]
+      ),
+      showlegend = FALSE
+    )
+
+    plot <- plot %>%  plotly::add_trace(
+      x = dt$rt,
+      y = dt$predicted,
+      type = 'scatter',
+      name = ft,
+      legendgroup = ft,
+      mode = 'lines',
+      line = list(
+        dash = 'dash',
+        color = colors_vec[ft]
+      ),
+      showlegend = FALSE
+    )
+
+    plot <- plot %>%  plotly::add_trace(
+      x = dt$rt,
+      y = rep(features$qlt_noise[i], length(dt$rt)),
+      type = 'scatter',
+      name = ft,
+      legendgroup = ft,
+      mode = 'lines',
+      line = list(
+        dash = 'dot',
+        color = colors_vec[ft]
+      ),
+      showlegend = FALSE
+    )
+
+
+  }
+
+  plot
+}
+
+
+
+# plotly::plot_ly() %>%
+#   plotly::add_trace(y = pk_ints, type = 'scatter', name = 'Data', mode = 'markers', marker = list(color = "black")) %>%
+#   plotly::add_trace(y = derivative01, type = 'scatter', name = '1s D', mode = 'lines', line = list(color = "blue")) %>%
+
+
+
+
+# ms$plot_groups(
+#   groups = suspects,
+#   filtered = TRUE,
+#   interactive = FALSE,
+#   cex = 1,
+# )
+
+ms$get_groups_ms1(mass = db, filtered = FALSE)
+ms$plot_groups_ms2(mass = db, filtered = FALSE, legendNames = TRUE)
+ms$get_components(mass = db)
+
+
+
+
+ms2 <- ms$subset_features(suspects)
+
+anas <- ms2$get_analyses()
+
+View(anas[[10]])
+
+
+
+
+
+
+ms$plot_groups_overview(mass = db[1:3, ], filtered = TRUE, legendNames = TRUE)
+
+
+
+
+
+ms2$add_settings(Settings_load_features_eic_StreamFind())
+
+ms2$add_features_eic(ms2$load_features_eic())
+
+ms2$get_features_eic(mass = db)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ms$plot_features(features = "mz237.05_rt1158_f227")
+
+ms$plot_features(mass = db, ppm = 10, sec = 15, rtExpand = 120, legendNames = TRUE)
+
+# fts <- ms$get_features(analyses = 1)
+# fts <- fts[order(fts$mz), ]
+# which(fts$feature %in% "mz300.05_rt1255_f175")
+# output <- rcpp_ms_annotation_isotopes(fts, rtWindowAlignment = 0.3, verbose = TRUE)
+
+
+
+fg <- ms$as_patRoon_featureGroups()
+
+db2 <- data.table::copy(all_db)
+db2 <- db2[grepl("IS", db2$tag), ]
+cols <- c("name", "formula", "mass", "rt")
+db2 <- db2[, cols, with = FALSE]
+db2[["formula"]] <- NULL
+data.table::setnames(db2, "mass", "neutralMass")
+
+
+?patRoon::normInts
+
+fgn <- patRoon::normInts(
+  fg,
+  featNorm = "istd",
+  standards = db2, #patRoonData::ISTDListPos
+  adduct = "[M+H]+",
+  ISTDRTWindow = 20,
+  ISTDMZWindow = 200,
+  minISTDs = 2
+)
+
+fgn <- patRoon::normInts(
+  fg,
+  featNorm = "tic",
+  standards = db2, #patRoonData::ISTDListPos
+  adduct = "[M+H]+",
+  ISTDRTWindow = 20,
+  ISTDMZWindow = 200,
+  minISTDs = 2
+)
+
+patRoon::plotGraph(fgn)
+
+
+
+# MSPeaksLists ----------------------------------------------------------------
 
 files_df <- data.frame(
   "file" = all_files[grepl("blank|influent|o3sw", all_files)],
@@ -35,9 +360,7 @@ files_df <- data.frame(
 
 ms <- MassSpecData$new(files = files_df)
 
-ms$get_run(analyses = 1)
-
-ms <- ms$subset_analyses(c(4:6, 10:12, 16:18))
+# ms <- ms$subset_analyses(c(4:6, 10:12, 16:18))
 
 ms$add_settings(
   list(
@@ -57,10 +380,14 @@ ms$add_settings(
   )
 )
 
-ms
+ms$find_features()
+ms$group_features()
+ms$filter_features()
+
+combine_MassSpecData(ms, ms2)
 
 
-patRoon::clearCache("parsed_ms_analyses")
+# patRoon::clearCache("parsed_ms_analyses")
 patRoon::clearCache("parsed_ms_spectra")
 patRoon::clearCache("load_features_ms1")
 patRoon::clearCache("load_features_ms2")
@@ -69,44 +396,39 @@ patRoon::clearCache("load_groups_ms2")
 # patRoon::clearCache("MSPeakListsAvg")
 # ms$get_history()
 
-ms$find_features()
 
-ms$group_features()
-
-ms$filter_features()
 
 # ms$plot_spectra(1, xVal = "drift")
 
 suspects <- ms$get_suspects(database = db, ppm = 10, sec = 15)
-
-suspects
-
 ms <- ms$subset_features(features = suspects)
 
 ms$load_features_ms1()
-
 ms$load_features_ms2()
-
 ms$load_groups_ms1()
-
 ms$load_groups_ms2()
 
+View(ms$get_groups_ms2())
+
+ms$plot_groups_ms1(colorBy = "targets+polarities")
+
+
 # ms$get_features_ms1(loadedMS1 = T)
-# 
+#
 # ms$plot_features_ms2(mass = db[7, ], loadedMS2 = T)
 #
 # ms$get_groups_ms1(loadedFeaturesMS1 = T, loadedGroupsMS1 = T)
-# 
+#
 # ms$get_groups_ms2(loadedFeaturesMS2 = T, loadedGroupsMS2 = T)
-# 
+#
 # ms$plot_groups_ms2(mass = db[7, ], colorBy = "targets+polarities")
-# 
+#
 # ms$plot_groups_ms1(mass = db[7, ], colorBy = "targets+polarities")
 
 # pat_fg <- ms$as_patRoon_featureGroups()
-# 
+#
 # pat_pl <- ms$as_patRoon_MSPeakLists()
-# 
+#
 # ms$patRoon_report()
 
 
@@ -167,7 +489,7 @@ ms$get_features_ms2(
   presence = 0.8,
   minIntensity = 250
 )
-# 
+#
 ms$plot_features_ms1(
   mass = db[11, ],
   presence = 0.8,
@@ -178,7 +500,7 @@ ms$plot_features_ms1(
 )
 
 # ms$get_features_ms1(
-#   mass = diu, rt = diu_rt, 
+#   mass = diu, rt = diu_rt,
 #   presence = 0.8,
 #   mzWindow = c(-1, 6),
 #   rtWindow = c(-2, 2),
@@ -195,11 +517,11 @@ ms$plot_groups_ms1(
   minIntensityGroups = 250,
   colorBy = "targets+polarities"
 )
-# 
+#
 # ms$plot_eic(mass = diu, rt = diu_rt, colorBy = "targets+polarities")
-# 
+#
 # ms$get_groups_ms1(
-#   mass = diu, rt = diu_rt, 
+#   mass = diu, rt = diu_rt,
 #   presenceFeatures = 0.8,
 #   presenceGroups = 0.8,
 #   mzWindow = c(-1, 6),
@@ -237,91 +559,91 @@ mspl <- generateMSPeakListsMzR(
 
 
 if (ms$has_groups()) {
-  
+
   plist <- lapply(ms$get_analyses(), function(x) {
-    
+
     features <- x$features
     features <- features[!features$filtered, ]
-    
+
     groups <- unique(features$group)
     groups <- groups[!is.na(groups)]
-    
+
     glist <- lapply(groups, function(x2, features) {
       out <- list()
-      
+
       MS <- features$ms1[features$group %in% x2]
       MSMS <- features$ms2[features$group %in% x2]
-      
+
       if (length(MS) > 1) {
         warning("")
         MS <- MS[1]
       }
-      
+
       if (length(MSMS) > 1) {
         warning("")
         MSMS <- MSMS[1]
       }
-      
+
       if (!is.null(MS[[1]])) {
         names(MS) <- "MS"
         out <- c(out, MS)
       }
-      
+
       if (!is.null(MSMS[[1]])) {
         names(MSMS) <- "MSMS"
         out <- c(out, MSMS)
       }
-      
+
       out
-      
+
     }, features = features)
-    
+
     names(glist) <- groups
-    
+
     glist
   })
-  
+
   names(plist) <- ms$get_analysis_names()
-  
+
   groups <- ms$get_groups()
-  
+
   aplist <- lapply(seq_len(nrow(groups)), function(x, groups) {
     out <- list()
-    
+
     MS <- groups$ms1[x]
     MSMS <- groups$ms2[x]
-    
+
     if (length(MS) > 1) {
       warning("")
       MS <- MS[1]
     }
-    
+
     if (length(MSMS) > 1) {
       warning("")
       MSMS <- MSMS[1]
     }
-    
+
     if (!is.null(MS[[1]])) {
       names(MS) <- "MS"
       out <- c(out, MS)
     }
-    
+
     if (!is.null(MSMS[[1]])) {
       names(MSMS) <- "MSMS"
       out <- c(out, MSMS)
     }
-    
+
     out
-    
-    
+
+
   }, groups = groups)
-  
+
   names(aplist) <- groups$group
-  
+
   new("MSPeakLists",
-      peakLists = plist,
-      averagedPeakLists = aplist,
-      algorithm = "StreamFind"
+    peakLists = plist,
+    averagedPeakLists = aplist,
+    algorithm = "StreamFind"
   )
 }
 
@@ -353,39 +675,6 @@ msbp$suspect_screening(sssfi)
 
 
 file.remove("feature_list.txt")
-
-
-
-
-
-
-
-write.csv(suspects_g, "C:/Users/Ricardo Cunha/Desktop/suspects_g.csv", row.names = FALSE)
-
-sink("C:/Users/Ricardo Cunha/Desktop/suspects_g.txt")
-cat("\n")
-cat("\n")
-
-for (i in 1:nrow(suspects_g)) {
-  cat("NAME: ")
-  cat(suspects_g$Label[i])
-  cat("\n")
-  cat("RETENTIONTIME: ")
-  cat(round(suspects_g$RT[i], digits = 3))
-  cat("\n")
-  cat("Mass: ")
-  cat(round(suspects_g$Mass[i], digits = 4))
-  cat("\n")
-  cat("Formula: ")
-  cat("\n")
-  cat("//")
-  cat("\n")
-  cat("\n")
-}
-sink()
-
-
-
 
 
 # sink(paste0(getwd(),"/", "forident",".txt"))
@@ -474,7 +763,11 @@ ms$get_ms2(analyses = 4, mz = 267.0702, rt = 1007.222, ppm = 20, sec = 30, mzClu
 ms$get_ms2(analyses = 5, mz = 267.0702, rt = 1007.222, ppm = 20, sec = 30, mzClust = 0.01, isInAllSpectra = TRUE)
 
 
-ms$plot_ms1(analyses = 4, mz = data.frame(mzmin = 239, mzmax = 245, rtmin = 1156, rtmax = 1158), isInAllSpectra = TRUE, verbose = TRUE)
+ms$plot_ms1(analyses = 4,
+  mz = data.frame(mzmin = 239, mzmax = 245, rtmin = 1156, rtmax = 1158),
+  isInAllSpectra = TRUE, verbose = TRUE
+)
+
 ms1
 
 
@@ -541,4 +834,3 @@ ms$get_history()
 # other ------------------------------------------------------------------------
 
 # ms$save_settings(format = "json", name = "settings")
-

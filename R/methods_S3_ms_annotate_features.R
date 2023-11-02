@@ -16,35 +16,35 @@
 
   cached_analyses <- FALSE
 
-  # if (caches_data()) {
-  #   hash <- patRoon::makeHash(names(features), features, settings)
-  #   iso_features <- patRoon::loadCacheData("annotate_features", hash)
-  #
-  #   if (!is.null(iso_features)) {
-  #
-  #     check <- vapply(names(iso_features),
-  #       function(x, iso_features, features) {
-  #         temp_i <- iso_features[[x]]$feature
-  #         temp_f <- features[[x]]$feature
-  #         s_length <- length(temp_i) == length(temp_f)
-  #         s_id <- all(temp_i %in% temp_f)
-  #         all(c(s_length, s_id))
-  #       },
-  #       iso_features = iso_features,
-  #       features = features,
-  #       FALSE
-  #     )
-  #
-  #     if (all(check)) {
-  #       cached_analyses <- TRUE
-  #     } else {
-  #       iso_features <- NULL
-  #     }
-  #   }
-  # } else {
-  #   hash <- NULL
-  #   iso_features <- NULL
-  # }
+  if (.caches_data()) {
+    hash <- patRoon::makeHash(names(features), features, settings)
+    iso_features <- patRoon::loadCacheData("annotate_features", hash)
+
+    if (!is.null(iso_features)) {
+
+      check <- vapply(names(iso_features),
+        function(x, iso_features, features) {
+          temp_i <- iso_features[[x]]$feature
+          temp_f <- features[[x]]$feature
+          s_length <- length(temp_i) == length(temp_f)
+          s_id <- all(temp_i %in% temp_f)
+          all(c(s_length, s_id))
+        },
+        iso_features = iso_features,
+        features = features,
+        FALSE
+      )
+
+      if (all(check)) {
+        cached_analyses <- TRUE
+      } else {
+        iso_features <- NULL
+      }
+    }
+  } else {
+    hash <- NULL
+    iso_features <- NULL
+  }
 
   parameters <- settings$parameters
 
@@ -72,9 +72,7 @@
 
     vars <- c("rcpp_ms_annotation_isotopes")
 
-    iso_output <- foreach(i = features,
-                          .packages = "StreamFind",
-                          .export = vars
+    iso_output <- foreach(i = features, .packages = "StreamFind", .export = vars
     ) %dopar% {
       do.call("rcpp_ms_annotation_isotopes", c(list("features" = i), parameters))
     }
@@ -130,10 +128,10 @@
 
     message(" Done!")
 
-    # if (!is.null(hash)) {
-    #   patRoon::saveCacheData("annotate_features", iso_features, hash)
-    #   message("\U1f5ab Annotated features cached!")
-    # }
+    if (!is.null(hash)) {
+      patRoon::saveCacheData("annotate_features", iso_features, hash)
+      message("\U1f5ab Annotated features cached!")
+    }
 
   } else {
     message("\U2139 Features annotation loaded from cache!")

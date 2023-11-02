@@ -1,23 +1,24 @@
 #include <iostream>
-#include "pugixml.h"
 #include "xml_utils.h"
 #include <string>
 #include <vector>
 #include <list>
 #include <Rcpp.h>
-
 #include <cstdio>
 #include <cstring>
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
 #include <zlib.h>
-
 #include <algorithm>
 #include <iterator>
 
+
+
+
+
 // [[Rcpp::export]]
-Rcpp::List rcpp_parse_xml(Rcpp::NumericVector input) {
+Rcpp::List rcpp_dev_parse_xml(Rcpp::NumericVector input) {
 
   Rcpp::List list_out = xml_utils::encoding_decoding_test_function(input);
 

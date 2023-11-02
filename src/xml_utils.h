@@ -1,11 +1,13 @@
 #ifndef XML_UTILS_H
 #define XML_UTILS_H
 
+#define PUGIXML_HEADER_ONLY
+#include "pugixml-1.14/src/pugixml.hpp"
+
 #include <iostream>
 #include <string>
 #include <vector>
 #include <list>
-#include "pugixml.h"
 #include <Rcpp.h>
 
 namespace xml_utils {
@@ -68,6 +70,7 @@ namespace xml_utils {
     Rcpp::CharacterVector polarity;
     Rcpp::CharacterVector mode;
     std::vector<int> levels;
+    Rcpp::String type;
     double mz_low;
     double mz_high;
     double rt_start;

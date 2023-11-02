@@ -1,5 +1,5 @@
 
-files <- list.files("D:/Jana/", full.names = TRUE)
+files <- StreamFindData::get_raman_file_paths()
 files <- files[1:2]
 
 

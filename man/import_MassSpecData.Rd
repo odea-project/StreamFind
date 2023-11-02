@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_R6_MassSpecData.R
 \name{import_MassSpecData}
 \alias{import_MassSpecData}
-\title{Function to import a MassSpecData class object from a \emph{json} or \emph{rds} file}
+\title{Function to import a MassSpecData class object from a \emph{json} or \emph{rds} file.}
 \usage{
 import_MassSpecData(file)
 }

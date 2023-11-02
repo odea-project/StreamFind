@@ -41,3 +41,10 @@ settings_group_features.json
 inst/doc
 /report
 report.yml
+
+# Exclude qAlgorithms project and meta files
+src/qAlgorithms/.vscode
+src/qAlgorithms/LICENSE
+src/qAlgorithms/README.md
+src/qAlgorithms/test
+

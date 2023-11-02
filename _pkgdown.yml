@@ -55,6 +55,11 @@ reference:
   contents:
     - starts_with("Settings_load_features_ms")
     - starts_with("Settings_load_groups_ms")
+- subtitle: load_features_eic
+  desc: >
+    Settings for loading the extracted ion chromatogram (EIC) of features.
+  contents:
+    - starts_with("Settings_load_features_eic")
 - subtitle: filter_features
   desc: >
     Settings for the processing method filter_features.
@@ -70,6 +75,16 @@ reference:
     Settings for the processing method suspect_screening.
   contents:
     - starts_with("Settings_suspect_screening")
+- subtitle: find_internal_standards
+  desc: >
+    Settings for the processing method find_internal_standards.
+  contents:
+    - starts_with("Settings_find_internal_standards")
+- subtitle: calculate_quality
+  desc: >
+    Settings for calculating quality parameters of features.
+  contents:
+    - starts_with("Settings_calculate_quality")
 - subtitle: General get and save default settings
   desc: >
     Funtions to uniformily get and save _ProcessingSettings_ are available.
@@ -83,4 +98,5 @@ reference:
     - convert_ms_files
     - trim_ms_files_spectra
     - import_MassSpecData
+    - combine_MassSpecData
     - make_ms_targets

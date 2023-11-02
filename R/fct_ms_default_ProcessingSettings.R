@@ -74,16 +74,16 @@ save_default_ProcessingSettings <- function(call = NA_character_,
 
 #' @title Settings_centroid_spectra_qCentroids
 #'
-#' @description Centroids profile spectra using the 
+#' @description Centroids profile spectra using the
 #' \href{https://link.springer.com/article/10.1007/s00216-022-04224-y}{qCentroids}
-#' algorithm, which is part of the 
+#' algorithm, which is part of the
 #' \href{https://github.com/odea-project/qAlgorithms}{qAlgorithms} library.
-#' 
+#'
 #' @template arg-runParallel
 #'
 #' @return A ProcessingSettings S3 class object with subclass
 #' Settings_centroid_spectra_qCentroids.
-#' 
+#'
 #' @references
 #' \insertRef{qcentroids01}{StreamFind}
 #'
@@ -145,7 +145,7 @@ Settings_bin_spectra_qBinning <- function() {
     software = "q",
     developer = "Max, Gerrit",
     contact = "max@email.de",
-    link = NA_character_,
+    link = "https://github.com/odea-project/qAlgorithms",
     doi = NA_character_
   )
 
@@ -188,7 +188,7 @@ Settings_find_features_qPeaks <- function() {
     software = "q",
     developer = "Max, Gerrit",
     contact = "max@email.de",
-    link = NA_character_,
+    link = "https://github.com/odea-project/qAlgorithms",
     doi = NA_character_
   )
 
@@ -314,7 +314,7 @@ Settings_find_features_xcms3_centwave <- function(
     software = "xcms",
     developer = "Ralf Tautenhahn, Johannes Rainer",
     contact = "rtautenh@ipb-halle.de",
-    link = NA_character_,
+    link = "https://bioconductor.org/packages/release/bioc/html/xcms.html",
     doi = "https://doi.org/10.1186/1471-2105-9-504"
   )
 
@@ -415,7 +415,7 @@ Settings_find_features_xcms3_matchedfilter <- function(
       baseValue = baseValue,
       distance = distance,
       fwhm = fwhm,
-      sigma = fwhm/2.3548,
+      sigma = fwhm / 2.3548,
       max = max,
       snthresh = snthresh,
       steps = steps,
@@ -426,7 +426,7 @@ Settings_find_features_xcms3_matchedfilter <- function(
     software = "xcms",
     developer = "Ralf Tautenhahn, Johannes Rainer",
     contact = "rtautenh@ipb-halle.de",
-    link = NA_character_,
+    link = "https://bioconductor.org/packages/release/bioc/html/xcms.html",
     doi = "https://doi.org/10.1186/1471-2105-9-504"
   )
 
@@ -510,6 +510,8 @@ validate.Settings_find_features_xcms3_matchedfilter <- function(x) {
 #' with many analyses files. However, useFFMIntensities=TRUE is still somewhat
 #' experimental, may be less accurate and requires a recent version of OpenMS
 #' (>=2.7).
+#' @param verbose Logical of length one. When TRUE adds processing information
+#' to the console.
 #'
 #' @details See the \link[patRoon]{findFeaturesOpenMS} function from the
 #' \pkg{patRoon} package for more information and requirements.
@@ -541,14 +543,15 @@ Settings_find_features_openms <- function(
     minFWHM = 5,
     maxFWHM = 40,
     traceSNRFiltering = TRUE,
-    localRTRange = 10,
-    localMZRange = 6.5,
-    isotopeFilteringModel = "metabolites (5% RMS)",
+    localRTRange = 0,
+    localMZRange = 0,
+    isotopeFilteringModel = "none",
     MZScoring13C = FALSE,
     useSmoothedInts = FALSE,
     extraOpts = NULL,
     intSearchRTWindow = 3,
-    useFFMIntensities = FALSE) {
+    useFFMIntensities = FALSE,
+    verbose = FALSE) {
 
   settings <- list(
     call = "find_features",
@@ -575,13 +578,14 @@ Settings_find_features_openms <- function(
       useSmoothedInts = useSmoothedInts,
       extraOpts = extraOpts,
       intSearchRTWindow = intSearchRTWindow,
-      useFFMIntensities = useFFMIntensities
+      useFFMIntensities = useFFMIntensities,
+      verbose = verbose
     ),
     version = as.character(packageVersion("StreamFind")),
     software = "openms",
     developer = "Rost HL, Sachsenberg T, Aiche S, Bielow C et al.",
     contact = "oliver.kohlbacher@uni-tuebingen.de",
-    link = NA_character_,
+    link = "https://openms.de/",
     doi = "https://doi.org/10.1038/nmeth.3959"
   )
 
@@ -761,7 +765,7 @@ Settings_group_features_xcms3_peakdensity <- function(
     software = "xcms",
     developer = "Colin Smith, Johannes Rainer",
     contact = "siuzdak@scripps.edu",
-    link = NA_character_,
+    link = "https://bioconductor.org/packages/release/bioc/html/xcms.html",
     doi = "https://doi.org/10.1021/ac051437y"
   )
 
@@ -924,7 +928,7 @@ Settings_group_features_xcms3_peakdensity_peakgroups <- function(
     software = "xcms",
     developer = "Colin Smith, Johannes Rainer",
     contact = "siuzdak@scripps.edu",
-    link = NA_character_,
+    link = "https://bioconductor.org/packages/release/bioc/html/xcms.html",
     doi = "https://doi.org/10.1021/ac051437y"
   )
 
@@ -944,6 +948,101 @@ validate.Settings_group_features_xcms3_peakdensity_peakgroups <- function(x) {
   all(
     checkmate::test_choice(x$call, "group_features"),
     checkmate::test_choice(x$algorithm, "xcms3_peakdensity_peakgroups")
+  )
+}
+
+#' @title Settings_group_features_openms
+#'
+#' @description Settings for grouping features (i.e., chromatographic peaks)
+#' in mzML/mzXML files using the \href{https://www.openms.org/}{OpenMS}
+#' (\url{https://abibuilder.cs.uni-tuebingen.de/archive/openms/}) software
+#' with the algorithm
+#' \href{https://abibuilder.cs.uni-tuebingen.de/archive/openms/Documentation/release/3.0.0/html/TOPP_FeatureLinkerUnlabeled.html}{FeatureLinkerUnlabeled}.
+#' The function uses the package \pkg{patRoon} in the background.
+#'
+#' @param rtalign Logical length one. Set to TRUE to enable retention time
+#' alignment.
+#' @param QT Logical length one. When TRUE the FeatureLinkerUnlabeledQT is used
+#' instead of FeatureLinkerUnlabeled for grouping features.
+#' @param maxAlignRT Numeric length one. Maximum retention time (in seconds) for
+#' feature pairing when performing retention time alignment.
+#' @param maxAlignMZ Numeric length one. Maximum *m/z* (in Da) for
+#' feature pairing when performing retention time alignment.
+#' @param maxGroupRT Numeric length one. Maximum retention time (in seconds) for
+#' feature pairing when performing grouping.
+#' @param maxGroupMZ Numeric length one. Maximum *m/z* (in Da) for
+#' feature pairing when performing grouping.
+#' @param extraOptsRT Named list containing extra options that will be passed
+#' to MapAlignerPoseClustering.
+#' @param extraOptsGroup Named list containing extra options that will be passed
+#' to FeatureLinkerUnlabeledQT/FeatureLinkerUnlabeled.
+#' @param verbose Logical of length one. When TRUE adds processing information
+#' to the console.
+#'
+#' @details See the \link[patRoon]{groupFeaturesOpenMS} function from the
+#' \pkg{patRoon} package for more information and requirements.
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_group_features_openms.
+#'
+#' @references
+#' \insertRef{patroon01}{StreamFind}
+#'
+#' \insertRef{patroon02}{StreamFind}
+#'
+#' \insertRef{openms01}{StreamFind}
+#'
+#' @export
+#'
+Settings_group_features_openms <- function(
+    rtalign = FALSE,
+    QT = FALSE,
+    maxAlignRT = 5,
+    maxAlignMZ = 0.008,
+    maxGroupRT = 5,
+    maxGroupMZ = 0.008,
+    extraOptsRT = NULL,
+    extraOptsGroup = NULL,
+    verbose = FALSE) {
+
+  settings <- list(
+    call = "group_features",
+    algorithm = "openms",
+    parameters = list(
+      rtalign = rtalign,
+      QT = QT,
+      maxAlignRT = maxAlignRT,
+      maxAlignMZ = maxAlignMZ,
+      maxGroupRT = maxGroupRT,
+      maxGroupMZ = maxGroupMZ,
+      extraOptsRT = extraOptsRT,
+      extraOptsGroup = extraOptsGroup,
+      verbose = verbose
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "openms",
+    developer = "Rost HL, Sachsenberg T, Aiche S, Bielow C et al.",
+    contact = "oliver.kohlbacher@uni-tuebingen.de",
+    link = "https://openms.de/",
+    doi = "https://doi.org/10.1038/nmeth.3959"
+  )
+
+  settings <- as.ProcessingSettings(settings)
+
+  return(settings)
+}
+
+#' @describeIn Settings_group_features_openms
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_group_features_openms S3 class object.
+#'
+#' @export
+#'
+validate.Settings_group_features_openms <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "group_features"),
+    checkmate::test_choice(x$algorithm, "openms")
   )
 }
 
@@ -974,7 +1073,7 @@ Settings_load_features_ms1_StreamFind <- function(
     presence = 0.8,
     minIntensity = 250,
     filtered = FALSE,
-    runParallel = FALSE,
+    runParallel = TRUE,
     verbose = FALSE) {
 
   settings <- list(
@@ -994,7 +1093,7 @@ Settings_load_features_ms1_StreamFind <- function(
     software = "StreamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = NA_character_,
+    link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_
   )
 
@@ -1047,7 +1146,7 @@ Settings_load_features_ms2_StreamFind <- function(
     presence = 0.8,
     minIntensity = 0,
     filtered = FALSE,
-    runParallel = FALSE,
+    runParallel = TRUE,
     verbose = FALSE) {
 
   settings <- list(
@@ -1066,7 +1165,7 @@ Settings_load_features_ms2_StreamFind <- function(
     software = "StreamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = NA_character_,
+    link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_
   )
 
@@ -1117,7 +1216,7 @@ Settings_load_groups_ms1_StreamFind <- function(
     minIntensity = 1000,
     verbose = FALSE,
     filtered = FALSE,
-    runParallel = FALSE) {
+    runParallel = TRUE) {
 
   settings <- list(
     call = "load_groups_ms1",
@@ -1134,7 +1233,7 @@ Settings_load_groups_ms1_StreamFind <- function(
     software = "StreamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = NA_character_,
+    link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_
   )
 
@@ -1183,7 +1282,7 @@ Settings_load_groups_ms2_StreamFind <- function(
     presence = 0.8,
     minIntensity = 250,
     filtered = FALSE,
-    runParallel = FALSE,
+    runParallel = TRUE,
     verbose = FALSE) {
 
   settings <- list(
@@ -1201,7 +1300,7 @@ Settings_load_groups_ms2_StreamFind <- function(
     software = "StreamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = NA_character_,
+    link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_
   )
 
@@ -1229,6 +1328,66 @@ validate.Settings_load_groups_ms2_StreamFind <- function(x) {
   )
 }
 
+#' @title Settings_load_features_eic_StreamFind
+#'
+#' @description Settings for loading MS2 spectra for feature groups.
+#'
+#' @template arg-ms-rtExpand
+#' @template arg-ms-mzExpand
+#' @template arg-ms-filtered
+#' @template arg-runParallel
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_load_features_eic_StreamFind.
+#'
+#' @export
+#'
+Settings_load_features_eic_StreamFind <- function(
+    rtExpand = 120,
+    mzExpand = 0,
+    filtered = FALSE,
+    runParallel = TRUE) {
+
+  settings <- list(
+    call = "load_features_eic",
+    algorithm = "StreamFind",
+    parameters = list(
+      "rtExpand" = rtExpand,
+      "mzExpand" = mzExpand,
+      "filtered" = filtered,
+      "runParallel" = runParallel
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+
+  settings <- as.ProcessingSettings(settings)
+
+  return(settings)
+}
+
+#' @describeIn Settings_load_features_eic_StreamFind
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_load_features_eic_StreamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_load_features_eic_StreamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "load_features_eic"),
+    checkmate::test_choice(x$algorithm, "StreamFind"),
+    checkmate::test_double(x$parameters$rtExpand, max.len = 1),
+    checkmate::test_double(x$parameters$mzExpand, max.len = 1),
+    checkmate::test_logical(x$parameters$filtered, max.len = 1),
+    checkmate::test_logical(x$parameters$runParallel, max.len = 1)
+  )
+}
+
 ## filter_features -----
 
 #' @title Settings_filter_features_StreamFind
@@ -1238,14 +1397,14 @@ validate.Settings_load_groups_ms2_StreamFind <- function(x) {
 #' @param ... Ordered filters to be applied. Possible filter arguments are:
 #' \itemize{
 #'  \item{**minIntensity**}{  Numeric (length 1) with the minimum intensity.}
-#'  \item{**minSnRatio**}{  Numeric (length 1) with the minimum signal-to-noise 
+#'  \item{**minSnRatio**}{  Numeric (length 1) with the minimum signal-to-noise
 #'  ratio.}
-#'  \item{**maxGroupSd**}{  Numeric (length 1) with the maximum intensity 
+#'  \item{**maxGroupSd**}{  Numeric (length 1) with the maximum intensity
 #'  deviation within each analysis replicate (in percentage).}
 #'  \item{**blank**}{  Numeric (length 1) with the intensity threshold for blank
 #'  subtraction. All features/feature groups not higher then the `blank` * its
 #'  intensity are filtered.}
-#'  \item{**minGroupAbundance**}{  Numeric (length 1) with the minimum presence 
+#'  \item{**minGroupAbundance**}{  Numeric (length 1) with the minimum presence
 #'  of a feature is a given analysis replicate.}
 #'  \item{**excludeIsotopes**}{  Logical (length 1) with `TRUE` for filtering
 #'  annotated isotopes (only prevails the monoisotopic features).}
@@ -1259,18 +1418,18 @@ validate.Settings_load_groups_ms2_StreamFind <- function(x) {
 #'
 #' @return A ProcessingSettings S3 class object with subclass
 #' Settings_filter_features_StreamFind.
-#' 
-#' @details 
-#' When feature groups exist the filtering is done on feature groups, meaning 
-#' that the filters are applied per feature group not individual features. For 
-#' instance, if feature groups exist the minimum intensity is applied on the 
+#'
+#' @details
+#' When feature groups exist the filtering is done on feature groups, meaning
+#' that the filters are applied per feature group not individual features. For
+#' instance, if feature groups exist the minimum intensity is applied on the
 #' maximum intensity observed for a feature group and not the intensity of each
 #' individual feature.
 #'
 #' @export
 #'
 Settings_filter_features_StreamFind <- function(...) {
-  
+
   dots <- list(...)
 
   settings <- list(
@@ -1281,10 +1440,10 @@ Settings_filter_features_StreamFind <- function(...) {
     software = "StreamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = NA_character_,
+    link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_
   )
-  
+
   possible_feature_filters <- c(
     "minIntensity",
     "minSnRatio",
@@ -1296,7 +1455,7 @@ Settings_filter_features_StreamFind <- function(...) {
     "rtFilter",
     "massFilter"
   )
-  
+
   if (!all(names(dots) %in% possible_feature_filters)) {
     warning("Added filter arguments not recognized!")
   }
@@ -1334,7 +1493,7 @@ Settings_filter_features_StreamFind <- function(...) {
   }
 
   settings$parameters <- dots
-  
+
   settings <- as.ProcessingSettings(settings)
 
   return(settings)
@@ -1444,7 +1603,7 @@ validate.Settings_filter_features_StreamFind <- function(x) {
 #'
 Settings_annotate_features_StreamFind <- function(
     maxIsotopes = 5,
-    elements = c("C","H", "N", "O", "S", "Cl", "Br"),
+    elements = c("C", "H", "N", "O", "S", "Cl", "Br"),
     mode = "small molecules",
     maxCharge = 1,
     rtWindowAlignment = 0.3,
@@ -1457,7 +1616,7 @@ Settings_annotate_features_StreamFind <- function(
   checkmate::assert_number(rtWindowAlignment)
   checkmate::assert_choice(mode, "small molecules")
   checkmate::assert_vector(elements, any.missing = FALSE, min.len = 1)
-  lapply(elements, function(i) checkmate::assert_choice(i, c("C","H", "N", "O", "S", "Cl", "Br", "Si", "Ge")))
+  lapply(elements, function(i) checkmate::assert_choice(i, c("C", "H", "N", "O", "S", "Cl", "Br", "Si", "Ge")))
   checkmate::assert_logical(runParallel, max.len = 1)
 
   settings <- list(
@@ -1476,7 +1635,7 @@ Settings_annotate_features_StreamFind <- function(
     software = "StreamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = NA_character_,
+    link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_
   )
 
@@ -1502,7 +1661,9 @@ validate.Settings_annotate_features_StreamFind <- function(x) {
     checkmate::test_double(x$parameters$rtWindowAlignment, max.len = 1),
     checkmate::test_choice(x$parameters$mode, "small molecules"),
     checkmate::test_vector(x$parameters$elements, any.missing = FALSE, min.len = 1),
-    vapply(x$parameters$elements, function(i) checkmate::test_choice(i, c("C","H", "N", "O", "S", "Cl", "Br", "Si", "Ge")), FALSE),
+    vapply(x$parameters$elements, function(i) {
+      checkmate::test_choice(i, c("C", "H", "N", "O", "S", "Cl", "Br", "Si", "Ge"))
+    }, FALSE),
     checkmate::test_logical(x$parameters$runParallel, max.len = 1)
   )
 }
@@ -1542,7 +1703,7 @@ Settings_suspect_screening_StreamFind <- function(
     software = "StreamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
-    link = NA_character_,
+    link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_
   )
 
@@ -1614,7 +1775,7 @@ Settings_suspect_screening_forident <- function(
     software = "forident",
     developer = "Sylvia Grosse, Thomas Letzel",
     contact = "support@for-ident.org",
-    link = NA_character_,
+    link = "https://water.for-ident.org/#!home",
     doi = NA_character_
   )
 
@@ -1627,7 +1788,7 @@ Settings_suspect_screening_forident <- function(
 #' Validates the object structure, returning a logical value of length one.
 #'
 #' @param x A Settings_suspect_screening_forident S3 class object.
-#' 
+#'
 #' @export
 #'
 validate.Settings_suspect_screening_forident <- function(x) {
@@ -1638,5 +1799,127 @@ validate.Settings_suspect_screening_forident <- function(x) {
     is.character(x$parameters$name),
     length(x$parameters$name) == 1,
     checkmate::test_logical(x$parameters$addMS2, max.len = 1)
+  )
+}
+
+## find_internal_standards -----
+
+#' @title Settings_find_internal_standards_StreamFind
+#'
+#' @description
+#' Settings for finding internal standards using a data.frame.
+#'
+#' @param database A data.frame with at least the columns name, mass, and rt
+#' indicating the name, neutral monoisotopic mass and retention time of the
+#' internal standards, respectively.
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_find_internal_standards_StreamFind.
+#'
+#' @export
+#'
+Settings_find_internal_standards_StreamFind <- function(
+    database = NULL,
+    ppm = 5,
+    sec = 10) {
+
+  settings <- list(
+    call = "find_internal_standards",
+    algorithm = "StreamFind",
+    algorithm = "StreamFind",
+    parameters = list(
+      "database" = database,
+      "ppm" = ppm,
+      "sec" = sec
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+
+  settings <- as.ProcessingSettings(settings)
+
+  return(settings)
+}
+
+#' @describeIn Settings_find_internal_standards_StreamFind
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_find_internal_standards_StreamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_find_internal_standards_StreamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "find_internal_standards"),
+    checkmate::test_choice(x$algorithm, "StreamFind"),
+    checkmate::test_double(x$parameters$ppm, max.len = 1),
+    checkmate::test_double(x$parameters$sec, max.len = 1),
+    checkmate::test_class(x$parameters$database, "data.frame")
+  ) && if (is.data.frame(x$parameters$database)) {
+    all(c("name", "mass", "rt") %in% colnames(x$parameters$database))
+  } else {
+    FALSE
+  }
+}
+
+## calculate_quality -----
+
+#' @title Settings_calculate_quality_StreamFind
+#'
+#' @description
+#' Settings for calculating quality parameters of features (e.g., signal-to-noise (sn) ratio).
+#'
+#' @template arg-ms-filtered
+#' @template arg-runParallel
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_calculate_quality_StreamFind.
+#'
+#' @export
+#'
+Settings_calculate_quality_StreamFind <- function(
+    filtered = FALSE,
+    runParallel = TRUE) {
+
+  settings <- list(
+    call = "calculate_quality",
+    algorithm = "StreamFind",
+    algorithm = "StreamFind",
+    parameters = list(
+      "filtered" = filtered,
+      "runParallel" = runParallel
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+
+  settings <- as.ProcessingSettings(settings)
+
+  return(settings)
+}
+
+#' @describeIn Settings_calculate_quality_StreamFind
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_calculate_quality_StreamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_calculate_quality_StreamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "calculate_quality"),
+    checkmate::test_choice(x$algorithm, "StreamFind"),
+    checkmate::test_logical(x$parameters$filtered, max.len = 1),
+    checkmate::test_logical(x$parameters$runParallel, max.len = 1)
   )
 }

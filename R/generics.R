@@ -1,23 +1,23 @@
 #' @noRd
-#' 
+#'
 #' @export
-#' 
+#'
 validate <- function(x) {
   UseMethod("validate")
 }
 
 #' @noRd
-#' 
+#'
 #' @export
-#' 
+#'
 asJSON <- function(x) {
   UseMethod("asJSON")
 }
 
 #' @noRd
-#' 
+#'
 #' @export
-#' 
+#'
 export <- function(x, ...) {
   UseMethod("export")
 }
@@ -56,14 +56,22 @@ export <- function(x, ...) {
   UseMethod(".s3_ms_fill_features")
 }
 
-.s3_ms_control_standards <- function(settings, self) {
-  UseMethod(".s3_ms_control_standards")
-}
-
 .s3_ms_correct_intensity <- function(settings, self) {
   UseMethod(".s3_ms_correct_intensity")
 }
 
+.s3_ms_normalise_intensity <- function(settings, self) {
+  UseMethod(".s3_ms_normalise_intensity")
+}
+
 .s3_ms_suspect_screening <- function(settings, self) {
   UseMethod(".s3_ms_suspect_screening")
+}
+
+.s3_ms_find_internal_standards <- function(settings, self) {
+  UseMethod(".s3_ms_find_internal_standards")
+}
+
+.s3_ms_calculate_quality <- function(settings, self) {
+  UseMethod(".s3_ms_calculate_quality")
 }
