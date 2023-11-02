@@ -4779,6 +4779,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
     load_features_eic = function(settings = NULL) {
       valid <- TRUE
       add_settings <- TRUE
+      
+      if (!any(self$has_features())) {
+        warning("Features not found! Not loaded.")
+        return(invisible(self))
+      }
 
       if (is.null(settings)) {
         settings <- self$get_settings(call = "load_features_eic")[[1]]
@@ -4861,6 +4866,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
     load_features_ms1 = function(settings = NULL) {
       valid <- TRUE
       add_settings <- TRUE
+      
+      if (!any(self$has_features())) {
+        warning("Features not found! Not loaded.")
+        return(invisible(self))
+      }
 
       if (is.null(settings)) {
         settings <- self$get_settings(call = "load_features_ms1")[[1]]
@@ -5001,6 +5011,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
     load_features_ms2 = function(settings = NULL) {
       valid <- TRUE
       add_settings <- TRUE
+      
+      if (!any(self$has_features())) {
+        warning("Features not found! Not loaded.")
+        return(invisible(self))
+      }
 
       if (is.null(settings)) {
         settings <- self$get_settings(call = "load_features_ms2")[[1]]
@@ -5148,6 +5163,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
     load_groups_ms1 = function(settings = NULL, settingsFeatures = NULL) {
       valid <- TRUE
       add_settings <- TRUE
+      
+      if (!any(self$has_groups())) {
+        warning("Feature groups not found! Not loaded.")
+        return(invisible(self))
+      }
 
       if (is.null(settings)) {
         settings <- self$get_settings(call = "load_groups_ms1")[[1]]
@@ -5292,6 +5312,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
     load_groups_ms2 = function(settings = NULL, settingsFeatures = NULL) {
       valid <- TRUE
       add_settings <- TRUE
+      
+      if (!any(self$has_groups())) {
+        warning("Feature groups not found! Not loaded.")
+        return(invisible(self))
+      }
 
       if (is.null(settings)) {
         settings <- self$get_settings(call = "load_groups_ms2")[[1]]
@@ -7755,6 +7780,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     calculate_quality = function(settings = NULL) {
 
+      if (!any(self$has_features())) {
+        warning("Features not found! Not calculated.")
+        return(invisible(self))
+      }
+      
       add_settings <- TRUE
 
       if (is.null(settings)) add_settings <- FALSE

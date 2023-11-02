@@ -84,8 +84,6 @@ ms
 db <- StreamFindData::get_ms_tof_spiked_chemicals()
 cols <- c("name", "formula", "mass", "rt", "tag")
 db <- db[, cols, with = FALSE]
-
-
 # Only spiked internal standards
 dbis <- db[grepl("IS", db$tag), ]
 dbis
@@ -95,12 +93,15 @@ dbis
 ms$add_settings(
   list(
     Settings_annotate_features_StreamFind(),
+    
     Settings_group_features_openms(),
+    
     Settings_find_internal_standards_StreamFind(
       database = dbis,
       ppm = 8,
       sec = 10
     ),
+    
     Settings_filter_features_StreamFind(
       minIntensity = 5000,
       maxGroupSd = 30,
@@ -108,13 +109,20 @@ ms$add_settings(
       minGroupAbundance = 3,
       excludeIsotopes = TRUE
     ),
+    
     Settings_load_features_eic_StreamFind(
       rtExpand = 60,
-      mzExpand = 0.0005),
+      mzExpand = 0.0005
+    ),
+    
     Settings_load_features_ms1_StreamFind(),
+    
     Settings_load_features_ms2_StreamFind(),
+    
     Settings_load_groups_ms1_StreamFind(),
+    
     Settings_load_groups_ms2_StreamFind(),
+    
     Settings_calculate_quality_StreamFind()
   )
 )
@@ -122,7 +130,6 @@ ms$add_settings(
 
 # Print
 ms
-
 
 
 
@@ -154,7 +161,7 @@ ms
 
 # Access and plot data ---------------------------------------------------------
 
-# Get help for MassSpecData methods
+# Get help for methods
 ms$help$get_groups()
 
 
@@ -218,7 +225,7 @@ ms$get_history()
 ms$save_settings(format = "json", name = "settings")
 
 
-# Saves the hole project
+# Saves all project data
 ms$save(format = "json", name = "MassSpecData_example")
 
 

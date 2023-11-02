@@ -1,56 +1,4 @@
 
-# .module_methods_InternalStandards <- function(env) {
-# 
-#   out <- list()
-# 
-#   out[["get"]] <- function() {
-#     istd <- self$get_features(filtered = TRUE)
-# 
-#     if ("istd_name" %in% colnames(istd)) {
-# 
-#       istd <- istd[!is.na(istd$istd_name), ]
-# 
-#       if (nrow(istd) > 0) {
-# 
-#         setnames(istd,
-#                  c("istd_name", "istd_rte", "istd_mze", "istd_rec"),
-#                  c("name", "rte", "mze","rec")
-#         )
-# 
-#         cols <- c(
-#           "name",
-#           "intensity",
-#           "area",
-#           "rte",
-#           "mze",
-#           "rec",
-#           "analysis",
-#           "feature",
-#           "group"
-#         )
-# 
-#         istd <- istd[, cols, with = FALSE]
-# 
-#         setorder(istd, "name")
-# 
-#         istd
-# 
-#       } else {
-#         warning("Internal standards not found!")
-#       }
-# 
-#     } else {
-#       warning("Not present! Run find_internal_standards method to tag the internal standards!")
-#     }
-#   }
-# 
-#   environment(out[["get"]]) <- env
-# 
-#   
-#   
-#   out
-# }
-
 #' @title .s3_ms_find_internal_standards.Settings_find_internal_standards_StreamFind
 #'
 #' @description Finds internal standards in the features/groups.
@@ -69,6 +17,11 @@
     sec = settings$parameters$sec,
     filtered = TRUE
   )
+  
+  if (nrow(internal_standards) == 0) {
+    warning("Internal standards were not found!")
+    return(FALSE)
+  }
   
   if ("intensity" %in% colnames(database)) {
     intensity <- database$intensity
@@ -182,3 +135,55 @@
     FALSE
   }
 }
+
+# .module_methods_InternalStandards <- function(env) {
+# 
+#   out <- list()
+# 
+#   out[["get"]] <- function() {
+#     istd <- self$get_features(filtered = TRUE)
+# 
+#     if ("istd_name" %in% colnames(istd)) {
+# 
+#       istd <- istd[!is.na(istd$istd_name), ]
+# 
+#       if (nrow(istd) > 0) {
+# 
+#         setnames(istd,
+#                  c("istd_name", "istd_rte", "istd_mze", "istd_rec"),
+#                  c("name", "rte", "mze","rec")
+#         )
+# 
+#         cols <- c(
+#           "name",
+#           "intensity",
+#           "area",
+#           "rte",
+#           "mze",
+#           "rec",
+#           "analysis",
+#           "feature",
+#           "group"
+#         )
+# 
+#         istd <- istd[, cols, with = FALSE]
+# 
+#         setorder(istd, "name")
+# 
+#         istd
+# 
+#       } else {
+#         warning("Internal standards not found!")
+#       }
+# 
+#     } else {
+#       warning("Not present! Run find_internal_standards method to tag the internal standards!")
+#     }
+#   }
+# 
+#   environment(out[["get"]]) <- env
+# 
+#   
+#   
+#   out
+# }

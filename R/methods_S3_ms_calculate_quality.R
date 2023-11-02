@@ -10,7 +10,7 @@
 
   if (!any(self$has_features())) {
     warning("Features were not found! Quality not calculated.")
-    return(invisible())
+    return(FALSE)
   }
 
   parameters <- settings$parameters
