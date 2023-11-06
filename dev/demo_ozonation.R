@@ -2,19 +2,28 @@
 library(StreamFind)
 
 
+# Convert files ----------------------------------------------------------------
 
-
-# Create -----------------------------------------------------------------------
+# Conversion of vendor files to open source mzML format
+?convert_ms_files
 
 # Load file paths
 all_files <- StreamFindData::get_ms_file_paths()
 files <- all_files[grepl("blank|influent|o3sw", all_files)]
+
 files
+
+
+
+
+
+
+
+# Create -----------------------------------------------------------------------
 
 # Make project headers
 headers <- ProjectHeaders(
-  name = "Wastewater project",
-  description = "Project example"
+  name = "Wastewater project"
 )
 
 # Create the "Engine"
@@ -187,13 +196,21 @@ ms$get_groups(mass = db, ppm = 8, sec = 10, filtered = TRUE, average = TRUE)
 ms$plot_internal_standards_qc()
 
 
-# Raw data for given targets
+# EIC for given targets
 ms$plot_eic(
   mass = 233.1131, # Naproxen-d3
   rt = 1169,
   ppm = 10,
   sec = 30,
   colorBy = "analyses"
+)
+
+
+# MS2 spectra
+ms$plot_groups_ms2(
+  mass = db,
+  colorBy = "targets+polarities",
+  legendNames = TRUE
 )
 
 

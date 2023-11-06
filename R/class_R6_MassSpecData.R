@@ -3048,7 +3048,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         } else {
           ms2 <- ms2[order(ms2$analysis), ]
-          setnames(ms2, "analysis", "replicate")
+          setnames(ms2, "analysis", "replicate", skip_absent = TRUE)
         }
 
         if ("name" %in% colnames(fgs)) {
@@ -7103,7 +7103,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                colorBy = "targets",
                                interactive = TRUE) {
 
-      if ("groups" %in% colorBy | "targets" %in% colorBy) {
+      if (grepl("groups", colorBy) || grepl("targets", colorBy)) {
         groupBy <- "groups"
       } else {
         groupBy <- "replicates"
@@ -7174,8 +7174,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                title = NULL,
                                colorBy = "targets",
                                interactive = TRUE) {
-
-      if ("groups" %in% colorBy | "targets" %in% colorBy) {
+      
+      if (grepl("groups", colorBy) || grepl("targets", colorBy)) {
         groupBy <- "groups"
       } else {
         groupBy <- "replicates"
