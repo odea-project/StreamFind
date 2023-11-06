@@ -94,7 +94,7 @@ settings <- list(
 
 # spectra ----------------------------------------------------------------------
 
-ms <- MassSpecData$new(files = files, settings = settings)
+ms <- MassSpecData$new(files = all_files)
 
 ms$find_features()
 
@@ -219,11 +219,11 @@ ms$plot_eic(mass = neutral_targets, colorBy = "targets", interactive = F, legend
 
 
 
-ms$get_analyses(1)[[1]]$run
+# fl <- choose.files()
 
-rcpp_parse_ms_analysis(all_files[7])
+rcpp_parse_ms_analysis(fl)
 
-rcpp_parse_spectra_headers(all_files[7])
+rcpp_parse_spectra_headers(fl)
 
 rcpp_parse_ms_analysis_spectra(ms$get_analyses(1)[[1]])
 

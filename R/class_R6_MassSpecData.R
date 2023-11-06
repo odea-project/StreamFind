@@ -6497,7 +6497,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         return(NULL)
       }
 
-      if ("replicates" %in% colorBy) {
+      if (grepl("replicates", colorBy)) {
         eic$replicate <- self$get_replicate_names()[eic$analysis]
       }
 
@@ -6550,9 +6550,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
         tic$polarity <- as.character(tic$polarity)
         tic$polarity <- pol_key[tic$polarity]
 
-        if (colorBy %in% "analyses") {
+        if (grepl("analyses", colorBy)) {
           tic$analysis <- paste0(tic$analysis, "/", tic$polarity)
-        } else if (colorBy %in% "replicates") {
+        } else if (grepl("replicates", colorBy)) {
           tic$replicate <- paste0(tic$replicate, "/", tic$polarity)
         } else {
           tic$level <- paste("MS", tic$level, sep = "")
@@ -6593,7 +6593,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         return(NULL)
       }
 
-      if ("replicates" %in% colorBy) {
+      if (grepl("replicates", colorBy)) {
         bpc$replicate <- self$get_replicate_names()[bpc$analysis]
       }
 
@@ -6610,9 +6610,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
         bpc$polarity <- as.character(bpc$polarity)
         bpc$polarity <- pol_key[bpc$polarity]
 
-        if (colorBy %in% "analyses") {
+        if (grepl("analyses", colorBy)) {
           bpc$analysis <- paste0(bpc$analysis, "/", bpc$polarity)
-        } else if (colorBy %in% "replicates") {
+        } else if (grepl("replicates", colorBy)) {
           bpc$replicate <- paste0(bpc$replicate, "/", bpc$polarity)
         } else {
           bpc$level <- paste("MS", bpc$level, sep = "")
@@ -6665,7 +6665,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         return(NULL)
       }
 
-      if ("replicates" %in% colorBy) {
+      if (grepl("replicates", colorBy)) {
         ms2$replicate <- self$get_replicate_names()[ms2$analysis]
       }
 
@@ -6712,7 +6712,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         return(NULL)
       }
 
-      if ("replicates" %in% colorBy) {
+      if (grepl("replicates", colorBy)) {
         ms1$replicate <- self$get_replicate_names()[ms1$analysis]
       }
 
@@ -6781,7 +6781,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         return(NULL)
       }
 
-      if ("replicates" %in% colorBy) {
+      if (grepl("replicates", colorBy)) {
         eic$replicate <- self$get_replicate_names()[eic$analysis]
       }
 
@@ -6827,7 +6827,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         return(NULL)
       }
 
-      if ("replicates" %in% colorBy) {
+      if (grepl("replicates", colorBy)) {
         fts$replicate <- self$get_replicate_names()[fts$analysis]
       }
 
@@ -6879,7 +6879,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         return(NULL)
       }
 
-      if ("replicates" %in% colorBy) {
+      if (grepl("replicates", colorBy)) {
         ms1$replicate <- self$get_replicate_names()[ms1$analysis]
       }
 
@@ -6929,7 +6929,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         message("\U2717 MS2 traces not found for the targets!")
         return(NULL)
       }
-      if ("replicates" %in% colorBy) {
+      if (grepl("replicates", colorBy)) {
         ms2$replicate <- self$get_replicate_names()[ms2$analysis]
       }
 
@@ -7132,6 +7132,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if ("analyses" %in% colorBy) colorBy <- "replicates"
+      
+      if (grepl("analyses", colorBy) && grepl("targets", colorBy)) colorBy <- "replicates+targets"
 
       if (!interactive) {
         .plot_ms1_static(ms1, legendNames, colorBy, title)
@@ -7202,6 +7204,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if ("analyses" %in% colorBy) colorBy <- "replicates"
+      
+      if (grepl("analyses", colorBy) && grepl("targets", colorBy)) colorBy <- "replicates+targets"
 
       if (!interactive) {
         .plot_ms2_static(ms2, legendNames, colorBy, title)
@@ -7337,7 +7341,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         return(NULL)
       }
 
-      if ("replicates" %in% colorBy) {
+      if (grepl("replicates", colorBy)) {
         components$replicate <- self$get_replicate_names()[components$analysis]
       }
 

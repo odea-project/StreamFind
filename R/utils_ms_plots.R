@@ -91,29 +91,45 @@
   if ("analyses" %in% colorBy) {
     varkey <- data$analysis
 
-  } else if ("replicates" %in% colorBy & "replicate" %in% colnames(data)) {
+  } else if (("targets+analyses" %in% colorBy ||  "analyses+targets" %in% colorBy) && "analysis" %in% colnames(data)) {
+    
+    if ("name" %in% colnames(data) & isTRUE(legendNames)) {
+      varkey <- paste0(data$name, " - ", data$analysis)
+    } else {
+      varkey <- paste0(data$id, " - ", data$analysis)
+    }
+    
+  } else if ("replicates" %in% colorBy && "replicate" %in% colnames(data)) {
     varkey <- data$replicate
 
-  } else if ("polarities" %in% colorBy & "polarity" %in% colnames(data)) {
+  } else if (("targets+replicates" %in% colorBy ||  "replicates+targets" %in% colorBy) && "replicate" %in% colnames(data)) {
+    
+    if ("name" %in% colnames(data) & isTRUE(legendNames)) {
+      varkey <- paste0(data$name, " - ", data$replicate)
+    } else {
+      varkey <- paste0(data$id, " - ", data$replicate)
+    }
+    
+  } else if ("polarities" %in% colorBy && "polarity" %in% colnames(data)) {
     varkey <- data$polarity
 
-  } else if ("targets+polarities" %in% colorBy & "polarity" %in% colnames(data)) {
+  } else if (("targets+polarities" %in% colorBy || "polarities+targets" %in% colorBy) && "polarity" %in% colnames(data)) {
 
     if ("name" %in% colnames(data) & isTRUE(legendNames)) {
-      varkey <- paste0(data$name, "-", data$polarity)
+      varkey <- paste0(data$name, " - ", data$polarity)
     } else {
-      varkey <- paste0(data$id, "-", data$polarity)
+      varkey <- paste0(data$id, " - ", data$polarity)
     }
 
-  } else if ("levels" %in% colorBy & "level" %in% colnames(data)) {
+  } else if ("levels" %in% colorBy && "level" %in% colnames(data)) {
     varkey <- data$level
 
-  } else if (is.character(legendNames) & length(legendNames) == length(unique(data$id))) {
+  } else if (is.character(legendNames) && length(legendNames) == length(unique(data$id))) {
     leg <- legendNames
     names(leg) <- unique(data$id)
     varkey <- leg[data$id]
 
-  } else if ("name" %in% colnames(data) & isTRUE(legendNames)) {
+  } else if ("name" %in% colnames(data) && isTRUE(legendNames)) {
     varkey <- data$name
 
   } else {

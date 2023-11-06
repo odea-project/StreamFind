@@ -502,7 +502,7 @@ bool rcpp_ms_groups_correspondence(Rcpp::DataFrame groups,
     auto rtmin_val = std::min_element(rtmin.begin(), rtmin.end());
     auto rtmax_val = std::max_element(rtmax.begin(), rtmax.end());
     
-    if (*g_rt > *rtmax_val || *g_rt < *rtmin_val) {
+    if (*g_rt > *rtmax_val + 2 || *g_rt < *rtmin_val - 2) {
       Rcpp::Rcout << "\n !! The feature group " << *g_id << " (n " << i << ")"
                   << " does not match retention time range in features!! \n";
       
@@ -512,7 +512,7 @@ bool rcpp_ms_groups_correspondence(Rcpp::DataFrame groups,
     auto massmin_val = std::min_element(massmin.begin(), massmin.end());
     auto massmax_val = std::max_element(massmax.begin(), massmax.end());
     
-    if (*g_mass > *massmax_val || *g_mass < *massmin_val) {
+    if (*g_mass > *massmax_val + 0.0005 || *g_mass < *massmin_val - 0.0005) {
       Rcpp::Rcout << "\n !! The feature group " << *g_id << " (n " << i << ")"
                   << " does not match mass range in features!! \n";
       
