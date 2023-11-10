@@ -74,6 +74,10 @@ ms$add_settings(
     Settings_load_features_ms2_StreamFind(),
     Settings_load_groups_ms1_StreamFind(),
     Settings_load_groups_ms2_StreamFind(),
+    Settings_calculate_quality_StreamFind(),
+    Settings_filter_features_StreamFind(
+      minSnRatio = 3
+    ),
     Settings_suspect_screening_StreamFind(
       database = db,
       ppm = 5,
@@ -86,9 +90,11 @@ ms$add_settings(
 
 ms$run_workflow()
 
-ms$get_suspects()
+# ms$get_features(mass = db, filtered = T)[["qlt_model"]]
 
+ms$plot_features(mass = db, filtered = T, legendNames = T)
 
+ms$plot_groups(groups = ms$get_suspects())
 
 fts <- ms$get_features(mass = db, filtered = F)
 
@@ -98,7 +104,6 @@ ms$plot_internal_standards_qc()
 # Suspects should be identified by name, formula and SMILES
 suspects <- ms$get_suspects(database = db, ppm = 10, sec = 15, filtered = FALSE)
 
-
 ms$get_features(mass = db)
 
 
@@ -106,151 +111,18 @@ ms$get_features(mass = db)
 
 
 
-suspects$ms2
 
 
 
 
 
 
-
-# sqlt <- Settings_calculate_quality_StreamFind(runParallel = TRUE)
-# patRoon::clearCache("calculate_quality")
-# ms$calculate_quality(sqlt)
-
-
-qlt <- .s3_ms_calculate_quality.Settings_calculate_quality_StreamFind(sqlt, ms)
-
-qlt[qlt$qlt_warning & qlt$qlt_sn >= 3, ]
-
-ms$plot_features(
-  features = qlt[qlt$qlt_warning & qlt$qlt_sn >= 3, ],  #qlt[qlt$qlt_warning, ],  #qlt[qlt$qlt_traces < 5, ],
-  filtered = TRUE,
-  rtExpand = 60,
-  mzExpand = 0.001,
-  loaded = F
-)
-
-
-
-
-id_T = "mz279.12_rt1007_f279"
-ana_T = "02_tof_ww_is_neg_influent-r002"
-
-id_T = "mz364.21_rt1067_f416"
-ana_T = "03_tof_ww_is_pos_o3sw_effluent-r002"
-
-ms$plot_features(analyses = ana_T, features = id_T, filtered = TRUE, mzExpand = 0.001, loaded = F)
-
-features <- suspects
-
-
-.plot_features_quality(features[1:2, ])
-
-
-.plot_features_quality <- function(features) {
-
-  if (!"qlt_model" %in% colnames(features)) {
-    warning("Features quality data not present!")
-    return(NULL)
-  }
-
-  qlt <- features$qlt_model
-
-  n_fts <- length(qlt)
-
-  qlt <- lapply(seq_len(n_fts), function(x, features, qlt) {
-
-    temp <- qlt[[x]]$data
-
-    temp$analysis <- features$analysis[x]
-
-    temp$feature <- features$feature[x]
-
-    if ("group" %in% colnames(features)) {
-      temp$group <- features$group[x]
-    }
-
-    temp
-  }, features = features, qlt = qlt)
-
-  colors_vec <- .get_colors(features$feature)
-
-  plot <- plotly::plot_ly()
-
-  for (i in seq_len(n_fts)) {
-
-    ft <- features$feature[i]
-
-    dt <- qlt[[i]]
-
-    plot <- plot %>%  plotly::add_trace(
-      x = dt$rt,
-      y = dt$original,
-      name = ft,
-      legendgroup = ft,
-      type = 'scatter',
-      mode = 'markers',
-      marker = list(
-        type = "diamond",
-        color = colors_vec[ft]
-      )
-    )
-
-    plot <- plot %>%  plotly::add_trace(
-      x = dt$rt,
-      y = dt$corrected,
-      name = ft,
-      legendgroup = ft,
-      type = 'scatter',
-      mode = 'markers',
-      marker = list(
-        color = colors_vec[ft]
-      ),
-      showlegend = FALSE
-    )
-
-    plot <- plot %>%  plotly::add_trace(
-      x = dt$rt,
-      y = dt$predicted,
-      type = 'scatter',
-      name = ft,
-      legendgroup = ft,
-      mode = 'lines',
-      line = list(
-        dash = 'dash',
-        color = colors_vec[ft]
-      ),
-      showlegend = FALSE
-    )
-
-    plot <- plot %>%  plotly::add_trace(
-      x = dt$rt,
-      y = rep(features$qlt_noise[i], length(dt$rt)),
-      type = 'scatter',
-      name = ft,
-      legendgroup = ft,
-      mode = 'lines',
-      line = list(
-        dash = 'dot',
-        color = colors_vec[ft]
-      ),
-      showlegend = FALSE
-    )
-
-
-  }
-
-  plot
-}
 
 
 
 # plotly::plot_ly() %>%
 #   plotly::add_trace(y = pk_ints, type = 'scatter', name = 'Data', mode = 'markers', marker = list(color = "black")) %>%
 #   plotly::add_trace(y = derivative01, type = 'scatter', name = '1s D', mode = 'lines', line = list(color = "blue")) %>%
-
-
 
 
 # ms$plot_groups(

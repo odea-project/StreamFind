@@ -7,7 +7,7 @@
 \usage{
 Settings_load_groups_ms1_StreamFind(
   mzClust = 0.003,
-  presence = 0.8,
+  presence = 0.6,
   minIntensity = 1000,
   verbose = FALSE,
   filtered = FALSE,

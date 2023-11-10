@@ -10,6 +10,8 @@
   if (!validate(settings)) return(FALSE)
   
   database <- settings$parameters$database
+  
+  database <- as.data.table(database)
 
   internal_standards <- self$get_suspects(
     database = database,

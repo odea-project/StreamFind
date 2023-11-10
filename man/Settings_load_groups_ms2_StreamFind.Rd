@@ -7,7 +7,7 @@
 \usage{
 Settings_load_groups_ms2_StreamFind(
   mzClust = 0.01,
-  presence = 0.8,
+  presence = 0.3,
   minIntensity = 250,
   filtered = FALSE,
   runParallel = TRUE,

@@ -277,7 +277,11 @@ export.ProcessingSettings <- function(x,
 #'
 #' @export
 as.ProcessingSettings <- function(value) {
+  
+  if (length(value) == 1 && is.list(value)) value <- value[[1]]
+  
   must_have_elements <- c("call", "algorithm", "parameters")
+  
   if (!all(must_have_elements %in% names(value))) return(NULL)
 
   if (!"version" %in% names(value)) value$version <- NA_character_

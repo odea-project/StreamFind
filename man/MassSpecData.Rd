@@ -2195,7 +2195,8 @@ and mass (\code{ppm}) and time (\code{sec}) deviations.
   database = NULL,
   ppm = 4,
   sec = 10,
-  filtered = FALSE
+  filtered = FALSE,
+  onGroups = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -2214,6 +2215,9 @@ mass of the suspect targets.}
 \item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
 
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
+
+\item{\code{onGroups}}{Logical of length one. When TRUE results are return based on
+feature groups not individual features.}
 }
 \if{html}{\out{</div>}}
 }

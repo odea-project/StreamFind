@@ -4,7 +4,7 @@ library(StreamFind)
 
 # Convert files ----------------------------------------------------------------
 
-# Conversion of vendor files to open source mzML format
+# Convert vendor file formats to open source mzML
 ?convert_ms_files
 
 # Load file paths
@@ -23,17 +23,19 @@ files
 
 # Make project headers
 headers <- ProjectHeaders(
-  name = "Wastewater project"
+  name = "Wastewater project",
+  author = "Ricardo Cunha",
+  description = "Demo"
 )
 
+  
 # Create the "Engine"
 ms <- MassSpecData$new(files = files, headers = headers)
 
 # Print method and access methods
 ms
 
-ms$plot_bpc(analyses = c(4, 10), levels = 1)
-
+ms$get_bpc(analyses = c(4, 10), levels = 1)
 
 
 
@@ -74,6 +76,8 @@ ffs <- Settings_find_features_openms()
 # Settings documentation
 ?Settings_find_features_openms
 
+# Web reference page 
+ms$help$settings_find_features()
 
 # Saves an example of settings on disk
 save_default_ProcessingSettings(
@@ -243,14 +247,15 @@ ms$get_history()
 ms$save_settings(format = "json", name = "settings")
 
 
+# Fast reproducibility of workflow
+ms2 <- MassSpecData$new(files = all_files[1:3])
+ms2$import_settings(file = "settings.json")
+ms2$run_workflow()
+ms2
+
+
 # Saves all project data
 ms$save(format = "json", name = "MassSpecData_example")
-
-
-
-
-
-
 
 
 

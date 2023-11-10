@@ -1381,8 +1381,8 @@ validate.Settings_load_features_eic_StreamFind <- function(x) {
   all(
     checkmate::test_choice(x$call, "load_features_eic"),
     checkmate::test_choice(x$algorithm, "StreamFind"),
-    checkmate::test_double(x$parameters$rtExpand, max.len = 1),
-    checkmate::test_double(x$parameters$mzExpand, max.len = 1),
+    checkmate::test_number(x$parameters$rtExpand),
+    checkmate::test_number(x$parameters$mzExpand),
     checkmate::test_logical(x$parameters$filtered, max.len = 1),
     checkmate::test_logical(x$parameters$runParallel, max.len = 1)
   )
@@ -1461,19 +1461,19 @@ Settings_filter_features_StreamFind <- function(...) {
   }
 
   if ("minIntensity" %in% names(dots)) {
-    checkmate::assert_double(dots[["minIntensity"]], max.len = 1)
+    checkmate::assert_number(dots[["minIntensity"]])
   }
 
   if ("minSnRatio" %in% names(dots)) {
-    checkmate::assert_double(dots[["minSnRatio"]], max.len = 1)
+    checkmate::assert_number(dots[["minSnRatio"]])
   }
 
   if ("maxGroupSd" %in% names(dots)) {
-    checkmate::assert_double(dots[["maxGroupSd"]], max.len = 1)
+    checkmate::assert_number(dots[["maxGroupSd"]])
   }
 
   if ("blank" %in% names(dots)) {
-    checkmate::assert_double(dots[["blank"]], max.len = 1)
+    checkmate::assert_number(dots[["blank"]])
   }
 
   if ("minGroupAbundance" %in% names(dots)) {
@@ -1485,11 +1485,11 @@ Settings_filter_features_StreamFind <- function(...) {
   }
 
   if ("rtFilter" %in% names(dots)) {
-    checkmate::assert_double(dots[["rtFilter"]], len = 2)
+    checkmate::assert_double(as.numeric(dots[["rtFilter"]]), len = 2)
   }
 
   if ("massFilter" %in% names(dots)) {
-    checkmate::assert_double(dots[["massFilter"]], len = 2)
+    checkmate::assert_double(as.numeric(dots[["massFilter"]]), len = 2)
   }
 
   settings$parameters <- dots
@@ -1551,23 +1551,16 @@ validate.Settings_filter_features_StreamFind <- function(x) {
     },
 
     if ("rtFilter" %in% filters) {
-      checkmate::test_double(x$parameters$rtFilter, len = 2)
+      checkmate::test_double(as.numeric(x$parameters$rtFilter), len = 2)
     } else {
       TRUE
     },
 
     if ("massFilter" %in% filters) {
-      checkmate::test_double(x$parameters$massFilter, len = 2)
+      checkmate::test_double(as.numeric(x$parameters$massFilter), len = 2)
     } else {
       TRUE
     }
-
-    # checkmate::test_number(x$parameters$minIntensity),
-    # checkmate::test_number(x$parameters$minSnRatio),
-    # checkmate::test_number(x$parameters$maxGroupSd),
-    # checkmate::test_number(x$parameters$blank),
-    # checkmate::test_count(x$parameters$minGroupAbundance),
-    # checkmate::test_logical(x$parameters$excludeIsotopes, max.len = 1)
   )
 }
 
@@ -1658,7 +1651,7 @@ validate.Settings_annotate_features_StreamFind <- function(x) {
     checkmate::test_count(x$parameters$maxIsotopes),
     checkmate::test_count(x$parameters$maxCharge),
     checkmate::test_count(x$parameters$maxGaps),
-    checkmate::test_double(x$parameters$rtWindowAlignment, max.len = 1),
+    checkmate::test_number(x$parameters$rtWindowAlignment),
     checkmate::test_choice(x$parameters$mode, "small molecules"),
     checkmate::test_vector(x$parameters$elements, any.missing = FALSE, min.len = 1),
     vapply(x$parameters$elements, function(i) {
@@ -1722,11 +1715,14 @@ Settings_suspect_screening_StreamFind <- function(
 #' @export
 #'
 validate.Settings_suspect_screening_StreamFind <- function(x) {
+  
+  x$parameters$database <- as.data.table(x$parameters$database)
+  
   all(
     checkmate::test_choice(x$call, "suspect_screening"),
     checkmate::test_choice(x$algorithm, "StreamFind"),
-    checkmate::test_double(x$parameters$ppm, max.len = 1),
-    checkmate::test_double(x$parameters$sec, max.len = 1),
+    checkmate::test_number(x$parameters$ppm),
+    checkmate::test_number(x$parameters$sec),
     checkmate::test_logical(x$parameters$filtered, max.len = 1)
   ) && if (is.data.frame(x$parameters$database)) {
     all(c("name", "mass") %in% colnames(x$parameters$database)) ||
@@ -1863,14 +1859,17 @@ Settings_find_internal_standards_StreamFind <- function(
 #' @export
 #'
 validate.Settings_find_internal_standards_StreamFind <- function(x) {
+  
+  x$parameters$database <- as.data.table(x$parameters$database)
+  
   all(
     checkmate::test_choice(x$call, "find_internal_standards"),
     checkmate::test_choice(x$algorithm, "StreamFind"),
-    checkmate::test_double(x$parameters$ppm, max.len = 1),
-    checkmate::test_double(x$parameters$sec, max.len = 1),
-    checkmate::test_class(x$parameters$database, "data.frame")
+    checkmate::test_number(x$parameters$ppm),
+    checkmate::test_number(x$parameters$sec)
   ) && if (is.data.frame(x$parameters$database)) {
-    all(c("name", "mass", "rt") %in% colnames(x$parameters$database))
+    all(c("name", "mass", "rt") %in% colnames(x$parameters$database)) ||
+      all(c("name", "mz", "rt") %in% colnames(x$parameters$database))
   } else {
     FALSE
   }

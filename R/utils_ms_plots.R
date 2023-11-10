@@ -1016,6 +1016,12 @@
   }
 
   if (is.null(cex) || !is.numeric(cex)) cex <- 0.6
+  
+  plot_qlt <- FALSE
+  
+  if ("qlt_model" %in% colnames(features)) {
+    plot_qlt <- TRUE
+  }
 
   plot(eic$rt,
     type = "n",
@@ -1039,6 +1045,7 @@
       cex = 0.2,
       col = cl[lt]
     )
+    
     lines(
       x = pk_eic$rt,
       y = pk_eic$intensity,
@@ -1050,38 +1057,63 @@
 
     pk_a <- features[features$unique_ids == t, ]
 
-    for (f in seq_len(nrow(pk_a))) {
-      # pk_eic_a <- pk_eic[
-      #   pk_eic$rt >= pk_a$rtmin[f] &
-      #     pk_eic$rt <= pk_a$rtmax[f],
-      # ]
+    # pk_eic_a <- pk_eic[
+    #   pk_eic$rt >= pk_a$rtmin[f] &
+    #     pk_eic$rt <= pk_a$rtmax[f],
+    # ]
 
-      # polygon(
-      #   c(pk_eic_a$rt, rev(pk_eic_a$rt)),
-      #   c(pk_eic_a$intensity, rep(0, length(pk_eic_a$intensity))),
-      #   col = paste(color = unname(cl[lt]), 50, sep = ""),
-      #   border = F
-      # )
+    # polygon(
+    #   c(pk_eic_a$rt, rev(pk_eic_a$rt)),
+    #   c(pk_eic_a$intensity, rep(0, length(pk_eic_a$intensity))),
+    #   col = paste(color = unname(cl[lt]), 50, sep = ""),
+    #   border = F
+    # )
 
-      rect(
-        xleft = pk_a$rtmin[f],
-        xright = pk_a$rtmax[f],
-        ybottom = 0,
-        ytop = pk_a$intensity,
-        border = cl[lt],
-        lwd = 1,
-        lty = 3
-      )
+    rect(
+      xleft = pk_a$rtmin,
+      xright = pk_a$rtmax,
+      ybottom = 0,
+      ytop = pk_a$intensity,
+      border = cl[lt],
+      lwd = 1,
+      lty = 3
+    )
 
-
-      lines(
-        x = rep(pk_a$rt, 2),
-        y = c(0, pk_a$intensity),
-        type = "l",
-        pch = 19,
-        cex = 0.6,
-        col = cl[lt]
-      )
+    lines(
+      x = rep(pk_a$rt, 2),
+      y = c(0, pk_a$intensity),
+      type = "l",
+      pch = 19,
+      cex = 0.6,
+      col = cl[lt]
+    )
+    
+    if (plot_qlt) {
+      q_t <- pk_a$qlt_model[[1]]
+      
+      if (!is.null(q_t)) {
+        q_t <- q_t$data
+        
+        lines(
+          x = q_t$rt,
+          y = q_t$predicted,
+          type = "l",
+          pch = 19,
+          cex = 0.3,
+          lty = 2,
+          col = cl[lt]
+        )
+        
+        lines(
+          x = q_t$rt,
+          y = rep(pk_a$qlt_noise, nrow(q_t)),
+          type = "l",
+          pch = 19,
+          cex = 0.3,
+          lty = 2,
+          col = cl[lt]
+        )
+      }
     }
   }
 
@@ -1116,11 +1148,11 @@
 #' @noRd
 #'
 .plot_features_interactive <- function(eic = NULL,
-                                      features = NULL,
-                                      legendNames = NULL,
-                                      colorBy = "targets",
-                                      title = NULL,
-                                      showLegend = TRUE) {
+                                       features = NULL,
+                                       legendNames = NULL,
+                                       colorBy = "targets",
+                                       title = NULL,
+                                       showLegend = TRUE) {
 
   eic <- .make_colorBy_varkey(eic, colorBy, legendNames)
 
@@ -1133,6 +1165,12 @@
   features$unique_ids <- paste0(features$feature, features$analysis)
 
   ids <- unique(eic$unique_ids)
+  
+  plot_qlt <- FALSE
+  
+  if ("qlt_model" %in% colnames(features)) {
+    plot_qlt <- TRUE
+  }
 
   title <- list(
     text = title, x = 0.13, y = 0.98,
@@ -1177,60 +1215,101 @@
       showlegend = showL[lt],
       hovertemplate = paste("<br>rt: %{x}<br>", "int: %{y}")
     )
+    
     if (length(y) >= 1) showL[lt] <- FALSE
 
     pk <- features[features$unique_ids %in% t, ]
 
-    for (f in seq_len(nrow(pk))) {
+    pk_eic <- eic[eic$rt >= pk$rtmin & eic$rt <= pk$rtmax & eic$unique_ids %in% t, ]
 
-      pk_eic <- eic[eic$rt >= pk$rtmin[f] & eic$rt <= pk$rtmax[f] & eic$unique_ids %in% t, ]
-
-      hT <- paste(
-        "</br> feature: ", pk$feature[f],
-        ifelse("group" %in% colnames(pk),
-          paste("</br> group: ", pk$group[f]), ""
-        ),
-        "</br> analysis: ", pk$analysis[f],
-        "</br> <i>m/z</i>: ", round(pk$mz[f], digits = 4),
-        "</br> dppm: ", round(((pk$mzmax[f] - pk$mzmin[f]) / pk$mz[f]) * 1E6, digits = 0),
-        "</br> rt: ", round(pk$rt[f], digits = 0),
-        "</br> drt: ", round(pk$rtmax[f] - pk$rtmin[f], digits = 0),
-        "</br> intensity: ", round(pk$intensity[f], digits = 0),
-        "</br> filled: ",
-        if ("is_filled" %in% colnames(pk)) {
-          ifelse(pk$is_filled[f] == 1, TRUE, FALSE)
-        } else {
-          FALSE
-        }
-      )
-
-      plot <- plot %>% add_trace(
-        x = pk_eic$rt,
-        y = pk_eic$intensity,
-        type = "scatter", mode = "lines+markers",
-        line = list(width = 0.6, color = unname(cl[lt])),
-        fill = "tozeroy", connectgaps = TRUE,
-        fillcolor = paste(color = unname(cl[lt]), 50, sep = ""),
-        marker = list(size = 3, color = unname(cl[lt])),
-        name = lt,
-        legendgroup = lt,
-        showlegend = FALSE,
-        hoverinfo = "text",
-        text = hT
-      )
-
-      plot <- plot %>% add_segments(
-        x = pk$rt[f],
-        xend = pk$rt[f],
-        y = 0,
-        yend = pk$intensity[f],
-        legendgroup = lt,
-        showlegend = FALSE,
-        line = list(color = unname(cl[lt]), size = 0.5),
-        hoverinfo = "text",
-        text = hT
-      )
+    hT <- paste(
+      "</br> feature: ", pk$feature,
+      ifelse("group" %in% colnames(pk),
+        paste("</br> group: ", pk$group), ""
+      ),
+      "</br> analysis: ", pk$analysis,
+      "</br> <i>m/z</i>: ", round(pk$mz, digits = 4),
+      "</br> dppm: ", round(((pk$mzmax - pk$mzmin) / pk$mz) * 1E6, digits = 0),
+      "</br> rt: ", round(pk$rt, digits = 0),
+      "</br> drt: ", round(pk$rtmax - pk$rtmin, digits = 0),
+      "</br> intensity: ", round(pk$intensity, digits = 0),
+      "</br> filled: ",
+      if ("is_filled" %in% colnames(pk)) {
+        ifelse(pk$is_filled == 1, TRUE, FALSE)
+      } else {
+        FALSE
+      },
+      if (plot_qlt) {
+        paste(
+          "</br> noise: ", pk$qlt_noise,
+          "</br> sn: ", pk$qlt_sn,
+          "</br> gaufit: ", round(pk$qlt_gaufit, digits = 4),
+          "</br> A: ", pk$qlt_A,
+          "</br> mu: ", pk$qlt_mu,
+          "</br> sigma: ", pk$qlt_sigma
+        )
+      } else {
+        ""
+      }
+    )
+    
+    if (plot_qlt) {
+      q_t <- pk$qlt_model[[1]]
+      
+      if (!is.null(q_t)) {
+        q_t <- q_t$data
+        
+        plot <- plot %>%  plotly::add_trace(
+          x = q_t$rt,
+          y = q_t$predicted,
+          type = 'scatter',
+          name = lt,
+          legendgroup = lt,
+          mode = 'lines',
+          line = list(dash = 'dash', color = unname(cl[lt])),
+          showlegend = FALSE
+        )
+        
+        plot <- plot %>%  plotly::add_trace(
+          x = q_t$rt,
+          y = rep(pk$qlt_noise, nrow(q_t)),
+          type = 'scatter',
+          name = lt,
+          legendgroup = lt,
+          mode = 'lines',
+          line = list(dash = 'dot', color = unname(cl[lt])),
+          showlegend = FALSE
+        )
+      }
     }
+
+    plot <- plot %>% add_trace(
+      x = pk_eic$rt,
+      y = pk_eic$intensity,
+      type = "scatter", mode = "lines+markers",
+      line = list(width = 0.6, color = unname(cl[lt])),
+      fill = "tozeroy", connectgaps = TRUE,
+      fillcolor = paste(color = unname(cl[lt]), 50, sep = ""),
+      marker = list(size = 3, color = unname(cl[lt])),
+      name = lt,
+      legendgroup = lt,
+      showlegend = FALSE,
+      hoverinfo = "text",
+      text = hT
+    )
+
+    plot <- plot %>% add_segments(
+      x = pk$rt,
+      xend = pk$rt,
+      y = 0,
+      yend = pk$intensity,
+      legendgroup = lt,
+      showlegend = FALSE,
+      line = list(color = unname(cl[lt]), size = 0.5),
+      hoverinfo = "text",
+      text = hT
+    )
+    
   }
 
   if (showLegend) {

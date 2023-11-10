@@ -64,6 +64,7 @@
 #' @template arg-ms-cex
 #' @template arg-ms-showLegend
 #' @template arg-ms-components
+#' @template arg-ms-onGroups
 #'
 #' @references
 #' \insertRef{patroon01}{StreamFind}
@@ -168,36 +169,40 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
     # Extracts and validates ProcessingSettings for a given call.
     #
-    .get_call_settings = function(settings = NULL, call = NULL) {
+    .get_call_settings = function(settings, call) {
+      
+      checkmate::assert_choice(call, self$processing_function_calls())
 
-      valid <- TRUE
-
-      if (length(call) > 1 & !is.character(call)) return(NULL)
-      if (!(call %in% self$processing_function_calls())) return(NULL)
-
-      if (is.null(settings)) {
-        settings <- self$get_settings(call)
-      } else if (call %in% names(settings)) {
-        settings <- settings[call]
-      }
-
-      if (!"call" %in% names(settings)) {
-        if (length(settings) > 1) {
-          warning("More then one settings for ", call, "found!")
-          valid <- FALSE
-        } else {
-          settings <- settings[[call]]
-        }
-      }
-
-      settings <- as.ProcessingSettings(settings)
-
-      if (!call %in% settings$call) {
-        warning("Settings call must be ", call)
+      if (is.null(settings)) settings <- self$get_settings(call)
+      
+      if (is.null(settings)) return(NULL)
+      
+      cols_check <- c("call", "algorithm", "parameters")
+      
+      if (all(cols_check %in% names(settings))) settings <- list(settings)
+      
+      if (length(settings) > 1) {
+        warning("More then one settings for ", call, "found!")
         return(NULL)
       }
-
-      settings
+      
+      settings <- as.ProcessingSettings(settings)
+      
+      if (checkmate::test_choice(call, settings$call)) {
+        settings
+        
+      } else {
+        warning("Settings call must be ", call, "!")
+        NULL
+      }
+    },
+    
+    # Checks if settings are already stored.
+    #
+    .settings_already_stored = function(settings) {
+      any(vapply(private$.settings, function(x, settings) {
+        identical(x, settings)
+      }, settings = settings, FALSE))
     },
 
     ## ___ .filters -----
@@ -279,7 +284,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (nrow(features) > 0) {
 
-        if ("sn" %in% colnames(features)) {
+        if ("qlt_sn" %in% colnames(features)) {
 
           if (is.numeric(value) & length(value) == 1) {
 
@@ -292,14 +297,14 @@ MassSpecData <- R6::R6Class("MassSpecData",
               }, features = features)
 
               groups_sel <- vapply(index, function(x, value) {
-                max(features$sn[x]) <= value
+                max(features$qlt_sn[x]) <= value
               }, value = value, FALSE)
 
               private$.tag_filtered(groups_sel, "minSnRatio")
 
             } else {
               private$.analyses <- lapply(private$.analyses, function(x) {
-                sel <- x$features$sn <= value & !x$features$filtered
+                sel <- x$features$qlt_sn <= value & !x$features$filtered
                 x$features$filtered[sel] <- TRUE
                 x$features$filter[sel] <- "minSnRatio"
                 x
@@ -319,7 +324,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             warning("The value for sn filtering must be numeric and of length one!")
           }
         } else {
-          warning("The sn column was not found in the features data.table!")
+          warning("The qlt_sn column was not found in the features data.table!")
         }
       } else {
         warning("There are no features in the MassSpecData!")
@@ -707,7 +712,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (self$has_settings()) {
         cat("settings: \n")
-        names_settings <- names(private$.settings)
+        names_settings <- vapply(private$.settings, function(x) x$call, "")
         algorithms <- vapply(private$.settings, function(x) x$algorithm, "")
         cat(
           paste0(" ", seq_len(length(names_settings)), ": ", names_settings, " (", algorithms, ")"),
@@ -1134,6 +1139,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return A character vector.
     #'
     get_bpc = function(analyses = NULL, levels = c(1, 2)) {
+      
       analyses <- private$.check_analyses_argument(analyses)
 
       if (is.null(analyses)) return(data.table())
@@ -1850,10 +1856,20 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return A list with ProcessingSettings S3 class object/s.
     #'
     get_settings = function(call = NULL) {
+      
       if (is.null(call)) {
         private$.settings
+        
       } else {
-        private$.settings[call]
+        call_names <- vapply(private$.settings, function(x) x$call, NA_character_)
+        
+        if (any(call %in% call_names)) {
+          private$.settings[call %in% call_names]
+          
+        } else {
+          warning("Settings for ", call, " not found!")
+          NULL
+        }
       }
     },
 
@@ -1865,7 +1881,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return A character vector with the name of with the ProcessingSettings.
     #'
     get_settings_names = function() {
-      names(private$.settings)
+      vapply(private$.settings, function(x) x$call, NA_character_)
     },
 
     ### _____ get_features -----
@@ -2120,8 +2136,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
         add_eic_filtered <- FALSE
 
         if (any(fts$filtered)) {
+          
           if (nrow(eic) == 0) {
             add_eic_filtered <- TRUE
+            
           } else if (any(!(fts$feature[fts$filtered] %in% eic$feature))) {
             add_eic_filtered <- TRUE
           }
@@ -2131,28 +2149,29 @@ MassSpecData <- R6::R6Class("MassSpecData",
           fts_filtered <- fts[fts$filtered, ]
           fts_filtered <- fts_filtered[!(fts_filtered$feature %in% eic$feature), ]
 
-          settings <- self$get_settings("load_features_eic")
-
-          if ("load_features_eic" %in% names(settings)) {
-            parameters <- settings[["load_features_eic"]][["parameters"]]
+          settings <- self$get_settings("load_features_eic")[[1]]
+          
+          if (!is.null(settings)) {
+            
+            parameters <- settings$parameters
+            
+            if ("rtExpand" %in% names(parameters)) {
+              rtExpand <- parameters[["rtExpand"]]
+            } else {
+              if (is.null(rtExpand)) rtExpand <- 0
+            }
+            
+            if ("mzExpand" %in% names(parameters)) {
+              mzExpand <- parameters[["mzExpand"]]
+            } else {
+              if (is.null(mzExpand)) mzExpand <- 0
+            }
+            
+            fts_filtered$rtmin <- fts_filtered$rtmin - rtExpand
+            fts_filtered$rtmax <- fts_filtered$rtmax + rtExpand
+            fts_filtered$mzmin <- fts_filtered$mzmin - mzExpand
+            fts_filtered$mzmax <- fts_filtered$mzmax + mzExpand
           }
-
-          if ("rtExpand" %in% names(parameters)) {
-            rtExpand <- parameters[["rtExpand"]]
-          } else {
-            if (is.null(rtExpand)) rtExpand <- 0
-          }
-
-          if ("mzExpand" %in% names(parameters)) {
-            mzExpand <- parameters[["mzExpand"]]
-          } else {
-            if (is.null(mzExpand)) mzExpand <- 0
-          }
-
-          fts_filtered$rtmin <- fts_filtered$rtmin - rtExpand
-          fts_filtered$rtmax <- fts_filtered$rtmax + rtExpand
-          fts_filtered$mzmin <- fts_filtered$mzmin - mzExpand
-          fts_filtered$mzmax <- fts_filtered$mzmax + mzExpand
 
           eic_2 <- self$get_spectra(
             analyses = analyses,
@@ -2285,24 +2304,23 @@ MassSpecData <- R6::R6Class("MassSpecData",
           fts_filtered <- fts[fts$filtered, ]
           fts_filtered <- fts_filtered[!(fts_filtered$feature %in% ms1$feature), ]
 
-          settings <- self$get_settings("load_features_ms1")
+          settings <- self$get_settings("load_features_ms1")[[1]]
+          
+          if (!is.null(settings)) {
 
-          if ("load_features_ms1" %in% names(settings)) {
-            parameters <- settings[["load_features_ms1"]][["parameters"]]
-          } else {
-            parameters <- list()
-          }
-
-          if ("mzClust" %in% names(parameters)) {
-            mzClust <- parameters[["mzClust"]]
-          }
-
-          if ("presence" %in% names(parameters)) {
-            presence <- parameters[["presence"]]
-          }
-
-          if ("minIntensity" %in% names(parameters)) {
-            minIntensity <- parameters[["minIntensity"]]
+            parameters <- settings$parameters
+            
+            if ("mzClust" %in% names(parameters)) {
+              mzClust <- parameters[["mzClust"]]
+            }
+            
+            if ("presence" %in% names(parameters)) {
+              presence <- parameters[["presence"]]
+            }
+            
+            if ("minIntensity" %in% names(parameters)) {
+              minIntensity <- parameters[["minIntensity"]]
+            }
           }
 
           ms1_2 <- self$get_ms1(
@@ -2424,28 +2442,27 @@ MassSpecData <- R6::R6Class("MassSpecData",
           fts_filtered <- fts[fts$filtered, ]
           fts_filtered <- fts_filtered[!(fts_filtered$feature %in% ms2$feature), ]
 
-          settings <- self$get_settings("load_features_ms2")
+          settings <- self$get_settings("load_features_ms2")[[1]]
 
-          if ("load_features_ms2" %in% names(settings)) {
-            parameters <- settings[["load_features_ms2"]][["parameters"]]
-          } else {
-            parameters <- list()
-          }
-
-          if ("isolationWindow" %in% names(parameters)) {
-            isolationWindow <- parameters[["isolationWindow"]]
-          }
-
-          if ("mzClust" %in% names(parameters)) {
-            mzClust <- parameters[["mzClust"]]
-          }
-
-          if ("presence" %in% names(parameters)) {
-            presence <- parameters[["presence"]]
-          }
-
-          if ("minIntensity" %in% names(parameters)) {
-            minIntensity <- parameters[["minIntensity"]]
+          if (!is.null(settings)) {
+            
+            parameters <- settings$parameters
+            
+            if ("isolationWindow" %in% names(parameters)) {
+              isolationWindow <- parameters[["isolationWindow"]]
+            }
+            
+            if ("mzClust" %in% names(parameters)) {
+              mzClust <- parameters[["mzClust"]]
+            }
+            
+            if ("presence" %in% names(parameters)) {
+              presence <- parameters[["presence"]]
+            }
+            
+            if ("minIntensity" %in% names(parameters)) {
+              minIntensity <- parameters[["minIntensity"]]
+            }
           }
 
           ms2_2 <- self$get_ms2(
@@ -2673,52 +2690,49 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           if (nrow(fts_filtered) > 0) {
 
-            settings_lf <- self$get_settings("load_features_ms1")
+            settings_lf <- self$get_settings("load_features_ms1")[[1]]
 
-            if ("load_features_ms1" %in% names(settings_lf)) {
-              parameters_lf <- settings_lf[["load_features_ms1"]][["parameters"]]
-            } else {
-              parameters_lf <- list()
+            if (!is.null(settings_lf)) {
+              
+              parameters_lf <- settings_lf$parameters
+            
+              if ("rtWindow" %in% names(parameters_lf)) {
+                rtWindow <- parameters_lf[["rtWindow"]]
+              }
+              
+              if ("mzWindow" %in% names(parameters_lf)) {
+                mzWindow <- parameters_lf[["mzWindow"]]
+              }
+              
+              if ("mzClust" %in% names(parameters_lf)) {
+                mzClustFeatures <- parameters_lf[["mzClust"]]
+              }
+              
+              if ("presence" %in% names(parameters_lf)) {
+                presenceFeatures <- parameters_lf[["presence"]]
+              }
+              
+              if ("minIntensity" %in% names(parameters_lf)) {
+                minIntensityFeatures <- parameters_lf[["minIntensity"]]
+              }
             }
 
-            settings <- self$get_settings("load_groups_ms1")
+            settings <- self$get_settings("load_groups_ms1")[[1]]
 
-            if ("load_groups_ms1" %in% names(settings)) {
-              parameters <- settings[["load_groups_ms1"]][["parameters"]]
-            } else {
-              parameters <- list()
-            }
-
-            if ("rtWindow" %in% names(parameters_lf)) {
-              rtWindowFeatures <- parameters_lf[["rtWindow"]]
-            }
-
-            if ("mzWindow" %in% names(parameters_lf)) {
-              mzWindowFeatures <- parameters_lf[["mzWindow"]]
-            }
-
-            if ("mzClust" %in% names(parameters_lf)) {
-              mzClustFeatures <- parameters_lf[["mzClust"]]
-            }
-
-            if ("presence" %in% names(parameters_lf)) {
-              presenceFeatures <- parameters_lf[["presence"]]
-            }
-
-            if ("minIntensity" %in% names(parameters_lf)) {
-              minIntensityFeatures <- parameters_lf[["minIntensity"]]
-            }
-
-            if ("mzClust" %in% names(parameters)) {
-              mzClustGroups <- parameters[["mzClust"]]
-            }
-
-            if ("presence" %in% names(parameters)) {
-              presenceGroups <- parameters[["presence"]]
-            }
-
-            if ("minIntensity" %in% names(parameters)) {
-              minIntensityGroups <- parameters[["minIntensity"]]
+            if (!is.null(settings)) {
+              parameters <- settings$parameters
+            
+              if ("mzClust" %in% names(parameters)) {
+                mzClustGroups <- parameters[["mzClust"]]
+              }
+              
+              if ("presence" %in% names(parameters)) {
+                presenceGroups <- parameters[["presence"]]
+              }
+              
+              if ("minIntensity" %in% names(parameters)) {
+                minIntensityGroups <- parameters[["minIntensity"]]
+              }
             }
 
             feat_ms1 <- self$get_features_ms1(
@@ -2956,48 +2970,46 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           if (nrow(fts_filtered) > 0) {
 
-            settings_lf <- self$get_settings("load_features_ms2")
+            settings_lf <- self$get_settings("load_features_ms2")[[1]]
 
-            if ("load_features_ms2" %in% names(settings_lf)) {
-              parameters_lf <- settings_lf[["load_features_ms2"]][["parameters"]]
-            } else {
-              parameters_lf <- list()
+            if (!is.null(settings_lf)) {
+              
+              parameters_lf <- settings_lf$parameters
+           
+              if ("isolationWindow" %in% names(parameters_lf)) {
+                isolationWindow <- parameters_lf[["isolationWindow"]]
+              }
+              
+              if ("mzClust" %in% names(parameters_lf)) {
+                mzClustFeatures <- parameters_lf[["mzClust"]]
+              }
+              
+              if ("presence" %in% names(parameters_lf)) {
+                presenceFeatures <- parameters_lf[["presence"]]
+              }
+              
+              if ("minIntensity" %in% names(parameters_lf)) {
+                minIntensityFeatures <- parameters_lf[["minIntensity"]]
+              }
             }
 
-            settings <- self$get_settings("load_groups_ms2")
+            settings <- self$get_settings("load_groups_ms2")[[1]]
 
-            if ("load_groups_ms2" %in% names(settings)) {
-              parameters <- settings[["load_groups_ms2"]][["parameters"]]
-            } else {
-              parameters <- list()
-            }
-
-            if ("isolationWindow" %in% names(parameters_lf)) {
-              isolationWindow <- parameters_lf[["isolationWindow"]]
-            }
-
-            if ("mzClust" %in% names(parameters_lf)) {
-              mzClustFeatures <- parameters_lf[["mzClust"]]
-            }
-
-            if ("presence" %in% names(parameters_lf)) {
-              presenceFeatures <- parameters_lf[["presence"]]
-            }
-
-            if ("minIntensity" %in% names(parameters_lf)) {
-              minIntensityFeatures <- parameters_lf[["minIntensity"]]
-            }
-
-            if ("mzClust" %in% names(parameters)) {
-              mzClustGroups <- parameters[["mzClust"]]
-            }
-
-            if ("presence" %in% names(parameters)) {
-              presenceGroups <- parameters[["presence"]]
-            }
-
-            if ("minIntensity" %in% names(parameters)) {
-              minIntensityGroups <- parameters[["minIntensity"]]
+            if (!is.null(settings)) {
+              
+              parameters <- settings$parameters
+            
+              if ("mzClust" %in% names(parameters)) {
+                mzClustGroups <- parameters[["mzClust"]]
+              }
+              
+              if ("presence" %in% names(parameters)) {
+                presenceGroups <- parameters[["presence"]]
+              }
+              
+              if ("minIntensity" %in% names(parameters)) {
+                minIntensityGroups <- parameters[["minIntensity"]]
+              }
             }
 
             feat_ms2 <- self$get_features_ms2(
@@ -3752,7 +3764,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @return Invisible.
     #'
-    add_settings = function(settings = NULL, replace = TRUE) {
+    add_settings = function(settings = NULL, replace = FALSE) {
 
       if (is.list(settings)) {
 
@@ -3772,6 +3784,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             "bin_spectra",
             "find_features",
             "annotate_features",
+            "load_features_eic",
             "load_features_ms1",
             "load_features_ms2",
             "load_groups_ms1",
@@ -3792,83 +3805,97 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
             } else {
               message(paste0("\U2713 Duplicate settings for the following not added as only one is possible!\n",
-                             paste(duplicated_names, collapse = "\n"))
+                paste(duplicated_names, collapse = "\n"))
               )
             }
+            
+            settings <- settings[!(duplicated(call_names) & call_names %in% only_one_possible)]
 
-            settings <- settings[!duplicated(call_names)]
-
-            call_names <- call_names[!duplicated(call_names)]
+            call_names <- vapply(settings, function(x) x$call, NA_character_)
           }
 
           if (is.null(private$.settings)) private$.settings <- list()
+          
+          lapply(settings, function(x, only_one_possible, replace) {
+            
+            stored_names <- vapply(private$.settings, function(x) x$call, NA_character_)
+            
+            if (replace) {
 
-          names(settings) <- call_names
-
-          if (replace) {
-            private$.settings[call_names] <- settings
-
-          } else {
-
-            if (any(call_names %in% only_one_possible)) {
-
-              replace_calls <- call_names[call_names %in% only_one_possible]
-
-              if (length(replace_calls) == 1) {
-                message("\U2139 ", replace_calls, " replaced as only one is possible!")
-
-              } else {
+              if (x$call %in% stored_names) {
+                
+                private$.settings[x$call %in% stored_names] <- x
+                
+                private$.register(
+                  "replaced",
+                  "ProcessingSettings",
+                  x$call,
+                  "StreamFind",
+                  x$version,
+                  x$algorithm
+                )
+                
                 message(
-                  paste0(
-                    "\U2713 Replaced settings as only one is possible:\n",
-                    paste(replace_calls, collapse = "\n")
-                  )
+                  paste0("\U2713 ", x$call, " processing settings replaced!")
+                )
+                
+              } else {
+                
+                private$.settings <- c(private$.settings, list(x))
+                
+                private$.register(
+                  "added",
+                  "ProcessingSettings",
+                  x$call,
+                  "StreamFind",
+                  x$version,
+                  x$algorithm
+                )
+                
+                message(
+                  paste0("\U2713 ", x$call, " processing settings added!")
                 )
               }
 
-              replace_settings <- settings[replace_calls]
+            } else {
+              
+              if (x$call %in% only_one_possible && x$call %in% stored_names) {
+                message("\U2139 ", x$call, " replaced as only one is possible!")
+                
+                private$.settings[x$call %in% stored_names] <- x
+                
+                private$.register(
+                  "replaced",
+                  "ProcessingSettings",
+                  x$call,
+                  "StreamFind",
+                  x$version,
+                  x$algorithm
+                )
+                
+                message(
+                  paste0("\U2713 ", x$call, " processing settings replaced!")
+                )
+                
+              } else {
 
-              private$.settings[replace_calls] <- settings[replace_calls]
-
-              settings <- settings[!call_names %in% only_one_possible]
+                private$.settings <- c(private$.settings, list(x))
+                
+                private$.register(
+                  "added",
+                  "ProcessingSettings",
+                  x$call,
+                  "StreamFind",
+                  x$version,
+                  x$algorithm
+                )
+                
+                message(
+                  paste0("\U2713 ", x$call, " processing settings added!")
+                )
+              }
             }
-
-            private$.settings <- c(private$.settings, settings)
-          }
-
-          if (length(settings) == 1) {
-            private$.register(
-              "added",
-              "ProcessingSettings",
-              settings[[1]]$call,
-              "StreamFind",
-              settings[[1]]$version,
-              settings[[1]]$algorithm
-            )
-
-            message(
-              paste0("\U2713 ", settings[[1]]$call, " processing settings added!")
-            )
-          } else {
-
-            lapply(settings, function(x) {
-              private$.register(
-                "added",
-                "ProcessingSettings",
-                x$call,
-                "StreamFind",
-                x$version,
-                x$algorithm
-              )
-            })
-
-            message(
-              paste0(
-                "\U2713 Added settings for:\n",
-                paste(call_names, collapse = "\n")
-              )
-            )
-          }
+          }, only_one_possible = only_one_possible, replace = replace)
 
         } else {
           warning("Settings content or structure not conform! Not added.")
@@ -3876,6 +3903,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       } else {
         warning("Settings content or structure not conform! Not added.")
       }
+      
       invisible(self)
     },
 
@@ -4832,6 +4860,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return Invisible.
     #'
     load_spectra = function(runParallel = FALSE) {
+      
       spec <- self$get_spectra(
         analyses = NULL, levels = NULL, mass = NULL,
         mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
@@ -4841,10 +4870,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
       )
 
       split_vector <- spec$analysis
+      
       spec$analysis <- NULL
+      
       spec_list <- split(spec, split_vector)
 
       if (length(spec_list) == self$get_number_analyses()) {
+        
         suppressMessages(self$add_spectra(spec_list, replace = TRUE))
 
         private$.register(
@@ -4921,36 +4953,18 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return Invisible.
     #'
     load_features_eic = function(settings = NULL) {
-      valid <- TRUE
-      add_settings <- TRUE
       
       if (!any(self$has_features())) {
         warning("Features not found! Not loaded.")
         return(invisible(self))
       }
-
-      if (is.null(settings)) {
-        settings <- self$get_settings(call = "load_features_eic")[[1]]
-        add_settings <- FALSE
-      } else if ("load_features_eic" %in% names(settings)) {
-        settings <- settings[["load_features_eic"]]
-      }
-
-      if (validate(settings)) {
-        if (!"load_features_eic" %in% settings$call) {
-          warning("Settings call must be load_features_eic!")
-          valid <- FALSE
-        }
-      } else {
-        warning("Settings content or structure not conform!")
-        valid <- FALSE
-      }
-
-      if (!valid) {
-        return(invisible(self))
-      }
+      
+      settings <- private$.get_call_settings(settings, "load_features_eic")
+      
+      if (is.null(settings)) return(invisible(self))
 
       algorithm <- settings$algorithm
+      
       parameters <- settings$parameters
 
       if ("StreamFind" %in% algorithm) {
@@ -4995,6 +5009,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
         message("\U2713 Feature EICs loaded!")
 
         self$add_features_eic(feat_eics_list, replace = TRUE)
+        
+        if (!private$.settings_already_stored(settings)) {
+          self$add_settings(settings)
+        }
       }
 
       invisible(self)
@@ -5008,36 +5026,18 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return Invisible.
     #'
     load_features_ms1 = function(settings = NULL) {
-      valid <- TRUE
-      add_settings <- TRUE
       
       if (!any(self$has_features())) {
         warning("Features not found! Not loaded.")
         return(invisible(self))
       }
 
-      if (is.null(settings)) {
-        settings <- self$get_settings(call = "load_features_ms1")[[1]]
-        add_settings <- FALSE
-      } else if ("load_features_ms1" %in% names(settings)) {
-        settings <- settings[["load_features_ms1"]]
-      }
-
-      if (validate(settings)) {
-        if (!"load_features_ms1" %in% settings$call) {
-          warning("Settings call must be load_features_ms1!")
-          valid <- FALSE
-        }
-      } else {
-        warning("Settings content or structure not conform!")
-        valid <- FALSE
-      }
-
-      if (!valid) {
-        return(invisible(self))
-      }
+      settings <- private$.get_call_settings(settings, "load_features_ms1")
+      
+      if (is.null(settings)) return(invisible(self))
 
       algorithm <- settings$algorithm
+      
       parameters <- settings$parameters
 
       if ("StreamFind" %in% algorithm) {
@@ -5114,8 +5114,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         if (all(added_ms1)) {
 
-          if (add_settings) self$add_settings(settings)
-
           private$.analyses <- analyses
 
           if (!cached_ms1 & !is.null(hash)) {
@@ -5140,6 +5138,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
           )
 
           message("\U2713 MS1 spectra added to features in analyses!")
+          
+          if (!private$.settings_already_stored(settings)) {
+            self$add_settings(settings)
+          }
         }
       }
       invisible(self)
@@ -5153,36 +5155,18 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return Invisible.
     #'
     load_features_ms2 = function(settings = NULL) {
-      valid <- TRUE
-      add_settings <- TRUE
       
       if (!any(self$has_features())) {
         warning("Features not found! Not loaded.")
         return(invisible(self))
       }
 
-      if (is.null(settings)) {
-        settings <- self$get_settings(call = "load_features_ms2")[[1]]
-        add_settings <- FALSE
-      } else if ("load_features_ms2" %in% names(settings)) {
-        settings <- settings[["load_features_ms2"]]
-      }
-
-      if (validate(settings)) {
-        if (!"load_features_ms2" %in% settings$call) {
-          warning("Settings call must be 'load_features_ms2'!")
-          valid <- FALSE
-        }
-      } else {
-        warning("Settings content or structure not conform!")
-        valid <- FALSE
-      }
-
-      if (!valid) {
-        return(invisible(self))
-      }
+      settings <- private$.get_call_settings(settings, "load_features_ms2")
+      
+      if (is.null(settings)) return(invisible(self))
 
       algorithm <- settings$algorithm
+      
       parameters <- settings$parameters
 
       if ("StreamFind" %in% algorithm) {
@@ -5260,8 +5244,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         if (all(added_ms2)) {
 
-          if (add_settings) self$add_settings(settings)
-
           private$.analyses <- analyses
 
           if (!cached_ms2 & !is.null(hash)) {
@@ -5286,6 +5268,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
           )
 
           message("\U2713 MS2 spectra added to features in analyses!")
+          
+          if (!private$.settings_already_stored(settings)) {
+            self$add_settings(settings)
+          }
         }
       }
       invisible(self)
@@ -5305,36 +5291,18 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return Invisible.
     #'
     load_groups_ms1 = function(settings = NULL, settingsFeatures = NULL) {
-      valid <- TRUE
-      add_settings <- TRUE
       
       if (!any(self$has_groups())) {
         warning("Feature groups not found! Not loaded.")
         return(invisible(self))
       }
 
-      if (is.null(settings)) {
-        settings <- self$get_settings(call = "load_groups_ms1")[[1]]
-        add_settings <- FALSE
-      } else if ("load_groups_ms1" %in% names(settings)) {
-        settings <- settings[["load_groups_ms1"]]
-      }
-
-      if (validate(settings)) {
-        if (!"load_groups_ms1" %in% settings$call) {
-          warning("Settings call must be 'load_groups_ms1'!")
-          valid <- FALSE
-        }
-      } else {
-        warning("Settings content or structure not conform!")
-        valid <- FALSE
-      }
-
-      if (!valid) {
-        return(invisible(self))
-      }
+      settings <- private$.get_call_settings(settings, "load_groups_ms1")
+      
+      if (is.null(settings)) return(invisible(self))
 
       algorithm <- settings$algorithm
+      
       parameters <- settings$parameters
 
       if ("StreamFind" %in% algorithm) {
@@ -5412,8 +5380,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
             temp
           }, ms1_list = ms1_list)
 
-          if (add_settings) self$add_settings(settings)
-
           private$.groups$ms1 <- groups_ms1
 
           if (requireNamespace(settings$software, quietly = TRUE)) {
@@ -5432,6 +5398,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
           )
 
           message("\U2713 MS1 spectra added to feature groups!")
+          
+          if (!private$.settings_already_stored(settings)) {
+            self$add_settings(settings)
+          }
 
         } else {
           warning("Mass traces were not found for feature groups!")
@@ -5454,36 +5424,18 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return Invisible.
     #'
     load_groups_ms2 = function(settings = NULL, settingsFeatures = NULL) {
-      valid <- TRUE
-      add_settings <- TRUE
       
       if (!any(self$has_groups())) {
         warning("Feature groups not found! Not loaded.")
         return(invisible(self))
       }
 
-      if (is.null(settings)) {
-        settings <- self$get_settings(call = "load_groups_ms2")[[1]]
-        add_settings <- FALSE
-      } else if ("load_groups_ms2" %in% names(settings)) {
-        settings <- settings[["load_groups_ms2"]]
-      }
-
-      if (validate(settings)) {
-        if (!"load_groups_ms2" %in% settings$call) {
-          warning("Settings call must be 'load_groups_ms2'!")
-          valid <- FALSE
-        }
-      } else {
-        warning("Settings content or structure not conform!")
-        valid <- FALSE
-      }
-
-      if (!valid) {
-        return(invisible(self))
-      }
+      settings <- private$.get_call_settings(settings, "load_groups_ms2")
+      
+      if (is.null(settings)) return(invisible(self))
 
       algorithm <- settings$algorithm
+      
       parameters <- settings$parameters
 
       if ("StreamFind" %in% algorithm) {
@@ -5561,8 +5513,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
             temp
           }, ms2_list = ms2_list)
 
-          if (add_settings) self$add_settings(settings)
-
           private$.groups$ms2 <- groups_ms2
 
           if (requireNamespace(settings$software, quietly = TRUE)) {
@@ -5581,6 +5531,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
           )
 
           message("\U2713 MS2 spectra added to feature groups!")
+          
+          if (!private$.settings_already_stored(settings)) {
+            self$add_settings(settings)
+          }
 
         } else {
           warning("Mass traces were not found for feature groups!")
@@ -6474,7 +6428,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
     ## ___ plot -----
 
-    ### ___ plot_spectra -----
+    ### _____ plot_spectra -----
 
     #' @description
     #' Plots spectra for given MS analyses.
@@ -6539,7 +6493,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       .plot_spectra_interactive(spec, colorBy, legendNames, xVal, yVal)
     },
 
-    ### ___ plot_xic -----
+    ### _____ plot_xic -----
 
     #' @description
     #' Plots extract ion chromatograms (EIC) and \emph{m/z} vs
@@ -6608,7 +6562,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       )
     },
 
-    ### ___ plot_eic -----
+    ### _____ plot_eic -----
 
     #' @description
     #' Plots extract ion chromatograms (EIC) from the analyses based on targets.
@@ -6652,7 +6606,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    ### ___ plot_tic -----
+    ### _____ plot_tic -----
 
     #' @description
     #' Plots the total ion chromatogram (TIC) of the analyses.
@@ -6712,7 +6666,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    ### ___ plot_bpc -----
+    ### _____ plot_bpc -----
 
     #' @description
     #' Plots the base peak chromatogram (BPC) of the analyses.
@@ -6772,7 +6726,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    ### ___ plot_ms2 -----
+    ### _____ plot_ms2 -----
 
     #' @description
     #' Plots MS2 spectra from the analyses based on targets.
@@ -6820,7 +6774,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    ### ___ plot_ms1 -----
+    ### _____ plot_ms1 -----
 
     #' @description
     #' Plots MS1 spectra from the analyses based on targets.
@@ -6867,7 +6821,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    ### ___ plot_features -----
+    ### _____ plot_features -----
 
     #' @description
     #' Plots features from analyses.
@@ -6982,7 +6936,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    ### ___ plot_features_ms1 -----
+    ### _____ plot_features_ms1 -----
 
     #' @description
     #' Plots MS1 spectra from features in the analyses.
@@ -7034,7 +6988,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    ### ___ plot_features_ms2 -----
+    ### _____ plot_features_ms2 -----
 
     #' @description
     #' Plots MS2 spectra from features in the analyses.
@@ -7084,7 +7038,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    ### ___ plot_alignment -----
+    ### _____ plot_alignment -----
 
     #' @description
     #' Plots the results from the retention time alignment across analyses.
@@ -7158,7 +7112,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       plot
     },
 
-    ### ___ plot_groups -----
+    ### _____ plot_groups -----
 
     #' @description
     #' Plots feature groups EIC.
@@ -7213,7 +7167,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       )
     },
 
-    ### ___ plot_groups_ms1 -----
+    ### _____ plot_groups_ms1 -----
 
     #' @description
     #' Plots MS1 spectra from feature groups in the analyses.
@@ -7286,7 +7240,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    ### ___ plot_groups_ms2 -----
+    ### _____ plot_groups_ms2 -----
 
     #' @description
     #' Plots MS1 spectra from feature groups in the analyses.
@@ -7358,7 +7312,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    ### ___ plot_groups_overview -----
+    ### _____ plot_groups_overview -----
 
     #' @description
     #' Method to give an overview of the EIC, alignment and intensity variance
@@ -7430,7 +7384,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       .plot_groups_overview_aux(fts, eic, heights, analyses)
     },
 
-    ### ___ plot_internal_standards_qc -----
+    ### _____ plot_internal_standards_qc -----
 
     #' @description
     #' Plots the quality control assessment of internal standards.
@@ -7515,7 +7469,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         lapply(self$get_settings(), function(x) {
           call <- x$call
           message("\U2699 Running ", call, " with ", x$algorithm)
-          do.call(self[[call]], list(settings = NULL))
+          do.call(self[[call]], list("settings" = x))
         })
 
       } else {
@@ -7525,17 +7479,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
-    ### ___ centroid_spectra -----
+    ### _____ centroid_spectra -----
 
     #' @description Centroids profile spectra data for each MS analysis.
     #'
     #' @return Invisible.
     #'
     centroid_spectra = function(settings = NULL) {
-
-      add_settings <- TRUE
-
-      if (is.null(settings)) add_settings <- FALSE
 
       settings <- private$.get_call_settings(settings, "centroid_spectra")
 
@@ -7544,7 +7494,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
       processed <- .s3_ms_centroid_spectra(settings, self)
 
       if (processed) {
-        if (add_settings) self$add_settings(settings)
+        
+        if (!private$.settings_already_stored(settings)) {
+          self$add_settings(settings)
+        }
 
         if (requireNamespace(settings$software, quietly = TRUE)) {
           version <- as.character(packageVersion(settings$software))
@@ -7565,17 +7518,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
-    ### ___ bin_spectra -----
+    ### _____ bin_spectra -----
 
     #' @description Bins centroided spectra for each MS analysis.
     #'
     #' @return Invisible.
     #'
     bin_spectra = function(settings = NULL) {
-
-      add_settings <- TRUE
-
-      if (is.null(settings)) add_settings <- FALSE
 
       settings <- private$.get_call_settings(settings, "bin_spectra")
 
@@ -7584,10 +7533,14 @@ MassSpecData <- R6::R6Class("MassSpecData",
       processed <- .s3_ms_bin_spectra(settings, self)
 
       if (processed) {
-        if (add_settings) self$add_settings(settings)
+        
+        if (!private$.settings_already_stored(settings)) {
+          self$add_settings(settings)
+        }
 
         if (requireNamespace(settings$software, quietly = TRUE)) {
           version <- as.character(packageVersion(settings$software))
+
         } else {
           version <- NA_character_
         }
@@ -7605,7 +7558,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
-    ### ___ find_features -----
+    ### _____ find_features -----
 
     #' @description Finds features (i.e., chromatographic peaks) in the spectra
     #' data of the analyses. Note, MS data structure requirements vary between
@@ -7615,19 +7568,17 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     find_features = function(settings = NULL) {
 
-      add_settings <- TRUE
-
-      if (is.null(settings)) add_settings <- FALSE
-
       settings <- private$.get_call_settings(settings, "find_features")
 
       if (is.null(settings)) return(invisible(self))
-
+      
       processed <- .s3_ms_find_features(settings, self)
 
       if (processed) {
 
-        if (add_settings) self$add_settings(settings)
+        if (!private$.settings_already_stored(settings)) {
+          self$add_settings(settings)
+        }
 
         if (requireNamespace(settings$software, quietly = TRUE)) {
           version <- as.character(packageVersion(settings$software))
@@ -7649,17 +7600,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
-    ### ___ group_features -----
+    ### _____ group_features -----
 
     #' @description Groups and possibly aligns features across analyses.
     #'
     #' @return Invisible.
     #'
     group_features = function(settings = NULL) {
-
-      add_settings <- TRUE
-
-      if (is.null(settings)) add_settings <- FALSE
 
       settings <- private$.get_call_settings(settings, "group_features")
 
@@ -7668,7 +7615,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
       processed <- .s3_ms_group_features(settings, self)
 
       if (processed) {
-        if (add_settings) self$add_settings(settings)
+        
+        if (!private$.settings_already_stored(settings)) {
+          self$add_settings(settings)
+        }
 
         if (requireNamespace(settings$software, quietly = TRUE)) {
           version <- as.character(packageVersion(settings$software))
@@ -7689,7 +7639,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
-    ### ___ filter_features -----
+    ### _____ filter_features -----
 
     #' @description Filters features and feature groups according to defined
     #' settings.
@@ -7705,21 +7655,19 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       processed <- FALSE
 
-      add_settings <- TRUE
-
-      if (is.null(settings)) add_settings <- FALSE
-
       settings <- private$.get_call_settings(settings, "filter_features")
 
       if (is.null(settings)) return(invisible(self))
 
       if ("Settings_filter_features_StreamFind" %in% class(settings)) {
+        
         if (!any(self$has_features())) {
           warning("Features were not found! Run find_features method first!")
           return(invisible(self))
         }
 
         parameters <- settings$parameters
+        
         filters <- names(parameters)
 
         possible_feature_filters <- c(
@@ -7765,7 +7713,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
 
         n_features_after <- nrow(self$get_features(filtered = FALSE))
+        
         n_features_filtered <- n_features - n_features_after
+        
         if (n_features_filtered < 0) n_features_filtered <- 0
 
         message(paste0("\U2713 ", n_features_filtered, " features filtered!"))
@@ -7777,7 +7727,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (processed) {
-        if (add_settings) self$add_settings(settings)
+        
+        if (!private$.settings_already_stored(settings)) {
+          self$add_settings(settings)
+        }
 
         if (requireNamespace(settings$software, quietly = TRUE)) {
           version <- as.character(packageVersion(settings$software))
@@ -7798,7 +7751,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
-    ### ___ annotate_features -----
+    ### _____ annotate_features -----
 
     #' @description Annotates isotopic features according to defined settings.
     #'
@@ -7809,10 +7762,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     annotate_features = function(settings = NULL) {
 
-      add_settings <- TRUE
-
-      if (is.null(settings)) add_settings <- FALSE
-
       settings <- private$.get_call_settings(settings, "annotate_features")
 
       if (is.null(settings)) return(invisible(self))
@@ -7820,7 +7769,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
       processed <- .s3_ms_annotate_features(settings, self)
 
       if (processed) {
-        if (add_settings) self$add_settings(settings)
+        
+        if (!private$.settings_already_stored(settings)) {
+          self$add_settings(settings)
+        }
 
         if (requireNamespace(settings$software, quietly = TRUE)) {
           version <- as.character(packageVersion(settings$software))
@@ -7843,16 +7795,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
-    ### ___ find_internal_standards -----
+    ### _____ find_internal_standards -----
 
     #' @description Finds internal standards in features according to defined
     #' settings.
     #'
     find_internal_standards = function(settings = NULL) {
-
-      add_settings <- TRUE
-
-      if (is.null(settings)) add_settings <- FALSE
 
       settings <- private$.get_call_settings(settings, "find_internal_standards")
 
@@ -7861,7 +7809,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
       processed <- .s3_ms_find_internal_standards(settings, self)
 
       if (processed) {
-        if (add_settings) self$add_settings(settings)
+        
+        if (!private$.settings_already_stored(settings)) {
+          self$add_settings(settings)
+        }
 
         if (requireNamespace(settings$software, quietly = TRUE)) {
           version <- as.character(packageVersion(settings$software))
@@ -7882,16 +7833,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
-    ### ___ suspect_screening -----
+    ### _____ suspect_screening -----
 
     #' @description Screens for suspect targets in features according to defined
     #' settings.
     #'
     suspect_screening = function(settings = NULL) {
-
-      add_settings <- TRUE
-
-      if (is.null(settings)) add_settings <- FALSE
 
       settings <- private$.get_call_settings(settings, "suspect_screening")
 
@@ -7900,7 +7847,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
       processed <- .s3_ms_suspect_screening(settings, self)
 
       if (processed) {
-        if (add_settings) self$add_settings(settings)
+        
+        if (!private$.settings_already_stored(settings)) {
+          self$add_settings(settings)
+        }
 
         if (requireNamespace(settings$software, quietly = TRUE)) {
           version <- as.character(packageVersion(settings$software))
@@ -7921,7 +7871,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
-    ### ___ calculate_quality -----
+    ### _____ calculate_quality -----
 
     #' @description Calculates quality parameters of features that can be used
     #' for filtering/prioritization.
@@ -7932,10 +7882,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         warning("Features not found! Not calculated.")
         return(invisible(self))
       }
-      
-      add_settings <- TRUE
-
-      if (is.null(settings)) add_settings <- FALSE
 
       settings <- private$.get_call_settings(settings, "calculate_quality")
 
@@ -7948,7 +7894,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (processed) {
 
-        if (add_settings) self$add_settings(settings)
+        if (!private$.settings_already_stored(settings)) {
+          self$add_settings(settings)
+        }
 
         if (requireNamespace(settings$software, quietly = TRUE)) {
           version <- as.character(packageVersion(settings$software))
@@ -8946,6 +8894,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         "bin_spectra",
         "find_features",
         "annotate_features",
+        "load_features_eic",
         "load_features_ms1",
         "load_features_ms2",
         "load_groups_ms1",
@@ -8984,6 +8933,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       },
       settings_annotate_features = function() {
         browseURL("https://odea-project.github.io/StreamFind/reference/index.html#annotate-features")
+      },
+      settings_load_features_eic = function() {
+        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#load-features-eic")
       },
       settings_load_features_ms1 = function() {
         browseURL("https://odea-project.github.io/StreamFind/reference/index.html#load-features-ms1")

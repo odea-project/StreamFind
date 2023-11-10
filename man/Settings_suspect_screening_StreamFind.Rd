@@ -5,7 +5,12 @@
 \alias{validate.Settings_suspect_screening_StreamFind}
 \title{Settings_suspect_screening_StreamFind}
 \usage{
-Settings_suspect_screening_StreamFind(database = NULL, ppm = 4, sec = 10)
+Settings_suspect_screening_StreamFind(
+  database = NULL,
+  ppm = 4,
+  sec = 10,
+  filtered = FALSE
+)
 
 \method{validate}{Settings_suspect_screening_StreamFind}(x)
 }
