@@ -106,15 +106,13 @@
     }
   }
 
-  ag <- list(obj = pat_features, algorithm = algorithm)
+  ag <- list("obj" = pat_features, "algorithm" = algorithm)
   
   if (!"verbose" %in% names(parameters)) {
     parameters[["verbose"]] <- TRUE
   }
-
-  gr_fun <- patRoon::groupFeatures
-
-  pat <- do.call(gr_fun, c(ag, parameters))
+  
+  pat <- do.call(patRoon::groupFeatures, c(ag, parameters))
   
   pat_ft <- pat@features@features
   

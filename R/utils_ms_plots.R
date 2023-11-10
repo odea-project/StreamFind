@@ -2040,21 +2040,21 @@
       showLegendInSecond <- TRUE
     }
 
-    df1 <- df[!is.na(df$rte), ]
+    df1 <- df[!is.na(df$error_rt), ]
 
     if (nrow(df1) > 0) {
 
-      if (!"rte_sd" %in% colnames(df1)) {
-        error_rte <- NULL
+      if (!"error_rt_sd" %in% colnames(df1)) {
+        error_error_rt <- NULL
 
       } else {
-        df1$rte_sd[is.na(df1$rte_sd)] <- 0
+        df1$error_rt_sd[is.na(df1$error_rt_sd)] <- 0
 
-        error_rte <- list(
+        error_error_rt <- list(
           type = "data",
           symmetric = FALSE,
-          arrayminus = df1$rte_sd,
-          array = df1$rte_sd,
+          arrayminus = df1$error_rt_sd,
+          array = df1$error_rt_sd,
           color = colors[i],
           width = 5
         )
@@ -2062,10 +2062,10 @@
 
       p1 <- p1 %>% add_trace(df1,
         x = df1$analysis,
-        y = df1$rte,
+        y = df1$error_rt,
         type = "scatter", mode = "markers",
         marker = list(size = 5, color = colors[i]),
-        error_y = error_rte,
+        error_y = error_error_rt,
         connectgaps = FALSE,
         name = i,
         legendgroup = i,
@@ -2073,21 +2073,21 @@
       )
     }
 
-    df2 <- df[!is.na(df$mze), ]
+    df2 <- df[!is.na(df$error_mass), ]
 
     if (nrow(df2) > 0) {
 
-      if (!"mze_sd" %in% colnames(df2)) {
-        error_mze <- NULL
+      if (!"error_mass_sd" %in% colnames(df2)) {
+        error_error_mass <- NULL
 
       } else {
-        df2$mze_sd[is.na(df2$mze_sd)] <- 0
+        df2$error_mass_sd[is.na(df2$error_mass_sd)] <- 0
 
-        error_mze <- list(
+        error_error_mass <- list(
           type = "data",
           symmetric = FALSE,
-          arrayminus = df2$mze_sd,
-          array = df2$mze_sd,
+          arrayminus = df2$error_mass_sd,
+          array = df2$error_mass_sd,
           color = colors[i],
           width = 5
         )
@@ -2095,10 +2095,10 @@
 
       p2 <- p2 %>% add_trace(df2,
         x = df2$analysis,
-        y = df2$mze,
+        y = df2$error_mass,
         type = "scatter", mode = "markers",
         marker = list(size = 5, color = colors[i]),
-        error_y = error_mze,
+        error_y = error_error_mass,
         connectgaps = FALSE,
         name = i,
         legendgroup = i,

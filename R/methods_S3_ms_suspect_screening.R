@@ -11,21 +11,72 @@
   suspect_features <- self$get_suspects(
     database = settings$parameters$database,
     ppm = settings$parameters$ppm,
-    sec = settings$parameters$sec
+    sec = settings$parameters$sec,
+    filtered = settings$parameters$filtered,
+    onGroups = FALSE
   )
-
-  suspect_groups <- self$get_groups(groups = unique(suspect_features$group))
+  
+  suspect_cols <- colnames(suspect_features)
+  suspect_cols <- c(suspect_cols[1:which(suspect_cols %in% "analysis") - 1])
 
   if (nrow(suspect_features) > 0) {
-    suspects_data <- list(
-      "features" = suspect_features,
-      "groups" = suspect_groups
-    )
+    
+    suspect_features_l <- split(suspect_features, suspect_features$analysis)
+    
+    if (!any(self$has_features())) return(FALSE)
+    
+    analyses <- self$get_analyses()
+    
+    analyses <- lapply(analyses, function(x, suspect_features_l, suspect_cols) {
+      
+      suspects <- suspect_features_l[[x$name]]
+      
+      if (!is.null(suspects)) {
+        
+        suspects_l <- lapply(x$features$feature, function(z, suspects, suspect_cols) {
+          
+          sus_idx <- which(suspects$feature %in% z)
+          
+          if (length(sus_idx) > 0) {
+            sus_temp <- suspects[sus_idx, ]
+            sus_temp <- sus_temp[, suspect_cols, with = FALSE]
+            
+            if (nrow(sus_temp) > 0) {
+              sus_temp  
+            } else {
+              NULL
+            }
+          } else {
+            NULL
+          }
+          
+        }, suspects = suspects, suspect_cols = suspect_cols)
+        
+        x$features$suspects <- suspects_l
+        
 
-    output <- list(suspects_data)
-    names(output) <- settings$call
+      } else {
+        x$features$suspects <- lapply(x$features$feature, function(x) NULL)
+      }
 
-    self$add_modules_data(output)
+      x
+      
+    }, suspect_features_l = suspect_features_l, suspect_cols = suspect_cols)
+    
+    features <- lapply(analyses, function(x) x$features)
+    
+    suppressMessages(self$add_features(features, replace = TRUE))
+    
+    
+    # suspects_data <- list(
+    #   "features" = suspect_features,
+    #   "groups" = suspect_groups
+    # )
+    # 
+    # output <- list(suspects_data)
+    # names(output) <- settings$call
+    # 
+    # self$add_modules_data(output)
 
     TRUE
   } else {

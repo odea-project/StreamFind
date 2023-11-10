@@ -1113,8 +1113,8 @@ validate.Settings_load_features_ms1_StreamFind <- function(x) {
   all(
     checkmate::test_choice(x$call, "load_features_ms1"),
     checkmate::test_choice(x$algorithm, "StreamFind"),
-    checkmate::test_double(x$parameters$rtWindow, max.len = 2),
-    checkmate::test_double(x$parameters$mzWindow, max.len = 2),
+    checkmate::test_double(as.numeric(x$parameters$rtWindow), max.len = 2),
+    checkmate::test_double(as.numeric(x$parameters$mzWindow), max.len = 2),
     checkmate::test_number(x$parameters$mzClust),
     checkmate::test_number(x$parameters$minIntensity),
     checkmate::test_logical(x$parameters$filtered, max.len = 1),
@@ -1143,7 +1143,7 @@ validate.Settings_load_features_ms1_StreamFind <- function(x) {
 Settings_load_features_ms2_StreamFind <- function(
     isolationWindow = 1.3,
     mzClust = 0.01,
-    presence = 0.8,
+    presence = 0.6,
     minIntensity = 0,
     filtered = FALSE,
     runParallel = TRUE,
@@ -1212,7 +1212,7 @@ validate.Settings_load_features_ms2_StreamFind <- function(x) {
 #'
 Settings_load_groups_ms1_StreamFind <- function(
     mzClust = 0.003,
-    presence = 0.8,
+    presence = 0.6,
     minIntensity = 1000,
     verbose = FALSE,
     filtered = FALSE,
@@ -1279,7 +1279,7 @@ validate.Settings_load_groups_ms1_StreamFind <- function(x) {
 #'
 Settings_load_groups_ms2_StreamFind <- function(
     mzClust = 0.01,
-    presence = 0.8,
+    presence = 0.3,
     minIntensity = 250,
     filtered = FALSE,
     runParallel = TRUE,
@@ -1689,7 +1689,8 @@ validate.Settings_annotate_features_StreamFind <- function(x) {
 Settings_suspect_screening_StreamFind <- function(
     database = NULL,
     ppm = 4,
-    sec = 10) {
+    sec = 10,
+    filtered = FALSE) {
 
   settings <- list(
     call = "suspect_screening",
@@ -1697,7 +1698,8 @@ Settings_suspect_screening_StreamFind <- function(
     parameters = list(
       "database" = database,
       "ppm" = ppm,
-      "sec" = sec
+      "sec" = sec,
+      "filtered" = filtered
     ),
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",
@@ -1724,8 +1726,14 @@ validate.Settings_suspect_screening_StreamFind <- function(x) {
     checkmate::test_choice(x$call, "suspect_screening"),
     checkmate::test_choice(x$algorithm, "StreamFind"),
     checkmate::test_double(x$parameters$ppm, max.len = 1),
-    checkmate::test_double(x$parameters$sec, max.len = 1)
-  )
+    checkmate::test_double(x$parameters$sec, max.len = 1),
+    checkmate::test_logical(x$parameters$filtered, max.len = 1)
+  ) && if (is.data.frame(x$parameters$database)) {
+    all(c("name", "mass") %in% colnames(x$parameters$database)) ||
+    all(c("name", "mz") %in% colnames(x$parameters$database))
+  } else {
+    FALSE
+  }
 }
 
 #' @title Settings_suspect_screening_forident

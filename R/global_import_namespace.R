@@ -11,7 +11,7 @@
 #'
 #' @importFrom data.table is.data.table rbindlist as.data.table setnames
 #' @importFrom data.table setorder copy fread data.table `:=` setcolorder
-#' @importFrom data.table between setDTthreads CJ setnafill
+#' @importFrom data.table between setDTthreads CJ setnafill setkey
 #'
 #' @importFrom parallelly supportsMulticore
 #'
