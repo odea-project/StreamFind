@@ -2310,7 +2310,7 @@ Invisible.
 \subsection{Method \code{add_settings()}}{
 Adds processing settings.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$add_settings(settings = NULL, replace = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$add_settings(settings = NULL, replace = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

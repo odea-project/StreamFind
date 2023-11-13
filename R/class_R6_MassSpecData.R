@@ -1283,14 +1283,50 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       num_cols <- c("mz", "rt", "drift", "mzmin", "mzmax", "rtmin", "rtmax", "driftmin", "driftmax")
 
-      if (all(apply(targets[, num_cols, with = FALSE], 1, sum) != 0)) {
-
+      if (all(apply(targets[, num_cols, with = FALSE], 1, function(x) sum(x, na.rm = TRUE)) != 0)) {
+        
+        if (TRUE %in% is.na(targets$mz)) {
+          targets$mz[is.na(targets$mz)] <- 0
+        }
+        
+        if (TRUE %in% is.na(targets$mzmax)) {
+          targets$mzmax[is.na(targets$mzmax)] <- max(self$get_mz_high(analyses))
+        }
+        
+        if (TRUE %in% is.na(targets$mzmin)) {
+          targets$mzmin[is.na(targets$mzmin)] <- min(self$get_mz_low(analyses))
+        }
+        
         if (TRUE %in% (targets$mzmax == 0)) {
           targets$mzmax[targets$mzmax == 0] <- max(self$get_mz_high(analyses))
+        }
+        
+        if (TRUE %in% is.na(targets$rt)) {
+          targets$rt[is.na(targets$rt)] <- 0
+        }
+        
+        if (TRUE %in% is.na(targets$rtmax)) {
+          targets$rtmax[is.na(targets$rtmax)] <- max(self$get_rt_end(analyses))
+        }
+        
+        if (TRUE %in% is.na(targets$rtmin)) {
+          targets$rtmin[is.na(targets$rtmin)] <- min(self$get_rt_start(analyses))
         }
 
         if (TRUE %in% (targets$rtmax == 0)) {
           targets$rtmax[targets$rtmax == 0] <- max(self$get_rt_end(analyses))
+        }
+        
+        if (TRUE %in% is.na(targets$drift)) {
+          targets$drift[is.na(targets$drift)] <- 0
+        }
+        
+        if (TRUE %in% is.na(targets$driftmax) & any(self$has_ion_mobility())) {
+          targets$driftmax[is.na(targets$driftmax)] <- max(self$get_run(analyses)[["drift"]], na.rm = TRUE)
+        }
+        
+        if (TRUE %in% is.na(targets$driftmin) & any(self$has_ion_mobility())) {
+          targets$driftmin[is.na(targets$driftmin)] <- min(self$get_run(analyses)[["drift"]], na.rm = TRUE)
         }
 
         if (TRUE %in% (targets$driftmax == 0) & any(self$has_ion_mobility())) {
