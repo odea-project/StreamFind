@@ -16,8 +16,8 @@
   parameters <- settings$parameters
 
   eic <- self$get_features_eic(
-    rtExpand = 120,
-    mzExpand = 0,
+    rtExpand = parameters$rtExpand,
+    mzExpand = parameters$mzExpand,
     filtered = parameters$filtered,
     loaded = TRUE
   )
@@ -153,9 +153,9 @@
 
           width <- ft$rtmax - ft$rtmin
 
-          pk_ft <- et[et$rt >= ft$rtmin - width & et$rt <= ft$rtmax + width, ]
+          pk_ft <- et[et$rt >= (ft$rtmin - width) & et$rt <= (ft$rtmax + width), ]
 
-          if (nrow(pk_ft) < 4) {
+          if (nrow(pk_ft) < parameters$minTraces) {
 
             results$qlt_gaufit[it] <- 0
 
@@ -180,16 +180,16 @@
 
           results$qlt_noise[it] <- round(noise, digits = 0)
 
-          pk_eic <- et[et$rt >= ft$rtmin - width / 4 & et$rt <= ft$rtmax + width / 4, ]
+          pk_eic <- et[et$rt >= (ft$rtmin - (width / 4)) & et$rt <= (ft$rtmax + (width / 4)), ]
 
-          pk_eic <- pk_eic[pk_eic$intensity >= noise, ]
+          pk_eic <- pk_eic[pk_eic$intensity > noise, ]
 
           results$qlt_traces[it] <- nrow(pk_eic)
 
           id_T <- NA_character_
           ana_T <- NA_character_
-          # id_T <- "mz279.1_rt1244_f524"
-          # ana_T <- "02_tof_ww_is_neg_influent-r001"
+          # id_T <- "mz287.12_rt913_f24"
+          # ana_T <- "03_tof_ww_is_pos_o3sw_effluent-r003"
           if (ft$feature %in% id_T && ana == ana_T) {
             browser()
 
@@ -205,7 +205,7 @@
             )
           }
 
-          if (nrow(pk_eic) < 4) {
+          if (nrow(pk_eic) < parameters$minTraces) {
 
             results$qlt_gaufit[it] <- 0
 
@@ -222,27 +222,35 @@
 
           pk_max <- which(pk_eic$intensity == max(pk_eic$intensity))
 
-          right_size <- nrow(pk_eic) - pk_max
+          right_size <- nrow(pk_eic) - pk_max[1]
 
           left_size <- pk_max - 1
-
-          if (right_size < left_size && right_size > 2) {
-            window_size <- right_size
-
+          
+          pk_simetry  <- right_size / left_size
+          
+          if (pk_simetry < 0.5 || pk_simetry > 2) {
+            
+            if (right_size < left_size && right_size > 2) {
+              window_size <- right_size
+              
+            } else {
+              window_size <- left_size
+            }
+            
+            if (window_size + 1 < (parameters$minTraces / 2)) { # when window size is too small gets all traces
+              pk_ints <- pk_eic$intensity
+              
+            } else {
+              left_traces <- sort(pk_max - seq_len(window_size))
+              right_traces <-  seq_len(window_size) + pk_max
+              traces <- c(left_traces, pk_max, right_traces)
+              traces <- traces[traces > 0]
+              baseline_intensity <- min(pk_eic$intensity[traces], na.rm = TRUE)
+              pk_eic <- pk_eic[pk_eic$intensity >= baseline_intensity, ]
+              pk_ints <- pk_eic$intensity
+            }
+            
           } else {
-            window_size <- left_size
-          }
-
-          if (window_size < 2) { # when window size is too small gets all traces
-            pk_ints <- pk_eic$intensity
-
-          } else {
-            left_traces <- seq_len(window_size) + (pk_max - window_size)
-            right_traces <-  seq_len(window_size) + pk_max
-            traces <- c(left_traces, pk_max, right_traces)
-            traces <- traces[traces > 0]
-            pk_eic <- pk_eic[traces, ]
-            pk_eic <- pk_eic[!is.na(pk_eic$intensity), ]
             pk_ints <- pk_eic$intensity
           }
 
@@ -257,7 +265,7 @@
             }
           }
 
-          if (sign_changes > 3) {
+          if (sign_changes > 4) {
             window_size <- 2  # Adjust the window size as needed
             corrected_ints <- .moving_average(pk_ints, window_size)
 
@@ -364,10 +372,10 @@
 
           id_T <- NA_character_
           ana_T <- NA_character_
-          # id_T = "mz268.19_rt916_f50"
-          # ana_T = "02_tof_ww_is_pos_influent-r003"
-          # id_T = "mz279.12_rt1007_f279"
-          # ana_T = "02_tof_ww_is_neg_influent-r002"
+          # id_T = "mz326.23_rt959_f132"
+          # ana_T = "03_tof_ww_is_pos_o3sw_effluent-r001"
+          # id_T <- "mz287.12_rt913_f24"
+          # ana_T <- "03_tof_ww_is_pos_o3sw_effluent-r003"
           if (ft$feature %in% id_T && ana == ana_T) {
             browser()
 

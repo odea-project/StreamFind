@@ -42,11 +42,16 @@ anaInfo <- data.frame(
   )
 )
 
-fts <- findFeatures(anaInfo[c(4:6, 10:12, 16:18), ], "openms", verbose = TRUE)
 
-gfs <- groupFeatures(fts, "openms", verbose = TRUE)
+anaInfoPos <- anaInfo[grepl("pos", anaInfo$analysis), ]
+anaInfoNeg <- anaInfo[grepl("neg", anaInfo$analysis), ]
+fListPos <- findFeatures(anaInfoPos, "openms")
+fListNeg <- findFeatures(anaInfoNeg, "openms")
+fList <- makeSet(fListPos, fListNeg, adducts = c("[M+H]+", "[M-H]-"))
 
+gfs <- groupFeatures(fList, "openms", verbose = TRUE)
 
+View(gfs[, !names(gfs@groups) %in% gfs@features@features$`01_tof_ww_is_pos_blank-r002`$group])
 
 
 temp <- normInts(gfs, featNorm = "istd", standards = pat_dbis, adduct = "[M+H]+")

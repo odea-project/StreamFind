@@ -182,7 +182,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (all(cols_check %in% names(settings))) settings <- list(settings)
       
       if (length(settings) > 1) {
-        warning("More then one settings for ", call, "found!")
+        warning("More then one settings for ", call, " found!")
         return(NULL)
       }
       
@@ -1900,7 +1900,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         call_names <- vapply(private$.settings, function(x) x$call, NA_character_)
         
         if (any(call %in% call_names)) {
-          private$.settings[call %in% call_names]
+          private$.settings[call_names %in% call]
           
         } else {
           warning("Settings for ", call, " not found!")
@@ -6441,6 +6441,30 @@ MassSpecData <- R6::R6Class("MassSpecData",
       names(has_fts) <- self$get_analysis_names(analyses)
       has_fts
     },
+    
+    #' @description
+    #' Checks for presence of suspects in given analyses names/indices.
+    #'
+    #' @return Logical value.
+    #'
+    has_suspects = function(analyses = NULL) {
+      analyses <- private$.check_analyses_argument(analyses)
+      
+      if (is.null(analyses)) return(FALSE)
+      
+      has_sus <- vapply(private$.analyses[analyses], function(x) {
+        
+        if ("suspects" %in% colnames(x$features)) {
+          any(vapply(x$features$suspects, function(x) !is.null(x), FALSE))
+        } else {
+          FALSE
+        }
+        
+      }, FALSE)
+      
+      names(has_sus) <- self$get_analysis_names(analyses)
+      has_sus
+    },
 
     #' @description
     #' Checks if there is alignment of retention time from grouping
@@ -7164,7 +7188,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                            sec = 60,
                            millisec = 5,
                            rtExpand = 15,
-                           mzExpand = 0.008,
+                           mzExpand = 0.005,
                            filtered = FALSE,
                            runParallel = FALSE,
                            legendNames = NULL,
@@ -8044,6 +8068,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           if (nrow(x) == 0) {
             x$mass <- NULL
+            x[, adduct := character(.N)]
             return(x)
           }
 
@@ -8153,7 +8178,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         neutralMasses <- groups_info$mzs
         names(neutralMasses) <- groups_cols
 
-        annotations_entry <- data.table::rbindlist(pat_features@features)
+        annotations_entry <- data.table::rbindlist(pat_features@features, fill = TRUE)
         annotations_entry$neutralMass <- neutralMasses[annotations_entry$group]
         polarity_column <- as.character(annotations_entry$polarity)
         annotations_entry$adduct <- polarity[polarity_column]
@@ -8161,7 +8186,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         cols_to_keep <- c("set", "group", "adduct", "neutralMass")
         annotations_entry <- annotations_entry[, cols_to_keep, with = FALSE]
-
+        annotations_entry <- unique(annotations_entry)
+        
         new("featureGroupsSet",
           groups = groups_trans,
           analysisInfo = pat_features@analysisInfo,

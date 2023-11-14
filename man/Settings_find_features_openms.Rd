@@ -14,7 +14,7 @@ Settings_find_features_openms(
   traceTermCriterion = "sample_rate",
   traceTermOutliers = 5,
   minSampleRate = 1,
-  minTraceLength = 5,
+  minTraceLength = 6,
   maxTraceLength = -1,
   widthFiltering = "fixed",
   minFWHM = 5,

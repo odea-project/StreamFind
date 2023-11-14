@@ -4483,7 +4483,7 @@ Plots feature groups EIC.
   sec = 60,
   millisec = 5,
   rtExpand = 15,
-  mzExpand = 0.008,
+  mzExpand = 0.005,
   filtered = FALSE,
   runParallel = FALSE,
   legendNames = NULL,

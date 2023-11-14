@@ -9,9 +9,9 @@ library(StreamFind)
 # TODO add filter for features/groups with more than 1 representation in components
 # TODO add signal to noise ratio to internal standards report, calculated on demand
 # TODO when subsetting on features/groups check/add if features_eics are also changed
-
 # TODO add suspects to MassSpecData matching patRoon
 # TODO add export for fragments to suspectsList, think how to handle polarities
+# TODO check the import MassSpecData from JSON, in particular the nested data.tables
 
 
 # Resources -------------------------------------------------------------------
@@ -22,6 +22,7 @@ all_db <- StreamFindData::get_ms_tof_spiked_chemicals()
 db <- all_db[!grepl("IS", all_db$tag, fixed = TRUE), ]
 cols <- c("name", "formula", "mass", "SMILES", "rt")
 db <- db[, cols, with = FALSE]
+data.table::setnames(db, "mass", "neutralMass")
 
 dbis <- all_db[grepl("IS", all_db$tag), ]
 cols <- c("name", "formula", "mass", "rt")
@@ -54,11 +55,7 @@ ms$add_settings(
     Settings_find_features_openms(),
     Settings_annotate_features_StreamFind(),
     Settings_group_features_openms(),
-    Settings_find_internal_standards_StreamFind(
-      database = dbis,
-      ppm = 8,
-      sec = 10
-    ),
+    Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
     Settings_filter_features_StreamFind(
       minIntensity = 5000,
       maxGroupSd = 30,
@@ -66,40 +63,52 @@ ms$add_settings(
       minGroupAbundance = 3,
       excludeIsotopes = TRUE
     ),
-    Settings_load_features_eic_StreamFind(
-      rtExpand = 60,
-      mzExpand = 0.0005
-    ),
+    Settings_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005),
     Settings_load_features_ms1_StreamFind(),
     Settings_load_features_ms2_StreamFind(),
     Settings_load_groups_ms1_StreamFind(),
     Settings_load_groups_ms2_StreamFind(),
     Settings_calculate_quality_StreamFind(),
-    Settings_filter_features_StreamFind(
-      minSnRatio = 3
-    ),
-    Settings_suspect_screening_StreamFind(
-      database = db,
-      ppm = 5,
-      sec = 10
-    )
+    Settings_filter_features_StreamFind(minSnRatio = 3),
+    Settings_suspect_screening_StreamFind(database = db, ppm = 5, sec = 10)
   )
 )
 
 # patRoon::clearCache("all")
 
+# patRoon::clearCache(c("calculate_quality"))
+# patRoon::clearCache(c("load_features_ms2"))
+# patRoon::clearCache(c("load_features_ms1"))
+# patRoon::clearCache(c("load_groups_ms1"))
+# patRoon::clearCache(c("load_groups_ms2"))
+
 ms$run_workflow()
 
-# ms$get_features(mass = db, filtered = T)[["qlt_model"]]
+# fg <- ms$as_patRoon_featureGroups(filtered = F)
+
+# ssus <- Settings_suspect_screening_patRoon(suspects = db)
+# .s3_ms_suspect_screening.Settings_suspect_screening_patRoon(ssus, ms)
+
+View(ms$get_suspects(onGroups = T))
+
+unset(fg, "positive")
+
+
+
+
+
+
+
+
+
 
 ms$plot_features(mass = db, filtered = T, legendNames = T)
 
-ms$plot_groups(groups = ms$get_suspects())
+ms$plot_features(features = ms$get_suspects(onGroups = F), colorBy = "analyses+targets")
 
 fts <- ms$get_features(mass = db, filtered = F)
 
 ms$plot_internal_standards_qc()
-
 
 # Suspects should be identified by name, formula and SMILES
 suspects <- ms$get_suspects(database = db, ppm = 10, sec = 15, filtered = FALSE)

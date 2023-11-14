@@ -5,11 +5,26 @@
 \alias{validate.Settings_calculate_quality_StreamFind}
 \title{Settings_calculate_quality_StreamFind}
 \usage{
-Settings_calculate_quality_StreamFind(filtered = FALSE, runParallel = TRUE)
+Settings_calculate_quality_StreamFind(
+  rtExpand = 120,
+  mzExpand = 3e-04,
+  minTraces = 6,
+  filtered = FALSE,
+  runParallel = TRUE
+)
 
 \method{validate}{Settings_calculate_quality_StreamFind}(x)
 }
 \arguments{
+\item{rtExpand}{Numeric value with the retention time values (in seconds) for
+expanding left and right the mass range.}
+
+\item{mzExpand}{Numeric value with the mass or mass-to-charge ratio
+(\emph{m/z}) (in Da) for expanding left and right the mass range.}
+
+\item{minTraces}{Numeric of length 1 with the minimum number traces for
+calculating feature quality.}
+
 \item{filtered}{Logical. When \code{TRUE}, filtered features/groups are considered.}
 
 \item{runParallel}{Logical of length one. Set to \code{TRUE} for parallel

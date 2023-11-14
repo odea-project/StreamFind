@@ -537,7 +537,7 @@ Settings_find_features_openms <- function(
     traceTermCriterion = "sample_rate",
     traceTermOutliers = 5,
     minSampleRate = 1,
-    minTraceLength = 5,
+    minTraceLength = 6,
     maxTraceLength = -1,
     widthFiltering = "fixed",
     minFWHM = 5,
@@ -1806,6 +1806,83 @@ validate.Settings_suspect_screening_forident <- function(x) {
   )
 }
 
+#' @title Settings_suspect_screening_patRoon
+#'
+#' @description
+#' Settings for performing suspect screening using the function 
+#' \link[patRoon]{screenSuspects} from the patRoon R package.
+#'
+#' @param suspects A data.frame with suspect information. See section Suspect
+#' list format in \link[patRoon]{screenSuspects} for more information.
+#' @param rtWindow The retention time window (in seconds) that 
+#' will be used for matching a suspect (+/- feature data).
+#' @param mzWindow The m/z window that will be used for matching a suspect 
+#' (+/- feature data)..
+#' @template arg-ms-filtered
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_suspect_screening_patRoon.
+#' 
+#' @references
+#' \insertRef{patroon01}{StreamFind}
+#'
+#' \insertRef{patroon02}{StreamFind}
+#'
+#' @export
+#'
+Settings_suspect_screening_patRoon <- function(
+    suspects = NULL,
+    rtWindow = 12,
+    mzWindow = 0.005,
+    filtered = FALSE) {
+  
+  settings <- list(
+    call = "suspect_screening",
+    algorithm = "patRoon",
+    parameters = list(
+      "suspects" = suspects,
+      "rtWindow" = rtWindow,
+      "mzWindow" = mzWindow,
+      "filtered" = filtered
+    ),
+    version = as.character(packageVersion("patRoon")),
+    software = "patRoon",
+    developer = "Rick Helmus",
+    contact = "r.helmus@uva.nl",
+    link = "https://github.com/rickhelmus/patRoon",
+    doi = "https://doi.org/10.1186/s13321-020-00477-w"
+  )
+  
+  settings <- as.ProcessingSettings(settings)
+  
+  return(settings)
+}
+
+#' @describeIn Settings_suspect_screening_patRoon
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_suspect_screening_patRoon S3 class object.
+#'
+#' @export
+#'
+validate.Settings_suspect_screening_patRoon <- function(x) {
+  
+  x$parameters$database <- as.data.table(x$parameters$database)
+  
+  all(
+    checkmate::test_choice(x$call, "suspect_screening"),
+    checkmate::test_choice(x$algorithm, "patRoon"),
+    checkmate::test_number(x$parameters$rtWindow),
+    checkmate::test_number(x$parameters$mzWindow),
+    checkmate::test_logical(x$parameters$filtered, max.len = 1)
+  ) && if (is.data.frame(x$parameters$suspects)) {
+    all(c("name", "neutralMass") %in% colnames(x$parameters$suspects)) ||
+      all(c("name", "mz") %in% colnames(x$parameters$suspects))
+  } else {
+    FALSE
+  }
+}
+
 ## find_internal_standards -----
 
 #' @title Settings_find_internal_standards_StreamFind
@@ -1882,6 +1959,10 @@ validate.Settings_find_internal_standards_StreamFind <- function(x) {
 #' @description
 #' Settings for calculating quality parameters of features (e.g., signal-to-noise (sn) ratio).
 #'
+#' @template arg-ms-rtExpand
+#' @template arg-ms-mzExpand
+#' @param minTraces Numeric of length 1 with the minimum number traces for 
+#' calculating feature quality.
 #' @template arg-ms-filtered
 #' @template arg-runParallel
 #'
@@ -1891,6 +1972,9 @@ validate.Settings_find_internal_standards_StreamFind <- function(x) {
 #' @export
 #'
 Settings_calculate_quality_StreamFind <- function(
+    rtExpand = 120,
+    mzExpand = 0.0003,
+    minTraces = 6,
     filtered = FALSE,
     runParallel = TRUE) {
 
@@ -1899,6 +1983,9 @@ Settings_calculate_quality_StreamFind <- function(
     algorithm = "StreamFind",
     algorithm = "StreamFind",
     parameters = list(
+      "rtExpand" = rtExpand,
+      "mzExpand" = mzExpand,
+      "minTraces" = minTraces,
       "filtered" = filtered,
       "runParallel" = runParallel
     ),
@@ -1926,6 +2013,9 @@ validate.Settings_calculate_quality_StreamFind <- function(x) {
   all(
     checkmate::test_choice(x$call, "calculate_quality"),
     checkmate::test_choice(x$algorithm, "StreamFind"),
+    checkmate::test_number(x$parameters$rtExpand),
+    checkmate::test_number(x$parameters$mzExpand),
+    checkmate::test_number(x$parameters$minTraces),
     checkmate::test_logical(x$parameters$filtered, max.len = 1),
     checkmate::test_logical(x$parameters$runParallel, max.len = 1)
   )
