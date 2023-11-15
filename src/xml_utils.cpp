@@ -933,7 +933,14 @@ xml_utils::runSummary xml_utils::run_summary(
   } else {
     output.mode = na_charvec;
     output.levels = empty_int_vec;
-    output.type = NA_STRING;
+    
+    if (output.chromatograms_number > 0) {
+      output.type = "SRM";
+      
+    } else {
+      output.type = NA_STRING;
+    }
+    
     output.mz_low = NA_REAL;
     output.mz_high = NA_REAL;
     output.rt_start = NA_REAL;

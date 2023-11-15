@@ -138,8 +138,14 @@ View(ms$get_features())
 
 
 
+fl <- all_files[30]
+srm <- MassSpecData$new(files = fl)
+srm$plot_chromatograms(interactive = FALSE)
 
 
+write.csv(srm$get_chromatograms(), "chromatograms.csv", row.names = FALSE)
+
+.plot_chromatograms_interactive(chromatograms)
 
 
 
@@ -159,6 +165,12 @@ spec$unique_id <- paste0(spec$analysis, "_", spec$id, "_", spec$polarity)
 spec
 
 rcpp_ms_cluster_spectra(spec, mzClust = 0.001, presence = 0.8, verbose = TRUE)
+
+
+
+
+
+
 
 
 # ms$get_ms2()

@@ -62,9 +62,7 @@ ProcessingSettings <- function(call = NA_character_,
     "openms", "xcms", "xcms3", "envipick", "sirius", "kpic2", "safd"
   )
 
-  if (any(vapply(patRoon_algorithms, function(a) {
-    grepl(a, x$algorithm, fixed = FALSE)
-  }, FALSE))) {
+  if (any(vapply(patRoon_algorithms, function(a) grepl(a, x$algorithm, fixed = FALSE), FALSE))) {
     s3_classes <- append(s3_classes, "patRoon")
   }
 

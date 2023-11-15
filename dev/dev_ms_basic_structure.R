@@ -84,10 +84,19 @@ ms$add_settings(
 
 ms$run_workflow()
 
+pat_sus <- ms$as_patRoon_featureGroups(suspects = F)
+
+screenInfo(pat_sus)
+
+
+
 # fg <- ms$as_patRoon_featureGroups(filtered = F)
 
 # ssus <- Settings_suspect_screening_patRoon(suspects = db)
 # .s3_ms_suspect_screening.Settings_suspect_screening_patRoon(ssus, ms)
+
+
+ms$has_suspects()
 
 View(ms$get_suspects(onGroups = T))
 

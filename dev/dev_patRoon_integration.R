@@ -51,32 +51,25 @@ fList <- makeSet(fListPos, fListNeg, adducts = c("[M+H]+", "[M-H]-"))
 
 gfs <- groupFeatures(fList, "openms", verbose = TRUE)
 
-View(gfs[, !names(gfs@groups) %in% gfs@features@features$`01_tof_ww_is_pos_blank-r002`$group])
-
-
-temp <- normInts(gfs, featNorm = "istd", standards = pat_dbis, adduct = "[M+H]+")
-
-
-all.equal(gfs@groups, temp@groups)
-
-
-
 
 sus <- screenSuspects(
   gfs,
   pat_db,
   rtWindow = 10,
   mzWindow = 0.005,
-  adduct = "[M+H]+",
   skipInvalid = TRUE,
   prefCalcChemProps = TRUE,
   neutralChemProps = FALSE,
   onlyHits = FALSE
 )
 
-sustox <- predictTox(sus)
 
-suscalctox <- calculateTox(sustox)
 
-toxicities(suscalctox)
+
+# View(gfs[, !names(gfs@groups) %in% gfs@features@features$`01_tof_ww_is_pos_blank-r002`$group])
+# temp <- normInts(gfs, featNorm = "istd", standards = pat_dbis, adduct = "[M+H]+")
+# all.equal(gfs@groups, temp@groups)
+# sustox <- predictTox(sus)
+# suscalctox <- calculateTox(sustox)
+# toxicities(suscalctox)
 

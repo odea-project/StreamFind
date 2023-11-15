@@ -1726,7 +1726,8 @@ validate.Settings_suspect_screening_StreamFind <- function(x) {
     checkmate::test_logical(x$parameters$filtered, max.len = 1)
   ) && if (is.data.frame(x$parameters$database)) {
     all(c("name", "mass") %in% colnames(x$parameters$database)) ||
-    all(c("name", "mz") %in% colnames(x$parameters$database))
+      all(c("name", "neutralMass") %in% colnames(x$parameters$database)) ||
+        all(c("name", "mz") %in% colnames(x$parameters$database))
   } else {
     FALSE
   }

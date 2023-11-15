@@ -2403,3 +2403,100 @@
 
 }
 
+#' .plot_chromatograms_interactive
+#'
+#' @noRd
+#'
+.plot_chromatograms_interactive <- function(chromatograms = NULL,
+                                            legendNames = NULL,
+                                            colorBy = "targets",
+                                            title = NULL,
+                                            showLegend = TRUE) {
+  
+  chromatograms <- .make_colorBy_varkey(chromatograms, colorBy, legendNames)
+  
+  leg <- unique(chromatograms$var)
+  cl <- .get_colors(leg)
+  
+  chromatograms$loop <- paste0(chromatograms$analysis, chromatograms$id, chromatograms$var)
+  loop_key <- unique(chromatograms$loop)
+  
+  title <- list(
+    text = title, x = 0.13, y = 0.98,
+    font = list(size = 12, color = "black")
+  )
+  
+  xaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2, title = "Retention time / seconds",
+    titlefont = list(size = 12, color = "black")
+  )
+  
+  yaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2, title = "Intensity / counts",
+    titlefont = list(size = 12, color = "black")
+  )
+  
+  plot <- plot_ly()
+  
+  if (showLegend) {
+    showL <- rep(TRUE, length(leg))
+  } else {
+    showL <- rep(FALSE, length(leg))
+  }
+  
+  names(showL) <- leg
+  
+  for (t in loop_key) {
+    select_vector <- chromatograms$loop %in% t
+    lt <- unique(chromatograms$var[select_vector])
+    x <- chromatograms$rt[select_vector]
+    y <- chromatograms$intensity[select_vector]
+    
+    t_pol <- unique(chromatograms$polarity[select_vector])
+    t_pre_ce <- unique(chromatograms$pre_ce[select_vector])
+    t_pre_mz <- unique(chromatograms$pre_mz[select_vector])
+    t_pro_mz <- unique(chromatograms$pro_mz[select_vector])
+    
+    plot <- plot %>% add_trace(
+      x = x,
+      y = y,
+      type = "scatter", mode = "lines+markers",
+      line = list(width = 0.5, color = unname(cl[lt])),
+      marker = list(size = 2, color = unname(cl[lt])),
+      name = lt,
+      legendgroup = lt,
+      showlegend = showL[lt],
+      hovertemplate = paste(
+        "<br>id: ", lt,
+        "<br>polarity: ", t_pol,
+        "<br>pre_ce: ", t_pre_ce,
+        "<br>pre_mz: ", t_pre_mz,
+        "<br>pro_mz: ", t_pro_mz,
+        "<br>rt: %{x}",
+        "<br>", "intensity: %{y}"
+      )
+    )
+    if (length(y) >= 1) showL[lt] <- FALSE
+  }
+  
+  
+  if (showLegend) {
+    plot <- plot %>% plotly::layout(
+      legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
+      xaxis = xaxis,
+      yaxis = yaxis,
+      title = title
+    )
+  } else {
+    plot <- plot %>% plotly::layout(
+      legend = NULL,
+      xaxis = xaxis,
+      yaxis = yaxis,
+      title = title
+    )
+  }
+  
+  plot
+}

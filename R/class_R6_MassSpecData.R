@@ -3398,11 +3398,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
         
         if (is.data.frame(database)) {
           database <- as.data.table(database)
-          if (any(c("mass", "neutral_mass") %in% colnames(database)) |
-              "mz" %in% colnames(database)) {
+          if (any(c("mass", "neutralMass") %in% colnames(database)) | "mz" %in% colnames(database)) {
             if ("name" %in% colnames(database)) {
-              if ("neutral_mass" %in% colnames(database)) {
-                setnames(database, neutral_mass, mass)
+              if ("neutralMass" %in% colnames(database)) {
+                setnames(database, "neutralMass", "mass")
               }
               valid_db = TRUE
             }
@@ -3810,6 +3809,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         }
 
         settings <- lapply(settings, as.ProcessingSettings)
+        
+        names(settings) <- NULL
 
         all_ps <- vapply(settings, function(x) class(x)[1], "")
 
@@ -3854,29 +3855,47 @@ MassSpecData <- R6::R6Class("MassSpecData",
           
           lapply(settings, function(x, only_one_possible, replace) {
             
-            stored_names <- vapply(private$.settings, function(x) x$call, NA_character_)
+            stored_calls <- vapply(private$.settings, function(x) x$call, NA_character_)
             
             if (replace) {
 
-              if (x$call %in% stored_names) {
+              if (x$call %in% stored_calls) {
                 
-                private$.settings[x$call %in% stored_names] <- x
-                
-                private$.register(
-                  "replaced",
-                  "ProcessingSettings",
-                  x$call,
-                  "StreamFind",
-                  x$version,
-                  x$algorithm
-                )
-                
-                message(
-                  paste0("\U2713 ", x$call, " processing settings replaced!")
-                )
-                
+                # case when repeating can happen with replace = TRUE as long as duplicated in call_names
+                if (!(x$call %in% only_one_possible) & any(duplicated(call_names))) {
+                  private$.settings <- c(private$.settings, list(x))
+                  
+                  private$.register(
+                    "added",
+                    "ProcessingSettings",
+                    x$call,
+                    "StreamFind",
+                    x$version,
+                    x$algorithm
+                  )
+                  
+                  message(
+                    paste0("\U2713 ", x$call, " processing settings added!")
+                  )
+                  
+                } else {
+                  private$.settings[x$call %in% stored_calls] <- x
+                  
+                  private$.register(
+                    "replaced",
+                    "ProcessingSettings",
+                    x$call,
+                    "StreamFind",
+                    x$version,
+                    x$algorithm
+                  )
+                  
+                  message(
+                    paste0("\U2713 ", x$call, " processing settings replaced!")
+                  )
+                }
+
               } else {
-                
                 private$.settings <- c(private$.settings, list(x))
                 
                 private$.register(
@@ -3895,10 +3914,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
             } else {
               
-              if (x$call %in% only_one_possible && x$call %in% stored_names) {
+              if (x$call %in% only_one_possible && x$call %in% stored_calls) {
                 message("\U2139 ", x$call, " replaced as only one is possible!")
                 
-                private$.settings[x$call %in% stored_names] <- x
+                private$.settings[x$call %in% stored_calls] <- x
                 
                 private$.register(
                   "replaced",
@@ -3914,7 +3933,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
                 )
                 
               } else {
-
                 private$.settings <- c(private$.settings, list(x))
                 
                 private$.register(
@@ -3934,10 +3952,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
           }, only_one_possible = only_one_possible, replace = replace)
 
         } else {
-          warning("Settings content or structure not conform! Not added.")
+          not_conform <- which(!all_ps %in% "ProcessingSettings")
+          warning("Settings (number/s: ", paste(not_conform, collapse = "; "), ") content or structure not conform! Not added.")
         }
       } else {
-        warning("Settings content or structure not conform! Not added.")
+        warning("Settings must be a list! Not added.")
       }
       
       invisible(self)
@@ -6552,6 +6571,50 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       .plot_spectra_interactive(spec, colorBy, legendNames, xVal, yVal)
     },
+    
+    #' @description
+    #' Plots chromatograms in the analyses.
+    #'
+    #' @return A plot.
+    #'
+    plot_chromatograms = function(analyses = NULL,
+                                  title = NULL,
+                                  colorBy = "targets",
+                                  legendNames = NULL,
+                                  showLegend = TRUE,
+                                  xlim = NULL,
+                                  ylim = NULL,
+                                  cex = 0.6,
+                                  interactive = TRUE) {
+      
+      chromatograms <- self$get_chromatograms()
+      
+      if (nrow(chromatograms) == 0) {
+        message("\U2717 Chromatograms not found for the analyses!")
+        return(NULL)
+      }
+      
+      if ("replicates" %in% colorBy) {
+        chromatograms$replicate <- self$get_replicate_names()[chromatograms$analysis]
+      }
+      
+      # if (!"id" %in% colnames(chromatograms)) tic$id <- tic$analysis
+      
+      # polarities <- self$get_polarities()
+      # polarities_names <- unique(names(polarities))
+      
+      pol_key <- c("positive", "negative", "nd")
+      names(pol_key) <- c("1", "-1", "0")
+      chromatograms$polarity <- as.character(chromatograms$polarity)
+      chromatograms$polarity <- pol_key[chromatograms$polarity]
+      
+      if (!interactive) {
+        .plot_eic_static(chromatograms, legendNames, colorBy, title, showLegend, xlim, ylim, cex)
+        NULL
+      } else {
+        .plot_chromatograms_interactive(chromatograms, legendNames, colorBy, title, showLegend)
+      }
+    },
 
     ### _____ plot_xic -----
 
@@ -8103,7 +8166,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @return An object with S4 class `featureGroups`.
     #'
-    as_patRoon_featureGroups = function(filtered = FALSE) {
+    as_patRoon_featureGroups = function(filtered = FALSE, suspects = TRUE) {
 
       if (!requireNamespace("patRoon", quietly = TRUE)) {
         return(NULL)
@@ -8167,6 +8230,48 @@ MassSpecData <- R6::R6Class("MassSpecData",
           }
         }
       }
+      
+      add_suspects_to_pat <- FALSE
+      
+      if (suspects && any(self$has_suspects())) {
+        suspects_df <- self$get_suspects(onGroups = FALSE)
+        
+        cols_keep <- colnames(suspects_df)
+        cols_keep <- c(cols_keep[1:(which(cols_keep %in% "analysis") - 1)], "group", "polarity")
+        suspects_df <- suspects_df[, cols_keep, with = FALSE]
+        
+        pol_key <- c("positive", "negative", "nd")
+        names(pol_key) <- c("1", "-1", "0")
+        suspects_df$polarity <- as.character(suspects_df$polarity)
+        suspects_df$polarity <- pol_key[suspects_df$polarity]
+        
+        setnames(suspects_df, c("exp_rt", "exp_mass"), c("rt", "neutralMass"), skip_absent = TRUE)
+        
+        suspects_df$error_mass <- suspects_df$error_mass * suspects_df$neutralMass / 1E6
+        
+        suspects_df_av <- data.table::copy(suspects_df)
+        suspects_df_av <- suspects_df_av[, `:=`(d_rt = max(abs(error_rt)), d_mz = max(abs(error_mass))), by = list(group)]
+        
+        suspects_df_av[["error_mass"]] <- NULL
+        suspects_df_av[["error_rt"]] <- NULL
+        
+        cols_group_by <- colnames(suspects_df_av)
+        cols_group_by <- cols_group_by[!cols_group_by %in% "polarity"]
+        
+        suspects_df_av <- suspects_df_av[, polarity := paste(unique(polarity), collapse = ","), by = cols_group_by]
+        
+        suspects_df_av <- unique(suspects_df_av)
+        
+        setcolorder(suspects_df_av, c("name", "group"))
+        
+        setnames(suspects_df_av, "polarity", "sets")
+        
+        setnames(suspects_df, c("error_rt", "error_mass"), c("d_rt", "d_mz"), skip_absent = TRUE)
+        
+        setcolorder(suspects_df, c("name", "group"))
+        
+        add_suspects_to_pat <- TRUE
+      }
 
       if (TRUE %in% grepl("Set", is(pat_features))) {
         polarity <- c("[M+H]+", "[M-H]-", "[M]")
@@ -8188,7 +8293,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         annotations_entry <- annotations_entry[, cols_to_keep, with = FALSE]
         annotations_entry <- unique(annotations_entry)
         
-        new("featureGroupsSet",
+        pat <- new("featureGroupsSet",
           groups = groups_trans,
           analysisInfo = pat_features@analysisInfo,
           groupInfo = groups_info,
@@ -8197,6 +8302,61 @@ MassSpecData <- R6::R6Class("MassSpecData",
           annotations = annotations_entry,
           algorithm = "openms-set"
         )
+        
+        if (add_suspects_to_pat) {
+          
+          pat_positive <- patRoon::unset(pat, "positive")
+          suspects_df_pos <- suspects_df[suspects_df$polarity %in% "positive", ]
+          if (nrow(suspects_df_pos) > 0) {
+            suspects_df_pos <- suspects_df_pos[, `:=`(d_rt = max(abs(d_rt)), d_mz = max(abs(d_mz))), by = list(group)]
+            suspects_df_pos <- unique(suspects_df_pos)
+          }
+          
+          pat_negative <- patRoon::unset(pat, "negative")
+          suspects_df_neg <- suspects_df[suspects_df$polarity %in% "negative", ]
+          if (nrow(suspects_df_neg) > 0) {
+            suspects_df_neg <- suspects_df_neg[, `:=`(d_rt = max(abs(d_rt)), d_mz = max(abs(d_mz))), by = list(group)]
+            suspects_df_neg <- unique(suspects_df_neg)
+          }
+
+          pat_positive_sus <- new("featureGroupsScreening",
+            screenInfo = suspects_df_pos,
+            groups = pat_positive@groups,
+            analysisInfo = pat_positive@analysisInfo,
+            groupInfo = pat_positive@groupInfo,
+            features = pat_positive@features,
+            ftindex = pat_positive@ftindex,
+            annotations = pat_positive@annotations
+          )
+          
+          pat_positive_neg <- new("featureGroupsScreening",
+            screenInfo = suspects_df_neg,
+            groups = pat_negative@groups,
+            analysisInfo = pat_negative@analysisInfo,
+            groupInfo = pat_negative@groupInfo,
+            features = pat_negative@features,
+            ftindex = pat_negative@ftindex,
+            annotations = pat_negative@annotations
+          )
+          
+          pat_sus <- new("featureGroupsScreeningSet",
+              screenInfo = suspects_df_av,
+              groups = groups_trans,
+              analysisInfo = pat_features@analysisInfo,
+              groupInfo = groups_info,
+              features = pat_features,
+              ftindex = ftindex,
+              annotations = annotations_entry,
+              setObjects = list(
+                "positive" = pat_positive,
+                "negative" = pat_negative
+              )
+          )
+          
+          return(pat_sus)
+        }
+        
+        pat
 
       } else {
 
@@ -8563,6 +8723,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
                              name = "settings", path = getwd()) {
 
       js_settings <- self$get_settings(call)
+      
+      names(js_settings) <- vapply(js_settings, function(x) x$call, NA_character_)
 
       if (format %in% "json") {
         js_settings <- toJSON(
