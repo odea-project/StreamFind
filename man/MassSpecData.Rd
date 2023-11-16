@@ -119,9 +119,11 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecData-has_settings}{\code{MassSpecData$has_settings()}}
 \item \href{#method-MassSpecData-has_features_eic}{\code{MassSpecData$has_features_eic()}}
 \item \href{#method-MassSpecData-has_features}{\code{MassSpecData$has_features()}}
+\item \href{#method-MassSpecData-has_suspects}{\code{MassSpecData$has_suspects()}}
 \item \href{#method-MassSpecData-has_alignment}{\code{MassSpecData$has_alignment()}}
 \item \href{#method-MassSpecData-has_groups}{\code{MassSpecData$has_groups()}}
 \item \href{#method-MassSpecData-plot_spectra}{\code{MassSpecData$plot_spectra()}}
+\item \href{#method-MassSpecData-plot_chromatograms}{\code{MassSpecData$plot_chromatograms()}}
 \item \href{#method-MassSpecData-plot_xic}{\code{MassSpecData$plot_xic()}}
 \item \href{#method-MassSpecData-plot_eic}{\code{MassSpecData$plot_eic()}}
 \item \href{#method-MassSpecData-plot_tic}{\code{MassSpecData$plot_tic()}}
@@ -3265,6 +3267,27 @@ Logical value.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-has_suspects"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-has_suspects}{}}}
+\subsection{Method \code{has_suspects()}}{
+Checks for presence of suspects in given analyses names/indices.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$has_suspects(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Logical value.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecData-has_alignment"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-has_alignment}{}}}
 \subsection{Method \code{has_alignment()}}{
@@ -3406,6 +3429,58 @@ overhead.}
 }
 \subsection{Returns}{
 A 3D interactive plot.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-plot_chromatograms"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-plot_chromatograms}{}}}
+\subsection{Method \code{plot_chromatograms()}}{
+Plots chromatograms in the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$plot_chromatograms(
+  analyses = NULL,
+  title = NULL,
+  colorBy = "targets",
+  legendNames = NULL,
+  showLegend = TRUE,
+  xlim = NULL,
+  ylim = NULL,
+  cex = 0.6,
+  interactive = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{colorBy}}{A string of length 1. One of \code{analyses}, \code{targets} (the
+default) or \code{replicates}.}
+
+\item{\code{legendNames}}{A character vector with the same length as the targets.}
+
+\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
+
+\item{\code{xlim}}{A length one or two numeric vector for setting the \emph{x}
+limits (in seconds) of the plot.}
+
+\item{\code{ylim}}{A length one or two numeric vector for setting the \emph{m/z}
+limits of the plot.}
+
+\item{\code{cex}}{A length one numeric value defining the scale of the legend for
+non interactive plotting.}
+
+\item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
+using \pkg{plotly}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A plot.
 }
 }
 \if{html}{\out{<hr>}}
@@ -5373,13 +5448,16 @@ An object with S4 class \code{features}.
 Creates an object with S4 class \code{featureGroups} from the package
 \pkg{patRoon} with the features in the analyses and feature groups.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$as_patRoon_featureGroups(filtered = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$as_patRoon_featureGroups(filtered = FALSE, addSuspects = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
+
+\item{\code{addSuspects}}{Logical of length 1. Set to \code{TRUE} for adding suspects
+when present.}
 }
 \if{html}{\out{</div>}}
 }

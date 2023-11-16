@@ -8,9 +8,12 @@ pat_all_files <- StreamFindData::get_ms_file_paths()
 pat_all_db <- StreamFindData::get_ms_tof_spiked_chemicals()
 
 pat_db <- pat_all_db[!grepl("IS", pat_all_db$tag), ]
-pat_cols <- c("name", "formula", "mass", "SMILES")
+pat_cols <- c("name", "formula", "mass", "SMILES", "rt")
 pat_db <- pat_db[, pat_cols, with = FALSE]
 data.table::setnames(pat_db, "mass", "neutralMass")
+
+pat_db$neutralMass <- pat_db$neutralMass + 1.0073
+data.table::setnames(pat_db, "neutralMass", "mz")
 
 pat_dbis <- pat_all_db[grepl("IS", pat_all_db$tag), ]
 pat_cols <- c("name", "formula", "mass", "rt")
@@ -47,10 +50,10 @@ anaInfoPos <- anaInfo[grepl("pos", anaInfo$analysis), ]
 anaInfoNeg <- anaInfo[grepl("neg", anaInfo$analysis), ]
 fListPos <- findFeatures(anaInfoPos, "openms")
 fListNeg <- findFeatures(anaInfoNeg, "openms")
-fList <- makeSet(fListPos, fListNeg, adducts = c("[M+H]+", "[M-H]-"))
+# fList <- makeSet(fListPos, fListNeg, adducts = c("[M+H]+", "[M-H]-"))
+fList <- fListPos 
 
 gfs <- groupFeatures(fList, "openms", verbose = TRUE)
-
 
 sus <- screenSuspects(
   gfs,

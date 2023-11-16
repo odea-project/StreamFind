@@ -2021,3 +2021,120 @@ validate.Settings_calculate_quality_StreamFind <- function(x) {
     checkmate::test_logical(x$parameters$runParallel, max.len = 1)
   )
 }
+
+# generate_formulas -----
+
+#' @title Settings_generate_formulas_GenForm
+#'
+#' @description
+#' Settings for generating formulas using the algorithm 
+#' \href{https://sourceforge.net/projects/genform/}{GenForm}. 
+#' The algorithm is used via the function \link[patRoon]{generateFormulas} 
+#' from the package \pkg{patRoon}.
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_generate_formulas_GenForm.
+#' 
+#' @references
+#' \insertRef{patroon01}{StreamFind}
+#'
+#' \insertRef{patroon02}{StreamFind}
+#' 
+#' \insertRef{genform}{StreamFind}
+#'
+#' @export
+#'
+Settings_generate_formulas_GenForm <- function() {
+  
+  settings <- list(
+    call = "generate_formulas",
+    algorithm = "GenForm",
+    parameters = list(),
+    version = as.character(packageVersion("patRoon")),
+    software = "GenForm",
+    developer = "Markus Meringer",
+    contact = "Markus.Meringer@Uni-Bayreuth.De",
+    link = "https://sourceforge.net/projects/genform/",
+    doi = "MATCH Commun. Math. Comput. Chem 65.2 (2011): 259-290."
+  )
+  
+  settings <- as.ProcessingSettings(settings)
+  
+  return(settings)
+}
+
+#' @describeIn Settings_generate_formulas_GenForm
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_generate_formulas_GenForm S3 class object.
+#'
+#' @export
+#'
+validate.Settings_generate_formulas_GenForm <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "generate_formulas"),
+    checkmate::test_choice(x$algorithm, "GenForm")
+  )
+}
+
+# generate_compounds -----
+
+#' @title Settings_generate_compounds_MetFrag
+#'
+#' @description
+#' Settings for generating compounds using 
+#' \href{https://ipb-halle.github.io/MetFrag/}{MetFrag}. 
+#' The algorithm is used via the function \link[patRoon]{generateCompounds} 
+#' from the package \pkg{patRoon}.
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_generate_compounds_MetFrag.
+#' 
+#' @references
+#' 
+#' \insertRef{metfrag01}{StreamFind}
+#' 
+#' \insertRef{metfrag02}{StreamFind}
+#' 
+#' \insertRef{metfrag03}{StreamFind}
+#' 
+#' \insertRef{metfrag04}{StreamFind}
+#' 
+#' \insertRef{patroon01}{StreamFind}
+#'
+#' \insertRef{patroon02}{StreamFind}
+#'
+#' @export
+#'
+Settings_generate_compounds_MetFrag <- function() {
+  
+  settings <- list(
+    call = "generate_compounds",
+    algorithm = "MetFrag",
+    parameters = list(),
+    version = as.character(packageVersion("patRoon")),
+    software = "MetFrag",
+    developer = "Christoph Ruttkies and Emma L. Schymanski",
+    contact = "cruttkie@ipb-halle.de",
+    link = "https://ipb-halle.github.io/MetFrag/",
+    doi = "https://doi.org/10.1186/s13321-016-0115-9"
+  )
+  
+  settings <- as.ProcessingSettings(settings)
+  
+  return(settings)
+}
+
+#' @describeIn Settings_generate_compounds_MetFrag
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_generate_compounds_MetFrag S3 class object.
+#'
+#' @export
+#'
+validate.Settings_generate_compounds_MetFrag <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "generate_compounds"),
+    checkmate::test_choice(x$algorithm, "MetFrag")
+  )
+}

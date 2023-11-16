@@ -65,6 +65,7 @@
 #' @template arg-ms-showLegend
 #' @template arg-ms-components
 #' @template arg-ms-onGroups
+#' @template arg-ms-addSuspects
 #'
 #' @references
 #' \insertRef{patroon01}{StreamFind}
@@ -3855,8 +3856,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           
           lapply(settings, function(x, only_one_possible, replace) {
             
-            stored_calls <- vapply(private$.settings, function(x) x$call, NA_character_)
-            
+            stored_calls <- vapply(private$.settings, function(z) z$call, NA_character_)
+
             if (replace) {
 
               if (x$call %in% stored_calls) {
@@ -3879,7 +3880,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                   )
                   
                 } else {
-                  private$.settings[x$call %in% stored_calls] <- x
+                  private$.settings[which(x$call %in% stored_calls)] <- list(x)
                   
                   private$.register(
                     "replaced",
@@ -3917,7 +3918,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
               if (x$call %in% only_one_possible && x$call %in% stored_calls) {
                 message("\U2139 ", x$call, " replaced as only one is possible!")
                 
-                private$.settings[x$call %in% stored_calls] <- x
+                private$.settings[which(x$call %in% stored_calls)] <- list(x)
                 
                 private$.register(
                   "replaced",
@@ -8053,6 +8054,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     as_patRoon_features = function(filtered = FALSE) {
 
       if (!requireNamespace("patRoon", quietly = TRUE)) {
+        warning("Package patRoon is not installed! Install it via https://github.com/rickhelmus/patRoon.")
         return(NULL)
       }
 
@@ -8163,12 +8165,15 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @description
     #' Creates an object with S4 class `featureGroups` from the package
     #' \pkg{patRoon} with the features in the analyses and feature groups.
+    #' 
+    #' 
     #'
     #' @return An object with S4 class `featureGroups`.
     #'
-    as_patRoon_featureGroups = function(filtered = FALSE, suspects = TRUE) {
+    as_patRoon_featureGroups = function(filtered = FALSE, addSuspects = TRUE) {
 
       if (!requireNamespace("patRoon", quietly = TRUE)) {
+        warning("Package patRoon is not installed! Install it via https://github.com/rickhelmus/patRoon.")
         return(NULL)
       }
 
@@ -8233,7 +8238,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       
       add_suspects_to_pat <- FALSE
       
-      if (suspects && any(self$has_suspects())) {
+      if (addSuspects && any(self$has_suspects())) {
         suspects_df <- self$get_suspects(onGroups = FALSE)
         
         cols_keep <- colnames(suspects_df)
@@ -8257,6 +8262,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         
         cols_group_by <- colnames(suspects_df_av)
         cols_group_by <- cols_group_by[!cols_group_by %in% "polarity"]
+        
+        polarity <- NULL
         
         suspects_df_av <- suspects_df_av[, polarity := paste(unique(polarity), collapse = ","), by = cols_group_by]
         
@@ -8299,7 +8306,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
           groupInfo = groups_info,
           features = pat_features,
           ftindex = ftindex,
+          groupQualities = data.table(),
+          groupScores = data.table(),
           annotations = annotations_entry,
+          ISTDs = data.table(),
+          ISTDAssignments = list(),
+          concentrations = data.table(),
+          toxicities = data.table(),
           algorithm = "openms-set"
         )
         
@@ -8326,31 +8339,47 @@ MassSpecData <- R6::R6Class("MassSpecData",
             groupInfo = pat_positive@groupInfo,
             features = pat_positive@features,
             ftindex = pat_positive@ftindex,
-            annotations = pat_positive@annotations
+            groupQualities = data.table(),
+            groupScores = data.table(),
+            annotations = pat_positive@annotations,
+            ISTDs = data.table(),
+            ISTDAssignments = list(),
+            concentrations = data.table(),
+            toxicities = data.table()
           )
           
-          pat_positive_neg <- new("featureGroupsScreening",
+          pat_negative_sus <- new("featureGroupsScreening",
             screenInfo = suspects_df_neg,
             groups = pat_negative@groups,
             analysisInfo = pat_negative@analysisInfo,
             groupInfo = pat_negative@groupInfo,
             features = pat_negative@features,
             ftindex = pat_negative@ftindex,
-            annotations = pat_negative@annotations
+            groupQualities = data.table(),
+            groupScores = data.table(),
+            annotations = pat_negative@annotations,
+            ISTDs = data.table(),
+            ISTDAssignments = list(),
+            concentrations = data.table(),
+            toxicities = data.table()
           )
           
           pat_sus <- new("featureGroupsScreeningSet",
-              screenInfo = suspects_df_av,
-              groups = groups_trans,
-              analysisInfo = pat_features@analysisInfo,
-              groupInfo = groups_info,
-              features = pat_features,
-              ftindex = ftindex,
-              annotations = annotations_entry,
-              setObjects = list(
-                "positive" = pat_positive,
-                "negative" = pat_negative
-              )
+            screenInfo = suspects_df_av,
+            groups = groups_trans,
+            analysisInfo = pat_features@analysisInfo,
+            groupInfo = groups_info,
+            features = pat_features,
+            ftindex = ftindex,
+            annotations = annotations_entry,
+            ISTDs = data.table(),
+            ISTDAssignments = list(),
+            concentrations = data.table(),
+            toxicities = data.table(),
+            setObjects = list(
+              "positive" = pat_positive_sus,
+              "negative" = pat_negative_sus
+            )
           )
           
           return(pat_sus)
@@ -8374,13 +8403,37 @@ MassSpecData <- R6::R6Class("MassSpecData",
           stop("Polarity should be defined as positive or negative!")
         }
 
-        new("featureGroupsOpenMS",
+        pat <- new("featureGroupsOpenMS",
           groups = groups_trans,
           analysisInfo = pat_features@analysisInfo,
           groupInfo = groups_info,
           features = pat_features,
           ftindex = ftindex
         )
+        
+        if (add_suspects_to_pat) {
+          suspects_df_av[["sets"]] <- NULL
+
+          pat_sus <- new("featureGroupsScreening",
+            screenInfo = suspects_df_av,
+            groups = pat@groups,
+            analysisInfo = pat@analysisInfo,
+            groupInfo = pat@groupInfo,
+            features = pat@features,
+            ftindex = pat@ftindex,
+            groupQualities = data.table(),
+            groupScores = data.table(),
+            annotations = pat@annotations,
+            ISTDs = data.table(),
+            ISTDAssignments = list(),
+            concentrations = data.table(),
+            toxicities = data.table()
+          )
+          
+          return(pat_sus)
+        }
+        
+        pat
       }
     },
 
@@ -8436,6 +8489,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                       method = "hclust",
                                       retainPrecursorMSMS = TRUE) {
 
+      if (!requireNamespace("patRoon", quietly = TRUE)) {
+        warning("Package patRoon is not installed! Install it via https://github.com/rickhelmus/patRoon.")
+        return(NULL)
+      }
+      
       if (self$has_groups()) {
 
         pruneMissingPrecursorMS = FALSE
@@ -8467,8 +8525,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           out
         }
-
-
 
         plist <- lapply(self$get_analyses(), function(x, filtered, correct_spectrum) {
 
@@ -8583,7 +8639,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         names(mlist) <- self$get_analysis_names()
 
         mlist <- mlist[vapply(mlist, function(x) length(x) > 0, FALSE)]
-
 
         groups <- self$get_groups(filtered = filtered)
 

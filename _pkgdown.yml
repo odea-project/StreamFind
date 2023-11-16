@@ -75,6 +75,16 @@ reference:
     Settings for the processing method suspect_screening.
   contents:
     - starts_with("Settings_suspect_screening")
+- subtitle: generate_formulas
+  desc: >
+    Settings for the processing method generate_formulas.
+  contents:
+    - starts_with("Settings_generate_formulas")
+- subtitle: generate_compounds
+  desc: >
+    Settings for the processing method generate_compounds.
+  contents:
+    - starts_with("Settings_generate_compounds")
 - subtitle: find_internal_standards
   desc: >
     Settings for the processing method find_internal_standards.

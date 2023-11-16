@@ -24,6 +24,9 @@ cols <- c("name", "formula", "mass", "SMILES", "rt")
 db <- db[, cols, with = FALSE]
 data.table::setnames(db, "mass", "neutralMass")
 
+db$neutralMass <- db$neutralMass + 1.0073
+data.table::setnames(db, "neutralMass", "mz")
+
 dbis <- all_db[grepl("IS", all_db$tag), ]
 cols <- c("name", "formula", "mass", "rt")
 dbis <- dbis[, cols, with = FALSE]
@@ -48,7 +51,7 @@ files_df <- data.frame(
   )
 )
 
-ms <- MassSpecData$new(files_df)
+ms <- MassSpecData$new(files_df[grepl("pos", files_df$replicate), ])
 
 ms$add_settings(
   list(
@@ -75,7 +78,6 @@ ms$add_settings(
 )
 
 # patRoon::clearCache("all")
-
 # patRoon::clearCache(c("calculate_quality"))
 # patRoon::clearCache(c("load_features_ms2"))
 # patRoon::clearCache(c("load_features_ms1"))
@@ -84,9 +86,11 @@ ms$add_settings(
 
 ms$run_workflow()
 
-pat_sus <- ms$as_patRoon_featureGroups(suspects = F)
+ms$get_suspects()
 
-screenInfo(pat_sus)
+pat_sus <- ms$as_patRoon_featureGroups(addSuspects = F)
+
+patRoon::screenInfo(pat_sus)
 
 
 

@@ -75,3 +75,11 @@ export <- function(x, ...) {
 .s3_ms_calculate_quality <- function(settings, self) {
   UseMethod(".s3_ms_calculate_quality")
 }
+
+.s3_ms_generate_formulas <- function(settings, self) {
+  UseMethod(".s3_ms_generate_formulas")
+}
+
+.s3_ms_generate_compounds <- function(settings, self) {
+  UseMethod(".s3_ms_generate_compounds")
+}

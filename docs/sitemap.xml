@@ -4,13 +4,10 @@
     <loc>https://odea-project.github.io/StreamFind/404.html</loc>
   </url>
   <url>
-    <loc>https://odea-project.github.io/StreamFind/articles/articles/demo_ozonation_project.html</loc>
+    <loc>https://odea-project.github.io/StreamFind/LICENSE.html</loc>
   </url>
   <url>
-    <loc>https://odea-project.github.io/StreamFind/articles/articles/ms_developer_guide.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/articles/articles/ms_overview.html</loc>
+    <loc>https://odea-project.github.io/StreamFind/articles/StreamFind.html</loc>
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/articles/demo_ozonation_project.html</loc>
@@ -25,43 +22,16 @@
     <loc>https://odea-project.github.io/StreamFind/articles/ms_overview.html</loc>
   </url>
   <url>
-    <loc>https://odea-project.github.io/StreamFind/articles/StreamFind.html</loc>
-  </url>
-  <url>
     <loc>https://odea-project.github.io/StreamFind/authors.html</loc>
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/index.html</loc>
   </url>
   <url>
-    <loc>https://odea-project.github.io/StreamFind/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/combine_MassSpecData.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/convert_ms_files.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/get_default_ProcessingSettings.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/import_MassSpecData.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/make_ms_targets.html</loc>
-  </url>
-  <url>
     <loc>https://odea-project.github.io/StreamFind/reference/MassSpecAnalysis.html</loc>
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/MassSpecData.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/pipe.html</loc>
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/ProcessingSettings.html</loc>
@@ -71,9 +41,6 @@
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/RamanData.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/save_default_ProcessingSettings.html</loc>
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_annotate_features_StreamFind.html</loc>
@@ -109,6 +76,12 @@
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_find_internal_standards_StreamFind.html</loc>
   </url>
   <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/Settings_generate_compounds_MetFrag.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/Settings_generate_formulas_GenForm.html</loc>
+  </url>
+  <url>
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_group_features_openms.html</loc>
   </url>
   <url>
@@ -133,13 +106,40 @@
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_load_groups_ms2_StreamFind.html</loc>
   </url>
   <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_suspect_screening_forident.html</loc>
-  </url>
-  <url>
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_suspect_screening_StreamFind.html</loc>
   </url>
   <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/Settings_suspect_screening_forident.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/Settings_suspect_screening_patRoon.html</loc>
+  </url>
+  <url>
     <loc>https://odea-project.github.io/StreamFind/reference/StreamFind-package.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/combine_MassSpecData.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/convert_ms_files.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/get_default_ProcessingSettings.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/import_MassSpecData.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/make_ms_targets.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/pipe.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/save_default_ProcessingSettings.html</loc>
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/trim_ms_files_spectra.html</loc>

@@ -119,11 +119,11 @@ save_default_ProcessingSettings(
 ```
 
 ```{r show-json, results='markup'}
-jsonlite::prettify(readLines("ffs.json"))
+jsonlite::prettify(readLines("~/Documents/github/StreamFind/vignettes/articles/ffs.json"))
 ```
 
 ```{r import-settings, results='markup'}
-ms$import_settings("ffs.json")
+ms$import_settings("~/Documents/github/StreamFind/vignettes/articles/ffs.json")
 
 # "openms" replaced by "xcms3_centwave"
 ms
