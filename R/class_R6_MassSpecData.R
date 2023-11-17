@@ -624,6 +624,50 @@ MassSpecData <- R6::R6Class("MassSpecData",
       } else {
         warning("There are no features in the MassSpecData!")
       }
+    },
+    
+    # Filters features and feature groups within a mass range.
+    #
+    .filter_onlySuspects = function(value = NULL) {
+      
+      if (any(self$has_suspects())) {
+        
+        if (is.logical(value) & length(value) == 1) {
+          
+          if (self$has_groups()) {
+            
+            sus <- self$get_suspects(onGroups = TRUE)
+            
+            groups <- self$get_groups(filtered = TRUE)
+            
+            groups_sel <- !groups$group %in% sus$group
+            
+            private$.tag_filtered(groups_sel, "onlySuspects")
+            
+          } else {
+            private$.analyses <- lapply(private$.analyses, function(x) {
+              sel <- vapply(x$features$suspects, function(x) is.null(x), FALSE) & !x$features$filtered
+              x$features$filtered[sel] <- TRUE
+              x$features$filter[sel] <- "onlySuspects"
+              x
+            })
+          }
+          
+          private$.register(
+            "filter_features",
+            "features",
+            "onlySuspects",
+            "StreamFind",
+            as.character(packageVersion("StreamFind")),
+            paste(value, collapse = "; ")
+          )
+          
+        } else {
+          warning("The value for onlySuspects must be logical and of length one!")
+        }
+      } else {
+        warning("There are no suspects in the MassSpecData!")
+      }
     }
   ),
 
@@ -7803,7 +7847,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           "excludeIsotopes",
           "excludeAdducts",
           "rtFilter",
-          "massFilter"
+          "massFilter",
+          "onlySuspects"
         )
 
         if (!all(filters %in% possible_feature_filters)) {
@@ -7830,7 +7875,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
             rtFilter = private$.filter_rtFilter(parameters[[filters[i]]]),
 
-            massFilter = private$.filter_massFilter(parameters[[filters[i]]])
+            massFilter = private$.filter_massFilter(parameters[[filters[i]]]),
+            
+            onlySuspects = private$.filter_onlySuspects(parameters[[filters[i]]])
 
             # TODO add more filters
           )

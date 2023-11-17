@@ -22,10 +22,10 @@ all_db <- StreamFindData::get_ms_tof_spiked_chemicals()
 db <- all_db[!grepl("IS", all_db$tag, fixed = TRUE), ]
 cols <- c("name", "formula", "mass", "SMILES", "rt")
 db <- db[, cols, with = FALSE]
-data.table::setnames(db, "mass", "neutralMass")
+# data.table::setnames(db, "mass", "neutralMass")
 
-db$neutralMass <- db$neutralMass + 1.0073
-data.table::setnames(db, "neutralMass", "mz")
+# db$neutralMass <- db$neutralMass + 1.0073
+# data.table::setnames(db, "neutralMass", "mz")
 
 dbis <- all_db[grepl("IS", all_db$tag), ]
 cols <- c("name", "formula", "mass", "rt")
@@ -73,7 +73,8 @@ ms$add_settings(
     Settings_load_groups_ms2_StreamFind(),
     Settings_calculate_quality_StreamFind(),
     Settings_filter_features_StreamFind(minSnRatio = 3),
-    Settings_suspect_screening_StreamFind(database = db, ppm = 5, sec = 10)
+    Settings_suspect_screening_StreamFind(database = db, ppm = 5, sec = 10),
+    Settings_filter_features_StreamFind(onlySuspects = TRUE)
   )
 )
 
@@ -86,9 +87,44 @@ ms$add_settings(
 
 ms$run_workflow()
 
+
+
+
+ms$get_features()
+
 ms$get_suspects()
 
-pat_sus <- ms$as_patRoon_featureGroups(addSuspects = F)
+
+
+
+
+pat_sus <- ms$as_patRoon_featureGroups(addSuspects = T)
+pat_mspl <- ms$as_patRoon_MSPeakLists()
+
+pat_for <- patRoon::generateFormulasGenForm(
+  pat_sus,
+  pat_mspl,
+  relMzDev = 5,
+  adduct = "[M+H]+",
+  elements = "CHNOPSCl",
+  hetero = TRUE,
+  oc = FALSE,
+  thrMS = NULL,
+  thrMSMS = NULL,
+  thrComb = NULL,
+  maxCandidates = Inf,
+  extraOpts = NULL,
+  calculateFeatures = TRUE,
+  featThreshold = 0,
+  featThresholdAnn = 0.75,
+  absAlignMzDev = 0.002,
+  MSMode = "both",
+  isolatePrec = TRUE,
+  timeout = 120,
+  topMost = 50,
+  batchSize = 8
+)
+
 
 patRoon::screenInfo(pat_sus)
 

@@ -1453,7 +1453,8 @@ Settings_filter_features_StreamFind <- function(...) {
     "excludeIsotopes",
     "excludeAdducts",
     "rtFilter",
-    "massFilter"
+    "massFilter",
+    "onlySuspects"
   )
 
   if (!all(names(dots) %in% possible_feature_filters)) {
@@ -1490,6 +1491,10 @@ Settings_filter_features_StreamFind <- function(...) {
 
   if ("massFilter" %in% names(dots)) {
     checkmate::assert_double(as.numeric(dots[["massFilter"]]), len = 2)
+  }
+  
+  if ("onlySuspects" %in% names(dots)) {
+    checkmate::assert_logical(dots[["onlySuspects"]], max.len = 1)
   }
 
   settings$parameters <- dots
@@ -1558,6 +1563,12 @@ validate.Settings_filter_features_StreamFind <- function(x) {
 
     if ("massFilter" %in% filters) {
       checkmate::test_double(as.numeric(x$parameters$massFilter), len = 2)
+    } else {
+      TRUE
+    },
+    
+    if ("onlySuspects" %in% filters) {
+      checkmate::test_logical(x$parameters$onlySuspects, max.len = 1)
     } else {
       TRUE
     }
