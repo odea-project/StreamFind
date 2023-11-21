@@ -540,8 +540,8 @@ parse.MassSpecAnalysis <- function(files = NULL, runParallel = FALSE) {
   if (!is.null(analyses)) {
     if (all(is.na(replicates))) {
       replicates <- vapply(analyses, function(x) x$name, "")
-      replicates <- gsub("-", "_", replicates)
-      replicates <- sub("_[^_]+$", "", replicates)
+      # replicates <- gsub("-", "_", replicates)
+      replicates <- sub("-[^-]+$", "", replicates)
     }
 
     analyses <- Map(

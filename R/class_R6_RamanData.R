@@ -5,6 +5,9 @@
 #' inspecting and storing RAMAN data.
 #'
 #' @template arg-headers
+#' @template arg-ms-analyses
+#' @template arg-raman-shift
+#' @template arg-ms-title
 #'
 #' @export
 #'
@@ -94,15 +97,26 @@ RamanData <- R6::R6Class("RamanData",
       if (!is.null(files)) {
 
         analyses <- lapply(files, function(x) {
-          spec <- read.asc.Andor(
-            file = x,
-            quiet = TRUE,
-            dec = ".",
-            sep = ";"
-          )
-          sf <- as.numeric(colnames(spec$spc))
-          int <- as.numeric(spec$spc[1, ])
-          df <- data.table("shift" = sf, "intensity" = int)
+          
+          text_data <- readLines(x)
+          
+          metadata_list <- list()
+          
+          data_values <- data.frame()
+          
+          for (line in text_data) {
+            # Extract metadata
+            if (grepl(":", line)) {
+              metadata <- strsplit(line, ":\\s+")[[1]]
+              metadata_list[[metadata[1]]] <- metadata[2]
+              
+            } else if (grepl("^-?\\d+\\.\\d+;", line)) {
+              values <- strsplit(line, ";")[[1]]
+              data_values <- rbind(data_values, as.numeric(values))
+            }
+          }
+          
+          colnames(data_values) <- c("shift", "intensity")
 
           f_name <- basename(x)
           f_ext <- file_ext(f_name)
@@ -113,8 +127,8 @@ RamanData <- R6::R6Class("RamanData",
             "replicate" = f_name,
             "blank" = NA_character_,
             "file" = x,
-            "spectrum" = df,
-            "corrected" = data.table()
+            "metadata" = metadata_list,
+            "spectrum" = data_values
           )
         })
 
@@ -212,6 +226,24 @@ RamanData <- R6::R6Class("RamanData",
         NULL
       }
     },
+    
+    #' @description
+    #' Gets the analysis replicate names.
+    #'
+    #' @return A character vector.
+    #'
+    get_replicate_names = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "replicate")
+    },
+    
+    #' @description
+    #' Gets the analysis blank replicate names.
+    #'
+    #' @return A character vector.
+    #'
+    get_blank_names = function(analyses = NULL) {
+      private$.get_analyses_entry(analyses, "blank")
+    },
 
     #' @description
     #' Gets the full file paths of the analyses.
@@ -226,9 +258,6 @@ RamanData <- R6::R6Class("RamanData",
 
     #' @description
     #' Gets spectra from analyses.
-    #'
-    #' @param analyses X.
-    #' @param shift X.
     #'
     #' @return A data.frame.
     #'
@@ -261,6 +290,8 @@ RamanData <- R6::R6Class("RamanData",
       if (length(private$.analyses) > 0) {
         df <- data.frame(
           "analysis" = vapply(private$.analyses, function(x) x$name, ""),
+          "replicate" = vapply(private$.analyses, function(x) x$replicate, ""),
+          "blank" = vapply(private$.analyses, function(x) x$blank, ""),
           "size" = vapply(private$.analyses, function(x) nrow(x$spectrum), 0),
           "file" = vapply(private$.analyses, function(x) x$file, "")
         )
@@ -311,6 +342,143 @@ RamanData <- R6::R6Class("RamanData",
         warning("Invalid headers content or structure! Not added.")
       }
       invisible(self)
+    },
+    
+    #' @description
+    #' Adds or redefines the analysis replicate names.
+    #'
+    #' @param value A character vector with the analysis replicate names.
+    #' Must be of the same length as the number of analyses.
+    #'
+    #' @return Invisible.
+    #'
+    add_replicate_names = function(value = NULL) {
+      if (is.character(value) & length(value) == self$get_number_analyses()) {
+        private$.analyses <- Map(
+          function(x, y) {
+            x$replicate <- y
+            x
+          },
+          private$.analyses, value
+        )
+        
+        message("\U2713 Replicate names added!")
+        
+      } else {
+        warning("Not done, check the value!")
+      }
+      invisible(self)
+    },
+    
+    #' @description
+    #' Adds or redefines the analysis blank replicate names.
+    #'
+    #' @param value A character vector with the analysis blank replicate names.
+    #' Must be of the same length as the number of analyses.
+    #'
+    #' @return Invisible.
+    #'
+    add_blank_names = function(value = NULL) {
+      if (is.character(value) & length(value) == self$get_number_analyses()) {
+        
+        if (all(value %in% self$get_replicate_names())) {
+          private$.analyses <- Map(
+            function(x, y) {
+              x$blank <- y
+              x
+            },
+            private$.analyses, value
+          )
+          
+          message("\U2713 Blank names added!")
+          
+        } else {
+          warning("Not done, blank names not among replicate names!")
+        }
+        
+      } else {
+        warning("Not done, check the value!")
+      }
+      invisible(self)
+    },
+    
+    ## plot -----
+    
+    #' @description
+    #' Plots spectra for given RAMAN analyses.
+    #'
+    #' @param colorBy A string of length 1. One of `analyses` (the default) or 
+    #' `replicates`.
+    #'
+    #' @return A 3D interactive plot.
+    #' 
+    plot_spectra = function(analyses = NULL,
+                            shift = NULL,
+                            colorBy = "analyses",
+                            title = NULL) {
+      
+      spectra <- self$get_spectra(analyses, shift)
+      
+      spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames = NULL)
+      
+      leg <- unique(spectra$var)
+      cl <- .get_colors(leg)
+      
+      spectra$loop <- paste0(spectra$analysis, spectra$id, spectra$var)
+      loop_key <- unique(spectra$loop)
+      
+      
+      title <- list(
+        text = title, x = 0.13, y = 0.98,
+        font = list(size = 12, color = "black")
+      )
+      
+      xaxis <- list(
+        linecolor = toRGB("black"),
+        linewidth = 2, title = "Raman shift / cm<sup>-1</sup>",
+        titlefont = list(size = 12, color = "black")
+      )
+      
+      yaxis <- list(
+        linecolor = toRGB("black"),
+        linewidth = 2, title = "Intensity / a.u.",
+        titlefont = list(size = 12, color = "black")
+      )
+      
+      plot <- plot_ly()
+      
+      
+      showL <- rep(TRUE, length(leg))
+      names(showL) <- leg
+      
+      for (t in loop_key) {
+        select_vector <- spectra$loop %in% t
+        lt <- unique(spectra$var[select_vector])
+        x <- spectra$rt[select_vector]
+        y <- spectra$intensity[select_vector]
+        
+        plot <- plot %>% add_trace(
+          x = x,
+          y = y,
+          type = "scatter", mode = "lines+markers",
+          line = list(width = 0.5, color = unname(cl[lt])),
+          marker = list(size = 2, color = unname(cl[lt])),
+          name = lt,
+          legendgroup = lt,
+          showlegend = showL[lt],
+          hovertemplate = paste("<br>shift: %{x}<br>", "intensity: %{y}")
+        )
+        if (length(y) >= 1) showL[lt] <- FALSE
+      }
+      
+      plot <- plot %>% plotly::layout(
+        legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
+        xaxis = xaxis,
+        yaxis = yaxis,
+        title = title
+      )
+      
+      plot
     }
   )
 )

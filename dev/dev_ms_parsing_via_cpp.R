@@ -94,7 +94,7 @@ settings <- list(
 
 # spectra ----------------------------------------------------------------------
 
-ms <- MassSpecData$new(files = all_files)
+ms <- MassSpecData$new(files = files)
 
 ms$find_features()
 

@@ -16,10 +16,15 @@ inspecting and storing RAMAN data.
 \item \href{#method-RamanData-get_analyses}{\code{RamanData$get_analyses()}}
 \item \href{#method-RamanData-get_number_analyses}{\code{RamanData$get_number_analyses()}}
 \item \href{#method-RamanData-get_analysis_names}{\code{RamanData$get_analysis_names()}}
+\item \href{#method-RamanData-get_replicate_names}{\code{RamanData$get_replicate_names()}}
+\item \href{#method-RamanData-get_blank_names}{\code{RamanData$get_blank_names()}}
 \item \href{#method-RamanData-get_files}{\code{RamanData$get_files()}}
 \item \href{#method-RamanData-get_spectra}{\code{RamanData$get_spectra()}}
 \item \href{#method-RamanData-get_overview}{\code{RamanData$get_overview()}}
 \item \href{#method-RamanData-add_headers}{\code{RamanData$add_headers()}}
+\item \href{#method-RamanData-add_replicate_names}{\code{RamanData$add_replicate_names()}}
+\item \href{#method-RamanData-add_blank_names}{\code{RamanData$add_blank_names()}}
+\item \href{#method-RamanData-plot_spectra}{\code{RamanData$plot_spectra()}}
 \item \href{#method-RamanData-clone}{\code{RamanData$clone()}}
 }
 }
@@ -132,6 +137,48 @@ A character vector.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanData-get_replicate_names"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanData-get_replicate_names}{}}}
+\subsection{Method \code{get_replicate_names()}}{
+Gets the analysis replicate names.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanData$get_replicate_names(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A character vector.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanData-get_blank_names"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanData-get_blank_names}{}}}
+\subsection{Method \code{get_blank_names()}}{
+Gets the analysis blank replicate names.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanData$get_blank_names(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A character vector.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-RamanData-get_files"></a>}}
 \if{latex}{\out{\hypertarget{method-RamanData-get_files}{}}}
 \subsection{Method \code{get_files()}}{
@@ -163,9 +210,11 @@ Gets spectra from analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{X.}
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
 
-\item{\code{shift}}{X.}
+\item{\code{shift}}{Numeric of length two with the minimum and maximum shift,
+in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -215,6 +264,82 @@ with the headers (all length one) can be given.}
 }
 \subsection{Returns}{
 Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanData-add_replicate_names"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanData-add_replicate_names}{}}}
+\subsection{Method \code{add_replicate_names()}}{
+Adds or redefines the analysis replicate names.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanData$add_replicate_names(value = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{A character vector with the analysis replicate names.
+Must be of the same length as the number of analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanData-add_blank_names"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanData-add_blank_names}{}}}
+\subsection{Method \code{add_blank_names()}}{
+Adds or redefines the analysis blank replicate names.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanData$add_blank_names(value = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{A character vector with the analysis blank replicate names.
+Must be of the same length as the number of analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanData-plot_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanData-plot_spectra}{}}}
+\subsection{Method \code{plot_spectra()}}{
+Plots spectra for given RAMAN analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanData$plot_spectra(
+  analyses = NULL,
+  shift = NULL,
+  colorBy = "analyses",
+  title = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{shift}}{Numeric of length two with the minimum and maximum shift,
+in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
+
+\item{\code{colorBy}}{A string of length 1. One of \code{analyses} (the default) or
+\code{replicates}.}
+
+\item{\code{title}}{A string with the title.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A 3D interactive plot.
 }
 }
 \if{html}{\out{<hr>}}

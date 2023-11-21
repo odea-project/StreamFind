@@ -1,25 +1,23 @@
 
 files <- StreamFindData::get_raman_file_paths()
-files <- files[1:2]
 
-
-r1 <- RamanData$new(headers = list(
-  "name" = "Example files",
-  "description" = "Test Raman class."
-))
+r1 <- RamanData$new(files)
 
 r1
 
+r1$add_replicate_names(c(rep("Sample", 11), rep("Blank", 11)))
 
-r1$get_spectra(shift = c(300, 100))
+r1$add_blank_names(rep("Blank", 22))
 
-plot(r1$get_spectra(shift = c(300, 100))[, 2:3])
+r1$get_spectra(analyses = 1)
 
+r1$plot_spectra()
 
-
-plot(r1$get_spectra(2)[1:200, 2:3])
-
-View(r1$get_analyses())
+# plot(r1$get_spectra(analyses = 1)[, 2:3], type = "l")
+# 
+# plot(r1$get_spectra(2)[1:200, 2:3])
+# 
+# View(r1$get_analyses())
 
 
 
