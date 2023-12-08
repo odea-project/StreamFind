@@ -7,6 +7,8 @@
 combine_MassSpecData(combineFeatureLists = TRUE, ...)
 }
 \arguments{
+\item{combineFeatureLists}{Logical, set to TRUE to combine feature lists.}
+
 \item{...}{\emph{MassSpecData} class object.}
 }
 \value{

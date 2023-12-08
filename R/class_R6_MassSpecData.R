@@ -55,6 +55,7 @@
 #' @template arg-ms-legendNames
 #' @template arg-ms-colorBy
 #' @template arg-ms-title
+#' @template arg-ms-labs
 #' @template arg-ms-interactive
 #' @template arg-ms-save-format
 #' @template arg-ms-save-name
@@ -788,7 +789,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     ## ___ get -----
-    ### _____ get_headers -----
 
     #' @description
     #' Gets the headers.
@@ -805,8 +805,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         private$.headers[value]
       }
     },
-    
-    ### _____ get_history -----
 
     #' @description
     #' Gets the object history.
@@ -822,8 +820,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         private$.history
       }
     },
-    
-    ### _____ get_analyses -----
 
     #' @description
     #' Gets analyses.
@@ -835,8 +831,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       analyses <- private$.check_analyses_argument(analyses)
       private$.analyses[analyses]
     },
-    
-    ### _____ get_number_analyses -----
 
     #' @description
     #' Gets the number of analyses present.
@@ -846,8 +840,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
     get_number_analyses = function() {
       length(private$.analyses)
     },
-    
-    ### _____ get_overview -----
 
     #' @description
     #' Gets the overview data.frame with all the analysis types,
@@ -905,8 +897,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         data.frame()
       }
     },
-    
-    ### _____ get_analysis_names -----
 
     #' @description
     #' Gets the analysis names.
@@ -926,8 +916,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         NULL
       }
     },
-    
-    ### _____ get_replicate_names -----
 
     #' @description
     #' Gets the analysis replicate names.
@@ -937,8 +925,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
     get_replicate_names = function(analyses = NULL) {
       private$.get_analyses_entry(analyses, "replicate")
     },
-    
-    ### _____ get_blank_names -----
 
     #' @description
     #' Gets the analysis blank replicate names.
@@ -948,8 +934,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
     get_blank_names = function(analyses = NULL) {
       private$.get_analyses_entry(analyses, "blank")
     },
-    
-    ### _____ get info from analyses -----
 
     #' @description
     #' Gets the full file paths of each analysis.
@@ -1221,8 +1205,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       metadata
     },
-
-    ### _____ get_spectra -----
 
     #' @description
     #' Gets spectra from each analysis.
@@ -1617,6 +1599,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
         names(spec_list) <- analyses
 
         spec <- rbindlist(spec_list, idcol = "analysis", fill = TRUE)
+        
+        if (runParallel & length(analyses) > 1 & !cached_spectra) {
+          parallel::stopCluster(cl)
+        }
 
         message(" Done!")
 
@@ -1634,8 +1620,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         data.table()
       }
     },
-
-    ### _____ get_chromatograms -----
 
     #' @description
     #' Gets chromatograms from each analysis.
@@ -1709,8 +1693,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    ### _____ get_eic -----
-
     #' @description
     #' Gets extract ion chromatograms (EIC) from the analyses based
     #' on targets.
@@ -1756,8 +1738,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       eic
     },
-
-    ### _____ get_ms1 -----
 
     #' @description
     #' Gets MS1 data from the analyses based on targets.
@@ -1840,8 +1820,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       ms1_df
     },
-
-    ### _____ get_ms2 -----
 
     #' @description
     #' Gets MS2 data from the analyses based on targets.
@@ -1926,8 +1904,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       ms2_df
     },
 
-    ### _____ get_settings -----
-
     #' @description
     #' Gets processing settings.
     #'
@@ -1954,8 +1930,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    ### _____ get_settings_names -----
-
     #' @description
     #' Gets the names of all present processing settings.
     #'
@@ -1964,8 +1938,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
     get_settings_names = function() {
       vapply(private$.settings, function(x) x$call, NA_character_)
     },
-
-    ### _____ get_features -----
 
     #' @description
     #' Gets features from analyses.
@@ -2156,8 +2128,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       fts
     },
 
-    ### _____ get_features_eic -----
-
     #' @description
     #' Gets EIC of features from analyses.
     #'
@@ -2309,8 +2279,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       eic
     },
 
-    ### _____ get_features_ms1 -----
-
     #' @description
     #' Gets an averaged MS1 spectrum for features in the analyses.
     #'
@@ -2458,8 +2426,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       copy(ms1)
     },
 
-    ### _____ get_features_ms2 -----
-
     #' @description
     #' Gets an averaged MS2 spectrum for features in the analyses.
     #'
@@ -2603,8 +2569,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       copy(ms2)
     },
 
-    ### _____ get_alignment -----
-
     #' @description
     #' Gets alignment.
     #'
@@ -2613,8 +2577,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
     get_alignment = function() {
       private$.alignment
     },
-
-    ### _____ get_groups -----
 
     #' @description
     #' Gets feature groups from the analyses.
@@ -2699,8 +2661,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       fgroups
     },
-
-    ### _____ get_groups_ms1 -----
 
     #' @description
     #' Gets an averaged MS1 spectrum for feature groups in the analyses.
@@ -2982,8 +2942,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       copy(ms1_df)
     },
 
-    ### _____ get_groups_ms2 -----
-
     #' @description
     #' Gets an averaged MS2 spectrum for feature groups in the analyses.
     #'
@@ -3256,8 +3214,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       copy(ms2_df)
     },
 
-    ### _____ get_groups_coverage -----
-
     #' @description
     #' Gets the percentage coverage of feature groups in the analyses (i.e.
     #' 100% means that a feature group is present in all the analyses).
@@ -3302,8 +3258,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       res
     },
-
-    ### _____ get_components -----
 
     #' @description
     #' Gets feature components (i.e., isotope clusters and adducts) in the
@@ -3370,8 +3324,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       components
     },
-
-    ### _____ get_suspects -----
 
     #' @description Gets suspects from features according to a defined database
     #' and mass (`ppm`) and time (`sec`) deviations.
@@ -3623,8 +3575,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       analyses_df
     },
 
-    ### _____ get_modules_data -----
-
     #' @description
     #' Gets modules data.
     #'
@@ -3637,8 +3587,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (is.null(modules)) modules <- names(private$.modules)
       private$.modules[modules]
     },
-
-    ### _____ get_internal_standards -----
 
     #' @description
     #' Gets modules data.
@@ -3773,7 +3721,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     ## ___ add -----
-    ### ___ add_headers -----
 
     #' @description
     #' Adds headers. If an argument or element "name" is given, it must
@@ -3827,8 +3774,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
-
-    ### _____ add_settings -----
 
     #' @description
     #' Adds processing settings.
@@ -4007,8 +3952,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
-    ### _____ add_analyses -----
-
     #' @description
     #' Adds analyses.
     #'
@@ -4111,16 +4054,16 @@ MassSpecData <- R6::R6Class("MassSpecData",
             no_groups_in_all_analyses <- !all(vapply(new_analyses,
               function(x) "group" %in% colnames(x$features), FALSE)
             )
-
+            
             if (self$has_groups() && old_size != 0) {
               warning("Feature groups cleared as new analyses were added!")
               suppressMessages(self$remove_groups())
 
-            } else if (has_features && no_groups_in_all_analyses) {
+            } else if (has_features && self$has_groups() && no_groups_in_all_analyses) {
               warning("Feature groups cleared as were not present in all the analyses!")
               suppressMessages(self$remove_groups())
 
-            } else if (has_features && !self$check_correspondence()) {
+            } else if (has_features && self$has_groups() && !self$check_correspondence()) {
               warning("Feature groups cleared as correspondence over the analyses did not match!")
               suppressMessages(self$remove_groups())
             }
@@ -4131,8 +4074,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
-
-    ### _____ add_files -----
 
     #' @description
     #' Adds *MassSpecAnalysis* objects based on mzML/mzXML files. Note that
@@ -4160,8 +4101,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       invisible(self)
     },
-
-    ### _____ add_replicate_names -----
 
     #' @description
     #' Adds or redefines the analysis replicate names.
@@ -4197,8 +4136,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
-
-    ### _____ add_blank_names -----
 
     #' @description
     #' Adds or redefines the analysis blank replicate names.
@@ -4240,8 +4177,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
-
-    ### _____ add_metadata -----
 
     #' @description
     #' Adds metadata to analyses.
@@ -4306,8 +4241,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
-
-    ### _____ add_spectra -----
 
     #' @description
     #' Adds spectra to analyses.
@@ -4413,8 +4346,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
-
-    ### _____ add_features_eic -----
 
     #' @description
     #' Adds extracted ion chromatograms (EICs) of features to analyses.
@@ -4606,8 +4537,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
-    ### _____ add_features -----
-
     #' @description
     #' Adds features to analyses.
     #'
@@ -4720,8 +4649,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
-    ### _____ add_group_to_features -----
-
     #' @description
     #' Adds a group columns from correspondence analysis to the features
     #' data.table. Note that existing features groups are replaced!
@@ -4786,8 +4713,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
-    ### _____ add_groups -----
-
     #' @description
     #' Adds feature groups. Note that existing features groups are
     #' replaced!
@@ -4796,11 +4721,14 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' MS analyses as obtained by the method `get_groups()`. Note that
     #' correspondence of features across MS analyses is performed with the
     #' method `group_features()`.
+    #' @param feature_groups A data.table with columns analysis, feature and group.
     #'
     #' @return Invisible.
     #'
-    add_groups = function(groups = NULL) {
-
+    add_groups = function(groups = NULL, feature_groups = NULL) {
+      
+      if (!is.null(feature_groups)) self$add_group_to_features(feature_groups)
+      
       if (is.list(groups) & !is.data.frame(groups)) {
         if ("ms1" %in% names(groups)) {
           groups$ms1 <- lapply(groups$ms1, as.data.table)
@@ -4860,8 +4788,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
-    ### _____ add_alignment -----
-
     #' @description
     #' Adds time alignment results.
     #'
@@ -4905,8 +4831,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
-
-    ### _____ add_modules_data -----
 
     #' @description
     #' Adds data from modules to the MassSpecData.
@@ -4952,8 +4876,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
     ## ___ load -----
 
-    ### _____ load_spectra -----
-
     #' @description
     #' Loads all spectra from all analyses.
     #'
@@ -4995,8 +4917,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
-
-    ### _____ load_chromatograms -----
 
     #' @description
     #' Loads all chromatograms from all analyses.
@@ -5044,8 +4964,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
-
-    ### _____ load_features_eic -----
 
     #' @description
     #' Loads features EICs in each analyses.
@@ -5117,8 +5035,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       invisible(self)
     },
-
-    ### _____ load_features_ms1 -----
 
     #' @description
     #' Loads and average MS1 spectra from features in the analyses.
@@ -5247,8 +5163,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
-    ### _____ load_features_ms2 -----
-
     #' @description
     #' Loads and average MS2 spectra from features in the analyses.
     #'
@@ -5376,8 +5290,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
-
-    ### _____ load_groups_ms1 -----
 
     #' @description
     #' Loads and average MS1 spectra from feature groups. If MS1
@@ -5509,8 +5421,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
       invisible(self)
     },
-
-    ### _____ load_groups_ms2 -----
 
     #' @description
     #' Loads and average MS2 spectra from feature groups. If MS2
@@ -5738,7 +5648,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         cat("Removed all processing settings! \n")
 
       } else {
-        all_calls <- names(private$.settings)
+        all_calls <- vapply(private$.settings, function(x) x$call, NA_character_)
 
         if (is.numeric(call)) {
           to_remove <- call
@@ -6193,6 +6103,19 @@ MassSpecData <- R6::R6Class("MassSpecData",
         if (length(keepAnalyses) > 0) {
           newAnalyses <- self$get_analyses(keepAnalyses)
           newAlignment <- self$get_alignment()[keepAnalyses]
+          
+          if (self$has_groups()) {
+            newFeatures <- lapply(newAnalyses, function(x) x$features)
+            names(newFeatures) <- names(newAnalyses)
+            newFeatures <- rbindlist(newFeatures, idcol = "analysis")
+            newFeatureGroups <- newFeatures[, c("analysis", "feature", "group"), with = FALSE]
+            newFeatureGroups <- newFeatureGroups[!is.na(newFeatureGroups$group), ]
+            newGroups <- rcpp_ms_groups_make_dataframe(newFeatures, names(newAnalyses), FALSE, FALSE)
+            newAnalyses <- lapply(newAnalyses, function(x) {
+              x$features[["group"]] <- NULL
+              x
+            })
+          }
 
           new_ms <- suppressMessages(MassSpecData$new(
             files = NULL,
@@ -6202,11 +6125,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
             groups = NULL,
             alignment = newAlignment
           ))
-
+          
           if (self$has_groups()) {
-            newFeatures <- new_ms$get_features()
-            newGroups <- rcpp_ms_groups_make_dataframe(newFeatures, new_ms$get_analysis_names(), FALSE, FALSE)
-            suppressMessages(new_ms$add_groups(newGroups))
+            suppressMessages(new_ms$add_groups(newGroups, newFeatureGroups))
           }
 
           message("\U2713 Subset with ", new_ms$get_number_analyses(), " analyses created!")
@@ -6450,8 +6371,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
     has_settings = function(call = NULL) {
       if (is.null(call)) {
         length(private$.settings) > 0
+      } else if (length(private$.settings) > 0) {
+        call %in% vapply(private$.settings, function(x) x$call, NA_character_)
       } else {
-        length(private$.settings[[call]]) > 0
+        FALSE
       }
     },
 
@@ -6552,8 +6475,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
     ## ___ plot -----
 
-    ### _____ plot_spectra -----
-
     #' @description
     #' Plots spectra for given MS analyses.
     #'
@@ -6561,6 +6482,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' `polarities`, `levels`, `targets` or `replicates`.
     #' @param xVal Character length one. Possible values are "mz", "rt" or "drift".
     #' @param yVal Character length one. Possible values are "mz", "rt" or "drift".
+    #' @param zLab A string with the title for the z axis.
     #'
     #'
     #'
@@ -6584,7 +6506,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
                             legendNames = NULL,
                             colorBy = "analyses",
                             xVal = "rt",
-                            yVal = "mz") {
+                            yVal = "mz",
+                            xLab = NULL,
+                            yLab = NULL,
+                            zLab = NULL) {
 
       spec <- self$get_spectra(
         analyses, levels,
@@ -6614,7 +6539,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         spec$replicate <- self$get_replicate_names()[spec$analysis]
       }
 
-      .plot_spectra_interactive(spec, colorBy, legendNames, xVal, yVal)
+      .plot_spectra_interactive(spec, colorBy, legendNames, xVal, yVal, xLab, yLab, zLab)
     },
     
     #' @description
@@ -6632,7 +6557,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                                   cex = 0.6,
                                   interactive = TRUE) {
       
-      chromatograms <- self$get_chromatograms()
+      chromatograms <- self$get_chromatograms(analyses)
       
       if (nrow(chromatograms) == 0) {
         message("\U2717 Chromatograms not found for the analyses!")
@@ -6660,8 +6585,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         .plot_chromatograms_interactive(chromatograms, legendNames, colorBy, title, showLegend)
       }
     },
-
-    ### _____ plot_xic -----
 
     #' @description
     #' Plots extract ion chromatograms (EIC) and \emph{m/z} vs
@@ -6730,8 +6653,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       )
     },
 
-    ### _____ plot_eic -----
-
     #' @description
     #' Plots extract ion chromatograms (EIC) from the analyses based on targets.
     #'
@@ -6773,8 +6694,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         .plot_eic_interactive(eic, legendNames, colorBy, title, showLegend)
       }
     },
-
-    ### _____ plot_tic -----
 
     #' @description
     #' Plots the total ion chromatogram (TIC) of the analyses.
@@ -6834,8 +6753,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    ### _____ plot_bpc -----
-
     #' @description
     #' Plots the base peak chromatogram (BPC) of the analyses.
     #'
@@ -6894,8 +6811,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    ### _____ plot_ms2 -----
-
     #' @description
     #' Plots MS2 spectra from the analyses based on targets.
     #'
@@ -6942,10 +6857,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    ### _____ plot_ms1 -----
-
     #' @description
     #' Plots MS1 spectra from the analyses based on targets.
+    #' 
+    #' @param showText X.
     #'
     #' @return A plot.
     #'
@@ -6966,6 +6881,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                         legendNames = NULL,
                         title = NULL,
                         colorBy = "targets",
+                        showText = TRUE,
                         interactive = TRUE) {
 
       ms1 <- self$get_ms1(
@@ -6985,11 +6901,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (!interactive) {
         .plot_ms1_static(ms1, legendNames, colorBy, title)
       } else {
-        .plot_ms1_interactive(ms1, legendNames, colorBy, title)
+        .plot_ms1_interactive(ms1, legendNames, colorBy, title, showText)
       }
     },
-
-    ### _____ plot_features -----
 
     #' @description
     #' Plots features from analyses.
@@ -7058,8 +6972,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    ### ___ map_features -----
-
     #' @description
     #' Plots a map of the retention time vs \emph{m/z} of features from analyses.
     #'
@@ -7103,8 +7015,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         .map_features_interactive(fts, colorBy, legendNames, xlim, ylim, title)
       }
     },
-
-    ### _____ plot_features_ms1 -----
 
     #' @description
     #' Plots MS1 spectra from features in the analyses.
@@ -7156,8 +7066,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    ### _____ plot_features_ms2 -----
-
     #' @description
     #' Plots MS2 spectra from features in the analyses.
     #'
@@ -7205,8 +7113,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         .plot_ms2_interactive(ms2, legendNames, colorBy, title)
       }
     },
-
-    ### _____ plot_alignment -----
 
     #' @description
     #' Plots the results from the retention time alignment across analyses.
@@ -7280,8 +7186,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       plot
     },
 
-    ### _____ plot_groups -----
-
     #' @description
     #' Plots feature groups EIC.
     #'
@@ -7334,8 +7238,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         interactive = interactive
       )
     },
-
-    ### _____ plot_groups_ms1 -----
 
     #' @description
     #' Plots MS1 spectra from feature groups in the analyses.
@@ -7408,8 +7310,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    ### _____ plot_groups_ms2 -----
-
     #' @description
     #' Plots MS1 spectra from feature groups in the analyses.
     #'
@@ -7479,8 +7379,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         .plot_ms2_interactive(ms2, legendNames, colorBy, title)
       }
     },
-
-    ### _____ plot_groups_overview -----
 
     #' @description
     #' Method to give an overview of the EIC, alignment and intensity variance
@@ -7552,8 +7450,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       .plot_groups_overview_aux(fts, eic, heights, analyses)
     },
 
-    ### _____ plot_internal_standards_qc -----
-
     #' @description
     #' Plots the quality control assessment of internal standards.
     #'
@@ -7569,8 +7465,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         .plot_internal_standards_qc_interactive(istd, self$get_analysis_names())
       }
     },
-
-    ### ___ map_components -----
 
     #' @description
     #' Maps components (i.e., isotope clusters and adducts) in the analyses.
@@ -9337,6 +9231,7 @@ import_MassSpecData <- function(file) {
 
 #' Function to combine MassSpecData class objects.
 #'
+#' @param combineFeatureLists Logical, set to TRUE to combine feature lists.
 #' @param ... *MassSpecData* class object.
 #'
 #' @return A *MassSpecData* class object.

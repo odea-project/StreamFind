@@ -1,16 +1,16 @@
-#' @title .s3_ms_suspect_screening.Settings_generate_formulas_patRoon
+#' @title .s3_ms_generate_formulas.Settings_generate_formulas_patRoon
 #'
 #' @description Generate formulas for feature groups.
 #'
 #' @noRd
 #'
-.s3_ms_suspect_screening.Settings_generate_formulas_patRoon <- function(settings, self) {
+.s3_ms_generate_formulas.Settings_generate_formulas_patRoon <- function(settings, self) {
   
   if (!validate(settings)) return(FALSE)
   
   parameters <- settings$parameters
   
-  fg <- ms$as_patRoon_featureGroups(filtered = parameters$filtered)
+  fg <- self$as_patRoon_featureGroups(filtered = parameters$filtered)
   
   if (is.null(fg)) return(FALSE)
   

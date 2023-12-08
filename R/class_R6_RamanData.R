@@ -6,14 +6,20 @@
 #'
 #' @template arg-headers
 #' @template arg-ms-analyses
-#' @template arg-raman-shift
+#' @template arg-raman-target
 #' @template arg-ms-title
+#' @template arg-runParallel
+#' @template arg-ms-cex
+#' @template arg-ms-showLegend
+#' @template arg-ms-labs
+#' @template arg-ms-minIntensity
+#' @template arg-ms-interactive
 #'
 #' @export
 #'
 RamanData <- R6::R6Class("RamanData",
 
-  # private fields -----
+  # _ private fields -----
   private = list(
 
     ## .headers -----
@@ -70,10 +76,10 @@ RamanData <- R6::R6Class("RamanData",
     }
   ),
 
-  # public fields/methods -----
+  # _ public fields/methods -----
   public = list(
 
-    ## system -----
+    ## ___ system -----
     #' @description
     #' Creates an R6 RamanData class object. When `headers` are not given
     #' (i.e., `NULL`), a default Headers S3 class object is generated with name
@@ -82,7 +88,7 @@ RamanData <- R6::R6Class("RamanData",
     #'
     #' @param files Full file paths of Raman analyses.
     #'
-    initialize = function(files = NULL, headers = NULL) {
+    initialize = function(files = NULL, headers = NULL, runParallel = FALSE) {
 
       if (!is.null(headers)) suppressMessages(self$add_headers(headers))
 
@@ -95,45 +101,70 @@ RamanData <- R6::R6Class("RamanData",
       }
 
       if (!is.null(files)) {
-
-        analyses <- lapply(files, function(x) {
+        
+        # TODO add validation for Raman asc files
+        
+        cached_analyses <- FALSE
+        
+        analyses <- NULL
+        
+        if (.caches_data()) {
+          hash <- patRoon::makeHash(files)
           
-          text_data <- readLines(x)
+          analyses <- patRoon::loadCacheData("parsed_raman_analyses", hash)
           
-          metadata_list <- list()
-          
-          data_values <- data.frame()
-          
-          for (line in text_data) {
-            # Extract metadata
-            if (grepl(":", line)) {
-              metadata <- strsplit(line, ":\\s+")[[1]]
-              metadata_list[[metadata[1]]] <- metadata[2]
-              
-            } else if (grepl("^-?\\d+\\.\\d+;", line)) {
-              values <- strsplit(line, ";")[[1]]
-              data_values <- rbind(data_values, as.numeric(values))
-            }
+          if (!is.null(analyses)) {
+            message("\U2139 Raman analyses loaded from cache!")
+            cached_analyses <- TRUE
           }
           
-          colnames(data_values) <- c("shift", "intensity")
-
-          f_name <- basename(x)
-          f_ext <- file_ext(f_name)
-          f_name <- sub(paste0(".", f_ext), "", f_name)
-
-          list(
-            "name" = f_name,
-            "replicate" = f_name,
-            "blank" = NA_character_,
-            "file" = x,
-            "metadata" = metadata_list,
-            "spectrum" = data_values
-          )
-        })
-
-        names(analyses) <- vapply(analyses, function(x) x$name, "")
-
+        } else {
+          hash <- NULL
+          analyses <- NULL
+        }
+        
+        if (is.null(analyses)) {
+          message("\U2699 Parsing ", length(files),  " Raman file/s..." ,appendLF = FALSE)
+          
+          if (!is.logical(runParallel)) runParallel <- FALSE
+          
+          if (runParallel & length(files) > 1) {
+            workers <- parallel::detectCores() - 1
+            if (length(files) < workers) workers <- length(files)
+            par_type <- "PSOCK"
+            if (parallelly::supportsMulticore()) par_type <- "FORK"
+            cl <- parallel::makeCluster(workers, type = par_type)
+            doParallel::registerDoParallel(cl)
+          } else {
+            registerDoSEQ()
+          }
+          
+          x <- NULL
+          
+          vars <- c("rcpp_parse_asc_file")
+          
+          analyses <- foreach(
+            x = files,
+            .packages = "StreamFind",
+            .export = vars
+            ) %dopar% { rcpp_parse_asc_file(x) }
+          
+          names(analyses) <- vapply(analyses, function(x) x$name, "")
+          
+          if (runParallel & length(files) > 1 & !cached_analyses) {
+            parallel::stopCluster(cl)
+          }
+          
+          message(" Done!")
+          
+          if (!cached_analyses & !is.null(hash)) {
+            if (!is.null(analyses)) {
+              message("\U1f5ab Parsed Raman analyses cached!")
+              patRoon::saveCacheData("parsed_raman_analyses", analyses, hash)
+            }
+          }
+        }
+        
         private$.analyses <- analyses
       }
 
@@ -170,7 +201,7 @@ RamanData <- R6::R6Class("RamanData",
       cat("\n")
     },
 
-    ## get -----
+    ## ___ get -----
     #' @description
     #' Gets the headers.
     #'
@@ -193,8 +224,9 @@ RamanData <- R6::R6Class("RamanData",
     #' @return The list of analyses or the analyses as defined by `analyses`
     #' argument.
     #'
-    get_analyses = function() {
-      private$.analyses
+    get_analyses = function(analyses = NULL) {
+      analyses <- private$.check_analyses_argument(analyses)
+      private$.analyses[analyses]
     },
 
     #' @description
@@ -261,17 +293,31 @@ RamanData <- R6::R6Class("RamanData",
     #'
     #' @return A data.frame.
     #'
-    get_spectra = function(analyses = NULL, shift = NULL) {
+    get_spectra = function(analyses = NULL,
+                           rt = NULL,
+                           shift = NULL,
+                           minIntensity = 0) {
 
       analyses <- private$.check_analyses_argument(analyses)
+      
       if (is.null(analyses)) return(data.frame())
 
-      spec <- lapply(private$.analyses[analyses], function(x) x$spectrum)
+      spec <- lapply(private$.analyses[analyses], function(x) x$spectra)
+      
       spec <- rbindlist(spec, idcol = "analysis", fill = TRUE)
+      
+      spec <- spec[spec$intensity >= 0, ]
+      
+      if (!is.null(rt) && length(rt) == 2 && "rt" %in% colnames(spec)) {
+        rt_range <- sort(rt)
+        sel <- spec$rt >= rt_range[1] & spec$rt <= rt_range[2]
+        spec <- spec[sel, ]
+      }
 
       if (!is.null(shift) && length(shift) == 2) {
         shift_range <- sort(shift)
-        spec <- spec[shift >= shift_range[1] & shift <= shift_range[2], ]
+        sel <- spec$shift >= shift_range[1] & spec$shift <= shift_range[2]
+        spec <- spec[sel, ]
       }
 
       spec
@@ -302,7 +348,7 @@ RamanData <- R6::R6Class("RamanData",
       }
     },
 
-    ## add -----
+    ## ___ add -----
     #' @description
     #' Adds headers. If an argument or element "name" is given, it must
     #' be type character. If an argument or element path is given, it must be
@@ -340,6 +386,90 @@ RamanData <- R6::R6Class("RamanData",
 
       } else {
         warning("Invalid headers content or structure! Not added.")
+      }
+      invisible(self)
+    },
+    
+    #' @description
+    #' Adds analyses.
+    #'
+    #' @param analyses A list.
+    #'
+    #' @return Invisible.
+    #'
+    add_analyses = function(analyses = NULL) {
+      
+      if (is.list(analyses)) {
+        if (all(c("name", "file") %in% names(analyses))) {
+          # analyses <- as.MassSpecAnalysis(analyses)
+          
+          if (TRUE) {
+            ana_name <- analyses$name
+            analyses <- list(analyses)
+            names(analyses) <- ana_name
+            
+          } else {
+            warning("Not done, check the conformity of the analyses list!")
+            analyses <- NULL
+          }
+          
+        } else {
+          # analyses <- lapply(analyses, as.MassSpecAnalysis)
+          
+          if (TRUE) {
+            ana_names <- vapply(analyses, function(x) x$name, "")
+            names(analyses) <- ana_names
+            
+          } else {
+            warning("Not done, check the conformity of the analyses list!")
+            analyses <- NULL
+          }
+        }
+        
+      } else {
+        warning("Not done, check the conformity of the analyses list!")
+        analyses <- NULL
+      }
+      
+      if (!is.null(analyses)) {
+        old_analyses <- self$get_analyses()
+        old_names <- NULL
+        
+        if (length(old_analyses) > 0) {
+          old_names <- vapply(old_analyses, function(x) x$name, "")
+        }
+        
+        new_names <- c(old_names, vapply(analyses, function(x) x$name, ""))
+        
+        if (!any(duplicated(new_names))) {
+          new_analyses <- c(old_analyses, analyses)
+          names(new_analyses) <- new_names
+          new_analyses <- new_analyses[order(names(new_analyses))]
+          old_size <- length(private$.analyses)
+          
+          private$.analyses <- new_analyses
+          
+          # lapply(analyses, function(x) {
+          #   private$.register(
+          #     "added",
+          #     class(x),
+          #     x$name,
+          #     "StreamFind",
+          #     x$version,
+          #     x$file
+          #   )
+          # })
+          
+          message(
+            paste0(
+              "\U2713 ",
+              length(new_analyses) - old_size,
+              " analyses added!"
+            )
+          )
+        } else {
+          warning("Duplicated analysis names not allowed! Not done.")
+        }
       }
       invisible(self)
     },
@@ -402,83 +532,107 @@ RamanData <- R6::R6Class("RamanData",
       invisible(self)
     },
     
-    ## plot -----
+    ## ___ remove -----
+    
+    #' @description
+    #' Removes analyses.
+    #'
+    #' @return Invisible.
+    #'
+    remove_analyses = function(analyses = NULL) {
+      
+      if (!is.null(analyses)) {
+        analyses <- private$.check_analyses_argument(analyses)
+        allNames <- self$get_analysis_names()
+        keepAnalyses <- unname(allNames[!(allNames %in% analyses)])
+        removeAnalyses <- unname(allNames[allNames %in% analyses])
+        analysesLeft <- self$get_analyses(keepAnalyses)
+        
+        if (length(removeAnalyses) > 0) {
+          private$.analyses <- analysesLeft
+          message("\U2713 Removed analyses:\n", paste(removeAnalyses, collapse = "\n"))
+          
+        } else {
+          message("\U2717 There are no analyses to remove!")
+        }
+        
+      } else {
+        private$.analyses <- NULL
+        message("\U2713 Removed all analyses!")
+      }
+      invisible(self)
+    },
+    
+    ## ___ processing -----
+    
+    #' @description
+    #' Merges spectra for given RAMAN analyses from the same chromatographic 
+    #' separation when using LC-Raman coupling.
+    #'
+    #' @param preCut The number of pre Raman scans to exclude when merging.
+    #'
+    #' @return Invisible.
+    #' 
+    merge_replicates = function(preCut = 2) {
+      processed <- .merge_replicate_files(self, preCut)
+      if (!processed) warning("Raman files were not merged!")
+      invisible(self)
+    },
+    
+    ## ___ plot -----
     
     #' @description
     #' Plots spectra for given RAMAN analyses.
     #'
     #' @param colorBy A string of length 1. One of `analyses` (the default) or 
     #' `replicates`.
+    #' @param xVal Character of length one. Possible are "rt" or "shift" for 
+    #' using the retention time or the shift as x axis, respectively.
     #'
-    #' @return A 3D interactive plot.
+    #' @return A plot.
     #' 
     plot_spectra = function(analyses = NULL,
+                            rt = NULL,
                             shift = NULL,
+                            minIntensity = 0,
+                            xVal = "shift",
+                            xLab = NULL,
+                            yLab = NULL,
+                            title = NULL,
+                            cex = 0.6,
+                            showLegend = TRUE,
                             colorBy = "analyses",
-                            title = NULL) {
+                            interactive = FALSE) {
       
-      spectra <- self$get_spectra(analyses, shift)
+      spectra <- self$get_spectra(analyses, rt, shift, minIntensity)
+      
+      if ("rt" %in% xVal) {
+        spectra <- spectra[, .(shift = unique(rt), intensity = sum(intensity)), by = c("analysis", "rt")]
+        if (is.null(xLab)) xLab = "Retention time / seconds"
+        
+      } else if ("shift" %in% xVal) {
+        spectra <- spectra[, .(shift = unique(shift), intensity = mean(intensity)), by = c("analysis", "shift")]
+        if (is.null(xLab)) xLab = expression('Shift / cm' ^ -1)
+      }
+      
+      spectra <- unique(spectra)
+      
+      if (is.null(yLab)) yLab = "Intensity / a.u."
+      
+      spectra$intensity <- spectra$intensity - min(spectra$intensity)
+      
+      if ("replicates" %in% colorBy) {
+        spec$replicate <- self$get_replicate_names()[spec$analysis]
+      }
       
       spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames = NULL)
       
-      leg <- unique(spectra$var)
-      cl <- .get_colors(leg)
-      
-      spectra$loop <- paste0(spectra$analysis, spectra$id, spectra$var)
-      loop_key <- unique(spectra$loop)
-      
-      
-      title <- list(
-        text = title, x = 0.13, y = 0.98,
-        font = list(size = 12, color = "black")
-      )
-      
-      xaxis <- list(
-        linecolor = toRGB("black"),
-        linewidth = 2, title = "Raman shift / cm<sup>-1</sup>",
-        titlefont = list(size = 12, color = "black")
-      )
-      
-      yaxis <- list(
-        linecolor = toRGB("black"),
-        linewidth = 2, title = "Intensity / a.u.",
-        titlefont = list(size = 12, color = "black")
-      )
-      
-      plot <- plot_ly()
-      
-      
-      showL <- rep(TRUE, length(leg))
-      names(showL) <- leg
-      
-      for (t in loop_key) {
-        select_vector <- spectra$loop %in% t
-        lt <- unique(spectra$var[select_vector])
-        x <- spectra$rt[select_vector]
-        y <- spectra$intensity[select_vector]
+      if (!interactive) {
+        return(.plot_raman_spectra_static(spectra, xLab, yLab, title, cex, showLegend))
         
-        plot <- plot %>% add_trace(
-          x = x,
-          y = y,
-          type = "scatter", mode = "lines+markers",
-          line = list(width = 0.5, color = unname(cl[lt])),
-          marker = list(size = 2, color = unname(cl[lt])),
-          name = lt,
-          legendgroup = lt,
-          showlegend = showL[lt],
-          hovertemplate = paste("<br>shift: %{x}<br>", "intensity: %{y}")
-        )
-        if (length(y) >= 1) showL[lt] <- FALSE
+      } else {
+        return(.plot_raman_spectra_interactive(spectra, xLab, yLab, title, colorBy))
       }
-      
-      plot <- plot %>% plotly::layout(
-        legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
-        xaxis = xaxis,
-        yaxis = yaxis,
-        title = title
-      )
-      
-      plot
-    }
+    }  
   )
 )

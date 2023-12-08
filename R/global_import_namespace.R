@@ -29,7 +29,7 @@
 #'
 #' @importFrom jsonlite toJSON fromJSON
 #'
-#' @importFrom stats sd cor
+#' @importFrom stats sd cor coef nls
 #'
 #' @importFrom graphics axis legend lines points polygon rect text
 #'

@@ -22,8 +22,11 @@ inspecting and storing RAMAN data.
 \item \href{#method-RamanData-get_spectra}{\code{RamanData$get_spectra()}}
 \item \href{#method-RamanData-get_overview}{\code{RamanData$get_overview()}}
 \item \href{#method-RamanData-add_headers}{\code{RamanData$add_headers()}}
+\item \href{#method-RamanData-add_analyses}{\code{RamanData$add_analyses()}}
 \item \href{#method-RamanData-add_replicate_names}{\code{RamanData$add_replicate_names()}}
 \item \href{#method-RamanData-add_blank_names}{\code{RamanData$add_blank_names()}}
+\item \href{#method-RamanData-remove_analyses}{\code{RamanData$remove_analyses()}}
+\item \href{#method-RamanData-merge_replicates}{\code{RamanData$merge_replicates()}}
 \item \href{#method-RamanData-plot_spectra}{\code{RamanData$plot_spectra()}}
 \item \href{#method-RamanData-clone}{\code{RamanData$clone()}}
 }
@@ -37,7 +40,7 @@ Creates an R6 RamanData class object. When \code{headers} are not given
 as \code{NA_character}, path as \code{get_wd()} and date as \code{Sys.time()}.
 See \code{?Headers} for more information.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{RamanData$new(files = NULL, headers = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{RamanData$new(files = NULL, headers = NULL, runParallel = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -51,6 +54,10 @@ except for name (must be type character length 1), author (must be type
 character length 1), path (must be type character length 1) and date (must
 be class POSIXct or class POSIXt length 1). See more information in
 \code{?ProjectHeaders}.}
+
+\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -95,9 +102,17 @@ The headers list or the header elements as defined by \code{value}.
 \subsection{Method \code{get_analyses()}}{
 Gets analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{RamanData$get_analyses()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{RamanData$get_analyses(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 The list of analyses or the analyses as defined by \code{analyses}
 argument.
@@ -204,7 +219,12 @@ A character vector.
 \subsection{Method \code{get_spectra()}}{
 Gets spectra from analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{RamanData$get_spectra(analyses = NULL, shift = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{RamanData$get_spectra(
+  analyses = NULL,
+  rt = NULL,
+  shift = NULL,
+  minIntensity = 0
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -213,8 +233,13 @@ Gets spectra from analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
+\item{\code{rt}}{Numeric of length two with the minimum and maximum retention time,
+in seconds.}
+
 \item{\code{shift}}{Numeric of length two with the minimum and maximum shift,
 in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
+
+\item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 }
 \if{html}{\out{</div>}}
 }
@@ -267,6 +292,26 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanData-add_analyses"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanData-add_analyses}{}}}
+\subsection{Method \code{add_analyses()}}{
+Adds analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanData$add_analyses(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A list.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-RamanData-add_replicate_names"></a>}}
 \if{latex}{\out{\hypertarget{method-RamanData-add_replicate_names}{}}}
 \subsection{Method \code{add_replicate_names()}}{
@@ -309,6 +354,48 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanData-remove_analyses"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanData-remove_analyses}{}}}
+\subsection{Method \code{remove_analyses()}}{
+Removes analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanData$remove_analyses(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanData-merge_replicates"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanData-merge_replicates}{}}}
+\subsection{Method \code{merge_replicates()}}{
+Merges spectra for given RAMAN analyses from the same chromatographic
+separation when using LC-Raman coupling.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanData$merge_replicates(preCut = 2)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{preCut}}{The number of pre Raman scans to exclude when merging.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-RamanData-plot_spectra"></a>}}
 \if{latex}{\out{\hypertarget{method-RamanData-plot_spectra}{}}}
 \subsection{Method \code{plot_spectra()}}{
@@ -316,9 +403,17 @@ Plots spectra for given RAMAN analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{RamanData$plot_spectra(
   analyses = NULL,
+  rt = NULL,
   shift = NULL,
+  minIntensity = 0,
+  xVal = "shift",
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  cex = 0.6,
+  showLegend = TRUE,
   colorBy = "analyses",
-  title = NULL
+  interactive = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -328,18 +423,38 @@ Plots spectra for given RAMAN analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
+\item{\code{rt}}{Numeric of length two with the minimum and maximum retention time,
+in seconds.}
+
 \item{\code{shift}}{Numeric of length two with the minimum and maximum shift,
 in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
+
+\item{\code{minIntensity}}{Numeric value with the minimum intensity.}
+
+\item{\code{xVal}}{Character of length one. Possible are "rt" or "shift" for
+using the retention time or the shift as x axis, respectively.}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{cex}}{A length one numeric value defining the scale of the legend for
+non interactive plotting.}
+
+\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
 
 \item{\code{colorBy}}{A string of length 1. One of \code{analyses} (the default) or
 \code{replicates}.}
 
-\item{\code{title}}{A string with the title.}
+\item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
+using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A 3D interactive plot.
+A plot.
 }
 }
 \if{html}{\out{<hr>}}

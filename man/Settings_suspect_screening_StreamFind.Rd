@@ -22,6 +22,8 @@ indicating the name and neutral monoisotopic mass of the suspect targets.}
 
 \item{sec}{Numeric of length one with the time deviation, in seconds.}
 
+\item{filtered}{Logical. When \code{TRUE}, filtered features/groups are considered.}
+
 \item{x}{A Settings_suspect_screening_StreamFind S3 class object.}
 }
 \value{

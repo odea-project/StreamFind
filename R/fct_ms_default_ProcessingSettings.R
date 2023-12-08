@@ -1684,6 +1684,7 @@ validate.Settings_annotate_features_StreamFind <- function(x) {
 #' indicating the name and neutral monoisotopic mass of the suspect targets.
 #' @template arg-ms-ppm
 #' @template arg-ms-sec
+#' @template arg-ms-filtered
 #'
 #' @return A ProcessingSettings S3 class object with subclass
 #' Settings_suspect_screening_StreamFind.

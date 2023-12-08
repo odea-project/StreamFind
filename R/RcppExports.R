@@ -53,3 +53,11 @@ rcpp_parse_ms_analysis_chromatograms <- function(analysis, index = NA_integer_) 
     .Call(`_StreamFind_rcpp_parse_ms_analysis_chromatograms`, analysis, index)
 }
 
+rcpp_parse_asc_file <- function(file_path) {
+    .Call(`_StreamFind_rcpp_parse_asc_file`, file_path)
+}
+
+rcpp_write_asc_file <- function(file, metadata_list, spectra) {
+    invisible(.Call(`_StreamFind_rcpp_write_asc_file`, file, metadata_list, spectra))
+}
+

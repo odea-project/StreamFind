@@ -150,7 +150,10 @@
                                       colorBy = "analyses",
                                       legendNames = NULL,
                                       xVal = "rt",
-                                      yVal = "mz") {
+                                      yVal = "mz",
+                                      xLab = NULL,
+                                      yLab = NULL,
+                                      zLab = NULL) {
 
   checkmate::assert_choice(xVal, c("rt", "mz", "drift"))
 
@@ -160,17 +163,23 @@
     stop("Duplicated x and y values are not possible!")
   }
 
-  xLab <- switch(xVal,
+  xlab <- switch(xVal,
     "mz" = "<i>m/z</i> / Da",
     "rt" = "Retention time / seconds",
     "drift" = "Drift time / milliseconds"
   )
 
-  yLab <- switch(yVal,
+  ylab <- switch(yVal,
     "mz" = "<i>m/z</i> / Da",
     "rt" = "Retention time / seconds",
     "drift" = "Drift time / milliseconds"
   )
+  
+  zlab <- "Intensity / counts"
+  
+  if (!is.null(xLab)) xlab <- xLab
+  if (!is.null(yLab)) ylab <- yLab
+  if (!is.null(zLab)) zlab <- zLab
 
   spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames)
 
@@ -202,9 +211,9 @@
     add_lines(color = ~var, colors = colors_var)
 
   fig <- fig %>% plotly::layout(scene = list(
-    xaxis = list(title = xLab),
-    yaxis = list(title = yLab),
-    zaxis = list(title = "Intensity / counts")
+    xaxis = list(title = xlab),
+    yaxis = list(title = ylab),
+    zaxis = list(title = zlab)
   ))
 
   fig
@@ -906,7 +915,8 @@
 .plot_ms1_interactive <- function(ms1 = NULL,
                                  legendNames = NULL,
                                  colorBy = "targets",
-                                 title = NULL) {
+                                 title = NULL,
+                                 showText = TRUE) {
 
   ms1 <- .make_colorBy_varkey(ms1, colorBy, legendNames)
 
@@ -919,7 +929,11 @@
   for (v in leg) {
     data <- ms1[ms1$var == v, ]
 
-    mz_text <- paste0(round(data$mz, digits = 4), "  ")
+    if (showText) {
+      mz_text <- paste0(round(data$mz, digits = 4), "  ")
+    } else {
+      mz_text <- " "
+    }
 
     plot <- plot %>% add_trace(
       x = data$mz,

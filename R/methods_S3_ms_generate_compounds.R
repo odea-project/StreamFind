@@ -10,7 +10,7 @@
   
   parameters <- settings$parameters
   
-  fg <- ms$as_patRoon_featureGroups(filtered = parameters$filtered)
+  fg <- self$as_patRoon_featureGroups(filtered = parameters$filtered)
   
   if (is.null(fg)) return(FALSE)
   

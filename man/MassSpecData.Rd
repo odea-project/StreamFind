@@ -2553,7 +2553,7 @@ Invisible.
 Adds feature groups. Note that existing features groups are
 replaced!
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$add_groups(groups = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$add_groups(groups = NULL, feature_groups = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -2563,6 +2563,8 @@ replaced!
 MS analyses as obtained by the method \code{get_groups()}. Note that
 correspondence of features across MS analyses is performed with the
 method \code{group_features()}.}
+
+\item{\code{feature_groups}}{A data.table with columns analysis, feature and group.}
 }
 \if{html}{\out{</div>}}
 }
@@ -3340,7 +3342,10 @@ Plots spectra for given MS analyses.
   legendNames = NULL,
   colorBy = "analyses",
   xVal = "rt",
-  yVal = "mz"
+  yVal = "mz",
+  xLab = NULL,
+  yLab = NULL,
+  zLab = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -3424,6 +3429,12 @@ overhead.}
 \item{\code{xVal}}{Character length one. Possible values are "mz", "rt" or "drift".}
 
 \item{\code{yVal}}{Character length one. Possible values are "mz", "rt" or "drift".}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
+\item{\code{zLab}}{A string with the title for the z axis.}
 }
 \if{html}{\out{</div>}}
 }
@@ -3951,6 +3962,7 @@ Plots MS1 spectra from the analyses based on targets.
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
+  showText = TRUE,
   interactive = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -4028,6 +4040,8 @@ overhead.}
 
 \item{\code{colorBy}}{A string of length 1. One of \code{analyses}, \code{targets} (the
 default) or \code{replicates}.}
+
+\item{\code{showText}}{X.}
 
 \item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
 using \pkg{plotly}.}

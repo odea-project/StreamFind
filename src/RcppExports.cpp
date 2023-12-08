@@ -175,6 +175,29 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rcpp_parse_asc_file
+Rcpp::List rcpp_parse_asc_file(std::string file_path);
+RcppExport SEXP _StreamFind_rcpp_parse_asc_file(SEXP file_pathSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type file_path(file_pathSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_parse_asc_file(file_path));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_write_asc_file
+void rcpp_write_asc_file(const std::string& file, Rcpp::List metadata_list, Rcpp::NumericMatrix spectra);
+RcppExport SEXP _StreamFind_rcpp_write_asc_file(SEXP fileSEXP, SEXP metadata_listSEXP, SEXP spectraSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const std::string& >::type file(fileSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type metadata_list(metadata_listSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type spectra(spectraSEXP);
+    rcpp_write_asc_file(file, metadata_list, spectra);
+    return R_NilValue;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_dev_parse_xml", (DL_FUNC) &_StreamFind_rcpp_dev_parse_xml, 1},
@@ -190,6 +213,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_parse_ms_analysis", (DL_FUNC) &_StreamFind_rcpp_parse_ms_analysis, 1},
     {"_StreamFind_rcpp_parse_ms_analysis_spectra", (DL_FUNC) &_StreamFind_rcpp_parse_ms_analysis_spectra, 2},
     {"_StreamFind_rcpp_parse_ms_analysis_chromatograms", (DL_FUNC) &_StreamFind_rcpp_parse_ms_analysis_chromatograms, 2},
+    {"_StreamFind_rcpp_parse_asc_file", (DL_FUNC) &_StreamFind_rcpp_parse_asc_file, 1},
+    {"_StreamFind_rcpp_write_asc_file", (DL_FUNC) &_StreamFind_rcpp_write_asc_file, 3},
     {NULL, NULL, 0}
 };
 

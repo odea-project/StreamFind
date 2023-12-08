@@ -1,23 +1,14 @@
 #' @noRd
-#'
-#' @export
-#'
 validate <- function(x) {
   UseMethod("validate")
 }
 
 #' @noRd
-#'
-#' @export
-#'
 asJSON <- function(x) {
   UseMethod("asJSON")
 }
 
 #' @noRd
-#'
-#' @export
-#'
 export <- function(x, ...) {
   UseMethod("export")
 }

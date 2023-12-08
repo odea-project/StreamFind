@@ -18,9 +18,9 @@ Rcpp::List rcpp_centroid_spectra_qCentroids(Rcpp::DataFrame spectra) {
   
   std::vector<std::string> spectra_cols = spectra.names();
   
-  if (spectra.nrows() == 0 || spectra_cols.size() == 0) {
-    throw std::runtime_error("Spectra DataFrame is empty!");
-  }
+  Rcpp::List list_out;
+  
+  if (spectra.nrows() == 0 || spectra_cols.size() == 0) return list_out;
   
   std::vector<std::string> must_have_names = {"scan", "mz", "intensity"};
   
@@ -44,9 +44,9 @@ Rcpp::List rcpp_centroid_spectra_qCentroids(Rcpp::DataFrame spectra) {
   
   int number_spectra = all_scan.size();
 
-  Rcpp::Rcout << std::endl;
-  Rcpp::Rcout << "Analyses with " << number_spectra << " spectra!" << std::endl;
-  Rcpp::Rcout << std::endl;
+  // Rcpp::Rcout << std::endl;
+  // Rcpp::Rcout << "Analyses with " << number_spectra << " spectra!" << std::endl;
+  // Rcpp::Rcout << std::endl;
   
   q::Matrix xyData(number_spectra, 3);
   
@@ -65,8 +65,6 @@ Rcpp::List rcpp_centroid_spectra_qCentroids(Rcpp::DataFrame spectra) {
   model.addMultipleMeasurements(xyData);
   
   model.runRegression();
-
-  Rcpp::List list_out;
   
   list_out["scan"] = model.getPeakProperties(q::Peakproperties::SMPLID);
   list_out["mz"] = model.getPeakProperties(q::Peakproperties::POSITION);
