@@ -1390,7 +1390,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       cached_spectra <- FALSE
 
       has_spectra <- self$has_loaded_spectra(analyses)
-
+      
       if (.caches_data() & !all(has_spectra)) {
         hash <- patRoon::makeHash(
           analyses, levels, targets, allTraces,
@@ -1471,6 +1471,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
                 temp <- temp[x$spectra, on = .(scan)]
                 temp <- .trim_spectra_targets(temp, targets, preMZr, with_im)
               }
+            } else {
+              temp <- temp[x$spectra, on = .(scan)]
             }
 
             if (!with_im) temp[["drift"]] <- NULL
@@ -1599,10 +1601,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         names(spec_list) <- analyses
 
         spec <- rbindlist(spec_list, idcol = "analysis", fill = TRUE)
-        
-        if (runParallel & length(analyses) > 1 & !cached_spectra) {
-          parallel::stopCluster(cl)
-        }
 
         message(" Done!")
 

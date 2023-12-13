@@ -56,7 +56,14 @@
       .packages = "StreamFind",
       .export = vars
     ) %dopar% {
-      do.call("rcpp_centroid_spectra_qCentroids", list("spectra" = i))
+      do.call(
+        "rcpp_centroid_spectra_qCentroids", 
+        list(
+          "spectra" = i,
+          maxScale = parameters$maxScale,
+          mode = parameters$mode
+        )
+      )
     }
 
     names(centroided_spectra_list) <- self$get_analysis_names()

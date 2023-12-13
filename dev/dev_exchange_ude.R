@@ -13,17 +13,17 @@ db <- db[, db_cols, with = FALSE]
 
 # MassSpecData with one TOF and Orbitrap MS file
 ms <- MassSpecData$new(all_files[c(7, 31)])
-
 ms$load_spectra()
 
 ms2 <- ms$clone()
 
-qCentroids <- Settings_centroid_spectra_qCentroids(runParallel = FALSE)
+qCentroids <- Settings_centroid_spectra_qCentroids(mode = 2, runParallel = FALSE)
+
+ms2$centroid_spectra(qCentroids)
 
 # qBinning <- Settings_bin_spectra_qBinning()
 # qPeaks <- Settings_find_features_qPeaks()
 
-ms2$centroid_spectra(qCentroids)
 
 ms$plot_spectra(analyses = 1, mass = db[16], ppm = 150)
 
@@ -31,9 +31,6 @@ patRoon::clearCache("parsed_ms_spectra")
 patRoon::clearCache("parsed_ms_analyses")
 
 ms2$plot_spectra(analyses = 1, mass = db[16], ppm = 150)
-
-
-
 
 ms2$has_loaded_spectra()
 
@@ -47,7 +44,7 @@ tof_spectra <- tof_spectra[, c("scan", "rt", "mz", "intensity")]
 orb_spectra <- ms$get_spectra(2)
 orb_spectra <- orb_spectra[, c("scan", "rt", "mz", "intensity")]
 
-cent_spectra <- rcpp_centroid_spectra_qCentroids(tof_spectra)
+cent_spectra <- rcpp_centroid_spectra_qCentroids(tof_spectra, maxScale = 5, mode = 2)
 
 class(cent_spectra)
 

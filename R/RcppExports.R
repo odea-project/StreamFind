@@ -9,8 +9,8 @@ rcpp_ms_annotation_isotopes <- function(features, maxIsotopes = 5L, elements = a
     .Call(`_StreamFind_rcpp_ms_annotation_isotopes`, features, maxIsotopes, elements, mode, maxCharge, rtWindowAlignment, maxGaps, maxCarbons, maxHetero, maxHalogens, verbose)
 }
 
-rcpp_centroid_spectra_qCentroids <- function(spectra) {
-    .Call(`_StreamFind_rcpp_centroid_spectra_qCentroids`, spectra)
+rcpp_centroid_spectra_qCentroids <- function(spectra, maxScale = 5L, mode = 2L) {
+    .Call(`_StreamFind_rcpp_centroid_spectra_qCentroids`, spectra, maxScale, mode)
 }
 
 rcpp_ms_cluster_spectra <- function(spectra, mzClust = 0.005, presence = 0.8, verbose = FALSE) {

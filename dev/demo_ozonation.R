@@ -5,13 +5,13 @@ library(StreamFind)
 # Convert files ----------------------------------------------------------------
 
 # Convert vendor file formats to open source mzML
-?convert_ms_files
+# ?convert_ms_files
 
 # Load file paths
 all_files <- StreamFindData::get_ms_file_paths()
 files <- all_files[grepl("blank|influent|o3sw", all_files)]
 
-files
+# files
 
 
 
@@ -33,9 +33,9 @@ headers <- ProjectHeaders(
 ms <- MassSpecData$new(files = files, headers = headers)
 
 # Print method and access methods
-ms
+# ms
 
-ms$get_bpc(analyses = c(4, 10), levels = 1)
+# ms$get_bpc(analyses = c(4, 10), levels = 1)
 
 
 
@@ -61,7 +61,7 @@ blks <- c(
 ms$add_replicate_names(rpls)$add_blank_names(blks)
 
 # Print
-ms
+# ms
 
 
 
@@ -74,25 +74,25 @@ ffs <- Settings_find_features_openms()
 
 
 # Settings documentation
-?Settings_find_features_openms
+# ?Settings_find_features_openms
 
 # Web reference page 
-ms$help$settings_find_features()
+# ms$help$settings_find_features()
 
 # Saves an example of settings on disk
-save_default_ProcessingSettings(
-  call = "find_features",
-  algorithm = "openms",
-  format = "json",
-  name = "ffs"
-)
+# save_default_ProcessingSettings(
+#   call = "find_features",
+#   algorithm = "openms",
+#   format = "json",
+#   name = "ffs"
+# )
 
 
-ms$import_settings("ffs.json")
-
+# ms$import_settings("ffs.json")
+ms$add_settings(ffs)
 
 # Print
-ms
+# ms
 
 
 # Loads a database of chemicals
@@ -101,7 +101,9 @@ cols <- c("name", "formula", "mass", "rt", "tag")
 db <- db[, cols, with = FALSE]
 # Only spiked internal standards
 dbis <- db[grepl("IS", db$tag), ]
-dbis
+# dbis
+
+dbsus <- db[!grepl("IS", db$tag), ]
 
 
 # Add other module processing settings
@@ -112,22 +114,16 @@ ms$add_settings(
     Settings_group_features_openms(),
 
     Settings_find_internal_standards_StreamFind(
-      database = dbis,
-      ppm = 8,
-      sec = 10
+      database = dbis, ppm = 8, sec = 10
     ),
 
     Settings_filter_features_StreamFind(
-      minIntensity = 5000,
-      maxGroupSd = 30,
-      blank = 5,
-      minGroupAbundance = 3,
-      excludeIsotopes = TRUE
+      minIntensity = 5000, maxGroupSd = 30, blank = 5,
+      minGroupAbundance = 3, excludeIsotopes = TRUE
     ),
 
     Settings_load_features_eic_StreamFind(
-      rtExpand = 60,
-      mzExpand = 0.0005
+      rtExpand = 60, mzExpand = 0.0005
     ),
 
     Settings_load_features_ms1_StreamFind(),
@@ -138,13 +134,21 @@ ms$add_settings(
 
     Settings_load_groups_ms2_StreamFind(),
 
-    Settings_calculate_quality_StreamFind()
+    Settings_calculate_quality_StreamFind(),
+    
+    Settings_filter_features_StreamFind(
+      minSnRatio = 3
+    ),
+    
+    Settings_suspect_screening_StreamFind(
+      database = dbsus, ppm = 5, sec = 10
+    )
   )
 )
 
 
 # Print
-ms
+# ms
 
 
 
@@ -167,6 +171,9 @@ ms$run_workflow()
 ms
 
 
+saveRDS(ms$get_analyses(10), file = "StreamFind_virt_MassSpecAnalysis_list.rds")
+
+ms$save_analyses(10, name = "StreamFind_virt_MassSpecAnalysis_json")
 
 
 

@@ -43,13 +43,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_centroid_spectra_qCentroids
-Rcpp::List rcpp_centroid_spectra_qCentroids(Rcpp::DataFrame spectra);
-RcppExport SEXP _StreamFind_rcpp_centroid_spectra_qCentroids(SEXP spectraSEXP) {
+Rcpp::List rcpp_centroid_spectra_qCentroids(Rcpp::DataFrame spectra, int maxScale, int mode);
+RcppExport SEXP _StreamFind_rcpp_centroid_spectra_qCentroids(SEXP spectraSEXP, SEXP maxScaleSEXP, SEXP modeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::DataFrame >::type spectra(spectraSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_centroid_spectra_qCentroids(spectra));
+    Rcpp::traits::input_parameter< int >::type maxScale(maxScaleSEXP);
+    Rcpp::traits::input_parameter< int >::type mode(modeSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_centroid_spectra_qCentroids(spectra, maxScale, mode));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -202,7 +204,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_dev_parse_xml", (DL_FUNC) &_StreamFind_rcpp_dev_parse_xml, 1},
     {"_StreamFind_rcpp_ms_annotation_isotopes", (DL_FUNC) &_StreamFind_rcpp_ms_annotation_isotopes, 11},
-    {"_StreamFind_rcpp_centroid_spectra_qCentroids", (DL_FUNC) &_StreamFind_rcpp_centroid_spectra_qCentroids, 1},
+    {"_StreamFind_rcpp_centroid_spectra_qCentroids", (DL_FUNC) &_StreamFind_rcpp_centroid_spectra_qCentroids, 3},
     {"_StreamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_StreamFind_rcpp_ms_cluster_spectra, 4},
     {"_StreamFind_rcpp_ms_groups_make_dataframe", (DL_FUNC) &_StreamFind_rcpp_ms_groups_make_dataframe, 4},
     {"_StreamFind_rcpp_ms_groups_correspondence", (DL_FUNC) &_StreamFind_rcpp_ms_groups_correspondence, 3},

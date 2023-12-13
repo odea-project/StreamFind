@@ -79,6 +79,10 @@ save_default_ProcessingSettings <- function(call = NA_character_,
 #' algorithm, which is part of the
 #' \href{https://github.com/odea-project/qAlgorithms}{qAlgorithms} library.
 #'
+#' @param maxScale Integer of length one. Maximum scale as integer (default is 
+#' 5) for defining the scale limit for the peak model.
+#' @param mode Integer of length one. `0` for debugging, `1` for silent mode 
+#' (the default) and `2` for progressbar mode.
 #' @template arg-runParallel
 #'
 #' @return A ProcessingSettings S3 class object with subclass
@@ -89,12 +93,16 @@ save_default_ProcessingSettings <- function(call = NA_character_,
 #'
 #' @export
 #'
-Settings_centroid_spectra_qCentroids <- function(runParallel = FALSE) {
+Settings_centroid_spectra_qCentroids <- function(maxScale = 5,
+                                                 mode = 1,
+                                                 runParallel = FALSE) {
 
   settings <- list(
     call = "centroid_spectra",
     algorithm = "qCentroids",
     parameters = list(
+      maxScale = maxScale,
+      mode = mode,
       runParallel = runParallel
     ),
     version = as.character(packageVersion("StreamFind")),
@@ -119,6 +127,8 @@ validate.Settings_centroid_spectra_qCentroids <- function(x) {
   all(
     checkmate::test_choice(x$call, "centroid_spectra"),
     checkmate::test_choice(x$algorithm, "qCentroids"),
+    checkmate::test_int(x$parameters$maxScale),
+    checkmate::test_int(x$parameters$mode),
     checkmate::test_logical(x$parameters$runParallel, max.len = 1)
   )
 }
