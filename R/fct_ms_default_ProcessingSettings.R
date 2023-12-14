@@ -107,7 +107,7 @@ Settings_centroid_spectra_qCentroids <- function(maxScale = 5,
     ),
     version = as.character(packageVersion("StreamFind")),
     software = "qAlgorithms",
-    developer = "Max Reuschenbach, Gerrit Renner, ",
+    developer = "Gerrit Renner",
     contact = "gerrit.renner@uni-due.de",
     link = "https://github.com/odea-project/qAlgorithms",
     doi = "https://doi.org/10.1007/s00216-022-04224-y"
@@ -593,7 +593,7 @@ Settings_find_features_openms <- function(
     ),
     version = as.character(packageVersion("StreamFind")),
     software = "openms",
-    developer = "Rost HL, Sachsenberg T, Aiche S, Bielow C et al.",
+    developer = "Oliver Kohlbacher",
     contact = "oliver.kohlbacher@uni-tuebingen.de",
     link = "https://openms.de/",
     doi = "https://doi.org/10.1038/nmeth.3959"
@@ -1031,7 +1031,7 @@ Settings_group_features_openms <- function(
     ),
     version = as.character(packageVersion("StreamFind")),
     software = "openms",
-    developer = "Rost HL, Sachsenberg T, Aiche S, Bielow C et al.",
+    developer = "Oliver Kohlbacher",
     contact = "oliver.kohlbacher@uni-tuebingen.de",
     link = "https://openms.de/",
     doi = "https://doi.org/10.1038/nmeth.3959"

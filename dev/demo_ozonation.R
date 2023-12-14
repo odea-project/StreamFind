@@ -155,8 +155,6 @@ ms$add_settings(
 
 
 
-
-
 # Process data -----------------------------------------------------------------
 
 # Process all modules in workflow
@@ -170,11 +168,7 @@ ms$run_workflow()
 # Print
 ms
 
-
-saveRDS(ms$get_analyses(10), file = "StreamFind_virt_MassSpecAnalysis_list.rds")
-
-ms$save_analyses(10, name = "StreamFind_virt_MassSpecAnalysis_json")
-
+View(ms$get_features())
 
 
 

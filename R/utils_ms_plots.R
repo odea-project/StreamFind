@@ -660,6 +660,7 @@
     lt <- unique(bpc$var[select_vector])
     x <- bpc$rt[select_vector]
     y <- bpc$intensity[select_vector]
+    ana <- bpc$analysis[select_vector]
 
     plot <- plot %>% add_trace(
       x = x,
@@ -671,6 +672,7 @@
       legendgroup = lt,
       showlegend = showL[lt],
       hovertemplate = paste(
+        "<br>analysis: ", ana,
         "<br>rt: %{x}<br>",
         "mz: ",
         round(bpc$mz[select_vector], digits = 4),
@@ -2316,7 +2318,7 @@
 
   yaxis2 <- list(
     linecolor = toRGB("black"), linewidth = 2,
-    title = "MZ / ppm",
+    title = "Mass / ppm",
     titlefont = list(size = 12, color = "black"),
     range = c(-10, 10)
   )
@@ -2390,7 +2392,7 @@
     nrows = length(plotList),
     titleY = TRUE, titleX = TRUE,
     # heights = heights[1:2],
-    margin = 0.05,
+    # margin = 0.05,
     shareX = TRUE,
     which_layout = "merge"
   )

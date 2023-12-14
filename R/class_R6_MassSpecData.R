@@ -271,7 +271,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           )
 
         } else {
-          warning("The value for minimum intensity filtering must be numeric and of length one!")
+          stop("The value for minimum intensity filtering must be numeric and of length one!")
         }
       } else {
         warning("There are no features in the MassSpecData!")
@@ -323,10 +323,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
             )
 
           } else {
-            warning("The value for sn filtering must be numeric and of length one!")
+            stop("The value for sn filtering must be numeric and of length one!")
           }
         } else {
-          warning("The qlt_sn column was not found in the features data.table!")
+          stop("The qlt_sn column was not found in the features data.table!")
         }
       } else {
         warning("There are no features in the MassSpecData!")
@@ -674,7 +674,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
   # _ public fields/methods -----
   public = list(
-    ## ___ system -----
+    ## ___ create -----
 
     #' @description
     #' Creates an R6 MassSpecData class object. When `headers` are not given
@@ -737,6 +737,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       message("\U2713 MassSpecData class object created!")
     },
+    
+    ## ___ print -----
 
     #' @description
     #' Prints a summary of the `MassSpecData` object in the console.
@@ -745,8 +747,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     print = function() {
       cat("\n")
+      cat(paste(is(self), collapse = "; "))
+      cat("\n")
       cat(
-        paste(is(self), collapse = "; "), "\n",
         "name          ", private$.headers$name, "\n",
         "author        ", private$.headers$author, "\n",
         "path          ", private$.headers$path, "\n",
@@ -754,10 +757,64 @@ MassSpecData <- R6::R6Class("MassSpecData",
         sep = ""
       )
 
-      cat("\n")
+      self$print_workflow()
+      
+      self$print_analyses()
+    },
+    
+    #' @description Prints the headers.
+    #'
+    #' @return Console text.
+    #'
+    print_headers = function() {
+      cat("\nHeaders: ")
+      
+      if (length(private$.headers) > 0) {
+        cat("\n")
+        names <- names(private$.headers)
+        vals <- unlist(private$.headers)
+        cat(paste0(" ", names, ": ", vals), sep = "\n")
+        cat("\n")
+        
+      } else {
+        cat("No headers found! \n")
+      }
+    },
+    
+    #' @description Prints the analyses present.
+    #'
+    #' @return Console text.
+    #'
+    print_analyses = function() {
+      cat("\nAnalyses: ")
+      
+      if (length(private$.analyses) > 0) {
+        cat("\n")
+        overview <- self$get_overview()
+        overview$file <- NULL
+        
+        if (all(self$has_loaded_spectra())) {
+          overview$spectra <- paste(overview$spectra, "loaded", sep = " ")
+        }
 
+        row.names(overview) <- paste0(" ", seq_len(nrow(overview)), ":")
+        
+        print(overview)
+        
+      } else {
+        cat("No files found! \n")
+      }
+    },
+    
+    #' @description Prints all processing methods present by order.
+    #'
+    #' @return Console text.
+    #'
+    print_workflow = function() {
+      cat("\nWorkflow: ")
+      
       if (self$has_settings()) {
-        cat("settings: \n")
+        cat("\n")
         names_settings <- vapply(private$.settings, function(x) x$call, "")
         algorithms <- vapply(private$.settings, function(x) x$algorithm, "")
         cat(
@@ -765,27 +822,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
           sep = "\n"
         )
         cat("\n")
-      }
-
-      if (length(private$.analyses) > 0) {
-        overview <- self$get_overview()
-
-        overview$file <- NULL
-
-        if (all(self$has_loaded_spectra())) {
-          overview$spectra <- paste(overview$spectra, "loaded", sep = " ")
-        }
-
-        cat("Analyses: \n")
-
-        row.names(overview) <- paste0(" ", seq_len(nrow(overview)), ":")
-
-        print(overview)
-
+        
       } else {
-        cat("Analyses: ", 0, "\n", sep = "")
+        cat("No methods found! \n")
       }
-      cat("\n")
     },
 
     ## ___ get -----
@@ -2253,7 +2293,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         eic <- self$get_spectra(
           analyses = analyses,
           levels = 1,
-          mz = fts, id = fts$feature,
+          mz = fts,
+          id = fts$feature,
           runParallel = runParallel
         )
 
@@ -3714,6 +3755,25 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       } else {
         warning("Not present! Run find_internal_standards method to tag the internal standards!")
+        data.table()
+      }
+    },
+    
+    #' @description Data.table with the overview of all processing methods 
+    #' present.
+    #'
+    #' @return A data.table.
+    #'
+    get_workflow_overview = function() {
+      if (self$has_settings()) {
+        data.table(
+          "call" = vapply(private$.settings, function(x) x$call, ""),
+          "algorithm" = vapply(private$.settings, function(x) x$algorithm, ""),
+          "developer" = vapply(private$.settings, function(x) paste(x$developer, collapse = "; "), ""),
+          "contact" = vapply(private$.settings, function(x) x$contact, ""),
+          "link" = vapply(private$.settings, function(x) x$link, "")
+        )
+      } else {
         data.table()
       }
     },
@@ -7517,7 +7577,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     ## ___ processing -----
-
+    
     #' @description Runs all modules represented by the added ProcessingSettings.
     #'
     #' @return Invisible.

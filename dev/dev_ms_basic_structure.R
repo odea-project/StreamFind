@@ -3,6 +3,7 @@ library(StreamFind)
 
 # Tasks -----------------------------------------------------------------------
 
+# TODO add export for fragments to suspectsList, think how to handle polarities
 # TODO add stats to the groups (e.g., presence in each replicate, coverage)
 # TODO check what happens when all MS2 centroids are added to clustering
 # TODO Features and groups MS1 could have a is_pre.
@@ -10,7 +11,6 @@ library(StreamFind)
 # TODO add signal to noise ratio to internal standards report, calculated on demand
 # TODO when subsetting on features/groups check/add if features_eics are also changed
 # TODO add suspects to MassSpecData matching patRoon
-# TODO add export for fragments to suspectsList, think how to handle polarities
 # TODO check the import MassSpecData from JSON, in particular the nested data.tables
 
 

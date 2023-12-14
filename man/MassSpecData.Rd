@@ -27,6 +27,9 @@ List of function elements to access specific reference help pages.}
 \itemize{
 \item \href{#method-MassSpecData-new}{\code{MassSpecData$new()}}
 \item \href{#method-MassSpecData-print}{\code{MassSpecData$print()}}
+\item \href{#method-MassSpecData-print_headers}{\code{MassSpecData$print_headers()}}
+\item \href{#method-MassSpecData-print_analyses}{\code{MassSpecData$print_analyses()}}
+\item \href{#method-MassSpecData-print_workflow}{\code{MassSpecData$print_workflow()}}
 \item \href{#method-MassSpecData-get_headers}{\code{MassSpecData$get_headers()}}
 \item \href{#method-MassSpecData-get_history}{\code{MassSpecData$get_history()}}
 \item \href{#method-MassSpecData-get_analyses}{\code{MassSpecData$get_analyses()}}
@@ -74,6 +77,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecData-get_suspects}{\code{MassSpecData$get_suspects()}}
 \item \href{#method-MassSpecData-get_modules_data}{\code{MassSpecData$get_modules_data()}}
 \item \href{#method-MassSpecData-get_internal_standards}{\code{MassSpecData$get_internal_standards()}}
+\item \href{#method-MassSpecData-get_workflow_overview}{\code{MassSpecData$get_workflow_overview()}}
 \item \href{#method-MassSpecData-add_headers}{\code{MassSpecData$add_headers()}}
 \item \href{#method-MassSpecData-add_settings}{\code{MassSpecData$add_settings()}}
 \item \href{#method-MassSpecData-add_analyses}{\code{MassSpecData$add_analyses()}}
@@ -243,6 +247,45 @@ A new \code{MassSpecData} class object.
 Prints a summary of the \code{MassSpecData} object in the console.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$print()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+Console text.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-print_headers"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-print_headers}{}}}
+\subsection{Method \code{print_headers()}}{
+Prints the headers.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$print_headers()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+Console text.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-print_analyses"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-print_analyses}{}}}
+\subsection{Method \code{print_analyses()}}{
+Prints the analyses present.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$print_analyses()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+Console text.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-print_workflow"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-print_workflow}{}}}
+\subsection{Method \code{print_workflow()}}{
+Prints all processing methods present by order.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$print_workflow()}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{
@@ -2276,6 +2319,20 @@ averaged and returned for each analysis replicate group.}
 \subsection{Returns}{
 The list of modules data as defined by \code{modules} argument when
 \code{NULL} all data in modules is returned.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-get_workflow_overview"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-get_workflow_overview}{}}}
+\subsection{Method \code{get_workflow_overview()}}{
+Data.table with the overview of all processing methods
+present.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_workflow_overview()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+A data.table.
 }
 }
 \if{html}{\out{<hr>}}
