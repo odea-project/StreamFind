@@ -17,8 +17,12 @@ rcpp_ms_cluster_spectra <- function(spectra, mzClust = 0.005, presence = 0.8, ve
     .Call(`_StreamFind_rcpp_ms_cluster_spectra`, spectra, mzClust, presence, verbose)
 }
 
-rcpp_ms_groups_make_dataframe <- function(features, analyses, mzAsMass = TRUE, newGroupNames = TRUE) {
-    .Call(`_StreamFind_rcpp_ms_groups_make_dataframe`, features, analyses, mzAsMass, newGroupNames)
+rcpp_ms_make_new_groups_id <- function(features, analyses, mzAsMass = TRUE) {
+    .Call(`_StreamFind_rcpp_ms_make_new_groups_id`, features, analyses, mzAsMass)
+}
+
+rcpp_ms_groups_make_dataframe <- function(features, analyses) {
+    .Call(`_StreamFind_rcpp_ms_groups_make_dataframe`, features, analyses)
 }
 
 rcpp_ms_groups_correspondence <- function(groups, features, verbose) {

@@ -338,7 +338,7 @@ RamanData <- R6::R6Class("RamanData",
           "analysis" = vapply(private$.analyses, function(x) x$name, ""),
           "replicate" = vapply(private$.analyses, function(x) x$replicate, ""),
           "blank" = vapply(private$.analyses, function(x) x$blank, ""),
-          "size" = vapply(private$.analyses, function(x) nrow(x$spectrum), 0),
+          "size" = vapply(private$.analyses, function(x) nrow(x$spectra), 0),
           "file" = vapply(private$.analyses, function(x) x$file, "")
         )
         row.names(df) <- seq_len(nrow(df))

@@ -126,21 +126,15 @@
   
   mz_as_mass <- grepl("Set", class(pat))
   
-  groups <- rcpp_ms_groups_make_dataframe(
-    pat_ft, self$get_analysis_names(), mz_as_mass, TRUE
-  )
+  groups <- rcpp_ms_make_new_groups_id(pat_ft, self$get_analysis_names(), mz_as_mass)
   
   if (self$has_groups()) self$remove_groups()
   
   new_groups_id <- groups$group
   names(new_groups_id) <- groups$old_group
-  pat_ft$group <- new_groups_id[pat_ft$group] 
+  pat_ft$group <- new_groups_id[pat_ft$group]
   
-  self$add_group_to_features(pat_ft)
-
-  groups$old_group <- NULL
-  
-  self$add_groups(groups)
+  self$add_groups(pat_ft)
   
   alignment <- .extract_time_alignment(pat, self)
 

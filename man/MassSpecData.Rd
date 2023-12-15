@@ -88,7 +88,6 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecData-add_spectra}{\code{MassSpecData$add_spectra()}}
 \item \href{#method-MassSpecData-add_features_eic}{\code{MassSpecData$add_features_eic()}}
 \item \href{#method-MassSpecData-add_features}{\code{MassSpecData$add_features()}}
-\item \href{#method-MassSpecData-add_group_to_features}{\code{MassSpecData$add_group_to_features()}}
 \item \href{#method-MassSpecData-add_groups}{\code{MassSpecData$add_groups()}}
 \item \href{#method-MassSpecData-add_alignment}{\code{MassSpecData$add_alignment()}}
 \item \href{#method-MassSpecData-add_modules_data}{\code{MassSpecData$add_modules_data()}}
@@ -97,8 +96,6 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecData-load_features_eic}{\code{MassSpecData$load_features_eic()}}
 \item \href{#method-MassSpecData-load_features_ms1}{\code{MassSpecData$load_features_ms1()}}
 \item \href{#method-MassSpecData-load_features_ms2}{\code{MassSpecData$load_features_ms2()}}
-\item \href{#method-MassSpecData-load_groups_ms1}{\code{MassSpecData$load_groups_ms1()}}
-\item \href{#method-MassSpecData-load_groups_ms2}{\code{MassSpecData$load_groups_ms2()}}
 \item \href{#method-MassSpecData-remove_headers}{\code{MassSpecData$remove_headers()}}
 \item \href{#method-MassSpecData-remove_settings}{\code{MassSpecData$remove_settings()}}
 \item \href{#method-MassSpecData-remove_analyses}{\code{MassSpecData$remove_analyses()}}
@@ -106,8 +103,6 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecData-remove_features_ms1}{\code{MassSpecData$remove_features_ms1()}}
 \item \href{#method-MassSpecData-remove_features_ms2}{\code{MassSpecData$remove_features_ms2()}}
 \item \href{#method-MassSpecData-remove_groups}{\code{MassSpecData$remove_groups()}}
-\item \href{#method-MassSpecData-remove_groups_ms1}{\code{MassSpecData$remove_groups_ms1()}}
-\item \href{#method-MassSpecData-remove_groups_ms2}{\code{MassSpecData$remove_groups_ms2()}}
 \item \href{#method-MassSpecData-remove_alignment}{\code{MassSpecData$remove_alignment()}}
 \item \href{#method-MassSpecData-subset_analyses}{\code{MassSpecData$subset_analyses()}}
 \item \href{#method-MassSpecData-subset_features}{\code{MassSpecData$subset_features()}}
@@ -118,8 +113,6 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecData-has_loaded_chromatograms}{\code{MassSpecData$has_loaded_chromatograms()}}
 \item \href{#method-MassSpecData-has_loaded_features_ms1}{\code{MassSpecData$has_loaded_features_ms1()}}
 \item \href{#method-MassSpecData-has_loaded_features_ms2}{\code{MassSpecData$has_loaded_features_ms2()}}
-\item \href{#method-MassSpecData-has_loaded_groups_ms1}{\code{MassSpecData$has_loaded_groups_ms1()}}
-\item \href{#method-MassSpecData-has_loaded_groups_ms2}{\code{MassSpecData$has_loaded_groups_ms2()}}
 \item \href{#method-MassSpecData-has_settings}{\code{MassSpecData$has_settings()}}
 \item \href{#method-MassSpecData-has_features_eic}{\code{MassSpecData$has_features_eic()}}
 \item \href{#method-MassSpecData-has_features}{\code{MassSpecData$has_features()}}
@@ -1731,8 +1724,10 @@ Gets feature groups from the analyses.
   sec = 60,
   millisec = 5,
   filtered = FALSE,
-  onlyIntensities = FALSE,
-  average = FALSE
+  intensities = TRUE,
+  average = FALSE,
+  sdValues = FALSE,
+  metadata = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -1785,11 +1780,18 @@ in milliseconds.}
 
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
 
-\item{\code{onlyIntensities}}{Logical. When \code{TRUE}, only feature intensity values
-are returned. Feature metadata for each group is excluded.}
+\item{\code{intensities}}{Logical. When \code{TRUE}, feature intensity values
+are returned.}
 
 \item{\code{average}}{Logical. When \code{TRUE}, feature intensities from each group are
 averaged and returned for each analysis replicate group.}
+
+\item{\code{sdValues}}{Logical length 1. Set to \code{TRUE} for returning the sd
+values when averaging the intensity within analysis replicates.}
+
+\item{\code{metadata}}{Logical length 1. Set to \code{TRUE} for returning extra
+metadata from feature groups (e.g., presence in each analysis replicate
+and mass and time widths).}
 }
 \if{html}{\out{</div>}}
 }
@@ -1818,13 +1820,12 @@ Gets an averaged MS1 spectrum for feature groups in the analyses.
   presenceFeatures = 0.8,
   minIntensityFeatures = 1000,
   loadedFeaturesMS1 = TRUE,
-  mzClustGroups = 0.003,
-  presenceGroups = 0.8,
-  minIntensityGroups = 1000,
+  mzClust = 0.003,
+  presence = 0.8,
+  minIntensity = 1000,
   groupBy = "groups",
   verbose = FALSE,
   filtered = FALSE,
-  loadedGroupsMS1 = TRUE,
   runParallel = FALSE
 )}\if{html}{\out{</div>}}
 }
@@ -1900,16 +1901,14 @@ features.}
 \item{\code{loadedFeaturesMS1}}{Logical. When \code{TRUE} and if available, previously
 loaded features MS1 data is used instead of extraction from raw data.}
 
-\item{\code{mzClustGroups}}{Numeric value with the mass deviation threshold
-(in Da) to cluster mass traces for feature groups. Highly dependent on the
-mass resolution of the MS data.}
+\item{\code{mzClust}}{Numeric value with the mass deviation threshold (in Da) to
+cluster mass traces. Highly dependent on the mass resolution of the MS data.}
 
-\item{\code{presenceGroups}}{Numeric of length one with the required presence ratio
-from 0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
+\item{\code{presence}}{Numeric of length one with the required presence ratio from
+0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
 present in all spectra) for traces during clustering of spectra.}
 
-\item{\code{minIntensityGroups}}{Numeric value with the minimum intensity for
-feature groups.}
+\item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 
 \item{\code{groupBy}}{String with the way of grouping. Possible values are \code{groups}
 and \code{replicates} to groups by feature groups or feature groups and
@@ -1919,9 +1918,6 @@ replicates, respectively.}
 result messages. When \code{FALSE}, some messages are omitted.}
 
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
-
-\item{\code{loadedGroupsMS1}}{Logical. When \code{TRUE} and if available, previously
-loaded feature groups MS1 data is used instead of extraction from raw data.}
 
 \item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
 processing. Note that parallel processing is not always faster due to
@@ -1953,13 +1949,12 @@ Gets an averaged MS2 spectrum for feature groups in the analyses.
   presenceFeatures = 0.8,
   minIntensityFeatures = 100,
   loadedFeaturesMS2 = TRUE,
-  mzClustGroups = 0.003,
-  presenceGroups = 0.8,
-  minIntensityGroups = 100,
+  mzClust = 0.003,
+  presence = 0.8,
+  minIntensity = 100,
   groupBy = "groups",
   verbose = FALSE,
   filtered = FALSE,
-  loadedGroupsMS2 = TRUE,
   runParallel = FALSE
 )}\if{html}{\out{</div>}}
 }
@@ -2029,16 +2024,14 @@ features.}
 \item{\code{loadedFeaturesMS2}}{Logical. When \code{TRUE} and if available, previously
 loaded features MS2 data is used instead of extraction from raw data.}
 
-\item{\code{mzClustGroups}}{Numeric value with the mass deviation threshold
-(in Da) to cluster mass traces for feature groups. Highly dependent on the
-mass resolution of the MS data.}
+\item{\code{mzClust}}{Numeric value with the mass deviation threshold (in Da) to
+cluster mass traces. Highly dependent on the mass resolution of the MS data.}
 
-\item{\code{presenceGroups}}{Numeric of length one with the required presence ratio
-from 0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
+\item{\code{presence}}{Numeric of length one with the required presence ratio from
+0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
 present in all spectra) for traces during clustering of spectra.}
 
-\item{\code{minIntensityGroups}}{Numeric value with the minimum intensity for
-feature groups.}
+\item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 
 \item{\code{groupBy}}{String with the way of grouping. Possible values are \code{groups}
 and \code{replicates} to groups by feature groups or feature groups and
@@ -2048,9 +2041,6 @@ replicates, respectively.}
 result messages. When \code{FALSE}, some messages are omitted.}
 
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
-
-\item{\code{loadedGroupsMS2}}{Logical. When \code{TRUE} and if available, previously
-loaded feature groups MS2 data is used instead of extraction from raw data.}
 
 \item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
 processing. Note that parallel processing is not always faster due to
@@ -2583,45 +2573,19 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecData-add_group_to_features"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecData-add_group_to_features}{}}}
-\subsection{Method \code{add_group_to_features()}}{
-Adds a group columns from correspondence analysis to the features
-data.table. Note that existing features groups are replaced!
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$add_group_to_features(feature_groups = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{feature_groups}}{A data.table with columns analysis, feature and group.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecData-add_groups"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-add_groups}{}}}
 \subsection{Method \code{add_groups()}}{
-Adds feature groups. Note that existing features groups are
-replaced!
+Adds a group column from correspondence analysis to the features
+data.table. Note that existing features groups are replaced!
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$add_groups(groups = NULL, feature_groups = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$add_groups(groups = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{groups}}{A data.table with feature groups from correspondence across
-MS analyses as obtained by the method \code{get_groups()}. Note that
-correspondence of features across MS analyses is performed with the
-method \code{group_features()}.}
-
-\item{\code{feature_groups}}{A data.table with columns analysis, feature and group.}
+\item{\code{groups}}{A data.table with columns analysis, feature and group.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2788,78 +2752,6 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecData-load_groups_ms1"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecData-load_groups_ms1}{}}}
-\subsection{Method \code{load_groups_ms1()}}{
-Loads and average MS1 spectra from feature groups. If MS1
-spectra from features are already loaded, the feature MS1 spectra are
-used for averaging into the respective feature group. If features MS1
-spectra are not present, settings for loading and averaging features MS1
-spectra (i.e., settings with call name "load_features_ms1") must
-be given in the \code{settingsFeatures} argument or added beforehand with the
-\code{add_settings} method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$load_groups_ms1(settings = NULL, settingsFeatures = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
-applicable to the processing method. Alternatively, a named
-list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
-ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the \code{MassSpecData} object.}
-
-\item{\code{settingsFeatures}}{A ProcessingSettings S3 class object with the call name
-applicable to the processing method for features. Alternatively, a named
-list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
-ProcessingSettings S3 class object. When not given, settings for the
-features processing method will be searched within the \code{MassSpecData} object.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecData-load_groups_ms2"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecData-load_groups_ms2}{}}}
-\subsection{Method \code{load_groups_ms2()}}{
-Loads and average MS2 spectra from feature groups. If MS2
-spectra from features are already loaded, the feature MS2 spectra are
-used for averaging into the respective feature group. If features MS2
-spectra are not present, settings for loading and averaging features MS2
-spectra (i.e., settings with call name "load_features_ms2") must
-be given in the \code{settingsFeatures} argument or added beforehand with the
-\code{add_settings} method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$load_groups_ms2(settings = NULL, settingsFeatures = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
-applicable to the processing method. Alternatively, a named
-list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
-ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the \code{MassSpecData} object.}
-
-\item{\code{settingsFeatures}}{A ProcessingSettings S3 class object with the call name
-applicable to the processing method for features. Alternatively, a named
-list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
-ProcessingSettings S3 class object. When not given, settings for the
-features processing method will be searched within the \code{MassSpecData} object.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecData-remove_headers"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-remove_headers}{}}}
 \subsection{Method \code{remove_headers()}}{
@@ -3000,34 +2892,6 @@ of feature groups.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecData-remove_groups_ms1"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecData-remove_groups_ms1}{}}}
-\subsection{Method \code{remove_groups_ms1()}}{
-Removes loaded MS1 spectra from feature groups. In practice, the column
-\emph{ms1} in the groups data.table is removed.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$remove_groups_ms1()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecData-remove_groups_ms2"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecData-remove_groups_ms2}{}}}
-\subsection{Method \code{remove_groups_ms2()}}{
-Removes loaded MS2 spectra from feature groups. In practice, the column
-\emph{ms2} in the groups data.table is removed.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$remove_groups_ms2()}\if{html}{\out{</div>}}
-}
-
 \subsection{Returns}{
 Invisible.
 }
@@ -3236,32 +3100,6 @@ Logical value.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecData-has_loaded_groups_ms1"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecData-has_loaded_groups_ms1}{}}}
-\subsection{Method \code{has_loaded_groups_ms1()}}{
-Checks for loaded feature groups MS1.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$has_loaded_groups_ms1()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-Logical value.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecData-has_loaded_groups_ms2"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecData-has_loaded_groups_ms2}{}}}
-\subsection{Method \code{has_loaded_groups_ms2()}}{
-Checks for loaded feature groups MS2.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$has_loaded_groups_ms2()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-Logical value.
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecData-has_settings"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-has_settings}{}}}
 \subsection{Method \code{has_settings()}}{
@@ -3367,9 +3205,17 @@ Logical value.
 Checks if there are feature groups from grouping features
 across analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$has_groups()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$has_groups(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 Logical value.
 }
@@ -4750,13 +4596,12 @@ Plots MS1 spectra from feature groups in the analyses.
   presenceFeatures = 0.8,
   minIntensityFeatures = 1000,
   loadedFeaturesMS1 = TRUE,
-  mzClustGroups = 0.005,
-  presenceGroups = 0.8,
-  minIntensityGroups = 1000,
+  mzClust = 0.005,
+  presence = 0.8,
+  minIntensity = 1000,
   groupBy = "groups",
   verbose = FALSE,
   filtered = FALSE,
-  loadedGroupsMS1 = TRUE,
   runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
@@ -4836,16 +4681,14 @@ features.}
 \item{\code{loadedFeaturesMS1}}{Logical. When \code{TRUE} and if available, previously
 loaded features MS1 data is used instead of extraction from raw data.}
 
-\item{\code{mzClustGroups}}{Numeric value with the mass deviation threshold
-(in Da) to cluster mass traces for feature groups. Highly dependent on the
-mass resolution of the MS data.}
+\item{\code{mzClust}}{Numeric value with the mass deviation threshold (in Da) to
+cluster mass traces. Highly dependent on the mass resolution of the MS data.}
 
-\item{\code{presenceGroups}}{Numeric of length one with the required presence ratio
-from 0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
+\item{\code{presence}}{Numeric of length one with the required presence ratio from
+0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
 present in all spectra) for traces during clustering of spectra.}
 
-\item{\code{minIntensityGroups}}{Numeric value with the minimum intensity for
-feature groups.}
+\item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 
 \item{\code{groupBy}}{String with the way of grouping. Possible values are \code{groups}
 and \code{replicates} to groups by feature groups or feature groups and
@@ -4855,9 +4698,6 @@ replicates, respectively.}
 result messages. When \code{FALSE}, some messages are omitted.}
 
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
-
-\item{\code{loadedGroupsMS1}}{Logical. When \code{TRUE} and if available, previously
-loaded feature groups MS1 data is used instead of extraction from raw data.}
 
 \item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
 processing. Note that parallel processing is not always faster due to
@@ -4899,13 +4739,12 @@ Plots MS1 spectra from feature groups in the analyses.
   presenceFeatures = 0.8,
   minIntensityFeatures = 100,
   loadedFeaturesMS2 = TRUE,
-  mzClustGroups = 0.003,
-  presenceGroups = TRUE,
-  minIntensityGroups = 100,
+  mzClust = 0.003,
+  presence = TRUE,
+  minIntensity = 100,
   groupBy = "groups",
   verbose = FALSE,
   filtered = FALSE,
-  loadedGroupsMS2 = TRUE,
   runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
@@ -4979,16 +4818,14 @@ features.}
 \item{\code{loadedFeaturesMS2}}{Logical. When \code{TRUE} and if available, previously
 loaded features MS2 data is used instead of extraction from raw data.}
 
-\item{\code{mzClustGroups}}{Numeric value with the mass deviation threshold
-(in Da) to cluster mass traces for feature groups. Highly dependent on the
-mass resolution of the MS data.}
+\item{\code{mzClust}}{Numeric value with the mass deviation threshold (in Da) to
+cluster mass traces. Highly dependent on the mass resolution of the MS data.}
 
-\item{\code{presenceGroups}}{Numeric of length one with the required presence ratio
-from 0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
+\item{\code{presence}}{Numeric of length one with the required presence ratio from
+0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
 present in all spectra) for traces during clustering of spectra.}
 
-\item{\code{minIntensityGroups}}{Numeric value with the minimum intensity for
-feature groups.}
+\item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 
 \item{\code{groupBy}}{String with the way of grouping. Possible values are \code{groups}
 and \code{replicates} to groups by feature groups or feature groups and
@@ -4998,9 +4835,6 @@ replicates, respectively.}
 result messages. When \code{FALSE}, some messages are omitted.}
 
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
-
-\item{\code{loadedGroupsMS2}}{Logical. When \code{TRUE} and if available, previously
-loaded feature groups MS2 data is used instead of extraction from raw data.}
 
 \item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
 processing. Note that parallel processing is not always faster due to
@@ -5386,10 +5220,9 @@ processing method will be searched within the \code{MassSpecData} object.}
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-The filtered features and feature groups are not entirely
-removed but tagged as filtered. See columns \code{filtered} and \code{filter}
-of the features and feature groups data.table as obtained with the
-methods \code{get_features()} and \code{get_groups()}, respectively.
+The features are not entirely removed but tagged as filtered.
+See columns \code{filtered} and \code{filter} of the features data.table as
+obtained with the method \code{get_features()}.
 }
 
 \subsection{Returns}{
