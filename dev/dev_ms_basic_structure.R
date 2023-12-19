@@ -18,9 +18,9 @@ library(StreamFind)
 
 all_files <- StreamFindData::get_ms_file_paths()
 
-all_db <- StreamFindData::get_ms_tof_spiked_chemicals()
+all_db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
 db <- all_db[!grepl("IS", all_db$tag, fixed = TRUE), ]
-cols <- c("name", "formula", "mass", "SMILES", "rt")
+cols <- c("name", "formula", "mass", "SMILES", "rt", "polarity", "fragments")
 db <- db[, cols, with = FALSE]
 # data.table::setnames(db, "mass", "neutralMass")
 
@@ -51,29 +51,19 @@ files_df <- data.frame(
   )
 )
 
-ms <- MassSpecData$new(files_df) #[grepl("pos", files_df$replicate), ]
-
-ms$add_settings(
-  list(
-    Settings_find_features_openms(),
-    Settings_annotate_features_StreamFind(),
-    Settings_group_features_openms(),
-    Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
-    Settings_filter_features_StreamFind(
-      minIntensity = 5000,
-      maxGroupSd = 30,
-      blank = 5,
-      minGroupAbundance = 3,
-      excludeIsotopes = TRUE
-    ),
-    Settings_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005),
-    Settings_load_features_ms1_StreamFind(),
-    Settings_load_features_ms2_StreamFind(),
-    Settings_calculate_quality_StreamFind(),
-    Settings_filter_features_StreamFind(minSnRatio = 3),
-    Settings_suspect_screening_StreamFind(database = db, ppm = 5, sec = 10),
-    Settings_filter_features_StreamFind(onlySuspects = TRUE)
-  )
+ps <- list(
+  Settings_find_features_openms(),
+  Settings_annotate_features_StreamFind(),
+  Settings_group_features_openms(),
+  Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
+  Settings_filter_features_StreamFind(minIntensity = 5000, maxGroupSd = 30, blank = 5, minGroupAbundance = 3, excludeIsotopes = TRUE),
+  Settings_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005),
+  Settings_load_features_ms1_StreamFind(),
+  Settings_load_features_ms2_StreamFind(),
+  Settings_calculate_quality_StreamFind(),
+  Settings_filter_features_StreamFind(minSnRatio = 3),
+  Settings_suspect_screening_StreamFind(database = db, ppm = 8, sec = 10, ppmMS2 = 10, minFragments = 3),
+  Settings_filter_features_StreamFind(onlySuspects = TRUE)
 )
 
 # patRoon::clearCache("all")
@@ -81,11 +71,145 @@ ms$add_settings(
 # patRoon::clearCache(c("load_features_ms2"))
 # patRoon::clearCache(c("load_features_ms1"))
 
+ms <- MassSpecData$new(files_df) #[grepl("pos", files_df$replicate), ]
+ms$add_settings(ps)
 ms$run_workflow()
 
-ms$get_groups(mass = dbis, average = T, intensities = T, filtered = T)
+# Export MS2 pattern -----
+
+# std <- MassSpecData$new(all_files[1:3])
+# std$add_settings(ps)
+# std$run_workflow()
+
+ms$plot_suspects()
+
+ms$save()
 
 
+
+std$plot_bpc(levels = 1)
+
+
+
+
+
+
+
+
+new_db <- fread("tof_spiked_chemicals_ms2.csv")
+
+std$get_suspects(
+  database = new_db,
+  ppm = 8, sec = 10
+)
+
+View(std$get_features(mass = db))
+
+
+
+std$plot_groups(mass = db, legendNames = T)
+
+
+
+ms2 <- std$get_groups_ms2(mass = db, mzClust = 0.003, presence = 0.6)
+db_out <- all_db
+if (!"polarity" %in% colnames(db_out)) {
+ db_out$polarity <- NA_integer_
+}
+std_names <- unique(ms2$name)
+for (i in std_names) {
+  t_ms2 <- ms2[ms2$name %in% i, ]
+  t_ms2[["name"]] <- NULL
+  t_ms2[["group"]] <- NULL
+  t_ms2[["feature"]] <- NULL
+  
+  polarities <- unique(t_ms2$polarity)
+  
+  polarities_vec <- t_ms2$polarity
+  t_ms2[["polarity"]] <- NULL
+  t_ms2 <- split(t_ms2, polarities_vec)
+  
+  if ("polarity" %in% colnames(db_out)) {
+    dbpol <- db_out$polarity[db_out$name %in% i]
+  }
+  
+  # adds fragments to existing row
+  if (is.na(dbpol)) {
+    # adds 1st pol to existing and adds new row for 2nd pol
+    if (length(polarities) > 1) {
+      
+      
+    } else {
+      db_out$polarity[db_out$name %in% i] <- polarities[1]
+      db_out$fragments[db_out$name %in% i] <- paste(
+        round(t_ms2[[1]]$mz, digits = 5),
+        round(t_ms2[[1]]$intensity, digits = 0),
+        sep = " ", collapse = "; "
+      )
+    }
+  }
+}
+write.csv(db_out, "tof_spiked_chemicals_ms2.csv", row.names = FALSE)
+
+
+fex <- paste(
+  round(t_ms2[[1]]$mz, digits = 5),
+  round(t_ms2[[1]]$intensity, digits = 0),
+  sep = " ", collapse = "; "
+)
+
+fexu <- unlist(strsplit(fex, split = "; ", fixed = TRUE))
+fexu <- strsplit(fexu, " ")
+fexu_mz <- sapply(fexu, function(x) as.numeric(x[1]))
+fexu_int <- sapply(fexu, function(x) as.numeric(x[2]))
+
+
+js_database <- split(db_out, all_db$name)
+names(js_database) <- db_out$name
+js_database <- lapply(js_database, function(x) unlist(x, recursive = FALSE))
+
+js_database <- jsonlite::toJSON(
+  js_database,
+  dataframe = "rows",
+  Date = "ISO8601",
+  POSIXt = "string",
+  factor = "string",
+  complex = "string",
+  null = "null",
+  na = "null",
+  auto_unbox = FALSE,
+  digits = 5,
+  pretty = TRUE,
+  force = TRUE
+)
+
+write(js_database, file = "js_database.json")
+
+js_database_r <- fromJSON("js_database.json")
+
+
+
+export_MS2_to_database <- function() {
+  
+}
+
+
+
+
+std$get_suspects(database = db, ppm = 5, sec = 10)
+std$get_groups(mass = db, ppm = 5, sec = 10, average = TRUE)
+
+
+
+
+
+
+
+
+
+ms$get_groups(mass = db, metadata = TRUE, intensities = T, average = T)
+
+ms$plot_features_ms2(mass = db[3, ], colorBy = "analyses")
 
 
 ms$get_suspects()
@@ -96,7 +220,7 @@ ms$get_suspects()
 
 ms$as_patRoon_featureGroups(filtered = TRUE)
 
-ms$get_groups(mass = db[2, ], average = TRUE)
+
 
 ms$plot_groups_overview(mass = db[2, ])
 

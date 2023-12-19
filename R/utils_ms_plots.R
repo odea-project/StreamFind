@@ -2516,3 +2516,210 @@
   
   plot
 }
+
+#' .plot_suspects_interactive
+#'
+#' @noRd
+#'
+.plot_suspects_interactive <- function(suspects, eic, heights) {
+  
+  leg <- unique(eic$var)
+  
+  colors <- .get_colors(leg)
+  
+  showleg <- rep(TRUE, length(leg))
+  
+  names(showleg) <- names(leg)
+  
+  plot_qlt <- FALSE
+  
+  if ("qlt_model" %in% colnames(suspects)) plot_qlt <- TRUE
+  
+  plot <- plot_ly()
+  
+  for (g in leg) {
+    uid <- unique(eic$uid[eic$var == g])
+    
+    for (u in uid) {
+      df <- eic[eic$uid == u, ]
+      ft <- suspects[suspects$uid == u, ]
+      
+      plot <- plot %>% add_trace(
+        df,
+        x = df$rt,
+        y = df$intensity,
+        type = "scatter", mode = "lines",
+        line = list(width = 0.5, color = colors[g]),
+        connectgaps = TRUE,
+        name = g,
+        legendgroup = g,
+        showlegend = FALSE
+      )
+      
+      df <- df[df$rt >= ft$rtmin & df$rt <= ft$rtmax, ]
+      df$mz <- as.numeric(df$mz)
+      
+      plot <- plot %>% add_trace(
+        df,
+        x = df$rt,
+        y = df$intensity,
+        type = "scatter", mode = "lines+markers",
+        fill = "tozeroy", connectgaps = TRUE,
+        fillcolor = paste(color = colors[g], 50, sep = ""),
+        line = list(width = 0.1, color = colors[g]),
+        marker = list(size = 3, color = colors[g]),
+        name = g,
+        legendgroup = g,
+        showlegend = showleg[which(leg %in% g)],
+        hoverinfo = "text",
+        hoverlabel = list(bgcolor = colors[g]),
+        text = paste(
+          "</br> suspect: ", g,
+          "</br> id_level: ", ft$id_level,
+          "</br> error_mass: ", ft$error_mass,
+          "</br> error_rt: ", ft$error_rt,
+          "</br> shared_fragments: ", ft$shared_fragments,
+          "</br> group: ", ft$group,
+          "</br> feature: ", ft$feature,
+          "</br> analysis: ", ft$analysis,
+          "</br> <i>m/z</i>: ", round(ft$mz, digits = 4),
+          "</br> rt: ", round(df$rt, digits = 0),
+          "</br> intensity: ", round(df$intensity, digits = 0),
+          "</br> filled: ",
+          if ("is_filled" %in% colnames(ft)) {
+            ifelse(ft$is_filled == 1, TRUE, FALSE)
+          } else {
+            FALSE
+          },
+          if (plot_qlt) {
+            paste(
+              "</br> noise: ", ft$qlt_noise,
+              "</br> sn: ", ft$qlt_sn,
+              "</br> gaufit: ", round(ft$qlt_gaufit, digits = 4),
+              "</br> A: ", ft$qlt_A,
+              "</br> mu: ", ft$qlt_mu,
+              "</br> sigma: ", ft$qlt_sigma
+            )
+          } else {
+            ""
+          }
+        )
+      )
+      showleg[which(leg %in% g)] <- FALSE
+    }
+  }
+  
+  plot2 <- plot_ly()
+  
+  for (g in leg) {
+    uid <- unique(suspects$uid[suspects$var == g])
+    
+    for (u in uid) {
+    
+      data <- suspects$ms2[suspects$uid == u][[1]]
+      
+      fragments <- suspects$fragments[suspects$uid == u]
+      
+      if (!is.null(data) && !is.na(fragments)) {
+        
+        bar_widths <- rep(0.2, nrow(data))
+        
+        data$intensity <- data$intensity / max(data$intensity)
+
+        plot2 <- plot2 %>% add_trace(
+          data = data,
+          x = data$mz,
+          y = data$intensity,
+          type = "bar",
+          width = 0.05,
+          marker = list(
+            color = colors[g],
+            line = list(color = colors[g], width = bar_widths)
+          ),
+          name = g,
+          legendgroup = g,
+          hovertemplate = paste("Exp:","<br><i>m/z</i>: %{x:.4f}", "<br>intensity: %{y:.0f}"),
+          showlegend = FALSE
+        )
+        
+        fragments <- unlist(strsplit(fragments, split = "; ", fixed = TRUE))
+        fragments <- strsplit(fragments, " ")
+        fragments <- data.table(
+          "mz" = vapply(fragments, function(x) as.numeric(x[1]), NA_real_),
+          "intensity" = vapply(fragments, function(x) as.numeric(x[2]), NA_real_)
+        )
+        
+        fragments$intensity <- fragments$intensity / max(fragments$intensity)
+
+        fragments$intensity <- -fragments$intensity
+        
+        plot2 <- plot2 %>% add_trace(
+          data = fragments,
+          x = fragments$mz,
+          y = fragments$intensity,
+          type = "bar",
+          width = 0.05,
+          marker = list(
+            color = colors[g],
+            line = list(color = colors[g], width = bar_widths)
+          ),
+          name = g,
+          legendgroup = g,
+          hovertemplate = paste("Database:","<br><i>m/z</i>: %{x:.4f}", "<br>intensity: %{y:.0f}"),
+          showlegend = FALSE
+        )
+      }
+    }
+  }
+  
+  xaxis1 <- list(
+    linecolor = toRGB("black"), linewidth = 2,
+    title = "Retention time / seconds",
+    titlefont = list(size = 12, color = "black"),
+    autotick = TRUE, ticks = "outside"
+  )
+  
+  xaxis2 <- list(
+    linecolor = toRGB("black"), linewidth = 2,
+    title = "<i>m/z</i> / Da",
+    titlefont = list(size = 12, color = "black"),
+    autotick = TRUE, ticks = "outside"
+  )
+  
+  yaxis1 <- list(
+    linecolor = toRGB("black"), linewidth = 2,
+    title = "Intensity / counts",
+    titlefont = list(size = 12, color = "black")
+  )
+  
+  yaxis2 <- list(
+    linecolor = toRGB("black"), linewidth = 2,
+    title = "Normalized intensity",
+    range = c(-1.3, 1.3),
+    titlefont = list(size = 12, color = "black")
+  )
+  
+  plotList <- list()
+  
+  plot <- plot %>% plotly::layout(xaxis = xaxis1, yaxis = yaxis1)
+  plotList[["plot"]] <- plot
+  
+  plot2 <- plot2 %>% plotly::layout(xaxis = xaxis2, yaxis = yaxis2)
+  plotList[["plot2"]] <- plot2
+  
+  plotf <- subplot(
+    plotList,
+    nrows = 2,
+    titleY = TRUE, titleX = TRUE,
+    heights = heights[1:2],
+    margin = 0.03,
+    shareX = FALSE,
+    which_layout = "merge"
+  )
+  
+  plotf <- plotf %>% plotly::layout(
+    legend = list(title = list(text = paste("<b>", "suspects", "</b>")))
+  )
+  
+  return(plotf)
+}

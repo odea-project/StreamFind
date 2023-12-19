@@ -67,6 +67,8 @@
 #' @template arg-ms-components
 #' @template arg-ms-onGroups
 #' @template arg-ms-addSuspects
+#' @template arg-ms-ppmMS2
+#' @template arg-ms-minFragments
 #'
 #' @references
 #' \insertRef{patroon01}{StreamFind}
@@ -283,20 +285,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
             if (self$has_groups()) {
               groups <- self$get_groups(filtered = FALSE, intensities = FALSE, average = FALSE, metadata = TRUE)
+              groups_sel <- groups$sn <= value
               groups <- groups$group
-              
-              # TODO add sn to group metadata output
-
-              index <- lapply(groups, function(x, features) {
-                which(features$group == x)
-              }, features = features)
-
-              groups_sel <- vapply(index, function(x, value) {
-                max(features$qlt_sn[x]) <= value
-              }, value = value, FALSE)
-              
               groups <- groups[groups_sel]
-
               private$.tag_filtered(groups, "minSnRatio")
 
             } else {
@@ -347,20 +338,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           if (self$has_groups()) {
             groups <- self$get_groups(filtered = FALSE, intensities = FALSE, average = FALSE, metadata = TRUE)
+            groups_sel <- groups$iso > 0
             groups <- groups$group
-            
-            # TODO add isotope to group metadata output
-
-            index <- lapply(groups, function(x, features) {
-              which(features$group == x)
-            }, features = features)
-
-            groups_sel <- vapply(index, function(x) {
-              all(features$iso_step[x] > 0)
-            }, FALSE)
-            
             groups <- groups[groups_sel]
-
             private$.tag_filtered(groups, "isotope")
 
           } else {
@@ -935,16 +915,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
     get_overview = function() {
       if (length(private$.analyses) > 0) {
 
-        if (!is.null(private$.groups)) {
-          wfilt <- !private$.groups$filtered
-
-          groups <- apply(
-            private$.groups[wfilt, self$get_analysis_names(), with = FALSE],
-            2, function(x) {
-              length(x[x > 0])
-            }
-          )
-
+        if (self$has_groups()) {
+          groups <- vapply(private$.analyses, function(x) {
+            grs <- x$features$group[!x$features$filtered]
+            length(grs[!is.na(grs)])
+          }, 0)
+          
         } else {
           groups <- 0
         }
@@ -2740,13 +2716,34 @@ MassSpecData <- R6::R6Class("MassSpecData",
         
         # adds rt and mass
         if (metadata) {
-          fts_meta <- fts[, .(rt = mean(rt), mass = mean(mass)), by = "group"]
+          cols <- colnames(fts)
+          if (!"qlt_noise" %in% cols) fts$qlt_noise <- NA_real_
+          if (!"qlt_sn" %in% cols) fts$qlt_sn <- NA_real_
+          if (!"istd" %in% cols) fts$istd <- list(NULL)
+          if (!"iso_step" %in% cols) fts$iso_step <- 0
+          
+          fts_meta <- fts[, .(
+            rt = round(mean(rt), digits = 2),
+            mass = round(mean(mass), digits = 5),
+            rtdev = round(max(rtmax) - min(rtmin), digits = 0),
+            massdev = round(max(mzmax) - min(mzmin), digits = 5),
+            presence = round(length(feature) / self$get_number_analyses() * 100, digits = 0),
+            sn = round(max(qlt_sn), digits = 1),
+            iso = min(iso_step),
+            istd = !all(vapply(istd, is.null, FALSE))
+          ), by = "group"]
+          
           fgroups <- fgroups[fts_meta, on = "group"]
         }
         
         if (intensities) fgroups <- fgroups[ints, on = "group"]
         
         if (average && sdValues) fgroups <- fgroups[iSD, on = "group"]
+        
+        if (filtered) {
+          ftag <- fts[, .(filter = paste(unique(filter), collapse = "; ")), by = "group"]
+          fgroups <- fgroups[ftag, on = "group"]
+        }
         
         fgroups
         
@@ -3109,8 +3106,21 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     get_suspects = function(analyses = NULL,
                             database = NULL,
-                            ppm = 4,
+                            features = NULL,
+                            mass = NULL,
+                            mz = NULL,
+                            rt = NULL,
+                            drift = NULL,
+                            ppm = 5,
                             sec = 10,
+                            millisec = 5,
+                            ppmMS2 = 10,
+                            minFragments = 3,
+                            isolationWindow = 1.3,
+                            mzClust = 0.003,
+                            presence = 0.8,
+                            minIntensity = 0,
+                            runParallel = FALSE,
                             filtered = FALSE,
                             onGroups = TRUE) {
       
@@ -3123,7 +3133,25 @@ MassSpecData <- R6::R6Class("MassSpecData",
       
       # Check if suspects are available in features
       if (is.null(database)) {
-        features <- self$get_features()
+        features <- self$get_features(
+          analyses,
+          features,
+          mass,
+          mz,
+          rt,
+          drift,
+          ppm,
+          sec,
+          millisec,
+          filtered
+        )
+        
+        if (nrow(features) == 0) {
+          message("\U2717 Features not found for targets!")
+          return(data.table())
+        }
+        
+        features[["name"]] <- NULL
         
         if ("suspects" %in% colnames(features)) {
           sel <- !vapply(features$suspects, is.null, TRUE)
@@ -3201,7 +3229,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
             x_rt <- database$rt[x]
             
-            if ("mz" %in% cols_db) {
+            if ("mz" %in% cols_db) x_mz <- database$mz[x] else x_mz <- NA_real_
+            
+            if (!is.na(x_mz)) {
               x_mz <- database$mz[x]
               
               temp <- self$get_features(
@@ -3270,7 +3300,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
               
               temp$error_rt <- NA_real_
               
-              cols_front <- c(cols_front, "id_level", "error_mass", "error_rt")
+              temp$shared_fragments <- 0
+              
+              temp$fragments <- NA_character_
+              
+              cols_front <- c(cols_front, "id_level", "error_mass", "error_rt", "shared_fragments", "fragments")
               
               setcolorder(temp, cols_front)
               
@@ -3282,10 +3316,90 @@ MassSpecData <- R6::R6Class("MassSpecData",
                   temp$error_rt[i] = round(temp$rt[i] - x_rt, digits = 1)
                 }
                 
-                # TODO add check for MS2 data in suspect screening
-                # when MS2 are loaded, if not loaded ask to load
+                if ("fragments" %in% colnames(database)) {
+                  fragments <- database$fragments[x]
+                  
+                  if (!is.na(fragments)) {
+                    
+                    if ("ms2" %in% colnames(temp)) {
+                      ms2 <- temp$ms2[[1]]
+                      
+                      if (is.null(ms2)) ms2 <- data.table()
+                      
+                    } else {
+                      ms2 <- self$get_features_ms2(
+                        temp$analysis,
+                        temp$feature,
+                        isolationWindow = isolationWindow,
+                        mzClust = mzClust,
+                        presence = presence,
+                        minIntensity = minIntensity,
+                        runParallel = runParallel
+                      )
+                    }
+                    
+                    if (nrow(ms2) > 0) {
+                      fragments <- unlist(strsplit(fragments, split = "; ", fixed = TRUE))
+                      fragments <- strsplit(fragments, " ")
+                      fragments <- data.table(
+                        "mz" = vapply(fragments, function(x) as.numeric(x[1]), NA_real_),
+                        "intensity" = vapply(fragments, function(x) as.numeric(x[2]), NA_real_)
+                      )
+                      
+                      setorder(fragments, -intensity)
+                      
+                      setorder(ms2, -intensity)
+                      
+                      fragments$intensity <- -fragments$intensity
+                      
+                      mzr <- fragments$mz * ppm / 1E6
+                      fragments$mzmin <- fragments$mz - mzr
+                      fragments$mzmax <- fragments$mz + mzr
+                      
+                      fragments$shared <- apply(fragments, 1, function(x) {
+                        any(ms2$mz >= x[3] & ms2$mz <= x[4])
+                      })
+                      
+                      # plot(
+                      #   intensity ~ mz, ms2,
+                      #   type = "h",
+                      #   xlab = expression(italic("m/z ") / " Da"),
+                      #   ylab = "Intensity / counts",
+                      #   col = "black",
+                      #   lwd = 2,
+                      #   ylim = c(min(fragments$intensity) * 1.5, max(ms2$intensity) * 1.5),
+                      #   yaxs = "i",
+                      #   xaxt = "n"
+                      # )
+                      # 
+                      # lines(
+                      #   intensity ~ mz, fragments,
+                      #   type = "h",
+                      #   pch = 19,
+                      #   lwd = 2,
+                      #   cex = 0.5,
+                      #   col = "red",
+                      #   yaxs = "i",
+                      #   xaxt = "n"
+                      # )
+                      
+                      temp$shared_fragments[i] = sum(fragments$shared)
+                      
+                      if (temp$shared_fragments[i] > 3) {
+                        
+                        temp$fragments <- database$fragments[x]
+                        
+                        if (temp$id_level[i] == "3b") {
+                          temp$id_level[i] = "1"
+                          
+                        } else if (temp$id_level[i] == "4") {
+                          temp$id_level[i] = "2"
+                        }
+                      }
+                    }
+                  }
+                }
               }
-             
             } else {
              temp <- data.table()
             }
@@ -3316,14 +3430,25 @@ MassSpecData <- R6::R6Class("MassSpecData",
         if (all(!is.na(analyses_df$group))) {
           
           keep_cols <- colnames(analyses_df)
-          keep_cols <- c(keep_cols[1:which(keep_cols %in% "error_mass") - 1], "group")
+          keep_cols <- c(keep_cols[1:which(keep_cols %in% "id_level") - 1], "group")
           
           order_cols <- colnames(analyses_df)
-          order_cols <- c(order_cols[1:which(order_cols %in% "analysis") - 1], "group")
-
-          temp_fts <- analyses_df[, keep_cols, with = FALSE]
+          order_cols <- c(order_cols[1:which(order_cols %in% "shared_fragments")], "group")
           
-          error_vals <- analyses_df[, .(error_mass = max(abs(error_mass)), error_rt = max(abs(error_rt))), by = "group"]
+          temp_fts <- analyses_df[, keep_cols, with = FALSE]
+
+          analyses_df$id_level <- factor(
+            analyses_df$id_level,
+            levels = c("1", "2", "3a", "3b", "4"),
+            ordered = TRUE
+          )
+          
+          error_vals <- analyses_df[, .(
+            id_level = min(id_level),
+            error_mass = max(abs(error_mass)),
+            error_rt = max(abs(error_rt)),
+            shared_fragments = max(shared_fragments)
+          ), by = "group"]
           
           groups_df <- self$get_groups(groups = unique(temp_fts$group),
             intensities = TRUE, average = TRUE, sdValues = FALSE, metadata = FALSE
@@ -6621,7 +6746,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         groupBy,
         verbose,
         filtered,
-        loadedGroupsMS1,
         runParallel
       )
 
@@ -6690,7 +6814,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         groupBy,
         verbose,
         filtered,
-        loadedGroupsMS2,
         runParallel
       )
 
@@ -6793,6 +6916,104 @@ MassSpecData <- R6::R6Class("MassSpecData",
       } else {
         istd <- self$get_internal_standards(average = FALSE)
         .plot_internal_standards_qc_interactive(istd, self$get_analysis_names())
+      }
+    },
+    
+    #' @description
+    #' Plots suspects.
+    #' 
+    #' @param database A data.frame with at least the columns name
+    #' and mass, indicating the name and neutral monoisotopic
+    #' mass of the suspect targets.
+    #'
+    #' @details The `ppm` and `sec` which indicate the
+    #' mass (im ppm) and time (in seconds) deviations applied during the
+    #' screening.
+    #'
+    #' @return A plot.
+    #'
+    plot_suspects = function(analyses = NULL,
+                             database = NULL,
+                             features = NULL,
+                             mass = NULL,
+                             mz = NULL,
+                             rt = NULL,
+                             drift = NULL,
+                             ppm = 4,
+                             sec = 10,
+                             millisec = 5,
+                             ppmMS2 = 10,
+                             minFragments = 3,
+                             isolationWindow = 1.3,
+                             mzClust = 0.003,
+                             presence = 0.8,
+                             minIntensity = 0,
+                             filtered = FALSE,
+                             rtExpand = 120,
+                             mzExpand = 0.005,
+                             loaded = TRUE,
+                             runParallel = FALSE,
+                             colorBy = "targets") {
+      
+      if (any(self$has_suspects())) {
+        
+        suspects <- self$get_suspects(
+          analyses,
+          database,
+          features,
+          mass,
+          mz,
+          rt,
+          drift,
+          ppm,
+          sec,
+          millisec,
+          ppmMS2,
+          minFragments,
+          isolationWindow ,
+          mzClust,
+          presence,
+          minIntensity,
+          runParallel,
+          filtered,
+          onGroups = FALSE
+        )
+        
+        if (nrow(suspects) == 0) return(NULL)
+        
+        eic <- self$get_features_eic(
+          analyses = unique(suspects$analysis),
+          features = suspects$feature,
+          rtExpand = rtExpand,
+          mzExpand = mzExpand,
+          filtered = filtered,
+          loaded = loaded,
+          runParallel = runParallel
+        )
+        
+        eic <- eic[, `:=`(intensity = sum(intensity)),
+          by = c("analysis", "polarity", "feature", "rt")
+        ][]
+        
+        if (nrow(eic) == 0) {
+          message("\U2717 Traces and/or features not found for targets!")
+          return(NULL)
+        }
+        
+        if (grepl("replicates", colorBy)) {
+          eic$replicate <- self$get_replicate_names()[eic$analysis]
+          suspects$replicate <- self$get_replicate_names()[suspects$analysis]
+        }
+        
+        suspects <- .make_colorBy_varkey(suspects, colorBy, TRUE)
+        
+        leg <- suspects$var
+        names(leg) <- paste0(suspects$feature, "_", suspects$analysis)
+        eic$uid <- paste0(eic$feature, "_", eic$analysis)
+        suspects$uid <- paste0(suspects$feature, "_", suspects$analysis)
+        eic$var <- leg[eic$uid]
+        
+        .plot_suspects_interactive(suspects, eic, heights = c(0.5, 0.5))
       }
     },
 

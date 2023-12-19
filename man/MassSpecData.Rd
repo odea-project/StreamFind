@@ -137,6 +137,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecData-plot_groups_ms2}{\code{MassSpecData$plot_groups_ms2()}}
 \item \href{#method-MassSpecData-plot_groups_overview}{\code{MassSpecData$plot_groups_overview()}}
 \item \href{#method-MassSpecData-plot_internal_standards_qc}{\code{MassSpecData$plot_internal_standards_qc()}}
+\item \href{#method-MassSpecData-plot_suspects}{\code{MassSpecData$plot_suspects()}}
 \item \href{#method-MassSpecData-map_components}{\code{MassSpecData$map_components()}}
 \item \href{#method-MassSpecData-run_workflow}{\code{MassSpecData$run_workflow()}}
 \item \href{#method-MassSpecData-centroid_spectra}{\code{MassSpecData$centroid_spectra()}}
@@ -155,12 +156,10 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecData-save_headers}{\code{MassSpecData$save_headers()}}
 \item \href{#method-MassSpecData-save_settings}{\code{MassSpecData$save_settings()}}
 \item \href{#method-MassSpecData-save_analyses}{\code{MassSpecData$save_analyses()}}
-\item \href{#method-MassSpecData-save_groups}{\code{MassSpecData$save_groups()}}
 \item \href{#method-MassSpecData-save}{\code{MassSpecData$save()}}
 \item \href{#method-MassSpecData-import_headers}{\code{MassSpecData$import_headers()}}
 \item \href{#method-MassSpecData-import_settings}{\code{MassSpecData$import_settings()}}
 \item \href{#method-MassSpecData-import_analyses}{\code{MassSpecData$import_analyses()}}
-\item \href{#method-MassSpecData-import_groups}{\code{MassSpecData$import_groups()}}
 \item \href{#method-MassSpecData-import_all}{\code{MassSpecData$import_all()}}
 \item \href{#method-MassSpecData-patRoon_report}{\code{MassSpecData$patRoon_report()}}
 \item \href{#method-MassSpecData-processing_function_calls}{\code{MassSpecData$processing_function_calls()}}
@@ -2228,8 +2227,21 @@ and mass (\code{ppm}) and time (\code{sec}) deviations.
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_suspects(
   analyses = NULL,
   database = NULL,
-  ppm = 4,
+  features = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  drift = NULL,
+  ppm = 5,
   sec = 10,
+  millisec = 5,
+  ppmMS2 = 10,
+  minFragments = 3,
+  isolationWindow = 1.3,
+  mzClust = 0.003,
+  presence = 0.8,
+  minIntensity = 0,
+  runParallel = FALSE,
   filtered = FALSE,
   onGroups = TRUE
 )}\if{html}{\out{</div>}}
@@ -2245,9 +2257,72 @@ of the analyses.}
 and mass, indicating the name and neutral monoisotopic
 mass of the suspect targets.}
 
+\item{\code{features}}{A character vector with the feature id/s or a data.frame or
+data.table with a column named \code{feature} with the feature id/s. A column
+named \code{analysis} can be given to specify from which analyses the features are
+returned.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
+data.table or data.frame named \code{min} and \code{max} with minimum and maximum
+neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time (in seconds) and/or drift time values (in milliseconds)
+can be given as one data.table or data.frame with columns named \code{mass} and
+\code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
+and \code{millisec}  arguments are used to calculate the ranges. Also works
+with a data.table or data.frame with minimum and maximum values of neutral
+mass, retention time and drift time targets. In this case, the column names
+must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that
+when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns
+data.table or data.frame named \code{mzmin} and \code{mzmax} with minimum and maximum
+\emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da)
+and retention time values (in seconds) can be given as one data.table or
+data.frame with columns named \code{mz} and \code{rt} and/or \code{drift}. Then, the
+deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments
+are used to calculate the ranges. Also works with a data.table or data.frame
+with minimum and maximum values of \emph{m/z}, retention time and drift time
+targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin},
+\code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges
+are given, the \code{ppm}, \code{sec} and \code{millisec} arguments are
+not used.}
+
+\item{\code{rt}}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+a two columns data.table or data.frame with minimum and maximum drift
+time values (in milliseconds).}
+
 \item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
 
 \item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+
+\item{\code{millisec}}{Numeric of length one with the drift time deviation,
+in milliseconds.}
+
+\item{\code{ppmMS2}}{Numeric of length one with the mass deviation, in ppm for MS2.}
+
+\item{\code{minFragments}}{Integer of length 1 with the minimum number of fragments.}
+
+\item{\code{isolationWindow}}{Numeric value with the isolation window (in Da)
+applied for ion isolation and fragmentation during acquisition of tandem
+data (i.e., MS2 data).}
+
+\item{\code{mzClust}}{Numeric value with the mass deviation threshold (in Da) to
+cluster mass traces. Highly dependent on the mass resolution of the MS data.}
+
+\item{\code{presence}}{Numeric of length one with the required presence ratio from
+0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
+present in all spectra) for traces during clustering of spectra.}
+
+\item{\code{minIntensity}}{Numeric value with the minimum intensity.}
+
+\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
 
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
 
@@ -4976,6 +5051,141 @@ A plot.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecData-plot_suspects"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-plot_suspects}{}}}
+\subsection{Method \code{plot_suspects()}}{
+Plots suspects.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$plot_suspects(
+  analyses = NULL,
+  database = NULL,
+  features = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  drift = NULL,
+  ppm = 4,
+  sec = 10,
+  millisec = 5,
+  ppmMS2 = 10,
+  minFragments = 3,
+  isolationWindow = 1.3,
+  mzClust = 0.003,
+  presence = 0.8,
+  minIntensity = 0,
+  filtered = FALSE,
+  rtExpand = 120,
+  mzExpand = 0.005,
+  loaded = TRUE,
+  runParallel = FALSE,
+  colorBy = "targets"
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name
+of the analyses.}
+
+\item{\code{database}}{A data.frame with at least the columns name
+and mass, indicating the name and neutral monoisotopic
+mass of the suspect targets.}
+
+\item{\code{features}}{A character vector with the feature id/s or a data.frame or
+data.table with a column named \code{feature} with the feature id/s. A column
+named \code{analysis} can be given to specify from which analyses the features are
+returned.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
+data.table or data.frame named \code{min} and \code{max} with minimum and maximum
+neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time (in seconds) and/or drift time values (in milliseconds)
+can be given as one data.table or data.frame with columns named \code{mass} and
+\code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
+and \code{millisec}  arguments are used to calculate the ranges. Also works
+with a data.table or data.frame with minimum and maximum values of neutral
+mass, retention time and drift time targets. In this case, the column names
+must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that
+when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns
+data.table or data.frame named \code{mzmin} and \code{mzmax} with minimum and maximum
+\emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da)
+and retention time values (in seconds) can be given as one data.table or
+data.frame with columns named \code{mz} and \code{rt} and/or \code{drift}. Then, the
+deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments
+are used to calculate the ranges. Also works with a data.table or data.frame
+with minimum and maximum values of \emph{m/z}, retention time and drift time
+targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin},
+\code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges
+are given, the \code{ppm}, \code{sec} and \code{millisec} arguments are
+not used.}
+
+\item{\code{rt}}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+a two columns data.table or data.frame with minimum and maximum drift
+time values (in milliseconds).}
+
+\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
+
+\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+
+\item{\code{millisec}}{Numeric of length one with the drift time deviation,
+in milliseconds.}
+
+\item{\code{ppmMS2}}{Numeric of length one with the mass deviation, in ppm for MS2.}
+
+\item{\code{minFragments}}{Integer of length 1 with the minimum number of fragments.}
+
+\item{\code{isolationWindow}}{Numeric value with the isolation window (in Da)
+applied for ion isolation and fragmentation during acquisition of tandem
+data (i.e., MS2 data).}
+
+\item{\code{mzClust}}{Numeric value with the mass deviation threshold (in Da) to
+cluster mass traces. Highly dependent on the mass resolution of the MS data.}
+
+\item{\code{presence}}{Numeric of length one with the required presence ratio from
+0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
+present in all spectra) for traces during clustering of spectra.}
+
+\item{\code{minIntensity}}{Numeric value with the minimum intensity.}
+
+\item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
+
+\item{\code{rtExpand}}{Numeric value with the retention time values (in seconds) for
+expanding left and right the mass range.}
+
+\item{\code{mzExpand}}{Numeric value with the mass or mass-to-charge ratio
+(\emph{m/z}) (in Da) for expanding left and right the mass range.}
+
+\item{\code{loaded}}{Logical. When \code{TRUE} and if available, previously
+loaded data will be used instead of extraction from raw data.}
+
+\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{colorBy}}{A string of length 1. One of \code{analyses}, \code{targets} (the
+default) or \code{replicates}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+The \code{ppm} and \code{sec} which indicate the
+mass (im ppm) and time (in seconds) deviations applied during the
+screening.
+}
+
+\subsection{Returns}{
+A plot.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecData-map_components"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-map_components}{}}}
 \subsection{Method \code{map_components()}}{
@@ -5552,32 +5762,6 @@ Saves the list of analyses as the defined \code{format} in
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecData-save_groups"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecData-save_groups}{}}}
-\subsection{Method \code{save_groups()}}{
-Saves the feature groups \code{data.table}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$save_groups(format = "json", name = "groups", path = getwd())}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{format}}{A string. Possible values are \code{json} and \code{rds} for saving as
-JSON or RDS formats, respectively.}
-
-\item{\code{name}}{String with the name of the file to be saved.}
-
-\item{\code{path}}{String with the directory of the file to be saved.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Saves the groups \code{data.table} as the defined \code{format}
-in the \code{path} and returns invisible.
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecData-save"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecData-save}{}}}
 \subsection{Method \code{save()}}{
@@ -5656,27 +5840,6 @@ Invisible.
 Imports analyses from a \emph{rds} or \emph{json} file.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecData$import_analyses(file = NA_character_)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
-method \code{save()}.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecData-import_groups"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecData-import_groups}{}}}
-\subsection{Method \code{import_groups()}}{
-Imports feature groups from a \emph{rds} or \emph{json} file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$import_groups(file = NA_character_)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

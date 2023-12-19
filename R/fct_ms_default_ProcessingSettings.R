@@ -1560,6 +1560,13 @@ validate.Settings_annotate_features_StreamFind <- function(x) {
 #' indicating the name and neutral monoisotopic mass of the suspect targets.
 #' @template arg-ms-ppm
 #' @template arg-ms-sec
+#' @template arg-ms-ppmMS2
+#' @template arg-ms-minFragments
+#' @template arg-ms-isolationWindow
+#' @template arg-ms-mzClust
+#' @template arg-ms-presence
+#' @template arg-ms-minIntensity
+#' @template arg-runParallel
 #' @template arg-ms-filtered
 #'
 #' @return A ProcessingSettings S3 class object with subclass
@@ -1569,8 +1576,15 @@ validate.Settings_annotate_features_StreamFind <- function(x) {
 #'
 Settings_suspect_screening_StreamFind <- function(
     database = NULL,
-    ppm = 4,
+    ppm = 5,
     sec = 10,
+    ppmMS2 = 10,
+    minFragments = 3,
+    isolationWindow = 1.3,
+    mzClust = 0.003,
+    presence = 0.8,
+    minIntensity = 0,
+    runParallel = FALSE,
     filtered = FALSE) {
 
   settings <- list(
@@ -1580,6 +1594,13 @@ Settings_suspect_screening_StreamFind <- function(
       "database" = database,
       "ppm" = ppm,
       "sec" = sec,
+      "ppmMS2" = ppmMS2,
+      "minFragments" = minFragments,
+      "isolationWindow" = isolationWindow,
+      "mzClust" = mzClust,
+      "presence" = presence,
+      "minIntensity" = minIntensity,
+      "runParallel" = runParallel,
       "filtered" = filtered
     ),
     version = as.character(packageVersion("StreamFind")),
@@ -1611,6 +1632,13 @@ validate.Settings_suspect_screening_StreamFind <- function(x) {
     checkmate::test_choice(x$algorithm, "StreamFind"),
     checkmate::test_number(x$parameters$ppm),
     checkmate::test_number(x$parameters$sec),
+    checkmate::test_number(x$parameters$ppmMS2),
+    checkmate::test_number(x$parameters$minFragments),
+    checkmate::test_number(x$parameters$isolationWindow),
+    checkmate::test_number(x$parameters$mzClust),
+    checkmate::test_number(x$parameters$presence),
+    checkmate::test_number(x$parameters$minIntensity),
+    checkmate::test_logical(x$parameters$runParallel, max.len = 1),
     checkmate::test_logical(x$parameters$filtered, max.len = 1)
   ) && if (is.data.frame(x$parameters$database)) {
     all(c("name", "mass") %in% colnames(x$parameters$database)) ||

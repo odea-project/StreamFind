@@ -12,13 +12,19 @@
     database = settings$parameters$database,
     ppm = settings$parameters$ppm,
     sec = settings$parameters$sec,
+    ppmMS2 = settings$parameters$ppmMS2,
+    minFragments = settings$parameters$minFragments,
+    isolationWindow = settings$parameters$isolationWindow,
+    mzClust = settings$parameters$mzClust,
+    presence = settings$parameters$presence,
+    minIntensity = settings$parameters$minIntensity,
     filtered = settings$parameters$filtered,
     onGroups = FALSE
   )
   
   suspect_cols <- colnames(suspect_features)
   suspect_cols <- c(suspect_cols[1:which(suspect_cols %in% "analysis") - 1])
-
+  
   if (nrow(suspect_features) > 0) {
     
     suspect_features_l <- split(suspect_features, suspect_features$analysis)
