@@ -21,6 +21,7 @@ all_files <- StreamFindData::get_ms_file_paths()
 all_db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
 db <- all_db[!grepl("IS", all_db$tag, fixed = TRUE), ]
 cols <- c("name", "formula", "mass", "SMILES", "rt", "polarity", "fragments")
+# cols <- c("name", "formula", "mass", "SMILES", "rt")
 db <- db[, cols, with = FALSE]
 # data.table::setnames(db, "mass", "neutralMass")
 
@@ -62,7 +63,7 @@ ps <- list(
   Settings_load_features_ms2_StreamFind(),
   Settings_calculate_quality_StreamFind(),
   Settings_filter_features_StreamFind(minSnRatio = 3),
-  Settings_suspect_screening_StreamFind(database = db, ppm = 8, sec = 10, ppmMS2 = 10, minFragments = 3),
+  Settings_suspect_screening_StreamFind(database = db, ppm = 10, sec = 15, ppmMS2 = 10, minFragments = 3),
   Settings_filter_features_StreamFind(onlySuspects = TRUE)
 )
 
@@ -75,11 +76,27 @@ ms <- MassSpecData$new(files_df) #[grepl("pos", files_df$replicate), ]
 ms$add_settings(ps)
 ms$run_workflow()
 
+
+
+
+
 # Export MS2 pattern -----
 
-# std <- MassSpecData$new(all_files[1:3])
+# std <- MassSpecData$new(list.files("/home/cunha/Documents/example_ms_files/", pattern = "00_hrms_mix1_pos_cent", full.names = TRUE))
 # std$add_settings(ps)
 # std$run_workflow()
+
+ms$plot_suspects()
+
+
+
+
+std$plot_eic(analyses = 1, mass = db, ppm = 10, sec = 15, legendNames = T)
+
+std$get_features(mass = db[9, ], filtered = TRUE)
+
+
+
 
 ms$plot_suspects()
 
@@ -110,8 +127,12 @@ View(std$get_features(mass = db))
 std$plot_groups(mass = db, legendNames = T)
 
 
+std$plot_features_ms2(mass = db[9, ], ppm = 10, loadedMS2 = F, legendNames = T)
 
-ms2 <- std$get_groups_ms2(mass = db, mzClust = 0.003, presence = 0.6)
+
+std$plot_groups_ms2(mass = db, ppm = 5, mzClust = 0.005, presence = 0.3, loadedFeaturesMS2 = TRUE, legendNames = T)
+
+ms2 <- std$get_groups_ms2(mass = db, mzClust = 0.005, presence = 0.4)
 db_out <- all_db
 if (!"polarity" %in% colnames(db_out)) {
  db_out$polarity <- NA_integer_

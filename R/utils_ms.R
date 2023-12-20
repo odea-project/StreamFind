@@ -10,7 +10,7 @@
 #' @noRd
 #'
 .trim_vector <- function(v, a, b) {
-  rowSums(mapply(function(a, b) v >= a & v <= b, a = a, b = b)) > 0
+  rowSums(as.matrix(mapply(function(a, b) v >= a & v <= b, a = a, b = b))) > 0
 }
 
 #' .trim_spectra_targets
@@ -28,39 +28,50 @@
   
   tg_list <- lapply(seq_len(nrow(targets)),
     function(z, traces, targets, preMZr) {
+      
       tg <- traces
       
       cutRt <- .trim_vector(tg$rt, targets$rtmin[z], targets$rtmax[z])
       
       tg <- tg[cutRt, ]
       
+      if (nrow(tg) == 0) return(NULL)
+      
       if (with_im) {
         cutIM <- .trim_vector(tg$drift, targets$driftmin[z], targets$driftmax[z])
         tg <- tg[cutIM, ]
       }
+      
+      if (nrow(tg) == 0) return(NULL)
 
       if ("polarity" %in% colnames(targets)) {
         tg <- tg[tg$polarity == targets$polarity[z], ]
       }
       
+      if (nrow(tg) == 0) return(NULL)
+      
       if (nrow(tg) > 0) {
+        
         if (!is.null(preMZr)) {
           cutMZ <- .trim_vector(tg$mz, targets$mzmin[z], targets$mzmax[z])
           tg <- tg[tg$level == 2 | (tg$level == 1 & cutMZ), ]
+          
           if (nrow(tg) > 0) {
             cutPreMZ <- .trim_vector(tg$pre_mz, preMZr$mzmin[z], preMZr$mzmax[z])
             tg <- tg[tg$level == 1 | (tg$level == 2 & cutPreMZ), ]
           }
+          
         } else {
           cutMZ <- .trim_vector(tg$mz, targets$mzmin[z], targets$mzmax[z])
           tg <- tg[cutMZ, ]
         }
       }
       
+      if (nrow(tg) == 0) return(NULL)
+      
       if (nrow(tg) > 0) {
         tg$id <- targets$id[z]
-      } else {
-        tg$id <- character()
+        
       }
       
       tg
@@ -69,6 +80,8 @@
     preMZr = preMZr,
     targets = targets
   )
+  
+  tg_list <- tg_list[!is.null(tg_list)]
   
   tg_df <- do.call("rbind", tg_list)
   

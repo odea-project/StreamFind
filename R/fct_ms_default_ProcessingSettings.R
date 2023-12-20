@@ -539,19 +539,19 @@ validate.Settings_find_features_xcms3_matchedfilter <- function(x) {
 #' @export
 #'
 Settings_find_features_openms <- function(
-    noiseThrInt = 500,
+    noiseThrInt = 1000,
     chromSNR = 3,
-    chromFWHM = 10,
-    mzPPM = 12,
-    reEstimateMTSD = FALSE,
+    chromFWHM = 7,
+    mzPPM = 15,
+    reEstimateMTSD = TRUE,
     traceTermCriterion = "sample_rate",
     traceTermOutliers = 5,
     minSampleRate = 1,
-    minTraceLength = 6,
-    maxTraceLength = -1,
+    minTraceLength = 4,
+    maxTraceLength = 70,
     widthFiltering = "fixed",
-    minFWHM = 5,
-    maxFWHM = 40,
+    minFWHM = 4,
+    maxFWHM = 35,
     traceSNRFiltering = TRUE,
     localRTRange = 0,
     localMZRange = 0,
@@ -1079,7 +1079,7 @@ validate.Settings_group_features_openms <- function(x) {
 Settings_load_features_ms1_StreamFind <- function(
     rtWindow = c(-2, 2),
     mzWindow = c(-1, 6),
-    mzClust = 0.003,
+    mzClust = 0.005,
     presence = 0.8,
     minIntensity = 250,
     filtered = FALSE,
@@ -1152,9 +1152,9 @@ validate.Settings_load_features_ms1_StreamFind <- function(x) {
 #'
 Settings_load_features_ms2_StreamFind <- function(
     isolationWindow = 1.3,
-    mzClust = 0.01,
-    presence = 0.6,
-    minIntensity = 0,
+    mzClust = 0.005,
+    presence = 0.8,
+    minIntensity = 10,
     filtered = FALSE,
     runParallel = TRUE,
     verbose = FALSE) {

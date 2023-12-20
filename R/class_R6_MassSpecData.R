@@ -1552,14 +1552,14 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         spec_list <- foreach(i = self$get_analyses(analyses), .packages = "StreamFind", .export = vars) %dopar% {
           run <- i$run
-
+          
           if (nrow(run) > 0) {
 
             if (!is.null(levels)) run <- run[run$level %in% levels, ]
 
             if (!is.null(targets)) {
 
-              trim <- function(v, a, b) rowSums(mapply(function(a, b) v >= a & v <= b, a = a, b = b)) > 0
+              trim <- function(v, a, b) rowSums(as.matrix(mapply(function(a, b) v >= a & v <= b, a = a, b = b))) > 0
 
               if ("polarity" %in% colnames(targets)) {
                 polarities_targets <- unique(targets$polarity)
@@ -1660,8 +1660,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         names(spec_list) <- analyses
 
         spec <- rbindlist(spec_list, idcol = "analysis", fill = TRUE)
-
-        message(" Done!")
 
         if (!cached_spectra & !is.null(hash)) {
           if (!is.null(spec)) {

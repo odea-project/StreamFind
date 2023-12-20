@@ -7,9 +7,9 @@
 \usage{
 Settings_load_features_ms2_StreamFind(
   isolationWindow = 1.3,
-  mzClust = 0.01,
-  presence = 0.6,
-  minIntensity = 0,
+  mzClust = 0.005,
+  presence = 0.8,
+  minIntensity = 10,
   filtered = FALSE,
   runParallel = TRUE,
   verbose = FALSE
