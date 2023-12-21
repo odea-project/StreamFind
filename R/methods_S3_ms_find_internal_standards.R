@@ -122,7 +122,6 @@
 
         x$features$istd <- istd_l
 
-
       } else {
         x$features$istd <- lapply(x$features$feature, function(x) NULL)
       }

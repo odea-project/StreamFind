@@ -26,13 +26,13 @@
 
   eic[["polarity"]] <- NULL
 
-  fts <- self$get_features(filtered = parameters$filtered)
+  fts <- self$get_features(filtered = TRUE)
 
-  fts <- fts[, c("analysis", "feature", "rt", "rtmin", "rtmax", "mz", "mzmin", "mzmax", "intensity"), with = FALSE]
+  fts <- fts[, c("analysis", "feature", "rt", "rtmin", "rtmax", "mz", "mzmin", "mzmax", "intensity", "filtered"), with = FALSE]
 
   if (nrow(eic) > 0) {
 
-    analyses <- unique(eic$analysis)
+    analyses <- self$get_analysis_names()
 
     cached_analyses <- FALSE
 
@@ -101,17 +101,15 @@
 
         ana <- i$a
 
-        ft_df <- as.data.table(i$f)
+        ft_df <- as.data.frame(i$f)
 
-        et_df <- as.data.table(i$e)
+        et_df <- as.data.frame(i$e)
+        
+        results <- rep(list(NULL), nrow(ft_df))
 
-        if (!(is.data.frame(ft_df) && is.data.frame(et_df))) {
-          return(NULL)
-        }
+        if (nrow(et_df) == 0) return(results)
 
-        if (!(nrow(ft_df) > 0 && nrow(et_df) > 0)) {
-          return(NULL)
-        }
+        if (nrow(ft_df) == 0) return(results)
 
         .gaussian <- function(x, A, mu, sigma) {
           A * exp(-(x - mu)^2 / (2 * sigma^2))
@@ -128,24 +126,30 @@
           return(output)
         }
 
-        results <- data.table("analysis" = ana, "feature" = ft_df$feature)
-
-        results$qlt_noise <- NA_real_
-        results$qlt_sn <- NA_real_
-        results$qlt_traces <- 0
-        results$qlt_gaufit <- NA_real_
-        results$qlt_fwhm <- NA_real_
-        results$qlt_A <- NA_real_
-        results$qlt_mu <- NA_real_
-        results$qlt_sigma <- NA_real_
-        results$qlt_warning <- FALSE
-        results$qlt_model <- list(NULL)
-
         its <- seq_len(nrow(ft_df))
 
         for (it in its) {
 
           ft <- ft_df[it, ]
+          
+          if (ft$filtered && !parameters$filtered) next
+          
+          pk_model <- list()
+          pk_model$traces <- 0
+          pk_model$noise <- NA_real_
+          pk_model$sn <- 0
+          pk_model$gaufit <- NA_real_
+          pk_model$fwhm <- NA_real_
+          pk_model$A <- NA_real_
+          pk_model$mu <- NA_real_
+          pk_model$sigma <- NA_real_
+          pk_model$rt <- NA_real_
+          pk_model$original <- NA_real_
+          pk_model$corrected <- NA_real_
+          pk_model$predicted <- NA_real_
+          pk_model$derivative <- NA_real_
+          pk_model$model <- NULL
+          pk_model$warning <- FALSE
 
           # message(paste0("\n Processing ", ft$feature, " from ", ana, " ... \n"))
 
@@ -156,12 +160,8 @@
           pk_ft <- et[et$rt >= (ft$rtmin - width) & et$rt <= (ft$rtmax + width), ]
 
           if (nrow(pk_ft) < parameters$minTraces) {
-
-            results$qlt_gaufit[it] <- 0
-
-            results[["qlt_model"]][it] <- list(warning = "Not enough traces in EIC!")
-
-            results$qlt_warning[it] <- TRUE
+            pk_model$traces <- nrow(pk_ft)
+            pk_model$warning <- "Not enough traces in EIC!"
 
             # message(paste0("\n Feature ", ft$feature, " in analysis ", ana, " has not enough EIC traces! \n"))
 
@@ -176,15 +176,15 @@
 
           noise <- mean(sort(pk_ft$intensity)[seq_len(noise_traces)])
 
-          results$qlt_sn[it] <- round(ft$intensity / noise, digits = 1)
+          pk_model$sn <- round(ft$intensity / noise, digits = 1)
 
-          results$qlt_noise[it] <- round(noise, digits = 0)
+          pk_model$noise <- round(noise, digits = 0)
 
           pk_eic <- et[et$rt >= (ft$rtmin - (width / 4)) & et$rt <= (ft$rtmax + (width / 4)), ]
 
           pk_eic <- pk_eic[pk_eic$intensity > noise, ]
 
-          results$qlt_traces[it] <- nrow(pk_eic)
+          pk_model$traces <- nrow(pk_eic)
 
           id_T <- NA_character_
           ana_T <- NA_character_
@@ -206,14 +206,7 @@
           }
 
           if (nrow(pk_eic) < parameters$minTraces) {
-
-            results$qlt_gaufit[it] <- 0
-
-            results[["qlt_model"]][it] <- list(
-              warning = "Not enough traces after noise correction!"
-            )
-
-            results$qlt_warning[it] <- TRUE
+            pk_model$warning <- "Not enough traces after noise correction!"
 
             # message(paste0("\n Feature ", ft$feature, " in analysis ", ana, " has gaussian fit warning: \n", "Not enough traces after noise correction!"))
 
@@ -313,14 +306,7 @@
           })
 
           if (is.null(model)) {
-
-            results$qlt_gaufit[it] <- 0
-
-            results[["qlt_model"]][it] <- list(
-              warning = fit_warning$message
-            )
-
-            results$qlt_warning[it] <- TRUE
+            pk_model$warning <- fit_warning$message
 
             # message(paste0("\n Feature ", ft$feature, " in analysis ", ana, " has gaussian fit error! \n"))
 
@@ -335,40 +321,54 @@
 
           R_squared <- 1 - (SS_residuals / SS_total)
 
-          fwhm <- 2 * coef(model)["sigma"] * sqrt(2 * log(2))
+          fwhm <- 2 * coef(model)[["sigma"]] * sqrt(2 * log(2))
 
-          pk_data <- data.table(
-            "rt" = pk_eic$rt,
-            "original" = pk_ints,
-            "corrected" = corrected_ints,
-            "predicted" = predicted_ints,
-            "derivative" = c(derivative01, NA_real_)
-          )
+          pk_model$gaufit <- R_squared
+          
+          pk_model$fwhm <- round(fwhm, digits = 1)
+          
+          pk_model$A <- round(coef(model)[["A"]], digits = 0)
+          
+          pk_model$mu <- round(coef(model)[["mu"]], digits = 1)
+          
+          pk_model$sigma <- round(coef(model)[["sigma"]], digits = 1)
+          
+          pk_model$rt <- pk_eic$rt
+          
+          pk_model$original <- pk_ints
+          
+          pk_model$corrected <- corrected_ints
+          
+          pk_model$predicted <- predicted_ints
+          
+          pk_model$derivative <- c(derivative01, NA_real_)
+          
+          pk_model$model <- model
+          
+          # pk_data <- data.table(
+          #   "rt" = pk_eic$rt,
+          #   "original" = pk_ints,
+          #   "corrected" = corrected_ints,
+          #   "predicted" = predicted_ints,
+          #   "derivative" = c(derivative01, NA_real_)
+          # )
+          # 
+          # pk_model <- list(
+          #   "model" = model,
+          #   "coefficients" = coef(model),
+          #   "data" = pk_data,
+          #   "R_square" = R_squared,
+          #   "warning" = NA_character_
+          # )
+          # 
+          # if (!is.null(fit_warning)) {
+          #   pk_model$warning <- fit_warning$message
+          #   results$qlt_warning[it] <- TRUE
+          # }
 
-          pk_model <- list(
-            "model" = model,
-            "coefficients" = coef(model),
-            "data" = pk_data,
-            "R_square" = R_squared,
-            "warning" = NA_character_
-          )
+          
 
-          if (!is.null(fit_warning)) {
-            pk_model$warning <- fit_warning$message
-            results$qlt_warning[it] <- TRUE
-          }
-
-          results$qlt_gaufit[it] <- R_squared
-
-          results$qlt_fwhm[it] <- round(fwhm, digits = 1)
-
-          results$qlt_A[it] <- round(coef(model)["A"], digits = 0)
-
-          results$qlt_mu[it] <- round(coef(model)["mu"], digits = 1)
-
-          results$qlt_sigma[it] <- round(coef(model)["sigma"], digits = 1)
-
-          results[["qlt_model"]][it] <- list(pk_model)
+          results[[it]] <- pk_model
 
           id_T <- NA_character_
           ana_T <- NA_character_
@@ -393,7 +393,8 @@
               loaded = FALSE
             )
           }
-        }
+        }# end for loop
+        
         results
       }
 
@@ -404,7 +405,7 @@
       names(quality) <- analyses
 
       message(" Done!")
-
+      
       if (!is.null(hash)) {
         patRoon::saveCacheData("calculate_quality", quality, hash)
         message("\U1f5ab Calculated features quality parameters cached!")
@@ -412,22 +413,33 @@
     } else {
       message("\U2139 Calculated features quality parameters loaded from cache!")
     }
+    
+    features <- self$get_analyses()
+    features <- lapply(features, function(x) x$features)
+    
+    features <- Map(
+      function(x, y) {
+        x[["quality"]] <- y
+        x
+      },
+      features, quality
+    )
+    
+    # quality <- rbindlist(quality, fill = TRUE)
+    # 
+    # cols_quality <- colnames(quality)
+    # cols_quality <- cols_quality[!cols_quality %in% c("feature", "analysis")]
+    # 
+    # features <- self$get_features(filtered = TRUE)
+    # 
+    # cols_features <- colnames(features)
+    # cols_features <- cols_features[!cols_features %in% cols_quality]
+    # 
+    # features <- features[, cols_features, with = FALSE]
+    # 
+    # features_w_quality <- merge(features, quality, all.x = TRUE)
 
-    quality <- rbindlist(quality, fill = TRUE)
-
-    cols_quality <- colnames(quality)
-    cols_quality <- cols_quality[!cols_quality %in% c("feature", "analysis")]
-
-    features <- self$get_features(filtered = TRUE)
-
-    cols_features <- colnames(features)
-    cols_features <- cols_features[!cols_features %in% cols_quality]
-
-    features <- features[, cols_features, with = FALSE]
-
-    features_w_quality <- merge(features, quality, all.x = TRUE)
-
-    self$add_features(features_w_quality, replace = TRUE)
+    suppressMessages(self$add_features(features, replace = TRUE))
 
     TRUE
 

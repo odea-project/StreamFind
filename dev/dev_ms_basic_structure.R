@@ -58,8 +58,8 @@ ps <- list(
   Settings_group_features_openms(),
   Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
   Settings_filter_features_StreamFind(minIntensity = 5000, maxGroupSd = 30, blank = 5, minGroupAbundance = 3, excludeIsotopes = TRUE),
-  Settings_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005),
-  Settings_load_features_ms1_StreamFind(),
+  Settings_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005, runParallel = FALSE),
+  # Settings_load_features_ms1_StreamFind(),
   Settings_load_features_ms2_StreamFind(),
   Settings_calculate_quality_StreamFind(),
   Settings_filter_features_StreamFind(minSnRatio = 3),
@@ -76,17 +76,27 @@ ms <- MassSpecData$new(files_df) #[grepl("pos", files_df$replicate), ]
 ms$add_settings(ps)
 ms$run_workflow()
 
-
+ms$plot_groups(interactive = F)
 
 
 
 # Export MS2 pattern -----
 
 # std <- MassSpecData$new(list.files("/home/cunha/Documents/example_ms_files/", pattern = "00_hrms_mix1_pos_cent", full.names = TRUE))
+# std <- MassSpecData$new(all_files[1:3])
 # std$add_settings(ps)
 # std$run_workflow()
 
-ms$plot_suspects()
+
+ms$get_features(filtered = FALSE)
+
+
+View(fts$istd)
+ms$get_internal_standards()
+
+
+
+std$plot_suspects()
 
 
 

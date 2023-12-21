@@ -277,7 +277,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (any(self$has_features())) {
 
-        if ("qlt_sn" %in% colnames(features)) {
+        if ("quality" %in% colnames(features)) {
 
           if (is.numeric(value) & length(value) == 1) {
             
@@ -292,7 +292,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
             } else {
               private$.analyses <- lapply(private$.analyses, function(x) {
-                sel <- x$features$qlt_sn <= value & !x$features$filtered
+                qlt <- x$features$quality$sn
+                qlt[is.null(qlt)] <- 0
+                sel <- qlt <= value & !x$features$filtered
                 x$features$filtered[sel] <- TRUE
                 x$features$filter[sel] <- "minSnRatio"
                 x
@@ -483,55 +485,51 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
         if (is.numeric(value) & length(value) == 1) {
           
-          message("\U2699 Subtracting blank...", appendLF = FALSE)
-          
           blk <- self$get_blank_names()
           
-          if (all(is.na(blk))) {
-            warning("There are no blank analysis replicates!")
-            return()
-          }
-          
           rpl <- self$get_replicate_names()
-
+          
           names(blk) <- rpl
           
           blk <- blk[!rpl %in% unique(blk)]
-
+          
           blk <- blk[!duplicated(names(blk))]
-
-          if (length(blk) == 0) {
-            warning("There are no blank analysis replicates associated for blank filtering!")
-            return()
-          }
-
-          groups <- self$get_groups(filtered = FALSE, intensities = TRUE, average = TRUE, sdValues = FALSE, metadata = FALSE)
-
-          for (r in seq_len(length(blk))) {
-            rp <- names(blk)[r]
-            bl <- blk[r]
-            groups[, (rp) := groups[[rp]] <= (groups[[bl]] * value)][]
-          }
-
-          groups_sel <- apply(groups[, names(blk), with = FALSE], MARGIN = 1,
-            function(x) { all(x, na.rm = TRUE) }
-          )
           
-          groups <- groups$group[groups_sel]
-
-          private$.tag_filtered(groups, "blank")
-
-          private$.register(
-            "filter_features",
-            "features",
-            "blank",
-            "StreamFind",
-            as.character(packageVersion("StreamFind")),
-            paste0("multiplier ", value)
-          )
+          if (length(blk) != 0) {
           
-          message(" Done!")
-
+            message("\U2699 Subtracting blank...", appendLF = FALSE)
+  
+            groups <- self$get_groups(filtered = FALSE, intensities = TRUE, average = TRUE, sdValues = FALSE, metadata = FALSE)
+  
+            for (r in seq_len(length(blk))) {
+              rp <- names(blk)[r]
+              bl <- blk[r]
+              groups[, (rp) := groups[[rp]] <= (groups[[bl]] * value)][]
+            }
+  
+            groups_sel <- apply(groups[, names(blk), with = FALSE], MARGIN = 1,
+              function(x) { all(x, na.rm = TRUE) }
+            )
+            
+            groups <- groups$group[groups_sel]
+  
+            private$.tag_filtered(groups, "blank")
+  
+            private$.register(
+              "filter_features",
+              "features",
+              "blank",
+              "StreamFind",
+              as.character(packageVersion("StreamFind")),
+              paste0("multiplier ", value)
+            )
+            
+            message(" Done!")
+          
+          
+          } else {
+            warning("There are no blank analysis replicates!")
+          }
         } else {
           warning("The value for blank filtering must be numeric and of length one!")
         }
@@ -1560,48 +1558,56 @@ MassSpecData <- R6::R6Class("MassSpecData",
             if (!is.null(targets)) {
 
               trim <- function(v, a, b) rowSums(as.matrix(mapply(function(a, b) v >= a & v <= b, a = a, b = b))) > 0
+              
+              tp_tar <- targets
+              pre_tar <- preMZr
 
-              if ("polarity" %in% colnames(targets)) {
-                polarities_targets <- unique(targets$polarity)
-
-                if (length(polarities_targets) == 1) {
-                  run <- run[run$polarity == polarities_targets, ]
+              if ("polarity" %in% colnames(tp_tar)) {
+                tar_polarities <- unique(tp_tar$polarity)
+                ana_polarities <- unique(run$polarity)
+                sel_tar <- tp_tar$polarity %in% ana_polarities
+                run <- run[run$polarity %in% tar_polarities, ]
+                tp_tar <- tp_tar[sel_tar, ]
+                
+                if (!is.null(pre_tar)) {
+                  pre_tar <- pre_tar[sel_tar, ]  
                 }
               }
+              
+              if (nrow(tp_tar) == 0) return(data.frame())
 
-              if ("analysis" %in% colnames(targets)) {
-                tp_tar <- targets[targets$analysis %in% i$name, ]
+              if ("analysis" %in% colnames(tp_tar)) {
+                sel_tar <- tp_tar$analysis %in% i$name
+                tp_tar <- tp_tar[sel_tar, ]
 
                 if (nrow(tp_tar) > 0) {
                   run <- run[trim(run$rt, tp_tar$rtmin, tp_tar$rtmax), ]
 
-                  if (i$has_ion_mobility) {
-                    run <- run[trim(run$drift, targets$driftmin, targets$driftmax), ]
+                  if (i$has_ion_mobility && nrow(run) > 0) {
+                    run <- run[trim(run$drift, tp_tar$driftmin, tp_tar$driftmax), ]
+                  }
+                  
+                  if (!is.null(pre_tar)) {
+                    pre_tar <- pre_tar[sel_tar, ]
+                    pre_tar_check <- trim(run$pre_mz, pre_tar$mzmin, pre_tar$mzmax)
+                    run <- run[(pre_tar_check %in% TRUE) | is.na(pre_tar_check), ]
                   }
 
                 } else {
-                  run <- data.frame()
+                  return(data.frame())
                 }
 
               } else {
-                run <- run[trim(run$rt, targets$rtmin, targets$rtmax), ]
+                run <- run[trim(run$rt, tp_tar$rtmin, tp_tar$rtmax), ]
 
-                if (i$has_ion_mobility) {
-                  run <- run[trim(run$drift, targets$driftmin, targets$driftmax), ]
+                if (i$has_ion_mobility && nrow(run) > 0) {
+                  run <- run[trim(run$drift, tp_tar$driftmin, tp_tar$driftmax), ]
                 }
-              }
-            }
-
-            if (!is.null(preMZr) & !is.null(targets)) {
-
-              if ("analysis" %in% colnames(targets)) {
-                pre_tar <- preMZr[targets$analysis %in% i$name, ]
-                preMZ_check <- trim(run$pre_mz, pre_tar$mzmin, pre_tar$mzmax)
-                run <- run[(preMZ_check %in% TRUE) | is.na(preMZ_check), ]
-
-              } else {
-                preMZ_check <- trim(run$pre_mz, preMZr$mzmin, preMZr$mzmax)
-                run <- run[(preMZ_check %in% TRUE) | is.na(preMZ_check), ]
+                
+                if (!is.null(pre_tar)) {
+                  pre_tar_check <- trim(run$pre_mz, pre_tar$mzmin, pre_tar$mzmax)
+                  run <- run[(pre_tar_check %in% TRUE) | is.na(pre_tar_check), ]
+                }
               }
             }
 
@@ -1610,28 +1616,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
               run <- rcpp_parse_ms_analysis_spectra(i, run$index)
 
               if (!is.null(targets)) {
-
-                if ("analysis" %in% colnames(targets)) {
-
-                  tp_tar <- targets[targets$analysis %in% i$name, ]
-
-                  if (!is.null(preMZr)) {
-                    pre_tar <- preMZr[targets$analysis %in% i$name, ]
-
-                  } else {
-                    pre_tar <- NULL
-                  }
-
-                  if (nrow(tp_tar) > 0) {
-                    run <- .trim_spectra_targets(run, tp_tar, pre_tar, i$has_ion_mobility)
-
-                  } else {
-                    run <- data.frame()
-                  }
-
-                } else {
-                  run <- .trim_spectra_targets(run, targets, preMZr, i$has_ion_mobility)
-                }
+                run <- .trim_spectra_targets(run, tp_tar, pre_tar, i$has_ion_mobility)
               }
 
               if (!i$has_ion_mobility) run[["drift"]] <- NULL
@@ -2715,20 +2700,19 @@ MassSpecData <- R6::R6Class("MassSpecData",
         # adds rt and mass
         if (metadata) {
           cols <- colnames(fts)
-          if (!"qlt_noise" %in% cols) fts$qlt_noise <- NA_real_
-          if (!"qlt_sn" %in% cols) fts$qlt_sn <- NA_real_
-          if (!"istd" %in% cols) fts$istd <- list(NULL)
+          if (!"istd" %in% cols) fts[["istd"]] <- list(NULL)
+          if (!"quality" %in% cols) fts[["quality"]] <- list(NULL)
           if (!"iso_step" %in% cols) fts$iso_step <- 0
           
           fts_meta <- fts[, .(
-            rt = round(mean(rt), digits = 2),
-            mass = round(mean(mass), digits = 5),
-            rtdev = round(max(rtmax) - min(rtmin), digits = 0),
-            massdev = round(max(mzmax) - min(mzmin), digits = 5),
+            rt = round(mean(rt), digits = 0),
+            mass = round(mean(mass), digits = 4),
+            rtdev = round(max(rtmax - rtmin), digits = 0),
+            massdev = round(max(mzmax - mzmin), digits = 4),
             presence = round(length(feature) / self$get_number_analyses() * 100, digits = 0),
-            sn = round(max(qlt_sn), digits = 1),
+            sn = round(max(vapply(quality, function(x) if (!is.null(x)) x$sn else 0, 0)), digits = 1),
             iso = min(iso_step),
-            istd = !all(vapply(istd, is.null, FALSE))
+            istd = paste0(unique(vapply(istd, function(x) if (!is.null(x)) x$name else NA_character_, NA_character_)), collapse = "; ")
           ), by = "group"]
           
           fgroups <- fgroups[fts_meta, on = "group"]
@@ -5830,10 +5814,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return Logical value.
     #'
     has_features_eic = function(analyses = NULL) {
+      
       analyses <- private$.check_analyses_argument(analyses)
-      if (is.null(analyses)) {
-        return(FALSE)
-      }
+      
+      if (is.null(analyses)) return(FALSE)
 
       has_eics <- vapply(private$.analyses[analyses], function(x) {
 
@@ -5844,7 +5828,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
           } else {
             FALSE
           }
-
         } else {
           FALSE
         }

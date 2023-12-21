@@ -1035,7 +1035,7 @@
   
   plot_qlt <- FALSE
   
-  if ("qlt_model" %in% colnames(features)) {
+  if ("quality" %in% colnames(features)) {
     plot_qlt <- TRUE
   }
 
@@ -1105,11 +1105,9 @@
     )
     
     if (plot_qlt) {
-      q_t <- pk_a$qlt_model[[1]]
+      q_t <- pk_a$quality[[1]]
       
-      if (!is.null(q_t)) {
-        q_t <- q_t$data
-        
+      if (!is.null(q_t$model)) {
         lines(
           x = q_t$rt,
           y = q_t$predicted,
@@ -1122,7 +1120,7 @@
         
         lines(
           x = q_t$rt,
-          y = rep(pk_a$qlt_noise, nrow(q_t)),
+          y = rep(q_t$noise, length(q_t$rt)),
           type = "l",
           pch = 19,
           cex = 0.3,
@@ -1184,7 +1182,7 @@
   
   plot_qlt <- FALSE
   
-  if ("qlt_model" %in% colnames(features)) {
+  if ("quality" %in% colnames(features)) {
     plot_qlt <- TRUE
   }
 
@@ -1256,25 +1254,26 @@
         FALSE
       },
       if (plot_qlt) {
-        paste(
-          "</br> noise: ", pk$qlt_noise,
-          "</br> sn: ", pk$qlt_sn,
-          "</br> gaufit: ", round(pk$qlt_gaufit, digits = 4),
-          "</br> A: ", pk$qlt_A,
-          "</br> mu: ", pk$qlt_mu,
-          "</br> sigma: ", pk$qlt_sigma
-        )
+        q_t <- pk$quality[[1]]
+        
+        if (!is.null(q_t$model)) {
+          paste(
+            "</br> noise: ", q_t$noise,
+            "</br> sn: ", q_t$sn,
+            "</br> gaufit: ", round(q_t$gaufit, digits = 4),
+            "</br> A: ", q_t$A,
+            "</br> mu: ", q_t$mu,
+            "</br> sigma: ", q_t$sigma
+          )
+        }
       } else {
         ""
       }
     )
     
     if (plot_qlt) {
-      q_t <- pk$qlt_model[[1]]
       
-      if (!is.null(q_t)) {
-        q_t <- q_t$data
-        
+      if (!is.null(q_t$model)) {
         plot <- plot %>%  plotly::add_trace(
           x = q_t$rt,
           y = q_t$predicted,
@@ -1288,7 +1287,7 @@
         
         plot <- plot %>%  plotly::add_trace(
           x = q_t$rt,
-          y = rep(pk$qlt_noise, nrow(q_t)),
+          y = rep(q_t$noise, length(q_t$rt)),
           type = 'scatter',
           name = lt,
           legendgroup = lt,
@@ -2533,7 +2532,7 @@
   
   plot_qlt <- FALSE
   
-  if ("qlt_model" %in% colnames(suspects)) plot_qlt <- TRUE
+  if ("quality" %in% colnames(suspects)) plot_qlt <- TRUE
   
   plot <- plot_ly()
   
@@ -2592,14 +2591,18 @@
             FALSE
           },
           if (plot_qlt) {
-            paste(
-              "</br> noise: ", ft$qlt_noise,
-              "</br> sn: ", ft$qlt_sn,
-              "</br> gaufit: ", round(ft$qlt_gaufit, digits = 4),
-              "</br> A: ", ft$qlt_A,
-              "</br> mu: ", ft$qlt_mu,
-              "</br> sigma: ", ft$qlt_sigma
-            )
+            q_t <- ft$quality[[1]]
+            
+            if (!is.null(q_t$model)) {
+              paste(
+                "</br> noise: ", q_t$noise,
+                "</br> sn: ", q_t$sn,
+                "</br> gaufit: ", round(q_t$gaufit, digits = 4),
+                "</br> A: ", q_t$A,
+                "</br> mu: ", q_t$mu,
+                "</br> sigma: ", q_t$sigma
+              )
+            }
           } else {
             ""
           }
