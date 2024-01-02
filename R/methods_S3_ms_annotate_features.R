@@ -18,32 +18,13 @@
 
   if (.caches_data()) {
     hash <- patRoon::makeHash(names(features), features, settings)
-    iso_features <- patRoon::loadCacheData("annotate_features", hash)
+    isotopes <- patRoon::loadCacheData("annotate_features", hash)
 
-    if (!is.null(iso_features)) {
-
-      check <- vapply(names(iso_features),
-        function(x, iso_features, features) {
-          temp_i <- iso_features[[x]]$feature
-          temp_f <- features[[x]]$feature
-          s_length <- length(temp_i) == length(temp_f)
-          s_id <- all(temp_i %in% temp_f)
-          all(c(s_length, s_id))
-        },
-        iso_features = iso_features,
-        features = features,
-        FALSE
-      )
-
-      if (all(check)) {
-        cached_analyses <- TRUE
-      } else {
-        iso_features <- NULL
-      }
-    }
+    if (!is.null(isotopes)) cached_analyses <- TRUE
+    
   } else {
     hash <- NULL
-    iso_features <- NULL
+    isotopes <- NULL
   }
 
   parameters <- settings$parameters
@@ -72,72 +53,69 @@
 
     vars <- c("rcpp_ms_annotation_isotopes")
 
-    iso_output <- foreach(i = features, .packages = "StreamFind", .export = vars
-    ) %dopar% {
+    isotopes <- foreach(i = features, .packages = "StreamFind", .export = vars) %dopar% {
       do.call("rcpp_ms_annotation_isotopes", c(list("features" = i), parameters))
     }
 
-    names(iso_output) <- names(features)
-
-    iso_group_count <- 0
-
-    iso_features <- lapply(names(iso_output),
-      function(x, iso_output, features) {
-        temp_i <- copy(iso_output[[x]]$output)
-        temp_i[["index"]] <- NULL
-        temp_i[["mz"]] <- NULL
-        temp_i[["rt"]] <- NULL
-        temp_i[["intensity"]] <- NULL
-
-        feature = NULL
-
-        temp_f <- copy(features[[x]])
-
-        `.` <- list
-
-        temp <- temp_f[temp_i, on = .(feature = feature)]
-
-        temp_max_gr <- max(temp$iso_gr)
-
-        temp$iso_gr <- temp$iso_gr + iso_group_count
-
-        iso_group_count <<- iso_group_count + temp_max_gr
-
-        temp
-      },
-      iso_output = iso_output,
-      features = features
-    )
-
-    names(iso_features) <- names(iso_output)
-
-    check <- vapply(names(iso_features),
-      function(x, iso_features, features) {
-        temp_i <- iso_features[[x]]$feature
-        temp_f <- features[[x]]$feature
-        s_length <- length(temp_i) == length(temp_f)
-        s_id <- all(temp_i %in% temp_f)
-        all(c(s_length, s_id))
-      },
-      iso_features = iso_features,
-      features = features,
-      FALSE
-    )
-
-    if (!all(check)) return(FALSE)
-
+    names(isotopes) <- names(features)
+  
     message(" Done!")
-
+    
     if (!is.null(hash)) {
-      patRoon::saveCacheData("annotate_features", iso_features, hash)
+      patRoon::saveCacheData("annotate_features", isotopes, hash)
       message("\U1f5ab Annotated features cached!")
     }
 
   } else {
     message("\U2139 Features annotation loaded from cache!")
   }
+  
+  iso_group_count <- 0
+  
+  iso_col <- lapply(names(isotopes), function(x, isotopes, features) {
+    temp_i <- isotopes[[x]]$output2
+    temp_i_fts <- vapply(temp_i, function(x) x$feature, NA_character_)
+    names(temp_i) <- temp_i_fts
+    
+    temp_f <- copy(features[[x]])
+    temp_f_fts <- temp_f$feature
+    
+    if (!all(temp_i_fts %in% temp_f_fts)) {
+      stop("Annotated features do not exist in features!")
+    }
+    
+    temp_i <- temp_i[temp_f_fts]
+    
+    if (!identical(names(temp_i), temp_f_fts)) {
+      stop("Annotated features do not match features!")
+    }
+    
+    temp_max_gr <- max(vapply(temp_i, function(x) x$cluster, 0))
+    
+    temp_i <- lapply(temp_i, function(x, iso_group_count) {
+      x$cluster <- x$cluster + iso_group_count
+      x
+    }, iso_group_count = iso_group_count)
+    
+    iso_group_count <<- iso_group_count + temp_max_gr
+    
+    temp_i
+  },
+  isotopes = isotopes,
+  features = features
+  )
+  
+  names(iso_col) <- names(features)
+  
+  features <- Map(
+    function(x, y) {
+      x[["isotope"]] <- y
+      x
+    },
+    features, iso_col
+  )
 
-  self$add_features(iso_features, replace = TRUE)
+  suppressMessages(self$add_features(features, replace = TRUE))
 
   TRUE
 }

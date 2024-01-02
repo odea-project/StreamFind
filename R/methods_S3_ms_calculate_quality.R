@@ -323,7 +323,7 @@
 
           fwhm <- 2 * coef(model)[["sigma"]] * sqrt(2 * log(2))
 
-          pk_model$gaufit <- R_squared
+          pk_model$gaufit <- round(R_squared, 4)
           
           pk_model$fwhm <- round(fwhm, digits = 1)
           
@@ -343,7 +343,7 @@
           
           pk_model$derivative <- c(derivative01, NA_real_)
           
-          pk_model$model <- model
+          # pk_model$model <- model
           
           # pk_data <- data.table(
           #   "rt" = pk_eic$rt,

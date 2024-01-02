@@ -73,7 +73,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecData-get_groups_ms1}{\code{MassSpecData$get_groups_ms1()}}
 \item \href{#method-MassSpecData-get_groups_ms2}{\code{MassSpecData$get_groups_ms2()}}
 \item \href{#method-MassSpecData-get_groups_coverage}{\code{MassSpecData$get_groups_coverage()}}
-\item \href{#method-MassSpecData-get_components}{\code{MassSpecData$get_components()}}
+\item \href{#method-MassSpecData-get_isotopes}{\code{MassSpecData$get_isotopes()}}
 \item \href{#method-MassSpecData-get_suspects}{\code{MassSpecData$get_suspects()}}
 \item \href{#method-MassSpecData-get_modules_data}{\code{MassSpecData$get_modules_data()}}
 \item \href{#method-MassSpecData-get_internal_standards}{\code{MassSpecData$get_internal_standards()}}
@@ -138,7 +138,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecData-plot_groups_overview}{\code{MassSpecData$plot_groups_overview()}}
 \item \href{#method-MassSpecData-plot_internal_standards_qc}{\code{MassSpecData$plot_internal_standards_qc()}}
 \item \href{#method-MassSpecData-plot_suspects}{\code{MassSpecData$plot_suspects()}}
-\item \href{#method-MassSpecData-map_components}{\code{MassSpecData$map_components()}}
+\item \href{#method-MassSpecData-map_isotopes}{\code{MassSpecData$map_isotopes()}}
 \item \href{#method-MassSpecData-run_workflow}{\code{MassSpecData$run_workflow()}}
 \item \href{#method-MassSpecData-centroid_spectra}{\code{MassSpecData$centroid_spectra()}}
 \item \href{#method-MassSpecData-bin_spectra}{\code{MassSpecData$bin_spectra()}}
@@ -160,7 +160,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecData-import_headers}{\code{MassSpecData$import_headers()}}
 \item \href{#method-MassSpecData-import_settings}{\code{MassSpecData$import_settings()}}
 \item \href{#method-MassSpecData-import_analyses}{\code{MassSpecData$import_analyses()}}
-\item \href{#method-MassSpecData-import_all}{\code{MassSpecData$import_all()}}
+\item \href{#method-MassSpecData-import}{\code{MassSpecData$import()}}
 \item \href{#method-MassSpecData-patRoon_report}{\code{MassSpecData$patRoon_report()}}
 \item \href{#method-MassSpecData-processing_function_calls}{\code{MassSpecData$processing_function_calls()}}
 \item \href{#method-MassSpecData-clone}{\code{MassSpecData$clone()}}
@@ -2130,17 +2130,16 @@ A data.table.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecData-get_components"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecData-get_components}{}}}
-\subsection{Method \code{get_components()}}{
-Gets feature components (i.e., isotope clusters and adducts) in the
-analyses.
+\if{html}{\out{<a id="method-MassSpecData-get_isotopes"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-get_isotopes}{}}}
+\subsection{Method \code{get_isotopes()}}{
+Gets feature isotopes (i.e., isotope clusters) in the analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_components(
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$get_isotopes(
   analyses = NULL,
   groups = NULL,
   features = NULL,
-  components = NULL,
+  clusters = NULL,
   mass = NULL,
   mz = NULL,
   rt = NULL,
@@ -2166,7 +2165,7 @@ data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
 returned.}
 
-\item{\code{components}}{A numeric vector with the number/s of feature component/s.}
+\item{\code{clusters}}{A numeric vector with the number/s of feature cluster/s.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -5186,16 +5185,16 @@ A plot.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecData-map_components"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecData-map_components}{}}}
-\subsection{Method \code{map_components()}}{
-Maps components (i.e., isotope clusters and adducts) in the analyses.
+\if{html}{\out{<a id="method-MassSpecData-map_isotopes"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-map_isotopes}{}}}
+\subsection{Method \code{map_isotopes()}}{
+Maps isotopic clusters in the analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$map_components(
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$map_isotopes(
   analyses = NULL,
   groups = NULL,
   features = NULL,
-  components = NULL,
+  clusters = NULL,
   mass = NULL,
   mz = NULL,
   rt = NULL,
@@ -5228,7 +5227,7 @@ data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
 returned.}
 
-\item{\code{components}}{A numeric vector with the number/s of feature component/s.}
+\item{\code{clusters}}{A numeric vector with the number/s of feature cluster/s.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -5855,12 +5854,12 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecData-import_all"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecData-import_all}{}}}
-\subsection{Method \code{import_all()}}{
-Imports all fields from a \code{MassSpecData} object saved as \emph{json}.
+\if{html}{\out{<a id="method-MassSpecData-import"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecData-import}{}}}
+\subsection{Method \code{import()}}{
+Imports a \code{MassSpecData} object saved as \emph{json}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$import_all(file = NA_character_)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecData$import(file = NA_character_)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

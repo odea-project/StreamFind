@@ -68,6 +68,7 @@ ps <- list(
 )
 
 # patRoon::clearCache("all")
+# patRoon::clearCache(c("annotate_features"))
 # patRoon::clearCache(c("calculate_quality"))
 # patRoon::clearCache(c("load_features_ms2"))
 # patRoon::clearCache(c("load_features_ms1"))
@@ -76,8 +77,12 @@ ms <- MassSpecData$new(files_df) #[grepl("pos", files_df$replicate), ]
 ms$add_settings(ps)
 ms$run_workflow()
 
-ms$plot_groups(interactive = F)
 
+
+
+#ms$plot_groups(interactive = T)
+
+ms$plot_suspects()
 
 
 # Export MS2 pattern -----
@@ -88,7 +93,7 @@ ms$plot_groups(interactive = F)
 # std$run_workflow()
 
 
-ms$get_features(filtered = FALSE)
+
 
 
 View(fts$istd)

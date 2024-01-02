@@ -130,10 +130,6 @@ ms$add_settings(
 
     Settings_load_features_ms2_StreamFind(),
 
-    Settings_load_groups_ms1_StreamFind(),
-
-    Settings_load_groups_ms2_StreamFind(),
-
     Settings_calculate_quality_StreamFind(),
     
     Settings_filter_features_StreamFind(
@@ -219,8 +215,8 @@ ms$plot_groups_ms2(
 )
 
 
-# Isotopic chains
-ms$map_components(
+# Isotopic clusters
+ms$map_isotopes(
   analyses = 10,
   mass = db,
   ppm = 8, sec = 10,

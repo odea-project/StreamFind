@@ -339,6 +339,8 @@
     temp$mzmin <- round(temp$mzmin, 8)
     temp$mzmax <- round(temp$mzmax, 8)
     
+    temp$isocount <- NULL
+    
     temp
   }, extra = extra, features = features, self = self, isSet = isSet)
 

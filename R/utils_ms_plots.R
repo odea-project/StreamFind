@@ -1679,11 +1679,11 @@
         "</br> filled: ", ft_nf$is_filled,
         "</br> filtered: ", ft_nf$filtered,
         "</br> filter: ", ft_nf$filter,
-        ifelse("iso_gr" %in% colnames(ft_nf),
-          paste("</br> component: ", ft_nf$iso_gr,
-                "</br>  - size: ", ft_nf$iso_size,
-                "</br>  - isotope: ", ft_nf$iso_cat,
-                "</br>  - carbons: ", ft_nf$iso_n_carbons), "")
+        ifelse("isotope" %in% colnames(ft_nf),
+          paste("</br> cluster: ", vapply(ft_nf$isotope, function(x) x$cluster, NA_real_),
+                "</br>  - size: ", vapply(ft_nf$isotope, function(x) x$cluster_size, NA_real_),
+                "</br>  - isotope: ", vapply(ft_nf$isotope, function(x) x$tag, NA_character_),
+                "</br>  - carbons: ", vapply(ft_nf$isotope, function(x) x$carbons, NA_real_)), "")
       )
     )
 
@@ -1823,68 +1823,68 @@
   return(plotf_2)
 }
 
-#' .map_components_interactive
+#' .map_isotopes_interactive
 #'
 #' @noRd
 #'
-.map_components_interactive <- function(components, colorBy = "targets",
+.map_isotopes_interactive <- function(isotopes, colorBy = "targets",
                                       legendNames = NULL,
                                       xlim = 60, ylim = 5,
                                       title = NULL, showLegend = TRUE) {
 
   if ("analyses" %in% colorBy) {
-    leg <- unique(components$analysis)
-    varkey <- components$analysis
-  } else if ("replicates" %in% colorBy & "replicate" %in% colnames(components)) {
-    leg <- unique(components$replicate)
-    varkey <- components$replicate
+    leg <- unique(isotopes$analysis)
+    varkey <- isotopes$analysis
+  } else if ("replicates" %in% colorBy & "replicate" %in% colnames(isotopes)) {
+    leg <- unique(isotopes$replicate)
+    varkey <- isotopes$replicate
   } else if (is.character(legendNames) &
-             length(legendNames) == length(unique(components$iso_gr))) {
+             length(legendNames) == length(unique(isotopes$iso_cluster))) {
     leg <- legendNames
-    names(leg) <- unique(components$iso_gr)
-    varkey <- leg[components$iso_gr]
-  } else if ("name" %in% colnames(components) & isTRUE(legendNames)) {
-    leg <- unique(components$name)
-    varkey <- components$name
+    names(leg) <- unique(isotopes$iso_cluster)
+    varkey <- leg[isotopes$iso_cluster]
+  } else if ("name" %in% colnames(isotopes) & isTRUE(legendNames)) {
+    leg <- unique(isotopes$name)
+    varkey <- isotopes$name
   } else if ("features" %in% colorBy) {
-    leg <- unique(components$feature)
-    varkey <- components$feature
+    leg <- unique(isotopes$feature)
+    varkey <- isotopes$feature
   } else {
-    leg <- unique(components$iso_gr)
-    varkey <- as.character(components$iso_gr)
+    leg <- unique(isotopes$iso_cluster)
+    varkey <- as.character(isotopes$iso_cluster)
   }
 
-  components$var <- varkey
+  isotopes$var <- varkey
 
   if (length(xlim) == 1) {
-    rtr <- c(min(components$rtmin) - xlim, max(components$rtmax) + xlim)
+    rtr <- c(min(isotopes$rtmin) - xlim, max(isotopes$rtmax) + xlim)
   } else if (length(xlim) == 2) {
     rtr <- xlim
   } else {
-    rtr <- c(min(components$rtmin), max(components$rtmax))
+    rtr <- c(min(isotopes$rtmin), max(isotopes$rtmax))
   }
 
   if (length(ylim) == 1) {
-    mzr <- c(min(components$mzmin) - ylim, max(components$mzmax) + ylim)
+    mzr <- c(min(isotopes$mzmin) - ylim, max(isotopes$mzmax) + ylim)
   } else if (length(ylim) == 2) {
     mzr <- ylim
   } else {
-    mzr <- c(min(components$mzmin), max(components$mzmax))
+    mzr <- c(min(isotopes$mzmin), max(isotopes$mzmax))
   }
 
-  cl <- .get_colors(unique(components$var))
+  cl <- .get_colors(unique(isotopes$var))
 
   plotlegend <- rep(TRUE, length(cl))
   names(plotlegend) <- names(cl)
 
   plot <- plot_ly()
 
-  for (i in seq_len(nrow(components))) {
+  for (i in seq_len(nrow(isotopes))) {
 
-    x0 <- components$rtmin[i]
-    x1 <- components$rtmax[i]
-    y0 <- components$mzmin[i]
-    y1 <- components$mzmax[i]
+    x0 <- isotopes$rtmin[i]
+    x1 <- isotopes$rtmax[i]
+    y0 <- isotopes$mzmin[i]
+    y1 <- isotopes$mzmax[i]
 
     plot <- plot %>% add_trace(
       x = c(x0, x1, x1, x0, x0),
@@ -1892,16 +1892,16 @@
       type = "scatter",
       mode = "lines",
       fill = "none",
-      line = list(color = cl[components$var[i]]),
+      line = list(color = cl[isotopes$var[i]]),
       opacity = 0.2,
-      name = components$var[i],
-      legendgroup = components$var[i],
+      name = isotopes$var[i],
+      legendgroup = isotopes$var[i],
       showlegend = FALSE
     )
   }
 
-  for (i in seq_len(nrow(components))) {
-    ft <- components[i, ]
+  for (i in seq_len(nrow(isotopes))) {
+    ft <- isotopes[i, ]
     x <- ft$rt
     y <- ft$mz
 
@@ -1909,20 +1909,19 @@
       x = x, y = y,
       type = "scatter", mode = "markers+text",
       #color = cl[ft$var],
-      marker = list(size = 15 * ft$iso_rel_int, color = cl[ft$var]),
+      marker = list(size = 15 * ft$iso_relative_intensity, color = cl[ft$var]),
       name = ft$var,
       legendgroup = ft$var,
-      showlegend = ifelse(ft$iso_cat == "M", FALSE, plotlegend[ft$var]),
-      text =  paste0(ft$iso_cat, " ", ft$iso_el),
+      showlegend = ifelse(ft$iso_tag == "M", FALSE, plotlegend[ft$var]),
+      text =  paste0(ft$iso_tag, " ", ft$iso_elements),
       textposition = "midle right",
       textfont = list(size = 12, color = cl[ft$var]),
       hovertext = paste(
-        "</br> component: ", ft$iso_gr,
+        "</br> cluster: ", ft$iso_cluster,
         "</br> feature: ", ft$feature,
         "</br> analysis: ", ft$analysis,
         "</br> <i>m/z</i>: ", round(y, digits = 4),
-        "</br> dppm: ", round(((ft$mzmax - ft$mzmin) /
-                                 y) * 1E6, digits = 0),
+        "</br> dppm: ", round(((ft$mzmax - ft$mzmin) / y) * 1E6, digits = 0),
         "</br> rt: ", round(x, digits = 0),
         "</br> drt: ", round(ft$rtmax - ft$rtmin, digits = 0),
         "</br> filled: ",
@@ -1932,17 +1931,17 @@
           FALSE
         },
         "</br> intensity: ", round(ft$intensity, digits = 0),
-        "</br> rel intensity (%): ", round(ft$iso_rel_int * 100, digits = 2),
-        "</br> charge: ", ft$iso_z,
-        "</br> isotope: ", ft$iso_cat,
-        "</br> element/s: ", ft$iso_el,
+        "</br> rel intensity (%): ", round(ft$iso_relative_intensity * 100, digits = 2),
+        "</br> charge: ", ft$iso_charge,
+        "</br> isotope: ", ft$iso_tag,
+        "</br> element/s: ", ft$iso_elements,
         "</br> target mass defect: ", round(ft$iso_md_hit, digits = 4),
         "</br> exp mass defect: ", round(ft$iso_md_diff, digits = 4),
-        "</br> estimated carbons: ", ft$iso_n_carbons
+        "</br> estimated carbons: ", ft$iso_carbons
       )
     )
 
-    if (isTRUE(plotlegend[ft$var]) & ft$iso_cat != "M") {
+    if (isTRUE(plotlegend[ft$var]) & ft$iso_tag != "M") {
       plotlegend[ft$var] <- FALSE
     }
   }
@@ -1977,60 +1976,60 @@
   plot
 }
 
-#' .map_components_static
+#' .map_isotopes_static
 #'
 #' @noRd
 #'
-.map_components_static <- function(components, colorBy = "targets",
+.map_isotopes_static <- function(isotopes, colorBy = "targets",
                                   legendNames = NULL,
                                   xlim = 60, ylim = 5,
                                   title = NULL, showLegend = TRUE) {
   if ("analyses" %in% colorBy) {
-    leg <- unique(components$analysis)
-    varkey <- components$analysis
-  } else if ("replicates" %in% colorBy & "replicate" %in% colnames(components)) {
-    leg <- unique(components$replicate)
-    varkey <- components$replicate
+    leg <- unique(isotopes$analysis)
+    varkey <- isotopes$analysis
+  } else if ("replicates" %in% colorBy & "replicate" %in% colnames(isotopes)) {
+    leg <- unique(isotopes$replicate)
+    varkey <- isotopes$replicate
   } else if (is.character(legendNames) &
-             length(legendNames) == length(unique(components$iso_gr))) {
+             length(legendNames) == length(unique(isotopes$iso_cluster))) {
     leg <- legendNames
-    names(leg) <- unique(components$iso_gr)
-    varkey <- leg[components$iso_gr]
-  } else if ("name" %in% colnames(components) & isTRUE(legendNames)) {
-    leg <- unique(components$name)
-    varkey <- components$name
+    names(leg) <- unique(isotopes$iso_cluster)
+    varkey <- leg[isotopes$iso_cluster]
+  } else if ("name" %in% colnames(isotopes) & isTRUE(legendNames)) {
+    leg <- unique(isotopes$name)
+    varkey <- isotopes$name
   } else if ("features" %in% colorBy) {
-    leg <- unique(components$feature)
-    varkey <- components$feature
+    leg <- unique(isotopes$feature)
+    varkey <- isotopes$feature
   } else {
-    leg <- unique(components$iso_gr)
-    varkey <- as.character(components$iso_gr)
+    leg <- unique(isotopes$iso_cluster)
+    varkey <- as.character(isotopes$iso_cluster)
   }
 
-  components$var <- varkey
+  isotopes$var <- varkey
 
   if (length(xlim) == 1) {
-    rtr <- c(min(components$rtmin) - xlim, max(components$rtmax) + xlim)
+    rtr <- c(min(isotopes$rtmin) - xlim, max(isotopes$rtmax) + xlim)
   } else if (length(xlim) == 2) {
     rtr <- xlim
   } else {
-    rtr <- c(min(components$rtmin), max(components$rtmax))
+    rtr <- c(min(isotopes$rtmin), max(isotopes$rtmax))
   }
 
-  ylim_oufset <- 1 + (0.02 * length(unique(components$var)))
+  ylim_oufset <- 1 + (0.02 * length(unique(isotopes$var)))
 
   if (length(ylim) == 1) {
-    mzr <- c(min(components$mzmin) - ylim, (max(components$mzmax) + ylim) * ylim_oufset)
+    mzr <- c(min(isotopes$mzmin) - ylim, (max(isotopes$mzmax) + ylim) * ylim_oufset)
   } else if (length(ylim) == 2) {
     mzr <- ylim
   } else {
-    mzr <- c(min(components$mzmin), max(components$mzmax) * ylim_oufset)
+    mzr <- c(min(isotopes$mzmin), max(isotopes$mzmax) * ylim_oufset)
   }
 
-  cl <- .get_colors(unique(components$var))
+  cl <- .get_colors(unique(isotopes$var))
 
-  plot(components$rt,
-       components$mz,
+  plot(isotopes$rt,
+       isotopes$mz,
        type = "n",
        xlab = "Retention time / seconds",
        ylab = expression(italic("m/z ") / " Da"),
@@ -2040,29 +2039,29 @@
   )
 
   rect(
-    xleft = components$rtmin,
-    xright = components$rtmax,
-    ybottom = components$mzmin,
-    ytop = components$mzmax,
-    col = paste0(cl[components$var], "70"),
-    border = paste0(cl[components$var], "70")
+    xleft = isotopes$rtmin,
+    xright = isotopes$rtmax,
+    ybottom = isotopes$mzmin,
+    ytop = isotopes$mzmax,
+    col = paste0(cl[isotopes$var], "70"),
+    border = paste0(cl[isotopes$var], "70")
   )
 
   points(
-    x = components$rt,
-    y = components$mz,
+    x = isotopes$rt,
+    y = isotopes$mz,
     type = "p",
     pch = 19,
-    cex = 1.5 * components$iso_rel_int,
-    col = cl[components$var]
+    cex = 1.5 * isotopes$iso_rel_int,
+    col = cl[isotopes$var]
   )
 
-  for (i in seq_len(nrow(components))) {
+  for (i in seq_len(nrow(isotopes))) {
     text(
-      components$rt[i] + 0.2,
-      components$mz[i],
-      paste0(components$iso_cat, " ", components$iso_el)[i],
-      pos = 4, col = cl[components$var[i]], cex = 0.6
+      isotopes$rt[i] + 0.2,
+      isotopes$mz[i],
+      paste0(isotopes$iso_tag, " ", isotopes$iso_elements)[i],
+      pos = 4, col = cl[isotopes$var[i]], cex = 0.6
     )
   }
 

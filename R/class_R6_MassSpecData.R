@@ -64,7 +64,7 @@
 #' @template arg-ms-xlim-ylim
 #' @template arg-ms-cex
 #' @template arg-ms-showLegend
-#' @template arg-ms-components
+#' @template arg-ms-clusters
 #' @template arg-ms-onGroups
 #' @template arg-ms-addSuspects
 #' @template arg-ms-ppmMS2
@@ -334,7 +334,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (nrow(features) > 0) {
 
-        if ("iso_step" %in% colnames(features) & isTRUE(value)) {
+        if ("isotope" %in% colnames(features) & isTRUE(value)) {
           
           message("\U2699 Excluding isotopes...", appendLF = FALSE)
 
@@ -347,7 +347,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           } else {
             private$.analyses <- lapply(private$.analyses, function(x) {
-              sel <- x$features$iso_step > 0 & !x$features$filtered
+              iso <- x$features$isotope$step
+              iso[is.null(iso)] <- 0
+              sel <- iso > 0 & !x$features$filtered
               x$features$filtered[sel] <- TRUE
               x$features$filter[sel] <- "isotope"
               x
@@ -1645,6 +1647,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         names(spec_list) <- analyses
 
         spec <- rbindlist(spec_list, idcol = "analysis", fill = TRUE)
+        
+        message(" Done!")
 
         if (!cached_spectra & !is.null(hash)) {
           if (!is.null(spec)) {
@@ -2702,7 +2706,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           cols <- colnames(fts)
           if (!"istd" %in% cols) fts[["istd"]] <- list(NULL)
           if (!"quality" %in% cols) fts[["quality"]] <- list(NULL)
-          if (!"iso_step" %in% cols) fts$iso_step <- 0
+          if (!"isotope" %in% cols) fts[["isotope"]] <- list(NULL)
           
           fts_meta <- fts[, .(
             rt = round(mean(rt), digits = 0),
@@ -2710,9 +2714,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
             rtdev = round(max(rtmax - rtmin), digits = 0),
             massdev = round(max(mzmax - mzmin), digits = 4),
             presence = round(length(feature) / self$get_number_analyses() * 100, digits = 0),
-            sn = round(max(vapply(quality, function(x) if (!is.null(x)) x$sn else 0, 0)), digits = 1),
-            iso = min(iso_step),
-            istd = paste0(unique(vapply(istd, function(x) if (!is.null(x)) x$name else NA_character_, NA_character_)), collapse = "; ")
+            sn = round(max(vapply(quality, function(x) if (!is.null(x)) x$sn else 0, 0), na.rm = TRUE), digits = 1),
+            iso = min(vapply(isotope, function(x) if (!is.null(x)) x$step else 0, 0)),
+            istd = paste0(unique(vapply(istd, function(x) if (!is.null(x)) x$name else NA_character_, NA_character_)), collapse = "; "),
+            filtered = all(filtered),
+            filter = paste0(unique(filter))
           ), by = "group"]
           
           fgroups <- fgroups[fts_meta, on = "group"]
@@ -3008,23 +3014,22 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Gets feature components (i.e., isotope clusters and adducts) in the
-    #' analyses.
+    #' Gets feature isotopes (i.e., isotope clusters) in the analyses.
     #'
     #' @return A data.table.
     #'
-    get_components = function(analyses = NULL,
-                              groups = NULL,
-                              features = NULL,
-                              components = NULL,
-                              mass = NULL,
-                              mz = NULL,
-                              rt = NULL,
-                              drift = NULL,
-                              ppm = 20,
-                              sec = 60,
-                              millisec = 5,
-                              filtered = FALSE) {
+    get_isotopes = function(analyses = NULL,
+                            groups = NULL,
+                            features = NULL,
+                            clusters = NULL,
+                            mass = NULL,
+                            mz = NULL,
+                            rt = NULL,
+                            drift = NULL,
+                            ppm = 20,
+                            sec = 60,
+                            millisec = 5,
+                            filtered = FALSE) {
 
       if (is.null(features) & !is.null(groups)) {
         features <- groups
@@ -3034,43 +3039,53 @@ MassSpecData <- R6::R6Class("MassSpecData",
         analyses, features, mass, mz, rt, drift, ppm, sec, millisec, filtered
       )
 
-      if (!("iso_gr" %in% colnames(fts))) {
-        warning("Components not found! Run annotate_features to cluster features into components.")
+      if (nrow(fts) == 0) return(data.table())
+      
+      if (!("isotope" %in% colnames(fts))) {
+        warning("Isotopes not found! Run annotate_features.")
         return(data.table())
       }
-
-      # if (!is.null(groups) & "group" %in% colnames(fts)) {
-      #   if (is.numeric(groups)) {
-      #     all_groups <- self$get_groups()
-      #     all_groups <- all_groups[[group]]
-      #     groups <- all_groups[groups]
-      #   }
-      #   fts <- fts[fts$group == groups, ]
-      # }
-
-      if (!is.null(components)) {
-        if (is.numeric(components)) {
-          fts <- fts[fts$iso_gr == components, ]
+      
+      if (!is.null(clusters)) {
+        if (is.numeric(clusters)) {
+          fts_clusters <- vapply(fts$isotope, function(x) x$cluster, NA_real_)
+          fts <- fts[fts_clusters == clusters, ]
         }
       }
-
+      
       if (nrow(fts) == 0) return(data.table())
+      
+      clusters <- vapply(fts$isotope, function(x) x$cluster, NA_real_)
+      which_clusters <- unique(clusters)
+      which_clusters <- which_clusters[!(which_clusters == 0)]
 
-      which_components <- unique(fts$iso_gr)
-      which_components <- which_components[!(which_components == 0)]
+      if (length(which_clusters) == 0) return(data.table())
 
-      if (length(which_components) == 0) return(data.table())
-
-      components <- self$get_features(filtered = TRUE)
-      components <- components[components$iso_gr %in% which_components, ]
+      all_fts <- self$get_features(filtered = TRUE)
+      all_iso <- all_fts$isotope
+      sel <- vapply(all_iso, function(x) x$cluster, NA_real_) %in% which_clusters
+      
+      iso <- all_iso[sel]
+      iso_df <- lapply(iso, function(x) as.data.table(x))
+      iso_df <- rbindlist(iso_df)
+      iso_df$feature <- NULL
+      colnames(iso_df) <- paste0("iso_", colnames(iso_df))
+      
+      fts_sel <- all_fts[sel, ]
+      
+      iso_df <- cbind(
+        fts_sel[, c("analysis", "feature"), with = FALSE],
+        iso_df,
+        fts_sel[, c("rt", "mz", "intensity", "rtmin", "rtmax", "mzmin", "mzmax"), with = FALSE]
+      )
 
       if ("name" %in% colnames(fts)) {
         tar_names <- fts$name
-        names(tar_names) <- as.character(fts$iso_gr)
-        components$name <- tar_names[as.character(components$iso_gr)]
+        names(tar_names) <- as.character(clusters)
+        iso_df$name <- tar_names[as.character(iso_df$iso_cluster)]
       }
 
-      components
+      iso_df
     },
 
     #' @description Gets suspects from features according to a defined database
@@ -3136,7 +3151,14 @@ MassSpecData <- R6::R6Class("MassSpecData",
         features[["name"]] <- NULL
         
         if ("suspects" %in% colnames(features)) {
-          sel <- !vapply(features$suspects, is.null, TRUE)
+          
+          sel <- !vapply(features$suspects, function(x) {
+            if (is.null(x)) {
+              TRUE
+            } else if (is.data.frame(x)) {
+              if (nrow(x) == 0) { TRUE } else { FALSE }
+            } else { TRUE }
+          }, TRUE)
           
           if (any(sel)) {
             features <- features[sel, ]
@@ -3500,9 +3522,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
           istd$mzr <- round(istd$mzmax - istd$mzmin, digits = 4)
 
-          if ("iso_gr" %in% colnames(istd)) {
-            istd$iso_n <- istd$iso_size
-            istd$iso_c <- istd$iso_n_carbons
+          if ("isotope" %in% colnames(istd)) {
+            istd$iso_n <- vapply(istd$isotope, function(x) x$cluster_size, 0)
+            istd$iso_c <- vapply(istd$isotope, function(x) x$carbons, 0)
             
           } else {
             istd$iso_n <- NA
@@ -6999,52 +7021,52 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Maps components (i.e., isotope clusters and adducts) in the analyses.
+    #' Maps isotopic clusters in the analyses.
     #'
     #' @return A plot.
     #'
-    map_components = function(analyses = NULL,
-                              groups = NULL,
-                              features = NULL,
-                              components = NULL,
-                              mass = NULL,
-                              mz = NULL,
-                              rt = NULL,
-                              drift = NULL,
-                              ppm = 20,
-                              sec = 60,
-                              millisec = 5,
-                              filtered = FALSE,
-                              xlim = 30,
-                              ylim = 0.05,
-                              showLegend = TRUE,
-                              legendNames = NULL,
-                              title = NULL,
-                              colorBy = "targets",
-                              interactive = TRUE) {
+    map_isotopes = function(analyses = NULL,
+                            groups = NULL,
+                            features = NULL,
+                            clusters = NULL,
+                            mass = NULL,
+                            mz = NULL,
+                            rt = NULL,
+                            drift = NULL,
+                            ppm = 20,
+                            sec = 60,
+                            millisec = 5,
+                            filtered = FALSE,
+                            xlim = 30,
+                            ylim = 0.05,
+                            showLegend = TRUE,
+                            legendNames = NULL,
+                            title = NULL,
+                            colorBy = "targets",
+                            interactive = TRUE) {
 
-      components <- self$get_components(
-        analyses, groups, features, components,
+      isotopes <- self$get_isotopes(
+        analyses, groups, features, clusters,
         mass, mz, rt, drift, ppm, sec, millisec, filtered
       )
 
-      if (nrow(components) == 0) {
-        message("\U2717 Feature components not found for the targets!")
+      if (nrow(isotopes) == 0) {
+        message("\U2717 Feature isotopes not found for the targets!")
         return(NULL)
       }
 
       if (grepl("replicates", colorBy)) {
-        components$replicate <- self$get_replicate_names()[components$analysis]
+        isotopes$replicate <- self$get_replicate_names()[isotopes$analysis]
       }
 
       if (!interactive) {
-        .map_components_static(
-          components, colorBy, legendNames,
+        .map_isotopes_static(
+          isotopes, colorBy, legendNames,
           xlim, ylim, title, showLegend
         )
       } else {
-        .map_components_interactive(
-          components, colorBy, legendNames,
+        .map_isotopes_interactive(
+          isotopes, colorBy, legendNames,
           xlim, ylim, title
         )
       }
@@ -7081,6 +7103,16 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     centroid_spectra = function(settings = NULL) {
 
+      if (self$get_number_analyses() == 0) {
+        warning("There are no analyses! Add MS analyses as mzML or mzXML files!")
+        return(invisible(self))
+      }
+      
+      if (!all(self$get_spectra_mode() %in% "profile")) {
+        warning("MS analyses must be all in profile mode for centroiding! Not done.")
+        return(invisible(self))
+      }
+      
       settings <- private$.get_call_settings(settings, "centroid_spectra")
 
       if (is.null(settings)) return(invisible(self))
@@ -7120,6 +7152,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     bin_spectra = function(settings = NULL) {
 
+      if (self$get_number_analyses() == 0) {
+        warning("There are no analyses! Add MS analyses as mzML or mzXML files!")
+        return(invisible(self))
+      }
+      
       settings <- private$.get_call_settings(settings, "bin_spectra")
 
       if (is.null(settings)) return(invisible(self))
@@ -7161,6 +7198,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return Invisible.
     #'
     find_features = function(settings = NULL) {
+      
+      if (self$get_number_analyses() == 0) {
+        warning("There are no analyses! Add MS analyses as mzML or mzXML files!")
+        return(invisible(self))
+      }
 
       settings <- private$.get_call_settings(settings, "find_features")
 
@@ -7201,6 +7243,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return Invisible.
     #'
     group_features = function(settings = NULL) {
+      
+      if (!any(self$has_features())) {
+        warning("There are no features! Run find_features first!")
+        return(invisible(self))
+      }
 
       settings <- private$.get_call_settings(settings, "group_features")
 
@@ -7246,6 +7293,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     filter_features = function(settings = NULL) {
 
+      if (!any(self$has_features())) {
+        warning("There are no features! Run find_features first!")
+        return(invisible(self))
+      }
+      
       processed <- FALSE
 
       settings <- private$.get_call_settings(settings, "filter_features")
@@ -7358,6 +7410,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     annotate_features = function(settings = NULL) {
 
+      if (!any(self$has_features())) {
+        warning("There are no features! Run find_features first!")
+        return(invisible(self))
+      }
+      
       settings <- private$.get_call_settings(settings, "annotate_features")
 
       if (is.null(settings)) return(invisible(self))
@@ -7398,6 +7455,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     find_internal_standards = function(settings = NULL) {
 
+      if (!any(self$has_features())) {
+        warning("There are no features! Run find_features first!")
+        return(invisible(self))
+      }
+      
       settings <- private$.get_call_settings(settings, "find_internal_standards")
 
       if (is.null(settings)) return(invisible(self))
@@ -7436,6 +7498,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     suspect_screening = function(settings = NULL) {
 
+      if (!any(self$has_features())) {
+        warning("There are no features! Run find_features first!")
+        return(invisible(self))
+      }
+      
       settings <- private$.get_call_settings(settings, "suspect_screening")
 
       if (is.null(settings)) return(invisible(self))
@@ -8432,13 +8499,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Imports all fields from a `MassSpecData` object saved as \emph{json}.
+    #' Imports a `MassSpecData` object saved as \emph{json}.
     #'
     #' @param file A \emph{json} file representing a `MassSpecData` object.
     #'
     #' @return Invisible.
     #'
-    import_all = function(file = NA_character_) {
+    import = function(file = NA_character_) {
 
       if (file.exists(file)) {
         if (file_ext(file) %in% "json") {

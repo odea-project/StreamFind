@@ -84,24 +84,33 @@ MassSpecAnalysis <- function(name = NA_character_,
                              metadata = list(),
                              version = NA_character_) {
 
+  if (is.list(features)) features <- as.data.table(features)
+  
   if (is.data.frame(features)) {
     if ("ms1" %in% colnames(features)) {
-      features$ms1 <- lapply(features$ms1, as.data.table)
+      features$ms1 <- lapply(features$ms1, function(z) {
+        if (!is.null(z)) z <- as.data.table(z)
+        z
+      })
     }
 
     if ("ms2" %in% colnames(features)) {
-      features$ms2 <- lapply(features$ms2, as.data.table)
+      features$ms2 <- lapply(features$ms2, function(z) {
+        if (!is.null(z)) z <- as.data.table(z)
+        z
+      })
+    }
+    
+    if ("suspects" %in% colnames(features)) {
+      features$suspects <- lapply(features$suspects, function(z) {
+        if (!is.null(z)) z <- as.data.table(z)
+        z
+      })
     }
   }
-
+  
   if (is.list(features)) {
-    if ("ms1" %in% names(features)) {
-      features$ms1 <- lapply(features$ms1, as.data.table)
-    }
-
-    if ("ms2" %in% names(features)) {
-      features$ms2 <- lapply(features$ms2, as.data.table)
-    }
+    features_eic <- lapply(features_eic, as.data.table)
   }
 
   if (is.na(version)) version <- as.character(packageVersion("StreamFind"))
@@ -155,21 +164,13 @@ MassSpecAnalysis <- function(name = NA_character_,
   x$chromatograms_number <- as.integer(x$chromatograms_number)
   x$software <- as.data.table(x$software)
   x$instrument <- as.data.table(x$instrument)
-
   x$run <- as.data.table(x$run)
   x$run$pre_mzlow <- as.numeric(x$run$pre_mzlow)
   x$run$pre_mzhigh <- as.numeric(x$run$pre_mzhigh)
   x$run$drift <- as.numeric(x$run$drift)
-
   x$spectra <- as.data.table(x$spectra)
   x$chromatograms <- as.data.table(x$chromatograms)
-  
-  x$features_eic <- as.list(x$features_eic)
-  x$features <- as.data.table(x$features)
-
   x$version <- as.character(x$version)
-
-
 
   if (validate.MassSpecAnalysis(x)) {
     structure(x, class = "MassSpecAnalysis")
