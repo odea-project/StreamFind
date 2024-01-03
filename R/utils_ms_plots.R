@@ -1181,7 +1181,7 @@
   ids <- unique(eic$unique_ids)
   
   plot_qlt <- FALSE
-  
+
   if ("quality" %in% colnames(features)) {
     plot_qlt <- TRUE
   }
@@ -1256,7 +1256,7 @@
       if (plot_qlt) {
         q_t <- pk$quality[[1]]
         
-        if (!is.null(q_t$model)) {
+        if (length(q_t$rt) > 4) {
           paste(
             "</br> noise: ", q_t$noise,
             "</br> sn: ", q_t$sn,
@@ -1268,12 +1268,22 @@
         }
       } else {
         ""
+      },
+      if ("isotope" %in% colnames(pk)) {
+        paste(
+          "</br> iso_cluster: ", vapply(pk$isotope, function(x) x$cluster, NA_real_),
+          "</br> iso_size: ", vapply(pk$isotope, function(x) x$cluster_size, NA_real_),
+          "</br> isotope: ", vapply(pk$isotope, function(x) x$tag, NA_character_),
+          "</br> carbons: ", vapply(pk$isotope, function(x) x$carbons, NA_real_)
+        )
+      } else {
+        ""
       }
     )
     
     if (plot_qlt) {
       
-      if (!is.null(q_t$model)) {
+      if (length(q_t$rt) > 4) {
         plot <- plot %>%  plotly::add_trace(
           x = q_t$rt,
           y = q_t$predicted,
@@ -1679,11 +1689,28 @@
         "</br> filled: ", ft_nf$is_filled,
         "</br> filtered: ", ft_nf$filtered,
         "</br> filter: ", ft_nf$filter,
-        ifelse("isotope" %in% colnames(ft_nf),
-          paste("</br> cluster: ", vapply(ft_nf$isotope, function(x) x$cluster, NA_real_),
-                "</br>  - size: ", vapply(ft_nf$isotope, function(x) x$cluster_size, NA_real_),
-                "</br>  - isotope: ", vapply(ft_nf$isotope, function(x) x$tag, NA_character_),
-                "</br>  - carbons: ", vapply(ft_nf$isotope, function(x) x$carbons, NA_real_)), "")
+        if ("quality" %in% colnames(ft_nf)) {
+          paste(
+            "</br> noise: ", vapply(ft_nf$quality, function(x) x$noise, NA_real_),
+            "</br> sn: ", vapply(ft_nf$quality, function(x) x$sn, NA_real_),
+            "</br> gaufit: ", round(vapply(ft_nf$quality, function(x) x$gaufit, NA_real_), digits = 4),
+            "</br> A: ", vapply(ft_nf$quality, function(x) x$A, NA_real_),
+            "</br> mu: ", vapply(ft_nf$quality, function(x) x$mu, NA_real_),
+            "</br> sigma: ", vapply(ft_nf$quality, function(x) x$sigma, NA_real_)
+          )
+        } else {
+          ""
+        },
+        if ("isotope" %in% colnames(ft_nf)) {
+          paste(
+            "</br> iso_cluster: ", vapply(ft_nf$isotope, function(x) x$cluster, NA_real_),
+            "</br> iso_size: ", vapply(ft_nf$isotope, function(x) x$cluster_size, NA_real_),
+            "</br> isotope: ", vapply(ft_nf$isotope, function(x) x$tag, NA_character_),
+            "</br> carbons: ", vapply(ft_nf$isotope, function(x) x$carbons, NA_real_)
+          )
+        } else {
+          ""
+        }
       )
     )
 
@@ -2529,10 +2556,6 @@
   
   names(showleg) <- names(leg)
   
-  plot_qlt <- FALSE
-  
-  if ("quality" %in% colnames(suspects)) plot_qlt <- TRUE
-  
   plot <- plot_ly()
   
   for (g in leg) {
@@ -2589,19 +2612,25 @@
           } else {
             FALSE
           },
-          if (plot_qlt) {
-            q_t <- ft$quality[[1]]
-            
-            if (!is.null(q_t$model)) {
-              paste(
-                "</br> noise: ", q_t$noise,
-                "</br> sn: ", q_t$sn,
-                "</br> gaufit: ", round(q_t$gaufit, digits = 4),
-                "</br> A: ", q_t$A,
-                "</br> mu: ", q_t$mu,
-                "</br> sigma: ", q_t$sigma
-              )
-            }
+          if ("quality" %in% colnames(ft)) {
+            paste(
+              "</br> noise: ", vapply(ft$quality, function(x) x$noise, NA_real_),
+              "</br> sn: ", vapply(ft$quality, function(x) x$sn, NA_real_),
+              "</br> gaufit: ", round(vapply(ft$quality, function(x) x$gaufit, NA_real_), digits = 4),
+              "</br> A: ", vapply(ft$quality, function(x) x$A, NA_real_),
+              "</br> mu: ", vapply(ft$quality, function(x) x$mu, NA_real_),
+              "</br> sigma: ", vapply(ft$quality, function(x) x$sigma, NA_real_)
+            )
+          } else {
+            ""
+          },
+          if ("isotope" %in% colnames(ft)) {
+            paste(
+              "</br> iso_cluster: ", vapply(ft$isotope, function(x) x$cluster, NA_real_),
+              "</br> iso_size: ", vapply(ft$isotope, function(x) x$cluster_size, NA_real_),
+              "</br> isotope: ", vapply(ft$isotope, function(x) x$tag, NA_character_),
+              "</br> carbons: ", vapply(ft$isotope, function(x) x$carbons, NA_real_)
+            )
           } else {
             ""
           }

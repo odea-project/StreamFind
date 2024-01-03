@@ -32,7 +32,7 @@ library(plotly)
 library(StreamFind)
 
 # Global options
-knitr::opts_chunk$set(echo = TRUE, fig.align = "center", fig.width = 9, results = "asis")
+knitr::opts_chunk$set(echo = TRUE, fig.align = "center", fig.width = 9, results = "asis", comment = "")
 
 # Working directory
 path_wd <- getwd()
@@ -47,11 +47,14 @@ files <- all_files[grepl("blank|influent|o3sw", all_files)]
 db_all <- StreamFindData::get_ms_tof_spiked_chemicals()
 db_all <- db_all[grepl("S", db_all$tag), ]
 cols <- c("name", "formula", "mass", "rt", "tag")
-db_all <- db_all[, cols, with = FALSE]
-
 db_is <- db_all[db_all$tag %in% "IS", ]
+db_is <- db_is[, cols, with = FALSE]
 db_is <- db_is[!db_is$name %in% c("Ibuprofen-d3", "Naproxen-d3"), ]
 db <- db_all[db_all$tag %in% "S", ]
+db <- db[, cols, with = FALSE]
+db_with_ms2 <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
+db_with_ms2 <- db_with_ms2[db_with_ms2$tag %in% "S", ]
+db_with_ms2 <- db_with_ms2[, c("name", "formula", "mass", "SMILES", "rt", "polarity", "fragments"), with = FALSE]
 ```
 
 <style>
@@ -191,7 +194,21 @@ other_settings <- list(
 
   Settings_load_features_ms2_StreamFind(),
 
-  Settings_calculate_quality_StreamFind()
+  Settings_calculate_quality_StreamFind(),
+  
+  Settings_filter_features_StreamFind(
+    minSnRatio = 3
+  ),
+  
+  # db_with_ms2 is a database with suspect chemical standards
+  # includes MS2 data (i.e., fragmentation pattern) from standards
+  Settings_suspect_screening_StreamFind(
+    database = db_with_ms2,
+    ppm = 10,
+    sec = 15,
+    ppmMS2 = 10,
+    minFragments = 3
+  )
 )
 
 # Printing the third ProcessingSettings object from the list
@@ -204,8 +221,8 @@ Then, all created *ProcessingSettings* can be added to the *MassSpecData*. The o
 # Add the settings as a list. The order matters!
 ms$add_settings(settings = c(list(ffs), other_settings))
 
-# Getting the workflow settings
-ms$get_settings_names()
+# Printing the data processing workflow
+ms$print_workflow()
 ```
 
 # `run_workflow()`
@@ -302,6 +319,14 @@ ms$map_isotopes(
   filtered = TRUE,
   legendNames = TRUE
 )
+```
+
+## Suspects
+
+The method `MassSpecData$plot_suspects()` is used to inspect the suspect screening results. A second plot is added to compare the experimental fragmentation pattern (top) with the fragmentation pattern of the respective reference standard (down) added within the database. The `colorBy` argument can be set to *targets+replicates* to legend the plot with combined keys of suspect target names and analysis replicate names.
+
+```{r plot-suspects, results='markup'}
+ms$plot_suspects(colorBy = "targets+replicates")
 ```
 
 # More to come

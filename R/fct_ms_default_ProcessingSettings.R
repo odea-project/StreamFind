@@ -1290,6 +1290,8 @@ validate.Settings_load_features_eic_StreamFind <- function(x) {
 #'  \item{**massFilter**}{  Numeric (length 2) with the min and max mass
 #'  (in Da) values to filter features. Features within the mass range are
 #'  filtered out.}
+#'   \item{**onlySuspects**}{  Logical (length 1) with `TRUE` for only keeping 
+#'   features annotated with a suspect.}
 #' }
 #'
 #' @return A ProcessingSettings S3 class object with subclass

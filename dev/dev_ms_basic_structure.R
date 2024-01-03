@@ -80,9 +80,7 @@ ms$run_workflow()
 
 
 
-#ms$plot_groups(interactive = T)
 
-ms$plot_suspects()
 
 
 # Export MS2 pattern -----
@@ -92,59 +90,10 @@ ms$plot_suspects()
 # std$add_settings(ps)
 # std$run_workflow()
 
-
-
-
-
-View(fts$istd)
-ms$get_internal_standards()
-
-
-
-std$plot_suspects()
-
-
-
-
-std$plot_eic(analyses = 1, mass = db, ppm = 10, sec = 15, legendNames = T)
-
-std$get_features(mass = db[9, ], filtered = TRUE)
-
-
-
-
-ms$plot_suspects()
-
-ms$save()
-
-
-
-std$plot_bpc(levels = 1)
-
-
-
-
-
-
-
-
 new_db <- fread("tof_spiked_chemicals_ms2.csv")
-
-std$get_suspects(
-  database = new_db,
-  ppm = 8, sec = 10
-)
-
-View(std$get_features(mass = db))
-
-
-
+std$get_suspects(database = new_db, ppm = 8, sec = 10)
 std$plot_groups(mass = db, legendNames = T)
-
-
 std$plot_features_ms2(mass = db[9, ], ppm = 10, loadedMS2 = F, legendNames = T)
-
-
 std$plot_groups_ms2(mass = db, ppm = 5, mzClust = 0.005, presence = 0.3, loadedFeaturesMS2 = TRUE, legendNames = T)
 
 ms2 <- std$get_groups_ms2(mass = db, mzClust = 0.005, presence = 0.4)
