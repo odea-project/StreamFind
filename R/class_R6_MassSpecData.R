@@ -6178,33 +6178,33 @@ MassSpecData <- R6::R6Class("MassSpecData",
         return(NULL)
       }
 
-      if ("replicates" %in% colorBy) {
+      if (grepl("replicates", colorBy)) {
         tic$replicate <- self$get_replicate_names()[tic$analysis]
       }
 
       if (!"id" %in% colnames(tic)) tic$id <- tic$analysis
 
-      polarities <- self$get_polarities()
-      polarities_names <- unique(names(polarities))
-
-      if (length(polarities) > length(polarities_names) &
-        colorBy %in% c("analyses", "levels", "replicates")) {
-
-        pol_key <- c("positive", "negative", "nd")
-        names(pol_key) <- c("1", "-1", "0")
-        tic$polarity <- as.character(tic$polarity)
-        tic$polarity <- pol_key[tic$polarity]
-
-        if (grepl("analyses", colorBy)) {
-          tic$analysis <- paste0(tic$analysis, "/", tic$polarity)
-        } else if (grepl("replicates", colorBy)) {
-          tic$replicate <- paste0(tic$replicate, "/", tic$polarity)
-        } else {
-          tic$level <- paste("MS", tic$level, sep = "")
-          tic$level <- factor(tic$level)
-          tic$level <- paste0(tic$level, "/", tic$polarity)
-        }
-      }
+      # polarities <- self$get_polarities()
+      # polarities_names <- unique(names(polarities))
+      # 
+      # if (length(polarities) > length(polarities_names) &
+      #   colorBy %in% c("analyses", "levels", "replicates")) {
+      # 
+      #   pol_key <- c("positive", "negative", "nd")
+      #   names(pol_key) <- c("1", "-1", "0")
+      #   tic$polarity <- as.character(tic$polarity)
+      #   tic$polarity <- pol_key[tic$polarity]
+      # 
+      #   if (grepl("analyses", colorBy)) {
+      #     tic$analysis <- paste0(tic$analysis, "/", tic$polarity)
+      #   } else if (grepl("replicates", colorBy)) {
+      #     tic$replicate <- paste0(tic$replicate, "/", tic$polarity)
+      #   } else {
+      #     tic$level <- paste("MS", tic$level, sep = "")
+      #     tic$level <- factor(tic$level)
+      #     tic$level <- paste0(tic$level, "/", tic$polarity)
+      #   }
+      # }
 
       if (!interactive) {
         .plot_eic_static(tic, legendNames, colorBy, title, showLegend, xlim, ylim, cex)
@@ -6242,27 +6242,27 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (!"id" %in% colnames(bpc)) bpc$id <- bpc$analysis
 
-      polarities <- self$get_polarities()
-      polarities_names <- unique(names(polarities))
-
-      if (length(polarities) > length(polarities_names) &
-          colorBy %in% c("analyses", "levels", "replicates")) {
-
-        pol_key <- c("positive", "negative", "nd")
-        names(pol_key) <- c("1", "-1", "0")
-        bpc$polarity <- as.character(bpc$polarity)
-        bpc$polarity <- pol_key[bpc$polarity]
-
-        if (grepl("analyses", colorBy)) {
-          bpc$analysis <- paste0(bpc$analysis, "/", bpc$polarity)
-        } else if (grepl("replicates", colorBy)) {
-          bpc$replicate <- paste0(bpc$replicate, "/", bpc$polarity)
-        } else {
-          bpc$level <- paste("MS", bpc$level, sep = "")
-          bpc$level <- factor(bpc$level)
-          bpc$level <- paste0(bpc$level, "/", bpc$polarity)
-        }
-      }
+      # polarities <- self$get_polarities()
+      # polarities_names <- unique(names(polarities))
+      # 
+      # if (length(polarities) > length(polarities_names) &
+      #     colorBy %in% c("analyses", "levels", "replicates")) {
+      # 
+      #   pol_key <- c("positive", "negative", "nd")
+      #   names(pol_key) <- c("1", "-1", "0")
+      #   bpc$polarity <- as.character(bpc$polarity)
+      #   bpc$polarity <- pol_key[bpc$polarity]
+      # 
+      #   if (grepl("analyses", colorBy)) {
+      #     bpc$analysis <- paste0(bpc$analysis, "/", bpc$polarity)
+      #   } else if (grepl("replicates", colorBy)) {
+      #     bpc$replicate <- paste0(bpc$replicate, "/", bpc$polarity)
+      #   } else {
+      #     bpc$level <- paste("MS", bpc$level, sep = "")
+      #     bpc$level <- factor(bpc$level)
+      #     bpc$level <- paste0(bpc$level, "/", bpc$polarity)
+      #   }
+      # }
 
       if (!interactive) {
         .plot_eic_static(bpc, legendNames, colorBy, title, showLegend, xlim, ylim, cex)

@@ -121,9 +121,18 @@
       varkey <- paste0(data$id, " - ", data$polarity)
     }
 
+  } else if (("analyses+polarities" %in% colorBy || "polarities+analyses" %in% colorBy) && "polarity" %in% colnames(data)) {
+    varkey <- paste0(data$analysis, " - ", data$polarity)
+    
+  } else if (("replicates+polarities" %in% colorBy || "polarities+replicates" %in% colorBy) && "polarity" %in% colnames(data)) {
+    varkey <- paste0(data$replicate, " - ", data$polarity)
+    
   } else if ("levels" %in% colorBy && "level" %in% colnames(data)) {
     varkey <- data$level
 
+  } else if (("levels+polarities" %in% colorBy || "polarities+levels" %in% colorBy) && "polarity" %in% colnames(data) && "level" %in% colnames(data)) {
+    varkey <- paste0(data$level, " - ", data$polarity)
+    
   } else if (is.character(legendNames) && length(legendNames) == length(unique(data$id))) {
     leg <- legendNames
     names(leg) <- unique(data$id)
