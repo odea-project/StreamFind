@@ -1,0 +1,300 @@
+---
+title: "TiChri: Matrix correction integration in patRoon"
+subtitle: "Concept"
+author:
+  name: Ricardo Cunha
+  email: cunha@iuta.de
+  affiliation: "Institut für Umwelt & Energie, Technik & Analytik e. V. (IUTA) <br> Bliersheimer Str. 58 - 60, 47229 Duisburg"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  bookdown::html_document2:
+    toc: yes
+    toc_float: yes
+    theme: paper
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+# Libraries
+library(knitr)
+library(kableExtra)
+library(magrittr)
+library(ggplot2)
+library(plotly)
+library(StreamFind)
+library(patRoon)
+# Global options
+knitr::opts_chunk$set(echo = TRUE, fig.align = "center", fig.width = 9, results = "asis", cache = TRUE)
+options(width = 300)
+```
+
+```{r logo, echo=FALSE}
+path_extdata <- system.file(package = "StreamFindData", dir = "extdata")
+logo <- file.path(path_extdata, "logo_StreamFind.png")
+htmltools::img(src = knitr::image_uri(logo), style = "margin-left:inherit;position:absolute;top:80px;left:740px;width:200px;")
+```
+
+<br>
+
+***
+
+```{r resources, include=FALSE}
+files <- list.files("D:/NTS/Project_220614_AirLiquid_220509_SPE/msfiles", full.names = TRUE)
+selected_files <- files[grepl("pos_Blank|pos_M220509014|pos_M220509017|pos_M220509018", files)]
+
+all_db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
+db <- all_db[!grepl("IS", all_db$tag, fixed = TRUE), ]
+cols <- c("name", "formula", "mass", "SMILES", "rt", "polarity", "fragments")
+# cols <- c("name", "formula", "mass", "SMILES", "rt")
+db <- db[, cols, with = FALSE]
+# data.table::setnames(db, "mass", "neutralMass")
+
+# db$neutralMass <- db$neutralMass + 1.0073
+# data.table::setnames(db, "neutralMass", "mz")
+
+dbis <- all_db[grepl("IS", all_db$tag), ]
+cols <- c("name", "formula", "mass", "rt")
+dbis <- dbis[, cols, with = FALSE]
+# files <- list.files("E:/Pub_Aopti/ms_files_mzML", "M200422", full.names = TRUE)
+```
+
+# AnalysisInfo
+
+```{r anaInfo}
+# The 3 first files are control and were excluded
+anaInfo <- data.frame(
+  "path" = dirname(selected_files),
+  "analysis" = tools::file_path_sans_ext(basename(selected_files)),
+  "group" = c(
+    rep("blank", 2),
+    rep("effluent_OZ", 2),
+    rep("effluent_OSW", 2),
+    rep("influent", 2)
+  ),
+  "blank" = rep("blank", 8)
+)
+
+kable(anaInfo, caption = "AnalysisInfo") %>%
+  kable_styling(
+    font_size = 12,
+    bootstrap_options = c("striped", "hover", "condensed"),
+    fixed_thead = TRUE
+  )
+```
+
+<br>
+
+# Total ion Chromatograms (TICs)
+
+```{r tics, message=FALSE, fig.height=9, fig.cap="Total ion chromatogram (TIC) of all analyses by replicate group name."}
+ms <- MassSpecData$new(selected_files)
+ms$add_replicate_names(anaInfo$group)
+ms$add_blank_names(anaInfo$blank)
+ms$plot_tic(levels = 1, colorBy = "replicates")
+```
+
+<br>
+
+# Data processing
+
+Processing settings described in \@ref(processing-settings).
+
+```{r data-process, message=FALSE, results='markup'}
+ms$find_features(Settings_find_features_openms())
+ms$group_features(Settings_group_features_openms())
+ms$find_internal_standards(Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10))
+ms
+```
+
+```{r internal-standards, fig.height=9, fig.cap="Evaluaton of spiked internal standards after feature finding and grouping."}
+#ms$plot_internal_standards_qc()
+```
+
+```{r to-patroon, message=FALSE, results='markup'}
+fGroups <- ms$as_patRoon_featureGroups()
+fGroups
+```
+
+
+<br>
+
+# Implementation in patRoon
+
+## Get TICs
+
+```{r get-tics-func, warning=FALSE, message=FALSE}
+getTICs <- function(anaInfo) {
+  filePaths <- patRoon:::getMzMLOrMzXMLAnalysisPath(anaInfo$analysis, anaInfo$path, mustExist = TRUE)
+  # can be applied in parallel?
+  tics <- lapply(filePaths, function(fpath) {
+    msf <- mzR::openMSfile(fpath)
+    hd <- mzR::header(msf)
+    mzR::close(msf)
+    hd <- hd[hd$msLevel == 1, ]
+    data.table::data.table("rt" = hd$retentionTime, "int" = hd$totIonCurrent)
+  })
+  names(tics) <- anaInfo$analysis
+  tics
+}
+```
+
+```{r get-tics, warning=FALSE, message=FALSE, results='markup'}
+tics <- getTICs(anaInfo)
+
+length(tics)
+
+is(tics)
+
+head(tics[[1]])
+```
+
+## Calculate TIC matrix profiles (MPs)
+
+The function uses a retention window (`rtWindow`), in seconds, to estimate the blank level in the proximity of the analysis spectrum. For now, simple average is used to aggregate the TIC MPs calculated for each blank replicate group associated with a given analysis and then to summarize the analysis MPs into one matrix profile (MP) vector. The MP is calculated according to eq. 6 (see below) of 10.1021/acs.analchem.1c00357.
+
+$TIC_{MP} = (\frac{TIC^{matrix}}{TIC^{blank}}) * -1$
+
+```{r calc-mps-func, warning=FALSE, message=FALSE}
+calculateTicMps <- function(anaInfo, tics, rtWindow = 10) {
+  
+  .trimVector <- function(v, a, b) {
+    rowSums(mapply(function(a, b) v >= a & v <= b, a = a, b = b)) > 0
+  }
+  
+  blkGroups <- anaInfo$blank
+  names(blkGroups) <- anaInfo$analysis
+  
+  blkAnalyses <- anaInfo$analysis
+  names(blkAnalyses) <- anaInfo$blank
+  blkAnalyses <- blkAnalyses[anaInfo$group %in% anaInfo$blank]
+  
+  # can be applied in parallel?
+  anaMpList <- lapply(anaInfo$analysis, function(x, blkGroups, blkAnalyses, tics, rtWindow) {
+    
+    blkG <- blkGroups[x]
+    blkA <- blkAnalyses[names(blkAnalyses) %in% blkG]
+    
+    ticX <- tics[[x]]
+    
+    mpListX <- lapply(tics[blkA], function(z, ticX, rtWindow) {
+      
+      mp <- vapply(seq_len(nrow(ticX)), function(j, z) {
+        rt <- ticX$rt[j]
+        rtr <- c(rt - rtWindow, rt + rtWindow)
+        intB <- mean(z$int[.trimVector(z$rt, rtr[1], rtr[2])])
+        # eq. 6 from 10.1021/acs.analchem.1c00357
+        (ticX$int[j] / intB) * -1
+      }, z = z, 0)
+      
+      mp
+      
+    }, ticX = ticX, rtWindow = rtWindow)
+    
+    ticX$mp <- Reduce(`+`, mpListX) / length(mpListX)
+    
+    ticX
+    
+  }, blkGroups = blkGroups, blkAnalyses = blkAnalyses, tics = tics, rtWindow = rtWindow)
+  
+  names(anaMpList) <- anaInfo$analysis
+  
+  anaMpList
+}
+```
+
+```{r calc-mps, warning=FALSE, message=FALSE, fig.height=9, fig.cap="MPs of each analysis"}
+ticMps <- calculateTicMps(anaInfo, tics, 10)
+
+fig <- plot_ly()
+cl <- StreamFind:::.get_colors(anaInfo$group)
+sL <- !duplicated(cl)
+for(i in seq_len(nrow(anaInfo))) {
+  fig <- fig %>% add_trace(
+    x = ticMps[[i]]$rt,
+    y = ticMps[[i]]$mp,
+    name = names(cl)[i],
+    legendgroup = names(cl)[i],
+    showlegend = sL[i],
+    type = "scatter",
+    mode = 'lines',
+    line = list(color = cl[i])
+  )
+}
+
+# fig <- fig %>% add_trace(
+#     x = iseval$rt,
+#     y = iseval$rec,
+#     name = names(cl)[i],
+#     legendgroup = names(cl)[i],
+#     showlegend = sL[i],
+#     type = "scatter",
+#     mode = 'markers',
+#     marker = list(color = cl[i])
+#   )
+
+xaxis <- list(
+  linecolor = toRGB("black"),
+  linewidth = 2, title = "Retention time / seconds",
+  titlefont = list(size = 12, color = "black")
+)
+
+yaxis <- list(
+  linecolor = toRGB("black"),
+  linewidth = 2, title = "Suppression factor",
+  titlefont = list(size = 12, color = "black")
+)
+
+fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis)
+
+fig
+```
+
+
+```{r}
+
+iseval <- ms$get_internal_standards(average = T)
+
+plot(iseval$rt, iseval$rec)
+
+
+```
+
+
+
+
+
+
+
+s
+```{r}
+purine <- 121.05090000 
+HP921 <- 922.00980000
+
+# ms$plot_eic(analyses = c(2, 5, 14), mass = dbis$mass[4], ppm = 20, colorBy = "targets+analyses")
+
+ms$plot_eic(analyses = c(2, 5, 14), mass = c(purine, HP921), ppm = 20, colorBy = "replicates+targets")
+
+
+# Check a project with SPE applied
+```
+
+
+```{r}
+
+
+```
+
+
+
+
+
+<br>
+
+# Processing settings
+
+```{r pro-settings, warning=FALSE, message=FALSE, results='markup'}
+Settings_find_features_openms()
+Settings_group_features_openms()
+```
+

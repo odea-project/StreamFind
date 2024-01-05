@@ -2718,7 +2718,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
             iso = min(vapply(isotope, function(x) if (!is.null(x)) x$step else 0, 0)),
             istd = paste0(unique(vapply(istd, function(x) if (!is.null(x)) x$name else NA_character_, NA_character_)), collapse = "; "),
             filtered = all(filtered),
-            filter = paste0(unique(filter))
+            filter = paste0(unique(filter)),
+            indices = list(as.data.table(matrix(index, nrow = 1, dimnames = list(unique(group), analysis))))
           ), by = "group"]
           
           fgroups <- fgroups[fts_meta, on = "group"]
@@ -3539,6 +3540,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
             cols <- c(
               "name",
+              "rt",
+              "mass",
               "intensity",
               "area",
               "rtr",
@@ -3556,6 +3559,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
             istd <- istd[, `:=`(
                 freq = length(area),
+                rt = round(mean(rt, na.rm = TRUE), digits = 0),
+                mass = round(mean(mass, na.rm = TRUE), digits = 4),
                 intensity = round(mean(intensity, na.rm = TRUE), digits = 0),
                 intensity_sd = round(sd(intensity, na.rm = TRUE), digits = 0),
                 area = round(mean(area, na.rm = TRUE), digits = 0),
@@ -3585,6 +3590,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           } else {
             cols <- c(
               "name",
+              "rt",
+              "mass",
               "intensity",
               "area",
               "rtr",
@@ -7736,11 +7743,15 @@ MassSpecData <- R6::R6Class("MassSpecData",
       features <- pat_features@features
 
       n_analyses <- length(features)
+      
+      browser()
 
       groups <- self$get_groups(
         filtered = filtered,
         intensities = TRUE, average = FALSE, sdValues = FALSE, metadata = TRUE
       )
+      
+      browser()
       
       groups_info <- copy(groups)
       groups_cols <- groups$group
@@ -7756,23 +7767,32 @@ MassSpecData <- R6::R6Class("MassSpecData",
       colnames(groups_info) <- c("mzs", "rts")
       # Note that here the mzs is still neutral mass
       
-      ftindex <- matrix(rep(0, n_analyses * length(groups_cols)), nrow = n_analyses)
-      colnames(ftindex) <- groups_cols
-
-      for (i in seq_len(n_analyses)) {
-        fts_temp <- features[[i]]
-        if (nrow(fts_temp) > 0) {
-          for (j in groups_cols) {
-            idx <- which(fts_temp$group %in% j)
-            if (length(idx) > 0) {
-              if (length(idx) > 1) {
-                warning("More than one feature per analyses assigned to a feature group!")
-                ftindex[i, j] <- idx
-              }
-            }
-          }
-        }
-      }
+      browser()
+      
+      ftindex <- rbindlist(groups$indices, fill = TRUE)
+      ftindex[is.na(ftindex)] <- 0
+      ftindex <- t(ftindex)
+      colnames(ftindex) <- groups$group
+      
+      browser()
+      
+      # ftindex <- matrix(rep(0, n_analyses * length(groups_cols)), nrow = n_analyses)
+      # colnames(ftindex) <- groups_cols
+      # 
+      # for (i in seq_len(n_analyses)) {
+      #   fts_temp <- features[[i]]
+      #   if (nrow(fts_temp) > 0) {
+      #     for (j in groups_cols) {
+      #       idx <- which(fts_temp$group %in% j)
+      #       if (length(idx) > 0) {
+      #         if (length(idx) > 1) {
+      #           warning("More than one feature per analyses assigned to a feature group!")
+      #           ftindex[i, j] <- idx
+      #         }
+      #       }
+      #     }
+      #   }
+      # }
       
       ftindex <- as.data.table(ftindex)
       
@@ -7950,6 +7970,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           features = pat_features,
           ftindex = ftindex
         )
+        
+        browser()
         
         if (add_suspects_to_pat) {
           suspects_df_av[["sets"]] <- NULL
