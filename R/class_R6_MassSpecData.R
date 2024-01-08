@@ -2665,33 +2665,25 @@ MassSpecData <- R6::R6Class("MassSpecData",
         fgroups <- data.table("group" = g_ids)
         
         if (intensities) {
-          fts_av <- fts[, .(intensity = max(intensity)), by = c("group", "analysis")]
           
           if (average) {
             rpls <- self$get_replicate_names()
-            fts_av$analysis <- rpls[fts_av$analysis]
-            fts_av <- fts_av[, .(intensity = mean(intensity, na.rm = TRUE), iSD = sd(intensity, na.rm = TRUE)), by = c("group", "analysis")]
-            fts_av$iSD <- round(fts_av$iSD / fts_av$intensity * 100, digits = 0)
+            fts_temp <- copy(fts)
+            fts_temp$analysis <- rpls[fts_temp$analysis]
+            fts_av <- fts_temp[, .(intensity = mean(intensity), sd = sd(intensity)), by = c("group", "analysis")]
+            fts_av$sd[is.na(fts_av$sd)] <- 0 
+            fts_av$sd <- round(fts_av$sd / fts_av$intensity * 100, digits = 0)
+            fts_sd <- copy(fts_av)
+            fts_sd$intensity <- NULL
+            fts_sd$analysis <- paste0(fts_sd$analysis, "_sd")
+            fts_sd <- tidyr::spread(fts_av[, c("group", "analysis", "sd"), with = TRUE], key = analysis, value = sd, fill = NA)
+            fts_av$sd <- NULL
+            fts_av <- tidyr::spread(fts_av, key = analysis, value = intensity, fill = 0)
+            
+          } else {
+            fts_av <- fts[, .(intensity = max(intensity)), by = c("group", "analysis")]
+            fts_av <- tidyr::spread(fts_av, key = analysis, value = intensity, fill = 0)
           }
-          
-          mat_cols <- self$get_analysis_names()
-          
-          if (average) mat_cols <- unique(rpls)
-          
-          mat <- matrix(rep(0, n_g * length(mat_cols)), nrow = n_g)
-          rownames(mat) <- g_ids
-          colnames(mat) <- mat_cols
-          
-          if (average && sdValues) {
-            mat_sd <- mat
-            for (i in seq_len(nrow(fts_av))) mat_sd[fts_av$group[i], fts_av$analysis[i]] <- fts_av$iSD[i]
-            colnames(mat_sd) <- paste0(mat_cols, "_sd")
-            iSD <- cbind(fgroups, mat_sd)
-          }
-          
-          for (i in seq_len(nrow(fts_av))) mat[fts_av$group[i], fts_av$analysis[i]] <- fts_av$intensity[i]
-          ints <- data.table("group" = g_ids)
-          ints <- cbind(fgroups, mat)
         }
 
         if ("name" %in% colnames(fts)) {
@@ -2701,7 +2693,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
           fgroups$name <- g_names[fgroups$group]
         }
         
-        # adds rt and mass
         if (metadata) {
           cols <- colnames(fts)
           if (!"istd" %in% cols) fts[["istd"]] <- list(NULL)
@@ -2718,21 +2709,15 @@ MassSpecData <- R6::R6Class("MassSpecData",
             iso = min(vapply(isotope, function(x) if (!is.null(x)) x$step else 0, 0)),
             istd = paste0(unique(vapply(istd, function(x) if (!is.null(x)) x$name else NA_character_, NA_character_)), collapse = "; "),
             filtered = all(filtered),
-            filter = paste0(unique(filter)),
-            indices = list(as.data.table(matrix(index, nrow = 1, dimnames = list(unique(group), analysis))))
+            filter = paste(unique(filter), collapse = "; ")
           ), by = "group"]
           
           fgroups <- fgroups[fts_meta, on = "group"]
         }
         
-        if (intensities) fgroups <- fgroups[ints, on = "group"]
+        if (intensities) fgroups <- fgroups[fts_av, on = "group"]
         
-        if (average && sdValues) fgroups <- fgroups[iSD, on = "group"]
-        
-        if (filtered) {
-          ftag <- fts[, .(filter = paste(unique(filter), collapse = "; ")), by = "group"]
-          fgroups <- fgroups[ftag, on = "group"]
-        }
+        if (average && sdValues) fgroups <- fgroups[fts_sd, on = "group"]
         
         fgroups
         
@@ -7743,20 +7728,19 @@ MassSpecData <- R6::R6Class("MassSpecData",
       features <- pat_features@features
 
       n_analyses <- length(features)
-      
-      browser()
 
       groups <- self$get_groups(
         filtered = filtered,
-        intensities = TRUE, average = FALSE, sdValues = FALSE, metadata = TRUE
+        intensities = TRUE,
+        average = FALSE,
+        sdValues = FALSE,
+        metadata = TRUE
       )
-      
-      browser()
       
       groups_info <- copy(groups)
       groups_cols <- groups$group
-      groups <- groups[, self$get_analysis_names(), with = FALSE]
-      groups_trans <- data.table::transpose(groups)
+      groups_ints <- groups[, self$get_analysis_names(), with = FALSE]
+      groups_trans <- data.table::transpose(groups_ints)
       colnames(groups_trans) <- groups_cols
 
       groups_info <- groups_info[, 1:3]
@@ -7767,34 +7751,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
       colnames(groups_info) <- c("mzs", "rts")
       # Note that here the mzs is still neutral mass
       
-      browser()
-      
-      ftindex <- rbindlist(groups$indices, fill = TRUE)
-      ftindex[is.na(ftindex)] <- 0
-      ftindex <- t(ftindex)
-      colnames(ftindex) <- groups$group
-      
-      browser()
-      
-      # ftindex <- matrix(rep(0, n_analyses * length(groups_cols)), nrow = n_analyses)
-      # colnames(ftindex) <- groups_cols
-      # 
-      # for (i in seq_len(n_analyses)) {
-      #   fts_temp <- features[[i]]
-      #   if (nrow(fts_temp) > 0) {
-      #     for (j in groups_cols) {
-      #       idx <- which(fts_temp$group %in% j)
-      #       if (length(idx) > 0) {
-      #         if (length(idx) > 1) {
-      #           warning("More than one feature per analyses assigned to a feature group!")
-      #           ftindex[i, j] <- idx
-      #         }
-      #       }
-      #     }
-      #   }
-      # }
-      
-      ftindex <- as.data.table(ftindex)
+      fts_idx <- self$get_features(filtered = filtered)[, .(index = index), by = c("group", "analysis")]
+      fts_idx <- tidyr::spread(fts_idx, key = analysis, value = index, fill = 0)
+      group_cols <- fts_idx$group
+      fts_idx$group <- NULL
+      fts_idx <- t(fts_idx)
+      colnames(fts_idx) <- group_cols
+      ftindex <- as.data.table(fts_idx)
       
       add_suspects_to_pat <- FALSE
       
@@ -7970,8 +7933,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
           features = pat_features,
           ftindex = ftindex
         )
-        
-        browser()
         
         if (add_suspects_to_pat) {
           suspects_df_av[["sets"]] <- NULL

@@ -1,6 +1,5 @@
 ---
 title: "TiChri: Matrix correction integration in patRoon"
-subtitle: "Concept"
 author:
   name: Ricardo Cunha
   email: cunha@iuta.de
@@ -17,6 +16,7 @@ editor_options:
 
 ```{r setup, include=FALSE}
 # Libraries
+library(data.table)
 library(knitr)
 library(kableExtra)
 library(magrittr)
@@ -26,13 +26,19 @@ library(StreamFind)
 library(patRoon)
 # Global options
 knitr::opts_chunk$set(echo = TRUE, fig.align = "center", fig.width = 9, results = "asis", cache = TRUE)
-options(width = 300)
+options(width = 400)
 ```
+
+<style>
+.list-group-item.active, .list-group-item.active:focus, .list-group-item.active:hover {
+  background-color: #1E8449;
+}
+</style>
 
 ```{r logo, echo=FALSE}
 path_extdata <- system.file(package = "StreamFindData", dir = "extdata")
 logo <- file.path(path_extdata, "logo_StreamFind.png")
-htmltools::img(src = knitr::image_uri(logo), style = "margin-left:inherit;position:absolute;top:80px;left:740px;width:200px;")
+htmltools::img(src = knitr::image_uri(logo), style = "margin-left:inherit;position:absolute;top:100px;left:740px;width:200px;")
 ```
 
 <br>
@@ -45,24 +51,17 @@ selected_files <- files[grepl("pos_Blank|pos_M220509014|pos_M220509017|pos_M2205
 
 all_db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
 db <- all_db[!grepl("IS", all_db$tag, fixed = TRUE), ]
-cols <- c("name", "formula", "mass", "SMILES", "rt", "polarity", "fragments")
-# cols <- c("name", "formula", "mass", "SMILES", "rt")
+cols <- c("name", "formula", "mass", "SMILES", "rt")
 db <- db[, cols, with = FALSE]
-# data.table::setnames(db, "mass", "neutralMass")
-
-# db$neutralMass <- db$neutralMass + 1.0073
-# data.table::setnames(db, "neutralMass", "mz")
 
 dbis <- all_db[grepl("IS", all_db$tag), ]
 cols <- c("name", "formula", "mass", "rt")
 dbis <- dbis[, cols, with = FALSE]
-# files <- list.files("E:/Pub_Aopti/ms_files_mzML", "M200422", full.names = TRUE)
 ```
 
 # AnalysisInfo
 
 ```{r anaInfo}
-# The 3 first files are control and were excluded
 anaInfo <- data.frame(
   "path" = dirname(selected_files),
   "analysis" = tools::file_path_sans_ext(basename(selected_files)),
@@ -98,18 +97,68 @@ ms$plot_tic(levels = 1, colorBy = "replicates")
 
 # Data processing
 
-Processing settings described in \@ref(processing-settings).
-
 ```{r data-process, message=FALSE, results='markup'}
-ms$find_features(Settings_find_features_openms())
-ms$group_features(Settings_group_features_openms())
-ms$find_internal_standards(Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10))
+ms$find_features(
+  Settings_find_features_openms(
+    noiseThrInt = 1000,
+    chromSNR = 3,
+    chromFWHM = 7,
+    mzPPM = 15,
+    reEstimateMTSD = TRUE,
+    traceTermCriterion = "sample_rate",
+    traceTermOutliers = 5,
+    minSampleRate = 1,
+    minTraceLength = 4,
+    maxTraceLength = 70,
+    widthFiltering = "fixed",
+    minFWHM = 4,
+    maxFWHM = 35,
+    traceSNRFiltering = TRUE,
+    localRTRange = 0,
+    localMZRange = 0,
+    isotopeFilteringModel = "none",
+    MZScoring13C = FALSE,
+    useSmoothedInts = FALSE,
+    extraOpts = NULL,
+    intSearchRTWindow = 3,
+    useFFMIntensities = FALSE,
+    verbose = FALSE
+  )
+)
+
+ms$group_features(
+  Settings_group_features_openms(
+    rtalign = FALSE,
+    QT = FALSE,
+    maxAlignRT = 8,
+    maxAlignMZ = 0.01,
+    maxGroupRT = 8,
+    maxGroupMZ = 0.01,
+    extraOptsRT = NULL,
+    extraOptsGroup = NULL,
+    verbose = FALSE
+  )
+)
+
+ms$find_internal_standards(
+  Settings_find_internal_standards_StreamFind(
+    database = dbis,
+    ppm = 8,
+    sec = 10
+  )
+)
+
 ms
 ```
 
 ```{r internal-standards, fig.height=9, fig.cap="Evaluaton of spiked internal standards after feature finding and grouping."}
-#ms$plot_internal_standards_qc()
+ms$plot_internal_standards_qc()
 ```
+
+```{r internal-standards-eic, fig.height=9, fig.cap="Extracted ion chromatogram (EIC) of four spiked internal standards per analysis replicate group.", message=FALSE}
+ms$plot_eic(mass = dbis[c(3, 4, 7, 8), c("name", "mass"), with = FALSE], colorBy = "replicates+targets", legendNames = TRUE, ppm = 20)
+```
+
 
 ```{r to-patroon, message=FALSE, results='markup'}
 fGroups <- ms$as_patRoon_featureGroups()
@@ -121,12 +170,17 @@ fGroups
 
 # Implementation in patRoon
 
+## Conditions
+
+- Analyses must have associated blanks
+- Features must be group across analyses for correspondence
+
 ## Get TICs
 
 ```{r get-tics-func, warning=FALSE, message=FALSE}
 getTICs <- function(anaInfo) {
   filePaths <- patRoon:::getMzMLOrMzXMLAnalysisPath(anaInfo$analysis, anaInfo$path, mustExist = TRUE)
-  # can be applied in parallel?
+  # can be applied in parallel but probably not advantageous
   tics <- lapply(filePaths, function(fpath) {
     msf <- mzR::openMSfile(fpath)
     hd <- mzR::header(msf)
@@ -169,7 +223,7 @@ calculateTicMps <- function(anaInfo, tics, rtWindow = 10) {
   names(blkAnalyses) <- anaInfo$blank
   blkAnalyses <- blkAnalyses[anaInfo$group %in% anaInfo$blank]
   
-  # can be applied in parallel?
+  # can be applied in parallel but probably not advantageous
   anaMpList <- lapply(anaInfo$analysis, function(x, blkGroups, blkAnalyses, tics, rtWindow) {
     
     blkG <- blkGroups[x]
@@ -203,12 +257,13 @@ calculateTicMps <- function(anaInfo, tics, rtWindow = 10) {
 }
 ```
 
-```{r calc-mps, warning=FALSE, message=FALSE, fig.height=9, fig.cap="MPs of each analysis"}
-ticMps <- calculateTicMps(anaInfo, tics, 10)
+```{r calc-mps, warning=FALSE, message=FALSE, fig.height=9, fig.cap="TIC MPs of each analysis"}
+ticMps <- calculateTicMps(anaInfo, tics, 5)
 
 fig <- plot_ly()
 cl <- StreamFind:::.get_colors(anaInfo$group)
 sL <- !duplicated(cl)
+
 for(i in seq_len(nrow(anaInfo))) {
   fig <- fig %>% add_trace(
     x = ticMps[[i]]$rt,
@@ -221,17 +276,6 @@ for(i in seq_len(nrow(anaInfo))) {
     line = list(color = cl[i])
   )
 }
-
-# fig <- fig %>% add_trace(
-#     x = iseval$rt,
-#     y = iseval$rec,
-#     name = names(cl)[i],
-#     legendgroup = names(cl)[i],
-#     showlegend = sL[i],
-#     type = "scatter",
-#     mode = 'markers',
-#     marker = list(color = cl[i])
-#   )
 
 xaxis <- list(
   linecolor = toRGB("black"),
@@ -250,51 +294,134 @@ fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis)
 fig
 ```
 
+## Correct intensity of featureGroups 
 
-```{r}
-
-iseval <- ms$get_internal_standards(average = T)
-
-plot(iseval$rt, iseval$rec)
-
-
+```{r calc-int-corr, warning=FALSE, message=FALSE}
+calculateCorrectedIntensities <- function(dt, anaInfo, ticMps, rtWindow) {
+  
+  blkGroups <- anaInfo$blank
+  names(blkGroups) <- anaInfo$analysis
+  
+  blkAnalyses <- anaInfo$analysis
+  names(blkAnalyses) <- anaInfo$blank
+  blkAnalyses <- blkAnalyses[anaInfo$group %in% anaInfo$blank]
+  
+  out <- data.table(
+    "feature" = dt$feature,
+    "group" = dt$group,
+    "analysis" = dt$analysis,
+    "rt" = dt$rt,
+    "intensity" = dt$intensity,
+    "scale" = NA_real_,
+    "mp" = NA_real_,
+    "corrected" = NA_real_
+  )
+  
+  for (i in seq_len(nrow(out))) {
+    mp <- ticMps[[out$analysis[i]]]
+    
+    if (is.null(rtWindow)) rtWindow <- (out$rtmax[i] - out$rtmin[i]) / 4
+    
+    sel <- (mp$rt >= (out$rt[i] - rtWindow)) & (mp$rt <= (out$rt[i] + rtWindow))
+    
+    mp <- mp[sel, ]
+    
+    bInt <- 0
+  
+    for (j in seq_len(length(blkAnalyses))) {
+      
+      bMp <- ticMps[[blkAnalyses[j]]]
+      
+      sel <- (bMp$rt >= (out$rt[i] - rtWindow)) & (bMp$rt <= (out$rt[i] + rtWindow))
+      
+      bMp <- bMp[sel, ]
+      
+      bInt <- bInt + mean(bMp$int)
+    }
+    
+    bInt <- bInt / length(blkAnalyses)
+    
+    selBlkInts <- (out$analysis %in% blkAnalyses) & (out$group %in% out$group[i])
+    
+    if (!any(selBlkInts)) {
+      warning("Feature", out$feature[i], " from analysis ", out$analysis[i], " does not have blank representation!")
+      next
+    }
+    
+    #based on eq. 4 from 10.1021/acs.analchem.1c00357
+    out$scale[i] <- ((mean(out$intensity[selBlkInts]) / out$intensity[i]) - 1) * -1
+    
+    #based on eq. 7 from 10.1021/acs.analchem.1c00357
+    out$mp[i] <- ((mean(mp$int) / bInt) * -1) * out$scale[i] / mean(mp$mp)
+    
+    #based on eq. 8 from 10.1021/acs.analchem.1c00357
+    out$corrected[i] <- out$intensity[i] * ((1 - out$mp[i] + 1) - 1)
+  }
+  
+  out
+}
 ```
 
+```{r calc-ints, warning=FALSE, message=FALSE, fig.height=9, fig.cap="Corrected instensity of internal standards (dashed lines are corrected intensities)."}
+# testing with the spiked internal standards
+istd <- ms$get_internal_standards(average = FALSE)
+istd <- istd[, c("group", "name"), with = TRUE]
 
+dt <- ms$get_features(features = istd)
 
+corrInts <- calculateCorrectedIntensities(dt, anaInfo, ticMps, rtWindow = 4)
 
+g_names <- dt$name
+names(g_names) <- dt$group
 
+corrInts$name <- g_names[corrInts$group]
 
+fig <- plot_ly(corrInts, x = corrInts$analysis)
+grps <- unique(corrInts$name)
+colors <- StreamFind:::.get_colors(grps)
 
-s
-```{r}
-purine <- 121.05090000 
-HP921 <- 922.00980000
+for (g in grps) {
+  df <- corrInts[corrInts$name == g, ]
 
-# ms$plot_eic(analyses = c(2, 5, 14), mass = dbis$mass[4], ppm = 20, colorBy = "targets+analyses")
+  fig <- fig %>% add_trace(df,
+    x = df$analysis,
+    y = df$intensity,
+    type = "scatter", mode = "lines",
+    line = list(width = 1, color = colors[g]),
+    connectgaps = FALSE,
+    name = g,
+    legendgroup = g,
+    showlegend = TRUE
+  )
 
-ms$plot_eic(analyses = c(2, 5, 14), mass = c(purine, HP921), ppm = 20, colorBy = "replicates+targets")
+  fig <- fig %>% add_trace(df,
+    x = df$analysis,
+    y = df$corrected,
+    type = "scatter", mode = "lines",
+    line = list(width = 1, color = colors[g], dash = 'dash'),
+    connectgaps = FALSE,
+    name = g,
+    legendgroup = g,
+    showlegend = FALSE
+  )
+}
 
+xaxis <- list(
+  linecolor = toRGB("black"),
+  linewidth = 2, title = "Analysis",
+  titlefont = list(size = 12, color = "black")
+)
 
-# Check a project with SPE applied
+yaxis <- list(
+  linecolor = toRGB("black"),
+  linewidth = 2, title = "Intensity / counts",
+  titlefont = list(size = 12, color = "black")
+)
+
+fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis)
+
+fig
 ```
-
-
-```{r}
-
-
-```
-
-
-
 
 
 <br>
-
-# Processing settings
-
-```{r pro-settings, warning=FALSE, message=FALSE, results='markup'}
-Settings_find_features_openms()
-Settings_group_features_openms()
-```
-

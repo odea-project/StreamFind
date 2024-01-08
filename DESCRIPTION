@@ -30,6 +30,7 @@ Imports:
     gtools,
     dplyr,
     plyr,
+    tidyr,
     parallelly,
     doParallel,
     parallel,
