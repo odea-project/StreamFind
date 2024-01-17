@@ -57,6 +57,7 @@ db <- db[, cols, with = FALSE]
 dbis <- all_db[grepl("IS", all_db$tag), ]
 cols <- c("name", "formula", "mass", "rt")
 dbis <- dbis[, cols, with = FALSE]
+dbis <- dbis[c(3, 4, 7, 8), ]
 ```
 
 # AnalysisInfo
@@ -86,7 +87,7 @@ kable(anaInfo, caption = "AnalysisInfo") %>%
 
 # Total ion Chromatograms (TICs)
 
-```{r tics, message=FALSE, fig.height=9, fig.cap="Total ion chromatogram (TIC) of all analyses by replicate group name."}
+```{r tics, message=FALSE, fig.cap="Total ion chromatogram (TIC) of all analyses by replicate group name."}
 ms <- MassSpecData$new(selected_files)
 ms$add_replicate_names(anaInfo$group)
 ms$add_blank_names(anaInfo$blank)
@@ -101,8 +102,8 @@ ms$plot_tic(levels = 1, colorBy = "replicates")
 ms$find_features(
   Settings_find_features_openms(
     noiseThrInt = 1000,
-    chromSNR = 3,
-    chromFWHM = 7,
+    chromSNR = 5,
+    chromFWHM = 5,
     mzPPM = 15,
     reEstimateMTSD = TRUE,
     traceTermCriterion = "sample_rate",
@@ -128,10 +129,10 @@ ms$find_features(
 
 ms$group_features(
   Settings_group_features_openms(
-    rtalign = FALSE,
+    rtalign = TRUE,
     QT = FALSE,
-    maxAlignRT = 8,
-    maxAlignMZ = 0.01,
+    maxAlignRT = 10,
+    maxAlignMZ = 0.02,
     maxGroupRT = 8,
     maxGroupMZ = 0.01,
     extraOptsRT = NULL,
@@ -151,14 +152,19 @@ ms$find_internal_standards(
 ms
 ```
 
+```{r internal-standards-eic, fig.height=7, fig.cap="Spiked internal standards after feature finding and grouping.", message=FALSE}
+ms$plot_groups(ms$get_internal_standards()[,c("group", "name"), with = FALSE], legendNames = TRUE, colorBy = "targets+replicates")
+```
+
 ```{r internal-standards, fig.height=9, fig.cap="Evaluaton of spiked internal standards after feature finding and grouping."}
 ms$plot_internal_standards_qc()
 ```
 
-```{r internal-standards-eic, fig.height=9, fig.cap="Extracted ion chromatogram (EIC) of four spiked internal standards per analysis replicate group.", message=FALSE}
-ms$plot_eic(mass = dbis[c(3, 4, 7, 8), c("name", "mass"), with = FALSE], colorBy = "replicates+targets", legendNames = TRUE, ppm = 20)
+```{r internal-standards-eic-old, include=FALSE, fig.height=7, fig.cap="Extracted ion chromatogram (EIC) of four spiked internal standards per analysis replicate group.", message=FALSE}
+# ms$get_internal_standards(average = FALSE)
+# ms$plot_eic(mass = dbis[, c("name", "mass"), with = FALSE], colorBy = "replicates+targets", legendNames = TRUE, ppm = 20)
+# ms$plot_eic(mass = dbis[c(3, 4, 7, 8), c("name", "mass"), with = FALSE], colorBy = "replicates+targets", legendNames = TRUE, ppm = 20)
 ```
-
 
 ```{r to-patroon, message=FALSE, results='markup'}
 fGroups <- ms$as_patRoon_featureGroups()
@@ -234,11 +240,21 @@ calculateTicMps <- function(anaInfo, tics, rtWindow = 10) {
     mpListX <- lapply(tics[blkA], function(z, ticX, rtWindow) {
       
       mp <- vapply(seq_len(nrow(ticX)), function(j, z) {
+        
         rt <- ticX$rt[j]
+        
         rtr <- c(rt - rtWindow, rt + rtWindow)
+        
         intB <- mean(z$int[.trimVector(z$rt, rtr[1], rtr[2])])
+        
+        intX <- mean(ticX$int[.trimVector(ticX$rt, rtr[1], rtr[2])])
+        
         # eq. 6 from 10.1021/acs.analchem.1c00357
-        (ticX$int[j] / intB) * -1
+        (intX / intB) * -1
+        
+        # alternative using the intensity at the exact rt
+        # (ticX$int[j] / intB) * -1
+        
       }, z = z, 0)
       
       mp
@@ -312,12 +328,14 @@ calculateCorrectedIntensities <- function(dt, anaInfo, ticMps, rtWindow) {
     "analysis" = dt$analysis,
     "rt" = dt$rt,
     "intensity" = dt$intensity,
+    "ticmp" = NA_real_,
     "scale" = NA_real_,
     "mp" = NA_real_,
     "corrected" = NA_real_
   )
   
   for (i in seq_len(nrow(out))) {
+    
     mp <- ticMps[[out$analysis[i]]]
     
     if (is.null(rtWindow)) rtWindow <- (out$rtmax[i] - out$rtmin[i]) / 4
@@ -344,9 +362,17 @@ calculateCorrectedIntensities <- function(dt, anaInfo, ticMps, rtWindow) {
     selBlkInts <- (out$analysis %in% blkAnalyses) & (out$group %in% out$group[i])
     
     if (!any(selBlkInts)) {
+      
+      # What to do?
+      # Find another feature in the near retention time?
+      # Pre-calculate retention time and mass based scales? 
+      
       warning("Feature", out$feature[i], " from analysis ", out$analysis[i], " does not have blank representation!")
+      
       next
     }
+    
+    out$ticmp[i] <- mean(mp$mp)
     
     #based on eq. 4 from 10.1021/acs.analchem.1c00357
     out$scale[i] <- ((mean(out$intensity[selBlkInts]) / out$intensity[i]) - 1) * -1
@@ -356,6 +382,7 @@ calculateCorrectedIntensities <- function(dt, anaInfo, ticMps, rtWindow) {
     
     #based on eq. 8 from 10.1021/acs.analchem.1c00357
     out$corrected[i] <- out$intensity[i] * ((1 - out$mp[i] + 1) - 1)
+    
   }
   
   out
@@ -369,7 +396,10 @@ istd <- istd[, c("group", "name"), with = TRUE]
 
 dt <- ms$get_features(features = istd)
 
+rpls <- ms$get_replicate_names()
+
 corrInts <- calculateCorrectedIntensities(dt, anaInfo, ticMps, rtWindow = 4)
+corrInts$replicate <- rpls[corrInts$analysis]
 
 g_names <- dt$name
 names(g_names) <- dt$group
@@ -421,6 +451,63 @@ yaxis <- list(
 fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis)
 
 fig
+```
+
+```{r, include=FALSE}
+
+dt2 <- ms$get_features(mass = db, sec = 15, ppm = 10)
+ms$plot_groups_overview(groups = dt2, legendNames = TRUE)
+
+ms$plot_eic(mass = db, legendNames = TRUE)
+
+corrInts2 <- calculateCorrectedIntensities(dt2, anaInfo, ticMps, rtWindow = 4)
+
+library(ggplot2)
+
+ggplot(corrInts, aes(x=rt, y=scale, shape=replicate, color=group)) +
+  geom_point()
+
+ggplot(corrInts, aes(x=rt, y=ticmp, shape=replicate, color=group)) +
+  geom_point()
+
+ggplot(corrInts, aes(x=mp, y=ticmp, shape=replicate, color=group)) +
+  geom_point()
+
+
+fig <- plot_ly(corrInts, x = corrInts$rt)
+
+fig <- fig %>% add_trace(corrInts,
+  x = corrInts$rt,
+  y = corrInts$scale,
+  color = corrInts$replicate,
+  name = corrInts$replicate,
+  legendgroup = corrInts$replicate,
+  type = "scatter", mode = "markers",
+  marker = list(size = 10)
+)
+
+fig2 <- plot_ly(corrInts, x = corrInts$rt)
+
+fig2 <- fig2 %>% add_trace(corrInts,
+  x = corrInts$rt,
+  y = corrInts$ticmp,
+  color = corrInts$replicate,
+  name = corrInts$replicate,
+  legendgroup = corrInts$replicate,
+  type = "scatter", mode = "markers",
+  marker = list(size = 10),
+  showlegend = FALSE
+)
+
+subplot(
+  list(fig, fig2),
+  nrows = 2,
+  titleY = TRUE, titleX = TRUE,
+  margin = 0.01,
+  shareX = TRUE,
+  which_layout = "merge"
+)
+
 ```
 
 
