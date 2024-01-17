@@ -2660,8 +2660,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (nrow(fts) > 0) {
         g_ids <- unique(fts$group)
         
-        n_g <- length(g_ids)
-        
         fgroups <- data.table("group" = g_ids)
         
         if (intensities) {
@@ -2675,8 +2673,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
             fts_av$sd <- round(fts_av$sd / fts_av$intensity * 100, digits = 0)
             fts_sd <- copy(fts_av)
             fts_sd$intensity <- NULL
-            fts_sd$analysis <- paste0(fts_sd$analysis, "_sd")
-            fts_sd <- tidyr::spread(fts_av[, c("group", "analysis", "sd"), with = TRUE], key = analysis, value = sd, fill = NA)
+            fts_sd$analysis <- paste(fts_sd$analysis, "_sd", sep = "")
+            fts_sd <- tidyr::spread(fts_sd[, c("group", "analysis", "sd"), with = TRUE], key = analysis, value = sd, fill = NA)
             fts_av$sd <- NULL
             fts_av <- tidyr::spread(fts_av, key = analysis, value = intensity, fill = 0)
             

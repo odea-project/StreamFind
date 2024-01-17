@@ -74,8 +74,12 @@ ps <- list(
 # patRoon::clearCache(c("load_features_ms1"))
 
 ms <- MassSpecData$new(files_df) #[grepl("pos", files_df$replicate), ]
+
 ms$add_settings(ps)
+
 ms$run_workflow()
+
+
 
 
 
