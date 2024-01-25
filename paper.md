@@ -19,8 +19,6 @@ affiliations:
    index: 1
  - name: FZI Forschungszentrum Informatik, Germany
    index: 2
- - name: FZI Forschungszentrum Informatik, Country
-   index: 2
 date: 13 August 2017
 bibliography: paper.bib
 ---
