@@ -1,7 +1,7 @@
 
 #' .merge_replicate_files
 #'
-#' @param self A ramanData object.
+#' @param self A Raman object.
 #' @param preCut The number of pre Raman scans to exclude when merging.
 #'
 #' @return Logical of length one.
@@ -125,13 +125,46 @@
 #'
 .plot_raman_spectra_static <- function(spectra, xLab, yLab, title, cex, showLegend) {
   
-  leg <- unique(spectra$var)
   
-  cl <- .get_colors(leg)
+  cl <- .get_colors(unique(spectra$var))
   
-  plot(spectra$shift, spectra$intensity, type = 'l',
-    xlab = xLab, ylab = yLab, main = title,
+  spectra$loop <- paste0(spectra$analysis, spectra$id, spectra$var)
+  
+  loop_key <- unique(spectra$loop)
+  
+  xr <- c(min(spectra$shift), max(spectra$shift))
+  if (showLegend) {
+    xr[2] <- xr[2] * 1.01
+  }
+  
+  intr <- c(0, max(spectra$intensity))
+  
+  if (is.null(cex) || !is.numeric(cex)) cex <- 1
+  
+  plot(spectra$shift,
+       type = "n",
+       xlab = xLab,
+       ylab = yLab,
+       xlim = xr,
+       ylim = intr,
+       main = title
   )
+  
+  for (t in loop_key) {
+    
+    select_vector <- spectra$loop %in% t
+    
+    lt <- unique(spectra$var[select_vector])
+    
+    lines(
+      x = spectra$shift[select_vector],
+      y = spectra$intensity[select_vector],
+      type = "l",
+      pch = 19,
+      cex = 0.5,
+      col = cl[lt]
+    )
+  }
   
   if (showLegend) {
     legend(
@@ -144,7 +177,6 @@
       bty = "n"
     )
   }
-  
 }
 
 #' .plot_raman_spectra_interactive

@@ -413,7 +413,7 @@ Plots spectra for given RAMAN analyses.
   cex = 0.6,
   showLegend = TRUE,
   colorBy = "analyses",
-  interactive = FALSE
+  interactive = TRUE
 )}\if{html}{\out{</div>}}
 }
 

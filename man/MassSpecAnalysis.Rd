@@ -14,6 +14,7 @@ MassSpecAnalysis(
   replicate = NA_character_,
   blank = NA_character_,
   file = NA_character_,
+  version = NA_character_,
   format = NA_character_,
   type = NA_character_,
   time_stamp = NA_character_,
@@ -34,8 +35,7 @@ MassSpecAnalysis(
   chromatograms = data.table(),
   features_eic = list(),
   features = data.table(),
-  metadata = list(),
-  version = NA_character_
+  metadata = list()
 )
 
 \method{validate}{MassSpecAnalysis}(x = NULL)
@@ -58,6 +58,10 @@ replicate group name.}
 replicate group name.}
 
 \item{file}{\emph{mzML} or \emph{mzXML} full file path (with extension).}
+
+\item{version}{Character of length one with the version. It should match with
+the version of the StreamFind package when created the \code{MassSpecAnalysis}
+object.}
 
 \item{format}{Character with length one. One of \emph{mzML} or \emph{mzXML}.}
 
@@ -116,10 +120,6 @@ from binning of spectra.}
 
 \item{metadata}{List with flexible storage for experimental metadata
 (e.g., concentration, location, etc.).}
-
-\item{version}{Character of length one with the version. It should match with
-the version of the StreamFind package when created the \code{MassSpecAnalysis}
-object.}
 
 \item{x}{A MassSpecAnalysis S3 class object.}
 

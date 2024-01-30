@@ -241,7 +241,7 @@ Rcpp::List rcpp_parse_ms_analysis(std::string file_path) {
       
       list_out["metadata"] = empty_list;
       
-      list_out.attr("class") = Rcpp::CharacterVector::create("MassSpecAnalysis");
+      list_out.attr("class") = Rcpp::CharacterVector::create("MassSpecAnalysis", "Analysis");
       
     } else {
       Rcpp::Rcout << "\u2717 MS file not conform!" << std::endl;

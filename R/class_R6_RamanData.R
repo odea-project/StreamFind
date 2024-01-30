@@ -602,7 +602,7 @@ RamanData <- R6::R6Class("RamanData",
                             cex = 0.6,
                             showLegend = TRUE,
                             colorBy = "analyses",
-                            interactive = FALSE) {
+                            interactive = TRUE) {
       
       spectra <- self$get_spectra(analyses, rt, shift, minIntensity)
       
@@ -612,17 +612,23 @@ RamanData <- R6::R6Class("RamanData",
         
       } else if ("shift" %in% xVal) {
         spectra <- spectra[, .(shift = unique(shift), intensity = mean(intensity)), by = c("analysis", "shift")]
-        if (is.null(xLab)) xLab = expression('Shift / cm' ^ -1)
+        if (is.null(xLab)) {
+          if (interactive) {
+            xLab = "Raman shift / cm<sup>-1</sup>"
+          } else {
+            xLab = expression("Raman shift / cm"^"-1")
+          }
+        }
       }
       
       spectra <- unique(spectra)
       
-      if (is.null(yLab)) yLab = "Intensity / a.u."
+      if (is.null(yLab)) yLab = "Raman intensity / A.U."
       
       spectra$intensity <- spectra$intensity - min(spectra$intensity)
       
       if ("replicates" %in% colorBy) {
-        spec$replicate <- self$get_replicate_names()[spec$analysis]
+        spectra$replicate <- self$get_replicate_names()[spectra$analysis]
       }
       
       spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames = NULL)

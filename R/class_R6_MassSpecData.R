@@ -5379,7 +5379,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
               NA_character_
             )
 
-            message("\U2713 Removed ", n_org - n_org_new, " features!")
+            message("\U2713 Removed ", n_org - n_org_new, " feature/s!")
 
           } else {
             message("\U2717 There are no features to remove!")
@@ -5504,8 +5504,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           groups <- unique(groups)
         }
         
-        if (is.character(groups) & length(groups) > 0) {
-          n_org_g <- length(all_groups)
+        if (is.character(groups) && length(groups) > 0) {
           keep_groups <- !all_groups %in% groups
           
           if (!all(keep_groups)) {
@@ -5523,18 +5522,19 @@ MassSpecData <- R6::R6Class("MassSpecData",
               
               x
             }, groups = groups)
-            n_g <- nrow(private$.groups)
+            
+            n_g <- length(groups)
             
             private$.register(
               "removed",
               "feature groups",
-              n_org_g - n_g,
+              n_g,
               NA_character_,
               NA_character_,
               NA_character_
             )
             
-            message("\U2713 Removed ", n_org_g - n_g, " groups!")
+            message("\U2713 Removed ", n_g, " group/s!")
             
           } else {
             message("\U2717 There are no groups to remove!")

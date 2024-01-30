@@ -61,6 +61,7 @@ MassSpecAnalysis <- function(name = NA_character_,
                              replicate = NA_character_,
                              blank = NA_character_,
                              file = NA_character_,
+                             version = NA_character_,
                              format = NA_character_,
                              type = NA_character_,
                              time_stamp = NA_character_,
@@ -81,8 +82,9 @@ MassSpecAnalysis <- function(name = NA_character_,
                              chromatograms = data.table(),
                              features_eic = list(),
                              features = data.table(),
-                             metadata = list(),
-                             version = NA_character_) {
+                             metadata = list()) {
+  
+  x <- Analysis(name, replicate, blank, file, version)
 
   if (is.list(features)) features <- as.data.table(features)
   
@@ -109,71 +111,42 @@ MassSpecAnalysis <- function(name = NA_character_,
     }
   }
   
-  if (is.list(features)) {
-    features_eic <- lapply(features_eic, as.data.table)
+  if (is.list(features_eic)) {
+    if (length(features_eic) > 0) {
+      features_eic <- lapply(features_eic, as.data.table)
+    }
   }
 
-  if (is.na(version)) version <- as.character(packageVersion("StreamFind"))
-
-  x <- list(
-    "name" = name,
-    "replicate" = replicate,
-    "blank" = blank,
-    "file" = file,
-    "format" = format,
-    "type" = type,
-    "time_stamp" = time_stamp,
-    "spectra_number" = spectra_number,
-    "spectra_mode" = spectra_mode,
-    "spectra_levels" = spectra_levels,
-    "mz_low" = mz_low,
-    "mz_high" = mz_high,
-    "rt_start" = rt_start,
-    "rt_end" = rt_end,
+  x <- c(x, list(
+    "format" = as.character(x$format),
+    "type" = as.character(x$type),
+    "time_stamp" = as.character(x$time_stamp),
+    "spectra_number" = as.integer(x$spectra_number),
+    "spectra_mode" = as.character(x$spectra_mode),
+    "spectra_levels" = as.integer(x$spectra_levels),
+    "mz_low" = as.numeric(x$mz_low),
+    "mz_high" = as.numeric(x$mz_high),
+    "rt_start" = as.numeric(x$rt_start),
+    "rt_end" = as.numeric(x$rt_end),
     "polarity" = polarity,
-    "has_ion_mobility" = has_ion_mobility,
-    "chromatograms_number" = chromatograms_number,
-    "software" = software,
-    "instrument" = instrument,
-    "run" = run,
-    "spectra" = spectra,
-    "chromatograms" = chromatograms,
+    "has_ion_mobility" = as.logical(x$has_ion_mobility),
+    "chromatograms_number" = as.integer(x$chromatograms_number),
+    "software" = as.data.table(x$software),
+    "instrument" = as.data.table(x$instrument),
+    "run" = as.data.table(x$run),
+    "spectra" = as.data.table(x$spectra),
+    "chromatograms" = as.data.table(x$chromatograms),
     "features_eic" = features_eic,
     "features" = features,
-    "metadata" = metadata,
-    "version" = version
-  )
-
-  x$name <- as.character(x$name)
-  x$replicate <- as.character(x$replicate)
-  x$blank <- as.character(x$blank)
-  if (is.na(x$blank)) x$blank <- NA_character_
-  x$file <- as.character(x$file)
-  x$format <- as.character(x$format)
-  x$type <- as.character(x$type)
-  x$time_stamp <- as.character(x$time_stamp)
-  x$spectra_number <- as.integer(x$spectra_number)
-  x$spectra_mode <- as.character(x$spectra_mode)
-  x$spectra_levels <- as.integer(x$spectra_levels)
-  x$mz_low <- as.numeric(x$mz_low)
-  x$mz_high <- as.numeric(x$mz_high)
-  x$rt_start <- as.numeric(x$rt_start)
-  x$rt_end <- as.numeric(x$rt_end)
-  # x$polarity <- as.integer(x$polarity)
-  x$has_ion_mobility <- as.logical(x$has_ion_mobility)
-  x$chromatograms_number <- as.integer(x$chromatograms_number)
-  x$software <- as.data.table(x$software)
-  x$instrument <- as.data.table(x$instrument)
-  x$run <- as.data.table(x$run)
-  x$run$pre_mzlow <- as.numeric(x$run$pre_mzlow)
-  x$run$pre_mzhigh <- as.numeric(x$run$pre_mzhigh)
-  x$run$drift <- as.numeric(x$run$drift)
-  x$spectra <- as.data.table(x$spectra)
-  x$chromatograms <- as.data.table(x$chromatograms)
-  x$version <- as.character(x$version)
+    "metadata" = metadata
+  ))
 
   if (validate.MassSpecAnalysis(x)) {
-    structure(x, class = "MassSpecAnalysis")
+    
+    x <- structure(x, class = c("MassSpecAnalysis", "Analysis"))
+    
+    x
+    
   } else {
     NULL
   }
@@ -188,43 +161,17 @@ MassSpecAnalysis <- function(name = NA_character_,
 #' @export
 #'
 validate.MassSpecAnalysis <- function(x = NULL) {
-  valid <- FALSE
-  name <- NA_character_
+  
+  valid <- validate.Analysis(x)
 
-  if (is.list(x)) {
-    valid <- TRUE
-
-    if (length(x$name) != 1 & !is.character(x$name)) {
-      warning("Analysis name not conform!")
-      valid <- FALSE
-    } else {
-      name <- x$name
-    }
-
-    if (length(x$replicate) != 1 &
-        !is.character(x$replicate)) {
-      warning("Analysis replicate name not conform!")
-      valid <- FALSE
-    }
-
-    if (length(x$blank) != 1 & !is.character(x$blank)) {
-      warning("Analysis blank name not conform!")
-      valid <- FALSE
-    }
+  if (valid) {
+    name <- x$name
 
     if (length(x$format) != 1) {
       warning("Analysis format not conform!")
       valid <- FALSE
     } else if (!(x$format %in% c("mzML", "mzXML"))) {
       warning("Analysis format must be 'mzML' ot 'mzXML'!")
-      valid <- FALSE
-    }
-
-    if (length(x$file) != 1 & !is.character(x$file)) {
-      warning("Analysis file path entry not conform!")
-      valid <- FALSE
-    } else if (!file.exists(x$file)) {
-      warning(paste0(x$file, " does not exist!"))
       valid <- FALSE
     }
 
@@ -344,14 +291,9 @@ validate.MassSpecAnalysis <- function(x = NULL) {
       warning("Analysis metadata entry not conform!")
       valid <- FALSE
     }
-
-    if (!is.character(as.character(x$version))) {
-      warning("Analysis version entry not conform!")
-      valid <- FALSE
-    }
+    
+    if (!valid) warning("Issue/s found with analysis ", x$name, "!")
   }
-
-  if (!valid) warning("Issue/s found with analysis ", x$name, "!")
 
   valid
 }
@@ -518,8 +460,8 @@ parse.MassSpecAnalysis <- function(files = NULL, runParallel = FALSE) {
       .packages = "StreamFind",
       .export = vars
     ) %dopar% { rcpp_parse_ms_analysis(i) }
-
-    class_analyses <- vapply(analyses, class, "")
+    
+    class_analyses <- vapply(analyses, function(x) class(x)[1], "")
 
     if (!all(class_analyses %in% "MassSpecAnalysis")) return(NULL)
 

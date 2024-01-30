@@ -850,6 +850,7 @@
   )
 
   plot <- plot %>% plotly::layout(bargap = 1,
+    legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
     title = title, xaxis = xaxis, yaxis = yaxis,
     barmode = "overlay", uniformtext = list(minsize = 6, mode = "show")
   )
@@ -988,6 +989,7 @@
   )
 
   plot <- plot %>% plotly::layout(bargap = 1,
+    legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
     title = title, xaxis = xaxis, yaxis = yaxis,
     barmode = "overlay", uniformtext = list(minsize = 6, mode = "show")
   )

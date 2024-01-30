@@ -4,13 +4,17 @@ template:
   bootstrap: 5
 
 reference:
-- title: R6 classes
+- title: "R6 classes: Data processing engines"
   desc: >
-    The R6 classes are used as framework for reading, processing, inspecting
-    and storing Mass Spectrometry (MS) and Spectroscopy data.
+    The R6 classes are used as processing engines for reading, processing, 
+    inspecting and storing data. Note that _MassSpecData_ and _RamanData_ are to
+    be replaced by _MassSpecEngine_ and _RamanEngine_ in future versions.
   contents:
     - MassSpecData
     - RamanData
+    - CoreEngine
+    - RamanEngine
+    - UVEngine
 - title: S3 classes
   desc: >
     S3 classes are implemented to harmonize, verify and dispatch data within
@@ -19,6 +23,7 @@ reference:
   contents:
     - ProjectHeaders
     - ProcessingSettings
+    - Analysis
     - MassSpecAnalysis
 - title: Processing settings for MS data
   desc: >
@@ -31,18 +36,17 @@ reference:
   desc: >
     Settings for the processing method centroid_spectra.
   contents:
-    - Settings_centroid_spectra_qCentroids
+    - starts_with("Settings_centroid_spectra")
 - subtitle: bin_spectra
   desc: >
     Settings for the processing method bin_spectra.
   contents:
-    - Settings_bin_spectra_qBinning
+    - starts_with("Settings_bin_spectra")
 - subtitle: find_features
   desc: >
     Settings for the processing method find_features.
   contents:
     - starts_with("Settings_find_features")
-
 - subtitle: group_features
   desc: >
     Settings for the processing method group_features.
@@ -54,7 +58,6 @@ reference:
     which aim to load data from raw MS files (e.g., MS1 and MS2 spectra).
   contents:
     - starts_with("Settings_load_features_ms")
-    - starts_with("Settings_load_groups_ms")
 - subtitle: load_features_eic
   desc: >
     Settings for loading the extracted ion chromatogram (EIC) of features.

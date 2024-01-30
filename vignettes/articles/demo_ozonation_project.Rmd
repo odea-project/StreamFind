@@ -335,7 +335,8 @@ Future integration:
 
 - Correcting matrix for better comparison between influent and effluent
 - Annotation of adducts and in-source fragments
-- Suspect screening with MS<sup>2</sup> validation and formula/compound assignment via patRoon
+- Formula/compound assignment via patRoon
 - Screening of transformation products using the *biotransformer* tool via patRoon
+- Fold-change and other statistic analysis for inter-sample correlation
 
 ***

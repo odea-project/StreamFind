@@ -36,7 +36,7 @@ ProjectHeaders <- function(...) {
 
   if (!"name" %in% x_names) x$name <- NA_character_
   if (!"author" %in% x_names) x$author <- NA_character_
-  if (!"path" %in% x_names) x$path <- getwd()
+  if (!"path" %in% x_names) x$path <- NA_character_
   if (!"date" %in% x_names) x$date <- Sys.time()
 
   if (validate.ProjectHeaders(x)) {
@@ -93,9 +93,11 @@ validate.ProjectHeaders <- function(x) {
     }
 
     if ("path" %in% names(x)) {
-      if (!dir.exists(x$path)) {
-        warning("ProjectHeaders entry path must exist!")
-        valid <- FALSE
+      if (!is.na(x$path)) {
+        if (!dir.exists(x$path)) {
+          warning("ProjectHeaders entry path must exist!")
+          valid <- FALSE
+        }
       }
     }
 
@@ -108,6 +110,23 @@ validate.ProjectHeaders <- function(x) {
   }
 
   valid
+}
+
+#' @describeIn ProjectHeaders
+#' Prints the ProjectHeaders S3 class object in the console.
+#'
+#' @param ... Not used.
+#'
+#' @export
+print.ProjectHeaders <- function(x, ...) {
+  cat("\n")
+  cat(
+    " ", class(x), "\n"
+  )
+  names <- names(x)
+  for (n in names) {
+    cat("  ", n, ": ", as.character(x[[n]]), "\n", sep = "")
+  }
 }
 
 #' @describeIn ProjectHeaders

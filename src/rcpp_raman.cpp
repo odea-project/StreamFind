@@ -98,6 +98,7 @@ Rcpp::List rcpp_parse_asc_file(std::string file_path) {
     Rcpp::Named("replicate") = file_info,
     Rcpp::Named("blank") = "",
     Rcpp::Named("file") = file_path,
+    Rcpp::Named("type") = "raman",
     Rcpp::Named("metadata") = metadata_list,
     Rcpp::Named("spectra") = data_list
   );

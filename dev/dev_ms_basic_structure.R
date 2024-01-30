@@ -12,6 +12,8 @@ library(StreamFind)
 # TODO when subsetting on features/groups check/add if features_eics are also changed
 # TODO add suspects to MassSpecData matching patRoon
 # TODO check the import MassSpecData from JSON, in particular the nested data.tables
+# TODO make components based on MCR approach (NTS gideline)
+# TODO add filter_features by ID and add filter_groups by ID and others
 
 
 # Resources -------------------------------------------------------------------
@@ -79,10 +81,12 @@ ms$add_settings(ps)
 
 ms$run_workflow()
 
+# ms$get_groups(metadata = TRUE, intensities = FALSE)
+# 
+# ms$get_suspects()
 
 
-
-
+ms$remove_groups(groups = "m267.180_rt916_g741")
 
 
 

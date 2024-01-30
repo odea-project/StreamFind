@@ -48,12 +48,37 @@ anaInfo <- data.frame(
 
 anaInfoPos <- anaInfo[grepl("pos", anaInfo$analysis), ]
 anaInfoNeg <- anaInfo[grepl("neg", anaInfo$analysis), ]
+
 fListPos <- findFeatures(anaInfoPos, "openms")
+
+
+
+
+
 fListNeg <- findFeatures(anaInfoNeg, "openms")
+
 # fList <- makeSet(fListPos, fListNeg, adducts = c("[M+H]+", "[M-H]-"))
 fList <- fListPos 
 
-gfs <- groupFeatures(fList, "openms", verbose = TRUE)
+gfs <- groupFeatures(fListPos, "openms", verbose = TRUE)
+
+getTICs(fListPos, msLevels = 2)
+getTICs(gfs)
+
+getBPCs(fListPos)
+getBPCs(gfs)
+
+plotTICs(fListPos, colourBy = "analyses", msLevels = 1)
+plotBPCs(fListPos, colourBy = "analyses", msLevels = 1)
+
+plotTICs(gfs, colourBy = "analyses", msLevels = 1, retentionRange = c(1100, 1200))
+plotBPCs(gfs, colourBy = "analyses", msLevels = 1, retentionRange = c(1100, 1200))
+
+plotChroms(gfs[5, 3])
+
+plot(gfs)
+
+plotInt(gfs)
 
 sus <- screenSuspects(
   gfs,
