@@ -742,7 +742,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           warning("No valid files were given! MassSpecData object is empty. \n")
         }
       }
-
+      
       if (!is.null(analyses)) suppressMessages(self$add_analyses(analyses))
 
       if (!is.null(groups)) suppressMessages(self$add_groups(groups))

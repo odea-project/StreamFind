@@ -118,24 +118,24 @@ MassSpecAnalysis <- function(name = NA_character_,
   }
 
   x <- c(x, list(
-    "format" = as.character(x$format),
-    "type" = as.character(x$type),
-    "time_stamp" = as.character(x$time_stamp),
-    "spectra_number" = as.integer(x$spectra_number),
-    "spectra_mode" = as.character(x$spectra_mode),
-    "spectra_levels" = as.integer(x$spectra_levels),
-    "mz_low" = as.numeric(x$mz_low),
-    "mz_high" = as.numeric(x$mz_high),
-    "rt_start" = as.numeric(x$rt_start),
-    "rt_end" = as.numeric(x$rt_end),
+    "format" = as.character(format),
+    "type" = as.character(type),
+    "time_stamp" = as.character(time_stamp),
+    "spectra_number" = as.integer(spectra_number),
+    "spectra_mode" = as.character(spectra_mode),
+    "spectra_levels" = as.integer(spectra_levels),
+    "mz_low" = as.numeric(mz_low),
+    "mz_high" = as.numeric(mz_high),
+    "rt_start" = as.numeric(rt_start),
+    "rt_end" = as.numeric(rt_end),
     "polarity" = polarity,
-    "has_ion_mobility" = as.logical(x$has_ion_mobility),
-    "chromatograms_number" = as.integer(x$chromatograms_number),
-    "software" = as.data.table(x$software),
-    "instrument" = as.data.table(x$instrument),
-    "run" = as.data.table(x$run),
-    "spectra" = as.data.table(x$spectra),
-    "chromatograms" = as.data.table(x$chromatograms),
+    "has_ion_mobility" = as.logical(has_ion_mobility),
+    "chromatograms_number" = as.integer(chromatograms_number),
+    "software" = as.data.table(software),
+    "instrument" = as.data.table(instrument),
+    "run" = as.data.table(run),
+    "spectra" = as.data.table(spectra),
+    "chromatograms" = as.data.table(chromatograms),
     "features_eic" = features_eic,
     "features" = features,
     "metadata" = metadata
@@ -466,6 +466,44 @@ parse.MassSpecAnalysis <- function(files = NULL, runParallel = FALSE) {
     if (!all(class_analyses %in% "MassSpecAnalysis")) return(NULL)
 
     message(" Done!")
+    
+    if (runParallel & length(files) > 1) parallel::stopCluster(cl)
+    
+    if (!is.null(analyses)) {
+      if (all(is.na(replicates))) {
+        replicates <- vapply(analyses, function(x) x$name, "")
+        # replicates <- gsub("-", "_", replicates)
+        replicates <- sub("-[^-]+$", "", replicates)
+      }
+      
+      analyses <- Map(
+        function(x, y) {
+          x$replicate <- y
+          x
+        },
+        analyses, replicates
+      )
+      
+      if (!is.null(blanks) & length(blanks) == length(analyses)) {
+        if (all(blanks %in% replicates)) {
+          analyses <- Map(
+            function(x, y) {
+              x$blank <- y
+              x
+            },
+            analyses, blanks
+          )
+        }
+      }
+      
+      names(analyses) <- vapply(analyses, function(x) x$name, "")
+      analyses <- analyses[order(names(analyses))]
+      
+      analyses <- lapply(analyses, function(x) {
+        x$version <- as.character(packageVersion("StreamFind"))
+        x
+      })
+    }
 
     if (!is.null(hash)) {
       patRoon::saveCacheData("parsed_ms_analyses", analyses, hash)
@@ -474,47 +512,6 @@ parse.MassSpecAnalysis <- function(files = NULL, runParallel = FALSE) {
 
   } else {
     message("\U2139 Analyses loaded from cache!")
-  }
-
-  if (runParallel & length(files) > 1 & !cached_analyses) {
-    parallel::stopCluster(cl)
-  }
-
-  if (!is.null(analyses)) {
-    if (all(is.na(replicates))) {
-      replicates <- vapply(analyses, function(x) x$name, "")
-      # replicates <- gsub("-", "_", replicates)
-      replicates <- sub("-[^-]+$", "", replicates)
-    }
-
-    analyses <- Map(
-      function(x, y) {
-        x$replicate <- y
-        x
-      },
-      analyses, replicates
-    )
-
-    if (!is.null(blanks) & length(blanks) == length(analyses)) {
-      if (all(blanks %in% replicates)) {
-        analyses <- Map(
-          function(x, y) {
-            x$blank <- y
-            x
-          },
-          analyses, blanks
-        )
-      }
-    }
-
-    names(analyses) <- vapply(analyses, function(x) x$name, "")
-    analyses <- analyses[order(names(analyses))]
-
-    analyses <- lapply(analyses, function(x) {
-      x$version <- as.character(packageVersion("StreamFind"))
-      x
-    })
-
   }
 
   analyses
