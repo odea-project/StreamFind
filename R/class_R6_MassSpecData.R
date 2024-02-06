@@ -7749,7 +7749,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       colnames(groups_info) <- c("mzs", "rts")
       # Note that here the mzs is still neutral mass
       
-      fts_idx <- self$get_features(filtered = filtered)[, .(index = index), by = c("group", "analysis")]
+      fts_idx <- self$get_features(filtered = filtered)
+      fts_idx$new_index <- stats::ave(seq_along(fts_idx$analysis), fts_idx$analysis, FUN = seq_along)
+      fts_idx <- fts_idx[, .(index = new_index), by = c("group", "analysis")]
       fts_idx <- tidyr::spread(fts_idx, key = analysis, value = index, fill = 0)
       group_cols <- fts_idx$group
       fts_idx$group <- NULL
@@ -8727,7 +8729,7 @@ import_MassSpecData <- function(file) {
     if (file_ext(file) %in% "json") {
 
       new_ms <- MassSpecData$new()
-      new_ms$import_all(file)
+      new_ms$import(file)
       message("\U2713 MassSpecData class object imported from json file!")
     }
 
