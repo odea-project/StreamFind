@@ -4,8 +4,8 @@
 \alias{RamanEngine}
 \title{\strong{RamanEngine} R6 class and methods}
 \description{
-The \emph{RamanEngine} R6 class is a framework with methods for parsing, processing,
-inspecting and storing data from Raman spectroscopy.
+The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecting
+and storing Raman spectroscopic data.
 }
 \section{Super class}{
 \code{\link[StreamFind:CoreEngine]{StreamFind::CoreEngine}} -> \code{RamanEngine}
@@ -14,7 +14,6 @@ inspecting and storing data from Raman spectroscopy.
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-RamanEngine-new}{\code{RamanEngine$new()}}
-\item \href{#method-RamanEngine-print}{\code{RamanEngine$print()}}
 \item \href{#method-RamanEngine-get_spectra}{\code{RamanEngine$get_spectra()}}
 \item \href{#method-RamanEngine-merge_replicates}{\code{RamanEngine$merge_replicates()}}
 \item \href{#method-RamanEngine-plot_spectra}{\code{RamanEngine$plot_spectra()}}
@@ -49,6 +48,7 @@ inspecting and storing data from Raman spectroscopy.
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_analyses'><code>StreamFind::CoreEngine$import_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_headers'><code>StreamFind::CoreEngine$import_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_settings'><code>StreamFind::CoreEngine$import_settings()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print'><code>StreamFind::CoreEngine$print()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_analyses'><code>StreamFind::CoreEngine$print_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_headers'><code>StreamFind::CoreEngine$print_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_workflow'><code>StreamFind::CoreEngine$print_workflow()</code></a></span></li>
@@ -69,10 +69,7 @@ inspecting and storing data from Raman spectroscopy.
 \if{html}{\out{<a id="method-RamanEngine-new"></a>}}
 \if{latex}{\out{\hypertarget{method-RamanEngine-new}{}}}
 \subsection{Method \code{new()}}{
-Creates an R6 class \emph{RamanEngine}. When \code{headers} are not given
-(i.e., \code{NULL}), a default Headers S3 class object is generated with name
-as \code{NA_character}, path as \code{get_wd()} and date as \code{Sys.time()}.
-See \code{?Headers} for more information.
+Creates an R6 class \emph{RamanEngine}. Child of \emph{CoreEngine} R6 class.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{RamanEngine$new(files = NULL, headers = NULL, runParallel = FALSE)}\if{html}{\out{</div>}}
 }
@@ -80,7 +77,7 @@ See \code{?Headers} for more information.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{files}}{Full file paths of Raman analyses.}
+\item{\code{files}}{Vector with full paths of \strong{.asc} files from Raman analyses.}
 
 \item{\code{headers}}{A named list with headers or a ProjectHeaders S3 class object.
 Each list element must have length one. There is no type restrictions
@@ -94,19 +91,6 @@ processing. Note that parallel processing is not always faster due to
 overhead.}
 }
 \if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-RamanEngine-print"></a>}}
-\if{latex}{\out{\hypertarget{method-RamanEngine-print}{}}}
-\subsection{Method \code{print()}}{
-Prints a summary of the \emph{RamanEngine} in the console.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$print()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-Console text.
 }
 }
 \if{html}{\out{<hr>}}
@@ -126,14 +110,11 @@ Gets spectra from analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
-\item{\code{rt}}{Numeric of length two with the minimum and maximum retention time,
-in seconds.}
+\item{\code{rt}}{Numeric of length two with the minimum and maximum retention time, in seconds.}
 
-\item{\code{shift}}{Numeric of length two with the minimum and maximum shift,
-in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
+\item{\code{shift}}{Numeric of length two with the minimum and maximum shift, in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
 
 \item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 }
@@ -189,14 +170,11 @@ Plots spectra for given \emph{RamanAnalyses}.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
-\item{\code{rt}}{Numeric of length two with the minimum and maximum retention time,
-in seconds.}
+\item{\code{rt}}{Numeric of length two with the minimum and maximum retention time, in seconds.}
 
-\item{\code{shift}}{Numeric of length two with the minimum and maximum shift,
-in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
+\item{\code{shift}}{Numeric of length two with the minimum and maximum shift, in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
 
 \item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 

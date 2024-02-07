@@ -4,15 +4,13 @@
 #' The *CoreEngine* R6 class is a basic data processor with generic methods for handling data.
 #'
 #' @template arg-headers
-#' @template arg-ms-analyses
+#' @template arg-analyses
 #' @template arg-verbose
-#' @template arg-ms-features
 #' @template arg-ms-settings
 #' @template arg-ms-save-format
 #' @template arg-ms-save-name
 #' @template arg-ms-save-path
 #' @template arg-ms-import-file
-#' @template arg-ms-xlim-ylim
 #'
 #' @export
 #'
@@ -153,20 +151,13 @@ CoreEngine <- R6::R6Class("CoreEngine",
   public = list(
     ## ___ create -----
     
-    #' @description
-    #' Creates an R6 *CoreEngine* class object.
+    #' @description Creates an R6 *CoreEngine* class object.
     #'
-    initialize = function(headers = NULL,
-                          settings = NULL,
-                          analyses = NULL) {
+    initialize = function(headers = NULL) {
       
       if (is.null(headers)) headers <- ProjectHeaders()
       
       if (!is.null(headers)) suppressMessages(self$add_headers(headers))
-      
-      if (!is.null(settings)) suppressMessages(self$add_settings(settings))
-      
-      if (!is.null(analyses)) suppressMessages(self$add_analyses(analyses))
       
       private$.register(
         "created",
@@ -182,8 +173,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     ## ___ print -----
     
-    #' @description
-    #' Prints a summary to the console.
+    #' @description Prints a summary to the console.
     #'
     print = function() {
       cat("\n")
@@ -225,7 +215,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       if (length(private$.analyses) > 0) {
         cat("\n")
         overview <- self$get_overview()
-        overview$file <- NULL
+        overview <- overview[, c("analysis", "replicate", "blank"), with = FALSE]
         row.names(overview) <- paste0(" ", seq_len(nrow(overview)), ":")
         print(overview)
       } else {
@@ -309,8 +299,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
         df <- data.table(
           "analysis" = vapply(private$.analyses, function(x) x$name, ""),
           "replicate" = vapply(private$.analyses, function(x) x$replicate, ""),
-          "blank" = vapply(private$.analyses, function(x) x$blank, ""),
-          "file" = vapply(private$.analyses, function(x) x$file, "")
+          "blank" = vapply(private$.analyses, function(x) x$blank, "")
         )
         
         row.names(df) <- seq_len(nrow(df))

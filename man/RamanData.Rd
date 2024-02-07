@@ -233,11 +233,9 @@ Gets spectra from analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
-\item{\code{rt}}{Numeric of length two with the minimum and maximum retention time,
-in seconds.}
+\item{\code{rt}}{Numeric of length two with the minimum and maximum retention time, in seconds.}
 
-\item{\code{shift}}{Numeric of length two with the minimum and maximum shift,
-in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
+\item{\code{shift}}{Numeric of length two with the minimum and maximum shift, in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
 
 \item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 }
@@ -423,11 +421,9 @@ Plots spectra for given RAMAN analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
 
-\item{\code{rt}}{Numeric of length two with the minimum and maximum retention time,
-in seconds.}
+\item{\code{rt}}{Numeric of length two with the minimum and maximum retention time, in seconds.}
 
-\item{\code{shift}}{Numeric of length two with the minimum and maximum shift,
-in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
+\item{\code{shift}}{Numeric of length two with the minimum and maximum shift, in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
 
 \item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 

@@ -54,7 +54,7 @@
 #' @template arg-ms-settingsFeatures
 #' @template arg-ms-legendNames
 #' @template arg-ms-colorBy
-#' @template arg-ms-title
+#' @template arg-title
 #' @template arg-ms-labs
 #' @template arg-ms-interactive
 #' @template arg-ms-save-format
@@ -737,7 +737,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (!is.null(settings)) suppressMessages(self$add_settings(settings))
 
       if (is.null(analyses) & !is.null(files)) {
-        analyses <- parse.MassSpecAnalysis(files, runParallel)
+        analyses <- parse_MassSpecAnalysis(files, runParallel)
         if (is.null(analyses)) {
           warning("No valid files were given! MassSpecData object is empty. \n")
         }
@@ -3995,7 +3995,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (!is.null(files)) {
 
-        new_analyses <- parse.MassSpecAnalysis(files, runParallel)
+        new_analyses <- parse_MassSpecAnalysis(files, runParallel)
 
         if (all(vapply(new_analyses, function(x) "MassSpecAnalysis" %in% is(x), FALSE))) {
           self$add_analyses(new_analyses)

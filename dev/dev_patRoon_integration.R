@@ -62,17 +62,17 @@ fList <- fListPos
 
 gfs <- groupFeatures(fListPos, "openms", verbose = TRUE)
 
-getTICs(fListPos, msLevels = 2)
-getTICs(gfs)
+getTICs(fListPos[2], MSLevel = 2)
+getTICs(gfs[1, ])
 
 getBPCs(fListPos)
-getBPCs(gfs)
+getBPCs(gfs[3, ])
 
-plotTICs(fListPos, colourBy = "analyses", msLevels = 1)
-plotBPCs(fListPos, colourBy = "analyses", msLevels = 1)
+plotTICs(fListPos, colourBy = "rGroups", MSLevel = 1)
+plotBPCs(fListPos, colourBy = "analyses", MSLevel = 1)
 
-plotTICs(gfs, colourBy = "analyses", msLevels = 1, retentionRange = c(1100, 1200))
-plotBPCs(gfs, colourBy = "analyses", msLevels = 1, retentionRange = c(1100, 1200))
+plotTICs(gfs, colourBy = "analyses", MSLevel = 1, retentionRange = c(1100, 1200))
+plotBPCs(gfs, colourBy = "analyses", MSLevel = 1, retentionRange = c(1100, 1200))
 
 plotChroms(gfs[5, 3])
 

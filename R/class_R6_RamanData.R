@@ -7,7 +7,7 @@
 #' @template arg-headers
 #' @template arg-ms-analyses
 #' @template arg-raman-target
-#' @template arg-ms-title
+#' @template arg-title
 #' @template arg-runParallel
 #' @template arg-ms-cex
 #' @template arg-ms-showLegend

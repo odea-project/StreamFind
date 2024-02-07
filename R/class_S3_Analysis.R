@@ -1,4 +1,4 @@
-#' **Analysis** S3 class constructor, methods and functions
+#' *Analysis* S3 class constructor, methods and functions
 #'
 #' @description
 #' Creates an Analysis S3 class object.
@@ -6,38 +6,31 @@
 #' @param name Character of length one with the name of the analysis.
 #' @param replicate Character of length one with the analysis replicate group name.
 #' @param blank Character of length one with the associated blank replicate group name.
-#' @param file Character of length one (optional) with the full file path including extension.
-#' @param version Character of length one with the version. It should match with
-#' the version of the StreamFind package when created the `Analysis` object.
 #'
-#' @return An Analysis S3 class object.
+#' @return An *Analysis* S3 class object.
 #'
 #' @export
 #'
 Analysis <- function(name = NA_character_,
                      replicate = NA_character_,
-                     blank = NA_character_,
-                     file = NA_character_,
-                     version = NA_character_) {
+                     blank = NA_character_) {
 
   x <- list(
     "name" = name,
     "replicate" = replicate,
-    "blank" = blank,
-    "file" = file,
-    "version" = version
+    "blank" = blank
   )
 
   x$name <- as.character(x$name)
+  
   x$replicate <- as.character(x$replicate)
+  
   x$blank <- as.character(x$blank)
+  
   if (is.na(x$blank)) x$blank <- NA_character_
-  x$file <- as.character(x$file)
-  x$version <- as.character(x$version)
 
   if (validate.Analysis(x)) {
     x <- structure(x, class = "Analysis")
-    if (is.na(x$version)) x$version <- as.character(packageVersion("StreamFind"))
     x
   } else {
     NULL
@@ -45,10 +38,9 @@ Analysis <- function(name = NA_character_,
 }
 
 #' @describeIn Analysis
-#' Validates an Analysis S3 class object, returning a logical value of
-#' length one.
+#' S3 method to validate an *Analysis* S3 class object, returning a logical value of length one.
 #'
-#' @param x An Analysis S3 class object.
+#' @param x An *Analysis* S3 class object.
 #'
 #' @export
 #'
@@ -75,19 +67,6 @@ validate.Analysis <- function(x = NULL) {
       warning("Analysis blank name not conform!")
       valid <- FALSE
     }
-
-    if (length(x$file) != 1 || !is.character(x$file)) {
-      warning("Analysis file path entry not conform!")
-      valid <- FALSE
-    } else if (!is.na(x$file) && !file.exists(x$file)) {
-      warning(paste0(x$file, " does not exist!"))
-      valid <- FALSE
-    }
-
-    if (length(x$version) != 1 || !is.character(as.character(x$version))) {
-      warning("Analysis version entry not conform!")
-      valid <- FALSE
-    }
   }
 
   if (!valid) warning("Issue/s found with analysis ", x$name, "!")
@@ -96,7 +75,7 @@ validate.Analysis <- function(x = NULL) {
 }
 
 #' @describeIn Analysis
-#' Prints the Analysis S3 class object in the console.
+#' S3 method to print an *Analysis* S3 class object in the console.
 #'
 #' @param ... Not used.
 #'
@@ -110,14 +89,12 @@ print.Analysis <- function(x, ...) {
     "  name: ", x$name, "\n",
     "  replicate: ", x$replicate, "\n",
     "  blank: ", x$blank, "\n",
-    "  file: ", x$file, "\n",
-    "  version: ", x$version, "\n",
     sep = ""
   )
 }
 
 #' @describeIn Analysis
-#' Converts a Analysis S3 class object to a JSON string.
+#' S3 method to convert an *Analysis* S3 class object to a JSON string.
 #'
 #' @export
 asJSON.Analysis <- function(x) {
@@ -138,9 +115,9 @@ asJSON.Analysis <- function(x) {
 }
 
 #' @describeIn Analysis
-#' Converts the argument value in an Analysis S3 class object.
+#' S3 method to convert the argument value to an *Analysis* S3 class object.
 #'
-#' @param value A list to be checked and/or converted to Analysis S3 class.
+#' @param value A list to be checked and/or converted to *Analysis* S3 class.
 #'
 #' @export
 as.Analysis <- function(value) {

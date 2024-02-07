@@ -1942,10 +1942,10 @@ acquired with different conditions or modes) of the <em>.mzML</em> or
 <em>.mzXML</em> files added will affect the content of each entry in the
 MassSpecAnalysis object but the structure remains the same (see
 <code><a href="../reference/MassSpecAnalysis.html">?MassSpecAnalysis</a></code>). The function
-<code><a href="../reference/MassSpecAnalysis.html">parse.MassSpecAnalysis()</a></code> from the StreamFind R package is
+<code><a href="../reference/MassSpecAnalysis.html">parse_MassSpecAnalysis()</a></code> from the StreamFind R package is
 used to create and validate the list of MassSpecAnalysis objects from a
 character vector with <em>.mzML</em> or <em>.mzXML</em> full file paths
-(see <code><a href="../reference/MassSpecAnalysis.html">?parse.MassSpecAnalysis</a></code> for more information). The
+(see <code><a href="../reference/MassSpecAnalysis.html">?parse_MassSpecAnalysis</a></code> for more information). The
 structure of the MassSpecAnalysis S3 class object is further described
 in section <a href="#analyses">analyses</a>. By typing
 <code>ms$get</code>, other available get methods are listed. The
@@ -1998,7 +1998,7 @@ entry names are already present in the MassSpecData object (e.g.,
 <span><span class="co">#&gt; [1] "ProjectHeaders"</span></span></code></pre></div>
 <p>Similarly, new MassSpecAnalysis objects can be added with
 <code>add_analyses()</code> as shown below. Note that the function
-<code><a href="../reference/MassSpecAnalysis.html">parse.MassSpecAnalysis()</a></code> was used to parse data from files
+<code><a href="../reference/MassSpecAnalysis.html">parse_MassSpecAnalysis()</a></code> was used to parse data from files
 7, 8 and 9, creating a named list of analysis objects. Again the name of
 each MassSpecAnalysis in the list is the file name without extension.
 Then, the list is added to the <code>ms</code> object with the method
@@ -2007,7 +2007,7 @@ available add methods are listed. The documentation
 <code><a href="../reference/MassSpecData.html">?MassSpecData</a></code> also contains detailed information and usage
 examples for available add methods.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">a_list</span> <span class="op">=</span> <span class="fu"><a href="../reference/MassSpecAnalysis.html">parse.MassSpecAnalysis</a></span><span class="op">(</span><span class="va">files</span><span class="op">[</span><span class="fl">7</span><span class="op">:</span><span class="fl">9</span><span class="op">]</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">a_list</span> <span class="op">=</span> <span class="fu"><a href="../reference/MassSpecAnalysis.html">parse_MassSpecAnalysis</a></span><span class="op">(</span><span class="va">files</span><span class="op">[</span><span class="fl">7</span><span class="op">:</span><span class="fl">9</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ⚙ Parsing 3 MS file/s... Done!</span></span>
 <span><span class="co">#&gt; 🖫 Parsed MS files/s cached!</span></span>
 <span></span>
@@ -2314,7 +2314,7 @@ shown above in <a href="#msdata">MassSpecData</a> section, the
 MassSpecData can be initiated with the <code>files</code> argument using
 a character vector of full file path/s to <em>.mzML</em> or
 <em>.mzXML</em> files. Alternatively, the function
-<code><a href="../reference/MassSpecAnalysis.html">parse.MassSpecAnalysis()</a></code> can be used to generate the list
+<code><a href="../reference/MassSpecAnalysis.html">parse_MassSpecAnalysis()</a></code> can be used to generate the list
 of analysis objects and then the argument <code>analyses</code> of the
 <code>new()</code> method or the <code>add_analyses()</code> method can
 be used to add the MassSpecAnalysis objects to the MassSpecData object.

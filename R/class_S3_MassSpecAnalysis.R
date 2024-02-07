@@ -1,7 +1,7 @@
 #' **MassSpecAnalysis** S3 class constructor, methods and functions
 #'
 #' @description
-#' Creates a MassSpecAnalysis S3 class object.
+#' Creates a *MassSpecAnalysis* S3 class object.
 #'
 #' @param name *mzML* or *mzXML* file name without extension.
 #' @param replicate Character with length one, representing the analysis
@@ -13,9 +13,6 @@
 #' @param type Character with length one. Possible values as "MS" for only MS1
 #' spectral data, "MS/MS" for tandem spectral data (i.e., MS1 and MS2) or "SRM"
 #' for selected reaction monitoring data (i.e., no spectra only chromatograms).
-#' @param instrument List with metadata from the instrument used to acquire the
-#' data (content is highly vendor dependent).
-#' @param software X.
 #' @param time_stamp Character with length one, representing the start time and
 #' date of the data acquisition.
 #' @param spectra_number Integer with the number of spectra in the file.
@@ -49,11 +46,8 @@
 #' @param features data.table with the features from data processing.
 #' @param metadata List with flexible storage for experimental metadata
 #' (e.g., concentration, location, etc.).
-#' @param version Character of length one with the version. It should match with
-#' the version of the StreamFind package when created the `MassSpecAnalysis`
-#' object.
 #'
-#' @return An MassSpecAnalysis S3 class object.
+#' @return An *MassSpecAnalysis* S3 class object.
 #'
 #' @export
 #'
@@ -61,7 +55,6 @@ MassSpecAnalysis <- function(name = NA_character_,
                              replicate = NA_character_,
                              blank = NA_character_,
                              file = NA_character_,
-                             version = NA_character_,
                              format = NA_character_,
                              type = NA_character_,
                              time_stamp = NA_character_,
@@ -84,7 +77,7 @@ MassSpecAnalysis <- function(name = NA_character_,
                              features = data.table(),
                              metadata = list()) {
   
-  x <- Analysis(name, replicate, blank, file, version)
+  x <- Analysis(name, replicate, blank)
 
   if (is.list(features)) features <- as.data.table(features)
   
@@ -118,6 +111,7 @@ MassSpecAnalysis <- function(name = NA_character_,
   }
 
   x <- c(x, list(
+    "file" <- as.character(file),
     "format" = as.character(format),
     "type" = as.character(type),
     "time_stamp" = as.character(time_stamp),
@@ -153,10 +147,10 @@ MassSpecAnalysis <- function(name = NA_character_,
 }
 
 #' @describeIn MassSpecAnalysis
-#' Validates a MassSpecAnalysis S3 class object, returning a logical value of
+#' S3 method to validate a *MassSpecAnalysis* S3 class object, returning a logical value of
 #' length one.
 #'
-#' @param x A MassSpecAnalysis S3 class object.
+#' @param x A *MassSpecAnalysis* S3 class object.
 #'
 #' @export
 #'
@@ -167,6 +161,14 @@ validate.MassSpecAnalysis <- function(x = NULL) {
   if (valid) {
     name <- x$name
 
+    if (length(x$file) != 1 || !is.character(x$file)) {
+      warning("Analysis file path entry not conform!")
+      valid <- FALSE
+    } else if (!is.na(x$file) && !file.exists(x$file)) {
+      warning(paste0(x$file, " does not exist!"))
+      valid <- FALSE
+    }
+    
     if (length(x$format) != 1) {
       warning("Analysis format not conform!")
       valid <- FALSE
@@ -299,7 +301,7 @@ validate.MassSpecAnalysis <- function(x = NULL) {
 }
 
 #' @describeIn MassSpecAnalysis
-#' Prints the MassSpecAnalysis S3 class object in the console.
+#' S3 method to print the *MassSpecAnalysis* S3 class object in the console.
 #'
 #' @param ... Not used.
 #'
@@ -310,7 +312,6 @@ print.MassSpecAnalysis <- function(x, ...) {
     " ", class(x), "\n"
   )
   cat(
-    # "  file              ", x$file, "\n",
     "  name              ", x$name, "\n",
     "  replicate         ", x$replicate, "\n",
     "  blank             ", x$blank, "\n",
@@ -329,7 +330,7 @@ print.MassSpecAnalysis <- function(x, ...) {
 }
 
 #' @describeIn MassSpecAnalysis
-#' Converts a MassSpecAnalysis S3 class object to a JSON string.
+#' S3 method to converts a *MassSpecAnalysis* S3 class object into a JSON string.
 #'
 #' @export
 asJSON.MassSpecAnalysis <- function(x) {
@@ -350,9 +351,9 @@ asJSON.MassSpecAnalysis <- function(x) {
 }
 
 #' @describeIn MassSpecAnalysis
-#' Converts the argument value in a MassSpecAnalysis S3 class object.
+#' S3 method to convert the argument value in a *MassSpecAnalysis* S3 class object.
 #'
-#' @param value A list to be checked and/or converted to MassSpecAnalysis S3 class.
+#' @param value A list to be checked and/or converted to *MassSpecAnalysis* S3 class.
 #'
 #' @export
 as.MassSpecAnalysis <- function(value) {
@@ -362,7 +363,7 @@ as.MassSpecAnalysis <- function(value) {
 
 #' @describeIn MassSpecAnalysis
 #' Parses information from *mzML* or *mzXML* file/s and returns a list with
-#' MassSpecAnalysis S3 class object/s. On error, returns \code{NULL}.
+#' *MassSpecAnalysis* S3 class object/s. On error, returns \code{NULL}.
 #'
 #' @param files A character vector with *mzML* or *mzXML* full file path/s.
 #' Alternatively, a data.frame with the column/s file, replicate and blank
@@ -371,7 +372,7 @@ as.MassSpecAnalysis <- function(value) {
 #' @template arg-runParallel
 #'
 #' @export
-parse.MassSpecAnalysis <- function(files = NULL, runParallel = FALSE) {
+parse_MassSpecAnalysis <- function(files = NULL, runParallel = FALSE) {
 
   if (is.data.frame(files)) {
     if ("file" %in% colnames(files)) {

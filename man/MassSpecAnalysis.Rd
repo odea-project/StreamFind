@@ -6,7 +6,7 @@
 \alias{print.MassSpecAnalysis}
 \alias{asJSON.MassSpecAnalysis}
 \alias{as.MassSpecAnalysis}
-\alias{parse.MassSpecAnalysis}
+\alias{parse_MassSpecAnalysis}
 \title{\strong{MassSpecAnalysis} S3 class constructor, methods and functions}
 \usage{
 MassSpecAnalysis(
@@ -14,7 +14,6 @@ MassSpecAnalysis(
   replicate = NA_character_,
   blank = NA_character_,
   file = NA_character_,
-  version = NA_character_,
   format = NA_character_,
   type = NA_character_,
   time_stamp = NA_character_,
@@ -46,7 +45,7 @@ MassSpecAnalysis(
 
 as.MassSpecAnalysis(value)
 
-parse.MassSpecAnalysis(files = NULL, runParallel = FALSE)
+parse_MassSpecAnalysis(files = NULL, runParallel = FALSE)
 }
 \arguments{
 \item{name}{\emph{mzML} or \emph{mzXML} file name without extension.}
@@ -58,10 +57,6 @@ replicate group name.}
 replicate group name.}
 
 \item{file}{\emph{mzML} or \emph{mzXML} full file path (with extension).}
-
-\item{version}{Character of length one with the version. It should match with
-the version of the StreamFind package when created the \code{MassSpecAnalysis}
-object.}
 
 \item{format}{Character with length one. One of \emph{mzML} or \emph{mzXML}.}
 
@@ -121,11 +116,11 @@ from binning of spectra.}
 \item{metadata}{List with flexible storage for experimental metadata
 (e.g., concentration, location, etc.).}
 
-\item{x}{A MassSpecAnalysis S3 class object.}
+\item{x}{A \emph{MassSpecAnalysis} S3 class object.}
 
 \item{...}{Not used.}
 
-\item{value}{A list to be checked and/or converted to MassSpecAnalysis S3 class.}
+\item{value}{A list to be checked and/or converted to \emph{MassSpecAnalysis} S3 class.}
 
 \item{files}{A character vector with \emph{mzML} or \emph{mzXML} full file path/s.
 Alternatively, a data.frame with the column/s file, replicate and blank
@@ -137,26 +132,26 @@ processing. Note that parallel processing is not always faster due to
 overhead.}
 }
 \value{
-An MassSpecAnalysis S3 class object.
+An \emph{MassSpecAnalysis} S3 class object.
 }
 \description{
-Creates a MassSpecAnalysis S3 class object.
+Creates a \emph{MassSpecAnalysis} S3 class object.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{validate(MassSpecAnalysis)}: Validates a MassSpecAnalysis S3 class object, returning a logical value of
+\item \code{validate(MassSpecAnalysis)}: S3 method to validate a \emph{MassSpecAnalysis} S3 class object, returning a logical value of
 length one.
 
-\item \code{print(MassSpecAnalysis)}: Prints the MassSpecAnalysis S3 class object in the console.
+\item \code{print(MassSpecAnalysis)}: S3 method to print the \emph{MassSpecAnalysis} S3 class object in the console.
 
-\item \code{asJSON(MassSpecAnalysis)}: Converts a MassSpecAnalysis S3 class object to a JSON string.
+\item \code{asJSON(MassSpecAnalysis)}: S3 method to converts a \emph{MassSpecAnalysis} S3 class object into a JSON string.
 
 }}
 \section{Functions}{
 \itemize{
-\item \code{as.MassSpecAnalysis()}: Converts the argument value in a MassSpecAnalysis S3 class object.
+\item \code{as.MassSpecAnalysis()}: S3 method to convert the argument value in a \emph{MassSpecAnalysis} S3 class object.
 
-\item \code{parse.MassSpecAnalysis()}: Parses information from \emph{mzML} or \emph{mzXML} file/s and returns a list with
-MassSpecAnalysis S3 class object/s. On error, returns \code{NULL}.
+\item \code{parse_MassSpecAnalysis()}: Parses information from \emph{mzML} or \emph{mzXML} file/s and returns a list with
+\emph{MassSpecAnalysis} S3 class object/s. On error, returns \code{NULL}.
 
 }}

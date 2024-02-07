@@ -21,7 +21,9 @@ xy <- XyEngine$new()
 
 
 
+r1 <- RamanEngine$new(files = StreamFindData::get_raman_file_paths())
 
+r1$get_analyses(2)
 
 
 
@@ -43,7 +45,7 @@ xy <- XyEngine$new()
 
 
 patRoon::clearCache("all")
-msana <- parse.MassSpecAnalysis(StreamFindData::get_ms_file_paths()[1])[[1]]
+msana <- parse_MassSpecAnalysis(StreamFindData::get_ms_file_paths()[1])[[1]]
 class(msana)
 sloop::s3_dispatch(print(msana))
 ana

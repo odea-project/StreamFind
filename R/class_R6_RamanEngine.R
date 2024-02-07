@@ -1,14 +1,14 @@
 #' **RamanEngine** R6 class and methods
 #'
 #' @description
-#' The *RamanEngine* R6 class is a framework with methods for parsing, processing,
-#' inspecting and storing data from Raman spectroscopy.
+#' The *RamanEngine* R6 class is a framework for parsing, processing, inspecting
+#' and storing Raman spectroscopic data.
 #'
 #' @template arg-headers
-#' @template arg-ms-analyses
-#' @template arg-raman-target
-#' @template arg-ms-title
 #' @template arg-runParallel
+#' @template arg-analyses
+#' @template arg-raman-target
+#' @template arg-title
 #' @template arg-ms-cex
 #' @template arg-ms-showLegend
 #' @template arg-ms-labs
@@ -34,24 +34,15 @@ RamanEngine <- R6::R6Class("RamanEngine",
 
     ## ___ system -----
     #' @description
-    #' Creates an R6 class *RamanEngine*. When `headers` are not given
-    #' (i.e., `NULL`), a default Headers S3 class object is generated with name
-    #' as `NA_character`, path as `get_wd()` and date as `Sys.time()`.
-    #' See `?Headers` for more information.
+    #' Creates an R6 class *RamanEngine*. Child of *CoreEngine* R6 class.
     #'
-    #' @param files Full file paths of Raman analyses.
+    #' @param files Vector with full paths of **.asc** files from Raman analyses.
     #'
     initialize = function(files = NULL, headers = NULL, runParallel = FALSE) {
 
+      if (is.null(headers)) headers <- ProjectHeaders()
+      
       if (!is.null(headers)) suppressMessages(self$add_headers(headers))
-
-      if (is.null(private$.headers)) {
-        private$.headers <- ProjectHeaders(
-          name = NA_character_,
-          path = getwd(),
-          date = Sys.time()
-        )
-      }
 
       if (!is.null(files)) {
         
@@ -122,36 +113,6 @@ RamanEngine <- R6::R6Class("RamanEngine",
       }
 
       message("\U2713 RamanEngine created!")
-    },
-
-    #' @description
-    #' Prints a summary of the *RamanEngine* in the console.
-    #'
-    #' @return Console text.
-    #'
-    print = function() {
-      cat(
-        paste(is(self), collapse = "; "), "\n",
-        "name          ", private$.headers$name, "\n",
-        "author        ", private$.headers$author, "\n",
-        "path          ", private$.headers$path, "\n",
-        "date          ", as.character(private$.headers$date), "\n",
-        sep = ""
-      )
-
-      cat("\n")
-
-      if (length(private$.analyses) > 0) {
-        overview <- self$get_overview()
-        overview$file <- NULL
-        cat("Analyses: \n")
-        row.names(overview) <- paste0(" ", seq_len(nrow(overview)), ":")
-        print(overview)
-
-      } else {
-        cat("Analyses: ", 0, "\n", sep = "")
-      }
-      cat("\n")
     },
 
     #' @description

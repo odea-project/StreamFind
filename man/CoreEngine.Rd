@@ -66,7 +66,7 @@ List of function elements to access specific reference help pages.}
 \subsection{Method \code{new()}}{
 Creates an R6 \emph{CoreEngine} class object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$new(headers = NULL, settings = NULL, analyses = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$new(headers = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -78,15 +78,6 @@ except for name (must be type character length 1), author (must be type
 character length 1), path (must be type character length 1) and date (must
 be class POSIXct or class POSIXt length 1). See more information in
 \code{?ProjectHeaders}.}
-
-\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
-applicable to the processing method. Alternatively, a named
-list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
-ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the \code{MassSpecData} object.}
-
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -177,8 +168,7 @@ Gets analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -223,8 +213,7 @@ Gets the analysis names.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -241,8 +230,7 @@ Gets the analysis replicate names.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -259,8 +247,7 @@ Gets the analysis blank replicate names.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -277,8 +264,7 @@ Gets the full file paths of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -295,8 +281,7 @@ Gets the file format of each analysis.'
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -313,8 +298,7 @@ Gets the type of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -548,8 +532,7 @@ Removes analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -569,8 +552,7 @@ Subsets on analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -704,8 +686,7 @@ Saves analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{format}}{A string. Possible values are \code{json} and \code{rds} for saving as
 JSON or RDS formats, respectively.}
