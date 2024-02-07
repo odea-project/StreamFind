@@ -59,7 +59,7 @@ ps <- list(
   Settings_annotate_features_StreamFind(),
   Settings_group_features_openms(),
   Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
-  Settings_filter_features_StreamFind(minIntensity = 5000, maxGroupSd = 30, blank = 5, minGroupAbundance = 3, excludeIsotopes = TRUE),
+  Settings_filter_features_StreamFind(minIntensity = 5000, maxGroupSd = 10, minGroupAbundance = 3, blank = 5, excludeIsotopes = TRUE),
   Settings_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005, runParallel = FALSE),
   # Settings_load_features_ms1_StreamFind(),
   Settings_load_features_ms2_StreamFind(),
@@ -88,6 +88,7 @@ ms$run_workflow()
 
 ms$remove_groups(groups = "m267.180_rt916_g741")
 
+View(ms$get_features(filtered = TRUE))
 
 
 

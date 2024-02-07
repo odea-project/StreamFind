@@ -234,21 +234,21 @@ MassSpecData <- R6::R6Class("MassSpecData",
           
           message("\U2699 Filtering by minIntensity...", appendLF = FALSE)
 
-          if (self$has_groups()) {
-            rpl <- unique(self$get_replicate_names())
-            groups <- self$get_groups(filtered = FALSE, intensities = TRUE, average = TRUE, metadata = FALSE)
-            groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1,function(x) max(x) <= value)
-            groups <- groups$group[groups_sel]
-            private$.tag_filtered(groups, "minIntensity")
-
-          } else {
+          # if (self$has_groups()) {
+          #   rpl <- unique(self$get_replicate_names())
+          #   groups <- self$get_groups(filtered = FALSE, intensities = TRUE, average = TRUE, metadata = FALSE)
+          #   groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1,function(x) max(x) <= value)
+          #   groups <- groups$group[groups_sel]
+          #   private$.tag_filtered(groups, "minIntensity")
+          # 
+          # } else {
             private$.analyses <- lapply(private$.analyses, function(x) {
               sel <- (x$features$intensity <= value) & (!x$features$filtered)
               x$features$filtered[sel] <- TRUE
               x$features$filter[sel] <- "minIntensity"
               x
             })
-          }
+          # }
 
           private$.register(
             "filter_features",
@@ -283,23 +283,23 @@ MassSpecData <- R6::R6Class("MassSpecData",
             
             message("\U2699 Filtering by minSnRatio...", appendLF = FALSE)
 
-            if (self$has_groups()) {
-              groups <- self$get_groups(filtered = FALSE, intensities = FALSE, average = FALSE, metadata = TRUE)
-              groups_sel <- groups$sn <= value
-              groups <- groups$group
-              groups <- groups[groups_sel]
-              private$.tag_filtered(groups, "minSnRatio")
-
-            } else {
+            # if (self$has_groups()) {
+            #   groups <- self$get_groups(filtered = FALSE, intensities = FALSE, average = FALSE, metadata = TRUE)
+            #   groups_sel <- groups$sn <= value
+            #   groups <- groups$group
+            #   groups <- groups[groups_sel]
+            #   private$.tag_filtered(groups, "minSnRatio")
+            # 
+            # } else {
               private$.analyses <- lapply(private$.analyses, function(x) {
-                qlt <- x$features$quality$sn
-                qlt[is.null(qlt)] <- 0
+                qlt <- vapply(x$features$quality, function(z) if (!is.null(z)) z$sn else NA_real_, NA_real_)
+                qlt[is.na(qlt)] <- 0
                 sel <- qlt <= value & !x$features$filtered
                 x$features$filtered[sel] <- TRUE
                 x$features$filter[sel] <- "minSnRatio"
                 x
               })
-            }
+            # }
 
             private$.register(
               "filter_features",
@@ -338,14 +338,14 @@ MassSpecData <- R6::R6Class("MassSpecData",
           
           message("\U2699 Excluding isotopes...", appendLF = FALSE)
 
-          if (self$has_groups()) {
-            groups <- self$get_groups(filtered = FALSE, intensities = FALSE, average = FALSE, metadata = TRUE)
-            groups_sel <- groups$iso > 0
-            groups <- groups$group
-            groups <- groups[groups_sel]
-            private$.tag_filtered(groups, "isotope")
-
-          } else {
+          # if (self$has_groups()) {
+          #   groups <- self$get_groups(filtered = FALSE, intensities = FALSE, average = FALSE, metadata = TRUE)
+          #   groups_sel <- groups$iso > 0
+          #   groups <- groups$group
+          #   groups <- groups[groups_sel]
+          #   private$.tag_filtered(groups, "isotope")
+          # 
+          # } else {
             private$.analyses <- lapply(private$.analyses, function(x) {
               iso <- x$features$isotope$step
               iso[is.null(iso)] <- 0
@@ -354,7 +354,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
               x$features$filter[sel] <- "isotope"
               x
             })
-          }
+          # }
 
           private$.register(
             "filter_features",
@@ -375,7 +375,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    # Filters feature groups with max replicate group intensity deviation.
+    # Filters features with max replicate group intensity deviation.
     #
     .filter_maxGroupSd = function(value = 30) {
 
@@ -386,25 +386,50 @@ MassSpecData <- R6::R6Class("MassSpecData",
           message("\U2699 Filtering by maxGroupSd...", appendLF = FALSE)
           
           rpl <- self$get_replicate_names()
-          blk <- self$get_blank_names()
-          rpl <- rpl[!rpl %in% blk]
-          rpl <- paste0(rpl, "_sd")
-
+          rpl <- paste(rpl, "_sd", sep = '')
+          names(rpl) <- self$get_analysis_names()
+          
           groups <- self$get_groups(
             filtered = FALSE, intensities = TRUE,
             average = TRUE, sdValues = TRUE,
             metadata = FALSE
           )
-
-          groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1,
-            function(x, value) {
-              all(x >= value | x == 0, na.rm = TRUE)
-            }, value = value
-          )
           
-          groups <- groups$group[groups_sel]
-
-          private$.tag_filtered(groups, "maxGroupSd")
+          lapply(1:nrow(groups), function(x, value, rpl, groups) {
+            
+            g <- groups$group[x]
+            vec <- as.numeric(groups[x, unique(rpl), with = FALSE])
+            sel <- vec >= value & !is.na(vec)
+            
+            for (i in 1:length(vec)) {
+              
+              if (sel[i]) {
+                rp <- unique(rpl)[i]
+                anas <- names(rpl)[rpl %in% rp]
+                
+                for (a in anas) {
+                  sel2 <- private$.analyses[[a]]$features$group %in% g
+                  
+                  if (TRUE %in% sel2) {
+                    if (!private$.analyses[[a]]$features$filtered[sel2]) {
+                      private$.analyses[[a]]$features$filtered[sel2] <- TRUE
+                      private$.analyses[[a]]$features$filter[sel2] <- "maxGroupSd"
+                    }
+                  }
+                }
+              }
+            }
+          }, value = value, rpl = rpl, groups = groups)
+          
+          # groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1,
+          #   function(x, value) {
+          #     all(x >= value | x == 0, na.rm = TRUE)
+          #   }, value = value
+          # )
+          # 
+          # groups <- groups$group[groups_sel]
+          # 
+          # private$.tag_filtered(groups, "maxGroupSd")
 
           private$.register(
             "filter_features",
@@ -425,7 +450,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
     },
 
-    # Filters feature groups with max replicate group abundance.
+    # Filters feature with min replicate group abundance.
     #
     .filter_minGroupAbundance = function(value = 3) {
 
@@ -435,29 +460,58 @@ MassSpecData <- R6::R6Class("MassSpecData",
           
           message("\U2699 Filtering by minGroupAbundance...", appendLF = FALSE)
           
+          rpl <- self$get_replicate_names()
+          
           groups <- self$get_groups(filtered = FALSE, intensities = TRUE, average = FALSE, metadata = FALSE)
           
-          features <- self$get_features(filtered = TRUE)
+          features <- self$get_features(filtered = FALSE)
           
-          # TODO add abundance to group metadata output
-
-          groups_sel <- vapply(groups$group,
-            function(x, features, rpl, value) {
-              which_fts <- which(features$group %in% x)
-              analyses <- features$analysis[which_fts]
-              r <- rpl[analyses]
-              r <- table(r)
-              !any(apply(r, 1, function(x) max(x) >= value))
-            },
-            features = features,
-            rpl = self$get_replicate_names(),
-            value = value,
-            FALSE
-          )
+          lapply(1:nrow(groups), function(x, value, rpl, groups) {
+            
+            g <- groups$group[x]
+            which_fts <- which(features$group %in% g)
+            analyses <- features$analysis[which_fts]
+            
+            r <- rpl[analyses]
+            r <- table(r)
+            
+            for (i in 1:length(r)) {
+              
+              if (r[i] < value) {
+                rp <- names(r[i])
+                anas <- names(rpl)[rpl %in% rp]
+                
+                for (a in anas) {
+                  
+                  if (a %in% analyses) {
+                    sel2 <- private$.analyses[[a]]$features$group %in% g
+                    private$.analyses[[a]]$features$filtered[sel2] <- TRUE
+                    private$.analyses[[a]]$features$filter[sel2] <- "minGroupAbundance"
+                  }
+                }
+              }
+            }
+          }, value = value, rpl = rpl, groups = groups)
           
-          groups <- groups$group[groups_sel]
-
-          private$.tag_filtered(groups, "minGroupAbundance")
+          # # TODO add abundance to group metadata output
+          # 
+          # groups_sel <- vapply(groups$group,
+          #   function(x, features, rpl, value) {
+          #     which_fts <- which(features$group %in% x)
+          #     analyses <- features$analysis[which_fts]
+          #     r <- rpl[analyses]
+          #     r <- table(r)
+          #     !any(apply(r, 1, function(x) max(x) >= value))
+          #   },
+          #   features = features,
+          #   rpl = self$get_replicate_names(),
+          #   value = value,
+          #   FALSE
+          # )
+          # 
+          # groups <- groups$group[groups_sel]
+          # 
+          # private$.tag_filtered(groups, "minGroupAbundance")
 
           private$.register(
             "filter_features",
@@ -497,6 +551,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           
           blk <- blk[!duplicated(names(blk))]
           
+          rpl <- rpl[!rpl %in% blk]
+          
           if (length(blk) != 0) {
           
             message("\U2699 Subtracting blank...", appendLF = FALSE)
@@ -509,13 +565,45 @@ MassSpecData <- R6::R6Class("MassSpecData",
               groups[, (rp) := groups[[rp]] <= (groups[[bl]] * value)][]
             }
   
-            groups_sel <- apply(groups[, names(blk), with = FALSE], MARGIN = 1,
-              function(x) { all(x, na.rm = TRUE) }
-            )
+            lapply(1:nrow(groups), function(x, value, rpl, groups) {
+              
+              g <- groups$group[x]
+              sel <- as.logical(groups[x, unique(rpl), with = FALSE])
+              
+              for (i in 1:length(sel)) {
+                
+                if (sel[i]) {
+                  rp <- unique(rpl)[i]
+                  anas <- names(rpl)[rpl %in% rp]
+                  
+                  for (a in anas) {
+                    sel2 <- private$.analyses[[a]]$features$group %in% g
+                    
+                    if (TRUE %in% sel2) {
+                      if (!private$.analyses[[a]]$features$filtered[sel2]) {
+                        private$.analyses[[a]]$features$filtered[sel2] <- TRUE
+                        private$.analyses[[a]]$features$filter[sel2] <- "blank"
+                      }
+                    }
+                  }
+                }
+              }
+            }, value = value, rpl = rpl, groups = groups)
             
-            groups <- groups$group[groups_sel]
-  
-            private$.tag_filtered(groups, "blank")
+            blk_anas <- unique(names(self$get_replicate_names()[self$get_replicate_names() %in% blk]))
+            
+            for (b in blk_anas) {
+              private$.analyses[[b]]$features$filtered <- TRUE
+              private$.analyses[[b]]$features$filter <- "blank"
+            }
+            
+            # groups_sel <- apply(groups[, names(blk), with = FALSE], MARGIN = 1,
+            #   function(x) { all(x, na.rm = TRUE) }
+            # )
+            # 
+            # groups <- groups$group[groups_sel]
+            # 
+            # private$.tag_filtered(groups, "blank")
   
             private$.register(
               "filter_features",
@@ -552,25 +640,25 @@ MassSpecData <- R6::R6Class("MassSpecData",
           
           value <- sort(value)
 
-          if (self$has_groups()) {
-            rpl <- self$get_replicate_names()
-
-            groups <- self$get_groups(filtered = FALSE, intensities = FALSE, average = FALSE, sdValues = FALSE, metadata = TRUE)
-
-            groups_sel <- (groups$rt <= value[2]) & (groups$rt >= value[1])
-            
-            groups <- groups$group[groups_sel]
-
-            private$.tag_filtered(groups, "rtFilter")
-
-          } else {
+          # if (self$has_groups()) {
+          #   rpl <- self$get_replicate_names()
+          # 
+          #   groups <- self$get_groups(filtered = FALSE, intensities = FALSE, average = FALSE, sdValues = FALSE, metadata = TRUE)
+          # 
+          #   groups_sel <- (groups$rt <= value[2]) & (groups$rt >= value[1])
+          #   
+          #   groups <- groups$group[groups_sel]
+          # 
+          #   private$.tag_filtered(groups, "rtFilter")
+          # 
+          # } else {
             private$.analyses <- lapply(private$.analyses, function(x) {
               sel <- (x$features$rt <= value[2]) & (x$features$rt >= value[1]) & (!x$features$filtered)
               x$features$filtered[sel] <- TRUE
               x$features$filter[sel] <- "rtFilter"
               x
             })
-          }
+          # }
 
           private$.register(
             "filter_features",
@@ -603,18 +691,18 @@ MassSpecData <- R6::R6Class("MassSpecData",
           
           value <- sort(value)
 
-          if (self$has_groups()) {
-            rpl <- self$get_replicate_names()
-
-            groups <- self$get_groups(filtered = FALSE, intensities = FALSE, average = FALSE, sdValues = FALSE, metadata = TRUE)
-
-            groups_sel <- (groups$mass <= value[2]) & (groups$mass >= value[1])
-            
-            groups <- groups$group[groups_sel]
-
-            private$.tag_filtered(groups, "massFilter")
-
-          } else {
+          # if (self$has_groups()) {
+          #   rpl <- self$get_replicate_names()
+          # 
+          #   groups <- self$get_groups(filtered = FALSE, intensities = FALSE, average = FALSE, sdValues = FALSE, metadata = TRUE)
+          # 
+          #   groups_sel <- (groups$mass <= value[2]) & (groups$mass >= value[1])
+          #   
+          #   groups <- groups$group[groups_sel]
+          # 
+          #   private$.tag_filtered(groups, "massFilter")
+          # 
+          # } else {
             private$.analyses <- lapply(private$.analyses, function(x) {
               sel <- (x$features$mass <= value[2]) &
                 (x$features$mass >= value[1]) &
@@ -623,7 +711,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
               x$features$filter[sel] <- "massFilter"
               x
             })
-          }
+          # }
 
           private$.register(
             "filter_features",
