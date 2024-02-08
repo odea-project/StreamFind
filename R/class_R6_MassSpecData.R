@@ -395,6 +395,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
             metadata = FALSE
           )
           
+          rpl <- rpl[rpl %in% colnames(groups)]
+          
           lapply(1:nrow(groups), function(x, value, rpl, groups) {
             
             g <- groups$group[x]
@@ -557,8 +559,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
           
             message("\U2699 Subtracting blank...", appendLF = FALSE)
   
-            groups <- self$get_groups(filtered = FALSE, intensities = TRUE, average = TRUE, sdValues = FALSE, metadata = FALSE)
-  
+            groups <- self$get_groups(filtered = TRUE, intensities = TRUE, average = TRUE, sdValues = FALSE, metadata = FALSE)
+            
             for (r in seq_len(length(blk))) {
               rp <- names(blk)[r]
               bl <- blk[r]
@@ -3975,6 +3977,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           }
 
         } else {
+          
           analyses <- lapply(analyses, as.MassSpecAnalysis)
 
           if (all(vapply(analyses, function(x) is(x, "MassSpecAnalysis"), FALSE))) {
@@ -4016,7 +4019,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
               class(x),
               x$name,
               "StreamFind",
-              x$version,
+              NA_character_,
               x$file
             )
           })

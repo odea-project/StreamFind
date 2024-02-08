@@ -111,7 +111,7 @@ MassSpecAnalysis <- function(name = NA_character_,
   }
 
   x <- c(x, list(
-    "file" <- as.character(file),
+    "file" = as.character(file),
     "format" = as.character(format),
     "type" = as.character(type),
     "time_stamp" = as.character(time_stamp),
@@ -160,7 +160,7 @@ validate.MassSpecAnalysis <- function(x = NULL) {
 
   if (valid) {
     name <- x$name
-
+    
     if (length(x$file) != 1 || !is.character(x$file)) {
       warning("Analysis file path entry not conform!")
       valid <- FALSE
@@ -498,12 +498,13 @@ parse_MassSpecAnalysis <- function(files = NULL, runParallel = FALSE) {
       }
       
       names(analyses) <- vapply(analyses, function(x) x$name, "")
+      
       analyses <- analyses[order(names(analyses))]
       
-      analyses <- lapply(analyses, function(x) {
-        x$version <- as.character(packageVersion("StreamFind"))
-        x
-      })
+      # analyses <- lapply(analyses, function(x) {
+      #   x$version <- as.character(packageVersion("StreamFind"))
+      #   x
+      # })
     }
 
     if (!is.null(hash)) {
