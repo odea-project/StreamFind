@@ -7714,8 +7714,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       anaInfo$file <- self$get_files()
 
-      rownames(anaInfo) <- seq_len(nrow(anaInfo))
-
       features <- lapply(self$get_analyses(), function(x, without_filtered_features) {
 
         ft <- copy(x$features)
@@ -7744,6 +7742,14 @@ MassSpecData <- R6::R6Class("MassSpecData",
         ft
       }, without_filtered_features = !filtered)
 
+      remove_empty <- !vapply(features, function(x) nrow(x) == 0, FALSE)
+      
+      features <- features[remove_empty]
+      
+      anaInfo <- anaInfo[remove_empty, ]
+      
+      rownames(anaInfo) <- seq_len(nrow(anaInfo))
+      
       if (multiple_polarities) {
 
         pol_key <- c("[M+H]+", "[M-H]-", "[M]")
@@ -7826,9 +7832,11 @@ MassSpecData <- R6::R6Class("MassSpecData",
         metadata = TRUE
       )
       
+      analyses <- self$get_analysis_names()[self$get_analysis_names() %in% colnames(groups)]
+      
       groups_info <- copy(groups)
       groups_cols <- groups$group
-      groups_ints <- groups[, self$get_analysis_names(), with = FALSE]
+      groups_ints <- groups[, analyses, with = FALSE]
       groups_trans <- data.table::transpose(groups_ints)
       colnames(groups_trans) <- groups_cols
 
