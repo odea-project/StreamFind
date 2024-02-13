@@ -8,8 +8,6 @@
 #' @template arg-ms-analyses
 #' @template arg-ms-settings
 #'
-#' @export
-#'
 XyEngine <- R6::R6Class("XyEngine",
 
   inherit = CoreEngine,

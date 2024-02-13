@@ -2,34 +2,84 @@
 ## Core development
 
 # R6 class: CoreEngine
-
-core <- CoreEngine$new()
-core
+# core <- CoreEngine$new()
+# core
 
 # S3 classes: ProjectHeaders, ProcessingSettings, Analysis
+# phead <- ProjectHeaders()
+# phead
 
-phead <- ProjectHeaders()
-phead
+# settings <- ProcessingSettings()
+# settings
 
-settings <- ProcessingSettings()
-settings
+# ana <- Analysis()
+# ana
 
-ana <- Analysis()
-ana
+# r1 <- RamanEngine$new(files = StreamFindData::get_raman_file_paths())
+# r1$get_number_analyses()
+# r1$plot_spectra(colorBy = "replicates")
+# r1$get_spectra()
 
-xy <- XyEngine$new()
+ms_files <- StreamFindData::get_ms_file_paths()
+ms_files <- ms_files[grepl("blank|influent|o3sw", ms_files)]
+ms_files_df <- data.frame(
+  "file" = ms_files,
+  "replicate" = c(
+    rep("blank_neg", 3),
+    rep("blank_pos", 3),
+    rep("in_neg", 3),
+    rep("in_pos", 3),
+    rep("out_neg", 3),
+    rep("out_pos", 3)
+  ),
+  "blank" = c(
+    rep("blank_neg", 3),
+    rep("blank_pos", 3),
+    rep("blank_neg", 3),
+    rep("blank_pos", 3),
+    rep("blank_neg", 3),
+    rep("blank_pos", 3)
+  )
+)
 
+# patRoon::clearCache(c("parsed_ms_analyses"))
 
+ms <- MassSpecEngine$new(ms_files_df)
+ms
 
-r1 <- RamanEngine$new(files = StreamFindData::get_raman_file_paths())
+db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
+cols <- c("name", "formula", "mass", "rt", "polarity", "fragments", "tag")
+db <- db[, cols, with = FALSE]
+dbis <- db[grepl("IS", db$tag), ]
+dbsus <- db[!grepl("IS", db$tag), ]
 
-r1$get_analyses(2)
+ms$plot_bpc(colorBy = "replicates", levels = 1)
 
+ps <- list(
+  Settings_find_features_openms(),
+  Settings_annotate_features_StreamFind(),
+  Settings_group_features_openms(),
+  # Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
+  Settings_filter_features_StreamFind(minIntensity = 5000, maxGroupSd = 30, blank = 5, minGroupAbundance = 3, excludeIsotopes = TRUE),
+  Settings_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005, runParallel = FALSE),
+  Settings_calculate_quality_StreamFind(),
+  Settings_filter_features_StreamFind(minSnRatio = 3),
+  Settings_load_features_ms2_StreamFind(runParallel = FALSE),
+  Settings_suspect_screening_StreamFind(database = dbsus, ppm = 5, sec = 10)
+)
 
+# patRoon::clearCache("all")
+# patRoon::clearCache(c("annotate_features"))
+# patRoon::clearCache(c("calculate_quality"))
+# patRoon::clearCache(c("load_features_ms2"))
+# patRoon::clearCache(c("load_features_ms1"))
 
+ms$add_settings(ps)
+ms$run_workflow()
 
+ms$plot_suspects()
 
-
+ms$plot_groups_overview(analyses = c(4:9, 13:18), groups = ms$get_suspects(), legendNames = TRUE, heights = c(0.25, 0.5, 0.25))
 
 
 

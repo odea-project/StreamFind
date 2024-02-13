@@ -1389,9 +1389,10 @@ CoreEngine <- R6::R6Class("CoreEngine",
     ### ___ processing_methods -----
     
     #' @description
-    #' Possible data processing methods.
+    #' Available data processing methods.
     #'
-    #' @return A character vector with ordered possible data  processing methods.
+    #' @return A data.table with the name and maximum permitted of available 
+    #' processing methods.
     #'
     processing_methods = function() {
       data.table(name = character(), max = numeric())

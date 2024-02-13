@@ -1,7 +1,8 @@
 #' **RamanData** R6 class and methods
 #'
 #' @description
-#' The RamanData R6 class is a framework with methods for parsing, processing,
+#' (to be deprecate and replaced by **RmanEngine**) The RamanData R6 class is 
+#' a framework with methods for parsing, processing,
 #' inspecting and storing RAMAN data.
 #'
 #' @template arg-headers

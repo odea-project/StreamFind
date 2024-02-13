@@ -1,8 +1,10 @@
-#' **MassSpecData** R6 class and methods
+#' **MassSpecEngine** R6 class and methods
 #'
 #' @description
-#' (to be deprecate and replaced by **MassSpecEngine**) The MassSpecData R6 class is a framework with methods for parsing,
-#' processing, visualizing and storing mass spectrometry (MS) data.
+#' The *MassSpecEngine* R6 class is a framework for parsing, processing, 
+#' inspecting and storing mass spectrometry (MS) data. The *MassSpecEngine* is
+#' using \href{https://github.com/rickhelmus/patRoon}{patRoon} for assembly of 
+#' workflows Non-Target Screening data processing workflows.
 #'
 #' @template arg-ms-files
 #' @template arg-runParallel
@@ -79,150 +81,19 @@
 #'
 #' @export
 #'
-MassSpecData <- R6::R6Class("MassSpecData",
+MassSpecEngine <- R6::R6Class("MassSpecEngine",
+                              
+  inherit = CoreEngine,
 
   # _ private fields -----
   private = list(
-    ## ___ .headers -----
-    .headers = NULL,
-
-    ## ___ .settings -----
-    .settings = NULL,
-
-    ## ___ .history -----
-    .history = NULL,
-
-    ## ___ .analyses -----
-    .analyses = NULL,
-
-    ## ___ .alignment -----
-    .alignment = NULL,
-
-    ## ___ .modules -----
-    .modules = NULL,
-
-    ## ___ .utils -----
-
-    # Registers changes in the history private field.
-    #
-    .register = function(
-      action = NA_character_,
-      object = NA_character_,
-      name = NA_character_,
-      software = NA_character_,
-      version = NA_character_,
-      details = NA_character_) {
-
-      date_time <- Sys.time()
-      if (is.null(private$.history)) private$.history <- list()
-
-      private$.history[[as.character.POSIXt(date_time)]] <- data.table(
-        "time" = date_time,
-        "action" = action,
-        "object" = object,
-        "name" = name,
-        "software" = software,
-        "version" = version,
-        "details" = details
-      )
-
-      invisible(self)
-    },
-
-    # Checks the analyses argument as a character/integer vector to match
-    # analyses names or indices from the `MassSpecData` object. Returns a valid
-    # character vector with analysis names or `NULL` for non-matching.
-    #
-    .check_analyses_argument = function(analyses = NULL) {
-      if (is.null(analyses)) {
-        self$get_analysis_names()
-      } else {
-        analyses <- self$get_analysis_names(analyses)
-        if (!all(analyses %in% self$get_analysis_names())) {
-          warning("Defined analyses not found!")
-          NULL
-        } else {
-          analyses
-        }
-      }
-    },
-
-    # Gets an entry from the analyses private field.
-    #
-    .get_analyses_entry = function(analyses = NULL, value = NA_character_) {
-      analyses <- private$.check_analyses_argument(analyses)
-
-      if (is.null(analyses)) return(NULL)
-      output <- lapply(private$.analyses, function(x, value) {
-
-        temp <- x[[value]]
-        names(temp) <- rep(x$name, length(temp))
-        temp
-
-      }, value = value)
-
-      output <- unname(output)
-
-      output <- unlist(output, recursive = FALSE, use.names = TRUE)
-
-      output[names(output) %in% analyses]
-    },
-
-    # Extracts and validates ProcessingSettings for a given call.
-    #
-    .get_call_settings = function(settings, call) {
-      
-      checkmate::assert_choice(call, self$processing_function_calls())
-
-      if (is.null(settings)) settings <- self$get_settings(call)
-      
-      if (is.null(settings)) return(NULL)
-      
-      cols_check <- c("call", "algorithm", "parameters")
-      
-      if (all(cols_check %in% names(settings))) settings <- list(settings)
-      
-      if (length(settings) > 1) {
-        warning("More then one settings for ", call, " found!")
-        return(NULL)
-      }
-      
-      settings <- as.ProcessingSettings(settings)
-      
-      if (checkmate::test_choice(call, settings$call)) {
-        settings
-        
-      } else {
-        warning("Settings call must be ", call, "!")
-        NULL
-      }
-    },
     
-    # Checks if settings are already stored.
+    ## .groups -----
+    # S4 FeatureGroups class from patRoon
     #
-    .settings_already_stored = function(settings) {
-      any(vapply(private$.settings, function(x, settings) {
-        identical(x, settings)
-      }, settings = settings, FALSE))
-    },
-
-    ## ___ .filters -----
-
-    # Tags features and feature groups with filter based on logical vector of
-    # feature groups.
-    #
-    .tag_filtered = function(groups, tag) {
-
-      private$.analyses <- lapply(private$.analyses,
-        function(x, groups, tag) {
-          sel <- (x$features$group %in% groups) & (!x$features$filtered)
-          x$features$filtered[sel] <- TRUE
-          x$features$filter[sel] <- tag
-          x
-        },
-        groups = groups, tag = tag
-      )
-    },
+    .groups = NULL,
+    
+    ## ___ .utils -----
 
     # Filters features and feature groups with minimum intensity.
     #
@@ -265,7 +136,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           stop("The value for minimum intensity filtering must be numeric and of length one!")
         }
       } else {
-        warning("There are no features in the MassSpecData!")
+        warning("There are no features in the MassSpecEngine!")
       }
     },
 
@@ -319,7 +190,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           stop("The qlt_sn column was not found in the features data.table!")
         }
       } else {
-        warning("There are no features in the MassSpecData!")
+        warning("There are no features in the MassSpecEngine!")
       }
 
 
@@ -371,7 +242,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           warning("Isotopic step column was not found in the features data.table!")
         }
       } else {
-        warning("There are no features in the MassSpecData!")
+        warning("There are no features in the MassSpecEngine!")
       }
     },
 
@@ -448,7 +319,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           warning("The value for maxGroupSd filtering must be numeric and of length one!")
         }
       } else {
-        warning("There are no feature groups in the MassSpecData!")
+        warning("There are no feature groups in the MassSpecEngine!")
       }
     },
 
@@ -530,7 +401,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           warning("The value for minGroupAbundance filtering must be numeric and of length one!")
         }
       } else {
-        warning("There are no feature groups in the MassSpecData!")
+        warning("There are no feature groups in the MassSpecEngine!")
       }
     },
 
@@ -626,7 +497,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           warning("The value for blank filtering must be numeric and of length one!")
         }
       } else {
-        warning("There are no feature groups in the MassSpecData!")
+        warning("There are no feature groups in the MassSpecEngine!")
       }
     },
 
@@ -677,7 +548,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           warning("The value for rt filtering must be numeric and of length two!")
         }
       } else {
-        warning("There are no features in the MassSpecData!")
+        warning("There are no features in the MassSpecEngine!")
       }
     },
 
@@ -730,7 +601,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           warning("The value for neutral mass filtering must be numeric and of length two!")
         }
       } else {
-        warning("There are no features in the MassSpecData!")
+        warning("There are no features in the MassSpecEngine!")
       }
     },
     
@@ -780,7 +651,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           warning("The value for onlySuspects must be logical and of length one!")
         }
       } else {
-        warning("There are no suspects in the MassSpecData!")
+        warning("There are no suspects in the MassSpecEngine!")
       }
     }
   ),
@@ -790,7 +661,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     ## ___ create -----
 
     #' @description
-    #' Creates an R6 MassSpecData class object. When `headers` are not given
+    #' Creates an R6 MassSpecEngine class object. When `headers` are not given
     #' (i.e., `NULL`), a default ProjectHeaders S3 class object is generated with name
     #' as `NA_character`, path as `get_wd()` and date as `Sys.time()`.
     #' See `?ProjectHeaders` for more information.
@@ -810,15 +681,14 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' correspondence of features across MS analyses is performed with the
     #' method `group_features()`.
     #'
-    #' @return A new `MassSpecData` class object.
+    #' @return A new `MassSpecEngine` class object.
     #'
     initialize = function(files = NULL,
                           runParallel = FALSE,
                           headers = NULL,
                           settings = NULL,
                           analyses = NULL,
-                          groups = NULL,
-                          alignment = NULL) {
+                          groups = NULL) {
 
       if (is.null(headers)) headers <- ProjectHeaders()
 
@@ -829,7 +699,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (is.null(analyses) & !is.null(files)) {
         analyses <- parse_MassSpecAnalysis(files, runParallel)
         if (is.null(analyses)) {
-          warning("No valid files were given! MassSpecData object is empty. \n")
+          warning("No valid files were given! MassSpecEngine object is empty. \n")
         }
       }
       
@@ -837,162 +707,44 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (!is.null(groups)) suppressMessages(self$add_groups(groups))
 
-      if (!is.null(alignment)) suppressMessages(self$add_alignment(alignment))
+      # if (!is.null(alignment)) suppressMessages(self$add_alignment(alignment))
 
       private$.register(
         "created",
-        "MassSpecData",
+        "MassSpecEngine",
         headers$name,
         "StreamFind",
         as.character(packageVersion("StreamFind")),
         paste(c(headers$author, headers$path), collapse = ", ")
       )
 
-      message("\U2713 MassSpecData class object created!")
+      message("\U2713 MassSpecEngine class object created!")
     },
     
     ## ___ print -----
-
-    #' @description
-    #' Prints a summary of the `MassSpecData` object in the console.
-    #'
-    #' @return Console text.
-    #'
-    print = function() {
-      cat("\n")
-      cat(paste(is(self), collapse = "; "))
-      cat("\n")
-      cat(
-        "name          ", private$.headers$name, "\n",
-        "author        ", private$.headers$author, "\n",
-        "path          ", private$.headers$path, "\n",
-        "date          ", as.character(private$.headers$date), "\n",
-        sep = ""
-      )
-
-      self$print_workflow()
-      
-      self$print_analyses()
-    },
-    
-    #' @description Prints the headers.
-    #'
-    #' @return Console text.
-    #'
-    print_headers = function() {
-      cat("\nHeaders: ")
-      
-      if (length(private$.headers) > 0) {
-        cat("\n")
-        names <- names(private$.headers)
-        vals <- unlist(private$.headers)
-        cat(paste0(" ", names, ": ", vals), sep = "\n")
-        cat("\n")
-        
-      } else {
-        cat("No headers found! \n")
-      }
-    },
     
     #' @description Prints the analyses present.
     #'
     #' @return Console text.
     #'
     print_analyses = function() {
-      cat("\nAnalyses: ")
-      
+      cat("\n")
+      cat("Analyses")
       if (length(private$.analyses) > 0) {
         cat("\n")
         overview <- self$get_overview()
-        overview$file <- NULL
-        
+        overview <- overview[, c("analysis", "replicate", "blank"), with = FALSE]
+        row.names(overview) <- paste0(" ", seq_len(nrow(overview)), ":")
         if (all(self$has_loaded_spectra())) {
           overview$spectra <- paste(overview$spectra, "loaded", sep = " ")
         }
-
-        row.names(overview) <- paste0(" ", seq_len(nrow(overview)), ":")
-        
         print(overview)
-        
       } else {
-        cat("No files found! \n")
-      }
-    },
-    
-    #' @description Prints all processing methods present by order.
-    #'
-    #' @return Console text.
-    #'
-    print_workflow = function() {
-      cat("\nWorkflow: ")
-      
-      if (self$has_settings()) {
-        cat("\n")
-        names_settings <- vapply(private$.settings, function(x) x$call, "")
-        algorithms <- vapply(private$.settings, function(x) x$algorithm, "")
-        cat(
-          paste0(" ", seq_len(length(names_settings)), ": ", names_settings, " (", algorithms, ")"),
-          sep = "\n"
-        )
-        cat("\n")
-        
-      } else {
-        cat("No methods found! \n")
+        cat(" empty \n")
       }
     },
 
     ## ___ get -----
-
-    #' @description
-    #' Gets the headers.
-    #'
-    #' @param value A character vector with the name/s of the header elements.
-    #' When `NULL`, the entire headers list is returned.
-    #'
-    #' @return The headers list or the header elements as defined by `value`.
-    #'
-    get_headers = function(value = NULL) {
-      if (is.null(value)) {
-        private$.headers
-      } else {
-        private$.headers[value]
-      }
-    },
-
-    #' @description
-    #' Gets the object history.
-    #'
-    #' @return The history list of processing steps applied.
-    #'
-    get_history = function() {
-      
-      if (is.list(private$.history)) {
-        rbindlist(private$.history, fill = TRUE)
-        
-      } else {
-        private$.history
-      }
-    },
-
-    #' @description
-    #' Gets analyses.
-    #'
-    #' @return The list of analyses or the analyses as defined by `analyses`
-    #' argument.
-    #'
-    get_analyses = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
-      private$.analyses[analyses]
-    },
-
-    #' @description
-    #' Gets the number of analyses present.
-    #'
-    #' @return An integer value.
-    #'
-    get_number_analyses = function() {
-      length(private$.analyses)
-    },
 
     #' @description
     #' Gets the overview data.frame with all the analysis types,
@@ -1023,7 +775,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           nrow(x$features[x$features$filtered])
         }, 0)
 
-        df <- data.frame(
+        df <- data.table(
           "type" = vapply(private$.analyses, function(x) x$type, ""),
           "analysis" = vapply(private$.analyses, function(x) x$name, ""),
           "replicate" = vapply(private$.analyses, function(x) x$replicate, ""),
@@ -1045,70 +797,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       } else {
         data.frame()
       }
-    },
-
-    #' @description
-    #' Gets the analysis names.
-    #'
-    #' @return A character vector.
-    #'
-    get_analysis_names = function(analyses = NULL) {
-      if (length(private$.analyses) > 0) {
-        ana <- vapply(private$.analyses, function(x) x$name, "")
-        names(ana) <- vapply(private$.analyses, function(x) x$name, "")
-        if (!is.null(analyses)) {
-          ana[analyses]
-        } else {
-          ana
-        }
-      } else {
-        NULL
-      }
-    },
-
-    #' @description
-    #' Gets the analysis replicate names.
-    #'
-    #' @return A character vector.
-    #'
-    get_replicate_names = function(analyses = NULL) {
-      private$.get_analyses_entry(analyses, "replicate")
-    },
-
-    #' @description
-    #' Gets the analysis blank replicate names.
-    #'
-    #' @return A character vector.
-    #'
-    get_blank_names = function(analyses = NULL) {
-      private$.get_analyses_entry(analyses, "blank")
-    },
-
-    #' @description
-    #' Gets the full file paths of each analysis.
-    #'
-    #' @return A character vector.
-    #'
-    get_files = function(analyses = NULL) {
-      private$.get_analyses_entry(analyses, "file")
-    },
-
-    #' @description
-    #' Gets the file format of each analysis.
-    #'
-    #' @return A character vector.
-    #'
-    get_formats = function(analyses = NULL) {
-      private$.get_analyses_entry(analyses, "format")
-    },
-
-    #' @description
-    #' Gets the type of each analysis.
-    #'
-    #' @return A character vector.
-    #'
-    get_types = function(analyses = NULL) {
-      private$.get_analyses_entry(analyses, "type")
     },
 
     #' @description
@@ -3196,7 +2884,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                             onGroups = TRUE) {
       
       if (!any(self$has_features(analyses))) {
-        warning("Features not found in the MassSpecData object!")
+        warning("Features not found in the MassSpecEngine object!")
         return(data.table())
       }
 
@@ -3699,257 +3387,8 @@ MassSpecData <- R6::R6Class("MassSpecData",
         data.table()
       }
     },
-    
-    #' @description Data.table with the overview of all processing methods 
-    #' present.
-    #'
-    #' @return A data.table.
-    #'
-    get_workflow_overview = function() {
-      if (self$has_settings()) {
-        data.table(
-          "call" = vapply(private$.settings, function(x) x$call, ""),
-          "algorithm" = vapply(private$.settings, function(x) x$algorithm, ""),
-          "developer" = vapply(private$.settings, function(x) paste(x$developer, collapse = "; "), ""),
-          "contact" = vapply(private$.settings, function(x) x$contact, ""),
-          "link" = vapply(private$.settings, function(x) x$link, "")
-        )
-      } else {
-        data.table()
-      }
-    },
 
     ## ___ add -----
-
-    #' @description
-    #' Adds headers. If an argument or element "name" is given, it must
-    #' be type character. If an argument or element path is given, it must be
-    #' type character and exist. If an argument or element date is given, it
-    #' must be class POSIXct or POSIXt. If given date is character, conversion
-    #' to class POSIXct or POSIXt is attempted. See `?ProjectHeaders` for more
-    #' information.
-    #'
-    #' @template arg-headers-ellipsis
-    #'
-    #' @return Invisible.
-    #'
-    add_headers = function(...) {
-
-      headers <- ProjectHeaders(...)
-
-      if (is(headers, "ProjectHeaders")) {
-        old_headers <- private$.headers
-        if (is.null(old_headers)) old_headers <- list()
-
-        if (length(old_headers) > 0) {
-          new_headers <- old_headers[!names(old_headers) %in% names(headers)]
-          new_headers[names(headers)] <- headers
-        } else {
-          new_headers <- headers
-        }
-
-        new_headers <- as.ProjectHeaders(new_headers)
-
-        if (!identical(new_headers, old_headers) & is(new_headers, "ProjectHeaders")) {
-          private$.headers <- new_headers
-
-          lapply(names(headers), function(x, new_headers) {
-            private$.register(
-              "added",
-              "ProjectHeaders",
-              x,
-              NA_character_,
-              NA_character_,
-              new_headers[x]
-            )
-          }, new_headers = new_headers)
-
-
-          message("\U2713 Added headers!")
-        }
-
-      } else {
-        warning("Invalid headers content or structure! Not added.")
-      }
-      invisible(self)
-    },
-
-    #' @description
-    #' Adds processing settings.
-    #'
-    #' @param settings  A named list of ProcessingSettings S3 class objects or a
-    #' single ProcessingSettings S3 class object. The list names should match
-    #' the call name of each ProcessingSettings object. Alternatively, a named
-    #' list with call name, algorithm and parameters to be transformed and added
-    #' as ProcessingSettings S3 class object.
-    #'
-    #' @param replace Logical. When `TRUE`, existing settings are replaced by
-    #' the new settings with the same call name.
-    #'
-    #' @return Invisible.
-    #'
-    add_settings = function(settings = NULL, replace = FALSE) {
-
-      if (is.list(settings)) {
-
-        cols_check <- c("call", "algorithm", "parameters")
-        if (all(cols_check %in% names(settings))) {
-          settings <- list(settings)
-        }
-
-        settings <- lapply(settings, as.ProcessingSettings)
-        
-        names(settings) <- NULL
-
-        all_ps <- vapply(settings, function(x) class(x)[1], "")
-
-        if (all(all_ps %in% "ProcessingSettings")) {
-
-          only_one_possible <- c(
-            "centroid_spectra",
-            "bin_spectra",
-            "find_features",
-            "annotate_features",
-            "load_features_eic",
-            "load_features_ms1",
-            "load_features_ms2",
-            "load_groups_ms1",
-            "load_groups_ms2",
-            "group_features",
-            "fill_features",
-            "calculate_quality"
-          )
-
-          call_names <- vapply(settings, function(x) x$call, NA_character_)
-
-          duplicated_names <- call_names[duplicated(call_names)]
-
-          if (any(duplicated_names %in% only_one_possible)) {
-
-            if (length(duplicated_names) == 1) {
-              message("\U2139 ", duplicated_names, " duplicate not added as only one is possible!")
-
-            } else {
-              message(paste0("\U2713 Duplicate settings for the following not added as only one is possible!\n",
-                paste(duplicated_names, collapse = "\n"))
-              )
-            }
-            
-            settings <- settings[!(duplicated(call_names) & call_names %in% only_one_possible)]
-
-            call_names <- vapply(settings, function(x) x$call, NA_character_)
-          }
-
-          if (is.null(private$.settings)) private$.settings <- list()
-          
-          lapply(settings, function(x, only_one_possible, replace) {
-            
-            stored_calls <- vapply(private$.settings, function(z) z$call, NA_character_)
-
-            if (replace) {
-
-              if (x$call %in% stored_calls) {
-                
-                # case when repeating can happen with replace = TRUE as long as duplicated in call_names
-                if (!(x$call %in% only_one_possible) & any(duplicated(call_names))) {
-                  private$.settings <- c(private$.settings, list(x))
-                  
-                  private$.register(
-                    "added",
-                    "ProcessingSettings",
-                    x$call,
-                    "StreamFind",
-                    x$version,
-                    x$algorithm
-                  )
-                  
-                  message(
-                    paste0("\U2713 ", x$call, " processing settings added!")
-                  )
-                  
-                } else {
-                  private$.settings[which(x$call %in% stored_calls)] <- list(x)
-                  
-                  private$.register(
-                    "replaced",
-                    "ProcessingSettings",
-                    x$call,
-                    "StreamFind",
-                    x$version,
-                    x$algorithm
-                  )
-                  
-                  message(
-                    paste0("\U2713 ", x$call, " processing settings replaced!")
-                  )
-                }
-
-              } else {
-                private$.settings <- c(private$.settings, list(x))
-                
-                private$.register(
-                  "added",
-                  "ProcessingSettings",
-                  x$call,
-                  "StreamFind",
-                  x$version,
-                  x$algorithm
-                )
-                
-                message(
-                  paste0("\U2713 ", x$call, " processing settings added!")
-                )
-              }
-
-            } else {
-              
-              if (x$call %in% only_one_possible && x$call %in% stored_calls) {
-                message("\U2139 ", x$call, " replaced as only one is possible!")
-                
-                private$.settings[which(x$call %in% stored_calls)] <- list(x)
-                
-                private$.register(
-                  "replaced",
-                  "ProcessingSettings",
-                  x$call,
-                  "StreamFind",
-                  x$version,
-                  x$algorithm
-                )
-                
-                message(
-                  paste0("\U2713 ", x$call, " processing settings replaced!")
-                )
-                
-              } else {
-                private$.settings <- c(private$.settings, list(x))
-                
-                private$.register(
-                  "added",
-                  "ProcessingSettings",
-                  x$call,
-                  "StreamFind",
-                  x$version,
-                  x$algorithm
-                )
-                
-                message(
-                  paste0("\U2713 ", x$call, " processing settings added!")
-                )
-              }
-            }
-          }, only_one_possible = only_one_possible, replace = replace)
-
-        } else {
-          not_conform <- which(!all_ps %in% "ProcessingSettings")
-          warning("Settings (number/s: ", paste(not_conform, collapse = "; "), ") content or structure not conform! Not added.")
-        }
-      } else {
-        warning("Settings must be a list! Not added.")
-      }
-      
-      invisible(self)
-    },
 
     #' @description
     #' Adds analyses.
@@ -4039,10 +3478,10 @@ MassSpecData <- R6::R6Class("MassSpecData",
               n_feats_new <- vapply(analyses, function(x) nrow(x$features), 0)
 
               if (sum(n_feats_old) == 0 & sum(n_feats_new) != 0 & old_size != 0) {
-                warning("New analyses have features but there are no features in the MassSpecData! Consider running find_features.")
+                warning("New analyses have features but there are no features in the MassSpecEngine! Consider running find_features.")
 
               } else if (sum(n_feats_old) != 0 & sum(n_feats_new) == 0 & old_size != 0) {
-                warning("New analyses do not have features but there are features in the MassSpecData! Consider running the find_features.")
+                warning("New analyses do not have features but there are features in the MassSpecEngine! Consider running the find_features.")
 
               } else if (any(c(n_feats_old, n_feats_new) %in% 0) & sum(c(n_feats_old, n_feats_new)) > 0) {
                 warning("There are analyses without features! Consider running find_features.")
@@ -4099,146 +3538,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
         warning("Files were not added!")
       }
 
-      invisible(self)
-    },
-
-    #' @description
-    #' Adds or redefines the analysis replicate names.
-    #'
-    #' @param value A character vector with the analysis replicate names.
-    #' Must be of the same length as the number of analyses.
-    #'
-    #' @return Invisible.
-    #'
-    add_replicate_names = function(value = NULL) {
-      if (is.character(value) & length(value) == self$get_number_analyses()) {
-        private$.analyses <- Map(
-          function(x, y) {
-            x$replicate <- y
-            x
-          },
-          private$.analyses, value
-        )
-
-        private$.register(
-          "added",
-          "analyses",
-          "replicate names",
-          NA_character_,
-          NA_character_,
-          NA_character_
-        )
-
-        message("\U2713 Replicate names added!")
-
-      } else {
-        warning("Not done, check the value!")
-      }
-      invisible(self)
-    },
-
-    #' @description
-    #' Adds or redefines the analysis blank replicate names.
-    #'
-    #' @param value A character vector with the analysis blank replicate names.
-    #' Must be of the same length as the number of analyses.
-    #'
-    #' @return Invisible.
-    #'
-    add_blank_names = function(value = NULL) {
-      if (is.character(value) & length(value) == self$get_number_analyses()) {
-
-        if (all(value %in% self$get_replicate_names())) {
-          private$.analyses <- Map(
-            function(x, y) {
-              x$blank <- y
-              x
-            },
-            private$.analyses, value
-          )
-
-          private$.register(
-            "added",
-            "analyses",
-            "blank names",
-            NA_character_,
-            NA_character_,
-            NA_character_
-          )
-
-          message("\U2713 Blank names added!")
-
-        } else {
-          warning("Not done, blank names not among replicate names!")
-        }
-
-      } else {
-        warning("Not done, check the value!")
-      }
-      invisible(self)
-    },
-
-    #' @description
-    #' Adds metadata to analyses.
-    #'
-    #' @param value A data.frame or data.table with metadata for the analyses.
-    #' The data.frame must have an analysis column and the same number of rows
-    #' as the number of analyses in the MassSpecData. Metadata is added using
-    #' any extra columns of the data.frame.
-    #'
-    #' @return Invisible.
-    #'
-    add_metadata = function(value = NULL) {
-
-      if (is.data.frame(value)) {
-        if (nrow(value) == self$get_number_analyses()) {
-          if ("analysis" %in% colnames(value)) {
-            if (ncol(value) >= 2) {
-              value <- value[order(value$analysis), ]
-              value <- as.data.table(value)
-              setcolorder(value, "analysis")
-
-              col_names <- colnames(value)
-              col_names <- col_names[2:length(col_names)]
-
-              value <- split(value, value$analysis)
-
-              private$.analyses <- Map(
-                function(x, y) {
-
-                  cols <- colnames(y)
-                  cols <- cols[2:length(cols)]
-
-                  for (i in cols) x$metadata[[i]] <- y[[i]][1]
-
-                  x
-                },
-                private$.analyses, value
-              )
-
-              private$.register(
-                "added",
-                "analyses",
-                "metadata",
-                NA_character_,
-                NA_character_,
-                paste(col_names, collapse = "; ")
-              )
-
-              message("\U2713 Metadata ", paste(col_names, collapse = ", "), " added!")
-
-            } else {
-              warning("No metadata found in the data.frame/data.table!")
-            }
-          } else {
-            warning("The column analysis must be in the data.frame/data.table!")
-          }
-        } else {
-          warning("The data.frame/data.table must have the same number of rows as the number of analyses in the MassSpecData!")
-        }
-      } else {
-        warning("The argument value must be a data.frame/data.table!")
-      }
       invisible(self)
     },
 
@@ -4712,92 +4011,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
-    #' @description
-    #' Adds time alignment results.
-    #'
-    #' @return Invisible.
-    #'
-    add_alignment = function(alignment = NULL) {
-      if (is.list(alignment) &
-        all(unname(self$get_analysis_names()) %in% names(alignment)) &
-        self$has_groups()) {
-        must_have_cols <- c(
-          "rt_original", "rt_adjusted",
-          "adjustment", "adjPoints"
-        )
-
-        alignment <- lapply(alignment, as.data.table)
-
-        valid <- vapply(alignment, function(x, must_have_cols) {
-          all(must_have_cols %in% colnames(x))
-        }, FALSE, must_have_cols = must_have_cols)
-
-        if (all(valid)) {
-          private$.alignment <- alignment
-
-          private$.register(
-            "added",
-            "MassSpecData",
-            "alignment",
-            NA_character_,
-            NA_character_,
-            NA_character_
-          )
-
-          message("\U2713 Alignment added!")
-
-        } else {
-          warning("Invalid alignment structure or content! Not added.")
-        }
-
-      } else {
-        warning("Groups not present or alignment not valid! Not added.")
-      }
-      invisible(self)
-    },
-
-    #' @description
-    #' Adds data from modules to the MassSpecData.
-    #'
-    #' @param value A named list with data from modules.
-    #'
-    #' @return Invisible.
-    #'
-    add_modules_data = function(value = NULL) {
-
-      value_names <- names(value)
-
-      if (!is.null(value_names)) {
-
-        if (is.null(private$.modules)) private$.modules <- list()
-
-        lapply(value_names, function(x, value) {
-
-          if (is.null(value[[x]]$software)) value[[x]]$software <- NA_character_
-          if (is.null(value[[x]]$version)) value[[x]]$version <- NA_character_
-
-          private$.modules <- c(private$.modules, value[x])
-
-          private$.register(
-            "added",
-            "module",
-            x,
-            value[[x]]$software,
-            value[[x]]$version,
-            length(value[[x]])
-          )
-
-          message(paste0("\U2713 ", x, " data added to modules!"))
-
-        }, value = value)
-
-      } else {
-        warning("Not done, the value must be a named list!")
-      }
-
-      invisible(self)
-    },
-
     ## ___ load -----
 
     #' @description
@@ -5218,190 +4431,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
     ## ___ remove -----
 
     #' @description
-    #' Removes headers entries. Note that the name, path and date headers
-    #' cannot be removed only changed.
-    #'
-    #' @param value A character vector with the name/s of the elements in headers
-    #' to be removed.
-    #'
-    #' @return Invisible.
-    #'
-    remove_headers = function(value = NULL) {
-      if (!is.null(value)) {
-        value <- value[!(value %in% c("name", "author", "path", "date"))]
-
-        if (length(value) == 0) {
-          warning("Name, author, path and date headers cannot be removed!")
-          value <- NA_character_
-        }
-
-        message("\U2713 Removed headers: ",
-          paste(value[value %in% names(private$.headers)], collapse = ", ")
-        )
-
-        lapply(value, function(x) {
-          if (x %in% names(private$.headers)) {
-            private$.register(
-              "removed",
-              "ProjectHeaders",
-              x,
-              NA_character_,
-              NA_character_,
-              private$.headers[[x]]
-            )
-
-            private$.headers[x] <- NULL
-          }
-        })
-
-      } else {
-        to_remove <- names(private$.headers) %in% c("name", "author", "path", "date")
-        to_remove <- names(private$.headers)[!to_remove]
-        private$.headers[to_remove] <- NULL
-
-        if (length(to_remove) > 1) {
-          details <- paste(to_remove, collapse = ", ")
-
-          private$.register(
-            "removed",
-            "ProjectHeaders",
-            "all",
-            NA_character_,
-            NA_character_,
-            details
-          )
-
-          message("\U2713 Removed headers: \n",
-            paste(to_remove, collapse = "\n")
-          )
-        } else {
-          message("\U2713 Removed all headers except name, author, path and date!")
-        }
-      }
-      invisible(self)
-    },
-
-    #' @description
-    #' Removes settings.
-    #'
-    #' @param call A string or a vector of strings with the name/s of the
-    #' processing method/s to be removed. Alternatively, an integer vector
-    #' with the index/es of the settings to be removed. When `call` is
-    #' \code{NULL} all settings are removed.
-    #'
-    #' @return Invisible.
-    #'
-    remove_settings = function(call = NULL) {
-
-      if (is.null(call)) {
-        lapply(private$.settings, function(x) {
-          private$.register(
-            "removed",
-            "ProcessingSettings",
-            x$call,
-            "StreamFind",
-            x$version,
-            x$algorithm
-          )
-        })
-
-        private$.settings <- NULL
-
-        cat("Removed all processing settings! \n")
-
-      } else {
-        all_calls <- vapply(private$.settings, function(x) x$call, NA_character_)
-
-        if (is.numeric(call)) {
-          to_remove <- call
-        } else {
-          to_remove <- which(all_calls %in% call)
-        }
-
-        if (length(call) > 0) {
-          lapply(private$.settings[to_remove], function(x) {
-            private$.register(
-              "removed",
-              "ProcessingSettings",
-              x$call,
-              "StreamFind",
-              x$version,
-              x$algorithm
-            )
-          })
-
-          private$.settings[to_remove] <- NULL
-
-          message("\U2713 Removed settings for:\n",
-            paste(all_calls[to_remove], collapse = "\n")
-          )
-
-        } else {
-          message("\U2717 There are no settings to remove!")
-        }
-      }
-      invisible(self)
-    },
-
-    #' @description
-    #' Removes analyses. Note that unique feature
-    #' groups from the removed analyses are also removed.
-    #'
-    #' @return Invisible.
-    #'
-    remove_analyses = function(analyses = NULL) {
-
-      if (!is.null(analyses)) {
-        analyses <- private$.check_analyses_argument(analyses)
-        allNames <- self$get_analysis_names()
-        keepAnalyses <- unname(allNames[!(allNames %in% analyses)])
-        removeAnalyses <- unname(allNames[allNames %in% analyses])
-        analysesLeft <- self$get_analyses(keepAnalyses)
-
-        if (length(removeAnalyses) > 0) {
-
-          private$.analyses <- analysesLeft
-          private$.alignment <- private$.alignment[keepAnalyses]
-
-          lapply(removeAnalyses, function(x) {
-            private$.register(
-              "removed",
-              "MassSpecAnalysis",
-              x,
-              NA_character_,
-              NA_character_,
-              NA_character_
-            )
-          })
-
-          message("\U2713 Removed analyses:\n", paste(removeAnalyses, collapse = "\n"))
-
-        } else {
-          message("\U2717 There are no analyses to remove!")
-        }
-
-      } else {
-        lapply(private$.analyses, function(x) {
-          private$.register(
-            "removed",
-            "MassSpecAnalysis",
-            x,
-            NA_character_,
-            NA_character_,
-            NA_character_
-          )
-        })
-
-        private$.analyses <- NULL
-        private$.alignment <- NULL
-
-        message("\U2713 Removed all analyses!")
-      }
-
-      invisible(self)
-    },
-
-    #' @description
     #' Remove features.
     #'
     #' @return Invisible.
@@ -5640,31 +4669,12 @@ MassSpecData <- R6::R6Class("MassSpecData",
       invisible(self)
     },
 
-    #' @description
-    #' Removes alignment results.
-    #'
-    #' @return Invisible.
-    #'
-    remove_alignment = function() {
-      private$.alignment <- NULL
-      private$.register(
-        "removed",
-        "alignment",
-        NA_character_,
-        NA_character_,
-        NA_character_,
-        NA_character_
-      )
-      message("\U2713 Removed alignment!")
-      invisible(self)
-    },
-
     ## ___ subset -----
 
     #' @description
-    #' Subsets a `MassSpecData` object on analyses.
+    #' Subsets a `MassSpecEngine` object on analyses.
     #'
-    #' @return A new cloned `MassSpecData` object with only the analyses as
+    #' @return A new cloned `MassSpecEngine` object with only the analyses as
     #' defined by the `analyses` argument.
     #'
     subset_analyses = function(analyses = NULL) {
@@ -5679,7 +4689,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
           newAnalyses <- self$get_analyses(keepAnalyses)
           newAlignment <- self$get_alignment()[keepAnalyses]
 
-          new_ms <- suppressMessages(MassSpecData$new(
+          new_ms <- suppressMessages(MassSpecEngine$new(
             files = NULL,
             headers = self$get_headers(),
             settings = self$get_settings(),
@@ -5696,7 +4706,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       message("\U2717 There are no analyses selected to subset!")
       
-      suppressMessages(MassSpecData$new(
+      suppressMessages(MassSpecEngine$new(
         files = NULL,
         headers = self$get_headers(),
         settings = self$get_settings())
@@ -5704,9 +4714,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Subsets a `MassSpecData` object on features from analyses.
+    #' Subsets a `MassSpecEngine` object on features from analyses.
     #'
-    #' @return A new cloned `MassSpecData` object with only the features as
+    #' @return A new cloned `MassSpecEngine` object with only the features as
     #' defined by the `features` argument.
     #'
     subset_features = function(features = NULL) {
@@ -5740,17 +4750,17 @@ MassSpecData <- R6::R6Class("MassSpecData",
       } else {
         message("\U2717 Data.frame with analysis and feature IDs not given!")
       }
-      suppressMessages(MassSpecData$new())
+      suppressMessages(MassSpecEngine$new())
     },
 
     #' @description
-    #' Subsets a `MassSpecData` object on groups from correspondence of features
+    #' Subsets a `MassSpecEngine` object on groups from correspondence of features
     #' across analyses. Note that when sub-setting groups, features that lose
     #' correspondence are not removed but filtered with "grouping" added as
     #' filter category/tag. Filtered features can be removed with the method
     #' `remove_features(filtered = TRUE)`.
     #'
-    #' @return A new cloned `MassSpecData` object with only the groups as
+    #' @return A new cloned `MassSpecEngine` object with only the groups as
     #' defined by the `groups` argument.
     #'
     subset_groups = function(groups = NULL) {
@@ -5774,7 +4784,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       } else {
         message("\U2717 There are no groups to subset!")
       }
-      suppressMessages(MassSpecData$new())
+      suppressMessages(MassSpecEngine$new())
     },
 
     ## ___ has -----
@@ -5797,15 +4807,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       names(has_im) <- self$get_analysis_names(analyses)
 
       has_im
-    },
-
-    #' @description
-    #' Checks if analyses are present.
-    #'
-    #' @return Logical value.
-    #'
-    has_analyses = function() {
-      length(private$.analyses) > 0
     },
 
     #' @description
@@ -5893,24 +4894,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     #' @description
-    #' Checks if there are processing settings.
-    #'
-    #' @param call A string or a vector of strings with the name/s of the
-    #' processing method/s.
-    #'
-    #' @return Logical value.
-    #'
-    has_settings = function(call = NULL) {
-      if (is.null(call)) {
-        length(private$.settings) > 0
-      } else if (length(private$.settings) > 0) {
-        call %in% vapply(private$.settings, function(x) x$call, NA_character_)
-      } else {
-        FALSE
-      }
-    },
-
-    #' @description
     #' Checks for presence of feature extracted ion chromatograms (EICs) in
     #' given analyses names/indices.
     #'
@@ -5982,16 +4965,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
       
       names(has_sus) <- self$get_analysis_names(analyses)
       has_sus
-    },
-
-    #' @description
-    #' Checks if there is alignment of retention time from grouping
-    #' features across analyses.
-    #'
-    #' @return Logical value.
-    #'
-    has_alignment = function() {
-      !is.null(private$.alignment)
     },
 
     #' @description
@@ -7154,27 +6127,6 @@ MassSpecData <- R6::R6Class("MassSpecData",
     },
 
     ## ___ processing -----
-    
-    #' @description Runs all modules represented by the added ProcessingSettings.
-    #'
-    #' @return Invisible.
-    #'
-    run_workflow = function() {
-
-      if (self$has_settings()) {
-
-        lapply(self$get_settings(), function(x) {
-          call <- x$call
-          message("\U2699 Running ", call, " with ", x$algorithm)
-          do.call(self[[call]], list("settings" = x))
-        })
-
-      } else {
-        warning("There are no processing settings to run!")
-      }
-
-      invisible(self)
-    },
 
     ### _____ centroid_spectra -----
 
@@ -8358,124 +7310,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
     ## ___ save -----
 
     #' @description
-    #' Saves the headers list.
-    #'
-    #' @return Saves the headers list as the defined \code{format} in
-    #' \code{path} and returns invisible.
-    #'
-    save_headers = function(format = "json", name = "headers", path = getwd()) {
-      if (format %in% "json") {
-        js_headers <- toJSON(
-          private$.headers,
-          dataframe = "columns",
-          Date = "ISO8601",
-          POSIXt = "string",
-          factor = "string",
-          complex = "string",
-          null = "null",
-          na = "null",
-          auto_unbox = FALSE,
-          digits = 8,
-          pretty = TRUE,
-          force = TRUE
-        )
-        write(js_headers, file = paste0(path, "/", name, ".json"))
-      }
-
-      if (format %in% "rds") {
-        saveRDS(private$.headers, file = paste0(path, "/", name, ".rds"))
-      }
-
-      invisible(self)
-    },
-
-    #' @description
-    #' Saves settings.
-    #'
-    #' @param call A string or a vector of strings with the name/s of the
-    #' processing method/s to be saved. When `call` is \code{NULL} all
-    #' settings are saved.
-    #'
-    #' @return Saves the settings list as the defined \code{format} in
-    #' \code{path} and returns invisible.
-    #'
-    save_settings = function(call = NULL, format = "json",
-                             name = "settings", path = getwd()) {
-
-      js_settings <- self$get_settings(call)
-      
-      names(js_settings) <- vapply(js_settings, function(x) x$call, NA_character_)
-
-      if (format %in% "json") {
-        js_settings <- toJSON(
-          js_settings,
-          dataframe = "columns",
-          Date = "ISO8601",
-          POSIXt = "string",
-          factor = "string",
-          complex = "string",
-          null = "null",
-          na = "null",
-          auto_unbox = FALSE,
-          digits = 8,
-          pretty = TRUE,
-          force = TRUE
-        )
-        write(js_settings, file = paste0(path, "/", name, ".json"))
-      }
-
-      if (format %in% "rds") {
-        saveRDS(self$get_settings(call), file = paste0(path, "/", name, ".rds"))
-      }
-
-      invisible(self)
-    },
-
-    #' @description
-    #' Saves analyses.
-    #'
-    #' @return Saves the list of analyses as the defined \code{format} in
-    #' \code{path} and returns invisible.
-    #'
-    save_analyses = function(analyses = NULL, format = "json",
-                             name = "analyses", path = getwd()) {
-
-      analyses <- self$get_analyses(analyses)
-
-      if (format %in% "json") {
-        js_analyses <- toJSON(
-          analyses,
-          dataframe = "columns",
-          Date = "ISO8601",
-          POSIXt = "string",
-          factor = "string",
-          complex = "string",
-          null = "null",
-          na = "null",
-          auto_unbox = FALSE,
-          digits = 8,
-          pretty = TRUE,
-          force = TRUE
-        )
-
-        write(js_analyses, file = paste0(path, "/", name, ".json"))
-      }
-
-      if (format %in% "rds") {
-        saveRDS(analyses, file = paste0(path, "/", name, ".rds"))
-      }
-
-      invisible(self)
-    },
-
-    #' @description
     #' Saves the private fields (i.e., headers, settings, analyses,
-    #' groups and alignment) of the MassSpecData object.
+    #' groups and alignment) of the MassSpecEngine object.
     #'
     #' @return Saves the private fields of the msdata as the defined `format`
     #' in the \code{path} and returns invisible.
     #'
-    save = function(format = "json", name = "MassSpecData", path = getwd()) {
+    save = function(format = "json", name = "MassSpecEngine", path = getwd()) {
 
       if (format %in% "json") {
         list_all <- list()
@@ -8522,68 +7363,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
     ## ___ import -----
 
     #' @description
-    #' Imports headers from a \emph{rds} or \emph{json} file.
+    #' Imports a `MassSpecEngine` object saved as \emph{json}.
     #'
-    #' @return Invisible.
-    #'
-    import_headers = function(file = NA_character_) {
-      if (file.exists(file)) {
-        headers <- NULL
-        if (file_ext(file) %in% "json") headers <- fromJSON(file)
-        if (file_ext(file) %in% "rds") headers <- readRDS(file)
-        self$add_headers(headers)
-
-      } else {
-        warning("File not found in given path!")
-      }
-      invisible(self)
-    },
-
-    #' @description
-    #' Imports processing settings from a \emph{rds} or \emph{json} file.
-    #'
-    #' @param replace Logical. When `TRUE`, existing settings are replaced by
-    #' the new settings with the same call name.
-    #'
-    #' @return Invisible.
-    #'
-    import_settings = function(file = NA_character_, replace = TRUE) {
-      if (file.exists(file)) {
-        settings <- NULL
-        if (file_ext(file) %in% "json") settings <- fromJSON(file)
-        if (file_ext(file) %in% "rds") settings <- readRDS(file)
-        self$add_settings(settings, replace)
-
-      } else {
-        warning("File not found in given path!")
-      }
-      invisible(self)
-    },
-
-    #' @description
-    #' Imports analyses from a \emph{rds} or \emph{json} file.
-    #'
-    #' @return Invisible.
-    #'
-    import_analyses = function(file = NA_character_) {
-      if (file.exists(file)) {
-        analyses <- NULL
-        if (file_ext(file) %in% "json") {
-          analyses <- fromJSON(file, simplifyDataFrame = FALSE)
-        }
-        if (file_ext(file) %in% "rds") analyses <- readRDS(file)
-        # TODO check in features data.table is converted from JSON properly
-        self$add_analyses(analyses)
-      } else {
-        warning("File not found in given path!")
-      }
-      invisible(self)
-    },
-
-    #' @description
-    #' Imports a `MassSpecData` object saved as \emph{json}.
-    #'
-    #' @param file A \emph{json} file representing a `MassSpecData` object.
+    #' @param file A \emph{json} file representing a `MassSpecEngine` object.
     #'
     #' @return Invisible.
     #'
@@ -8727,28 +7509,44 @@ MassSpecData <- R6::R6Class("MassSpecData",
     ### ___ processing_function_calls -----
 
     #' @description
-    #' Possible processing function calls.
+    #' Available data processing methods.
     #'
-    #' @return A character vector with ordered possible function calls for data
-    #' pre and post-processing.
+    #' @return A data.table with the name and maximum permitted of available 
+    #' processing methods.
     #'
-    processing_function_calls = function() {
-      c(
-        "centroid_spectra",
-        "bin_spectra",
-        "find_features",
-        "annotate_features",
-        "load_features_eic",
-        "load_features_ms1",
-        "load_features_ms2",
-        "load_groups_ms1",
-        "load_groups_ms2",
-        "group_features",
-        "fill_features",
-        "filter_features",
-        "suspect_screening",
-        "find_internal_standards",
-        "calculate_quality"
+    processing_methods = function() {
+      
+      data.table(
+        name = c(
+          "centroid_spectra",
+          "bin_spectra",
+          "find_features",
+          "annotate_features",
+          "load_features_eic",
+          "load_features_ms1",
+          "load_features_ms2",
+          "group_features",
+          "fill_features",
+          "filter_features",
+          "suspect_screening",
+          "find_internal_standards",
+          "calculate_quality"
+        ),
+        max = c(
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          Inf,
+          1,
+          1,
+          1
+        )
       )
     },
 
@@ -8758,13 +7556,13 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' List of function elements to access specific reference help pages.
     help = list(
       methods = function() {
-        browseURL("https://odea-project.github.io/StreamFind/reference/MassSpecData.html#methods")
+        browseURL("https://odea-project.github.io/StreamFind/reference/MassSpecEngine.html#methods")
       },
       get_groups = function() {
-        browseURL("https://odea-project.github.io/StreamFind/reference/MassSpecData.html#method-MassSpecData-get_groups")
+        browseURL("https://odea-project.github.io/StreamFind/reference/MassSpecEngine.html#method-MassSpecEngine-get_groups")
       },
       get_features = function() {
-        browseURL("https://odea-project.github.io/StreamFind/reference/MassSpecData.html#method-MassSpecData-get_features")
+        browseURL("https://odea-project.github.io/StreamFind/reference/MassSpecEngine.html#method-MassSpecEngine-get_features")
       },
       settings_centroid_spectra = function() {
         browseURL("https://odea-project.github.io/StreamFind/reference/index.html#centroid-spectra")
@@ -8809,33 +7607,33 @@ MassSpecData <- R6::R6Class("MassSpecData",
   )
 )
 
-# _ import MassSpecData class -----
+# _ import MassSpecEngine class -----
 
-#' Function to import a MassSpecData class object from a *json* or *rds* file.
+#' Function to import a MassSpecEngine class object from a *json* or *rds* file.
 #'
-#' @description Function to import a `MassSpecData` class object from a saved
+#' @description Function to import a `MassSpecEngine` class object from a saved
 #' *json* or *rds* file.
 #'
 #' @template arg-ms-import-file
 #'
-#' @return A `MassSpecData` class object.
+#' @return A `MassSpecEngine` class object.
 #'
 #' @export
 #'
-import_MassSpecData <- function(file) {
+import_MassSpecEngine <- function(file) {
 
   if (file.exists(file)) {
     if (file_ext(file) %in% "json") {
 
-      new_ms <- MassSpecData$new()
+      new_ms <- MassSpecEngine$new()
       new_ms$import(file)
-      message("\U2713 MassSpecData class object imported from json file!")
+      message("\U2713 MassSpecEngine class object imported from json file!")
     }
 
     if (file_ext(file) %in% "rds") {
       new_ms <- readRDS(file)
       # TODO is it important to validate object
-      message("\U2713 MassSpecData class object imported from rds file!")
+      message("\U2713 MassSpecEngine class object imported from rds file!")
     }
 
     new_ms
@@ -8847,20 +7645,20 @@ import_MassSpecData <- function(file) {
 }
 
 
-#' Function to combine MassSpecData class objects.
+#' Function to combine MassSpecEngine class objects.
 #'
 #' @param combineFeatureLists Logical, set to TRUE to combine feature lists.
-#' @param ... *MassSpecData* class object.
+#' @param ... *MassSpecEngine* class object.
 #'
-#' @return A *MassSpecData* class object.
+#' @return A *MassSpecEngine* class object.
 #'
-combine_MassSpecData <- function(combineFeatureLists = TRUE, ...) {
+combine_MassSpecEngine <- function(combineFeatureLists = TRUE, ...) {
 
   combined_analyses <- list()
 
   for (obj in list(...)) {
 
-    if (inherits(obj, "MassSpecData")) {
+    if (inherits(obj, "MassSpecEngine")) {
       combined_analyses <- c(combined_analyses, obj$get_analyses())
     }
 
@@ -8870,5 +7668,5 @@ combine_MassSpecData <- function(combineFeatureLists = TRUE, ...) {
     #}
   }
 
-  return(MassSpecData$new(analyses = combined_analyses))
+  return(MassSpecEngine$new(analyses = combined_analyses))
 }

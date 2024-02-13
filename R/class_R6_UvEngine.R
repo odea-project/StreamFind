@@ -8,8 +8,6 @@
 #' @template arg-ms-analyses
 #' @template arg-ms-settings
 #'
-#' @export
-#'
 UvEngine <- R6::R6Class("UvEngine",
 
   inherit = CoreEngine,

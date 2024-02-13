@@ -13,8 +13,8 @@ reference:
     - MassSpecData
     - RamanData
     - CoreEngine
+    - MassSpecEngine
     - RamanEngine
-    - UVEngine
 - title: S3 classes
   desc: >
     S3 classes are implemented to harmonize, verify and dispatch data within

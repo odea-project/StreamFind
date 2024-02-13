@@ -818,13 +818,14 @@ Invisible.
 \if{html}{\out{<a id="method-CoreEngine-processing_methods"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-processing_methods}{}}}
 \subsection{Method \code{processing_methods()}}{
-Possible data processing methods.
+Available data processing methods.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$processing_methods()}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{
-A character vector with ordered possible data  processing methods.
+A data.table with the name and maximum permitted of available
+processing methods.
 }
 }
 \if{html}{\out{<hr>}}
