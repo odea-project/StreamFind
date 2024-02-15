@@ -49,6 +49,8 @@
 #' @importFrom checkmate test_count test_double test_choice test_logical test_vector test_number
 #'
 #' @importFrom utils txtProgressBar setTxtProgressBar
+#' 
+#' @importFrom patRoon featureTable
 #'
 #' @noRd
 NULL

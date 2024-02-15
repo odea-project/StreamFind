@@ -2769,7 +2769,7 @@ Loads features EICs in each analyses.
 applicable to the processing method. Alternatively, a named
 list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
 ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the \code{MassSpecData} object.}
+processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2793,7 +2793,7 @@ Loads and average MS1 spectra from features in the analyses.
 applicable to the processing method. Alternatively, a named
 list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
 ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the \code{MassSpecData} object.}
+processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2817,7 +2817,7 @@ Loads and average MS2 spectra from features in the analyses.
 applicable to the processing method. Alternatively, a named
 list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
 ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the \code{MassSpecData} object.}
+processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -5325,7 +5325,7 @@ Centroids profile spectra data for each MS analysis.
 applicable to the processing method. Alternatively, a named
 list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
 ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the \code{MassSpecData} object.}
+processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -5349,7 +5349,7 @@ Bins centroided spectra for each MS analysis.
 applicable to the processing method. Alternatively, a named
 list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
 ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the \code{MassSpecData} object.}
+processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -5375,7 +5375,7 @@ the available processing settings for finding features.
 applicable to the processing method. Alternatively, a named
 list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
 ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the \code{MassSpecData} object.}
+processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -5399,7 +5399,7 @@ Groups and possibly aligns features across analyses.
 applicable to the processing method. Alternatively, a named
 list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
 ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the \code{MassSpecData} object.}
+processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -5424,7 +5424,7 @@ settings.
 applicable to the processing method. Alternatively, a named
 list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
 ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the \code{MassSpecData} object.}
+processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -5454,7 +5454,7 @@ Annotates isotopic features according to defined settings.
 applicable to the processing method. Alternatively, a named
 list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
 ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the \code{MassSpecData} object.}
+processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -5484,7 +5484,7 @@ settings.
 applicable to the processing method. Alternatively, a named
 list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
 ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the \code{MassSpecData} object.}
+processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -5506,7 +5506,7 @@ settings.
 applicable to the processing method. Alternatively, a named
 list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
 ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the \code{MassSpecData} object.}
+processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -5528,7 +5528,7 @@ for filtering/prioritization.
 applicable to the processing method. Alternatively, a named
 list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
 ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the \code{MassSpecData} object.}
+processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }

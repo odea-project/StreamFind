@@ -6,7 +6,7 @@
 #' 
 #' @template arg-headers
 #' @template arg-ms-analyses
-#' @template arg-ms-settings
+#' @template arg-settings
 #'
 XyEngine <- R6::R6Class("XyEngine",
 

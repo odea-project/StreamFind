@@ -12,8 +12,13 @@
     return(FALSE)
   }
 
-  features <- lapply(self$get_analyses(), function(x) x$features)
-
+  features <- self$get_feature_list()
+  
+  features <- lapply(features, function(x) {
+    x$index <- seq_len(nrow(x))
+    x
+  })
+  
   cached_analyses <- FALSE
 
   if (.caches_data()) {
@@ -107,15 +112,50 @@
   
   names(iso_col) <- names(features)
   
-  features <- Map(
-    function(x, y) {
-      x[["isotope"]] <- y
-      x
-    },
-    features, iso_col
-  )
-
-  suppressMessages(self$add_features(features, replace = TRUE))
+  if (self$has_modules_data("patRoon")) {
+    
+    module_pat <- self$get_modules_data("patRoon")[["patRoon"]]
+    
+    if ("features" %in% is(module_pat$data)) {
+      pat_feature_list <- module_pat$data@features
+      
+    } else if ("featureGroups" %in% is(module_pat$data)) {
+      pat_feature_list <- patRoon::getFeatures(module_pat$data@features@features)
+      
+    } else {
+      return(FALSE)
+    }
+    
+    pat_feature_list <- Map(
+      function(x, y) {
+        x[["isotope"]] <- y
+        x
+      },
+      pat_feature_list, iso_col
+    )
+    
+    if ("features" %in% is(module_pat$data)) {
+      module_pat$data@features <- pat_feature_list
+      
+    } else if ("featureGroups" %in% is(module_pat$data)) {
+      module_pat$data@features@features@features <- pat_feature_list
+    }
+    
+    self$add_modules_data(list("patRoon" = module_pat))
+    
+  } else {
+    return(FALSE)
+  }
+  
+  # features <- Map(
+  #   function(x, y) {
+  #     x[["isotope"]] <- y
+  #     x
+  #   },
+  #   features, iso_col
+  # )
+  # 
+  # suppressMessages(self$add_features(features, replace = TRUE))
 
   TRUE
 }

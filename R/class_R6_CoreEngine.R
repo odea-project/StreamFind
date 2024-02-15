@@ -4,9 +4,10 @@
 #' The *CoreEngine* R6 class is a basic data processor with generic methods for handling data.
 #'
 #' @template arg-headers
+#' @template arg-settings-and-list
+#' @template arg-modules
 #' @template arg-analyses
 #' @template arg-verbose
-#' @template arg-ms-settings
 #' @template arg-ms-save-format
 #' @template arg-ms-save-name
 #' @template arg-ms-save-path
@@ -123,7 +124,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       if (all(cols_check %in% names(settings))) settings <- list(settings)
       
       if (length(settings) > 1) {
-        warning("More then one settings for ", call, " found!")
+        warning("More than one settings for ", call, " found! Not done.")
         return(NULL)
       }
       
@@ -152,12 +153,21 @@ CoreEngine <- R6::R6Class("CoreEngine",
     ## ___ create -----
     
     #' @description Creates an R6 *CoreEngine* class object.
+    #' 
+    #' @param analyses An Analysis S3 class object or a list with Analysis S3 
+    #' class objects as elements (see `?Analysis` for more information).
     #'
-    initialize = function(headers = NULL) {
+    initialize = function(headers = NULL, settings = NULL, analyses = NULL, modules = NULL) {
       
       if (is.null(headers)) headers <- ProjectHeaders()
       
       if (!is.null(headers)) suppressMessages(self$add_headers(headers))
+      
+      if (!is.null(settings)) suppressMessages(self$add_settings(settings))
+      
+      if (!is.null(analyses)) suppressMessages(self$add_analyses(analyses))
+      
+      if (!is.null(modules)) suppressMessages(self$add_modules(modules))
       
       private$.register(
         "created",
@@ -215,7 +225,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       if (length(private$.analyses) > 0) {
         cat("\n")
         overview <- self$get_overview()
-        overview <- overview[, c("analysis", "replicate", "blank"), with = FALSE]
+        overview$file <- NULL
         row.names(overview) <- paste0(" ", seq_len(nrow(overview)), ":")
         print(overview)
       } else {
@@ -357,6 +367,41 @@ CoreEngine <- R6::R6Class("CoreEngine",
       private$.get_analyses_entry(analyses, "type")
     },
     
+    #' @description
+    #' Gets processing settings.
+    #'
+    #' @param call A string or a vector of strings with the name/s of the
+    #' processing method/s.
+    #'
+    #' @return A list with ProcessingSettings S3 class object/s.
+    #'
+    get_settings = function(call = NULL) {
+      
+      if (is.null(call)) {
+        private$.settings
+        
+      } else {
+        call_names <- vapply(private$.settings, function(x) x$call, NA_character_)
+        
+        if (any(call %in% call_names)) {
+          private$.settings[call_names %in% call]
+          
+        } else {
+          warning("Settings for ", call, " not found!")
+          NULL
+        }
+      }
+    },
+    
+    #' @description
+    #' Gets the names of all present processing settings.
+    #'
+    #' @return A character vector with the name of with the ProcessingSettings.
+    #'
+    get_settings_names = function() {
+      vapply(private$.settings, function(x) x$call, NA_character_)
+    },
+    
     #' @description A data.table with the overview of all processing methods present.
     #'
     get_workflow_overview = function() {
@@ -371,6 +416,19 @@ CoreEngine <- R6::R6Class("CoreEngine",
       } else {
         data.table()
       }
+    },
+    
+    #' @description
+    #' Gets modules data.
+    #'
+    #' @param modules X.
+    #'
+    #' @return The list of modules data as defined by `modules` argument when
+    #' `NULL` all data in modules is returned.
+    #'
+    get_modules_data = function(modules = NULL) {
+      if (is.null(modules)) modules <- names(private$.modules)
+      private$.modules[modules]
     },
     
     ## ___ add -----
@@ -831,7 +889,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
           if (is.null(value[[x]]$software)) value[[x]]$software <- NA_character_
           if (is.null(value[[x]]$version)) value[[x]]$version <- NA_character_
           
-          private$.modules <- c(private$.modules, value[x])
+          private$.modules[x] <- value[x]
           
           private$.register(
             "added",
@@ -1072,14 +1130,6 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     ## ___ has -----
     
-    #' @description Checks if analyses are present.
-    #'
-    #' @return Logical value.
-    #'
-    has_analyses = function() {
-      length(private$.analyses) > 0
-    },
-    
     #' @description Checks if there are processing settings.
     #'
     #' @param call A string or a vector of strings with the name/s of the
@@ -1096,6 +1146,30 @@ CoreEngine <- R6::R6Class("CoreEngine",
         FALSE
       }
     },
+    
+    #' @description Checks if analyses are present.
+    #'
+    #' @return Logical value.
+    #'
+    has_analyses = function() {
+      length(private$.analyses) > 0
+    },
+    
+    #' @description Checks if modules data is present.
+    #' 
+    #' @param names A string or a vector of strings with the name/s of the
+    #' modules data. The actual names depends of the applied algorithms. For 
+    #' instance, when algorithms via patRoon are used, the name of the module 
+    #' data is patRoon.
+    #'
+    #' @return Logical value.
+    #'
+    has_modules_data = function(names = NULL) {
+      if (is.null(names)) names <- names(private$.modules)
+      length(private$.modules[names]) > 0
+    },
+    
+    
     
     ## ___ plot -----
     

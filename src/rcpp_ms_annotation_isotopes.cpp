@@ -41,10 +41,10 @@ Rcpp::List rcpp_ms_annotation_isotopes(
   
   std::vector<std::string> must_have_names = {
     "feature", "index", "rt", "rtmin", "rtmax",
-    "mz", "mzmin", "mzmax", "polarity", "intensity"
+    "mz", "mzmin", "mzmax", "intensity"
   };
   
-  std::vector<bool> has_must_have_names(10, false);
+  std::vector<bool> has_must_have_names(9, false);
   
   for (size_t i = 0; i < must_have_names.size(); ++i) {
     for (size_t j = 0; j < features_cols.size(); ++j) {

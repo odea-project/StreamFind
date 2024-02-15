@@ -42,31 +42,86 @@ ms_files_df <- data.frame(
   )
 )
 
-# patRoon::clearCache(c("parsed_ms_analyses"))
-
-ms <- MassSpecEngine$new(ms_files_df)
-ms
-
 db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
 cols <- c("name", "formula", "mass", "rt", "polarity", "fragments", "tag")
 db <- db[, cols, with = FALSE]
 dbis <- db[grepl("IS", db$tag), ]
 dbsus <- db[!grepl("IS", db$tag), ]
 
-ms$plot_bpc(colorBy = "replicates", levels = 1)
-
 ps <- list(
   Settings_find_features_openms(),
   Settings_annotate_features_StreamFind(),
-  Settings_group_features_openms(),
+  # Settings_filter_features_patRoon(absMinIntensity = 50000),
+  Settings_group_features_openms()
+  #Settings_filter_features_patRoon(blankThreshold = 5)
   # Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
-  Settings_filter_features_StreamFind(minIntensity = 5000, maxGroupSd = 30, blank = 5, minGroupAbundance = 3, excludeIsotopes = TRUE),
-  Settings_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005, runParallel = FALSE),
-  Settings_calculate_quality_StreamFind(),
-  Settings_filter_features_StreamFind(minSnRatio = 3),
-  Settings_load_features_ms2_StreamFind(runParallel = FALSE),
-  Settings_suspect_screening_StreamFind(database = dbsus, ppm = 5, sec = 10)
+  #Settings_filter_features_StreamFind(minIntensity = 5000, maxGroupSd = 30, blank = 5, minGroupAbundance = 3, excludeIsotopes = TRUE),
+  #Settings_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005, runParallel = FALSE),
+  #Settings_calculate_quality_StreamFind(),
+  #Settings_filter_features_StreamFind(minSnRatio = 3),
+  #Settings_load_features_ms2_StreamFind(runParallel = FALSE),
+  #Settings_suspect_screening_StreamFind(database = dbsus, ppm = 5, sec = 10)
 )
+
+# patRoon::clearCache(c("parsed_ms_analyses"))
+
+ms <- MassSpecEngine$new(files = ms_files_df, settings = ps)
+
+ms$has_modules_data("patRoon")
+
+ms$run_workflow()
+
+# ms$has_features()
+# 
+# ms$has_groups()
+# 
+# ms$features()
+# 
+# ms$featureGroups()
+# 
+# ms$get_feature_list()
+# 
+# ms$get_features(mass = db)
+# 
+# ms$get_groups(average = TRUE, metadata = TRUE)
+# 
+# ms$get_features_eic(analyses = 1, mass = dbis[1, ])
+# 
+# ms$get_features_ms1(analyses = 1, mass = dbis[1, ])
+# 
+# ms$get_features_ms2(analyses = 1, mass = dbis[1, ])
+# 
+# ms$get_groups_ms1(mass = dbis[1, ])
+# 
+# ms$get_groups_ms2(mass = dbis[1, ])
+# 
+# ms$get_isotopes(analyses = 1, features = ms$get_features(analyses = 1, mass = dbis[3, ]))
+
+ms$get_suspects(analyses = 1, database = dbis)
+
+
+
+# View(ms$get_modules_data())
+
+ms$get_features(mass = dbis)
+
+ms$plot_groups(mass = dbis, legendNames = TRUE)
+
+
+
+
+
+
+
+
+
+
+
+
+
+ms$plot_bpc(colorBy = "replicates", levels = 1)
+
+
 
 # patRoon::clearCache("all")
 # patRoon::clearCache(c("annotate_features"))
@@ -75,6 +130,7 @@ ps <- list(
 # patRoon::clearCache(c("load_features_ms1"))
 
 ms$add_settings(ps)
+
 ms$run_workflow()
 
 ms$plot_suspects()

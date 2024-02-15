@@ -122,12 +122,49 @@
   }
   
   pat <- do.call(pp_fun, c(ag, parameters))
+  
+  # isSet <- TRUE %in% grepl("Set", is(pat))
+  
+  for (x in patRoon::analyses(pat)) {
+    pat@features[[x]]$filtered <- FALSE
+    pat@features[[x]]$filter <- NA_character_
+    pol <- self$get_polarities(x)
+    if ("positive" %in% pol) adduct_val <- -1.007276
+    if ("negative" %in% pol) adduct_val <- 1.007276
+    pat@features[[x]]$mass <- pat@features[[x]]$mz + adduct_val
+    
+    # if (isSet) {
+    #   pat@features[[x]]$mass <- pat@features[[x]]$mz
+    #   
+    # } else {
+    #   
+    # }
+  }
+  
+  pols <- self$get_polarities()
+  
+  if (length(unique(pols)) > 1) {
+    pat <- patRoon::makeSet(
+      pat[pols %in% "positive"],
+      pat[pols %in% "negative"],
+      adducts = list("[M+H]+", "[M-H]-")
+    )
+  }
+  
+  self$add_modules_data(
+    list("patRoon" = list(
+        "data" = pat,
+        "software" = "patRoon",
+        "version" = as.character(packageVersion("patRoon"))
+      )
+    )
+  )
 
-  features <- .build_features_table_from_patRoon(pat, self)
+  # features <- .build_features_table_from_patRoon(pat, self)
 
-  if (any(self$has_features())) self$remove_features()
-
-  self$add_features(features, replace = TRUE)
+  # if (any(self$has_features())) self$remove_features()
+  # 
+  # self$add_features(features, replace = TRUE)
 
   TRUE
 }

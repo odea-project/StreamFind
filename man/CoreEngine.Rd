@@ -33,7 +33,10 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-CoreEngine-get_files}{\code{CoreEngine$get_files()}}
 \item \href{#method-CoreEngine-get_formats}{\code{CoreEngine$get_formats()}}
 \item \href{#method-CoreEngine-get_types}{\code{CoreEngine$get_types()}}
+\item \href{#method-CoreEngine-get_settings}{\code{CoreEngine$get_settings()}}
+\item \href{#method-CoreEngine-get_settings_names}{\code{CoreEngine$get_settings_names()}}
 \item \href{#method-CoreEngine-get_workflow_overview}{\code{CoreEngine$get_workflow_overview()}}
+\item \href{#method-CoreEngine-get_modules_data}{\code{CoreEngine$get_modules_data()}}
 \item \href{#method-CoreEngine-add_headers}{\code{CoreEngine$add_headers()}}
 \item \href{#method-CoreEngine-add_settings}{\code{CoreEngine$add_settings()}}
 \item \href{#method-CoreEngine-add_analyses}{\code{CoreEngine$add_analyses()}}
@@ -45,8 +48,9 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-CoreEngine-remove_settings}{\code{CoreEngine$remove_settings()}}
 \item \href{#method-CoreEngine-remove_analyses}{\code{CoreEngine$remove_analyses()}}
 \item \href{#method-CoreEngine-subset_analyses}{\code{CoreEngine$subset_analyses()}}
-\item \href{#method-CoreEngine-has_analyses}{\code{CoreEngine$has_analyses()}}
 \item \href{#method-CoreEngine-has_settings}{\code{CoreEngine$has_settings()}}
+\item \href{#method-CoreEngine-has_analyses}{\code{CoreEngine$has_analyses()}}
+\item \href{#method-CoreEngine-has_modules_data}{\code{CoreEngine$has_modules_data()}}
 \item \href{#method-CoreEngine-run_workflow}{\code{CoreEngine$run_workflow()}}
 \item \href{#method-CoreEngine-save_headers}{\code{CoreEngine$save_headers()}}
 \item \href{#method-CoreEngine-save_settings}{\code{CoreEngine$save_settings()}}
@@ -66,7 +70,12 @@ List of function elements to access specific reference help pages.}
 \subsection{Method \code{new()}}{
 Creates an R6 \emph{CoreEngine} class object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$new(headers = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$new(
+  headers = NULL,
+  settings = NULL,
+  analyses = NULL,
+  modules = NULL
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -78,6 +87,17 @@ except for name (must be type character length 1), author (must be type
 character length 1), path (must be type character length 1) and date (must
 be class POSIXct or class POSIXt length 1). See more information in
 \code{?ProjectHeaders}.}
+
+\item{\code{settings}}{A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.}
+
+\item{\code{analyses}}{An Analysis S3 class object or a list with Analysis S3
+class objects as elements (see \code{?Analysis} for more information).}
+
+\item{\code{modules}}{A named list of objects from processing modules.}
 }
 \if{html}{\out{</div>}}
 }
@@ -304,6 +324,40 @@ Gets the type of each analysis.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-get_settings"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-get_settings}{}}}
+\subsection{Method \code{get_settings()}}{
+Gets processing settings.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_settings(call = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{call}}{A string or a vector of strings with the name/s of the
+processing method/s.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A list with ProcessingSettings S3 class object/s.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-get_settings_names"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-get_settings_names}{}}}
+\subsection{Method \code{get_settings_names()}}{
+Gets the names of all present processing settings.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_settings_names()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+A character vector with the name of with the ProcessingSettings.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-get_workflow_overview"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-get_workflow_overview}{}}}
 \subsection{Method \code{get_workflow_overview()}}{
@@ -312,6 +366,27 @@ A data.table with the overview of all processing methods present.
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_workflow_overview()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-get_modules_data"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-get_modules_data}{}}}
+\subsection{Method \code{get_modules_data()}}{
+Gets modules data.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_modules_data(modules = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{modules}}{X.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+The list of modules data as defined by \code{modules} argument when
+\code{NULL} all data in modules is returned.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-add_headers"></a>}}
@@ -562,19 +637,6 @@ defined by the \code{analyses} argument.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-has_analyses"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-has_analyses}{}}}
-\subsection{Method \code{has_analyses()}}{
-Checks if analyses are present.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_analyses()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-Logical value.
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-has_settings"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-has_settings}{}}}
 \subsection{Method \code{has_settings()}}{
@@ -588,6 +650,42 @@ Checks if there are processing settings.
 \describe{
 \item{\code{call}}{A string or a vector of strings with the name/s of the
 processing method/s.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Logical value.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-has_analyses"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-has_analyses}{}}}
+\subsection{Method \code{has_analyses()}}{
+Checks if analyses are present.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_analyses()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+Logical value.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-has_modules_data"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-has_modules_data}{}}}
+\subsection{Method \code{has_modules_data()}}{
+Checks if modules data is present.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_modules_data(names = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{names}}{A string or a vector of strings with the name/s of the
+modules data. The actual names depends of the applied algorithms. For
+instance, when algorithms via patRoon are used, the name of the module
+data is patRoon.}
 }
 \if{html}{\out{</div>}}
 }

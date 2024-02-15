@@ -50,7 +50,7 @@
 #' @template arg-ms-loadedGroupsMS1
 #' @template arg-ms-loadedFeaturesMS2
 #' @template arg-ms-loadedGroupsMS2
-#' @template arg-ms-settings
+#' @template arg-settings
 #' @template arg-ms-settingsFeatures
 #' @template arg-ms-legendNames
 #' @template arg-ms-colorBy

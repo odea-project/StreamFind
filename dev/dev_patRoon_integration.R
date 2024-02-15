@@ -47,7 +47,13 @@ anaInfo <- data.frame(
 
 
 anaInfoPos <- anaInfo[grepl("pos", anaInfo$analysis), ]
+
 anaInfoNeg <- anaInfo[grepl("neg", anaInfo$analysis), ]
+
+
+
+
+
 
 fListPos <- findFeatures(anaInfoPos, "openms")
 

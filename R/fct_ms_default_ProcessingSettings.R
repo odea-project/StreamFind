@@ -1453,6 +1453,130 @@ validate.Settings_filter_features_StreamFind <- function(x) {
   )
 }
 
+#' @title Settings_filter_features_patRoon
+#'
+#' @description Settings for filtering of features and feature groups. A full 
+#' description of the filtering parameters is described in 
+#' \code{\link[patRoon]{replicateGroupSubtract}} from patRoon package.
+#'
+#' @return A ProcessingSettings S3 class object with subclass
+#' Settings_filter_features_patRoon.
+#'
+#' @details Note that when filters are applied to features or feature groups 
+#' these require specific results from processing modules. For instance, 
+#' subtracting the blank can only be done after grouping features. Also, some 
+#' filters require. Thus, not all filters can be applied to features. 
+#' See \code{\link[patRoon]{features-class}} and \code{\link[patRoon]{replicateGroupSubtract}} 
+#' for further information.
+#' 
+#' @export
+#'
+Settings_filter_features_patRoon <- function(absMinIntensity = NULL,
+                                             relMinIntensity = NULL,
+                                             preAbsMinIntensity = NULL,
+                                             preRelMinIntensity = NULL,
+                                             absMinAnalyses = NULL,
+                                             relMinAnalyses = NULL,
+                                             absMinReplicates = NULL,
+                                             relMinReplicates = NULL,
+                                             absMinFeatures = NULL,
+                                             relMinFeatures = NULL,
+                                             absMinReplicateAbundance = NULL,
+                                             relMinReplicateAbundance = NULL,
+                                             absMinConc = NULL,
+                                             relMinConc = NULL,
+                                             absMaxTox = NULL,
+                                             relMaxTox = NULL,
+                                             absMinConcTox = NULL,
+                                             relMinConcTox = NULL,
+                                             maxReplicateIntRSD = NULL,
+                                             blankThreshold = NULL,
+                                             retentionRange = NULL,
+                                             mzRange = NULL,
+                                             mzDefectRange = NULL,
+                                             chromWidthRange = NULL,
+                                             featQualityRange = NULL,
+                                             groupQualityRange = NULL,
+                                             rGroups = NULL,
+                                             results = NULL,
+                                             removeBlanks = FALSE,
+                                             removeISTDs = FALSE,
+                                             checkFeaturesSession = NULL,
+                                             # predAggrParams = patRoon::getDefPredAggrParams(),
+                                             removeNA = FALSE,
+                                             negate = FALSE) {
+  
+  settings <- list(
+    call = "filter_features",
+    algorithm = "patRoon",
+    parameters = list(),
+    version = as.character(packageVersion("patRoon")),
+    software = "patRoon",
+    developer = "Rick Helmus",
+    contact = "r.helmus@uva.nl",
+    link = "https://github.com/rickhelmus/patRoon",
+    doi = "10.21105/joss.04029"
+  )
+  
+  settings$parameters <- list(
+    "absMinIntensity" = absMinIntensity,
+    "relMinIntensity" = relMinIntensity,
+    "preAbsMinIntensity" = preAbsMinIntensity,
+    "preRelMinIntensity" = preRelMinIntensity,
+    "absMinAnalyses" = absMinAnalyses,
+    "relMinAnalyses" = relMinAnalyses,
+    "absMinReplicates" = absMinReplicates,
+    "relMinReplicates" = relMinReplicates,
+    "absMinFeatures" = absMinFeatures,
+    "relMinFeatures" = relMinFeatures,
+    "absMinReplicateAbundance" = absMinReplicateAbundance,
+    "relMinReplicateAbundance" = relMinReplicateAbundance,
+    "absMinConc" = absMinConc,
+    "relMinConc" = relMinConc,
+    "absMaxTox" = absMaxTox,
+    "relMaxTox" = relMaxTox,
+    "absMinConcTox" = absMinConcTox,
+    "relMinConcTox" = relMinConcTox,
+    "maxReplicateIntRSD" = maxReplicateIntRSD,
+    "blankThreshold" = blankThreshold,
+    "retentionRange" = retentionRange,
+    "mzRange" = mzRange,
+    "mzDefectRange" = mzDefectRange,
+    "chromWidthRange" = chromWidthRange,
+    "featQualityRange" = featQualityRange,
+    "groupQualityRange" = groupQualityRange,
+    "rGroups" = rGroups,
+    "results" = results,
+    "removeBlanks" = removeBlanks,
+    "removeISTDs" = removeISTDs,
+    "checkFeaturesSession" = checkFeaturesSession,
+    # "predAggrParams" = predAggrParams,
+    "removeNA" = removeNA,
+    "negate" = negate
+  )
+  
+  settings <- as.ProcessingSettings(settings)
+  
+  return(settings)
+}
+
+#' @describeIn Settings_filter_features_patRoon
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_filter_features_patRoon S3 class object.
+#'
+#' @export
+#'
+validate.Settings_filter_features_patRoon <- function(x) {
+  
+  # filters <- names(x$parameters)
+  
+  all(
+    checkmate::test_choice(x$call, "filter_features"),
+    checkmate::test_choice(x$algorithm, "patRoon"),
+  )
+}
+
 ## annotate_features -----
 
 #' @title Settings_annotate_features_StreamFind

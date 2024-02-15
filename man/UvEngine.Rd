@@ -34,12 +34,16 @@ reporting of any two-dimensional data.
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_formats"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_formats'><code>StreamFind::CoreEngine$get_formats()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_headers'><code>StreamFind::CoreEngine$get_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_history"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_history'><code>StreamFind::CoreEngine$get_history()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_modules_data"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_modules_data'><code>StreamFind::CoreEngine$get_modules_data()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_number_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_number_analyses'><code>StreamFind::CoreEngine$get_number_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_overview"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_overview'><code>StreamFind::CoreEngine$get_overview()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_replicate_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_replicate_names'><code>StreamFind::CoreEngine$get_replicate_names()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_settings'><code>StreamFind::CoreEngine$get_settings()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_settings_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_settings_names'><code>StreamFind::CoreEngine$get_settings_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_types"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_types'><code>StreamFind::CoreEngine$get_types()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_workflow_overview"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_workflow_overview'><code>StreamFind::CoreEngine$get_workflow_overview()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_analyses'><code>StreamFind::CoreEngine$has_analyses()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_modules_data"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_modules_data'><code>StreamFind::CoreEngine$has_modules_data()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_settings'><code>StreamFind::CoreEngine$has_settings()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import'><code>StreamFind::CoreEngine$import()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_analyses'><code>StreamFind::CoreEngine$import_analyses()</code></a></span></li>
@@ -85,7 +89,7 @@ be class POSIXct or class POSIXt length 1). See more information in
 applicable to the processing method. Alternatively, a named
 list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
 ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the \code{MassSpecData} object.}
+processing method will be searched within the engine object.}
 
 \item{\code{analyses}}{A numeric/character vector with the number/name
 of the analyses.}
