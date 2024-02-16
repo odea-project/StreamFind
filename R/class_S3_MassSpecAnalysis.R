@@ -323,7 +323,6 @@ print.MassSpecAnalysis <- function(x, ...) {
     "  chromatograms     ", x$chromatograms_number, "\n",
     "  has ion mobility  ", x$has_ion_mobility, "\n",
     "  polarity          ", paste(x$polarity, collapse = "; "), "\n",
-    "  features          ", nrow(x$features), "\n",
     sep = ""
   )
   cat("\n")
@@ -358,6 +357,9 @@ asJSON.MassSpecAnalysis <- function(x) {
 #' @export
 as.MassSpecAnalysis <- function(value) {
   if (length(value) == 1 & is.list(value)) value <- value[[1]]
+  
+  browser()
+  
   do.call(MassSpecAnalysis, value)
 }
 

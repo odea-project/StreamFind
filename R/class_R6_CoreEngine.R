@@ -1,7 +1,6 @@
 #' **CoreEngine** R6 class and methods
 #'
-#' @description
-#' The *CoreEngine* R6 class is a basic data processor with generic methods for handling data.
+#' @description The CoreEngine R6 class is a basic data processor with generic methods for handling data.
 #'
 #' @template arg-headers
 #' @template arg-settings-and-list
@@ -105,8 +104,33 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     # Converts each element in the list `analyses` to an Analysis S3 class object.
     #
-    .validate_list_analyses = function(analyses = NULL) {
-      lapply(analyses, function(x) as.Analysis(x))
+    .validate_list_analyses = function(analyses = NULL, childClass = "Analysis") {
+      
+      if (is.list(analyses)) {
+        
+        if (all(c("name") %in% names(analyses))) {
+          ana_name <- analyses$name
+          analyses <- list(analyses)
+          names(analyses) <- ana_name
+        }
+        
+        analyses <- lapply(analyses, function(x) do.call(childClass, x))
+        
+        if (all(vapply(analyses, function(x) is(x, childClass), FALSE))) {
+          ana_names <- vapply(analyses, function(x) x$name, "")
+          names(analyses) <- ana_names
+          
+        } else {
+          warning("Not done, check the conformity of the analyses list!")
+          analyses <- NULL
+        }
+        
+      } else {
+        warning("Not done, check the conformity of the analyses list!")
+        analyses <- NULL
+      }
+      
+      analyses
     },
     
     # Extracts and validates ProcessingSettings for a given call.
@@ -152,7 +176,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
   public = list(
     ## ___ create -----
     
-    #' @description Creates an R6 *CoreEngine* class object.
+    #' @description Creates an R6 CoreEngine class object.
     #' 
     #' @param analyses An Analysis S3 class object or a list with Analysis S3 
     #' class objects as elements (see `?Analysis` for more information).
@@ -270,7 +294,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     #' @description Gets the object history.
     #'
-    #' @return The history list of processing steps applied.
+    #' @return A data.table with the audit trail.
     #'
     get_history = function() {
       
@@ -646,11 +670,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
     
-    #' @description
-    #' Adds analyses.
+    #' @description Adds analyses.
     #'
-    #' @param analyses An S3 class object or a list with
-    #' analyses as elements.
+    #' @param analyses An Analysis S3 class object or a list with Analysis S3 objects as elements.
     #'
     #' @return Invisible.
     #'
@@ -678,23 +700,27 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
       
       if (!is.null(analyses)) {
-        analyses <- private$.validate_list_analyses(analyses)
-        analyses <- analyses[!vapply(analyses, is.null, TRUE)]
         
-        if (length(analyses) > 0) {
+        all_valid <- all(vapply(analyses, validate, FALSE))
+        
+        if (all_valid) {
+          
           old_analyses <- self$get_analyses()
+          
           old_names <- NULL
           
-          if (length(old_analyses) > 0) {
-            old_names <- vapply(old_analyses, function(x) x$name, "")
-          }
+          if (length(old_analyses) > 0) old_names <- vapply(old_analyses, function(x) x$name, "")
           
           new_names <- c(old_names, vapply(analyses, function(x) x$name, ""))
           
           if (!any(duplicated(new_names))) {
+            
             new_analyses <- c(old_analyses, analyses)
+            
             names(new_analyses) <- new_names
+            
             new_analyses <- new_analyses[order(names(new_analyses))]
+            
             old_size <- length(private$.analyses)
             
             private$.analyses <- new_analyses
@@ -721,10 +747,12 @@ CoreEngine <- R6::R6Class("CoreEngine",
           } else {
             warning("Duplicated analysis names not allowed! Not done.")
           }
+          
         } else {
           warning("No conform analyses to add!")
         }
       }
+      
       invisible(self)
     },
     

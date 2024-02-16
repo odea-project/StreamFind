@@ -51,21 +51,39 @@ dbsus <- db[!grepl("IS", db$tag), ]
 ps <- list(
   Settings_find_features_openms(),
   Settings_annotate_features_StreamFind(),
-  # Settings_filter_features_patRoon(absMinIntensity = 50000),
-  Settings_group_features_openms()
-  #Settings_filter_features_patRoon(blankThreshold = 5)
+  Settings_filter_features_patRoon(absMinIntensity = 20000),
+  Settings_group_features_openms(),
+  Settings_filter_features_patRoon(blankThreshold = 5),
   # Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
   #Settings_filter_features_StreamFind(minIntensity = 5000, maxGroupSd = 30, blank = 5, minGroupAbundance = 3, excludeIsotopes = TRUE),
-  #Settings_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005, runParallel = FALSE),
-  #Settings_calculate_quality_StreamFind(),
+  Settings_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005, runParallel = FALSE),
+  Settings_calculate_quality_StreamFind(),
   #Settings_filter_features_StreamFind(minSnRatio = 3),
   #Settings_load_features_ms2_StreamFind(runParallel = FALSE),
-  #Settings_suspect_screening_StreamFind(database = dbsus, ppm = 5, sec = 10)
+  Settings_suspect_screening_StreamFind(database = dbsus, ppm = 5, sec = 10)
 )
 
 # patRoon::clearCache(c("parsed_ms_analyses"))
 
 ms <- MassSpecEngine$new(files = ms_files_df, settings = ps)
+
+# ms$analysisInfo
+# 
+# ms$features
+# 
+# ms$featureGroups
+
+
+
+# new_files <- StreamFindData::get_ms_file_paths()[1:3]
+# 
+# new_anas <- parse_MassSpecAnalysis(new_files)
+# 
+# ms$add_analyses(new_anas)
+
+
+
+
 
 ms$has_modules_data("patRoon")
 
@@ -81,37 +99,33 @@ ms$run_workflow()
 # 
 # ms$get_feature_list()
 # 
-# ms$get_features(mass = db)
+# ms$get_features(mass = dbsus)
 # 
-# ms$get_groups(average = TRUE, metadata = TRUE)
+# ms$get_groups(mass = dbsus, average = TRUE, metadata = TRUE)
 # 
-# ms$get_features_eic(analyses = 1, mass = dbis[1, ])
+# ms$get_features_eic(analyses = 4, mass = dbsus[4, ])
 # 
 # ms$get_features_ms1(analyses = 1, mass = dbis[1, ])
 # 
-# ms$get_features_ms2(analyses = 1, mass = dbis[1, ])
+# ms$get_ms2(analyses = 4, mass = dbsus)
+# 
+# ms$get_features_ms2(analyses = 4, mass = dbsus)
 # 
 # ms$get_groups_ms1(mass = dbis[1, ])
 # 
 # ms$get_groups_ms2(mass = dbis[1, ])
 # 
 # ms$get_isotopes(analyses = 1, features = ms$get_features(analyses = 1, mass = dbis[3, ]))
+# 
+# ms$get_suspects(analyses = 4, database = dbsus)
+# 
+View(ms$get_suspects(onGroups = FALSE))
 
-ms$get_suspects(analyses = 1, database = dbis)
+ms$analysisInfo
 
+ms$features
 
-
-# View(ms$get_modules_data())
-
-ms$get_features(mass = dbis)
-
-ms$plot_groups(mass = dbis, legendNames = TRUE)
-
-
-
-
-
-
+ms$featureGroups
 
 
 

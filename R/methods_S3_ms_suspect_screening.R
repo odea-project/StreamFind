@@ -25,21 +25,24 @@
   if (nrow(suspect_features) > 0) {
     
     suspect_cols <- colnames(suspect_features)
+    
     suspect_cols <- c(suspect_cols[1:which(suspect_cols %in% "analysis") - 1])
     
     suspect_features_l <- split(suspect_features, suspect_features$analysis)
     
     if (!any(self$has_features())) return(FALSE)
     
-    analyses <- self$get_analyses()
+    features <- self$get_feature_list()
     
-    analyses <- lapply(analyses, function(x, suspect_features_l, suspect_cols) {
+    sus_col <- lapply(names(features), function(x, features, suspect_features_l, suspect_cols) {
       
-      suspects <- suspect_features_l[[x$name]]
+      suspects <- suspect_features_l[[x]]
+      
+      fts <- features[[x]]
       
       if (!is.null(suspects)) {
         
-        suspects_l <- lapply(x$features$feature, function(z, suspects, suspect_cols) {
+        suspects_l <- lapply(fts$feature, function(z, suspects, suspect_cols) {
           
           sus_idx <- which(suspects$feature %in% z)
           
@@ -58,33 +61,40 @@
           
         }, suspects = suspects, suspect_cols = suspect_cols)
         
-        x$features$suspects <- suspects_l
+        suspects_l
         
 
       } else {
-        x$features$suspects <- lapply(x$features$feature, function(x) NULL)
+        lapply(fts$feature, function(x) NULL)
       }
-
-      x
       
-    }, suspect_features_l = suspect_features_l, suspect_cols = suspect_cols)
+    }, features = features, suspect_features_l = suspect_features_l, suspect_cols = suspect_cols)
     
-    features <- lapply(analyses, function(x) x$features)
+    names(sus_col) <- names(features)
     
-    suppressMessages(self$add_features(features, replace = TRUE))
+    if (self$has_modules_data("patRoon")) {
+      
+      pat_features <- self$features
+      
+      pat_feature_list <- pat_features@features
+      
+      pat_feature_list <- Map(
+        function(x, y) {
+          x[["suspects"]] <- y
+          x
+        },
+        pat_feature_list, sus_col
+      )
+      
+      self$update_feature_list(pat_feature_list)
+      
+    } else {
+      warning("Features not found! Not done.")
+      return(FALSE)
+    }
     
-    
-    # suspects_data <- list(
-    #   "features" = suspect_features,
-    #   "groups" = suspect_groups
-    # )
-    # 
-    # output <- list(suspects_data)
-    # names(output) <- settings$call
-    # 
-    # self$add_modules_data(output)
-
     TRUE
+    
   } else {
     FALSE
   }

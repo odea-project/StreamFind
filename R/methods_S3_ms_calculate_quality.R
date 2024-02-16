@@ -413,39 +413,32 @@
     } else {
       message("\U2139 Calculated features quality parameters loaded from cache!")
     }
-    
-    features <- self$get_analyses()
-    features <- lapply(features, function(x) x$features)
-    
-    features <- Map(
-      function(x, y) {
-        x[["quality"]] <- y
-        x
-      },
-      features, quality
-    )
-    
-    # quality <- rbindlist(quality, fill = TRUE)
-    # 
-    # cols_quality <- colnames(quality)
-    # cols_quality <- cols_quality[!cols_quality %in% c("feature", "analysis")]
-    # 
-    # features <- self$get_features(filtered = TRUE)
-    # 
-    # cols_features <- colnames(features)
-    # cols_features <- cols_features[!cols_features %in% cols_quality]
-    # 
-    # features <- features[, cols_features, with = FALSE]
-    # 
-    # features_w_quality <- merge(features, quality, all.x = TRUE)
 
-    suppressMessages(self$add_features(features, replace = TRUE))
+    if (self$has_modules_data("patRoon")) {
+      
+      pat_features <- self$features
+      
+      pat_feature_list <- pat_features@features
+      
+      pat_feature_list <- Map(
+        function(x, y) {
+          x[["quality"]] <- y
+          x
+        },
+        pat_feature_list, quality
+      )
+      
+      self$update_feature_list(pat_feature_list)
+      
+    } else {
+      warning("Features not found! Not done.")
+      return(FALSE)
+    }
 
     TRUE
 
   } else {
     warning("EIC traces from features not found! Not done.")
-
     FALSE
   }
 }
