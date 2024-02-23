@@ -7,10 +7,10 @@
 #' @template arg-modules
 #' @template arg-analyses
 #' @template arg-verbose
-#' @template arg-ms-save-format
-#' @template arg-ms-save-name
-#' @template arg-ms-save-path
-#' @template arg-ms-import-file
+#' @template arg-save-format
+#' @template arg-save-name
+#' @template arg-save-path
+#' @template arg-import-file
 #'
 #' @export
 #'
@@ -226,7 +226,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       self$print_analyses()
     },
     
-    #' @description Prints the headers.
+    #' @description Prints the headers list.
     #'
     print_headers = function() {
       cat("\n")
@@ -241,7 +241,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
     },
     
-    #' @description Prints the analyses present.
+    #' @description Prints the analyses.
     #'
     print_analyses = function() {
       cat("\n")
@@ -257,7 +257,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
     },
     
-    #' @description Prints all processing methods present by order.
+    #' @description Prints the order of processing methods for all added processing settings.
     #'
     print_workflow = function() {
       cat("\n")
@@ -277,12 +277,10 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     ## ___ get -----
     
-    #' @description Gets the headers.
+    #' @description Gets the headers list.
     #'
     #' @param value A character vector with the name/s of the header elements.
     #' When `NULL` (the default), the entire headers list is returned.
-    #'
-    #' @return The headers list or the header elements as defined by `value`.
     #'
     get_headers = function(value = NULL) {
       if (is.null(value)) {
@@ -292,9 +290,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
     },
     
-    #' @description Gets the object history.
-    #'
-    #' @return A data.table with the audit trail.
+    #' @description Gets the object history (audit trail) as a data.table.
     #'
     get_history = function() {
       
@@ -306,17 +302,14 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
     },
     
-    #' @description Gets analyses.
-    #'
-    #' @return The list of analyses or the analyses as defined by `analyses`
-    #' argument.
+    #' @description Gets the list of analyses.
     #'
     get_analyses = function(analyses = NULL) {
       analyses <- private$.check_analyses_argument(analyses)
       private$.analyses[vapply(analyses, function(x) which(names(private$.analyses) %in% x), 0)]
     },
     
-    #' @description Gets the number of analyses present.
+    #' @description Gets the number of analyses.
     #'
     get_number_analyses = function() {
       length(private$.analyses)
@@ -324,8 +317,6 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     #' @description Gets an overview data.table with all the analysis names, 
     #' replicates, associated blank replicates, and full file paths.
-    #'
-    #' @return A data.table with columns analysis, replicate, blank and file.
     #'
     get_overview = function() {
       if (length(private$.analyses) > 0) {
@@ -391,13 +382,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
       private$.get_analyses_entry(analyses, "type")
     },
     
-    #' @description
-    #' Gets processing settings.
+    #' @description Gets the processing settings list.
     #'
-    #' @param call A string or a vector of strings with the name/s of the
-    #' processing method/s.
-    #'
-    #' @return A list with ProcessingSettings S3 class object/s.
+    #' @param call A string or a vector of strings with the name/s of the processing method/s.
     #'
     get_settings = function(call = NULL) {
       
@@ -417,16 +404,13 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
     },
     
-    #' @description
-    #' Gets the names of all present processing settings.
-    #'
-    #' @return A character vector with the name of with the ProcessingSettings.
+    #' @description Gets the names of all processing methods in added processing settings as a character vector.
     #'
     get_settings_names = function() {
       vapply(private$.settings, function(x) x$call, NA_character_)
     },
     
-    #' @description A data.table with the overview of all processing methods present.
+    #' @description A data.table with the overview of all processing methods from added processing settings.
     #'
     get_workflow_overview = function() {
       if (self$has_settings()) {
@@ -442,13 +426,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
     },
     
-    #' @description
-    #' Gets modules data.
+    #' @description Gets the list of modules data.
     #'
-    #' @param modules X.
-    #'
-    #' @return The list of modules data as defined by `modules` argument when
-    #' `NULL` all data in modules is returned.
+    #' @param modules A character vector with the name of the module/s.
     #'
     get_modules_data = function(modules = NULL) {
       if (is.null(modules)) modules <- names(private$.modules)
@@ -1066,22 +1046,26 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #'
     remove_analyses = function(analyses = NULL) {
       
+      analyses <- private$.check_analyses_argument(analyses)
+      
       if (!is.null(analyses)) {
-        analyses <- private$.check_analyses_argument(analyses)
+        
         allNames <- self$get_analysis_names()
+        
         keepAnalyses <- unname(allNames[!(allNames %in% analyses)])
+        
         removeAnalyses <- unname(allNames[allNames %in% analyses])
+        
         analysesLeft <- self$get_analyses(keepAnalyses)
         
         if (length(removeAnalyses) > 0) {
           
           private$.analyses <- analysesLeft
-          private$.alignment <- private$.alignment[keepAnalyses]
           
           lapply(removeAnalyses, function(x) {
             private$.register(
               "removed",
-              "MassSpecAnalysis",
+              "Analysis",
               x,
               NA_character_,
               NA_character_,
@@ -1099,7 +1083,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
         lapply(private$.analyses, function(x) {
           private$.register(
             "removed",
-            "MassSpecAnalysis",
+            "Analysis",
             x,
             NA_character_,
             NA_character_,
@@ -1108,7 +1092,6 @@ CoreEngine <- R6::R6Class("CoreEngine",
         })
         
         private$.analyses <- NULL
-        private$.alignment <- NULL
         
         message("\U2713 Removed all analyses!")
       }
@@ -1118,25 +1101,21 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     ## ___ subset -----
     
-    #' @description Subsets on analyses.
-    #'
-    #' @return A new cloned object with only the analyses as
-    #' defined by the `analyses` argument.
+    #' @description Subsets on analyses returning a new cloned object with only the analyses to keep.
     #'
     subset_analyses = function(analyses = NULL) {
+      
       analyses <- private$.check_analyses_argument(analyses)
       
       if (!is.null(analyses)) {
         allNames <- self$get_analysis_names()
-        removeAnalyses <- unname(allNames[!(allNames %in% analyses)])
         keepAnalyses <- unname(allNames[allNames %in% analyses])
         
         if (length(keepAnalyses) > 0) {
+          
           newAnalyses <- self$get_analyses(keepAnalyses)
-          newAlignment <- self$get_alignment()[keepAnalyses]
           
           new_ms <- suppressMessages(CoreEngine$new(
-            files = NULL,
             headers = self$get_headers(),
             settings = self$get_settings(),
             analyses = newAnalyses,
@@ -1158,12 +1137,10 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     ## ___ has -----
     
-    #' @description Checks if there are processing settings.
+    #' @description Checks if there are processing settings, returning `TRUE` or `FALSE`.
     #'
     #' @param call A string or a vector of strings with the name/s of the
     #' processing method/s.
-    #'
-    #' @return Logical value.
     #'
     has_settings = function(call = NULL) {
       if (is.null(call)) {
@@ -1175,35 +1152,29 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
     },
     
-    #' @description Checks if analyses are present.
-    #'
-    #' @return Logical value.
+    #' @description Checks if analyses are present, returning `TRUE` or `FALSE`.
     #'
     has_analyses = function() {
       length(private$.analyses) > 0
     },
     
-    #' @description Checks if modules data is present.
+    #' @description Checks if modules data is present, returning `TRUE` or `FALSE`.
     #' 
     #' @param names A string or a vector of strings with the name/s of the
     #' modules data. The actual names depends of the applied algorithms. For 
     #' instance, when algorithms via patRoon are used, the name of the module 
     #' data is patRoon.
     #'
-    #' @return Logical value.
-    #'
     has_modules_data = function(names = NULL) {
       if (is.null(names)) names <- names(private$.modules)
       length(private$.modules[names]) > 0
     },
     
-    
-    
     ## ___ plot -----
     
     ## ___ processing -----
     
-    #' @description Runs all modules represented by the added ProcessingSettings.
+    #' @description Runs all processing modules represented by added processing settings.
     #'
     #' @return Invisible.
     #'
@@ -1226,10 +1197,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     ## ___ save -----
     
-    #' @description Saves the headers list.
-    #'
-    #' @return Saves the headers list as the defined \code{format} in
-    #' \code{path} and returns invisible.
+    #' @description Saves the headers list as the defined \code{format} in \code{path} and returns invisible.
     #'
     save_headers = function(format = "json", name = "headers", path = getwd()) {
       if (format %in% "json") {
@@ -1257,14 +1225,11 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
     
-    #' @description Saves settings.
+    #' @description Saves  the settings list as the defined \code{format} in \code{path} and returns invisible.
     #'
     #' @param call A string or a vector of strings with the name/s of the
     #' processing method/s to be saved. When `call` is \code{NULL} all
     #' settings are saved.
-    #'
-    #' @return Saves the settings list as the defined \code{format} in
-    #' \code{path} and returns invisible.
     #'
     save_settings = function(call = NULL, format = "json", name = "settings", path = getwd()) {
       
@@ -1297,10 +1262,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
     
-    #' @description Saves analyses.
-    #'
-    #' @return Saves the list of analyses as the defined \code{format} in
-    #' \code{path} and returns invisible.
+    #' @description Saves the list of analyses as the defined \code{format} in \code{path} and returns invisible.
     #'
     save_analyses = function(analyses = NULL, format = "json", name = "analyses", path = getwd()) {
       
@@ -1332,10 +1294,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
     
-    #' @description Saves the private fields of the engine.
-    #'
-    #' @return Saves the private fields of the engine as the defined `format`
-    #' in the \code{path} and returns invisible.
+    #' @description Saves the data of the engine as the defined by `format` in the \code{path} and returns invisible.
     #'
     save = function(format = "json", name = "EngineData", path = getwd()) {
       
@@ -1381,8 +1340,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     ## ___ import -----
     
-    #' @description
-    #' Imports headers from a \emph{rds} or \emph{json} file.
+    #' @description Imports headers from a \emph{rds} or \emph{json} file.
     #'
     #' @return Invisible.
     #'
@@ -1399,8 +1357,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
     
-    #' @description
-    #' Imports processing settings from a \emph{rds} or \emph{json} file.
+    #' @description Imports processing settings from a \emph{rds} or \emph{json} file.
     #'
     #' @param replace Logical. When `TRUE`, existing settings are replaced by
     #' the new settings with the same call name.
@@ -1420,8 +1377,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
     
-    #' @description
-    #' Imports analyses from a \emph{rds} or \emph{json} file.
+    #' @description Imports analyses from an \emph{rds} or \emph{json} file.
     #'
     #' @return Invisible.
     #'
@@ -1439,10 +1395,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
     
-    #' @description
-    #' Imports a *CoreEngine* saved as \emph{json}.
+    #' @description Imports a CoreEngine saved as \emph{json} or \emph{rds}.
     #'
-    #' @param file A \emph{json} file representing a *CoreEngine*.
+    #' @param file A \emph{json} or \emph{rds} file representing a CoreEngine.
     #'
     #' @return Invisible.
     #'
@@ -1490,11 +1445,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     ### ___ processing_methods -----
     
-    #' @description
-    #' Available data processing methods.
-    #'
-    #' @return A data.table with the name and maximum permitted of available 
-    #' processing methods.
+    #' @description Data.table with available data processing methods.
     #'
     processing_methods = function() {
       data.table(name = character(), max = numeric())

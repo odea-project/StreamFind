@@ -60,7 +60,7 @@
 #' @template arg-ms-save-format
 #' @template arg-ms-save-name
 #' @template arg-ms-save-path
-#' @template arg-ms-import-file
+#' @template arg-import-file
 #' @template arg-ms-xlim-ylim
 #' @template arg-ms-cex
 #' @template arg-ms-showLegend
@@ -8816,7 +8816,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 #' @description Function to import a `MassSpecData` class object from a saved
 #' *json* or *rds* file.
 #'
-#' @template arg-ms-import-file
+#' @template arg-import-file
 #'
 #' @return A `MassSpecData` class object.
 #'

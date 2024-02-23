@@ -26,10 +26,8 @@
 
   eic[["polarity"]] <- NULL
 
-  fts <- self$get_features(filtered = TRUE)
-
-  fts <- fts[, c("analysis", "feature", "rt", "rtmin", "rtmax", "mz", "mzmin", "mzmax", "intensity", "filtered"), with = FALSE]
-
+  fts <- self$feature_list
+  
   if (nrow(eic) > 0) {
 
     analyses <- self$get_analysis_names()
@@ -43,11 +41,11 @@
       if (!is.null(quality)) {
         check <- vapply(names(quality),
           function(x, quality, fts) {
-            temp_i <- quality[[x]]$feature
-            temp_f <- fts[fts$analysis %in% x, ]
-            temp_f <- temp_f$feature
+            temp_i <- names(quality[[x]])
+            temp_f <- fts[[x]]$feature
             s_id <- all(temp_i %in% temp_f)
             all(s_id)
+            FALSE
           },
           quality = quality,
           fts = fts,
@@ -56,6 +54,7 @@
 
         if (all(check)) {
           cached_analyses <- TRUE
+          
         } else {
           quality <- NULL
         }
@@ -64,7 +63,7 @@
       hash <- NULL
       quality <- NULL
     }
-
+    
     if (parameters$runParallel && length(analyses) > 1 && !cached_analyses) {
       workers <- parallel::detectCores() - 1
       if (length(analyses) < workers) workers <- length(analyses)
@@ -88,17 +87,14 @@
         eic_t <- eic[eic$analysis %in% x, ]
         eic_t[["analysis"]] <- NULL
 
-        fts_t <- fts[fts$analysis %in% x, ]
-        fts_t[["analysis"]] <- NULL
-
-        list("a" = x, "e" = eic_t, "f" = fts_t)
+        list("a" = x, "e" = eic_t, "f" = fts[[x]])
 
       }, eic = eic, fts = fts)
-
+      
       i <- NULL
 
       quality <- foreach(i = fts_eics, .packages = c("data.table", "StreamFind")) %dopar% {
-
+        
         ana <- i$a
 
         ft_df <- as.data.frame(i$f)
@@ -127,7 +123,7 @@
         }
 
         its <- seq_len(nrow(ft_df))
-
+        
         for (it in its) {
 
           ft <- ft_df[it, ]
@@ -413,108 +409,14 @@
     } else {
       message("\U2139 Calculated features quality parameters loaded from cache!")
     }
-
-    if (self$has_modules_data("patRoon")) {
-      
-      pat_features <- self$features
-      
-      pat_feature_list <- pat_features@features
-      
-      pat_feature_list <- Map(
-        function(x, y) {
-          x[["quality"]] <- y
-          x
-        },
-        pat_feature_list, quality
-      )
-      
-      self$update_feature_list(pat_feature_list)
-      
-    } else {
-      warning("Features not found! Not done.")
-      return(FALSE)
-    }
-
-    TRUE
+    
+    features <- self$get_feature_list(filtered = TRUE)
+    
+    if (!is.logical(self$add_features_column("quality", quality, features))) return(TRUE)
 
   } else {
     warning("EIC traces from features not found! Not done.")
-    FALSE
   }
+  
+  FALSE
 }
-
-# .fit_model <- function(corrected_ints, pk_model_init) {
-#   tryCatch(
-#     {
-#       model <- nls(corrected_ints ~ gaussian(pk_x, A, mu, sigma),
-#         start = pk_model_init,
-#         control = list(warnOnly = TRUE)
-#       )
-#     },
-#     warning = function(w) {
-#       warning(paste0("Feature ", ft$feature, " in analysis ", ana, " has gaussian fit warning: ", conditionMessage(w)))
-#       fit_warning <<- TRUE
-#
-#       model <- nls(corrected_ints ~ gaussian(pk_x, A, mu, sigma),
-#         start = pk_model_init,
-#         control = list(warnOnly = TRUE)
-#       )
-#
-#       return(model)
-#     }
-#   )
-# }
-#
-# model <- .fit_model(corrected_ints, pk_model_init)
-
-# baseline_correction <- function(pk_ints, window_size) {
-#   smoothed <- filter(pk_ints, rep(1 / window_size, window_size), sides = 2)
-#   # baseline_corrected <- y - smoothed
-#   return(smoothed)
-# }
-# window_size <- 3
-# pk_ints <- baseline_correction(pk_ints, window_size)
-# pk_ints <- pk_ints[!is.na(pk_ints)]
-# plot(pk_ints)
-
-# bc <- baseline::baseline(matrix(pk_ints, nrow = 1), method = "als")
-# plot(baseline::getBaseline(bc)[1, ])
-# plot(pk_ints - baseline::getBaseline(bc)[1, ])
-# pk_ints <- pk_ints - baseline::getBaseline(bc)[1, ]
-
-# degree <- 4
-# poly_formula <- as.formula(paste("pk_ints ~ poly(pk_x,", degree, ")"))
-# model <- lm(poly_formula, data = data.frame(pk_x, pk_ints))
-# predicted_values <- predict(model, newdata = data.frame(pk_x))
-
-#summary_model <- summary(model)
-
-# half_width <- (ft$rtmax - ft$rtmin) / 2 # adds slight extra width to the feature
-#
-# out_ft <- et[et$rt <= ft$rtmin & et$rt >= ft$rtmin - half_width | et$rt >= ft$rtmax & et$rt <= ft$rtmax + half_width, ]
-#
-# if (nrow(out_ft) > 0) {
-#   other_ft <- ft_df_all[
-#     ft_df_all$rtmax >= min(out_ft$rt) & ft_df_all$mz >= ft$mzmin & ft_df_all$mz <= ft$mzmax  |
-#     ft_df_all$rtmin <= max(out_ft$rt) & ft_df_all$mz >= ft$mzmin & ft_df_all$mz <= ft$mzmax
-#   ]
-#
-#   if (nrow(other_ft) > 0) {
-#     for (it2 in seq_len(nrow(other_ft))) {
-#       out_ft <- out_ft[!(out_ft$rt >= other_ft$rtmin[it2] & out_ft$rt <= other_ft$rtmax[it2]), ]
-#     }
-#   }
-# }
-# #estimated sn based on lower ends of the pk
-# if (TRUE | nrow(out_ft) == 0) {
-#   noise <- mean(sort(pk_ft$intensity)[seq_len(nrow(pk_ft) - nrow(pk_eic))])
-#   results$qlt_sn[it] <- round(ft$intensity / noise, digits = 1)
-#   results$qlt_noise[it] <- round(noise, digits = 0)
-#
-# #estimated sn from outer traces
-# } else {
-#   noise <- quantile(out_ft$intensity, probs = seq(0, 1, 0.25))[3]
-#   # noise <- mean(out_ft$intensity)
-#   results$qlt_sn[it] <- round(ft$intensity / noise, digits = 1)
-#   results$qlt_noise[it] <- round(noise, digits = 0)
-# }

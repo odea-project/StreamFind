@@ -12,7 +12,7 @@
     return(FALSE)
   }
 
-  features <- self$get_feature_list()
+  features <- self$feature_list
   
   features <- lapply(features, function(x) {
     x$index <- seq_len(nrow(x))
@@ -75,8 +75,6 @@
     message("\U2139 Features annotation loaded from cache!")
   }
   
-  iso_group_count <- 0
-  
   iso_col <- lapply(names(isotopes), function(x, isotopes, features) {
     
     temp_i <- isotopes[[x]]$output2
@@ -98,16 +96,7 @@
     if (!identical(names(temp_i), temp_f_fts)) {
       stop("Annotated features do not match features!")
     }
-    
-    temp_max_gr <- max(vapply(temp_i, function(x) x$cluster, 0))
-    
-    temp_i <- lapply(temp_i, function(x, iso_group_count) {
-      x$cluster <- x$cluster + iso_group_count
-      x
-    }, iso_group_count = iso_group_count)
-    
-    iso_group_count <<- iso_group_count + temp_max_gr
-    
+
     temp_i
   },
   isotopes = isotopes,
@@ -116,26 +105,7 @@
   
   names(iso_col) <- names(features)
   
-  if (self$has_modules_data("patRoon")) {
-    
-    pat_features <- self$features
-    
-    pat_feature_list <- pat_features@features
-    
-    pat_feature_list <- Map(
-      function(x, y) {
-        x[["isotope"]] <- y
-        x
-      },
-      pat_feature_list, iso_col
-    )
-    
-   self$update_feature_list(pat_feature_list)
-    
-  } else {
-    warning("Features not found! Not done.")
-    return(FALSE)
-  }
+  if (!is.logical(self$add_features_column("isotope", iso_col, features))) return(TRUE)
   
-  TRUE
+  FALSE
 }

@@ -93,15 +93,17 @@
     
     if (!any(self$has_features())) return(FALSE)
     
-    analyses <- self$get_analyses()
+    features <- self$get_feature_list(filtered = TRUE)
 
-    analyses <- lapply(analyses, function(x, internal_standards_l) {
+    istd_col <- lapply(names(features), function(x, features, internal_standards_l) {
       
-      istd <- internal_standards_l[[x$name]]
+      istd <- internal_standards_l[[x]]
+      
+      fts <- features[[x]]
       
       if (!is.null(istd)) {
 
-        istd_l <- lapply(x$features$feature, function(z, istd) {
+        istd_l <- lapply(fts$feature, function(z, istd) {
 
           istd_idx <- which(istd$feature %in% z)
 
@@ -120,40 +122,17 @@
 
         }, istd = istd)
 
-        x$features$istd <- istd_l
+        istd_l
 
       } else {
-        x$features$istd <- lapply(x$features$feature, function(x) NULL)
+        lapply(fts$feature, function(x) NULL)
       }
       
-      
-      # x$features[["istd_name"]] <- NA_character_
-      # x$features[["istd_rte"]] <- NA_real_
-      # x$features[["istd_mze"]] <- NA_real_
-      # x$features[["istd_rec"]] <- NA_real_
-      # 
-      # 
-      # if (!is.null(istd)) {
-      #   for (i in seq_len(nrow(istd))) {
-      #     ft_idx <- which(x$features$feature %in% istd$feature[i])
-      #     x$features$istd_name[ft_idx] <- istd$name[i]
-      #     x$features$istd_rte[ft_idx] <- istd$error_rt[i]
-      #     x$features$istd_mze[ft_idx] <- istd$error_mass[i]
-      #     x$features$istd_rec[ft_idx] <- istd$rec[i] 
-      #   }
-      # }
-      
-      x
-      
-    }, internal_standards_l = internal_standards_l)
+    }, features = features, internal_standards_l = internal_standards_l)
     
-    features <- lapply(analyses, function(x) x$features)
+    names(istd_col) <- names(features)
     
-    suppressMessages(self$add_features(features, replace = TRUE))
-    
-    if ("istd" %in% colnames(self$get_features())) {
-      
-      # self$InternalStandards <- .module_methods_InternalStandards(self$.__enclos_env__)
+    if (!is.logical(self$add_features_column("istd", istd_col, features))) {
       
       message("\U2713 ", length(unique(internal_standards$name)), " internal standards found and tagged!")
       
@@ -167,55 +146,3 @@
     FALSE
   }
 }
-
-# .module_methods_InternalStandards <- function(env) {
-# 
-#   out <- list()
-# 
-#   out[["get"]] <- function() {
-#     istd <- self$get_features(filtered = TRUE)
-# 
-#     if ("istd_name" %in% colnames(istd)) {
-# 
-#       istd <- istd[!is.na(istd$istd_name), ]
-# 
-#       if (nrow(istd) > 0) {
-# 
-#         setnames(istd,
-#                  c("istd_name", "istd_rte", "istd_mze", "istd_rec"),
-#                  c("name", "rte", "mze","rec")
-#         )
-# 
-#         cols <- c(
-#           "name",
-#           "intensity",
-#           "area",
-#           "rte",
-#           "mze",
-#           "rec",
-#           "analysis",
-#           "feature",
-#           "group"
-#         )
-# 
-#         istd <- istd[, cols, with = FALSE]
-# 
-#         setorder(istd, "name")
-# 
-#         istd
-# 
-#       } else {
-#         warning("Internal standards not found!")
-#       }
-# 
-#     } else {
-#       warning("Not present! Run find_internal_standards method to tag the internal standards!")
-#     }
-#   }
-# 
-#   environment(out[["get"]]) <- env
-# 
-#   
-#   
-#   out
-# }

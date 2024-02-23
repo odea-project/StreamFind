@@ -1264,6 +1264,110 @@ validate.Settings_load_features_eic_StreamFind <- function(x) {
   )
 }
 
+#' @title Settings_load_MSPeakLists_patRoon
+#'
+#' @description Settings for loading MS2 and MS1 spectra for feature groups.
+#'
+#' @param useLoaded Logical of length one. When `TRUE` and both MS1 and MS2 are loaded to features, 
+#' these are used otherwise the native function `generateMSPeakLists` from \pkg{patRoon} is used instead.
+#' @param maxMSRtWindow Maximum chromatographic peak window used for spectrum 
+#' averaging (in seconds, +/- retention time). If NULL all spectra from a feature 
+#' will be taken into account. Lower to decrease processing time.
+#' @param precursorMzWindow The m/z window (in Da) to find MS/MS spectra of a precursor. 
+#' This is typically used for Data-Dependent like MS/MS data and should correspond to the 
+#' isolation m/z window (i.e. +/- the precursor m/z) that was used to collect the data. 
+#' For Data-Independent MS/MS experiments, where precursor ions are not isolated prior to 
+#' fragmentation (e.g. bbCID, MSe, all-ion, ...) the value should be NULL.
+#' @param clusterMzWindow m/z window (in Da) used for clustering m/z values
+#' when spectra are averaged. For method="hclust" this corresponds to the
+#' cluster height, while for method="distance" this value is used to find
+#' nearby masses (+/- window). Too small windows will prevent clustering
+#' m/z values (thus erroneously treating equal masses along spectra as
+#' different), whereas too big windows may cluster unrelated m/z values
+#' from different or even the same spectrum together.
+#' @param topMost Only retain this maximum number of MS peaks when generating
+#' averaged spectra. Lowering this number may exclude more irrelevant (noisy)
+#' MS peaks and decrease processing time, whereas higher values may avoid
+#' excluding lower intense MS peaks that may still be of interest.
+#' @param minIntensityPre MS peaks with intensities below this value will
+#' be removed (applied prior to selection by `topMost`) before averaging.
+#' @param minIntensityPost MS peaks with intensities below this value will
+#' be removed after averaging.
+#' @param avgFun Function that is used to calculate average m/z values.
+#' @param method Method used for producing averaged MS spectra. Valid
+#' values are "hclust", used for hierarchical clustering (using the
+#' fastcluster package), and "distance", to use the between peak distance.
+#' The latter method may reduces processing time and memory requirements,
+#' at the potential cost of reduced accuracy.
+#' @param pruneMissingPrecursorMS For MS data only: if TRUE then peak lists
+#' without a precursor peak are removed. Note that even when this is set to
+#' FALSE, functionality that relies on MS (not MS/MS) peak lists (e.g.
+#' formulae calculation) will still skip calculation if a precursor is not
+#' found.
+#' @param retainPrecursorMSMS For MS/MS data only: if TRUE then always
+#' retain the precursor mass peak even if is not among the `topMost` peaks.
+#' Note that MS precursor mass peaks are always kept. Furthermore, note
+#' that precursor peaks in both MS and MS/MS data may still be removed by
+#' intensity thresholds (this is unlike the filter method function).
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_load_MSPeakLists_patRoon.
+#'
+#' @export
+#'
+Settings_load_MSPeakLists_patRoon <- function(
+    useLoaded = FALSE,
+    maxMSRtWindow = 5,
+    precursorMzWindow = 4,
+    clusterMzWindow = 0.005,
+    topMost = 100,
+    minIntensityPre = 50,
+    minIntensityPost = 50,
+    avgFun = mean,
+    method = "hclust",
+    retainPrecursorMSMS = TRUE) {
+  
+  settings <- list(
+    call = "load_MSPeakLists",
+    algorithm = "patRoon",
+    parameters = list(
+      useLoaded = useLoaded,
+      maxMSRtWindow = maxMSRtWindow,
+      precursorMzWindow = precursorMzWindow,
+      clusterMzWindow = clusterMzWindow,
+      topMost = topMost,
+      minIntensityPre = minIntensityPre,
+      minIntensityPost = minIntensityPost,
+      avgFun = avgFun,
+      method = method,
+      retainPrecursorMSMS = retainPrecursorMSMS
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "patRoon",
+    developer = "Ricardo Cunha and Rick Helmus",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  
+  settings <- as.ProcessingSettings(settings)
+  
+  return(settings)
+}
+
+#' @describeIn Settings_load_MSPeakLists_patRoon
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_load_MSPeakLists_patRoon S3 class object.
+#'
+#' @export
+#'
+validate.Settings_load_MSPeakLists_patRoon <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "load_MSPeakLists"),
+    checkmate::test_choice(x$algorithm, "patRoon")
+  )
+}
+
 ## filter_features -----
 
 #' @title Settings_filter_features_StreamFind
@@ -1999,8 +2103,7 @@ validate.Settings_find_internal_standards_StreamFind <- function(x) {
 
 #' @title Settings_calculate_quality_StreamFind
 #'
-#' @description
-#' Settings for calculating quality parameters of features (e.g., signal-to-noise (sn) ratio).
+#' @description Settings for calculating quality parameters of features (e.g., signal-to-noise (sn) ratio).
 #'
 #' @template arg-ms-rtExpand
 #' @template arg-ms-mzExpand
@@ -2066,16 +2169,34 @@ validate.Settings_calculate_quality_StreamFind <- function(x) {
 
 # generate_formulas -----
 
-#' @title Settings_generate_formulas_GenForm
+#' @title Settings_generate_formulas_genform
 #'
-#' @description
-#' Settings for generating formulas using the algorithm 
+#' @description Settings for generating formulas using the algorithm 
 #' \href{https://sourceforge.net/projects/genform/}{GenForm}. 
 #' The algorithm is used via the function \link[patRoon]{generateFormulas} 
 #' from the package \pkg{patRoon}.
+#' 
+#' @param relMzDev 
+#' @param elements 
+#' @param hetero 
+#' @param oc 
+#' @param thrMS 
+#' @param thrMSMS 
+#' @param thrComb 
+#' @param maxCandidates 
+#' @param extraOpts 
+#' @param calculateFeatures 
+#' @param featThreshold 
+#' @param featThresholdAnn 
+#' @param absAlignMzDev 
+#' @param MSMode 
+#' @param isolatePrec 
+#' @param timeout 
+#' @param topMost 
+#' @param batchSize 
+#' 
 #'
-#' @return A ProcessingSettings S3 class object with subclass
-#' Settings_generate_formulas_GenForm.
+#' @return A ProcessingSettings S3 class object with subclass Settings_generate_formulas_genform.
 #' 
 #' @references
 #' \insertRef{patroon01}{StreamFind}
@@ -2086,12 +2207,48 @@ validate.Settings_calculate_quality_StreamFind <- function(x) {
 #'
 #' @export
 #'
-Settings_generate_formulas_GenForm <- function() {
+Settings_generate_formulas_genform <- function(relMzDev = 5,
+                                               elements = "CHNOP",
+                                               hetero = TRUE,
+                                               oc = FALSE,
+                                               thrMS = NULL,
+                                               thrMSMS = NULL,
+                                               thrComb = NULL,
+                                               maxCandidates = Inf,
+                                               extraOpts = NULL,
+                                               calculateFeatures = TRUE,
+                                               featThreshold = 0,
+                                               featThresholdAnn = 0.75,
+                                               absAlignMzDev = 0.002,
+                                               MSMode = "both",
+                                               isolatePrec = TRUE,
+                                               timeout = 120,
+                                               topMost = 50,
+                                               batchSize = 8) {
   
   settings <- list(
     call = "generate_formulas",
-    algorithm = "GenForm",
-    parameters = list(),
+    algorithm = "genform",
+    parameters = list(
+      relMzDev = relMzDev,
+      elements = elements,
+      hetero = hetero,
+      oc = oc,
+      thrMS = thrMS,
+      thrMSMS = thrMSMS,
+      thrComb = thrComb,
+      maxCandidates = maxCandidates,
+      extraOpts = extraOpts,
+      calculateFeatures = calculateFeatures,
+      featThreshold = featThreshold,
+      featThresholdAnn = featThresholdAnn,
+      absAlignMzDev = absAlignMzDev,
+      MSMode = MSMode,
+      isolatePrec = isolatePrec,
+      timeout = timeout,
+      topMost = topMost,
+      batchSize = batchSize
+    ),
     version = as.character(packageVersion("patRoon")),
     software = "GenForm",
     developer = "Markus Meringer",
@@ -2105,32 +2262,48 @@ Settings_generate_formulas_GenForm <- function() {
   return(settings)
 }
 
-#' @describeIn Settings_generate_formulas_GenForm
+#' @describeIn Settings_generate_formulas_genform
 #' Validates the object structure, returning a logical value of length one.
 #'
-#' @param x A Settings_generate_formulas_GenForm S3 class object.
+#' @param x A Settings_generate_formulas_genform S3 class object.
 #'
 #' @export
 #'
-validate.Settings_generate_formulas_GenForm <- function(x) {
+validate.Settings_generate_formulas_genform <- function(x) {
   all(
     checkmate::test_choice(x$call, "generate_formulas"),
-    checkmate::test_choice(x$algorithm, "GenForm")
+    checkmate::test_choice(x$algorithm, "genform")
   )
 }
 
 # generate_compounds -----
 
-#' @title Settings_generate_compounds_MetFrag
+#' @title Settings_generate_compounds_metfrag
 #'
-#' @description
-#' Settings for generating compounds using 
-#' \href{https://ipb-halle.github.io/MetFrag/}{MetFrag}. 
-#' The algorithm is used via the function \link[patRoon]{generateCompounds} 
-#' from the package \pkg{patRoon}.
+#' @description Settings for generating compounds using \href{https://ipb-halle.github.io/MetFrag/}{MetFrag}. 
+#' The algorithm is used via the function \link[patRoon]{generateCompounds} from the package \pkg{patRoon}.
+#' 
+#' @param method 
+#' @param timeout 
+#' @param timeoutRetries 
+#' @param errorRetries 
+#' @param topMost 
+#' @param dbRelMzDev 
+#' @param fragRelMzDev 
+#' @param fragAbsMzDev 
+#' @param adduct 
+#' @param database 
+#' @param extendedPubChem 
+#' @param chemSpiderToken 
+#' @param scoreTypes 
+#' @param scoreWeights 
+#' @param preProcessingFilters 
+#' @param postProcessingFilters 
+#' @param maxCandidatesToStop 
+#' @param identifiers 
+#' @param extraOpts 
 #'
-#' @return A ProcessingSettings S3 class object with subclass
-#' Settings_generate_compounds_MetFrag.
+#' @return A ProcessingSettings S3 class object with subclass Settings_generate_compounds_metfrag.
 #' 
 #' @references
 #' 
@@ -2148,12 +2321,50 @@ validate.Settings_generate_formulas_GenForm <- function(x) {
 #'
 #' @export
 #'
-Settings_generate_compounds_MetFrag <- function() {
+Settings_generate_compounds_metfrag <- function(method = "CL",
+                                                timeout = 300,
+                                                timeoutRetries = 5,
+                                                errorRetries = 5,
+                                                topMost = 5,
+                                                dbRelMzDev = 8,
+                                                fragRelMzDev = 10,
+                                                fragAbsMzDev = 0.002,
+                                                adduct = NULL,
+                                                database = "comptox",
+                                                extendedPubChem = "auto",
+                                                chemSpiderToken = "",
+                                                scoreTypes = patRoon::compoundScorings("metfrag", "comptox", onlyDefault = TRUE)$name,
+                                                scoreWeights = 1,
+                                                preProcessingFilters = c("UnconnectedCompoundFilter", "IsotopeFilter"),
+                                                postProcessingFilters = c("InChIKeyFilter"),
+                                                maxCandidatesToStop = 100,
+                                                identifiers = NULL,
+                                                extraOpts = NULL) {
   
   settings <- list(
     call = "generate_compounds",
-    algorithm = "MetFrag",
-    parameters = list(),
+    algorithm = "metfrag",
+    parameters = list(
+      method = method,
+      timeout = timeout,
+      timeoutRetries = timeoutRetries,
+      errorRetries = errorRetries,
+      topMost = topMost,
+      dbRelMzDev = dbRelMzDev,
+      fragRelMzDev = fragRelMzDev,
+      fragAbsMzDev = fragAbsMzDev,
+      adduct = adduct,
+      database = database,
+      extendedPubChem = extendedPubChem,
+      chemSpiderToken = chemSpiderToken,
+      scoreTypes = scoreTypes,
+      scoreWeights = scoreWeights,
+      preProcessingFilters = preProcessingFilters,
+      postProcessingFilters = postProcessingFilters,
+      maxCandidatesToStop = maxCandidatesToStop,
+      identifiers = identifiers,
+      extraOpts = extraOpts
+    ),
     version = as.character(packageVersion("patRoon")),
     software = "MetFrag",
     developer = "Christoph Ruttkies and Emma L. Schymanski",
@@ -2167,16 +2378,16 @@ Settings_generate_compounds_MetFrag <- function() {
   return(settings)
 }
 
-#' @describeIn Settings_generate_compounds_MetFrag
+#' @describeIn Settings_generate_compounds_metfrag
 #' Validates the object structure, returning a logical value of length one.
 #'
-#' @param x A Settings_generate_compounds_MetFrag S3 class object.
+#' @param x A Settings_generate_compounds_metfrag S3 class object.
 #'
 #' @export
 #'
-validate.Settings_generate_compounds_MetFrag <- function(x) {
+validate.Settings_generate_compounds_metfrag <- function(x) {
   all(
     checkmate::test_choice(x$call, "generate_compounds"),
-    checkmate::test_choice(x$algorithm, "MetFrag")
+    checkmate::test_choice(x$algorithm, "metfrag")
   )
 }

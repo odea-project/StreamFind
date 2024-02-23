@@ -7,8 +7,7 @@
 import_MassSpecEngine(file)
 }
 \arguments{
-\item{file}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
-method \code{save()}.}
+\item{file}{A \emph{json} or \emph{rds} file to be imported.}
 }
 \value{
 A \code{MassSpecEngine} class object.

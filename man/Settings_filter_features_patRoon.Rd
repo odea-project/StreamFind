@@ -37,7 +37,6 @@ Settings_filter_features_patRoon(
   removeBlanks = FALSE,
   removeISTDs = FALSE,
   checkFeaturesSession = NULL,
-  predAggrParams = patRoon::getDefPredAggrParams(),
   removeNA = FALSE,
   negate = FALSE
 )
@@ -57,9 +56,12 @@ description of the filtering parameters is described in
 \code{\link[patRoon]{replicateGroupSubtract}} from patRoon package.
 }
 \details{
-Note when filters are applied to features or feature groups so that
-the processing settings are applied accordingly. Also, some filters require
-that other processing methods are applied first so that results are present.
+Note that when filters are applied to features or feature groups
+these require specific results from processing modules. For instance,
+subtracting the blank can only be done after grouping features. Also, some
+filters require. Thus, not all filters can be applied to features.
+See \code{\link[patRoon]{features-class}} and \code{\link[patRoon]{replicateGroupSubtract}}
+for further information.
 }
 \section{Methods (by generic)}{
 \itemize{

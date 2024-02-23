@@ -191,6 +191,11 @@ print.ProcessingSettings <- function(x, ...) {
               cat("      - ", names(x$parameters[[i]])[i2], x$parameters[[i]][[i2]], "\n")
             }
 
+          } else if ("function" %in% is(x$parameters[[i]])) {
+            cat("  - ", names(x$parameters)[i])
+            quote(x$parameters[[i]])
+            cat("\n")
+            
           } else {
             cat("  - ", names(x$parameters)[i], x$parameters[[i]], "\n")
           }
@@ -223,6 +228,11 @@ print.ProcessingSettings <- function(x, ...) {
           for (i2 in seq_len(length(x$parameters[[i]]))) {
             cat("      - ", names(x$parameters[[i]])[i2], x$parameters[[i]][[i2]], "\n")
           }
+          
+        } else if ("function" %in% is(x$parameters[[i]])) {
+          cat("  - ", names(x$parameters)[i], ":\n")
+          print(x$parameters[[i]])
+          cat("\n")
           
         } else {
           cat("  - ", names(x$parameters)[i], x$parameters[[i]], "\n")

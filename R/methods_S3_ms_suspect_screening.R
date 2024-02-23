@@ -32,7 +32,7 @@
     
     if (!any(self$has_features())) return(FALSE)
     
-    features <- self$get_feature_list()
+    features <- self$get_feature_list(filtered = settings$parameters$filtered)
     
     sus_col <- lapply(names(features), function(x, features, suspect_features_l, suspect_cols) {
       
@@ -72,26 +72,7 @@
     
     names(sus_col) <- names(features)
     
-    if (self$has_modules_data("patRoon")) {
-      
-      pat_features <- self$features
-      
-      pat_feature_list <- pat_features@features
-      
-      pat_feature_list <- Map(
-        function(x, y) {
-          x[["suspects"]] <- y
-          x
-        },
-        pat_feature_list, sus_col
-      )
-      
-      self$update_feature_list(pat_feature_list)
-      
-    } else {
-      warning("Features not found! Not done.")
-      return(FALSE)
-    }
+    if (!is.logical(self$add_features_column("suspects", sus_col, features))) return(TRUE)
     
     TRUE
     
@@ -237,13 +218,35 @@
 #'
 .s3_ms_suspect_screening.Settings_suspect_screening_patRoon <- function(settings, self) {
   
+  if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
+    warning("patRoon package not found! Install it for finding features.")
+    return(FALSE)
+  }
+  
   if (!validate(settings)) return(FALSE)
   
   parameters <- settings$parameters
   
-  fg <- self$as_patRoon_featureGroups(filtered = parameters$filtered)
+  algorithm <- settings$algorithm
   
-  if (is.null(fg)) return(FALSE)
+  fg <- self$featureGroups
+  
+  if (is.null(fg)) {
+    warning("Feature groups not found! Not done.")
+    return(FALSE)
+  }
+  
+  mspl <- self$MSPeakLists
+  
+  if (is.null(mspl)) {
+    warning("MSPeakLists not found! Use the load_MSPeakLists to load MS1 and MS2 data. Not done.")
+    return(FALSE)
+  }
+  
+
+  
+  
+  
   
   res <- patRoon::screenSuspects(
     fGroups = fg,

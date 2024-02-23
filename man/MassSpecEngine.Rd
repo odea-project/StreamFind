@@ -4,10 +4,9 @@
 \alias{MassSpecEngine}
 \title{\strong{MassSpecEngine} R6 class and methods}
 \description{
-The \emph{MassSpecEngine} R6 class is a framework for parsing, processing,
-inspecting and storing mass spectrometry (MS) data. The \emph{MassSpecEngine} is
-using \href{https://github.com/rickhelmus/patRoon}{patRoon} for assembly of
-workflows Non-Target Screening data processing workflows.
+The MassSpecEngine R6 class is a framework for parsing, processing, inspecting and storing
+mass spectrometry (MS) data. The MassSpecEngine is using \href{https://github.com/rickhelmus/patRoon}{patRoon} for
+assembly of Non-Target Screening data processing workflows.
 }
 \references{
 \insertRef{patroon01}{StreamFind}
@@ -24,6 +23,27 @@ workflows Non-Target Screening data processing workflows.
 \describe{
 \item{\code{help}}{(\code{list()})\cr
 List of function elements to access specific reference help pages.}
+}
+\if{html}{\out{</div>}}
+}
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
+\describe{
+\item{\code{analysisInfo}}{description description The analysisInfo data.frame with the list of analyses.}
+
+\item{\code{features}}{The features S4 class object from patRoon.}
+
+\item{\code{filtered_features}}{The filtered features as list of data.table objects for each analysis.}
+
+\item{\code{feature_list}}{List of feature data.table objects for each analysis.}
+
+\item{\code{featureGroups}}{The featureGroups S4 class object from patRoon.}
+
+\item{\code{MSPeakLists}}{The MSPeakLists S4 class object from patRoon.}
+
+\item{\code{formulas}}{The formulas S4 class object from patRoon.}
+
+\item{\code{compounds}}{The compounds S4 class object from patRoon.}
 }
 \if{html}{\out{</div>}}
 }
@@ -61,21 +81,24 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-get_groups}{\code{MassSpecEngine$get_groups()}}
 \item \href{#method-MassSpecEngine-get_groups_ms1}{\code{MassSpecEngine$get_groups_ms1()}}
 \item \href{#method-MassSpecEngine-get_groups_ms2}{\code{MassSpecEngine$get_groups_ms2()}}
-\item \href{#method-MassSpecEngine-get_groups_coverage}{\code{MassSpecEngine$get_groups_coverage()}}
+\item \href{#method-MassSpecEngine-get_MSPeakLists}{\code{MassSpecEngine$get_MSPeakLists()}}
 \item \href{#method-MassSpecEngine-get_isotopes}{\code{MassSpecEngine$get_isotopes()}}
 \item \href{#method-MassSpecEngine-get_suspects}{\code{MassSpecEngine$get_suspects()}}
 \item \href{#method-MassSpecEngine-get_internal_standards}{\code{MassSpecEngine$get_internal_standards()}}
 \item \href{#method-MassSpecEngine-add_analyses}{\code{MassSpecEngine$add_analyses()}}
 \item \href{#method-MassSpecEngine-add_files}{\code{MassSpecEngine$add_files()}}
+\item \href{#method-MassSpecEngine-add_replicate_names}{\code{MassSpecEngine$add_replicate_names()}}
+\item \href{#method-MassSpecEngine-add_blank_names}{\code{MassSpecEngine$add_blank_names()}}
 \item \href{#method-MassSpecEngine-add_spectra}{\code{MassSpecEngine$add_spectra()}}
-\item \href{#method-MassSpecEngine-add_features_eic}{\code{MassSpecEngine$add_features_eic()}}
-\item \href{#method-MassSpecEngine-add_features}{\code{MassSpecEngine$add_features()}}
-\item \href{#method-MassSpecEngine-add_groups}{\code{MassSpecEngine$add_groups()}}
+\item \href{#method-MassSpecEngine-add_modules_data}{\code{MassSpecEngine$add_modules_data()}}
+\item \href{#method-MassSpecEngine-add_features_column}{\code{MassSpecEngine$add_features_column()}}
 \item \href{#method-MassSpecEngine-load_spectra}{\code{MassSpecEngine$load_spectra()}}
 \item \href{#method-MassSpecEngine-load_chromatograms}{\code{MassSpecEngine$load_chromatograms()}}
 \item \href{#method-MassSpecEngine-load_features_eic}{\code{MassSpecEngine$load_features_eic()}}
 \item \href{#method-MassSpecEngine-load_features_ms1}{\code{MassSpecEngine$load_features_ms1()}}
 \item \href{#method-MassSpecEngine-load_features_ms2}{\code{MassSpecEngine$load_features_ms2()}}
+\item \href{#method-MassSpecEngine-load_MSPeakLists}{\code{MassSpecEngine$load_MSPeakLists()}}
+\item \href{#method-MassSpecEngine-remove_analyses}{\code{MassSpecEngine$remove_analyses()}}
 \item \href{#method-MassSpecEngine-remove_features}{\code{MassSpecEngine$remove_features()}}
 \item \href{#method-MassSpecEngine-remove_features_ms1}{\code{MassSpecEngine$remove_features_ms1()}}
 \item \href{#method-MassSpecEngine-remove_features_ms2}{\code{MassSpecEngine$remove_features_ms2()}}
@@ -86,12 +109,15 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-has_ion_mobility}{\code{MassSpecEngine$has_ion_mobility()}}
 \item \href{#method-MassSpecEngine-has_loaded_spectra}{\code{MassSpecEngine$has_loaded_spectra()}}
 \item \href{#method-MassSpecEngine-has_loaded_chromatograms}{\code{MassSpecEngine$has_loaded_chromatograms()}}
+\item \href{#method-MassSpecEngine-has_features}{\code{MassSpecEngine$has_features()}}
+\item \href{#method-MassSpecEngine-has_groups}{\code{MassSpecEngine$has_groups()}}
 \item \href{#method-MassSpecEngine-has_loaded_features_ms1}{\code{MassSpecEngine$has_loaded_features_ms1()}}
 \item \href{#method-MassSpecEngine-has_loaded_features_ms2}{\code{MassSpecEngine$has_loaded_features_ms2()}}
 \item \href{#method-MassSpecEngine-has_features_eic}{\code{MassSpecEngine$has_features_eic()}}
-\item \href{#method-MassSpecEngine-has_features}{\code{MassSpecEngine$has_features()}}
 \item \href{#method-MassSpecEngine-has_suspects}{\code{MassSpecEngine$has_suspects()}}
-\item \href{#method-MassSpecEngine-has_groups}{\code{MassSpecEngine$has_groups()}}
+\item \href{#method-MassSpecEngine-has_MSPeakLists}{\code{MassSpecEngine$has_MSPeakLists()}}
+\item \href{#method-MassSpecEngine-has_formulas}{\code{MassSpecEngine$has_formulas()}}
+\item \href{#method-MassSpecEngine-has_compounds}{\code{MassSpecEngine$has_compounds()}}
 \item \href{#method-MassSpecEngine-plot_spectra}{\code{MassSpecEngine$plot_spectra()}}
 \item \href{#method-MassSpecEngine-plot_chromatograms}{\code{MassSpecEngine$plot_chromatograms()}}
 \item \href{#method-MassSpecEngine-plot_xic}{\code{MassSpecEngine$plot_xic()}}
@@ -121,13 +147,15 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-find_internal_standards}{\code{MassSpecEngine$find_internal_standards()}}
 \item \href{#method-MassSpecEngine-suspect_screening}{\code{MassSpecEngine$suspect_screening()}}
 \item \href{#method-MassSpecEngine-calculate_quality}{\code{MassSpecEngine$calculate_quality()}}
+\item \href{#method-MassSpecEngine-generate_formulas}{\code{MassSpecEngine$generate_formulas()}}
+\item \href{#method-MassSpecEngine-generate_compounds}{\code{MassSpecEngine$generate_compounds()}}
 \item \href{#method-MassSpecEngine-as_patRoon_features}{\code{MassSpecEngine$as_patRoon_features()}}
 \item \href{#method-MassSpecEngine-as_patRoon_featureGroups}{\code{MassSpecEngine$as_patRoon_featureGroups()}}
 \item \href{#method-MassSpecEngine-as_patRoon_MSPeakLists}{\code{MassSpecEngine$as_patRoon_MSPeakLists()}}
 \item \href{#method-MassSpecEngine-check_correspondence}{\code{MassSpecEngine$check_correspondence()}}
 \item \href{#method-MassSpecEngine-save}{\code{MassSpecEngine$save()}}
 \item \href{#method-MassSpecEngine-import}{\code{MassSpecEngine$import()}}
-\item \href{#method-MassSpecEngine-patRoon_report}{\code{MassSpecEngine$patRoon_report()}}
+\item \href{#method-MassSpecEngine-report}{\code{MassSpecEngine$report()}}
 \item \href{#method-MassSpecEngine-processing_methods}{\code{MassSpecEngine$processing_methods()}}
 \item \href{#method-MassSpecEngine-clone}{\code{MassSpecEngine$clone()}}
 }
@@ -135,11 +163,8 @@ List of function elements to access specific reference help pages.}
 \if{html}{\out{
 <details><summary>Inherited methods</summary>
 <ul>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_blank_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_blank_names'><code>StreamFind::CoreEngine$add_blank_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_headers'><code>StreamFind::CoreEngine$add_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_metadata"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_metadata'><code>StreamFind::CoreEngine$add_metadata()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_modules_data"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_modules_data'><code>StreamFind::CoreEngine$add_modules_data()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_replicate_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_replicate_names'><code>StreamFind::CoreEngine$add_replicate_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_settings'><code>StreamFind::CoreEngine$add_settings()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_analyses'><code>StreamFind::CoreEngine$get_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_analysis_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_analysis_names'><code>StreamFind::CoreEngine$get_analysis_names()</code></a></span></li>
@@ -165,7 +190,6 @@ List of function elements to access specific reference help pages.}
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_analyses'><code>StreamFind::CoreEngine$print_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_headers'><code>StreamFind::CoreEngine$print_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_workflow'><code>StreamFind::CoreEngine$print_workflow()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_analyses'><code>StreamFind::CoreEngine$remove_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_headers'><code>StreamFind::CoreEngine$remove_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_settings'><code>StreamFind::CoreEngine$remove_settings()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_workflow'><code>StreamFind::CoreEngine$run_workflow()</code></a></span></li>
@@ -179,7 +203,7 @@ List of function elements to access specific reference help pages.}
 \if{html}{\out{<a id="method-MassSpecEngine-new"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-new}{}}}
 \subsection{Method \code{new()}}{
-Creates an R6 \emph{MassSpecEngine} class object.
+Creates an R6 MassSpecEngine class object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$new(
   files = NULL,
@@ -208,15 +232,12 @@ character length 1), path (must be type character length 1) and date (must
 be class POSIXct or class POSIXt length 1). See more information in
 \code{?ProjectHeaders}.}
 
-\item{\code{settings}}{A named list of ProcessingSettings objects or a
-single ProcessingSettings object. The list names should match
-the call name of each ProcessingSettings object. Alternatively, a named
-list with call name, algorithm and parameters to be transformed and added
-as ProcessingSettings object.}
+\item{\code{settings}}{A named list of ProcessingSettings objects or a single ProcessingSettings object. The list
+names should match the call name of each ProcessingSettings object. Alternatively, a named list with call name,
+algorithm and parameters to be transformed and added as ProcessingSettings object.}
 
-\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
-MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis}
-for more information).}
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with MassSpecAnalysis S3 class objects as
+elements (see \code{?MassSpecAnalysis} for more information).}
 
 \item{\code{modules}}{A named list of objects from processing modules.}
 
@@ -227,24 +248,18 @@ overhead.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A new \code{MassSpecEngine} class object.
+A new MassSpecEngine class object.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_overview"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_overview}{}}}
 \subsection{Method \code{get_overview()}}{
-Gets the overview data.frame with all the analysis types,
-names, replicates, associated blank replicates, polarities and full
-file paths.
+Gets an overview data.frame of all the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_overview()}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-A data.frame with columns type, analysis, replicate, blank
-polarity and file.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_time_stamps"></a>}}
@@ -258,8 +273,7 @@ Gets the time stamp of the each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -279,8 +293,7 @@ Gets the number of spectra in each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -300,8 +313,7 @@ Gets the spectra mode of each analysis (i.e., profile or centroided).
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -321,8 +333,7 @@ Gets the spectra levels of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -342,8 +353,7 @@ Gets the lower \emph{m/z} value of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -363,8 +373,7 @@ Gets the higher \emph{m/z} value of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -384,8 +393,7 @@ Gets the start retention time value of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -405,8 +413,7 @@ Gets the end retention time value of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -426,8 +433,7 @@ Gets the polarity of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -447,8 +453,7 @@ Gets the number of chromatograms in each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -468,8 +473,7 @@ Gets the instrument information of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -489,8 +493,7 @@ Gets the software information of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -510,8 +513,7 @@ Gets the run summary data.table of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -531,8 +533,7 @@ Gets the total ion chromatogram (TIC) of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{levels}}{Integer value or vector of length one or two with the levels of
 MS data. Possible values are 1 and 2 for MS1 and MS2 data, respectively.}
@@ -555,8 +556,7 @@ Gets the base peak chromatogram (BPC) of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{levels}}{Integer value or vector of length one or two with the levels of
 MS data. Possible values are 1 and 2 for MS1 and MS2 data, respectively.}
@@ -579,8 +579,7 @@ Gets metadata from each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -616,8 +615,7 @@ Gets spectra from each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{levels}}{Integer value or vector of length one or two with the levels of
 MS data. Possible values are 1 and 2 for MS1 and MS2 data, respectively.}
@@ -688,8 +686,7 @@ overhead.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A data.table with spectra for each analyses and
-targets, when defined.
+A data.table with spectra for each analyses and targets, when defined.
 }
 }
 \if{html}{\out{<hr>}}
@@ -709,8 +706,7 @@ Gets chromatograms from each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{index}}{Integer value with the index.}
 
@@ -730,8 +726,7 @@ A data.table with chromatogram/s.
 \if{html}{\out{<a id="method-MassSpecEngine-get_eic"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_eic}{}}}
 \subsection{Method \code{get_eic()}}{
-Gets extract ion chromatograms (EIC) from the analyses based
-on targets.
+Gets extract ion chromatograms (EIC) from the analyses based on targets as a data.table.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_eic(
   analyses = NULL,
@@ -750,8 +745,7 @@ on targets.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -804,15 +798,12 @@ overhead.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A data.table.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_ms1"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_ms1}{}}}
 \subsection{Method \code{get_ms1()}}{
-Gets MS1 data from the analyses based on targets.
+Gets MS1 data from the analyses based on targets as a data.frame.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_ms1(
   analyses = NULL,
@@ -835,8 +826,7 @@ Gets MS1 data from the analyses based on targets.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -901,15 +891,12 @@ overhead.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A data.frame.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_ms2"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_ms2}{}}}
 \subsection{Method \code{get_ms2()}}{
-Gets MS2 data from the analyses based on targets.
+Gets MS2 data from the analyses based on targets as a data.frame.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_ms2(
   analyses = NULL,
@@ -933,8 +920,7 @@ Gets MS2 data from the analyses based on targets.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -1003,33 +989,34 @@ overhead.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A data.frame.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_feature_list"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_feature_list}{}}}
 \subsection{Method \code{get_feature_list()}}{
-Gets a list with feature data.table objects for each analysis.
+Gets the list of features for each analysis.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_feature_list(analyses = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_feature_list(analyses = NULL, filtered = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+
+\item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A list of data.table objects for each analysis.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_features"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_features}{}}}
 \subsection{Method \code{get_features()}}{
-Gets features from analyses.
+Gets a data.table with all features in analyses or as selected by the arguments.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_features(
   analyses = NULL,
@@ -1048,13 +1035,12 @@ Gets features from analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -1101,15 +1087,12 @@ in milliseconds.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A data.table.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_features_eic"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_features_eic}{}}}
 \subsection{Method \code{get_features_eic()}}{
-Gets EIC of features from analyses.
+Gets a data.table with feature EICs following the targets from the arguments.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_features_eic(
   analyses = NULL,
@@ -1132,13 +1115,12 @@ Gets EIC of features from analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -1198,15 +1180,13 @@ overhead.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A data.table.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_features_ms1"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_features_ms1}{}}}
 \subsection{Method \code{get_features_ms1()}}{
-Gets an averaged MS1 spectrum for features in the analyses.
+Gets a data.table of averaged MS1 spectrum for features in the analyses or as selected from the
+arguments.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_features_ms1(
   analyses = NULL,
@@ -1233,13 +1213,12 @@ Gets an averaged MS1 spectrum for features in the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -1315,15 +1294,13 @@ overhead.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A data.table.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_features_ms2"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_features_ms2}{}}}
 \subsection{Method \code{get_features_ms2()}}{
-Gets an averaged MS2 spectrum for features in the analyses.
+Gets a data.table of averaged MS2 spectrum for features in the analyses or as selected from the
+arguments.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_features_ms2(
   analyses = NULL,
@@ -1349,13 +1326,12 @@ Gets an averaged MS2 spectrum for features in the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -1425,15 +1401,12 @@ overhead.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A data.table.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_groups"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_groups}{}}}
 \subsection{Method \code{get_groups()}}{
-Gets feature groups from the analyses.
+Gets a data.table with feature groups from the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_groups(
   groups = NULL,
@@ -1507,24 +1480,20 @@ are returned.}
 \item{\code{average}}{Logical. When \code{TRUE}, feature intensities from each group are
 averaged and returned for each analysis replicate group.}
 
-\item{\code{sdValues}}{Logical length 1. Set to \code{TRUE} for returning the sd
-values when averaging the intensity within analysis replicates.}
+\item{\code{sdValues}}{Logical length 1. Set to \code{TRUE} for returning the sd values when averaging the intensity
+within analysis replicates.}
 
-\item{\code{metadata}}{Logical length 1. Set to \code{TRUE} for returning extra
-metadata from feature groups (e.g., presence in each analysis replicate
-and mass and time widths).}
+\item{\code{metadata}}{Logical length 1. Set to \code{TRUE} for returning extra metadata from feature groups
+(e.g., presence in each analysis replicate and mass and time widths).}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A data.table.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_groups_ms1"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_groups_ms1}{}}}
 \subsection{Method \code{get_groups_ms1()}}{
-Gets an averaged MS1 spectrum for feature groups in the analyses.
+Gets a data.table of averaged MS1 spectrum for feature groups in the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_groups_ms1(
   groups = NULL,
@@ -1646,15 +1615,12 @@ overhead.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A data.table.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_groups_ms2"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_groups_ms2}{}}}
 \subsection{Method \code{get_groups_ms2()}}{
-Gets an averaged MS2 spectrum for feature groups in the analyses.
+Gets a data.table of averaged MS2 spectrum for feature groups in the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_groups_ms2(
   groups = NULL,
@@ -1769,93 +1735,92 @@ overhead.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A data.table.
-}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_groups_coverage"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_groups_coverage}{}}}
-\subsection{Method \code{get_groups_coverage()}}{
-Gets the percentage coverage of feature groups in the analyses (i.e.
-100\% means that a feature group is present in all the analyses).
+\if{html}{\out{<a id="method-MassSpecEngine-get_MSPeakLists"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_MSPeakLists}{}}}
+\subsection{Method \code{get_MSPeakLists()}}{
+Creates S4 class \code{MSPeakLists}. Note that feature groups are required. The MS and MSMS spectra
+of each feature are then average by \pkg{patRoon} to produce the feature group spectra using the parameters
+of the function \link[patRoon]{getDefAvgPListParams}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_groups_coverage(
-  groups = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  drift = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  filtered = FALSE,
-  minIntensity = 0
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_MSPeakLists(
+  useLoaded = TRUE,
+  maxMSRtWindow = 10,
+  precursorMzWindow = 4,
+  clusterMzWindow = 0.005,
+  topMost = 100,
+  minIntensityPre = 10,
+  minIntensityPost = 10,
+  avgFun = mean,
+  method = "distance",
+  retainPrecursorMSMS = TRUE
 )}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{groups}}{A numeric/character vector with the number/id
-of feature groups.}
+\item{\code{useLoaded}}{Logical of length one. When \code{TRUE} and both MS1 and MS2 are loaded to features,
+these are used otherwise the native function \code{generateMSPeakLists} from \pkg{patRoon} is used instead.}
 
-\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
-data.table or data.frame named \code{min} and \code{max} with minimum and maximum
-neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
-and retention time (in seconds) and/or drift time values (in milliseconds)
-can be given as one data.table or data.frame with columns named \code{mass} and
-\code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
-and \code{millisec}  arguments are used to calculate the ranges. Also works
-with a data.table or data.frame with minimum and maximum values of neutral
-mass, retention time and drift time targets. In this case, the column names
-must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that
-when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
-arguments are not used.}
+\item{\code{maxMSRtWindow}}{Maximum chromatographic peak window used for spectrum
+averaging (in seconds, +/- retention time). If NULL all spectra from a feature
+will be taken into account. Lower to decrease processing time.}
 
-\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns
-data.table or data.frame named \code{mzmin} and \code{mzmax} with minimum and maximum
-\emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da)
-and retention time values (in seconds) can be given as one data.table or
-data.frame with columns named \code{mz} and \code{rt} and/or \code{drift}. Then, the
-deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments
-are used to calculate the ranges. Also works with a data.table or data.frame
-with minimum and maximum values of \emph{m/z}, retention time and drift time
-targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin},
-\code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges
-are given, the \code{ppm}, \code{sec} and \code{millisec} arguments are
-not used.}
+\item{\code{precursorMzWindow}}{The m/z window (in Da) to find MS/MS spectra of a precursor.
+This is typically used for Data-Dependent like MS/MS data and should correspond to the
+isolation m/z window (i.e. +/- the precursor m/z) that was used to collect the data.
+For Data-Independent MS/MS experiments, where precursor ions are not isolated prior to
+fragmentation (e.g. bbCID, MSe, all-ion, ...) the value should be NULL.}
 
-\item{\code{rt}}{A vector with target retention time values (in seconds) or
-a two columns data.table or data.frame with minimum and maximum retention
-time values (in seconds).}
+\item{\code{clusterMzWindow}}{m/z window (in Da) used for clustering m/z values
+when spectra are averaged. For method="hclust" this corresponds to the
+cluster height, while for method="distance" this value is used to find
+nearby masses (+/- window). Too small windows will prevent clustering
+m/z values (thus erroneously treating equal masses along spectra as
+different), whereas too big windows may cluster unrelated m/z values
+from different or even the same spectrum together.}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
-a two columns data.table or data.frame with minimum and maximum drift
-time values (in milliseconds).}
+\item{\code{topMost}}{Only retain this maximum number of MS peaks when generating
+averaged spectra. Lowering this number may exclude more irrelevant (noisy)
+MS peaks and decrease processing time, whereas higher values may avoid
+excluding lower intense MS peaks that may still be of interest.}
 
-\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
+\item{\code{minIntensityPre}}{MS peaks with intensities below this value will
+be removed (applied prior to selection by \code{topMost}) before averaging.}
 
-\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+\item{\code{minIntensityPost}}{MS peaks with intensities below this value will
+be removed after averaging.}
 
-\item{\code{millisec}}{Numeric of length one with the drift time deviation,
-in milliseconds.}
+\item{\code{avgFun}}{Function that is used to calculate average m/z values.}
 
-\item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
+\item{\code{method}}{Method used for producing averaged MS spectra. Valid
+values are "hclust", used for hierarchical clustering (using the
+fastcluster package), and "distance", to use the between peak distance.
+The latter method may reduces processing time and memory requirements,
+at the potential cost of reduced accuracy.}
 
-\item{\code{minIntensity}}{Numeric value with the minimum intensity.}
+\item{\code{retainPrecursorMSMS}}{For MS/MS data only: if TRUE then always
+retain the precursor mass peak even if is not among the \code{topMost} peaks.
+Note that MS precursor mass peaks are always kept. Furthermore, note
+that precursor peaks in both MS and MS/MS data may still be removed by
+intensity thresholds (this is unlike the filter method function).}
+
+\item{\code{pruneMissingPrecursorMS}}{For MS data only: if TRUE then peak lists
+without a precursor peak are removed. Note that even when this is set to
+FALSE, functionality that relies on MS (not MS/MS) peak lists (e.g.
+formulae calculation) will still skip calculation if a precursor is not
+found.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A data.table.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_isotopes"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_isotopes}{}}}
 \subsection{Method \code{get_isotopes()}}{
-Gets feature isotopes (i.e., isotope clusters) in the analyses.
+Gets a data.table of feature isotopes (i.e., isotope clusters) in the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_isotopes(
   analyses = NULL,
@@ -1876,8 +1841,7 @@ Gets feature isotopes (i.e., isotope clusters) in the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{groups}}{A numeric/character vector with the number/id
 of feature groups.}
@@ -1885,7 +1849,7 @@ of feature groups.}
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{clusters}}{A numeric vector with the number/s of feature cluster/s.}
 
@@ -1934,16 +1898,13 @@ in milliseconds.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A data.table.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_suspects"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_suspects}{}}}
 \subsection{Method \code{get_suspects()}}{
-Gets suspects from features according to a defined database
-and mass (\code{ppm}) and time (\code{sec}) deviations.
+Gets a data.table of suspects from features according to a defined database and mass (\code{ppm})
+and time (\code{sec}) deviations.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_suspects(
   analyses = NULL,
@@ -1971,17 +1932,15 @@ and mass (\code{ppm}) and time (\code{sec}) deviations.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
-\item{\code{database}}{A data.frame with at least the columns name
-and mass, indicating the name and neutral monoisotopic
-mass of the suspect targets.}
+\item{\code{database}}{A data.frame with at least the columns name and mass, indicating the name and neutral
+monoisotopic mass of the suspect targets.}
 
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -2053,20 +2012,16 @@ feature groups not individual features.}
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-The \code{ppm} and \code{sec} which indicate the
-mass (im ppm) and time (in seconds) deviations applied during the
-screening.
+The \code{ppm} and \code{sec} which indicate the mass (im ppm) and time (in seconds) deviations applied during
+the screening.
 }
 
-\subsection{Returns}{
-A data.frame with the suspects and matched features.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_internal_standards"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_internal_standards}{}}}
 \subsection{Method \code{get_internal_standards()}}{
-Gets modules data.
+Gets a data.table with internal standards found by the \code{find_internal_standards} module.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_internal_standards(average = TRUE)}\if{html}{\out{</div>}}
 }
@@ -2074,23 +2029,17 @@ Gets modules data.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{average}}{Logical. When \code{TRUE}, feature intensities from each group are
-averaged and returned for each analysis replicate group.}
-
-\item{\code{modules}}{X.}
+\item{\code{average}}{Logical of length one. When \code{TRUE} and groups are present, internal standards are averaged per
+analysis replicate group.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-The list of modules data as defined by \code{modules} argument when
-\code{NULL} all data in modules is returned.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-add_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-add_analyses}{}}}
 \subsection{Method \code{add_analyses()}}{
-Adds analyses.
+Adds analyses. Note that when adding new analyses, any existing grouping of features are removed.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_analyses(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -2098,9 +2047,8 @@ Adds analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with
-MassSpecAnalysis S3 class objects as elements (see \code{?MassSpecAnalysis} for
-more information).}
+\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with MassSpecAnalysis S3 class objects as
+elements (see \code{?MassSpecAnalysis} for more information).}
 }
 \if{html}{\out{</div>}}
 }
@@ -2112,9 +2060,8 @@ Invisible.
 \if{html}{\out{<a id="method-MassSpecEngine-add_files"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-add_files}{}}}
 \subsection{Method \code{add_files()}}{
-Adds \emph{MassSpecAnalysis} objects based on mzML/mzXML files. Note that
-when adding new mzML/mzXML files or \emph{MassSpecAnalysis} are added any
-existing grouping of features is removed.
+Adds analyses based on mzML/mzXML files. Note that when adding new mzML/mzXML
+files, any existing grouping or features are removed.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_files(files = NULL, runParallel = FALSE)}\if{html}{\out{</div>}}
 }
@@ -2132,6 +2079,48 @@ replicate group name (character). Note the file paths must have the extension
 \item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
 processing. Note that parallel processing is not always faster due to
 overhead.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-add_replicate_names"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_replicate_names}{}}}
+\subsection{Method \code{add_replicate_names()}}{
+Adds or redefines the analysis replicate names.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_replicate_names(value = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{A character vector with the analysis replicate names.
+Must be of the same length as the number of analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-add_blank_names"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_blank_names}{}}}
+\subsection{Method \code{add_blank_names()}}{
+Adds or redefines the analysis blank replicate names.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_blank_names(value = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{A character vector with the analysis blank replicate names.
+Must be of the same length as the number of analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2165,22 +2154,18 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-add_features_eic"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_features_eic}{}}}
-\subsection{Method \code{add_features_eic()}}{
-Adds extracted ion chromatograms (EICs) of features to analyses.
+\if{html}{\out{<a id="method-MassSpecEngine-add_modules_data"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_modules_data}{}}}
+\subsection{Method \code{add_modules_data()}}{
+Adds data from modules to the engine.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_features_eic(eics = NULL, replace = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_modules_data(value = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{eics}}{A data.table with features from MS analyses as obtained
-by the method \code{get_features_eics()}.}
-
-\item{\code{replace}}{Logical. When \code{TRUE}, existing EICs of features are
-replaced by the new EICs.}
+\item{\code{value}}{A named list with data from modules.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2189,49 +2174,33 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-add_features"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_features}{}}}
-\subsection{Method \code{add_features()}}{
-Adds features to analyses.
+\if{html}{\out{<a id="method-MassSpecEngine-add_features_column"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_features_column}{}}}
+\subsection{Method \code{add_features_column()}}{
+Adds an extra column with data to the features data.table of each analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_features(features = NULL, replace = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_features_column(
+  name = NULL,
+  data = NULL,
+  preFeatureList = NULL
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{features}}{A data.table with features from MS analyses as obtained
-by the method \code{get_features()}. Note that features are obtained with the
-method \code{find_features()}.}
+\item{\code{name}}{A string with the column name. Be aware that if the column name is already present, the original
+data is replaced be the added data.}
 
-\item{\code{replace}}{Logical. When \code{TRUE}, existing features are replaced by
-the new features.}
+\item{\code{data}}{A nested list of data. The first level refers to each analysis and the second refers to each feature.}
+
+\item{\code{preFeatureList}}{The list of features data.tables from each analysis which was used to create the data.
+This is used when filtered features were included.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-add_groups"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_groups}{}}}
-\subsection{Method \code{add_groups()}}{
-Adds a group column from correspondence analysis to the features
-data.table. Note that existing features groups are replaced!
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_groups(groups = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{groups}}{A data.table with columns analysis, feature and group.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
+Logical of length one. \code{TRUE} for completed or \code{FALSE} for not done.
 }
 }
 \if{html}{\out{<hr>}}
@@ -2351,10 +2320,54 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-load_MSPeakLists"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-load_MSPeakLists}{}}}
+\subsection{Method \code{load_MSPeakLists()}}{
+Loads and average MS2 spectra from features in the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$load_MSPeakLists(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-remove_analyses"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-remove_analyses}{}}}
+\subsection{Method \code{remove_analyses()}}{
+Removes analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$remove_analyses(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-remove_features"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-remove_features}{}}}
 \subsection{Method \code{remove_features()}}{
-Remove features.
+Removes features. Note that feature groups are also removed when features is set to \code{NULL}
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$remove_features(features = NULL, filtered = FALSE)}\if{html}{\out{</div>}}
 }
@@ -2365,7 +2378,7 @@ Remove features.
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
 }
@@ -2379,9 +2392,8 @@ Invisible.
 \if{html}{\out{<a id="method-MassSpecEngine-remove_features_ms1"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-remove_features_ms1}{}}}
 \subsection{Method \code{remove_features_ms1()}}{
-Removes loaded MS1 spectra from features in the analyses. In practice,
-the column \emph{ms1} in the features data.table of each analysis object
-is removed.
+Removes loaded MS1 spectra from features in the analyses. In practice, the column \emph{ms1} in
+the features data.table of each analysis object is removed.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$remove_features_ms1()}\if{html}{\out{</div>}}
 }
@@ -2394,9 +2406,8 @@ Invisible.
 \if{html}{\out{<a id="method-MassSpecEngine-remove_features_ms2"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-remove_features_ms2}{}}}
 \subsection{Method \code{remove_features_ms2()}}{
-Removes loaded MS2 spectra from features in the analyses. In practice,
-the column \emph{ms2} in the features data.table of each analysis object
-is removed.
+Removes loaded MS2 spectra from features in the analyses. In practice, the column \emph{ms2} in
+the features data.table of each analysis object is removed.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$remove_features_ms2()}\if{html}{\out{</div>}}
 }
@@ -2432,7 +2443,7 @@ Invisible.
 \if{html}{\out{<a id="method-MassSpecEngine-subset_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-subset_analyses}{}}}
 \subsection{Method \code{subset_analyses()}}{
-Subsets a \code{MassSpecEngine} object on analyses.
+Subsets a MassSpecEngine object on analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$subset_analyses(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -2440,21 +2451,19 @@ Subsets a \code{MassSpecEngine} object on analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A new cloned \code{MassSpecEngine} object with only the analyses as
-defined by the \code{analyses} argument.
+A new cloned MassSpecEngine object with only the analyses as defined by the analyses argument.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-subset_features"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-subset_features}{}}}
 \subsection{Method \code{subset_features()}}{
-Subsets a \code{MassSpecEngine} object on features from analyses.
+Subsets a MassSpecEngine object on features from analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$subset_features(features = NULL)}\if{html}{\out{</div>}}
 }
@@ -2465,24 +2474,20 @@ Subsets a \code{MassSpecEngine} object on features from analyses.
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A new cloned \code{MassSpecEngine} object with only the features as
-defined by the \code{features} argument.
+A new cloned MassSpecEngine object with only the features as defined by the features argument.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-subset_groups"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-subset_groups}{}}}
 \subsection{Method \code{subset_groups()}}{
-Subsets a \code{MassSpecEngine} object on groups from correspondence of features
-across analyses. Note that when sub-setting groups, features that lose
-correspondence are not removed but filtered with "grouping" added as
-filter category/tag. Filtered features can be removed with the method
-\code{remove_features(filtered = TRUE)}.
+Subsets a MassSpecEngine object on feature groups. Note that when sub-setting groups, features
+that lose correspondence are removed.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$subset_groups(groups = NULL)}\if{html}{\out{</div>}}
 }
@@ -2496,15 +2501,15 @@ of feature groups.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A new cloned \code{MassSpecEngine} object with only the groups as
-defined by the \code{groups} argument.
+A new cloned MassSpecEngine object with only the groups as defined by the \code{groups} argument.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-has_ion_mobility"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-has_ion_mobility}{}}}
 \subsection{Method \code{has_ion_mobility()}}{
-Checks if analyses have have drift time from ion mobility.
+Checks if analyses have have drift time from ion mobility, returning \code{TRUE} or \code{FALSE} for
+each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_ion_mobility(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -2512,20 +2517,17 @@ Checks if analyses have have drift time from ion mobility.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Logical value.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-has_loaded_spectra"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-has_loaded_spectra}{}}}
 \subsection{Method \code{has_loaded_spectra()}}{
-Checks for loaded spectra in given analyses names/indices.
+Checks for loaded spectra in given analyses names/indices, returning \code{TRUE} or \code{FALSE} for each
+analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_loaded_spectra(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -2533,20 +2535,17 @@ Checks for loaded spectra in given analyses names/indices.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Logical value.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-has_loaded_chromatograms"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-has_loaded_chromatograms}{}}}
 \subsection{Method \code{has_loaded_chromatograms()}}{
-Checks for loaded chromatograms in given analyses names/indices.
+Checks for loaded chromatograms in given analyses names/indices, returning \code{TRUE} or \code{FALSE} for
+each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_loaded_chromatograms(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -2554,84 +2553,16 @@ Checks for loaded chromatograms in given analyses names/indices.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Logical value.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_loaded_features_ms1"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_loaded_features_ms1}{}}}
-\subsection{Method \code{has_loaded_features_ms1()}}{
-Checks for loaded features MS1 in given analyses names/indices.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_loaded_features_ms1(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Logical value.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_loaded_features_ms2"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_loaded_features_ms2}{}}}
-\subsection{Method \code{has_loaded_features_ms2()}}{
-Checks for loaded features MS2 in given analyses names/indices.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_loaded_features_ms2(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Logical value.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_features_eic"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_features_eic}{}}}
-\subsection{Method \code{has_features_eic()}}{
-Checks for presence of feature extracted ion chromatograms (EICs) in
-given analyses names/indices.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_features_eic(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Logical value.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-has_features"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-has_features}{}}}
 \subsection{Method \code{has_features()}}{
-Checks if given analyses have features.
+Checks if given analyses have features, returning \code{TRUE} or \code{FALSE}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_features(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -2639,42 +2570,17 @@ Checks if given analyses have features.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Logical value.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_suspects"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_suspects}{}}}
-\subsection{Method \code{has_suspects()}}{
-Checks for presence of suspects in given analyses names/indices.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_suspects(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Logical value.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-has_groups"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-has_groups}{}}}
 \subsection{Method \code{has_groups()}}{
-Checks if there are feature groups from grouping features
-across analyses.
+Checks if there are feature groups from grouping features across analyses, returning \code{TRUE}
+or \code{FALSE}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_groups(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -2682,20 +2588,122 @@ across analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-Logical value.
 }
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-has_loaded_features_ms1"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_loaded_features_ms1}{}}}
+\subsection{Method \code{has_loaded_features_ms1()}}{
+Checks for loaded features MS1 in given analyses names/indices, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_loaded_features_ms1(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-has_loaded_features_ms2"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_loaded_features_ms2}{}}}
+\subsection{Method \code{has_loaded_features_ms2()}}{
+Checks for loaded features MS2 in given analyses names/indices, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_loaded_features_ms2(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-has_features_eic"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_features_eic}{}}}
+\subsection{Method \code{has_features_eic()}}{
+Checks for presence of feature extracted ion chromatograms (EICs) in given analyses names/indices,
+returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_features_eic(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-has_suspects"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_suspects}{}}}
+\subsection{Method \code{has_suspects()}}{
+Checks for presence of suspects in given analyses names/indices, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_suspects(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-has_MSPeakLists"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_MSPeakLists}{}}}
+\subsection{Method \code{has_MSPeakLists()}}{
+Checks if there are MSPeakLists for analyses, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_MSPeakLists(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-has_formulas"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_formulas}{}}}
+\subsection{Method \code{has_formulas()}}{
+Checks if there are formulas assigned to feature groups, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_formulas()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-has_compounds"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_compounds}{}}}
+\subsection{Method \code{has_compounds()}}{
+Checks if there are compounds assigned to feature groups, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_compounds()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-plot_spectra"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra}{}}}
 \subsection{Method \code{plot_spectra()}}{
-Plots spectra for given MS analyses.
+Plots (3D) spectra for given MS analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra(
   analyses = NULL,
@@ -2713,7 +2721,7 @@ Plots spectra for given MS analyses.
   minIntensityMS1 = 0,
   minIntensityMS2 = 0,
   runParallel = FALSE,
-  legendNames = NULL,
+  legendNames = TRUE,
   colorBy = "analyses",
   xVal = "rt",
   yVal = "mz",
@@ -2726,8 +2734,7 @@ Plots spectra for given MS analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{levels}}{Integer value or vector of length one or two with the levels of
 MS data. Possible values are 1 and 2 for MS1 and MS2 data, respectively.}
@@ -2797,8 +2804,7 @@ overhead.}
 
 \item{\code{legendNames}}{A character vector with the same length as the targets.}
 
-\item{\code{colorBy}}{A string of length 1. One of \code{analyses} (the default),
-\code{polarities}, \code{levels}, \code{targets} or \code{replicates}.}
+\item{\code{colorBy}}{A string of length 1. One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.}
 
 \item{\code{xVal}}{Character length one. Possible values are "mz", "rt" or "drift".}
 
@@ -2811,9 +2817,6 @@ overhead.}
 \item{\code{zLab}}{A string with the title for the z axis.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A 3D interactive plot.
 }
 }
 \if{html}{\out{<hr>}}
@@ -2838,8 +2841,7 @@ Plots chromatograms in the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{title}}{A string with the title.}
 
@@ -2864,16 +2866,12 @@ using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A plot.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-plot_xic"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_xic}{}}}
 \subsection{Method \code{plot_xic()}}{
-Plots extract ion chromatograms (EIC) and \emph{m/z} vs
-retention time from the analyses.
+Plots extract ion chromatograms (EIC) and \emph{m/z} vs retention time from the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_xic(
   analyses = NULL,
@@ -2898,8 +2896,7 @@ retention time from the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -2970,9 +2967,6 @@ for all selected analyses.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-An interactive plot.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-plot_eic"></a>}}
@@ -3005,8 +2999,7 @@ Plots extract ion chromatograms (EIC) from the analyses based on targets.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -3080,9 +3073,6 @@ using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A plot.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-plot_tic"></a>}}
@@ -3107,8 +3097,7 @@ Plots the total ion chromatogram (TIC) of the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{levels}}{Integer value or vector of length one or two with the levels of
 MS data. Possible values are 1 and 2 for MS1 and MS2 data, respectively.}
@@ -3136,9 +3125,6 @@ using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A plot.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-plot_bpc"></a>}}
@@ -3163,8 +3149,7 @@ Plots the base peak chromatogram (BPC) of the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{levels}}{Integer value or vector of length one or two with the levels of
 MS data. Possible values are 1 and 2 for MS1 and MS2 data, respectively.}
@@ -3228,8 +3213,7 @@ Plots MS2 spectra from the analyses based on targets.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -3308,9 +3292,6 @@ using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A plot.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-plot_ms1"></a>}}
@@ -3344,8 +3325,7 @@ Plots MS1 spectra from the analyses based on targets.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -3422,9 +3402,6 @@ using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A plot.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-plot_features"></a>}}
@@ -3461,13 +3438,12 @@ Plots features from analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -3583,13 +3559,12 @@ Plots a map of the retention time vs \emph{m/z} of features from analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -3696,13 +3671,12 @@ Plots MS1 spectra from features in the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -3826,13 +3800,12 @@ Plots MS2 spectra from features in the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -4358,8 +4331,7 @@ from features within target feature groups.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{groups}}{A numeric/character vector with the number/id
 of feature groups.}
@@ -4481,8 +4453,7 @@ Plots suspects.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{database}}{A data.frame with at least the columns name
 and mass, indicating the name and neutral monoisotopic
@@ -4491,7 +4462,7 @@ mass of the suspect targets.}
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -4613,8 +4584,7 @@ Maps isotopic clusters in the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name
-of the analyses.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{groups}}{A numeric/character vector with the number/id
 of feature groups.}
@@ -4622,7 +4592,7 @@ of feature groups.}
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{clusters}}{A numeric vector with the number/s of feature cluster/s.}
 
@@ -4918,6 +4888,54 @@ processing method will be searched within the engine object.}
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-generate_formulas"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-generate_formulas}{}}}
+\subsection{Method \code{generate_formulas()}}{
+Generates formulas from feature groups using the package patRoon.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$generate_formulas(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-generate_compounds"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-generate_compounds}{}}}
+\subsection{Method \code{generate_compounds()}}{
+Generates compounds from feature groups using the package patRoon.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$generate_compounds(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-as_patRoon_features"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-as_patRoon_features}{}}}
 \subsection{Method \code{as_patRoon_features()}}{
@@ -5040,14 +5058,11 @@ An object with S4 class \code{MSPeakLists}.
 \if{html}{\out{<a id="method-MassSpecEngine-check_correspondence"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-check_correspondence}{}}}
 \subsection{Method \code{check_correspondence()}}{
-Checks the correspondence of features within feature groups.
+Checks the correspondence of features within feature groups, returning \code{TRUE} or \code{FALSE}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$check_correspondence()}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-\code{TRUE} or \code{FALSE}.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-save"></a>}}
@@ -5080,7 +5095,7 @@ in the \code{path} and returns invisible.
 \if{html}{\out{<a id="method-MassSpecEngine-import"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-import}{}}}
 \subsection{Method \code{import()}}{
-Imports a \code{MassSpecEngine} object saved as \emph{json}.
+Imports a MassSpecEngine object saved as \emph{json}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$import(file = NA_character_)}\if{html}{\out{</div>}}
 }
@@ -5097,16 +5112,16 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-patRoon_report"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-patRoon_report}{}}}
-\subsection{Method \code{patRoon_report()}}{
+\if{html}{\out{<a id="method-MassSpecEngine-report"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-report}{}}}
+\subsection{Method \code{report()}}{
 Saves the HTML report from the function \link[patRoon]{report} from the
 package \pkg{patRoon}. The interface is exactly the same and the
 arguments description are taken from the documentation in \pkg{patRoon}.
 Therefore, for further information, we recommend to consult directly the
 function \link[patRoon]{report} in \pkg{patRoon}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$patRoon_report(
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$report(
   path = paste0(getwd(), "/report"),
   filtered = FALSE,
   settingsFile = system.file("report", "settings.yml", package = "patRoon"),
@@ -5156,15 +5171,11 @@ An interactive HTML report from the package \pkg{patRoon}.
 \if{html}{\out{<a id="method-MassSpecEngine-processing_methods"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-processing_methods}{}}}
 \subsection{Method \code{processing_methods()}}{
-Available data processing methods.
+A data.table with available data processing methods.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$processing_methods()}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-A data.table with the name and maximum permitted of available
-processing methods.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-clone"></a>}}

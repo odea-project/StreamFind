@@ -1319,7 +1319,7 @@ of the analyses.}
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -1403,7 +1403,7 @@ of the analyses.}
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -1504,7 +1504,7 @@ of the analyses.}
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -1620,7 +1620,7 @@ of the analyses.}
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -2163,7 +2163,7 @@ of feature groups.}
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{clusters}}{A numeric vector with the number/s of feature cluster/s.}
 
@@ -2259,7 +2259,7 @@ mass of the suspect targets.}
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -2907,7 +2907,7 @@ Remove features.
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
 }
@@ -3020,7 +3020,7 @@ Subsets a \code{MassSpecData} object on features from analyses.
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 }
 \if{html}{\out{</div>}}
 }
@@ -4070,7 +4070,7 @@ of the analyses.}
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -4192,7 +4192,7 @@ of the analyses.}
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -4305,7 +4305,7 @@ of the analyses.}
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -4435,7 +4435,7 @@ of the analyses.}
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -5094,7 +5094,7 @@ mass of the suspect targets.}
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
 data.table or data.frame named \code{min} and \code{max} with minimum and maximum
@@ -5225,7 +5225,7 @@ of feature groups.}
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
 data.table with a column named \code{feature} with the feature id/s. A column
 named \code{analysis} can be given to specify from which analyses the features are
-returned.}
+returned/removed.}
 
 \item{\code{clusters}}{A numeric vector with the number/s of feature cluster/s.}
 
@@ -5799,8 +5799,7 @@ Imports headers from a \emph{rds} or \emph{json} file.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
-method \code{save()}.}
+\item{\code{file}}{A \emph{json} or \emph{rds} file to be imported.}
 }
 \if{html}{\out{</div>}}
 }
@@ -5820,8 +5819,7 @@ Imports processing settings from a \emph{rds} or \emph{json} file.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
-method \code{save()}.}
+\item{\code{file}}{A \emph{json} or \emph{rds} file to be imported.}
 
 \item{\code{replace}}{Logical. When \code{TRUE}, existing settings are replaced by
 the new settings with the same call name.}
@@ -5844,8 +5842,7 @@ Imports analyses from a \emph{rds} or \emph{json} file.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
-method \code{save()}.}
+\item{\code{file}}{A \emph{json} or \emph{rds} file to be imported.}
 }
 \if{html}{\out{</div>}}
 }

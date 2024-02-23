@@ -4,7 +4,7 @@
 \alias{CoreEngine}
 \title{\strong{CoreEngine} R6 class and methods}
 \description{
-The \emph{CoreEngine} R6 class is a basic data processor with generic methods for handling data.
+The CoreEngine R6 class is a basic data processor with generic methods for handling data.
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -68,7 +68,7 @@ List of function elements to access specific reference help pages.}
 \if{html}{\out{<a id="method-CoreEngine-new"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-new}{}}}
 \subsection{Method \code{new()}}{
-Creates an R6 \emph{CoreEngine} class object.
+Creates an R6 CoreEngine class object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$new(
   headers = NULL,
@@ -116,7 +116,7 @@ Prints a summary to the console.
 \if{html}{\out{<a id="method-CoreEngine-print_headers"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-print_headers}{}}}
 \subsection{Method \code{print_headers()}}{
-Prints the headers.
+Prints the headers list.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$print_headers()}\if{html}{\out{</div>}}
 }
@@ -126,7 +126,7 @@ Prints the headers.
 \if{html}{\out{<a id="method-CoreEngine-print_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-print_analyses}{}}}
 \subsection{Method \code{print_analyses()}}{
-Prints the analyses present.
+Prints the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$print_analyses()}\if{html}{\out{</div>}}
 }
@@ -136,7 +136,7 @@ Prints the analyses present.
 \if{html}{\out{<a id="method-CoreEngine-print_workflow"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-print_workflow}{}}}
 \subsection{Method \code{print_workflow()}}{
-Prints all processing methods present by order.
+Prints the order of processing methods for all added processing settings.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$print_workflow()}\if{html}{\out{</div>}}
 }
@@ -146,7 +146,7 @@ Prints all processing methods present by order.
 \if{html}{\out{<a id="method-CoreEngine-get_headers"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-get_headers}{}}}
 \subsection{Method \code{get_headers()}}{
-Gets the headers.
+Gets the headers list.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_headers(value = NULL)}\if{html}{\out{</div>}}
 }
@@ -159,28 +159,22 @@ When \code{NULL} (the default), the entire headers list is returned.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-The headers list or the header elements as defined by \code{value}.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-get_history"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-get_history}{}}}
 \subsection{Method \code{get_history()}}{
-Gets the object history.
+Gets the object history (audit trail) as a data.table.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_history()}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-The history list of processing steps applied.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-get_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-get_analyses}{}}}
 \subsection{Method \code{get_analyses()}}{
-Gets analyses.
+Gets the list of analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_analyses(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -192,16 +186,12 @@ Gets analyses.
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-The list of analyses or the analyses as defined by \code{analyses}
-argument.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-get_number_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-get_number_analyses}{}}}
 \subsection{Method \code{get_number_analyses()}}{
-Gets the number of analyses present.
+Gets the number of analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_number_analyses()}\if{html}{\out{</div>}}
 }
@@ -217,9 +207,6 @@ replicates, associated blank replicates, and full file paths.
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_overview()}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-A data.table with columns analysis, replicate, blank and file.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-get_analysis_names"></a>}}
@@ -327,7 +314,7 @@ Gets the type of each analysis.
 \if{html}{\out{<a id="method-CoreEngine-get_settings"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-get_settings}{}}}
 \subsection{Method \code{get_settings()}}{
-Gets processing settings.
+Gets the processing settings list.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_settings(call = NULL)}\if{html}{\out{</div>}}
 }
@@ -335,33 +322,26 @@ Gets processing settings.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{call}}{A string or a vector of strings with the name/s of the
-processing method/s.}
+\item{\code{call}}{A string or a vector of strings with the name/s of the processing method/s.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A list with ProcessingSettings S3 class object/s.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-get_settings_names"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-get_settings_names}{}}}
 \subsection{Method \code{get_settings_names()}}{
-Gets the names of all present processing settings.
+Gets the names of all processing methods in added processing settings as a character vector.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_settings_names()}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-A character vector with the name of with the ProcessingSettings.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-get_workflow_overview"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-get_workflow_overview}{}}}
 \subsection{Method \code{get_workflow_overview()}}{
-A data.table with the overview of all processing methods present.
+A data.table with the overview of all processing methods from added processing settings.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_workflow_overview()}\if{html}{\out{</div>}}
 }
@@ -371,7 +351,7 @@ A data.table with the overview of all processing methods present.
 \if{html}{\out{<a id="method-CoreEngine-get_modules_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-get_modules_data}{}}}
 \subsection{Method \code{get_modules_data()}}{
-Gets modules data.
+Gets the list of modules data.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_modules_data(modules = NULL)}\if{html}{\out{</div>}}
 }
@@ -379,13 +359,9 @@ Gets modules data.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{modules}}{X.}
+\item{\code{modules}}{A character vector with the name of the module/s.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-The list of modules data as defined by \code{modules} argument when
-\code{NULL} all data in modules is returned.
 }
 }
 \if{html}{\out{<hr>}}
@@ -456,8 +432,7 @@ Adds analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{An S3 class object or a list with
-analyses as elements.}
+\item{\code{analyses}}{An Analysis S3 class object or a list with Analysis S3 objects as elements.}
 }
 \if{html}{\out{</div>}}
 }
@@ -619,7 +594,7 @@ Invisible.
 \if{html}{\out{<a id="method-CoreEngine-subset_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-subset_analyses}{}}}
 \subsection{Method \code{subset_analyses()}}{
-Subsets on analyses.
+Subsets on analyses returning a new cloned object with only the analyses to keep.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$subset_analyses(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -631,16 +606,12 @@ Subsets on analyses.
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A new cloned object with only the analyses as
-defined by the \code{analyses} argument.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-has_settings"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-has_settings}{}}}
 \subsection{Method \code{has_settings()}}{
-Checks if there are processing settings.
+Checks if there are processing settings, returning \code{TRUE} or \code{FALSE}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_settings(call = NULL)}\if{html}{\out{</div>}}
 }
@@ -653,28 +624,22 @@ processing method/s.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-Logical value.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-has_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-has_analyses}{}}}
 \subsection{Method \code{has_analyses()}}{
-Checks if analyses are present.
+Checks if analyses are present, returning \code{TRUE} or \code{FALSE}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_analyses()}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-Logical value.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-has_modules_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-has_modules_data}{}}}
 \subsection{Method \code{has_modules_data()}}{
-Checks if modules data is present.
+Checks if modules data is present, returning \code{TRUE} or \code{FALSE}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_modules_data(names = NULL)}\if{html}{\out{</div>}}
 }
@@ -689,15 +654,12 @@ data is patRoon.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-Logical value.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-run_workflow"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-run_workflow}{}}}
 \subsection{Method \code{run_workflow()}}{
-Runs all modules represented by the added ProcessingSettings.
+Runs all processing modules represented by added processing settings.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$run_workflow()}\if{html}{\out{</div>}}
 }
@@ -710,7 +672,7 @@ Invisible.
 \if{html}{\out{<a id="method-CoreEngine-save_headers"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-save_headers}{}}}
 \subsection{Method \code{save_headers()}}{
-Saves the headers list.
+Saves the headers list as the defined \code{format} in \code{path} and returns invisible.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$save_headers(format = "json", name = "headers", path = getwd())}\if{html}{\out{</div>}}
 }
@@ -718,8 +680,7 @@ Saves the headers list.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{format}}{A string. Possible values are \code{json} and \code{rds} for saving as
-JSON or RDS formats, respectively.}
+\item{\code{format}}{A string. Possible values are \code{json} and \code{rds} for saving as JSON or RDS formats, respectively.}
 
 \item{\code{name}}{String with the name of the file to be saved.}
 
@@ -727,16 +688,12 @@ JSON or RDS formats, respectively.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-Saves the headers list as the defined \code{format} in
-\code{path} and returns invisible.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-save_settings"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-save_settings}{}}}
 \subsection{Method \code{save_settings()}}{
-Saves settings.
+Saves  the settings list as the defined \code{format} in \code{path} and returns invisible.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$save_settings(
   call = NULL,
@@ -753,8 +710,7 @@ Saves settings.
 processing method/s to be saved. When \code{call} is \code{NULL} all
 settings are saved.}
 
-\item{\code{format}}{A string. Possible values are \code{json} and \code{rds} for saving as
-JSON or RDS formats, respectively.}
+\item{\code{format}}{A string. Possible values are \code{json} and \code{rds} for saving as JSON or RDS formats, respectively.}
 
 \item{\code{name}}{String with the name of the file to be saved.}
 
@@ -762,16 +718,12 @@ JSON or RDS formats, respectively.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-Saves the settings list as the defined \code{format} in
-\code{path} and returns invisible.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-save_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-save_analyses}{}}}
 \subsection{Method \code{save_analyses()}}{
-Saves analyses.
+Saves the list of analyses as the defined \code{format} in \code{path} and returns invisible.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$save_analyses(
   analyses = NULL,
@@ -786,8 +738,7 @@ Saves analyses.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
-\item{\code{format}}{A string. Possible values are \code{json} and \code{rds} for saving as
-JSON or RDS formats, respectively.}
+\item{\code{format}}{A string. Possible values are \code{json} and \code{rds} for saving as JSON or RDS formats, respectively.}
 
 \item{\code{name}}{String with the name of the file to be saved.}
 
@@ -795,16 +746,12 @@ JSON or RDS formats, respectively.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-Saves the list of analyses as the defined \code{format} in
-\code{path} and returns invisible.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-save"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-save}{}}}
 \subsection{Method \code{save()}}{
-Saves the private fields of the engine.
+Saves the data of the engine as the defined by \code{format} in the \code{path} and returns invisible.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$save(format = "json", name = "EngineData", path = getwd())}\if{html}{\out{</div>}}
 }
@@ -812,18 +759,13 @@ Saves the private fields of the engine.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{format}}{A string. Possible values are \code{json} and \code{rds} for saving as
-JSON or RDS formats, respectively.}
+\item{\code{format}}{A string. Possible values are \code{json} and \code{rds} for saving as JSON or RDS formats, respectively.}
 
 \item{\code{name}}{String with the name of the file to be saved.}
 
 \item{\code{path}}{String with the directory of the file to be saved.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Saves the private fields of the engine as the defined \code{format}
-in the \code{path} and returns invisible.
 }
 }
 \if{html}{\out{<hr>}}
@@ -838,8 +780,7 @@ Imports headers from a \emph{rds} or \emph{json} file.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
-method \code{save()}.}
+\item{\code{file}}{A \emph{json} or \emph{rds} file to be imported.}
 }
 \if{html}{\out{</div>}}
 }
@@ -859,8 +800,7 @@ Imports processing settings from a \emph{rds} or \emph{json} file.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
-method \code{save()}.}
+\item{\code{file}}{A \emph{json} or \emph{rds} file to be imported.}
 
 \item{\code{replace}}{Logical. When \code{TRUE}, existing settings are replaced by
 the new settings with the same call name.}
@@ -875,7 +815,7 @@ Invisible.
 \if{html}{\out{<a id="method-CoreEngine-import_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-import_analyses}{}}}
 \subsection{Method \code{import_analyses()}}{
-Imports analyses from a \emph{rds} or \emph{json} file.
+Imports analyses from an \emph{rds} or \emph{json} file.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$import_analyses(file = NA_character_)}\if{html}{\out{</div>}}
 }
@@ -883,8 +823,7 @@ Imports analyses from a \emph{rds} or \emph{json} file.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{A \emph{json} or \emph{rds} file as obtained by the MassSpecData
-method \code{save()}.}
+\item{\code{file}}{A \emph{json} or \emph{rds} file to be imported.}
 }
 \if{html}{\out{</div>}}
 }
@@ -896,7 +835,7 @@ Invisible.
 \if{html}{\out{<a id="method-CoreEngine-import"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-import}{}}}
 \subsection{Method \code{import()}}{
-Imports a \emph{CoreEngine} saved as \emph{json}.
+Imports a CoreEngine saved as \emph{json} or \emph{rds}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$import(file = NA_character_)}\if{html}{\out{</div>}}
 }
@@ -904,7 +843,7 @@ Imports a \emph{CoreEngine} saved as \emph{json}.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{A \emph{json} file representing a \emph{CoreEngine}.}
+\item{\code{file}}{A \emph{json} or \emph{rds} file representing a CoreEngine.}
 }
 \if{html}{\out{</div>}}
 }
@@ -916,15 +855,11 @@ Invisible.
 \if{html}{\out{<a id="method-CoreEngine-processing_methods"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-processing_methods}{}}}
 \subsection{Method \code{processing_methods()}}{
-Available data processing methods.
+Data.table with available data processing methods.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$processing_methods()}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-A data.table with the name and maximum permitted of available
-processing methods.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-clone"></a>}}

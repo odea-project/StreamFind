@@ -121,39 +121,13 @@
   
   for (x in patRoon::analyses(pat)) {
     pat@features[[x]]$filtered <- FALSE
-    pat@features[[x]]$filter <- NA_character_
     pol <- self$get_polarities(x)
     if ("positive" %in% pol) adduct_val <- -1.007276
     if ("negative" %in% pol) adduct_val <- 1.007276
     pat@features[[x]]$mass <- pat@features[[x]]$mz + adduct_val
   }
   
-  pols <- self$get_polarities()
-  
-  if (length(unique(pols)) > 1) {
-    patSet <- patRoon::makeSet(
-      pat[pols %in% "positive"],
-      pat[pols %in% "negative"],
-      adducts = list("[M+H]+", "[M-H]-")
-    )
-    
-    self$add_modules_data(
-      list("patRoon" = list(
-        "data" = patSet,
-        "software" = "patRoon",
-        "version" = as.character(packageVersion("patRoon"))
-      ))
-    )
-    
-  } else {
-    self$add_modules_data(
-      list("patRoon" = list(
-        "data" = pat,
-        "software" = "patRoon",
-        "version" = as.character(packageVersion("patRoon"))
-      ))
-    )
-  }
+  self$features <- pat
   
   TRUE
 }

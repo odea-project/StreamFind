@@ -1,99 +1,85 @@
-#' @title .s3_ms_suspect_screening.Settings_generate_compounds_patRoon
+
+#' @title .s3_ms_generate_compounds.Settings_generate_compounds_metfrag
 #'
-#' @description Generate formulas for feature groups.
+#' @description Generate compounds for feature groups using MetFrag.
 #'
 #' @noRd
 #'
-.s3_ms_suspect_screening.Settings_generate_compounds_patRoon <- function(settings, self) {
+.s3_ms_generate_compounds.Settings_generate_compounds_metfrag <- function(settings, self) {
+  
+  if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
+    warning("patRoon package not found! Install it for finding features.")
+    return(FALSE)
+  }
   
   if (!validate(settings)) return(FALSE)
   
   parameters <- settings$parameters
   
-  fg <- self$as_patRoon_featureGroups(filtered = parameters$filtered)
+  algorithm <- settings$algorithm
   
-  if (is.null(fg)) return(FALSE)
+  fg <- self$featureGroups
   
-  res <- patRoon::screenSuspects(
-    fGroups = fg,
-    suspects = parameters$suspects,
-    rtWindow = parameters$rtWindow,
-    mzWindow = parameters$mzWindow,
-    skipInvalid = TRUE,
-    prefCalcChemProps = TRUE,
-    neutralChemProps = TRUE,
-    onlyHits = TRUE,
-    adduct = NULL
-  )
+  if (is.null(fg)) {
+    warning("Feature groups not found! Not done.")
+    return(FALSE)
+  }
   
-  # suspect_list <- res@screenInfo
-  # 
-  # if (!any(self$has_features())) return(FALSE)
-  # 
-  # analyses <- self$get_analyses()
-  # 
-  # features <- lapply(analyses, function(x, suspect_list) {
+  mspl <- self$MSPeakLists
+  
+  if (is.null(mspl)) {
+    warning("MSPeakLists not found! Use the load_MSPeakLists to load MS1 and MS2 data. Not done.")
+    return(FALSE)
+  }
+  
+  if ("featureGroupsSet" %in% is(fg)) {
+    parameters$adduct <- NULL
+    
+  } else {
+    pol <- unique(unname(self$get_polarities()))
+    
+    if ("positive" %in% pol) parameters$adduct <- "[M+H]+"
+    
+    if ("negative" %in% pol) parameters$adduct <- "[M-H]-"
+  }
+  
+  ag <- list(fGroups = fg, MSPeakLists = mspl, algorithm = algorithm)
+  
+  pp_fun <- patRoon::generateCompounds
+  
+  compounds <- do.call(pp_fun, c(ag, parameters))
+  
+  # feature_list <- self$feature_list
+  
+  # compounds_col <- lapply(names(feature_list), function(x, feature_list, compounds) {
   #   
-  #   fts <- x$features
+  #   compound <- compounds@featureFormulas[[x]]
   #   
-  #   has_suspect_features <- any(suspect_list$group %in% fts$group)
-  #   
-  #   if (has_suspect_features) {
+  #   if (!is.null(compound)) {
   #     
-  #     suspects_l <- lapply(seq_len(nrow(fts)), function(z, suspect_list) {
-  #       
-  #       ft <- fts[z, ]
-  #       
-  #       sus_idx <- which(suspect_list$group %in% ft$group)
-  #       
-  #       if (length(sus_idx) > 0) {
-  #         sus_temp <- suspect_list[sus_idx, ]
-  #         
-  #         if ("rt" %in% colnames(sus_temp)) {
-  #           if (!is.na(sus_temp$rt)) {
-  #             sus_temp$d_rt <- sus_temp$rt - ft$rt
-  #             sus_temp$d_rt <- round(sus_temp$d_rt, digits = 1)
-  #           }
-  #           setnames(sus_temp, "rt", "exp_rt")
-  #           setnames(sus_temp, "d_rt", "error_rt")
-  #         }
-  #         
-  #         if ("neutralMass" %in% colnames(sus_temp)) {
-  #           sus_temp$d_mz <- (sus_temp$neutralMass - ft$mass) / ft$mass * 1E6
-  #           sus_temp$d_mz <- round(sus_temp$d_mz, digits = 1)
-  #           setnames(sus_temp, "neutralMass", "exp_mass")
-  #           setnames(sus_temp, "d_mz", "error_mass")
-  #         }
-  #          # TODO make case for mz column
-  #         
-  #         sus_temp[["group"]] <- NULL
-  #         sus_temp[["sets"]] <- NULL
-  #         sus_temp[["molNeutralized-negative"]] <- NULL
-  #         sus_temp[["molNeutralized-positive"]] <- NULL
-  #         sus_temp[["molNeutralized"]] <- NULL
-  # 
-  #         if (nrow(sus_temp) > 0) {
-  #           sus_temp  
-  #         } else {
-  #           NULL
-  #         }
-  #       } else {
-  #         NULL
-  #       }
-  #       
-  #     }, suspect_list = suspect_list)
+  #     fts <- feature_list[[x]]
   #     
-  #     fts$suspects <- suspects_l
-  # 
-  #   } else {
-  #     fts$suspects <- lapply(fts$feature, function(x) NULL)
+  #     if (nrow(fts) > 0) {
+  #       res <- lapply(fts$group, function(z, compound) compound[[z]], compound = compound)
+  #       return(res)
+  #     }
   #   }
   #   
-  #   fts
+  #   rep(list(NULL), nrow(feature_list[[x]]))
   #   
-  # }, suspect_list = suspect_list)
+  # }, feature_list = feature_list,  compounds = compounds)
   
-  # suppressMessages(self$add_features(features, replace = TRUE))
+  # self$add_features_column("compounds", compounds_col, feature_list)
   
-  TRUE
+  self$compounds <- compounds
+  
+  if ("compounds" %in% is(self$compounds)) {
+    
+    message(paste0("\U2713 ", length(compounds), " compounds generated and added!"))
+    
+    TRUE
+    
+  } else {
+    FALSE
+  }
 }

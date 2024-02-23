@@ -50,22 +50,139 @@ dbsus <- db[!grepl("IS", db$tag), ]
 
 ps <- list(
   Settings_find_features_openms(),
+  
   Settings_annotate_features_StreamFind(),
-  Settings_filter_features_patRoon(absMinIntensity = 20000),
+
   Settings_group_features_openms(),
-  Settings_filter_features_patRoon(blankThreshold = 5),
+
   # Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
-  #Settings_filter_features_StreamFind(minIntensity = 5000, maxGroupSd = 30, blank = 5, minGroupAbundance = 3, excludeIsotopes = TRUE),
-  Settings_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005, runParallel = FALSE),
-  Settings_calculate_quality_StreamFind(),
-  #Settings_filter_features_StreamFind(minSnRatio = 3),
-  #Settings_load_features_ms2_StreamFind(runParallel = FALSE),
-  Settings_suspect_screening_StreamFind(database = dbsus, ppm = 5, sec = 10)
+
+  Settings_filter_features_StreamFind(excludeIsotopes = TRUE),
+
+  Settings_filter_features_patRoon(absMinIntensity = 5000, maxReplicateIntRSD = 30, blankThreshold = 10, absMinReplicateAbundance = 3),
+
+  Settings_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005),
+
+  Settings_calculate_quality_StreamFind(runParallel = FALSE),
+
+  Settings_filter_features_StreamFind(minSnRatio = 5),
+  
+  Settings_load_features_ms1_StreamFind(runParallel = FALSE),
+
+  Settings_load_features_ms2_StreamFind(runParallel = FALSE),
+  
+  Settings_load_MSPeakLists_patRoon(useLoaded = TRUE), # Check patRoon function foor issues with MSPeakLists 
+  
+  Settings_generate_formulas_genform(),
+  
+  Settings_generate_compounds_metfrag()
+
+  # Settings_suspect_screening_StreamFind(database = dbsus, ppm = 5, sec = 10)
 )
 
-# patRoon::clearCache(c("parsed_ms_analyses"))
-
 ms <- MassSpecEngine$new(files = ms_files_df, settings = ps)
+
+ms$run_workflow()
+
+
+
+
+
+
+
+
+
+
+sus <- ms$get_suspects(database = dbsus, ppm = 5, sec = 10)
+
+ms$plot_groups(sus$group)
+
+
+
+
+
+
+
+
+
+
+
+
+
+# MS2Tox and MS2Quant
+
+
+
+# normalize internal standards
+fGroupsNorm <- patRoon::normInts(ms$featureGroups, featNorm = "tic", groupNorm = TRUE)
+fGroupsNorm <- patRoon::normInts(ms$featureGroups, featNorm = "istd", standards = dbis, adduct = "[M+H]+", 
+                                 ISTDRTWindow = 20, ISTDMZWindow = 200, minISTDs = 2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# grs <- ms$get_groups(mass = db, filtered = F, sec = 10)
+# 
+# ms$remove_groups(groups = grs$group)
+# 
+# fts <- ms$features
+# 
+# fts <- patRoon::filter(fts, absMinIntensity = 50000)
+# 
+# ms$features <- fts
+
+
+
+
+
+# ms$get_features(mass = dbis, filtered = TRUE)
+
+# ms$features@features
+
+# ms$filtered_features
+
+ms$get_groups(mass = db, filtered = F, sec = 10)
+
+ms$get_suspects()
+
+ms$plot_internal_standards_qc()
+
+ms$plot_eic(analyses = 13:15, mass = dbis[5, ])
+
+
+
+
+
+
+View(ms$get_isotopes(
+  analyses = 4,
+  mass = db,
+  ppm = 8, sec = 10
+))
+
+ms$map_isotopes(
+  analyses = 4,
+  mass = db,
+  ppm = 8, sec = 10,
+  filtered = TRUE,
+  legendNames = TRUE
+)
+
+
+
+ms$filtered_features 
+
+
 
 # ms$analysisInfo
 # 
@@ -80,20 +197,30 @@ ms <- MassSpecEngine$new(files = ms_files_df, settings = ps)
 # new_anas <- parse_MassSpecAnalysis(new_files)
 # 
 # ms$add_analyses(new_anas)
+# 
+# ms$add_files(new_files)
 
 
 
 
 
-ms$has_modules_data("patRoon")
 
-ms$run_workflow()
+
+ms$filtered_features
+
+ms$get_features(mass = dbis, filtered = TRUE)
+
+ms$plot_internal_standards_qc()
 
 # ms$has_features()
 # 
 # ms$has_groups()
 # 
-# ms$features()
+length(ms$features)
+
+View(ms$get_modules_data("patRoon"))
+
+
 # 
 # ms$featureGroups()
 # 
@@ -119,7 +246,7 @@ ms$run_workflow()
 # 
 # ms$get_suspects(analyses = 4, database = dbsus)
 # 
-View(ms$get_suspects(onGroups = FALSE))
+ms$get_suspects(onGroups = TRUE)
 
 ms$analysisInfo
 
