@@ -10,6 +10,7 @@
 #' @template arg-settings
 #' @template arg-runParallel
 #' @template arg-analyses
+#' @template arg-chromatograms
 #' @template arg-ms-levels
 #' @template arg-ms-mz
 #' @template arg-ms-rt
@@ -99,7 +100,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
   ),
   
   # _ active bindings -----
+  
   active = list(
+    
+    ### ___ NTS -----
     
     #' @field analysisInfo description description The analysisInfo data.frame with the list of analyses.
     #'
@@ -595,6 +599,48 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         }
         
         invisible(self)
+      }
+    },
+    
+    ### ___ Chromatograms -----
+    
+    #' @field chrom_peaks `data.table` with integrated peaks from chromatograms for each analyses.
+    #' 
+    chrom_peaks = function() {
+      
+      if (self$has_chrom_peaks()) {
+        pks <- private$.modules$chrom_peaks$data
+        pks <- lapply(pks, function(x) x$peaks)
+        pks <- rbindlist(pks)
+        
+        if (nrow(pks) > 0) {
+          pks$replicate <- self$get_replicate_names()[pks$analysis]
+        }
+        
+        pks
+        
+      } else {
+        data.table()
+      }
+    },
+    
+    #' @field chromatograms `data.table` with chromatograms for each analyses.
+    #' 
+    chromatograms = function() {
+      
+      if (self$has_chrom_peaks()) {
+        res <- private$.modules$chrom_peaks$data
+        res <- lapply(res, function(x) x$chromatograms)
+        res <- rbindlist(res, fill = TRUE)
+        
+        if (nrow(res) > 0) {
+          res$replicate <- self$get_replicate_names()[res$analysis]
+        }
+        
+        res
+        
+      } else {
+        data.table()
       }
     }
   ),
@@ -1310,31 +1356,39 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @return A data.table with chromatogram/s.
     #'
     get_chromatograms = function(analyses = NULL,
-                                 index = NA_integer_,
+                                 chromatograms = NA_integer_,
                                  minIntensity = 0,
                                  runParallel = FALSE) {
 
       analyses <- private$.check_analyses_argument(analyses)
       if (is.null(analyses)) return(data.table())
 
-      index <- as.integer(index)
-
-      if (!is.integer(index)) {
-        warning("Index must be an integer vector!")
+      if (!(is.numeric(chromatograms) || is.character(chromatograms))) {
+        warning("The argument chromatograms must be an integer or character vector with indeces or names!")
         return(data.table())
       }
 
       has_chroms <- self$has_loaded_chromatograms(analyses)
 
       if (all(has_chroms)) {
-        chrom_list <- lapply(self$get_analyses(analyses), function(x, index) {
+        chrom_list <- lapply(self$get_analyses(analyses), function(x, chromatograms) {
           chroms <- x$chromatograms
-          if (!is.na(index[1])) {
-            which_chroms <- chroms$index %in% index
+          
+          if (is.numeric(chromatograms)) {
+            which_chroms <- chroms$index %in% chromatograms
             chroms <- chroms[which_chroms, ]
+            
+          } else if (is.character(chromatograms)) {
+            which_chroms <- chroms$id %in% chromatograms
+            chroms <- chroms[which_chroms, ]
+            
+          } else if (!is.na(chromatograms)) {
+            return(data.table())
           }
+          
           chroms
-        }, index = index)
+          
+        }, chromatograms = chromatograms)
 
       } else {
 
@@ -1356,10 +1410,24 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         }
 
         i = NULL
+        
+        if (is.numeric(chromatograms)) {
+          index <- chromatograms
+        } else {
+          index <- NA_integer_
+        }
 
         chrom_list <- foreach(i = self$get_analyses(analyses)) %dopar% {
           chroms <- rcpp_parse_ms_analysis_chromatograms(i, index)
           chroms
+        }
+        
+        if (is.character(chromatograms)) {
+          chrom_list <- lapply(chrom_list, function(x, chromatograms) {
+            which_chroms <- x$id %in% chromatograms
+            x <- x[which_chroms, ]
+            x
+          }, chromatograms = chromatograms)
         }
 
         message(" Done!")
@@ -5042,6 +5110,18 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         FALSE
       }
     },
+    
+    #' @description Checks if there are integrated peaks from chromatograms, returning `TRUE` or `FALSE`.
+    #'
+    has_chrom_peaks = function() {
+      
+      if (self$has_modules_data("chrom_peaks")) {
+        sum(vapply(private$.modules$chrom_peaks$data, function(x) nrow(x$peaks), 0)) > 0
+        
+      } else {
+        FALSE
+      }
+    },
 
     ## ___ plot -----
 
@@ -5109,6 +5189,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Plots chromatograms in the analyses.
     #'
     plot_chromatograms = function(analyses = NULL,
+                                  chromatograms = NA_integer_,
                                   title = NULL,
                                   colorBy = "targets",
                                   legendNames = NULL,
@@ -5118,7 +5199,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                   cex = 0.6,
                                   interactive = TRUE) {
       
-      chromatograms <- self$get_chromatograms(analyses)
+      chromatograms <- self$get_chromatograms(analyses, chromatograms)
       
       if (nrow(chromatograms) == 0) {
         message("\U2717 Chromatograms not found for the analyses!")
@@ -5448,6 +5529,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         .plot_ms1_interactive(ms1, legendNames, colorBy, title, showText)
       }
     },
+    
+    ### ___ NTS -----
 
     #' @description
     #' Plots features from analyses.
@@ -6157,6 +6240,45 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         )
       }
     },
+    
+    ### ___ Chromatograms -----
+    
+    #' @description Plots peaks from chromatograms from analyses.
+    #'
+    plot_chrom_peaks = function(analyses = NULL,
+                                chromatograms = NA_integer_,
+                                legendNames = NULL,
+                                title = NULL,
+                                colorBy = "targets",
+                                showLegend = TRUE,
+                                xlim = NULL,
+                                ylim = NULL,
+                                cex = 0.6,
+                                xLab = NULL,
+                                yLab = NULL,
+                                interactive = TRUE) {
+      
+      if (!self$has_chrom_peaks()) return(NULL)
+      
+      analyses <- private$.check_analyses_argument(analyses)
+      
+      if (is.null(analyses)) return(NULL)
+      
+      pks <- self$chrom_peaks
+      
+      pks <- pks[pks$analysis %in% analyses, ]
+      
+      if (nrow(pks) == 0) {
+        message("\U2717 Peaks not found for the targets!")
+        return(NULL)
+      }
+      
+      if (!interactive) {
+        .plot_chrom_peaks_static(self$chromatograms, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
+      } else {
+        .plot_chrom_peaks_interactive(self$chromatograms, pks, legendNames, colorBy, title, showLegend, xLab, yLab)
+      }
+    },
 
     ## ___ processing -----
 
@@ -6673,6 +6795,97 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       invisible(self)
     },
+    
+    ### _____ integrate_chromatograms -----
+    
+    #' @description Integrates chromatograms, returning a peak list for each chromatogram for each analyses.
+    #'
+    #' @return Invisible.
+    #'
+    integrate_chromatograms = function(settings = NULL) {
+      
+      if (!any(self$get_chromatograms_number() > 1)) {
+        warning("There are no chromatograms! Not done.")
+        return(invisible(self))
+      }
+      
+      settings <- private$.get_call_settings(settings, "integrate_chromatograms")
+      
+      if (is.null(settings)) return(invisible(self))
+      
+      processed <- .s3_integrate_chromatograms(settings, self)
+      
+      if (processed) {
+        
+        if (!private$.settings_already_stored(settings)) {
+          self$add_settings(settings)
+        }
+        
+        if (requireNamespace(settings$software, quietly = TRUE)) {
+          version <- as.character(packageVersion(settings$software))
+          
+        } else {
+          version <- NA_character_
+        }
+        
+        private$.register(
+          "processed",
+          "integrate chromatograms",
+          settings$call,
+          settings$software,
+          version,
+          settings$algorithm
+        )
+      }
+      
+      invisible(self)
+    },
+    
+    ### _____ deconvolute_spectra_charges -----
+    
+    #' @description Deconvolutes spectra with multi-charged compounds, such as monoclonal antibodies.
+    #'
+    #' @return Invisible.
+    #'
+    deconvolute_spectra_charges = function(settings = NULL) {
+      
+      if (!any(self$get_spectra_number() > 1)) {
+        warning("There are no spectra! Not done.")
+        return(invisible(self))
+      }
+      
+      settings <- private$.get_call_settings(settings, "deconvolute_spectra_charges")
+      
+      if (is.null(settings)) return(invisible(self))
+      
+      processed <- .s3_deconvolute_spectra_charges(settings, self)
+      
+      if (processed) {
+        
+        if (!private$.settings_already_stored(settings)) {
+          self$add_settings(settings)
+        }
+        
+        if (requireNamespace(settings$software, quietly = TRUE)) {
+          version <- as.character(packageVersion(settings$software))
+          
+        } else {
+          version <- NA_character_
+        }
+        
+        private$.register(
+          "processed",
+          "deconvoluted spectra charges",
+          settings$call,
+          settings$software,
+          version,
+          settings$algorithm
+        )
+      }
+      
+      invisible(self)
+    },
+    
     
     ## ___ as -----
 
@@ -7585,7 +7798,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           "find_internal_standards",
           "calculate_quality",
           "generate_formulas",
-          "generate_compounds"
+          "generate_compounds",
+          "integrate_chromatograms",
+          "deconvolute_spectra_charges"
         ),
         max = c(
           1,
@@ -7599,6 +7814,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           1,
           1,
           Inf,
+          1,
+          1,
           1,
           1,
           1,

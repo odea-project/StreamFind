@@ -357,9 +357,6 @@ asJSON.MassSpecAnalysis <- function(x) {
 #' @export
 as.MassSpecAnalysis <- function(value) {
   if (length(value) == 1 & is.list(value)) value <- value[[1]]
-  
-  browser()
-  
   do.call(MassSpecAnalysis, value)
 }
 

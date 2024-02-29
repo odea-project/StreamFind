@@ -71,7 +71,7 @@ ps <- list(
 
   Settings_load_features_ms2_StreamFind(runParallel = FALSE),
   
-  Settings_load_MSPeakLists_patRoon(useLoaded = TRUE), # Check patRoon function foor issues with MSPeakLists 
+  Settings_load_MSPeakLists_patRoon(useLoaded = TRUE), # Check patRoon function for issues with MSPeakLists!!! 
   
   Settings_generate_formulas_genform(),
   

@@ -77,3 +77,11 @@ export <- function(x, ...) {
 .s3_ms_generate_compounds <- function(settings, self) {
   UseMethod(".s3_ms_generate_compounds")
 }
+
+.s3_integrate_chromatograms <- function(settings, self) {
+  UseMethod(".s3_integrate_chromatograms")
+}
+
+.s3_deconvolute_spectra_charges <- function(settings, self) {
+  UseMethod(".s3_deconvolute_spectra_charges")
+}

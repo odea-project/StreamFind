@@ -44,6 +44,10 @@ List of function elements to access specific reference help pages.}
 \item{\code{formulas}}{The formulas S4 class object from patRoon.}
 
 \item{\code{compounds}}{The compounds S4 class object from patRoon.}
+
+\item{\code{chrom_peaks}}{\code{data.table} with integrated peaks from chromatograms for each analyses.}
+
+\item{\code{chromatograms}}{\code{data.table} with chromatograms for each analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -118,6 +122,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-has_MSPeakLists}{\code{MassSpecEngine$has_MSPeakLists()}}
 \item \href{#method-MassSpecEngine-has_formulas}{\code{MassSpecEngine$has_formulas()}}
 \item \href{#method-MassSpecEngine-has_compounds}{\code{MassSpecEngine$has_compounds()}}
+\item \href{#method-MassSpecEngine-has_chrom_peaks}{\code{MassSpecEngine$has_chrom_peaks()}}
 \item \href{#method-MassSpecEngine-plot_spectra}{\code{MassSpecEngine$plot_spectra()}}
 \item \href{#method-MassSpecEngine-plot_chromatograms}{\code{MassSpecEngine$plot_chromatograms()}}
 \item \href{#method-MassSpecEngine-plot_xic}{\code{MassSpecEngine$plot_xic()}}
@@ -138,6 +143,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-plot_internal_standards_qc}{\code{MassSpecEngine$plot_internal_standards_qc()}}
 \item \href{#method-MassSpecEngine-plot_suspects}{\code{MassSpecEngine$plot_suspects()}}
 \item \href{#method-MassSpecEngine-map_isotopes}{\code{MassSpecEngine$map_isotopes()}}
+\item \href{#method-MassSpecEngine-plot_chrom_peaks}{\code{MassSpecEngine$plot_chrom_peaks()}}
 \item \href{#method-MassSpecEngine-centroid_spectra}{\code{MassSpecEngine$centroid_spectra()}}
 \item \href{#method-MassSpecEngine-bin_spectra}{\code{MassSpecEngine$bin_spectra()}}
 \item \href{#method-MassSpecEngine-find_features}{\code{MassSpecEngine$find_features()}}
@@ -149,6 +155,8 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-calculate_quality}{\code{MassSpecEngine$calculate_quality()}}
 \item \href{#method-MassSpecEngine-generate_formulas}{\code{MassSpecEngine$generate_formulas()}}
 \item \href{#method-MassSpecEngine-generate_compounds}{\code{MassSpecEngine$generate_compounds()}}
+\item \href{#method-MassSpecEngine-integrate_chromatograms}{\code{MassSpecEngine$integrate_chromatograms()}}
+\item \href{#method-MassSpecEngine-deconvolute_spectra_charges}{\code{MassSpecEngine$deconvolute_spectra_charges()}}
 \item \href{#method-MassSpecEngine-as_patRoon_features}{\code{MassSpecEngine$as_patRoon_features()}}
 \item \href{#method-MassSpecEngine-as_patRoon_featureGroups}{\code{MassSpecEngine$as_patRoon_featureGroups()}}
 \item \href{#method-MassSpecEngine-as_patRoon_MSPeakLists}{\code{MassSpecEngine$as_patRoon_MSPeakLists()}}
@@ -697,7 +705,7 @@ Gets chromatograms from each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_chromatograms(
   analyses = NULL,
-  index = NA_integer_,
+  chromatograms = NA_integer_,
   minIntensity = 0,
   runParallel = FALSE
 )}\if{html}{\out{</div>}}
@@ -708,7 +716,7 @@ Gets chromatograms from each analysis.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
-\item{\code{index}}{Integer value with the index.}
+\item{\code{chromatograms}}{A character or integer vector with the ID name or the index of the chromatograms to extract.}
 
 \item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 
@@ -2700,6 +2708,16 @@ Checks if there are compounds assigned to feature groups, returning \code{TRUE} 
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-has_chrom_peaks"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_chrom_peaks}{}}}
+\subsection{Method \code{has_chrom_peaks()}}{
+Checks if there are integrated peaks from chromatograms, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_chrom_peaks()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-plot_spectra"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra}{}}}
 \subsection{Method \code{plot_spectra()}}{
@@ -2827,6 +2845,7 @@ Plots chromatograms in the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_chromatograms(
   analyses = NULL,
+  chromatograms = NA_integer_,
   title = NULL,
   colorBy = "targets",
   legendNames = NULL,
@@ -2842,6 +2861,8 @@ Plots chromatograms in the analyses.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+
+\item{\code{chromatograms}}{A character or integer vector with the ID name or the index of the chromatograms to extract.}
 
 \item{\code{title}}{A string with the title.}
 
@@ -4664,6 +4685,63 @@ A plot.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-plot_chrom_peaks"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_chrom_peaks}{}}}
+\subsection{Method \code{plot_chrom_peaks()}}{
+Plots peaks from chromatograms from analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_chrom_peaks(
+  analyses = NULL,
+  chromatograms = NA_integer_,
+  legendNames = NULL,
+  title = NULL,
+  colorBy = "targets",
+  showLegend = TRUE,
+  xlim = NULL,
+  ylim = NULL,
+  cex = 0.6,
+  xLab = NULL,
+  yLab = NULL,
+  interactive = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+
+\item{\code{chromatograms}}{A character or integer vector with the ID name or the index of the chromatograms to extract.}
+
+\item{\code{legendNames}}{A character vector with the same length as the targets.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{colorBy}}{A string of length 1. One of \code{analyses}, \code{targets} (the
+default) or \code{replicates}.}
+
+\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
+
+\item{\code{xlim}}{A length one or two numeric vector for setting the \emph{x}
+limits (in seconds) of the plot.}
+
+\item{\code{ylim}}{A length one or two numeric vector for setting the \emph{m/z}
+limits of the plot.}
+
+\item{\code{cex}}{A length one numeric value defining the scale of the legend for
+non interactive plotting.}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
+\item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
+using \pkg{plotly}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-centroid_spectra"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-centroid_spectra}{}}}
 \subsection{Method \code{centroid_spectra()}}{
@@ -4918,6 +4996,54 @@ Invisible.
 Generates compounds from feature groups using the package patRoon.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$generate_compounds(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-integrate_chromatograms"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-integrate_chromatograms}{}}}
+\subsection{Method \code{integrate_chromatograms()}}{
+Integrates chromatograms, returning a peak list for each chromatogram for each analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$integrate_chromatograms(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-deconvolute_spectra_charges"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-deconvolute_spectra_charges}{}}}
+\subsection{Method \code{deconvolute_spectra_charges()}}{
+Deconvolutes spectra with multi-charged compounds, such as monoclonal antibodies.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$deconvolute_spectra_charges(settings = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

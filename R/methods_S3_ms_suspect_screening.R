@@ -236,18 +236,6 @@
     return(FALSE)
   }
   
-  mspl <- self$MSPeakLists
-  
-  if (is.null(mspl)) {
-    warning("MSPeakLists not found! Use the load_MSPeakLists to load MS1 and MS2 data. Not done.")
-    return(FALSE)
-  }
-  
-
-  
-  
-  
-  
   res <- patRoon::screenSuspects(
     fGroups = fg,
     suspects = parameters$suspects,
@@ -261,6 +249,8 @@
   )
   
   suspect_list <- res@screenInfo
+  
+  browser()
   
   if (!any(self$has_features())) return(FALSE)
   
@@ -327,7 +317,8 @@
     
   }, suspect_list = suspect_list)
   
-  suppressMessages(self$add_features(features, replace = TRUE))
+  
+  browser()
   
   TRUE
 }

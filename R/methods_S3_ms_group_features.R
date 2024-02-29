@@ -7,7 +7,7 @@
 #'
 .s3_ms_group_features.patRoon <- function(settings, self) {
 
-  if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
+  if (!requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found! Install it for finding features.")
     return(FALSE)
   }

@@ -2391,3 +2391,126 @@ validate.Settings_generate_compounds_metfrag <- function(x) {
     checkmate::test_choice(x$algorithm, "metfrag")
   )
 }
+
+
+# integrate_chromatograms -----
+
+#' @title Settings_integrate_chromatograms_StreamFind
+#'
+#' @description Prototype.
+#' 
+#' @param chromatograms 
+#' @param smoothing 
+#' @param windowSize 
+#' @param baseline 
+#' @param baseline_method 
+#' @param baseline_args 
+#' @param minPeakHeight 
+#' @param minPeakDistance 
+#' @param minPeakWidth 
+#' @param maxPeakWidth 
+#' @param minSN 
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_integrate_chromatograms_StreamFind.
+#'
+#' @export
+#'
+Settings_integrate_chromatograms_StreamFind <- function(chromatograms = NA_character_,
+                                                        smoothing = TRUE,
+                                                        windowSize = 4,
+                                                        baseline = TRUE,
+                                                        baseline_method = "als",
+                                                        baseline_args = list(
+                                                          lambda = 5,
+                                                          p = 0.05,
+                                                          maxit = 10
+                                                        ),
+                                                        minPeakHeight = 0,
+                                                        minPeakDistance = 10,
+                                                        minPeakWidth = 5,
+                                                        maxPeakWidth = 120,
+                                                        minSN = 10) {
+  
+  settings <- list(
+    call = "integrate_chromatograms",
+    algorithm = "StreamFind",
+    parameters = list(
+      chromatograms = chromatograms,
+      smoothing = smoothing,
+      windowSize = windowSize,
+      baseline = baseline,
+      baseline_method = baseline_method,
+      baseline_args = baseline_args,
+      minPeakHeight = minPeakHeight,
+      minPeakDistance = minPeakDistance,
+      minPeakWidth = minPeakWidth,
+      maxPeakWidth = maxPeakWidth,
+      minSN = minSN
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_integrate_chromatograms_StreamFind
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_integrate_chromatograms_StreamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_integrate_chromatograms_StreamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "integrate_chromatograms"),
+    checkmate::test_choice(x$algorithm, "StreamFind")
+  )
+}
+
+# deconvolute_spectra_charges -----
+
+#' @title Settings_deconvolute_spectra_charges_StreamFind
+#'
+#' @description Prototype.
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_deconvolute_spectra_charges_StreamFind.
+#'
+#' @export
+#'
+Settings_deconvolute_spectra_charges_StreamFind <- function() {
+  
+  settings <- list(
+    call = "deconvolute_spectra_charges",
+    algorithm = "StreamFind",
+    parameters = list(
+      
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_deconvolute_spectra_charges_StreamFind
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_integrate_chromatograms_StreamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_deconvolute_spectra_charges_StreamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "deconvolute_spectra_charges"),
+    checkmate::test_choice(x$algorithm, "StreamFind")
+  )
+}

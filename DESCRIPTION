@@ -36,7 +36,9 @@ Imports:
     parallel,
     foreach,
     methods,
-    checkmate
+    checkmate,
+    pracma,
+    baseline
 Suggests: 
     knitr,
     kableExtra,
