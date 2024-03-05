@@ -28,6 +28,23 @@ RamanEngine <- R6::R6Class("RamanEngine",
     .averaged = NULL
 
   ),
+  
+  # _ active bindings -----
+  
+  active = list(
+    
+    #' @field spectra .
+    #'
+    spectra = function() {
+      
+      if (self$has_modules_data("spectra")) {
+        private$.modules$spectra$spectra
+        
+      } else {
+        self$get_spectra()
+      }
+    }
+  ),
 
   # _ public fields/methods -----
   public = list(
@@ -163,9 +180,160 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #' @return Invisible.
     #' 
     merge_replicates = function(preCut = 2) {
-      processed <- .merge_replicate_files(self, preCut)
-      if (!processed) warning("Raman files were not merged!")
+      analyses <- .merge_replicate_files(self, preCut)
+      analyses <- private$.validate_list_analyses(analyses, childClass = "RamanAnalysis")
+      
+      if (!is.null(analyses)) {
+        
+        if (all(vapply(analyses, function(x) is(x), NA_character_) %in% "RamanAnalysis")) {
+          to_remove <- self$get_analysis_names()[self$get_replicate_names() %in% names(analyses)]
+          suppressMessages(self$remove_analyses(to_remove))
+          self$add_analyses(analyses)
+        }
+      }
+      
       invisible(self)
+    },
+    
+    #' @description X.
+    #'
+    #' @return Invisible.
+    #' 
+    average_spectra = function() {
+      
+      spec <- self$get_spectra()
+      
+      rpl <- self$get_replicate_names()
+      
+      spec$replicate <- rpl[spec$analysis]
+      
+      spec_list <- split(spec, spec$replicate)
+      
+      names(spec_list)
+      
+      av_list <- lapply(spec_list, function(x) {
+        res <- copy(x)
+        res[["analysis"]] <- NULL
+        res <- res[, intensity := mean(intensity), by = c("shift")]
+        res <- unique(res)
+        res
+      })
+      
+      av_spec <- rbindlist(av_list)
+      
+      self$add_modules_data(
+        list("spectra" = list(
+          "spectra" = av_spec,
+          "software" = "StreamFind",
+          "version" = as.character(packageVersion("StreamFind"))
+        ))
+      )
+      
+      invisible(self)
+    },
+    
+    #' @description X.
+    #'
+    #' @return Invisible.
+    #' 
+    blank_subtraction = function() {
+      
+      if (self$has_averaged_spectra()) {
+        spec <- self$spectra
+        spec_list <- split(spec, spec$replicate)
+        
+      } else {
+        spec <- self$get_spectra()
+        spec_list <- split(spec, spec$analysis)
+      }
+      
+      blks <- self$get_blank_names()
+      names(blks) <- self$get_replicate_names()
+      
+      
+      spec_blk <- spec_list[names(spec_list) %in% blks]
+      
+      spec_spec <- spec_list[!names(spec_list) %in% blks]
+      
+      spec_spec <- lapply(spec_spec, function(x) {
+        rp <- unique(x$replicate)
+        x$raw <- x$intensity
+        x$blank <- spec_blk[[blks[rp]]]$intensity
+        x$intensity <- x$intensity - x$blank
+        x
+      })
+      
+      spec_spec <- rbindlist(spec_spec)
+      
+      self$add_modules_data(
+        list("spectra" = list(
+          "spectra" = spec_spec,
+          "software" = "StreamFind",
+          "version" = as.character(packageVersion("StreamFind"))
+        ))
+      )
+      
+      invisible(self)
+    },
+    
+    #' @description X.
+    #'
+    #' @return Invisible.
+    #' 
+    baseline_correction = function() {
+      
+      baseline_method <- "als"
+      baseline_args <- list(lambda = 5, p = 0.05, maxit = 10)
+      
+      if (self$has_averaged_spectra()) {
+        spec <- self$spectra
+        spec_list <- split(spec, spec$replicate)
+        
+      } else {
+        spec <- self$get_spectra()
+        spec_list <- split(spec, spec$analysis)
+      }
+      
+      corr_list <- lapply(spec_list, function(x) {
+        x$averaged <- x$intensity
+        baseline_data <- .baseline_correction(x$intensity, baseline_method, baseline_args)
+        x$baseline <- baseline_data$baseline
+        x$corrected <- baseline_data$corrected
+        x$intensity <- x$corrected
+        x
+      })
+      
+      corr_list <- rbindlist(corr_list)
+      
+      if (self$has_modules_data("spectra")) {
+        private$.modules$spectra$spectra <- corr_list
+
+      } else {
+        self$add_modules_data(
+          list("spectra" = list(
+            "spectra" = corr_list,
+            "software" = "StreamFind",
+            "version" = as.character(packageVersion("StreamFind"))
+          ))
+        )
+      }
+      
+      invisible(self)
+    },
+    
+    ## ___ has -----
+    
+    #' @description X, returning `TRUE` or `FALSE`.
+    #'
+    has_averaged_spectra = function() {
+      
+      if (self$has_modules_data("spectra")) {
+        
+        TRUE
+        
+      } else {
+        FALSE
+      }
     },
     
     ## ___ plot -----

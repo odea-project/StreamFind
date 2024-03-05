@@ -104,19 +104,13 @@
         message(" Done!")
       }
     }
-
-    message("\U2699 Removing ", length(anas),  " analyses..." , appendLF = FALSE)
     
-    suppressMessages(raman$remove_analyses(anas))
-    
-    message(" Done!")
-    
-    raman$add_analyses(merged_analysis)
-    
-    TRUE
+    merged_analysis
   })
   
-  all(unlist(unified))
+  names(unified) <- urpls
+  
+  unified
 }
 
 #' .plot_raman_spectra_static

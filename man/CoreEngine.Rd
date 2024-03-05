@@ -63,6 +63,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-CoreEngine-has_modules_data}{\code{CoreEngine$has_modules_data()}}
 \item \href{#method-CoreEngine-has_spectra_peaks}{\code{CoreEngine$has_spectra_peaks()}}
 \item \href{#method-CoreEngine-has_averaged_spectra}{\code{CoreEngine$has_averaged_spectra()}}
+\item \href{#method-CoreEngine-plot_spectra_peaks}{\code{CoreEngine$plot_spectra_peaks()}}
 \item \href{#method-CoreEngine-run_workflow}{\code{CoreEngine$run_workflow()}}
 \item \href{#method-CoreEngine-save_headers}{\code{CoreEngine$save_headers()}}
 \item \href{#method-CoreEngine-save_settings}{\code{CoreEngine$save_settings()}}
@@ -696,6 +697,58 @@ Checks if there are average spectra, returning \code{TRUE} or \code{FALSE}.
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_averaged_spectra()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-plot_spectra_peaks"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-plot_spectra_peaks}{}}}
+\subsection{Method \code{plot_spectra_peaks()}}{
+Plots peaks from spectra from analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$plot_spectra_peaks(
+  analyses = NULL,
+  legendNames = NULL,
+  title = NULL,
+  colorBy = "analyses",
+  showLegend = TRUE,
+  xlim = NULL,
+  ylim = NULL,
+  cex = 0.6,
+  xLab = NULL,
+  yLab = NULL,
+  interactive = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+
+\item{\code{legendNames}}{A character vector with the same length as the targets or
+\code{TRUE} or \code{FALSE} for using the name in added targets as legend of the plot.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{colorBy}}{A string defining how to legend the plot. Possible values are
+\code{analyses}, \code{targets} (the default) or \code{replicates}. Other options are possible
+for specific plotting methods.}
+
+\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
+
+\item{\code{xlim}}{A length one or two numeric vector for setting the \emph{x} limits of the plot.}
+
+\item{\code{ylim}}{A length one or two numeric vector for setting the \emph{y} limits of the plot.}
+
+\item{\code{cex}}{A length one numeric value defining the scale of the legend for non interactive plotting.}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
+\item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-run_workflow"></a>}}

@@ -13,7 +13,8 @@
 std::string trim_whitespaces_before_and_after(const std::string& str) {
   size_t first = str.find_first_not_of(" \t\n\r");
   size_t last = str.find_last_not_of(" \t\n\r");
-  return str.substr(first, (last - first + 1));
+  if (first < 100) str.substr(first, (last - first + 1));
+  return str;
 }
 
 std::string extractFileName(const std::string& filePath) {
@@ -52,14 +53,21 @@ Rcpp::List rcpp_parse_asc_file(std::string file_path) {
   
   std::vector<std::vector<double>> data_values;
   
+  // int line_number = 0;
+  
   while (std::getline(file, line)) {
+    
+    // line_number++;
+    // 
+    // Rcpp::Rcout << line_number << " ";
     
     if (line.find(":") != std::string::npos) {
       std::istringstream iss(line);
       std::string key, value;
       std::getline(iss, key, ':');
       std::getline(iss, value);
-      metadata_list[key] = trim_whitespaces_before_and_after(value);
+      
+      if (value.length() > 0) metadata_list[key] = trim_whitespaces_before_and_after(value);
       
     } else if (line.find(";") != std::string::npos) {
       std::istringstream iss(line);

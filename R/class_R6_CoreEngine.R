@@ -11,6 +11,14 @@
 #' @template arg-save-name
 #' @template arg-save-path
 #' @template arg-import-file
+#' @template arg-title
+#' @template arg-legendNames
+#' @template arg-colorBy
+#' @template arg-labs
+#' @template arg-interactive
+#' @template arg-xlim-ylim
+#' @template arg-cex
+#' @template arg-showLegend
 #'
 #' @export
 #'
@@ -296,7 +304,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       if (length(private$.analyses) > 0) {
         cat("\n")
         overview <- self$get_overview()
-        overview$file <- NULL
+        overview[["file"]] <- NULL
         row.names(overview) <- paste0(" ", seq_len(nrow(overview)), ":")
         print(overview)
       } else {

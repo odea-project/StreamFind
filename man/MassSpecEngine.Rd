@@ -48,6 +48,8 @@ List of function elements to access specific reference help pages.}
 \item{\code{chrom_peaks}}{\code{data.table} with integrated peaks from chromatograms for each analyses.}
 
 \item{\code{chromatograms}}{\code{data.table} with chromatograms for each analyses.}
+
+\item{\code{spectra_charges}}{\code{data.table} with charges assigned to spectra for each analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -123,6 +125,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-has_formulas}{\code{MassSpecEngine$has_formulas()}}
 \item \href{#method-MassSpecEngine-has_compounds}{\code{MassSpecEngine$has_compounds()}}
 \item \href{#method-MassSpecEngine-has_chrom_peaks}{\code{MassSpecEngine$has_chrom_peaks()}}
+\item \href{#method-MassSpecEngine-has_spectra_charges}{\code{MassSpecEngine$has_spectra_charges()}}
 \item \href{#method-MassSpecEngine-plot_spectra}{\code{MassSpecEngine$plot_spectra()}}
 \item \href{#method-MassSpecEngine-plot_chromatograms}{\code{MassSpecEngine$plot_chromatograms()}}
 \item \href{#method-MassSpecEngine-plot_xic}{\code{MassSpecEngine$plot_xic()}}
@@ -144,6 +147,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-plot_suspects}{\code{MassSpecEngine$plot_suspects()}}
 \item \href{#method-MassSpecEngine-map_isotopes}{\code{MassSpecEngine$map_isotopes()}}
 \item \href{#method-MassSpecEngine-plot_chrom_peaks}{\code{MassSpecEngine$plot_chrom_peaks()}}
+\item \href{#method-MassSpecEngine-plot_spectra_charges}{\code{MassSpecEngine$plot_spectra_charges()}}
 \item \href{#method-MassSpecEngine-centroid_spectra}{\code{MassSpecEngine$centroid_spectra()}}
 \item \href{#method-MassSpecEngine-bin_spectra}{\code{MassSpecEngine$bin_spectra()}}
 \item \href{#method-MassSpecEngine-find_features}{\code{MassSpecEngine$find_features()}}
@@ -197,6 +201,7 @@ List of function elements to access specific reference help pages.}
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_analyses'><code>StreamFind::CoreEngine$import_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_headers'><code>StreamFind::CoreEngine$import_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_settings'><code>StreamFind::CoreEngine$import_settings()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="plot_spectra_peaks"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-plot_spectra_peaks'><code>StreamFind::CoreEngine$plot_spectra_peaks()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print'><code>StreamFind::CoreEngine$print()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_analyses'><code>StreamFind::CoreEngine$print_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_headers'><code>StreamFind::CoreEngine$print_headers()</code></a></span></li>
@@ -2721,6 +2726,16 @@ Checks if there are integrated peaks from chromatograms, returning \code{TRUE} o
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-has_spectra_charges"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_spectra_charges}{}}}
+\subsection{Method \code{has_spectra_charges()}}{
+Checks if there are charges assigned to spectra, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_spectra_charges()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-plot_spectra"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra}{}}}
 \subsection{Method \code{plot_spectra()}}{
@@ -4715,6 +4730,60 @@ Plots peaks from chromatograms from analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{chromatograms}}{A character or integer vector with the ID name or the index of the chromatograms to extract.}
+
+\item{\code{legendNames}}{A character vector with the same length as the targets.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{colorBy}}{A string of length 1. One of \code{analyses}, \code{targets} (the
+default) or \code{replicates}.}
+
+\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
+
+\item{\code{xlim}}{A length one or two numeric vector for setting the \emph{x}
+limits (in seconds) of the plot.}
+
+\item{\code{ylim}}{A length one or two numeric vector for setting the \emph{m/z}
+limits of the plot.}
+
+\item{\code{cex}}{A length one numeric value defining the scale of the legend for
+non interactive plotting.}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
+\item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
+using \pkg{plotly}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_charges"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra_charges}{}}}
+\subsection{Method \code{plot_spectra_charges()}}{
+Plots charge assignment of deconvoluted spectra from analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_charges(
+  analyses = NULL,
+  legendNames = NULL,
+  title = NULL,
+  colorBy = "analyses",
+  showLegend = TRUE,
+  xlim = NULL,
+  ylim = NULL,
+  cex = 0.6,
+  xLab = NULL,
+  yLab = NULL,
+  interactive = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{legendNames}}{A character vector with the same length as the targets.}
 
