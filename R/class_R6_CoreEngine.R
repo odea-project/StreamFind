@@ -171,6 +171,53 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }, settings = settings, FALSE))
     }
   ),
+  
+  # _ active bindings -----
+  
+  active = list(
+    
+    ### ___ spectra -----
+    
+    #' @field spectra_peaks `data.table` with integrated spectra peaks for each analyses.
+    #' 
+    spectra_peaks = function() {
+      
+      if (self$has_spectra_peaks()) {
+        pks <- private$.modules$spectra$data
+        pks <- lapply(pks, function(x) x$peaks)
+        pks <- rbindlist(pks)
+        
+        if (nrow(pks) > 0) {
+          pks$replicate <- self$get_replicate_names()[pks$analysis]
+        }
+        
+        pks
+        
+      } else {
+        data.table()
+      }
+    },
+    
+    #' @field averaged_spectra `data.table` with averaged_spectra spectra for each analyses.
+    #' 
+    averaged_spectra = function() {
+      
+      if (self$has_averaged_spectra()) {
+        res <- private$.modules$spectra$data
+        res <- lapply(res, function(x) x$average)
+        res <- rbindlist(res)
+        
+        if (nrow(res) > 0) {
+          res$replicate <- self$get_replicate_names()[res$analysis]
+        }
+        
+        res
+        
+      } else {
+        data.table()
+      }
+    }
+  ),
     
   # _ public fields/methods -----
   public = list(
@@ -424,6 +471,12 @@ CoreEngine <- R6::R6Class("CoreEngine",
       } else {
         data.table()
       }
+    },
+    
+    #' @description Gets names of present modules data.
+    #'
+    get_modules_data_names = function() {
+      names(private$.modules)
     },
     
     #' @description Gets the list of modules data.
@@ -1170,7 +1223,104 @@ CoreEngine <- R6::R6Class("CoreEngine",
       length(private$.modules[names]) > 0
     },
     
+    ### ___ spectra -----
+    
+    #' @description Checks if there are spectra peaks, returning `TRUE` or `FALSE`.
+    #'
+    has_spectra_peaks = function() {
+      
+      if (self$has_modules_data("spectra")) {
+        sum(vapply(private$.modules$spectra$data, function(x) nrow(x$peaks), 0)) > 0
+        
+      } else {
+        FALSE
+      }
+    },
+    
+    #' @description Checks if there are average spectra, returning `TRUE` or `FALSE`.
+    #'
+    has_averaged_spectra = function() {
+      
+      if (self$has_modules_data("spectra")) {
+        sum(vapply(private$.modules$spectra$data, function(x) nrow(x$average), 0)) > 0
+        
+      } else {
+        FALSE
+      }
+    },
+    
     ## ___ plot -----
+    
+    #' @description Plots peaks from spectra from analyses.
+    #'
+    plot_spectra_peaks = function(analyses = NULL,
+                                  legendNames = NULL,
+                                  title = NULL,
+                                  colorBy = "analyses",
+                                  showLegend = TRUE,
+                                  xlim = NULL,
+                                  ylim = NULL,
+                                  cex = 0.6,
+                                  xLab = NULL,
+                                  yLab = NULL,
+                                  interactive = TRUE) {
+      
+      if (!self$has_spectra_peaks()) return(NULL)
+      
+      analyses <- private$.check_analyses_argument(analyses)
+      
+      if (is.null(analyses)) return(NULL)
+      
+      pks <- self$spectra_peaks
+      
+      pks <- pks[pks$analysis %in% analyses, ]
+      
+      if (nrow(pks) == 0) {
+        message("\U2717 Peaks not found for the targets!")
+        return(NULL)
+      }
+      
+      setnames(pks, c("mass", "massmin", "massmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
+      
+      sp_data <- self$get_modules_data("spectra")
+      sp_data <- sp_data$spectra$data
+      sp_data <- sp_data[unique(pks$analysis)]
+      
+      if (self$has_averaged_spectra()) {
+        spec <- lapply(sp_data, function(x) x$average)
+        spec <- rbindlist(spec, fill = TRUE)
+        if ("rt" %in% colnames(spec)) spec$rt <- NULL
+        setnames(spec, c("mass", "massmin", "massmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
+        setnames(spec, c("mz", "mzmin", "mzmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
+        
+      } else {
+        spec <- lapply(sp_data, function(x) x$raw)
+        spec <- rbindlist(spec, fill = TRUE)
+        if ("rt" %in% colnames(spec)) spec$rt <- NULL
+        setnames(spec, c("mass", "massmin", "massmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
+        setnames(spec, c("mz", "mzmin", "mzmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
+      }
+      
+      if ("smoothed" %in% colnames(spec)) {
+        spec$raw <- spec$smoothed
+      }
+      
+      ids <- spec$id
+      names(ids) <- spec$analysis
+      ids <- ids[!duplicated(names(ids))]
+      
+      pks$id = ids[pks$analysis]
+      
+      if (is.null(xLab)) xLab <- "Mass / Da"
+      if (is.null(yLab)) yLab <- "Intensity"
+      
+      if (!interactive) {
+        .plot_chrom_peaks_static(spec, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
+      } else {
+        .plot_chrom_peaks_interactive(spec, pks, legendNames, colorBy, title, showLegend, xLab, yLab)
+      }
+    },
+    
     
     ## ___ processing -----
     

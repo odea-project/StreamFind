@@ -14,6 +14,15 @@ List of function elements to access specific reference help pages.}
 }
 \if{html}{\out{</div>}}
 }
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
+\describe{
+\item{\code{spectra_peaks}}{\code{data.table} with integrated spectra peaks for each analyses.}
+
+\item{\code{averaged_spectra}}{\code{data.table} with averaged_spectra spectra for each analyses.}
+}
+\if{html}{\out{</div>}}
+}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
@@ -36,6 +45,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-CoreEngine-get_settings}{\code{CoreEngine$get_settings()}}
 \item \href{#method-CoreEngine-get_settings_names}{\code{CoreEngine$get_settings_names()}}
 \item \href{#method-CoreEngine-get_workflow_overview}{\code{CoreEngine$get_workflow_overview()}}
+\item \href{#method-CoreEngine-get_modules_data_names}{\code{CoreEngine$get_modules_data_names()}}
 \item \href{#method-CoreEngine-get_modules_data}{\code{CoreEngine$get_modules_data()}}
 \item \href{#method-CoreEngine-add_headers}{\code{CoreEngine$add_headers()}}
 \item \href{#method-CoreEngine-add_settings}{\code{CoreEngine$add_settings()}}
@@ -51,6 +61,8 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-CoreEngine-has_settings}{\code{CoreEngine$has_settings()}}
 \item \href{#method-CoreEngine-has_analyses}{\code{CoreEngine$has_analyses()}}
 \item \href{#method-CoreEngine-has_modules_data}{\code{CoreEngine$has_modules_data()}}
+\item \href{#method-CoreEngine-has_spectra_peaks}{\code{CoreEngine$has_spectra_peaks()}}
+\item \href{#method-CoreEngine-has_averaged_spectra}{\code{CoreEngine$has_averaged_spectra()}}
 \item \href{#method-CoreEngine-run_workflow}{\code{CoreEngine$run_workflow()}}
 \item \href{#method-CoreEngine-save_headers}{\code{CoreEngine$save_headers()}}
 \item \href{#method-CoreEngine-save_settings}{\code{CoreEngine$save_settings()}}
@@ -344,6 +356,16 @@ Gets the names of all processing methods in added processing settings as a chara
 A data.table with the overview of all processing methods from added processing settings.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_workflow_overview()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-get_modules_data_names"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-get_modules_data_names}{}}}
+\subsection{Method \code{get_modules_data_names()}}{
+Gets names of present modules data.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_modules_data_names()}\if{html}{\out{</div>}}
 }
 
 }
@@ -654,6 +676,26 @@ data is patRoon.}
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-has_spectra_peaks"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-has_spectra_peaks}{}}}
+\subsection{Method \code{has_spectra_peaks()}}{
+Checks if there are spectra peaks, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_spectra_peaks()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-has_averaged_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-has_averaged_spectra}{}}}
+\subsection{Method \code{has_averaged_spectra()}}{
+Checks if there are average spectra, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_averaged_spectra()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-run_workflow"></a>}}

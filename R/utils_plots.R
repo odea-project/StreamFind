@@ -208,16 +208,14 @@
       "</br> analysis: ", pk$analysis[1],
       "</br> id: ", pk$id[1],
       "</br> peak: ", pk$peak[1],
-      "</br> rt: ", round(pk$rt[1], digits = 0),
-      "</br> drt: ", round(pk$rtmax[1] - pk$rtmin[1], digits = 0),
+      "</br> x: ", round(pk$rt[1], digits = 0),
+      "</br> dx: ", round(pk$rtmax[1] - pk$rtmin[1], digits = 0),
       "</br> intensity: ", round(pk$intensity[1], digits = 0)
     )
     
     if (!"baseline" %in% colnames(chrom)) chrom$baseline <- rep(0, nrow(chrom))
     
     plot <- plot %>% add_trace(
-      # x = pk_chrom$rt,
-      # y = pk_chrom$raw,
       x = c(pk_chrom$rt, rev(pk_chrom$rt)),
       y = c(pk_chrom$raw, rev(pk_chrom$baseline)),
       type = "scatter", mode = "lines+markers",

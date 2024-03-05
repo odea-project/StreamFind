@@ -55,7 +55,7 @@ ps <- list(
 
   Settings_group_features_openms(),
 
-  # Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
+  Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
 
   Settings_filter_features_StreamFind(excludeIsotopes = TRUE),
 
@@ -67,15 +67,15 @@ ps <- list(
 
   Settings_filter_features_StreamFind(minSnRatio = 5),
   
-  Settings_load_features_ms1_StreamFind(runParallel = FALSE),
-
-  Settings_load_features_ms2_StreamFind(runParallel = FALSE),
-  
-  Settings_load_MSPeakLists_patRoon(useLoaded = TRUE), # Check patRoon function for issues with MSPeakLists!!! 
-  
-  Settings_generate_formulas_genform(),
-  
-  Settings_generate_compounds_metfrag()
+  # Settings_load_features_ms1_StreamFind(runParallel = FALSE),
+  # 
+  Settings_load_features_ms2_StreamFind(runParallel = FALSE)
+  # 
+  # Settings_load_MSPeakLists_patRoon(useLoaded = TRUE), # Check patRoon function for issues with MSPeakLists!!! 
+  # 
+  # Settings_generate_formulas_genform(),
+  # 
+  # Settings_generate_compounds_metfrag()
 
   # Settings_suspect_screening_StreamFind(database = dbsus, ppm = 5, sec = 10)
 )
@@ -83,24 +83,6 @@ ps <- list(
 ms <- MassSpecEngine$new(files = ms_files_df, settings = ps)
 
 ms$run_workflow()
-
-
-
-
-
-
-
-
-
-
-sus <- ms$get_suspects(database = dbsus, ppm = 5, sec = 10)
-
-ms$plot_groups(sus$group)
-
-
-
-
-
 
 
 

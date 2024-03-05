@@ -94,13 +94,12 @@
 
 #' @title .find_peaks
 #' 
-#' @description Finds peaks in a given vector using the findpeaks function from pracma and an additional attempt 
+#' @description Finds peaks in a given vector using the `findpeaks` function from `pracma` and an additional attempt 
 #' to merge peaks.
 #' 
 #' @noRd
 #' 
-.find_peaks <- function(data,
-                        xVar,
+.find_peaks <- function(data, xVar,
                         merge = TRUE,
                         closeByThreshold = 45,
                         valeyThreshold = 0.5,
@@ -109,7 +108,7 @@
                         maxPeakWidth,
                         minPeakWidth) {
   
-  plotLevel <- 4
+  plotLevel <- 1
   
   vec <- data$intensity
   
@@ -261,6 +260,8 @@
     }
     
     pks <- pks[!pks$merged]
+    
+    pks[["merged"]] <- NULL
   }
 
   pks$width <- pks$max - pks$min

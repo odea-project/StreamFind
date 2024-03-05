@@ -2765,3 +2765,211 @@
   
   return(plotf)
 }
+
+#' .plot_spec_charges_static
+#'
+#' @noRd
+#'
+.plot_spec_charges_static <- function(spec = NULL,
+                                      res = NULL,
+                                      legendNames = NULL,
+                                      colorBy = "targets",
+                                      title = NULL,
+                                      showLegend = TRUE,
+                                      xlim = NULL,
+                                      ylim = NULL,
+                                      cex = 0.6,
+                                      xLab = NULL,
+                                      yLab = NULL) {
+  
+  res$unique_ids <- paste0(res$analysis, "_", res$id)
+  
+  res <- .make_colorBy_varkey(res, colorBy, legendNames)
+  
+  leg <- unique(res$var)
+  
+  cl <- .get_colors(leg)
+  
+  ids <- unique(res$unique_ids)
+  
+  xlab <- "Mass / Da"
+  ylab <- "Intensity / counts"
+  if (!is.null(xLab)) xlab <- xLab
+  if (!is.null(yLab)) ylab <- yLab
+  
+  if (is.numeric(xlim) & length(xlim) == 1) {
+    rtr <- c(min(spec$mz) - xlim, max(spec$mz) + xlim)
+  } else if (is.numeric(xlim) & length(xlim) == 2) {
+    rtr <- xlim
+  } else {
+    rtr <- c(min(spec$mz), max(spec$mz))
+    if (showLegend) {
+      rtr[2] <- rtr[2] * 1.01
+    }
+  }
+  
+  if (is.numeric(ylim) & length(ylim) == 1) {
+    intr <- c(min(spec$intensity) - ylim, (max(spec$intensity) + ylim))
+  } else if (is.numeric(ylim) & length(ylim) == 2) {
+    intr <- ylim
+  } else {
+    intr <- c(0, max(spec$intensity) * 1.4)
+  }
+  
+  if (is.null(cex) || !is.numeric(cex)) cex <- 0.6
+  
+  plot(
+    spec$mz,
+    type = "n",
+    xlab = xlab,
+    ylab = ylab,
+    xlim = rtr,
+    ylim = intr,
+    main = title
+  )
+  
+  for (t in ids) {
+    select_vector <- res$unique_ids == t
+    
+    lt <- unique(res$var[select_vector])
+    
+    pk <- res[select_vector, ]
+    
+    sp <- spec[spec$analysis %in% pk$analysis[1] & spec$id %in% pk$id[1], ]
+
+    lines(x = sp$mz, y = sp$intensity, type = "l", pch = 19, cex = 0.3, col = cl[lt])
+    
+    text(x = pk$mz, y = pk$intensity, adj = c(-0.1, 0.25),
+      labels = paste0(pk$z, " - " , round(pk$mz, digits = 3)),
+      vfont = NULL, cex = 0.6, col = "darkgreen", font = NULL, srt = 90
+    )
+  }
+  
+  if (showLegend) {
+    legend(
+      x = "topright",
+      legend = names(cl),
+      col = cl,
+      lwd = 2,
+      lty = 1,
+      cex = cex,
+      bty = "n"
+    )
+  }
+}
+
+#' .plot_spec_charges_interactive
+#'
+#' @noRd
+#'
+.plot_spec_charges_interactive <- function(spec = NULL,
+                                           res = NULL,
+                                           legendNames = NULL,
+                                           colorBy = "targets",
+                                           title = NULL,
+                                           showLegend = TRUE,
+                                           xLab = NULL,
+                                           yLab = NULL) {
+  
+  res$unique_ids <- paste0(res$analysis, "_", res$id)
+  
+  res <- .make_colorBy_varkey(res, colorBy, legendNames)
+  
+  leg <- unique(res$var)
+  
+  cl <- .get_colors(leg)
+  
+  ids <- unique(res$unique_ids)
+  
+  title <- list(
+    text = title, x = 0.13, y = 0.98,
+    font = list(size = 12, color = "black")
+  )
+  
+  xlab <- "Mass / Da"
+  ylab <- "Intensity / counts"
+  if (!is.null(xLab)) xlab <- xLab
+  if (!is.null(yLab)) ylab <- yLab
+  
+  xaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2, title = xlab,
+    range = c(min(spec$mz), max(spec$mz)),
+    titlefont = list(size = 12, color = "black")
+  )
+  
+  yaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2, title = ylab,
+    range = c(min(spec$intensity), max(spec$intensity) * 1.3),
+    titlefont = list(size = 12, color = "black")
+  )
+  
+  plot <- plot_ly()
+  
+  if (showLegend) {
+    showL <- rep(TRUE, length(leg))
+  } else {
+    showL <- rep(FALSE, length(leg))
+  }
+  
+  names(showL) <- leg
+  
+  
+  for (t in ids) {
+    select_vector <- res$unique_ids == t
+    
+    lt <- unique(res$var[select_vector])
+    
+    pk <- res[select_vector, ]
+    
+    sp <- spec[spec$analysis %in% pk$analysis[1] & spec$id %in% pk$id[1], ]
+    
+    plot <- plot %>% add_trace(
+      x = sp$mz,
+      y = sp$intensity,
+      type = "scatter", mode = "lines",
+      line = list(width = 0.3, color = unname(cl[lt])),
+      name = lt,
+      legendgroup = lt,
+      showlegend = showL[lt],
+      hovertemplate = paste("<br>mz: %{x}<br>", "int: %{y}")
+    )
+    
+    if (nrow(sp) >= 1) showL[lt] <- FALSE
+    
+    plot <- plot %>% add_trace(
+      x = pk$mz,
+      y = pk$intensity,
+      type = "scatter", mode = "text",
+      # marker = list(color = unname(cl[lt])),
+      text = paste0(pk$z, "\n" , round(pk$mz, digits = 3)),
+      textposition = "outside",
+      # textangle = 90,
+      textfont = list(size = 9, color = unname(cl[lt])),
+      name = lt,
+      legendgroup = lt,
+      showlegend = FALSE,
+      hovertemplate = paste("<i>m/z</i>: %{x:.4f}", "<br>intensity: %{y:.0f}")
+    )
+  }
+  
+  if (showLegend) {
+    plot <- plot %>% plotly::layout(
+      legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
+      xaxis = xaxis,
+      yaxis = yaxis,
+      title = title
+    )
+    
+  } else {
+    plot <- plot %>% plotly::layout(
+      legend = NULL,
+      xaxis = xaxis,
+      yaxis = yaxis,
+      title = title
+    )
+  }
+  
+  plot
+}

@@ -642,6 +642,28 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       } else {
         data.table()
       }
+    },
+    
+    ### ___ Spectra -----
+    
+    #' @field spectra_charges `data.table` with charges assigned to spectra for each analyses.
+    #' 
+    spectra_charges = function() {
+      
+      if (self$has_spectra_charges()) {
+        res <- private$.modules$spectra$data
+        res <- lapply(res, function(x) x$charges)
+        res <- rbindlist(res)
+        
+        if (nrow(res) > 0) {
+          res$replicate <- self$get_replicate_names()[res$analysis]
+        }
+        
+        res
+        
+      } else {
+        data.table()
+      }
     }
   ),
 
@@ -5111,12 +5133,28 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       }
     },
     
+    ### ___ Chromatograms -----
+    
     #' @description Checks if there are integrated peaks from chromatograms, returning `TRUE` or `FALSE`.
     #'
     has_chrom_peaks = function() {
       
       if (self$has_modules_data("chrom_peaks")) {
         sum(vapply(private$.modules$chrom_peaks$data, function(x) nrow(x$peaks), 0)) > 0
+        
+      } else {
+        FALSE
+      }
+    },
+    
+    ### ___ Spectra -----
+    
+    #' @description Checks if there are charges assigned to spectra, returning `TRUE` or `FALSE`.
+    #'
+    has_spectra_charges = function() {
+      
+      if (self$has_modules_data("spectra")) {
+        sum(vapply(private$.modules$spectra$data, function(x) nrow(x$charges), 0)) > 0
         
       } else {
         FALSE
@@ -6277,6 +6315,51 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         .plot_chrom_peaks_static(self$chromatograms, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
       } else {
         .plot_chrom_peaks_interactive(self$chromatograms, pks, legendNames, colorBy, title, showLegend, xLab, yLab)
+      }
+    },
+    
+    ### ___ Spectra -----
+    
+    #' @description Plots charge assignment of deconvoluted spectra from analyses.
+    #'
+    plot_spectra_charges = function(analyses = NULL,
+                                    legendNames = NULL,
+                                    title = NULL,
+                                    colorBy = "analyses",
+                                    showLegend = TRUE,
+                                    xlim = NULL,
+                                    ylim = NULL,
+                                    cex = 0.6,
+                                    xLab = NULL,
+                                    yLab = NULL,
+                                    interactive = TRUE) {
+      
+      if (!self$has_spectra_charges()) return(NULL)
+      
+      analyses <- private$.check_analyses_argument(analyses)
+      
+      if (is.null(analyses)) return(NULL)
+      
+      res <- self$spectra_charges
+      
+      res <- res[res$analysis %in% analyses, ]
+      
+      if (nrow(res) == 0) {
+        message("\U2717 Spectra charges not found for the targets!")
+        return(NULL)
+      }
+
+      sp_data <- self$get_modules_data("spectra")
+      sp_data <- sp_data$spectra$data
+      sp_data <- sp_data[unique(res$analysis)]
+      
+      spec <- lapply(sp_data, function(x) x$raw)
+      spec <- rbindlist(spec, fill = TRUE)
+      
+      if (!interactive) {
+        .plot_spec_charges_static(spec, res, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
+      } else {
+        .plot_spec_charges_interactive(spec, res, legendNames, colorBy, title, showLegend, xLab, yLab)
       }
     },
 

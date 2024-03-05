@@ -2477,18 +2477,86 @@ validate.Settings_integrate_chromatograms_StreamFind <- function(x) {
 #' @title Settings_deconvolute_spectra_charges_StreamFind
 #'
 #' @description Prototype.
+#' 
+#' @param rtmin 
+#' @param rtmax 
+#' @param mzmin 
+#' @param mzmax 
+#' @param presence  presence can be adjusted to remove noise
+#' @param mzClust critical for resolution, in Da
+#' @param minIntensity 
+#' @param roundVal 
+#' @param relLowCut 
+#' @param absLowCut 
+#' @param mzClustAverage 
+#' @param smoothing 
+#' @param windowSize 
+#' @param baseline 
+#' @param baseline_method 
+#' @param baseline_args 
+#' @param merge 
+#' @param closeByThreshold 
+#' @param valeyThreshold 
+#' @param minPeakHeight 
+#' @param minPeakDistance 
+#' @param maxPeakWidth 
+#' @param minPeakWidth 
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_deconvolute_spectra_charges_StreamFind.
 #'
 #' @export
 #'
-Settings_deconvolute_spectra_charges_StreamFind <- function() {
+Settings_deconvolute_spectra_charges_StreamFind <- function(rtmin = 315 - 2.5,
+                                                            rtmax = 315 + 2.5,
+                                                            mzmin = 2400,
+                                                            mzmax = 3800,
+                                                            presence = 0.1,
+                                                            mzClust = 0.001,
+                                                            minIntensity = 50,
+                                                            roundVal = 35,
+                                                            relLowCut = 0.2,
+                                                            absLowCut = 300,
+                                                            mzClustAverage = 0.1,
+                                                            smoothing = TRUE,
+                                                            windowSize = 25,
+                                                            baseline = TRUE,
+                                                            baseline_method = "als",
+                                                            baseline_args = list(lambda = 9, p = 0.02, maxit = 10),
+                                                            merge = TRUE,
+                                                            closeByThreshold = 45,
+                                                            valeyThreshold = 0.5,
+                                                            minPeakHeight = 100,
+                                                            minPeakDistance = 50,
+                                                            maxPeakWidth = 250,
+                                                            minPeakWidth = 50) {
   
   settings <- list(
     call = "deconvolute_spectra_charges",
     algorithm = "StreamFind",
     parameters = list(
-      
+      rtmin = rtmin,
+      rtmax = rtmax,
+      mzmin = mzmin,
+      mzmax = mzmax,
+      presence = presence, # presence can be adjusted to remove noise
+      mzClust = mzClust, # critical for resolution, in Da
+      minIntensity = minIntensity,
+      roundVal = roundVal,
+      relLowCut = relLowCut,
+      absLowCut = absLowCut,
+      mzClustAverage = mzClustAverage,
+      smoothing = smoothing,
+      windowSize = windowSize,
+      baseline = baseline,
+      baseline_method = baseline_method,
+      baseline_args = baseline_args,
+      merge = merge,
+      closeByThreshold = closeByThreshold,
+      valeyThreshold = valeyThreshold,
+      minPeakHeight = minPeakHeight,
+      minPeakDistance = minPeakDistance,
+      maxPeakWidth = maxPeakWidth,
+      minPeakWidth = minPeakWidth
     ),
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",

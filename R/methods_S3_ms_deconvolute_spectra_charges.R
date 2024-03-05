@@ -9,28 +9,70 @@
   
   intensity <- NULL
   
-  rtmin = 315 - 2.5
-  rtmax = 315 + 2.5
-  mzmin = 2400
-  mzmax = 3800
-  presence = 0.1 # presence can be adjusted to remove noise
-  mzClust = 0.001 # critical for resolution, in Da
-  minIntensity = 50
-  roundVal = 35
-  lowCut = 0.2
-  mzClustAverage = 0.1
-  smoothing = TRUE
-  windowSize = 25
-  baseline = TRUE
-  baseline_method = "als"
-  baseline_args = list(lambda = 9, p = 0.02, maxit = 10)
-  merge = TRUE
-  closeByThreshold = 45
-  valeyThreshold = 0.5
-  minPeakHeight = 100
-  minPeakDistance = 50
-  maxPeakWidth = 250
-  minPeakWidth = 50
+  message("Deconvoluting spectra...", appendLF = TRUE)
+  
+  if (!requireNamespace("pracma", quietly = TRUE)) {
+    warning("Package pracma not found but required! Not done.")
+    return(FALSE)
+  }
+  
+  if (!validate(settings)) return(FALSE)
+  
+  parameters <- settings$parameters
+  
+  if (parameters$baseline && !requireNamespace("baseline", quietly = TRUE)) {
+    warning("Package baseline not found but required for baseline correction! Not done.")
+    return(FALSE)
+  }
+  
+  rtmin <- parameters$rtmin
+  rtmax <- parameters$rtmax
+  mzmin <- parameters$mzmin
+  mzmax <- parameters$mzmax
+  presence <- parameters$presence
+  mzClust <- parameters$mzClust
+  minIntensity <- parameters$minIntensity
+  roundVal <- parameters$roundVal
+  relLowCut <- parameters$relLowCut
+  absLowCut <- parameters$absLowCut
+  mzClustAverage <- parameters$mzClustAverage
+  smoothing <- parameters$smoothing
+  windowSize <- parameters$windowSize
+  baseline <- parameters$baseline
+  baseline_method <- parameters$baseline_method
+  baseline_args <- parameters$baseline_args
+  merge <- parameters$merge
+  closeByThreshold <- parameters$closeByThreshold
+  valeyThreshold <- parameters$valeyThreshold
+  minPeakHeight <- parameters$minPeakHeight
+  minPeakDistance <- parameters$minPeakDistance
+  maxPeakWidth <- parameters$maxPeakWidth
+  minPeakWidth <- parameters$minPeakWidth
+  
+  
+  # rtmin = 315 - 2.5
+  # rtmax = 315 + 2.5
+  # mzmin = 2400
+  # mzmax = 3800
+  # presence = 0.1 # presence can be adjusted to remove noise
+  # mzClust = 0.001 # critical for resolution, in Da
+  # minIntensity = 50
+  # roundVal = 35
+  # relLowCut = 0.2
+  # absLowCut = 300
+  # mzClustAverage = 0.1
+  # smoothing = TRUE
+  # windowSize = 25
+  # baseline = TRUE
+  # baseline_method = "als"
+  # baseline_args = list(lambda = 9, p = 0.02, maxit = 10)
+  # merge = TRUE
+  # closeByThreshold = 45
+  # valeyThreshold = 0.5
+  # minPeakHeight = 100
+  # minPeakDistance = 50
+  # maxPeakWidth = 250
+  # minPeakWidth = 50
   
   plotLevel = 4
   
@@ -45,19 +87,36 @@
     minIntensity = minIntensity
   )
   
-  # .plot_spectra_interactive(ms1)
+  if (nrow(ms1) == 0) {
+    warning("MS1 spectra not found! Not done.")
+    return(FALSE)
+  }
+  
+  if (plotLevel > 1) .plot_spectra_interactive(ms1)
   
   ms1_list <- split(ms1, ms1$analysis)
   
-  ms1_list <- lapply(ms1_list, function(x) {
+  analyses <- self$get_analysis_names()
+  
+  output <- lapply(analyses, function(x, ms1_list) {
     
-    if (nrow(x) == 0) return(data.table())
+    raw <- ms1_list[[x]]
     
-    if ("BVCZ_Blank" %in% unique(x$analysis)) return(list())
+    empty_res <- list(
+      "raw" = data.table(),
+      "charges" = data.table(),
+      "average" = data.table(),
+      "peaks" = data.table()
+    )
     
-    x$cluster <- round(x$mz / roundVal) * roundVal
+    if (is.null(raw)) return(empty_res)
     
-    sp <- copy(x)
+    if (nrow(raw) == 0) return(empty_res)
+    
+    raw$cluster <- round(raw$mz / roundVal) * roundVal
+    
+    sp <- copy(raw)
+    
     setorder(sp, -intensity)
     sp$mzLow <- NA_real_
     sp$mzHigh <- NA_real_
@@ -105,11 +164,16 @@
     
     setorder(sp2, -intensity)
     
-    sp2 <- sp2[sp2$intensity / sp2$intensity[1] > lowCut, ]
+    if (!is.null(absLowCut)) {
+      sp2 <- sp2[sp2$intensity > absLowCut, ]
+      
+    } else {
+      sp2 <- sp2[sp2$intensity / sp2$intensity[1] > relLowCut, ]
+    }
     
     if (plotLevel > 1) {
       
-      plot(x$mz, x$intensity, type = 'l', ylab = ylab, xlab = xlab,
+      plot(raw$mz, raw$intensity, type = 'l', ylab = ylab, xlab = xlab,
         main = "Clusters, overlap window and low intensity threshold (lowCut)"
       )
       
@@ -141,7 +205,12 @@
         angle = 30
       )
       
-      abline(h = sp2$intensity[1] * lowCut, col = "darkred")
+      if (!is.null(absLowCut)) {
+        abline(h = absLowCut, col = "darkred")
+        
+      } else {
+        abline(h = sp2$intensity[1] * relLowCut, col = "darkred")
+      }
       
       text(
         sp2$mz,
@@ -173,10 +242,10 @@
       )
     }
     
-    res <- x[x$mz == 0, ]
+    res <- raw[raw$mz == 0, ]
     
     for (i in seq_len(nrow(sp2))) {
-      temp <- x[x$cluster == sp2$cluster[i] & x$mz == sp2$mz[i], ]
+      temp <- raw[raw$cluster == sp2$cluster[i] & raw$mz == sp2$mz[i], ]
       res <- rbind(res, temp)
     }
     
@@ -186,21 +255,14 @@
     
     res$z <- NA_integer_
     
-    # Based on the relationship
-    #
-    # m/z_iZ = m/z_{i+1}(Z-1)
-    #
-    # giving
-    #
-    # Z = \frac{-m/z_{i+1}}{m/z_i-m/z_{i+1}}
-    
+    # Based on the relationship m/z_iZ = m/z_{i+1}(Z-1) giving Z = \frac{-m/z_{i+1}}{m/z_i-m/z_{i+1}}
     for (i in seq_len(nrow(res))) {
       res$z[i] <- round((-res$mz[i + 1]) / (res$mz[i] - res$mz[i + 1]), digits = 0)
     }
     
     res <- res[!is.na(res$z), ]
     
-    res <- res[-1, ] # removes the first as mass estimation might be affected by not complete cluster
+    res <- res[-1, ] # removes the first as mass estimation might be affected by incomplete cluster
     
     res$mass <- NA_real_
     
@@ -208,17 +270,27 @@
     
     res_outliers <- res[res$mass < (mean(res$mass) - sd(res$mass)) | res$mass > (mean(res$mass) + sd(res$mass))]
     
-    if (nrow(res_outliers) > 0) {
-      res <- res[res$cluster != res_outliers$cluster, ]
+    if (nrow(res_outliers) > 0) res <- res[!res$cluster %in% res_outliers$cluster, ]
+    
+    if (length(seq_len(nrow(res))[-1]) >= 2) {
+      
+      res$z_step <- 0
+      
+      for (i in seq_len(nrow(res))[-1]) res$z_step[i - 1] <- res$z[i - 1] - res$z[i]
+      
+      res <- res[res$z_step == 1, ]
+      
+    } else {
+      return(empty_res)
     }
     
     if (plotLevel > 0) {
       plot(
-        x$mz, x$intensity, type = 'l',
+        raw$mz, raw$intensity, type = 'l',
         ylab = ylab,
         xlab = xlab,
         main = title,
-        ylim = c(0, max(x$intensity) * 1.4)
+        ylim = c(0, max(raw$intensity) * 1.4)
       )
       
       text(
@@ -240,15 +312,13 @@
       
       window <- (res$mz[j + 1] - res$mz[j]) / 2
       
-      sel <- x$mz >= (res$mz[j] - window) & x$mz <= (res$mz[j] + window)
+      sel <- raw$mz >= (res$mz[j] - window) & raw$mz <= (res$mz[j] + window)
       
-      prfl <- x[sel, ]
+      prfl <- raw[sel, ]
       
       if (max(res$intensity) == res$intensity[j] & plotLevel > 1) {
-        plot(prfl$mz, prfl$intensity, type = 'l',
-             xlab = expression(italic("m/z")),
-             ylab = ylab,
-             main = paste0("Raw profile for charge +", res$z[j])
+        plot(prfl$mz, prfl$intensity, type = 'l', xlab = expression(italic("m/z")), ylab = ylab,
+          main = paste0("Raw profile for charge +", res$z[j])
         )
       }
       
@@ -294,14 +364,6 @@
       av_profile$intensity <- av_profile$smoothed
     }
     
-    
-    
-    if (plotLevel > 1) {
-      plot(av_profile$mass, av_profile$intensity, type = 'l', xlab = xlab, ylab = ylab,
-        main = paste0("Smoothed profile")
-      )
-    }
-    
     if (baseline) {
       baseline_out <- .baseline_correction(av_profile$intensity, baseline_method, baseline_args)
       av_profile$baseline <- baseline_out$baseline
@@ -316,37 +378,38 @@
       if (smoothing) lines(av_profile$mass, av_profile$smoothed, col = "darkgreen")
       if (baseline) lines(av_profile$mass, baseline_out$baseline, col = "darkred")
     }
-
+    
     pks <- .find_peaks(av_profile, "mass", merge, closeByThreshold, valeyThreshold, minPeakHeight, minPeakDistance, maxPeakWidth, minPeakWidth)
-
     
+    browser()
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    if (nrow(pks) > 0) {
+      setnames(pks, c("xVal", "min", "max", "index"), c("mass", "massmin", "massmax", "peak"))
+      pks$analysis <- x
+      setcolorder(pks, c("analysis", "peak", "idx"))
+      
+    } else {
+      pks <- data.table()
+    }
     
     list(
-      "raw" = x,
+      "raw" = raw,
       "charges" = res,
-      "average" = list()
+      "average" = av_profile,
+      "peaks" = pks
     )
-  })
+    
+  }, ms1_list = ms1_list)
   
+  names(output) <- analyses
   
+  self$add_modules_data(
+    list("spectra" = list(
+      "data" = output,
+      "software" = "StreamFind",
+      "version" = as.character(packageVersion("StreamFind"))
+    ))
+  )
   
-  
-  
-  ms1_list
-  
-  
-  
-  
-  
-  
+  TRUE
 }
