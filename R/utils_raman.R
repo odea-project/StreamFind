@@ -213,7 +213,7 @@
   for (t in loop_key) {
     select_vector <- spectra$loop %in% t
     lt <- unique(spectra$var[select_vector])
-    x <- spectra$rt[select_vector]
+    x <- spectra$shift[select_vector]
     y <- spectra$intensity[select_vector]
     
     plot <- plot %>% add_trace(

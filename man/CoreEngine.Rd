@@ -17,9 +17,11 @@ List of function elements to access specific reference help pages.}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{spectra_peaks}}{\code{data.table} with integrated spectra peaks for each analyses.}
+\item{\code{spectra}}{List of spectra \code{data.table} objects for each analysis.}
 
-\item{\code{averaged_spectra}}{\code{data.table} with averaged_spectra spectra for each analyses.}
+\item{\code{averaged_spectra}}{List of averaged spectra \code{data.table} each analysis/replicate.}
+
+\item{\code{spectra_peaks}}{\code{data.table} with integrated spectra peaks for each analysis.}
 }
 \if{html}{\out{</div>}}
 }
@@ -31,6 +33,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-CoreEngine-print_headers}{\code{CoreEngine$print_headers()}}
 \item \href{#method-CoreEngine-print_analyses}{\code{CoreEngine$print_analyses()}}
 \item \href{#method-CoreEngine-print_workflow}{\code{CoreEngine$print_workflow()}}
+\item \href{#method-CoreEngine-print_modules}{\code{CoreEngine$print_modules()}}
 \item \href{#method-CoreEngine-get_headers}{\code{CoreEngine$get_headers()}}
 \item \href{#method-CoreEngine-get_history}{\code{CoreEngine$get_history()}}
 \item \href{#method-CoreEngine-get_analyses}{\code{CoreEngine$get_analyses()}}
@@ -57,10 +60,12 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-CoreEngine-remove_headers}{\code{CoreEngine$remove_headers()}}
 \item \href{#method-CoreEngine-remove_settings}{\code{CoreEngine$remove_settings()}}
 \item \href{#method-CoreEngine-remove_analyses}{\code{CoreEngine$remove_analyses()}}
+\item \href{#method-CoreEngine-remove_modules_data}{\code{CoreEngine$remove_modules_data()}}
 \item \href{#method-CoreEngine-subset_analyses}{\code{CoreEngine$subset_analyses()}}
 \item \href{#method-CoreEngine-has_settings}{\code{CoreEngine$has_settings()}}
 \item \href{#method-CoreEngine-has_analyses}{\code{CoreEngine$has_analyses()}}
 \item \href{#method-CoreEngine-has_modules_data}{\code{CoreEngine$has_modules_data()}}
+\item \href{#method-CoreEngine-has_spectra}{\code{CoreEngine$has_spectra()}}
 \item \href{#method-CoreEngine-has_spectra_peaks}{\code{CoreEngine$has_spectra_peaks()}}
 \item \href{#method-CoreEngine-has_averaged_spectra}{\code{CoreEngine$has_averaged_spectra()}}
 \item \href{#method-CoreEngine-plot_spectra_peaks}{\code{CoreEngine$plot_spectra_peaks()}}
@@ -107,8 +112,8 @@ the call name of each ProcessingSettings object. Alternatively, a named
 list with call name, algorithm and parameters to be transformed and added
 as ProcessingSettings object.}
 
-\item{\code{analyses}}{An Analysis S3 class object or a list with Analysis S3
-class objects as elements (see \code{?Analysis} for more information).}
+\item{\code{analyses}}{An Analysis S3 class object or a list with Analysis S3  class objects as elements
+(see \code{?Analysis} for more information).}
 
 \item{\code{modules}}{A named list of objects from processing modules.}
 }
@@ -152,6 +157,16 @@ Prints the analyses.
 Prints the order of processing methods for all added processing settings.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$print_workflow()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-print_modules"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-print_modules}{}}}
+\subsection{Method \code{print_modules()}}{
+Prints the data modules added to the engine.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$print_modules()}\if{html}{\out{</div>}}
 }
 
 }
@@ -354,7 +369,7 @@ Gets the names of all processing methods in added processing settings as a chara
 \if{html}{\out{<a id="method-CoreEngine-get_workflow_overview"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-get_workflow_overview}{}}}
 \subsection{Method \code{get_workflow_overview()}}{
-A data.table with the overview of all processing methods from added processing settings.
+A \code{data.table} with the overview of all processing methods from added processing settings.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_workflow_overview()}\if{html}{\out{</div>}}
 }
@@ -391,11 +406,9 @@ Gets the list of modules data.
 \if{html}{\out{<a id="method-CoreEngine-add_headers"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-add_headers}{}}}
 \subsection{Method \code{add_headers()}}{
-Adds headers. If an argument or element "name" is given,
-it must be type character. If an argument or element path is given, it
-must be type character and exist. If an argument or element date is
-given, it must be class POSIXct or POSIXt. If given date is character,
-conversion to class POSIXct or POSIXt is attempted.
+Adds headers. If an argument or element "name" is given, it must be type character. If an argument
+or element path is given, it must be type character and exist. If an argument or element date is  given, it must
+be class POSIXct or POSIXt. If given date is character, conversion to class POSIXct or POSIXt is attempted.
 See \code{?ProjectHeaders} for more information.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$add_headers(...)}\if{html}{\out{</div>}}
@@ -427,11 +440,9 @@ Adds processing settings.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{settings}}{A named list of ProcessingSettings S3 class objects or a
-single ProcessingSettings S3 class object. The list names should match
-the call name of each ProcessingSettings object. Alternatively, a named
-list with call name, algorithm and parameters to be transformed and added
-as ProcessingSettings S3 class object.}
+\item{\code{settings}}{A named list of ProcessingSettings S3 class objects or a single ProcessingSettings S3 class
+object. The list names should match the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added as ProcessingSettings S3 class object.}
 
 \item{\code{replace}}{Logical of length one. When \code{TRUE}, existing settings are
 replaced by the new settings with the same call name, except settings for
@@ -552,8 +563,7 @@ Invisible.
 \if{html}{\out{<a id="method-CoreEngine-remove_headers"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-remove_headers}{}}}
 \subsection{Method \code{remove_headers()}}{
-Removes headers entries. Note that the name, path and date
-headers cannot be removed only changed.
+Removes headers entries. Note that the name, path and date headers cannot be removed only changed.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$remove_headers(value = NULL)}\if{html}{\out{</div>}}
 }
@@ -582,9 +592,8 @@ Removes settings.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{call}}{A string or a vector of strings with the name/s of the
-processing method/s to be removed. Alternatively, an integer vector
-with the index/es of the settings to be removed. When \code{call} is
+\item{\code{call}}{A string or a vector of strings with the name/s of the processing method/s to be removed.
+Alternatively, an integer vector with the index/es of the settings to be removed. When \code{call} is
 \code{NULL} all settings are removed.}
 }
 \if{html}{\out{</div>}}
@@ -606,6 +615,26 @@ Removes analyses.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-remove_modules_data"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-remove_modules_data}{}}}
+\subsection{Method \code{remove_modules_data()}}{
+Removes modules data.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$remove_modules_data(modules)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{modules}}{A named list of objects from processing modules.}
 }
 \if{html}{\out{</div>}}
 }
@@ -642,8 +671,7 @@ Checks if there are processing settings, returning \code{TRUE} or \code{FALSE}.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{call}}{A string or a vector of strings with the name/s of the
-processing method/s.}
+\item{\code{call}}{A string or a vector of strings with the name/s of the processing method/s.}
 }
 \if{html}{\out{</div>}}
 }
@@ -677,6 +705,16 @@ data is patRoon.}
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-has_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-has_spectra}{}}}
+\subsection{Method \code{has_spectra()}}{
+Checks if there are spectra, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_spectra()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-has_spectra_peaks"></a>}}
@@ -801,9 +839,8 @@ Saves  the settings list as the defined \code{format} in \code{path} and returns
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{call}}{A string or a vector of strings with the name/s of the
-processing method/s to be saved. When \code{call} is \code{NULL} all
-settings are saved.}
+\item{\code{call}}{A string or a vector of strings with the name/s of the processing method/s to be saved.
+When \code{call} is \code{NULL} all settings are saved.}
 
 \item{\code{format}}{A string. Possible values are \code{json} and \code{rds} for saving as JSON or RDS formats, respectively.}
 

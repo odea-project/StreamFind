@@ -84,7 +84,15 @@ ms <- MassSpecEngine$new(files = ms_files_df, settings = ps)
 
 ms$run_workflow()
 
+ms
 
+View(ms$get_modules_data("patRoon"))
+
+ms$get_isotopes(
+  analyses = 5,
+  mass = db[db$name %in% c("Diclofenac", "Candesartan"), ],
+  ppm = 5, sec = 10
+)
 
 
 

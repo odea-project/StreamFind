@@ -176,6 +176,58 @@ validate.Settings_bin_spectra_qBinning <- function(x) {
   )
 }
 
+#' @title Settings_bin_spectra_StreamFind
+#'
+#' @description Not yet implemented.
+#' 
+#' @param valSpectrumUnits 
+#' @param windowSpectrumUnits 
+#' @param xVals 
+#' @param xWindows 
+#'
+#' @return X.
+#'
+#' @export
+#'
+Settings_bin_spectra_StreamFind <- function(valSpectrumUnits = "rt",
+                                            windowSpectrumUnits = 20,
+                                            xVals = NULL,
+                                            xWindows = NULL) {
+  
+  settings <- list(
+    call = "bin_spectra",
+    algorithm = "StreamFind",
+    parameters = list(
+      valSpectrumUnits = valSpectrumUnits,
+      windowSpectrumUnits = windowSpectrumUnits,
+      xVals = xVals,
+      xWindows = xWindows
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_bin_spectra_StreamFind
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_bin_spectra_StreamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_bin_spectra_StreamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "bin_spectra"),
+    checkmate::test_choice(x$algorithm, "StreamFind")
+  )
+}
+
 ## find_features -----
 
 #' @title Settings_find_features_qPeaks
@@ -1263,6 +1315,8 @@ validate.Settings_load_features_eic_StreamFind <- function(x) {
     checkmate::test_logical(x$parameters$runParallel, max.len = 1)
   )
 }
+
+## load_MSPeakLists -----
 
 #' @title Settings_load_MSPeakLists_patRoon
 #'
@@ -2405,6 +2459,9 @@ validate.Settings_generate_compounds_metfrag <- function(x) {
 #' @param baseline 
 #' @param baseline_method 
 #' @param baseline_args 
+#' @param merge 
+#' @param closeByThreshold 
+#' @param valeyThreshold 
 #' @param minPeakHeight 
 #' @param minPeakDistance 
 #' @param minPeakWidth 
@@ -2425,6 +2482,9 @@ Settings_integrate_chromatograms_StreamFind <- function(chromatograms = NA_chara
                                                           p = 0.05,
                                                           maxit = 10
                                                         ),
+                                                        merge = TRUE,
+                                                        closeByThreshold = 45,
+                                                        valeyThreshold = 0.5,
                                                         minPeakHeight = 0,
                                                         minPeakDistance = 10,
                                                         minPeakWidth = 5,
@@ -2441,6 +2501,9 @@ Settings_integrate_chromatograms_StreamFind <- function(chromatograms = NA_chara
       baseline = baseline,
       baseline_method = baseline_method,
       baseline_args = baseline_args,
+      merge = merge,
+      closeByThreshold = closeByThreshold,
+      valeyThreshold = valeyThreshold,
       minPeakHeight = minPeakHeight,
       minPeakDistance = minPeakDistance,
       minPeakWidth = minPeakWidth,
@@ -2501,6 +2564,7 @@ validate.Settings_integrate_chromatograms_StreamFind <- function(x) {
 #' @param minPeakDistance 
 #' @param maxPeakWidth 
 #' @param minPeakWidth 
+#' @param minSN 
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_deconvolute_spectra_charges_StreamFind.
 #'
@@ -2528,7 +2592,8 @@ Settings_deconvolute_spectra_charges_StreamFind <- function(rtmin = 315 - 2.5,
                                                             minPeakHeight = 100,
                                                             minPeakDistance = 50,
                                                             maxPeakWidth = 250,
-                                                            minPeakWidth = 50) {
+                                                            minPeakWidth = 50,
+                                                            minSN = 0) {
   
   settings <- list(
     call = "deconvolute_spectra_charges",
@@ -2556,7 +2621,8 @@ Settings_deconvolute_spectra_charges_StreamFind <- function(rtmin = 315 - 2.5,
       minPeakHeight = minPeakHeight,
       minPeakDistance = minPeakDistance,
       maxPeakWidth = maxPeakWidth,
-      minPeakWidth = minPeakWidth
+      minPeakWidth = minPeakWidth,
+      minSN = minSN
     ),
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",
@@ -2579,6 +2645,316 @@ Settings_deconvolute_spectra_charges_StreamFind <- function(rtmin = 315 - 2.5,
 validate.Settings_deconvolute_spectra_charges_StreamFind <- function(x) {
   all(
     checkmate::test_choice(x$call, "deconvolute_spectra_charges"),
+    checkmate::test_choice(x$algorithm, "StreamFind")
+  )
+}
+
+# average_spectra -----
+
+#' @title Settings_average_spectra_StreamFind
+#'
+#' @description Prototype.
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_average_spectra_StreamFind.
+#'
+#' @export
+#'
+Settings_average_spectra_StreamFind <- function() {
+  
+  settings <- list(
+    call = "average_spectra",
+    algorithm = "StreamFind",
+    parameters = list(),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_average_spectra_StreamFind
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_average_spectra_StreamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_average_spectra_StreamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "average_spectra"),
+    checkmate::test_choice(x$algorithm, "StreamFind")
+  )
+}
+
+# subtract_blank_spectra -----
+
+#' @title Settings_subtract_blank_spectra_StreamFind
+#'
+#' @description Prototype.
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_subtract_blank_spectra_StreamFind.
+#'
+#' @export
+#'
+Settings_subtract_blank_spectra_StreamFind <- function() {
+  
+  settings <- list(
+    call = "subtract_blank_spectra",
+    algorithm = "StreamFind",
+    parameters = list(),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_subtract_blank_spectra_StreamFind
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_subtract_blank_spectra_StreamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_subtract_blank_spectra_StreamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "subtract_blank_spectra"),
+    checkmate::test_choice(x$algorithm, "StreamFind")
+  )
+}
+
+# correct_spectra_baseline -----
+
+#' @title Settings_correct_spectra_baseline_StreamFind
+#'
+#' @description Prototype.
+#' 
+#' @param method 
+#' @param args 
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_correct_spectra_baseline_StreamFind.
+#'
+#' @export
+#'
+Settings_correct_spectra_baseline_StreamFind <- function(method = "als",
+                                                         args = list(lambda = 5, p = 0.05, maxit = 10)) {
+  
+  settings <- list(
+    call = "correct_spectra_baseline",
+    algorithm = "StreamFind",
+    parameters = list(
+      method = method,
+      args = args
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_correct_spectra_baseline_StreamFind
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_correct_spectra_baseline_StreamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_correct_spectra_baseline_StreamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "correct_spectra_baseline"),
+    checkmate::test_choice(x$algorithm, "StreamFind")
+  )
+}
+
+# smooth_spectra -----
+
+#' @title Settings_smooth_spectra_StreamFind
+#'
+#' @description Prototype.
+#' 
+#' @param windowSize 
+#' @param xValWindow 
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_smooth_spectra_StreamFind.
+#'
+#' @export
+#'
+Settings_smooth_spectra_StreamFind <- function(windowSize = 5,
+                                               xValWindow = NULL) {
+  
+  settings <- list(
+    call = "smooth_spectra",
+    algorithm = "StreamFind",
+    parameters = list(
+      windowSize = windowSize,
+      xValWindow = xValWindow
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_smooth_spectra_StreamFind
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_smooth_spectra_StreamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_smooth_spectra_StreamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "smooth_spectra"),
+    checkmate::test_choice(x$algorithm, "StreamFind")
+  )
+}
+
+# normalize_spectra -----
+
+#' @title Settings_normalize_spectra_StreamFind
+#'
+#' @description Prototype.
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_normalize_spectra_StreamFind.
+#'
+#' @export
+#'
+Settings_normalize_spectra_StreamFind <- function() {
+  
+  settings <- list(
+    call = "normalize_spectra",
+    algorithm = "StreamFind",
+    parameters = list(),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_normalize_spectra_StreamFind
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_normalize_spectra_StreamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_normalize_spectra_StreamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "normalize_spectra"),
+    checkmate::test_choice(x$algorithm, "StreamFind")
+  )
+}
+
+# subtract_spectra_section -----
+
+#' @title Settings_subtract_spectra_section_StreamFind
+#'
+#' @description Prototype.
+#' 
+#' @param sectionVal 
+#' @param sectionWindow 
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_subtract_spectra_section_StreamFind.
+#'
+#' @export
+#'
+Settings_subtract_spectra_section_StreamFind <- function(sectionVal = "rt",
+                                                         sectionWindow = c(10, 200)) {
+  
+  settings <- list(
+    call = "subtract_spectra_section",
+    algorithm = "StreamFind",
+    parameters = list(
+      sectionVal = sectionVal,
+      sectionWindow = sectionWindow
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_subtract_spectra_section_StreamFind
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_subtract_spectra_section_StreamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_subtract_spectra_section_StreamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "subtract_spectra_section"),
+    checkmate::test_choice(x$algorithm, "StreamFind")
+  )
+}
+
+# delete_spectra_section -----
+
+#' @title Settings_delete_spectra_section_StreamFind
+#'
+#' @description Prototype.
+#' 
+#' @param section 
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_delete_spectra_section_StreamFind.
+#'
+#' @export
+#'
+Settings_delete_spectra_section_StreamFind <- function(section = list()) {
+  
+  settings <- list(
+    call = "delete_spectra_section",
+    algorithm = "StreamFind",
+    parameters = list(section = section),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_delete_spectra_section_StreamFind
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_delete_spectra_section_StreamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_delete_spectra_section_StreamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "delete_spectra_section"),
     checkmate::test_choice(x$algorithm, "StreamFind")
   )
 }

@@ -1,5 +1,5 @@
 ---
-title: 'StreamFind general introduction'
+title: 'StreamFind General Introduction'
 author:
   name: Ricardo Cunha
   email: cunha@iuta.de
@@ -12,7 +12,7 @@ output:
     toc_float: true
 vignette: >
   %\VignetteEncoding{UTF-8}
-  %\VignetteIndexEntry{StreamFind general introduction}
+  %\VignetteIndexEntry{StreamFind General Introduction}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
   chunk_output_type: console
@@ -211,11 +211,11 @@ save_default_ProcessingSettings(
 ```
 
 ```{r show-json, results='markup'}
-jsonlite::prettify(readLines("~/Documents/github/StreamFind/vignettes/articles/ffs.json"))
+jsonlite::prettify(readLines("~/github/StreamFind/vignettes/articles/ffs.json"))
 ```
 
 ```{r import-settings, results='markup'}
-ms$import_settings("~/Documents/github/StreamFind/vignettes/articles/ffs.json")
+ms$import_settings("~/github/StreamFind/vignettes/articles/ffs.json")
 
 # "openms" replaced by "xcms3_centwave"
 ms

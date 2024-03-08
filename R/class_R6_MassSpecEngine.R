@@ -105,7 +105,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     
     ### ___ NTS -----
     
-    #' @field analysisInfo description description The analysisInfo data.frame with the list of analyses.
+    #' @field analysisInfo The analysisInfo data.frame with the list of analyses.
     #'
     analysisInfo = function() {
       
@@ -653,11 +653,6 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       if (self$has_spectra_charges()) {
         res <- private$.modules$spectra$data
         res <- lapply(res, function(x) x$charges)
-        res <- rbindlist(res)
-        
-        if (nrow(res) > 0) {
-          res$replicate <- self$get_replicate_names()[res$analysis]
-        }
         
         res
         
@@ -1176,9 +1171,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         spec_list <- NULL
       }
 
-      message("\U2699 Parsing spectra from ", length(analyses),  " MS file/s..." ,
-        appendLF = FALSE
-      )
+      message("\U2699 Parsing spectra from ", length(analyses),  " MS file/s..." ,appendLF = FALSE)
 
       if (!is.logical(runParallel)) runParallel <- FALSE
 
@@ -6342,6 +6335,12 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       res <- self$spectra_charges
       
+      res <- rbindlist(res)
+      
+      if (nrow(res) > 0) {
+        res$replicate <- self$get_replicate_names()[res$analysis]
+      }
+      
       res <- res[res$analysis %in% analyses, ]
       
       if (nrow(res) == 0) {
@@ -7677,14 +7676,12 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         headers <- private$.headers
         settings <- private$.settings
         analyses <- private$.analyses
-        alignment <- private$.alignment
         history <- private$.history
         modules <- private$.modules
 
         if (length(headers) > 0) list_all$headers <- headers
         if (!is.null(settings)) list_all$settings <- settings
         if (!is.null(analyses)) list_all$analyses <- analyses
-        if (!is.null(alignment)) list_all$alignment <- alignment
         if (!is.null(history)) list_all$history <- history
         if (!is.null(modules)) list_all$modules <- modules
 
@@ -7706,9 +7703,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         write(js_all, file = paste0(path, "/", name, ".", "json"))
       }
 
-      if (format %in% "rds") {
-        saveRDS(self, file = paste0(path, "/", name, ".rds"))
-      }
+      if (format %in% "rds") saveRDS(self, file = paste0(path, "/", name, ".rds"))
 
       invisible(self)
     },
@@ -7724,6 +7719,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     import = function(file = NA_character_) {
 
       if (file.exists(file)) {
+        
         if (file_ext(file) %in% "json") {
           js_ms <- fromJSON(file, simplifyDataFrame = FALSE)
 
@@ -7743,12 +7739,6 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
             }
           }
 
-          if ("alignment" %in% fields_present) {
-            if (!is.null(js_ms[["alignment"]])) {
-              self$add_alignment(js_ms[["alignment"]])
-            }
-          }
-
           if ("history" %in% fields_present) {
             private$.history <- js_ms[["history"]]
           }
@@ -7757,6 +7747,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
             private$.modules <- js_ms[["modules"]]
           }
         }
+        
       } else {
         warning("File not found in given path!")
         NULL
@@ -7809,20 +7800,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         return(invisible(self))
       }
 
-      if (!any(self$has_features())) {
-        warning("There are no features in the MS analyses!")
-        return(invisible(self))
-      }
-
       if (!self$has_groups()) {
         warning("No feature groups found!")
-        return(invisible(self))
-      }
-
-      fGroups <- self$as_patRoon_featureGroups(filtered)
-
-      if (is.null(fGroups) | length(fGroups) == 0) {
-        warning("Feature groups empty!")
         return(invisible(self))
       }
 
@@ -7836,10 +7815,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       }
 
       patRoon::report(
-        fGroups,
+        self$featureGroups,
         MSPeakLists,
-        formulas = NULL,
-        compounds = NULL,
+        formulas = self$formulas,
+        compounds = self$compounds,
         compsCluster = NULL,
         components = NULL,
         TPs = NULL,

@@ -9,8 +9,6 @@
   
   intensity <- NULL
   
-  message("Deconvoluting spectra...", appendLF = TRUE)
-  
   if (!requireNamespace("pracma", quietly = TRUE)) {
     warning("Package pracma not found but required! Not done.")
     return(FALSE)
@@ -48,6 +46,7 @@
   minPeakDistance <- parameters$minPeakDistance
   maxPeakWidth <- parameters$maxPeakWidth
   minPeakWidth <- parameters$minPeakWidth
+  minSN <- parameters$minSN
   
   
   # rtmin = 315 - 2.5
@@ -74,7 +73,7 @@
   # maxPeakWidth = 250
   # minPeakWidth = 50
   
-  plotLevel = 4
+  plotLevel = 0
   
   xlab = expression(italic("m/z"))
   ylab = "Intensity / counts"
@@ -379,9 +378,7 @@
       if (baseline) lines(av_profile$mass, baseline_out$baseline, col = "darkred")
     }
     
-    pks <- .find_peaks(av_profile, "mass", merge, closeByThreshold, valeyThreshold, minPeakHeight, minPeakDistance, maxPeakWidth, minPeakWidth)
-    
-    browser()
+    pks <- .find_peaks(av_profile, "mass", merge, closeByThreshold, valeyThreshold, minPeakHeight, minPeakDistance, maxPeakWidth, minPeakWidth, minSN)
     
     if (nrow(pks) > 0) {
       setnames(pks, c("xVal", "min", "max", "index"), c("mass", "massmin", "massmax", "peak"))
@@ -410,6 +407,8 @@
       "version" = as.character(packageVersion("StreamFind"))
     ))
   )
+  
+  message(paste0("\U2713 ", "Spectra deconvoluted!"))
   
   TRUE
 }

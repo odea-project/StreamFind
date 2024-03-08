@@ -12,6 +12,9 @@ Settings_integrate_chromatograms_StreamFind(
   baseline = TRUE,
   baseline_method = "als",
   baseline_args = list(lambda = 5, p = 0.05, maxit = 10),
+  merge = TRUE,
+  closeByThreshold = 45,
+  valeyThreshold = 0.5,
   minPeakHeight = 0,
   minPeakDistance = 10,
   minPeakWidth = 5,
@@ -33,6 +36,12 @@ Settings_integrate_chromatograms_StreamFind(
 \item{baseline_method}{}
 
 \item{baseline_args}{}
+
+\item{merge}{}
+
+\item{closeByThreshold}{}
+
+\item{valeyThreshold}{}
 
 \item{minPeakHeight}{}
 

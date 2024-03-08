@@ -29,7 +29,7 @@ List of function elements to access specific reference help pages.}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{analysisInfo}}{description description The analysisInfo data.frame with the list of analyses.}
+\item{\code{analysisInfo}}{The analysisInfo data.frame with the list of analyses.}
 
 \item{\code{features}}{The features S4 class object from patRoon.}
 
@@ -197,6 +197,7 @@ List of function elements to access specific reference help pages.}
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_averaged_spectra"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_averaged_spectra'><code>StreamFind::CoreEngine$has_averaged_spectra()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_modules_data"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_modules_data'><code>StreamFind::CoreEngine$has_modules_data()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_settings'><code>StreamFind::CoreEngine$has_settings()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_spectra"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_spectra'><code>StreamFind::CoreEngine$has_spectra()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_spectra_peaks"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_spectra_peaks'><code>StreamFind::CoreEngine$has_spectra_peaks()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_analyses'><code>StreamFind::CoreEngine$import_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_headers'><code>StreamFind::CoreEngine$import_headers()</code></a></span></li>
@@ -205,8 +206,10 @@ List of function elements to access specific reference help pages.}
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print'><code>StreamFind::CoreEngine$print()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_analyses'><code>StreamFind::CoreEngine$print_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_headers'><code>StreamFind::CoreEngine$print_headers()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_modules"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_modules'><code>StreamFind::CoreEngine$print_modules()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_workflow'><code>StreamFind::CoreEngine$print_workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_headers'><code>StreamFind::CoreEngine$remove_headers()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_modules_data"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_modules_data'><code>StreamFind::CoreEngine$remove_modules_data()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_settings'><code>StreamFind::CoreEngine$remove_settings()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_workflow'><code>StreamFind::CoreEngine$run_workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-save_analyses'><code>StreamFind::CoreEngine$save_analyses()</code></a></span></li>

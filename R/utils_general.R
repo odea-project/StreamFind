@@ -79,12 +79,14 @@
   
   i_baseline <- as.numeric(mat@baseline)
   
-  i_baseline[i_baseline > vec] <- vec[i_baseline > vec]
+  # i_corrected <- as.numeric(mat@corrected)
   
+  i_baseline[i_baseline > vec] <- vec[i_baseline > vec]
+
   i_baseline[i_baseline < 0] <- vec[i_baseline < 0]
 
   i_corrected <- vec - i_baseline
-  
+
   i_corrected[i_corrected < 0] <- 0
   
   list("mat" = mat, "baseline" = i_baseline, "corrected" = i_corrected)
@@ -101,14 +103,15 @@
 #' 
 .find_peaks <- function(data, xVar,
                         merge = TRUE,
-                        closeByThreshold = 45,
+                        closeByThreshold = 2,
                         valeyThreshold = 0.5,
                         minPeakHeight,
                         minPeakDistance,
                         maxPeakWidth,
-                        minPeakWidth) {
+                        minPeakWidth,
+                        minSN) {
   
-  plotLevel <- 1
+  plotLevel <- 0
   
   vec <- data$intensity
   
@@ -299,10 +302,16 @@
   .integrate_peak_area <- function(xVec, i_vec, baseline, peak_start, peak_end) {
     peak_mask <- (xVec >= peak_start) & (xVec <= peak_end)
     peak_xVec <- xVec[peak_mask]
+    
     if (!is.null(baseline)) {
       peak_intensity <- i_vec[peak_mask] - baseline[peak_mask]
+      
+    } else {
+      peak_intensity <- i_vec[peak_mask]
     }
+    
     peak_intensity[peak_intensity < 0] <- 0
+    
     return(.trapezoidal_integration(peak_xVec, peak_intensity))
   }
   
@@ -319,6 +328,19 @@
   
   pks$area <- integrated_areas
   
+  sn_vals <- sapply(pks$index, function(i) {
+    base = which(xVec >= pks$min[i] & xVec <= pks$max[i])
+    base = c(min(base) - 2, base, max(base) + 2)
+    base <- i_vec[base]
+    base <- base[base > 0]
+    base <- min(base)
+    round(pks$intensity[i] / base, digits = 1)
+  })
+  
+  pks$sn <- sn_vals
+  
+  if (is.numeric(minSN)) pks <- pks[pks$sn >= minSN[1], ]
+  
   if (plotLevel > 0) {
     
     if ("smoothed" %in% colnames(data)) i_vec <- data$smoothed
@@ -326,7 +348,7 @@
     plot(xVec, i_vec, type = "l", col = "black",ylim = c(0, max(i_vec) * 1.1) )
     
     if ("baseline" %in% colnames(data)) lines(xVec, as.numeric(i_baseline), col = "darkred", lwd = 1, lty = 2)
-    
+
     if (!"baseline" %in% colnames(data)) i_baseline <- rep(0, length(i_vec))
     
     colors <- .get_colors(pks$index)
@@ -355,4 +377,44 @@
   }
   
   pks
+}
+
+#' @title .make_hash
+#' 
+#' @description X
+#' 
+#' @noRd
+#' 
+.make_hash <- function() {
+  
+  
+  
+}
+
+#' @title .save_cache_data
+#' 
+#' @description X
+#' 
+#' @noRd
+#' 
+.save_cache_data <- function() {
+  
+  
+  
+  
+  
+}
+
+#' @title .load_cache_data
+#' 
+#' @description X
+#' 
+#' @noRd
+#' 
+.load_cache_data <- function() {
+  
+  
+  
+  
+  
 }

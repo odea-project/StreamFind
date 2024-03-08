@@ -85,3 +85,27 @@ export <- function(x, ...) {
 .s3_deconvolute_spectra_charges <- function(settings, self) {
   UseMethod(".s3_deconvolute_spectra_charges")
 }
+
+.s3_average_spectra <- function(settings, self) {
+  UseMethod(".s3_average_spectra")
+}
+
+.s3_subtract_blank_spectra <- function(settings, self) {
+  UseMethod(".s3_subtract_blank_spectra")
+}
+
+.s3_subtract_spectra_section <- function(settings, self) {
+  UseMethod(".s3_subtract_spectra_section")
+}
+
+.s3_delete_spectra_section <- function(settings, self) {
+  UseMethod(".s3_delete_spectra_section")
+}
+
+.s3_correct_spectra_baseline <- function(settings, self) {
+  UseMethod(".s3_correct_spectra_baseline")
+}
+
+.s3_smooth_spectra <- function(settings, self) {
+  UseMethod(".s3_smooth_spectra")
+}

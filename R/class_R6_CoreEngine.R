@@ -186,7 +186,41 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     ### ___ spectra -----
     
-    #' @field spectra_peaks `data.table` with integrated spectra peaks for each analyses.
+    #' @field spectra List of spectra `data.table` objects for each analysis.
+    #'
+    spectra = function() {
+      
+      if (self$has_modules_data("spectra")) {
+        res <- private$.modules$spectra$data
+        res <- lapply(res, function(x) x$spectra)
+        
+      } else {
+        res <- lapply(self$get_analyses(), function(x) x$spectra)
+        names(res) <- self$get_analysis_names()
+        res <- Map(function(x, y) {
+          x$analysis <- y
+          x
+        }, res, names(res))
+      }
+      
+      res
+    },
+    
+    #' @field averaged_spectra List of averaged spectra `data.table` each analysis/replicate.
+    #' 
+    averaged_spectra = function() {
+      
+      if (self$has_averaged_spectra()) {
+        res <- private$.modules$spectra$data
+        res <- lapply(res, function(x) x$average)
+        res
+        
+      } else {
+        data.table()
+      }
+    },
+    
+    #' @field spectra_peaks `data.table` with integrated spectra peaks for each analysis.
     #' 
     spectra_peaks = function() {
       
@@ -195,31 +229,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
         pks <- lapply(pks, function(x) x$peaks)
         pks <- rbindlist(pks)
         
-        if (nrow(pks) > 0) {
-          pks$replicate <- self$get_replicate_names()[pks$analysis]
-        }
+        if (nrow(pks) > 0) pks$replicate <- self$get_replicate_names()[pks$analysis]
         
         pks
-        
-      } else {
-        data.table()
-      }
-    },
-    
-    #' @field averaged_spectra `data.table` with averaged_spectra spectra for each analyses.
-    #' 
-    averaged_spectra = function() {
-      
-      if (self$has_averaged_spectra()) {
-        res <- private$.modules$spectra$data
-        res <- lapply(res, function(x) x$average)
-        res <- rbindlist(res)
-        
-        if (nrow(res) > 0) {
-          res$replicate <- self$get_replicate_names()[res$analysis]
-        }
-        
-        res
         
       } else {
         data.table()
@@ -233,8 +245,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     #' @description Creates an R6 CoreEngine class object.
     #' 
-    #' @param analyses An Analysis S3 class object or a list with Analysis S3 
-    #' class objects as elements (see `?Analysis` for more information).
+    #' @param analyses An Analysis S3 class object or a list with Analysis S3  class objects as elements 
+    #' (see `?Analysis` for more information).
     #'
     initialize = function(headers = NULL, settings = NULL, analyses = NULL, modules = NULL) {
       
@@ -248,12 +260,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       
       if (!is.null(modules)) suppressMessages(self$add_modules(modules))
       
-      private$.register(
-        "created",
-        "CoreEngine",
-        headers$name,
-        "StreamFind",
-        as.character(packageVersion("StreamFind")),
+      private$.register("created", "CoreEngine", headers$name, "StreamFind", as.character(packageVersion("StreamFind")),
         paste(c(headers$author, headers$path), collapse = ", ")
       )
       
@@ -279,6 +286,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
       self$print_workflow()
       
       self$print_analyses()
+      
+      self$print_modules()
     },
     
     #' @description Prints the headers list.
@@ -323,6 +332,23 @@ CoreEngine <- R6::R6Class("CoreEngine",
         algorithms <- vapply(private$.settings, function(x) x$algorithm, "")
         cat(
           paste0(" ", seq_len(length(names_settings)), ": ", names_settings, " (", algorithms, ")"),
+          sep = "\n"
+        )
+      } else {
+        cat(" empty \n")
+      }
+    },
+    
+    #' @description Prints the data modules added to the engine.
+    #'
+    print_modules = function() {
+      cat("\n")
+      cat("Modules")
+      if (length(private$.modules) > 0) {
+        cat("\n")
+        names_modules <- names(private$.modules)
+        cat(
+          paste0(" ", seq_len(length(names_modules)), ": ", names_modules),
           sep = "\n"
         )
       } else {
@@ -465,7 +491,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       vapply(private$.settings, function(x) x$call, NA_character_)
     },
     
-    #' @description A data.table with the overview of all processing methods from added processing settings.
+    #' @description A `data.table` with the overview of all processing methods from added processing settings.
     #'
     get_workflow_overview = function() {
       if (self$has_settings()) {
@@ -498,11 +524,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     ## ___ add -----
     
-    #' @description Adds headers. If an argument or element "name" is given, 
-    #' it must be type character. If an argument or element path is given, it 
-    #' must be type character and exist. If an argument or element date is 
-    #' given, it must be class POSIXct or POSIXt. If given date is character, 
-    #' conversion to class POSIXct or POSIXt is attempted.
+    #' @description Adds headers. If an argument or element "name" is given, it must be type character. If an argument 
+    #' or element path is given, it must be type character and exist. If an argument or element date is  given, it must 
+    #' be class POSIXct or POSIXt. If given date is character, conversion to class POSIXct or POSIXt is attempted.
     #' See `?ProjectHeaders` for more information.
     #'
     #' @template arg-headers-ellipsis
@@ -552,11 +576,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     #' @description Adds processing settings.
     #'
-    #' @param settings A named list of ProcessingSettings S3 class objects or a
-    #' single ProcessingSettings S3 class object. The list names should match
-    #' the call name of each ProcessingSettings object. Alternatively, a named
-    #' list with call name, algorithm and parameters to be transformed and added
-    #' as ProcessingSettings S3 class object.
+    #' @param settings A named list of ProcessingSettings S3 class objects or a single ProcessingSettings S3 class 
+    #' object. The list names should match the call name of each ProcessingSettings object. Alternatively, a named
+    #' list with call name, algorithm and parameters to be transformed and added as ProcessingSettings S3 class object.
     #'
     #' @param replace Logical of length one. When `TRUE`, existing settings are 
     #' replaced by the new settings with the same call name, except settings for
@@ -982,8 +1004,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     ## ___ remove -----
     
-    #' @description Removes headers entries. Note that the name, path and date 
-    #' headers cannot be removed only changed.
+    #' @description Removes headers entries. Note that the name, path and date headers cannot be removed only changed.
     #'
     #' @param value A character vector with the name/s of the elements in headers
     #' to be removed.
@@ -1044,9 +1065,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     #' @description Removes settings.
     #'
-    #' @param call A string or a vector of strings with the name/s of the
-    #' processing method/s to be removed. Alternatively, an integer vector
-    #' with the index/es of the settings to be removed. When `call` is
+    #' @param call A string or a vector of strings with the name/s of the processing method/s to be removed. 
+    #' Alternatively, an integer vector with the index/es of the settings to be removed. When `call` is
     #' \code{NULL} all settings are removed.
     #'
     #' @return Invisible.
@@ -1160,6 +1180,17 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
     
+    #' @description Removes modules data.
+    #'
+    #' @return Invisible.
+    #'
+    remove_modules_data = function(modules) {
+      
+      for (i in modules) if (self$has_modules_data(i)) private$.modules[[i]] <- NULL
+      
+      invisible(self)
+    },
+    
     ## ___ subset -----
     
     #' @description Subsets on analyses returning a new cloned object with only the analyses to keep.
@@ -1200,8 +1231,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     #' @description Checks if there are processing settings, returning `TRUE` or `FALSE`.
     #'
-    #' @param call A string or a vector of strings with the name/s of the
-    #' processing method/s.
+    #' @param call A string or a vector of strings with the name/s of the processing method/s.
     #'
     has_settings = function(call = NULL) {
       if (is.null(call)) {
@@ -1233,12 +1263,36 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     ### ___ spectra -----
     
+    #' @description Checks if there are spectra, returning `TRUE` or `FALSE`.
+    #'
+    has_spectra = function() {
+      
+      if (self$has_modules_data("spectra")) {
+        sum(vapply(private$.modules$spectra$data, function(x) {
+          if ("spectra" %in% names(x)) {
+            nrow(x$spectra)
+          } else {
+            0
+          }
+        }, 0)) > 0
+        
+      } else {
+        all(vapply(self$get_analyses(), function(x) nrow(x$spectra) > 0, FALSE))
+      }
+    },
+    
     #' @description Checks if there are spectra peaks, returning `TRUE` or `FALSE`.
     #'
     has_spectra_peaks = function() {
       
       if (self$has_modules_data("spectra")) {
-        sum(vapply(private$.modules$spectra$data, function(x) nrow(x$peaks), 0)) > 0
+        sum(vapply(private$.modules$spectra$data, function(x) {
+          if ("peaks" %in% names(x)) {
+            nrow(x$peaks)
+          } else {
+            0
+          }
+        }, 0)) > 0
         
       } else {
         FALSE
@@ -1250,7 +1304,13 @@ CoreEngine <- R6::R6Class("CoreEngine",
     has_averaged_spectra = function() {
       
       if (self$has_modules_data("spectra")) {
-        sum(vapply(private$.modules$spectra$data, function(x) nrow(x$average), 0)) > 0
+        sum(vapply(private$.modules$spectra$data, function(x) {
+          if ("average" %in% names(x)) {
+            nrow(x$average)
+          } else {
+            0
+          }
+        }, 0)) > 0
         
       } else {
         FALSE
@@ -1385,9 +1445,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     #' @description Saves  the settings list as the defined \code{format} in \code{path} and returns invisible.
     #'
-    #' @param call A string or a vector of strings with the name/s of the
-    #' processing method/s to be saved. When `call` is \code{NULL} all
-    #' settings are saved.
+    #' @param call A string or a vector of strings with the name/s of the processing method/s to be saved. 
+    #' When `call` is \code{NULL} all settings are saved.
     #'
     save_settings = function(call = NULL, format = "json", name = "settings", path = getwd()) {
       

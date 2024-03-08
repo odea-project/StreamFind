@@ -4,8 +4,7 @@
 \alias{RamanEngine}
 \title{\strong{RamanEngine} R6 class and methods}
 \description{
-The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecting
-and storing Raman spectroscopic data.
+The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecting and storing Raman spectroscopic data.
 }
 \section{Super class}{
 \code{\link[StreamFind:CoreEngine]{StreamFind::CoreEngine}} -> \code{RamanEngine}
@@ -14,9 +13,20 @@ and storing Raman spectroscopic data.
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-RamanEngine-new}{\code{RamanEngine$new()}}
+\item \href{#method-RamanEngine-get_overview}{\code{RamanEngine$get_overview()}}
 \item \href{#method-RamanEngine-get_spectra}{\code{RamanEngine$get_spectra()}}
 \item \href{#method-RamanEngine-merge_replicates}{\code{RamanEngine$merge_replicates()}}
+\item \href{#method-RamanEngine-average_spectra}{\code{RamanEngine$average_spectra()}}
+\item \href{#method-RamanEngine-subtract_blank_spectra}{\code{RamanEngine$subtract_blank_spectra()}}
+\item \href{#method-RamanEngine-correct_spectra_baseline}{\code{RamanEngine$correct_spectra_baseline()}}
+\item \href{#method-RamanEngine-bin_spectra}{\code{RamanEngine$bin_spectra()}}
+\item \href{#method-RamanEngine-subtract_spectra_section}{\code{RamanEngine$subtract_spectra_section()}}
+\item \href{#method-RamanEngine-delete_spectra_section}{\code{RamanEngine$delete_spectra_section()}}
+\item \href{#method-RamanEngine-smooth_spectra}{\code{RamanEngine$smooth_spectra()}}
+\item \href{#method-RamanEngine-normalize_spectra}{\code{RamanEngine$normalize_spectra()}}
 \item \href{#method-RamanEngine-plot_spectra}{\code{RamanEngine$plot_spectra()}}
+\item \href{#method-RamanEngine-plot_chromatograms}{\code{RamanEngine$plot_chromatograms()}}
+\item \href{#method-RamanEngine-processing_methods}{\code{RamanEngine$processing_methods()}}
 \item \href{#method-RamanEngine-clone}{\code{RamanEngine$clone()}}
 }
 }
@@ -40,7 +50,6 @@ and storing Raman spectroscopic data.
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_modules_data"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_modules_data'><code>StreamFind::CoreEngine$get_modules_data()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_modules_data_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_modules_data_names'><code>StreamFind::CoreEngine$get_modules_data_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_number_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_number_analyses'><code>StreamFind::CoreEngine$get_number_analyses()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_overview"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_overview'><code>StreamFind::CoreEngine$get_overview()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_replicate_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_replicate_names'><code>StreamFind::CoreEngine$get_replicate_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_settings'><code>StreamFind::CoreEngine$get_settings()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_settings_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_settings_names'><code>StreamFind::CoreEngine$get_settings_names()</code></a></span></li>
@@ -50,6 +59,7 @@ and storing Raman spectroscopic data.
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_averaged_spectra"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_averaged_spectra'><code>StreamFind::CoreEngine$has_averaged_spectra()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_modules_data"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_modules_data'><code>StreamFind::CoreEngine$has_modules_data()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_settings'><code>StreamFind::CoreEngine$has_settings()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_spectra"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_spectra'><code>StreamFind::CoreEngine$has_spectra()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_spectra_peaks"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_spectra_peaks'><code>StreamFind::CoreEngine$has_spectra_peaks()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import'><code>StreamFind::CoreEngine$import()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_analyses'><code>StreamFind::CoreEngine$import_analyses()</code></a></span></li>
@@ -59,10 +69,11 @@ and storing Raman spectroscopic data.
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print'><code>StreamFind::CoreEngine$print()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_analyses'><code>StreamFind::CoreEngine$print_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_headers'><code>StreamFind::CoreEngine$print_headers()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_modules"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_modules'><code>StreamFind::CoreEngine$print_modules()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_workflow'><code>StreamFind::CoreEngine$print_workflow()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="processing_methods"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-processing_methods'><code>StreamFind::CoreEngine$processing_methods()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_analyses'><code>StreamFind::CoreEngine$remove_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_headers'><code>StreamFind::CoreEngine$remove_headers()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_modules_data"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_modules_data'><code>StreamFind::CoreEngine$remove_modules_data()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_settings'><code>StreamFind::CoreEngine$remove_settings()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_workflow'><code>StreamFind::CoreEngine$run_workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-save'><code>StreamFind::CoreEngine$save()</code></a></span></li>
@@ -102,10 +113,20 @@ overhead.}
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-get_overview"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-get_overview}{}}}
+\subsection{Method \code{get_overview()}}{
+Gets an overview data.frame of all the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$get_overview()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-RamanEngine-get_spectra"></a>}}
 \if{latex}{\out{\hypertarget{method-RamanEngine-get_spectra}{}}}
 \subsection{Method \code{get_spectra()}}{
-Gets spectra from analyses.
+Gets a \code{data.table} with spectra from analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{RamanEngine$get_spectra(
   analyses = NULL,
@@ -128,16 +149,13 @@ Gets spectra from analyses.
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A data.frame.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-RamanEngine-merge_replicates"></a>}}
 \if{latex}{\out{\hypertarget{method-RamanEngine-merge_replicates}{}}}
 \subsection{Method \code{merge_replicates()}}{
-Merges spectra for given \emph{RamanAnalyses} from the same chromatographic
-separation when using LC-Raman coupling.
+Merges spectra for given \emph{RamanAnalyses} from the same chromatographic separation when using
+LC-Raman coupling.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{RamanEngine$merge_replicates(preCut = 2)}\if{html}{\out{</div>}}
 }
@@ -146,6 +164,198 @@ separation when using LC-Raman coupling.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{preCut}}{The number of pre Raman scans to exclude when merging.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-average_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-average_spectra}{}}}
+\subsection{Method \code{average_spectra()}}{
+Averages spectra based on assigned analysis replicates.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$average_spectra(settings)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-subtract_blank_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-subtract_blank_spectra}{}}}
+\subsection{Method \code{subtract_blank_spectra()}}{
+Subtracts spectra from correspondent blank analysis replicates.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$subtract_blank_spectra(settings)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-correct_spectra_baseline"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-correct_spectra_baseline}{}}}
+\subsection{Method \code{correct_spectra_baseline()}}{
+Corrects the spectra baseline.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$correct_spectra_baseline(settings)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-bin_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-bin_spectra}{}}}
+\subsection{Method \code{bin_spectra()}}{
+Bins spectra in units, according to a given window size.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$bin_spectra(settings)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-subtract_spectra_section"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-subtract_spectra_section}{}}}
+\subsection{Method \code{subtract_spectra_section()}}{
+Subtracts each spectra by a spectra section in each analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$subtract_spectra_section(settings)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-delete_spectra_section"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-delete_spectra_section}{}}}
+\subsection{Method \code{delete_spectra_section()}}{
+Deletes a section of spectra in each analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$delete_spectra_section(settings)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-smooth_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-smooth_spectra}{}}}
+\subsection{Method \code{smooth_spectra()}}{
+Smooths the spectra in each analysis/replicate.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$smooth_spectra(settings)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-normalize_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-normalize_spectra}{}}}
+\subsection{Method \code{normalize_spectra()}}{
+Normalizes spectra in each analysis/replicate.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$normalize_spectra(settings)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -195,22 +405,85 @@ using the retention time or the shift as x axis, respectively.}
 
 \item{\code{title}}{A string with the title.}
 
-\item{\code{cex}}{A length one numeric value defining the scale of the legend for
-non interactive plotting.}
+\item{\code{cex}}{A length one numeric value defining the scale of the legend for non interactive plotting.}
 
 \item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
 
-\item{\code{colorBy}}{A string of length 1. One of \code{analyses} (the default) or
-\code{replicates}.}
+\item{\code{colorBy}}{A string defining how to legend the plot. Possible values are
+\code{analyses}, \code{targets} (the default) or \code{replicates}. Other options are possible
+for specific plotting methods.}
 
-\item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
-using \pkg{plotly}.}
+\item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
 A plot.
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-plot_chromatograms"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-plot_chromatograms}{}}}
+\subsection{Method \code{plot_chromatograms()}}{
+Plots chromatograms from analyses with spectra coupled to LC.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$plot_chromatograms(
+  analyses = NULL,
+  rt = NULL,
+  shift = NULL,
+  minIntensity = 0,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  cex = 0.6,
+  showLegend = TRUE,
+  colorBy = "analyses",
+  interactive = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+
+\item{\code{rt}}{Numeric of length two with the minimum and maximum retention time, in seconds.}
+
+\item{\code{shift}}{Numeric of length two with the minimum and maximum shift, in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
+
+\item{\code{minIntensity}}{Numeric value with the minimum intensity.}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{cex}}{A length one numeric value defining the scale of the legend for non interactive plotting.}
+
+\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
+
+\item{\code{colorBy}}{A string defining how to legend the plot. Possible values are
+\code{analyses}, \code{targets} (the default) or \code{replicates}. Other options are possible
+for specific plotting methods.}
+
+\item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A plot.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-processing_methods"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-processing_methods}{}}}
+\subsection{Method \code{processing_methods()}}{
+A data.table with available data processing methods.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$processing_methods()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-RamanEngine-clone"></a>}}

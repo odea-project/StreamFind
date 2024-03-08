@@ -1,8 +1,5 @@
 ---
-title: 'Wastewater ozonation showcase'
-subtitle: |
-  | Mass spectrometry project example
-  | <br>
+title: 'Evaluation of Wastewater Ozonation with Mass Spectrometry'
 author:
   name: Ricardo Cunha
   email: cunha@iuta.de
@@ -16,7 +13,7 @@ output:
     toc_float: true
 vignette: >
   %\VignetteEncoding{UTF-8}
-  %\VignetteIndexEntry{Developer guide for mass spectrometry}
+  %\VignetteIndexEntry{Evaluation of Wastewater Ozonation with Mass Spectrometry}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
   chunk_output_type: console
@@ -81,28 +78,28 @@ In this article, we demonstrate how the StreamFind R package can be used to eval
 basename(files)
 ```
 
-The showcase will use the StreamFind main class *MassSpecData*, which encapsulates all tools required for parsing, storing, processing and visualizing MS data. Note that not all methods/functions will be shown as the demonstration focuses of the workflow to assess wastewater ozonation. For a complete overview of the StreamFind R package for mass spectrometry, the article [StreamFind for mass spectrometry](XXX) is recommended.
+The showcase will use the StreamFind main class *MassSpecEngine*, which encapsulates all tools required for parsing, storing, processing and visualizing MS data. Note that not all methods/functions will be shown as the demonstration focuses of the workflow to assess wastewater ozonation. For a complete overview of the StreamFind R package for mass spectrometry, the article [StreamFind for mass spectrometry](XXX) is recommended.
 
-# *MassSpecData*
+# *MassSpecEngine*
 
-The main [*R6*](https://r6.r-lib.org/) [*MassSpecData*](https://odea-project.github.io/StreamFind/reference/MassSpecData.html) class object is created using the `MassSpecData$new()`, as shown below. The argument `files` can be used to add directly the set of *mzML* files. Note that the original vendor files were converted to *mzML* format using the [convert_ms_files()](https://odea-project.github.io/StreamFind/reference/convert_ms_files.html) function, which uses the *msConvert* command line from [ProteoWizard](https://proteowizard.sourceforge.io/download.html).
+The main [*R6*](https://r6.r-lib.org/) [*MassSpecEngine*](https://odea-project.github.io/StreamFind/reference/MassSpecEngine.html) class object is created using the `MassSpecEngine$new()`, as shown below. The argument `files` can be used to add directly the set of *mzML* files. Note that the original vendor files were converted to *mzML* format using the [convert_ms_files()](https://odea-project.github.io/StreamFind/reference/convert_ms_files.html) function, which uses the *msConvert* command line from [ProteoWizard](https://proteowizard.sourceforge.io/download.html).
 
 ```{r create-ms, message=TRUE, warning=FALSE}
-# Create a MassSpecData from mzML files
-ms <- MassSpecData$new(files = files)
+# Create a MassSpecEngine from mzML files
+ms <- MassSpecEngine$new(files = files)
 ```
 
 ```{r show-ms, results='markup'}
-# Print in console a summary of the MassSpecData
+# Print in console a summary of the MassSpecEngine
 ms
 ```
 
 # *ProjectHeaders*
 
-Project headers (e.g., name, author and description) can be added to the *MassSpecData* using the `MassSpecData$add_headers()`. The headers are converted to an S3 [*ProjectHeaders*](https://odea-project.github.io/StreamFind/reference/ProjectHeaders.html) class object in the *MassSpecData*, where it goes through a validation to ensure conformity (more details [here](https://odea-project.github.io/StreamFind/reference/ProjectHeaders.html)).
+Project headers (e.g., name, author and description) can be added to the *MassSpecEngine* using the `MassSpecEngine$add_headers()`. The headers are converted to an S3 [*ProjectHeaders*](https://odea-project.github.io/StreamFind/reference/ProjectHeaders.html) class object in the *MassSpecEngine*, where it goes through a validation to ensure conformity (more details [here](https://odea-project.github.io/StreamFind/reference/ProjectHeaders.html)).
 
 ```{r add-headers, results='markup'}
-# Add headers to the MassSpecData
+# Add headers to the MassSpecEngine
 ms$add_headers(
   name = "Wastewater Ozonation Showcase",
   author = "Ricardo Cunha",
@@ -112,13 +109,13 @@ ms$add_headers(
 # Get the headers as ProjectHeaders
 ms$get_headers()
 
-# Get the MassSpecData date
+# Get the MassSpecEngine date
 ms$get_headers(value = "date")
 ```
 
 # Replicates and blanks
 
-The analysis replicate names and the associated blank replicate name can be amended in the *MassSpecData*, as shown below. Alternatively, a `data.frame` with column names *file*, *replicate* and *blank* could be added as the `files` argument in `MassSpecData$new(files = files)` to have directly the replicate and blank replicate names assigned (more details [here](https://odea-project.github.io/StreamFind/reference/MassSpecData.html#method-MassSpecData-new)).
+The analysis replicate names and the associated blank replicate name can be amended in the *MassSpecEngine*, as shown below. Alternatively, a `data.frame` with column names *file*, *replicate* and *blank* could be added as the `files` argument in `MassSpecEngine$new(files = files)` to have directly the replicate and blank replicate names assigned (more details [here](https://odea-project.github.io/StreamFind/reference/MassSpecEngine.html#method-MassSpecEngine-new)).
 
 ```{r add-replicates, results='markup'}
 # Character vector with analysis replicate names
@@ -177,12 +174,13 @@ other_settings <- list(
     sec = 10
   ),
   
-  Settings_filter_features_StreamFind(
-    minIntensity = 5000,
-    maxGroupSd = 30,
-    blank = 5,
-    minGroupAbundance = 3,
-    excludeIsotopes = TRUE
+  Settings_filter_features_StreamFind(excludeIsotopes = TRUE),
+  
+  Settings_filter_features_patRoon(
+    absMinIntensity = 5000,
+    maxReplicateIntRSD = 30,
+    blankThreshold = 10,
+    absMinReplicateAbundance = 3
   ),
 
   Settings_load_features_eic_StreamFind(
@@ -190,15 +188,13 @@ other_settings <- list(
     mzExpand = 0.0005
   ),
 
-  Settings_load_features_ms1_StreamFind(),
+  Settings_load_features_ms1_StreamFind(runParallel = FALSE),
 
-  Settings_load_features_ms2_StreamFind(),
+  Settings_load_features_ms2_StreamFind(runParallel = FALSE),
 
-  Settings_calculate_quality_StreamFind(),
+  Settings_calculate_quality_StreamFind(runParallel = FALSE),
   
-  Settings_filter_features_StreamFind(
-    minSnRatio = 3
-  ),
+  Settings_filter_features_StreamFind(minSnRatio = 5),
   
   # db_with_ms2 is a database with suspect chemical standards
   # includes MS2 data (i.e., fragmentation pattern) from standards
@@ -215,7 +211,7 @@ other_settings <- list(
 other_settings[[3]]
 ```
 
-Then, all created *ProcessingSettings* can be added to the *MassSpecData*. The order will matter when the workflow is applied!
+Then, all created *ProcessingSettings* can be added to the *MassSpecEngine*. The order will matter when the workflow is applied!
 
 ```{r add-settings, results='markup'}
 # Add the settings as a list. The order matters!
@@ -230,7 +226,7 @@ ms$print_workflow()
 The modules assigned by the added *ProcessingSettings* can be processed by `run_workflow()`, as demonstrated below. Note that with `run_workflow()`, the processing modules are applied with the same order as they were added.
 
 ```{r do-workflow, results='markup', warning=FALSE}
-# Run all ProcessingSettings added to the MassSpecData
+# Run all ProcessingSettings added to the MassSpecEngine
 ms$run_workflow()
 ```
 
@@ -243,20 +239,20 @@ ms$find_features()$annotate_features()$group_features()$filter_features()
 
 # Results
 
-The created features and feature groups can be inspected as `data.table` objects or plotted by dedicated modules in the *MassSpecData*.
+The created features and feature groups can be inspected as `data.table` objects or plotted by dedicated modules in the *MassSpecEngine*.
 
 ## `data.table` objects
 
-The features and feature groups can be obtained as `data.table` with the `MassSpecData$get_features()` and `MassSpecData$get_groups()` methods. The methods also allow to look for specific features/feature groups using mass, mass-to-charge ratio, retention time and drift time targets, as show below for a small set of compound targets where mass and retention time expected value are known. Note that drift time is only applicable for MS data with ion mobility separation.
+The features and feature groups can be obtained as `data.table` with the `MassSpecEngine$get_features()` and `MassSpecEngine$get_groups()` methods. The methods also allow to look for specific features/feature groups using mass, mass-to-charge ratio, retention time and drift time targets, as show below for a small set of compound targets where mass and retention time expected value are known. Note that drift time is only applicable for MS data with ion mobility separation.
 
 ```{r database-show, results='markup'}
 db
 ```
 
 ```{r show-target-groups, results='markup'}
-# compounds are searched by monoisotopic mass and retention time
+# Compounds are searched by monoisotopic mass and retention time
 # ppm and sec set the mass (im ppm) and time (in seconds) allowed deviation, respectively
-# average applied a mean to the intensities in each analysis replicate group
+# average applies a mean to the intensities in each analysis replicate group
 ms$get_groups(mass = db, ppm = 5, sec = 10, average = TRUE)
 ```
 
@@ -264,7 +260,7 @@ Already by inspection of the `data.table`, it is possible to see compounds detec
 
 ## `plot_groups` methods
 
-For a better overview of the results, the method `MassSpecData$plot_groups()` or even more detailed the method `MassSpecData$plot_groups_overview()` can be used.
+For a better overview of the results, the method `MassSpecEngine$plot_groups()` or even more detailed the method `MassSpecEngine$plot_groups_overview()` can be used.
 
 ```{r plot-groups}
 # set legendNames to TRUE for using the names in db as legend
@@ -277,7 +273,7 @@ ms$plot_groups_overview(mass = db, ppm = 5, sec = 10, legendNames = TRUE)
 
 ## Filtered not removed
 
-The `filter_features()` module was applied to filter features out according to defined conditions/thresholds. The filtered features were not removed but just tagged as filtered and a filter tag was assigned. For instance, when the method `MassSpecData$get_features()` is run with `filtered` argument set to `TRUE`, the filtered features are also shown. Below, we search for the internal standards added to each analysis that were filtered when applying the blank subtraction, receiving the tag **blank** in the *filter* column and `TRUE` in the *filtered* column.
+The `filter_features()` module was applied to filter features out according to defined conditions/thresholds. The filtered features were not removed but just tagged as filtered and a filter tag was assigned. For instance, when the method `MassSpecEngine$get_features()` is run with `filtered` argument set to `TRUE`, the filtered features are also shown. Below, we search for the internal standards added to each analysis that were filtered when applying the blank subtraction, receiving the tag **blank** in the *filter* column and `TRUE` in the *filtered* column.
 
 ```{r database-is-show, results='markup'}
 db_is
@@ -290,7 +286,7 @@ ms$get_groups(mass = db_is, ppm = 8, sec = 10, average = TRUE, filtered = TRUE)
 
 ## Internal Stanards
 
-The module `MassSpecData$find_internal_standards()` was applied and the results can be obtained with the dedicated method `MassSpecData$get_internal_standards()` or plotted as a quality overview using the method `MassSpecData$plot_internal_standards_qc()`, as shown below. The plot gives an overview of the mass, retention time and intensity variance of the internal stadards across the analyses in the project. 
+The module `MassSpecEngine$find_internal_standards()` was applied and the results can be obtained with the dedicated method `MassSpecEngine$get_internal_standards()` or plotted as a quality overview using the method `MassSpecEngine$plot_internal_standards_qc()`, as shown below. The plot gives an overview of the mass, retention time and intensity variance of the internal stadards across the analyses in the project. 
 
 ```{r plot_is_qc, fig.height=10}
 ms$plot_internal_standards_qc()
@@ -298,22 +294,22 @@ ms$plot_internal_standards_qc()
 
 ## Isotopes
 
-The method `annotate_features()` was applied to annotate the natural isotopes within the MS data. Implementation of adducts and in source fragments annotation is planned but not yet available with the StreamFind algorithm. The method `MassSpecData$get_isotopes()` can be used to search for isotopes, as shown below for the analysis number 11. Because the filter `excludeIsotopes` was applied, the isotopic features are filtered out with tag **isotope** or **minIntensity** when filtered by `minIntensity`, which was applied first. Although the first isotope of Diclofenac (i.e., the <sup>13</sup>C) was not found, the second was annotated as the `maxGaps` argument in settings was set to 1. This is a frequent case for compounds with halogens.
+The method `annotate_features()` was applied to annotate the natural isotopes within the MS data. Implementation of adducts and in source fragments annotation is planned but not yet available with the StreamFind algorithm. The method `MassSpecEngine$get_isotopes()` can be used to search for isotopes, as shown below for the analysis number 11. Because the filter `excludeIsotopes` was applied, the isotopic features are filtered out with tag **isotope** or **minIntensity** when filtered by `minIntensity`, which was applied first. Although the first isotope of Diclofenac (i.e., the <sup>13</sup>C) was not found, the second was annotated as the `maxGaps` argument in settings was set to 1. This is a frequent case for compounds with halogens.
 
 ```{r show-isotopes, results='markup'}
-# Isotopes of Diclofenac and Candesartan in analysis 11
+# Isotopes of Diclofenac and Candesartan in analysis 5
 ms$get_isotopes(
-  analyses = 11,
+  analyses = 5,
   mass = db[db$name %in% c("Diclofenac", "Candesartan"), ],
   ppm = 5, sec = 10
 )
 ```
 
-The isotopes can also be visualized with the method `MassSpecData$map_isotopes()`, as shown below for the internal standards added to analysis 11. Note that again the `filtered` argument was set to `TRUE` to return also filtered features.
+The isotopes can also be visualized with the method `MassSpecEngine$map_isotopes()`, as shown below for the internal standards added to analysis 11. Note that again the `filtered` argument was set to `TRUE` to return also filtered features.
 
 ```{r plot-isotopes, results='markup'}
 ms$map_isotopes(
-  analyses = 11,
+  analyses = 5,
   mass = db_is,
   ppm = 8, sec = 10,
   filtered = TRUE,
@@ -323,7 +319,7 @@ ms$map_isotopes(
 
 ## Suspects
 
-The method `MassSpecData$plot_suspects()` is used to inspect the suspect screening results. A second plot is added to compare the experimental fragmentation pattern (top) with the fragmentation pattern of the respective reference standard (down) added within the database. The `colorBy` argument can be set to *targets+replicates* to legend the plot with combined keys of suspect target names and analysis replicate names.
+The method `MassSpecEngine$plot_suspects()` is used to inspect the suspect screening results. A second plot is added to compare the experimental fragmentation pattern (top) with the fragmentation pattern of the respective reference standard (down) added within the database. The `colorBy` argument can be set to *targets+replicates* to legend the plot with combined keys of suspect target names and analysis replicate names.
 
 ```{r plot-suspects, results='markup'}
 ms$plot_suspects(colorBy = "targets+replicates")

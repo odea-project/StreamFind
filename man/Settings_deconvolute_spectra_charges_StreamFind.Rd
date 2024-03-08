@@ -28,7 +28,8 @@ Settings_deconvolute_spectra_charges_StreamFind(
   minPeakHeight = 100,
   minPeakDistance = 50,
   maxPeakWidth = 250,
-  minPeakWidth = 50
+  minPeakWidth = 50,
+  minSN = 0
 )
 
 \method{validate}{Settings_deconvolute_spectra_charges_StreamFind}(x)
@@ -79,6 +80,8 @@ Settings_deconvolute_spectra_charges_StreamFind(
 \item{maxPeakWidth}{}
 
 \item{minPeakWidth}{}
+
+\item{minSN}{}
 
 \item{x}{A Settings_integrate_chromatograms_StreamFind S3 class object.}
 }
