@@ -5,11 +5,21 @@
 \alias{validate.Settings_centroid_spectra_qCentroids}
 \title{Settings_centroid_spectra_qCentroids}
 \usage{
-Settings_centroid_spectra_qCentroids(runParallel = FALSE)
+Settings_centroid_spectra_qCentroids(
+  maxScale = 5,
+  mode = 1,
+  runParallel = FALSE
+)
 
 \method{validate}{Settings_centroid_spectra_qCentroids}(x)
 }
 \arguments{
+\item{maxScale}{Integer of length one. Maximum scale as integer (default is
+5) for defining the scale limit for the peak model.}
+
+\item{mode}{Integer of length one. \code{0} for debugging, \code{1} for silent mode
+(the default) and \code{2} for progressbar mode.}
+
 \item{runParallel}{Logical of length one. Set to \code{TRUE} for parallel
 processing. Note that parallel processing is not always faster due to
 overhead.}

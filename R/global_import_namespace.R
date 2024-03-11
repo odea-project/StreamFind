@@ -11,7 +11,7 @@
 #'
 #' @importFrom data.table is.data.table rbindlist as.data.table setnames
 #' @importFrom data.table setorder copy fread data.table `:=` setcolorder
-#' @importFrom data.table between setDTthreads CJ setnafill
+#' @importFrom data.table between setDTthreads CJ setnafill setkey
 #'
 #' @importFrom parallelly supportsMulticore
 #'
@@ -26,10 +26,12 @@
 #' @importFrom dplyr count
 #'
 #' @importFrom plyr round_any
+#' 
+#' @importFrom tidyr spread
 #'
 #' @importFrom jsonlite toJSON fromJSON
 #'
-#' @importFrom stats sd cor
+#' @importFrom stats sd cor coef nls
 #'
 #' @importFrom graphics axis legend lines points polygon rect text
 #'
@@ -47,8 +49,12 @@
 #' @importFrom checkmate test_count test_double test_choice test_logical test_vector test_number
 #'
 #' @importFrom utils txtProgressBar setTxtProgressBar
-#'
-#' @importFrom hyperSpec read.asc.Andor
+#' 
+#' @importFrom patRoon featureTable
+#' 
+#' @importFrom baseline baseline
+#' 
+#' @importFrom pracma findpeaks
 #'
 #' @noRd
 NULL

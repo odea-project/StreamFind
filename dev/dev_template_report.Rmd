@@ -14,47 +14,30 @@ output:
 editor_options: 
   chunk_output_type: console
 ---
+<style>
+.list-group-item.active, .list-group-item.active:focus, .list-group-item.active:hover {
+  background-color: #1E8449;
+}
+</style>
 
 ```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.align = "center", fig.width = 9, results = "asis", cache = TRUE, comment = '')
+options(width = 400)
+```
 
-# Libraries
+```{r libraries, include=FALSE}
 library(knitr)
 library(kableExtra)
 library(magrittr)
 library(ggplot2)
 library(plotly)
 library(StreamFind)
-
-# Variables
-logo <- NA_character_
-
-# Global options
-knitr::opts_chunk$set(echo = TRUE, fig.align = "center", fig.width = 9, results = "asis")
-
-# Working directory
-path_wd <- getwd()
-
-# Add logo file
-path_extdata <- system.file(package = "StreamFindData", dir = "extdata")
-logo <- file.path(path_extdata, "logo_iuta.png") #207 x 216 px
 ```
 
 ```{r logo, echo=FALSE}
-if (!is.na(logo)) {
-  htmltools::img(
-  src = knitr::image_uri(logo),
-  alt = "logo",
-  style =
-    paste0("
-      margin-left:inherit;
-      position:absolute;
-      top:60px;
-      left:740px;
-      width:", 100, "px;
-      height:", 100*(216/207), "px;"
-    )
-  ) 
-}
+path_extdata <- system.file(package = "StreamFindData", dir = "extdata")
+logo <- file.path(path_extdata, "logo_StreamFind.png")
+htmltools::img(src = knitr::image_uri(logo), style = "margin-left:inherit;position:absolute;top:100px;left:740px;width:200px;")
 ```
 
 <br>
@@ -76,9 +59,9 @@ Moreover, a cheatsheet can be downdloaded with the following link <https://raw.g
 
 ## Code
 
-Code is automaticelly embedded unless `echo` chunk option is set to `FALSE`.
+Code is automatically embedded unless `echo` chunk option is set to `FALSE`.
 Evaluation of code in a given chunk can be skiped by setting `eval` to `FALSE`.
-Code chunks should always be unically named.  
+Each code chunk should have a unique named.  
 
 ```{r exampleCode}
 
@@ -137,40 +120,10 @@ plot_ly(pressure, x = ~temperature, y = ~pressure, type = "scatter", mode = "mar
 
 ```
 
-<br> <br>
+<br>
 
 # Signature
 
-The report was produced on `r Sys.time()`. The data and report are stored in ``r path_wd`` of the workstation *`r Sys.info()["nodename"]`* under the user *`r Sys.info()["user"]`*.
+The report was produced on `r Sys.time()`. The data and report are stored in `r getwd()` of the workstation *`r Sys.info()["nodename"]`* under the user *`r Sys.info()["user"]`*.
 
 ***
-
-<br>
-
-<style>
-body, p {
-  color: black;
-  font-family: Arial;
-  text-align: justify;
-  font-size: 12pt;
-}
-h1{
-  font-size: 20pt;
-  font-style: bold;
-}
-h2{
-  font-size:18pt;
-  font-style: bold;
-}
-h3{
-  font-size:14pt;
-  font-style: bold;
-}
-.list-group-item.active, .list-group-item.active:focus, .list-group-item.active:hover {
-    background-color: #239B56;
-}
-caption {
-  color: black;
-  font-size: 1.0em;
-}
-</style>

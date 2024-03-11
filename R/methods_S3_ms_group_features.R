@@ -5,25 +5,23 @@
 #'
 #' @noRd
 #'
-.s3_ms_group_features.patRoon <- function(settings, self) {
-
-  if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
+.s3_ms_group_features.patRoon <- function(settings, self, private) {
+  
+  if (!requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found! Install it for finding features.")
     return(FALSE)
   }
-
-  pat_features <- self$as_patRoon_features(filtered = FALSE)
   
-  if (length(pat_features) == 0) {
-    warning("Features were not found! Run find_features method first!")
+  if (!self$has_features()) {
+    warning("There are no features! Run find_features method first!")
     return(FALSE)
   }
+  
+  pat_features <- self$features
 
   algorithm <- settings$algorithm
 
-  if (grepl("_", algorithm, fixed = FALSE)) {
-    algorithm <- gsub("^(.*?)_.*$", "\\1", algorithm)
-  }
+  if (grepl("_", algorithm, fixed = FALSE)) algorithm <- gsub("^(.*?)_.*$", "\\1", algorithm)
 
   if ("xcms" %in% algorithm || "xcms3" %in% algorithm) {
     if (!requireNamespace("xcms")) {
@@ -106,50 +104,13 @@
     }
   }
 
-  ag <- list(obj = pat_features, algorithm = algorithm)
+  ag <- list("obj" = pat_features, "algorithm" = algorithm)
   
-  if (!"verbose" %in% names(parameters)) {
-    parameters[["verbose"]] <- TRUE
-  }
-
-  gr_fun <- patRoon::groupFeatures
-
-  pat <- do.call(gr_fun, c(ag, parameters))
+  if (!"verbose" %in% names(parameters)) parameters[["verbose"]] <- TRUE
   
-  pat_ft <- pat@features@features
+  pat <- do.call(patRoon::groupFeatures, c(ag, parameters))
   
-  pat_ft <- rbindlist(pat_ft, idcol = "analysis")
-  
-  setnames(pat_ft,
-    c("ID", "ret", "retmin", "retmax"),
-    c("feature", "rt", "rtmin", "rtmax"),
-    skip_absent = TRUE
-  )
-  
-  mz_as_mass <- grepl("Set", class(pat))
-  
-  groups <- rcpp_ms_groups_make_dataframe(
-    pat_ft, self$get_analysis_names(), mz_as_mass, TRUE
-  )
-  
-  if (self$has_groups()) self$remove_groups()
-  
-  new_groups_id <- groups$group
-  names(new_groups_id) <- groups$old_group
-  pat_ft$group <- new_groups_id[pat_ft$group] 
-  
-  self$add_group_to_features(pat_ft)
-
-  groups$old_group <- NULL
-  
-  self$add_groups(groups)
-  
-  alignment <- .extract_time_alignment(pat, self)
-
-  if (!is.null(alignment)) {
-    self$add_alignment(alignment)
-    message("\U2713 Added alignment of retention time for each analysis!")
-  }
+  self$featureGroups <- pat
 
   TRUE
 }

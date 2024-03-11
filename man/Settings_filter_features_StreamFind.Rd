@@ -30,6 +30,8 @@ range are filtered out.}
 \item{\strong{massFilter}}{  Numeric (length 2) with the min and max mass
 (in Da) values to filter features. Features within the mass range are
 filtered out.}
+\item{\strong{onlySuspects}}{  Logical (length 1) with \code{TRUE} for only keeping
+features annotated with a suspect.}
 }}
 
 \item{x}{A Settings_filter_features_StreamFind S3 class object.}

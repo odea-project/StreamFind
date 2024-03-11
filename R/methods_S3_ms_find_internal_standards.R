@@ -5,17 +5,25 @@
 #'
 #' @noRd
 #'
-.s3_ms_find_internal_standards.Settings_find_internal_standards_StreamFind <- function(settings, self) {
+.s3_ms_find_internal_standards.Settings_find_internal_standards_StreamFind <- function(settings, self, private) {
+  
+  if (!any(self$has_features())) {
+    warning("There are no features! Run find_features first!")
+    return(FALSE)
+  }
   
   if (!validate(settings)) return(FALSE)
   
   database <- settings$parameters$database
+  
+  database <- as.data.table(database)
 
   internal_standards <- self$get_suspects(
     database = database,
     ppm = settings$parameters$ppm,
     sec = settings$parameters$sec,
-    filtered = TRUE
+    filtered = TRUE,
+    onGroups = FALSE
   )
   
   if (nrow(internal_standards) == 0) {
@@ -90,38 +98,46 @@
     
     if (!any(self$has_features())) return(FALSE)
     
-    analyses <- self$get_analyses()
+    features <- self$get_feature_list(filtered = TRUE)
 
-    analyses <- lapply(analyses, function(x, internal_standards_l) {
+    istd_col <- lapply(names(features), function(x, features, internal_standards_l) {
       
-      x$features[["istd_name"]] <- NA_character_
-      x$features[["istd_rte"]] <- NA_real_
-      x$features[["istd_mze"]] <- NA_real_
-      x$features[["istd_rec"]] <- NA_real_
+      istd <- internal_standards_l[[x]]
       
-      istd <- internal_standards_l[[x$name]]
+      fts <- features[[x]]
       
       if (!is.null(istd)) {
-        for (i in seq_len(nrow(istd))) {
-          ft_idx <- which(x$features$feature %in% istd$feature[i])
-          x$features$istd_name[ft_idx] <- istd$name[i]
-          x$features$istd_rte[ft_idx] <- istd$rt_error[i]
-          x$features$istd_mze[ft_idx] <- istd$mz_error[i]
-          x$features$istd_rec[ft_idx] <- istd$rec[i] 
-        }
+
+        istd_l <- lapply(fts$feature, function(z, istd) {
+
+          istd_idx <- which(istd$feature %in% z)
+
+          if (length(istd_idx) > 0) {
+            istd_temp <- istd[istd_idx, ]
+            istd_temp <- istd_temp[, c("name", "formula", "error_mass", "error_rt", "rec"), with = FALSE]
+
+            if (nrow(istd_temp) > 0) {
+              istd_temp
+            } else {
+              NULL
+            }
+          } else {
+            NULL
+          }
+
+        }, istd = istd)
+
+        istd_l
+
+      } else {
+        lapply(fts$feature, function(x) NULL)
       }
       
-      x
-      
-    }, internal_standards_l = internal_standards_l)
+    }, features = features, internal_standards_l = internal_standards_l)
     
-    features <- lapply(analyses, function(x) x$features)
+    names(istd_col) <- names(features)
     
-    suppressMessages(self$add_features(features, replace = TRUE))
-    
-    if ("istd_name" %in% colnames(self$get_features())) {
-      
-      # self$InternalStandards <- .module_methods_InternalStandards(self$.__enclos_env__)
+    if (private$.add_features_column("istd", istd_col)) {
       
       message("\U2713 ", length(unique(internal_standards$name)), " internal standards found and tagged!")
       
@@ -135,55 +151,3 @@
     FALSE
   }
 }
-
-# .module_methods_InternalStandards <- function(env) {
-# 
-#   out <- list()
-# 
-#   out[["get"]] <- function() {
-#     istd <- self$get_features(filtered = TRUE)
-# 
-#     if ("istd_name" %in% colnames(istd)) {
-# 
-#       istd <- istd[!is.na(istd$istd_name), ]
-# 
-#       if (nrow(istd) > 0) {
-# 
-#         setnames(istd,
-#                  c("istd_name", "istd_rte", "istd_mze", "istd_rec"),
-#                  c("name", "rte", "mze","rec")
-#         )
-# 
-#         cols <- c(
-#           "name",
-#           "intensity",
-#           "area",
-#           "rte",
-#           "mze",
-#           "rec",
-#           "analysis",
-#           "feature",
-#           "group"
-#         )
-# 
-#         istd <- istd[, cols, with = FALSE]
-# 
-#         setorder(istd, "name")
-# 
-#         istd
-# 
-#       } else {
-#         warning("Internal standards not found!")
-#       }
-# 
-#     } else {
-#       warning("Not present! Run find_internal_standards method to tag the internal standards!")
-#     }
-#   }
-# 
-#   environment(out[["get"]]) <- env
-# 
-#   
-#   
-#   out
-# }

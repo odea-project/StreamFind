@@ -8,7 +8,7 @@
 Settings_load_features_ms1_StreamFind(
   rtWindow = c(-2, 2),
   mzWindow = c(-1, 6),
-  mzClust = 0.003,
+  mzClust = 0.005,
   presence = 0.8,
   minIntensity = 250,
   filtered = FALSE,

@@ -345,7 +345,7 @@ test_that("remove features completely", {
 ms5$remove_settings("group_features")
 
 test_that("remove settings", {
-  expect_null(ms5$get_settings("group_features")[[1]])
+  expect_null(suppressWarnings(ms5$get_settings("group_features"))[[1]])
 })
 
 file.remove(c("headers.json", "analyses.json", "groups.json", "settings.json"))
@@ -386,7 +386,7 @@ ms5$load_features_ms1(settings = slfms1)
 test_that("load MS1 features", {
   expect_true(any(ms5$has_loaded_features_ms1()))
   expect_equal(
-    unique(ms5$get_features_ms1(loadedMS1 = TRUE)[["id"]]),
+    unique(ms5$get_features_ms1(loadedMS1 = TRUE)[["feature"]]),
     unique(fts_to_subset$feature)
   )
 })
@@ -402,7 +402,7 @@ ms5$load_features_ms2(settings = slfms2)
 test_that("load MS2 features", {
   expect_true(any(ms5$has_loaded_features_ms2()))
   expect_equal(
-      unique(ms5$get_features_ms2(loadedMS2 = TRUE)[["id"]]),
+      unique(ms5$get_features_ms2(loadedMS2 = TRUE)[["feature"]]),
       unique(fts_to_subset$feature)
   )
 })
@@ -473,7 +473,7 @@ ms6$load_groups_ms1(settings = slfgms1)
 test_that("load MS1 groups", {
   expect_true(any(ms6$has_loaded_groups_ms1()))
   expect_equal(
-    unique(ms6$get_groups_ms1()[["id"]]),
+    unique(ms6$get_groups_ms1()[["group"]]),
     groups_to_subset$group
   )
 })
@@ -489,7 +489,7 @@ ms6$load_groups_ms2(settings = slfgms2)
 test_that("load MS2 groups", {
   expect_true(any(ms6$has_loaded_groups_ms2()))
   expect_equal(
-    unique(ms6$get_groups_ms2()[["id"]]),
+    unique(ms6$get_groups_ms2()[["group"]]),
     groups_to_subset$group
   )
 })

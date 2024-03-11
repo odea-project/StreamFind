@@ -5,7 +5,19 @@
 \alias{validate.Settings_suspect_screening_StreamFind}
 \title{Settings_suspect_screening_StreamFind}
 \usage{
-Settings_suspect_screening_StreamFind(database = NULL, ppm = 4, sec = 10)
+Settings_suspect_screening_StreamFind(
+  database = NULL,
+  ppm = 5,
+  sec = 10,
+  ppmMS2 = 10,
+  minFragments = 3,
+  isolationWindow = 1.3,
+  mzClust = 0.003,
+  presence = 0.8,
+  minIntensity = 0,
+  runParallel = FALSE,
+  filtered = FALSE
+)
 
 \method{validate}{Settings_suspect_screening_StreamFind}(x)
 }
@@ -16,6 +28,29 @@ indicating the name and neutral monoisotopic mass of the suspect targets.}
 \item{ppm}{Numeric of length one with the mass deviation, in ppm.}
 
 \item{sec}{Numeric of length one with the time deviation, in seconds.}
+
+\item{ppmMS2}{Numeric of length one with the mass deviation, in ppm for MS2.}
+
+\item{minFragments}{Integer of length 1 with the minimum number of fragments.}
+
+\item{isolationWindow}{Numeric value with the isolation window (in Da)
+applied for ion isolation and fragmentation during acquisition of tandem
+data (i.e., MS2 data).}
+
+\item{mzClust}{Numeric value with the mass deviation threshold (in Da) to
+cluster mass traces. Highly dependent on the mass resolution of the MS data.}
+
+\item{presence}{Numeric of length one with the required presence ratio from
+0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
+present in all spectra) for traces during clustering of spectra.}
+
+\item{minIntensity}{Numeric value with the minimum intensity.}
+
+\item{runParallel}{Logical of length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{filtered}{Logical. When \code{TRUE}, filtered features/groups are considered.}
 
 \item{x}{A Settings_suspect_screening_StreamFind S3 class object.}
 }

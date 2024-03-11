@@ -4,30 +4,87 @@
 #'
 #' @noRd
 #'
-.s3_ms_suspect_screening.Settings_suspect_screening_StreamFind <- function(settings, self) {
+.s3_ms_suspect_screening.Settings_suspect_screening_StreamFind <- function(settings, self, private) {
 
+  if (!any(self$has_features())) {
+    warning("There are no features! Run find_features first!")
+    return(FALSE)
+  }
+  
   if (!validate(settings)) return(FALSE)
 
   suspect_features <- self$get_suspects(
     database = settings$parameters$database,
     ppm = settings$parameters$ppm,
-    sec = settings$parameters$sec
+    sec = settings$parameters$sec,
+    ppmMS2 = settings$parameters$ppmMS2,
+    minFragments = settings$parameters$minFragments,
+    isolationWindow = settings$parameters$isolationWindow,
+    mzClust = settings$parameters$mzClust,
+    presence = settings$parameters$presence,
+    minIntensity = settings$parameters$minIntensity,
+    filtered = settings$parameters$filtered,
+    onGroups = FALSE
   )
-
-  suspect_groups <- self$get_groups(groups = unique(suspect_features$group))
-
+  
   if (nrow(suspect_features) > 0) {
-    suspects_data <- list(
-      "features" = suspect_features,
-      "groups" = suspect_groups
-    )
+    
+    suspect_cols <- colnames(suspect_features)
+    
+    suspect_cols <- c(suspect_cols[1:which(suspect_cols %in% "analysis") - 1])
+    
+    suspect_features_l <- split(suspect_features, suspect_features$analysis)
+    
+    if (!any(self$has_features())) return(FALSE)
+    
+    features <- self$get_feature_list(filtered = settings$parameters$filtered)
+    
+    sus_col <- lapply(names(features), function(x, features, suspect_features_l, suspect_cols) {
+      
+      suspects <- suspect_features_l[[x]]
+      
+      fts <- features[[x]]
+      
+      if (!is.null(suspects)) {
+        
+        suspects_l <- lapply(fts$feature, function(z, suspects, suspect_cols) {
+          
+          sus_idx <- which(suspects$feature %in% z)
+          
+          if (length(sus_idx) > 0) {
+            sus_temp <- suspects[sus_idx, ]
+            sus_temp <- sus_temp[, suspect_cols, with = FALSE]
+            
+            if (nrow(sus_temp) > 0) {
+              sus_temp  
+            } else {
+              NULL
+            }
+          } else {
+            NULL
+          }
+          
+        }, suspects = suspects, suspect_cols = suspect_cols)
+        
+        suspects_l
+        
 
-    output <- list(suspects_data)
-    names(output) <- settings$call
-
-    self$add_modules_data(output)
-
-    TRUE
+      } else {
+        lapply(fts$feature, function(x) NULL)
+      }
+      
+    }, features = features, suspect_features_l = suspect_features_l, suspect_cols = suspect_cols)
+    
+    names(sus_col) <- names(features)
+    
+    if (private$.add_features_column("suspects", sus_col)) {
+      
+      TRUE
+      
+    } else {
+      FALSE
+    }
+    
   } else {
     FALSE
   }
@@ -39,8 +96,13 @@
 #'
 #' @noRd
 #'
-.s3_ms_suspect_screening.Settings_suspect_screening_forident <- function(settings, self) {
+.s3_ms_suspect_screening.Settings_suspect_screening_forident <- function(settings, self, private) {
 
+  if (!any(self$has_features())) {
+    warning("There are no features! Run find_features first!")
+    return(FALSE)
+  }
+  
   if (!validate(settings)) return(FALSE)
 
   if (self$has_groups()) {
@@ -159,5 +221,118 @@
     }
   }
 
+  TRUE
+}
+
+#' @title .s3_ms_suspect_screening.Settings_suspect_screening_patRoon
+#'
+#' @description Makes suspect screening on feature groups.
+#'
+#' @noRd
+#'
+.s3_ms_suspect_screening.Settings_suspect_screening_patRoon <- function(settings, self, private) {
+  
+  if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
+    warning("patRoon package not found! Install it for finding features.")
+    return(FALSE)
+  }
+  
+  if (!validate(settings)) return(FALSE)
+  
+  parameters <- settings$parameters
+  
+  algorithm <- settings$algorithm
+  
+  fg <- self$featureGroups
+  
+  if (is.null(fg)) {
+    warning("Feature groups not found! Not done.")
+    return(FALSE)
+  }
+  
+  res <- patRoon::screenSuspects(
+    fGroups = fg,
+    suspects = parameters$suspects,
+    rtWindow = parameters$rtWindow,
+    mzWindow = parameters$mzWindow,
+    skipInvalid = TRUE,
+    prefCalcChemProps = TRUE,
+    neutralChemProps = TRUE,
+    onlyHits = TRUE,
+    adduct = NULL
+  )
+  
+  suspect_list <- res@screenInfo
+  
+  browser()
+  
+  if (!any(self$has_features())) return(FALSE)
+  
+  analyses <- self$get_analyses()
+  
+  features <- lapply(analyses, function(x, suspect_list) {
+    
+    fts <- x$features
+    
+    has_suspect_features <- any(suspect_list$group %in% fts$group)
+    
+    if (has_suspect_features) {
+      
+      suspects_l <- lapply(seq_len(nrow(fts)), function(z, suspect_list) {
+        
+        ft <- fts[z, ]
+        
+        sus_idx <- which(suspect_list$group %in% ft$group)
+        
+        if (length(sus_idx) > 0) {
+          sus_temp <- suspect_list[sus_idx, ]
+          
+          if ("rt" %in% colnames(sus_temp)) {
+            if (!is.na(sus_temp$rt)) {
+              sus_temp$d_rt <- sus_temp$rt - ft$rt
+              sus_temp$d_rt <- round(sus_temp$d_rt, digits = 1)
+            }
+            setnames(sus_temp, "rt", "exp_rt")
+            setnames(sus_temp, "d_rt", "error_rt")
+          }
+          
+          if ("neutralMass" %in% colnames(sus_temp)) {
+            sus_temp$d_mz <- (sus_temp$neutralMass - ft$mass) / ft$mass * 1E6
+            sus_temp$d_mz <- round(sus_temp$d_mz, digits = 1)
+            setnames(sus_temp, "neutralMass", "exp_mass")
+            setnames(sus_temp, "d_mz", "error_mass")
+          }
+           # TODO make case for mz column
+          
+          sus_temp[["group"]] <- NULL
+          sus_temp[["sets"]] <- NULL
+          sus_temp[["molNeutralized-negative"]] <- NULL
+          sus_temp[["molNeutralized-positive"]] <- NULL
+          sus_temp[["molNeutralized"]] <- NULL
+
+          if (nrow(sus_temp) > 0) {
+            sus_temp  
+          } else {
+            NULL
+          }
+        } else {
+          NULL
+        }
+        
+      }, suspect_list = suspect_list)
+      
+      fts$suspects <- suspects_l
+
+    } else {
+      fts$suspects <- lapply(fts$feature, function(x) NULL)
+    }
+    
+    fts
+    
+  }, suspect_list = suspect_list)
+  
+  
+  browser()
+  
   TRUE
 }

@@ -94,7 +94,7 @@ settings <- list(
 
 # spectra ----------------------------------------------------------------------
 
-ms <- MassSpecData$new(files = files, settings = settings)
+ms <- MassSpecData$new(files = files)
 
 ms$find_features()
 
@@ -138,8 +138,14 @@ View(ms$get_features())
 
 
 
+fl <- all_files[30]
+srm <- MassSpecData$new(files = fl)
+srm$plot_chromatograms(interactive = FALSE)
 
 
+write.csv(srm$get_chromatograms(), "chromatograms.csv", row.names = FALSE)
+
+.plot_chromatograms_interactive(chromatograms)
 
 
 
@@ -159,6 +165,12 @@ spec$unique_id <- paste0(spec$analysis, "_", spec$id, "_", spec$polarity)
 spec
 
 rcpp_ms_cluster_spectra(spec, mzClust = 0.001, presence = 0.8, verbose = TRUE)
+
+
+
+
+
+
 
 
 # ms$get_ms2()
@@ -219,11 +231,11 @@ ms$plot_eic(mass = neutral_targets, colorBy = "targets", interactive = F, legend
 
 
 
-ms$get_analyses(1)[[1]]$run
+# fl <- choose.files()
 
-rcpp_parse_ms_analysis(all_files[7])
+rcpp_parse_ms_analysis(fl)
 
-rcpp_parse_spectra_headers(all_files[7])
+rcpp_parse_spectra_headers(fl)
 
 rcpp_parse_ms_analysis_spectra(ms$get_analyses(1)[[1]])
 
@@ -254,7 +266,7 @@ ms <- MassSpecData$new(files = all_files[10:21],
 )
 
 ana <- ms$get_analyses(1)
-ana1 <- parse.MassSpecAnalysis(all_files[10])
+ana1 <- parse_MassSpecAnalysis(all_files[10])
 all.equal(ana, ana1)
 
 ms1 <- ms$subset_analyses(4)

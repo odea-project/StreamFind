@@ -14,13 +14,15 @@
 
 
 // [[Rcpp::export]]
-Rcpp::List rcpp_centroid_spectra_qCentroids(Rcpp::DataFrame spectra) {
+Rcpp::List rcpp_centroid_spectra_qCentroids(Rcpp::DataFrame spectra,
+                                            int maxScale = 5,
+                                            int mode = 2) {
   
   std::vector<std::string> spectra_cols = spectra.names();
   
-  if (spectra.nrows() == 0 || spectra_cols.size() == 0) {
-    throw std::runtime_error("Spectra DataFrame is empty!");
-  }
+  Rcpp::List list_out;
+  
+  if (spectra.nrows() == 0 || spectra_cols.size() == 0) return list_out;
   
   std::vector<std::string> must_have_names = {"scan", "mz", "intensity"};
   
@@ -44,9 +46,9 @@ Rcpp::List rcpp_centroid_spectra_qCentroids(Rcpp::DataFrame spectra) {
   
   int number_spectra = all_scan.size();
 
-  Rcpp::Rcout << std::endl;
-  Rcpp::Rcout << "Analyses with " << number_spectra << " spectra!" << std::endl;
-  Rcpp::Rcout << std::endl;
+  // Rcpp::Rcout << std::endl;
+  // Rcpp::Rcout << "Analyses with " << number_spectra << " spectra!" << std::endl;
+  // Rcpp::Rcout << std::endl;
   
   q::Matrix xyData(number_spectra, 3);
   
@@ -58,32 +60,53 @@ Rcpp::List rcpp_centroid_spectra_qCentroids(Rcpp::DataFrame spectra) {
   
   q::tValues tVal;
   
-  q::Peakmodel model(2);
+  q::Peakmodel model(maxScale);
+  
+  switch (mode) {
+    case 0:
+      model.setMode(q::Mode::DEBUGGING);
+      break;
+      
+    case 2:
+      model.setMode(q::Mode::PROGRESS);
+      break;
+      
+    default:
+      break;
+  }
   
   model.loadTValues(tVal);
   
   model.addMultipleMeasurements(xyData);
   
-  model.runRegression();
-
-  Rcpp::List list_out;
+  // auto start = std::chrono::high_resolution_clock::now();
+  
+  model.findPeaks();
+  
+  // auto finish = std::chrono::high_resolution_clock::now();
+  // 
+  // std::chrono::duration<double> elapsed = finish - start;
+  // Rcpp::Rcout << std::endl;
+  // Rcpp::Rcout << "Elapsed time: " << elapsed.count() << " s\n";
+  
+  // model.runRegression();
   
   list_out["scan"] = model.getPeakProperties(q::Peakproperties::SMPLID);
   list_out["mz"] = model.getPeakProperties(q::Peakproperties::POSITION);
   list_out["intensity"] = model.getPeakProperties(q::Peakproperties::HEIGHT);
   list_out["area"] = model.getPeakProperties(q::Peakproperties::AREA);
-  list_out["width"] = model.getPeakProperties(q::Peakproperties::WIDTH);
   list_out["DQS"] = model.getPeakProperties(q::Peakproperties::DQS);
-  list_out["SIGMAPOSITION"] = model.getPeakProperties(q::Peakproperties::SIGMAPOSITION);
-  list_out["SIGMAHEIGHT"] = model.getPeakProperties(q::Peakproperties::SIGMAHEIGHT);
-  list_out["SIGMAAREA"] = model.getPeakProperties(q::Peakproperties::SIGMAAREA);
-  list_out["SIGMAWIDTH"] = model.getPeakProperties(q::Peakproperties::SIGMAWIDTH);
-  list_out["COEFF_B0"] = model.getPeakProperties(q::Peakproperties::COEFF_B0);
-  list_out["COEFF_B1"] = model.getPeakProperties(q::Peakproperties::COEFF_B1);
-  list_out["COEFF_B2"] = model.getPeakProperties(q::Peakproperties::COEFF_B2);
-  list_out["COEFF_B3"] = model.getPeakProperties(q::Peakproperties::COEFF_B3);
   
-  
+  // list_out["width"] = model.getPeakProperties(q::Peakproperties::WIDTH);
+  // list_out["SIGMAPOSITION"] = model.getPeakProperties(q::Peakproperties::SIGMAPOSITION);
+  // list_out["SIGMAHEIGHT"] = model.getPeakProperties(q::Peakproperties::SIGMAHEIGHT);
+  // list_out["SIGMAAREA"] = model.getPeakProperties(q::Peakproperties::SIGMAAREA);
+  // list_out["SIGMAWIDTH"] = model.getPeakProperties(q::Peakproperties::SIGMAWIDTH);
+  // list_out["COEFF_B0"] = model.getPeakProperties(q::Peakproperties::COEFF_B0);
+  // list_out["COEFF_B1"] = model.getPeakProperties(q::Peakproperties::COEFF_B1);
+  // list_out["COEFF_B2"] = model.getPeakProperties(q::Peakproperties::COEFF_B2);
+  // list_out["COEFF_B3"] = model.getPeakProperties(q::Peakproperties::COEFF_B3);
+
   list_out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
   
   return list_out;

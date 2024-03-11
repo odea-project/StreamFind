@@ -385,7 +385,7 @@ void xml_utils::mzml_spectra_headers_parser(const pugi::xml_node& node_mzml, xml
         if (std::isnan(output.pre_ce[i])) output.pre_ce[i] = NA_REAL;
         
         // check is DIA in all ions mode was applied
-        if (output.pre_mzhigh[i] == output.pre_mzlow[i]) {
+        if (output.pre_mzhigh[i] == output.pre_mzlow[i] && pre_mzlow_node != NULL && pre_mzhigh_node != NULL) {
           output.pre_mzhigh[i] = NA_REAL;
           output.pre_mzlow[i] = NA_REAL;
           output.pre_mz[i] = NA_REAL;
@@ -933,7 +933,14 @@ xml_utils::runSummary xml_utils::run_summary(
   } else {
     output.mode = na_charvec;
     output.levels = empty_int_vec;
-    output.type = NA_STRING;
+    
+    if (output.chromatograms_number > 0) {
+      output.type = "SRM";
+      
+    } else {
+      output.type = NA_STRING;
+    }
+    
     output.mz_low = NA_REAL;
     output.mz_high = NA_REAL;
     output.rt_start = NA_REAL;

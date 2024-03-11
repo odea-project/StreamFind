@@ -22,17 +22,55 @@ Rcpp::List rcpp_ms_annotation_isotopes(
   bool verbose = false
 ) {
 
+  
+  
   Rcpp::List list_out;
-
-  int number_of_features = features.nrows();
-
-  if (verbose) {
-    Rcpp::Rcout << "Processing " << number_of_features << "..." << std::endl;
+  
+  
+  
+  
+  
+  // Check arguments /////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////
+  
+  std::vector<std::string> features_cols = features.names();
+  
+  if (features.nrows() == 0 || features_cols.size() == 0) {
+    throw std::runtime_error("Features DataFrame is empty!");
   }
+  
+  std::vector<std::string> must_have_names = {
+    "feature", "index", "rt", "rtmin", "rtmax",
+    "mz", "mzmin", "mzmax", "intensity"
+  };
+  
+  std::vector<bool> has_must_have_names(9, false);
+  
+  for (size_t i = 0; i < must_have_names.size(); ++i) {
+    for (size_t j = 0; j < features_cols.size(); ++j) {
+      if (must_have_names[i] == features_cols[j]) has_must_have_names[i] = true;
+    }
+  }
+  
+  for (bool value : has_must_have_names) {
+    if (!value) {
+      throw std::runtime_error("The DataFrame features does not have all required columns!");
+    }
+  }
+  
+  
+  
+  
   
   
   // Order Input data by mz //////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////
+  
+  int number_of_features = features.nrows();
+  
+  if (verbose) {
+    Rcpp::Rcout << "Processing " << number_of_features << "..." << std::endl;
+  }
 
   std::vector<std::string> all_ids_unsorted = features["feature"];
   std::vector<int> all_idx_unsorted = features["index"];
@@ -451,7 +489,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(
   std::vector<double> feat_iso_error(number_of_features);
   std::vector<double> feat_iso_mz_sd(number_of_features);
   std::vector<std::string> feat_iso_feat(number_of_features);
-  Rcpp::CharacterVector feat_iso_el(number_of_features);
+  std::vector<std::string> feat_iso_el(number_of_features);
   std::vector<int> feat_iso_gr_size(number_of_features);
 
 
@@ -460,8 +498,6 @@ Rcpp::List rcpp_ms_annotation_isotopes(
 
   std::vector<double> feat_estimated_carbons(number_of_features);
   int final_estimated_number_carbons;
-
-
 
 
   // Main loop ///////////////////////////////////////////////////////////////////////////////////
@@ -742,7 +778,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(
           hits_iso_error[0] = error_monoiso;
 
           Rcpp::List hits_iso_el(maxIsotopes + 1);
-          Rcpp::CharacterVector el_monoiso;
+          std::vector<std::string> el_monoiso;
           el_monoiso.push_back("");
           hits_iso_el[0] = el_monoiso;
 
@@ -758,8 +794,8 @@ Rcpp::List rcpp_ms_annotation_isotopes(
           Rcpp::IntegerVector int_empty_vector;
           int_empty_vector.push_back(nan(""));
 
-          Rcpp::CharacterVector char_empty_vector;
-          char_empty_vector.push_back("");
+          std::vector<std::string> string_empty_vector;
+          string_empty_vector.push_back("");
 
           for (int iso = 1; iso < maxIsotopes + 1; ++iso) {
             hits_iso_mz[iso] = empty_vector;
@@ -770,7 +806,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(
             hits_iso_md[iso] = empty_vector;
             hits_iso_error[iso] = empty_vector;
             hits_iso_mz_sd[iso] = empty_vector;
-            hits_iso_el[iso] = char_empty_vector;
+            hits_iso_el[iso] = string_empty_vector;
             hits_iso_ab[iso] = empty_vector;
           }
 
@@ -822,7 +858,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(
             Rcpp::NumericVector md;
             Rcpp::NumericVector error;
             Rcpp::NumericVector mz_sd;
-            Rcpp::CharacterVector el;
+            std::vector<std::string> el;
 
             for (int f = 1; f < number_chain_features; ++f) {
               double mzr = max_chain_mzr;
@@ -865,7 +901,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(
               bool is_iso_candidate = false;
               double mass_error = 10; // is updated on the first hit
               double candidate_iso_md = 0;
-              Rcpp::CharacterVector el_temp;
+              std::vector<std::string> el_temp;
               Rcpp::NumericVector ab_temp;
 
               // when candidate is inside of the mass +/- sd for iso step
@@ -880,7 +916,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(
                   double candidate_md_error = abs(temp_iso_md[j] - candidate_diff);
 
                   int candidate_idx = temp_iso_idx[j];
-                  Rcpp::CharacterVector candidate_el = el_combinations_list[candidate_idx];
+                  std::vector<std::string> candidate_el = el_combinations_list[candidate_idx];
                   Rcpp::NumericVector candidate_ab = el_ab_combinations_list[candidate_idx];
 
                   double min_rel_int = 1;
@@ -888,8 +924,8 @@ Rcpp::List rcpp_ms_annotation_isotopes(
 
                   std::unordered_map<std::string, int> count_map;
 
-                  for (int e = 0; e < candidate_el.size(); ++e) {
-                    std::string e_el = Rcpp::as<std::string>(candidate_el[e]);
+                  for (size_t e = 0; e < candidate_el.size(); ++e) {
+                    std::string e_el = candidate_el[e];
                     count_map[e_el]++;
                   }
 
@@ -1034,9 +1070,9 @@ Rcpp::List rcpp_ms_annotation_isotopes(
                   }
                 }
 
-                std::string concat_el_temp = Rcpp::as<std::string>(el_temp[0]);
-                for (int e = 1; e < el_temp.size(); ++e) {
-                  concat_el_temp += " " + Rcpp::as<std::string>(el_temp[e]);
+                std::string concat_el_temp = el_temp[0];
+                for (size_t e = 1; e < el_temp.size(); ++e) {
+                  concat_el_temp += " " + el_temp[e];
                 }
 
                 // Rcpp::Rcout << std::endl;
@@ -1169,7 +1205,7 @@ Rcpp::List rcpp_ms_annotation_isotopes(
           Rcpp::NumericVector flat_ints;
           Rcpp::NumericVector flat_diff;
           Rcpp::NumericVector flat_md;
-          Rcpp::CharacterVector flat_el;
+          std::vector<std::string> flat_el;
           Rcpp::NumericVector flat_error;
           Rcpp::NumericVector flat_mz_sd;
           for (int iso = 0; iso < maxIsotopes + 1; ++iso) {
@@ -1384,9 +1420,52 @@ Rcpp::List rcpp_ms_annotation_isotopes(
     Rcpp::Named("iso_feat") = feat_iso_feat,
     Rcpp::Named("iso_size") = feat_iso_gr_size
   );
-
+  
   list_out["output"] = output_df;
+  
+  Rcpp::List list_out2(number_of_features);
+  
+  // Rcpp::CharacterVector feat_iso_el_new(number_of_features);
+  
+  // for (int i = 0; i < number_of_features; ++i) {
+  //   if (TYPEOF(feat_iso_el[i]) == CHARSXP) {
+  //     SEXP str = Rf_coerceVector(feat_iso_el[i], STRSXP);
+  //     feat_iso_el_new[i] = Rcpp::String(CHAR(STRING_ELT(str, 0)));
+  //   } else {
+  //     feat_iso_el_new[i] = feat_iso_el[i];
+  //   }
+  // }
+  
+  for (int i = 0; i < number_of_features; ++i) {
+    
+    // if (feat_iso_el[i] == "") {
+    //   feat_iso_el[i] = NA_STRING;
+    // }
+    // 
+    // if (TYPEOF(feat_iso_el[i]) == CHARSXP) {
+    //   feat_iso_el[i] = Rcpp::String(feat_iso_el[i]);
+    // }
+    
+    list_out2[i] = Rcpp::List::create(
+      Rcpp::Named("feature") = all_ids[i],
+      Rcpp::Named("cluster") = feat_iso_gr[i],
+      Rcpp::Named("cluster_size") = feat_iso_gr_size[i],
+      Rcpp::Named("cluster_feature") = feat_iso_feat[i],
+      Rcpp::Named("elements") = feat_iso_el[i],
+      Rcpp::Named("carbons") = feat_estimated_carbons[i],
+      Rcpp::Named("charge") = feat_iso_z[i],
+      Rcpp::Named("tag") = feat_iso_cat[i],
+      Rcpp::Named("step") = feat_iso_step[i],
+      Rcpp::Named("md_diff") = feat_iso_diff[i],
+      Rcpp::Named("md_hit") = feat_iso_md[i],
+      Rcpp::Named("md_error") = feat_iso_error[i],
+      Rcpp::Named("mass_deviation") = feat_iso_mz_sd[i],
+      Rcpp::Named("relative_intensity") = feat_iso_int[i]
+    );
+  }
 
+  list_out["output2"] = list_out2;
+  
   return list_out;
 }
 

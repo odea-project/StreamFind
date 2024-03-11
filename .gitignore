@@ -3,14 +3,14 @@ app/frontend/node_modules
 app/frontend/public
 
 # R project files -------------------------------------------------------------
-.Rproj.user
-.Rhistory
-.Rdata
-.RData
-.httr-oauth
-.DS_Store
-StreamFind.Rproj
-.vscode
+*.Rproj.user
+*.Rhistory
+*.Rdata
+*.RData
+*.httr-oauth
+*.DS_Store
+*.Rproj
+*.vscode
 
 # Excluded project folders ----------------------------------------------------
 **/doc
@@ -24,21 +24,11 @@ StreamFind.Rproj
 **/log
 
 # Excluded rds, cache and html files ------------------------------------------
-/handbooks/Handbook_backend_StreamFind.html
-/handbooks/Handbook_backend_StreamFind_cache
-/handbooks/Handbook_backend_StreamFind_files
-settings_pp.rds
-MassSpecData_example.json
-settings_pp_2.json
-settings.json
-ffs.json
-gfs.json
-fls.json
-settings_find_features.json
-settings_group_features.json
-/dev/template_report.html
-/dev/demo_ozonation_project.html
-inst/doc
+*.rds
+*.json
+dev/*.html
+dev/*_cache
+dev/*_files
 /report
 report.yml
 
@@ -48,3 +38,4 @@ src/qAlgorithms/LICENSE
 src/qAlgorithms/README.md
 src/qAlgorithms/test
 
+.Rproj.user
