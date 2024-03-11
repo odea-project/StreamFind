@@ -826,7 +826,7 @@ msbp$load_groups_ms2(slgms2)
 
 msbp$suspect_screening(sss)
 
-View(msbp$get_modules_data("suspect_screening"))
+View(msbp$get_results("suspect_screening"))
 
 
 

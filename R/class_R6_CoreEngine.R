@@ -4,13 +4,17 @@
 #'
 #' @template arg-headers
 #' @template arg-settings-and-list
-#' @template arg-modules
+#' @template arg-results
 #' @template arg-analyses
 #' @template arg-verbose
+#' 
 #' @template arg-save-format
 #' @template arg-save-name
 #' @template arg-save-path
 #' @template arg-import-file
+#' 
+#' @template arg-chromatograms
+#' 
 #' @template arg-title
 #' @template arg-legendNames
 #' @template arg-colorBy
@@ -39,8 +43,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
     ## ___ .analyses -----
     .analyses = NULL,
     
-    ## ___ .modules -----
-    .modules = NULL,
+    ## ___ .results -----
+    .results = NULL,
     
     ## ___ .utils -----
     
@@ -184,14 +188,56 @@ CoreEngine <- R6::R6Class("CoreEngine",
   
   active = list(
     
+    ### ___ chromatograms -----
+    
+    #' @field chromatograms `data.table` with processed chromatograms for each analyses.
+    #' 
+    chromatograms = function() {
+      
+      if (self$has_results("chromatograms")) {
+        res <- private$.results$chromatograms$data
+        res <- lapply(res, function(x) x$chromatograms)
+        res <- rbindlist(res, fill = TRUE)
+        if (nrow(res) > 0) res$replicate <- self$get_replicate_names()[res$analysis]
+        
+      } else {
+        res <- lapply(self$get_analyses(), function(x) x$chromatograms)
+        names(res) <- self$get_analysis_names()
+        res <- Map(function(x, y) {
+          if (is.data.table(x)) x$analysis <- y
+          x
+        }, res, names(res))
+      }
+      
+      res
+    },
+    
+    #' @field chromatograms_peaks `data.table` with integrated peaks from chromatograms for each analyses.
+    #' 
+    chromatograms_peaks = function() {
+      
+      if (self$has_chromatograms_peaks()) {
+        pks <- private$.results$chromatograms$data
+        pks <- lapply(pks, function(x) x$peaks)
+        pks <- rbindlist(pks)
+        
+        if (nrow(pks) > 0) pks$replicate <- self$get_replicate_names()[pks$analysis]
+        
+        pks
+        
+      } else {
+        data.table()
+      }
+    },
+    
     ### ___ spectra -----
     
     #' @field spectra List of spectra `data.table` objects for each analysis.
     #'
     spectra = function() {
       
-      if (self$has_modules_data("spectra")) {
-        res <- private$.modules$spectra$data
+      if (self$has_results("spectra")) {
+        res <- private$.results$spectra$data
         res <- lapply(res, function(x) x$spectra)
         
       } else {
@@ -211,7 +257,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     averaged_spectra = function() {
       
       if (self$has_averaged_spectra()) {
-        res <- private$.modules$spectra$data
+        res <- private$.results$spectra$data
         res <- lapply(res, function(x) x$average)
         res
         
@@ -225,7 +271,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     spectra_peaks = function() {
       
       if (self$has_spectra_peaks()) {
-        pks <- private$.modules$spectra$data
+        pks <- private$.results$spectra$data
         pks <- lapply(pks, function(x) x$peaks)
         pks <- rbindlist(pks)
         
@@ -248,7 +294,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' @param analyses An Analysis S3 class object or a list with Analysis S3  class objects as elements 
     #' (see `?Analysis` for more information).
     #'
-    initialize = function(headers = NULL, settings = NULL, analyses = NULL, modules = NULL) {
+    initialize = function(headers = NULL, settings = NULL, analyses = NULL, results = NULL) {
       
       if (is.null(headers)) headers <- ProjectHeaders()
       
@@ -258,7 +304,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       
       if (!is.null(analyses)) suppressMessages(self$add_analyses(analyses))
       
-      if (!is.null(modules)) suppressMessages(self$add_modules(modules))
+      if (!is.null(results)) suppressMessages(self$add_results(results))
       
       private$.register("created", "CoreEngine", headers$name, "StreamFind", as.character(packageVersion("StreamFind")),
         paste(c(headers$author, headers$path), collapse = ", ")
@@ -287,7 +333,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       
       self$print_analyses()
       
-      self$print_modules()
+      self$print_results()
     },
     
     #' @description Prints the headers list.
@@ -339,16 +385,16 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
     },
     
-    #' @description Prints the data modules added to the engine.
+    #' @description Prints the data results added to the engine.
     #'
-    print_modules = function() {
+    print_results = function() {
       cat("\n")
-      cat("Modules")
-      if (length(private$.modules) > 0) {
+      cat("Results")
+      if (length(private$.results) > 0) {
         cat("\n")
-        names_modules <- names(private$.modules)
+        names_results <- names(private$.results)
         cat(
-          paste0(" ", seq_len(length(names_modules)), ": ", names_modules),
+          paste0(" ", seq_len(length(names_results)), ": ", names_results),
           sep = "\n"
         )
       } else {
@@ -507,19 +553,19 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
     },
     
-    #' @description Gets names of present modules data.
+    #' @description Gets names of present results data.
     #'
-    get_modules_data_names = function() {
-      names(private$.modules)
+    get_results_names = function() {
+      names(private$.results)
     },
     
-    #' @description Gets the list of modules data.
+    #' @description Gets the list of results data.
     #'
-    #' @param modules A character vector with the name of the module/s.
+    #' @param results A character vector with the name of the module/s.
     #'
-    get_modules_data = function(modules = NULL) {
-      if (is.null(modules)) modules <- names(private$.modules)
-      private$.modules[modules]
+    get_results = function(results = NULL) {
+      if (is.null(results)) results <- names(private$.results)
+      private$.results[results]
     },
     
     ## ___ add -----
@@ -961,26 +1007,26 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
     
-    #' @description Adds data from modules to the engine.
+    #' @description Adds data from results to the engine.
     #'
-    #' @param value A named list with data from modules.
+    #' @param value A named list with data from results.
     #'
     #' @return Invisible.
     #'
-    add_modules_data = function(value = NULL) {
+    add_results = function(value = NULL) {
       
       value_names <- names(value)
       
       if (!is.null(value_names)) {
         
-        if (is.null(private$.modules)) private$.modules <- list()
+        if (is.null(private$.results)) private$.results <- list()
         
         lapply(value_names, function(x, value) {
           
           if (is.null(value[[x]]$software)) value[[x]]$software <- NA_character_
           if (is.null(value[[x]]$version)) value[[x]]$version <- NA_character_
           
-          private$.modules[x] <- value[x]
+          private$.results[x] <- value[x]
           
           private$.register(
             "added",
@@ -991,7 +1037,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
             length(value[[x]])
           )
           
-          message(paste0("\U2713 ", x, " data added to modules!"))
+          message(paste0("\U2713 ", x, " data added to results!"))
           
         }, value = value)
         
@@ -1180,13 +1226,13 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
     
-    #' @description Removes modules data.
+    #' @description Removes results data.
     #'
     #' @return Invisible.
     #'
-    remove_modules_data = function(modules) {
+    remove_results = function(results) {
       
-      for (i in modules) if (self$has_modules_data(i)) private$.modules[[i]] <- NULL
+      for (i in results) if (self$has_results(i)) private$.results[[i]] <- NULL
       
       invisible(self)
     },
@@ -1234,10 +1280,13 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' @param call A string or a vector of strings with the name/s of the processing method/s.
     #'
     has_settings = function(call = NULL) {
+      
       if (is.null(call)) {
         length(private$.settings) > 0
+        
       } else if (length(private$.settings) > 0) {
         call %in% vapply(private$.settings, function(x) x$call, NA_character_)
+        
       } else {
         FALSE
       }
@@ -1249,16 +1298,48 @@ CoreEngine <- R6::R6Class("CoreEngine",
       length(private$.analyses) > 0
     },
     
-    #' @description Checks if modules data is present, returning `TRUE` or `FALSE`.
+    #' @description Checks if results are present, returning `TRUE` or `FALSE`.
     #' 
     #' @param names A string or a vector of strings with the name/s of the
-    #' modules data. The actual names depends of the applied algorithms. For 
+    #' results data. The actual names depends of the applied algorithms. For 
     #' instance, when algorithms via patRoon are used, the name of the module 
     #' data is patRoon.
     #'
-    has_modules_data = function(names = NULL) {
-      if (is.null(names)) names <- names(private$.modules)
-      length(private$.modules[names]) > 0
+    has_results = function(names = NULL) {
+      if (is.null(names)) names <- names(private$.results)
+      length(private$.results[names]) > 0
+    },
+    
+    ### ___ chromatograms -----
+    
+    #' @description Checks if there are chromatograms, returning `TRUE` or `FALSE`.
+    #'
+    has_chromatograms = function() {
+      
+      if (self$has_results("chromatograms")) {
+        sum(vapply(private$.results$chromatograms$data, function(x) {
+          if ("chromatograms" %in% names(x)) {
+            nrow(x$chromatograms)
+          } else {
+            0
+          }
+        }, 0)) > 0
+        
+      } else {
+        all(vapply(self$get_analyses(), function(x) nrow(x$chromatograms) > 0, FALSE))
+      }
+    },
+    
+    #' @description Checks if there are integrated peaks from chromatograms, returning `TRUE` or `FALSE`.
+    #'
+    has_chromatograms_peaks = function() {
+      
+      if (self$has_results("chromatograms")) {
+        sum(vapply(private$.results$chromatograms$data, function(x) nrow(x$peaks), 0)) > 0
+        
+      } else {
+        FALSE
+      }
     },
     
     ### ___ spectra -----
@@ -1267,8 +1348,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #'
     has_spectra = function() {
       
-      if (self$has_modules_data("spectra")) {
-        sum(vapply(private$.modules$spectra$data, function(x) {
+      if (self$has_results("spectra")) {
+        sum(vapply(private$.results$spectra$data, function(x) {
           if ("spectra" %in% names(x)) {
             nrow(x$spectra)
           } else {
@@ -1285,8 +1366,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #'
     has_spectra_peaks = function() {
       
-      if (self$has_modules_data("spectra")) {
-        sum(vapply(private$.modules$spectra$data, function(x) {
+      if (self$has_results("spectra")) {
+        sum(vapply(private$.results$spectra$data, function(x) {
           if ("peaks" %in% names(x)) {
             nrow(x$peaks)
           } else {
@@ -1303,8 +1384,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #'
     has_averaged_spectra = function() {
       
-      if (self$has_modules_data("spectra")) {
-        sum(vapply(private$.modules$spectra$data, function(x) {
+      if (self$has_results("spectra")) {
+        sum(vapply(private$.results$spectra$data, function(x) {
           if ("average" %in% names(x)) {
             nrow(x$average)
           } else {
@@ -1318,6 +1399,43 @@ CoreEngine <- R6::R6Class("CoreEngine",
     },
     
     ## ___ plot -----
+    
+    #' @description Plots peaks from chromatograms from analyses.
+    #'
+    plot_chromatograms_peaks = function(analyses = NULL,
+                                        chromatograms = NA_integer_,
+                                        legendNames = NULL,
+                                        title = NULL,
+                                        colorBy = "targets",
+                                        showLegend = TRUE,
+                                        xlim = NULL,
+                                        ylim = NULL,
+                                        cex = 0.6,
+                                        xLab = NULL,
+                                        yLab = NULL,
+                                        interactive = TRUE) {
+      
+      if (!self$has_chromatograms_peaks()) return(NULL)
+      
+      analyses <- private$.check_analyses_argument(analyses)
+      
+      if (is.null(analyses)) return(NULL)
+      
+      pks <- self$chromatograms_peaks
+      
+      pks <- pks[pks$analysis %in% analyses, ]
+      
+      if (nrow(pks) == 0) {
+        message("\U2717 Peaks not found for the targets!")
+        return(NULL)
+      }
+      
+      if (!interactive) {
+        .plot_chrom_peaks_static(self$chromatograms, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
+      } else {
+        .plot_chrom_peaks_interactive(self$chromatograms, pks, legendNames, colorBy, title, showLegend, xLab, yLab)
+      }
+    },
     
     #' @description Plots peaks from spectra from analyses.
     #'
@@ -1350,7 +1468,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       
       setnames(pks, c("mass", "massmin", "massmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
       
-      sp_data <- self$get_modules_data("spectra")
+      sp_data <- self$get_results("spectra")
       sp_data <- sp_data$spectra$data
       sp_data <- sp_data[unique(pks$analysis)]
       
@@ -1392,7 +1510,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     ## ___ processing -----
     
-    #' @description Runs all processing modules represented by added processing settings.
+    #' @description Runs all processing results represented by added processing settings.
     #'
     #' @return Invisible.
     #'
@@ -1522,13 +1640,13 @@ CoreEngine <- R6::R6Class("CoreEngine",
         settings <- private$.settings
         analyses <- private$.analyses
         history <- private$.history
-        modules <- private$.modules
+        results <- private$.results
         
         if (length(headers) > 0) list_all$headers <- headers
         if (!is.null(settings)) list_all$settings <- settings
         if (!is.null(analyses)) list_all$analyses <- analyses
         if (!is.null(history)) list_all$history <- history
-        if (!is.null(modules)) list_all$modules <- modules
+        if (!is.null(results)) list_all$results <- results
         
         js_all <- toJSON(
           list_all,
@@ -1644,8 +1762,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
             private$.history <- js_ms[["history"]]
           }
           
-          if ("modules" %in% fields_present) {
-            private$.modules <- js_ms[["modules"]]
+          if ("results" %in% fields_present) {
+            private$.results <- js_ms[["results"]]
           }
         }
       } else {

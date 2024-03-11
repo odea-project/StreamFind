@@ -4,8 +4,11 @@
 #' The *RamanEngine* R6 class is a framework for parsing, processing, inspecting and storing Raman spectroscopic data.
 #'
 #' @template arg-headers
-#' @template arg-runParallel
+#' @template arg-settings-and-list
+#' @template arg-results
 #' @template arg-analyses
+#' @template arg-verbose
+#' @template arg-runParallel
 #' 
 #' @template arg-raman-target
 #' @template arg-ms-minIntensity
@@ -48,15 +51,9 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #'
     #' @param files Vector with full paths of **.asc** files from Raman analyses.
     #'
-    initialize = function(files = NULL, headers = NULL, runParallel = FALSE) {
-
-      if (is.null(headers)) headers <- ProjectHeaders()
+    initialize = function(files = NULL, headers = NULL, settings = NULL, analyses = NULL, results = NULL, runParallel = FALSE) {
       
-      if (!is.null(headers)) suppressMessages(self$add_headers(headers))
-
-      if (!is.null(files)) {
-        
-        # TODO add validation for Raman asc files
+      if (is.null(analyses) & !is.null(files)) {
         
         cached_analyses <- FALSE
         
@@ -105,9 +102,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
           
           names(analyses) <- vapply(analyses, function(x) x$name, "")
           
-          if (runParallel & length(files) > 1 & !cached_analyses) {
-            parallel::stopCluster(cl)
-          }
+          if (runParallel & length(files) > 1 & !cached_analyses) parallel::stopCluster(cl)
           
           message(" Done!")
           
@@ -119,10 +114,23 @@ RamanEngine <- R6::R6Class("RamanEngine",
           }
         }
         
-        private$.analyses <- analyses
+        analyses <- lapply(analyses, function(x) as.RamanAnalysis(x))
+        
+        if (is.null(analyses)) {
+          warning("No valid files were given! MassSpecEngine object is empty. \n")
+        }
       }
-
-      message("\U2713 RamanEngine created!")
+      
+      super$initialize(headers, settings, analyses, results)
+      
+      private$.register(
+        "created",
+        "RamanEngine",
+        headers$name,
+        "StreamFind",
+        as.character(packageVersion("StreamFind")),
+        paste(c(headers$author, headers$path), collapse = ", ")
+      )
     },
     
     ## ___ get -----
@@ -214,27 +222,104 @@ RamanEngine <- R6::R6Class("RamanEngine",
       spec
     },
     
+    ## ___ subset -----
+    
+    #' @description Subsets on analyses.
+    #'
+    #' @return A new cloned engine with only the analyses as defined by the analyses argument.
+    #'
+    subset_analyses = function(analyses = NULL) {
+      
+      analyses <- private$.check_analyses_argument(analyses)
+      
+      if (!is.null(analyses)) {
+        
+        allNames <- self$get_analysis_names()
+        
+        keepAnalyses <- unname(allNames[allNames %in% analyses])
+        
+        if (length(keepAnalyses) > 0) {
+          
+          newAnalyses <- self$get_analyses(keepAnalyses)
+          
+          new_ms <- suppressMessages(RamanEngine$new(
+            headers = self$get_headers(),
+            settings = self$get_settings(),
+            analyses = newAnalyses
+          ))
+          
+          if (self$has_results("spectra")) {
+            
+            analyses_left <- new_ms$get_analysis_names()
+            
+            replicates_left <- new_ms$get_replicate_names()[analyses_left]
+            
+            if (!is.null(analyses_left)) {
+              sel <- names(private$.results$spectra$data) %in% c(analyses_left, replicates_left)
+              res <- private$.results$spectra
+              res <- res$data[sel]
+              suppressMessages(new_ms$add_results(res))
+            }
+          }
+          
+          message("\U2713 Subset with ", new_ms$get_number_analyses(), " analyses created!")
+          
+          return(new_ms)
+          
+        } else {
+          warning("No analyses selected to subset! Not done.")
+        }
+        
+        NULL
+      }
+    },
+    
+    ## ___ remove -----
+    
+    #' @description Removes analyses.
+    #'
+    #' @return Invisible.
+    #'
+    remove_analyses = function(analyses = NULL) {
+      
+      analyses <- private$.check_analyses_argument(analyses)
+      
+      if (!is.null(analyses)) {
+        
+        super$remove_analyses(analyses)
+        
+        if (self$has_results("spectra")) {
+          
+          analyses_left <- self$get_analysis_names()
+          
+          replicates_left <- self$get_replicate_names()[analyses_left]
+          
+          if (is.null(analyses_left)) {
+            private$.remove_results("spectra")
+            
+          } else {
+            sel <- names(private$.results$spectra$data) %in% c(analyses_left, replicates_left)
+            private$.results$spectra$data <- private$.results$spectra$data[sel]
+            
+          }
+        }
+      }
+      
+      invisible(self)
+    },
+    
     ## ___ processing -----
     
     #' @description Merges spectra for given *RamanAnalyses* from the same chromatographic separation when using 
     #' LC-Raman coupling.
     #'
-    #' @param preCut The number of pre Raman scans to exclude when merging.
-    #'
     #' @return Invisible.
     #' 
-    merge_replicates = function(preCut = 2) {
-      analyses <- .merge_replicate_files(self, preCut)
-      analyses <- private$.validate_list_analyses(analyses, childClass = "RamanAnalysis")
+    merge_spectra_time_series = function(settings) {
       
-      if (!is.null(analyses)) {
-        
-        if (all(vapply(analyses, function(x) is(x), NA_character_) %in% "RamanAnalysis")) {
-          to_remove <- self$get_analysis_names()[self$get_replicate_names() %in% names(analyses)]
-          suppressMessages(self$remove_analyses(to_remove))
-          self$add_analyses(analyses)
-        }
-      }
+      if (missing(settings)) settings <- Settings_merge_spectra_time_series_StreamFind()
+      
+      .dispatch_process_method("merge_spectra_time_series", settings, self, private)
       
       invisible(self)
     },
@@ -247,74 +332,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
       
       if (missing(settings)) settings <- Settings_average_spectra_StreamFind()
       
-      settings <- private$.get_call_settings(settings, "average_spectra")
-      
-      if ("StreamFind" %in% settings$algorithm) {
-        
-        spec <- self$spectra
-        spec <- rbindlist(spec, fill = TRUE)
-        
-        if (nrow(spec) == 0) {
-          warning("Spectra not found! Not done.")
-          return(invisible(self))
-        }
-        
-        if ("analysis" %in% colnames(spec)) {
-          
-          rpl <- self$get_replicate_names()
-
-          spec$replicate <- rpl[spec$analysis]
-          
-          spec_list <- split(spec, spec$replicate)
-          
-          av_list <- lapply(spec_list, function(x) {
-            intensity <- NULL
-            res <- copy(x)
-            
-            res[["analysis"]] <- NULL
-            
-            groupCols <- "shift"
-            
-            if ("rt" %in% colnames(x)) groupCols <- c("rt", groupCols)
-            
-            res <- res[, intensity := mean(intensity), by = groupCols]
-            
-            res <- unique(res)
-            
-            setcolorder(res, c("replicate"))
-            
-            res
-            
-            list("spectra" = x, "average" = res)
-            
-          })
-          
-          if (self$has_averaged_spectra()) {
-            private$.modules$spectra$data <- av_list
-            
-          } else {
-            self$add_modules_data(
-              list("spectra" = list(
-                "data" = av_list,
-                "software" = "StreamFind",
-                "version" = as.character(packageVersion("StreamFind"))
-              ))
-            )
-          }
-          
-          message(paste0("\U2713 ", "Averaged spectra!"))
-          
-          if (!private$.settings_already_stored(settings)) self$add_settings(settings)
-          
-          if (requireNamespace(settings$software, quietly = TRUE)) {
-            version <- as.character(packageVersion(settings$software))
-          } else {
-            version <- NA_character_
-          }
-          
-          private$.register("processed", "spectra", settings$call, settings$software, version, settings$algorithm)
-        }
-      }
+      .dispatch_process_method("average_spectra", settings, self, private)
       
       invisible(self)
     },
@@ -327,110 +345,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
       
       if (missing(settings)) settings <- Settings_subtract_blank_spectra_StreamFind()
       
-      settings <- private$.get_call_settings(settings, "subtract_blank_spectra")
-      
-      if ("StreamFind" %in% settings$algorithm) {
-        
-        if (self$has_averaged_spectra()) {
-          spec_list <- self$averaged_spectra
-          
-        } else if (self$has_spectra()) {
-          spec_list <- self$spectra
-          
-        } else {
-          warning("Spectra not found! Not done.")
-          return(invisible(self))
-        }
-        
-        blks <- self$get_blank_names()
-        
-        names(blks) <- self$get_replicate_names()
-        
-        spec_blk <- spec_list[names(spec_list) %in% blks]
-        
-        if (length(spec_blk) == 0) {
-          warning("Blank spectra not found! Not done.")
-          return(invisible(self))
-        }
-        
-        spec_sub <- lapply(spec_list, function(x) {
-          
-          rp <- unique(x$replicate)
-          
-          if (rp %in% blks) return(data.table())
-          
-          blk <- spec_blk[blks[rp]]
-          
-          if (length(blk) > 1) {
-            intensity <- NULL
-            blk <- rbindlist(blk)
-            blk[["analysis"]] <- NULL
-            blk[["replicate"]] <- NULL
-            blk <- blk[, intensity := mean(intensity), by = c("shift")][]
-            blk <- blk$intensity
-            
-          } else {
-            blk <- blk[[1]]$intensity
-          }
-          
-          x$blank <- blk
-          x$intensity <- x$intensity - blk
-          
-          if ("analysis" %in% colnames(x) && "replicate" %in% colnames(x)) {
-            if (unique(x$analysis) == unique(x$replicate)) {
-              x[["analysis"]] <- NULL
-            }
-          }
-          
-          x <- unique(x)
-          
-          x
-        })
-        
-        if (self$has_averaged_spectra()) {
-          
-          private$.modules$spectra$data <- Map(
-            function(x, y) {
-              x$average <- y
-              x
-            },
-            private$.modules$spectra$data, spec_sub
-          )
-          
-          message(paste0("\U2713 ", "Blank spectra subtracted in averaged spectra!"))
-          
-          if (!private$.settings_already_stored(settings)) self$add_settings(settings)
-          
-          if (requireNamespace(settings$software, quietly = TRUE)) {
-            version <- as.character(packageVersion(settings$software))
-          } else {
-            version <- NA_character_
-          }
-          
-          private$.register("processed", "spectra", settings$call, settings$software, version, settings$algorithm)
-          
-        } else if (self$has_spectra()) {
-          private$.modules$spectra$data <- Map(
-            function(x, y) {
-              x$spectra <- y
-              x
-            },
-            private$.modules$spectra$data, spec_sub
-          )
-          
-          message(paste0("\U2713 ", "Blank spectra subtracted in spectra!"))
-          
-          if (!private$.settings_already_stored(settings)) self$add_settings(settings)
-          
-          if (requireNamespace(settings$software, quietly = TRUE)) {
-            version <- as.character(packageVersion(settings$software))
-          } else {
-            version <- NA_character_
-          }
-          
-          private$.register("processed", "spectra", settings$call, settings$software, version, settings$algorithm)
-        }
-      }
+      .dispatch_process_method("subtract_blank_spectra", settings, self, private)
       
       invisible(self)
     },
@@ -443,86 +358,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
       
       if (missing(settings)) settings <- Settings_correct_spectra_baseline_StreamFind()
       
-      settings <- private$.get_call_settings(settings, "correct_spectra_baseline")
-      
-      if ("StreamFind" %in% settings$algorithm) {
-        
-        baseline_method <- settings$parameters$method
-        
-        baseline_args <- settings$parameters$args
-        
-        if (!(self$has_averaged_spectra() || self$has_spectra())) {
-          warning("Spectra not found! Not done.")
-          return(invisible(self))
-        }
-        
-        private$.modules$spectra$data <- lapply(private$.modules$spectra$data, function(x, baseline_method, baseline_args) {
-          
-          if ("average" %in% names(x)) {
-            
-            if (nrow(x$average) > 0) {
-              
-              if ("rt" %in% colnames(x$average)) {
-                temp_x <- split(x$average, x$average$rt)
-                
-                temp_x <- lapply(temp_x, function(z) {
-                  baseline_data <- .baseline_correction(z$intensity, baseline_method, baseline_args)
-                  z$baseline <- baseline_data$baseline
-                  z$intensity <- baseline_data$corrected
-                  z
-                })
-                
-                x$average <- rbindlist(temp_x)
-                
-              } else {
-                baseline_data <- .baseline_correction(x$average$intensity, baseline_method, baseline_args)
-                x$average$baseline <- baseline_data$baseline
-                x$average$intensity <- baseline_data$corrected
-              }
-            }
-            
-          } else (
-            
-            if (nrow(x$spectra) > 0) {
-              
-              if (nrow(x$average) > 0) {
-                
-                if ("rt" %in% colnames(x$spectra)) {
-                  temp_x <- split(x$spectra, x$spectra$rt)
-                  
-                  temp_x <- lapply(temp_x, function(z) {
-                    baseline_data <- .baseline_correction(z$intensity, baseline_method, baseline_args)
-                    z$baseline <- baseline_data$baseline
-                    z$intensity <- baseline_data$corrected
-                    z
-                  })
-                  
-                  x$spectra <- rbindlist(temp_x)
-                  
-                } else {
-                  baseline_data <- .baseline_correction(x$spectra$intensity, baseline_method, baseline_args)
-                  x$spectra$baseline <- baseline_data$baseline
-                  x$spectra$intensity <- baseline_data$corrected
-                }
-              }
-            }
-          )
-          
-          x
-        }, baseline_method = baseline_method, baseline_args = baseline_args)
-
-        message(paste0("\U2713 ", "Spectra beseline corrected!"))
-        
-        if (!private$.settings_already_stored(settings)) self$add_settings(settings)
-        
-        if (requireNamespace(settings$software, quietly = TRUE)) {
-          version <- as.character(packageVersion(settings$software))
-        } else {
-          version <- NA_character_
-        }
-        
-        private$.register("processed", "spectra", settings$call, settings$software, version, settings$algorithm)
-      }
+      .dispatch_process_method("correct_spectra_baseline", settings, self, private)
       
       invisible(self)
     },
@@ -535,183 +371,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
       
       if (missing(settings)) settings <- Settings_bin_spectra_StreamFind()
       
-      settings <- private$.get_call_settings(settings, "bin_spectra")
-      
-      if ("StreamFind" %in% settings$algorithm) {
-        
-        valSpectrumUnits = settings$parameters$valSpectrumUnits
-        windowSpectrumUnits = settings$parameters$windowSpectrumUnits
-        
-        xVals = settings$parameters$xVals #c("rt", "shift")
-        xWindows = settings$parameters$xWindows
-        
-        if (self$has_averaged_spectra()) {
-          spec_list <- self$averaged_spectra
-          
-        } else if (self$has_spectra()) {
-          spec_list <- self$spectra
-          
-        } else {
-          warning("Spectra not found! Not done.")
-          return(invisible(self))
-        }
-        
-        cached_analyses <- FALSE
-        
-        if (.caches_data()) {
-          hash <- patRoon::makeHash(spec_list, settings)
-          spec_binned <- patRoon::loadCacheData("bin_spectra", hash)
-          
-          if (!is.null(spec_binned)) {
-            check <- identical(names(spec_binned), names(spec_list))
-            
-            if (all(check)) {
-              cached_analyses <- TRUE
-              
-            } else {
-              spec_binned <- NULL
-            }
-          }
-        } else {
-          hash <- NULL
-          spec_binned <- NULL
-        }
-        
-        if (is.null(spec_binned)) {
-          
-          spec_binned <- lapply(spec_list, function(x) {
-            
-            if (nrow(x) == 0) return(data.table())
-            
-            if (!is.null(valSpectrumUnits) && !is.null(windowSpectrumUnits)) {
-              
-              unitVal <- unique(x[[valSpectrumUnits]])
-              
-              max_i <- length(unitVal) # maximum number of scan
-              
-              min_i <- 1
-              
-              unitSections <- seq(min_i, max_i, windowSpectrumUnits)
-              
-              idx <- seq_len(max_i)
-              
-              binKey <- rep(NA_integer_, max_i)
-              
-              for (i in unitSections) binKey[idx >= i] <- i
-              
-              names(binKey) <- as.character(unitVal)
-              
-              res <- data.table("intensity" = x$intensity, "bin_key" = binKey[as.character(x[[valSpectrumUnits]])])
-              
-              if (is.null(xVals)) {
-                xVals <- colnames(x)
-                xVals <- xVals[!xVals %in% c("analysis", "replicate", "intensity")]
-              }
-              
-              for (i in xVals) res[[i]] <- x[[i]]
-              
-              valKeys <- xVals[!xVals %in% valSpectrumUnits]
-              
-              res <- res[, .(x = mean(x), intensity = mean(intensity)), by = c("bin_key", valKeys), env = list(x = valSpectrumUnits)]
-              
-              res <- unique(res)
-              
-              setcolorder(res, c(valSpectrumUnits, valKeys, "intensity"))
-              
-              res$bin_key <- NULL
-              
-              if ("replicate" %in% colnames(x)) {
-                res$replicate <- unique(x$replicate)
-                setcolorder(res, c("replicate"))
-              }
-              
-              if ("analysis" %in% colnames(x)) {
-                res$analysis <- unique(x$analysis)
-                setcolorder(res, c("analysis"))
-              }
-              
-              res
-              
-            } else {
-              
-              max_x <- max(x[[xVal]])
-              min_x <- min(x[[xVal]])
-              
-              max_x2 <- max(x[[x2Val]])
-              min_x2 <- min(x[[x2Val]])
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-            }
-            
-            # x_all <- seq(round(min_x, digits = 0), round(max_x , digits = 0), rt_bin_size)
-            # x2_all <- seq(round(min_x2, digits = 0), round(max_x2 , digits = 0), mz_bin_size)
-            # 
-            # bins_number <- length(rts_all) * length(mzs_all)
-            # bins_id <- rep(NA_character_, bins_number)
-            # mat <- matrix(rep(1, bins_number * 2), nrow = bins_number, ncol = 2)
-            # counter <- 0
-            # for (i in seq_len(length(rts_all))) {
-            #   for (j in seq_len(length(mzs_all))) {
-            #     bins_id[counter + j] <- paste0(rts_all[i], "-", mzs_all[j])
-            #     mat[counter + j, 1] <- rts_all[i]
-            #     mat[counter + j, 2] <- mzs_all[j]
-            #   }
-            #   counter <- counter + j
-            # }
-            # dimnames(mat) <- list(bins_id, c("rt", "mz"))
-            # as.data.frame(mat)
-            
-          })
-          
-          if (!is.null(hash)) {
-            patRoon::saveCacheData("bin_spectra", spec_binned, hash)
-            message("\U1f5ab Binned spectra cached!")
-          }
-        }
-        
-        if (self$has_averaged_spectra()) {
-          
-          private$.modules$spectra$data <- Map(
-            function(x, y) {
-              x$average <- y
-              x
-            },#
-            private$.modules$spectra$data, spec_binned
-          )
-          
-        } else {
-          
-          spec_list <- Map(function(x, y) list("spectra" = x, "average" = y), spec_list, spec_binned)
-          
-          self$add_modules_data(
-            list("spectra" = list(
-              "data" = spec_list,
-              "software" = "StreamFind",
-              "version" = as.character(packageVersion("StreamFind"))
-            ))
-          )
-        }
-        
-        message(paste0("\U2713 ", "Spectra binned!"))
-        
-        if (!private$.settings_already_stored(settings)) self$add_settings(settings)
-        
-        if (requireNamespace(settings$software, quietly = TRUE)) {
-          version <- as.character(packageVersion(settings$software))
-        } else {
-          version <- NA_character_
-        }
-        
-        private$.register("processed", "spectra", settings$call, settings$software, version, settings$algorithm)
-      }
+      .dispatch_process_method("bin_spectra", settings, self, private) 
       
       invisible(self)
     },
@@ -724,123 +384,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
       
       if (missing(settings)) settings <- Settings_subtract_spectra_section_StreamFind()
       
-      settings <- private$.get_call_settings(settings, "subtract_spectra_section")
-      
-      if ("StreamFind" %in% settings$algorithm) {
-        
-        if (self$has_averaged_spectra()) {
-          spec_list <- self$averaged_spectra
-          
-        } else if (self$has_spectra()) {
-          spec_list <- self$spectra
-          
-        } else {
-          warning("Spectra not found! Not done.")
-          return(invisible(self))
-        }
-        
-        sectionVal = settings$parameters$sectionVal
-        
-        sectionWindow = settings$parameters$sectionWindow
-        
-        cached_analyses <- FALSE
-        
-        if (.caches_data()) {
-          hash <- patRoon::makeHash(spec_list, settings)
-          spec_cut <- patRoon::loadCacheData("subtract_spectra_section", hash)
-          
-          if (!is.null(spec_cut)) {
-            check <- identical(names(spec_cut), names(spec_list))
-            
-            if (all(check)) {
-              cached_analyses <- TRUE
-              
-            } else {
-              spec_cut <- NULL
-            }
-          }
-        } else {
-          hash <- NULL
-          spec_cut <- NULL
-        }
-        
-        if (is.null(spec_cut)) {
-          
-          spec_cut <- lapply(spec_list, function(x) {
-            
-            if (nrow(x) == 0) return(data.table())
-            
-            res <- copy(x)
-            
-            if (!is.null(sectionVal) && !is.null(sectionWindow)) {
-              
-              if (sectionVal %in% colnames(x)) {
-                
-                if (length(sectionWindow) == 2 && is.numeric(sectionWindow)) {
-                  
-                  sectionWindow <- sort(sectionWindow)
-                  
-                  cutSec <- res[res[[sectionVal]] >= sectionWindow[1] & res[[sectionVal]] <= sectionWindow[2], ]
-                  
-                  if (nrow(cutSec) > 0) {
-                    
-                    cutSec <- cutSec[, .(intensity = mean(intensity)), by = "shift"]
-                    
-                    res <- res[res[[sectionVal]] < sectionWindow[1] | res[[sectionVal]] > sectionWindow[2], ]
-                    
-                    if (nrow(res) > 0) {
-                      
-                      for (i in unique(res$rt)) res$intensity[res$rt == i] <- res$intensity[res$rt == i] - cutSec$intensity
-                      
-                    }
-                  }
-                }
-              }
-            }
-            
-            res
-          })
-          
-          if (!is.null(hash)) {
-            patRoon::saveCacheData("subtract_spectra_section", spec_cut, hash)
-            message("\U1f5ab Subtrated spectra section cached!")
-          }
-        }
-        
-        if (self$has_averaged_spectra()) {
-          private$.modules$spectra$data <- Map(
-            function(x, y) {
-              x$average <- y
-              x
-            },#
-            private$.modules$spectra$data, spec_cut
-          )
-          
-        } else {
-          
-          spec_list <- Map(function(x, y) list("spectra" = x, "average" = y), spec_list, spec_cut)
-          
-          self$add_modules_data(
-            list("spectra" = list(
-              "data" = spec_list,
-              "software" = "StreamFind",
-              "version" = as.character(packageVersion("StreamFind"))
-            ))
-          )
-        }
-        
-        message(paste0("\U2713 ", "Spectra section subtracted!"))
-        
-        if (!private$.settings_already_stored(settings)) self$add_settings(settings)
-        
-        if (requireNamespace(settings$software, quietly = TRUE)) {
-          version <- as.character(packageVersion(settings$software))
-        } else {
-          version <- NA_character_
-        }
-        
-        private$.register("processed", "spectra", settings$call, settings$software, version, settings$algorithm)
-      }
+      .dispatch_process_method("subtract_spectra_section", settings, self, private)
       
       invisible(self)
     },
@@ -852,88 +396,8 @@ RamanEngine <- R6::R6Class("RamanEngine",
     delete_spectra_section = function(settings) {
       
       if (missing(settings)) settings <- Settings_subtract_spectra_section_StreamFind()
-
-      settings <- private$.get_call_settings(settings, "delete_spectra_section")
-
-      if ("StreamFind" %in% settings$algorithm) {
-        
-        section <- settings$parameters$section
-        
-        if (length(section) == 0) {
-          warning("Sections not found! Not done.")
-          return(invisible(self))
-        }
-        
-        if (self$has_averaged_spectra()) {
-          spec_list <- self$averaged_spectra
-          
-        } else if (self$has_spectra()) {
-          spec_list <- self$spectra
-          
-        } else {
-          warning("Spectra not found! Not done.")
-          return(invisible(self))
-        }
-        
-        spec_del <- lapply(spec_list, function(x) {
-          
-          if (nrow(x) > 0) {
-            
-            sel <- logical()
-            
-            for (i in names(section)) {
-              if (i %in% colnames(x)) {
-                section[[i]] <- sort(section[[i]])
-                
-                if (length(sel) == 0) {
-                  sel <- (x[[i]] >= section[[i]][1]) & (x[[i]] <= section[[i]][2])
-                  
-                } else {
-                  sel <- sel & (x[[i]] >= section[[i]][1]) & (x[[i]] <= section[[i]][2])
-                }
-              }
-            }
-            
-            if (length(sel) > 0) x <- x[!sel, ]
-          }
-          
-          x
-        })
-        
-        if (self$has_averaged_spectra()) {
-          
-          private$.modules$spectra$data <- Map(
-            function(x, y) {
-              x$average <- y
-              x
-            },#
-            private$.modules$spectra$data, spec_del
-          )
-          
-        } else {
-          spec_list <- Map(function(x, y) list("spectra" = x, "average" = y), spec_list, spec_del)
-          
-          self$add_modules_data(
-            list("spectra" = list(
-              "data" = spec_list,
-              "software" = "StreamFind",
-              "version" = as.character(packageVersion("StreamFind"))
-            ))
-          )
-        }
-        
-        message(paste0("\U2713 ", "Spectra section deleted!"))
-        
-        if (!private$.settings_already_stored(settings)) self$add_settings(settings)
-        
-        if (requireNamespace(settings$software, quietly = TRUE)) {
-          version <- as.character(packageVersion(settings$software))
-        } else {
-          version <- NA_character_
-        }
-        
-        private$.register("processed", "spectra", settings$call, settings$software, version, settings$algorithm)
-      }
+      
+      .dispatch_process_method("delete_spectra_section", settings, self, private)
       
       invisible(self)
     },
@@ -946,76 +410,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
       
       if (missing(settings)) settings <- Settings_smooth_spectra_StreamFind()
       
-      settings <- private$.get_call_settings(settings, "smooth_spectra")
-      
-      if ("StreamFind" %in% settings$algorithm) {
-        
-        windowSize <- settings$parameters$windowSize
-        
-        if (!(self$has_averaged_spectra() || self$has_spectra())) {
-          warning("Spectra not found! Not done.")
-          return(invisible(self))
-        }
-        
-        private$.modules$spectra$data <- lapply(private$.modules$spectra$data, function(x, windowSize) {
-          
-          if ("average" %in% names(x)) {
-            
-            if (nrow(x$average) > 0) {
-              
-              if ("rt" %in% colnames(x$average)) {
-                temp_x <- split(x$average, x$average$rt)
-                
-                temp_x <- lapply(temp_x, function(z) {
-                  z$intensity <- .moving_average(z$intensity, windowSize = windowSize)
-                  z
-                })
-                
-                x$average <- rbindlist(temp_x)
-                
-              } else {
-                x$average$intensity <- .moving_average(x$average$intensity, windowSize = windowSize)
-              }
-            }
-            
-          } else (
-            
-            if (nrow(x$spectra) > 0) {
-              
-              if (nrow(x$average) > 0) {
-                
-                if ("rt" %in% colnames(x$spectra)) {
-                  temp_x <- split(x$spectra, x$spectra$rt)
-                  
-                  temp_x <- lapply(temp_x, function(z) {
-                    z$intensity <- .moving_average(z$intensity, windowSize = windowSize)
-                    z
-                  })
-                  
-                  x$spectra <- rbindlist(temp_x)
-                  
-                } else {
-                  x$average$intensity <- .moving_average(x$average$intensity, windowSize = windowSize)
-                }
-              }
-            }
-          )
-          
-          x
-        }, windowSize = windowSize)
-        
-        message(paste0("\U2713 ", "Spectra smoothed!"))
-        
-        if (!private$.settings_already_stored(settings)) self$add_settings(settings)
-        
-        if (requireNamespace(settings$software, quietly = TRUE)) {
-          version <- as.character(packageVersion(settings$software))
-        } else {
-          version <- NA_character_
-        }
-        
-        private$.register("processed", "spectra", settings$call, settings$software, version, settings$algorithm)
-      }
+      .dispatch_process_method("smooth_spectra", settings, self, private)
       
       invisible(self)
     },
@@ -1028,86 +423,17 @@ RamanEngine <- R6::R6Class("RamanEngine",
       
       if (missing(settings)) settings <- Settings_normalize_spectra_StreamFind()
       
-      settings <- private$.get_call_settings(settings, "normalize_spectra")
-      
-      if ("StreamFind" %in% settings$algorithm) {
-        
-        if (!(self$has_averaged_spectra() || self$has_spectra())) {
-          warning("Spectra not found! Not done.")
-          return(invisible(self))
-        }
-        
-        private$.modules$spectra$data <- lapply(private$.modules$spectra$data, function(x) {
-          
-          if ("average" %in% names(x)) {
-            
-            if (nrow(x$average) > 0) {
-              
-              if ("rt" %in% colnames(x$average)) {
-                temp_x <- split(x$average, x$average$rt)
-                
-                temp_x <- lapply(temp_x, function(z) {
-                  z$intensity <- z$intensity / max(z$intensity)
-                  z
-                })
-                
-                x$average <- rbindlist(temp_x)
-                
-              } else {
-                x$average$intensity <- x$average$intensity / max(x$average$intensity)
-              }
-            }
-            
-          } else (
-            
-            if (nrow(x$spectra) > 0) {
-              
-              if (nrow(x$average) > 0) {
-                
-                if ("rt" %in% colnames(x$spectra)) {
-                  temp_x <- split(x$spectra, x$spectra$rt)
-                  
-                  temp_x <- lapply(temp_x, function(z) {
-                    z$intensity <- z$intensity / max(z$intensity)
-                    z
-                  })
-                  
-                  x$spectra <- rbindlist(temp_x)
-                  
-                } else {
-                  x$average$intensity <- x$average$intensity / max(x$average$intensity)
-                }
-              }
-            }
-          )
-          
-          x
-        })
-        
-        message(paste0("\U2713 ", "Spectra normalized!"))
-        
-        if (!private$.settings_already_stored(settings)) self$add_settings(settings)
-        
-        if (requireNamespace(settings$software, quietly = TRUE)) {
-          version <- as.character(packageVersion(settings$software))
-        } else {
-          version <- NA_character_
-        }
-        
-        private$.register("processed", "spectra", settings$call, settings$software, version, settings$algorithm)
-      }
+      .dispatch_process_method("normalize_spectra", settings, self, private)
       
       invisible(self)
     },
-    
-    ## ___ has -----
     
     ## ___ plot -----
     
     #' @description Plots spectra for given *RamanAnalyses*.
     #'
-    #' @param xVal Character of length one. Possible are "rt" or "shift" for 
-    #' using the retention time or the shift as x axis, respectively.
+    #' @param xVal Character of length one. Possible are "rt" or "shift" for using the retention time or the shift 
+    #' as x axis, respectively.
     #'
     #' @return A plot.
     #' 

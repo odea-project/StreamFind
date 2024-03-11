@@ -17,6 +17,10 @@ List of function elements to access specific reference help pages.}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
+\item{\code{chromatograms}}{\code{data.table} with processed chromatograms for each analyses.}
+
+\item{\code{chromatograms_peaks}}{\code{data.table} with integrated peaks from chromatograms for each analyses.}
+
 \item{\code{spectra}}{List of spectra \code{data.table} objects for each analysis.}
 
 \item{\code{averaged_spectra}}{List of averaged spectra \code{data.table} each analysis/replicate.}
@@ -33,7 +37,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-CoreEngine-print_headers}{\code{CoreEngine$print_headers()}}
 \item \href{#method-CoreEngine-print_analyses}{\code{CoreEngine$print_analyses()}}
 \item \href{#method-CoreEngine-print_workflow}{\code{CoreEngine$print_workflow()}}
-\item \href{#method-CoreEngine-print_modules}{\code{CoreEngine$print_modules()}}
+\item \href{#method-CoreEngine-print_results}{\code{CoreEngine$print_results()}}
 \item \href{#method-CoreEngine-get_headers}{\code{CoreEngine$get_headers()}}
 \item \href{#method-CoreEngine-get_history}{\code{CoreEngine$get_history()}}
 \item \href{#method-CoreEngine-get_analyses}{\code{CoreEngine$get_analyses()}}
@@ -48,26 +52,29 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-CoreEngine-get_settings}{\code{CoreEngine$get_settings()}}
 \item \href{#method-CoreEngine-get_settings_names}{\code{CoreEngine$get_settings_names()}}
 \item \href{#method-CoreEngine-get_workflow_overview}{\code{CoreEngine$get_workflow_overview()}}
-\item \href{#method-CoreEngine-get_modules_data_names}{\code{CoreEngine$get_modules_data_names()}}
-\item \href{#method-CoreEngine-get_modules_data}{\code{CoreEngine$get_modules_data()}}
+\item \href{#method-CoreEngine-get_results_names}{\code{CoreEngine$get_results_names()}}
+\item \href{#method-CoreEngine-get_results}{\code{CoreEngine$get_results()}}
 \item \href{#method-CoreEngine-add_headers}{\code{CoreEngine$add_headers()}}
 \item \href{#method-CoreEngine-add_settings}{\code{CoreEngine$add_settings()}}
 \item \href{#method-CoreEngine-add_analyses}{\code{CoreEngine$add_analyses()}}
 \item \href{#method-CoreEngine-add_replicate_names}{\code{CoreEngine$add_replicate_names()}}
 \item \href{#method-CoreEngine-add_blank_names}{\code{CoreEngine$add_blank_names()}}
 \item \href{#method-CoreEngine-add_metadata}{\code{CoreEngine$add_metadata()}}
-\item \href{#method-CoreEngine-add_modules_data}{\code{CoreEngine$add_modules_data()}}
+\item \href{#method-CoreEngine-add_results}{\code{CoreEngine$add_results()}}
 \item \href{#method-CoreEngine-remove_headers}{\code{CoreEngine$remove_headers()}}
 \item \href{#method-CoreEngine-remove_settings}{\code{CoreEngine$remove_settings()}}
 \item \href{#method-CoreEngine-remove_analyses}{\code{CoreEngine$remove_analyses()}}
-\item \href{#method-CoreEngine-remove_modules_data}{\code{CoreEngine$remove_modules_data()}}
+\item \href{#method-CoreEngine-remove_results}{\code{CoreEngine$remove_results()}}
 \item \href{#method-CoreEngine-subset_analyses}{\code{CoreEngine$subset_analyses()}}
 \item \href{#method-CoreEngine-has_settings}{\code{CoreEngine$has_settings()}}
 \item \href{#method-CoreEngine-has_analyses}{\code{CoreEngine$has_analyses()}}
-\item \href{#method-CoreEngine-has_modules_data}{\code{CoreEngine$has_modules_data()}}
+\item \href{#method-CoreEngine-has_results}{\code{CoreEngine$has_results()}}
+\item \href{#method-CoreEngine-has_chromatograms}{\code{CoreEngine$has_chromatograms()}}
+\item \href{#method-CoreEngine-has_chromatograms_peaks}{\code{CoreEngine$has_chromatograms_peaks()}}
 \item \href{#method-CoreEngine-has_spectra}{\code{CoreEngine$has_spectra()}}
 \item \href{#method-CoreEngine-has_spectra_peaks}{\code{CoreEngine$has_spectra_peaks()}}
 \item \href{#method-CoreEngine-has_averaged_spectra}{\code{CoreEngine$has_averaged_spectra()}}
+\item \href{#method-CoreEngine-plot_chromatograms_peaks}{\code{CoreEngine$plot_chromatograms_peaks()}}
 \item \href{#method-CoreEngine-plot_spectra_peaks}{\code{CoreEngine$plot_spectra_peaks()}}
 \item \href{#method-CoreEngine-run_workflow}{\code{CoreEngine$run_workflow()}}
 \item \href{#method-CoreEngine-save_headers}{\code{CoreEngine$save_headers()}}
@@ -92,7 +99,7 @@ Creates an R6 CoreEngine class object.
   headers = NULL,
   settings = NULL,
   analyses = NULL,
-  modules = NULL
+  results = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -115,7 +122,7 @@ as ProcessingSettings object.}
 \item{\code{analyses}}{An Analysis S3 class object or a list with Analysis S3  class objects as elements
 (see \code{?Analysis} for more information).}
 
-\item{\code{modules}}{A named list of objects from processing modules.}
+\item{\code{results}}{A named list of objects from processing methods.}
 }
 \if{html}{\out{</div>}}
 }
@@ -161,12 +168,12 @@ Prints the order of processing methods for all added processing settings.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-print_modules"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-print_modules}{}}}
-\subsection{Method \code{print_modules()}}{
-Prints the data modules added to the engine.
+\if{html}{\out{<a id="method-CoreEngine-print_results"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-print_results}{}}}
+\subsection{Method \code{print_results()}}{
+Prints the data results added to the engine.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$print_modules()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$print_results()}\if{html}{\out{</div>}}
 }
 
 }
@@ -376,28 +383,28 @@ A \code{data.table} with the overview of all processing methods from added proce
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-get_modules_data_names"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-get_modules_data_names}{}}}
-\subsection{Method \code{get_modules_data_names()}}{
-Gets names of present modules data.
+\if{html}{\out{<a id="method-CoreEngine-get_results_names"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-get_results_names}{}}}
+\subsection{Method \code{get_results_names()}}{
+Gets names of present results data.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_modules_data_names()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_results_names()}\if{html}{\out{</div>}}
 }
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-get_modules_data"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-get_modules_data}{}}}
-\subsection{Method \code{get_modules_data()}}{
-Gets the list of modules data.
+\if{html}{\out{<a id="method-CoreEngine-get_results"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-get_results}{}}}
+\subsection{Method \code{get_results()}}{
+Gets the list of results data.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_modules_data(modules = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_results(results = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{modules}}{A character vector with the name of the module/s.}
+\item{\code{results}}{A character vector with the name of the module/s.}
 }
 \if{html}{\out{</div>}}
 }
@@ -540,18 +547,18 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-add_modules_data"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-add_modules_data}{}}}
-\subsection{Method \code{add_modules_data()}}{
-Adds data from modules to the engine.
+\if{html}{\out{<a id="method-CoreEngine-add_results"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-add_results}{}}}
+\subsection{Method \code{add_results()}}{
+Adds data from results to the engine.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$add_modules_data(value = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$add_results(value = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{value}}{A named list with data from modules.}
+\item{\code{value}}{A named list with data from results.}
 }
 \if{html}{\out{</div>}}
 }
@@ -623,18 +630,18 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-remove_modules_data"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-remove_modules_data}{}}}
-\subsection{Method \code{remove_modules_data()}}{
-Removes modules data.
+\if{html}{\out{<a id="method-CoreEngine-remove_results"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-remove_results}{}}}
+\subsection{Method \code{remove_results()}}{
+Removes results data.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$remove_modules_data(modules)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$remove_results(results)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{modules}}{A named list of objects from processing modules.}
+\item{\code{results}}{A named list of objects from processing methods.}
 }
 \if{html}{\out{</div>}}
 }
@@ -687,24 +694,44 @@ Checks if analyses are present, returning \code{TRUE} or \code{FALSE}.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-has_modules_data"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-has_modules_data}{}}}
-\subsection{Method \code{has_modules_data()}}{
-Checks if modules data is present, returning \code{TRUE} or \code{FALSE}.
+\if{html}{\out{<a id="method-CoreEngine-has_results"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-has_results}{}}}
+\subsection{Method \code{has_results()}}{
+Checks if results are present, returning \code{TRUE} or \code{FALSE}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_modules_data(names = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_results(names = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{names}}{A string or a vector of strings with the name/s of the
-modules data. The actual names depends of the applied algorithms. For
+results data. The actual names depends of the applied algorithms. For
 instance, when algorithms via patRoon are used, the name of the module
 data is patRoon.}
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-has_chromatograms"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-has_chromatograms}{}}}
+\subsection{Method \code{has_chromatograms()}}{
+Checks if there are chromatograms, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_chromatograms()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-has_chromatograms_peaks"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-has_chromatograms_peaks}{}}}
+\subsection{Method \code{has_chromatograms_peaks()}}{
+Checks if there are integrated peaks from chromatograms, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_chromatograms_peaks()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-has_spectra"></a>}}
@@ -735,6 +762,61 @@ Checks if there are average spectra, returning \code{TRUE} or \code{FALSE}.
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_averaged_spectra()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-plot_chromatograms_peaks"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-plot_chromatograms_peaks}{}}}
+\subsection{Method \code{plot_chromatograms_peaks()}}{
+Plots peaks from chromatograms from analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$plot_chromatograms_peaks(
+  analyses = NULL,
+  chromatograms = NA_integer_,
+  legendNames = NULL,
+  title = NULL,
+  colorBy = "targets",
+  showLegend = TRUE,
+  xlim = NULL,
+  ylim = NULL,
+  cex = 0.6,
+  xLab = NULL,
+  yLab = NULL,
+  interactive = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+
+\item{\code{chromatograms}}{A character or integer vector with the ID name or the index of the chromatograms to extract.}
+
+\item{\code{legendNames}}{A character vector with the same length as the targets or
+\code{TRUE} or \code{FALSE} for using the name in added targets as legend of the plot.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{colorBy}}{A string defining how to legend the plot. Possible values are
+\code{analyses}, \code{targets} (the default) or \code{replicates}. Other options are possible
+for specific plotting methods.}
+
+\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
+
+\item{\code{xlim}}{A length one or two numeric vector for setting the \emph{x} limits of the plot.}
+
+\item{\code{ylim}}{A length one or two numeric vector for setting the \emph{y} limits of the plot.}
+
+\item{\code{cex}}{A length one numeric value defining the scale of the legend for non interactive plotting.}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
+\item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-plot_spectra_peaks"></a>}}
@@ -792,7 +874,7 @@ for specific plotting methods.}
 \if{html}{\out{<a id="method-CoreEngine-run_workflow"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-run_workflow}{}}}
 \subsection{Method \code{run_workflow()}}{
-Runs all processing modules represented by added processing settings.
+Runs all processing results represented by added processing settings.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$run_workflow()}\if{html}{\out{</div>}}
 }

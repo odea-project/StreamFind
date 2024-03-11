@@ -93,9 +93,7 @@ save_default_ProcessingSettings <- function(call = NA_character_,
 #'
 #' @export
 #'
-Settings_centroid_spectra_qCentroids <- function(maxScale = 5,
-                                                 mode = 1,
-                                                 runParallel = FALSE) {
+Settings_centroid_spectra_qCentroids <- function(maxScale = 5, mode = 1, runParallel = FALSE) {
 
   settings <- list(
     call = "centroid_spectra",
@@ -1322,8 +1320,6 @@ validate.Settings_load_features_eic_StreamFind <- function(x) {
 #'
 #' @description Settings for loading MS2 and MS1 spectra for feature groups.
 #'
-#' @param useLoaded Logical of length one. When `TRUE` and both MS1 and MS2 are loaded to features, 
-#' these are used otherwise the native function `generateMSPeakLists` from \pkg{patRoon} is used instead.
 #' @param maxMSRtWindow Maximum chromatographic peak window used for spectrum 
 #' averaging (in seconds, +/- retention time). If NULL all spectra from a feature 
 #' will be taken into account. Lower to decrease processing time.
@@ -1369,7 +1365,6 @@ validate.Settings_load_features_eic_StreamFind <- function(x) {
 #' @export
 #'
 Settings_load_MSPeakLists_patRoon <- function(
-    useLoaded = FALSE,
     maxMSRtWindow = 5,
     precursorMzWindow = 4,
     clusterMzWindow = 0.005,
@@ -1384,7 +1379,6 @@ Settings_load_MSPeakLists_patRoon <- function(
     call = "load_MSPeakLists",
     algorithm = "patRoon",
     parameters = list(
-      useLoaded = useLoaded,
       maxMSRtWindow = maxMSRtWindow,
       precursorMzWindow = precursorMzWindow,
       clusterMzWindow = clusterMzWindow,
@@ -1395,12 +1389,12 @@ Settings_load_MSPeakLists_patRoon <- function(
       method = method,
       retainPrecursorMSMS = retainPrecursorMSMS
     ),
-    version = as.character(packageVersion("StreamFind")),
+    version = as.character(packageVersion("patRoon")),
     software = "patRoon",
-    developer = "Ricardo Cunha and Rick Helmus",
-    contact = "cunha@iuta.de",
-    link = "https://odea-project.github.io/StreamFind",
-    doi = NA_character_
+    developer = "Rick Helmus",
+    contact = "r.helmus@uva.nl",
+    link = "https://github.com/rickhelmus/patRoon",
+    doi = "10.21105/joss.04029"
   )
   
   settings <- as.ProcessingSettings(settings)
@@ -1419,6 +1413,86 @@ validate.Settings_load_MSPeakLists_patRoon <- function(x) {
   all(
     checkmate::test_choice(x$call, "load_MSPeakLists"),
     checkmate::test_choice(x$algorithm, "patRoon")
+  )
+}
+
+#' @title Settings_load_MSPeakLists_StreamFind
+#'
+#' @description Settings for converting loaded MS2 and MS1 spectra into a `MSPeakLists` object from patRoon.
+#'
+#' @param clusterMzWindow m/z window (in Da) used for clustering m/z values
+#' when spectra are averaged. For method="hclust" this corresponds to the
+#' cluster height, while for method="distance" this value is used to find
+#' nearby masses (+/- window). Too small windows will prevent clustering
+#' m/z values (thus erroneously treating equal masses along spectra as
+#' different), whereas too big windows may cluster unrelated m/z values
+#' from different or even the same spectrum together.
+#' @param topMost Only retain this maximum number of MS peaks when generating
+#' averaged spectra. Lowering this number may exclude more irrelevant (noisy)
+#' MS peaks and decrease processing time, whereas higher values may avoid
+#' excluding lower intense MS peaks that may still be of interest.
+#' @param minIntensityPre MS peaks with intensities below this value will
+#' be removed (applied prior to selection by `topMost`) before averaging.
+#' @param minIntensityPost MS peaks with intensities below this value will
+#' be removed after averaging.
+#' @param avgFun Function that is used to calculate average m/z values.
+#' @param method Method used for producing averaged MS spectra. Valid
+#' values are "hclust", used for hierarchical clustering (using the
+#' fastcluster package), and "distance", to use the between peak distance.
+#' The latter method may reduces processing time and memory requirements,
+#' at the potential cost of reduced accuracy.
+#' @param pruneMissingPrecursorMS For MS data only: if TRUE then peak lists
+#' without a precursor peak are removed. Note that even when this is set to
+#' FALSE, functionality that relies on MS (not MS/MS) peak lists (e.g.
+#' formulae calculation) will still skip calculation if a precursor is not
+#' found.
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_load_MSPeakLists_StreamFind.
+#'
+#' @export
+#'
+Settings_load_MSPeakLists_StreamFind <- function(clusterMzWindow = 0.005,
+                                                 topMost = 100,
+                                                 minIntensityPre = 50,
+                                                 minIntensityPost = 50,
+                                                 avgFun = mean,
+                                                 method = "distance") {
+  
+  settings <- list(
+    call = "load_MSPeakLists",
+    algorithm = "StreamFind",
+    parameters = list(
+      clusterMzWindow = clusterMzWindow,
+      topMost = topMost,
+      minIntensityPre = minIntensityPre,
+      minIntensityPost = minIntensityPost,
+      avgFun = avgFun,
+      method = method
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  
+  settings <- as.ProcessingSettings(settings)
+  
+  return(settings)
+}
+
+#' @describeIn Settings_load_MSPeakLists_StreamFind
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_load_MSPeakLists_StreamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_load_MSPeakLists_StreamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "load_MSPeakLists"),
+    checkmate::test_choice(x$algorithm, "StreamFind")
   )
 }
 
@@ -2955,6 +3029,49 @@ Settings_delete_spectra_section_StreamFind <- function(section = list()) {
 validate.Settings_delete_spectra_section_StreamFind <- function(x) {
   all(
     checkmate::test_choice(x$call, "delete_spectra_section"),
+    checkmate::test_choice(x$algorithm, "StreamFind")
+  )
+}
+
+# merge_spectra_time_series -----
+
+#' @title Settings_merge_spectra_time_series_StreamFind
+#'
+#' @description Prototype.
+#' 
+#' @param preCut The number of pre Raman scans to exclude when merging.
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_merge_spectra_time_series_StreamFind.
+#'
+#' @export
+#'
+Settings_merge_spectra_time_series_StreamFind <- function(preCut = list()) {
+  
+  settings <- list(
+    call = "merge_spectra_time_series",
+    algorithm = "StreamFind",
+    parameters = list(preCut = preCut),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_merge_spectra_time_series_StreamFind
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_merge_spectra_time_series_StreamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_merge_spectra_time_series_StreamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "merge_spectra_time_series"),
     checkmate::test_choice(x$algorithm, "StreamFind")
   )
 }

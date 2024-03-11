@@ -4,8 +4,13 @@
 #'
 #' @noRd
 #'
-.s3_ms_suspect_screening.Settings_suspect_screening_StreamFind <- function(settings, self) {
+.s3_ms_suspect_screening.Settings_suspect_screening_StreamFind <- function(settings, self, private) {
 
+  if (!any(self$has_features())) {
+    warning("There are no features! Run find_features first!")
+    return(FALSE)
+  }
+  
   if (!validate(settings)) return(FALSE)
 
   suspect_features <- self$get_suspects(
@@ -72,9 +77,13 @@
     
     names(sus_col) <- names(features)
     
-    if (!is.logical(self$add_features_column("suspects", sus_col, features))) return(TRUE)
-    
-    TRUE
+    if (private$.add_features_column("suspects", sus_col)) {
+      
+      TRUE
+      
+    } else {
+      FALSE
+    }
     
   } else {
     FALSE
@@ -87,8 +96,13 @@
 #'
 #' @noRd
 #'
-.s3_ms_suspect_screening.Settings_suspect_screening_forident <- function(settings, self) {
+.s3_ms_suspect_screening.Settings_suspect_screening_forident <- function(settings, self, private) {
 
+  if (!any(self$has_features())) {
+    warning("There are no features! Run find_features first!")
+    return(FALSE)
+  }
+  
   if (!validate(settings)) return(FALSE)
 
   if (self$has_groups()) {
@@ -216,7 +230,7 @@
 #'
 #' @noRd
 #'
-.s3_ms_suspect_screening.Settings_suspect_screening_patRoon <- function(settings, self) {
+.s3_ms_suspect_screening.Settings_suspect_screening_patRoon <- function(settings, self, private) {
   
   if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found! Install it for finding features.")

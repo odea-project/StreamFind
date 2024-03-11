@@ -4,8 +4,13 @@
 #'
 #' @noRd
 #'
-.s3_ms_calculate_quality.Settings_calculate_quality_StreamFind <- function(settings, self) {
+.s3_ms_calculate_quality.Settings_calculate_quality_StreamFind <- function(settings, self, private) {
 
+  if (!any(self$has_features())) {
+    warning("Features not found! Not calculated.")
+    return(FALSE)
+  }
+  
   if (!validate(settings)) return(FALSE)
 
   if (!any(self$has_features())) {
@@ -406,17 +411,21 @@
         patRoon::saveCacheData("calculate_quality", quality, hash)
         message("\U1f5ab Calculated features quality parameters cached!")
       }
+      
     } else {
       message("\U2139 Calculated features quality parameters loaded from cache!")
     }
     
-    features <- self$get_feature_list(filtered = TRUE)
-    
-    if (!is.logical(self$add_features_column("quality", quality, features))) return(TRUE)
+    if (private$.add_features_column("quality", quality)) {
+      
+      TRUE
+      
+    } else {
+      FALSE
+    }
 
   } else {
     warning("EIC traces from features not found! Not done.")
+    FALSE
   }
-  
-  FALSE
 }

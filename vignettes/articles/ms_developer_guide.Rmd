@@ -1,12 +1,11 @@
 ---
-title: 'Developer Guide'
+title: 'StreamFind Developer Guide'
 subtitle: |
-  | Implementation of processing modules and algorithms
+  | Implementation of processing methods and algorithms
   | <br>
 author:
   name: Ricardo Cunha
   email: cunha@iuta.de
-  # affiliation: "Institut für Umwelt & Energie, Technik & Analytik e. V. (IUTA) <br> Bliersheimer Str. 58 - 60, 47229 Duisburg"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   bookdown::html_document2:
@@ -16,7 +15,7 @@ output:
     toc_float: true
 vignette: >
   %\VignetteEncoding{UTF-8}
-  %\VignetteIndexEntry{Developer guide for mass spectrometry}
+  %\VignetteIndexEntry{StreamFind Developer Guide}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
   chunk_output_type: console
@@ -70,7 +69,7 @@ pre code {
 
 # StreamFind
 
-The library of StreamFind is an R package and can be used for data management, processing, visualization and reporting. This guide uses mass spectrometry (MS) data as example and aims to instruct developers to implement new processing modules and additional processing algorithms for new or existing processing modules in the StreamFind library.
+The StreamFind is an R package and can be used for data management, processing, visualization and reporting. This guide uses mass spectrometry (MS) data as example and aims to instruct developers to implement new processing modules and additional processing algorithms for new or existing processing methods in StreamFind.
 
 ## Setup
 
@@ -91,7 +90,7 @@ ms$get_headers()
 ms
 ```
 
-For implementation of processing modules and algorithms, the [S3](https://rstudio-education.github.io/hopr/s3.html) class [ProcessingSettings](https://odea-project.github.io/StreamFind/reference/ProcessingSettings.html) is used to dispatch settings to processing modules. See article [Wastewater ozonation showcase](XXX) for demonstration of usage. In essence, a given algorithm to be applied to a processing method is added to the *MassSpecEngine* as a *ProcessingSettings* object which is then used to process the data with the defined settings or parameters. The structure of a *ProcessingSettings* is exemplified below for the algorithm `openms` to be applied to the module `MassSpecEngine$find_features()`.
+For implementation of processing methods, the [S3](https://rstudio-education.github.io/hopr/s3.html) class [ProcessingSettings](https://odea-project.github.io/StreamFind/reference/ProcessingSettings.html) is used to dispatch settings to processing methods. See article [Evaluation of Wastewater Ozonation with Mass Spectrometry](XXX) for demonstration of usage. In essence, a given algorithm to be applied to a processing method is added to the *MassSpecEngine* as a *ProcessingSettings* object which is then used to process the data with the defined settings or parameters. The structure of a *ProcessingSettings* is exemplified below for the algorithm `openms` to be applied to the method `MassSpecEngine$find_features()`.
 
 ```{r example-settings, results='markup'}
 ffs <- Settings_find_features_openms()
@@ -99,7 +98,7 @@ ffs <- Settings_find_features_openms()
 ffs
 ```
 
-As shown, the constructor of a *ProcessingSettings* is a function always including `Settings_[module name]_[algorithm name]`; More details are given in the Semantics (\@ref(semantics)). Then, the *ProcessingSettings* can be directly added to the *MassSpecEngine*.
+As shown, the constructor of a *ProcessingSettings* is a function always including `Settings_[method name]_[algorithm name]`; More details are given in the Semantics (\@ref(semantics)). Then, the *ProcessingSettings* can be directly added to the *MassSpecEngine*.
 
 ```{r add-settings, results='markup'}
 ms$add_settings(ffs)
@@ -129,13 +128,13 @@ ms$import_settings("~/github/StreamFind/vignettes/articles/ffs.json")
 ms
 ```
 
-The use of the S3 object system for *ProcessingSettings* gives flexibility to the list of parameters, meaning that each parameter entry can be a single numeric value, a vector of strings or even a full data.frame if required. Each *ProcessingSettings* constructor (i.e., `Settings_[module name]_[algorithm name]`) has a dedicated validation method to ensure that the parameters and metadata are in conformity (as shown below). The validation of a *ProcessingSettings* is always performed before applying it to a processing module.
+The use of the S3 object system for *ProcessingSettings* gives flexibility to the list of parameters, meaning that each parameter entry can be a single numeric value, a vector of strings or even a full data.frame if required. Each *ProcessingSettings* constructor (i.e., `Settings_[method name]_[algorithm name]`) has a dedicated validation method to ensure that the parameters and metadata are in conformity (as shown below). The validation of a *ProcessingSettings* is always performed before applying it to a processing method.
 
 ```{r validate-settings, results='markup'}
 validate(ffs)
 ```
 
-Besides the S3 class *ProcessingSettings*, the *ProcessingSettings* object receives other class names that are used for S3 method dispatchment (i.e., direct the object to the dedicated S3 method where the actual processing algorithm is applied). Below we show the classes of the `ffs` *ProcessingSettings*. The class *patRoon* means that the algorithm `openms` is applied via the package [patRoon](https://github.com/rickhelmus/patRoon). The class *Settings_find_features_openms* directs the object to the right processing module and indicates which algorithm to be applied. For this, an [S3 generic](http://adv-r.had.co.nz/S3.html) is used in each processing module (e.g., `MassSpecEngine$find_features()` or `MassSpecEngine$group_features()`) for the dispatchment. This process is not visible to the user but is essential for the developer. Implementation of new processing modules and/or algorithms must consider this structure. In the section Implementation (\@ref(implementation)) the process of adding new modules and algorithms is described in more detail.
+Besides the S3 class *ProcessingSettings*, the *ProcessingSettings* object receives other class names that are used for S3 method dispatchment (i.e., direct the object to the dedicated S3 method where the actual processing algorithm is applied). Below we show the classes of the `ffs` *ProcessingSettings*. The class *patRoon* means that the algorithm `openms` is applied via the package [patRoon](https://github.com/rickhelmus/patRoon). The class *Settings_find_features_openms* directs the object to the right processing method and indicates which algorithm to be applied. For this, an [S3 generic](http://adv-r.had.co.nz/S3.html) is used in each processing method (e.g., `MassSpecEngine$find_features()` or `MassSpecEngine$group_features()`) for the dispatchment. This process is not visible to the user but is essential for the developer. Implementation of new processing methods and/or algorithms must consider this structure. In the section Implementation (\@ref(implementation)) the process of adding new methods and algorithms is described in more detail.
 
 ```{r other-classes, results='markup'}
 class(ffs)
@@ -143,17 +142,17 @@ class(ffs)
 
 ## Semantics
 
-Consistent semantics are attempted within the StreamFind R package. Some of the class and method names were already mentioned above and a clear use of the *underscore* to separate words for methods and use of *Upper Camel Case* for classes is visible. In this section, we try to highlight the defined rules for the most important semantic aspects. All the methods available via the class `MassSpecEngine$` are written with underscore to separate the words (e.g., `get_analysis_names()` or `annotate_features()`). The arguments of methods, functions and class constructors are always written with *Lower Camel Case* when more than one word is needed (e.g., `colorBy` or `minIntensity`). Classes are written with *Upper Camel Case* when two or more words are used (e.g., *MassSpecAnalysis* or *ProjectHeaders*) with the exception of the specific constructor functions for the different algorithm settings, which use the syntax `Settings_[module name]_[algorithm name]` (e.g., *Settings_filter_features_StreamFind* or *Settings_bin_spectra_qBinning*); This supports and facilitates the association of the settings with the respective processing module. Functions or methods not available to the user (i.e., not exported via the package NAMESPACE) are written with `.` at the beginning, followed by *underscore* to separate words (e.g., *.get_colors()* or *.plot_ms2_static()*). This is also applied to the S3 generics of the processing modules, which use the syntax `.s3_ms_[module name]` (e.g., `.s3_ms_find_features` or `.s3_ms_group_features`).
+Consistent semantics are attempted within the StreamFind R package. Some of the class and method names were already mentioned above and a clear use of the *underscore* to separate words for methods and use of *Upper Camel Case* for classes is visible. In this section, we try to highlight the defined rules for the most important semantic aspects. All the methods available via the class `MassSpecEngine$` are written with underscore to separate the words (e.g., `get_analysis_names()` or `annotate_features()`). The arguments of methods, functions and class constructors are always written with *Lower Camel Case* when more than one word is needed (e.g., `colorBy` or `minIntensity`). Classes are written with *Upper Camel Case* when two or more words are used (e.g., *MassSpecAnalysis* or *ProjectHeaders*) with the exception of the specific constructor functions for the different algorithm settings, which use the syntax `Settings_[method name]_[algorithm name]` (e.g., *Settings_filter_features_StreamFind* or *Settings_bin_spectra_qBinning*); This supports and facilitates the association of the settings with the respective processing method. Functions or methods not available to the user (i.e., not exported via the package NAMESPACE) are written with `.` at the beginning, followed by *underscore* to separate words (e.g., *.get_colors()* or *.plot_ms2_static()*). This is also applied to the S3 generics of the processing modules, which use the syntax `.s3_ms_[module method]` (e.g., `.s3_ms_find_features` or `.s3_ms_group_features`).
 
 ## Files
 
-The file structure of the StreamFind package is in line with the [CRAN official package development guideline](https://cran.r-project.org/doc/manuals/R-exts.html#:~:text=Contents%5D%5BIndex%5D-,1.1%20Package%20structure,which%20should%20not%20be%20empty).). All relevant files for the developer are in the R, src, man-roxygen, tests and vignettes. In the R folder are the R scripts, in the src folder are C++ libraries and the [Rcpp](https://cran.r-project.org/web/packages/Rcpp/index.html) interface functions, in the man-roxygen are the templates for documentation of arguments, in the tests are the test units that should be applied for each processing module and each algorithm implementation and finally, in the vignettes are articles, tutorial and guides for the users. R file names in the R folder have a defined name syntax according to the content/function. Class files are named with `class_[class type in capital_[class name].R]`. Exported MS function files are named with `fct_ms_[unique name].R`. MS utility functions not exported are named with `utils_ms_[unique name].R`. S3 methods for processing modules are written with `methods_S3_ms_[module name]_[algorithm].R`. *ProcessingSettings* constructors are named `constructor_S3_ms_[module name]_[algorithm].R`.
+The file structure of the StreamFind package is in line with the [CRAN official package development guideline](https://cran.r-project.org/doc/manuals/R-exts.html#:~:text=Contents%5D%5BIndex%5D-,1.1%20Package%20structure,which%20should%20not%20be%20empty).). All relevant files for the developer are in the R, src, man-roxygen, tests and vignettes. In the R folder are the R scripts, in the src folder are C++ libraries and the [Rcpp](https://cran.r-project.org/web/packages/Rcpp/index.html) interface functions, in the man-roxygen are the templates for documentation of arguments, in the tests are the test units that should be applied for each processing method and each algorithm implementation and finally, in the vignettes are articles, tutorials and guides for the users. R file names in the R folder have a defined name syntax according to the content/function. Class files are named with `class_[class type in capital_[class name].R]`. Exported MS function files are named with `fct_ms_[unique name].R`. Utility functions not exported are named with `utils_[unique name].R`. S3 methods for processing modules are written with `methods_S3_ms_[method name]_[algorithm].R`. *ProcessingSettings* constructors are named `constructor_S3_ms_[method name]_[algorithm].R`.
 
 # Implementation
 
-The implementation of new processing modules and new algorithms for a given processing modules differ in terms of impact change. While addition of new processing modules require the change of the main *MassSpecEngine* class and addition of new S3 generics, adding new algorithms for existing modules do not require changes in the existing files. Therefore, we describe their implementation in two separate sections.
+The implementation of new processing methods and new algorithms for a given processing method differs in terms of impact change. While addition of new processing methods require the change of the main *MassSpecEngine* class and addition of new S3 generics, adding new algorithms for existing modules do not require changes in the existing files. Therefore, we describe their implementation in two separate sections.
 
-## New modules
+## New methods
 
 Under definition.
 

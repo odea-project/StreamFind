@@ -5,33 +5,23 @@
 #'
 #' @noRd
 #'
-.s3_ms_group_features.patRoon <- function(settings, self) {
-
+.s3_ms_group_features.patRoon <- function(settings, self, private) {
+  
   if (!requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found! Install it for finding features.")
     return(FALSE)
   }
   
-  if (self$has_modules_data("patRoon")) {
-    
-    pat_features <- self$features
-    
-    if (is.null(pat_features)) return(FALSE)
-    
-  } else {
+  if (!self$has_features()) {
+    warning("There are no features! Run find_features method first!")
     return(FALSE)
   }
-
-  if (length(pat_features) == 0) {
-    warning("There are no feature! Run find_features method first!")
-    return(FALSE)
-  }
+  
+  pat_features <- self$features
 
   algorithm <- settings$algorithm
 
-  if (grepl("_", algorithm, fixed = FALSE)) {
-    algorithm <- gsub("^(.*?)_.*$", "\\1", algorithm)
-  }
+  if (grepl("_", algorithm, fixed = FALSE)) algorithm <- gsub("^(.*?)_.*$", "\\1", algorithm)
 
   if ("xcms" %in% algorithm || "xcms3" %in% algorithm) {
     if (!requireNamespace("xcms")) {
@@ -116,9 +106,7 @@
 
   ag <- list("obj" = pat_features, "algorithm" = algorithm)
   
-  if (!"verbose" %in% names(parameters)) {
-    parameters[["verbose"]] <- TRUE
-  }
+  if (!"verbose" %in% names(parameters)) parameters[["verbose"]] <- TRUE
   
   pat <- do.call(patRoon::groupFeatures, c(ag, parameters))
   

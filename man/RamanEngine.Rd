@@ -15,7 +15,9 @@ The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecti
 \item \href{#method-RamanEngine-new}{\code{RamanEngine$new()}}
 \item \href{#method-RamanEngine-get_overview}{\code{RamanEngine$get_overview()}}
 \item \href{#method-RamanEngine-get_spectra}{\code{RamanEngine$get_spectra()}}
-\item \href{#method-RamanEngine-merge_replicates}{\code{RamanEngine$merge_replicates()}}
+\item \href{#method-RamanEngine-subset_analyses}{\code{RamanEngine$subset_analyses()}}
+\item \href{#method-RamanEngine-remove_analyses}{\code{RamanEngine$remove_analyses()}}
+\item \href{#method-RamanEngine-merge_spectra_time_series}{\code{RamanEngine$merge_spectra_time_series()}}
 \item \href{#method-RamanEngine-average_spectra}{\code{RamanEngine$average_spectra()}}
 \item \href{#method-RamanEngine-subtract_blank_spectra}{\code{RamanEngine$subtract_blank_spectra()}}
 \item \href{#method-RamanEngine-correct_spectra_baseline}{\code{RamanEngine$correct_spectra_baseline()}}
@@ -37,8 +39,8 @@ The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecti
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_blank_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_blank_names'><code>StreamFind::CoreEngine$add_blank_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_headers'><code>StreamFind::CoreEngine$add_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_metadata"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_metadata'><code>StreamFind::CoreEngine$add_metadata()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_modules_data"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_modules_data'><code>StreamFind::CoreEngine$add_modules_data()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_replicate_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_replicate_names'><code>StreamFind::CoreEngine$add_replicate_names()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_results"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_results'><code>StreamFind::CoreEngine$add_results()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_settings'><code>StreamFind::CoreEngine$add_settings()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_analyses'><code>StreamFind::CoreEngine$get_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_analysis_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_analysis_names'><code>StreamFind::CoreEngine$get_analysis_names()</code></a></span></li>
@@ -47,17 +49,19 @@ The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecti
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_formats"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_formats'><code>StreamFind::CoreEngine$get_formats()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_headers'><code>StreamFind::CoreEngine$get_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_history"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_history'><code>StreamFind::CoreEngine$get_history()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_modules_data"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_modules_data'><code>StreamFind::CoreEngine$get_modules_data()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_modules_data_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_modules_data_names'><code>StreamFind::CoreEngine$get_modules_data_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_number_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_number_analyses'><code>StreamFind::CoreEngine$get_number_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_replicate_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_replicate_names'><code>StreamFind::CoreEngine$get_replicate_names()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_results"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_results'><code>StreamFind::CoreEngine$get_results()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_results_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_results_names'><code>StreamFind::CoreEngine$get_results_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_settings'><code>StreamFind::CoreEngine$get_settings()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_settings_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_settings_names'><code>StreamFind::CoreEngine$get_settings_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_types"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_types'><code>StreamFind::CoreEngine$get_types()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_workflow_overview"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_workflow_overview'><code>StreamFind::CoreEngine$get_workflow_overview()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_analyses'><code>StreamFind::CoreEngine$has_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_averaged_spectra"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_averaged_spectra'><code>StreamFind::CoreEngine$has_averaged_spectra()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_modules_data"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_modules_data'><code>StreamFind::CoreEngine$has_modules_data()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_chromatograms"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_chromatograms'><code>StreamFind::CoreEngine$has_chromatograms()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_chromatograms_peaks"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_chromatograms_peaks'><code>StreamFind::CoreEngine$has_chromatograms_peaks()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_results"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_results'><code>StreamFind::CoreEngine$has_results()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_settings'><code>StreamFind::CoreEngine$has_settings()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_spectra"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_spectra'><code>StreamFind::CoreEngine$has_spectra()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_spectra_peaks"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_spectra_peaks'><code>StreamFind::CoreEngine$has_spectra_peaks()</code></a></span></li>
@@ -65,22 +69,21 @@ The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecti
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_analyses'><code>StreamFind::CoreEngine$import_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_headers'><code>StreamFind::CoreEngine$import_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_settings'><code>StreamFind::CoreEngine$import_settings()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="plot_chromatograms_peaks"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-plot_chromatograms_peaks'><code>StreamFind::CoreEngine$plot_chromatograms_peaks()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="plot_spectra_peaks"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-plot_spectra_peaks'><code>StreamFind::CoreEngine$plot_spectra_peaks()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print'><code>StreamFind::CoreEngine$print()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_analyses'><code>StreamFind::CoreEngine$print_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_headers'><code>StreamFind::CoreEngine$print_headers()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_modules"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_modules'><code>StreamFind::CoreEngine$print_modules()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_results"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_results'><code>StreamFind::CoreEngine$print_results()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_workflow'><code>StreamFind::CoreEngine$print_workflow()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_analyses'><code>StreamFind::CoreEngine$remove_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_headers'><code>StreamFind::CoreEngine$remove_headers()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_modules_data"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_modules_data'><code>StreamFind::CoreEngine$remove_modules_data()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_results"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_results'><code>StreamFind::CoreEngine$remove_results()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_settings'><code>StreamFind::CoreEngine$remove_settings()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_workflow'><code>StreamFind::CoreEngine$run_workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-save'><code>StreamFind::CoreEngine$save()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-save_analyses'><code>StreamFind::CoreEngine$save_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-save_headers'><code>StreamFind::CoreEngine$save_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-save_settings'><code>StreamFind::CoreEngine$save_settings()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="subset_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-subset_analyses'><code>StreamFind::CoreEngine$subset_analyses()</code></a></span></li>
 </ul>
 </details>
 }}
@@ -90,7 +93,14 @@ The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecti
 \subsection{Method \code{new()}}{
 Creates an R6 class \emph{RamanEngine}. Child of \emph{CoreEngine} R6 class.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$new(files = NULL, headers = NULL, runParallel = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$new(
+  files = NULL,
+  headers = NULL,
+  settings = NULL,
+  analyses = NULL,
+  results = NULL,
+  runParallel = FALSE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -104,6 +114,22 @@ except for name (must be type character length 1), author (must be type
 character length 1), path (must be type character length 1) and date (must
 be class POSIXct or class POSIXt length 1). See more information in
 \code{?ProjectHeaders}.}
+
+\item{\code{settings}}{A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.}
+
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+
+\item{\code{results}}{A named list of objects from processing methods.}
 
 \item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
 processing. Note that parallel processing is not always faster due to
@@ -151,19 +177,69 @@ Gets a \code{data.table} with spectra from analyses.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-RamanEngine-merge_replicates"></a>}}
-\if{latex}{\out{\hypertarget{method-RamanEngine-merge_replicates}{}}}
-\subsection{Method \code{merge_replicates()}}{
-Merges spectra for given \emph{RamanAnalyses} from the same chromatographic separation when using
-LC-Raman coupling.
+\if{html}{\out{<a id="method-RamanEngine-subset_analyses"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-subset_analyses}{}}}
+\subsection{Method \code{subset_analyses()}}{
+Subsets on analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$merge_replicates(preCut = 2)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$subset_analyses(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{preCut}}{The number of pre Raman scans to exclude when merging.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A new cloned engine with only the analyses as defined by the analyses argument.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-remove_analyses"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-remove_analyses}{}}}
+\subsection{Method \code{remove_analyses()}}{
+Removes analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$remove_analyses(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-merge_spectra_time_series"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-merge_spectra_time_series}{}}}
+\subsection{Method \code{merge_spectra_time_series()}}{
+Merges spectra for given \emph{RamanAnalyses} from the same chromatographic separation when using
+LC-Raman coupling.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$merge_spectra_time_series(settings)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.}
+
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -183,6 +259,12 @@ Averages spectra based on assigned analysis replicates.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{settings}}{A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.}
+
 \item{\code{settings}}{A ProcessingSettings S3 class object with the call name
 applicable to the processing method. Alternatively, a named
 list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
@@ -207,6 +289,12 @@ Subtracts spectra from correspondent blank analysis replicates.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{settings}}{A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.}
+
 \item{\code{settings}}{A ProcessingSettings S3 class object with the call name
 applicable to the processing method. Alternatively, a named
 list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
@@ -231,6 +319,12 @@ Corrects the spectra baseline.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{settings}}{A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.}
+
 \item{\code{settings}}{A ProcessingSettings S3 class object with the call name
 applicable to the processing method. Alternatively, a named
 list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
@@ -255,6 +349,12 @@ Bins spectra in units, according to a given window size.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{settings}}{A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.}
+
 \item{\code{settings}}{A ProcessingSettings S3 class object with the call name
 applicable to the processing method. Alternatively, a named
 list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
@@ -279,6 +379,12 @@ Subtracts each spectra by a spectra section in each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{settings}}{A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.}
+
 \item{\code{settings}}{A ProcessingSettings S3 class object with the call name
 applicable to the processing method. Alternatively, a named
 list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
@@ -303,6 +409,12 @@ Deletes a section of spectra in each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{settings}}{A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.}
+
 \item{\code{settings}}{A ProcessingSettings S3 class object with the call name
 applicable to the processing method. Alternatively, a named
 list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
@@ -327,6 +439,12 @@ Smooths the spectra in each analysis/replicate.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{settings}}{A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.}
+
 \item{\code{settings}}{A ProcessingSettings S3 class object with the call name
 applicable to the processing method. Alternatively, a named
 list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
@@ -351,6 +469,12 @@ Normalizes spectra in each analysis/replicate.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{settings}}{A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.}
+
 \item{\code{settings}}{A ProcessingSettings S3 class object with the call name
 applicable to the processing method. Alternatively, a named
 list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
@@ -396,8 +520,8 @@ Plots spectra for given \emph{RamanAnalyses}.
 
 \item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 
-\item{\code{xVal}}{Character of length one. Possible are "rt" or "shift" for
-using the retention time or the shift as x axis, respectively.}
+\item{\code{xVal}}{Character of length one. Possible are "rt" or "shift" for using the retention time or the shift
+as x axis, respectively.}
 
 \item{\code{xLab}}{A string with the title for the x axis.}
 

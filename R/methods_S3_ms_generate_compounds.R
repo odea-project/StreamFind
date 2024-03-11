@@ -5,10 +5,15 @@
 #'
 #' @noRd
 #'
-.s3_ms_generate_compounds.Settings_generate_compounds_metfrag <- function(settings, self) {
+.s3_ms_generate_compounds.Settings_generate_compounds_metfrag <- function(settings, self, private) {
   
   if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found! Install it for finding features.")
+    return(FALSE)
+  }
+  
+  if (!self$has_groups()) {
+    warning("There are no feaure groups! Not done.")
     return(FALSE)
   }
   

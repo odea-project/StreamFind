@@ -5,7 +5,12 @@
 #'
 #' @noRd
 #'
-.s3_ms_filter_features.Settings_filter_features_StreamFind <- function(settings, self) {
+.s3_ms_filter_features.Settings_filter_features_StreamFind <- function(settings, self, private) {
+  
+  if (!self$has_features()) {
+    warning("There are no features! Run find_features first!")
+    return(FALSE)
+  }
   
   parameters <- settings$parameters
   
@@ -605,15 +610,15 @@
 #'
 #' @noRd
 #'
-.s3_ms_filter_features.Settings_filter_features_patRoon <- function(settings, self) {
+.s3_ms_filter_features.Settings_filter_features_patRoon <- function(settings, self, private) {
   
   if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found! Install it for finding features.")
     return(FALSE)
   }
   
-  if (self$has_modules_data("patRoon")) {
-    module_pat <- self$get_modules_data("patRoon")[["patRoon"]]
+  if (self$has_results("patRoon")) {
+    module_pat <- self$get_results("patRoon")[["patRoon"]]
     
   } else {
     warning("No features found! Not done.")

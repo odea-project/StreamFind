@@ -49,6 +49,7 @@ dbis <- db[grepl("IS", db$tag), ]
 dbsus <- db[!grepl("IS", db$tag), ]
 
 ps <- list(
+  
   Settings_find_features_openms(),
   
   Settings_annotate_features_StreamFind(),
@@ -66,16 +67,16 @@ ps <- list(
   Settings_calculate_quality_StreamFind(runParallel = FALSE),
 
   Settings_filter_features_StreamFind(minSnRatio = 5),
+
+  Settings_load_features_ms1_StreamFind(runParallel = FALSE),
+
+  Settings_load_features_ms2_StreamFind(runParallel = FALSE),
+
+  Settings_load_MSPeakLists_StreamFind(), # Check patRoon function for issues with MSPeakLists!!!
   
-  # Settings_load_features_ms1_StreamFind(runParallel = FALSE),
-  # 
-  Settings_load_features_ms2_StreamFind(runParallel = FALSE)
-  # 
-  # Settings_load_MSPeakLists_patRoon(useLoaded = TRUE), # Check patRoon function for issues with MSPeakLists!!! 
-  # 
   # Settings_generate_formulas_genform(),
-  # 
-  # Settings_generate_compounds_metfrag()
+  
+  Settings_generate_compounds_metfrag()
 
   # Settings_suspect_screening_StreamFind(database = dbsus, ppm = 5, sec = 10)
 )
@@ -84,9 +85,14 @@ ms <- MassSpecEngine$new(files = ms_files_df, settings = ps)
 
 ms$run_workflow()
 
-ms
+comp <- patRoon::as.data.table(ms$compounds)
 
-View(ms$get_modules_data("patRoon"))
+View(comp[comp$group %in% ms$get_groups(mass = dbsus)$group, ])
+
+
+
+
+View(ms$get_results("patRoon"))
 
 ms$get_isotopes(
   analyses = 5,
@@ -208,7 +214,7 @@ ms$plot_internal_standards_qc()
 # 
 length(ms$features)
 
-View(ms$get_modules_data("patRoon"))
+View(ms$get_results("patRoon"))
 
 
 # 

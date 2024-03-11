@@ -3,7 +3,6 @@ title: 'Evaluation of Wastewater Ozonation with Mass Spectrometry'
 author:
   name: Ricardo Cunha
   email: cunha@iuta.de
-  # affiliation: "Institut für Umwelt & Energie, Technik & Analytik e. V. (IUTA) <br> Bliersheimer Str. 58 - 60, 47229 Duisburg"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   bookdown::html_document2:

@@ -6,7 +6,6 @@
 \title{Settings_load_MSPeakLists_patRoon}
 \usage{
 Settings_load_MSPeakLists_patRoon(
-  useLoaded = FALSE,
   maxMSRtWindow = 5,
   precursorMzWindow = 4,
   clusterMzWindow = 0.005,
@@ -21,9 +20,6 @@ Settings_load_MSPeakLists_patRoon(
 \method{validate}{Settings_load_MSPeakLists_patRoon}(x)
 }
 \arguments{
-\item{useLoaded}{Logical of length one. When \code{TRUE} and both MS1 and MS2 are loaded to features,
-these are used otherwise the native function \code{generateMSPeakLists} from \pkg{patRoon} is used instead.}
-
 \item{maxMSRtWindow}{Maximum chromatographic peak window used for spectrum
 averaging (in seconds, +/- retention time). If NULL all spectra from a feature
 will be taken into account. Lower to decrease processing time.}

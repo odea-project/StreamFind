@@ -1,383 +1,256 @@
 
-#' @title .moving_average
-#' 
-#' @description Smooths a vector using a moving average window. Optionally, a time window can be given to also limit the
-#' window time.
-#' 
+#' .dispatch_process_method
+#'
+#' @description Function to dispatch the processing method according to the defined processing settings object.
+#'
 #' @noRd
-#' 
-.moving_average <- function(vec, windowSize,  timeVec = NULL, timeWindow = NULL) {
+#'
+.dispatch_process_method <- function(method, settings, self, private) {
   
-  output <- numeric(length(vec))
+  call_method <- paste0(".s3_", method)
   
-  use_time <- FALSE
+  method_to_settings <- sub("ms_", "", method)
   
-  if (is.numeric(timeVec) && length(timeVec) == length(vec) && is.numeric(timeWindow)) {
-    use_time <- TRUE
+  settings <- private$.get_call_settings(settings, method_to_settings)
+  
+  if (is.null(settings)) return(FALSE)
+  
+  processed <- do.call(call_method, list(settings, self, private))
+  
+  if (processed) {
+    
+    if (!private$.settings_already_stored(settings)) self$add_settings(settings)
+    
+    private$.register("processed", NA_character_, settings$call, settings$software, NA_character_, settings$algorithm)
   }
-  
-  all_idx <- seq_len(length(vec))
-  
-  for (z in seq_len(length(vec))) {
-    
-    if (use_time) {
-      idx <- which(abs(timeVec - timeVec[z]) <= timeWindow)
-      
-    } else {
-      idx <- all_idx
-    }
-    
-    left_window <- idx >= max(min(idx), z - windowSize) & idx < z
-    
-    left_window <- idx[left_window]
-    
-    left_size <- length(left_window)
-    
-    if (left_size > 0) left_window = vec[left_window]
-    
-    right_window <- idx <= min(max(idx), z + windowSize) & idx > z
-    
-    right_window <- idx[right_window]
-    
-    right_size <- length(right_window)
-    
-    if (right_size > 0) right_window <- vec[right_window]
-    
-    if (left_size == 0) {
-      output[z] <- vec[z]
-      next
-    }
-    
-    if (right_size == 0) {
-      output[z] <- vec[z]
-      next
-    }
-    
-    if (left_size < right_size) left_window <- c(left_window, rep(0, right_size - left_size))
-    
-    if (right_size < left_size) right_window <- c(right_window, rep(0, left_size - right_size))
-    
-    output[z] <- mean(c(left_window, vec[z], right_window))
-  }
-  
-  output
 }
 
-
-
-#' @title .baseline_correction
+#' .trim_vector
 #' 
-#' @description Corrects the baseline from a vector using the baseline package.
+#' @description Asset function for fast trimming of a vector based on a list of ranges.
 #' 
+#' @param v A vector to trim based on minimum and maximum value pairs.
+#' @param a A vector with minimum values to evaluate `v`.
+#' @param b A vector with maximum values to evaluate `v`.
+#'
+#' @return A logical vector with the same length as `v` with \code{TRUE} for regions between `a` and `b` value pairs.
+#'
 #' @noRd
-#' 
-.baseline_correction <- function(vec, method, opts) {
-  
-  mat <- matrix(as.numeric(vec), nrow = 1)
-  
-  mat <- do.call("baseline", c(list(spectra = mat, method = method), opts))
-  
-  i_baseline <- as.numeric(mat@baseline)
-  
-  # i_corrected <- as.numeric(mat@corrected)
-  
-  i_baseline[i_baseline > vec] <- vec[i_baseline > vec]
+#'
+.trim_vector <- function(v, a, b) rowSums(as.matrix(mapply(function(a, b) v >= a & v <= b, a = a, b = b))) > 0
 
-  i_baseline[i_baseline < 0] <- vec[i_baseline < 0]
-
-  i_corrected <- vec - i_baseline
-
-  i_corrected[i_corrected < 0] <- 0
-  
-  list("mat" = mat, "baseline" = i_baseline, "corrected" = i_corrected)
-}
-
-
-
-#' @title .find_peaks
-#' 
-#' @description Finds peaks in a given vector using the `findpeaks` function from `pracma` and an additional attempt 
-#' to merge peaks.
-#' 
+#' .trim_spectra_targets
+#'
+#' @param traces A data.frame with spectra.
+#' @param targets A data.frame with targets (minimum and maximum).
+#' @param preMZr A data.frame with precursor minimum and maximum values as
+#' `targets` but expanded with the isolation window.
+#'
+#' @return The filtered `traces` data.frame.
+#'
 #' @noRd
-#' 
-.find_peaks <- function(data, xVar,
-                        merge = TRUE,
-                        closeByThreshold = 2,
-                        valeyThreshold = 0.5,
-                        minPeakHeight,
-                        minPeakDistance,
-                        maxPeakWidth,
-                        minPeakWidth,
-                        minSN) {
+#'
+.trim_spectra_targets <- function(traces, targets, preMZr, with_im) {
   
-  plotLevel <- 0
-  
-  vec <- data$intensity
-  
-  xVec <- data[[xVar]]
-  
-  prac_pks <- pracma::findpeaks(
-    x = vec,
-    nups = 1,
-    ndowns = 1,
-    zero = "0",
-    peakpat = NULL,
-    minpeakheight = minPeakHeight, # Minimum peak height
-    minpeakdistance = minPeakDistance, # Minimum peak separation
-    threshold = 0, # Minimum height difference
-    npeaks = 0, # Maximum number of peaks
-    sortstr = FALSE # Peak sorting
+  tg_list <- lapply(seq_len(nrow(targets)),
+                    function(z, traces, targets, preMZr) {
+                      
+                      tg <- traces
+                      
+                      cutRt <- .trim_vector(tg$rt, targets$rtmin[z], targets$rtmax[z])
+                      
+                      tg <- tg[cutRt, ]
+                      
+                      if (nrow(tg) == 0) return(NULL)
+                      
+                      if (with_im) {
+                        cutIM <- .trim_vector(tg$drift, targets$driftmin[z], targets$driftmax[z])
+                        tg <- tg[cutIM, ]
+                      }
+                      
+                      if (nrow(tg) == 0) return(NULL)
+                      
+                      if ("polarity" %in% colnames(targets)) {
+                        tg <- tg[tg$polarity == targets$polarity[z], ]
+                      }
+                      
+                      if (nrow(tg) == 0) return(NULL)
+                      
+                      if (nrow(tg) > 0) {
+                        
+                        if (!is.null(preMZr)) {
+                          cutMZ <- .trim_vector(tg$mz, targets$mzmin[z], targets$mzmax[z])
+                          tg <- tg[tg$level == 2 | (tg$level == 1 & cutMZ), ]
+                          
+                          if (nrow(tg) > 0) {
+                            cutPreMZ <- .trim_vector(tg$pre_mz, preMZr$mzmin[z], preMZr$mzmax[z])
+                            tg <- tg[tg$level == 1 | (tg$level == 2 & cutPreMZ), ]
+                          }
+                          
+                        } else {
+                          cutMZ <- .trim_vector(tg$mz, targets$mzmin[z], targets$mzmax[z])
+                          tg <- tg[cutMZ, ]
+                        }
+                      }
+                      
+                      if (nrow(tg) == 0) return(NULL)
+                      
+                      if (nrow(tg) > 0) {
+                        tg$id <- targets$id[z]
+                        
+                      }
+                      
+                      tg
+                    },
+                    traces = traces,
+                    preMZr = preMZr,
+                    targets = targets
   )
   
-  if (is.null(prac_pks)) {
-    return(data.table())
-    
-  } else {
-    pks <- data.table(
-      "idx" = as.integer(prac_pks[, 2]),
-      "xVal" = xVec[prac_pks[, 2]],
-      "min" = xVec[as.integer(prac_pks[, 3]) - 1],
-      "max" = xVec[as.integer(prac_pks[, 4]) + 1],
-      "intensity" = vec[as.integer(prac_pks[, 2])]
-    )
-  }
+  tg_list <- tg_list[!is.null(tg_list)]
   
-  if (plotLevel > 3) {
-    plot(xVec, vec, type = "l",main = "Found peaks")
-    points(pks$xVal, pks$intensity, pch = 16, col = "red", cex = 1.5)
-    text(x = pks$xVal, y = pks$intensity, adj = c(-0.4, 0.25),
-      labels = pks$index, cex = 0.6, col = "darkred", font = NULL, srt = 90
-    )
-  }
+  tg_df <- do.call("rbind", tg_list)
   
-  setorder(pks, "xVal")
-  
-  pks$index <- seq_len(nrow(pks))
-  
-  if (merge) {
-    
-    pks$merged <- FALSE
-    
-    next_pk <- FALSE
-    
-    pk_pos <- 1
-    
-    for (i in seq_len(nrow(pks) - 1)) {
-      
-      if (next_pk) pk_pos <- i
-      
-      # if (i > 7) browser()
-      
-      pk_diff <- abs(pks$min[i + 1] - pks$max[i])
-      
-      pk_closeby <- pk_diff <= closeByThreshold
-      
-      if (pk_closeby) {
-        
-        pk_i <- vec[xVec == pks$xVal[i]]
-        
-        pk_next <- vec[xVec == pks$xVal[i + 1]]
-        
-        if (pk_i < pk_next) {
-          
-          pk_i <- vec[xVec == pks$max[i]]
-          
-          ints_between <- vec[xVec > pks$max[i] & xVec < pks$xVal[i + 1]]
-          
-          if (all(ints_between < pk_next)) {
-            
-            if (!all(ints_between > pk_i)) {
-              
-              if (length(ints_between[ints_between < pk_i]) / length(ints_between) < 0.5) {
-                do_merge <- TRUE 
-                
-              } else {
-                do_merge <- FALSE
-              }
-              
-            } else {
-              do_merge <- TRUE
-            }
-            
-          } else {
-            do_merge <- FALSE
-          }
-          
-        } else if (pk_i > pk_next) {
-          
-          pk_next <- vec[xVec == pks$min[i + 1]]
-          
-          ints_between <- vec[xVec > pks$xVal[i] & xVec < pks$min[i + 1]]
-          
-          if (all(ints_between < pk_i)) {
-            
-            if (!all(ints_between > pk_next)) {
-              
-              if (length(ints_between[ints_between < pk_next]) / length(ints_between) < 0.5) {
-                do_merge <- TRUE
-                
-              } else {
-                do_merge <- FALSE
-              }
-              
-            } else {
-              do_merge <- TRUE
-            }
-            
-          } else {
-            do_merge <- FALSE
-          }
-          
-        } else if (pk_i == pk_next) {
-          do_merge <- TRUE
-          
-        } else {
-          do_merge <- FALSE
-        }
-        
-        if (do_merge) {
-          pks$max[pk_pos] <- pks$max[i + 1]
-          t_i <- pks$intensity[pk_pos]
-          pks$intensity[pk_pos] <- max(pks$intensity[pk_pos], pks$intensity[i + 1])
-          if (t_i != pks$intensity[pk_pos]) pks$xVal[pk_pos] <- pks$xVal[i + 1]
-          pks$merged[i + 1] <- TRUE
-          next_pk <- FALSE
-          
-        } else {
-          next_pk <- TRUE
-        }
-        
-      } else {
-        next_pk <- TRUE
-      }
-    }
-    
-    if (plotLevel > 3) {
-      plot(xVec, vec, type = "l",main = "Found peaks")
-      points(pks$xVal, pks$intensity, pch = 16, col = "red", cex = 1.5)
-      points(pks$xVal[pks$merged], pks$intensity[pks$merged], pch = 16, col = "darkgreen", cex = 1.5)
-      text(x = pks$xVal, y = pks$intensity, adj = c(-0.4, 0.25),
-        labels = pks$index, cex = 0.6, col = "darkred", font = NULL, srt = 90
-      )
-    }
-    
-    pks <- pks[!pks$merged]
-    
-    pks[["merged"]] <- NULL
-  }
-
-  pks$width <- pks$max - pks$min
-  
-  pks <- pks[pks$width >= minPeakWidth & pks$width <= maxPeakWidth, ]
-  
-  if (nrow(pks) == 0) return(data.table())
-  
-  pks$index <- seq_len(nrow(pks))
-  
-  if ("smoothed" %in% colnames(data)) {
-    i_vec <- data$smoothed
-    
-  } else if ("raw" %in% colnames(data)) {
-    i_vec <- data$raw
-    
-  } else {
-    i_vec <- data$intensity
-  }
-  
-  pks$intensity <- vapply(pks$index, function(i) {
-    quarter_pk <- (pks$max[i] - pks$min[i]) / 4
-    max(i_vec[xVec > (pks$xVal[i] - quarter_pk) & xVec < (pks$xVal[i] + quarter_pk)])
-  }, 0)
-  
-  pks$xVal <- vapply(pks$index, function(i) {
-    quarter_pk <- (pks$max[i] - pks$min[i]) / 4
-    xVec[xVec > (pks$xVal[i] - quarter_pk) & xVec < (pks$xVal[i] + quarter_pk) & i_vec == pks$intensity[i]]
-  }, 0)
-  
-  pks$idx <- vapply(pks$index, function(i) which(xVec %in% pks$xVal[i]), 0)
-  
-  .trapezoidal_integration <- function(x, y) sum(diff(x) * (head(y, -1) + tail(y, -1)) / 2)
-  
-  .integrate_peak_area <- function(xVec, i_vec, baseline, peak_start, peak_end) {
-    peak_mask <- (xVec >= peak_start) & (xVec <= peak_end)
-    peak_xVec <- xVec[peak_mask]
-    
-    if (!is.null(baseline)) {
-      peak_intensity <- i_vec[peak_mask] - baseline[peak_mask]
-      
-    } else {
-      peak_intensity <- i_vec[peak_mask]
-    }
-    
-    peak_intensity[peak_intensity < 0] <- 0
-    
-    return(.trapezoidal_integration(peak_xVec, peak_intensity))
-  }
-  
-  if ("baseline" %in% colnames(data)) {
-    i_baseline <- data$baseline
-    
-  } else {
-    i_baseline <- NULL
-  }
-  
-  integrated_areas <- vapply(pks$index, function(i) {
-    .integrate_peak_area(xVec, i_vec, i_baseline, pks$min[i], pks$max[i])
-  }, 0)
-  
-  pks$area <- integrated_areas
-  
-  sn_vals <- sapply(pks$index, function(i) {
-    base = which(xVec >= pks$min[i] & xVec <= pks$max[i])
-    base = c(min(base) - 2, base, max(base) + 2)
-    base <- i_vec[base]
-    base <- base[base > 0]
-    base <- min(base)
-    round(pks$intensity[i] / base, digits = 1)
-  })
-  
-  pks$sn <- sn_vals
-  
-  if (is.numeric(minSN)) pks <- pks[pks$sn >= minSN[1], ]
-  
-  if (plotLevel > 0) {
-    
-    if ("smoothed" %in% colnames(data)) i_vec <- data$smoothed
-    
-    plot(xVec, i_vec, type = "l", col = "black",ylim = c(0, max(i_vec) * 1.1) )
-    
-    if ("baseline" %in% colnames(data)) lines(xVec, as.numeric(i_baseline), col = "darkred", lwd = 1, lty = 2)
-
-    if (!"baseline" %in% colnames(data)) i_baseline <- rep(0, length(i_vec))
-    
-    colors <- .get_colors(pks$index)
-    
-    for (i in pks$index) {
-      
-      sel <- xVec > pks$min[i] & xVec < pks$max[i]
-      
-      lines(xVec[sel], i_vec[sel], pch = 16, col = colors[i], cex = 1.5)
-      
-      lines(xVec[sel], i_baseline[sel], pch = 16, col = colors[i], cex = 1.5)
-      
-      polygon(
-        c(xVec[sel], rev(xVec[sel])),
-        c(i_vec[sel], rev(i_baseline[sel])),
-        col = colors[i],
-        border = NA
-      )
-      
-      text(
-        x = pks$xVal[i], y = i_vec[pks$idx[i]], adj = c(0.5, -1),
-        labels = pks$index[i],
-        vfont = NULL, cex = 0.8, col = "black", font = NULL, srt = 0
-      )
-    }
-  }
-  
-  pks
+  tg_df
 }
+
+#' .caches_data
+#'
+#' @description Check if cache is possible and enabled via the global options.
+#'
+#' @return `TRUE` or `FALSE`.
+#'
+#' @noRd
+#'
+.caches_data <- function() {
+  if (requireNamespace("patRoon", quietly = TRUE)) {
+    ret <- getOption("patRoon.cache.mode", default = "both")
+    if (ret %in% c("both", "save", "load")) {
+      TRUE
+    } else {
+      FALSE
+    }
+  } else {
+    FALSE
+  }
+}
+
+#' .correlate_analysis_spectra
+#'
+#' @description Function to correlate MS spectra from analyses.
+#'
+#' @param spectra A data.table with columns "analysis", "mz" and "intensity".
+#' Optionally, a column named "id" or "group" can be given to split the
+#' data.table before correlation analysis by setting the argument
+#' \code{splitSpectra} to \code{TRUE}. Note that when both "id" and "group"
+#' columns are present "group" is used for splitting the data.table not "id".
+#' If a column "replicate" is present and the argument \code{byReplicates}
+#' is set to \code{TRUE}, the correlation is performed by replicate analysis
+#' groups.
+#' @param splitSpectra X.
+#' @param byReplicates X.
+#' @param decimals X.
+#' @param minIntensity X.
+#' @param method X.
+#'
+#' @return X.
+#'
+#' @noRd
+#'
+.correlate_analysis_spectra <- function(spectra,
+                                        splitSpectra = FALSE,
+                                        byReplicates = FALSE,
+                                        decimals = 2,
+                                        minIntensity = 1000,
+                                        method = "pearson") {
+  
+  analysis <- NULL
+  intensity <- NULL
+  
+  if (!is.data.table(spectra)) {
+    warning("Spectra must be a data.table!")
+    return(data.table())
+  }
+  
+  if ("replicate" %in% colnames(spectra) & byReplicates) {
+    spectra$analysis <- spectra$replicate
+  } else {
+    byReplicates <- FALSE
+  }
+  
+  if (!"id" %in% colnames(spectra)) spectra$id <- NA_character_
+  
+  if ("group" %in% colnames(spectra)) spectra$id <- spectra$group
+  
+  if (!all(c("id", "analysis", "mz", "intensity") %in% colnames(spectra))) {
+    warning("Spectra data.table does not containg mandatory columns!")
+    return(data.table())
+  }
+  
+  if (splitSpectra) {
+    cor_list <- split(spectra, spectra$id)
+  } else {
+    cor_list <- list(spectra)
+  }
+  
+  cor_list <- lapply(cor_list, function(x, minIntensity, decimals, method) {
+    temp <- copy(x[, c("analysis", "mz", "intensity")])
+    
+    temp <- temp[temp$intensity >= minIntensity, ]
+    
+    for (i in unique(temp$analysis)) {
+      temp$intensity[temp$analysis %in% i] <-
+        temp$intensity[temp$analysis %in% i] /
+        max(temp$intensity[temp$analysis %in% i])
+    }
+    
+    temp$mz <- round(temp$mz, digits = decimals)
+    
+    mz <- NULL
+    analysis <- NULL
+    
+    temp <- temp[
+      data.table::CJ(analysis = analysis, mz = mz, unique = TRUE),
+      on = list(analysis, mz)
+    ]
+    
+    data.table::setnafill(temp, fill = 0, cols = "intensity")
+    
+    temp <- temp[, `:=`(intensity = sum(intensity)),
+                 by = c("analysis", "mz")
+    ][]
+    
+    temp <- unique(temp)
+    
+    temp <- matrix(temp$intensity,
+                   nrow = length(unique(temp$mz)),
+                   ncol = length(unique(temp$analysis)),
+                   dimnames = list(
+                     unique(temp$mz),
+                     unique(temp$analysis)
+                   )
+    )
+    
+    temp <- cor(temp, method = method)
+    
+    temp <- as.data.table(temp, keep.rownames = "analysis")
+    
+    return(temp)
+  }, decimals = decimals, minIntensity = minIntensity, method = method)
+  
+  id_col <- "id"
+  
+  if ("group" %in% colnames(spectra)) id_col <- "group"
+  
+  cor_list <- rbindlist(cor_list, idcol = "id")
+  
+  if (byReplicates) {
+    setnames(cor_list, "analysis", "replicate")
+  }
+  
+  cor_list
+}
+
 
 #' @title .make_hash
 #' 
@@ -385,9 +258,7 @@
 #' 
 #' @noRd
 #' 
-.make_hash <- function() {
-  
-  
+.make_hash <- function(...) {
   
 }
 
@@ -399,10 +270,6 @@
 #' 
 .save_cache_data <- function() {
   
-  
-  
-  
-  
 }
 
 #' @title .load_cache_data
@@ -412,9 +279,5 @@
 #' @noRd
 #' 
 .load_cache_data <- function() {
-  
-  
-  
-  
   
 }

@@ -31,15 +31,19 @@ e_cuv$average_spectra()
 
 e_cuv$subtract_blank_spectra()
 
-e_cuv$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("shift" = c(-40, 470))))
+e_cuv$delete_spectra_section(
+  Settings_delete_spectra_section_StreamFind(list("shift" = c(-40, 470)))
+)
 
 e_cuv$smooth_spectra(Settings_smooth_spectra_StreamFind(windowSize = 2))
 
-e_cuv$normalize_spectra()
-
 e_cuv$correct_spectra_baseline(
-  Settings_correct_spectra_baseline_StreamFind(method = "als", args = list(lambda = 3, p = 0.06, maxit = 10))
+  Settings_correct_spectra_baseline_StreamFind(
+    method = "als", args = list(lambda = 3, p = 0.06, maxit = 10)
+  )
 )
+
+e_cuv$normalize_spectra()
 
 e_cuv$plot_spectra()
 
@@ -75,13 +79,14 @@ e_cuv$plot_spectra()
 ## SEC -----
 
 sec_dir <- paste0(wd, "/Jana_SEC_serum")
+
 sec_files <- list.files(sec_dir, pattern = "_\\d.asc", full.names = TRUE)
 
 e_sec <- RamanEngine$new(sec_files, runParallel = FALSE)
 
 e_sec$add_replicate_names(sub("_\\d+$", "", e_sec$get_analysis_names()))
-#e_sec$add_replicate_names(sub("_(\\d)\\d*$", "_\\1", e_sec$get_analysis_names()))
-# e_sec$merge_replicates(preCut = 2)
+# e_sec$add_replicate_names(sub("_(\\d)\\d*$", "_\\1", e_sec$get_analysis_names()))
+# e_sec$merge_spectra_time_series()
 
 e_sec$bin_spectra(Settings_bin_spectra_StreamFind(windowSpectrumUnits = 5))
 
@@ -93,12 +98,16 @@ e_sec$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("sh
 
 e_sec$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("rt" = c(0, 435.241 - 5))))
 
-e_sec$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("rt" = c(435.241 + 5, max(e_sec$get_spectra()$rt)))))
+e_sec$delete_spectra_section(
+  Settings_delete_spectra_section_StreamFind(list("rt" = c(435.241 + 5, max(e_sec$get_spectra()$rt))))
+)
 
 e_sec$smooth_spectra(Settings_smooth_spectra_StreamFind(windowSize = 3))
 
 e_sec$correct_spectra_baseline(
-  Settings_correct_spectra_baseline_StreamFind(method = "als", args = list(lambda = 5, p = 0.05, maxit = 10))
+  Settings_correct_spectra_baseline_StreamFind(
+    method = "als", args = list(lambda = 5, p = 0.05, maxit = 10)
+  )
 )
 
 e_sec$plot_spectra()

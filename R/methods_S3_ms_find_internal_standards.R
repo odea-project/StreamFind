@@ -5,7 +5,12 @@
 #'
 #' @noRd
 #'
-.s3_ms_find_internal_standards.Settings_find_internal_standards_StreamFind <- function(settings, self) {
+.s3_ms_find_internal_standards.Settings_find_internal_standards_StreamFind <- function(settings, self, private) {
+  
+  if (!any(self$has_features())) {
+    warning("There are no features! Run find_features first!")
+    return(FALSE)
+  }
   
   if (!validate(settings)) return(FALSE)
   
@@ -132,7 +137,7 @@
     
     names(istd_col) <- names(features)
     
-    if (!is.logical(self$add_features_column("istd", istd_col, features))) {
+    if (private$.add_features_column("istd", istd_col)) {
       
       message("\U2713 ", length(unique(internal_standards$name)), " internal standards found and tagged!")
       

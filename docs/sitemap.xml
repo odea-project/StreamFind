@@ -4,6 +4,15 @@
     <loc>https://odea-project.github.io/StreamFind/404.html</loc>
   </url>
   <url>
+    <loc>https://odea-project.github.io/StreamFind/articles/articles/demo_ozonation_project.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/articles/articles/framework.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/articles/articles/ms_developer_guide.html</loc>
+  </url>
+  <url>
     <loc>https://odea-project.github.io/StreamFind/articles/demo_ozonation_project.html</loc>
   </url>
   <url>
@@ -167,6 +176,12 @@
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_load_MSPeakLists_patRoon.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/Settings_load_MSPeakLists_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/Settings_merge_spectra_time_series_StreamFind.html</loc>
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_normalize_spectra_StreamFind.html</loc>

@@ -29,7 +29,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/demo_ozonation_project.html">Evaluation of Wastewater Ozonation with Mass Spectrometry</a>
     <a class="dropdown-item" href="../articles/framework.html">StreamFind General Introduction</a>
-    <a class="dropdown-item" href="../articles/ms_developer_guide.html">Developer Guide</a>
+    <a class="dropdown-item" href="../articles/ms_developer_guide.html">StreamFind Developer Guide</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -60,7 +60,6 @@
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">Settings_load_MSPeakLists_patRoon</span><span class="op">(</span></span>
-<span>  useLoaded <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  maxMSRtWindow <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  precursorMzWindow <span class="op">=</span> <span class="fl">4</span>,</span>
 <span>  clusterMzWindow <span class="op">=</span> <span class="fl">0.005</span>,</span>
@@ -78,12 +77,7 @@
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>useLoaded</dt>
-<dd><p>Logical of length one. When <code>TRUE</code> and both MS1 and MS2 are loaded to features,
-these are used otherwise the native function <code>generateMSPeakLists</code> from <span class="pkg">patRoon</span> is used instead.</p></dd>
-
-
-<dt>maxMSRtWindow</dt>
+    <dl><dt>maxMSRtWindow</dt>
 <dd><p>Maximum chromatographic peak window used for spectrum
 averaging (in seconds, +/- retention time). If NULL all spectra from a feature
 will be taken into account. Lower to decrease processing time.</p></dd>

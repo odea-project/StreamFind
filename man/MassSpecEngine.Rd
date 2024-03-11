@@ -35,7 +35,7 @@ List of function elements to access specific reference help pages.}
 
 \item{\code{filtered_features}}{The filtered features as list of data.table objects for each analysis.}
 
-\item{\code{feature_list}}{List of feature data.table objects for each analysis.}
+\item{\code{feature_list}}{List of features data.table objects for each analysis.}
 
 \item{\code{featureGroups}}{The featureGroups S4 class object from patRoon.}
 
@@ -44,10 +44,6 @@ List of function elements to access specific reference help pages.}
 \item{\code{formulas}}{The formulas S4 class object from patRoon.}
 
 \item{\code{compounds}}{The compounds S4 class object from patRoon.}
-
-\item{\code{chrom_peaks}}{\code{data.table} with integrated peaks from chromatograms for each analyses.}
-
-\item{\code{chromatograms}}{\code{data.table} with chromatograms for each analyses.}
 
 \item{\code{spectra_charges}}{\code{data.table} with charges assigned to spectra for each analyses.}
 }
@@ -96,14 +92,9 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-add_replicate_names}{\code{MassSpecEngine$add_replicate_names()}}
 \item \href{#method-MassSpecEngine-add_blank_names}{\code{MassSpecEngine$add_blank_names()}}
 \item \href{#method-MassSpecEngine-add_spectra}{\code{MassSpecEngine$add_spectra()}}
-\item \href{#method-MassSpecEngine-add_modules_data}{\code{MassSpecEngine$add_modules_data()}}
-\item \href{#method-MassSpecEngine-add_features_column}{\code{MassSpecEngine$add_features_column()}}
+\item \href{#method-MassSpecEngine-add_results}{\code{MassSpecEngine$add_results()}}
 \item \href{#method-MassSpecEngine-load_spectra}{\code{MassSpecEngine$load_spectra()}}
 \item \href{#method-MassSpecEngine-load_chromatograms}{\code{MassSpecEngine$load_chromatograms()}}
-\item \href{#method-MassSpecEngine-load_features_eic}{\code{MassSpecEngine$load_features_eic()}}
-\item \href{#method-MassSpecEngine-load_features_ms1}{\code{MassSpecEngine$load_features_ms1()}}
-\item \href{#method-MassSpecEngine-load_features_ms2}{\code{MassSpecEngine$load_features_ms2()}}
-\item \href{#method-MassSpecEngine-load_MSPeakLists}{\code{MassSpecEngine$load_MSPeakLists()}}
 \item \href{#method-MassSpecEngine-remove_analyses}{\code{MassSpecEngine$remove_analyses()}}
 \item \href{#method-MassSpecEngine-remove_features}{\code{MassSpecEngine$remove_features()}}
 \item \href{#method-MassSpecEngine-remove_features_ms1}{\code{MassSpecEngine$remove_features_ms1()}}
@@ -124,7 +115,6 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-has_MSPeakLists}{\code{MassSpecEngine$has_MSPeakLists()}}
 \item \href{#method-MassSpecEngine-has_formulas}{\code{MassSpecEngine$has_formulas()}}
 \item \href{#method-MassSpecEngine-has_compounds}{\code{MassSpecEngine$has_compounds()}}
-\item \href{#method-MassSpecEngine-has_chrom_peaks}{\code{MassSpecEngine$has_chrom_peaks()}}
 \item \href{#method-MassSpecEngine-has_spectra_charges}{\code{MassSpecEngine$has_spectra_charges()}}
 \item \href{#method-MassSpecEngine-plot_spectra}{\code{MassSpecEngine$plot_spectra()}}
 \item \href{#method-MassSpecEngine-plot_chromatograms}{\code{MassSpecEngine$plot_chromatograms()}}
@@ -146,8 +136,11 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-plot_internal_standards_qc}{\code{MassSpecEngine$plot_internal_standards_qc()}}
 \item \href{#method-MassSpecEngine-plot_suspects}{\code{MassSpecEngine$plot_suspects()}}
 \item \href{#method-MassSpecEngine-map_isotopes}{\code{MassSpecEngine$map_isotopes()}}
-\item \href{#method-MassSpecEngine-plot_chrom_peaks}{\code{MassSpecEngine$plot_chrom_peaks()}}
 \item \href{#method-MassSpecEngine-plot_spectra_charges}{\code{MassSpecEngine$plot_spectra_charges()}}
+\item \href{#method-MassSpecEngine-load_features_eic}{\code{MassSpecEngine$load_features_eic()}}
+\item \href{#method-MassSpecEngine-load_features_ms1}{\code{MassSpecEngine$load_features_ms1()}}
+\item \href{#method-MassSpecEngine-load_features_ms2}{\code{MassSpecEngine$load_features_ms2()}}
+\item \href{#method-MassSpecEngine-load_MSPeakLists}{\code{MassSpecEngine$load_MSPeakLists()}}
 \item \href{#method-MassSpecEngine-centroid_spectra}{\code{MassSpecEngine$centroid_spectra()}}
 \item \href{#method-MassSpecEngine-bin_spectra}{\code{MassSpecEngine$bin_spectra()}}
 \item \href{#method-MassSpecEngine-find_features}{\code{MassSpecEngine$find_features()}}
@@ -185,31 +178,34 @@ List of function elements to access specific reference help pages.}
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_formats"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_formats'><code>StreamFind::CoreEngine$get_formats()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_headers'><code>StreamFind::CoreEngine$get_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_history"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_history'><code>StreamFind::CoreEngine$get_history()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_modules_data"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_modules_data'><code>StreamFind::CoreEngine$get_modules_data()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_modules_data_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_modules_data_names'><code>StreamFind::CoreEngine$get_modules_data_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_number_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_number_analyses'><code>StreamFind::CoreEngine$get_number_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_replicate_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_replicate_names'><code>StreamFind::CoreEngine$get_replicate_names()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_results"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_results'><code>StreamFind::CoreEngine$get_results()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_results_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_results_names'><code>StreamFind::CoreEngine$get_results_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_settings'><code>StreamFind::CoreEngine$get_settings()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_settings_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_settings_names'><code>StreamFind::CoreEngine$get_settings_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_types"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_types'><code>StreamFind::CoreEngine$get_types()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_workflow_overview"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_workflow_overview'><code>StreamFind::CoreEngine$get_workflow_overview()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_analyses'><code>StreamFind::CoreEngine$has_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_averaged_spectra"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_averaged_spectra'><code>StreamFind::CoreEngine$has_averaged_spectra()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_modules_data"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_modules_data'><code>StreamFind::CoreEngine$has_modules_data()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_chromatograms"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_chromatograms'><code>StreamFind::CoreEngine$has_chromatograms()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_chromatograms_peaks"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_chromatograms_peaks'><code>StreamFind::CoreEngine$has_chromatograms_peaks()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_results"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_results'><code>StreamFind::CoreEngine$has_results()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_settings'><code>StreamFind::CoreEngine$has_settings()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_spectra"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_spectra'><code>StreamFind::CoreEngine$has_spectra()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_spectra_peaks"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_spectra_peaks'><code>StreamFind::CoreEngine$has_spectra_peaks()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_analyses'><code>StreamFind::CoreEngine$import_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_headers'><code>StreamFind::CoreEngine$import_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_settings'><code>StreamFind::CoreEngine$import_settings()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="plot_chromatograms_peaks"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-plot_chromatograms_peaks'><code>StreamFind::CoreEngine$plot_chromatograms_peaks()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="plot_spectra_peaks"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-plot_spectra_peaks'><code>StreamFind::CoreEngine$plot_spectra_peaks()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print'><code>StreamFind::CoreEngine$print()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_analyses'><code>StreamFind::CoreEngine$print_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_headers'><code>StreamFind::CoreEngine$print_headers()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_modules"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_modules'><code>StreamFind::CoreEngine$print_modules()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_results"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_results'><code>StreamFind::CoreEngine$print_results()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_workflow'><code>StreamFind::CoreEngine$print_workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_headers'><code>StreamFind::CoreEngine$remove_headers()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_modules_data"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_modules_data'><code>StreamFind::CoreEngine$remove_modules_data()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_results"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_results'><code>StreamFind::CoreEngine$remove_results()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_settings'><code>StreamFind::CoreEngine$remove_settings()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_workflow'><code>StreamFind::CoreEngine$run_workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-save_analyses'><code>StreamFind::CoreEngine$save_analyses()</code></a></span></li>
@@ -229,7 +225,7 @@ Creates an R6 MassSpecEngine class object.
   headers = NULL,
   settings = NULL,
   analyses = NULL,
-  modules = NULL,
+  results = NULL,
   runParallel = FALSE
 )}\if{html}{\out{</div>}}
 }
@@ -258,7 +254,7 @@ algorithm and parameters to be transformed and added as ProcessingSettings objec
 \item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with MassSpecAnalysis S3 class objects as
 elements (see \code{?MassSpecAnalysis} for more information).}
 
-\item{\code{modules}}{A named list of objects from processing modules.}
+\item{\code{results}}{A named list of objects from processing methods.}
 
 \item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
 processing. Note that parallel processing is not always faster due to
@@ -2173,53 +2169,23 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-add_modules_data"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_modules_data}{}}}
-\subsection{Method \code{add_modules_data()}}{
-Adds data from modules to the engine.
+\if{html}{\out{<a id="method-MassSpecEngine-add_results"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_results}{}}}
+\subsection{Method \code{add_results()}}{
+Adds data from results to the engine.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_modules_data(value = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_results(value = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{value}}{A named list with data from modules.}
+\item{\code{value}}{A named list with data from results.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
 Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-add_features_column"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_features_column}{}}}
-\subsection{Method \code{add_features_column()}}{
-Adds an extra column with data to the features data.table of each analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_features_column(
-  name = NULL,
-  data = NULL,
-  preFeatureList = NULL
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{name}}{A string with the column name. Be aware that if the column name is already present, the original
-data is replaced be the added data.}
-
-\item{\code{data}}{A nested list of data. The first level refers to each analysis and the second refers to each feature.}
-
-\item{\code{preFeatureList}}{The list of features data.tables from each analysis which was used to create the data.
-This is used when filtered features were included.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Logical of length one. \code{TRUE} for completed or \code{FALSE} for not done.
 }
 }
 \if{html}{\out{<hr>}}
@@ -2259,102 +2225,6 @@ Loads all chromatograms from all analyses.
 \item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
 processing. Note that parallel processing is not always faster due to
 overhead.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-load_features_eic"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-load_features_eic}{}}}
-\subsection{Method \code{load_features_eic()}}{
-Loads features EICs in each analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$load_features_eic(settings = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
-applicable to the processing method. Alternatively, a named
-list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
-ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the engine object.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-load_features_ms1"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-load_features_ms1}{}}}
-\subsection{Method \code{load_features_ms1()}}{
-Loads and average MS1 spectra from features in the analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$load_features_ms1(settings = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
-applicable to the processing method. Alternatively, a named
-list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
-ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the engine object.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-load_features_ms2"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-load_features_ms2}{}}}
-\subsection{Method \code{load_features_ms2()}}{
-Loads and average MS2 spectra from features in the analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$load_features_ms2(settings = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
-applicable to the processing method. Alternatively, a named
-list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
-ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the engine object.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-load_MSPeakLists"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-load_MSPeakLists}{}}}
-\subsection{Method \code{load_MSPeakLists()}}{
-Loads and average MS2 spectra from features in the analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$load_MSPeakLists(settings = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
-applicable to the processing method. Alternatively, a named
-list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
-ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2715,16 +2585,6 @@ Checks if there are formulas assigned to feature groups, returning \code{TRUE} o
 Checks if there are compounds assigned to feature groups, returning \code{TRUE} or \code{FALSE}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_compounds()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_chrom_peaks"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_chrom_peaks}{}}}
-\subsection{Method \code{has_chrom_peaks()}}{
-Checks if there are integrated peaks from chromatograms, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_chrom_peaks()}\if{html}{\out{</div>}}
 }
 
 }
@@ -4706,63 +4566,6 @@ A plot.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-plot_chrom_peaks"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_chrom_peaks}{}}}
-\subsection{Method \code{plot_chrom_peaks()}}{
-Plots peaks from chromatograms from analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_chrom_peaks(
-  analyses = NULL,
-  chromatograms = NA_integer_,
-  legendNames = NULL,
-  title = NULL,
-  colorBy = "targets",
-  showLegend = TRUE,
-  xlim = NULL,
-  ylim = NULL,
-  cex = 0.6,
-  xLab = NULL,
-  yLab = NULL,
-  interactive = TRUE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-
-\item{\code{chromatograms}}{A character or integer vector with the ID name or the index of the chromatograms to extract.}
-
-\item{\code{legendNames}}{A character vector with the same length as the targets.}
-
-\item{\code{title}}{A string with the title.}
-
-\item{\code{colorBy}}{A string of length 1. One of \code{analyses}, \code{targets} (the
-default) or \code{replicates}.}
-
-\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
-
-\item{\code{xlim}}{A length one or two numeric vector for setting the \emph{x}
-limits (in seconds) of the plot.}
-
-\item{\code{ylim}}{A length one or two numeric vector for setting the \emph{m/z}
-limits of the plot.}
-
-\item{\code{cex}}{A length one numeric value defining the scale of the legend for
-non interactive plotting.}
-
-\item{\code{xLab}}{A string with the title for the x axis.}
-
-\item{\code{yLab}}{A string with the title for the y axis.}
-
-\item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
-using \pkg{plotly}.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_charges"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra_charges}{}}}
 \subsection{Method \code{plot_spectra_charges()}}{
@@ -4814,6 +4617,102 @@ non interactive plotting.}
 using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-load_features_eic"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-load_features_eic}{}}}
+\subsection{Method \code{load_features_eic()}}{
+Loads features EICs in each analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$load_features_eic(settings)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-load_features_ms1"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-load_features_ms1}{}}}
+\subsection{Method \code{load_features_ms1()}}{
+Loads and average MS1 spectra from features in the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$load_features_ms1(settings)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-load_features_ms2"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-load_features_ms2}{}}}
+\subsection{Method \code{load_features_ms2()}}{
+Loads and average MS2 spectra from features in the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$load_features_ms2(settings)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-load_MSPeakLists"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-load_MSPeakLists}{}}}
+\subsection{Method \code{load_MSPeakLists()}}{
+Loads MS1 and MS2 spectra and converts to a \code{MSPeakLists} object from patRoon.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$load_MSPeakLists(settings)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
 }
 }
 \if{html}{\out{<hr>}}
@@ -4918,8 +4817,7 @@ Invisible.
 \if{html}{\out{<a id="method-MassSpecEngine-filter_features"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-filter_features}{}}}
 \subsection{Method \code{filter_features()}}{
-Filters features and feature groups according to defined
-settings.
+Filters features and feature groups according to defined settings.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$filter_features(settings = NULL)}\if{html}{\out{</div>}}
 }
@@ -4966,8 +4864,7 @@ processing method will be searched within the engine object.}
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-Extra columns are added to the features data.table in each
-analysis.
+Extra columns are added to the features data.table in each analysis.
 }
 
 \subsection{Returns}{
@@ -4978,8 +4875,7 @@ Invisible.
 \if{html}{\out{<a id="method-MassSpecEngine-find_internal_standards"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-find_internal_standards}{}}}
 \subsection{Method \code{find_internal_standards()}}{
-Finds internal standards in features according to defined
-settings.
+Finds internal standards in features according to defined settings.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$find_internal_standards(settings = NULL)}\if{html}{\out{</div>}}
 }
@@ -4995,13 +4891,15 @@ processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+Invisible.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-suspect_screening"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-suspect_screening}{}}}
 \subsection{Method \code{suspect_screening()}}{
-Screens for suspect targets in features according to defined
-settings.
+Screens for suspect targets in features according to defined settings.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$suspect_screening(settings = NULL)}\if{html}{\out{</div>}}
 }
@@ -5022,8 +4920,7 @@ processing method will be searched within the engine object.}
 \if{html}{\out{<a id="method-MassSpecEngine-calculate_quality"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-calculate_quality}{}}}
 \subsection{Method \code{calculate_quality()}}{
-Calculates quality parameters of features that can be used
-for filtering/prioritization.
+Calculates quality parameters of features that can be used for filtering/prioritization.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$calculate_quality(settings = NULL)}\if{html}{\out{</div>}}
 }

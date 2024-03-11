@@ -29,7 +29,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/demo_ozonation_project.html">Evaluation of Wastewater Ozonation with Mass Spectrometry</a>
     <a class="dropdown-item" href="../articles/framework.html">StreamFind General Introduction</a>
-    <a class="dropdown-item" href="../articles/ms_developer_guide.html">Developer Guide</a>
+    <a class="dropdown-item" href="../articles/ms_developer_guide.html">StreamFind Developer Guide</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -54,7 +54,7 @@
     <div class="section level2">
       <h2 id="r-classes-data-processing-engines">R6 classes: Data processing engines<a class="anchor" aria-label="anchor" href="#r-classes-data-processing-engines"></a></h2>
       
-      <p class="section-desc"></p><p>The R6 classes are used as processing engines for reading, processing, inspecting and storing data. Note that <em>MassSpecData</em> and <em>RamanData</em> are to be replaced by <em>MassSpecEngine</em> and <em>RamanEngine</em> in future versions.</p>
+      <p class="section-desc"></p><p>The R6 classes are used as processing engines for reading, processing, inspecting and storing data. Note that <em>MassSpecData</em> is to be replaced by <em>MassSpecEngine</em> in future versions.</p>
 
       
     </div><div id="" class="section level2">
@@ -63,16 +63,6 @@
       
 
       <dl><dt>
-          
-          <code><a href="MassSpecData.html">MassSpecData</a></code> 
-        </dt>
-        <dd><strong>MassSpecData</strong> R6 class and methods</dd>
-      </dl><dl><dt>
-          
-          <code><a href="RamanData.html">RamanData</a></code> 
-        </dt>
-        <dd><strong>RamanData</strong> R6 class and methods</dd>
-      </dl><dl><dt>
           
           <code><a href="CoreEngine.html">CoreEngine</a></code> 
         </dt>
@@ -131,7 +121,7 @@
       
     </div><div class="section level2">
       
-      <h3 id="centroid-spectra">centroid_spectra<a class="anchor" aria-label="anchor" href="#centroid-spectra"></a></h3>
+      <h3 id="average-spectra">average_spectra<a class="anchor" aria-label="anchor" href="#average-spectra"></a></h3>
       
 
       
@@ -142,9 +132,9 @@
 
       <dl><dt>
           
-          <code><a href="Settings_centroid_spectra_qCentroids.html">Settings_centroid_spectra_qCentroids()</a></code> <code><a href="Settings_centroid_spectra_qCentroids.html">validate(<i>&lt;Settings_centroid_spectra_qCentroids&gt;</i>)</a></code> 
+          <code><a href="Settings_average_spectra_StreamFind.html">Settings_average_spectra_StreamFind()</a></code> <code><a href="Settings_average_spectra_StreamFind.html">validate(<i>&lt;Settings_average_spectra_StreamFind&gt;</i>)</a></code> 
         </dt>
-        <dd>Settings_centroid_spectra_qCentroids</dd>
+        <dd>Settings_average_spectra_StreamFind</dd>
       </dl></div><div class="section level2">
       
       <h3 id="bin-spectra">bin_spectra<a class="anchor" aria-label="anchor" href="#bin-spectra"></a></h3>
@@ -166,6 +156,155 @@
           <code><a href="Settings_bin_spectra_StreamFind.html">Settings_bin_spectra_StreamFind()</a></code> <code><a href="Settings_bin_spectra_StreamFind.html">validate(<i>&lt;Settings_bin_spectra_StreamFind&gt;</i>)</a></code> 
         </dt>
         <dd>Settings_bin_spectra_StreamFind</dd>
+      </dl></div><div class="section level2">
+      
+      <h3 id="correct-spectra-baseline">correct_spectra_baseline<a class="anchor" aria-label="anchor" href="#correct-spectra-baseline"></a></h3>
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="Settings_correct_spectra_baseline_StreamFind.html">Settings_correct_spectra_baseline_StreamFind()</a></code> <code><a href="Settings_correct_spectra_baseline_StreamFind.html">validate(<i>&lt;Settings_correct_spectra_baseline_StreamFind&gt;</i>)</a></code> 
+        </dt>
+        <dd>Settings_correct_spectra_baseline_StreamFind</dd>
+      </dl></div><div class="section level2">
+      
+      <h3 id="delete-spectra-section">delete_spectra_section<a class="anchor" aria-label="anchor" href="#delete-spectra-section"></a></h3>
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="Settings_delete_spectra_section_StreamFind.html">Settings_delete_spectra_section_StreamFind()</a></code> <code><a href="Settings_delete_spectra_section_StreamFind.html">validate(<i>&lt;Settings_delete_spectra_section_StreamFind&gt;</i>)</a></code> 
+        </dt>
+        <dd>Settings_delete_spectra_section_StreamFind</dd>
+      </dl></div><div class="section level2">
+      
+      <h3 id="integrate-chromatograms">integrate_chromatograms<a class="anchor" aria-label="anchor" href="#integrate-chromatograms"></a></h3>
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="Settings_integrate_chromatograms_StreamFind.html">Settings_integrate_chromatograms_StreamFind()</a></code> <code><a href="Settings_integrate_chromatograms_StreamFind.html">validate(<i>&lt;Settings_integrate_chromatograms_StreamFind&gt;</i>)</a></code> 
+        </dt>
+        <dd>Settings_integrate_chromatograms_StreamFind</dd>
+      </dl></div><div class="section level2">
+      
+      <h3 id="merge-spectra-time-series">merge_spectra_time_series<a class="anchor" aria-label="anchor" href="#merge-spectra-time-series"></a></h3>
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="Settings_merge_spectra_time_series_StreamFind.html">Settings_merge_spectra_time_series_StreamFind()</a></code> <code><a href="Settings_merge_spectra_time_series_StreamFind.html">validate(<i>&lt;Settings_merge_spectra_time_series_StreamFind&gt;</i>)</a></code> 
+        </dt>
+        <dd>Settings_merge_spectra_time_series_StreamFind</dd>
+      </dl></div><div class="section level2">
+      
+      <h3 id="annotate-features">annotate_features<a class="anchor" aria-label="anchor" href="#annotate-features"></a></h3>
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="Settings_annotate_features_StreamFind.html">Settings_annotate_features_StreamFind()</a></code> <code><a href="Settings_annotate_features_StreamFind.html">validate(<i>&lt;Settings_annotate_features_StreamFind&gt;</i>)</a></code> 
+        </dt>
+        <dd>Settings_annotate_features_StreamFind</dd>
+      </dl></div><div class="section level2">
+      
+      <h3 id="calculate-quality">calculate_quality<a class="anchor" aria-label="anchor" href="#calculate-quality"></a></h3>
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="Settings_calculate_quality_StreamFind.html">Settings_calculate_quality_StreamFind()</a></code> <code><a href="Settings_calculate_quality_StreamFind.html">validate(<i>&lt;Settings_calculate_quality_StreamFind&gt;</i>)</a></code> 
+        </dt>
+        <dd>Settings_calculate_quality_StreamFind</dd>
+      </dl></div><div class="section level2">
+      
+      <h3 id="centroid-spectra">centroid_spectra<a class="anchor" aria-label="anchor" href="#centroid-spectra"></a></h3>
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="Settings_centroid_spectra_qCentroids.html">Settings_centroid_spectra_qCentroids()</a></code> <code><a href="Settings_centroid_spectra_qCentroids.html">validate(<i>&lt;Settings_centroid_spectra_qCentroids&gt;</i>)</a></code> 
+        </dt>
+        <dd>Settings_centroid_spectra_qCentroids</dd>
+      </dl></div><div class="section level2">
+      
+      <h3 id="deconvolute-spectra-charges">deconvolute_spectra_charges<a class="anchor" aria-label="anchor" href="#deconvolute-spectra-charges"></a></h3>
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="Settings_deconvolute_spectra_charges_StreamFind.html">Settings_deconvolute_spectra_charges_StreamFind()</a></code> <code><a href="Settings_deconvolute_spectra_charges_StreamFind.html">validate(<i>&lt;Settings_deconvolute_spectra_charges_StreamFind&gt;</i>)</a></code> 
+        </dt>
+        <dd>Settings_deconvolute_spectra_charges_StreamFind</dd>
+      </dl></div><div class="section level2">
+      
+      <h3 id="filter-features">filter_features<a class="anchor" aria-label="anchor" href="#filter-features"></a></h3>
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="Settings_filter_features_patRoon.html">Settings_filter_features_patRoon()</a></code> <code><a href="Settings_filter_features_patRoon.html">validate(<i>&lt;Settings_filter_features_patRoon&gt;</i>)</a></code> 
+        </dt>
+        <dd>Settings_filter_features_patRoon</dd>
+      </dl><dl><dt>
+          
+          <code><a href="Settings_filter_features_StreamFind.html">Settings_filter_features_StreamFind()</a></code> <code><a href="Settings_filter_features_StreamFind.html">validate(<i>&lt;Settings_filter_features_StreamFind&gt;</i>)</a></code> 
+        </dt>
+        <dd>Settings_filter_features_StreamFind</dd>
       </dl></div><div class="section level2">
       
       <h3 id="find-features">find_features<a class="anchor" aria-label="anchor" href="#find-features"></a></h3>
@@ -204,6 +343,54 @@
         <dd>Settings_find_features_xcms3_matchedfilter</dd>
       </dl></div><div class="section level2">
       
+      <h3 id="find-internal-standards">find_internal_standards<a class="anchor" aria-label="anchor" href="#find-internal-standards"></a></h3>
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="Settings_find_internal_standards_StreamFind.html">Settings_find_internal_standards_StreamFind()</a></code> <code><a href="Settings_find_internal_standards_StreamFind.html">validate(<i>&lt;Settings_find_internal_standards_StreamFind&gt;</i>)</a></code> 
+        </dt>
+        <dd>Settings_find_internal_standards_StreamFind</dd>
+      </dl></div><div class="section level2">
+      
+      <h3 id="generate-compounds">generate_compounds<a class="anchor" aria-label="anchor" href="#generate-compounds"></a></h3>
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="Settings_generate_compounds_metfrag.html">Settings_generate_compounds_metfrag()</a></code> <code><a href="Settings_generate_compounds_metfrag.html">validate(<i>&lt;Settings_generate_compounds_metfrag&gt;</i>)</a></code> 
+        </dt>
+        <dd>Settings_generate_compounds_metfrag</dd>
+      </dl></div><div class="section level2">
+      
+      <h3 id="generate-formulas">generate_formulas<a class="anchor" aria-label="anchor" href="#generate-formulas"></a></h3>
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="Settings_generate_formulas_genform.html">Settings_generate_formulas_genform()</a></code> <code><a href="Settings_generate_formulas_genform.html">validate(<i>&lt;Settings_generate_formulas_genform&gt;</i>)</a></code> 
+        </dt>
+        <dd>Settings_generate_formulas_genform</dd>
+      </dl></div><div class="section level2">
+      
       <h3 id="group-features">group_features<a class="anchor" aria-label="anchor" href="#group-features"></a></h3>
       
 
@@ -228,6 +415,22 @@
           <code><a href="Settings_group_features_xcms3_peakdensity_peakgroups.html">Settings_group_features_xcms3_peakdensity_peakgroups()</a></code> <code><a href="Settings_group_features_xcms3_peakdensity_peakgroups.html">validate(<i>&lt;Settings_group_features_xcms3_peakdensity_peakgroups&gt;</i>)</a></code> 
         </dt>
         <dd>Settings_group_features_xcms3_peakdensity_peakgroups</dd>
+      </dl></div><div class="section level2">
+      
+      <h3 id="load-features-eic">load_features_eic<a class="anchor" aria-label="anchor" href="#load-features-eic"></a></h3>
+      
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="Settings_load_features_eic_StreamFind.html">Settings_load_features_eic_StreamFind()</a></code> <code><a href="Settings_load_features_eic_StreamFind.html">validate(<i>&lt;Settings_load_features_eic_StreamFind&gt;</i>)</a></code> 
+        </dt>
+        <dd>Settings_load_features_eic_StreamFind</dd>
       </dl></div><div class="section level2">
       
       <h3 id="load-features-ms-and-ms-spectra">load_features MS1 and MS2 spectra<a class="anchor" aria-label="anchor" href="#load-features-ms-and-ms-spectra"></a></h3>
@@ -265,59 +468,11 @@
           <code><a href="Settings_load_MSPeakLists_patRoon.html">Settings_load_MSPeakLists_patRoon()</a></code> <code><a href="Settings_load_MSPeakLists_patRoon.html">validate(<i>&lt;Settings_load_MSPeakLists_patRoon&gt;</i>)</a></code> 
         </dt>
         <dd>Settings_load_MSPeakLists_patRoon</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="load-features-eic">load_features_eic<a class="anchor" aria-label="anchor" href="#load-features-eic"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_load_features_eic_StreamFind.html">Settings_load_features_eic_StreamFind()</a></code> <code><a href="Settings_load_features_eic_StreamFind.html">validate(<i>&lt;Settings_load_features_eic_StreamFind&gt;</i>)</a></code> 
-        </dt>
-        <dd>Settings_load_features_eic_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="filter-features">filter_features<a class="anchor" aria-label="anchor" href="#filter-features"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_filter_features_patRoon.html">Settings_filter_features_patRoon()</a></code> <code><a href="Settings_filter_features_patRoon.html">validate(<i>&lt;Settings_filter_features_patRoon&gt;</i>)</a></code> 
-        </dt>
-        <dd>Settings_filter_features_patRoon</dd>
       </dl><dl><dt>
           
-          <code><a href="Settings_filter_features_StreamFind.html">Settings_filter_features_StreamFind()</a></code> <code><a href="Settings_filter_features_StreamFind.html">validate(<i>&lt;Settings_filter_features_StreamFind&gt;</i>)</a></code> 
+          <code><a href="Settings_load_MSPeakLists_StreamFind.html">Settings_load_MSPeakLists_StreamFind()</a></code> <code><a href="Settings_load_MSPeakLists_StreamFind.html">validate(<i>&lt;Settings_load_MSPeakLists_StreamFind&gt;</i>)</a></code> 
         </dt>
-        <dd>Settings_filter_features_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="annotate-features">annotate_features<a class="anchor" aria-label="anchor" href="#annotate-features"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_annotate_features_StreamFind.html">Settings_annotate_features_StreamFind()</a></code> <code><a href="Settings_annotate_features_StreamFind.html">validate(<i>&lt;Settings_annotate_features_StreamFind&gt;</i>)</a></code> 
-        </dt>
-        <dd>Settings_annotate_features_StreamFind</dd>
+        <dd>Settings_load_MSPeakLists_StreamFind</dd>
       </dl></div><div class="section level2">
       
       <h3 id="suspect-screening">suspect_screening<a class="anchor" aria-label="anchor" href="#suspect-screening"></a></h3>
@@ -346,7 +501,7 @@
         <dd>Settings_suspect_screening_StreamFind</dd>
       </dl></div><div class="section level2">
       
-      <h3 id="generate-formulas">generate_formulas<a class="anchor" aria-label="anchor" href="#generate-formulas"></a></h3>
+      <h3 id="normalize-spectra">normalize_spectra<a class="anchor" aria-label="anchor" href="#normalize-spectra"></a></h3>
       
 
       
@@ -357,137 +512,9 @@
 
       <dl><dt>
           
-          <code><a href="Settings_generate_formulas_genform.html">Settings_generate_formulas_genform()</a></code> <code><a href="Settings_generate_formulas_genform.html">validate(<i>&lt;Settings_generate_formulas_genform&gt;</i>)</a></code> 
+          <code><a href="Settings_normalize_spectra_StreamFind.html">Settings_normalize_spectra_StreamFind()</a></code> <code><a href="Settings_normalize_spectra_StreamFind.html">validate(<i>&lt;Settings_normalize_spectra_StreamFind&gt;</i>)</a></code> 
         </dt>
-        <dd>Settings_generate_formulas_genform</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="generate-compounds">generate_compounds<a class="anchor" aria-label="anchor" href="#generate-compounds"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_generate_compounds_metfrag.html">Settings_generate_compounds_metfrag()</a></code> <code><a href="Settings_generate_compounds_metfrag.html">validate(<i>&lt;Settings_generate_compounds_metfrag&gt;</i>)</a></code> 
-        </dt>
-        <dd>Settings_generate_compounds_metfrag</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="find-internal-standards">find_internal_standards<a class="anchor" aria-label="anchor" href="#find-internal-standards"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_find_internal_standards_StreamFind.html">Settings_find_internal_standards_StreamFind()</a></code> <code><a href="Settings_find_internal_standards_StreamFind.html">validate(<i>&lt;Settings_find_internal_standards_StreamFind&gt;</i>)</a></code> 
-        </dt>
-        <dd>Settings_find_internal_standards_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="calculate-quality">calculate_quality<a class="anchor" aria-label="anchor" href="#calculate-quality"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_calculate_quality_StreamFind.html">Settings_calculate_quality_StreamFind()</a></code> <code><a href="Settings_calculate_quality_StreamFind.html">validate(<i>&lt;Settings_calculate_quality_StreamFind&gt;</i>)</a></code> 
-        </dt>
-        <dd>Settings_calculate_quality_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="integrate-chromatograms">integrate_chromatograms<a class="anchor" aria-label="anchor" href="#integrate-chromatograms"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_integrate_chromatograms_StreamFind.html">Settings_integrate_chromatograms_StreamFind()</a></code> <code><a href="Settings_integrate_chromatograms_StreamFind.html">validate(<i>&lt;Settings_integrate_chromatograms_StreamFind&gt;</i>)</a></code> 
-        </dt>
-        <dd>Settings_integrate_chromatograms_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="deconvolute-spectra-charges">deconvolute_spectra_charges<a class="anchor" aria-label="anchor" href="#deconvolute-spectra-charges"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_deconvolute_spectra_charges_StreamFind.html">Settings_deconvolute_spectra_charges_StreamFind()</a></code> <code><a href="Settings_deconvolute_spectra_charges_StreamFind.html">validate(<i>&lt;Settings_deconvolute_spectra_charges_StreamFind&gt;</i>)</a></code> 
-        </dt>
-        <dd>Settings_deconvolute_spectra_charges_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="average-spectra">average_spectra<a class="anchor" aria-label="anchor" href="#average-spectra"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_average_spectra_StreamFind.html">Settings_average_spectra_StreamFind()</a></code> <code><a href="Settings_average_spectra_StreamFind.html">validate(<i>&lt;Settings_average_spectra_StreamFind&gt;</i>)</a></code> 
-        </dt>
-        <dd>Settings_average_spectra_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="subtract-blank-spectra">subtract_blank_spectra<a class="anchor" aria-label="anchor" href="#subtract-blank-spectra"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_subtract_blank_spectra_StreamFind.html">Settings_subtract_blank_spectra_StreamFind()</a></code> <code><a href="Settings_subtract_blank_spectra_StreamFind.html">validate(<i>&lt;Settings_subtract_blank_spectra_StreamFind&gt;</i>)</a></code> 
-        </dt>
-        <dd>Settings_subtract_blank_spectra_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="correct-spectra-baseline">correct_spectra_baseline<a class="anchor" aria-label="anchor" href="#correct-spectra-baseline"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_correct_spectra_baseline_StreamFind.html">Settings_correct_spectra_baseline_StreamFind()</a></code> <code><a href="Settings_correct_spectra_baseline_StreamFind.html">validate(<i>&lt;Settings_correct_spectra_baseline_StreamFind&gt;</i>)</a></code> 
-        </dt>
-        <dd>Settings_correct_spectra_baseline_StreamFind</dd>
+        <dd>Settings_normalize_spectra_StreamFind</dd>
       </dl></div><div class="section level2">
       
       <h3 id="smooth-spectra">smooth_spectra<a class="anchor" aria-label="anchor" href="#smooth-spectra"></a></h3>
@@ -506,7 +533,7 @@
         <dd>Settings_smooth_spectra_StreamFind</dd>
       </dl></div><div class="section level2">
       
-      <h3 id="normalize-spectra">normalize_spectra<a class="anchor" aria-label="anchor" href="#normalize-spectra"></a></h3>
+      <h3 id="subtract-blank-spectra">subtract_blank_spectra<a class="anchor" aria-label="anchor" href="#subtract-blank-spectra"></a></h3>
       
 
       
@@ -517,9 +544,9 @@
 
       <dl><dt>
           
-          <code><a href="Settings_normalize_spectra_StreamFind.html">Settings_normalize_spectra_StreamFind()</a></code> <code><a href="Settings_normalize_spectra_StreamFind.html">validate(<i>&lt;Settings_normalize_spectra_StreamFind&gt;</i>)</a></code> 
+          <code><a href="Settings_subtract_blank_spectra_StreamFind.html">Settings_subtract_blank_spectra_StreamFind()</a></code> <code><a href="Settings_subtract_blank_spectra_StreamFind.html">validate(<i>&lt;Settings_subtract_blank_spectra_StreamFind&gt;</i>)</a></code> 
         </dt>
-        <dd>Settings_normalize_spectra_StreamFind</dd>
+        <dd>Settings_subtract_blank_spectra_StreamFind</dd>
       </dl></div><div class="section level2">
       
       <h3 id="subtract-spectra-section">subtract_spectra_section<a class="anchor" aria-label="anchor" href="#subtract-spectra-section"></a></h3>
@@ -536,22 +563,6 @@
           <code><a href="Settings_subtract_spectra_section_StreamFind.html">Settings_subtract_spectra_section_StreamFind()</a></code> <code><a href="Settings_subtract_spectra_section_StreamFind.html">validate(<i>&lt;Settings_subtract_spectra_section_StreamFind&gt;</i>)</a></code> 
         </dt>
         <dd>Settings_subtract_spectra_section_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="delete-spectra-section">delete_spectra_section<a class="anchor" aria-label="anchor" href="#delete-spectra-section"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_delete_spectra_section_StreamFind.html">Settings_delete_spectra_section_StreamFind()</a></code> <code><a href="Settings_delete_spectra_section_StreamFind.html">validate(<i>&lt;Settings_delete_spectra_section_StreamFind&gt;</i>)</a></code> 
-        </dt>
-        <dd>Settings_delete_spectra_section_StreamFind</dd>
       </dl></div><div class="section level2">
       
       <h3 id="general-get-and-save-default-settings">General get and save default settings<a class="anchor" aria-label="anchor" href="#general-get-and-save-default-settings"></a></h3>
@@ -594,16 +605,6 @@
           <code><a href="trim_ms_files_spectra.html">trim_ms_files_spectra()</a></code> 
         </dt>
         <dd>Function to trim spectra in <em>mzML</em> or <em>mzXML</em> files</dd>
-      </dl><dl><dt>
-          
-          <code><a href="import_MassSpecData.html">import_MassSpecData()</a></code> 
-        </dt>
-        <dd>Function to import a MassSpecData class object from a <em>json</em> or <em>rds</em> file.</dd>
-      </dl><dl><dt>
-          
-          <code><a href="combine_MassSpecData.html">combine_MassSpecData()</a></code> 
-        </dt>
-        <dd>Function to combine MassSpecData class objects.</dd>
       </dl><dl><dt>
           
           <code><a href="import_MassSpecEngine.html">import_MassSpecEngine()</a></code> 

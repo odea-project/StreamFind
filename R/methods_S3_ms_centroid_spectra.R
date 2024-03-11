@@ -8,6 +8,16 @@
 .s3_ms_centroid_spectra.Settings_centroid_spectra_qCentroids <- function(settings, self) {
 
   message("Centroiding spectra with qCentroids...", appendLF = TRUE)
+  
+  if (self$get_number_analyses() == 0) {
+    warning("There are no analyses! Add MS analyses as mzML or mzXML files!")
+    return(FALSE)
+  }
+  
+  if (!all(self$get_spectra_mode() %in% "profile")) {
+    warning("MS analyses must be all in profile mode for centroiding! Not done.")
+    return(FALSE)
+  }
 
   if (!any(self$has_loaded_spectra())) self$load_spectra()
 

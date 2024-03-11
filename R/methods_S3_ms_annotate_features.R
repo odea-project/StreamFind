@@ -5,7 +5,7 @@
 #'
 #' @noRd
 #'
-.s3_ms_annotate_features.Settings_annotate_features_StreamFind <- function(settings, self) {
+.s3_ms_annotate_features.Settings_annotate_features_StreamFind <- function(settings, self, private) {
 
   if (!any(self$has_features())) {
     warning("Features were not found! Run find_features method first!")
@@ -105,7 +105,13 @@
   
   names(iso_col) <- names(features)
   
-  if (!is.logical(self$add_features_column("isotope", iso_col, features))) return(TRUE)
-  
-  FALSE
+  if (private$.add_features_column("isotope", iso_col)) {
+    
+    message(paste0("\U2713 ", "Features annotated!"))
+    
+    TRUE
+    
+  } else {
+    FALSE
+  }
 }

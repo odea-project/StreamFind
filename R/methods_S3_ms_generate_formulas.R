@@ -5,10 +5,15 @@
 #'
 #' @noRd
 #'
-.s3_ms_generate_formulas.Settings_generate_formulas_genform <- function(settings, self) {
-
+.s3_ms_generate_formulas.Settings_generate_formulas_genform <- function(settings, self, private) {
+  
   if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found! Install it for finding features.")
+    return(FALSE)
+  }
+  
+  if (!self$has_groups()) {
+    warning("There are no feaure groups! Not done.")
     return(FALSE)
   }
   
@@ -69,7 +74,7 @@
     
   }, feature_list = feature_list,  formulas = formulas)
   
-  self$add_features_column("formulas", formulas_col, feature_list)
+  private$.add_features_column("formulas", formulas_col)
   
   self$formulas <- formulas
 

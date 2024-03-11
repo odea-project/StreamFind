@@ -29,7 +29,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/demo_ozonation_project.html">Evaluation of Wastewater Ozonation with Mass Spectrometry</a>
     <a class="dropdown-item" href="../articles/framework.html">StreamFind General Introduction</a>
-    <a class="dropdown-item" href="../articles/ms_developer_guide.html">Developer Guide</a>
+    <a class="dropdown-item" href="../articles/ms_developer_guide.html">StreamFind Developer Guide</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -71,7 +71,9 @@
 <ul><li><p><a href="#method-RamanEngine-new"><code>RamanEngine$new()</code></a></p></li>
 <li><p><a href="#method-RamanEngine-get_overview"><code>RamanEngine$get_overview()</code></a></p></li>
 <li><p><a href="#method-RamanEngine-get_spectra"><code>RamanEngine$get_spectra()</code></a></p></li>
-<li><p><a href="#method-RamanEngine-merge_replicates"><code>RamanEngine$merge_replicates()</code></a></p></li>
+<li><p><a href="#method-RamanEngine-subset_analyses"><code>RamanEngine$subset_analyses()</code></a></p></li>
+<li><p><a href="#method-RamanEngine-remove_analyses"><code>RamanEngine$remove_analyses()</code></a></p></li>
+<li><p><a href="#method-RamanEngine-merge_spectra_time_series"><code>RamanEngine$merge_spectra_time_series()</code></a></p></li>
 <li><p><a href="#method-RamanEngine-average_spectra"><code>RamanEngine$average_spectra()</code></a></p></li>
 <li><p><a href="#method-RamanEngine-subtract_blank_spectra"><code>RamanEngine$subtract_blank_spectra()</code></a></p></li>
 <li><p><a href="#method-RamanEngine-correct_spectra_baseline"><code>RamanEngine$correct_spectra_baseline()</code></a></p></li>
@@ -88,8 +90,8 @@
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_blank_names"><a href="CoreEngine.html#method-add_blank_names"><code>StreamFind::CoreEngine$add_blank_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_headers"><a href="CoreEngine.html#method-add_headers"><code>StreamFind::CoreEngine$add_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_metadata"><a href="CoreEngine.html#method-add_metadata"><code>StreamFind::CoreEngine$add_metadata()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_modules_data"><a href="CoreEngine.html#method-add_modules_data"><code>StreamFind::CoreEngine$add_modules_data()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_replicate_names"><a href="CoreEngine.html#method-add_replicate_names"><code>StreamFind::CoreEngine$add_replicate_names()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_results"><a href="CoreEngine.html#method-add_results"><code>StreamFind::CoreEngine$add_results()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_settings"><a href="CoreEngine.html#method-add_settings"><code>StreamFind::CoreEngine$add_settings()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_analyses"><a href="CoreEngine.html#method-get_analyses"><code>StreamFind::CoreEngine$get_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_analysis_names"><a href="CoreEngine.html#method-get_analysis_names"><code>StreamFind::CoreEngine$get_analysis_names()</code></a></span></li>
@@ -98,17 +100,19 @@
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_formats"><a href="CoreEngine.html#method-get_formats"><code>StreamFind::CoreEngine$get_formats()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_headers"><a href="CoreEngine.html#method-get_headers"><code>StreamFind::CoreEngine$get_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_history"><a href="CoreEngine.html#method-get_history"><code>StreamFind::CoreEngine$get_history()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_modules_data"><a href="CoreEngine.html#method-get_modules_data"><code>StreamFind::CoreEngine$get_modules_data()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_modules_data_names"><a href="CoreEngine.html#method-get_modules_data_names"><code>StreamFind::CoreEngine$get_modules_data_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_number_analyses"><a href="CoreEngine.html#method-get_number_analyses"><code>StreamFind::CoreEngine$get_number_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_replicate_names"><a href="CoreEngine.html#method-get_replicate_names"><code>StreamFind::CoreEngine$get_replicate_names()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_results"><a href="CoreEngine.html#method-get_results"><code>StreamFind::CoreEngine$get_results()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_results_names"><a href="CoreEngine.html#method-get_results_names"><code>StreamFind::CoreEngine$get_results_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_settings"><a href="CoreEngine.html#method-get_settings"><code>StreamFind::CoreEngine$get_settings()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_settings_names"><a href="CoreEngine.html#method-get_settings_names"><code>StreamFind::CoreEngine$get_settings_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_types"><a href="CoreEngine.html#method-get_types"><code>StreamFind::CoreEngine$get_types()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_workflow_overview"><a href="CoreEngine.html#method-get_workflow_overview"><code>StreamFind::CoreEngine$get_workflow_overview()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_analyses"><a href="CoreEngine.html#method-has_analyses"><code>StreamFind::CoreEngine$has_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_averaged_spectra"><a href="CoreEngine.html#method-has_averaged_spectra"><code>StreamFind::CoreEngine$has_averaged_spectra()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_modules_data"><a href="CoreEngine.html#method-has_modules_data"><code>StreamFind::CoreEngine$has_modules_data()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_chromatograms"><a href="CoreEngine.html#method-has_chromatograms"><code>StreamFind::CoreEngine$has_chromatograms()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_chromatograms_peaks"><a href="CoreEngine.html#method-has_chromatograms_peaks"><code>StreamFind::CoreEngine$has_chromatograms_peaks()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_results"><a href="CoreEngine.html#method-has_results"><code>StreamFind::CoreEngine$has_results()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_settings"><a href="CoreEngine.html#method-has_settings"><code>StreamFind::CoreEngine$has_settings()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_spectra"><a href="CoreEngine.html#method-has_spectra"><code>StreamFind::CoreEngine$has_spectra()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_spectra_peaks"><a href="CoreEngine.html#method-has_spectra_peaks"><code>StreamFind::CoreEngine$has_spectra_peaks()</code></a></span></li>
@@ -116,26 +120,33 @@
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_analyses"><a href="CoreEngine.html#method-import_analyses"><code>StreamFind::CoreEngine$import_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_headers"><a href="CoreEngine.html#method-import_headers"><code>StreamFind::CoreEngine$import_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_settings"><a href="CoreEngine.html#method-import_settings"><code>StreamFind::CoreEngine$import_settings()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="plot_chromatograms_peaks"><a href="CoreEngine.html#method-plot_chromatograms_peaks"><code>StreamFind::CoreEngine$plot_chromatograms_peaks()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="plot_spectra_peaks"><a href="CoreEngine.html#method-plot_spectra_peaks"><code>StreamFind::CoreEngine$plot_spectra_peaks()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print"><a href="CoreEngine.html#method-print"><code>StreamFind::CoreEngine$print()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_analyses"><a href="CoreEngine.html#method-print_analyses"><code>StreamFind::CoreEngine$print_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_headers"><a href="CoreEngine.html#method-print_headers"><code>StreamFind::CoreEngine$print_headers()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_results"><a href="CoreEngine.html#method-print_results"><code>StreamFind::CoreEngine$print_results()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_workflow"><a href="CoreEngine.html#method-print_workflow"><code>StreamFind::CoreEngine$print_workflow()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_analyses"><a href="CoreEngine.html#method-remove_analyses"><code>StreamFind::CoreEngine$remove_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_headers"><a href="CoreEngine.html#method-remove_headers"><code>StreamFind::CoreEngine$remove_headers()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_modules_data"><a href="CoreEngine.html#method-remove_modules_data"><code>StreamFind::CoreEngine$remove_modules_data()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_results"><a href="CoreEngine.html#method-remove_results"><code>StreamFind::CoreEngine$remove_results()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_settings"><a href="CoreEngine.html#method-remove_settings"><code>StreamFind::CoreEngine$remove_settings()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_workflow"><a href="CoreEngine.html#method-run_workflow"><code>StreamFind::CoreEngine$run_workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save"><a href="CoreEngine.html#method-save"><code>StreamFind::CoreEngine$save()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save_analyses"><a href="CoreEngine.html#method-save_analyses"><code>StreamFind::CoreEngine$save_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save_headers"><a href="CoreEngine.html#method-save_headers"><code>StreamFind::CoreEngine$save_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save_settings"><a href="CoreEngine.html#method-save_settings"><code>StreamFind::CoreEngine$save_settings()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="subset_analyses"><a href="CoreEngine.html#method-subset_analyses"><code>StreamFind::CoreEngine$subset_analyses()</code></a></span></li>
 </ul></details></p><hr><a id="method-RamanEngine-new"></a><div class="section">
 <h3 id="method-new-">Method <code>new()</code><a class="anchor" aria-label="anchor" href="#method-new-"></a></h3>
 <p>Creates an R6 class <em>RamanEngine</em>. Child of <em>CoreEngine</em> R6 class.</p><div class="section">
 <h4 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va"><a href="../reference/RamanEngine.html">RamanEngine</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>files <span class="op">=</span> <span class="cn">NULL</span>, headers <span class="op">=</span> <span class="cn">NULL</span>, runParallel <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va"><a href="../reference/RamanEngine.html">RamanEngine</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
+<span>  files <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  headers <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  settings <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  results <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  runParallel <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -151,6 +162,30 @@ except for name (must be type character length 1), author (must be type
 character length 1), path (must be type character length 1) and date (must
 be class POSIXct or class POSIXt length 1). See more information in
 <code><a href="ProjectHeaders.html">?ProjectHeaders</a></code>.</p></dd>
+
+
+<dt><code>settings</code></dt>
+<dd><p>A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.</p></dd>
+
+
+<dt><code>settings</code></dt>
+<dd><p>A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.</p></dd>
+
+
+<dt><code>analyses</code></dt>
+<dd><p>A numeric/character vector with the number/name of the analyses.</p></dd>
+
+
+<dt><code>results</code></dt>
+<dd><p>A named list of objects from processing methods.</p></dd>
 
 
 <dt><code>runParallel</code></dt>
@@ -203,42 +238,37 @@ overhead.</p></dd>
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-RamanEngine-merge_replicates"></a><div class="section">
-<h3 id="method-merge-replicates-">Method <code>merge_replicates()</code><a class="anchor" aria-label="anchor" href="#method-merge-replicates-"></a></h3>
-<p>Merges spectra for given <em>RamanAnalyses</em> from the same chromatographic separation when using
-LC-Raman coupling.</p><div class="section">
+</div><p></p><hr><a id="method-RamanEngine-subset_analyses"></a><div class="section">
+<h3 id="method-subset-analyses-">Method <code>subset_analyses()</code><a class="anchor" aria-label="anchor" href="#method-subset-analyses-"></a></h3>
+<p>Subsets on analyses.</p><div class="section">
 <h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">merge_replicates</span><span class="op">(</span>preCut <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">subset_analyses</span><span class="op">(</span>analyses <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>preCut</code></dt>
-<dd><p>The number of pre Raman scans to exclude when merging.</p></dd>
+<p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
+<dd><p>A numeric/character vector with the number/name of the analyses.</p></dd>
 
 
 </dl><p></p></div>
 </div>
 <div class="section">
 <h4 id="returns">Returns<a class="anchor" aria-label="anchor" href="#returns"></a></h4>
-<p>Invisible.</p>
+<p>A new cloned engine with only the analyses as defined by the analyses argument.</p>
 </div>
 
-</div><p></p><hr><a id="method-RamanEngine-average_spectra"></a><div class="section">
-<h3 id="method-average-spectra-">Method <code>average_spectra()</code><a class="anchor" aria-label="anchor" href="#method-average-spectra-"></a></h3>
-<p>Averages spectra based on assigned analysis replicates.</p><div class="section">
+</div><p></p><hr><a id="method-RamanEngine-remove_analyses"></a><div class="section">
+<h3 id="method-remove-analyses-">Method <code>remove_analyses()</code><a class="anchor" aria-label="anchor" href="#method-remove-analyses-"></a></h3>
+<p>Removes analyses.</p><div class="section">
 <h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">average_spectra</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">remove_analyses</span><span class="op">(</span>analyses <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>settings</code></dt>
-<dd><p>A ProcessingSettings S3 class object with the call name
-applicable to the processing method. Alternatively, a named
-list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as
-ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the engine object.</p></dd>
+<p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
+<dd><p>A numeric/character vector with the number/name of the analyses.</p></dd>
 
 
 </dl><p></p></div>
@@ -248,16 +278,25 @@ processing method will be searched within the engine object.</p></dd>
 <p>Invisible.</p>
 </div>
 
-</div><p></p><hr><a id="method-RamanEngine-subtract_blank_spectra"></a><div class="section">
-<h3 id="method-subtract-blank-spectra-">Method <code>subtract_blank_spectra()</code><a class="anchor" aria-label="anchor" href="#method-subtract-blank-spectra-"></a></h3>
-<p>Subtracts spectra from correspondent blank analysis replicates.</p><div class="section">
+</div><p></p><hr><a id="method-RamanEngine-merge_spectra_time_series"></a><div class="section">
+<h3 id="method-merge-spectra-time-series-">Method <code>merge_spectra_time_series()</code><a class="anchor" aria-label="anchor" href="#method-merge-spectra-time-series-"></a></h3>
+<p>Merges spectra for given <em>RamanAnalyses</em> from the same chromatographic separation when using
+LC-Raman coupling.</p><div class="section">
 <h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">subtract_blank_spectra</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">merge_spectra_time_series</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>settings</code></dt>
+<dd><p>A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.</p></dd>
+
+
+<dt><code>settings</code></dt>
 <dd><p>A ProcessingSettings S3 class object with the call name
 applicable to the processing method. Alternatively, a named
 list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as
@@ -272,16 +311,24 @@ processing method will be searched within the engine object.</p></dd>
 <p>Invisible.</p>
 </div>
 
-</div><p></p><hr><a id="method-RamanEngine-correct_spectra_baseline"></a><div class="section">
-<h3 id="method-correct-spectra-baseline-">Method <code>correct_spectra_baseline()</code><a class="anchor" aria-label="anchor" href="#method-correct-spectra-baseline-"></a></h3>
-<p>Corrects the spectra baseline.</p><div class="section">
+</div><p></p><hr><a id="method-RamanEngine-average_spectra"></a><div class="section">
+<h3 id="method-average-spectra-">Method <code>average_spectra()</code><a class="anchor" aria-label="anchor" href="#method-average-spectra-"></a></h3>
+<p>Averages spectra based on assigned analysis replicates.</p><div class="section">
 <h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">correct_spectra_baseline</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">average_spectra</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>settings</code></dt>
+<dd><p>A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.</p></dd>
+
+
+<dt><code>settings</code></dt>
 <dd><p>A ProcessingSettings S3 class object with the call name
 applicable to the processing method. Alternatively, a named
 list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as
@@ -296,16 +343,24 @@ processing method will be searched within the engine object.</p></dd>
 <p>Invisible.</p>
 </div>
 
-</div><p></p><hr><a id="method-RamanEngine-bin_spectra"></a><div class="section">
-<h3 id="method-bin-spectra-">Method <code>bin_spectra()</code><a class="anchor" aria-label="anchor" href="#method-bin-spectra-"></a></h3>
-<p>Bins spectra in units, according to a given window size.</p><div class="section">
+</div><p></p><hr><a id="method-RamanEngine-subtract_blank_spectra"></a><div class="section">
+<h3 id="method-subtract-blank-spectra-">Method <code>subtract_blank_spectra()</code><a class="anchor" aria-label="anchor" href="#method-subtract-blank-spectra-"></a></h3>
+<p>Subtracts spectra from correspondent blank analysis replicates.</p><div class="section">
 <h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">bin_spectra</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">subtract_blank_spectra</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-6">Arguments<a class="anchor" aria-label="anchor" href="#arguments-6"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>settings</code></dt>
+<dd><p>A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.</p></dd>
+
+
+<dt><code>settings</code></dt>
 <dd><p>A ProcessingSettings S3 class object with the call name
 applicable to the processing method. Alternatively, a named
 list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as
@@ -320,16 +375,24 @@ processing method will be searched within the engine object.</p></dd>
 <p>Invisible.</p>
 </div>
 
-</div><p></p><hr><a id="method-RamanEngine-subtract_spectra_section"></a><div class="section">
-<h3 id="method-subtract-spectra-section-">Method <code>subtract_spectra_section()</code><a class="anchor" aria-label="anchor" href="#method-subtract-spectra-section-"></a></h3>
-<p>Subtracts each spectra by a spectra section in each analysis.</p><div class="section">
+</div><p></p><hr><a id="method-RamanEngine-correct_spectra_baseline"></a><div class="section">
+<h3 id="method-correct-spectra-baseline-">Method <code>correct_spectra_baseline()</code><a class="anchor" aria-label="anchor" href="#method-correct-spectra-baseline-"></a></h3>
+<p>Corrects the spectra baseline.</p><div class="section">
 <h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">subtract_spectra_section</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">correct_spectra_baseline</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-7">Arguments<a class="anchor" aria-label="anchor" href="#arguments-7"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>settings</code></dt>
+<dd><p>A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.</p></dd>
+
+
+<dt><code>settings</code></dt>
 <dd><p>A ProcessingSettings S3 class object with the call name
 applicable to the processing method. Alternatively, a named
 list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as
@@ -344,16 +407,24 @@ processing method will be searched within the engine object.</p></dd>
 <p>Invisible.</p>
 </div>
 
-</div><p></p><hr><a id="method-RamanEngine-delete_spectra_section"></a><div class="section">
-<h3 id="method-delete-spectra-section-">Method <code>delete_spectra_section()</code><a class="anchor" aria-label="anchor" href="#method-delete-spectra-section-"></a></h3>
-<p>Deletes a section of spectra in each analysis.</p><div class="section">
+</div><p></p><hr><a id="method-RamanEngine-bin_spectra"></a><div class="section">
+<h3 id="method-bin-spectra-">Method <code>bin_spectra()</code><a class="anchor" aria-label="anchor" href="#method-bin-spectra-"></a></h3>
+<p>Bins spectra in units, according to a given window size.</p><div class="section">
 <h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">delete_spectra_section</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">bin_spectra</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-8">Arguments<a class="anchor" aria-label="anchor" href="#arguments-8"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>settings</code></dt>
+<dd><p>A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.</p></dd>
+
+
+<dt><code>settings</code></dt>
 <dd><p>A ProcessingSettings S3 class object with the call name
 applicable to the processing method. Alternatively, a named
 list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as
@@ -368,16 +439,24 @@ processing method will be searched within the engine object.</p></dd>
 <p>Invisible.</p>
 </div>
 
-</div><p></p><hr><a id="method-RamanEngine-smooth_spectra"></a><div class="section">
-<h3 id="method-smooth-spectra-">Method <code>smooth_spectra()</code><a class="anchor" aria-label="anchor" href="#method-smooth-spectra-"></a></h3>
-<p>Smooths the spectra in each analysis/replicate.</p><div class="section">
+</div><p></p><hr><a id="method-RamanEngine-subtract_spectra_section"></a><div class="section">
+<h3 id="method-subtract-spectra-section-">Method <code>subtract_spectra_section()</code><a class="anchor" aria-label="anchor" href="#method-subtract-spectra-section-"></a></h3>
+<p>Subtracts each spectra by a spectra section in each analysis.</p><div class="section">
 <h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">smooth_spectra</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">subtract_spectra_section</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-9">Arguments<a class="anchor" aria-label="anchor" href="#arguments-9"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>settings</code></dt>
+<dd><p>A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.</p></dd>
+
+
+<dt><code>settings</code></dt>
 <dd><p>A ProcessingSettings S3 class object with the call name
 applicable to the processing method. Alternatively, a named
 list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as
@@ -392,16 +471,24 @@ processing method will be searched within the engine object.</p></dd>
 <p>Invisible.</p>
 </div>
 
-</div><p></p><hr><a id="method-RamanEngine-normalize_spectra"></a><div class="section">
-<h3 id="method-normalize-spectra-">Method <code>normalize_spectra()</code><a class="anchor" aria-label="anchor" href="#method-normalize-spectra-"></a></h3>
-<p>Normalizes spectra in each analysis/replicate.</p><div class="section">
+</div><p></p><hr><a id="method-RamanEngine-delete_spectra_section"></a><div class="section">
+<h3 id="method-delete-spectra-section-">Method <code>delete_spectra_section()</code><a class="anchor" aria-label="anchor" href="#method-delete-spectra-section-"></a></h3>
+<p>Deletes a section of spectra in each analysis.</p><div class="section">
 <h4 id="usage-11">Usage<a class="anchor" aria-label="anchor" href="#usage-11"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">normalize_spectra</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">delete_spectra_section</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-10">Arguments<a class="anchor" aria-label="anchor" href="#arguments-10"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>settings</code></dt>
+<dd><p>A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.</p></dd>
+
+
+<dt><code>settings</code></dt>
 <dd><p>A ProcessingSettings S3 class object with the call name
 applicable to the processing method. Alternatively, a named
 list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as
@@ -416,10 +503,74 @@ processing method will be searched within the engine object.</p></dd>
 <p>Invisible.</p>
 </div>
 
+</div><p></p><hr><a id="method-RamanEngine-smooth_spectra"></a><div class="section">
+<h3 id="method-smooth-spectra-">Method <code>smooth_spectra()</code><a class="anchor" aria-label="anchor" href="#method-smooth-spectra-"></a></h3>
+<p>Smooths the spectra in each analysis/replicate.</p><div class="section">
+<h4 id="usage-12">Usage<a class="anchor" aria-label="anchor" href="#usage-12"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">smooth_spectra</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-11">Arguments<a class="anchor" aria-label="anchor" href="#arguments-11"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>settings</code></dt>
+<dd><p>A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.</p></dd>
+
+
+<dt><code>settings</code></dt>
+<dd><p>A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-9">Returns<a class="anchor" aria-label="anchor" href="#returns-9"></a></h4>
+<p>Invisible.</p>
+</div>
+
+</div><p></p><hr><a id="method-RamanEngine-normalize_spectra"></a><div class="section">
+<h3 id="method-normalize-spectra-">Method <code>normalize_spectra()</code><a class="anchor" aria-label="anchor" href="#method-normalize-spectra-"></a></h3>
+<p>Normalizes spectra in each analysis/replicate.</p><div class="section">
+<h4 id="usage-13">Usage<a class="anchor" aria-label="anchor" href="#usage-13"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">normalize_spectra</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-12">Arguments<a class="anchor" aria-label="anchor" href="#arguments-12"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>settings</code></dt>
+<dd><p>A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.</p></dd>
+
+
+<dt><code>settings</code></dt>
+<dd><p>A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-10">Returns<a class="anchor" aria-label="anchor" href="#returns-10"></a></h4>
+<p>Invisible.</p>
+</div>
+
 </div><p></p><hr><a id="method-RamanEngine-plot_spectra"></a><div class="section">
 <h3 id="method-plot-spectra-">Method <code>plot_spectra()</code><a class="anchor" aria-label="anchor" href="#method-plot-spectra-"></a></h3>
 <p>Plots spectra for given <em>RamanAnalyses</em>.</p><div class="section">
-<h4 id="usage-12">Usage<a class="anchor" aria-label="anchor" href="#usage-12"></a></h4>
+<h4 id="usage-14">Usage<a class="anchor" aria-label="anchor" href="#usage-14"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">plot_spectra</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  rt <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -437,7 +588,7 @@ processing method will be searched within the engine object.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-11">Arguments<a class="anchor" aria-label="anchor" href="#arguments-11"></a></h4>
+<h4 id="arguments-13">Arguments<a class="anchor" aria-label="anchor" href="#arguments-13"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
 <dd><p>A numeric/character vector with the number/name of the analyses.</p></dd>
 
@@ -455,8 +606,8 @@ processing method will be searched within the engine object.</p></dd>
 
 
 <dt><code>xVal</code></dt>
-<dd><p>Character of length one. Possible are "rt" or "shift" for
-using the retention time or the shift as x axis, respectively.</p></dd>
+<dd><p>Character of length one. Possible are "rt" or "shift" for using the retention time or the shift
+as x axis, respectively.</p></dd>
 
 
 <dt><code>xLab</code></dt>
@@ -492,14 +643,14 @@ for specific plotting methods.</p></dd>
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-9">Returns<a class="anchor" aria-label="anchor" href="#returns-9"></a></h4>
+<h4 id="returns-11">Returns<a class="anchor" aria-label="anchor" href="#returns-11"></a></h4>
 <p>A plot.</p>
 </div>
 
 </div><p></p><hr><a id="method-RamanEngine-plot_chromatograms"></a><div class="section">
 <h3 id="method-plot-chromatograms-">Method <code>plot_chromatograms()</code><a class="anchor" aria-label="anchor" href="#method-plot-chromatograms-"></a></h3>
 <p>Plots chromatograms from analyses with spectra coupled to LC.</p><div class="section">
-<h4 id="usage-13">Usage<a class="anchor" aria-label="anchor" href="#usage-13"></a></h4>
+<h4 id="usage-15">Usage<a class="anchor" aria-label="anchor" href="#usage-15"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">plot_chromatograms</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  rt <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -516,7 +667,7 @@ for specific plotting methods.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-12">Arguments<a class="anchor" aria-label="anchor" href="#arguments-12"></a></h4>
+<h4 id="arguments-14">Arguments<a class="anchor" aria-label="anchor" href="#arguments-14"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
 <dd><p>A numeric/character vector with the number/name of the analyses.</p></dd>
 
@@ -566,14 +717,14 @@ for specific plotting methods.</p></dd>
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-10">Returns<a class="anchor" aria-label="anchor" href="#returns-10"></a></h4>
+<h4 id="returns-12">Returns<a class="anchor" aria-label="anchor" href="#returns-12"></a></h4>
 <p>A plot.</p>
 </div>
 
 </div><p></p><hr><a id="method-RamanEngine-processing_methods"></a><div class="section">
 <h3 id="method-processing-methods-">Method <code>processing_methods()</code><a class="anchor" aria-label="anchor" href="#method-processing-methods-"></a></h3>
 <p>A data.table with available data processing methods.</p><div class="section">
-<h4 id="usage-14">Usage<a class="anchor" aria-label="anchor" href="#usage-14"></a></h4>
+<h4 id="usage-16">Usage<a class="anchor" aria-label="anchor" href="#usage-16"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">processing_methods</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -581,12 +732,12 @@ for specific plotting methods.</p></dd>
 </div><p></p><hr><a id="method-RamanEngine-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-15">Usage<a class="anchor" aria-label="anchor" href="#usage-15"></a></h4>
+<h4 id="usage-17">Usage<a class="anchor" aria-label="anchor" href="#usage-17"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">RamanEngine</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-13">Arguments<a class="anchor" aria-label="anchor" href="#arguments-13"></a></h4>
+<h4 id="arguments-15">Arguments<a class="anchor" aria-label="anchor" href="#arguments-15"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 

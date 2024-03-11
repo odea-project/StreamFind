@@ -3557,7 +3557,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #' @return The list of modules data as defined by `modules` argument when
     #' `NULL` all data in modules is returned.
     #'
-    get_modules_data = function(modules = NULL) {
+    get_results = function(modules = NULL) {
       if (is.null(modules)) modules <- names(private$.modules)
       private$.modules[modules]
     },
@@ -4763,7 +4763,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @return Invisible.
     #'
-    add_modules_data = function(value = NULL) {
+    add_results = function(value = NULL) {
 
       value_names <- names(value)
 

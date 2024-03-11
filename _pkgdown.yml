@@ -15,6 +15,7 @@ reference:
     - MassSpecEngine
     - RamanEngine
 
+
 - title: S3 classes
   desc: >
     S3 classes are implemented to harmonize, verify and dispatch data within
@@ -27,6 +28,7 @@ reference:
     - MassSpecAnalysis
     - RamanAnalysis
 
+
 - title: Processing settings
   desc: >
     The _ProcessingSettings_ S3 class is used to store, assign and dispatch
@@ -35,21 +37,73 @@ reference:
     algorithm for each MS processing method. Below the available subclasses
     for _ProcessingSettings_ are listed for each processing method.
 
-- subtitle: centroid_spectra
+- subtitle: average_spectra
   contents:
-    - starts_with("Settings_centroid_spectra")
+    - starts_with("Settings_average_spectra")
 
 - subtitle: bin_spectra
   contents:
     - starts_with("Settings_bin_spectra")
 
+- subtitle: correct_spectra_baseline
+  contents:
+    - starts_with("Settings_correct_spectra_baseline")
+
+- subtitle: delete_spectra_section
+  contents:
+    - starts_with("Settings_delete_spectra_section")
+
+- subtitle: integrate_chromatograms
+  contents:
+    - starts_with("Settings_integrate_chromatograms")
+
+- subtitle: merge_spectra_time_series
+  contents:
+    - starts_with("Settings_merge_spectra_time_series")
+
+- subtitle: annotate_features
+  contents:
+    - starts_with("Settings_annotate_features")
+
+- subtitle: calculate_quality
+  contents:
+    - starts_with("Settings_calculate_quality")
+
+- subtitle: centroid_spectra
+  contents:
+    - starts_with("Settings_centroid_spectra")
+
+- subtitle: deconvolute_spectra_charges
+  contents:
+    - starts_with("Settings_deconvolute_spectra_charges")
+
+- subtitle: filter_features
+  contents:
+    - starts_with("Settings_filter_features")
+
 - subtitle: find_features
   contents:
     - starts_with("Settings_find_features")
 
+- subtitle: find_internal_standards
+  contents:
+    - starts_with("Settings_find_internal_standards")
+
+- subtitle: generate_compounds
+  contents:
+    - starts_with("Settings_generate_compounds")
+
+- subtitle: generate_formulas
+  contents:
+    - starts_with("Settings_generate_formulas")
+
 - subtitle: group_features
   contents:
     - starts_with("Settings_group_features")
+
+- subtitle: load_features_eic
+  contents:
+    - starts_with("Settings_load_features_eic")
 
 - subtitle: load_features MS1 and MS2 spectra
   contents:
@@ -59,73 +113,26 @@ reference:
   contents:
     - starts_with("Settings_load_MSPeakLists")
 
-- subtitle: load_features_eic
-  contents:
-    - starts_with("Settings_load_features_eic")
-
-- subtitle: filter_features
-  contents:
-    - starts_with("Settings_filter_features")
-
-- subtitle: annotate_features
-  contents:
-    - starts_with("Settings_annotate_features")
-
 - subtitle: suspect_screening
   contents:
     - starts_with("Settings_suspect_screening")
-
-- subtitle: generate_formulas
-  contents:
-    - starts_with("Settings_generate_formulas")
-
-- subtitle: generate_compounds
-  contents:
-    - starts_with("Settings_generate_compounds")
-
-- subtitle: find_internal_standards
-  contents:
-    - starts_with("Settings_find_internal_standards")
-
-- subtitle: calculate_quality
-  contents:
-    - starts_with("Settings_calculate_quality")
-
-- subtitle: integrate_chromatograms
-  contents:
-    - starts_with("Settings_integrate_chromatograms")
-
-- subtitle: deconvolute_spectra_charges
-  contents:
-    - starts_with("Settings_deconvolute_spectra_charges")
-
-- subtitle: average_spectra
-  contents:
-    - starts_with("Settings_average_spectra")
-
-- subtitle: subtract_blank_spectra
-  contents:
-    - starts_with("Settings_subtract_blank_spectra")
-
-- subtitle: correct_spectra_baseline
-  contents:
-    - starts_with("Settings_correct_spectra_baseline")
-
-- subtitle: smooth_spectra
-  contents:
-    - starts_with("Settings_smooth_spectra")
 
 - subtitle: normalize_spectra
   contents:
     - starts_with("Settings_normalize_spectra")
 
+- subtitle: smooth_spectra
+  contents:
+    - starts_with("Settings_smooth_spectra")
+
+- subtitle: subtract_blank_spectra
+  contents:
+    - starts_with("Settings_subtract_blank_spectra")
+
 - subtitle: subtract_spectra_section
   contents:
     - starts_with("Settings_subtract_spectra_section")
 
-- subtitle: delete_spectra_section
-  contents:
-    - starts_with("Settings_delete_spectra_section")
 
 - subtitle: General get and save default settings
   desc: >
@@ -135,6 +142,7 @@ reference:
   contents:
     - get_default_ProcessingSettings
     - save_default_ProcessingSettings
+
 
 - title: Other MS functions
   contents:

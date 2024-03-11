@@ -72,13 +72,14 @@ This guide focuses on describing the general framework behind the StreamFind, us
 Development of the StreamFind platform as Python and C++ libraries is planned and will support other types of data.
 The behavior and usage of the StreanFind is expected to be similar across R, Python and C++.
 This is achieved by using reference classes with harmonized methods for the different languages.
-For instance, the StreamFind R library is centered around [R6](https://r6.r-lib.org/index.html) classes, serving as data processing engines (used as metaphor) for different types of data (e.g. Mass Spectrometry (MS) and Raman Spectroscopy data).  
+For instance, the StreamFind R library is centered around [R6](https://r6.r-lib.org/index.html) classes, serving as data 
+processing engines (used as metaphor) for different types of data (e.g. mass spectrometry (MS) and Raman spectroscopy data).  
 
 # Data processing engines
 
 Data processing engines are fundamentally reference classes with methods to manage, process, visualize and report data within a project.
 The `CoreEngine` is the parent class of all other data specific engines.
-As parent, the `CoreEngine` manages the project information via the class `ProjectHeaders` and registers the audit trail as well as other uniform functions (e.g. adding and removing analysis from the project) across child data dedicated engines.  
+As parent, the `CoreEngine` manages the project information via the class `ProjectHeaders` and registers the audit trail as well as other uniform functions (e.g. adding and removing analyses from the project) across child data dedicated engines.  
 
 ```{r}
 core <- CoreEngine$new()
@@ -89,16 +90,21 @@ core
 Note that when an empty `CoreEngine` is created, required `ProjectHeaders` are created with name, author, path and date.
 Yet, `ProjectHeaders` can be specified directly during creation of the `CoreEngine` via the argument `headers` or added to the engine as shown in \@ref(project-headers).
 The `CoreEngine` does not directly handles data processing.
-Processing methods are data specific and therefore, are used via the data dedicated engines (e.g., `MassSpecEngine` and `RamanEngine`).  
+Processing methods are data specific and therefore, are used via the data dedicated engines (e.g., `MassSpecEngine` and `RamanEngine`). 
+Yet, the framework to manage the data processing workflow and the results are implemented in the `CoreEngine` 
+and are therefore, harmonized across engines.  
 
 ## Project headers
 
-The `ProjectHeaders` class is meant to hold project information that can be used to identify the engine when for example, combining different engines, or to add extra information, such as description, location, etc.
+The `ProjectHeaders` class is meant to hold project information that can be used to identify the engine when for example, 
+combining different engines, or to add extra information, such as description, location, etc.
 The user can add any kind of attribute but it must have length one and be named.
 Below, `ProjectHeaders` are created and added to the `CoreEngine`.  
 
 ```{r}
-headers <- ProjectHeaders(name = "Project Example", author = "Person Name",
+headers <- ProjectHeaders(
+  name = "Project Example", 
+  author = "Person Name", 
   description = "Example of project headers"
 )
 
@@ -110,7 +116,7 @@ core$get_headers()
 ## ProcessingSettings
 
 The unit of a data processing workflow in a data dedicated engine is a data processing method, which uses a specific algorithm for data processing.
-To harmonize the diversity of processing methods and algorithms available, a general call `ProcessingSettings` is used (shown below).
+To harmonize the diversity of processing methods and algorithms available, a general `ProcessingSettings` is used (shown below).
 This way, the `ProcessingSettings` objects are use as instructions to assemble a data processing workflow within the engine.  
 
 ```{r}
@@ -152,111 +158,97 @@ parse_MassSpecAnalysis(StreamFindData::get_ms_file_paths()[1])
 
 # Child engines
 
-The `CoreEngine` does not handle processing directly. The data processing is delegated to child engines. The most basic is the `XyEngine`, where any two-dimensional data can be used. A simple example is given below for creating the engine and accessing the data.
+As above mentioned, the `CoreEngine` does not handle data processing directly. The data processing is delegated to child 
+engines. A simple example is given below for creating a child `RamanEngine` and accessing the spectra from the analyses 
+added as *.asc* files. Note that workflow and results are still empty, as no data processing methods were applied.  
+
+```{r message=FALSE}
+# Example raman .asc files
+raman_ex_files <- StreamFindData::get_raman_file_paths()
+raman <- RamanEngine$new(raman_ex_files)
+raman
+```
 
 ```{r}
-
+# setting interactive to TRUE, plotly is used for an interactive plot
+raman$plot_spectra(interactive = FALSE)
 ```
 
+# Editing analyses set 
 
+For data processing, the analyses replicate names and the correspondent blank analysis replicates can be assigned with 
+dedicated methods, as shown below. For instance, the replicate names are used for averaging the spectra in correspondent 
+analyses and the assigned blanks are used for background subtraction, as shown below in \@ref(data-processing).  
 
-
-
-
-# Project management
-p
-
-The R package is in the [StreamFind GitHub repository](https://github.com/odea-project/StreamFind) of the [ODEA Project](https://github.com/odea-project). For development, the recommendation is to download the repository locally using [git](https://git-scm.com/) tracking for version control. The [GitHub desktop](https://desktop.github.com/) tool can be used for more easily install and configure git with your GitHub account, which is recommended for authoring contributions. Since it is an R package, the [RStudio](https://posit.co/products/open-source/rstudio/) IDE is recommended for development. Yet, others (e.g., [VS Code](https://code.visualstudio.com/download)) will also work. When using RStudio, the repository can be downloaded via new project, selecting version control, then git and finally adding the GitHub *url* https://github.com/odea-project/StreamFind. This should create a local image of the StreamFind repository directly with git tracking, if git or GitHub desktop were properly installed and configured. When using RStudio, the project should directly be identified as package development where all tools are available to support development. We recommend setting the *Use devtools package functions if available* and *generate documentation via Roxygen* (in the configure bottom you select all options) located in the *Build* tab under the *Configure Build Tools...*. For other IDEs, we recommend using the package [devtools](https://www.r-project.org/nosvn/pandoc/devtools.html). Considering that the local image of the StreamFind repository is installed with git tracking, the first step for development is to create a dedicated branch for implementation of new processing modules and/or algorithms. The master branch should not be changed directly but modified by pull requests from the dedicated development branch, giving the opportunity for code revision.
-
-## Structure
-
-The streamFind R package is centered around the [R6](https://r6.r-lib.org/index.html) class system, which brings object oriented programming to R. For MS, the [MassSpecData](https://odea-project.github.io/StreamFind/reference/MassSpecData.html) R6 class is used to encapsulate both the data and methods. The data is stored in private fields within the *MassSpecData* and can only be accessed and processed via the public methods. Below the creation of a *MassSpecData* object and the way to access and change data is briefly shown.
-
-```{r create-empty-ms, results='markup'}
-ms <- MassSpecData$new()
-
-ms$add_headers(name = "Example", author = "Person A")
-
-ms$get_headers()
-
-# print method. Note that MS data files were not yet added!
-ms
+```{r}
+raman$add_replicate_names(c(rep("Sample", 11), rep("Blank", 11)))
+raman$add_blank_names(rep("Blank", 22))
 ```
 
-For implementation of processing modules and algorithms, the [S3](https://rstudio-education.github.io/hopr/s3.html) class [ProcessingSettings](https://odea-project.github.io/StreamFind/reference/ProcessingSettings.html) is used to dispatch settings to processing modules. See article [Wastewater ozonation showcase](XXX) for demonstration of usage. In essence, a given algorithm to be applied to a processing method is added to the *MassSpecData* as a *ProcessingSettings* object which is then used to process the data with the defined settings or parameters. The structure of a *ProcessingSettings* is exemplified below for the algorithm `openms` to be applied to the module `MassSpecData$find_features()`.
-
-```{r example-settings, results='markup'}
-ffs <- Settings_find_features_openms()
-
-ffs
+```{r}
+# The replicate names are modified and the blanks are assigned
+raman
 ```
 
-As shown, the constructor of a *ProcessingSettings* is a function always including `Settings_[module name]_[algorithm name]`; More details are given in the Semantics (\@ref(semantics)). Then, the *ProcessingSettings* can be directly added to the MassSpecData.
+# Data processing
 
-```{r add-settings, results='markup'}
-ms$add_settings(ffs)
+As above mentioned, `ProcessingSettings` are used to design the data processing workflow. Below we create a simple 
+list of `ProcessingSettings` for processing the Raman spectra.
 
-ms
-```
-
-Alternatively, the *ProcessingSettings* can be saved as a JSON string and imported from a JSON file, as demonstrated below.
-
-```{r save-settings, results='markup'}
-save_default_ProcessingSettings(
-  call = "find_features",
-  algorithm = "xcms3_centwave",
-  name = "ffs",
-  path = getwd()
+```{r}
+ps <- list(
+  # Averages the spectra for each analysis replicate
+  Settings_average_spectra_StreamFind(),
+  
+  # Simple normalization based on maximum intensity
+  Settings_normalize_spectra_StreamFind(),
+  
+  # Background subtraction
+  Settings_subtract_blank_spectra_StreamFind(),
+  
+  # Removes a section from the spectra from -40 to 470
+  Settings_delete_spectra_section_StreamFind(list("shift" = c(-40, 470))),
+  
+  # Applies smoothing based on moving average
+  Settings_smooth_spectra_StreamFind(windowSize = 2),
+ 
+  # Performs baseline correction 
+  Settings_correct_spectra_baseline_StreamFind(method = "als", args = list(lambda = 3, p = 0.06, maxit = 10))
 )
 ```
 
-```{r show-json, results='markup'}
-jsonlite::prettify(readLines("~/github/StreamFind/vignettes/articles/ffs.json"))
+```{r, message=FALSE}
+# The settings are added to the engine but not yet applied
+raman$add_settings(ps)
+
+raman$print_workflow()
 ```
 
-```{r import-settings, results='markup'}
-ms$import_settings("~/github/StreamFind/vignettes/articles/ffs.json")
-
-# "openms" replaced by "xcms3_centwave"
-ms
+```{r, message=FALSE}
+# The data processing workflow is applied
+raman$run_workflow()
 ```
 
-The use of the S3 object system for *ProcessingSettings* gives flexibility to the list of parameters, meaning that each parameter entry can be a single numeric value, a vector of strings or even a full data.frame if required. Each *ProcessingSettings* constructor (i.e., `Settings_[module name]_[algorithm name]`) has a dedicated validation method to ensure that the parameters and metadata are in conformity (as shown below). The validation of a *ProcessingSettings* is always performed before applying it to a processing module.
+# Results
 
-```{r validate-settings, results='markup'}
-validate(ffs)
+Once the data processing methods are applied, the results can be accessed with the `get_results()` method.  
+
+```{r}
+# The spectra data module is added after processing the Raman spectra 
+raman$print_results()
+
+# The structure of the spectra results
+str(raman$get_results("spectra"))
 ```
 
-Besides the S3 class *ProcessingSettings*, the *ProcessingSettings* object receives other class names that are used for S3 method dispatchment (i.e., direct the object to the dedicated S3 method where the actual processing algorithm is applied). Below we show the classes of the `ffs` *ProcessingSettings*. The class *patRoon* means that the algorithm `openms` is applied via the package [patRoon](https://github.com/rickhelmus/patRoon). The class *Settings_find_features_openms* directs the object to the right processing module and indicates which algorithm to be applied. For this, an [S3 generic](http://adv-r.had.co.nz/S3.html) is used in each processing module (e.g., `MassSpecData$find_features()` or `MassSpecData$group_features()`) for the dispatchment. This process is not visible to the user but is essential for the developer. Implementation of new processing modules and/or algorithms must consider this structure. In the section Implementation (\@ref(implementation)) the process of adding new modules and algorithms is described in more detail.
-
-```{r other-classes, results='markup'}
-class(ffs)
+```{r}
+# Averaged spectra can be obtained with the dedicated field
+raman$averaged_spectra
 ```
 
-## Semantics
-
-Consistent semantics are attempted within the StreamFind R package. Some of the class and method names were already mentioned above and a clear use of the *underscore* to separate words for methods and use of *Upper Camel Case* for classes is visible. In this section, we try to highlight the defined rules for the most important semantic aspects. All the methods available via the class `MassSpecData$` are written with underscore to separate the words (e.g., `get_analysis_names()` or `annotate_features()`). The arguments of methods, functions and class constructors are always written with *Lower Camel Case* when more than one word is needed (e.g., `colorBy` or `minIntensity`). Classes are written with *Upper Camel Case* when two or more words are used (e.g., *MassSpecAnalysis* or *ProjectHeaders*) with the exception of the specific constructor functions for the different algorithm settings, which use the syntax `Settings_[module name]_[algorithm name]` (e.g., *Settings_filter_features_StreamFind* or *Settings_bin_spectra_qBinning*); This supports and facilitates the association of the settings with the respective processing module. Functions or methods not available to the user (i.e., not exported via the package NAMESPACE) are written with `.` at the beginning, followed by *underscore* to separate words (e.g., *.get_colors()* or *.plot_ms2_static()*). This is also applied to the S3 generics of the processing modules, which use the syntax `.s3_ms_[module name]` (e.g., `.s3_ms_find_features` or `.s3_ms_group_features`).
-
-## Files
-
-The file structure of the StreamFind package is in line with the [CRAN official package development guideline](https://cran.r-project.org/doc/manuals/R-exts.html#:~:text=Contents%5D%5BIndex%5D-,1.1%20Package%20structure,which%20should%20not%20be%20empty).). All relevant files for the developer are in the R, src, man-roxygen, tests and vignettes. In the R folder are the R scripts, in the src folder are C++ libraries and the [Rcpp](https://cran.r-project.org/web/packages/Rcpp/index.html) interface functions, in the man-roxygen are the templates for documentation of arguments, in the tests are the test units that should be applied for each processing module and each algorithm implementation and finally, in the vignettes are articles, tutorial and guides for the users. R file names in the R folder have a defined name syntax according to the content/function. Class files are named with `class_[class type in capital_[class name].R]`. Exported MS function files are named with `fct_ms_[unique name].R`. MS utility functions not exported are named with `utils_ms_[unique name].R`. S3 methods for processing modules are written with `methods_S3_ms_[module name]_[algorithm].R`. *ProcessingSettings* constructors are named `constructor_S3_ms_[module name]_[algorithm].R`.
-
-# Implementation
-
-The implementation of new processing modules and new algorithms for a given processing modules differ in terms of impact change. While addition of new processing modules require the change of the main *MassSpecData* class and addition of new S3 generics, adding new algorithms for existing modules do not require changes in the existing files. Therefore, we describe their implementation in two separate sections.
-
-## New modules
-
-Under definition.
-
-
-
-## New algorithms
-
-Under definition.
-
-```{r remove-ffs, include=FALSE}
-file.remove("ffs.json")
+```{r}
+# Modified spectra which results in a single spectrum
+raman$plot_spectra()
 ```
 
 ***

@@ -5,9 +5,14 @@
 #'
 #' @noRd
 #'
-.s3_deconvolute_spectra_charges.Settings_deconvolute_spectra_charges_StreamFind <- function(settings, self) {
+.s3_deconvolute_spectra_charges.Settings_deconvolute_spectra_charges_StreamFind <- function(settings, self, private) {
   
   intensity <- NULL
+  
+  if (!any(self$get_spectra_number() > 0)) {
+    warning("There are no spectra! Not done.")
+    return(invisible(self))
+  }
   
   if (!requireNamespace("pracma", quietly = TRUE)) {
     warning("Package pracma not found but required! Not done.")
@@ -400,7 +405,7 @@
   
   names(output) <- analyses
   
-  self$add_modules_data(
+  self$add_results(
     list("spectra" = list(
       "data" = output,
       "software" = "StreamFind",
