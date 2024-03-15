@@ -69,11 +69,14 @@
               
               res <- res[res[[sectionVal]] < sectionWindow[1] | res[[sectionVal]] > sectionWindow[2], ]
               
-              if (nrow(res) > 0) {
-                
-                for (i in unique(res$rt)) res$intensity[res$rt == i] <- res$intensity[res$rt == i] - cutSec$intensity
-                
-              }
+              res_list <- split(res, res$rt)
+              
+              res_list <- lapply(res_list, function(z, cutSec) {
+                z$intensity <- z$intensity - cutSec$intensity
+                z
+              }, cutSec = cutSec)
+              
+              res <- rbindlist(res_list)
             }
           }
         }

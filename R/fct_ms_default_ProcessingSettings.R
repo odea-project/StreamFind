@@ -2901,22 +2901,79 @@ validate.Settings_smooth_spectra_StreamFind <- function(x) {
   )
 }
 
+#' @title Settings_smooth_spectra_savgol
+#'
+#' @description Prototype.
+#' 
+#' @param fl 
+#' @param forder 
+#' @param dorder 
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_smooth_spectra_savgol.
+#'
+#' @export
+#'
+Settings_smooth_spectra_savgol <- function(fl = 11, forder = 4, dorder = 0) {
+  
+  settings <- list(
+    call = "smooth_spectra",
+    algorithm = "savgol",
+    parameters = list(
+      fl = fl,
+      forder = forder,
+      dorder = dorder
+    ),
+    version = as.character(packageVersion("pracma")),
+    software = "pracma",
+    developer = "Hans W. Borchers",
+    contact = NA_character_,
+    link = "https://cran.r-project.org/web/packages/pracma/index.html",
+    doi = NA_character_
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_smooth_spectra_savgol
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_smooth_spectra_savgol S3 class object.
+#'
+#' @export
+#'
+validate.Settings_smooth_spectra_savgol <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "smooth_spectra"),
+    checkmate::test_choice(x$algorithm, "savgol")
+  )
+}
+
 # normalize_spectra -----
 
 #' @title Settings_normalize_spectra_StreamFind
 #'
 #' @description Prototype.
+#' 
+#' @param liftTozero 
+#' @param xName 
+#' @param xVal 
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_normalize_spectra_StreamFind.
 #'
 #' @export
 #'
-Settings_normalize_spectra_StreamFind <- function() {
+Settings_normalize_spectra_StreamFind <- function(liftTozero = FALSE,
+                                                  xName = NULL,
+                                                  xVal = NULL) {
   
   settings <- list(
     call = "normalize_spectra",
     algorithm = "StreamFind",
-    parameters = list(),
+    parameters = list(
+      liftTozero = liftTozero,
+      xName = xName,
+      xVal = xVal
+    ),
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",
     developer = "Ricardo Cunha",
@@ -3045,7 +3102,7 @@ validate.Settings_delete_spectra_section_StreamFind <- function(x) {
 #'
 #' @export
 #'
-Settings_merge_spectra_time_series_StreamFind <- function(preCut = list()) {
+Settings_merge_spectra_time_series_StreamFind <- function(preCut = 2) {
   
   settings <- list(
     call = "merge_spectra_time_series",

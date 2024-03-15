@@ -76,10 +76,10 @@ ProcessingSettings <- function(call = NA_character_,
     s3_classes <- append(s3_classes, algo)
     
     # TODO add validation for StreamFind implemented algorithm, may a list of added native algorithms
-    if ("StreamFind" %in% x$software) {
-      page <- "https://odea-project.github.io/StreamFind/reference/"
-      x$link <- paste0(page, algo, ".html")
-    }
+    # if ("StreamFind" %in% x$software) {
+    #   page <- "https://odea-project.github.io/StreamFind/reference/"
+    #   x$link <- paste0(page, algo, ".html")
+    # }
   }
   
   patRoon_algorithms <- c("openms", "xcms", "xcms3", "envipick", "sirius", "kpic2", "safd", "GenForm", "MetFrag")

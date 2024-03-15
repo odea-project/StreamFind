@@ -6,6 +6,8 @@ files <- list.files(paste0(wd2, "/HRMS_2.5mgmL"), pattern = "mzML", full.names =
 
 ms <- MassSpecEngine$new(files)
 
+ms$plot_chromatograms(chromatograms = 0)
+
 ps <- Settings_integrate_chromatograms_StreamFind(
   chromatograms = 0,
   smoothing = TRUE,
@@ -22,14 +24,19 @@ ps <- Settings_integrate_chromatograms_StreamFind(
   maxPeakWidth = 120,
   minSN = 10
 )
-# #
+
 ms$integrate_chromatograms(ps)
 
 ms$chromatograms_peaks
 
-ms$plot_chromatograms_peaks(colorBy = "targets+analyses")
+# ms$plot_chromatograms_peaks(colorBy = "targets+analyses")
 
 ms$deconvolute_spectra_charges(Settings_deconvolute_spectra_charges_StreamFind())
+
+ms$plot_spectra()
+
+
+View(ms$get_results("spectra"))
 
 ms$spectra_charges
 

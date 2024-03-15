@@ -76,9 +76,10 @@ ps <- list(
   
   # Settings_generate_formulas_genform(),
   
-  Settings_generate_compounds_metfrag()
+  # Settings_generate_compounds_metfrag()
 
-  # Settings_suspect_screening_StreamFind(database = dbsus, ppm = 5, sec = 10)
+  # TODO add suspect screning results to featureGroups?
+  Settings_suspect_screening_StreamFind(database = dbsus, ppm = 5, sec = 10)
 )
 
 ms <- MassSpecEngine$new(files = ms_files_df, settings = ps)
@@ -89,9 +90,6 @@ comp <- patRoon::as.data.table(ms$compounds)
 
 View(comp[comp$group %in% ms$get_groups(mass = dbsus)$group, ])
 
-
-
-
 View(ms$get_results("patRoon"))
 
 ms$get_isotopes(
@@ -101,8 +99,7 @@ ms$get_isotopes(
 )
 
 
-
-
+ms$map_isotopes(analyses = 5, mass = db[c(3, 24)], legendNames = TRUE, filtered = TRUE)
 
 
 # MS2Tox and MS2Quant

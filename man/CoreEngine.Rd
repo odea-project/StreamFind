@@ -14,21 +14,6 @@ List of function elements to access specific reference help pages.}
 }
 \if{html}{\out{</div>}}
 }
-\section{Active bindings}{
-\if{html}{\out{<div class="r6-active-bindings">}}
-\describe{
-\item{\code{chromatograms}}{\code{data.table} with processed chromatograms for each analyses.}
-
-\item{\code{chromatograms_peaks}}{\code{data.table} with integrated peaks from chromatograms for each analyses.}
-
-\item{\code{spectra}}{List of spectra \code{data.table} objects for each analysis.}
-
-\item{\code{averaged_spectra}}{List of averaged spectra \code{data.table} each analysis/replicate.}
-
-\item{\code{spectra_peaks}}{\code{data.table} with integrated spectra peaks for each analysis.}
-}
-\if{html}{\out{</div>}}
-}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
@@ -69,11 +54,6 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-CoreEngine-has_settings}{\code{CoreEngine$has_settings()}}
 \item \href{#method-CoreEngine-has_analyses}{\code{CoreEngine$has_analyses()}}
 \item \href{#method-CoreEngine-has_results}{\code{CoreEngine$has_results()}}
-\item \href{#method-CoreEngine-has_chromatograms}{\code{CoreEngine$has_chromatograms()}}
-\item \href{#method-CoreEngine-has_chromatograms_peaks}{\code{CoreEngine$has_chromatograms_peaks()}}
-\item \href{#method-CoreEngine-has_spectra}{\code{CoreEngine$has_spectra()}}
-\item \href{#method-CoreEngine-has_spectra_peaks}{\code{CoreEngine$has_spectra_peaks()}}
-\item \href{#method-CoreEngine-has_averaged_spectra}{\code{CoreEngine$has_averaged_spectra()}}
 \item \href{#method-CoreEngine-plot_chromatograms_peaks}{\code{CoreEngine$plot_chromatograms_peaks()}}
 \item \href{#method-CoreEngine-plot_spectra_peaks}{\code{CoreEngine$plot_spectra_peaks()}}
 \item \href{#method-CoreEngine-run_workflow}{\code{CoreEngine$run_workflow()}}
@@ -712,56 +692,6 @@ data is patRoon.}
 }
 \if{html}{\out{</div>}}
 }
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-has_chromatograms"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-has_chromatograms}{}}}
-\subsection{Method \code{has_chromatograms()}}{
-Checks if there are chromatograms, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_chromatograms()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-has_chromatograms_peaks"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-has_chromatograms_peaks}{}}}
-\subsection{Method \code{has_chromatograms_peaks()}}{
-Checks if there are integrated peaks from chromatograms, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_chromatograms_peaks()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-has_spectra"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-has_spectra}{}}}
-\subsection{Method \code{has_spectra()}}{
-Checks if there are spectra, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_spectra()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-has_spectra_peaks"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-has_spectra_peaks}{}}}
-\subsection{Method \code{has_spectra_peaks()}}{
-Checks if there are spectra peaks, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_spectra_peaks()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-has_averaged_spectra"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-has_averaged_spectra}{}}}
-\subsection{Method \code{has_averaged_spectra()}}{
-Checks if there are average spectra, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_averaged_spectra()}\if{html}{\out{</div>}}
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-plot_chromatograms_peaks"></a>}}

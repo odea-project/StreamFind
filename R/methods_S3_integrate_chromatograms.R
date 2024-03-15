@@ -42,8 +42,8 @@
     pks <- data.table(
       "idx" = as.integer(prac_pks[, 2]),
       "xVal" = xVec[prac_pks[, 2]],
-      "min" = xVec[as.integer(prac_pks[, 3]) - 1],
-      "max" = xVec[as.integer(prac_pks[, 4]) + 1],
+      "min" = xVec[as.integer(prac_pks[, 3])],
+      "max" = xVec[as.integer(prac_pks[, 4])],
       "intensity" = vec[as.integer(prac_pks[, 2])]
     )
   }
@@ -74,7 +74,7 @@
       
       # if (i > 7) browser()
       
-      pk_diff <- abs(pks$min[i + 1] - pks$max[i])
+      pk_diff <- abs(pks$xVal[i + 1] - pks$xVal[i])
       
       pk_closeby <- pk_diff <= closeByThreshold
       
@@ -236,7 +236,7 @@
   sn_vals <- sapply(pks$index, function(i) {
     base = which(xVec >= pks$min[i] & xVec <= pks$max[i])
     base = c(min(base) - 2, base, max(base) + 2)
-    base <- i_vec[base]
+    base <- i_vec[base[base > 0]]
     base <- base[base > 0]
     base <- min(base)
     round(pks$intensity[i] / base, digits = 1)
@@ -245,6 +245,8 @@
   pks$sn <- sn_vals
   
   if (is.numeric(minSN)) pks <- pks[pks$sn >= minSN[1], ]
+  
+  if (is.numeric(minPeakHeight)) pks <- pks[pks$intensity >= minPeakHeight, ]
   
   if (plotLevel > 0) {
     

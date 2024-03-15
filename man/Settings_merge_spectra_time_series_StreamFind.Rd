@@ -5,7 +5,7 @@
 \alias{validate.Settings_merge_spectra_time_series_StreamFind}
 \title{Settings_merge_spectra_time_series_StreamFind}
 \usage{
-Settings_merge_spectra_time_series_StreamFind(preCut = list())
+Settings_merge_spectra_time_series_StreamFind(preCut = 2)
 
 \method{validate}{Settings_merge_spectra_time_series_StreamFind}(x)
 }

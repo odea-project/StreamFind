@@ -45,6 +45,16 @@ List of function elements to access specific reference help pages.}
 
 \item{\code{compounds}}{The compounds S4 class object from patRoon.}
 
+\item{\code{chromatograms}}{\code{data.table} with processed chromatograms for each analyses.}
+
+\item{\code{chromatograms_peaks}}{\code{data.table} with integrated peaks from chromatograms for each analyses.}
+
+\item{\code{spectra}}{List of spectra \code{data.table} objects for each analysis.}
+
+\item{\code{averaged_spectra}}{List of averaged spectra \code{data.table} each analysis/replicate.}
+
+\item{\code{spectra_peaks}}{\code{data.table} with integrated spectra peaks for each analysis.}
+
 \item{\code{spectra_charges}}{\code{data.table} with charges assigned to spectra for each analyses.}
 }
 \if{html}{\out{</div>}}
@@ -115,7 +125,13 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-has_MSPeakLists}{\code{MassSpecEngine$has_MSPeakLists()}}
 \item \href{#method-MassSpecEngine-has_formulas}{\code{MassSpecEngine$has_formulas()}}
 \item \href{#method-MassSpecEngine-has_compounds}{\code{MassSpecEngine$has_compounds()}}
+\item \href{#method-MassSpecEngine-has_chromatograms}{\code{MassSpecEngine$has_chromatograms()}}
+\item \href{#method-MassSpecEngine-has_chromatograms_peaks}{\code{MassSpecEngine$has_chromatograms_peaks()}}
+\item \href{#method-MassSpecEngine-has_spectra}{\code{MassSpecEngine$has_spectra()}}
+\item \href{#method-MassSpecEngine-has_spectra_peaks}{\code{MassSpecEngine$has_spectra_peaks()}}
+\item \href{#method-MassSpecEngine-has_averaged_spectra}{\code{MassSpecEngine$has_averaged_spectra()}}
 \item \href{#method-MassSpecEngine-has_spectra_charges}{\code{MassSpecEngine$has_spectra_charges()}}
+\item \href{#method-MassSpecEngine-plot_raw_spectra}{\code{MassSpecEngine$plot_raw_spectra()}}
 \item \href{#method-MassSpecEngine-plot_spectra}{\code{MassSpecEngine$plot_spectra()}}
 \item \href{#method-MassSpecEngine-plot_chromatograms}{\code{MassSpecEngine$plot_chromatograms()}}
 \item \href{#method-MassSpecEngine-plot_xic}{\code{MassSpecEngine$plot_xic()}}
@@ -187,13 +203,8 @@ List of function elements to access specific reference help pages.}
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_types"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_types'><code>StreamFind::CoreEngine$get_types()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_workflow_overview"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_workflow_overview'><code>StreamFind::CoreEngine$get_workflow_overview()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_analyses'><code>StreamFind::CoreEngine$has_analyses()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_averaged_spectra"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_averaged_spectra'><code>StreamFind::CoreEngine$has_averaged_spectra()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_chromatograms"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_chromatograms'><code>StreamFind::CoreEngine$has_chromatograms()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_chromatograms_peaks"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_chromatograms_peaks'><code>StreamFind::CoreEngine$has_chromatograms_peaks()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_results"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_results'><code>StreamFind::CoreEngine$has_results()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_settings'><code>StreamFind::CoreEngine$has_settings()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_spectra"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_spectra'><code>StreamFind::CoreEngine$has_spectra()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_spectra_peaks"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_spectra_peaks'><code>StreamFind::CoreEngine$has_spectra_peaks()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_analyses'><code>StreamFind::CoreEngine$import_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_headers'><code>StreamFind::CoreEngine$import_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_settings'><code>StreamFind::CoreEngine$import_settings()</code></a></span></li>
@@ -2589,6 +2600,56 @@ Checks if there are compounds assigned to feature groups, returning \code{TRUE} 
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-has_chromatograms"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_chromatograms}{}}}
+\subsection{Method \code{has_chromatograms()}}{
+Checks if there are chromatograms, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_chromatograms()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-has_chromatograms_peaks"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_chromatograms_peaks}{}}}
+\subsection{Method \code{has_chromatograms_peaks()}}{
+Checks if there are integrated peaks from chromatograms, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_chromatograms_peaks()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-has_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_spectra}{}}}
+\subsection{Method \code{has_spectra()}}{
+Checks if there are spectra, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_spectra()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-has_spectra_peaks"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_spectra_peaks}{}}}
+\subsection{Method \code{has_spectra_peaks()}}{
+Checks if there are spectra peaks, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_spectra_peaks()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-has_averaged_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_averaged_spectra}{}}}
+\subsection{Method \code{has_averaged_spectra()}}{
+Checks if there are average spectra, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_averaged_spectra()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-has_spectra_charges"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-has_spectra_charges}{}}}
 \subsection{Method \code{has_spectra_charges()}}{
@@ -2599,12 +2660,12 @@ Checks if there are charges assigned to spectra, returning \code{TRUE} or \code{
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra}{}}}
-\subsection{Method \code{plot_spectra()}}{
-Plots (3D) spectra for given MS analyses.
+\if{html}{\out{<a id="method-MassSpecEngine-plot_raw_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_raw_spectra}{}}}
+\subsection{Method \code{plot_raw_spectra()}}{
+Plots raw spectra in 3D for given MS analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra(
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_raw_spectra(
   analyses = NULL,
   levels = NULL,
   mass = NULL,
@@ -2714,6 +2775,146 @@ overhead.}
 \item{\code{yLab}}{A string with the title for the y axis.}
 
 \item{\code{zLab}}{A string with the title for the z axis.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra}{}}}
+\subsection{Method \code{plot_spectra()}}{
+Plots spectra given MS analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra(
+  analyses = NULL,
+  levels = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  drift = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL,
+  allTraces = TRUE,
+  isolationWindow = 1.3,
+  minIntensityMS1 = 0,
+  minIntensityMS2 = 0,
+  runParallel = FALSE,
+  results = TRUE,
+  averaged = TRUE,
+  baseline = FALSE,
+  smoothed = TRUE,
+  legendNames = TRUE,
+  colorBy = "analyses",
+  xVal = "mass",
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  cex = 0.6,
+  showLegend = TRUE,
+  interactive = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+
+\item{\code{levels}}{Integer value or vector of length one or two with the levels of
+MS data. Possible values are 1 and 2 for MS1 and MS2 data, respectively.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
+data.table or data.frame named \code{min} and \code{max} with minimum and maximum
+neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time (in seconds) and/or drift time values (in milliseconds)
+can be given as one data.table or data.frame with columns named \code{mass} and
+\code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
+and \code{millisec}  arguments are used to calculate the ranges. Also works
+with a data.table or data.frame with minimum and maximum values of neutral
+mass, retention time and drift time targets. In this case, the column names
+must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that
+when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns
+data.table or data.frame named \code{mzmin} and \code{mzmax} with minimum and maximum
+\emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da)
+and retention time values (in seconds) can be given as one data.table or
+data.frame with columns named \code{mz} and \code{rt} and/or \code{drift}. Then, the
+deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments
+are used to calculate the ranges. Also works with a data.table or data.frame
+with minimum and maximum values of \emph{m/z}, retention time and drift time
+targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin},
+\code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges
+are given, the \code{ppm}, \code{sec} and \code{millisec} arguments are
+not used.}
+
+\item{\code{rt}}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+a two columns data.table or data.frame with minimum and maximum drift
+time values (in milliseconds).}
+
+\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
+
+\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+
+\item{\code{millisec}}{Numeric of length one with the drift time deviation,
+in milliseconds.}
+
+\item{\code{id}}{Character with the same length as \emph{m/z} and retention time
+targets to be used as identifier/s. When not given, the id is built as a
+combination of the \emph{m/z} and retention time ranges or values.}
+
+\item{\code{allTraces}}{Logical, when \code{TRUE} all level 2 data is returned.
+When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
+are returned, using the \code{isolationWindow} to calculate the mass window.}
+
+\item{\code{isolationWindow}}{Numeric value with the isolation window (in Da)
+applied for ion isolation and fragmentation during acquisition of tandem
+data (i.e., MS2 data).}
+
+\item{\code{minIntensityMS1}}{Numeric value with the minimum intensity of level 1
+data (i.e., MS1 data).}
+
+\item{\code{minIntensityMS2}}{Numeric value with the minimum intensity of level 2
+data (i.e., MS2 data).}
+
+\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
+processing. Note that parallel processing is not always faster due to
+overhead.}
+
+\item{\code{results}}{Logical of length one. Set to \code{TRUE} for plotting the spectra in results not the raw spectra.}
+
+\item{\code{averaged}}{Logical of length one. Set to \code{TRUE} for plotting the averaged spectra.}
+
+\item{\code{baseline}}{Logical of length one. Set to \code{TRUE} for plotting the spectra with baseline corrected.}
+
+\item{\code{smoothed}}{Logical of length one. Set to \code{TRUE} for plotting the smoothed spectra.}
+
+\item{\code{legendNames}}{A character vector with the same length as the targets.}
+
+\item{\code{colorBy}}{A string of length 1. One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.}
+
+\item{\code{xVal}}{Character length one. Possible values are "mz", "rt", "drift" or "mass".}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{cex}}{A length one numeric value defining the scale of the legend for
+non interactive plotting.}
+
+\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
+
+\item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
+using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
 }

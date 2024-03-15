@@ -5,11 +5,21 @@
 \alias{validate.Settings_normalize_spectra_StreamFind}
 \title{Settings_normalize_spectra_StreamFind}
 \usage{
-Settings_normalize_spectra_StreamFind()
+Settings_normalize_spectra_StreamFind(
+  liftTozero = FALSE,
+  xName = NULL,
+  xVal = NULL
+)
 
 \method{validate}{Settings_normalize_spectra_StreamFind}(x)
 }
 \arguments{
+\item{liftTozero}{}
+
+\item{xName}{}
+
+\item{xVal}{}
+
 \item{x}{A Settings_normalize_spectra_StreamFind S3 class object.}
 }
 \value{

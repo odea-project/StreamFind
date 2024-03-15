@@ -5,6 +5,67 @@
 wd <- "C:/Users/apoli/Documents/iSoft"
 
 
+## BVCZ ---------
+
+ant_dir <- paste0(wd, "/Bevacizumab_Avastin_LotB8703H40/LC-Raman/for Ricardo/Messung 3")
+
+ant_files <- list.files(ant_dir, pattern = ".asc", full.names = TRUE)
+
+ant_files <- list.files(ant_dir, pattern = "_\\d.asc", full.names = TRUE)
+
+ant <- RamanEngine$new(ant_files, runParallel = FALSE)
+
+# ant$add_replicate_names(sub("_\\d+$", "", e_sec$get_analysis_names()))
+ant$add_replicate_names(sub("_(\\d)\\d*$", "_\\1", ant$get_analysis_names()))
+ant$merge_spectra_time_series()
+
+ant$bin_spectra(Settings_bin_spectra_StreamFind(windowSpectrumUnits = 5))
+
+# ant$plot_chromatograms()
+
+ant$normalize_spectra(Settings_normalize_spectra_StreamFind(liftTozero = TRUE)) # TODO
+
+ant$subtract_spectra_section(Settings_subtract_spectra_section_StreamFind(sectionWindow = c(0, 3)))
+
+ant$smooth_spectra(Settings_smooth_spectra_savgol(fl = 11, forder = 2, dorder = 0))
+
+ant$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("shift" = c(-40, 330))))
+
+ant$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("shift" = c(2000, 2600))))
+
+# ant$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("rt" = c(10, max(e_sec$get_spectra()$rt)))))
+
+ant$correct_spectra_baseline(Settings_correct_spectra_baseline_StreamFind(
+  method = "als", args = list(lambda = 3, p = 0.02, maxit = 20)
+))
+
+ant$normalize_spectra(Settings_normalize_spectra_StreamFind(liftTozero = TRUE))
+
+ant$plot_chromatograms()
+
+ant$plot_spectra(rt = c(0, 4))
+ant$plot_spectra(rt = c(5, 8))
+ant$plot_spectra_baseline(rt = c(5, 8))
+ant$plot_spectra(rt = c(11, 14))
+
+# ant$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("rt" = c(0, 10))))
+
+
+ant$plot_spectra(rt = c(10, 13))
+ant$plot_spectra(rt = c(13, 14.5))
+ant$plot_spectra(rt = c(14.5, 16))
+
+# ant$averaged_spectra
+
+ant$plot_spectra_baseline(rt = c(10, 13), interactive = T)
+
+ant$plot_spectra_baseline(interactive = F)
+
+
+
+
+
+
 ## Cuvette -----
 
 
@@ -12,11 +73,11 @@ cuvette_dir <- paste0(wd, "/Jana_cuvette_serum")
 
 cuvette_files <- list.files(cuvette_dir, pattern = "shiftadded", full.names = TRUE)
 
-e_cuv <- RamanEngine$new(cuvette_files, runParallel = FALSE)
+cuv <- RamanEngine$new(cuvette_files, runParallel = FALSE)
 
-e_cuv$add_replicate_names(sub("_\\d+$", "", e_cuv$get_analysis_names()))
+cuv$add_replicate_names(sub("_\\d+$", "", cuv$get_analysis_names()))
 
-e_cuv$add_blank_names(
+cuv$add_blank_names(
   c(
     rep("shiftadded_220726_H2O_100mW_0,1s_300n", 3),
     rep("shiftadded_220726_H2O_20mW_0,1s_900n", 3),
@@ -27,25 +88,21 @@ e_cuv$add_blank_names(
   )
 )
 
-e_cuv$average_spectra()
+cuv$average_spectra()
 
-e_cuv$subtract_blank_spectra()
+cuv$subtract_blank_spectra()
 
-e_cuv$delete_spectra_section(
-  Settings_delete_spectra_section_StreamFind(list("shift" = c(-40, 470)))
-)
+cuv$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("shift" = c(-40, 470))))
 
-e_cuv$smooth_spectra(Settings_smooth_spectra_StreamFind(windowSize = 2))
+cuv$smooth_spectra(Settings_smooth_spectra_StreamFind(windowSize = 2))
 
-e_cuv$correct_spectra_baseline(
-  Settings_correct_spectra_baseline_StreamFind(
-    method = "als", args = list(lambda = 3, p = 0.06, maxit = 10)
-  )
-)
+cuv$correct_spectra_baseline(Settings_correct_spectra_baseline_StreamFind(
+  method = "als", args = list(lambda = 3, p = 0.03, maxit = 10)
+))
 
-e_cuv$normalize_spectra()
+cuv$normalize_spectra()
 
-e_cuv$plot_spectra()
+cuv$plot_spectra()
 
 # anasl <- e_cuv$get_analyses()
 # 
@@ -78,11 +135,13 @@ e_cuv$plot_spectra()
 
 ## SEC -----
 
+flowrate = 0.35 #ml/min
+
 sec_dir <- paste0(wd, "/Jana_SEC_serum")
 
 sec_files <- list.files(sec_dir, pattern = "_\\d.asc", full.names = TRUE)
 
-e_sec <- RamanEngine$new(sec_files, runParallel = FALSE)
+e_sec <- RamanEngine$new(sec_files[2:3], runParallel = FALSE)
 
 e_sec$add_replicate_names(sub("_\\d+$", "", e_sec$get_analysis_names()))
 # e_sec$add_replicate_names(sub("_(\\d)\\d*$", "_\\1", e_sec$get_analysis_names()))
@@ -92,15 +151,13 @@ e_sec$bin_spectra(Settings_bin_spectra_StreamFind(windowSpectrumUnits = 5))
 
 e_sec$normalize_spectra()
 
-e_sec$subtract_spectra_section(Settings_subtract_spectra_section_StreamFind(sectionWindow = c(10, 200)))
+e_sec$subtract_spectra_section(Settings_subtract_spectra_section_StreamFind(sectionWindow = c(10, 30)))
 
-e_sec$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("shift" = c(-40, 470))))
+e_sec$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("shift" = c(-40, 900))))
 
 e_sec$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("rt" = c(0, 435.241 - 5))))
 
-e_sec$delete_spectra_section(
-  Settings_delete_spectra_section_StreamFind(list("rt" = c(435.241 + 5, max(e_sec$get_spectra()$rt))))
-)
+e_sec$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("rt" = c(435.241 + 5, max(e_sec$get_spectra()$rt)))))
 
 e_sec$smooth_spectra(Settings_smooth_spectra_StreamFind(windowSize = 3))
 
@@ -110,7 +167,20 @@ e_sec$correct_spectra_baseline(
   )
 )
 
-e_sec$plot_spectra()
+View(e_sec$get_results("spectra"))
+
+View(e_sec$averaged_spectra)
+
+specblk <- e_sec$get_spectra(rt = c(20, 200))
+specblk <- specblk[, .(intensity = mean(intensity)), by = "shift"]
+
+specpk <- e_sec$get_spectra(rt = c(435 - 2.5, 435 + 2.5))
+specpk <- specpk[, .(intensity = mean(intensity)), by = "shift"]
+
+plot(specblk$intensity, type = 'l')
+lines(specpk$intensity, col = "red")
+
+e_sec$plot_spectra(rt = c(435 - 2.5, 435 + 2.5))
 
 e_sec$plot_chromatograms()
 
@@ -128,7 +198,65 @@ lines(cbsa, col = "darkred")
 cor(bsa, cbsa)
 
 
+## Antibody -----
 
+ant_dir <- paste0(wd, "/Bevacizumab_Avastin_LotB8703H40/LC-Raman/for Ricardo/Messung 1")
+
+ant_files <- list.files(ant_dir, pattern = "_\\d.asc", full.names = TRUE)
+
+ant <- RamanEngine$new(ant_files, runParallel = FALSE)
+
+# ant$add_replicate_names(sub("_\\d+$", "", e_sec$get_analysis_names()))
+# ant$add_replicate_names(sub("_(\\d)\\d*$", "_\\1", ant$get_analysis_names()))
+# ant$merge_spectra_time_series()
+
+ant$bin_spectra(Settings_bin_spectra_StreamFind(windowSpectrumUnits = 19))
+
+ant$normalize_spectra()
+
+ant$subtract_spectra_section(Settings_subtract_spectra_section_StreamFind(sectionWindow = c(0, 3)))
+
+ant$smooth_spectra(Settings_smooth_spectra_StreamFind(windowSize = 5))
+
+ant$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("shift" = c(-40, 330))))
+
+ant$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("shift" = c(2000, max(e_sec$get_spectra()$shift)))))
+
+ant$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("rt" = c(0, 6))))
+
+ant$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("rt" = c(10, max(e_sec$get_spectra()$rt)))))
+
+ant$correct_spectra_baseline(
+  Settings_correct_spectra_baseline_StreamFind(
+    method = "als", args = list(lambda = 3, p = 0.09, maxit = 10)
+  )
+)
+
+# TODO function for baseline fitting
+# TODO smoothing with SavityGoley
+# 
+
+# ant$plot_chromatograms()
+ant$plot_spectra()
+
+
+
+View(e_sec$get_results("spectra"))
+
+View(e_sec$averaged_spectra)
+
+specblk <- e_sec$get_spectra(rt = c(20, 200))
+specblk <- specblk[, .(intensity = mean(intensity)), by = "shift"]
+
+specpk <- e_sec$get_spectra(rt = c(435 - 2.5, 435 + 2.5))
+specpk <- specpk[, .(intensity = mean(intensity)), by = "shift"]
+
+plot(specblk$intensity, type = 'l')
+lines(specpk$intensity, col = "red")
+
+e_sec$plot_spectra(rt = c(435 - 2.5, 435 + 2.5))
+
+e_sec$plot_chromatograms()
 
 
 

@@ -51,11 +51,13 @@
       
     } else {
       self$add_results(
-        list("spectra" = list(
-          "data" = av_list,
-          "software" = "StreamFind",
-          "version" = as.character(packageVersion("StreamFind"))
-        ))
+        list(
+          "spectra" = list(
+            "data" = av_list,
+            "software" = "StreamFind",
+            "version" = as.character(packageVersion("StreamFind"))
+          )
+        )
       )
     }
     

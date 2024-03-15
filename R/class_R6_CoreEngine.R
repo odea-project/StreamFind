@@ -186,104 +186,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
   
   # _ active bindings -----
   
-  active = list(
-    
-    ### ___ chromatograms -----
-    
-    #' @field chromatograms `data.table` with processed chromatograms for each analyses.
-    #' 
-    chromatograms = function() {
-      
-      if (self$has_results("chromatograms")) {
-        res <- private$.results$chromatograms$data
-        res <- lapply(res, function(x) x$chromatograms)
-        res <- rbindlist(res, fill = TRUE)
-        if (nrow(res) > 0) res$replicate <- self$get_replicate_names()[res$analysis]
-        
-      } else {
-        res <- lapply(self$get_analyses(), function(x) x$chromatograms)
-        names(res) <- self$get_analysis_names()
-        res <- Map(function(x, y) {
-          if (is.data.table(x)) x$analysis <- y
-          x
-        }, res, names(res))
-      }
-      
-      res
-    },
-    
-    #' @field chromatograms_peaks `data.table` with integrated peaks from chromatograms for each analyses.
-    #' 
-    chromatograms_peaks = function() {
-      
-      if (self$has_chromatograms_peaks()) {
-        pks <- private$.results$chromatograms$data
-        pks <- lapply(pks, function(x) x$peaks)
-        pks <- rbindlist(pks)
-        
-        if (nrow(pks) > 0) pks$replicate <- self$get_replicate_names()[pks$analysis]
-        
-        pks
-        
-      } else {
-        data.table()
-      }
-    },
-    
-    ### ___ spectra -----
-    
-    #' @field spectra List of spectra `data.table` objects for each analysis.
-    #'
-    spectra = function() {
-      
-      if (self$has_results("spectra")) {
-        res <- private$.results$spectra$data
-        res <- lapply(res, function(x) x$spectra)
-        
-      } else {
-        res <- lapply(self$get_analyses(), function(x) x$spectra)
-        names(res) <- self$get_analysis_names()
-        res <- Map(function(x, y) {
-          x$analysis <- y
-          x
-        }, res, names(res))
-      }
-      
-      res
-    },
-    
-    #' @field averaged_spectra List of averaged spectra `data.table` each analysis/replicate.
-    #' 
-    averaged_spectra = function() {
-      
-      if (self$has_averaged_spectra()) {
-        res <- private$.results$spectra$data
-        res <- lapply(res, function(x) x$average)
-        res
-        
-      } else {
-        data.table()
-      }
-    },
-    
-    #' @field spectra_peaks `data.table` with integrated spectra peaks for each analysis.
-    #' 
-    spectra_peaks = function() {
-      
-      if (self$has_spectra_peaks()) {
-        pks <- private$.results$spectra$data
-        pks <- lapply(pks, function(x) x$peaks)
-        pks <- rbindlist(pks)
-        
-        if (nrow(pks) > 0) pks$replicate <- self$get_replicate_names()[pks$analysis]
-        
-        pks
-        
-      } else {
-        data.table()
-      }
-    }
-  ),
+  active = list( ),
     
   # _ public fields/methods -----
   public = list(
@@ -1232,7 +1135,12 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #'
     remove_results = function(results) {
       
-      for (i in results) if (self$has_results(i)) private$.results[[i]] <- NULL
+      if (missing(results)) {
+        private$.results <- NULL
+        
+      } else {
+        for (i in results) if (self$has_results(i)) private$.results[[i]] <- NULL
+      }
       
       invisible(self)
     },
@@ -1309,95 +1217,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       if (is.null(names)) names <- names(private$.results)
       length(private$.results[names]) > 0
     },
-    
-    ### ___ chromatograms -----
-    
-    #' @description Checks if there are chromatograms, returning `TRUE` or `FALSE`.
-    #'
-    has_chromatograms = function() {
-      
-      if (self$has_results("chromatograms")) {
-        sum(vapply(private$.results$chromatograms$data, function(x) {
-          if ("chromatograms" %in% names(x)) {
-            nrow(x$chromatograms)
-          } else {
-            0
-          }
-        }, 0)) > 0
-        
-      } else {
-        all(vapply(self$get_analyses(), function(x) nrow(x$chromatograms) > 0, FALSE))
-      }
-    },
-    
-    #' @description Checks if there are integrated peaks from chromatograms, returning `TRUE` or `FALSE`.
-    #'
-    has_chromatograms_peaks = function() {
-      
-      if (self$has_results("chromatograms")) {
-        sum(vapply(private$.results$chromatograms$data, function(x) nrow(x$peaks), 0)) > 0
-        
-      } else {
-        FALSE
-      }
-    },
-    
-    ### ___ spectra -----
-    
-    #' @description Checks if there are spectra, returning `TRUE` or `FALSE`.
-    #'
-    has_spectra = function() {
-      
-      if (self$has_results("spectra")) {
-        sum(vapply(private$.results$spectra$data, function(x) {
-          if ("spectra" %in% names(x)) {
-            nrow(x$spectra)
-          } else {
-            0
-          }
-        }, 0)) > 0
-        
-      } else {
-        all(vapply(self$get_analyses(), function(x) nrow(x$spectra) > 0, FALSE))
-      }
-    },
-    
-    #' @description Checks if there are spectra peaks, returning `TRUE` or `FALSE`.
-    #'
-    has_spectra_peaks = function() {
-      
-      if (self$has_results("spectra")) {
-        sum(vapply(private$.results$spectra$data, function(x) {
-          if ("peaks" %in% names(x)) {
-            nrow(x$peaks)
-          } else {
-            0
-          }
-        }, 0)) > 0
-        
-      } else {
-        FALSE
-      }
-    },
-    
-    #' @description Checks if there are average spectra, returning `TRUE` or `FALSE`.
-    #'
-    has_averaged_spectra = function() {
-      
-      if (self$has_results("spectra")) {
-        sum(vapply(private$.results$spectra$data, function(x) {
-          if ("average" %in% names(x)) {
-            nrow(x$average)
-          } else {
-            0
-          }
-        }, 0)) > 0
-        
-      } else {
-        FALSE
-      }
-    },
-    
+
     ## ___ plot -----
     
     #' @description Plots peaks from chromatograms from analyses.

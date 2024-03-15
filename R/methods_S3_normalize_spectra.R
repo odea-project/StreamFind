@@ -12,6 +12,10 @@
     return(FALSE)
   }
   
+  liftTozero <- settings$parameters$liftTozero
+  xName <- settings$parameters$xName
+  xVal <- settings$parameters$xVal
+  
   private$.results$spectra$data <- lapply(private$.results$spectra$data, function(x) {
     
     if ("average" %in% names(x)) {
@@ -22,8 +26,32 @@
           temp_x <- split(x$average, x$average$rt)
           
           temp_x <- lapply(temp_x, function(z) {
-            max_int <- max(z$intensity)
-            z$intensity <- z$intensity / max_int
+            
+            if (liftTozero) z$intensity <- z$intensity + abs(min(z$intensity))
+            
+            if (!is.null(xName)) {
+              
+              if (xName %in% colnames(z)) {
+                norm_int <- z$intensity[z[[xName]] == xVal]
+                
+                if (length(norm_int) > 0) {
+                  z$intensity <- z$intensity / norm_int
+                  
+                } else {
+                  warning("xval not found in xName column! Not done!")
+                  return(FALSE)
+                }
+                
+              } else {
+                warning("xName not found in spectra data.table! Not done!")
+                return(FALSE)
+              }
+              
+            } else {
+              max_int <- max(z$intensity)
+              z$intensity <- z$intensity / max_int
+            }
+            
             z
           })
           

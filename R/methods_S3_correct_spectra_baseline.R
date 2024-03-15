@@ -13,15 +13,15 @@
   
   i_baseline <- as.numeric(mat@baseline)
   
-  # i_corrected <- as.numeric(mat@corrected)
+  i_corrected <- as.numeric(mat@corrected)
   
-  i_baseline[i_baseline > vec] <- vec[i_baseline > vec]
-  
-  i_baseline[i_baseline < 0] <- vec[i_baseline < 0]
-  
-  i_corrected <- vec - i_baseline
-  
-  i_corrected[i_corrected < 0] <- 0
+  # i_baseline[i_baseline > vec] <- vec[i_baseline > vec]
+  # 
+  # i_baseline[i_baseline < 0] <- vec[i_baseline < 0]
+  # 
+  # i_corrected <- vec - i_baseline
+  # 
+  # i_corrected[i_corrected < 0] <- 0
   
   list("mat" = mat, "baseline" = i_baseline, "corrected" = i_corrected)
 }
@@ -55,6 +55,7 @@
           temp_x <- lapply(temp_x, function(z) {
             baseline_data <- .baseline_correction(z$intensity, baseline_method, baseline_args)
             z$baseline <- baseline_data$baseline
+            z$raw <- z$intensity
             z$intensity <- baseline_data$corrected
             z
           })
@@ -64,6 +65,7 @@
         } else {
           baseline_data <- .baseline_correction(x$average$intensity, baseline_method, baseline_args)
           x$average$baseline <- baseline_data$baseline
+          x$average$raw <- x$average$intensity
           x$average$intensity <- baseline_data$corrected
         }
       }
@@ -80,6 +82,7 @@
             temp_x <- lapply(temp_x, function(z) {
               baseline_data <- .baseline_correction(z$intensity, baseline_method, baseline_args)
               z$baseline <- baseline_data$baseline
+              z$raw <- z$intensity
               z$intensity <- baseline_data$corrected
               z
             })
@@ -89,6 +92,7 @@
           } else {
             baseline_data <- .baseline_correction(x$spectra$intensity, baseline_method, baseline_args)
             x$spectra$baseline <- baseline_data$baseline
+            x$spectra$raw <- x$spectra$intensity
             x$spectra$intensity <- baseline_data$corrected
           }
         }

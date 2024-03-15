@@ -116,7 +116,7 @@
             x$spectra <- rbindlist(temp_x)
             
           } else {
-            x$average$intensity <- .moving_average(x$average$intensity, windowSize = windowSize)
+            x$spectra$intensity <- .moving_average(x$spectra$intensity, windowSize = windowSize)
           }
         }
       }
@@ -124,6 +124,75 @@
     
     x
   }, windowSize = windowSize)
+  
+  message(paste0("\U2713 ", "Spectra smoothed!"))
+  
+  TRUE
+}
+
+#' @title .s3_smooth_spectra.Settings_smooth_spectra_savgol
+#'
+#' @description Smooths of spectra based on Savitzky and Golay from pracma package.
+#'
+#' @noRd
+#'
+.s3_smooth_spectra.Settings_smooth_spectra_savgol <- function(settings, self, private) {
+  
+  fl <- settings$parameters$fl
+  forder <- settings$parameters$forder
+  dorder <- settings$parameters$dorder
+  
+  if (!(self$has_averaged_spectra() || self$has_spectra())) {
+    warning("Spectra not found! Not done.")
+    return(FALSE)
+  }
+  
+  private$.results$spectra$data <- lapply(private$.results$spectra$data, function(x, fl, forder, dorder) {
+    
+    if ("average" %in% names(x)) {
+      
+      if (nrow(x$average) > 0) {
+        
+        if ("rt" %in% colnames(x$average)) {
+          temp_x <- split(x$average, x$average$rt)
+          
+          temp_x <- lapply(temp_x, function(z) {
+            z$intensity <- pracma::savgol(z$intensity, fl = fl, forder = forder, dorder = dorder)
+            z
+          })
+          
+          x$average <- rbindlist(temp_x)
+          
+        } else {
+          x$average$intensity <- pracma::savgol(x$average$intensity, fl = fl, forder = forder, dorder = dorder)
+        }
+      }
+      
+    } else (
+      
+      if (nrow(x$spectra) > 0) {
+        
+        if (nrow(x$average) > 0) {
+          
+          if ("rt" %in% colnames(x$spectra)) {
+            temp_x <- split(x$spectra, x$spectra$rt)
+            
+            temp_x <- lapply(temp_x, function(z) {
+              z$intensity <- pracma::savgol(z$intensity, fl = fl, forder = forder, dorder = dorder)
+              z
+            })
+            
+            x$spectra <- rbindlist(temp_x)
+            
+          } else {
+            x$spectra$intensity <- pracma::savgol(x$spectra$intensity, fl = fl, forder = forder, dorder = dorder)
+          }
+        }
+      }
+    )
+    
+    x
+  }, fl = fl, forder = forder, dorder = dorder)
   
   message(paste0("\U2713 ", "Spectra smoothed!"))
   

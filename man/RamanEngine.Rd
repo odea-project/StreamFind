@@ -9,6 +9,15 @@ The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecti
 \section{Super class}{
 \code{\link[StreamFind:CoreEngine]{StreamFind::CoreEngine}} -> \code{RamanEngine}
 }
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
+\describe{
+\item{\code{spectra}}{List of spectra \code{data.table} objects for each analysis.}
+
+\item{\code{averaged_spectra}}{List of averaged spectra \code{data.table} each analysis/replicate.}
+}
+\if{html}{\out{</div>}}
+}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
@@ -26,7 +35,10 @@ The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecti
 \item \href{#method-RamanEngine-delete_spectra_section}{\code{RamanEngine$delete_spectra_section()}}
 \item \href{#method-RamanEngine-smooth_spectra}{\code{RamanEngine$smooth_spectra()}}
 \item \href{#method-RamanEngine-normalize_spectra}{\code{RamanEngine$normalize_spectra()}}
+\item \href{#method-RamanEngine-has_spectra}{\code{RamanEngine$has_spectra()}}
+\item \href{#method-RamanEngine-has_averaged_spectra}{\code{RamanEngine$has_averaged_spectra()}}
 \item \href{#method-RamanEngine-plot_spectra}{\code{RamanEngine$plot_spectra()}}
+\item \href{#method-RamanEngine-plot_spectra_baseline}{\code{RamanEngine$plot_spectra_baseline()}}
 \item \href{#method-RamanEngine-plot_chromatograms}{\code{RamanEngine$plot_chromatograms()}}
 \item \href{#method-RamanEngine-processing_methods}{\code{RamanEngine$processing_methods()}}
 \item \href{#method-RamanEngine-clone}{\code{RamanEngine$clone()}}
@@ -58,13 +70,8 @@ The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecti
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_types"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_types'><code>StreamFind::CoreEngine$get_types()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_workflow_overview"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_workflow_overview'><code>StreamFind::CoreEngine$get_workflow_overview()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_analyses'><code>StreamFind::CoreEngine$has_analyses()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_averaged_spectra"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_averaged_spectra'><code>StreamFind::CoreEngine$has_averaged_spectra()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_chromatograms"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_chromatograms'><code>StreamFind::CoreEngine$has_chromatograms()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_chromatograms_peaks"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_chromatograms_peaks'><code>StreamFind::CoreEngine$has_chromatograms_peaks()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_results"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_results'><code>StreamFind::CoreEngine$has_results()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_settings'><code>StreamFind::CoreEngine$has_settings()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_spectra"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_spectra'><code>StreamFind::CoreEngine$has_spectra()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_spectra_peaks"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_spectra_peaks'><code>StreamFind::CoreEngine$has_spectra_peaks()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import'><code>StreamFind::CoreEngine$import()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_analyses'><code>StreamFind::CoreEngine$import_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_headers'><code>StreamFind::CoreEngine$import_headers()</code></a></span></li>
@@ -488,12 +495,90 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-has_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-has_spectra}{}}}
+\subsection{Method \code{has_spectra()}}{
+Checks if there are spectra, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$has_spectra()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-has_averaged_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-has_averaged_spectra}{}}}
+\subsection{Method \code{has_averaged_spectra()}}{
+Checks if there are average spectra, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$has_averaged_spectra()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-RamanEngine-plot_spectra"></a>}}
 \if{latex}{\out{\hypertarget{method-RamanEngine-plot_spectra}{}}}
 \subsection{Method \code{plot_spectra()}}{
 Plots spectra for given \emph{RamanAnalyses}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{RamanEngine$plot_spectra(
+  analyses = NULL,
+  rt = NULL,
+  shift = NULL,
+  minIntensity = 0,
+  xVal = "shift",
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  cex = 0.6,
+  showLegend = TRUE,
+  colorBy = "analyses",
+  interactive = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+
+\item{\code{rt}}{Numeric of length two with the minimum and maximum retention time, in seconds.}
+
+\item{\code{shift}}{Numeric of length two with the minimum and maximum shift, in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
+
+\item{\code{minIntensity}}{Numeric value with the minimum intensity.}
+
+\item{\code{xVal}}{Character of length one. Possible are "rt" or "shift" for using the retention time or the shift
+as x axis, respectively.}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{cex}}{A length one numeric value defining the scale of the legend for non interactive plotting.}
+
+\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
+
+\item{\code{colorBy}}{A string defining how to legend the plot. Possible values are
+\code{analyses}, \code{targets} (the default) or \code{replicates}. Other options are possible
+for specific plotting methods.}
+
+\item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A plot.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-plot_spectra_baseline"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-plot_spectra_baseline}{}}}
+\subsection{Method \code{plot_spectra_baseline()}}{
+Plots spectra corrected for given \emph{RamanAnalyses}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$plot_spectra_baseline(
   analyses = NULL,
   rt = NULL,
   shift = NULL,
