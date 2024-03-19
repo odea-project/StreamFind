@@ -121,28 +121,31 @@ ms
 ms$plot_tic(colorBy = "replicates")
 ```
 
-The data processing workflow is based on applied processing methods within the engine. For pre-processing the MS data of BSA, the following steps are applied:
+The data processing workflow is based on applied processing methods within the engine. As pre-processing, the following steps are applied:
 
-- Find the retention time elution of BSA based on peak integration of the total ion chromatogram (TIC) of each analysis. 
-- 
+1. Find the retention time elution of BSA based on the total ion chromatogram (TIC) of each analysis; 
+2. Find the mass-to-charge (*m/z*) range of BSA for deconvolution of charges; 
+3. Deconvolute charges for estimation of the exact mass, in DA; 
 
-The individual processing steps are applied according to *ProcessingSettings*. Below, the integration of the TIC is shown using the dedicated *ProcessingSettings*.
+The individual processing steps are applied according to *ProcessingSettings*. Below, the integration of the TIC is shown using the dedicated *ProcessingSettings* after loading the TIC chromatograms from the analysis files and smoothing using a moving average approach.
+
+```{r}
+ms$load_chromatograms("TIC")
+```
+
+```{r}
+# Smoothing of the TIC chromatogram for improving peak finding
+ms$smooth_chromatograms(Settings_smooth_chromatograms_movingaverage(windowSize = 5))
+```
 
 ```{r}
 # Settings for integration of the TIC
 ps_ic <- Settings_integrate_chromatograms_StreamFind(
-  chromatograms = 0,
-  smoothing = TRUE,
-  windowSize = 10,
-  baseline = TRUE,
-  baseline_method = "als",
-  baseline_args = list(lambda = 6, p = 0.02, maxit = 10),
   merge = TRUE,
-  closeByThreshold = 2,
-  valeyThreshold = 0.5,
+  closeByThreshold = 5,
   minPeakHeight = 3E6,
-  minPeakDistance = 2,
-  minPeakWidth = 5,
+  minPeakDistance = 3,
+  minPeakWidth = 20,
   maxPeakWidth = 200,
   minSN = 5
 )
@@ -158,17 +161,35 @@ ms$integrate_chromatograms(ps_ic)
 ms$plot_chromatograms_peaks(colorBy = "replicates")
 ```
 
-The average retention time of the main peak was `r mean(ms$chromatograms_peaks$rt)` seconds with a standard deviation of `r sd(ms$chromatograms_peaks$rt)`. The following step is to estimate the mass-to-charge (*m/z*) range of BSA for deconvolution of the charges. For this, the MS1 spectra of the peak retention time +/- 0.1 seconds is plotted.
+The average retention time of the main peak was `r mean(ms$chromatograms_peaks$rt)` seconds with a standard deviation of `r sd(ms$chromatograms_peaks$rt)`. The following step is to estimate the *m/z* range of BSA for deconvolution of charges. For this, the MS1 spectra of the peak retention time +/- 0.1 seconds is plotted.
 
 ```{r, fig.cap="Spectra of BSA for each analysis replicate at the peak maximum."}
-ms$plot_ms1(rt = mean(ms$chromatograms_peaks$rt), sec = 0.1,
+ms$plot_ms1(rt = mean(rbindlist(ms$chromatograms_peaks)$rt), sec = 0.1,
   colorBy = "replicates", presence = 0.1, minIntensity = 1000, interactive = FALSE
 )
 ```
 
-For deconvolution, the m/z from 1200 to 2000 can be added to the dedicated *ProcessingSettings*, as shown below.
+According to the MS1 spectra, the *m/z* from 1200 to 2000 can be added to the dedicated *ProcessingSettings* for deconvolution, as shown below. The first step is to load from the mzML files the traces within the retention time and *m/z* ranges selected.
 
 ```{r}
+# av_rt <- mean(rbindlist(ms$chromatograms_peaks)$rt)
+av_rt <- 363.9824
+
+spectra_ranges <- data.table(
+  "mzmin" = 1200,
+  "mzmax" = 2000,
+  "rtmin" = av_rt - 1,
+  "rtmax" = av_rt + 1
+)
+
+ms <- MassSpecEngine$new(files = ms_files[1:2], headers = list(name = "BSA Quality Evaluation Project"))
+
+ms$add_replicate_names(sub("_\\d+$", "", ms$get_analysis_names()))
+
+ms$load_spectra(mz = spectra_ranges)
+
+ms$cluster_spectra(Settings_cluster_spectra_StreamFind(val = "mz", clustVal = 0.01, presence = 0.2))
+
 ps_dc <- Settings_deconvolute_spectra_charges_StreamFind(
   rtmin = mean(ms$chromatograms_peaks$rt) - 1,
   rtmax = mean(ms$chromatograms_peaks$rt) + 1,
@@ -177,9 +198,11 @@ ps_dc <- Settings_deconvolute_spectra_charges_StreamFind(
   presence = 0.2,
   mzClust = 0.005,
   minIntensity = 500,
-  roundVal = 20,
+  
+  roundVal = 15,
   relLowCut = 0.2,
-  absLowCut = 1000,
+  absLowCut = 8000,
+  
   mzClustAverage = 0.1,
   smoothing = TRUE,
   windowSize = 5,
@@ -197,6 +220,37 @@ ps_dc <- Settings_deconvolute_spectra_charges_StreamFind(
 )
 
 ms$deconvolute_spectra_charges(ps_dc)
+
+
+
+
+ms$get_spectra()
+
+
+
+ms$spectra
+
+
+
+
+
+
+
+
+
+ms$has_results("spectra")
+
+ms$spectra
+# 
+ms$plot_spectra(interactive = T)
+
+
+```
+
+
+
+```{r}
+
 ```
 
 
@@ -240,39 +294,42 @@ rfiles <- list.files(dir, pattern = "BVZ_", full.names = TRUE)
 
 raman <- RamanEngine$new(rfiles)
 
-raman$plot_spectra(colorBy = "replicates", interactive = F)
-
-raman$plot_spectra()
+# raman$plot_spectra(colorBy = "replicates", interactive = F)
+# 
+# raman$plot_spectra()
+# 
+# raman$plot_chromatograms()
 
 r_settings <- list(
+  
   Settings_bin_spectra_StreamFind(windowSpectrumUnits = 5),
   
-  Settings_bin_spectra_StreamFind(),
+  Settings_normalize_spectra_minmax(),
   
-  Settings_normalize_spectra_StreamFind(liftTozero = TRUE),
-  
-  Settings_subtract_spectra_section_StreamFind(sectionWindow = c(0, 2)),
-  
-  Settings_smooth_spectra_savgol(fl = 11, forder = 2, dorder = 0),
-  
+  Settings_subtract_spectra_section_StreamFind(sectionWindow = c(0, 1.6)),
+
+  Settings_smooth_spectra_savgol(fl = 21, forder = 4, dorder = 0),
+
   Settings_delete_spectra_section_StreamFind(list("shift" = c(-100, 330))),
+
+  Settings_delete_spectra_section_StreamFind(list("shift" = c(1800, 2600))),
+
+  Settings_correct_spectra_baseline_airpls(lambda = 45, differences = 1, itermax = 30),
   
-  Settings_delete_spectra_section_StreamFind(list("shift" = c(2000, 2600))),
-  
-  Settings_correct_spectra_baseline_StreamFind(method = "als", args = list(lambda = 3, p = 0.02, maxit = 20)),
-  
-  Settings_normalize_spectra_StreamFind(liftTozero = TRUE)
-  
+  Settings_normalize_spectra_snv(liftTozero = TRUE)
 )
 
 raman$add_settings(r_settings)
 
-raman$print_workflow()
+# raman$print_workflow()
 
 raman$run_workflow()
 
-raman$plot_spectra(rt = c(3, 3.5))
+# raman$plot_spectra_baseline(rt = c(2.8, 3.2))
 
+raman$plot_spectra(analyses = c(2:6), rt = c(2.8, 3.2))
+
+# View(raman$get_results("spectra"))
 
 # r$plot_spectra(rt = c(5, 8))
 # r$plot_spectra_baseline(rt = c(5, 8))

@@ -29,6 +29,16 @@ export <- function(x, ...) {
 }
 
 #' @noRd
+.s3_cluster_spectra <- function(settings, self, private) {
+  UseMethod(".s3_cluster_spectra")
+}
+
+#' @noRd
+.s3_correct_chromatograms_baseline <- function(settings, self, private) {
+  UseMethod(".s3_correct_chromatograms_baseline")
+}
+
+#' @noRd
 .s3_correct_spectra_baseline <- function(settings, self, private) {
   UseMethod(".s3_correct_spectra_baseline")
 }
@@ -129,6 +139,11 @@ export <- function(x, ...) {
 #' @noRd
 .s3_normalize_spectra <- function(settings, self, private) {
   UseMethod(".s3_normalize_spectra")
+}
+
+#' @noRd
+.s3_smooth_chromatograms <- function(settings, self, private) {
+  UseMethod(".s3_smooth_chromatograms")
 }
 
 #' @noRd

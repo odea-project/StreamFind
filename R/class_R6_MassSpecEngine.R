@@ -626,66 +626,143 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     
     #' @field chromatograms `data.table` with processed chromatograms for each analyses.
     #' 
-    chromatograms = function() {
+    chromatograms = function(value) {
       
-      if (self$has_results("chromatograms")) {
-        res <- private$.results$chromatograms$data
-        res <- lapply(res, function(x) x$chromatograms)
-        res <- rbindlist(res, fill = TRUE)
-        if (nrow(res) > 0) res$replicate <- self$get_replicate_names()[res$analysis]
+      if (missing(value)) {
+        
+        if (self$has_results("chromatograms")) {
+          res <- private$.results$chromatograms
+          res <- lapply(res, function(x) x$chromatograms)
+          
+        } else {
+          res <- lapply(self$get_analyses(), function(x) x$chromatograms)
+          names(res) <- self$get_analysis_names()
+          res <- Map(function(x, y) {
+            if (is.data.table(x)) {
+              if (nrow(x) > 0) {
+                x$analysis <- y
+                setcolorder(x, "analysis")
+              }
+            }
+            
+            x
+          }, res, names(res))
+        }
+        
+        res
         
       } else {
-        res <- lapply(self$get_analyses(), function(x) x$chromatograms)
-        names(res) <- self$get_analysis_names()
-        res <- Map(function(x, y) {
-          if (is.data.table(x)) {
-            x$analysis <- y
-            setcolorder(x, "analysis")
+        
+        if (self$has_results("chromatograms")) {
+          
+          if (identical(names(private$.results$chromatograms), names(value))) {
+            private$.results$chromatograms <- Map(function(x, y) {
+              x$chromatograms <- y
+              x
+            }, private$.results$chromatograms, value)
+            
+          } else {
+            private$.results[["chromatograms"]] <- Map(function(x, y) {
+              x <- list("chromatograms" = y)
+              x
+            }, names(value), value)
           }
           
-          x
-        }, res, names(res))
+        } else {
+          private$.results[["chromatograms"]] <- Map(function(x, y) {
+            x <- list("chromatograms" = y)
+            x
+          }, names(value), value)
+        }
+        
+        invisible(self)
       }
-      
-      res
     },
     
     #' @field chromatograms_peaks `data.table` with integrated peaks from chromatograms for each analyses.
     #' 
-    chromatograms_peaks = function() {
+    chromatograms_peaks = function(value) {
       
-      if (self$has_chromatograms_peaks()) {
-        pks <- private$.results$chromatograms$data
-        pks <- lapply(pks, function(x) x$peaks)
-        pks <- rbindlist(pks)
+      if (missing(value)) {
         
-        if (nrow(pks) > 0) pks$replicate <- self$get_replicate_names()[pks$analysis]
-        
-        pks
+        if (self$has_chromatograms_peaks()) {
+          pks <- private$.results$chromatograms
+          pks <- lapply(pks, function(x) x$peaks)
+          
+          pks
+          
+        } else {
+          data.table()
+        }
         
       } else {
-        data.table()
+        
+        if (self$has_results("chromatograms")) {
+          
+          if (identical(names(private$.results$chromatograms), names(value))) {
+            private$.results$chromatograms <- Map(function(x, y) {
+              x$peaks <- y
+              x
+            }, private$.results$chromatograms, value)
+          }
+        }
+        
+        invisible(self)
       }
     },
     
     #' @field spectra List of spectra `data.table` objects for each analysis.
     #'
-    spectra = function() {
+    spectra = function(value) {
       
-      if (self$has_results("spectra")) {
-        res <- private$.results$spectra$data
-        res <- lapply(res, function(x) x$spectra)
+      if (missing(value)) {
+        
+        if (self$has_results("spectra")) {
+          res <- private$.results$spectra
+          res <- lapply(res, function(x) x$spectra)
+          
+        } else {
+          res <- lapply(self$get_analyses(), function(x) x$spectra)
+          names(res) <- self$get_analysis_names()
+          res <- Map(function(x, y) {
+            if (is.data.table(x)) {
+              if (nrow(x) > 0) {
+                x$analysis <- y
+                setcolorder(x, "analysis")
+              }
+            }
+            x
+          }, res, names(res))
+        }
+        
+        res
         
       } else {
-        res <- lapply(self$get_analyses(), function(x) x$spectra)
-        names(res) <- self$get_analysis_names()
-        res <- Map(function(x, y) {
-          x$analysis <- y
-          x
-        }, res, names(res))
+        
+        if (self$has_results("spectra")) {
+          
+          if (identical(names(private$.results$spectra), names(value))) {
+            private$.results$spectra <- Map(function(x, y) {
+              x$spectra <- y
+              x
+            }, private$.results$spectra, value)
+            
+          } else {
+            private$.results[["spectra"]] <- Map(function(x, y) {
+              x <- list("spectra" = y)
+              x
+            }, names(value), value)
+          }
+          
+        } else {
+          private$.results[["spectra"]] <- Map(function(x, y) {
+            x <- list("spectra" = y)
+            x
+          }, names(value), value)
+        }
+        
+        invisible(self)
       }
-      
-      res
     },
     
     #' @field averaged_spectra List of averaged spectra `data.table` each analysis/replicate.
@@ -786,6 +863,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         ov$polarity <- vapply(private$.analyses, function(x) paste(x$polarity, collapse = "; "), "")
         
         ov$spectra <- vapply(private$.analyses, function(x) x$spectra_number, 0)
+        
+        if (any(self$get_chromatograms_number() > 0)) {
+          ov$chromatograms <- vapply(private$.analyses, function(x) x$chromatograms_number, 0)
+        }
         
         if (self$has_features()) {
           ov$features <- vapply(self$features@features, function(x) nrow(x[!x$filtered, ]), 0)
@@ -1033,8 +1114,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     #' @description Gets spectra from each analysis.
-    #'
-    #' @return A data.table with spectra for each analyses and targets, when defined.
+    #' 
+    #' @param raw_spectra Logical of length one. Set to `TRUE` for parsing raw spectra not spectra 
+    #' results/processed.
+    #' @param loaded_spectra Logical of length one. Set to `TRUE` for parsing loaded spectra not 
+    #' spectra from raw data files.
     #'
     get_spectra = function(analyses = NULL,
                            levels = NULL,
@@ -1050,6 +1134,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                            isolationWindow = 1.3,
                            minIntensityMS1 = 0,
                            minIntensityMS2 = 0,
+                           raw_spectra = FALSE,
+                           loaded_spectra = TRUE,
                            runParallel = FALSE) {
 
       analyses <- private$.check_analyses_argument(analyses)
@@ -1212,103 +1298,106 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       } else {
         preMZr <- NULL
       }
-
-      cached_spectra <- FALSE
-
-      has_spectra <- self$has_loaded_spectra(analyses)
       
-      if (.caches_data() & !all(has_spectra)) {
-        hash <- patRoon::makeHash(
-          analyses, levels, targets, allTraces,
-          isolationWindow, minIntensityMS1, minIntensityMS2
-        )
+      hash <- NULL
 
-        spec_list <- patRoon::loadCacheData("parsed_ms_spectra", hash)
-
-        if (!is.null(spec_list)) {
-          message("\U2139 Spectra loaded from cache!")
-          return(spec_list)
+      if (self$has_spectra() && !raw_spectra) {
+        spec <- rbindlist(self$spectra, fill = TRUE)
+        
+        if ("analysis" %in% colnames(spec)) {
+          spec <- spec[spec$analysis %in% analyses, ]
+          
+        } else if ("replicate" %in% colnames(spec)) {
+          rpl <- self$get_replicate_names()
+          rpl <- rpl[analyses]
+          spec <- spec[spec$replicate %in% unname(rpl)]
+          spec$analysis <- spec$replicate
+          setcolorder(spec, c("analysis", "replicate"))
         }
+        
+        return(spec)
+        
+      } else if (all(self$has_loaded_spectra(analyses)) && loaded_spectra) {
+        
+        spec_list <- lapply(self$get_analyses(analyses), function(x, levels, targets, preMZr) {
+          
+          temp <- x$spectra
 
-      } else {
-        hash <- NULL
-        spec_list <- NULL
-      }
+          with_im <- x$has_ion_mobility
 
-      message("\U2699 Parsing spectra from ", length(analyses),  " MS file/s..." ,appendLF = FALSE)
+          if (!is.null(levels)) temp <- temp[temp$level %in% levels, ]
 
-      if (!is.logical(runParallel)) runParallel <- FALSE
+          if (!is.null(targets)) {
 
-      has_spectra <- all(self$has_loaded_spectra(analyses))
+            if ("polarity" %in% colnames(targets)) {
+              polarities_targets <- unique(targets$polarity)
 
-      if (runParallel & length(analyses) > 1 & !has_spectra) {
-        workers <- parallel::detectCores() - 1
-        if (length(analyses) < workers) workers <- length(analyses)
-        par_type <- "PSOCK"
-        if (parallelly::supportsMulticore()) par_type <- "FORK"
-        cl <- parallel::makeCluster(workers, type = par_type)
-        doParallel::registerDoParallel(cl)
-      } else {
-        registerDoSEQ()
-      }
-
-      i <- NULL
-
-      if (has_spectra) {
-        spec_list <- lapply(self$get_analyses(analyses),
-          function(x, levels, targets, preMZr) {
-
-            temp <- x$run
-
-            with_im <- x$has_ion_mobility
-
-            if (!is.null(levels)) temp <- temp[temp$level %in% levels, ]
-
-            if (!is.null(targets)) {
-
-              if ("polarity" %in% colnames(targets)) {
-                polarities_targets <- unique(targets$polarity)
-
-                if (length(polarities_targets) == 1) {
-                  temp <- temp[temp$polarity == polarities_targets, ]
-                }
+              if (length(polarities_targets) == 1) {
+                temp <- temp[temp$polarity == polarities_targets, ]
               }
-
-              if ("analysis" %in% colnames(targets)) {
-                tp_tar <- targets[targets$analysis %in% x$name, ]
-
-                if (!is.null(preMZr)) {
-                  pre_tar <- preMZr[targets$analysis %in% x$name, ]
-
-                } else {
-                  pre_tar <- NULL
-                }
-
-                if (nrow(tp_tar) > 0) {
-                  temp <- temp[x$spectra, on = .(scan)]
-                  temp <- .trim_spectra_targets(temp, tp_tar, pre_tar, with_im)
-
-                } else {
-                  temp <- data.frame()
-                }
-              } else {
-                temp <- temp[x$spectra, on = .(scan)]
-                temp <- .trim_spectra_targets(temp, targets, preMZr, with_im)
-              }
-            } else {
-              temp <- temp[x$spectra, on = .(scan)]
             }
 
-            if (!with_im) temp[["drift"]] <- NULL
+            if ("analysis" %in% colnames(targets)) {
+              tp_tar <- targets[targets$analysis %in% x$name, ]
 
-            temp
-          },
-          levels = levels,
-          targets = targets,
-          preMZr = preMZr
-        )
+              if (!is.null(preMZr)) {
+                pre_tar <- preMZr[targets$analysis %in% x$name, ]
+
+              } else {
+                pre_tar <- NULL
+              }
+
+              if (nrow(tp_tar) > 0) {
+                temp <- .trim_spectra_targets(temp, tp_tar, pre_tar, with_im)
+
+              } else {
+                temp <- data.frame()
+              }
+            } else {
+              temp <- .trim_spectra_targets(temp, targets, preMZr, with_im)
+            }
+            
+          }
+
+          if (!with_im) temp[["drift"]] <- NULL
+
+          temp
+          
+        }, levels = levels, targets = targets, preMZr = preMZr)
 
       } else {
+        
+        if (.caches_data()) {
+          hash <- patRoon::makeHash(analyses, levels, targets, allTraces, isolationWindow, minIntensityMS1, minIntensityMS2)
+          
+          spec_list <- patRoon::loadCacheData("parsed_ms_spectra", hash)
+          
+          if (!is.null(spec_list)) {
+            message("\U2139 Spectra loaded from cache!")
+            return(spec_list)
+          }
+          
+        } else {
+          hash <- NULL
+          spec_list <- NULL
+        }
+        
+        message("\U2699 Parsing spectra from ", length(analyses),  " MS file/s..." ,appendLF = FALSE)
+        
+        if (!is.logical(runParallel)) runParallel <- FALSE
+        
+        if (runParallel & length(analyses) > 1) {
+          workers <- parallel::detectCores() - 1
+          if (length(analyses) < workers) workers <- length(analyses)
+          par_type <- "PSOCK"
+          if (parallelly::supportsMulticore()) par_type <- "FORK"
+          cl <- parallel::makeCluster(workers, type = par_type)
+          doParallel::registerDoParallel(cl)
+        } else {
+          registerDoSEQ()
+        }
+        
+        i <- NULL
         
         vars <- c(
           "rcpp_parse_ms_analysis_spectra",
@@ -1415,7 +1504,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         
         message(" Done!")
 
-        if (!cached_spectra & !is.null(hash)) {
+        if (.caches_data() && !is.null(hash)) {
           if (!is.null(spec)) {
             message("\U1f5ab Parsed spectra cached!")
             patRoon::saveCacheData("parsed_ms_spectra", spec, hash)
@@ -1431,49 +1520,71 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     #' @description Gets chromatograms from each analysis.
+    #' 
+    #' @param raw_chromatograms Logical of length one. Set to `TRUE` for parsing raw chromatograms not chromatograms 
+    #' results/processed.
+    #' @param loaded_chromatograms Logical of length one. Set to `TRUE` for parsing loaded chromatograms not 
+    #' chromatograms from raw data files.
     #'
     #' @return A data.table with chromatogram/s.
     #'
     get_chromatograms = function(analyses = NULL,
-                                 chromatograms = NA_integer_,
-                                 minIntensity = 0,
+                                 chromatograms = NULL,
+                                 minIntensity = NULL,
+                                 raw_chromatograms = FALSE,
+                                 loaded_chromatograms = TRUE,
                                  runParallel = FALSE) {
 
       analyses <- private$.check_analyses_argument(analyses)
+      
       if (is.null(analyses)) return(data.table())
-
-      if (!(is.numeric(chromatograms) || is.character(chromatograms))) {
-        warning("The argument chromatograms must be an integer or character vector with indeces or names!")
-        return(data.table())
-      }
-
-      has_chroms <- self$has_loaded_chromatograms(analyses)
-
-      if (all(has_chroms)) {
-        chrom_list <- lapply(self$get_analyses(analyses), function(x, chromatograms) {
-          chroms <- x$chromatograms
+      
+      if (self$has_chromatograms() && !raw_chromatograms) {
+        chroms <- rbindlist(self$chromatograms, fill = TRUE)
+        
+        if ("analysis" %in% colnames(chroms)) {
+          chroms <- chroms[chroms$analysis %in% analyses, ]
           
-          if (is.numeric(chromatograms)) {
-            which_chroms <- chroms$index %in% chromatograms
-            chroms <- chroms[which_chroms, ]
-            
-          } else if (is.character(chromatograms)) {
-            which_chroms <- chroms$id %in% chromatograms
-            chroms <- chroms[which_chroms, ]
-            
-          } else if (!is.na(chromatograms)) {
-            return(data.table())
-          }
+        } else if ("replicate" %in% colnames(chroms)) {
+          rpl <- self$get_replicate_names()
+          rpl <- rpl[analyses]
+          chroms <- chroms[chroms$replicate %in% unname(rpl)]
+          chroms$analysis <- chroms$replicate
+          setcolorder(chroms, c("analysis", "replicate"))
+        }
+        
+        if (is.numeric(chromatograms)) {
+          which_chroms <- chroms$index %in% chromatograms
+          chroms <- chroms[which_chroms, ]
           
-          chroms
+        } else if (is.character(chromatograms)) {
+          which_chroms <- chroms$id %in% chromatograms
+          chroms <- chroms[which_chroms, ]
           
-        }, chromatograms = chromatograms)
-
+        } else if (!is.null(chromatograms)) {
+          return(data.table())
+        }
+        
+      } else if (all(self$has_loaded_chromatograms(analyses)) && loaded_chromatograms) {
+        chroms <- lapply(private$.analyses[analyses], function(x) x$chromatograms)
+        chroms <- rbindlist(chroms, idcol = "analysis", fill = TRUE)
+        
+        if (is.numeric(chromatograms)) {
+          which_chroms <- chroms$index %in% chromatograms
+          chroms <- chroms[which_chroms, ]
+          
+        } else if (is.character(chromatograms)) {
+          which_chroms <- chroms$id %in% chromatograms
+          chroms <- chroms[which_chroms, ]
+          
+        } else if (!is.na(chromatograms)) {
+          return(data.table())
+        }
+        
+        
       } else {
 
-        message("\U2699 Parsing chromatograms from ", length(analyses),  " MS file/s..." ,
-          appendLF = FALSE
-        )
+        message("\U2699 Parsing chromatograms from ", length(analyses),  " MS file/s..." , appendLF = FALSE)
 
         if (!is.logical(runParallel)) runParallel <- FALSE
 
@@ -1497,8 +1608,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         }
 
         chrom_list <- foreach(i = self$get_analyses(analyses)) %dopar% {
-          chroms <- rcpp_parse_ms_analysis_chromatograms(i, index)
-          chroms
+          rcpp_parse_ms_analysis_chromatograms(i, index)
         }
         
         if (is.character(chromatograms)) {
@@ -1510,17 +1620,20 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         }
 
         message(" Done!")
+        
+        if (length(chrom_list) == length(analyses)) {
+          names(chrom_list) <- analyses
+          chroms <- rbindlist(chrom_list, idcol = "analysis", fill = TRUE)
+          
+        } else {
+          warning("Defined analyses not found!")
+          data.table()
+        }
       }
 
-      if (length(chrom_list) == length(analyses)) {
-        names(chrom_list) <- analyses
-        chrom_df <- rbindlist(chrom_list, idcol = "analysis", fill = TRUE)
-        chrom_df <- chrom_df[chrom_df$intensity > minIntensity, ]
-        chrom_df
-      } else {
-        warning("Defined analyses not found!")
-        data.table()
-      }
+      if (is.numeric(minIntensity)) chroms <- chroms[chroms$intensity > minIntensity, ]
+      
+      chroms
     },
 
     #' @description Gets extract ion chromatograms (EIC) from the analyses based on targets as a data.table.
@@ -1543,6 +1656,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         isolationWindow = 1.3,
         minIntensityMS1 = 0,
         minIntensityMS2 = 0,
+        raw_spectra = TRUE,
+        loaded_spectra = TRUE,
         runParallel = runParallel
       )
 
@@ -1588,6 +1703,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         allTraces = TRUE,
         minIntensityMS1 = minIntensity,
         minIntensityMS2 = 0,
+        raw_spectra = TRUE,
+        loaded_spectra = TRUE,
         runParallel = runParallel
       )
 
@@ -1669,6 +1786,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         allTraces = FALSE,
         minIntensityMS1 = 0,
         minIntensityMS2 = minIntensity,
+        raw_spectra = TRUE,
+        loaded_spectra = TRUE,
         runParallel = runParallel
       )
 
@@ -2101,6 +2220,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           levels = 1,
           mz = fts,
           id = fts$feature,
+          raw_spectra = TRUE,
+          loaded_spectra = TRUE,
           runParallel = runParallel
         )
 
@@ -3524,7 +3645,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
 
       org_analysis_names <- unname(self$get_analysis_names())
 
-      must_have_cols <- c("scan", "mz", "intensity")
+      must_have_cols <- c("scan", "rt", "mz", "intensity")
 
       if (is.data.frame(spectra)) {
         must_have_cols <- c("analysis", must_have_cols)
@@ -3572,7 +3693,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         if (replace | n_data == 0) {
           rem_run_cols <- lapply(private$.analyses, function(x) colnames(x$run))
           rem_run_cols <- unique(unname(unlist(rem_run_cols)))
-          rem_run_cols <- rem_run_cols[!rem_run_cols %in% "scan"]
+          rem_run_cols <- rem_run_cols[!rem_run_cols %in% c("scan", "rt")]
 
           spectra <- lapply(spectra, function(x, rem_run_cols) {
             if (nrow(x) == 0) return(data.table())
@@ -3643,14 +3764,24 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     #' @return Invisible.
     #'
-    load_spectra = function(runParallel = FALSE) {
+    load_spectra = function(analyses = NULL,
+                            levels = NULL,
+                            mass = NULL,
+                            mz = NULL,
+                            rt = NULL,
+                            drift = NULL,
+                            ppm = 20,
+                            sec = 60,
+                            millisec = 5,
+                            id = NULL,
+                            allTraces = TRUE,
+                            isolationWindow = 1.3,
+                            minIntensityMS1 = 0,
+                            minIntensityMS2 = 0,
+                            runParallel = FALSE) {
       
-      spec <- self$get_spectra(
-        analyses = NULL, levels = NULL, mass = NULL,
-        mz = NULL, rt = NULL, ppm = 20, sec = 60, id = NULL,
-        allTraces = TRUE, isolationWindow = 1.3,
-        minIntensityMS1 = 0, minIntensityMS2 = 0,
-        runParallel = runParallel
+      spec <- self$get_spectra(analyses, levels, mass, mz, rt, drift, ppm, sec, millisec, id, allTraces, isolationWindow, 
+        minIntensityMS1, minIntensityMS2, raw_spectra = TRUE, loaded_spectra = FALSE, runParallel = runParallel
       )
 
       split_vector <- spec$analysis
@@ -3658,25 +3789,32 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       spec$analysis <- NULL
       
       spec_list <- split(spec, split_vector)
-
+      
       if (length(spec_list) == self$get_number_analyses()) {
         
-        suppressMessages(self$add_spectra(spec_list, replace = TRUE))
-
+        private$.analyses <- Map(
+          function(x, y) {
+            x$spectra <- y
+            x
+          },
+          private$.analyses, spec_list
+        )
+        
         private$.register(
-          "loaded",
+          "added",
           "analyses",
           "raw spectra",
           NA_character_,
           NA_character_,
           NA_character_
         )
-
-        message("\U2713 Spectra loaded to all analyses!")
+        
+        message("\U2713 ", " Spectra loaded!")
 
       } else {
         warning("Not done, check the MS file paths and formats!")
       }
+      
       invisible(self)
     },
 
@@ -3684,12 +3822,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     #' @return Invisible.
     #'
-    load_chromatograms = function(runParallel = FALSE) {
+    load_chromatograms = function(chromatograms = NULL, runParallel = FALSE) {
 
-      chrom <- self$get_chromatograms(
-        analyses = NULL, minIntensity = 0,
-        runParallel = runParallel
-      )
+      chrom <- self$get_chromatograms(chromatograms = chromatograms, runParallel = runParallel)
 
       if (nrow(chrom) > 0) {
         split_vector <- chrom$analysis
@@ -4497,14 +4632,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     has_chromatograms = function() {
       
-      if (self$has_results("chromatograms")) {
-        sum(vapply(private$.results$chromatograms$data, function(x) {
-          if ("chromatograms" %in% names(x)) {
-            nrow(x$chromatograms)
-          } else {
-            0
-          }
-        }, 0)) > 0
+      if (self$has_results("spectra")) {
+        sum(vapply(private$.results$chromatograms, function(x) nrow(x$chromatograms), 0)) > 0
         
       } else {
         all(vapply(self$get_analyses(), function(x) nrow(x$chromatograms) > 0, FALSE))
@@ -4516,7 +4645,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     has_chromatograms_peaks = function() {
       
       if (self$has_results("chromatograms")) {
-        sum(vapply(private$.results$chromatograms$data, function(x) nrow(x$peaks), 0)) > 0
+        sum(vapply(private$.results$chromatograms, function(x) nrow(x$peaks), 0)) > 0
         
       } else {
         FALSE
@@ -4528,13 +4657,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     has_spectra = function() {
       
       if (self$has_results("spectra")) {
-        sum(vapply(private$.results$spectra$data, function(x) {
-          if ("spectra" %in% names(x)) {
-            nrow(x$spectra)
-          } else {
-            0
-          }
-        }, 0)) > 0
+        sum(vapply(private$.results$spectra, function(x) nrow(x$spectra), 0)) > 0
         
       } else {
         all(vapply(self$get_analyses(), function(x) nrow(x$spectra) > 0, FALSE))
@@ -4656,7 +4779,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     #' @param colorBy A string of length 1. One of `analyses` (the default), `polarities`, `levels`, `targets` or `replicates`.
     #' @param xVal Character length one. Possible values are "mz", "rt", "drift" or "mass".
-    #' @param results Logical of length one. Set to `TRUE` for plotting the spectra in results not the raw spectra.
+    #' @param raw_spectra Logical of length one. Set to `TRUE` for plotting the spectra in results not the raw spectra.
+    #' @param loaded_spectra Logical of length one. Set to `TRUE` for parsing loaded spectra not 
+    #' spectra from raw data files.
     #' @param averaged Logical of length one. Set to `TRUE` for plotting the averaged spectra.
     #' @param baseline Logical of length one. Set to `TRUE` for plotting the spectra with baseline corrected.
     #' @param smoothed Logical of length one. Set to `TRUE` for plotting the smoothed spectra.
@@ -4675,14 +4800,15 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                             isolationWindow = 1.3,
                             minIntensityMS1 = 0,
                             minIntensityMS2 = 0,
+                            raw_spectra = FALSE,
+                            loaded_spectra = TRUE,
                             runParallel = FALSE,
-                            results = TRUE,
                             averaged = TRUE,
                             baseline = FALSE,
                             smoothed = TRUE,
                             legendNames = TRUE,
                             colorBy = "analyses",
-                            xVal = "mass",
+                            xVal = "mz",
                             xLab = NULL,
                             yLab = NULL,
                             title = NULL,
@@ -4690,50 +4816,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                             showLegend = TRUE,
                             interactive = TRUE) {
       
-      if (results && self$has_results("spectra")) {
-        
-        if (averaged && self$has_averaged_spectra()) {
-          spec <- self$averaged_spectra
-          
-        } else if (!averaged) {
-          spec <- self$spectra
-          
-        } else {
-          warning("Average spectra results not found!")
-          return(NULL)
-        }
-        
-        spec <- rbindlist(spec)
-        
-      } else if (!results) {
-        spec <- self$get_spectra(
-          analyses, levels,
-          mass, mz, rt, drift, ppm, sec, millisec, id,
-          allTraces = allTraces,
-          isolationWindow,
-          minIntensityMS1,
-          minIntensityMS2,
-          runParallel
-        )
-        
-      } else {
-        warning("Spectra results not found!")
-        return(NULL)
-      }
+      spec <- self$get_spectra(analyses, levels, mass, mz, rt, drift, ppm, sec, millisec, id, allTraces = allTraces,
+        isolationWindow, minIntensityMS1, minIntensityMS2, raw_spectra, loaded_spectra, runParallel
+      )
       
       if (nrow(spec) == 0) {
         message("\U2717 Traces not found for the targets!")
         return(NULL)
-      }
-      
-      if ( averaged && !baseline && "baseline" %in% colnames(spec)) {
-        
-        if (smoothed && "smoothed" %in% colnames(spec)) {
-          spec$intensity <- spec$smoothed
-          
-        } else {
-          spec$intensity <- spec$raw
-        }
       }
       
       if (!xVal %in% colnames(spec)) {
@@ -4741,19 +4830,17 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         return(NULL)
       }
       
+      if (xVal == "mz" && (!"mz" %in% colnames(spec)) && "mass" %in% colnmes(spec)) xVal = "mass"
+      
       spec$x <- spec[[xVal]]
       
-      unique_key <- c("analysis")
+      if ("feature" %in% colnames(spec)) spec$id <- spec$feature
       
-      if (grepl("polarities", colorBy) && "polarity" %in% colnames(spec)) {
-        unique_key <- c(unique_key, "polarity")
-      }
+      if ("replicates" %in% colorBy) spec$replicate <- self$get_replicate_names()[spec$analysis]
       
-      if (grepl("levels", colorBy)  && "level" %in% colnames(spec)) {
-        unique_key <- c(unique_key, "level")
-      }
+      spec <- .make_colorBy_varkey(spec, colorBy, legendNames = NULL)
       
-      unique_key <- c(unique_key, "x")
+      unique_key <- c("var", "x")
       
       spec <- spec[, .(intensity = sum(intensity)), by = c(unique_key)]
       
@@ -4780,14 +4867,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       if (is.null(yLab)) yLab = "Intensity / counts"
       
-      if ("feature" %in% colnames(spec)) spec$id <- spec$feature
-      
-      if ("replicates" %in% colorBy) {
-        spec$replicate <- self$get_replicate_names()[spec$analysis]
-      }
-      
-      spec <- .make_colorBy_varkey(spec, colorBy, legendNames = NULL)
-      
+      setorder(spec, x)
+
       if (!interactive) {
         return(.plot_x_spectra_static(spec, xLab, yLab, title, cex, showLegend))
         
@@ -4797,9 +4878,17 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
     
     #' @description Plots chromatograms in the analyses.
+    #' 
+    #' @param raw_chromatograms Logical of length one. Set to `TRUE` for parsing raw chromatograms not chromatograms 
+    #' results/processed.
+    #' @param loaded_chromatograms Logical of length one. Set to `TRUE` for parsing loaded chromatograms not 
+    #' chromatograms from raw data files.
     #'
     plot_chromatograms = function(analyses = NULL,
-                                  chromatograms = NA_integer_,
+                                  chromatograms = NULL,
+                                  minIntensity = NULL,
+                                  raw_chromatograms = FALSE,
+                                  loaded_chromatograms = TRUE,
                                   title = NULL,
                                   colorBy = "targets",
                                   legendNames = NULL,
@@ -4809,7 +4898,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                   cex = 0.6,
                                   interactive = TRUE) {
       
-      chromatograms <- self$get_chromatograms(analyses, chromatograms)
+      chromatograms <- self$get_chromatograms(
+        analyses, chromatograms, minIntensity, raw_chromatograms, loaded_chromatograms
+      )
       
       if (nrow(chromatograms) == 0) {
         message("\U2717 Chromatograms not found for the analyses!")
@@ -4819,12 +4910,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       if ("replicates" %in% colorBy) {
         chromatograms$replicate <- self$get_replicate_names()[chromatograms$analysis]
       }
-      
-      # if (!"id" %in% colnames(chromatograms)) tic$id <- tic$analysis
-      
-      # polarities <- self$get_polarities()
-      # polarities_names <- unique(names(polarities))
-      
+
       pol_key <- c("positive", "negative", "nd")
       names(pol_key) <- c("1", "-1", "0")
       chromatograms$polarity <- as.character(chromatograms$polarity)
@@ -4835,6 +4921,45 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         NULL
       } else {
         .plot_chromatograms_interactive(chromatograms, legendNames, colorBy, title, showLegend)
+      }
+    },
+    
+    #' @description Plots chromatograms corrected baseline for given analyses.
+    #'
+    #' @return A plot.
+    #' 
+    plot_chromatograms_baseline = function(analyses = NULL,
+                                           chromatograms = NULL,
+                                           xLab = NULL,
+                                           yLab = NULL,
+                                           title = NULL,
+                                           cex = 0.6,
+                                           showLegend = TRUE,
+                                           colorBy = "analyses",
+                                           interactive = TRUE) {
+      
+      chroms <- self$get_chromatograms(analyses, chromatograms, 0, FALSE)
+      
+      if (!("baseline" %in% colnames(chroms) && "raw" %in% colnames(chroms))) {
+        warning("Baseline not found!")
+        return(NULL)
+      }
+      
+      if ("replicates" %in% colorBy) chroms$replicate <- self$get_replicate_names()[chroms$analysis]
+      
+      chroms <- .make_colorBy_varkey(chroms, colorBy, legendNames = NULL)
+      
+      setnames(chroms, "rt", "x")
+      
+      if (is.null(xLab)) xLab = "Retention time / seconds"
+      
+      if (is.null(yLab)) yLab = "Intensity / counts"
+      
+      if (!interactive) {
+        return(.plot_x_spectra_baseline_static(chroms, xLab, yLab, title, cex, showLegend))
+        
+      } else {
+        return(.plot_x_spectra_baseline_interactive(chroms, xLab, yLab, title, colorBy))
       }
     },
 
@@ -6077,6 +6202,28 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       invisible(self)
     },
     
+    #' @description Smooths chromatograms in each analyses.
+    #'
+    #' @return Invisible.
+    #'
+    smooth_chromatograms = function(settings = NULL) {
+      
+      .dispatch_process_method("smooth_chromatograms", settings, self, private)
+      
+      invisible(self)
+    },
+    
+    #' @description Corrects the baseline of chromatograms in each analyses.
+    #'
+    #' @return Invisible.
+    #'
+    correct_chromatograms_baseline = function(settings = NULL) {
+      
+      .dispatch_process_method("correct_chromatograms_baseline", settings, self, private)
+      
+      invisible(self)
+    },
+    
     #' @description Integrates chromatograms, returning a peak list for each chromatogram for each analyses.
     #'
     #' @return Invisible.
@@ -6084,6 +6231,17 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     integrate_chromatograms = function(settings = NULL) {
       
       .dispatch_process_method("integrate_chromatograms", settings, self, private)
+      
+      invisible(self)
+    },
+    
+    #' @description Clusters spectra based on a value name.
+    #'
+    #' @return Invisible.
+    #'
+    cluster_spectra = function(settings = NULL) {
+      
+      .dispatch_process_method("cluster_spectra", settings, self, private)
       
       invisible(self)
     },
@@ -6992,7 +7150,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           "calculate_quality",
           "generate_formulas",
           "generate_compounds",
+          "smooth_chromatograms",
+          "correct_chromatograms_baseline",
           "integrate_chromatograms",
+          "cluster_spectra",
           "deconvolute_spectra_charges"
         ),
         max = c(
@@ -7007,6 +7168,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           1,
           1,
           Inf,
+          1,
+          1,
+          1,
           1,
           1,
           1,

@@ -70,7 +70,7 @@ save_default_ProcessingSettings <- function(call = NA_character_,
   }
 }
 
-## centroid_spectra -----
+# centroid_spectra -----
 
 #' @title Settings_centroid_spectra_qCentroids
 #'
@@ -131,7 +131,7 @@ validate.Settings_centroid_spectra_qCentroids <- function(x) {
   )
 }
 
-## bin_spectra -----
+# bin_spectra -----
 
 #' @title Settings_bin_spectra_qBinning
 #'
@@ -226,7 +226,7 @@ validate.Settings_bin_spectra_StreamFind <- function(x) {
   )
 }
 
-## find_features -----
+# find_features -----
 
 #' @title Settings_find_features_qPeaks
 #'
@@ -755,7 +755,7 @@ validate.Settings_find_features_kpic2 <- function(x) {
   )
 }
 
-## group_features -----
+# group_features -----
 
 #' @title Settings_group_features_xcms3_peakdensity
 #'
@@ -1106,7 +1106,7 @@ validate.Settings_group_features_openms <- function(x) {
   )
 }
 
-## load_features -----
+# load_features -----
 
 #' @title Settings_load_features_ms1_StreamFind
 #'
@@ -1314,7 +1314,7 @@ validate.Settings_load_features_eic_StreamFind <- function(x) {
   )
 }
 
-## load_MSPeakLists -----
+# load_MSPeakLists -----
 
 #' @title Settings_load_MSPeakLists_patRoon
 #'
@@ -1496,7 +1496,7 @@ validate.Settings_load_MSPeakLists_StreamFind <- function(x) {
   )
 }
 
-## filter_features -----
+# filter_features -----
 
 #' @title Settings_filter_features_StreamFind
 #'
@@ -1809,7 +1809,7 @@ validate.Settings_filter_features_patRoon <- function(x) {
   )
 }
 
-## annotate_features -----
+# annotate_features -----
 
 #' @title Settings_annotate_features_StreamFind
 #'
@@ -1906,7 +1906,7 @@ validate.Settings_annotate_features_StreamFind <- function(x) {
   )
 }
 
-## suspect_screening -----
+# suspect_screening -----
 
 #' @title Settings_suspect_screening_StreamFind
 #'
@@ -2158,7 +2158,7 @@ validate.Settings_suspect_screening_patRoon <- function(x) {
   }
 }
 
-## find_internal_standards -----
+# find_internal_standards -----
 
 #' @title Settings_find_internal_standards_StreamFind
 #'
@@ -2227,7 +2227,7 @@ validate.Settings_find_internal_standards_StreamFind <- function(x) {
   }
 }
 
-## calculate_quality -----
+# calculate_quality -----
 
 #' @title Settings_calculate_quality_StreamFind
 #'
@@ -2527,15 +2527,8 @@ validate.Settings_generate_compounds_metfrag <- function(x) {
 #'
 #' @description Prototype.
 #' 
-#' @param chromatograms 
-#' @param smoothing 
-#' @param windowSize 
-#' @param baseline 
-#' @param baseline_method 
-#' @param baseline_args 
 #' @param merge 
 #' @param closeByThreshold 
-#' @param valeyThreshold 
 #' @param minPeakHeight 
 #' @param minPeakDistance 
 #' @param minPeakWidth 
@@ -2546,19 +2539,8 @@ validate.Settings_generate_compounds_metfrag <- function(x) {
 #'
 #' @export
 #'
-Settings_integrate_chromatograms_StreamFind <- function(chromatograms = NA_character_,
-                                                        smoothing = TRUE,
-                                                        windowSize = 4,
-                                                        baseline = TRUE,
-                                                        baseline_method = "als",
-                                                        baseline_args = list(
-                                                          lambda = 5,
-                                                          p = 0.05,
-                                                          maxit = 10
-                                                        ),
-                                                        merge = TRUE,
+Settings_integrate_chromatograms_StreamFind <- function(merge = TRUE,
                                                         closeByThreshold = 45,
-                                                        valeyThreshold = 0.5,
                                                         minPeakHeight = 0,
                                                         minPeakDistance = 10,
                                                         minPeakWidth = 5,
@@ -2569,15 +2551,8 @@ Settings_integrate_chromatograms_StreamFind <- function(chromatograms = NA_chara
     call = "integrate_chromatograms",
     algorithm = "StreamFind",
     parameters = list(
-      chromatograms = chromatograms,
-      smoothing = smoothing,
-      windowSize = windowSize,
-      baseline = baseline,
-      baseline_method = baseline_method,
-      baseline_args = baseline_args,
       merge = merge,
       closeByThreshold = closeByThreshold,
-      valeyThreshold = valeyThreshold,
       minPeakHeight = minPeakHeight,
       minPeakDistance = minPeakDistance,
       minPeakWidth = minPeakWidth,
@@ -2764,6 +2739,55 @@ validate.Settings_average_spectra_StreamFind <- function(x) {
   )
 }
 
+# cluster_spectra -----
+
+#' @title Settings_cluster_spectra_StreamFind
+#'
+#' @description Prototype.
+#' 
+#' @param val 
+#' @param clustVal 
+#' @param presence 
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_cluster_spectra_StreamFind.
+#'
+#' @export
+#'
+Settings_cluster_spectra_StreamFind <- function(val = "mz", clustVal = 0.001, presence = 0.1) {
+  
+  settings <- list(
+    call = "cluster_spectra",
+    algorithm = "StreamFind",
+    parameters = list(
+      val = val,
+      clustVal = clustVal,
+      presence = presence
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_cluster_spectra_StreamFind
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_cluster_spectra_StreamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_cluster_spectra_StreamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "cluster_spectra"),
+    checkmate::test_choice(x$algorithm, "StreamFind")
+  )
+}
+
 # subtract_blank_spectra -----
 
 #' @title Settings_subtract_blank_spectra_StreamFind
@@ -2805,73 +2829,210 @@ validate.Settings_subtract_blank_spectra_StreamFind <- function(x) {
   )
 }
 
-# correct_spectra_baseline -----
+# correct_chromatograms_baseline -----
 
-#' @title Settings_correct_spectra_baseline_StreamFind
+#' @title Settings_correct_chromatograms_baseline_baseline
 #'
 #' @description Prototype.
 #' 
 #' @param method 
 #' @param args 
 #'
-#' @return A ProcessingSettings S3 class object with subclass Settings_correct_spectra_baseline_StreamFind.
+#' @return A ProcessingSettings S3 class object with subclass Settings_correct_chromatograms_baseline_baseline.
 #'
 #' @export
 #'
-Settings_correct_spectra_baseline_StreamFind <- function(method = "als",
-                                                         args = list(lambda = 5, p = 0.05, maxit = 10)) {
+Settings_correct_chromatograms_baseline_baseline <- function(method = "als",
+                                                       args = list(lambda = 5, p = 0.05, maxit = 10)) {
   
   settings <- list(
-    call = "correct_spectra_baseline",
-    algorithm = "StreamFind",
+    call = "correct_chromatograms_baseline",
+    algorithm = "baseline",
     parameters = list(
       method = method,
       args = args
     ),
-    version = as.character(packageVersion("StreamFind")),
-    software = "StreamFind",
-    developer = "Ricardo Cunha",
-    contact = "cunha@iuta.de",
-    link = "https://odea-project.github.io/StreamFind",
-    doi = NA_character_
+    version = as.character(packageVersion("baseline")),
+    software = "baseline",
+    developer = "Kristian Hovde Liland and Bjørn-Helge Mevik",
+    contact = "kristian.liland@nmbu.no",
+    link = "https://github.com/khliland/baseline/",
+    doi = "10.1366/000370210792434350"
   )
   
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_correct_spectra_baseline_StreamFind
+#' @describeIn Settings_correct_chromatograms_baseline_baseline
 #' Validates the object structure, returning a logical value of length one.
 #'
-#' @param x A Settings_correct_spectra_baseline_StreamFind S3 class object.
+#' @param x A Settings_correct_chromatograms_baseline_baseline S3 class object.
 #'
 #' @export
 #'
-validate.Settings_correct_spectra_baseline_StreamFind <- function(x) {
+validate.Settings_correct_chromatograms_baseline_baseline <- function(x) {
   all(
-    checkmate::test_choice(x$call, "correct_spectra_baseline"),
-    checkmate::test_choice(x$algorithm, "StreamFind")
+    checkmate::test_choice(x$call, "correct_chromatograms_baseline"),
+    checkmate::test_choice(x$algorithm, "baseline")
   )
 }
 
-# smooth_spectra -----
+#' @title Settings_correct_chromatograms_baseline_airpls
+#'
+#' @description Prototype.
+#' 
+#' @param lambda 
+#' @param differences 
+#' @param itermax 
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_correct_chromatograms_baseline_airpls.
+#'
+#' @export
+#'
+Settings_correct_chromatograms_baseline_airpls <- function(lambda = 10, differences = 1, itermax = 20) {
+  
+  settings <- list(
+    call = "correct_chromatograms_baseline",
+    algorithm = "airpls",
+    parameters = list(
+      lambda = lambda, differences = differences, itermax = itermax
+    ),
+    version = NA_character_,
+    software = "airPLS",
+    developer = "Zhi-Min Zhang",
+    contact = "zmzhang@csu.edu.cn",
+    link = "https://github.com/zmzhang/airPLS",
+    doi = "10.1039/b922045c"
+  )
+  
+  as.ProcessingSettings(settings)
+}
 
-#' @title Settings_smooth_spectra_StreamFind
+#' @describeIn Settings_correct_chromatograms_baseline_airpls
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_correct_chromatograms_baseline_airpls S3 class object.
+#'
+#' @export
+#'
+validate.Settings_correct_chromatograms_baseline_airpls <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "correct_chromatograms_baseline"),
+    checkmate::test_choice(x$algorithm, "airpls")
+  )
+}
+
+# correct_spectra_baseline -----
+
+#' @title Settings_correct_spectra_baseline_baseline
+#'
+#' @description Prototype.
+#' 
+#' @param method 
+#' @param args 
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_correct_spectra_baseline_baseline.
+#'
+#' @export
+#'
+Settings_correct_spectra_baseline_baseline <- function(method = "als",
+                                                       args = list(lambda = 5, p = 0.05, maxit = 10)) {
+  
+  settings <- list(
+    call = "correct_spectra_baseline",
+    algorithm = "baseline",
+    parameters = list(
+      method = method,
+      args = args
+    ),
+    version = as.character(packageVersion("baseline")),
+    software = "baseline",
+    developer = "Kristian Hovde Liland and Bjørn-Helge Mevik",
+    contact = "kristian.liland@nmbu.no",
+    link = "https://github.com/khliland/baseline/",
+    doi = "10.1366/000370210792434350"
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_correct_spectra_baseline_baseline
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_correct_spectra_baseline_baseline S3 class object.
+#'
+#' @export
+#'
+validate.Settings_correct_spectra_baseline_baseline <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "correct_spectra_baseline"),
+    checkmate::test_choice(x$algorithm, "baseline")
+  )
+}
+
+#' @title Settings_correct_spectra_baseline_airpls
+#'
+#' @description Prototype.
+#' 
+#' @param lambda 
+#' @param differences 
+#' @param itermax 
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_correct_spectra_baseline_airpls.
+#'
+#' @export
+#'
+Settings_correct_spectra_baseline_airpls <- function(lambda = 10, differences = 1, itermax = 20) {
+  
+  settings <- list(
+    call = "correct_spectra_baseline",
+    algorithm = "airpls",
+    parameters = list(
+      lambda = lambda, differences = differences, itermax = itermax
+    ),
+    version = NA_character_,
+    software = "airPLS",
+    developer = "Zhi-Min Zhang",
+    contact = "zmzhang@csu.edu.cn",
+    link = "https://github.com/zmzhang/airPLS",
+    doi = "10.1039/b922045c"
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_correct_spectra_baseline_airpls
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_correct_spectra_baseline_airpls S3 class object.
+#'
+#' @export
+#'
+validate.Settings_correct_spectra_baseline_airpls <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "correct_spectra_baseline"),
+    checkmate::test_choice(x$algorithm, "airpls")
+  )
+}
+
+# smooth_chromatograms -----
+
+#' @title Settings_smooth_chromatograms_movingaverage
 #'
 #' @description Prototype.
 #' 
 #' @param windowSize 
 #' @param xValWindow 
 #'
-#' @return A ProcessingSettings S3 class object with subclass Settings_smooth_spectra_StreamFind.
+#' @return A ProcessingSettings S3 class object with subclass Settings_smooth_chromatograms_movingaverage.
 #'
 #' @export
 #'
-Settings_smooth_spectra_StreamFind <- function(windowSize = 5,
-                                               xValWindow = NULL) {
+Settings_smooth_chromatograms_movingaverage <- function(windowSize = 5, xValWindow = NULL) {
   
   settings <- list(
-    call = "smooth_spectra",
-    algorithm = "StreamFind",
+    call = "smooth_chromatograms",
+    algorithm = "movingaverage",
     parameters = list(
       windowSize = windowSize,
       xValWindow = xValWindow
@@ -2887,17 +3048,111 @@ Settings_smooth_spectra_StreamFind <- function(windowSize = 5,
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_smooth_spectra_StreamFind
+#' @describeIn Settings_smooth_chromatograms_movingaverage
 #' Validates the object structure, returning a logical value of length one.
 #'
-#' @param x A Settings_smooth_spectra_StreamFind S3 class object.
+#' @param x A Settings_smooth_chromatograms_movingaverage S3 class object.
 #'
 #' @export
 #'
-validate.Settings_smooth_spectra_StreamFind <- function(x) {
+validate.Settings_smooth_chromatograms_movingaverage <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "smooth_chromatograms"),
+    checkmate::test_choice(x$algorithm, "movingaverage")
+  )
+}
+
+#' @title Settings_smooth_chromatograms_savgol
+#'
+#' @description Prototype.
+#' 
+#' @param fl 
+#' @param forder 
+#' @param dorder 
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_smooth_chromatograms_savgol.
+#'
+#' @export
+#'
+Settings_smooth_chromatograms_savgol <- function(fl = 11, forder = 4, dorder = 0) {
+  
+  settings <- list(
+    call = "smooth_chromatograms",
+    algorithm = "savgol",
+    parameters = list(
+      fl = fl,
+      forder = forder,
+      dorder = dorder
+    ),
+    version = as.character(packageVersion("pracma")),
+    software = "pracma",
+    developer = "Hans W. Borchers",
+    contact = NA_character_,
+    link = "https://cran.r-project.org/web/packages/pracma/index.html",
+    doi = NA_character_
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_smooth_chromatograms_savgol
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_smooth_chromatograms_savgol S3 class object.
+#'
+#' @export
+#'
+validate.Settings_smooth_chromatograms_savgol <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "smooth_chromatograms"),
+    checkmate::test_choice(x$algorithm, "savgol")
+  )
+}
+
+# smooth_spectra -----
+
+#' @title Settings_smooth_spectra_movingaverage
+#'
+#' @description Prototype.
+#' 
+#' @param windowSize 
+#' @param xValWindow 
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_smooth_spectra_movingaverage.
+#'
+#' @export
+#'
+Settings_smooth_spectra_movingaverage <- function(windowSize = 5, xValWindow = NULL) {
+  
+  settings <- list(
+    call = "smooth_spectra",
+    algorithm = "movingaverage",
+    parameters = list(
+      windowSize = windowSize,
+      xValWindow = xValWindow
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_smooth_spectra_movingaverage
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_smooth_spectra_movingaverage S3 class object.
+#'
+#' @export
+#'
+validate.Settings_smooth_spectra_movingaverage <- function(x) {
   all(
     checkmate::test_choice(x$call, "smooth_spectra"),
-    checkmate::test_choice(x$algorithm, "StreamFind")
+    checkmate::test_choice(x$algorithm, "movingaverage")
   )
 }
 
@@ -2996,6 +3251,86 @@ validate.Settings_normalize_spectra_StreamFind <- function(x) {
   all(
     checkmate::test_choice(x$call, "normalize_spectra"),
     checkmate::test_choice(x$algorithm, "StreamFind")
+  )
+}
+
+#' @title Settings_normalize_spectra_minmax
+#'
+#' @description Prototype.
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_normalize_spectra_minmax.
+#'
+#' @export
+#'
+Settings_normalize_spectra_minmax <- function() {
+  
+  settings <- list(
+    call = "normalize_spectra",
+    algorithm = "minmax",
+    parameters = list(),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_normalize_spectra_minmax
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_normalize_spectra_minmax S3 class object.
+#'
+#' @export
+#'
+validate.Settings_normalize_spectra_minmax <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "normalize_spectra"),
+    checkmate::test_choice(x$algorithm, "minmax")
+  )
+}
+
+#' @title Settings_normalize_spectra_snv
+#'
+#' @description Prototype.
+#' 
+#' @param liftTozero 
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_normalize_spectra_snv.
+#'
+#' @export
+#'
+Settings_normalize_spectra_snv <- function(liftTozero = FALSE) {
+  
+  settings <- list(
+    call = "normalize_spectra",
+    algorithm = "snv",
+    parameters = list(liftTozero = liftTozero),
+    version = NA_character_,
+    software = NA_character_,
+    developer = "Jürgen Schram",
+    contact = "schram@hsnr.de",
+    link = NA_character_,
+    doi = "10.1016/j.trac.2018.12.004"
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_normalize_spectra_snv
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_normalize_spectra_snv S3 class object.
+#'
+#' @export
+#'
+validate.Settings_normalize_spectra_snv <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "normalize_spectra"),
+    checkmate::test_choice(x$algorithm, "snv")
   )
 }
 

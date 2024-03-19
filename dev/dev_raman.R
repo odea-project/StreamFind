@@ -15,15 +15,13 @@ ant_files <- list.files(ant_dir, pattern = "_\\d.asc", full.names = TRUE)
 
 ant <- RamanEngine$new(ant_files, runParallel = FALSE)
 
-# ant$add_replicate_names(sub("_\\d+$", "", e_sec$get_analysis_names()))
-ant$add_replicate_names(sub("_(\\d)\\d*$", "_\\1", ant$get_analysis_names()))
-ant$merge_spectra_time_series()
+ant$add_replicate_names(sub("_\\d+$", "", ant$get_analysis_names()))
+# ant$add_replicate_names(sub("_(\\d)\\d*$", "_\\1", ant$get_analysis_names()))
+# ant$merge_spectra_time_series()
 
 ant$bin_spectra(Settings_bin_spectra_StreamFind(windowSpectrumUnits = 5))
 
-# ant$plot_chromatograms()
-
-ant$normalize_spectra(Settings_normalize_spectra_StreamFind(liftTozero = TRUE)) # TODO
+ant$normalize_spectra(Settings_normalize_spectra_StreamFind(liftTozero = TRUE))
 
 ant$subtract_spectra_section(Settings_subtract_spectra_section_StreamFind(sectionWindow = c(0, 3)))
 
@@ -33,13 +31,29 @@ ant$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("shif
 
 ant$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("shift" = c(2000, 2600))))
 
-# ant$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("rt" = c(10, max(e_sec$get_spectra()$rt)))))
-
-ant$correct_spectra_baseline(Settings_correct_spectra_baseline_StreamFind(
-  method = "als", args = list(lambda = 3, p = 0.02, maxit = 20)
-))
+ant$correct_spectra_baseline(Settings_correct_spectra_baseline_baseline(method = "als", args = list(lambda = 3, p = 0.02, maxit = 20)))
 
 ant$normalize_spectra(Settings_normalize_spectra_StreamFind(liftTozero = TRUE))
+
+ant$plot_spectra(rt = c(5, 8))
+
+
+View(ant$get_results("spectra"))
+
+
+# ant$plot_chromatograms()
+
+ # TODO
+
+
+
+
+
+# ant$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("rt" = c(10, max(e_sec$get_spectra()$rt)))))
+
+
+
+
 
 ant$plot_chromatograms()
 
@@ -68,6 +82,7 @@ ant$plot_spectra_baseline(interactive = F)
 
 ## Cuvette -----
 
+wd <- "C:/Users/apoli/Documents/iSoft"
 
 cuvette_dir <- paste0(wd, "/Jana_cuvette_serum")
 
@@ -94,15 +109,35 @@ cuv$subtract_blank_spectra()
 
 cuv$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("shift" = c(-40, 470))))
 
-cuv$smooth_spectra(Settings_smooth_spectra_StreamFind(windowSize = 2))
+cuv$smooth_spectra(Settings_smooth_spectra_savgol(fl = 11, forder = 2, dorder = 0))
 
-cuv$correct_spectra_baseline(Settings_correct_spectra_baseline_StreamFind(
-  method = "als", args = list(lambda = 3, p = 0.03, maxit = 10)
-))
+cuv$correct_spectra_baseline(Settings_correct_spectra_baseline_baseline(method = "als", args = list(lambda = 3, p = 0.03, maxit = 10)))
 
-cuv$normalize_spectra()
+cuv$correct_spectra_baseline(Settings_correct_spectra_baseline_airpls(lambda = 5))
+
+cuv$normalize_spectra(Settings_normalize_spectra_StreamFind())
+
+
+cuv$raw_spectra
+
+is(Settings_normalize_spectra_StreamFind())
 
 cuv$plot_spectra()
+
+View(cuv$get_results("spectra"))
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # anasl <- e_cuv$get_analyses()
 # 

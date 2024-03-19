@@ -2990,6 +2990,8 @@
   
   ids <- unique(peaks$unique_ids)
   
+  if (!"raw" %in% colnames(chroms)) chroms$raw <- chroms$intensity
+  
   xlab <- "Retention time / seconds"
   ylab <- "Intensity / counts"
   if (!is.null(xLab)) xlab <- xLab
@@ -3057,7 +3059,7 @@
       col = cl[lt]
     )
     
-    if (!"baseline" %in% colnames(chrom)) chrom$baseline <- rep(0, nrow(chrom))
+    if (!"baseline" %in% colnames(chrom)) pk_chrom$baseline <- rep(min(pk_chrom$raw), nrow(pk_chrom))
     
     polygon(
       c(pk_chrom$rt, rev(pk_chrom$rt)),
@@ -3108,6 +3110,8 @@
   cl <- .get_colors(leg)
   
   ids <- unique(peaks$unique_ids)
+  
+  if (!"raw" %in% colnames(chroms)) chroms$raw <- chroms$intensity
   
   title <- list(
     text = title, x = 0.13, y = 0.98,
@@ -3178,7 +3182,7 @@
       "</br> intensity: ", round(pk$intensity[1], digits = 0)
     )
     
-    if (!"baseline" %in% colnames(chrom)) chrom$baseline <- rep(0, nrow(chrom))
+    if (!"baseline" %in% colnames(chrom)) pk_chrom$baseline <- rep(min(pk_chrom$raw), nrow(pk_chrom))
     
     plot <- plot %>% add_trace(
       x = c(pk_chrom$rt, rev(pk_chrom$rt)),
@@ -3266,11 +3270,13 @@
   if (showLegend) {
     legend(
       x = "topright",
+      inset = 0.2,
+      y.intersp = 2,
       legend = names(cl),
       col = cl,
       lwd = 2,
       lty = 1,
-      # cex = cex,
+      cex = cex,
       bty = "n"
     )
   }

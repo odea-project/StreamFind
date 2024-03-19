@@ -1,31 +1,59 @@
 
 wd2 <- "C:/Users/apoli/Documents/Dev_230830_Bevacizumab_Avastin_LotB8703H40_Raman_HRMS"
+
 files <- list.files(paste0(wd2, "/HRMS_2.5mgmL"), pattern = "mzML", full.names = TRUE)
 
 # files <- StreamFindData::get_ms_file_paths()[29]
 
 ms <- MassSpecEngine$new(files)
 
-ms$plot_chromatograms(chromatograms = 0)
+ms$load_chromatograms(chromatograms = 0)
+
+# ms$plot_chromatograms(colorBy = "analyses")
+
+ms$smooth_chromatograms(Settings_smooth_chromatograms_movingaverage(windowSize = 5))
+
+# ms$plot_chromatograms(colorBy = "analyses")
+
+ms$correct_chromatograms_baseline(Settings_correct_chromatograms_baseline_airpls())
+
+# ms$plot_chromatograms(colorBy = "analyses")
 
 ps <- Settings_integrate_chromatograms_StreamFind(
-  chromatograms = 0,
-  smoothing = TRUE,
-  windowSize = 10,
-  baseline = TRUE,
-  baseline_method = "als",
-  baseline_args = list(lambda = 6, p = 0.02, maxit = 10),
   merge = TRUE,
   closeByThreshold = 2,
-  valeyThreshold = 0.5,
   minPeakHeight = 20000,
   minPeakDistance = 2,
   minPeakWidth = 5,
   maxPeakWidth = 120,
-  minSN = 10
+  minSN = 50
 )
 
 ms$integrate_chromatograms(ps)
+
+ms$chromatograms_peaks
+
+ms$plot_chromatograms_peaks(colorBy = "analyses+targets")
+
+ms
+
+
+
+
+
+# View(ms$get_results("chromatograms"))
+# ms$get_chromatograms()
+# ms$chromatograms
+
+
+ms$plot_chromatograms_baseline(colorBy = "targets+analyses")
+
+
+
+
+
+
+
 
 ms$chromatograms_peaks
 

@@ -7,89 +7,154 @@
 #'
 .s3_normalize_spectra.Settings_normalize_spectra_StreamFind <- function(settings, self, private) {
   
-  if (!(self$has_averaged_spectra() || self$has_spectra())) {
+  if (!self$has_spectra()) {
     warning("Spectra not found! Not done.")
     return(FALSE)
   }
   
   liftTozero <- settings$parameters$liftTozero
+  
   xName <- settings$parameters$xName
+  
   xVal <- settings$parameters$xVal
   
-  private$.results$spectra$data <- lapply(private$.results$spectra$data, function(x) {
+  spec_list <- self$spectra
+  
+  spec_list <- lapply(spec_list, function(x) {
     
-    if ("average" %in% names(x)) {
+    if (nrow(x) > 0) {
       
-      if (nrow(x$average) > 0) {
+      if ("rt" %in% colnames(x)) {
         
-        if ("rt" %in% colnames(x$average)) {
-          temp_x <- split(x$average, x$average$rt)
-          
-          temp_x <- lapply(temp_x, function(z) {
-            
-            if (liftTozero) z$intensity <- z$intensity + abs(min(z$intensity))
-            
-            if (!is.null(xName)) {
-              
-              if (xName %in% colnames(z)) {
-                norm_int <- z$intensity[z[[xName]] == xVal]
-                
-                if (length(norm_int) > 0) {
-                  z$intensity <- z$intensity / norm_int
-                  
-                } else {
-                  warning("xval not found in xName column! Not done!")
-                  return(FALSE)
-                }
-                
-              } else {
-                warning("xName not found in spectra data.table! Not done!")
-                return(FALSE)
-              }
-              
-            } else {
-              max_int <- max(z$intensity)
-              z$intensity <- z$intensity / max_int
-            }
-            
-            z
-          })
-          
-          x$average <- rbindlist(temp_x)
-          
-        } else {
-          max_int <- max(x$average$intensity)
-          x$average$intensity <- x$average$intensity / max_int
-        }
-      }
-      
-    } else (
-      
-      if (nrow(x$spectra) > 0) {
+        temp_x <- split(x, x$rt)
         
-        if (nrow(x$average) > 0) {
+        temp_x <- lapply(temp_x, function(z) {
           
-          if ("rt" %in% colnames(x$spectra)) {
-            temp_x <- split(x$spectra, x$spectra$rt)
-            
-            temp_x <- lapply(temp_x, function(z) {
-              max_int <- max(z$intensity)
-              z$intensity <- z$intensity / max_int
-              z
-            })
-            
-            x$spectra <- rbindlist(temp_x)
-            
-          } else {
-            max_int <- max(x$average$intensity)
-            x$average$intensity <- x$average$intensity / max_int
-          }
-        }
+          if (liftTozero) z$intensity <- z$intensity + abs(min(z$intensity))
+          
+          max_int <- max(z$intensity)
+          z$intensity <- z$intensity / max_int
+          z
+        })
+        
+        x <- rbindlist(temp_x)
+        
+      } else {
+        
+        if (liftTozero) x$intensity <- x$intensity + abs(min(x$intensity))
+        
+        max_int <- max(x$intensity)
+        x$intensity <- x$intensity / max_int
       }
-    )
+    }
     
     x
+    
   })
+  
+  self$spectra <- spec_list
+  
+  message(paste0("\U2713 ", "Spectra normalized!"))
+  
+  TRUE
+}
+
+#' @title .s3_normalize_spectra.Settings_normalize_spectra_minmax
+#'
+#' @description Normalizes intensity based on mix and max.
+#'
+#' @noRd
+#'
+.s3_normalize_spectra.Settings_normalize_spectra_minmax <- function(settings, self, private) {
+  
+  if (!self$has_spectra()) {
+    warning("Spectra not found! Not done.")
+    return(FALSE)
+  }
+  
+  spec_list <- self$spectra
+  
+  spec_list <- lapply(spec_list, function(x) {
+    
+    if (nrow(x) > 0) {
+      
+      if ("rt" %in% colnames(x)) {
+        temp_x <- split(x, x$rt)
+        
+        temp_x <- lapply(temp_x, function(z) {
+          max_int <- max(z$intensity)
+          min_int <- min(z$intensity)
+          z$intensity <- (z$intensity - min_int) / (max_int - min_int)
+          z
+        })
+        
+        x <- rbindlist(temp_x)
+        
+      } else {
+        max_int <- max(x$intensity)
+        min_int <- min(x$intensity)
+        x$intensity <- (x$intensity - min_int) / (max_int - min_int)
+      }
+    }
+
+    x
+    
+  })
+  
+  self$spectra <- spec_list
+  
+  message(paste0("\U2713 ", "Spectra normalized!"))
+  
+  TRUE
+}
+
+#' @title .s3_normalize_spectra.Settings_normalize_spectra_snv
+#'
+  #' @description Normalizes intensity based on standard normal variate (SNV) transformation.
+#'
+#' @noRd
+#'
+.s3_normalize_spectra.Settings_normalize_spectra_snv <- function(settings, self, private) {
+  
+  if (!self$has_spectra()) {
+    warning("Spectra not found! Not done.")
+    return(FALSE)
+  }
+  
+  liftTozero <- settings$parameters$liftTozero
+  
+  spec_list <- self$spectra
+  
+  spec_list <- lapply(spec_list, function(x) {
+    
+    if (nrow(x) > 0) {
+      
+      if ("rt" %in% colnames(x)) {
+        temp_x <- split(x, x$rt)
+        
+        temp_x <- lapply(temp_x, function(z) {
+          mean_int <- mean(z$intensity)
+          sd_int <- sd(z$intensity)
+          z$intensity <- (z$intensity - mean_int) / sd_int
+          if (liftTozero) z$intensity <- z$intensity + abs(min(z$intensity))
+          z
+        })
+        
+        x <- rbindlist(temp_x)
+        
+      } else {
+        mean_int <- mean(x$intensity)
+        sd_int <- sd(x$intensity)
+        x$intensity <- (x$intensity - mean_int) / sd_int
+        if (liftTozero) x$intensity <- x$intensity + abs(min(x$intensity))
+      }
+    }
+    
+    x
+    
+  })
+  
+  self$spectra <- spec_list
   
   message(paste0("\U2713 ", "Spectra normalized!"))
   

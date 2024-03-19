@@ -6,15 +6,8 @@
 \title{Settings_integrate_chromatograms_StreamFind}
 \usage{
 Settings_integrate_chromatograms_StreamFind(
-  chromatograms = NA_character_,
-  smoothing = TRUE,
-  windowSize = 4,
-  baseline = TRUE,
-  baseline_method = "als",
-  baseline_args = list(lambda = 5, p = 0.05, maxit = 10),
   merge = TRUE,
   closeByThreshold = 45,
-  valeyThreshold = 0.5,
   minPeakHeight = 0,
   minPeakDistance = 10,
   minPeakWidth = 5,
@@ -25,23 +18,9 @@ Settings_integrate_chromatograms_StreamFind(
 \method{validate}{Settings_integrate_chromatograms_StreamFind}(x)
 }
 \arguments{
-\item{chromatograms}{}
-
-\item{smoothing}{}
-
-\item{windowSize}{}
-
-\item{baseline}{}
-
-\item{baseline_method}{}
-
-\item{baseline_args}{}
-
 \item{merge}{}
 
 \item{closeByThreshold}{}
-
-\item{valeyThreshold}{}
 
 \item{minPeakHeight}{}
 

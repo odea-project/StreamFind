@@ -701,7 +701,7 @@ Plots peaks from chromatograms from analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$plot_chromatograms_peaks(
   analyses = NULL,
-  chromatograms = NA_integer_,
+  chromatograms = NULL,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",

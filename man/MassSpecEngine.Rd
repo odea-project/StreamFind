@@ -134,6 +134,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-plot_raw_spectra}{\code{MassSpecEngine$plot_raw_spectra()}}
 \item \href{#method-MassSpecEngine-plot_spectra}{\code{MassSpecEngine$plot_spectra()}}
 \item \href{#method-MassSpecEngine-plot_chromatograms}{\code{MassSpecEngine$plot_chromatograms()}}
+\item \href{#method-MassSpecEngine-plot_chromatograms_baseline}{\code{MassSpecEngine$plot_chromatograms_baseline()}}
 \item \href{#method-MassSpecEngine-plot_xic}{\code{MassSpecEngine$plot_xic()}}
 \item \href{#method-MassSpecEngine-plot_eic}{\code{MassSpecEngine$plot_eic()}}
 \item \href{#method-MassSpecEngine-plot_tic}{\code{MassSpecEngine$plot_tic()}}
@@ -168,7 +169,10 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-calculate_quality}{\code{MassSpecEngine$calculate_quality()}}
 \item \href{#method-MassSpecEngine-generate_formulas}{\code{MassSpecEngine$generate_formulas()}}
 \item \href{#method-MassSpecEngine-generate_compounds}{\code{MassSpecEngine$generate_compounds()}}
+\item \href{#method-MassSpecEngine-smooth_chromatograms}{\code{MassSpecEngine$smooth_chromatograms()}}
+\item \href{#method-MassSpecEngine-correct_chromatograms_baseline}{\code{MassSpecEngine$correct_chromatograms_baseline()}}
 \item \href{#method-MassSpecEngine-integrate_chromatograms}{\code{MassSpecEngine$integrate_chromatograms()}}
+\item \href{#method-MassSpecEngine-cluster_spectra}{\code{MassSpecEngine$cluster_spectra()}}
 \item \href{#method-MassSpecEngine-deconvolute_spectra_charges}{\code{MassSpecEngine$deconvolute_spectra_charges()}}
 \item \href{#method-MassSpecEngine-as_patRoon_features}{\code{MassSpecEngine$as_patRoon_features()}}
 \item \href{#method-MassSpecEngine-as_patRoon_featureGroups}{\code{MassSpecEngine$as_patRoon_featureGroups()}}
@@ -634,6 +638,8 @@ Gets spectra from each analysis.
   isolationWindow = 1.3,
   minIntensityMS1 = 0,
   minIntensityMS2 = 0,
+  raw_spectra = FALSE,
+  loaded_spectra = TRUE,
   runParallel = FALSE
 )}\if{html}{\out{</div>}}
 }
@@ -705,14 +711,17 @@ data (i.e., MS1 data).}
 \item{\code{minIntensityMS2}}{Numeric value with the minimum intensity of level 2
 data (i.e., MS2 data).}
 
+\item{\code{raw_spectra}}{Logical of length one. Set to \code{TRUE} for parsing raw spectra not spectra
+results/processed.}
+
+\item{\code{loaded_spectra}}{Logical of length one. Set to \code{TRUE} for parsing loaded spectra not
+spectra from raw data files.}
+
 \item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
 processing. Note that parallel processing is not always faster due to
 overhead.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A data.table with spectra for each analyses and targets, when defined.
 }
 }
 \if{html}{\out{<hr>}}
@@ -723,8 +732,10 @@ Gets chromatograms from each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_chromatograms(
   analyses = NULL,
-  chromatograms = NA_integer_,
-  minIntensity = 0,
+  chromatograms = NULL,
+  minIntensity = NULL,
+  raw_chromatograms = FALSE,
+  loaded_chromatograms = TRUE,
   runParallel = FALSE
 )}\if{html}{\out{</div>}}
 }
@@ -737,6 +748,12 @@ Gets chromatograms from each analysis.
 \item{\code{chromatograms}}{A character or integer vector with the ID name or the index of the chromatograms to extract.}
 
 \item{\code{minIntensity}}{Numeric value with the minimum intensity.}
+
+\item{\code{raw_chromatograms}}{Logical of length one. Set to \code{TRUE} for parsing raw chromatograms not chromatograms
+results/processed.}
+
+\item{\code{loaded_chromatograms}}{Logical of length one. Set to \code{TRUE} for parsing loaded chromatograms not
+chromatograms from raw data files.}
 
 \item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
 processing. Note that parallel processing is not always faster due to
@@ -2205,12 +2222,92 @@ Invisible.
 \subsection{Method \code{load_spectra()}}{
 Loads all spectra from all analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$load_spectra(runParallel = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$load_spectra(
+  analyses = NULL,
+  levels = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  drift = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL,
+  allTraces = TRUE,
+  isolationWindow = 1.3,
+  minIntensityMS1 = 0,
+  minIntensityMS2 = 0,
+  runParallel = FALSE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+
+\item{\code{levels}}{Integer value or vector of length one or two with the levels of
+MS data. Possible values are 1 and 2 for MS1 and MS2 data, respectively.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns
+data.table or data.frame named \code{min} and \code{max} with minimum and maximum
+neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time (in seconds) and/or drift time values (in milliseconds)
+can be given as one data.table or data.frame with columns named \code{mass} and
+\code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
+and \code{millisec}  arguments are used to calculate the ranges. Also works
+with a data.table or data.frame with minimum and maximum values of neutral
+mass, retention time and drift time targets. In this case, the column names
+must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that
+when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns
+data.table or data.frame named \code{mzmin} and \code{mzmax} with minimum and maximum
+\emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da)
+and retention time values (in seconds) can be given as one data.table or
+data.frame with columns named \code{mz} and \code{rt} and/or \code{drift}. Then, the
+deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments
+are used to calculate the ranges. Also works with a data.table or data.frame
+with minimum and maximum values of \emph{m/z}, retention time and drift time
+targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin},
+\code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges
+are given, the \code{ppm}, \code{sec} and \code{millisec} arguments are
+not used.}
+
+\item{\code{rt}}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+a two columns data.table or data.frame with minimum and maximum drift
+time values (in milliseconds).}
+
+\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
+
+\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+
+\item{\code{millisec}}{Numeric of length one with the drift time deviation,
+in milliseconds.}
+
+\item{\code{id}}{Character with the same length as \emph{m/z} and retention time
+targets to be used as identifier/s. When not given, the id is built as a
+combination of the \emph{m/z} and retention time ranges or values.}
+
+\item{\code{allTraces}}{Logical, when \code{TRUE} all level 2 data is returned.
+When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
+are returned, using the \code{isolationWindow} to calculate the mass window.}
+
+\item{\code{isolationWindow}}{Numeric value with the isolation window (in Da)
+applied for ion isolation and fragmentation during acquisition of tandem
+data (i.e., MS2 data).}
+
+\item{\code{minIntensityMS1}}{Numeric value with the minimum intensity of level 1
+data (i.e., MS1 data).}
+
+\item{\code{minIntensityMS2}}{Numeric value with the minimum intensity of level 2
+data (i.e., MS2 data).}
+
 \item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
 processing. Note that parallel processing is not always faster due to
 overhead.}
@@ -2227,12 +2324,14 @@ Invisible.
 \subsection{Method \code{load_chromatograms()}}{
 Loads all chromatograms from all analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$load_chromatograms(runParallel = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$load_chromatograms(chromatograms = NULL, runParallel = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{chromatograms}}{A character or integer vector with the ID name or the index of the chromatograms to extract.}
+
 \item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
 processing. Note that parallel processing is not always faster due to
 overhead.}
@@ -2800,14 +2899,15 @@ Plots spectra given MS analyses.
   isolationWindow = 1.3,
   minIntensityMS1 = 0,
   minIntensityMS2 = 0,
+  raw_spectra = FALSE,
+  loaded_spectra = TRUE,
   runParallel = FALSE,
-  results = TRUE,
   averaged = TRUE,
   baseline = FALSE,
   smoothed = TRUE,
   legendNames = TRUE,
   colorBy = "analyses",
-  xVal = "mass",
+  xVal = "mz",
   xLab = NULL,
   yLab = NULL,
   title = NULL,
@@ -2884,11 +2984,14 @@ data (i.e., MS1 data).}
 \item{\code{minIntensityMS2}}{Numeric value with the minimum intensity of level 2
 data (i.e., MS2 data).}
 
+\item{\code{raw_spectra}}{Logical of length one. Set to \code{TRUE} for plotting the spectra in results not the raw spectra.}
+
+\item{\code{loaded_spectra}}{Logical of length one. Set to \code{TRUE} for parsing loaded spectra not
+spectra from raw data files.}
+
 \item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
 processing. Note that parallel processing is not always faster due to
 overhead.}
-
-\item{\code{results}}{Logical of length one. Set to \code{TRUE} for plotting the spectra in results not the raw spectra.}
 
 \item{\code{averaged}}{Logical of length one. Set to \code{TRUE} for plotting the averaged spectra.}
 
@@ -2927,7 +3030,10 @@ Plots chromatograms in the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_chromatograms(
   analyses = NULL,
-  chromatograms = NA_integer_,
+  chromatograms = NULL,
+  minIntensity = NULL,
+  raw_chromatograms = FALSE,
+  loaded_chromatograms = TRUE,
   title = NULL,
   colorBy = "targets",
   legendNames = NULL,
@@ -2945,6 +3051,14 @@ Plots chromatograms in the analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{chromatograms}}{A character or integer vector with the ID name or the index of the chromatograms to extract.}
+
+\item{\code{minIntensity}}{Numeric value with the minimum intensity.}
+
+\item{\code{raw_chromatograms}}{Logical of length one. Set to \code{TRUE} for parsing raw chromatograms not chromatograms
+results/processed.}
+
+\item{\code{loaded_chromatograms}}{Logical of length one. Set to \code{TRUE} for parsing loaded chromatograms not
+chromatograms from raw data files.}
 
 \item{\code{title}}{A string with the title.}
 
@@ -2968,6 +3082,55 @@ non interactive plotting.}
 using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-plot_chromatograms_baseline"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_chromatograms_baseline}{}}}
+\subsection{Method \code{plot_chromatograms_baseline()}}{
+Plots chromatograms corrected baseline for given analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_chromatograms_baseline(
+  analyses = NULL,
+  chromatograms = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  cex = 0.6,
+  showLegend = TRUE,
+  colorBy = "analyses",
+  interactive = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+
+\item{\code{chromatograms}}{A character or integer vector with the ID name or the index of the chromatograms to extract.}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{cex}}{A length one numeric value defining the scale of the legend for
+non interactive plotting.}
+
+\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
+
+\item{\code{colorBy}}{A string of length 1. One of \code{analyses}, \code{targets} (the
+default) or \code{replicates}.}
+
+\item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
+using \pkg{plotly}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A plot.
 }
 }
 \if{html}{\out{<hr>}}
@@ -3420,7 +3583,7 @@ Plots MS1 spectra from the analyses based on targets.
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
-  showText = TRUE,
+  showText = FALSE,
   interactive = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -5187,12 +5350,84 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-smooth_chromatograms"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-smooth_chromatograms}{}}}
+\subsection{Method \code{smooth_chromatograms()}}{
+Smooths chromatograms in each analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$smooth_chromatograms(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-correct_chromatograms_baseline"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-correct_chromatograms_baseline}{}}}
+\subsection{Method \code{correct_chromatograms_baseline()}}{
+Corrects the baseline of chromatograms in each analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$correct_chromatograms_baseline(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-integrate_chromatograms"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-integrate_chromatograms}{}}}
 \subsection{Method \code{integrate_chromatograms()}}{
 Integrates chromatograms, returning a peak list for each chromatogram for each analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$integrate_chromatograms(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-cluster_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-cluster_spectra}{}}}
+\subsection{Method \code{cluster_spectra()}}{
+Clusters spectra based on a value name.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$cluster_spectra(settings = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

@@ -25,7 +25,9 @@
     spec_list <- split(spec, spec$replicate)
     
     av_list <- lapply(spec_list, function(x) {
+      
       intensity <- NULL
+      
       res <- copy(x)
       
       res[["analysis"]] <- NULL
@@ -42,24 +44,9 @@
       
       res
       
-      list("spectra" = x, "average" = res)
-      
     })
     
-    if (self$has_averaged_spectra()) {
-      private$.results$spectra$data <- av_list
-      
-    } else {
-      self$add_results(
-        list(
-          "spectra" = list(
-            "data" = av_list,
-            "software" = "StreamFind",
-            "version" = as.character(packageVersion("StreamFind"))
-          )
-        )
-      )
-    }
+    self$spectra <- av_list
     
     message(paste0("\U2713 ", "Averaged spectra!"))
     

@@ -926,19 +926,11 @@ CoreEngine <- R6::R6Class("CoreEngine",
         
         lapply(value_names, function(x, value) {
           
-          if (is.null(value[[x]]$software)) value[[x]]$software <- NA_character_
-          if (is.null(value[[x]]$version)) value[[x]]$version <- NA_character_
-          
           private$.results[x] <- value[x]
           
-          private$.register(
-            "added",
-            "module",
-            x,
-            value[[x]]$software,
-            value[[x]]$version,
-            length(value[[x]])
-          )
+          # TODO add heck for replicate or analyses names
+          
+          private$.register("added", "results", x, NA_character_,NA_character_, NA_character_)
           
           message(paste0("\U2713 ", x, " data added to results!"))
           
@@ -1223,7 +1215,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' @description Plots peaks from chromatograms from analyses.
     #'
     plot_chromatograms_peaks = function(analyses = NULL,
-                                        chromatograms = NA_integer_,
+                                        chromatograms = NULL,
                                         legendNames = NULL,
                                         title = NULL,
                                         colorBy = "targets",
@@ -1242,18 +1234,37 @@ CoreEngine <- R6::R6Class("CoreEngine",
       if (is.null(analyses)) return(NULL)
       
       pks <- self$chromatograms_peaks
-      
+      pks <- rbindlist(pks)
       pks <- pks[pks$analysis %in% analyses, ]
+      
+      if (is.numeric(chromatograms)) {
+        which_pks <- pks$index %in% chromatograms
+        pks <- pks[which_pks, ]
+        
+      } else if (is.character(chromatograms)) {
+        which_pks <- pks$id %in% chromatograms
+        pks <- pks[which_pks, ]
+        
+      } else if (!is.null(chromatograms)) {
+        return(NULL)
+      }
       
       if (nrow(pks) == 0) {
         message("\U2717 Peaks not found for the targets!")
         return(NULL)
       }
       
+      chroms <- self$get_chromatograms(analyses = analyses, chromatograms = chromatograms)
+      
+      if ("replicates" %in% colorBy) {
+        chroms$replicate <- self$get_replicate_names()[chroms$analysis]
+        pks$replicate <- self$get_replicate_names()[pks$analysis]
+      }
+      
       if (!interactive) {
-        .plot_chrom_peaks_static(self$chromatograms, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
+        .plot_chrom_peaks_static(chroms, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
       } else {
-        .plot_chrom_peaks_interactive(self$chromatograms, pks, legendNames, colorBy, title, showLegend, xLab, yLab)
+        .plot_chrom_peaks_interactive(chroms, pks, legendNames, colorBy, title, showLegend, xLab, yLab)
       }
     },
     

@@ -9,7 +9,9 @@
   
   call_method <- paste0(".s3_", method)
   
-  method_to_settings <- sub("ms_", "", method)
+  method_to_settings <- sub(".s3_ms_", "", call_method)
+  
+  method_to_settings <- sub(".s3_", "", method_to_settings)
   
   settings <- private$.get_call_settings(settings, method_to_settings)
   

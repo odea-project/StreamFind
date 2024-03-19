@@ -38,37 +38,68 @@ RamanEngine <- R6::R6Class("RamanEngine",
   
   active = list(
     
-    #' @field spectra List of spectra `data.table` objects for each analysis.
+    #' @field raw_spectra List of raw spectra `data.table` objects for each analysis.
     #'
-    spectra = function() {
+    raw_spectra = function() {
       
-      if (self$has_results("spectra")) {
-        res <- private$.results$spectra$data
-        res <- lapply(res, function(x) x$spectra)
-        
-      } else {
-        res <- lapply(self$get_analyses(), function(x) x$spectra)
-        names(res) <- self$get_analysis_names()
-        res <- Map(function(x, y) {
-          x$analysis <- y
-          x
-        }, res, names(res))
-      }
+      res <- lapply(self$get_analyses(), function(x) x$spectra)
+      
+      names(res) <- self$get_analysis_names()
+      
+      res <- Map(function(x, y) {
+        x$analysis <- y
+        x
+      }, res, names(res))
       
       res
     },
     
-    #' @field averaged_spectra List of averaged spectra `data.table` each analysis/replicate.
-    #' 
-    averaged_spectra = function() {
+    #' @field spectra List of spectra `data.table` objects for each analysis.
+    #'
+    spectra = function(value) {
       
-      if (self$has_averaged_spectra()) {
-        res <- private$.results$spectra$data
-        res <- lapply(res, function(x) x$average)
+      if (missing(value)) {
+        
+        if (self$has_results("spectra")) {
+          res <- private$.results$spectra
+          res <- lapply(res, function(x) x$spectra)
+          
+        } else {
+          res <- lapply(self$get_analyses(), function(x) x$spectra)
+          names(res) <- self$get_analysis_names()
+          res <- Map(function(x, y) {
+            x$analysis <- y
+            x
+          }, res, names(res))
+        }
+        
         res
         
       } else {
-        data.table()
+        
+        if (self$has_results("spectra")) {
+          
+          if (identical(names(private$.results$spectra), names(value))) {
+            private$.results$spectra <- Map(function(x, y) {
+              x$spectra <- y
+              x
+            }, private$.results$spectra, value)
+            
+          } else {
+            private$.results[["spectra"]] <- Map(function(x, y) {
+              x <- list("spectra" = y)
+              x
+            }, names(value), value)
+          }
+          
+        } else {
+          private$.results[["spectra"]] <- Map(function(x, y) {
+            x <- list("spectra" = y)
+            x
+          }, names(value), value)
+        }
+        
+        invisible(self)
       }
     }
   ),
@@ -198,15 +229,17 @@ RamanEngine <- R6::R6Class("RamanEngine",
     },
 
     #' @description Gets a `data.table` with spectra from analyses.
+    #' 
+    #' @param raw_spectra Logical of length one. Set to `TRUE` for parsing raw spectra not spectra results/processed.
     #'
-    get_spectra = function(analyses = NULL, rt = NULL, shift = NULL, minIntensity = 0) {
+    get_spectra = function(analyses = NULL, rt = NULL, shift = NULL, minIntensity = 0, raw_spectra = FALSE) {
 
       analyses <- private$.check_analyses_argument(analyses)
       
       if (is.null(analyses)) return(data.frame())
       
-      if (self$has_averaged_spectra()) {
-        spec <- self$averaged_spectra
+      if (self$has_spectra() && !raw_spectra) {
+        spec <- self$spectra
         spec <- rbindlist(spec, fill = TRUE)
         
         if ("analysis" %in% colnames(spec)) {
@@ -219,11 +252,6 @@ RamanEngine <- R6::R6Class("RamanEngine",
           spec$analysis <- spec$replicate
           setcolorder(spec, c("analysis", "replicate"))
         }
-        
-      } else if (self$has_spectra()) {
-        spec <- self$spectra
-        spec <- rbindlist(spec, fill = TRUE)
-        spec <- spec[spec$analysis %in% analyses]
         
       } else {
         spec <- lapply(private$.analyses[analyses], function(x) x$spectra)
@@ -389,7 +417,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #' 
     correct_spectra_baseline = function(settings) {
       
-      if (missing(settings)) settings <- Settings_correct_spectra_baseline_StreamFind()
+      if (missing(settings)) settings <- Settings_correct_spectra_baseline_airpls()
       
       .dispatch_process_method("correct_spectra_baseline", settings, self, private)
       
@@ -441,7 +469,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #' 
     smooth_spectra = function(settings) {
       
-      if (missing(settings)) settings <- Settings_smooth_spectra_StreamFind()
+      if (missing(settings)) settings <- Settings_smooth_spectra_movingaverage()
       
       .dispatch_process_method("smooth_spectra", settings, self, private)
       
@@ -468,34 +496,10 @@ RamanEngine <- R6::R6Class("RamanEngine",
     has_spectra = function() {
       
       if (self$has_results("spectra")) {
-        sum(vapply(private$.results$spectra$data, function(x) {
-          if ("spectra" %in% names(x)) {
-            nrow(x$spectra)
-          } else {
-            0
-          }
-        }, 0)) > 0
+        sum(vapply(private$.results$spectra, function(x) nrow(x$spectra), 0)) > 0
         
       } else {
         all(vapply(self$get_analyses(), function(x) nrow(x$spectra) > 0, FALSE))
-      }
-    },
-    
-    #' @description Checks if there are average spectra, returning `TRUE` or `FALSE`.
-    #'
-    has_averaged_spectra = function() {
-      
-      if (self$has_results("spectra")) {
-        sum(vapply(private$.results$spectra$data, function(x) {
-          if ("average" %in% names(x)) {
-            nrow(x$average)
-          } else {
-            0
-          }
-        }, 0)) > 0
-        
-      } else {
-        FALSE
       }
     },
     
@@ -505,6 +509,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #'
     #' @param xVal Character of length one. Possible are "rt" or "shift" for using the retention time or the shift 
     #' as x axis, respectively.
+    #' @param raw_spectra Logical of length one. Set to `TRUE` for parsing raw spectra not spectra results/processed.
     #'
     #' @return A plot.
     #' 
@@ -512,6 +517,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
                             rt = NULL,
                             shift = NULL,
                             minIntensity = 0,
+                            raw_spectra = FALSE,
                             xVal = "shift",
                             xLab = NULL,
                             yLab = NULL,
@@ -521,7 +527,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
                             colorBy = "analyses",
                             interactive = TRUE) {
       
-      spectra <- self$get_spectra(analyses, rt, shift, minIntensity)
+      spectra <- self$get_spectra(analyses, rt, shift, minIntensity, raw_spectra)
       
       if (nrow(spectra) == 0) {
         warning("No spectra found for the defined targets!")
@@ -586,7 +592,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
                                      colorBy = "analyses",
                                      interactive = TRUE) {
       
-      spectra <- self$get_spectra(analyses, rt, shift, minIntensity)
+      spectra <- self$get_spectra(analyses, rt, shift, minIntensity, raw_spectra = FALSE)
       
       if (!("baseline" %in% colnames(spectra) && "raw" %in% colnames(spectra))) {
         warning("Baseline not found!")
@@ -632,6 +638,8 @@ RamanEngine <- R6::R6Class("RamanEngine",
     },
     
     #' @description Plots chromatograms from analyses with spectra coupled to LC.
+    #' 
+    #' @param raw_spectra Logical of length one. Set to `TRUE` for parsing raw spectra not spectra results/processed.
     #'
     #' @return A plot.
     #' 
@@ -639,6 +647,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
                                   rt = NULL,
                                   shift = NULL,
                                   minIntensity = 0,
+                                  raw_spectra = FALSE,
                                   xLab = NULL,
                                   yLab = NULL,
                                   title = NULL,
@@ -647,7 +656,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
                                   colorBy = "analyses",
                                   interactive = TRUE) {
       
-      spectra <- self$get_spectra(analyses, rt, shift, minIntensity)
+      spectra <- self$get_spectra(analyses, rt, shift, minIntensity, raw_spectra)
       
       if ("rt" %in% colnames(spectra)) {
         

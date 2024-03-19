@@ -6,10 +6,7 @@
 #'
 .s3_subtract_blank_spectra.Settings_subtract_blank_spectra_StreamFind <- function(settings, self, private) {
   
-  if (self$has_averaged_spectra()) {
-    spec_list <- self$averaged_spectra
-    
-  } else if (self$has_spectra()) {
+  if (self$has_spectra()) {
     spec_list <- self$spectra
     
   } else {
@@ -62,30 +59,9 @@
     x
   })
   
-  if (self$has_averaged_spectra()) {
-    private$.results$spectra$data <- Map(
-      function(x, y) {
-        x$average <- y
-        x
-      },
-      private$.results$spectra$data, spec_sub
-    )
-    
-    message(paste0("\U2713 ", "Blank spectra subtracted in averaged spectra!"))
-    
-    TRUE
-    
-  } else if (self$has_spectra()) {
-    private$.results$spectra$data <- Map(
-      function(x, y) {
-        x$spectra <- y
-        x
-      },
-      private$.results$spectra$data, spec_sub
-    )
-    
-    message(paste0("\U2713 ", "Blank spectra subtracted in spectra!"))
-    
-    TRUE
-  }
+  self$spectra <- spec_sub
+  
+  message(paste0("\U2713 ", "Blank spectra subtracted in spectra!"))
+  
+  TRUE
 }

@@ -9,10 +9,7 @@
   
   intensity <- NULL
   
-  if (self$has_averaged_spectra()) {
-    spec_list <- self$averaged_spectra
-    
-  } else if (self$has_spectra()) {
+  if (self$has_spectra()) {
     spec_list <- self$spectra
     
   } else {
@@ -91,27 +88,7 @@
     }
   }
   
-  if (self$has_averaged_spectra()) {
-    private$.results$spectra$data <- Map(
-      function(x, y) {
-        x$average <- y
-        x
-      },#
-      private$.results$spectra$data, spec_cut
-    )
-    
-  } else {
-    
-    spec_list <- Map(function(x, y) list("spectra" = x, "average" = y), spec_list, spec_cut)
-    
-    self$add_results(
-      list("spectra" = list(
-        "data" = spec_list,
-        "software" = "StreamFind",
-        "version" = as.character(packageVersion("StreamFind"))
-      ))
-    )
-  }
+  self$spectra <- spec_cut
   
   message(paste0("\U2713 ", "Spectra section subtracted!"))
   
