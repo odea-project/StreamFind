@@ -69,6 +69,11 @@ export <- function(x, ...) {
 }
 
 #' @noRd
+.s3_ms_calculate_spectra_charges <- function(settings, self, private) {
+  UseMethod(".s3_ms_calculate_spectra_charges")
+}
+
+#' @noRd
 .s3_ms_centroid_spectra <- function(settings, self, private) {
   UseMethod(".s3_ms_centroid_spectra")
 }
@@ -79,8 +84,8 @@ export <- function(x, ...) {
 }
 
 #' @noRd
-.s3_deconvolute_spectra_charges <- function(settings, self, private) {
-  UseMethod(".s3_deconvolute_spectra_charges")
+.s3_ms_deconvolute_spectra <- function(settings, self, private) {
+  UseMethod(".s3_ms_deconvolute_spectra")
 }
 
 #' @noRd

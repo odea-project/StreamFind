@@ -2782,7 +2782,7 @@
   
   ids <- unique(res$unique_ids)
   
-  xlab <- "Mass / Da"
+  xlab <- expression(italic("m/z ") / " Da")
   ylab <- "Intensity / counts"
   if (!is.null(xLab)) xlab <- xLab
   if (!is.null(yLab)) ylab <- yLab
@@ -2876,7 +2876,7 @@
     font = list(size = 12, color = "black")
   )
   
-  xlab <- "Mass / Da"
+  xlab <- "<i>m/z</i> / Da"
   ylab <- "Intensity / counts"
   if (!is.null(xLab)) xlab <- xLab
   if (!is.null(yLab)) ylab <- yLab

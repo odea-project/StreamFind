@@ -2584,94 +2584,31 @@ validate.Settings_integrate_chromatograms_StreamFind <- function(x) {
   )
 }
 
-# deconvolute_spectra_charges -----
+# calculate_spectra_charges -----
 
-#' @title Settings_deconvolute_spectra_charges_StreamFind
+#' @title Settings_calculate_spectra_charges_StreamFind
 #'
 #' @description Prototype.
 #' 
-#' @param rtmin 
-#' @param rtmax 
-#' @param mzmin 
-#' @param mzmax 
-#' @param presence  presence can be adjusted to remove noise
-#' @param mzClust critical for resolution, in Da
-#' @param minIntensity 
 #' @param roundVal 
 #' @param relLowCut 
 #' @param absLowCut 
-#' @param mzClustAverage 
-#' @param smoothing 
-#' @param windowSize 
-#' @param baseline 
-#' @param baseline_method 
-#' @param baseline_args 
-#' @param merge 
-#' @param closeByThreshold 
-#' @param valeyThreshold 
-#' @param minPeakHeight 
-#' @param minPeakDistance 
-#' @param maxPeakWidth 
-#' @param minPeakWidth 
-#' @param minSN 
 #'
-#' @return A ProcessingSettings S3 class object with subclass Settings_deconvolute_spectra_charges_StreamFind.
+#' @return A ProcessingSettings S3 class object with subclass Settings_calculate_spectra_charges_StreamFind.
 #'
 #' @export
 #'
-Settings_deconvolute_spectra_charges_StreamFind <- function(rtmin = 315 - 2.5,
-                                                            rtmax = 315 + 2.5,
-                                                            mzmin = 2400,
-                                                            mzmax = 3800,
-                                                            presence = 0.1,
-                                                            mzClust = 0.001,
-                                                            minIntensity = 50,
-                                                            roundVal = 35,
+Settings_calculate_spectra_charges_StreamFind <- function(roundVal = 35,
                                                             relLowCut = 0.2,
-                                                            absLowCut = 300,
-                                                            mzClustAverage = 0.1,
-                                                            smoothing = TRUE,
-                                                            windowSize = 25,
-                                                            baseline = TRUE,
-                                                            baseline_method = "als",
-                                                            baseline_args = list(lambda = 9, p = 0.02, maxit = 10),
-                                                            merge = TRUE,
-                                                            closeByThreshold = 45,
-                                                            valeyThreshold = 0.5,
-                                                            minPeakHeight = 100,
-                                                            minPeakDistance = 50,
-                                                            maxPeakWidth = 250,
-                                                            minPeakWidth = 50,
-                                                            minSN = 0) {
+                                                            absLowCut = 300) {
   
   settings <- list(
-    call = "deconvolute_spectra_charges",
+    call = "calculate_spectra_charges",
     algorithm = "StreamFind",
     parameters = list(
-      rtmin = rtmin,
-      rtmax = rtmax,
-      mzmin = mzmin,
-      mzmax = mzmax,
-      presence = presence, # presence can be adjusted to remove noise
-      mzClust = mzClust, # critical for resolution, in Da
-      minIntensity = minIntensity,
       roundVal = roundVal,
       relLowCut = relLowCut,
-      absLowCut = absLowCut,
-      mzClustAverage = mzClustAverage,
-      smoothing = smoothing,
-      windowSize = windowSize,
-      baseline = baseline,
-      baseline_method = baseline_method,
-      baseline_args = baseline_args,
-      merge = merge,
-      closeByThreshold = closeByThreshold,
-      valeyThreshold = valeyThreshold,
-      minPeakHeight = minPeakHeight,
-      minPeakDistance = minPeakDistance,
-      maxPeakWidth = maxPeakWidth,
-      minPeakWidth = minPeakWidth,
-      minSN = minSN
+      absLowCut = absLowCut
     ),
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",
@@ -2684,16 +2621,67 @@ Settings_deconvolute_spectra_charges_StreamFind <- function(rtmin = 315 - 2.5,
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_deconvolute_spectra_charges_StreamFind
+#' @describeIn Settings_calculate_spectra_charges_StreamFind
 #' Validates the object structure, returning a logical value of length one.
 #'
-#' @param x A Settings_integrate_chromatograms_StreamFind S3 class object.
+#' @param x A Settings_calculate_spectra_charges_StreamFind S3 class object.
 #'
 #' @export
 #'
-validate.Settings_deconvolute_spectra_charges_StreamFind <- function(x) {
+validate.Settings_calculate_spectra_charges_StreamFind <- function(x) {
   all(
-    checkmate::test_choice(x$call, "deconvolute_spectra_charges"),
+    checkmate::test_choice(x$call, "calculate_spectra_charges"),
+    checkmate::test_choice(x$algorithm, "StreamFind")
+  )
+}
+
+# deconvolute_spectra -----
+
+#' @title Settings_deconvolute_spectra_StreamFind
+#'
+#' @description Prototype.
+#' 
+#' @param roundVal 
+#' @param relLowCut 
+#' @param absLowCut 
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_deconvolute_spectra_StreamFind.
+#'
+#' @export
+#'
+Settings_deconvolute_spectra_StreamFind <- function(roundVal = 35,
+                                                    relLowCut = 0.2,
+                                                    absLowCut = 300) {
+  
+  settings <- list(
+    call = "deconvolute_spectra",
+    algorithm = "StreamFind",
+    parameters = list(
+      roundVal = roundVal,
+      relLowCut = relLowCut,
+      absLowCut = absLowCut
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_deconvolute_spectra_StreamFind
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_deconvolute_spectra_StreamFind S3 class object.
+#'
+#' @export
+#'
+validate.Settings_deconvolute_spectra_StreamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "deconvolute_spectra"),
     checkmate::test_choice(x$algorithm, "StreamFind")
   )
 }

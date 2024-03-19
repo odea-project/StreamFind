@@ -173,7 +173,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-correct_chromatograms_baseline}{\code{MassSpecEngine$correct_chromatograms_baseline()}}
 \item \href{#method-MassSpecEngine-integrate_chromatograms}{\code{MassSpecEngine$integrate_chromatograms()}}
 \item \href{#method-MassSpecEngine-cluster_spectra}{\code{MassSpecEngine$cluster_spectra()}}
-\item \href{#method-MassSpecEngine-deconvolute_spectra_charges}{\code{MassSpecEngine$deconvolute_spectra_charges()}}
+\item \href{#method-MassSpecEngine-calculate_spectra_charges}{\code{MassSpecEngine$calculate_spectra_charges()}}
 \item \href{#method-MassSpecEngine-as_patRoon_features}{\code{MassSpecEngine$as_patRoon_features()}}
 \item \href{#method-MassSpecEngine-as_patRoon_featureGroups}{\code{MassSpecEngine$as_patRoon_featureGroups()}}
 \item \href{#method-MassSpecEngine-as_patRoon_MSPeakLists}{\code{MassSpecEngine$as_patRoon_MSPeakLists()}}
@@ -5446,12 +5446,12 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-deconvolute_spectra_charges"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-deconvolute_spectra_charges}{}}}
-\subsection{Method \code{deconvolute_spectra_charges()}}{
-Deconvolutes spectra with multi-charged compounds, such as monoclonal antibodies.
+\if{html}{\out{<a id="method-MassSpecEngine-calculate_spectra_charges"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-calculate_spectra_charges}{}}}
+\subsection{Method \code{calculate_spectra_charges()}}{
+Calculate charges from spectra with multi-charged compounds, such as monoclonal antibodies.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$deconvolute_spectra_charges(settings = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$calculate_spectra_charges(settings = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

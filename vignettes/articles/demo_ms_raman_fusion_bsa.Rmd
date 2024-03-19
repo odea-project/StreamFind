@@ -175,12 +175,7 @@ According to the MS1 spectra, the *m/z* from 1200 to 2000 can be added to the de
 # av_rt <- mean(rbindlist(ms$chromatograms_peaks)$rt)
 av_rt <- 363.9824
 
-spectra_ranges <- data.table(
-  "mzmin" = 1200,
-  "mzmax" = 2000,
-  "rtmin" = av_rt - 1,
-  "rtmax" = av_rt + 1
-)
+spectra_ranges <- data.table("mzmin" = 1200, "mzmax" = 2000, "rtmin" = av_rt - 1, "rtmax" = av_rt + 1)
 
 ms <- MassSpecEngine$new(files = ms_files[1:2], headers = list(name = "BSA Quality Evaluation Project"))
 
@@ -190,39 +185,31 @@ ms$load_spectra(mz = spectra_ranges)
 
 ms$cluster_spectra(Settings_cluster_spectra_StreamFind(val = "mz", clustVal = 0.01, presence = 0.2))
 
-ps_dc <- Settings_deconvolute_spectra_charges_StreamFind(
-  rtmin = mean(ms$chromatograms_peaks$rt) - 1,
-  rtmax = mean(ms$chromatograms_peaks$rt) + 1,
-  mzmin = 1300,
-  mzmax = 2000,
-  presence = 0.2,
-  mzClust = 0.005,
-  minIntensity = 500,
-  
+ps_dc <- Settings_calculate_spectra_charges_StreamFind(
   roundVal = 15,
   relLowCut = 0.2,
-  absLowCut = 8000,
-  
-  mzClustAverage = 0.1,
-  smoothing = TRUE,
-  windowSize = 5,
-  baseline = TRUE,
-  baseline_method = "als",
-  baseline_args = list(lambda = 5, p = 0.05, maxit = 10),
-  merge = TRUE,
-  closeByThreshold = 40,
-  valeyThreshold = 0.5,
-  minPeakHeight = 500,
-  minPeakDistance = 50,
-  maxPeakWidth = 60,
-  minPeakWidth = 20,
-  minSN = 0
+  absLowCut = 8000
+  # mzClustAverage = 0.1,
+  # smoothing = TRUE,
+  # windowSize = 5,
+  # baseline = TRUE,
+  # baseline_method = "als",
+  # baseline_args = list(lambda = 5, p = 0.05, maxit = 10),
+  # merge = TRUE,
+  # closeByThreshold = 40,
+  # valeyThreshold = 0.5,
+  # minPeakHeight = 500,
+  # minPeakDistance = 50,
+  # maxPeakWidth = 60,
+  # minPeakWidth = 20,
+  # minSN = 0
 )
 
-ms$deconvolute_spectra_charges(ps_dc)
+ms$calculate_spectra_charges(ps_dc)
 
+# ms$spectra_charges
 
-
+ms$plot_spectra_charges()
 
 ms$get_spectra()
 

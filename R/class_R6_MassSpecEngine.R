@@ -799,16 +799,34 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     
     #' @field spectra_charges `data.table` with charges assigned to spectra for each analyses.
     #' 
-    spectra_charges = function() {
+    spectra_charges = function(value) {
       
-      if (self$has_spectra_charges()) {
-        res <- private$.results$spectra$data
-        res <- lapply(res, function(x) x$charges)
+      if (missing(value)) {
         
-        res
+        if (self$has_spectra_charges()) {
+          res <- private$.results$spectra
+          res <- lapply(res, function(x) x$charges)
+          
+          res
+          
+        } else {
+          data.table()
+        }
         
       } else {
-        data.table()
+        
+        if (self$has_results("spectra")) {
+          
+          if (identical(names(private$.results$spectra), names(value))) {
+            private$.results$spectra <- Map(function(x, y) {
+              x$charges <- y
+              x
+            }, private$.results$spectra, value)
+            
+          }
+        }
+        
+        invisible(self)
       }
     }
   ),
@@ -4705,7 +4723,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     has_spectra_charges = function() {
       
       if (self$has_results("spectra")) {
-        sum(vapply(private$.results$spectra$data, function(x) nrow(x$charges), 0)) > 0
+        sum(vapply(private$.results$spectra, function(x) nrow(x$charges), 0)) > 0
         
       } else {
         FALSE
@@ -5998,6 +6016,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       res <- rbindlist(res)
       
+      res <- res[!res$outlier, ]
+      
       if (nrow(res) > 0) {
         res$replicate <- self$get_replicate_names()[res$analysis]
       }
@@ -6008,12 +6028,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         message("\U2717 Spectra charges not found for the targets!")
         return(NULL)
       }
-
-      sp_data <- self$get_results("spectra")
-      sp_data <- sp_data$spectra$data
-      sp_data <- sp_data[unique(res$analysis)]
       
-      spec <- lapply(sp_data, function(x) x$raw)
+      spec <- self$spectra
       spec <- rbindlist(spec, fill = TRUE)
       
       if (!interactive) {
@@ -6246,17 +6262,27 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       invisible(self)
     },
     
-    #' @description Deconvolutes spectra with multi-charged compounds, such as monoclonal antibodies.
+    #' @description Calculate charges from spectra with multi-charged compounds, such as monoclonal antibodies.
     #'
     #' @return Invisible.
     #'
-    deconvolute_spectra_charges = function(settings = NULL) {
+    calculate_spectra_charges = function(settings = NULL) {
       
-      .dispatch_process_method("deconvolute_spectra_charges", settings, self, private)
+      .dispatch_process_method("ms_calculate_spectra_charges", settings, self, private)
       
       invisible(self)
     },
     
+    #' @description Deconvolutes spectra with calculated charges from multi-charged compounds, such as monoclonal antibodies.
+    #'
+    #' @return Invisible.
+    #'
+    deconvolute_spectra = function(settings = NULL) {
+      
+      .dispatch_process_method("ms_deconvolute_spectra", settings, self, private)
+      
+      invisible(self)
+    },
     
     ## ___ as -----
 
@@ -7154,7 +7180,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           "correct_chromatograms_baseline",
           "integrate_chromatograms",
           "cluster_spectra",
-          "deconvolute_spectra_charges"
+          "calculate_spectra_charges",
+          "deconvolute_spectra"
         ),
         max = c(
           1,
@@ -7168,6 +7195,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           1,
           1,
           Inf,
+          1,
           1,
           1,
           1,
