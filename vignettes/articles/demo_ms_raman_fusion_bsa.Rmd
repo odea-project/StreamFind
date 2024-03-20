@@ -207,29 +207,25 @@ ps_dc <- Settings_calculate_spectra_charges_StreamFind(
 
 ms$calculate_spectra_charges(ps_dc)
 
+ms$deconvolute_spectra(Settings_deconvolute_spectra_StreamFind())
+
+
+
+
+
+ms$plot_deconvoluted_spectra()
+
+
+
+
+# ms$deconvoluted_spectra
 # ms$spectra_charges
-
-ms$plot_spectra_charges()
-
-ms$get_spectra()
-
-
-
-ms$spectra
-
-
-
-
-
-
-
-
-
-ms$has_results("spectra")
-
-ms$spectra
-# 
-ms$plot_spectra(interactive = T)
+# ms$plot_spectra_charges()
+# ms$get_spectra()
+# ms$spectra
+# ms$has_results("spectra")
+# ms$spectra
+# ms$plot_spectra(interactive = T)
 
 
 ```

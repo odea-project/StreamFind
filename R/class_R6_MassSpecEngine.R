@@ -765,38 +765,6 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       }
     },
     
-    #' @field averaged_spectra List of averaged spectra `data.table` each analysis/replicate.
-    #' 
-    averaged_spectra = function() {
-      
-      if (self$has_averaged_spectra()) {
-        res <- private$.results$spectra$data
-        res <- lapply(res, function(x) x$average)
-        res
-        
-      } else {
-        data.table()
-      }
-    },
-    
-    #' @field spectra_peaks `data.table` with integrated spectra peaks for each analysis.
-    #' 
-    spectra_peaks = function() {
-      
-      if (self$has_spectra_peaks()) {
-        pks <- private$.results$spectra$data
-        pks <- lapply(pks, function(x) x$peaks)
-        pks <- rbindlist(pks)
-        
-        if (nrow(pks) > 0) pks$replicate <- self$get_replicate_names()[pks$analysis]
-        
-        pks
-        
-      } else {
-        data.table()
-      }
-    },
-    
     #' @field spectra_charges `data.table` with charges assigned to spectra for each analyses.
     #' 
     spectra_charges = function(value) {
@@ -822,11 +790,60 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
               x$charges <- y
               x
             }, private$.results$spectra, value)
-            
           }
         }
         
         invisible(self)
+      }
+    },
+    
+    #' @field deconvoluted_spectra List of deconvoluted spectra for each analysis.
+    #' 
+    deconvoluted_spectra = function(value) {
+      
+      if (missing(value)) {
+        
+        if (self$has_deconvoluted_spectra()) {
+          res <- private$.results$spectra
+          res <- lapply(res, function(x) x$deconvoluted)
+          
+          res
+          
+        } else {
+          data.table()
+        }
+        
+      } else {
+        
+        if (self$has_results("spectra")) {
+          
+          if (identical(names(private$.results$spectra), names(value))) {
+            private$.results$spectra <- Map(function(x, y) {
+              x$deconvoluted <- y
+              x
+            }, private$.results$spectra, value)
+          }
+        }
+        
+        invisible(self)
+      }
+    },
+    
+    #' @field spectra_peaks `data.table` with integrated spectra peaks for each analysis.
+    #' 
+    spectra_peaks = function() {
+      
+      if (self$has_spectra_peaks()) {
+        pks <- private$.results$spectra$data
+        pks <- lapply(pks, function(x) x$peaks)
+        pks <- rbindlist(pks)
+        
+        if (nrow(pks) > 0) pks$replicate <- self$get_replicate_names()[pks$analysis]
+        
+        pks
+        
+      } else {
+        data.table()
       }
     }
   ),
@@ -4650,9 +4667,14 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     has_chromatograms = function() {
       
-      if (self$has_results("spectra")) {
-        sum(vapply(private$.results$chromatograms, function(x) nrow(x$chromatograms), 0)) > 0
+      if (self$has_results("chromatograms")) {
         
+        if (all(vapply(private$.results$chromatograms, function(x) "chromatograms" %in% names(x), FALSE))) {
+          sum(vapply(private$.results$chromatograms, function(x) nrow(x$chromatograms), 0)) > 0
+          
+        } else {
+          all(vapply(self$get_analyses(), function(x) nrow(x$chromatograms) > 0, FALSE))
+        }
       } else {
         all(vapply(self$get_analyses(), function(x) nrow(x$chromatograms) > 0, FALSE))
       }
@@ -4663,8 +4685,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     has_chromatograms_peaks = function() {
       
       if (self$has_results("chromatograms")) {
-        sum(vapply(private$.results$chromatograms, function(x) nrow(x$peaks), 0)) > 0
         
+        if (all(vapply(private$.results$chromatograms, function(x) "peaks" %in% names(x), FALSE))) {
+          sum(vapply(private$.results$chromatograms, function(x) nrow(x$peaks), 0)) > 0
+          
+        } else {
+          FALSE
+        }
       } else {
         FALSE
       }
@@ -4675,8 +4702,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     has_spectra = function() {
       
       if (self$has_results("spectra")) {
-        sum(vapply(private$.results$spectra, function(x) nrow(x$spectra), 0)) > 0
         
+        if (all(vapply(private$.results$spectra, function(x) "spectra" %in% names(x), FALSE))) {
+          sum(vapply(private$.results$spectra, function(x) nrow(x$spectra), 0)) > 0
+          
+        } else {
+          all(vapply(self$get_analyses(), function(x) nrow(x$spectra) > 0, FALSE))
+        }
       } else {
         all(vapply(self$get_analyses(), function(x) nrow(x$spectra) > 0, FALSE))
       }
@@ -4687,32 +4719,30 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     has_spectra_peaks = function() {
       
       if (self$has_results("spectra")) {
-        sum(vapply(private$.results$spectra$data, function(x) {
-          if ("peaks" %in% names(x)) {
-            nrow(x$peaks)
-          } else {
-            0
-          }
-        }, 0)) > 0
         
+        if (all(vapply(private$.results$spectra, function(x) "peaks" %in% names(x), FALSE))) {
+          sum(vapply(private$.results$spectra, function(x) nrow(x$peaks), 0)) > 0
+          
+        } else {
+          FALSE
+        }
       } else {
         FALSE
       }
     },
     
-    #' @description Checks if there are average spectra, returning `TRUE` or `FALSE`.
+    #' @description Checks if there are deconvoluted spectra, returning `TRUE` or `FALSE`.
     #'
-    has_averaged_spectra = function() {
+    has_deconvoluted_spectra = function() {
       
       if (self$has_results("spectra")) {
-        sum(vapply(private$.results$spectra$data, function(x) {
-          if ("average" %in% names(x)) {
-            nrow(x$average)
-          } else {
-            0
-          }
-        }, 0)) > 0
         
+        if (all(vapply(private$.results$spectra, function(x) "deconvoluted" %in% names(x), FALSE))) {
+          sum(vapply(private$.results$spectra, function(x) nrow(x$deconvoluted), 0)) > 0
+          
+        } else {
+          FALSE
+        }
       } else {
         FALSE
       }
@@ -4723,8 +4753,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     has_spectra_charges = function() {
       
       if (self$has_results("spectra")) {
-        sum(vapply(private$.results$spectra, function(x) nrow(x$charges), 0)) > 0
         
+        if (all(vapply(private$.results$spectra, function(x) "charges" %in% names(x), FALSE))) {
+          sum(vapply(private$.results$spectra, function(x) nrow(x$charges), 0)) > 0
+          
+        } else {
+          FALSE
+        }
       } else {
         FALSE
       }
@@ -6039,6 +6074,56 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       }
     },
 
+    #' @description Plots deconvoluted spectra in given MS analyses.
+    #'
+    plot_deconvoluted_spectra = function(analyses = NULL,
+                                         legendNames = NULL,
+                                         colorBy = "analyses",
+                                         xLab = NULL,
+                                         yLab = NULL,
+                                         title = NULL,
+                                         cex = 0.6,
+                                         showLegend = TRUE,
+                                         interactive = TRUE) {
+      
+      if (!self$has_deconvoluted_spectra()) {
+        message("\U2717 Deconvoluted spectra not found!")
+        return(NULL)
+      }
+      
+      analyses <- private$.check_analyses_argument(analyses)
+      
+      if (is.null(analyses)) return(NULL)
+      
+      spec <- self$deconvoluted_spectra
+      
+      spec <- spec[analyses]
+      
+      spec <- rbindlist(spec, fill = TRUE)
+      
+      if (nrow(spec) == 0) {
+        message("\U2717 Deconvoluted spectra not found!")
+        return(NULL)
+      }
+      
+      if ("replicates" %in% colorBy) spec$replicate <- self$get_replicate_names()[spec$analysis]
+      
+      spec <- .make_colorBy_varkey(spec, colorBy, legendNames = NULL)
+      
+      if (is.null(xLab)) xLab = "Mass / Da"
+      
+      if (is.null(yLab)) yLab = "Intensity / counts"
+      
+      spec$x <- spec$mass
+      
+      if (!interactive) {
+        return(.plot_x_spectra_static(spec, xLab, yLab, title, cex, showLegend))
+        
+      } else {
+        return(.plot_x_spectra_interactive(spec, xLab, yLab, title, colorBy))
+      }
+    },
+    
     ## ___ processing -----
 
     #' @description Loads features EICs in each analyses.

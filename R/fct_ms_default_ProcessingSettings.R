@@ -2641,25 +2641,19 @@ validate.Settings_calculate_spectra_charges_StreamFind <- function(x) {
 #'
 #' @description Prototype.
 #' 
-#' @param roundVal 
-#' @param relLowCut 
-#' @param absLowCut 
+#' @param clustVal 
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_deconvolute_spectra_StreamFind.
 #'
 #' @export
 #'
-Settings_deconvolute_spectra_StreamFind <- function(roundVal = 35,
-                                                    relLowCut = 0.2,
-                                                    absLowCut = 300) {
+Settings_deconvolute_spectra_StreamFind <- function(clustVal = 0.1) {
   
   settings <- list(
     call = "deconvolute_spectra",
     algorithm = "StreamFind",
     parameters = list(
-      roundVal = roundVal,
-      relLowCut = relLowCut,
-      absLowCut = absLowCut
+      clustVal = clustVal
     ),
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",

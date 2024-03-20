@@ -10,7 +10,9 @@
   parameters <- settings$parameters
   
   roundVal <- parameters$roundVal
+  
   relLowCut <- parameters$relLowCut
+  
   absLowCut <- parameters$absLowCut
   
   if (!self$has_spectra()) {
@@ -233,7 +235,7 @@
   
   self$spectra_charges <- charges
 
-  message(paste0("\U2713 ", "Spectra deconvoluted!"))
+  message(paste0("\U2713 ", "Spectra charges calculated!"))
   
   TRUE
 }
