@@ -6,22 +6,19 @@
 \title{Settings_bin_spectra_StreamFind}
 \usage{
 Settings_bin_spectra_StreamFind(
-  valSpectrumUnits = "rt",
-  windowSpectrumUnits = 20,
-  xVals = NULL,
-  xWindows = NULL
+  unitsVal = NULL,
+  unitsNumber = NULL,
+  bins = NULL
 )
 
 \method{validate}{Settings_bin_spectra_StreamFind}(x)
 }
 \arguments{
-\item{valSpectrumUnits}{}
+\item{unitsVal}{}
 
-\item{windowSpectrumUnits}{}
+\item{unitsNumber}{}
 
-\item{xVals}{}
-
-\item{xWindows}{}
+\item{bins}{}
 
 \item{x}{A Settings_bin_spectra_StreamFind S3 class object.}
 }

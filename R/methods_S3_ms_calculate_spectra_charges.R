@@ -188,8 +188,6 @@
       
       res$outlier <- FALSE
       
-      res$outlier <- res$mass < (mean(res$mass) - sd(res$mass)) | res$mass > (mean(res$mass) + sd(res$mass))
-      
       if (length(seq_len(nrow(res))[-1]) >= 2) {
         
         res$z_step <- 0
@@ -199,6 +197,10 @@
         res$outlier <- res$z_step != 1
         
       }
+      
+      mass_vec <- res$mass[!res$outlier]
+      
+      res$outlier[!res$outlier] <- mass_vec < (mean(mass_vec) - sd(mass_vec)) | mass_vec > (mean(mass_vec) + sd(mass_vec))
       
       plot_charges_annotated <- function(x, res) {
         plot(x$mz, x$intensity, type = 'l', ylim = c(0, max(x$intensity) * 1.4))
@@ -222,6 +224,10 @@
       }
       
       if (FALSE) plot_charges_annotated(x, res)
+      
+      res <- res[!res$outlier, ]
+      
+      res$outlier <- NULL
       
       res
 

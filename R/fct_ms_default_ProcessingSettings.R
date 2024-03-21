@@ -178,28 +178,25 @@ validate.Settings_bin_spectra_qBinning <- function(x) {
 #'
 #' @description Not yet implemented.
 #' 
-#' @param valSpectrumUnits 
-#' @param windowSpectrumUnits 
-#' @param xVals 
-#' @param xWindows 
+#' @param unitsVal 
+#' @param unitsNumber 
+#' @param bins 
 #'
 #' @return X.
 #'
 #' @export
 #'
-Settings_bin_spectra_StreamFind <- function(valSpectrumUnits = "rt",
-                                            windowSpectrumUnits = 20,
-                                            xVals = NULL,
-                                            xWindows = NULL) {
+Settings_bin_spectra_StreamFind <- function(unitsVal = NULL,
+                                            unitsNumber = NULL,
+                                            bins = NULL) {
   
   settings <- list(
     call = "bin_spectra",
     algorithm = "StreamFind",
     parameters = list(
-      valSpectrumUnits = valSpectrumUnits,
-      windowSpectrumUnits = windowSpectrumUnits,
-      xVals = xVals,
-      xWindows = xWindows
+      unitsVal = unitsVal,
+      unitsNumber = unitsNumber,
+      bins = bins
     ),
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",
@@ -2642,18 +2639,20 @@ validate.Settings_calculate_spectra_charges_StreamFind <- function(x) {
 #' @description Prototype.
 #' 
 #' @param clustVal 
+#' @param window 
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_deconvolute_spectra_StreamFind.
 #'
 #' @export
 #'
-Settings_deconvolute_spectra_StreamFind <- function(clustVal = 0.1) {
+Settings_deconvolute_spectra_StreamFind <- function(clustVal = 0.1, window = 20) {
   
   settings <- list(
     call = "deconvolute_spectra",
     algorithm = "StreamFind",
     parameters = list(
-      clustVal = clustVal
+      clustVal = clustVal,
+      window = window
     ),
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",
@@ -3313,6 +3312,123 @@ validate.Settings_normalize_spectra_snv <- function(x) {
   all(
     checkmate::test_choice(x$call, "normalize_spectra"),
     checkmate::test_choice(x$algorithm, "snv")
+  )
+}
+
+#' @title Settings_normalize_spectra_scale
+#'
+#' @description Prototype.
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_normalize_spectra_scale.
+#'
+#' @export
+#'
+Settings_normalize_spectra_scale <- function() {
+  
+  settings <- list(
+    call = "normalize_spectra",
+    algorithm = "scale",
+    parameters = list(),
+    version = NA_character_,
+    software = NA_character_,
+    developer = NA_character_,
+    contact = NA_character_,
+    link = NA_character_,
+    doi = NA_character_
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_normalize_spectra_scale
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_normalize_spectra_scale S3 class object.
+#'
+#' @export
+#'
+validate.Settings_normalize_spectra_scale <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "normalize_spectra"),
+    checkmate::test_choice(x$algorithm, "scale")
+  )
+}
+
+#' @title Settings_normalize_spectra_blockweight
+#'
+#' @description Prototype.
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_normalize_spectra_blockweight.
+#'
+#' @export
+#'
+Settings_normalize_spectra_blockweight <- function() {
+  
+  settings <- list(
+    call = "normalize_spectra",
+    algorithm = "blockweight",
+    parameters = list(),
+    version = NA_character_,
+    software = NA_character_,
+    developer = NA_character_,
+    contact = NA_character_,
+    link = NA_character_,
+    doi = NA_character_
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_normalize_spectra_blockweight
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_normalize_spectra_blockweight S3 class object.
+#'
+#' @export
+#'
+validate.Settings_normalize_spectra_blockweight <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "normalize_spectra"),
+    checkmate::test_choice(x$algorithm, "blockweight")
+  )
+}
+
+#' @title Settings_normalize_spectra_meancenter
+#'
+#' @description Prototype.
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_normalize_spectra_meancenter.
+#'
+#' @export
+#'
+Settings_normalize_spectra_meancenter <- function() {
+  
+  settings <- list(
+    call = "normalize_spectra",
+    algorithm = "meancenter",
+    parameters = list(),
+    version = NA_character_,
+    software = NA_character_,
+    developer = NA_character_,
+    contact = NA_character_,
+    link = NA_character_,
+    doi = NA_character_
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @describeIn Settings_normalize_spectra_meancenter
+#' Validates the object structure, returning a logical value of length one.
+#'
+#' @param x A Settings_normalize_spectra_meancenter S3 class object.
+#'
+#' @export
+#'
+validate.Settings_normalize_spectra_meancenter <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "normalize_spectra"),
+    checkmate::test_choice(x$algorithm, "meancenter")
   )
 }
 

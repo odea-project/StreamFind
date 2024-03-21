@@ -51,11 +51,11 @@ List of function elements to access specific reference help pages.}
 
 \item{\code{spectra}}{List of spectra \code{data.table} objects for each analysis.}
 
-\item{\code{averaged_spectra}}{List of averaged spectra \code{data.table} each analysis/replicate.}
+\item{\code{spectra_charges}}{\code{data.table} with charges assigned to spectra for each analyses.}
+
+\item{\code{deconvoluted_spectra}}{List of deconvoluted spectra for each analysis.}
 
 \item{\code{spectra_peaks}}{\code{data.table} with integrated spectra peaks for each analysis.}
-
-\item{\code{spectra_charges}}{\code{data.table} with charges assigned to spectra for each analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -129,7 +129,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-has_chromatograms_peaks}{\code{MassSpecEngine$has_chromatograms_peaks()}}
 \item \href{#method-MassSpecEngine-has_spectra}{\code{MassSpecEngine$has_spectra()}}
 \item \href{#method-MassSpecEngine-has_spectra_peaks}{\code{MassSpecEngine$has_spectra_peaks()}}
-\item \href{#method-MassSpecEngine-has_averaged_spectra}{\code{MassSpecEngine$has_averaged_spectra()}}
+\item \href{#method-MassSpecEngine-has_deconvoluted_spectra}{\code{MassSpecEngine$has_deconvoluted_spectra()}}
 \item \href{#method-MassSpecEngine-has_spectra_charges}{\code{MassSpecEngine$has_spectra_charges()}}
 \item \href{#method-MassSpecEngine-plot_raw_spectra}{\code{MassSpecEngine$plot_raw_spectra()}}
 \item \href{#method-MassSpecEngine-plot_spectra}{\code{MassSpecEngine$plot_spectra()}}
@@ -154,6 +154,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-plot_suspects}{\code{MassSpecEngine$plot_suspects()}}
 \item \href{#method-MassSpecEngine-map_isotopes}{\code{MassSpecEngine$map_isotopes()}}
 \item \href{#method-MassSpecEngine-plot_spectra_charges}{\code{MassSpecEngine$plot_spectra_charges()}}
+\item \href{#method-MassSpecEngine-plot_deconvoluted_spectra}{\code{MassSpecEngine$plot_deconvoluted_spectra()}}
 \item \href{#method-MassSpecEngine-load_features_eic}{\code{MassSpecEngine$load_features_eic()}}
 \item \href{#method-MassSpecEngine-load_features_ms1}{\code{MassSpecEngine$load_features_ms1()}}
 \item \href{#method-MassSpecEngine-load_features_ms2}{\code{MassSpecEngine$load_features_ms2()}}
@@ -174,6 +175,10 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-integrate_chromatograms}{\code{MassSpecEngine$integrate_chromatograms()}}
 \item \href{#method-MassSpecEngine-cluster_spectra}{\code{MassSpecEngine$cluster_spectra()}}
 \item \href{#method-MassSpecEngine-calculate_spectra_charges}{\code{MassSpecEngine$calculate_spectra_charges()}}
+\item \href{#method-MassSpecEngine-deconvolute_spectra}{\code{MassSpecEngine$deconvolute_spectra()}}
+\item \href{#method-MassSpecEngine-smooth_spectra}{\code{MassSpecEngine$smooth_spectra()}}
+\item \href{#method-MassSpecEngine-correct_spectra_baseline}{\code{MassSpecEngine$correct_spectra_baseline()}}
+\item \href{#method-MassSpecEngine-normalize_spectra}{\code{MassSpecEngine$normalize_spectra()}}
 \item \href{#method-MassSpecEngine-as_patRoon_features}{\code{MassSpecEngine$as_patRoon_features()}}
 \item \href{#method-MassSpecEngine-as_patRoon_featureGroups}{\code{MassSpecEngine$as_patRoon_featureGroups()}}
 \item \href{#method-MassSpecEngine-as_patRoon_MSPeakLists}{\code{MassSpecEngine$as_patRoon_MSPeakLists()}}
@@ -2739,12 +2744,12 @@ Checks if there are spectra peaks, returning \code{TRUE} or \code{FALSE}.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_averaged_spectra"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_averaged_spectra}{}}}
-\subsection{Method \code{has_averaged_spectra()}}{
-Checks if there are average spectra, returning \code{TRUE} or \code{FALSE}.
+\if{html}{\out{<a id="method-MassSpecEngine-has_deconvoluted_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_deconvoluted_spectra}{}}}
+\subsection{Method \code{has_deconvoluted_spectra()}}{
+Checks if there are deconvoluted spectra, returning \code{TRUE} or \code{FALSE}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_averaged_spectra()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_deconvoluted_spectra()}\if{html}{\out{</div>}}
 }
 
 }
@@ -4984,6 +4989,52 @@ using \pkg{plotly}.}
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-plot_deconvoluted_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_deconvoluted_spectra}{}}}
+\subsection{Method \code{plot_deconvoluted_spectra()}}{
+Plots deconvoluted spectra in given MS analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_deconvoluted_spectra(
+  analyses = NULL,
+  legendNames = NULL,
+  colorBy = "analyses",
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  cex = 0.6,
+  showLegend = TRUE,
+  interactive = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+
+\item{\code{legendNames}}{A character vector with the same length as the targets.}
+
+\item{\code{colorBy}}{A string of length 1. One of \code{analyses}, \code{targets} (the
+default) or \code{replicates}.}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{cex}}{A length one numeric value defining the scale of the legend for
+non interactive plotting.}
+
+\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
+
+\item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively
+using \pkg{plotly}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-load_features_eic"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-load_features_eic}{}}}
 \subsection{Method \code{load_features_eic()}}{
@@ -5452,6 +5503,102 @@ Invisible.
 Calculate charges from spectra with multi-charged compounds, such as monoclonal antibodies.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$calculate_spectra_charges(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-deconvolute_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-deconvolute_spectra}{}}}
+\subsection{Method \code{deconvolute_spectra()}}{
+Deconvolutes spectra with calculated charges from multi-charged compounds, such as monoclonal antibodies.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$deconvolute_spectra(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-smooth_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-smooth_spectra}{}}}
+\subsection{Method \code{smooth_spectra()}}{
+Smooths the spectra in each analysis/replicate.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$smooth_spectra(settings)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-correct_spectra_baseline"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-correct_spectra_baseline}{}}}
+\subsection{Method \code{correct_spectra_baseline()}}{
+Corrects the spectra baseline.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$correct_spectra_baseline(settings)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-normalize_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-normalize_spectra}{}}}
+\subsection{Method \code{normalize_spectra()}}{
+Normalizes spectra in each analysis/replicate.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$normalize_spectra(settings)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

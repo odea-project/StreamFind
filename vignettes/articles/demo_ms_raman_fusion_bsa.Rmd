@@ -177,7 +177,7 @@ av_rt <- 363.9824
 
 spectra_ranges <- data.table("mzmin" = 1200, "mzmax" = 2000, "rtmin" = av_rt - 1, "rtmax" = av_rt + 1)
 
-ms <- MassSpecEngine$new(files = ms_files[1:2], headers = list(name = "BSA Quality Evaluation Project"))
+ms <- MassSpecEngine$new(files = ms_files[1:12], headers = list(name = "BSA Quality Evaluation Project"))
 
 ms$add_replicate_names(sub("_\\d+$", "", ms$get_analysis_names()))
 
@@ -185,39 +185,33 @@ ms$load_spectra(mz = spectra_ranges)
 
 ms$cluster_spectra(Settings_cluster_spectra_StreamFind(val = "mz", clustVal = 0.01, presence = 0.2))
 
-ps_dc <- Settings_calculate_spectra_charges_StreamFind(
-  roundVal = 15,
-  relLowCut = 0.2,
-  absLowCut = 8000
-  # mzClustAverage = 0.1,
-  # smoothing = TRUE,
-  # windowSize = 5,
-  # baseline = TRUE,
-  # baseline_method = "als",
-  # baseline_args = list(lambda = 5, p = 0.05, maxit = 10),
-  # merge = TRUE,
-  # closeByThreshold = 40,
-  # valeyThreshold = 0.5,
-  # minPeakHeight = 500,
-  # minPeakDistance = 50,
-  # maxPeakWidth = 60,
-  # minPeakWidth = 20,
-  # minSN = 0
-)
-
+ps_dc <- Settings_calculate_spectra_charges_StreamFind(roundVal = 15, relLowCut = 0.2, absLowCut = 8000)
 ms$calculate_spectra_charges(ps_dc)
 
 ms$deconvolute_spectra(Settings_deconvolute_spectra_StreamFind())
 
+ms$smooth_spectra(Settings_smooth_spectra_movingaverage(windowSize = 10))
+
+ms$normalize_spectra(Settings_normalize_spectra_snv(liftTozero = TRUE))
+
+ms$normalize_spectra(Settings_normalize_spectra_blockweight())
+
+ms$bin_spectra(Settings_bin_spectra_StreamFind(bins = list("rt" = 5, "mass" = 1))
 
 
+# ms$spectra
+# 
+# ms$plot_spectra()
 
+# ms$correct_spectra_baseline(Settings_correct_spectra_baseline_baseline())
 
-ms$plot_deconvoluted_spectra()
+# ms$plot_deconvoluted_spectra()
 
+# ms$plot_spectra(interactive = T)
+# 
+# ms$plot_spectra_charges()
 
-
-
+# ms$spectra_charges
 # ms$deconvoluted_spectra
 # ms$spectra_charges
 # ms$plot_spectra_charges()

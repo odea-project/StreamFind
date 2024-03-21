@@ -46,13 +46,11 @@
     return(FALSE)
   }
   
-  valSpectrumUnits = settings$parameters$valSpectrumUnits
+  unitsVal = settings$parameters$unitsVal
   
-  windowSpectrumUnits = settings$parameters$windowSpectrumUnits
+  unitsNumber = settings$parameters$unitsNumber
   
-  xVals = settings$parameters$xVals #c("rt", "shift")
-  
-  xWindows = settings$parameters$xWindows
+  bins = settings$parameters$bins
   
   cached_analyses <- FALSE
   
@@ -81,15 +79,18 @@
       
       if (nrow(x) == 0) return(data.table())
       
-      if (!is.null(valSpectrumUnits) && !is.null(windowSpectrumUnits)) {
+      # performs binning based on number of units, i.e. traces, for a given dimension
+      if (!is.null(unitsVal) && !is.null(unitsNumber) && is.null(bins)) {
         
-        unitVal <- unique(x[[valSpectrumUnits]])
+        intensity <- NULL
+        
+        unitVal <- unique(x[[unitsVal]])
         
         max_i <- length(unitVal) # maximum number of scan
         
         min_i <- 1
         
-        unitSections <- seq(min_i, max_i, windowSpectrumUnits)
+        unitSections <- seq(min_i, max_i, unitsNumber)
         
         idx <- seq_len(max_i)
         
@@ -99,22 +100,21 @@
         
         names(binKey) <- as.character(unitVal)
         
-        res <- data.table("intensity" = x$intensity, "bin_key" = binKey[as.character(x[[valSpectrumUnits]])])
+        res <- data.table("intensity" = x$intensity, "bin_key" = binKey[as.character(x[[unitsVal]])])
         
-        if (is.null(xVals)) {
-          xVals <- colnames(x)
-          xVals <- xVals[!xVals %in% c("analysis", "replicate", "intensity")]
-        }
+        xVals <- colnames(x)
+        
+        xVals <- xVals[!xVals %in% c("analysis", "replicate", "intensity")]
         
         for (i in xVals) res[[i]] <- x[[i]]
         
-        valKeys <- xVals[!xVals %in% valSpectrumUnits]
+        valKeys <- xVals[!xVals %in% unitsVal]
         
-        res <- res[, .(x = mean(x), intensity = mean(intensity)), by = c("bin_key", valKeys), env = list(x = valSpectrumUnits)]
+        res <- res[, .(x = mean(x), intensity = mean(intensity)), by = c("bin_key", valKeys), env = list(x = unitsVal)]
         
         res <- unique(res)
         
-        setcolorder(res, c(valSpectrumUnits, valKeys, "intensity"))
+        setcolorder(res, c(unitsVal, valKeys, "intensity"))
         
         res$bin_key <- NULL
         
@@ -129,14 +129,21 @@
         }
         
         res
+      
+      # performs binning based on a defined set of one or more dimensions, building a key after binning
+      } else if (!is.null(bins)) {
         
-      } else {
+        if (!all(names(bins) %in% colnames(x))) stop("Names in bins not fouond in spectra columns!")
         
-        max_x <- max(x[[xVal]])
-        min_x <- min(x[[xVal]])
+        browser()
         
-        max_x2 <- max(x[[x2Val]])
-        min_x2 <- min(x[[x2Val]])
+        
+        
+        
+        
+        
+        
+        
         
         
         

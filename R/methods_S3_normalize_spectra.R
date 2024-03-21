@@ -160,3 +160,142 @@
   
   TRUE
 }
+
+#' @title .s3_normalize_spectra.Settings_normalize_spectra_scale
+#'
+#' @description Scales spectra based on the standard deviation.
+#'
+#' @noRd
+#'
+.s3_normalize_spectra.Settings_normalize_spectra_scale <- function(settings, self, private) {
+  
+  if (!self$has_spectra()) {
+    warning("Spectra not found! Not done.")
+    return(FALSE)
+  }
+
+  spec_list <- self$spectra
+  
+  spec_list <- lapply(spec_list, function(x) {
+    
+    if (nrow(x) > 0) {
+      
+      if ("rt" %in% colnames(x)) {
+        temp_x <- split(x, x$rt)
+        
+        temp_x <- lapply(temp_x, function(z) {
+          sd_int <- sd(z$intensity)
+          z$intensity <- z$intensity / sd_int
+          z
+        })
+        
+        x <- rbindlist(temp_x)
+        
+      } else {
+        sd_int <- sd(x$intensity)
+        x$intensity <- x$intensity / sd_int
+      }
+    }
+    
+    x
+    
+  })
+  
+  self$spectra <- spec_list
+  
+  message(paste0("\U2713 ", "Spectra normalized!"))
+  
+  TRUE
+}
+
+#' @title .s3_normalize_spectra.Settings_normalize_spectra_blockweight
+#'
+#' @description Scales spectra based on the standard deviation.
+#'
+#' @noRd
+#'
+.s3_normalize_spectra.Settings_normalize_spectra_blockweight <- function(settings, self, private) {
+  
+  if (!self$has_spectra()) {
+    warning("Spectra not found! Not done.")
+    return(FALSE)
+  }
+  
+  spec_list <- self$spectra
+  
+  spec_list <- lapply(spec_list, function(x) {
+    
+    if (nrow(x) > 0) {
+      
+      if ("rt" %in% colnames(x)) {
+        temp_x <- split(x, x$rt)
+        
+        temp_x <- lapply(temp_x, function(z) {
+          z$intensity <- z$intensity / sqrt(length(z$intensity))
+          z
+        })
+        
+        x <- rbindlist(temp_x)
+        
+      } else {
+        x$intensity <- x$intensity / sqrt(length(x$intensity))
+      }
+    }
+    
+    x
+    
+  })
+  
+  self$spectra <- spec_list
+  
+  message(paste0("\U2713 ", "Spectra normalized!"))
+  
+  TRUE
+}
+
+#' @title .s3_normalize_spectra.Settings_normalize_spectra_meancenter
+#'
+#' @description Performs a mean center normalzation to spectra.
+#'
+#' @noRd
+#'
+.s3_normalize_spectra.Settings_normalize_spectra_meancenter <- function(settings, self, private) {
+  
+  if (!self$has_spectra()) {
+    warning("Spectra not found! Not done.")
+    return(FALSE)
+  }
+  
+  spec_list <- self$spectra
+  
+  spec_list <- lapply(spec_list, function(x) {
+    
+    if (nrow(x) > 0) {
+      
+      if ("rt" %in% colnames(x)) {
+        temp_x <- split(x, x$rt)
+        
+        temp_x <- lapply(temp_x, function(z) {
+          mean_int <- mean(z$intensity)
+          z$intensity <- z$intensity / mean_int
+          z
+        })
+        
+        x <- rbindlist(temp_x)
+        
+      } else {
+        mean_int <- mean(x$intensity)
+        x$intensity <- x$intensity / mean_int
+      }
+    }
+    
+    x
+    
+  })
+  
+  self$spectra <- spec_list
+  
+  message(paste0("\U2713 ", "Spectra normalized!"))
+  
+  TRUE
+}

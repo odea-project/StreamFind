@@ -11,6 +11,8 @@
   
   clustVal <- parameters$clustVal
   
+  windowVal <- parameters$window
+  
   if (!self$has_spectra_charges()) {
     warning("Spectra charges not found for deconvolution! Not done.")
     return(FALSE)
@@ -22,28 +24,32 @@
   
   deconvoluted <- Map(function(x, y) {
     
-    y2 <- y[!y$outlier, ]
-    
-    profiles <- lapply(seq_len(nrow(y2)), function(j) {
+    profiles <- lapply(seq_len(nrow(y)), function(j) {
       
-      if (j == nrow(y2)) {
-        window <- (y2$mz[j] - y2$mz[j - 1]) / 2
+      if (is.null(windowVal)) {
         
-      } else {
-        
-        if (y2$z[j] - y2$z[j + 1] > 1) {
-          window <- (y2$mz[j] - y2$mz[j - 1]) / 2
+        if (j == nrow(y)) {
+          window <- (y$mz[j] - y$mz[j - 1]) / 2
           
         } else {
-          window <- (y2$mz[j + 1] - y2$mz[j]) / 2
+          
+          if (y$z[j] - y$z[j + 1] > 1) {
+            window <- (y$mz[j] - y$mz[j - 1]) / 2
+            
+          } else {
+            window <- (y$mz[j + 1] - y$mz[j]) / 2
+          }
         }
+        
+      } else {
+        window <- windowVal
       }
       
-      sel <- x$mz >= (y2$mz[j] - window) & x$mz <= (y2$mz[j] + window)
+      sel <- x$mz >= (y$mz[j] - window) & x$mz <= (y$mz[j] + window)
       
       prfl <- x[sel, ]
       
-      prfl$mz <- prfl$mz * y2$z[j]
+      prfl$mz <- prfl$mz * y$z[j]
       
       prfl
     })
@@ -69,7 +75,7 @@
   
   names(deconvoluted) <- names(spec_list)
   
-  self$deconvoluted_spectra <- deconvoluted
+  self$spectra <- deconvoluted
   
   message(paste0("\U2713 ", "Spectra deconvoluted!"))
   

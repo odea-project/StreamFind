@@ -84,6 +84,10 @@ ps <- list(
 
 ms <- MassSpecEngine$new(files = ms_files_df, settings = ps)
 
+ms$plot_bpc(interactive = F)
+
+names(ms)
+
 ms$run_workflow()
 
 comp <- patRoon::as.data.table(ms$compounds)

@@ -1523,6 +1523,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         }
 
         if (runParallel & length(analyses) > 1) parallel::stopCluster(cl)
+        
+        message(" Done!")
       }
 
       if (length(spec_list) == length(analyses)) {
@@ -1536,8 +1538,6 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         names(spec_list) <- analyses
 
         spec <- rbindlist(spec_list, idcol = "analysis", fill = TRUE)
-        
-        message(" Done!")
 
         if (.caches_data() && !is.null(hash)) {
           if (!is.null(spec)) {
@@ -4878,12 +4878,12 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         return(NULL)
       }
       
+      if (xVal == "mz" && (!"mz" %in% colnames(spec)) && "mass" %in% colnames(spec)) xVal = "mass"
+      
       if (!xVal %in% colnames(spec)) {
         message("\U2717 xVal not found in spectra data.table!")
         return(NULL)
       }
-      
-      if (xVal == "mz" && (!"mz" %in% colnames(spec)) && "mass" %in% colnmes(spec)) xVal = "mass"
       
       spec$x <- spec[[xVal]]
       
@@ -6067,6 +6067,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       spec <- self$spectra
       spec <- rbindlist(spec, fill = TRUE)
       
+      if ("mass" %in% colnames(spec)) spec <- self$get_spectra(loaded_spectra = TRUE, raw_spectra = TRUE)
+      
+      setorder(spec, mz)
+      
       if (!interactive) {
         .plot_spec_charges_static(spec, res, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
       } else {
@@ -6365,6 +6369,45 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     deconvolute_spectra = function(settings = NULL) {
       
       .dispatch_process_method("ms_deconvolute_spectra", settings, self, private)
+      
+      invisible(self)
+    },
+    
+    #' @description Smooths the spectra in each analysis/replicate.
+    #'
+    #' @return Invisible.
+    #' 
+    smooth_spectra = function(settings) {
+      
+      if (missing(settings)) settings <- Settings_smooth_spectra_movingaverage()
+      
+      .dispatch_process_method("smooth_spectra", settings, self, private)
+      
+      invisible(self)
+    },
+    
+    #' @description Corrects the spectra baseline.
+    #'
+    #' @return Invisible.
+    #' 
+    correct_spectra_baseline = function(settings) {
+      
+      if (missing(settings)) settings <- Settings_correct_spectra_baseline_airpls()
+      
+      .dispatch_process_method("correct_spectra_baseline", settings, self, private)
+      
+      invisible(self)
+    },
+    
+    #' @description Normalizes spectra in each analysis/replicate.
+    #'
+    #' @return Invisible.
+    #' 
+    normalize_spectra = function(settings) {
+      
+      if (missing(settings)) settings <- Settings_normalize_spectra_StreamFind()
+      
+      .dispatch_process_method("normalize_spectra", settings, self, private)
       
       invisible(self)
     },
@@ -7266,7 +7309,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           "integrate_chromatograms",
           "cluster_spectra",
           "calculate_spectra_charges",
-          "deconvolute_spectra"
+          "deconvolute_spectra",
+          "smooth_spectra",
+          "correct_spectra_baseline",
+          "normalize_spectra"
         ),
         max = c(
           1,
@@ -7290,7 +7336,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           1,
           1,
           1,
-          1
+          1,
+          Inf,
+          1,
+          Inf
         )
       )
     },
