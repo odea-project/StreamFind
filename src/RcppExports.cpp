@@ -21,6 +21,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rcpp_fill_bin_spectra
+std::vector<double> rcpp_fill_bin_spectra(Rcpp::DataFrame spectra, Rcpp::DataFrame bin_mat, Rcpp::List bins, double overlap, std::string summaryFunction);
+RcppExport SEXP _StreamFind_rcpp_fill_bin_spectra(SEXP spectraSEXP, SEXP bin_matSEXP, SEXP binsSEXP, SEXP overlapSEXP, SEXP summaryFunctionSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type spectra(spectraSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type bin_mat(bin_matSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type bins(binsSEXP);
+    Rcpp::traits::input_parameter< double >::type overlap(overlapSEXP);
+    Rcpp::traits::input_parameter< std::string >::type summaryFunction(summaryFunctionSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_fill_bin_spectra(spectra, bin_mat, bins, overlap, summaryFunction));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpp_ms_annotation_isotopes
 Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes, Rcpp::CharacterVector elements, std::string mode, int maxCharge, double rtWindowAlignment, int maxGaps, double maxCarbons, double maxHetero, double maxHalogens, bool verbose);
 RcppExport SEXP _StreamFind_rcpp_ms_annotation_isotopes(SEXP featuresSEXP, SEXP maxIsotopesSEXP, SEXP elementsSEXP, SEXP modeSEXP, SEXP maxChargeSEXP, SEXP rtWindowAlignmentSEXP, SEXP maxGapsSEXP, SEXP maxCarbonsSEXP, SEXP maxHeteroSEXP, SEXP maxHalogensSEXP, SEXP verboseSEXP) {
@@ -214,6 +229,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_dev_parse_xml", (DL_FUNC) &_StreamFind_rcpp_dev_parse_xml, 1},
+    {"_StreamFind_rcpp_fill_bin_spectra", (DL_FUNC) &_StreamFind_rcpp_fill_bin_spectra, 5},
     {"_StreamFind_rcpp_ms_annotation_isotopes", (DL_FUNC) &_StreamFind_rcpp_ms_annotation_isotopes, 11},
     {"_StreamFind_rcpp_centroid_spectra_qCentroids", (DL_FUNC) &_StreamFind_rcpp_centroid_spectra_qCentroids, 3},
     {"_StreamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_StreamFind_rcpp_ms_cluster_spectra, 4},

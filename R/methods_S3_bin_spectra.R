@@ -130,61 +130,49 @@
         
         res
       
-      # performs binning based on a defined set of one or more dimensions, building a key after binning
       } else if (!is.null(bins)) {
         
         if (!all(names(bins) %in% colnames(x))) stop("Names in bins not fouond in spectra columns!")
         
-        browser()
+        .make_bin_sequence <- function(vec, bin_size) seq(round(min(vec), digits = 0), round(max(vec) , digits = 0), bin_size)
         
+        bins_seq_list <- Map(function(name, val) .make_bin_sequence(x[[name]], val), names(bins), bins)
         
+        bin_matrix <- as.data.frame(do.call(expand.grid, bins_seq_list))
         
+        colnames(bin_matrix) <- names(bins)
         
+        bin_key <- apply(bin_matrix, 1, function(x) paste0(x, collapse = "-"))
         
+        ints <- rcpp_fill_bin_spectra(x, bin_matrix, bins, overlap = 0.1, summaryFunction = "mean")
         
+        out <- data.table(
+          "analysis" = unique(x$analysis),
+          "id" = unique(x$id),
+          "polarity" = unique(x$polarity),
+          "rt" = bin_matrix$rt,
+          "mass" = bin_matrix$mass,
+          "intensity" = ints,
+          "bins" = bin_key
+        )
         
+        out
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+      } else {
+        x
       }
-      
-      # x_all <- seq(round(min_x, digits = 0), round(max_x , digits = 0), rt_bin_size)
-      # x2_all <- seq(round(min_x2, digits = 0), round(max_x2 , digits = 0), mz_bin_size)
-      # 
-      # bins_number <- length(rts_all) * length(mzs_all)
-      # bins_id <- rep(NA_character_, bins_number)
-      # mat <- matrix(rep(1, bins_number * 2), nrow = bins_number, ncol = 2)
-      # counter <- 0
-      # for (i in seq_len(length(rts_all))) {
-      #   for (j in seq_len(length(mzs_all))) {
-      #     bins_id[counter + j] <- paste0(rts_all[i], "-", mzs_all[j])
-      #     mat[counter + j, 1] <- rts_all[i]
-      #     mat[counter + j, 2] <- mzs_all[j]
-      #   }
-      #   counter <- counter + j
-      # }
-      # dimnames(mat) <- list(bins_id, c("rt", "mz"))
-      # as.data.frame(mat)
       
     })
     
-    if (!is.null(hash)) {
-      patRoon::saveCacheData("bin_spectra", spec_binned, hash)
-      message("\U1f5ab Binned spectra cached!")
-    }
+    # if (!is.null(hash)) {
+    #   patRoon::saveCacheData("bin_spectra", spec_binned, hash)
+    #   message("\U1f5ab Binned spectra cached!")
+    # }
     
   }
   
   self$spectra <- spec_binned
-  
+
   message(paste0("\U2713 ", "Spectra binned!"))
   
   TRUE

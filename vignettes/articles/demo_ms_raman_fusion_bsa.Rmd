@@ -177,7 +177,7 @@ av_rt <- 363.9824
 
 spectra_ranges <- data.table("mzmin" = 1200, "mzmax" = 2000, "rtmin" = av_rt - 1, "rtmax" = av_rt + 1)
 
-ms <- MassSpecEngine$new(files = ms_files[1:12], headers = list(name = "BSA Quality Evaluation Project"))
+ms <- MassSpecEngine$new(files = ms_files[1:4], headers = list(name = "BSA Quality Evaluation Project"))
 
 ms$add_replicate_names(sub("_\\d+$", "", ms$get_analysis_names()))
 
@@ -196,7 +196,7 @@ ms$normalize_spectra(Settings_normalize_spectra_snv(liftTozero = TRUE))
 
 ms$normalize_spectra(Settings_normalize_spectra_blockweight())
 
-ms$bin_spectra(Settings_bin_spectra_StreamFind(bins = list("rt" = 5, "mass" = 1))
+ms$bin_spectra(Settings_bin_spectra_StreamFind(bins = list("rt" = 5, "mass" = 5)))
 
 
 # ms$spectra

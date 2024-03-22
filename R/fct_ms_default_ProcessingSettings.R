@@ -2230,12 +2230,12 @@ validate.Settings_find_internal_standards_StreamFind <- function(x) {
 #'
 #' @description Settings for calculating quality parameters of features (e.g., signal-to-noise (sn) ratio).
 #'
-#' @template arg-ms-rtExpand
-#' @template arg-ms-mzExpand
+#' @template arg-ms-rtExpand 
+#' @template arg-ms-mzExpand 
 #' @param minTraces Numeric of length 1 with the minimum number traces for 
 #' calculating feature quality.
-#' @template arg-ms-filtered
-#' @template arg-runParallel
+#' @template arg-ms-filtered 
+#' @template arg-runParallel 
 #'
 #' @return A ProcessingSettings S3 class object with subclass
 #' Settings_calculate_quality_StreamFind.
