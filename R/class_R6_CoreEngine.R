@@ -1153,15 +1153,15 @@ CoreEngine <- R6::R6Class("CoreEngine",
           
           newAnalyses <- self$get_analyses(keepAnalyses)
           
-          new_ms <- suppressMessages(CoreEngine$new(
+          new_core <- suppressMessages(CoreEngine$new(
             headers = self$get_headers(),
             settings = self$get_settings(),
             analyses = newAnalyses,
           ))
           
-          message("\U2713 Subset with ", new_ms$get_number_analyses(), " analyses created!")
+          message("\U2713 Subset with ", new_core$get_number_analyses(), " analyses created!")
           
-          return(new_ms)
+          return(new_core)
         }
       }
       

@@ -344,7 +344,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       if (missing(value)) {
         
-        if (ms$has_results("patRoon")) {
+        if (self$has_results("patRoon")) {
           
           pat <- private$.results$patRoon$data
           
@@ -906,7 +906,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         if (self$has_features()) {
           ov$features <- vapply(self$features@features, function(x) nrow(x[!x$filtered, ]), 0)
           
-          # TODO MS get_overview add more details, such s suspects, isotopes, etc.
+          # TODO  get_overview add more details, such s suspects, isotopes, etc.
         }
         
         ov$file <- vapply(private$.analyses, function(x) x$file, NA_character_)
@@ -1417,7 +1417,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           spec_list <- NULL
         }
         
-        message("\U2699 Parsing spectra from ", length(analyses),  " MS file/s..." ,appendLF = FALSE)
+        message("\U2699 Parsing spectra from ", length(analyses),  "  file/s..." ,appendLF = FALSE)
         
         if (!is.logical(runParallel)) runParallel <- FALSE
         
@@ -1886,7 +1886,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       analyses <- private$.check_analyses_argument(analyses)
 
-      if (ms$has_results("patRoon")) {
+      if (self$has_results("patRoon")) {
         
         pat <- private$.results$patRoon$data
         
@@ -1968,7 +1968,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       fts <- NULL
       
-      if (ms$has_results("patRoon")) fts <- self$feature_list[analyses]
+      if (self$has_results("patRoon")) fts <- self$feature_list[analyses]
       
       if (is.null(fts)) return(data.table())
       
