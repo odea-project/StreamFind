@@ -196,7 +196,7 @@ ms$normalize_spectra(Settings_normalize_spectra_snv(liftTozero = TRUE))
 
 ms$normalize_spectra(Settings_normalize_spectra_blockweight())
 
-ms$bin_spectra(Settings_bin_spectra_StreamFind(bins = list("rt" = 5, "mass" = 5)))
+# ms$bin_spectra(Settings_bin_spectra_StreamFind(bins = list("rt" = 5, "mass" = 5)))
 
 
 # ms$spectra
@@ -279,7 +279,7 @@ raman <- RamanEngine$new(rfiles)
 
 r_settings <- list(
   
-  Settings_bin_spectra_StreamFind(windowSpectrumUnits = 5),
+  Settings_bin_spectra_StreamFind(unitsVal = "rt", unitsNumber = 5),
   
   Settings_normalize_spectra_minmax(),
   

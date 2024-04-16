@@ -1757,7 +1757,7 @@
   }
   plot2 <- hide_colorbar(plot2)
   
-  plot3 <- plot_ly(features, x = features$analysis)
+  plot3 <- plot_ly(features, x = sort(unique(features$analysis)))
   
   for (g in leg) {
     df_3 <- features[features$var == g, ]
@@ -1769,8 +1769,9 @@
         "intensity" = 0
       )
       df_3 <- rbind(df_3[, c("analysis", "var", "intensity")], extra)
-      df_3 <- df_3[order(df_3$analysis), ]
     }
+    
+    df_3 <- df_3[order(df_3$analysis), ]
     
     plot3 <- plot3 %>% add_trace(df_3,
                                  x = df_3$analysis,
