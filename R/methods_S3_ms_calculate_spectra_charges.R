@@ -87,6 +87,8 @@
         sp2 <- sp2[sp2$intensity / sp2$intensity[1] > relLowCut, ]
       }
       
+      if (nrow(sp2) == 0) return(data.table())
+      
       plot_charges_temp <- function(x, sp, sp2, absLowCut, relLowCut, roundVal) {
         
         plot(x$mz, x$intensity, type = 'l', main = "Clusters, overlap window and low intensity threshold (lowCut)")
@@ -180,7 +182,11 @@
       
       res <- res[!is.na(res$z), ]
       
+      if (nrow(res) == 0) return(data.table())
+      
       res <- res[-1, ] # removes the first as mass estimation might be affected by incomplete cluster
+      
+      if (nrow(res) == 0) return(data.table())
       
       res$mass <- NA_real_
       

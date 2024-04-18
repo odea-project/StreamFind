@@ -1,5 +1,5 @@
 
-# library(StreamFind)
+library(StreamFind)
 
 
 # Convert files ----------------------------------------------------------------
@@ -10,8 +10,6 @@
 # Load file paths
 all_files <- StreamFindData::get_ms_file_paths()
 files <- all_files[grepl("blank|influent|o3sw", all_files)]
-
-# files
 
 
 
@@ -32,10 +30,7 @@ headers <- ProjectHeaders(
 # Create the "Engine"
 ms <- MassSpecEngine$new(files = files, headers = headers)
 
-# Print method and access methods
-# ms
-
-# ms$get_bpc(analyses = c(4, 10), levels = 1)
+ms$plot_bpc(analyses = c(4, 10), levels = 1)
 
 
 
@@ -60,8 +55,6 @@ blks <- c(
 # Add names to the Engine
 ms$add_replicate_names(rpls)$add_blank_names(blks)
 
-# Print
-# ms
 
 
 
@@ -80,19 +73,18 @@ ffs <- Settings_find_features_openms()
 # ms$help$settings_find_features()
 
 # Saves an example of settings on disk
-# save_default_ProcessingSettings(
-#   call = "find_features",
-#   algorithm = "openms",
-#   format = "json",
-#   name = "ffs"
-# )
+save_default_ProcessingSettings(
+  call = "find_features",
+  algorithm = "openms",
+  format = "json",
+  name = "ffs"
+)
 
 
-# ms$import_settings("ffs.json")
-ms$add_settings(ffs)
+ms$import_settings("ffs.json")
+# ms$add_settings(ffs)
 
-# Print
-# ms
+
 
 
 # Loads a database of chemicals
@@ -130,9 +122,6 @@ ms$add_settings(
 )
 
 
-# Print
-# ms
-
 
 
 
@@ -147,53 +136,53 @@ ms$run_workflow()
 # ms$find_features()$annotate_features()$group_features()$filter_features()
 
 
-# Print
-ms
+
+
 
 
 
 # Access and plot data ---------------------------------------------------------
 
-# Get help for methods
-# ms$help$settings_annotate_features()
-
 
 # Getting feature groups from the database
-# ms$get_groups(mass = db, ppm = 8, sec = 10, average = TRUE)
+ms$get_groups(mass = db, ppm = 8, sec = 10)
 
+# Plot suspect identification results
+ms$plot_suspects()
 
 # Plot overview of feature groups
-# ms$plot_groups_overview(
-#   mass = db,
-#   ppm = 8, sec = 10,
-#   legendNames = TRUE
-# )
+ms$plot_groups_overview(
+  mass = db,
+  ppm = 8, sec = 10,
+  legendNames = TRUE
+)
 
 
 # Change filtered to TRUE to show hidden data
-# ms$get_groups(mass = db, ppm = 8, sec = 10, filtered = TRUE, average = TRUE)
-
+ms$get_groups(mass = db, ppm = 8, sec = 10, filtered = TRUE, average = TRUE)
 
 # Quality check for spiked internal standards
-# ms$plot_internal_standards_qc()
+ms$plot_internal_standards_qc()
 
 
 # EIC for given targets
-# ms$plot_eic(
-#   mass = 233.1131, # Naproxen-d3
-#   rt = 1169,
-#   ppm = 10,
-#   sec = 30,
-#   colorBy = "analyses"
-# )
+ms$plot_eic(
+  mass = 233.1131, # Naproxen-d3
+  rt = 1169,
+  ppm = 10,
+  sec = 30,
+  colorBy = "analyses"
+)
 
+# Plot suspect identification results
+ms$get_suspects()
 
 # MS2 spectra
-# ms$plot_groups_ms2(
-#   mass = db,
-#   colorBy = "targets+polarities",
-#   legendNames = TRUE
-# )
+ms$plot_groups_ms2(
+  mass = db,
+  colorBy = "targets+polarities",
+  legendNames = TRUE
+)
 
 
 # Isotopic clusters
@@ -229,12 +218,7 @@ ms2$run_workflow()
 ms2
 
 
-# Saves all project data
-ms$save(format = "json", name = "MassSpecData_example")
-
-
 
 
 file.remove("ffs.json")
 file.remove("settings.json")
-file.remove("MassSpecData_example.json")

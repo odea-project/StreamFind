@@ -181,6 +181,7 @@ validate.Settings_bin_spectra_qBinning <- function(x) {
 #' @param unitsVal 
 #' @param unitsNumber 
 #' @param bins 
+#' @param refBinAnalysis 
 #'
 #' @return X.
 #'
@@ -188,7 +189,8 @@ validate.Settings_bin_spectra_qBinning <- function(x) {
 #'
 Settings_bin_spectra_StreamFind <- function(unitsVal = NULL,
                                             unitsNumber = NULL,
-                                            bins = NULL) {
+                                            bins = NULL,
+                                            refBinAnalysis = NULL) {
   
   settings <- list(
     call = "bin_spectra",
@@ -196,7 +198,8 @@ Settings_bin_spectra_StreamFind <- function(unitsVal = NULL,
     parameters = list(
       unitsVal = unitsVal,
       unitsNumber = unitsNumber,
-      bins = bins
+      bins = bins,
+      refBinAnalysis = refBinAnalysis
     ),
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",
@@ -2684,17 +2687,21 @@ validate.Settings_deconvolute_spectra_StreamFind <- function(x) {
 #' @title Settings_average_spectra_StreamFind
 #'
 #' @description Prototype.
+#' 
+#' @param collapseTime Logical length 1. When `TRUE` the spectra are averaged, reducing the time variable.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_average_spectra_StreamFind.
 #'
 #' @export
 #'
-Settings_average_spectra_StreamFind <- function() {
+Settings_average_spectra_StreamFind <- function(collapseTime = FALSE) {
   
   settings <- list(
     call = "average_spectra",
     algorithm = "StreamFind",
-    parameters = list(),
+    parameters = list(
+      collapseTime = collapseTime
+    ),
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",
     developer = "Ricardo Cunha",

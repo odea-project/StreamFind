@@ -24,6 +24,10 @@
   
   deconvoluted <- Map(function(x, y) {
     
+    if (nrow(x) == 0) return(data.table())
+    
+    if (nrow(y) == 0) return(data.table())
+    
     profiles <- lapply(seq_len(nrow(y)), function(j) {
       
       if (is.null(windowVal)) {

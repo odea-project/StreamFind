@@ -52,6 +52,8 @@
   
   bins = settings$parameters$bins
   
+  refBinAnalysis = settings$parameters$refBinAnalysis
+  
   cached_analyses <- FALSE
   
   if (.caches_data()) {
@@ -74,6 +76,47 @@
   }
   
   if (is.null(spec_binned)) {
+    
+    useRefBins <- FALSE
+    ref_bins_seq_list <- NULL
+    ref_bin_matrix <- NULL
+    ref_bin_key <- NULL
+    
+    if (!is.null(refBinAnalysis)) {
+      if (is.numeric(refBinAnalysis) && length(refBinAnalysis) == 1) {
+        refBinAnalysis <- self$get_analysis_names()[refBinAnalysis]
+      }
+      
+      if (!is.character(refBinAnalysis)) {
+        warning("Reference analysis not found! Not done.")
+        return(FALSE)
+      }
+      
+      refSpec <- spec_list[[refBinAnalysis]]
+      
+      if (nrow(refSpec) == 0) {
+        warning("Reference analysis not found! Not done.")
+        return(FALSE)
+      }
+      
+      if (!is.null(bins)) {
+        
+        if (!all(names(bins) %in% colnames(refSpec))) stop("Names in bins not found in spectra columns")
+        
+        .make_bin_sequence <- function(vec, bin_size) seq(round(min(vec), digits = 0), round(max(vec) , digits = 0), bin_size)
+        
+        ref_bins_seq_list <- Map(function(name, val) .make_bin_sequence(refSpec[[name]], val), names(bins), bins)
+        
+        ref_bin_matrix <- as.data.frame(do.call(expand.grid, ref_bins_seq_list))
+        
+        colnames(ref_bin_matrix) <- names(bins)
+        
+        ref_bin_key <- apply(ref_bin_matrix, 1, function(x) paste0(x, collapse = "-"))
+        
+        useRefBins <- TRUE
+      }
+    }
+    
     
     spec_binned <- lapply(spec_list, function(x) {
       
@@ -132,17 +175,25 @@
       
       } else if (!is.null(bins)) {
         
-        if (!all(names(bins) %in% colnames(x))) stop("Names in bins not fouond in spectra columns!")
+        if (useRefBins) {
+          bins_seq_list <- ref_bins_seq_list
+          bin_matrix <- ref_bin_matrix
+          bin_key <- ref_bin_key
         
-        .make_bin_sequence <- function(vec, bin_size) seq(round(min(vec), digits = 0), round(max(vec) , digits = 0), bin_size)
-        
-        bins_seq_list <- Map(function(name, val) .make_bin_sequence(x[[name]], val), names(bins), bins)
-        
-        bin_matrix <- as.data.frame(do.call(expand.grid, bins_seq_list))
-        
-        colnames(bin_matrix) <- names(bins)
-        
-        bin_key <- apply(bin_matrix, 1, function(x) paste0(x, collapse = "-"))
+        } else {
+          
+          if (!all(names(bins) %in% colnames(x))) stop("Names in bins not fouond in spectra columns!")
+          
+          .make_bin_sequence <- function(vec, bin_size) seq(round(min(vec), digits = 0), round(max(vec) , digits = 0), bin_size)
+          
+          bins_seq_list <- Map(function(name, val) .make_bin_sequence(x[[name]], val), names(bins), bins)
+          
+          bin_matrix <- as.data.frame(do.call(expand.grid, bins_seq_list))
+          
+          colnames(bin_matrix) <- names(bins)
+          
+          bin_key <- apply(bin_matrix, 1, function(x) paste0(x, collapse = "-"))
+        }
         
         ints <- rcpp_fill_bin_spectra(x, bin_matrix, bins, overlap = 0.1, summaryFunction = "mean")
         

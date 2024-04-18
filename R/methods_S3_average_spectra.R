@@ -16,6 +16,8 @@
     return(FALSE)
   }
   
+  collapseTime <- settings$parameters$collapseTime
+  
   if ("analysis" %in% colnames(spec)) {
     
     rpl <- self$get_replicate_names()
@@ -28,15 +30,50 @@
       
       intensity <- NULL
       
+      rt = NULL
+      
       res <- copy(x)
       
       res[["analysis"]] <- NULL
       
-      groupCols <- "shift"
+      groupCols <- "replicate"
       
-      if ("rt" %in% colnames(x)) groupCols <- c("rt", groupCols)
+      if ("shift" %in% colnames(res)) groupCols <- c("shift", groupCols)
       
-      res <- res[, intensity := mean(intensity), by = groupCols]
+      if ("rt" %in% colnames(x) && !collapseTime) groupCols <- c("rt", groupCols)
+      
+      if ("mz" %in% colnames(x)) groupCols <- c("mz", groupCols)
+      
+      if ("mass" %in% colnames(x)) groupCols <- c("mass", groupCols)
+      
+      if ("bins" %in% colnames(x)) groupCols <- c("bins", groupCols)
+      
+      if (collapseTime && "rt" %in% colnames(res)) {
+        
+        if ("raw" %in% colnames(res) && !"baseline" %in% colnames(res)) {
+          res <- res[, c("rt", "intensity", "raw") := .(mean(rt), mean(intensity), mean(raw)), by = groupCols]
+          
+        } else if ("raw" %in% colnames(res) && "baseline" %in% colnames(res)) {
+          res <- res[, c("rt", "intensity", "raw", "baseline") := .(mean(rt), mean(intensity), mean(raw), mean(baseline)), by = groupCols]
+          
+        } else {
+          res <- res[, c("rt", "intensity") := .(mean(rt), mean(intensity)), by = groupCols]
+        }
+        
+        res <- res[, c("intensity", "rt") := .(mean(intensity), mean(rt)), by = groupCols]
+        
+      } else {
+        
+        if ("raw" %in% colnames(res) && !"baseline" %in% colnames(res)) {
+          res <- res[, c("intensity", "raw") := .(mean(rt), mean(intensity), mean(raw)), by = groupCols]
+          
+        } else if ("raw" %in% colnames(res) && "baseline" %in% colnames(res)) {
+          res <- res[, c("intensity", "raw", "baseline") := .(mean(intensity), mean(raw), mean(baseline)), by = groupCols]
+          
+        } else {
+          res <- res[, c("intensity") := .(mean(intensity)), by = groupCols]
+        }
+      }
       
       res <- unique(res)
       

@@ -1346,8 +1346,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           rpl <- self$get_replicate_names()
           rpl <- rpl[analyses]
           spec <- spec[spec$replicate %in% unname(rpl)]
-          spec$analysis <- spec$replicate
-          setcolorder(spec, c("analysis", "replicate"))
+          
+          if (!"analysis" %in% colnames(spec)) {
+            spec$analysis <- spec$replicate
+            setcolorder(spec, c("analysis", "replicate"))
+          }
         }
         
         return(spec)
@@ -1395,6 +1398,12 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           }
 
           if (!with_im) temp[["drift"]] <- NULL
+          
+          if ("analysis" %in% colnames(temp)) temp$analysis <- x$name
+          
+          if ("replicate" %in% colnames(temp)) temp$replicate <- x$replicate
+          
+          setcolorder(temp, c("analysis", "replicate"))
 
           temp
           
@@ -1511,7 +1520,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
               }
 
               if (!i$has_ion_mobility) spec[["drift"]] <- NULL
-
+              
+              if ("analysis" %in% colnames(spec)) spec$analysis <- i$name
+              
+              if ("replicate" %in% colnames(spec)) spec$replicate <- i$replicate
+              
+              setcolorder(temp, c("analysis", "replicate"))
+              
               spec
 
             } else {
@@ -1535,9 +1550,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           x
         }, minMS1 = minIntensityMS1, minMS2 = minIntensityMS2)
 
-        names(spec_list) <- analyses
-
-        spec <- rbindlist(spec_list, idcol = "analysis", fill = TRUE)
+        spec <- rbindlist(spec_list, fill = TRUE)
 
         if (.caches_data() && !is.null(hash)) {
           if (!is.null(spec)) {
@@ -6051,8 +6064,6 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       res <- rbindlist(res)
       
-      res <- res[!res$outlier, ]
-      
       if (nrow(res) > 0) {
         res$replicate <- self$get_replicate_names()[res$analysis]
       }
@@ -6408,6 +6419,19 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       if (missing(settings)) settings <- Settings_normalize_spectra_StreamFind()
       
       .dispatch_process_method("normalize_spectra", settings, self, private)
+      
+      invisible(self)
+    },
+    
+    #' @description Averages spectra based on assigned analysis replicates.
+    #'
+    #' @return Invisible.
+    #' 
+    average_spectra = function(settings) {
+      
+      if (missing(settings)) settings <- Settings_average_spectra_StreamFind()
+      
+      .dispatch_process_method("average_spectra", settings, self, private)
       
       invisible(self)
     },
@@ -7312,7 +7336,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           "deconvolute_spectra",
           "smooth_spectra",
           "correct_spectra_baseline",
-          "normalize_spectra"
+          "normalize_spectra",
+          "average_spectra"
         ),
         max = c(
           1,
@@ -7339,7 +7364,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           1,
           Inf,
           1,
-          Inf
+          Inf,
+          1
         )
       )
     },

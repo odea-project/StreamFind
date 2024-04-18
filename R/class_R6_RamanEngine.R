@@ -245,21 +245,25 @@ RamanEngine <- R6::R6Class("RamanEngine",
         if ("analysis" %in% colnames(spec)) {
           spec <- spec[spec$analysis %in% analyses, ]
           
+          if (!"replicate" %in% colnames(spec)) spec$replicate <- self$get_replicate_names()[spec$analysis]
+          
         } else if ("replicate" %in% colnames(spec)) {
           rpl <- self$get_replicate_names()
           rpl <- rpl[analyses]
           spec <- spec[spec$replicate %in% unname(rpl)]
-          spec$analysis <- spec$replicate
-          setcolorder(spec, c("analysis", "replicate"))
+          
+          if (!"analysis" %in% colnames(spec)) spec$analysis <- spec$replicate
         }
         
       } else {
         spec <- lapply(private$.analyses[analyses], function(x) x$spectra)
         spec <- rbindlist(spec, idcol = "analysis", fill = TRUE)
+        spec$replicate <- self$get_replicate_names()[spec$analysis] 
       }
       
       if (nrow(spec) == 0) {
-        warning("")
+        warning("No spectra found!")
+        return(spec)
       }
       
       if (!is.null(rt) && length(rt) == 2 && "rt" %in% colnames(spec)) {
@@ -275,10 +279,12 @@ RamanEngine <- R6::R6Class("RamanEngine",
       }
       
       if ("rt" %in% colnames(spec)) {
-        setorder(spec, shift, rt, analysis)
+        setorder(spec, analysis, rt, shift)
       } else {
-        setorder(spec, shift, analysis)
+        setorder(spec, analysis, shift)
       }
+      
+      setcolorder(spec, c("analysis", "replicate"))
       
       spec
     },
@@ -554,12 +560,6 @@ RamanEngine <- R6::R6Class("RamanEngine",
       
       if (is.null(yLab)) yLab = "Raman intensity / A.U."
       
-      # spectra$intensity <- spectra$intensity - min(spectra$intensity)
-      
-      if ("replicates" %in% colorBy) {
-        spectra$replicate <- self$get_replicate_names()[spectra$analysis]
-      }
-      
       spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames = NULL)
       
       setnames(spectra, "shift", "x")
@@ -623,8 +623,6 @@ RamanEngine <- R6::R6Class("RamanEngine",
       
       if (is.null(yLab)) yLab = "Raman intensity / A.U."
       
-      if ("replicates" %in% colorBy) spectra$replicate <- self$get_replicate_names()[spectra$analysis]
-      
       spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames = NULL)
       
       setnames(spectra, "shift", "x")
@@ -669,10 +667,6 @@ RamanEngine <- R6::R6Class("RamanEngine",
         spectra <- unique(spectra)
         
         if (is.null(xLab)) xLab = "Retention time / seconds"
-        
-        if ("replicates" %in% colorBy) {
-          spectra$replicate <- self$get_replicate_names()[spectra$analysis]
-        }
         
         spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames = NULL)
         

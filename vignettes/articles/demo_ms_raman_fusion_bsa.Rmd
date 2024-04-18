@@ -22,26 +22,16 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-# Libraries
 library(knitr)
 library(kableExtra)
 library(magrittr)
 library(ggplot2)
 library(plotly)
+library(data.table)
 library(StreamFind)
 
-# Global options
-knitr::opts_chunk$set(
-  echo = TRUE, message = FALSE, warning = FALSE,
-  fig.align = "center", fig.width = 9,
-  esults = "asis", comment = ""
-)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.align = "center", fig.width = 9, results = "asis", comment = "")
 
-# Working directory
-path_wd <- getwd()
-```
-
-```{r resources, include=FALSE}
 main_dir <- "C:/Users/apoli/Documents/iSoft/BSA_products"
 
 all_files <- list.files(main_dir, full.names = TRUE)
@@ -55,6 +45,8 @@ raman_dirs <- all_files[grepl("_Raman", fixed = TRUE, all_files)]
 raman_files <- character()
 
 for (i in raman_dirs) raman_files <- c(raman_files, list.files(i, full.names = TRUE))
+
+raman_unified_files <- list.files(main_dir, pattern = "asc", full.names = TRUE)
 ```
 
 <style>
@@ -172,45 +164,32 @@ ms$plot_ms1(rt = mean(rbindlist(ms$chromatograms_peaks)$rt), sec = 0.1,
 According to the MS1 spectra, the *m/z* from 1200 to 2000 can be added to the dedicated *ProcessingSettings* for deconvolution, as shown below. The first step is to load from the mzML files the traces within the retention time and *m/z* ranges selected.
 
 ```{r}
-# av_rt <- mean(rbindlist(ms$chromatograms_peaks)$rt)
-av_rt <- 363.9824
+av_rt <- mean(rbindlist(ms$chromatograms_peaks)$rt)
 
 spectra_ranges <- data.table("mzmin" = 1200, "mzmax" = 2000, "rtmin" = av_rt - 1, "rtmax" = av_rt + 1)
 
-ms <- MassSpecEngine$new(files = ms_files[1:4], headers = list(name = "BSA Quality Evaluation Project"))
+# ms <- MassSpecEngine$new(files = ms_files, headers = list(name = "BSA Quality Evaluation Project"))
 
 ms$add_replicate_names(sub("_\\d+$", "", ms$get_analysis_names()))
 
 ms$load_spectra(mz = spectra_ranges)
 
-ms$cluster_spectra(Settings_cluster_spectra_StreamFind(val = "mz", clustVal = 0.01, presence = 0.2))
+# ms$cluster_spectra(Settings_cluster_spectra_StreamFind(val = "mz", clustVal = 0.01, presence = 0.2))
+# ms$calculate_spectra_charges(Settings_calculate_spectra_charges_StreamFind(roundVal = 15, relLowCut = 0.2, absLowCut = 8000))
+# ms$deconvolute_spectra(Settings_deconvolute_spectra_StreamFind())
+# ms$smooth_spectra(Settings_smooth_spectra_movingaverage(windowSize = 15))
+# ms$normalize_spectra(Settings_normalize_spectra_minmax()) #liftTozero = TRUE
+# ms$normalize_spectra(Settings_normalize_spectra_blockweight())
+# ms$bin_spectra(Settings_bin_spectra_StreamFind(bins = list("rt" = 2, "mass" = 25), refBinAnalysis = 1))
 
-ps_dc <- Settings_calculate_spectra_charges_StreamFind(roundVal = 15, relLowCut = 0.2, absLowCut = 8000)
-ms$calculate_spectra_charges(ps_dc)
-
-ms$deconvolute_spectra(Settings_deconvolute_spectra_StreamFind())
-
-ms$smooth_spectra(Settings_smooth_spectra_movingaverage(windowSize = 10))
-
-ms$normalize_spectra(Settings_normalize_spectra_snv(liftTozero = TRUE))
-
-ms$normalize_spectra(Settings_normalize_spectra_blockweight())
-
-# ms$bin_spectra(Settings_bin_spectra_StreamFind(bins = list("rt" = 5, "mass" = 5)))
-
-
-# ms$spectra
-# 
+# View(ms$spectra)
 # ms$plot_spectra()
-
-# ms$correct_spectra_baseline(Settings_correct_spectra_baseline_baseline())
-
-# ms$plot_deconvoluted_spectra()
-
-# ms$plot_spectra(interactive = T)
-# 
+# ms$spectra_charges
 # ms$plot_spectra_charges()
-
+# ms$correct_spectra_baseline(Settings_correct_spectra_baseline_baseline())
+# ms$plot_deconvoluted_spectra()
+# ms$plot_spectra(interactive = T)
+# ms$plot_spectra_charges()
 # ms$spectra_charges
 # ms$deconvoluted_spectra
 # ms$spectra_charges
@@ -220,377 +199,380 @@ ms$normalize_spectra(Settings_normalize_spectra_blockweight())
 # ms$has_results("spectra")
 # ms$spectra
 # ms$plot_spectra(interactive = T)
-
-
+# View(ms$get_results("spectra"))
 ```
 
-
-
-```{r}
-
-```
-
+Below we create an ordered list of *ProcessingSettings* objects for each processing method to be applied and add the list to the engine. The exact parameters for each method can be optimized individually by calling the specific method directly. Once the settings are added, the workflow can be inspected with the `print_workflow()` method.
 
 ```{r}
-ms$plot_spectra(colorBy = "replicates")
-
-ms$plot_spectra_charges()
-
-# ms$plot_spectra_peaks()
-```
-
-
-
- Below we create an ordered list of *ProcessingSettings* objects for each processing method to be applied. The exact parameters for each method can be optimized individually by calling the specific method directly, as shown below for XXX.
-
-```{r}
-
-```
-
-
-
-
-
-
-
-
-## Raman
-
-```{r}
-dir <- "C:/Users/apoli/Documents/iSoft/Bevacizumab_Zirabev_LotFR7476"
-# files_in_dir <- list.files(dir, full.names = TRUE)
-# files_in_dir <- files_in_dir[grepl("uL", files_in_dir)]
-# for (i in files_in_dir) {
-#   rfls <- list.files(i, pattern = ".asc", full.names = TRUE)
-#   r <- RamanEngine$new(rfls, runParallel = FALSE)
-#   r$add_replicate_names(sub("_(\\d)\\d*$", "_\\1", r$get_analysis_names()))
-#   r$merge_spectra_time_series()
-# }
-
-rfiles <- list.files(dir, pattern = "BVZ_", full.names = TRUE)
-
-raman <- RamanEngine$new(rfiles)
-
-# raman$plot_spectra(colorBy = "replicates", interactive = F)
-# 
-# raman$plot_spectra()
-# 
-# raman$plot_chromatograms()
-
-r_settings <- list(
-  
-  Settings_bin_spectra_StreamFind(unitsVal = "rt", unitsNumber = 5),
-  
+ms_workflow_settings <- list(
+  Settings_cluster_spectra_StreamFind(val = "mz", clustVal = 0.01, presence = 0.2),
+  Settings_calculate_spectra_charges_StreamFind(roundVal = 15, relLowCut = 0.2, absLowCut = 8000),
+  Settings_deconvolute_spectra_StreamFind(),
+  Settings_smooth_spectra_movingaverage(windowSize = 15),
+  Settings_bin_spectra_StreamFind(bins = list("rt" = 2, "mass" = 25), refBinAnalysis = 1),
+  Settings_average_spectra_StreamFind(),
   Settings_normalize_spectra_minmax(),
-  
-  Settings_subtract_spectra_section_StreamFind(sectionWindow = c(0, 1.6)),
-
-  Settings_smooth_spectra_savgol(fl = 21, forder = 4, dorder = 0),
-
-  Settings_delete_spectra_section_StreamFind(list("shift" = c(-100, 330))),
-
-  Settings_delete_spectra_section_StreamFind(list("shift" = c(1800, 2600))),
-
-  Settings_correct_spectra_baseline_airpls(lambda = 45, differences = 1, itermax = 30),
-  
-  Settings_normalize_spectra_snv(liftTozero = TRUE)
+  Settings_normalize_spectra_blockweight()
 )
 
-raman$add_settings(r_settings)
+# Remove the settings added to integrate the TIC chromatograms
+ms$remove_settings()
 
-# raman$print_workflow()
+ms$add_settings(ms_workflow_settings)
 
-raman$run_workflow()
-
-# raman$plot_spectra_baseline(rt = c(2.8, 3.2))
-
-raman$plot_spectra(analyses = c(2:6), rt = c(2.8, 3.2))
-
-# View(raman$get_results("spectra"))
-
-# r$plot_spectra(rt = c(5, 8))
-# r$plot_spectra_baseline(rt = c(5, 8))
-# r$plot_spectra(rt = c(11, 14))
-
-
-
-
-
-
-
-```
-
-
-
-
-
-
-
-
-
-
-
-In this article, we demonstrate how the StreamFind R package can be used to evaluate ozonation of secondary wastewater effluent (i.e., effluent of the aerated biological treatment) using mass spectrometry (MS). A set of 18 *mzML* files, representing blank, influent and effluent measurements in triplicate for both positive and negative ionization mode, are used.
-
-```{r files, results='markup'}
-basename(files)
-```
-
-The showcase will use the StreamFind main class *MassSpecEngine*, which encapsulates all tools required for parsing, storing, processing and visualizing MS data. Note that not all methods/functions will be shown as the demonstration focuses of the workflow to assess wastewater ozonation. For a complete overview of the StreamFind R package for mass spectrometry, the article [StreamFind for mass spectrometry](XXX) is recommended.
-
-# *MassSpecEngine*
-
-The main [*R6*](https://r6.r-lib.org/) [*MassSpecEngine*](https://odea-project.github.io/StreamFind/reference/MassSpecEngine.html) class object is created using the `MassSpecEngine$new()`, as shown below. The argument `files` can be used to add directly the set of *mzML* files. Note that the original vendor files were converted to *mzML* format using the [convert_ms_files()](https://odea-project.github.io/StreamFind/reference/convert_ms_files.html) function, which uses the *msConvert* command line from [ProteoWizard](https://proteowizard.sourceforge.io/download.html).
-
-```{r create-ms, message=TRUE, warning=FALSE}
-# Create a MassSpecEngine from mzML files
-ms <- MassSpecEngine$new(files = files)
-```
-
-```{r show-ms, results='markup'}
-# Print in console a summary of the MassSpecEngine
-ms
-```
-
-# *ProjectHeaders*
-
-Project headers (e.g., name, author and description) can be added to the *MassSpecEngine* using the `MassSpecEngine$add_headers()`. The headers are converted to an S3 [*ProjectHeaders*](https://odea-project.github.io/StreamFind/reference/ProjectHeaders.html) class object in the *MassSpecEngine*, where it goes through a validation to ensure conformity (more details [here](https://odea-project.github.io/StreamFind/reference/ProjectHeaders.html)).
-
-```{r add-headers, results='markup'}
-# Add headers to the MassSpecEngine
-ms$add_headers(
-  name = "Wastewater Ozonation Showcase",
-  author = "Ricardo Cunha",
-  description = "Demonstration project"
-)
-
-# Get the headers as ProjectHeaders
-ms$get_headers()
-
-# Get the MassSpecEngine date
-ms$get_headers(value = "date")
-```
-
-# Replicates and blanks
-
-The analysis replicate names and the associated blank replicate name can be amended in the *MassSpecEngine*, as shown below. Alternatively, a `data.frame` with column names *file*, *replicate* and *blank* could be added as the `files` argument in `MassSpecEngine$new(files = files)` to have directly the replicate and blank replicate names assigned (more details [here](https://odea-project.github.io/StreamFind/reference/MassSpecEngine.html#method-MassSpecEngine-new)).
-
-```{r add-replicates, results='markup'}
-# Character vector with analysis replicate names
-rpls <- c(
-  rep("blank_neg", 3),
-  rep("blank_pos", 3),
-  rep("influent_neg", 3),
-  rep("influent_pos", 3),
-  rep("effluent_neg", 3),
-  rep("effluent_pos", 3)
-)
-
-# Character vector with associated blank replicate names
-# Note that the order should match the respective replicate
-blks <- c(
-  rep("blank_neg", 3),
-  rep("blank_pos", 3),
-  rep("blank_neg", 3),
-  rep("blank_pos", 3),
-  rep("blank_neg", 3),
-  rep("blank_pos", 3)
-)
-
-# Chaining add replicates and blanks
-ms$add_replicate_names(rpls)$add_blank_names(blks)
-
-# Replicates and blanks were amended
-ms$get_overview()[, 1:5]
-```
-
-# *ProcessingSettings*
-
-Data processing is performed by modules according to [*ProcessingSettings*](https://odea-project.github.io/StreamFind/reference/ProcessingSettings.html). The S3 *ProcessingSettings* class objects are obtained via the respective [`Settings_[module name]_[algorithm name]`](https://odea-project.github.io/StreamFind/reference/index.html#processing-settings-for-ms-data) constructor functions, attributing the respective subclass. Below we obtain the *ProcessingSettings* for the module `find_features()` using the algorithm *openms*. The parameters for each processing module can be changed via the constructor arguments. Documentation for each *ProcessingSettings* subclass can be found in the [StreamFind reference documentation](https://odea-project.github.io/StreamFind/reference/index.html).
-
-```{r ffs, results='markup'}
-# Get ProcessingSettings for finding features using the openms algorithm
-ffs <- Settings_find_features_openms()
-
-# Print in console the details of the ProcessingSettings
-ffs
-```
-
-```{r other-settings, results='markup'}
-
-# List with other workflow module settings
-other_settings <- list(
-  Settings_annotate_features_StreamFind(),
-
-  Settings_group_features_openms(),
-  
-  # Modifying the parameters with the constructor arguments
-  # db_is is a data.table with the name, mass and expected retention time of spiked internal standards, as shown below
-  Settings_find_internal_standards_StreamFind(
-    database = db_is,
-    ppm = 8,
-    sec = 10
-  ),
-  
-  Settings_filter_features_StreamFind(excludeIsotopes = TRUE),
-  
-  Settings_filter_features_patRoon(
-    absMinIntensity = 5000,
-    maxReplicateIntRSD = 30,
-    blankThreshold = 10,
-    absMinReplicateAbundance = 3
-  ),
-
-  Settings_load_features_eic_StreamFind(
-    rtExpand = 60,
-    mzExpand = 0.0005
-  ),
-
-  Settings_load_features_ms1_StreamFind(runParallel = FALSE),
-
-  Settings_load_features_ms2_StreamFind(runParallel = FALSE),
-
-  Settings_calculate_quality_StreamFind(runParallel = FALSE),
-  
-  Settings_filter_features_StreamFind(minSnRatio = 5),
-  
-  # db_with_ms2 is a database with suspect chemical standards
-  # includes MS2 data (i.e., fragmentation pattern) from standards
-  Settings_suspect_screening_StreamFind(
-    database = db_with_ms2,
-    ppm = 10,
-    sec = 15,
-    ppmMS2 = 10,
-    minFragments = 3
-  )
-)
-
-# Printing the third ProcessingSettings object from the list
-other_settings[[3]]
-```
-
-Then, all created *ProcessingSettings* can be added to the *MassSpecEngine*. The order will matter when the workflow is applied!
-
-```{r add-settings, results='markup'}
-# Add the settings as a list. The order matters!
-ms$add_settings(settings = c(list(ffs), other_settings))
-
-# Printing the data processing workflow
 ms$print_workflow()
 ```
 
-# `run_workflow()`
+The `run_workflow()` method is called to run the data processing. The workflow will be applied in the order the methods were added to the engine.
 
-The modules assigned by the added *ProcessingSettings* can be processed by `run_workflow()`, as demonstrated below. Note that with `run_workflow()`, the processing modules are applied with the same order as they were added.
-
-```{r do-workflow, results='markup', warning=FALSE}
-# Run all ProcessingSettings added to the MassSpecEngine
+```{r}
 ms$run_workflow()
 ```
 
-Alternatively, the modules can be processed by chaining, as shown below. By chaining, the order can be modified as the modules are individually called.
-
-```{r do-workflow-chain, eval=FALSE}
-# Alternatively, the modules can be chained
-ms$find_features()$annotate_features()$group_features()$filter_features()
+```{r ,fig.cap="Deconvoluted and pre-processed spectra for each analysis."}
+ms$plot_spectra(colorBy = "analyses")
 ```
 
-# Results
+## Raman
 
-The created features and feature groups can be inspected as `data.table` objects or plotted by dedicated modules in the *MassSpecEngine*.
+The four different BSA products were measured using an online coupling of size exclusion chromatography (SEC) with capillary-enhanced Raman spectroscopy (CERS) through a liquid-core optical fibre flow cell, as reported by Thissen et al. (DOI: 10.1021/acs.analchem.3c03991). The raw spectra was converted to *asc* format for each retention time. A subset of the background and the main BSA elution peak was selected for pre-processing. The first pre-processing step is to merge the individual *asc* files into a main file for each BSA product, as shown below.
 
-## `data.table` objects
+```{r eval=FALSE}
+# Engine with all asc files for each spectrum and each BSA product
+#raman <- RamanEngine$new(raman_files, runParallel = FALSE)
 
-The features and feature groups can be obtained as `data.table` with the `MassSpecEngine$get_features()` and `MassSpecEngine$get_groups()` methods. The methods also allow to look for specific features/feature groups using mass, mass-to-charge ratio, retention time and drift time targets, as show below for a small set of compound targets where mass and retention time expected value are known. Note that drift time is only applicable for MS data with ion mobility separation.
+# Folder names of each BSA product
+#base_dirs <- basename(dirname(raman_files))
 
-```{r database-show, results='markup'}
-db
+# The folder name is used as replicate name, which is also used as file name for the unified data file
+#raman$add_replicate_names(base_dirs)
+
+# The spectra are merged into a time series for each BSA product
+#raman$merge_spectra_time_series()
 ```
 
-```{r show-target-groups, results='markup'}
-# Compounds are searched by monoisotopic mass and retention time
-# ppm and sec set the mass (im ppm) and time (in seconds) allowed deviation, respectively
-# average applies a mean to the intensities in each analysis replicate group
-ms$get_groups(mass = db, ppm = 5, sec = 10, average = TRUE)
+A new engine is created with the unified file for each BSA product and then plotted as a time series.
+
+```{r}
+raman <- RamanEngine$new(raman_unified_files, runParallel = FALSE)
+
+# Modifying the replicate names to match the MS analyses
+raman$add_replicate_names(unique(ms$get_replicate_names())[1:4])
+
+raman
 ```
 
-Already by inspection of the `data.table`, it is possible to see compounds detected in the influent but not in the effluent (e.g., Carbamazepine) or compounds that are appear to be reduced during ozonation (e.g., Metoprolol). Since positive and negative ionization mode were combined, there are compounds that appear in both polarities and are grouped by neutral monoisotopic mass (e.g., Diclofenac).
-
-## `plot_groups` methods
-
-For a better overview of the results, the method `MassSpecEngine$plot_groups()` or even more detailed the method `MassSpecEngine$plot_groups_overview()` can be used.
-
-```{r plot-groups}
-# set legendNames to TRUE for using the names in db as legend
-ms$plot_groups(mass = db, ppm = 5, sec = 10, legendNames = TRUE)
+```{r ,fig.cap="Time series chromatogram for each BSA product. Each data point is a Raman spectrum at a specific retention time."}
+raman$plot_chromatograms(yLab = "Abbundance sum for each spectrum", colorBy = "replicates")
 ```
 
-```{r plot-groups-overview, fig.height=10}
-ms$plot_groups_overview(mass = db, ppm = 5, sec = 10, legendNames = TRUE)
+```{r ,fig.cap="Raw averaged Raman spectra for each BSA product between minute 5.5 and 8."}
+raman$plot_spectra(rt = c(5.5, 8), colorBy = "replicates")
 ```
 
-## Filtered not removed
+As for MS data, the workflow for Raman data is also assembled using an ordered list of processing settings, as shown below. 
 
-The `filter_features()` module was applied to filter features out according to defined conditions/thresholds. The filtered features were not removed but just tagged as filtered and a filter tag was assigned. For instance, when the method `MassSpecEngine$get_features()` is run with `filtered` argument set to `TRUE`, the filtered features are also shown. Below, we search for the internal standards added to each analysis that were filtered when applying the blank subtraction, receiving the tag **blank** in the *filter* column and `TRUE` in the *filtered* column.
-
-```{r database-is-show, results='markup'}
-db_is
-```
-
-```{r show-filtered-is, results='markup'}
-# set filtered to TRUE for showing filtered features/feature groups
-ms$get_groups(mass = db_is, ppm = 8, sec = 10, average = TRUE, filtered = TRUE)
-```
-
-## Internal Stanards
-
-The module `MassSpecEngine$find_internal_standards()` was applied and the results can be obtained with the dedicated method `MassSpecEngine$get_internal_standards()` or plotted as a quality overview using the method `MassSpecEngine$plot_internal_standards_qc()`, as shown below. The plot gives an overview of the mass, retention time and intensity variance of the internal stadards across the analyses in the project. 
-
-```{r plot_is_qc, fig.height=10}
-ms$plot_internal_standards_qc()
-```
-
-## Isotopes
-
-The method `annotate_features()` was applied to annotate the natural isotopes within the MS data. Implementation of adducts and in source fragments annotation is planned but not yet available with the StreamFind algorithm. The method `MassSpecEngine$get_isotopes()` can be used to search for isotopes, as shown below for the analysis number 11. Because the filter `excludeIsotopes` was applied, the isotopic features are filtered out with tag **isotope** or **minIntensity** when filtered by `minIntensity`, which was applied first. Although the first isotope of Diclofenac (i.e., the <sup>13</sup>C) was not found, the second was annotated as the `maxGaps` argument in settings was set to 1. This is a frequent case for compounds with halogens.
-
-```{r show-isotopes, results='markup'}
-# Isotopes of Diclofenac and Candesartan in analysis 5
-ms$get_isotopes(
-  analyses = 5,
-  mass = db[db$name %in% c("Diclofenac", "Candesartan"), ],
-  ppm = 5, sec = 10
+```{r}
+raman_workflow_settings <- list(
+  Settings_bin_spectra_StreamFind(unitsVal = "rt", unitsNumber = 3),
+  Settings_normalize_spectra_minmax(),
+  Settings_subtract_spectra_section_StreamFind(sectionWindow = c(0, 3)),
+  Settings_smooth_spectra_savgol(fl = 21, forder = 4, dorder = 0),
+  Settings_delete_spectra_section_StreamFind(list("shift" = c(-100, 330))),
+  Settings_delete_spectra_section_StreamFind(list("shift" = c(1800, 2600))),
+  Settings_correct_spectra_baseline_airpls(lambda = 45, differences = 1, itermax = 30),
+  Settings_delete_spectra_section_StreamFind(list("rt" = c(0, 5.5))),
+  Settings_delete_spectra_section_StreamFind(list("rt" = c(8, 11))),
+  Settings_average_spectra_StreamFind(collapseTime = TRUE),
+  Settings_normalize_spectra_minmax(),
+  Settings_normalize_spectra_blockweight()
 )
+
+raman$add_settings(raman_workflow_settings)
+
+raman$print_workflow()
 ```
 
-The isotopes can also be visualized with the method `MassSpecEngine$map_isotopes()`, as shown below for the internal standards added to analysis 11. Note that again the `filtered` argument was set to `TRUE` to return also filtered features.
+A particularity of the workflow for Raman data is that the background subtraction (workflow step number 3) is performed from a time region (i.e., between 0 and 3 minutes) before the main BSA peak, which is from approximately from 5 to 8 minutes. The workflow is then applied using the `run_workflow()` method.
 
-```{r plot-isotopes, results='markup'}
-ms$map_isotopes(
-  analyses = 5,
-  mass = db_is,
-  ppm = 8, sec = 10,
-  filtered = TRUE,
-  legendNames = TRUE
+```{r}
+raman$run_workflow()
+```
+
+```{r ,fig.cap="Processed Raman spectra for each BSA product."}
+raman$plot_spectra()
+```
+
+# Fusion
+
+The fusion of MS and Raman data is performed by combining the processed data from both engines. The data is then merged into a single data frame for statistical evaluation using a MachineLearningEngine, which is under development.
+
+```{r}
+rSpec <- raman$get_spectra()
+mrSpec <- matrix(rSpec$intensity, nrow = length(unique(rSpec$replicate)), ncol = length(unique(rSpec$shift)), byrow = TRUE, dimnames = list(as.character(unique(rSpec$replicate)), as.character(unique(rSpec$shift))))
+
+mSpec <- ms$get_spectra()
+mmSpec <- matrix(mSpec$intensity, nrow = length(unique(mSpec$replicate)), ncol = length(unique(mSpec$bins)), byrow = TRUE, dimnames = list(unique(mSpec$replicate), unique(mSpec$bins)))
+
+fusedMat <- cbind(mmSpec, mrSpec)
+```
+
+```{r}
+cl <- StreamFind:::.get_colors(rownames(fusedMat))
+fig <- plot_ly()
+xVal <- seq_len(length(fusedMat[1, ]))
+for (i in seq_len(nrow(fusedMat))) {
+  fig <- fig %>% add_trace(
+    x = xVal,
+    y = fusedMat[i, ],
+    type = "scatter", mode = "lines",
+    line = list(width = 0.5, color = unname(cl[i])),
+    name = names(cl)[i],
+    legendgroup = names(cl)[i],
+    showlegend = TRUE
+  )
+}
+xaxis <- list(
+  linecolor = toRGB("black"),
+  linewidth = 2, title = "Bins",
+  titlefont = list(size = 12, color = "black")
 )
+yaxis <- list(
+  linecolor = toRGB("black"),
+  linewidth = 2, title = "Intensity",
+  titlefont = list(size = 12, color = "black")
+)
+fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis)
+fig
 ```
 
-## Suspects
+# Statistic analysis
 
-The method `MassSpecEngine$plot_suspects()` is used to inspect the suspect screening results. A second plot is added to compare the experimental fragmentation pattern (top) with the fragmentation pattern of the respective reference standard (down) added within the database. The `colorBy` argument can be set to *targets+replicates* to legend the plot with combined keys of suspect target names and analysis replicate names.
+## PCA
 
-```{r plot-suspects, results='markup'}
-ms$plot_suspects(colorBy = "targets+replicates")
+```{r ,echo=FALSE,fig.width=10,fig.height=5}
+data_pca <- prcomp(mrSpec, center = TRUE, scale. = FALSE)
+pcs <- data_pca$x
+pc_data <- data.frame(PC1 = pcs[, 1], PC2 = pcs[, 2], Species = rownames(pcs))
+pca_plot <- plot_ly(
+  data = pc_data,
+  x = ~PC1,
+  y = ~PC2,
+  type = "scatter",
+  mode = "markers+text",
+  text = ~Species,
+  textfont = list(size = 14),
+  marker = list(size = 12),
+  textposition = "top center"
+) %>%
+  layout(
+    title = "PCA Plot with Annotations",
+    xaxis = list(title = "Principal Component 1"),
+    yaxis = list(title = "Principal Component 2")
+  )
+pca_plot
 ```
 
-# More to come
+```{r ,echo=FALSE,fig.width=10,fig.height=4}
+loadings <- as.data.frame(data_pca$rotation[, 1:2])
+loadings_plot <- plot_ly(
+  data = loadings,
+  x = ~PC1,
+  y = ~PC2,
+  type = "scatter",
+  mode = "markers+text",
+  text = rownames(loadings),
+  textfont = list(size = 14),
+  marker = list(size = 10)
+) %>%
+  layout(
+    title = "PCA Loadings Plot",
+    xaxis = list(title = "Principal Component 1"),
+    yaxis = list(title = "Principal Component 2")
+  )
+loadings_plot
+```
 
-Future integration:
+## Correlation Analysis
 
-- Correcting matrix for better comparison between influent and effluent
-- Annotation of adducts and in-source fragments
-- Formula/compound assignment via patRoon
-- Screening of transformation products using the *biotransformer* tool via patRoon
-- Fold-change and other statistic analysis for inter-sample correlation
+```{r}
+# Calculate correlation matrix
+correlation_matrix <- cor(fusedMat)
 
-***
+# Print correlation matrix
+print(correlation_matrix)
+```
+
+## Distance Metrics
+
+```{r}
+# Calculate Euclidean distance matrix
+distance_matrix <- dist(fusedMat)
+
+# Print distance matrix
+print(distance_matrix)
+```
+
+## Hierarchical Clustering
+
+```{r}
+# Perform hierarchical clustering
+hc_result <- hclust(dist(fusedMat))
+
+# Plot dendrogram
+plot(hc_result)
+```
+
+## Multidimensional Scaling (MDS)
+
+```{r}
+# Calculate Euclidean distance matrix
+distance_matrix <- dist(fusedMat)
+
+# Perform MDS
+mds_result <- cmdscale(distance_matrix)
+
+# Plot MDS results
+plot(mds_result[,1], mds_result[,2], pch = 19, col = "blue", xlab = "MDS1", ylab = "MDS2")
+
+```
+
+## Kernel Methods
+
+```{r}
+# Example code for kernel PCA (assuming Gaussian kernel)
+library(kernlab)
+kpca_result <- kpca(fusedMat, kernel = "rbfdot")
+
+# Plot kernel PCA results
+plot(kpca_result@pcv[,1], kpca_result@pcv[,2], pch = 19, col = "blue", xlab = "KPCA1", ylab = "KPCA2")
+```
+
+## Feature Selection and Importance
+
+```{r}
+# Example code for feature selection (using random forest as an example)
+library(randomForest)
+rf_model <- randomForest(fusedMat, importance = TRUE)
+print(importance(rf_model))
+
+var_importance <- importance(rf_model)
+var_names <- rownames(var_importance)
+var_scores <- var_importance[,"MeanDecreaseAccuracy"]  # Adjust column name as needed
+
+# Sort variables by importance score
+sorted_indices <- order(var_scores, decreasing = TRUE)
+sorted_var_names <- var_names[sorted_indices]
+sorted_var_scores <- var_scores[sorted_indices]
+
+# Create bar plot
+barplot(sorted_var_scores, names.arg = sorted_var_names, las = 2, cex.names = 0.8,
+        main = "Variable Importance", xlab = "Variables", ylab = "Importance Score")
+```
+
+
+##  Cosine similarity and k-means clustering
+
+```{r}
+vectors <- fusedMat
+
+similarity_matrix <- tcrossprod(vectors) / (sqrt(rowSums(vectors^2)) %*% t(sqrt(rowSums(vectors^2))))
+
+# Perform k-means clustering
+k <- 3  # Number of clusters
+clusters <- kmeans(similarity_matrix, centers = k)
+
+# Print cluster assignments
+print(clusters$cluster)
+```
+
+## Similarity Measures
+
+```{r}
+vectors <- fusedMat
+
+# Calculate cosine similarity between pairs of vectors
+cosine_similarity <- function(x, y) {
+  return(sum(x * y) / (sqrt(sum(x^2)) * sqrt(sum(y^2))))
+}
+
+similarity_matrix <- matrix(NA, nrow = nrow(vectors), ncol = nrow(vectors))
+for (i in 1:nrow(vectors)) {
+  for (j in 1:nrow(vectors)) {
+    similarity_matrix[i, j] <- cosine_similarity(vectors[i,], vectors[j,])
+  }
+}
+
+# Print similarity matrix
+print(similarity_matrix)
+```
+
+## PCA 2
+
+```{r}
+vectors <- fusedMat
+
+# Perform PCA
+pca_result <- prcomp(vectors)
+
+# Plot PCA results
+plot(pca_result$x[,1], pca_result$x[,2], pch = 19, col = "blue", xlab = "PC1", ylab = "PC2")
+```
+
+## k-nearest neighbors (KNN) classification
+
+```{r}
+training_data <- fusedMat[1:2, ]  # Replace this with your actual training data
+test_data <- fusedMat[3:4, ]  # Replace this with your actual test data
+labels <- rownames(fusedMat[1:2, ])  # Replace this with your actual labels for training data
+
+# Train KNN model
+library(class)
+knn_model <- knn(train = training_data, test = test_data, cl = labels, k = 3)
+
+# Print predicted labels for test data
+print(knn_model)
+```
+
+## Partial Least Squares (PLS)
+
+Not applicable!
+
+```{r}
+# Example data
+X <- fusedMat  # Replace this with your actual predictor variables
+Y <- seq_len(nrow(fusedMat))  # Replace this with your actual response variable
+
+# Perform PLS regression
+library(pls)
+pls_model <- plsr(Y ~ X, ncomp = 2)  # You can adjust the number of components (ncomp) as needed
+
+# Predict using the PLS model
+predicted_values <- predict(pls_model, newdata = X)
+
+# Print predicted values
+print(predicted_values)
+```
+
+## Support Vector Regression (SVR)
+
+Not applicable!
+
+```{r}
+# Example data
+X <- matrix(rnorm(100), nrow = 10)  # Replace this with your actual predictor variables
+Y <- rnorm(10)  # Replace this with your actual response variable
+
+# Train SVR model
+library(e1071)
+svr_model <- svm(Y ~ ., data = as.data.frame(X), kernel = "radial", epsilon = 0.1, cost = 1)  # Adjust parameters as needed
+
+# Predict using the SVR model
+predicted_values <- predict(svr_model, newdata = as.data.frame(X))
+
+# Print predicted values
+print(predicted_values)
+
+```
+
