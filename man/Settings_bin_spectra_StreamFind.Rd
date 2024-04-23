@@ -8,7 +8,8 @@
 Settings_bin_spectra_StreamFind(
   unitsVal = NULL,
   unitsNumber = NULL,
-  bins = NULL
+  bins = NULL,
+  refBinAnalysis = NULL
 )
 
 \method{validate}{Settings_bin_spectra_StreamFind}(x)
@@ -19,6 +20,8 @@ Settings_bin_spectra_StreamFind(
 \item{unitsNumber}{}
 
 \item{bins}{}
+
+\item{refBinAnalysis}{}
 
 \item{x}{A Settings_bin_spectra_StreamFind S3 class object.}
 }

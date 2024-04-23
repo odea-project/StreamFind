@@ -179,6 +179,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-smooth_spectra}{\code{MassSpecEngine$smooth_spectra()}}
 \item \href{#method-MassSpecEngine-correct_spectra_baseline}{\code{MassSpecEngine$correct_spectra_baseline()}}
 \item \href{#method-MassSpecEngine-normalize_spectra}{\code{MassSpecEngine$normalize_spectra()}}
+\item \href{#method-MassSpecEngine-average_spectra}{\code{MassSpecEngine$average_spectra()}}
 \item \href{#method-MassSpecEngine-as_patRoon_features}{\code{MassSpecEngine$as_patRoon_features()}}
 \item \href{#method-MassSpecEngine-as_patRoon_featureGroups}{\code{MassSpecEngine$as_patRoon_featureGroups()}}
 \item \href{#method-MassSpecEngine-as_patRoon_MSPeakLists}{\code{MassSpecEngine$as_patRoon_MSPeakLists()}}
@@ -5599,6 +5600,30 @@ Invisible.
 Normalizes spectra in each analysis/replicate.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$normalize_spectra(settings)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
+applicable to the processing method. Alternatively, a named
+list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
+ProcessingSettings S3 class object. When not given, settings for the
+processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-average_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-average_spectra}{}}}
+\subsection{Method \code{average_spectra()}}{
+Averages spectra based on assigned analysis replicates.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$average_spectra(settings)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

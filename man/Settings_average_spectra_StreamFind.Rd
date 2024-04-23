@@ -5,11 +5,13 @@
 \alias{validate.Settings_average_spectra_StreamFind}
 \title{Settings_average_spectra_StreamFind}
 \usage{
-Settings_average_spectra_StreamFind()
+Settings_average_spectra_StreamFind(collapseTime = FALSE)
 
 \method{validate}{Settings_average_spectra_StreamFind}(x)
 }
 \arguments{
+\item{collapseTime}{Logical length 1. When \code{TRUE} the spectra are averaged, reducing the time variable.}
+
 \item{x}{A Settings_average_spectra_StreamFind S3 class object.}
 }
 \value{

@@ -1397,13 +1397,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
             
           }
 
-          if (!with_im) temp[["drift"]] <- NULL
+          if (!with_im) temp$drift <- NULL
           
-          if ("analysis" %in% colnames(temp)) temp$analysis <- x$name
+          if (!"analysis" %in% colnames(temp)) temp$analysis <- x$name
           
-          if ("replicate" %in% colnames(temp)) temp$replicate <- x$replicate
-          
-          setcolorder(temp, c("analysis", "replicate"))
+          if (!"replicate" %in% colnames(temp)) temp$replicate <- x$replicate
 
           temp
           
@@ -1518,14 +1516,14 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
               if (!is.null(targets)) {
                 spec <- .trim_spectra_targets(spec, tp_tar, pre_tar, i$has_ion_mobility)
               }
+              
+              if (nrow(spec) == 0) return(data.frame())
 
-              if (!i$has_ion_mobility) spec[["drift"]] <- NULL
+              if (!i$has_ion_mobility) spec$drift <- NULL
               
-              if ("analysis" %in% colnames(spec)) spec$analysis <- i$name
+              if (!"analysis" %in% colnames(spec)) spec$analysis <- i$name
               
-              if ("replicate" %in% colnames(spec)) spec$replicate <- i$replicate
-              
-              setcolorder(temp, c("analysis", "replicate"))
+              if (!"replicate" %in% colnames(spec)) spec$replicate <- i$replicate
               
               spec
 
@@ -1558,6 +1556,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
             patRoon::saveCacheData("parsed_ms_spectra", spec, hash)
           }
         }
+        
+        setcolorder(spec, c("analysis", "replicate"))
 
         spec
 
