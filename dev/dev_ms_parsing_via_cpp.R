@@ -15,8 +15,8 @@ path <- "C:/Users/Ricardo Cunha/Documents/Work/example_ms_files"
 db <- StreamFindData::get_ms_tof_spiked_chemicals()
 
 db_cols <- c("name", "mass", "rt")
-carbamazepin_d10 <- db[db$name %in% "Carbamazepin-d10", db_cols, with = FALSE]
-diuron_d6 <- db[db$name %in% "Diuron-d6", db_cols, with = FALSE]
+carbamazepin_d10 <- db[db$name %in% "Carbamazepin-D10", db_cols, with = FALSE]
+diuron_d6 <- db[db$name %in% "Diuron-D6", db_cols, with = FALSE]
 carb_pos <- carbamazepin_d10$mass + 1.007276
 carb <- carbamazepin_d10$mass
 carb_rt <- carbamazepin_d10$rt
@@ -53,9 +53,9 @@ cols <- c("name", "formula", "mass", "rt")
 # tof_db <- data.table::fread(tof_db)
 # tof_db <- tof_db[, cols, with = FALSE]
 
-afin_db <- paste0(path, "/Composition_Mix-Fusion.csv")
-afin_db <- data.table::fread(afin_db)
-afin_db <- afin_db[, cols, with = FALSE]
+# afin_db <- paste0(path, "/Composition_Mix-Fusion.csv")
+# afin_db <- data.table::fread(afin_db)
+# afin_db <- afin_db[, cols, with = FALSE]
 
 # ude_db <- paste0(path, "/mix1_orbitrap_ude.csv")
 # ude_db <- data.table::fread(ude_db)
@@ -63,23 +63,21 @@ afin_db <- afin_db[, cols, with = FALSE]
 
 ## settings --------------------------------------------------------------------
 
-settings <- list(
-  Settings_find_features_xcms3_centwave(),
-  Settings_group_features_xcms3_peakdensity(),
-  Settings_filter_features_StreamFind(
-    minIntensity = 5000,
-    minSnRatio = 20,
-    maxGroupSd = 30,
-    blank = 5,
-    minGroupAbundance = 3,
-    excludeIsotopes = TRUE
-  ),
-  Settings_load_features_ms1_StreamFind(),
-  Settings_load_features_ms2_StreamFind(),
-  Settings_load_groups_ms1_StreamFind(),
-  Settings_load_groups_ms2_StreamFind()
-  
-)
+# settings <- list(
+#   Settings_find_features_xcms3_centwave(),
+#   Settings_group_features_xcms3_peakdensity(),
+#   Settings_filter_features_StreamFind(
+#     minIntensity = 5000,
+#     minSnRatio = 20,
+#     maxGroupSd = 30,
+#     blank = 5,
+#     minGroupAbundance = 3,
+#     excludeIsotopes = TRUE
+#   ),
+#   Settings_load_features_ms1_StreamFind(),
+#   Settings_load_features_ms2_StreamFind()
+#   
+# )
 
 # cached -----------------------------------------------------------------------
 
@@ -90,7 +88,11 @@ settings <- list(
 # patRoon::clearCache("load_groups_ms1")
 # patRoon::clearCache("load_groups_ms2")
 
-# patRoon::clearCache("all")
+patRoon::clearCache("all")
+
+# StreamCraft interface --------------------------------------------------------
+
+ana <- parse_MassSpecAnalysis(files[1])
 
 # spectra ----------------------------------------------------------------------
 
