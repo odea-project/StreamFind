@@ -1315,6 +1315,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         mz_targets <- make_ms_targets(mz, rt, drift, ppm, sec, millisec, id)
 
         if (!"polarity" %in% colnames(mz_targets)) {
+          
           targets <- list()
 
           for (i in polarities) {
@@ -1339,8 +1340,6 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       }
 
       num_cols <- c("mz", "rt", "drift", "mzmin", "mzmax", "rtmin", "rtmax", "driftmin", "driftmax")
-      
-      browser()
 
       if (all(apply(targets[, num_cols, with = FALSE], 1, function(x) sum(x, na.rm = TRUE)) != 0)) {
         
@@ -1367,43 +1366,40 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         if (TRUE %in% is.na(targets$driftmin) & any(self$has_ion_mobility())) targets$driftmin[is.na(targets$driftmin)] <- min(self$get_spectra_headers(analyses)[["drift"]], na.rm = TRUE)
 
         if (TRUE %in% (targets$driftmax == 0) & any(self$has_ion_mobility())) targets$driftmax[targets$driftmax == 0] <- max(self$get_spectra_headers(analyses)[["drift"]], na.rm = TRUE)
+      
+      } else {
+        targets <- targets[0, ]
       }
       
-      targets$precursor <- FALSE
-      
-      if (is.null(levels)) levels <- 0
+      if (is.null(levels)) levels <- unique(self$get_spectra_level(analyses))
       
       if (!2 %in% levels) allTraces <- TRUE
 
       if (!is.logical(allTraces)) allTraces <- TRUE
-
-      if (!allTraces & !is.null(targets)) {
-
-        if (!any(is.numeric(isolationWindow) | is.integer(isolationWindow))) isolationWindow <- 0
+      
+      if (nrow(targets) > 0) {
         
-        targets$precursor <- TRUE
+        targets$precursor <- FALSE
         
-        targets$mzmin <- targets$mzmin - (isolationWindow / 2)
-        
-        targets$mzmax <- targets$mzmax + (isolationWindow / 2)
-
-        # TODO make case for DIA when pre_mz is not available
-        
-        preMZr <- targets[, c("mzmin", "mzmax")]
-        preMZr$mzmin <- preMZr$mzmin - (isolationWindow / 2)
-        preMZr$mzmax <- preMZr$mzmax + (isolationWindow / 2)
-
-        if (nrow(preMZr) == 1 & TRUE %in% (targets$mzmax == 0)) {
-          preMZr <- NULL
+        if (!allTraces) {
+          
+          if (!any(is.numeric(isolationWindow) | is.integer(isolationWindow))) isolationWindow <- 0
+          
+          targets$precursor <- TRUE
+          
+          targets$mzmin <- targets$mzmin - (isolationWindow / 2)
+          
+          targets$mzmax <- targets$mzmax + (isolationWindow / 2)
+          
+          # TODO make case for DIA when pre_mz is not available
         }
-
-      } else {
-        preMZr <- NULL
       }
       
-      hash <- NULL
-
+      ##################################################################
+      # Extracts spectra results #######################################
+      ##################################################################
       if (self$has_spectra() && !raw_spectra) {
+        
         spec <- rbindlist(self$spectra, fill = TRUE)
         
         if ("analysis" %in% colnames(spec)) {
@@ -1422,9 +1418,12 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         
         return(spec)
         
+      ##################################################################
+      # Extracts spectra loaded ########################################
+      ##################################################################
       } else if (all(self$has_loaded_spectra(analyses)) && loaded_spectra) {
         
-        spec_list <- lapply(self$get_analyses(analyses), function(x, levels, targets, preMZr) {
+        spec_list <- lapply(self$get_analyses(analyses), function(x, levels, targets) {
           
           temp <- x$spectra
 
@@ -1432,39 +1431,26 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
 
           if (!is.null(levels)) temp <- temp[temp$level %in% levels, ]
 
-          if (!is.null(targets)) {
-
-            if ("polarity" %in% colnames(targets)) {
-              polarities_targets <- unique(targets$polarity)
-
-              if (length(polarities_targets) == 1) {
-                temp <- temp[temp$polarity == polarities_targets, ]
-              }
-            }
-
-            if ("analysis" %in% colnames(targets)) {
-              tp_tar <- targets[targets$analysis %in% x$name, ]
-
-              if (!is.null(preMZr)) {
-                pre_tar <- preMZr[targets$analysis %in% x$name, ]
-
-              } else {
-                pre_tar <- NULL
-              }
-
-              if (nrow(tp_tar) > 0) {
-                temp <- .trim_spectra_targets(temp, tp_tar, pre_tar, any(temp$drift > 0))
-
+          if (nrow(targets) > 0) {
+            
+            if ("analysis" %in% colnames(targets)) targets <- targets[targets$analysis %in% x$name, ]
+            
+            if (now(targets) > 0) {
+              
+              if ("polarity" %in% colnames(targets)) temp <- temp[temp$polarity == targets$polarity, ]
+              
+              if (nrow(targets) > 0) {
+                temp <- .trim_spectra_targets(temp, targets, with_im)
+                
               } else {
                 temp <- data.frame()
               }
             } else {
-              temp <- .trim_spectra_targets(temp, targets, preMZr, any(temp$drift > 0))
+              temp <- data.frame()
             }
-            
           }
 
-          if (!any(temp$drift > 0)) temp$drift <- NULL
+          if (with_im) temp$drift <- NULL
           
           if (!"analysis" %in% colnames(temp)) temp$analysis <- x$name
           
@@ -1473,8 +1459,62 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           temp
           
         }, levels = levels, targets = targets, preMZr = preMZr)
-
+      
+      ##################################################################
+      # Extracts spectra from raw data #################################
+      ##################################################################
       } else {
+        
+        spec_list <- lapply(self$get_analyses(analyses), function(x, levels, targets) {
+          
+          cached <- FALSE
+          
+          if (.caches_data()) {
+            hash <- patRoon::makeHash(x$file, levels, targets, minIntensityMS1, minIntensityMS2)
+            spec_list <- patRoon::loadCacheData("parsed_ms_spectra", hash)
+            
+            if (!is.null(spec_list)) {
+              message("\U2139 Spectra loaded from cache!")
+              return(spec_list)
+            }
+            
+          } else {
+            hash <- NULL
+            spec_list <- NULL
+          }
+          
+          browser()
+
+          message("\U2699 Parsing spectra from ", x$file, " file...", appendLF = FALSE)
+          
+          browser()
+
+          spec <- rcpp_parse_ms_spectra_v2(x, levels, targets, minIntensityMS1, minIntensityMS2)
+          
+          message(" Done!")
+          
+          if (nrow(spec) == 0) return(data.frame())
+          
+          if (!any(spec$drift > 0)) spec$drift <- NULL
+          
+          if (!"analysis" %in% colnames(spec)) spec$analysis <- x$name
+          
+          if (!"replicate" %in% colnames(spec)) spec$replicate <- x$replicate
+          
+          if (.caches_data() && !is.null(hash)) {
+            patRoon::saveCacheData("parsed_ms_spectra", spec, hash)
+            message("\U1f5ab Parsed spectra cached!")
+          }
+          
+          spec
+          
+        }, levels = levels, targets = targets)
+        
+        
+        
+        
+        
+        
         
         if (.caches_data()) {
           hash <- patRoon::makeHash(analyses, levels, targets, allTraces, isolationWindow, minIntensityMS1, minIntensityMS2)
@@ -1492,26 +1532,6 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         }
         
         message("\U2699 Parsing spectra from ", length(analyses),  "  file/s..." ,appendLF = FALSE)
-        
-        if (!is.logical(runParallel)) runParallel <- FALSE
-        
-        if (runParallel & length(analyses) > 1) {
-          workers <- parallel::detectCores() - 1
-          if (length(analyses) < workers) workers <- length(analyses)
-          par_type <- "PSOCK"
-          if (parallelly::supportsMulticore()) par_type <- "FORK"
-          cl <- parallel::makeCluster(workers, type = par_type)
-          doParallel::registerDoParallel(cl)
-        } else {
-          registerDoSEQ()
-        }
-        
-        i <- NULL
-        
-        vars <- c(
-          "rcpp_parse_ms_analysis_spectra",
-          ".trim_spectra_targets"
-        )
 
         spec_list <- foreach(i = self$get_analyses(analyses), .packages = "StreamFind", .export = vars) %dopar% {
           spectra_headers <- i$spectra_headers

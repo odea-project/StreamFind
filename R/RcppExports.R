@@ -13,6 +13,10 @@ rcpp_parse_ms_chromatograms_headers_v2 <- function(file_path) {
     .Call(`_StreamFind_rcpp_parse_ms_chromatograms_headers_v2`, file_path)
 }
 
+rcpp_parse_ms_spectra_v2 <- function(analysis, levels, targets, minIntensityMS1, minIntensityMS2) {
+    .Call(`_StreamFind_rcpp_parse_ms_spectra_v2`, analysis, levels, targets, minIntensityMS1, minIntensityMS2)
+}
+
 rcpp_dev_parse_xml <- function(input) {
     .Call(`_StreamFind_rcpp_dev_parse_xml`, input)
 }

@@ -43,6 +43,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rcpp_parse_ms_spectra_v2
+Rcpp::List rcpp_parse_ms_spectra_v2(Rcpp::List analysis, std::vector<int> levels, Rcpp::DataFrame targets, double minIntensityMS1, double minIntensityMS2);
+RcppExport SEXP _StreamFind_rcpp_parse_ms_spectra_v2(SEXP analysisSEXP, SEXP levelsSEXP, SEXP targetsSEXP, SEXP minIntensityMS1SEXP, SEXP minIntensityMS2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type analysis(analysisSEXP);
+    Rcpp::traits::input_parameter< std::vector<int> >::type levels(levelsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type targets(targetsSEXP);
+    Rcpp::traits::input_parameter< double >::type minIntensityMS1(minIntensityMS1SEXP);
+    Rcpp::traits::input_parameter< double >::type minIntensityMS2(minIntensityMS2SEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_parse_ms_spectra_v2(analysis, levels, targets, minIntensityMS1, minIntensityMS2));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpp_dev_parse_xml
 Rcpp::List rcpp_dev_parse_xml(Rcpp::NumericVector input);
 RcppExport SEXP _StreamFind_rcpp_dev_parse_xml(SEXP inputSEXP) {
@@ -264,6 +279,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_parse_ms_analysis_v2", (DL_FUNC) &_StreamFind_rcpp_parse_ms_analysis_v2, 1},
     {"_StreamFind_rcpp_parse_ms_spectra_headers_v2", (DL_FUNC) &_StreamFind_rcpp_parse_ms_spectra_headers_v2, 1},
     {"_StreamFind_rcpp_parse_ms_chromatograms_headers_v2", (DL_FUNC) &_StreamFind_rcpp_parse_ms_chromatograms_headers_v2, 1},
+    {"_StreamFind_rcpp_parse_ms_spectra_v2", (DL_FUNC) &_StreamFind_rcpp_parse_ms_spectra_v2, 5},
     {"_StreamFind_rcpp_dev_parse_xml", (DL_FUNC) &_StreamFind_rcpp_dev_parse_xml, 1},
     {"_StreamFind_rcpp_fill_bin_spectra", (DL_FUNC) &_StreamFind_rcpp_fill_bin_spectra, 5},
     {"_StreamFind_rcpp_ms_annotation_isotopes", (DL_FUNC) &_StreamFind_rcpp_ms_annotation_isotopes, 11},
