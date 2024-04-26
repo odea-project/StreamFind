@@ -67,24 +67,24 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-get_time_stamps}{\code{MassSpecEngine$get_time_stamps()}}
 \item \href{#method-MassSpecEngine-get_spectra_number}{\code{MassSpecEngine$get_spectra_number()}}
 \item \href{#method-MassSpecEngine-get_spectra_mode}{\code{MassSpecEngine$get_spectra_mode()}}
-\item \href{#method-MassSpecEngine-get_spectra_levels}{\code{MassSpecEngine$get_spectra_levels()}}
+\item \href{#method-MassSpecEngine-get_spectra_level}{\code{MassSpecEngine$get_spectra_level()}}
 \item \href{#method-MassSpecEngine-get_mz_low}{\code{MassSpecEngine$get_mz_low()}}
 \item \href{#method-MassSpecEngine-get_mz_high}{\code{MassSpecEngine$get_mz_high()}}
 \item \href{#method-MassSpecEngine-get_rt_start}{\code{MassSpecEngine$get_rt_start()}}
 \item \href{#method-MassSpecEngine-get_rt_end}{\code{MassSpecEngine$get_rt_end()}}
-\item \href{#method-MassSpecEngine-get_polarities}{\code{MassSpecEngine$get_polarities()}}
+\item \href{#method-MassSpecEngine-get_spectra_polarity}{\code{MassSpecEngine$get_spectra_polarity()}}
 \item \href{#method-MassSpecEngine-get_chromatograms_number}{\code{MassSpecEngine$get_chromatograms_number()}}
 \item \href{#method-MassSpecEngine-get_instrument_info}{\code{MassSpecEngine$get_instrument_info()}}
 \item \href{#method-MassSpecEngine-get_software_info}{\code{MassSpecEngine$get_software_info()}}
 \item \href{#method-MassSpecEngine-get_run}{\code{MassSpecEngine$get_run()}}
-\item \href{#method-MassSpecEngine-get_tic}{\code{MassSpecEngine$get_tic()}}
-\item \href{#method-MassSpecEngine-get_bpc}{\code{MassSpecEngine$get_bpc()}}
+\item \href{#method-MassSpecEngine-get_spectra_tic}{\code{MassSpecEngine$get_spectra_tic()}}
+\item \href{#method-MassSpecEngine-get_spectra_bpc}{\code{MassSpecEngine$get_spectra_bpc()}}
 \item \href{#method-MassSpecEngine-get_metadata}{\code{MassSpecEngine$get_metadata()}}
 \item \href{#method-MassSpecEngine-get_spectra}{\code{MassSpecEngine$get_spectra()}}
 \item \href{#method-MassSpecEngine-get_chromatograms}{\code{MassSpecEngine$get_chromatograms()}}
-\item \href{#method-MassSpecEngine-get_eic}{\code{MassSpecEngine$get_eic()}}
-\item \href{#method-MassSpecEngine-get_ms1}{\code{MassSpecEngine$get_ms1()}}
-\item \href{#method-MassSpecEngine-get_ms2}{\code{MassSpecEngine$get_ms2()}}
+\item \href{#method-MassSpecEngine-get_spectra_eic}{\code{MassSpecEngine$get_spectra_eic()}}
+\item \href{#method-MassSpecEngine-get_spectra_ms1}{\code{MassSpecEngine$get_spectra_ms1()}}
+\item \href{#method-MassSpecEngine-get_spectra_ms2}{\code{MassSpecEngine$get_spectra_ms2()}}
 \item \href{#method-MassSpecEngine-get_feature_list}{\code{MassSpecEngine$get_feature_list()}}
 \item \href{#method-MassSpecEngine-get_features}{\code{MassSpecEngine$get_features()}}
 \item \href{#method-MassSpecEngine-get_features_eic}{\code{MassSpecEngine$get_features_eic()}}
@@ -358,12 +358,12 @@ A character vector.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_spectra_levels"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_levels}{}}}
-\subsection{Method \code{get_spectra_levels()}}{
+\if{html}{\out{<a id="method-MassSpecEngine-get_spectra_level"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_level}{}}}
+\subsection{Method \code{get_spectra_level()}}{
 Gets the spectra levels of each analysis.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_levels(analyses = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_level(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -458,12 +458,12 @@ A character vector.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_polarities"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_polarities}{}}}
-\subsection{Method \code{get_polarities()}}{
+\if{html}{\out{<a id="method-MassSpecEngine-get_spectra_polarity"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_polarity}{}}}
+\subsection{Method \code{get_spectra_polarity()}}{
 Gets the polarity of each analysis.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_polarities(analyses = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_polarity(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -558,12 +558,12 @@ A data.table.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_tic"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_tic}{}}}
-\subsection{Method \code{get_tic()}}{
+\if{html}{\out{<a id="method-MassSpecEngine-get_spectra_tic"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_tic}{}}}
+\subsection{Method \code{get_spectra_tic()}}{
 Gets the total ion chromatogram (TIC) of each analysis.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_tic(analyses = NULL, levels = c(1, 2))}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_tic(analyses = NULL, levels = c(1, 2))}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -581,12 +581,12 @@ A data.table with the TIC chromatogram.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_bpc"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_bpc}{}}}
-\subsection{Method \code{get_bpc()}}{
+\if{html}{\out{<a id="method-MassSpecEngine-get_spectra_bpc"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_bpc}{}}}
+\subsection{Method \code{get_spectra_bpc()}}{
 Gets the base peak chromatogram (BPC) of each analysis.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_bpc(analyses = NULL, levels = c(1, 2))}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_bpc(analyses = NULL, levels = c(1, 2))}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -772,12 +772,12 @@ A data.table with chromatogram/s.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_eic"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_eic}{}}}
-\subsection{Method \code{get_eic()}}{
+\if{html}{\out{<a id="method-MassSpecEngine-get_spectra_eic"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_eic}{}}}
+\subsection{Method \code{get_spectra_eic()}}{
 Gets extract ion chromatograms (EIC) from the analyses based on targets as a data.table.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_eic(
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_eic(
   analyses = NULL,
   mass = NULL,
   mz = NULL,
@@ -849,12 +849,12 @@ overhead.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_ms1"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_ms1}{}}}
-\subsection{Method \code{get_ms1()}}{
+\if{html}{\out{<a id="method-MassSpecEngine-get_spectra_ms1"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_ms1}{}}}
+\subsection{Method \code{get_spectra_ms1()}}{
 Gets MS1 data from the analyses based on targets as a data.frame.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_ms1(
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_ms1(
   analyses = NULL,
   mass = NULL,
   mz = NULL,
@@ -942,12 +942,12 @@ overhead.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_ms2"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_ms2}{}}}
-\subsection{Method \code{get_ms2()}}{
+\if{html}{\out{<a id="method-MassSpecEngine-get_spectra_ms2"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_ms2}{}}}
+\subsection{Method \code{get_spectra_ms2()}}{
 Gets MS2 data from the analyses based on targets as a data.frame.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_ms2(
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_ms2(
   analyses = NULL,
   mass = NULL,
   mz = NULL,

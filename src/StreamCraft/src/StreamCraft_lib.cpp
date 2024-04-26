@@ -8,7 +8,7 @@ void sc::welcome() {
   std::cout << std::endl;
 };
 
-sc::MassSpecAnalysis::MassSpecAnalysis(const std::string& file) {
+sc::MS_ANALYSIS::MS_ANALYSIS(const std::string& file) {
   file_path = file;
   
   file_dir = file.substr(0, file.find_last_of("/\\") + 1);
@@ -21,7 +21,7 @@ sc::MassSpecAnalysis::MassSpecAnalysis(const std::string& file) {
   file_name = file_name.substr(0, file_name.find_last_of("."));
 
   if (std::find(possible_formats.begin(), possible_formats.end(), file_extension) == possible_formats.end()) {
-    std::cerr << "Invalid file extension for MassSpecAnalysis!" << std::endl;
+    std::cerr << "Invalid file extension for MS_ANALYSIS!" << std::endl;
   }
 
   format_case = std::distance(possible_formats.begin(), std::find(possible_formats.begin(), possible_formats.end(), file_extension));
@@ -29,36 +29,32 @@ sc::MassSpecAnalysis::MassSpecAnalysis(const std::string& file) {
   switch (format_case) {
 
     case 0: {
-      ms = std::make_unique<MassSpecFile<MZML>>(file);
+      ms = std::make_unique<MS_FILE<MZML>>(file);
       break;
     }
 
     case 1: {
-      ms = std::make_unique<MassSpecFile<MZXML>>(file);
+      ms = std::make_unique<MS_FILE<MZXML>>(file);
       break;
     }
     
     default:
       break;
   }
-
-  number_spectra = ms->get_number_spectra();
-  number_chromatograms = ms->get_number_chromatograms();
-  number_spectra_binary_arrays = ms->get_number_spectra_binary_arrays();
-  first_spectra_headers = ms->get_first_spectra_headers();
 };
 
-void sc::MassSpecAnalysis::print() {
-  std::cout << "MassSpecAnalysis (" << possible_formats[format_case] << ")" << std::endl;
+void sc::MS_ANALYSIS::print() {
+  std::cout << "MS_ANALYSIS (" << possible_formats[format_case] << ")" << std::endl;
   std::cout << "  File:                      " << file_path << std::endl;
-  std::cout << "  Number of spectra:         " << number_spectra << std::endl;
-  std::cout << "  Spectra mode (first):      " << first_spectra_headers.mode[0] << std::endl;
-  std::cout << "  Number of binnary arrays:  " << number_spectra_binary_arrays << std::endl;
-  std::cout << "  Number of chromatograms:   " << number_chromatograms << std::endl;
+  std::cout << "  Format:                    " << get_format() << std::endl;
+  std::cout << "  Type:                      " << get_type() << std::endl;
+  std::cout << "  Number of spectra:         " << get_number_spectra() << std::endl;
+  std::cout << "  Number of binnary arrays:  " << get_number_spectra_binary_arrays() << std::endl;
+  std::cout << "  Number of chromatograms:   " << get_number_chromatograms() << std::endl;
   std::cout << std::endl;
 };
 
-std::vector<std::vector<std::vector<double>>> sc::MassSpecAnalysis::extract_spectra_targets_simple(const sc::MS_TARGETS& targets) {
+std::vector<std::vector<std::vector<double>>> sc::MS_ANALYSIS::extract_spectra_targets_simple(const sc::MS_TARGETS& targets) {
 
   int number_targets = targets.index.size();
 
@@ -143,7 +139,7 @@ std::vector<std::vector<std::vector<double>>> sc::MassSpecAnalysis::extract_spec
   return res;
 };
 
-std::vector<std::vector<std::vector<double>>> sc::MassSpecAnalysis::extract_spectra_targets_with_drift(const sc::MS_TARGETS& targets) {
+std::vector<std::vector<std::vector<double>>> sc::MS_ANALYSIS::extract_spectra_targets_with_drift(const sc::MS_TARGETS& targets) {
 
   int number_targets = targets.index.size();
 
@@ -273,7 +269,9 @@ std::vector<std::vector<std::vector<double>>> sc::MassSpecAnalysis::extract_spec
   return res;
 };
 
-std::vector<std::vector<std::vector<double>>> sc::MassSpecAnalysis::get_spectra_targets(const sc::MS_TARGETS& targets) {
+std::vector<std::vector<std::vector<double>>> sc::MS_ANALYSIS::get_spectra_targets(const sc::MS_TARGETS& targets) {
+
+  const int number_spectra = get_number_spectra();
 
   int number_targets = targets.index.size();
 
@@ -288,6 +286,8 @@ std::vector<std::vector<std::vector<double>>> sc::MassSpecAnalysis::get_spectra_
     std::cerr << "No spectra found in file!" << std::endl;
     return res;
   }
+
+  const int number_spectra_binary_arrays = get_number_spectra_binary_arrays();
 
   if (number_spectra_binary_arrays == 0) {
     std::cerr << "No binary arrays found in file!" << std::endl;
@@ -306,7 +306,9 @@ std::vector<std::vector<std::vector<double>>> sc::MassSpecAnalysis::get_spectra_
   }
 };
 
-std::vector<std::vector<std::vector<double>>> sc::MassSpecAnalysis::get_spectra_dda_targets(const sc::MS_TARGETS& targets) {
+std::vector<std::vector<std::vector<double>>> sc::MS_ANALYSIS::get_spectra_dda_targets(const sc::MS_TARGETS& targets) {
+
+  const int number_spectra = get_number_spectra();
 
   int number_targets = targets.index.size();
 
@@ -321,6 +323,8 @@ std::vector<std::vector<std::vector<double>>> sc::MassSpecAnalysis::get_spectra_
     std::cerr << "No spectra found in file!" << std::endl;
     return res;
   }
+
+  const int number_spectra_binary_arrays = get_number_spectra_binary_arrays();
 
   if (number_spectra_binary_arrays == 0) {
     std::cerr << "No binary arrays found in file!" << std::endl;

@@ -3,6 +3,174 @@
 #include <filesystem>
 #include <cstring>
 #include <algorithm>
+#include <set>
+
+int sc::mzxml::MZXML_SPECTRUM::extract_spec_index() const {
+  return spec.attribute("num").as_int();
+};
+
+std::string sc::mzxml::MZXML_SPECTRUM::extract_spec_id() const {
+  return spec.attribute("num").as_string();
+};
+
+int sc::mzxml::MZXML_SPECTRUM::extract_spec_scan() const {
+  return spec.attribute("num").as_int();
+};
+
+int sc::mzxml::MZXML_SPECTRUM::extract_spec_array_length() const {
+  return spec.attribute("peaksCount").as_int();
+};
+
+int sc::mzxml::MZXML_SPECTRUM::extract_spec_level() const {
+  return spec.attribute("msLevel").as_int();
+};
+
+std::string sc::mzxml::MZXML_SPECTRUM::extract_spec_mode() const {
+  int centroided = spec.attribute("centroided").as_int();
+  if (centroided == 1) {
+    return "centroid";
+  } else if (centroided == 0) {
+     return "profile";
+  } else {
+    return "";
+  }
+};
+
+std::string sc::mzxml::MZXML_SPECTRUM::extract_spec_polarity() const {
+  std::string pol_sign = spec.attribute("polarity").as_string();
+  if (pol_sign == "+") {
+     return "positive";
+  } else if (pol_sign == "-") {
+    return "negative";
+  } else {
+    return "";
+  }
+};
+
+double sc::mzxml::MZXML_SPECTRUM::extract_spec_lowmz() const {
+  return spec.attribute("lowMz").as_double();
+};
+
+double sc::mzxml::MZXML_SPECTRUM::extract_spec_highmz() const {
+  return spec.attribute("highMz").as_double();
+};
+
+double sc::mzxml::MZXML_SPECTRUM::extract_spec_bpmz() const {
+  return spec.attribute("basePeakMz").as_double();
+};
+
+double sc::mzxml::MZXML_SPECTRUM::extract_spec_bpint() const {
+  return spec.attribute("basePeakIntensity").as_double();
+};
+
+double sc::mzxml::MZXML_SPECTRUM::extract_spec_tic() const {
+  return spec.attribute("totIonCurrent").as_double();
+};
+
+double sc::mzxml::MZXML_SPECTRUM::extract_scan_rt() const {
+  std::string rt = spec.attribute("retentionTime").as_string();
+  double rt_n;
+  std::sscanf(rt.c_str(), "%*[^0123456789]%lf", &rt_n);
+  char last_char = '\0';
+  std::sscanf(rt.c_str() + rt.size() - 1, "%c", &last_char);
+  if (last_char != 'S') rt_n = rt_n * 60;
+  return rt_n;
+};
+
+double sc::mzxml::MZXML_SPECTRUM::extract_ion_mz() const {
+  pugi::xml_node precursor = spec.child("precursorMz");
+  return precursor.text().as_double();
+};
+
+double sc::mzxml::MZXML_SPECTRUM::extract_activation_ce() const {
+  return spec.attribute("collisionEnergy").as_double();
+};
+
+sc::MZXML_BINARY_METADATA sc::mzxml::MZXML_SPECTRUM::extract_binary_metadata() const {
+  
+  sc::MZXML_BINARY_METADATA binary_metadata;
+  
+  binary_metadata.precision = spec.child("peaks").attribute("precision").as_int();
+
+  std::string compression = spec.child("peaks").attribute("compressionType").as_string();
+
+  binary_metadata.compression = compression;
+
+  if (compression == "zlib" || compression == "zlib compression") {
+    binary_metadata.compressed = true;
+
+  } else {
+    binary_metadata.compressed = false;
+  }
+
+  std::string byte_order = spec.child("peaks").attribute("byteOrder").as_string();
+
+  if (byte_order == "network") {
+    binary_metadata.byte_order = "big_endian";
+
+  } else {
+    binary_metadata.byte_order = "little_endian";
+  }
+
+  return binary_metadata;
+};
+
+std::vector<std::vector<double>> sc::mzxml::MZXML_SPECTRUM::extract_binary_data(const MZXML_BINARY_METADATA& mtd) const {
+
+  std::vector<std::vector<double>> spectrum(2);
+
+  const int number_traces = spec.attribute("peaksCount").as_int();
+
+  if (number_traces == 0) return  spectrum;
+
+  for (int i = 0; i < 2; i++) spectrum[i].resize(number_traces);
+
+  const char* encoded_string = spec.child("peaks").child_value();
+
+  std::string decoded_string = utils::decode_base64(encoded_string);
+
+  if (mtd.compressed) {
+    decoded_string = utils::decompress_zlib(decoded_string);
+  }
+
+  std::vector<double> res(number_traces * 2);
+
+  if (mtd.byte_order == "big_endian") {
+    res = utils::decode_big_endian(decoded_string, mtd.precision / 8);
+
+  } else if (mtd.byte_order == "little_endian") {
+    res = utils::decode_little_endian(decoded_string, mtd.precision / 8);
+
+  } else {
+    std::cerr << "Byte order must be big_endian or little_endian!" << std::endl;
+    return(spectrum);
+  }
+
+  for (int i = 0; i < number_traces; i++) {
+    spectrum[0][i] = res[i * 2];
+    spectrum[1][i] = res[i * 2 + 1];
+  }
+
+  return spectrum;
+};
+
+std::vector<pugi::xml_node> sc::mzxml::MZXML::link_vector_spectra_nodes() const {
+
+  std::vector<pugi::xml_node> spectra;
+
+  pugi::xml_node msrun = root.child("msRun");
+
+  if (msrun) {
+    for (pugi::xml_node child = msrun.child("scan"); child; child = child.next_sibling()) {
+      spectra.push_back(child);
+    }
+
+  } else {
+    std::cerr << "msRun not found in the mzXML file!" << std::endl;
+  }
+  
+  return spectra;
+};
 
 sc::mzxml::MZXML::MZXML(const std::string& file) {
 
@@ -45,318 +213,65 @@ sc::mzxml::MZXML::MZXML(const std::string& file) {
 
   name = root.name();
 
-  pugi::xml_node msrun = root.child("msRun");
-
-  number_spectra = msrun.attribute("scanCount").as_int();
-
-  pugi::xml_node first_node = msrun.child("scan");
-
-  if (number_spectra > 0) {
-
-    if (first_node) extract_binary_metadata(first_node);
-
-    std::vector<int> sp0 = {0};
-    first_spectra_headers = extract_spectra_headers(sp0);
-  }
+  if (get_number_spectra() > 0) spectra_nodes = link_vector_spectra_nodes();
 };
 
-void sc::mzxml::MZXML::extract_binary_metadata(const pugi::xml_node& first_node) {
-
-  binary_metadata.precision = first_node.child("peaks").attribute("precision").as_int();
-
-  std::string compression = first_node.child("peaks").attribute("compressionType").as_string();
-
-  binary_metadata.compression = compression;
-
-  if (compression == "zlib" || compression == "zlib compression") {
-    binary_metadata.compressed = true;
-
-  } else {
-    binary_metadata.compressed = false;
-  }
-
-  std::string byte_order = first_node.child("peaks").attribute("byteOrder").as_string();
-
-  if (byte_order == "network") {
-    binary_metadata.byte_order = "big_endian";
-
-  } else {
-    binary_metadata.byte_order = "little_endian";
-  }
-};
-
-void sc::mzxml::MZXML::print() {
+void sc::mzxml::MZXML::print() const {
   std::cout << name << std::endl;
   std::cout << std::endl;
   std::cout << " File:                      " << file_path << std::endl;
   std::cout << std::endl;
-  std::cout << " Number of spectra:         " << number_spectra << std::endl;
+  std::cout << " Number of spectra:         " << get_number_spectra() << std::endl;
   // std::cout << " Spectra mode (first):      " << first_spectra_headers.spec_mode[0] << std::endl;
   std::cout << std::endl;
 };
 
-std::vector<pugi::xml_node> sc::mzxml::MZXML::link_vector_spectra_nodes() {
+int sc::mzxml::MZXML::get_number_spectra() const {
+  const pugi::xml_node msrun = root.child("msRun");
+  return msrun.attribute("scanCount").as_int();
+};
 
-  std::vector<pugi::xml_node> spectra;
+int sc::mzxml::MZXML::get_number_spectra_binary_arrays() const {
+  if (get_number_spectra() == 0) return 0;
+  else return 1;
+};
 
-  pugi::xml_node msrun = root.child("msRun");
+std::vector<std::string> sc::mzxml::MZXML::get_spectra_binary_short_names() const {
+  if (get_number_spectra() == 0) return std::vector<std::string> {};
+  else return std::vector<std::string> {"mz", "intensity"};
+};
 
-  if (msrun) {
-    for (pugi::xml_node child = msrun.child("scan"); child; child = child.next_sibling()) {
-      spectra.push_back(child);
+sc::MZXML_BINARY_METADATA sc::mzxml::MZXML::get_spectra_binary_metadata() const {
+  const pugi::xml_node msrun = root.child("msRun");
+  const pugi::xml_node spec = msrun.child("scan");
+  return MZXML_SPECTRUM(spec).extract_binary_metadata();
+};
+
+std::string sc::mzxml::MZXML::get_type() const {
+  const int number_spectra = get_number_spectra();
+  std::string type = "Unknown";
+  if (number_spectra > 0) {
+    const std::vector<int>& level = get_level();
+    const std::vector<double>& pre_mz = get_spectra_precursor_mz();
+    bool no_pre_mz = std::all_of(pre_mz.begin(), pre_mz.end(), [](double d) { return std::isnan(d); });
+    if (level.size() > 1) {
+      if (no_pre_mz) {
+        type = "MS/MS-AllIons";
+      } else {
+        type = "MS/MS-DDA";
+      }
+    } else if (level[0] == 1) {
+      type = "MS";
+    } else {
+      type = "MSn";
     }
-
-  } else {
-    std::cerr << "msRun not found in the mzXML file!" << std::endl;
   }
-  
-  return spectra;
+  return type;
 };
 
-int sc::mzxml::MZXML::extract_spec_index(const pugi::xml_node& spec) {
-  return spec.attribute("num").as_int();
-};
+std::vector<int> sc::mzxml::MZXML::get_spectra_index(std::vector<int> indices) const {
 
-std::string sc::mzxml::MZXML::extract_spec_id(const pugi::xml_node& spec) {
-  return spec.attribute("num").as_string();
-};
-
-int sc::mzxml::MZXML::extract_spec_scan(const pugi::xml_node& spec) {
-  return spec.attribute("num").as_int();
-};
-
-int sc::mzxml::MZXML::extract_spec_array_length(const pugi::xml_node& spec) {
-  return spec.attribute("peaksCount").as_int();
-};
-
-int sc::mzxml::MZXML::extract_spec_level(const pugi::xml_node& spec) {
-  return spec.attribute("msLevel").as_int();
-};
-
-std::string sc::mzxml::MZXML::extract_spec_mode(const pugi::xml_node& spec) {
-  int centroided = spec.attribute("centroided").as_int();
-  if (centroided == 1) {
-    return "centroid";
-  } else if (centroided == 0) {
-     return "profile";
-  } else {
-    return "";
-  }
-};
-
-std::string sc::mzxml::MZXML::extract_spec_polarity(const pugi::xml_node& spec) {
-  std::string pol_sign = spec.attribute("polarity").as_string();
-  if (pol_sign == "+") {
-     return "positive";
-  } else if (pol_sign == "-") {
-    return "negative";
-  } else {
-    return "";
-  }
-};
-
-double sc::mzxml::MZXML::extract_spec_lowmz(const pugi::xml_node& spec) {
-  return spec.attribute("lowMz").as_double();
-};
-
-double sc::mzxml::MZXML::extract_spec_highmz(const pugi::xml_node& spec) {
-  return spec.attribute("highMz").as_double();
-};
-
-double sc::mzxml::MZXML::extract_spec_bpmz(const pugi::xml_node& spec) {
-  return spec.attribute("basePeakMz").as_double();
-};
-
-double sc::mzxml::MZXML::extract_spec_bpint(const pugi::xml_node& spec) {
-  return spec.attribute("basePeakIntensity").as_double();
-};
-
-double sc::mzxml::MZXML::extract_spec_tic(const pugi::xml_node& spec) {
-  return spec.attribute("totIonCurrent").as_double();
-};
-
-double sc::mzxml::MZXML::extract_scan_rt(const pugi::xml_node& spec) {
-  std::string rt = spec.attribute("retentionTime").as_string();
-  double rt_n;
-  std::sscanf(rt.c_str(), "%*[^0123456789]%lf", &rt_n);
-  char last_char = '\0';
-  std::sscanf(rt.c_str() + rt.size() - 1, "%c", &last_char);
-  if (last_char != 'S') rt_n = rt_n * 60;
-  return rt_n;
-};
-
-double sc::mzxml::MZXML::extract_ion_mz(const pugi::xml_node& spec) {
-  pugi::xml_node precursor = spec.child("precursorMz");
-  return precursor.text().as_double();
-};
-
-double sc::mzxml::MZXML::extract_activation_ce(const pugi::xml_node& spec) {
-  return spec.attribute("collisionEnergy").as_double();
-};
-
-sc::MS_SPECTRA_HEADERS sc::mzxml::MZXML::extract_spectra_headers(const std::vector<int>& idxs) {
-
-  MS_SPECTRA_HEADERS headers;
-
-  std::vector<pugi::xml_node> spectra_nodes = link_vector_spectra_nodes();
-
-  int n = idxs.size();
-
-  if (n == 0) {
-    std::cerr << "No indices given!" << std::endl;
-    return headers;
-  }
-
-  if (spectra_nodes.size() == 0) {
-    std::cerr << "No spectra found!" << std::endl;
-    return headers;
-  }
-
-  headers.resize_all(n);
-
-  // #pragma omp parallel for
-  for (int i = 0; i < n; i++) {
-
-    const int& index = idxs[i];
-
-    const pugi::xml_node& spec = spectra_nodes[index];
-
-    headers.index[i] = extract_spec_index(spec);
-    headers.id[i] = extract_spec_id(spec);
-    headers.scan[i] = extract_spec_scan(spec);
-    headers.array_length[i] = extract_spec_array_length(spec);
-    headers.level[i] = extract_spec_level(spec);
-    headers.mode[i] = extract_spec_mode(spec);
-    headers.polarity[i] = extract_spec_polarity(spec);
-    headers.lowmz[i] = extract_spec_lowmz(spec);
-    headers.highmz[i] = extract_spec_highmz(spec);
-    headers.bpmz[i] = extract_spec_bpmz(spec);
-    headers.bpint[i] = extract_spec_bpint(spec);
-    headers.tic[i] = extract_spec_tic(spec);
-    headers.rt[i] = extract_scan_rt(spec);
-
-    pugi::xml_node precursor = spec.child("precursorMz");
-
-    if (precursor) {
-      headers.precursor_mz[i] = extract_ion_mz(spec);
-      headers.activation_ce[i] = extract_activation_ce(spec);
-    }
-  } // end of i loop
-
-  return headers;
-}
-
-std::vector<std::vector<double>> sc::mzxml::MZXML::extract_spectrum(const pugi::xml_node& spectrum_node) {
-
-  std::vector<std::vector<double>> spectrum(2);
-
-  int number_traces = spectrum_node.attribute("peaksCount").as_int();
-
-  if (number_traces == 0) return  spectrum;
-
-  for (int i = 0; i < 2; i++) spectrum[i].resize(number_traces);
-
-  const char* encoded_string = spectrum_node.child("peaks").child_value();
-
-  std::string decoded_string = utils::decode_base64(encoded_string);
-
-  if (binary_metadata.compressed) {
-    decoded_string = utils::decompress_zlib(decoded_string);
-  }
-
-  std::vector<double> res(number_traces * 2);
-
-  if (binary_metadata.byte_order == "big_endian") {
-    res = utils::decode_big_endian(decoded_string, binary_metadata.precision / 8);
-
-  } else if (binary_metadata.byte_order == "little_endian") {
-    res = utils::decode_little_endian(decoded_string, binary_metadata.precision / 8);
-
-  } else {
-    std::cerr << "Byte order must be big_endian or little_endian!" << std::endl;
-    return(spectrum);
-  }
-
-  for (int i = 0; i < number_traces; i++) {
-    spectrum[0][i] = res[i * 2];
-    spectrum[1][i] = res[i * 2 + 1];
-  }
-
-  return spectrum;
-};
-
-std::vector<std::vector<std::vector<double>>> sc::mzxml::MZXML::extract_spectra(const std::vector<int>& idxs) {
-
-  std::vector<std::vector<std::vector<double>>> sp;
-
-  std::vector<pugi::xml_node> spectra_nodes = link_vector_spectra_nodes();
-
-  int n = idxs.size();
-
-  if (n == 0) {
-    std::cerr << "No indices given!" << std::endl;
-    return sp;
-  }
-
-  if (spectra_nodes.size() == 0) {
-    std::cerr << "No spectra found!" << std::endl;
-    return sp;
-  }
-
-  sp.resize(n);
-
-  // #pragma omp parallel for
-  for (int i = 0; i < n; i++) {
-
-    const int& index = idxs[i];
-
-    const pugi::xml_node& spectrum_node = spectra_nodes[index];
-
-    sp[i] = extract_spectrum(spectrum_node);
-  }
-
-  return sp;
-}
-
-sc::MS_SPECTRA_HEADERS sc::mzxml::MZXML::get_spectra_headers(std::vector<int> indices) {
-
-  MS_SPECTRA_HEADERS hd;
-
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzXML file!" << std::endl;
-    return hd;
-  } 
-
-  if (indices.size() == 0) {
-    indices.resize(number_spectra);
-    std::iota(indices.begin(), indices.end(), 0);
-  }
-
-  hd = extract_spectra_headers(indices);
-  
-  return hd;
-};
-
-std::vector<std::vector<std::vector<double>>> sc::mzxml::MZXML::get_spectra(std::vector<int> indices) {
-
-  std::vector<std::vector<std::vector<double>>> sp;
-
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzXML file!" << std::endl;
-    return sp;
-  }
-
-  if (indices.size() == 0) {
-    indices.resize(number_spectra);
-    std::iota(indices.begin(), indices.end(), 0);
-  }
-
-  sp = extract_spectra(indices);
-  
-  return sp;
-};
-
-std::vector<int> sc::mzxml::MZXML::get_spectra_index(std::vector<int> indices) {
+  const int number_spectra = get_number_spectra();
   
   std::vector<int> idxs;
 
@@ -370,21 +285,24 @@ std::vector<int> sc::mzxml::MZXML::get_spectra_index(std::vector<int> indices) {
     std::iota(indices.begin(), indices.end(), 0);
   }
 
-  int n = indices.size();
+  const int n = indices.size();
+  const std::vector<int> f_indices = indices;
 
-  std::vector<pugi::xml_node> spectra_nodes = link_vector_spectra_nodes();
+  idxs.resize(n);
 
+  // #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
-    int idx = indices[i];
-    pugi::xml_node spec = spectra_nodes[idx];
-    int index = extract_spec_index(spec);
-    idxs.push_back(index);
+    const int& idx = f_indices[i];
+    const sc::MZXML_SPECTRUM& spec(spectra_nodes[idx]);
+    idxs[i] = spec.extract_spec_index();
   }
 
   return idxs;
 };
 
-std::vector<int> sc::mzxml::MZXML::get_spectra_scan_number(std::vector<int> indices) {
+std::vector<int> sc::mzxml::MZXML::get_spectra_scan_number(std::vector<int> indices) const {
+
+  const int number_spectra = get_number_spectra();
   
   std::vector<int> scans;
 
@@ -398,21 +316,24 @@ std::vector<int> sc::mzxml::MZXML::get_spectra_scan_number(std::vector<int> indi
     std::iota(indices.begin(), indices.end(), 0);
   }
 
-  int n = indices.size();
+  const int n = indices.size();
+  const std::vector<int> f_indices = indices;
 
-  std::vector<pugi::xml_node> spectra_nodes = link_vector_spectra_nodes();
+  scans.resize(n);
 
+  // #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
-    int idx = indices[i];
-    pugi::xml_node spec = spectra_nodes[idx];
-    int scan = extract_spec_scan(spec);
-    scans.push_back(scan);
+    const int& idx = f_indices[i];
+    const sc::MZXML_SPECTRUM& spec(spectra_nodes[idx]);
+    scans[i] = spec.extract_spec_scan();
   }
 
   return scans;
 };
 
-std::vector<int> sc::mzxml::MZXML::get_spectra_array_length(std::vector<int> indices) {
+std::vector<int> sc::mzxml::MZXML::get_spectra_array_length(std::vector<int> indices) const {
+
+  const int number_spectra = get_number_spectra();
   
   std::vector<int> lengths;
 
@@ -426,21 +347,24 @@ std::vector<int> sc::mzxml::MZXML::get_spectra_array_length(std::vector<int> ind
     std::iota(indices.begin(), indices.end(), 0);
   }
 
-  int n = indices.size();
+  const int n = indices.size();
+  const std::vector<int> f_indices = indices;
 
-  std::vector<pugi::xml_node> spectra_nodes = link_vector_spectra_nodes();
+  lengths.resize(n);
 
+  // #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
-    int idx = indices[i];
-    pugi::xml_node spec = spectra_nodes[idx];
-    int length = extract_spec_array_length(spec);
-    lengths.push_back(length);
+    const int& idx = f_indices[i];
+    const sc::MZXML_SPECTRUM& spec(spectra_nodes[idx]);
+    lengths[i] = spec.extract_spec_array_length();
   }
 
   return lengths;
 };
 
-std::vector<int> sc::mzxml::MZXML::get_spectra_level(std::vector<int> indices) {
+std::vector<int> sc::mzxml::MZXML::get_spectra_level(std::vector<int> indices) const {
+
+  const int number_spectra = get_number_spectra();
   
   std::vector<int> levels;
 
@@ -454,21 +378,24 @@ std::vector<int> sc::mzxml::MZXML::get_spectra_level(std::vector<int> indices) {
     std::iota(indices.begin(), indices.end(), 0);
   }
 
-  int n = indices.size();
+  const int n = indices.size();
+  const std::vector<int> f_indices = indices;
 
-  std::vector<pugi::xml_node> spectra_nodes = link_vector_spectra_nodes();
+  levels.resize(n);
 
+  // #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
-    int idx = indices[i];
-    pugi::xml_node spec = spectra_nodes[idx];
-    int level = extract_spec_level(spec);
-    levels.push_back(level);
+    const int& idx = f_indices[i];
+    const sc::MZXML_SPECTRUM& spec(spectra_nodes[idx]);
+    levels[i] = spec.extract_spec_level();
   }
 
   return levels;
 };
 
-std::vector<std::string> sc::mzxml::MZXML::get_spectra_mode(std::vector<int> indices) {
+std::vector<std::string> sc::mzxml::MZXML::get_spectra_mode(std::vector<int> indices) const {
+
+  const int number_spectra = get_number_spectra();
   
   std::vector<std::string> modes;
 
@@ -482,21 +409,24 @@ std::vector<std::string> sc::mzxml::MZXML::get_spectra_mode(std::vector<int> ind
     std::iota(indices.begin(), indices.end(), 0);
   }
 
-  int n = indices.size();
+  const int n = indices.size();
+  const std::vector<int> f_indices = indices;
 
-  std::vector<pugi::xml_node> spectra_nodes = link_vector_spectra_nodes();
+  modes.resize(n);
 
+  // #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
-    int idx = indices[i];
-    pugi::xml_node spec = spectra_nodes[idx];
-    std::string mode = extract_spec_mode(spec);
-    modes.push_back(mode);
+    const int& idx = f_indices[i];
+    const sc::MZXML_SPECTRUM& spec(spectra_nodes[idx]);
+    modes[i] = spec.extract_spec_mode();
   }
 
   return modes;
 };
 
-std::vector<std::string> sc::mzxml::MZXML::get_spectra_polarity(std::vector<int> indices) {
+std::vector<std::string> sc::mzxml::MZXML::get_spectra_polarity(std::vector<int> indices) const {
+
+  const int number_spectra = get_number_spectra();
   
   std::vector<std::string> polarities;
 
@@ -510,21 +440,24 @@ std::vector<std::string> sc::mzxml::MZXML::get_spectra_polarity(std::vector<int>
     std::iota(indices.begin(), indices.end(), 0);
   }
 
-  int n = indices.size();
+  const int n = indices.size();
+  const std::vector<int> f_indices = indices;
 
-  std::vector<pugi::xml_node> spectra_nodes = link_vector_spectra_nodes();
+  polarities.resize(n);
 
+  // #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
-    int idx = indices[i];
-    pugi::xml_node spec = spectra_nodes[idx];
-    std::string polarity = extract_spec_polarity(spec);
-    polarities.push_back(polarity);
+    const int& idx = f_indices[i];
+    const sc::MZXML_SPECTRUM& spec(spectra_nodes[idx]);
+    polarities[i] = spec.extract_spec_polarity();
   }
 
   return polarities;
 };
 
-std::vector<double> sc::mzxml::MZXML::get_spectra_lowmz(std::vector<int> indices) {
+std::vector<double> sc::mzxml::MZXML::get_spectra_lowmz(std::vector<int> indices) const {
+
+  const int number_spectra = get_number_spectra();
   
   std::vector<double> lowmzs;
 
@@ -538,21 +471,24 @@ std::vector<double> sc::mzxml::MZXML::get_spectra_lowmz(std::vector<int> indices
     std::iota(indices.begin(), indices.end(), 0);
   }
 
-  int n = indices.size();
+  const int n = indices.size();
+  const std::vector<int> f_indices = indices;
 
-  std::vector<pugi::xml_node> spectra_nodes = link_vector_spectra_nodes();
+  lowmzs.resize(n);
 
+  // #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
-    int idx = indices[i];
-    pugi::xml_node spec = spectra_nodes[idx];
-    double lowmz = extract_spec_lowmz(spec);
-    lowmzs.push_back(lowmz);
+    const int& idx = f_indices[i];
+    const sc::MZXML_SPECTRUM& spec(spectra_nodes[idx]);
+    lowmzs[i] = spec.extract_spec_lowmz();
   }
 
   return lowmzs;
 };
 
-std::vector<double> sc::mzxml::MZXML::get_spectra_highmz(std::vector<int> indices) {
+std::vector<double> sc::mzxml::MZXML::get_spectra_highmz(std::vector<int> indices) const {
+
+  const int number_spectra = get_number_spectra();
   
   std::vector<double> highmzs;
 
@@ -566,21 +502,24 @@ std::vector<double> sc::mzxml::MZXML::get_spectra_highmz(std::vector<int> indice
     std::iota(indices.begin(), indices.end(), 0);
   }
 
-  int n = indices.size();
+  const int n = indices.size();
+  const std::vector<int> f_indices = indices;
 
-  std::vector<pugi::xml_node> spectra_nodes = link_vector_spectra_nodes();
+  highmzs.resize(n);
 
+  // #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
-    int idx = indices[i];
-    pugi::xml_node spec = spectra_nodes[idx];
-    double highmz = extract_spec_highmz(spec);
-    highmzs.push_back(highmz);
+    const int& idx = f_indices[i];
+    const sc::MZXML_SPECTRUM& spec(spectra_nodes[idx]);
+    highmzs[i] = spec.extract_spec_highmz();
   }
 
   return highmzs;
 };
 
-std::vector<double> sc::mzxml::MZXML::get_spectra_bpmz(std::vector<int> indices) {
+std::vector<double> sc::mzxml::MZXML::get_spectra_bpmz(std::vector<int> indices) const {
+
+  const int number_spectra = get_number_spectra();
   
   std::vector<double> bpmzs;
 
@@ -594,21 +533,24 @@ std::vector<double> sc::mzxml::MZXML::get_spectra_bpmz(std::vector<int> indices)
     std::iota(indices.begin(), indices.end(), 0);
   }
 
-  int n = indices.size();
+  const int n = indices.size();
+  const std::vector<int> f_indices = indices;
 
-  std::vector<pugi::xml_node> spectra_nodes = link_vector_spectra_nodes();
+  bpmzs.resize(n);
 
+  // #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
-    int idx = indices[i];
-    pugi::xml_node spec = spectra_nodes[idx];
-    double bpmz = extract_spec_bpmz(spec);
-    bpmzs.push_back(bpmz);
+    const int& idx = f_indices[i];
+    const sc::MZXML_SPECTRUM& spec(spectra_nodes[idx]);
+    bpmzs[i] = spec.extract_spec_bpmz();
   }
 
   return bpmzs;
 };
 
-std::vector<double> sc::mzxml::MZXML::get_spectra_bpint(std::vector<int> indices) {
+std::vector<double> sc::mzxml::MZXML::get_spectra_bpint(std::vector<int> indices) const {
+
+  const int number_spectra = get_number_spectra();
   
   std::vector<double> bpints;
 
@@ -622,21 +564,24 @@ std::vector<double> sc::mzxml::MZXML::get_spectra_bpint(std::vector<int> indices
     std::iota(indices.begin(), indices.end(), 0);
   }
 
-  int n = indices.size();
+  const int n = indices.size();
+  const std::vector<int> f_indices = indices;
 
-  std::vector<pugi::xml_node> spectra_nodes = link_vector_spectra_nodes();
+  bpints.resize(n);
 
+  // #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
-    int idx = indices[i];
-    pugi::xml_node spec = spectra_nodes[idx];
-    double bpint = extract_spec_bpint(spec);
-    bpints.push_back(bpint);
+    const int& idx = f_indices[i];
+    const sc::MZXML_SPECTRUM& spec(spectra_nodes[idx]);
+    bpints[i] = spec.extract_spec_bpint();
   }
 
   return bpints;
 };
 
-std::vector<double> sc::mzxml::MZXML::get_spectra_tic(std::vector<int> indices) {
+std::vector<double> sc::mzxml::MZXML::get_spectra_tic(std::vector<int> indices) const {
+
+  const int number_spectra = get_number_spectra();
   
   std::vector<double> tics;
 
@@ -650,21 +595,24 @@ std::vector<double> sc::mzxml::MZXML::get_spectra_tic(std::vector<int> indices) 
     std::iota(indices.begin(), indices.end(), 0);
   }
 
-  int n = indices.size();
+  const int n = indices.size();
+  const std::vector<int> f_indices = indices;
 
-  std::vector<pugi::xml_node> spectra_nodes = link_vector_spectra_nodes();
+  tics.resize(n);
 
+  // #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
-    int idx = indices[i];
-    pugi::xml_node spec = spectra_nodes[idx];
-    double tic = extract_spec_tic(spec);
-    tics.push_back(tic);
+    const int& idx = f_indices[i];
+    const sc::MZXML_SPECTRUM& spec(spectra_nodes[idx]);
+    tics[i] = spec.extract_spec_tic();
   }
 
   return tics;
 };
 
-std::vector<double> sc::mzxml::MZXML::get_spectra_rt(std::vector<int> indices) {
+std::vector<double> sc::mzxml::MZXML::get_spectra_rt(std::vector<int> indices) const {
+
+  const int number_spectra = get_number_spectra();
   
   std::vector<double> rts;
 
@@ -678,27 +626,30 @@ std::vector<double> sc::mzxml::MZXML::get_spectra_rt(std::vector<int> indices) {
     std::iota(indices.begin(), indices.end(), 0);
   }
 
-  int n = indices.size();
+  const int n = indices.size();
+  const std::vector<int> f_indices = indices;
 
-  std::vector<pugi::xml_node> spectra_nodes = link_vector_spectra_nodes();
+  rts.resize(n);
 
+  // #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
-    int idx = indices[i];
-    pugi::xml_node spec = spectra_nodes[idx];
-    double rt = extract_scan_rt(spec);
-    rts.push_back(rt);
+    const int& idx = f_indices[i];
+    const sc::MZXML_SPECTRUM& spec(spectra_nodes[idx]);
+    rts[i] = spec.extract_scan_rt();
   }
 
   return rts;
 };
 
-std::vector<double> sc::mzxml::MZXML::get_spectra_precursor_mz(std::vector<int> indices) {
+std::vector<double> sc::mzxml::MZXML::get_spectra_precursor_mz(std::vector<int> indices) const {
+
+  const int number_spectra = get_number_spectra();
   
-  std::vector<double> prec_mzs;
+  std::vector<double> mzs;
 
   if (number_spectra == 0) {
     std::cerr << "There are no spectra in the mzXML file!" << std::endl;
-    return prec_mzs;
+    return mzs;
   }
 
   if (indices.size() == 0) {
@@ -706,27 +657,30 @@ std::vector<double> sc::mzxml::MZXML::get_spectra_precursor_mz(std::vector<int> 
     std::iota(indices.begin(), indices.end(), 0);
   }
 
-  int n = indices.size();
+  const int n = indices.size();
+  const std::vector<int> f_indices = indices;
 
-  std::vector<pugi::xml_node> spectra_nodes = link_vector_spectra_nodes();
+  mzs.resize(n);
 
+  // #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
-    int idx = indices[i];
-    pugi::xml_node spec = spectra_nodes[idx];
-    double prec_mz = extract_ion_mz(spec);
-    prec_mzs.push_back(prec_mz);
+    const int& idx = f_indices[i];
+    const sc::MZXML_SPECTRUM& spec(spectra_nodes[idx]);
+    mzs[i] = spec.extract_ion_mz();
   }
 
-  return prec_mzs;
+  return mzs;
 };
 
-std::vector<double> sc::mzxml::MZXML::get_spectra_collision_energy(std::vector<int> indices) {
+std::vector<double> sc::mzxml::MZXML::get_spectra_collision_energy(std::vector<int> indices) const {
+
+  const int number_spectra = get_number_spectra();
   
-  std::vector<double> ces;
+  std::vector<double> energies;
 
   if (number_spectra == 0) {
     std::cerr << "There are no spectra in the mzXML file!" << std::endl;
-    return ces;
+    return energies;
   }
 
   if (indices.size() == 0) {
@@ -734,21 +688,186 @@ std::vector<double> sc::mzxml::MZXML::get_spectra_collision_energy(std::vector<i
     std::iota(indices.begin(), indices.end(), 0);
   }
 
-  int n = indices.size();
+  const int n = indices.size();
+  const std::vector<int> f_indices = indices;
 
-  std::vector<pugi::xml_node> spectra_nodes = link_vector_spectra_nodes();
+  energies.resize(n);
 
+  // #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
-    int idx = indices[i];
-    pugi::xml_node spec = spectra_nodes[idx];
-    double ce = extract_activation_ce(spec);
-    ces.push_back(ce);
+    const int& idx = f_indices[i];
+    const sc::MZXML_SPECTRUM& spec(spectra_nodes[idx]);
+    energies[i] = spec.extract_activation_ce();
   }
 
-  return ces;
+  return energies;
 };
 
-std::vector<std::vector<std::string>> sc::mzxml::MZXML::get_software() {
+std::vector<std::string> sc::mzxml::MZXML::get_polarity() const {
+  const std::vector<std::string>& polarity = get_spectra_polarity();
+  std::set<std::string> unique_polarity(polarity.begin(), polarity.end());
+  return std::vector<std::string>(unique_polarity.begin(), unique_polarity.end());
+};
+
+std::vector<std::string> sc::mzxml::MZXML::get_mode() const {
+  const std::vector<std::string>& mode = get_spectra_mode();
+  std::set<std::string> unique_mode(mode.begin(), mode.end());
+  return std::vector<std::string>(unique_mode.begin(), unique_mode.end());
+};
+
+std::vector<int> sc::mzxml::MZXML::get_level() const {
+  const std::vector<int>& levels = get_spectra_level();
+  std::set<int> unique_level(levels.begin(), levels.end());
+  return std::vector<int>(unique_level.begin(), unique_level.end());
+};
+
+double sc::mzxml::MZXML::get_min_mz() const {
+  const std::vector<double>& mz_low = get_spectra_lowmz();
+  return *std::min_element(mz_low.begin(), mz_low.end());
+};
+
+double sc::mzxml::MZXML::get_max_mz() const {
+  const std::vector<double>& mz_high = get_spectra_highmz();
+  return *std::max_element(mz_high.begin(), mz_high.end());
+};
+
+double sc::mzxml::MZXML::get_start_rt() const {
+  const std::vector<double>& rt = get_spectra_rt();
+  return *std::min_element(rt.begin(), rt.end());
+};
+
+double sc::mzxml::MZXML::get_end_rt() const {
+  const std::vector<double>& rt = get_spectra_rt();
+  return *std::max_element(rt.begin(), rt.end());
+};
+
+sc::MS_SUMMARY sc::mzxml::MZXML::get_summary() const {
+  sc::MS_SUMMARY summary;
+  summary.file_name = file_name;
+  summary.file_path = file_path;
+  summary.file_dir = file_dir;
+  summary.file_extension = file_extension;
+  summary.number_spectra = get_number_spectra();
+  summary.number_chromatograms = get_number_chromatograms();
+  summary.number_spectra_binary_arrays = get_number_spectra_binary_arrays();
+  summary.format = get_format();
+  summary.type = get_type();
+  summary.polarity = get_polarity();
+  summary.mode = get_mode();
+  summary.level = get_level();
+  summary.min_mz = get_min_mz();
+  summary.max_mz = get_max_mz();
+  summary.start_rt = get_start_rt();
+  summary.end_rt = get_end_rt();
+  summary.has_ion_mobility = has_ion_mobility();
+  summary.time_stamp = get_time_stamp();
+  return summary;
+};
+
+sc::MS_SPECTRA_HEADERS sc::mzxml::MZXML::get_spectra_headers(std::vector<int> indices) const {
+
+  const int number_spectra = get_number_spectra();
+
+  sc::MS_SPECTRA_HEADERS headers;
+
+  if (number_spectra == 0) {
+    std::cerr << "There are no spectra in the mzXML file!" << std::endl;
+    return headers;
+  }
+
+  if (indices.size() == 0) {
+    indices.resize(number_spectra);
+    std::iota(indices.begin(), indices.end(), 0);
+  }
+
+  const std::vector<int> idxs = indices;
+  
+  const int n = idxs.size();
+
+  if (n == 0) {
+    std::cerr << "No indices given!" << std::endl;
+    return headers;
+  }
+
+  if (spectra_nodes.size() == 0) {
+    std::cerr << "No spectra found!" << std::endl;
+    return headers;
+  }
+
+  headers.resize_all(n);
+
+  // // #pragma omp parallel for
+  for (int i = 0; i < n; i++) {
+    const int& index = idxs[i];
+    const sc::MZXML_SPECTRUM& sp = spectra_nodes[index];
+
+    headers.index[i] = sp.extract_spec_index();
+    headers.scan[i] = sp.extract_spec_scan();
+    headers.array_length[i] = sp.extract_spec_array_length();
+    headers.level[i] = sp.extract_spec_level();
+    headers.mode[i] = sp.extract_spec_mode();
+    headers.polarity[i] = sp.extract_spec_polarity();
+    headers.lowmz[i] = sp.extract_spec_lowmz();
+    headers.highmz[i] = sp.extract_spec_highmz();
+    headers.bpmz[i] = sp.extract_spec_bpmz();
+    headers.bpint[i] = sp.extract_spec_bpint();
+    headers.tic[i] = sp.extract_spec_tic();
+    headers.rt[i] = sp.extract_scan_rt();
+
+    if (sp.has_precursor()) {
+      headers.precursor_mz[i] = sp.extract_ion_mz();
+      headers.activation_ce[i] = sp.extract_activation_ce();
+    }
+  } // end of i loop
+
+  return headers;
+};
+
+std::vector<std::vector<std::vector<double>>> sc::mzxml::MZXML::get_spectra(std::vector<int> indices) const {
+
+  const int number_spectra = get_number_spectra();
+
+  std::vector<std::vector<std::vector<double>>> sp;
+
+  if (number_spectra == 0) {
+    std::cerr << "There are no spectra in the mzXML file!" << std::endl;
+    return sp;
+  }
+
+  if (indices.size() == 0) {
+    indices.resize(number_spectra);
+    std::iota(indices.begin(), indices.end(), 0);
+  }
+
+  const std::vector<int> idxs = indices;
+
+  const int n = idxs.size();
+
+  if (n == 0) {
+    std::cerr << "No indices given!" << std::endl;
+    return sp;
+  }
+
+  if (spectra_nodes.size() == 0) {
+    std::cerr << "No spectra found!" << std::endl;
+    return sp;
+  }
+
+  sp.resize(n);
+
+  const sc::MZXML_BINARY_METADATA binary_metadata = get_spectra_binary_metadata();
+
+  #pragma omp parallel for
+  for (int i = 0; i < n; i++) {
+    const int& index = idxs[i];
+    const sc::MZXML_SPECTRUM& spec = spectra_nodes[index];
+    sp[i] = spec.extract_binary_data(binary_metadata);
+  }
+
+  return sp;
+};
+
+std::vector<std::vector<std::string>> sc::mzxml::MZXML::get_software() const {
 
   std::vector<std::vector<std::string>> output(3);
 
@@ -767,7 +886,7 @@ std::vector<std::vector<std::string>> sc::mzxml::MZXML::get_software() {
   return output;
 };
 
-std::vector<std::vector<std::string>> sc::mzxml::MZXML::get_hardware() {
+std::vector<std::vector<std::string>> sc::mzxml::MZXML::get_hardware() const {
 
   std::vector<std::vector<std::string>> output(2);
 
@@ -792,15 +911,15 @@ void sc::mzxml::test_extract_spectra_mzxml(const std::string& file) {
   std::cout << "Test Extract Spectra mzXML file:" << std::endl;
   std::cout << std::endl;
 
-  MZML mzml(file);
+  MZXML mzxml(file);
 
-  std::cout << "Root name: " << mzml.name << std::endl;
+  std::cout << "Root name: " << mzxml.name << std::endl;
 
-  std::cout << "Number of spectra: " << mzml.number_spectra << std::endl;
+  std::cout << "Number of spectra: " << mzxml.get_number_spectra() << std::endl;
 
   MS_SPECTRA_HEADERS hd;
 
-  hd = mzml.get_spectra_headers();
+  hd = mzxml.get_spectra_headers();
 
   int number = hd.index.size();
 
@@ -808,13 +927,13 @@ void sc::mzxml::test_extract_spectra_mzxml(const std::string& file) {
 
   std::cout << "Retention time of 10th spectrum: " << hd.rt[10] << std::endl;
 
-  std::cout << "Number of binary arrays: " << mzml.number_spectra_binary_arrays << std::endl;
+  std::cout << "Number of binary arrays: " << mzxml.get_number_spectra_binary_arrays() << std::endl;
 
   std::vector<std::vector<std::vector<double>>> spectra;
 
   std::vector<int> indices = {10, 15};
 
-  spectra = mzml.get_spectra(indices);
+  spectra = mzxml.get_spectra(indices);
 
   std::cout << "Number of extracted spectra: " << spectra.size() << std::endl;
 

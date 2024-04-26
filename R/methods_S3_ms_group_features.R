@@ -99,7 +99,7 @@
     }
 
     # when multiple polarities it makes setFeatureGroups, no rt alignment possible
-    if (length(unique(self$get_polarities())) > 1) {
+    if (length(unique(self$get_spectra_polarity())) > 1) {
       parameters <- parameters["groupParam"]
     }
   }

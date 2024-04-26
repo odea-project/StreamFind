@@ -55,11 +55,11 @@ std::vector<double> rcpp_fill_bin_spectra(Rcpp::DataFrame spectra,
   #pragma omp parallel for
   for(int i = 0; i < number_bins; i++) {
     
-    int num_threads = 0;
-
-    num_threads = omp_get_num_threads();
-
-    int thread_num = omp_get_thread_num();
+    // int num_threads = 0;
+    // 
+    // num_threads = omp_get_num_threads();
+    // 
+    // int thread_num = omp_get_thread_num();
 
     // #pragma omp critical
     // {

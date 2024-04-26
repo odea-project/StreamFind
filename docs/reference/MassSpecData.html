@@ -112,24 +112,24 @@ List of function elements to access specific reference help pages.</p></dd>
 <li><p><a href="#method-MassSpecData-get_time_stamps"><code>MassSpecData$get_time_stamps()</code></a></p></li>
 <li><p><a href="#method-MassSpecData-get_spectra_number"><code>MassSpecData$get_spectra_number()</code></a></p></li>
 <li><p><a href="#method-MassSpecData-get_spectra_mode"><code>MassSpecData$get_spectra_mode()</code></a></p></li>
-<li><p><a href="#method-MassSpecData-get_spectra_levels"><code>MassSpecData$get_spectra_levels()</code></a></p></li>
+<li><p><a href="#method-MassSpecData-get_spectra_level"><code>MassSpecData$get_spectra_level()</code></a></p></li>
 <li><p><a href="#method-MassSpecData-get_mz_low"><code>MassSpecData$get_mz_low()</code></a></p></li>
 <li><p><a href="#method-MassSpecData-get_mz_high"><code>MassSpecData$get_mz_high()</code></a></p></li>
 <li><p><a href="#method-MassSpecData-get_rt_start"><code>MassSpecData$get_rt_start()</code></a></p></li>
 <li><p><a href="#method-MassSpecData-get_rt_end"><code>MassSpecData$get_rt_end()</code></a></p></li>
-<li><p><a href="#method-MassSpecData-get_polarities"><code>MassSpecData$get_polarities()</code></a></p></li>
+<li><p><a href="#method-MassSpecData-get_spectra_polarity"><code>MassSpecData$get_spectra_polarity()</code></a></p></li>
 <li><p><a href="#method-MassSpecData-get_chromatograms_number"><code>MassSpecData$get_chromatograms_number()</code></a></p></li>
 <li><p><a href="#method-MassSpecData-get_instrument_info"><code>MassSpecData$get_instrument_info()</code></a></p></li>
 <li><p><a href="#method-MassSpecData-get_software_info"><code>MassSpecData$get_software_info()</code></a></p></li>
 <li><p><a href="#method-MassSpecData-get_run"><code>MassSpecData$get_run()</code></a></p></li>
-<li><p><a href="#method-MassSpecData-get_tic"><code>MassSpecData$get_tic()</code></a></p></li>
-<li><p><a href="#method-MassSpecData-get_bpc"><code>MassSpecData$get_bpc()</code></a></p></li>
+<li><p><a href="#method-MassSpecData-get_spectra_tic"><code>MassSpecData$get_spectra_tic()</code></a></p></li>
+<li><p><a href="#method-MassSpecData-get_spectra_bpc"><code>MassSpecData$get_spectra_bpc()</code></a></p></li>
 <li><p><a href="#method-MassSpecData-get_metadata"><code>MassSpecData$get_metadata()</code></a></p></li>
 <li><p><a href="#method-MassSpecData-get_spectra"><code>MassSpecData$get_spectra()</code></a></p></li>
 <li><p><a href="#method-MassSpecData-get_chromatograms"><code>MassSpecData$get_chromatograms()</code></a></p></li>
-<li><p><a href="#method-MassSpecData-get_eic"><code>MassSpecData$get_eic()</code></a></p></li>
-<li><p><a href="#method-MassSpecData-get_ms1"><code>MassSpecData$get_ms1()</code></a></p></li>
-<li><p><a href="#method-MassSpecData-get_ms2"><code>MassSpecData$get_ms2()</code></a></p></li>
+<li><p><a href="#method-MassSpecData-get_spectra_eic"><code>MassSpecData$get_spectra_eic()</code></a></p></li>
+<li><p><a href="#method-MassSpecData-get_spectra_ms1"><code>MassSpecData$get_spectra_ms1()</code></a></p></li>
+<li><p><a href="#method-MassSpecData-get_spectra_ms2"><code>MassSpecData$get_spectra_ms2()</code></a></p></li>
 <li><p><a href="#method-MassSpecData-get_settings"><code>MassSpecData$get_settings()</code></a></p></li>
 <li><p><a href="#method-MassSpecData-get_settings_names"><code>MassSpecData$get_settings_names()</code></a></p></li>
 <li><p><a href="#method-MassSpecData-get_features"><code>MassSpecData$get_features()</code></a></p></li>
@@ -629,11 +629,11 @@ of the analyses.</p></dd>
 <p>A character vector.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecData-get_spectra_levels"></a><div class="section">
-<h3 id="method-get-spectra-levels-">Method <code>get_spectra_levels()</code><a class="anchor" aria-label="anchor" href="#method-get-spectra-levels-"></a></h3>
+</div><p></p><hr><a id="method-MassSpecData-get_spectra_level"></a><div class="section">
+<h3 id="method-get-spectra-levels-">Method <code>get_spectra_level()</code><a class="anchor" aria-label="anchor" href="#method-get-spectra-levels-"></a></h3>
 <p>Gets the spectra levels of each analysis.</p><div class="section">
 <h4 id="usage-19">Usage<a class="anchor" aria-label="anchor" href="#usage-19"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">get_spectra_levels</span><span class="op">(</span>analyses <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">get_spectra_level</span><span class="op">(</span>analyses <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -734,11 +734,11 @@ of the analyses.</p></dd>
 <p>A character vector.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecData-get_polarities"></a><div class="section">
-<h3 id="method-get-polarities-">Method <code>get_polarities()</code><a class="anchor" aria-label="anchor" href="#method-get-polarities-"></a></h3>
+</div><p></p><hr><a id="method-MassSpecData-get_spectra_polarity"></a><div class="section">
+<h3 id="method-get-polarities-">Method <code>get_spectra_polarity()</code><a class="anchor" aria-label="anchor" href="#method-get-polarities-"></a></h3>
 <p>Gets the polarity of each analysis.</p><div class="section">
 <h4 id="usage-24">Usage<a class="anchor" aria-label="anchor" href="#usage-24"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">get_polarities</span><span class="op">(</span>analyses <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">get_spectra_polarity</span><span class="op">(</span>analyses <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -839,11 +839,11 @@ of the analyses.</p></dd>
 <p>A data.table.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecData-get_tic"></a><div class="section">
-<h3 id="method-get-tic-">Method <code>get_tic()</code><a class="anchor" aria-label="anchor" href="#method-get-tic-"></a></h3>
+</div><p></p><hr><a id="method-MassSpecData-get_spectra_tic"></a><div class="section">
+<h3 id="method-get-tic-">Method <code>get_spectra_tic()</code><a class="anchor" aria-label="anchor" href="#method-get-tic-"></a></h3>
 <p>Gets the total ion chromatogram (TIC) of each analysis.</p><div class="section">
 <h4 id="usage-29">Usage<a class="anchor" aria-label="anchor" href="#usage-29"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">get_tic</span><span class="op">(</span>analyses <span class="op">=</span> <span class="cn">NULL</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">get_spectra_tic</span><span class="op">(</span>analyses <span class="op">=</span> <span class="cn">NULL</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -865,11 +865,11 @@ MS data. Possible values are 1 and 2 for MS1 and MS2 data, respectively.</p></dd
 <p>A data.table with the TIC chromatogram.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecData-get_bpc"></a><div class="section">
-<h3 id="method-get-bpc-">Method <code>get_bpc()</code><a class="anchor" aria-label="anchor" href="#method-get-bpc-"></a></h3>
+</div><p></p><hr><a id="method-MassSpecData-get_spectra_bpc"></a><div class="section">
+<h3 id="method-get-bpc-">Method <code>get_spectra_bpc()</code><a class="anchor" aria-label="anchor" href="#method-get-bpc-"></a></h3>
 <p>Gets the base peak chromatogram (BPC) of each analysis.</p><div class="section">
 <h4 id="usage-30">Usage<a class="anchor" aria-label="anchor" href="#usage-30"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">get_bpc</span><span class="op">(</span>analyses <span class="op">=</span> <span class="cn">NULL</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">get_spectra_bpc</span><span class="op">(</span>analyses <span class="op">=</span> <span class="cn">NULL</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -1084,12 +1084,12 @@ overhead.</p></dd>
 <p>A data.table with chromatogram/s.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecData-get_eic"></a><div class="section">
-<h3 id="method-get-eic-">Method <code>get_eic()</code><a class="anchor" aria-label="anchor" href="#method-get-eic-"></a></h3>
+</div><p></p><hr><a id="method-MassSpecData-get_spectra_eic"></a><div class="section">
+<h3 id="method-get-eic-">Method <code>get_spectra_eic()</code><a class="anchor" aria-label="anchor" href="#method-get-eic-"></a></h3>
 <p>Gets extract ion chromatograms (EIC) from the analyses based
 on targets.</p><div class="section">
 <h4 id="usage-34">Usage<a class="anchor" aria-label="anchor" href="#usage-34"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">get_eic</span><span class="op">(</span></span>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">get_spectra_eic</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mass <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mz <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -1184,11 +1184,11 @@ overhead.</p></dd>
 <p>A data.table.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecData-get_ms1"></a><div class="section">
-<h3 id="method-get-ms-">Method <code>get_ms1()</code><a class="anchor" aria-label="anchor" href="#method-get-ms-"></a></h3>
+</div><p></p><hr><a id="method-MassSpecData-get_spectra_ms1"></a><div class="section">
+<h3 id="method-get-ms-">Method <code>get_spectra_ms1()</code><a class="anchor" aria-label="anchor" href="#method-get-ms-"></a></h3>
 <p>Gets MS1 data from the analyses based on targets.</p><div class="section">
 <h4 id="usage-35">Usage<a class="anchor" aria-label="anchor" href="#usage-35"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">get_ms1</span><span class="op">(</span></span>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">get_spectra_ms1</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mass <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mz <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -1307,11 +1307,11 @@ overhead.</p></dd>
 <p>A data.frame.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecData-get_ms2"></a><div class="section">
-<h3 id="method-get-ms--1">Method <code>get_ms2()</code><a class="anchor" aria-label="anchor" href="#method-get-ms--1"></a></h3>
+</div><p></p><hr><a id="method-MassSpecData-get_spectra_ms2"></a><div class="section">
+<h3 id="method-get-ms--1">Method <code>get_spectra_ms2()</code><a class="anchor" aria-label="anchor" href="#method-get-ms--1"></a></h3>
 <p>Gets MS2 data from the analyses based on targets.</p><div class="section">
 <h4 id="usage-36">Usage<a class="anchor" aria-label="anchor" href="#usage-36"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">get_ms2</span><span class="op">(</span></span>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">get_spectra_ms2</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mass <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mz <span class="op">=</span> <span class="cn">NULL</span>,</span>

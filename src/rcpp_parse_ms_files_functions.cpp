@@ -275,7 +275,7 @@ Rcpp::List rcpp_parse_ms_analysis_spectra(Rcpp::List analysis, Rcpp::IntegerVect
   if (result) {
     pugi::xml_node root = doc.document_element();
     
-    Rcpp::List run = analysis["run"];
+    Rcpp::List run = analysis["spectra_headers"];
     Rcpp::IntegerVector scan = run["scan"];
     
     if (scan.size() == 0) {

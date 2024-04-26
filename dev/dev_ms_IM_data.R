@@ -21,13 +21,13 @@ ms
 patRoon::clearCache("parsed_ms_analyses")
 patRoon::clearCache("parsed_ms_spectra")
 
-# ms$get_eic(mz = db$mz, drift = 20, millisec = 5)
+# ms$get_spectra_eic(mz = db$mz, drift = 20, millisec = 5)
 
 ms$plot_eic(mz = db$mz, drift = 20, millisec = 5)
 
-ms$get_ms1(mz = db$mz, drift = 20, millisec = 5)
+ms$get_spectra_ms1(mz = db$mz, drift = 20, millisec = 5)
 
-ms$get_ms2(mz = db$mz, drift = 20, millisec = 5)
+ms$get_spectra_ms2(mz = db$mz, drift = 20, millisec = 5)
 
 ms$plot_eic(mz = db$mz, drift = 20, millisec = 5)
 

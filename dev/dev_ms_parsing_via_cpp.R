@@ -2,14 +2,14 @@
 # resources --------------------------------------------------------------------
 
 ## files -----------------------------------------------------------------------
-all_files <- StreamFindData::get_ms_file_paths()
+# all_files <- StreamFindData::get_ms_file_paths()
 # files <- all_files[grepl("mrm", all_files)]
 # files <- all_files[1:3]
 # files <- all_files[grepl("influent|blank", all_files)]
-files <- all_files[grepl("o3sw", all_files)]
+# files <- all_files[grepl("o3sw", all_files)]
 
-path <- "C:/Users/Ricardo Cunha/Documents/Work/example_ms_files"
-# files <- list.files(path, pattern = ".mzML", full.names = TRUE)
+path <- "C:/Users/apoli/Documents/example_ms_files"
+files <- list.files(path, pattern = ".mzML", full.names = TRUE)
 
 ## databases -------------------------------------------------------------------
 db <- StreamFindData::get_ms_tof_spiked_chemicals()
@@ -92,11 +92,48 @@ patRoon::clearCache("all")
 
 # StreamCraft interface --------------------------------------------------------
 
+
 ana <- parse_MassSpecAnalysis(files[1])
+
+validate(ana[[1]])
+
+# make a benchmark with rcpp_parse_msAnalysis(files) vs rcpp_parse_ms_analysis_v2(files) and compare the results
+
+# testSpeed <- microbenchmark::microbenchmark(
+#   rcpp_parse_ms_analysis(files[1]),
+#   rcpp_parse_ms_analysis_v2(files[1]),
+#   times = 3
+# )
+# 
+# testSpeed <- microbenchmark::microbenchmark(
+#   rcpp_parse_spectra_headers(files[1]),
+#   rcpp_parse_ms_spectra_headers_v2(files[1]),
+#   times = 3
+# )
+
+
 
 # spectra ----------------------------------------------------------------------
 
-ms <- MassSpecData$new(files = files)
+ms <- MassSpecEngine$new(files = files[1:3])
+
+ms$get_spectra()
+
+ms$get_rt_end()
+
+ms$get_spectra_mode()
+
+ms$get_spectra_polarity()
+
+ms$get_spectra_headers()
+
+
+
+
+
+ms$get_spectra_tic()
+
+ms$plot_bpc(levels = 1, colorBy = "replicates")
 
 ms$find_features()
 
@@ -175,14 +212,14 @@ rcpp_ms_cluster_spectra(spec, mzClust = 0.001, presence = 0.8, verbose = TRUE)
 
 
 
-# ms$get_ms2()
+# ms$get_spectra_ms2()
 
 rcpp_parse_ms_analysis_spectra(ms$get_analyses()[[1]])
 
 
 ms$get_run()
 
-ms$get_polarities()
+ms$get_spectra_polarity()
 
 ms$get_spectra(mass = afin_db$mass[2])
 
@@ -190,7 +227,7 @@ ms$get_spectra(mass = afin_db$mass[2])
 
 ms$plot_eic(mz = afin_db$mass[2] + 1.00726, colorBy = "targets")
 
-ms$get_ms2(mass = afin_db$mass[2])
+ms$get_spectra_ms2(mass = afin_db$mass[2])
 
 ms$plot_bpc(levels = 1, colorBy = "analyses")
 
@@ -216,17 +253,17 @@ ms$get_spectra(analyses = c(2, 5), mass = diu, rt = diu_rt, sec = 120, levels = 
 
 ms$plot_ms1(analyses = c(2, 5), mass = diu, rt = diu_rt, interactive = F)
 
-ms$get_ms1(analyses = c(2, 5), mass = diu, rt = diu_rt)
+ms$get_spectra_ms1(analyses = c(2, 5), mass = diu, rt = diu_rt)
 
-ms$get_tic()
+ms$get_spectra_tic()
 
 ms$plot_tic(levels = 1, colorBy = "polarities", interactive = F)
 
 ms$plot_eic(mass = neutral_targets, colorBy = "targets", interactive = F, legendNames = TRUE)
 
-#ms$get_eic(mass = diu)
+#ms$get_spectra_eic(mass = diu)
 
-#ms$get_eic(mz = diu_pos)
+#ms$get_spectra_eic(mz = diu_pos)
 
 
 

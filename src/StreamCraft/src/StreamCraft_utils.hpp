@@ -9,6 +9,75 @@ namespace sc {
 
   inline namespace utils {
 
+    class VIRTUAL_MS_SPECTRUM {
+      public:
+        virtual ~VIRTUAL_MS_SPECTRUM() = default;
+        virtual int extract_spec_index() = 0;
+        virtual std::string extract_spec_id() const = 0;
+        virtual int extract_spec_scan() const = 0;
+        virtual int extract_spec_array_length() const = 0;
+        virtual int extract_spec_level() const = 0;
+        virtual std::string extract_spec_mode() const = 0;
+        virtual std::string extract_spec_polarity() const = 0;
+        virtual double extract_spec_lowmz() const = 0;
+        virtual double extract_spec_highmz() const = 0;
+        virtual double extract_spec_bpmz() const = 0;
+        virtual double extract_spec_bpint() const = 0;
+        virtual double extract_spec_tic() const = 0;
+        virtual double extract_scan_rt() const = 0;
+        virtual double extract_ion_mz() const = 0;
+        virtual double extract_activation_ce() const = 0;
+        virtual bool has_precursor() const = 0;
+        // virtual std::vector<std::vector<double>> extract_binary_data(const MZXML_BINARY_METADATA&  mtd) const = 0;
+    };
+
+    template <typename T>
+    class MS_SPECTRUM : public VIRTUAL_MS_SPECTRUM {
+      public:
+        MS_SPECTRUM(T spec_in) : spec(spec_in) {}
+        int extract_spec_index() override { return spec.extract_spec_index(); }
+        std::string extract_spec_id() const override { return spec.extract_spec_id(); }
+        int extract_spec_scan() const override { return spec.extract_spec_scan(); }
+        int extract_spec_array_length() const override { return spec.extract_spec_array_length(); }
+        int extract_spec_level() const override { return spec.extract_spec_level(); }
+        std::string extract_spec_mode() const override { return spec.extract_spec_mode(); }
+        std::string extract_spec_polarity() const override { return spec.extract_spec_polarity(); }
+        double extract_spec_lowmz() const override { return spec.extract_spec_lowmz(); }
+        double extract_spec_highmz() const override { return spec.extract_spec_highmz(); }
+        double extract_spec_bpmz() const override { return spec.extract_spec_bpmz(); }
+        double extract_spec_bpint() const override { return spec.extract_spec_bpint(); }
+        double extract_spec_tic() const override { return spec.extract_spec_tic(); }
+        double extract_scan_rt() const override { return spec.extract_scan_rt(); }
+        double extract_ion_mz() const override { return spec.extract_ion_mz(); }
+        double extract_activation_ce() const override { return spec.extract_activation_ce(); }
+        bool has_precursor() const override { return spec.has_precursor(); }
+        // std::vector<std::vector<double>> extract_binary_data(const MZXML_BINARY_METADATA&  mtd) const override { return spec.extract_binary_data(mtd); }
+
+      private:
+        T spec;
+    };
+
+    struct MS_SUMMARY {
+      std::string file_name;
+      std::string file_path;
+      std::string file_dir;
+      std::string file_extension;
+      int number_spectra;
+      int number_chromatograms;
+      int number_spectra_binary_arrays;
+      std::string format;
+      std::string time_stamp;
+      std::vector<std::string> polarity;
+      std::vector<std::string> mode;
+      std::vector<int> level;
+      std::string type;
+      double min_mz;
+      double max_mz;
+      double start_rt;
+      double end_rt;
+      bool has_ion_mobility;
+    };
+
     enum MS_SPECTRA_MODE {
       CENTROID,
       PROFILE

@@ -107,7 +107,7 @@
 
   if (self$has_groups()) {
 
-    polarities <- unique(self$get_polarities())
+    polarities <- unique(self$get_spectra_polarity())
 
     if (length(polarities) > 1 & settings$parameters$addMS2) {
       warning("Using ms2 data of feature groups from multiple polarities is not possible! Using features of each analysis instead.")

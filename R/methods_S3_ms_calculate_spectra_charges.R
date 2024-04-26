@@ -337,7 +337,7 @@
   ylab = "Intensity / counts"
   title = "Charges and mass annotation"
 
-  ms1 <- self$get_ms1(
+  ms1 <- self$get_spectra_ms1(
     mz = data.table("rtmin" = rtmin, "rtmax" = rtmax, "mzmin" = mzmin, "mzmax" = mzmax),
     presence = presence,
     mzClust = mzClust,

@@ -10,6 +10,39 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// rcpp_parse_ms_analysis_v2
+Rcpp::List rcpp_parse_ms_analysis_v2(std::string file_path);
+RcppExport SEXP _StreamFind_rcpp_parse_ms_analysis_v2(SEXP file_pathSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type file_path(file_pathSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_parse_ms_analysis_v2(file_path));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_parse_ms_spectra_headers_v2
+Rcpp::List rcpp_parse_ms_spectra_headers_v2(std::string file_path);
+RcppExport SEXP _StreamFind_rcpp_parse_ms_spectra_headers_v2(SEXP file_pathSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type file_path(file_pathSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_parse_ms_spectra_headers_v2(file_path));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_parse_ms_chromatograms_headers_v2
+Rcpp::List rcpp_parse_ms_chromatograms_headers_v2(std::string file_path);
+RcppExport SEXP _StreamFind_rcpp_parse_ms_chromatograms_headers_v2(SEXP file_pathSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type file_path(file_pathSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_parse_ms_chromatograms_headers_v2(file_path));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpp_dev_parse_xml
 Rcpp::List rcpp_dev_parse_xml(Rcpp::NumericVector input);
 RcppExport SEXP _StreamFind_rcpp_dev_parse_xml(SEXP inputSEXP) {
@@ -228,6 +261,9 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_StreamFind_rcpp_parse_ms_analysis_v2", (DL_FUNC) &_StreamFind_rcpp_parse_ms_analysis_v2, 1},
+    {"_StreamFind_rcpp_parse_ms_spectra_headers_v2", (DL_FUNC) &_StreamFind_rcpp_parse_ms_spectra_headers_v2, 1},
+    {"_StreamFind_rcpp_parse_ms_chromatograms_headers_v2", (DL_FUNC) &_StreamFind_rcpp_parse_ms_chromatograms_headers_v2, 1},
     {"_StreamFind_rcpp_dev_parse_xml", (DL_FUNC) &_StreamFind_rcpp_dev_parse_xml, 1},
     {"_StreamFind_rcpp_fill_bin_spectra", (DL_FUNC) &_StreamFind_rcpp_fill_bin_spectra, 5},
     {"_StreamFind_rcpp_ms_annotation_isotopes", (DL_FUNC) &_StreamFind_rcpp_ms_annotation_isotopes, 11},

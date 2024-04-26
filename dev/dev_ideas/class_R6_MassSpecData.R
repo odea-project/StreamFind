@@ -1143,7 +1143,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @return A list for each analysis with an integer vector.
     #'
-    get_spectra_levels = function(analyses = NULL) {
+    get_spectra_level = function(analyses = NULL) {
       private$.get_analyses_entry(analyses, "spectra_levels")
     },
 
@@ -1188,7 +1188,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @return A character vector.
     #'
-    get_polarities = function(analyses = NULL) {
+    get_spectra_polarity = function(analyses = NULL) {
 
       polarities <- private$.get_analyses_entry(analyses, "polarity")
 
@@ -1289,7 +1289,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @return A data.table with the TIC chromatogram.
     #'
-    get_tic = function(analyses = NULL, levels = c(1, 2)) {
+    get_spectra_tic = function(analyses = NULL, levels = c(1, 2)) {
 
       analyses <- private$.check_analyses_argument(analyses)
 
@@ -1316,7 +1316,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @return A character vector.
     #'
-    get_bpc = function(analyses = NULL, levels = c(1, 2)) {
+    get_spectra_bpc = function(analyses = NULL, levels = c(1, 2)) {
       
       analyses <- private$.check_analyses_argument(analyses)
 
@@ -1388,7 +1388,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         minIntensityMS2 <- 0
       }
 
-      polarities <- unique(self$get_polarities(analyses))
+      polarities <- unique(self$get_spectra_polarity(analyses))
 
       if (!is.null(mass)) {
 
@@ -1833,7 +1833,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @return A data.table.
     #'
-    get_eic = function(analyses = NULL,
+    get_spectra_eic = function(analyses = NULL,
                        mass = NULL,
                        mz = NULL,
                        rt = NULL,
@@ -1878,7 +1878,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @return A data.frame.
     #'
-    get_ms1 = function(analyses = NULL,
+    get_spectra_ms1 = function(analyses = NULL,
                        mass = NULL,
                        mz = NULL,
                        rt = NULL,
@@ -1960,7 +1960,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @return A data.frame.
     #'
-    get_ms2 = function(analyses = NULL,
+    get_spectra_ms2 = function(analyses = NULL,
                        mass = NULL,
                        mz = NULL,
                        rt = NULL,
@@ -2507,7 +2507,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             }
           }
 
-          ms1_2 <- self$get_ms1(
+          ms1_2 <- self$get_spectra_ms1(
             analyses = unique(fts$analysis),
             mz = fts_filtered,
             id = fts_filtered$feature,
@@ -2528,7 +2528,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         if (nrow(ms1) == 0) return(data.table())
 
       } else {
-        ms1 <- self$get_ms1(
+        ms1 <- self$get_spectra_ms1(
           analyses = unique(fts$analysis),
           mz = fts,
           id = fts$feature,
@@ -2647,7 +2647,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
             }
           }
 
-          ms2_2 <- self$get_ms2(
+          ms2_2 <- self$get_spectra_ms2(
             analyses = unique(fts$analysis),
             mz = fts_filtered,
             id = fts_filtered$feature,
@@ -2670,7 +2670,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       } else {
 
-        ms2 <- self$get_ms2(
+        ms2 <- self$get_spectra_ms2(
           analyses = unique(fts$analysis),
           mz = fts,
           id = fts$feature,
@@ -2870,7 +2870,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (nrow(ms1) == 0) return(data.table())
 
-      polarities <- unique(self$get_polarities(analyses = unique(ms1$analysis)))
+      polarities <- unique(self$get_spectra_polarity(analyses = unique(ms1$analysis)))
 
       multiple_polarities <- FALSE
 
@@ -2983,7 +2983,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (nrow(ms2) == 0) return(data.table())
 
-      polarities <- unique(self$get_polarities(analyses = unique(ms2$analysis)))
+      polarities <- unique(self$get_spectra_polarity(analyses = unique(ms2$analysis)))
 
       multiple_polarities <- FALSE
 
@@ -3299,7 +3299,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
            
             cols_db <- colnames(database)
             
-            pol <- self$get_polarities(analysis)
+            pol <- self$get_spectra_polarity(analysis)
             
             it <- seq_len(nrow(database))
             
@@ -6111,7 +6111,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       
       # if (!"id" %in% colnames(chromatograms)) tic$id <- tic$analysis
       
-      # polarities <- self$get_polarities()
+      # polarities <- self$get_spectra_polarity()
       # polarities_names <- unique(names(polarities))
       
       pol_key <- c("positive", "negative", "nd")
@@ -6218,7 +6218,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                         cex = 0.6,
                         interactive = TRUE) {
 
-      eic <- self$get_eic(analyses, mass, mz, rt, drift, ppm, sec, millisec, id, runParallel)
+      eic <- self$get_spectra_eic(analyses, mass, mz, rt, drift, ppm, sec, millisec, id, runParallel)
 
       if (nrow(eic) == 0) {
         message("\U2717 Traces not found for the targets!")
@@ -6252,7 +6252,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                         cex = 0.6,
                         interactive = TRUE) {
 
-      tic <- self$get_tic(analyses, levels)
+      tic <- self$get_spectra_tic(analyses, levels)
 
       if (nrow(tic) == 0) {
         message("\U2717 TIC not found for the analyses!")
@@ -6265,7 +6265,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (!"id" %in% colnames(tic)) tic$id <- tic$analysis
 
-      # polarities <- self$get_polarities()
+      # polarities <- self$get_spectra_polarity()
       # polarities_names <- unique(names(polarities))
       # 
       # if (length(polarities) > length(polarities_names) &
@@ -6310,7 +6310,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                         cex = 0.6,
                         interactive = TRUE) {
 
-      bpc <- self$get_bpc(analyses, levels)
+      bpc <- self$get_spectra_bpc(analyses, levels)
 
       if (nrow(bpc) == 0) {
         message("\U2717 BPC not found for the analyses!")
@@ -6323,7 +6323,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       if (!"id" %in% colnames(bpc)) bpc$id <- bpc$analysis
 
-      # polarities <- self$get_polarities()
+      # polarities <- self$get_spectra_polarity()
       # polarities_names <- unique(names(polarities))
       # 
       # if (length(polarities) > length(polarities_names) &
@@ -6377,7 +6377,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                         colorBy = "targets",
                         interactive = TRUE) {
 
-      ms2 <- self$get_ms2(
+      ms2 <- self$get_spectra_ms2(
         analyses, mass, mz, rt, drift, ppm, sec, millisec, id, isolationWindow,
         mzClust, presence, verbose, minIntensity, runParallel
       )
@@ -6425,7 +6425,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
                         showText = TRUE,
                         interactive = TRUE) {
 
-      ms1 <- self$get_ms1(
+      ms1 <- self$get_spectra_ms1(
         analyses, mass, mz, rt, drift, ppm, sec, millisec, id, mzClust, presence,
         verbose, minIntensity, runParallel
       )
@@ -7701,7 +7701,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       multiple_polarities <- FALSE
 
-      polarities <- self$get_polarities()
+      polarities <- self$get_spectra_polarity()
 
       if (length(polarities) > self$get_number_analyses()) {
         stop("Multiple polarities detected within one file! Not permited in patRoon currently.")
@@ -8011,7 +8011,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
 
       } else {
 
-        polarity <- unique(self$get_polarities())
+        polarity <- unique(self$get_spectra_polarity())
 
         if (length(polarity) > 1) {
           stop("Multiple polarities detected but Features is not a set!")

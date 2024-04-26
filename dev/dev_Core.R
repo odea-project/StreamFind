@@ -231,7 +231,7 @@ View(ms$get_results("patRoon"))
 # 
 # ms$get_features_ms1(analyses = 1, mass = dbis[1, ])
 # 
-# ms$get_ms2(analyses = 4, mass = dbsus)
+# ms$get_spectra_ms2(analyses = 4, mass = dbsus)
 # 
 # ms$get_features_ms2(analyses = 4, mass = dbsus)
 # 

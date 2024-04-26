@@ -156,7 +156,7 @@ ms$plot_chromatograms_peaks(colorBy = "replicates")
 The average retention time of the main peak was `r mean(ms$chromatograms_peaks$rt)` seconds with a standard deviation of `r sd(ms$chromatograms_peaks$rt)`. The following step is to estimate the *m/z* range of BSA for deconvolution of charges. For this, the MS1 spectra of the peak retention time +/- 0.1 seconds is plotted.
 
 ```{r, fig.cap="Spectra of BSA for each analysis replicate at the peak maximum."}
-ms$plot_ms1(rt = mean(rbindlist(ms$chromatograms_peaks)$rt), sec = 0.1,
+ms$plot_ms1(rt = mean(rbindlist(ms$chromatograms_peaks)$rt), sec = 0.5,
   colorBy = "replicates", presence = 0.1, minIntensity = 1000, interactive = FALSE
 )
 ```
@@ -169,8 +169,8 @@ av_rt <- mean(rbindlist(ms$chromatograms_peaks)$rt)
 spectra_ranges <- data.table("mzmin" = 1200, "mzmax" = 2000, "rtmin" = av_rt - 1, "rtmax" = av_rt + 1)
 
 # ms <- MassSpecEngine$new(files = ms_files, headers = list(name = "BSA Quality Evaluation Project"))
-
-ms$add_replicate_names(sub("_\\d+$", "", ms$get_analysis_names()))
+# 
+# ms$add_replicate_names(sub("_\\d+$", "", ms$get_analysis_names()))
 
 ms$load_spectra(mz = spectra_ranges)
 
@@ -264,11 +264,11 @@ raman
 ```
 
 ```{r ,fig.cap="Time series chromatogram for each BSA product. Each data point is a Raman spectrum at a specific retention time."}
-raman$plot_chromatograms(yLab = "Abbundance sum for each spectrum", colorBy = "replicates")
+raman$plot_chromatograms(yLab = "Abbundance sum for each spectrum", colorBy = "analyses")
 ```
 
 ```{r ,fig.cap="Raw averaged Raman spectra for each BSA product between minute 5.5 and 8."}
-raman$plot_spectra(rt = c(5.5, 8), colorBy = "replicates")
+raman$plot_spectra(rt = c(5.5, 8), colorBy = "analyses")
 ```
 
 As for MS data, the workflow for Raman data is also assembled using an ordered list of processing settings, as shown below. 
@@ -349,10 +349,15 @@ fig
 
 # Statistic analysis
 
+Ideas:
+
+MCR-ALS (Multivariate Curve Resolution - Alternating Least Squares)
+
+
 ## PCA
 
 ```{r ,echo=FALSE,fig.width=10,fig.height=5}
-data_pca <- prcomp(mrSpec, center = TRUE, scale. = FALSE)
+data_pca <- prcomp(fusedMat, center = TRUE, scale. = FALSE)
 pcs <- data_pca$x
 pc_data <- data.frame(PC1 = pcs[, 1], PC2 = pcs[, 2], Species = rownames(pcs))
 pca_plot <- plot_ly(
@@ -376,22 +381,36 @@ pca_plot
 
 ```{r ,echo=FALSE,fig.width=10,fig.height=4}
 loadings <- as.data.frame(data_pca$rotation[, 1:2])
-loadings_plot <- plot_ly(
-  data = loadings,
+
+loadings_plot <- plot_ly()
+
+loadings_plot <- loadings_plot %in% add_trace(loadings[rownames(loadings) %in% colnames(mrSpec), ],
+  x = loadings[rownames(loadings) %in% colnames(mrSpec), "PC1"],
+  y = loadings[rownames(loadings) %in% colnames(mrSpec), "PC2"],
+  type = "scatter",
+  mode = "markers",
+  # text = rownames(loadings)[(rownames(loadings) %in% colnames(mrSpec))],
+  # textfont = list(size = 14),
+  marker = list(size = 10)
+)
+ 
+loadings_plot <- loadings_plot %in% add_trace(
+  data = loadings[rownames(loadings) %in% colnames(mmSpec), ],
   x = ~PC1,
   y = ~PC2,
   type = "scatter",
   mode = "markers+text",
-  text = rownames(loadings),
+  text = rownames(loadings)[(rownames(loadings) %in% colnames(mmSpec))],
   textfont = list(size = 14),
-  marker = list(size = 10)
-) %>%
-  layout(
+  marker = list(size = 10, color = "red")
+)
+
+loadings_plot %>% layout(
     title = "PCA Loadings Plot",
     xaxis = list(title = "Principal Component 1"),
     yaxis = list(title = "Principal Component 2")
   )
-loadings_plot
+
 ```
 
 ## Correlation Analysis
@@ -523,9 +542,9 @@ plot(pca_result$x[,1], pca_result$x[,2], pch = 19, col = "blue", xlab = "PC1", y
 ## k-nearest neighbors (KNN) classification
 
 ```{r}
-training_data <- fusedMat[1:2, ]  # Replace this with your actual training data
-test_data <- fusedMat[3:4, ]  # Replace this with your actual test data
-labels <- rownames(fusedMat[1:2, ])  # Replace this with your actual labels for training data
+training_data <- fusedMat[c(1, 4), ]  # Replace this with your actual training data
+test_data <- fusedMat[2:3, ]  # Replace this with your actual test data
+labels <- rownames(fusedMat[c(1, 4), ])  # Replace this with your actual labels for training data
 
 # Train KNN model
 library(class)
