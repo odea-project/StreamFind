@@ -110,7 +110,7 @@ ms
 ```
 
 ```{r, fig.cap="Total ion chromatograms for each analysis replicate."}
-ms$plot_tic(colorBy = "replicates")
+ms$plot_spectra_tic(colorBy = "replicates")
 ```
 
 The data processing workflow is based on applied processing methods within the engine. As pre-processing, the following steps are applied:
@@ -156,7 +156,7 @@ ms$plot_chromatograms_peaks(colorBy = "replicates")
 The average retention time of the main peak was `r mean(ms$chromatograms_peaks$rt)` seconds with a standard deviation of `r sd(ms$chromatograms_peaks$rt)`. The following step is to estimate the *m/z* range of BSA for deconvolution of charges. For this, the MS1 spectra of the peak retention time +/- 0.1 seconds is plotted.
 
 ```{r, fig.cap="Spectra of BSA for each analysis replicate at the peak maximum."}
-ms$plot_ms1(rt = mean(rbindlist(ms$chromatograms_peaks)$rt), sec = 0.5,
+ms$plot_spectra_ms1(rt = mean(rbindlist(ms$chromatograms_peaks)$rt), sec = 0.5,
   colorBy = "replicates", presence = 0.1, minIntensity = 1000, interactive = FALSE
 )
 ```
@@ -349,14 +349,86 @@ fig
 
 # Statistic analysis
 
-Ideas:
+To be done!
 
-MCR-ALS (Multivariate Curve Resolution - Alternating Least Squares)
+
+## mdatools
+
+### PCA
+
+```{r, include=FALSE}
+library(mdatools)
+data(people)
+
+m = pca(people, 7, scale = TRUE, info = "People PCA model")
+m = selectCompNum(m, 5)
+
+print(m$res$cal)
+
+par(mfrow = c(1, 2))
+mdaplot(m$res$cal$scores, type = "p", show.labels = TRUE, show.lines = c(0, 0))
+mdaplot(m$loadings, type = "p", show.labels = TRUE, show.lines = c(0, 0))
+```
+
+
+
+
+
+
+```{r, include=FALSE}
+
+m = pca(fusedMat, 3, scale = FALSE, info = "People PCA model")
+
+par(mfrow = c(2, 2))
+mdaplot(m$res$cal$scores, type = "p", show.labels = TRUE, show.lines = c(0, 0))
+mdaplot(m$loadings, type = "p", show.labels = TRUE, show.lines = c(0, 0))
+plotResiduals(m$res$cal, show.labels = TRUE)
+plotVariance(m$res$cal, type = "h", show.labels = TRUE, labels = "values")
+```
+
+```{r ,echo=FALSE,fig.width=10,fig.height=4}
+
+library(plotly)
+
+loadings_plot <- plot_ly()
+
+loadings_plot <- loadings_plot %>% add_trace(
+  x = m$loadings[rownames(loadings) %in% colnames(mrSpec), "Comp 1"],
+  y = m$loadings[rownames(loadings) %in% colnames(mrSpec), "Comp 2"],
+  type = "scatter",
+  mode = "markers+text",
+  text = rownames(m$loadings)[(rownames(m$loadings) %in% colnames(mrSpec))],
+  textfont = list(size = 14),
+  legendgroup = "Raman",
+  name = "Raman",
+  marker = list(size = 10)
+)
+ 
+loadings_plot <- loadings_plot %>% add_trace(
+  x = m$loadings[rownames(m$loadings) %in% colnames(mmSpec), "Comp 1"],
+  y = m$loadings[rownames(m$loadings) %in% colnames(mmSpec), "Comp 2"],
+  type = "scatter",
+  mode = "markers+text",
+  text = rownames(m$loadings)[(rownames(m$loadings) %in% colnames(mmSpec))],
+  textfont = list(size = 14),
+  legendgroup = "MS",
+  name = "MS",
+  marker = list(size = 10, color = "red")
+)
+
+loadings_plot %>% layout(
+    title = "PCA Loadings Plot",
+    xaxis = list(title = "Principal Component 1"),
+    yaxis = list(title = "Principal Component 2")
+  )
+
+```
+
 
 
 ## PCA
 
-```{r ,echo=FALSE,fig.width=10,fig.height=5}
+```{r , include=FALSE, fig.width=10,fig.height=5}
 data_pca <- prcomp(fusedMat, center = TRUE, scale. = FALSE)
 pcs <- data_pca$x
 pc_data <- data.frame(PC1 = pcs[, 1], PC2 = pcs[, 2], Species = rownames(pcs))
@@ -384,24 +456,27 @@ loadings <- as.data.frame(data_pca$rotation[, 1:2])
 
 loadings_plot <- plot_ly()
 
-loadings_plot <- loadings_plot %in% add_trace(loadings[rownames(loadings) %in% colnames(mrSpec), ],
+loadings_plot <- loadings_plot %>% add_trace(
   x = loadings[rownames(loadings) %in% colnames(mrSpec), "PC1"],
   y = loadings[rownames(loadings) %in% colnames(mrSpec), "PC2"],
   type = "scatter",
-  mode = "markers",
-  # text = rownames(loadings)[(rownames(loadings) %in% colnames(mrSpec))],
-  # textfont = list(size = 14),
+  mode = "markers+text",
+  text = rownames(loadings)[(rownames(loadings) %in% colnames(mrSpec))],
+  textfont = list(size = 14),
+  legendgroup = "Raman",
+  name = "Raman",
   marker = list(size = 10)
 )
  
-loadings_plot <- loadings_plot %in% add_trace(
-  data = loadings[rownames(loadings) %in% colnames(mmSpec), ],
-  x = ~PC1,
-  y = ~PC2,
+loadings_plot <- loadings_plot %>% add_trace(
+  x = loadings[rownames(loadings) %in% colnames(mmSpec), "PC1"],
+  y = loadings[rownames(loadings) %in% colnames(mmSpec), "PC2"],
   type = "scatter",
   mode = "markers+text",
   text = rownames(loadings)[(rownames(loadings) %in% colnames(mmSpec))],
   textfont = list(size = 14),
+  legendgroup = "MS",
+  name = "MS",
   marker = list(size = 10, color = "red")
 )
 
@@ -594,4 +669,17 @@ predicted_values <- predict(svr_model, newdata = as.data.frame(X))
 print(predicted_values)
 
 ```
+
+## MCR-ALS (Multivariate Curve Resolution - Alternating Least Squares) 
+
+```{r}
+
+# Perform MCR-ALS analysis
+mcr_result <- mcr(fusedMat, nfac = 2)  # You can adjust the number of components (nfac) as needed
+
+# Print MCR-ALS results
+print(mcr_result)
+
+```
+
 

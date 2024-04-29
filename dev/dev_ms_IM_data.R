@@ -23,13 +23,13 @@ patRoon::clearCache("parsed_ms_spectra")
 
 # ms$get_spectra_eic(mz = db$mz, drift = 20, millisec = 5)
 
-ms$plot_eic(mz = db$mz, drift = 20, millisec = 5)
+ms$plot_spectra_eic(mz = db$mz, drift = 20, millisec = 5)
 
 ms$get_spectra_ms1(mz = db$mz, drift = 20, millisec = 5)
 
 ms$get_spectra_ms2(mz = db$mz, drift = 20, millisec = 5)
 
-ms$plot_eic(mz = db$mz, drift = 20, millisec = 5)
+ms$plot_spectra_eic(mz = db$mz, drift = 20, millisec = 5)
 
 # ms$plot_spectra(levels = c(1, 2), colorBy = "levels")
 

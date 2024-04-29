@@ -151,3 +151,4 @@ reference:
     - import_MassSpecEngine
     - combine_MassSpecEngine
     - make_ms_targets
+    - clear_cache

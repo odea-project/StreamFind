@@ -1207,7 +1207,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #'
     has_results = function(names = NULL) {
       if (is.null(names)) names <- names(private$.results)
-      length(private$.results[names]) > 0
+      !all(vapply(private$.results[names], is.null, FALSE))
     },
 
     ## ___ plot -----

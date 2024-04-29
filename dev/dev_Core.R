@@ -84,7 +84,7 @@ ps <- list(
 
 ms <- MassSpecEngine$new(files = ms_files_df, settings = ps)
 
-ms$plot_bpc(interactive = F)
+ms$plot_spectra_bpc(interactive = F)
 
 names(ms)
 
@@ -154,7 +154,7 @@ ms$get_suspects()
 
 ms$plot_internal_standards_qc()
 
-ms$plot_eic(analyses = 13:15, mass = dbis[5, ])
+ms$plot_spectra_eic(analyses = 13:15, mass = dbis[5, ])
 
 
 
@@ -257,7 +257,7 @@ ms$featureGroups
 
 
 
-ms$plot_bpc(colorBy = "replicates", levels = 1)
+ms$plot_spectra_bpc(colorBy = "replicates", levels = 1)
 
 
 

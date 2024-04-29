@@ -333,7 +333,7 @@ plotisotopes(pattern)
 #   features = ms_60k$get_components(analyses = 2, features = "mz172.133_rt351_f577")
 # )
 #
-# ms_60k$plot_xic(mz = db3$mz[2], rt = db3$rt[2], ppm = 20, sec = 120)
+# ms_60k$plot_spectra_xic(mz = db3$mz[2], rt = db3$rt[2], ppm = 20, sec = 120)
 
 
 
@@ -388,8 +388,8 @@ plotisotopes(pattern)
 #   mzWindow = c(-0.005, 0.005)
 # )
 #
-# ms_60k$plot_xic(mz = suspects_60k$mz[1], rt =  suspects_60k$rt[1], ppm = 5, sec = 60)
-# ms_120k$plot_xic(mz = suspects_120k$mz, rt =  suspects_120k$rt, ppm = 5, sec = 60)
+# ms_60k$plot_spectra_xic(mz = suspects_60k$mz[1], rt =  suspects_60k$rt[1], ppm = 5, sec = 60)
+# ms_120k$plot_spectra_xic(mz = suspects_120k$mz, rt =  suspects_120k$rt, ppm = 5, sec = 60)
 #
 # plotly::plot_ly(y = fts_120k$sn, type = "box")
 # plotly::plot_ly(y = fts_60k_100$intensity, type = "box")

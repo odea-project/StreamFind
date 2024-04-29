@@ -64,27 +64,27 @@ List of function elements to access specific reference help pages.}
 \itemize{
 \item \href{#method-MassSpecEngine-new}{\code{MassSpecEngine$new()}}
 \item \href{#method-MassSpecEngine-get_overview}{\code{MassSpecEngine$get_overview()}}
-\item \href{#method-MassSpecEngine-get_time_stamps}{\code{MassSpecEngine$get_time_stamps()}}
+\item \href{#method-MassSpecEngine-get_metadata}{\code{MassSpecEngine$get_metadata()}}
+\item \href{#method-MassSpecEngine-get_instrument_info}{\code{MassSpecEngine$get_instrument_info()}}
+\item \href{#method-MassSpecEngine-get_software_info}{\code{MassSpecEngine$get_software_info()}}
 \item \href{#method-MassSpecEngine-get_spectra_number}{\code{MassSpecEngine$get_spectra_number()}}
 \item \href{#method-MassSpecEngine-get_spectra_mode}{\code{MassSpecEngine$get_spectra_mode()}}
 \item \href{#method-MassSpecEngine-get_spectra_level}{\code{MassSpecEngine$get_spectra_level()}}
-\item \href{#method-MassSpecEngine-get_mz_low}{\code{MassSpecEngine$get_mz_low()}}
-\item \href{#method-MassSpecEngine-get_mz_high}{\code{MassSpecEngine$get_mz_high()}}
-\item \href{#method-MassSpecEngine-get_rt_start}{\code{MassSpecEngine$get_rt_start()}}
-\item \href{#method-MassSpecEngine-get_rt_end}{\code{MassSpecEngine$get_rt_end()}}
+\item \href{#method-MassSpecEngine-get_spectra_lowest_mz}{\code{MassSpecEngine$get_spectra_lowest_mz()}}
+\item \href{#method-MassSpecEngine-get_spectra_highest_mz}{\code{MassSpecEngine$get_spectra_highest_mz()}}
+\item \href{#method-MassSpecEngine-get_spectra_lowest_rt}{\code{MassSpecEngine$get_spectra_lowest_rt()}}
+\item \href{#method-MassSpecEngine-get_spectra_highest_rt}{\code{MassSpecEngine$get_spectra_highest_rt()}}
 \item \href{#method-MassSpecEngine-get_spectra_polarity}{\code{MassSpecEngine$get_spectra_polarity()}}
-\item \href{#method-MassSpecEngine-get_chromatograms_number}{\code{MassSpecEngine$get_chromatograms_number()}}
-\item \href{#method-MassSpecEngine-get_instrument_info}{\code{MassSpecEngine$get_instrument_info()}}
-\item \href{#method-MassSpecEngine-get_software_info}{\code{MassSpecEngine$get_software_info()}}
-\item \href{#method-MassSpecEngine-get_run}{\code{MassSpecEngine$get_run()}}
+\item \href{#method-MassSpecEngine-get_spectra_headers}{\code{MassSpecEngine$get_spectra_headers()}}
 \item \href{#method-MassSpecEngine-get_spectra_tic}{\code{MassSpecEngine$get_spectra_tic()}}
 \item \href{#method-MassSpecEngine-get_spectra_bpc}{\code{MassSpecEngine$get_spectra_bpc()}}
-\item \href{#method-MassSpecEngine-get_metadata}{\code{MassSpecEngine$get_metadata()}}
 \item \href{#method-MassSpecEngine-get_spectra}{\code{MassSpecEngine$get_spectra()}}
-\item \href{#method-MassSpecEngine-get_chromatograms}{\code{MassSpecEngine$get_chromatograms()}}
 \item \href{#method-MassSpecEngine-get_spectra_eic}{\code{MassSpecEngine$get_spectra_eic()}}
 \item \href{#method-MassSpecEngine-get_spectra_ms1}{\code{MassSpecEngine$get_spectra_ms1()}}
 \item \href{#method-MassSpecEngine-get_spectra_ms2}{\code{MassSpecEngine$get_spectra_ms2()}}
+\item \href{#method-MassSpecEngine-get_chromatograms_number}{\code{MassSpecEngine$get_chromatograms_number()}}
+\item \href{#method-MassSpecEngine-get_chromatograms_headers}{\code{MassSpecEngine$get_chromatograms_headers()}}
+\item \href{#method-MassSpecEngine-get_chromatograms}{\code{MassSpecEngine$get_chromatograms()}}
 \item \href{#method-MassSpecEngine-get_feature_list}{\code{MassSpecEngine$get_feature_list()}}
 \item \href{#method-MassSpecEngine-get_features}{\code{MassSpecEngine$get_features()}}
 \item \href{#method-MassSpecEngine-get_features_eic}{\code{MassSpecEngine$get_features_eic()}}
@@ -101,7 +101,6 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-add_files}{\code{MassSpecEngine$add_files()}}
 \item \href{#method-MassSpecEngine-add_replicate_names}{\code{MassSpecEngine$add_replicate_names()}}
 \item \href{#method-MassSpecEngine-add_blank_names}{\code{MassSpecEngine$add_blank_names()}}
-\item \href{#method-MassSpecEngine-add_spectra}{\code{MassSpecEngine$add_spectra()}}
 \item \href{#method-MassSpecEngine-add_results}{\code{MassSpecEngine$add_results()}}
 \item \href{#method-MassSpecEngine-load_spectra}{\code{MassSpecEngine$load_spectra()}}
 \item \href{#method-MassSpecEngine-load_chromatograms}{\code{MassSpecEngine$load_chromatograms()}}
@@ -135,17 +134,16 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-plot_spectra}{\code{MassSpecEngine$plot_spectra()}}
 \item \href{#method-MassSpecEngine-plot_chromatograms}{\code{MassSpecEngine$plot_chromatograms()}}
 \item \href{#method-MassSpecEngine-plot_chromatograms_baseline}{\code{MassSpecEngine$plot_chromatograms_baseline()}}
-\item \href{#method-MassSpecEngine-plot_xic}{\code{MassSpecEngine$plot_xic()}}
-\item \href{#method-MassSpecEngine-plot_eic}{\code{MassSpecEngine$plot_eic()}}
-\item \href{#method-MassSpecEngine-plot_tic}{\code{MassSpecEngine$plot_tic()}}
-\item \href{#method-MassSpecEngine-plot_bpc}{\code{MassSpecEngine$plot_bpc()}}
-\item \href{#method-MassSpecEngine-plot_ms2}{\code{MassSpecEngine$plot_ms2()}}
-\item \href{#method-MassSpecEngine-plot_ms1}{\code{MassSpecEngine$plot_ms1()}}
+\item \href{#method-MassSpecEngine-plot_spectra_xic}{\code{MassSpecEngine$plot_spectra_xic()}}
+\item \href{#method-MassSpecEngine-plot_spectra_eic}{\code{MassSpecEngine$plot_spectra_eic()}}
+\item \href{#method-MassSpecEngine-plot_spectra_tic}{\code{MassSpecEngine$plot_spectra_tic()}}
+\item \href{#method-MassSpecEngine-plot_spectra_bpc}{\code{MassSpecEngine$plot_spectra_bpc()}}
+\item \href{#method-MassSpecEngine-plot_spectra_ms2}{\code{MassSpecEngine$plot_spectra_ms2()}}
+\item \href{#method-MassSpecEngine-plot_spectra_ms1}{\code{MassSpecEngine$plot_spectra_ms1()}}
 \item \href{#method-MassSpecEngine-plot_features}{\code{MassSpecEngine$plot_features()}}
 \item \href{#method-MassSpecEngine-map_features}{\code{MassSpecEngine$map_features()}}
 \item \href{#method-MassSpecEngine-plot_features_ms1}{\code{MassSpecEngine$plot_features_ms1()}}
 \item \href{#method-MassSpecEngine-plot_features_ms2}{\code{MassSpecEngine$plot_features_ms2()}}
-\item \href{#method-MassSpecEngine-plot_alignment}{\code{MassSpecEngine$plot_alignment()}}
 \item \href{#method-MassSpecEngine-plot_groups}{\code{MassSpecEngine$plot_groups()}}
 \item \href{#method-MassSpecEngine-plot_groups_ms1}{\code{MassSpecEngine$plot_groups_ms1()}}
 \item \href{#method-MassSpecEngine-plot_groups_ms2}{\code{MassSpecEngine$plot_groups_ms2()}}
@@ -246,8 +244,7 @@ Creates an R6 MassSpecEngine class object.
   headers = NULL,
   settings = NULL,
   analyses = NULL,
-  results = NULL,
-  runParallel = FALSE
+  results = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -276,10 +273,6 @@ algorithm and parameters to be transformed and added as ProcessingSettings objec
 elements (see \code{?MassSpecAnalysis} for more information).}
 
 \item{\code{results}}{A named list of objects from processing methods.}
-
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -298,12 +291,12 @@ Gets an overview data.frame of all the analyses.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_time_stamps"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_time_stamps}{}}}
-\subsection{Method \code{get_time_stamps()}}{
-Gets the time stamp of the each analysis.
+\if{html}{\out{<a id="method-MassSpecEngine-get_metadata"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_metadata}{}}}
+\subsection{Method \code{get_metadata()}}{
+Gets metadata from each analysis.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_time_stamps(analyses = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_metadata(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -314,7 +307,47 @@ Gets the time stamp of the each analysis.
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A character vector.
+A data.table.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-get_instrument_info"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_instrument_info}{}}}
+\subsection{Method \code{get_instrument_info()}}{
+Gets the instrument information of each analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_instrument_info(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A list.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-get_software_info"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_software_info}{}}}
+\subsection{Method \code{get_software_info()}}{
+Gets the software information of each analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_software_info(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A list.
 }
 }
 \if{html}{\out{<hr>}}
@@ -341,7 +374,7 @@ A character vector.
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_mode"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_mode}{}}}
 \subsection{Method \code{get_spectra_mode()}}{
-Gets the spectra mode of each analysis (i.e., profile or centroided).
+Gets the spectra mode of each analysis (i.e., profile or centroid).
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_mode(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -378,12 +411,12 @@ A list for each analysis with an integer vector.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_mz_low"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_mz_low}{}}}
-\subsection{Method \code{get_mz_low()}}{
+\if{html}{\out{<a id="method-MassSpecEngine-get_spectra_lowest_mz"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_lowest_mz}{}}}
+\subsection{Method \code{get_spectra_lowest_mz()}}{
 Gets the lower \emph{m/z} value of each analysis.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_mz_low(analyses = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_lowest_mz(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -398,12 +431,12 @@ A character vector.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_mz_high"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_mz_high}{}}}
-\subsection{Method \code{get_mz_high()}}{
+\if{html}{\out{<a id="method-MassSpecEngine-get_spectra_highest_mz"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_highest_mz}{}}}
+\subsection{Method \code{get_spectra_highest_mz()}}{
 Gets the higher \emph{m/z} value of each analysis.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_mz_high(analyses = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_highest_mz(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -418,12 +451,12 @@ A character vector.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_rt_start"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_rt_start}{}}}
-\subsection{Method \code{get_rt_start()}}{
+\if{html}{\out{<a id="method-MassSpecEngine-get_spectra_lowest_rt"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_lowest_rt}{}}}
+\subsection{Method \code{get_spectra_lowest_rt()}}{
 Gets the start retention time value of each analysis.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_rt_start(analyses = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_lowest_rt(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -438,12 +471,12 @@ A character vector.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_rt_end"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_rt_end}{}}}
-\subsection{Method \code{get_rt_end()}}{
+\if{html}{\out{<a id="method-MassSpecEngine-get_spectra_highest_rt"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_highest_rt}{}}}
+\subsection{Method \code{get_spectra_highest_rt()}}{
 Gets the end retention time value of each analysis.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_rt_end(analyses = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_highest_rt(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -478,72 +511,12 @@ A character vector.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_chromatograms_number"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_chromatograms_number}{}}}
-\subsection{Method \code{get_chromatograms_number()}}{
-Gets the number of chromatograms in each analysis.
+\if{html}{\out{<a id="method-MassSpecEngine-get_spectra_headers"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_headers}{}}}
+\subsection{Method \code{get_spectra_headers()}}{
+Gets the spectra headers data.table of each analysis.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_chromatograms_number(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A character vector.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_instrument_info"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_instrument_info}{}}}
-\subsection{Method \code{get_instrument_info()}}{
-Gets the instrument information of each analysis.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_instrument_info(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A data.table.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_software_info"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_software_info}{}}}
-\subsection{Method \code{get_software_info()}}{
-Gets the software information of each analysis.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_software_info(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A data.table.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_run"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_run}{}}}
-\subsection{Method \code{get_run()}}{
-Gets the run summary data.table of each analysis.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_run(analyses = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_headers(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -604,26 +577,6 @@ A character vector.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_metadata"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_metadata}{}}}
-\subsection{Method \code{get_metadata()}}{
-Gets metadata from each analysis.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_metadata(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A data.table.
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra}{}}}
 \subsection{Method \code{get_spectra()}}{
@@ -645,8 +598,7 @@ Gets spectra from each analysis.
   minIntensityMS1 = 0,
   minIntensityMS2 = 0,
   raw_spectra = FALSE,
-  loaded_spectra = TRUE,
-  runParallel = FALSE
+  loaded_spectra = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -717,65 +669,18 @@ data (i.e., MS1 data).}
 \item{\code{minIntensityMS2}}{Numeric value with the minimum intensity of level 2
 data (i.e., MS2 data).}
 
-\item{\code{raw_spectra}}{Logical of length one. Set to \code{TRUE} for parsing raw spectra not spectra
-results/processed.}
+\item{\code{raw_spectra}}{Logical of length one. Set to \code{TRUE} for parsing raw spectra not spectra results/processed.}
 
-\item{\code{loaded_spectra}}{Logical of length one. Set to \code{TRUE} for parsing loaded spectra not
-spectra from raw data files.}
-
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
+\item{\code{loaded_spectra}}{Logical of length one. Set to \code{TRUE} for parsing loaded spectra not raw data files.}
 }
 \if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_chromatograms"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_chromatograms}{}}}
-\subsection{Method \code{get_chromatograms()}}{
-Gets chromatograms from each analysis.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_chromatograms(
-  analyses = NULL,
-  chromatograms = NULL,
-  minIntensity = NULL,
-  raw_chromatograms = FALSE,
-  loaded_chromatograms = TRUE,
-  runParallel = FALSE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-
-\item{\code{chromatograms}}{A character or integer vector with the ID name or the index of the chromatograms to extract.}
-
-\item{\code{minIntensity}}{Numeric value with the minimum intensity.}
-
-\item{\code{raw_chromatograms}}{Logical of length one. Set to \code{TRUE} for parsing raw chromatograms not chromatograms
-results/processed.}
-
-\item{\code{loaded_chromatograms}}{Logical of length one. Set to \code{TRUE} for parsing loaded chromatograms not
-chromatograms from raw data files.}
-
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A data.table with chromatogram/s.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_eic"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_eic}{}}}
 \subsection{Method \code{get_spectra_eic()}}{
-Gets extract ion chromatograms (EIC) from the analyses based on targets as a data.table.
+Gets spectra extract ion chromatograms (EIC) from the analyses based on targets as a data.table.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_eic(
   analyses = NULL,
@@ -786,8 +691,7 @@ Gets extract ion chromatograms (EIC) from the analyses based on targets as a dat
   ppm = 20,
   sec = 60,
   millisec = 5,
-  id = NULL,
-  runParallel = FALSE
+  id = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -840,10 +744,6 @@ in milliseconds.}
 \item{\code{id}}{Character with the same length as \emph{m/z} and retention time
 targets to be used as identifier/s. When not given, the id is built as a
 combination of the \emph{m/z} and retention time ranges or values.}
-
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -852,7 +752,7 @@ overhead.}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_ms1"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_ms1}{}}}
 \subsection{Method \code{get_spectra_ms1()}}{
-Gets MS1 data from the analyses based on targets as a data.frame.
+Gets level 1 spectra from the analyses based on targets as a data.frame.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_ms1(
   analyses = NULL,
@@ -867,8 +767,7 @@ Gets MS1 data from the analyses based on targets as a data.frame.
   mzClust = 0.003,
   presence = 0.8,
   verbose = FALSE,
-  minIntensity = 1000,
-  runParallel = FALSE
+  minIntensity = 1000
 )}\if{html}{\out{</div>}}
 }
 
@@ -933,10 +832,6 @@ present in all spectra) for traces during clustering of spectra.}
 result messages. When \code{FALSE}, some messages are omitted.}
 
 \item{\code{minIntensity}}{Numeric value with the minimum intensity.}
-
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -945,7 +840,7 @@ overhead.}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_ms2"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_ms2}{}}}
 \subsection{Method \code{get_spectra_ms2()}}{
-Gets MS2 data from the analyses based on targets as a data.frame.
+Gets level 2 spectra from the analyses based on targets as a data.frame.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_ms2(
   analyses = NULL,
@@ -961,8 +856,7 @@ Gets MS2 data from the analyses based on targets as a data.frame.
   mzClust = 0.005,
   presence = 0.8,
   verbose = FALSE,
-  minIntensity = 0,
-  runParallel = FALSE
+  minIntensity = 0
 )}\if{html}{\out{</div>}}
 }
 
@@ -1031,12 +925,84 @@ present in all spectra) for traces during clustering of spectra.}
 result messages. When \code{FALSE}, some messages are omitted.}
 
 \item{\code{minIntensity}}{Numeric value with the minimum intensity.}
-
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
 }
 \if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-get_chromatograms_number"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_chromatograms_number}{}}}
+\subsection{Method \code{get_chromatograms_number()}}{
+Gets the number of chromatograms in each analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_chromatograms_number(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A character vector.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-get_chromatograms_headers"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_chromatograms_headers}{}}}
+\subsection{Method \code{get_chromatograms_headers()}}{
+Gets the chromatograms headers data.table of each analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_chromatograms_headers(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A data.table.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-get_chromatograms"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_chromatograms}{}}}
+\subsection{Method \code{get_chromatograms()}}{
+Gets chromatograms from each analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_chromatograms(
+  analyses = NULL,
+  chromatograms = NULL,
+  minIntensity = NULL,
+  raw_chromatograms = FALSE,
+  loaded_chromatograms = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+
+\item{\code{chromatograms}}{A character or integer vector with the ID name or the index of the chromatograms to extract.}
+
+\item{\code{minIntensity}}{Numeric value with the minimum intensity.}
+
+\item{\code{raw_chromatograms}}{Logical of length one. Set to \code{TRUE} for parsing raw chromatograms not chromatograms
+results/processed.}
+
+\item{\code{loaded_chromatograms}}{Logical of length one. Set to \code{TRUE} for parsing loaded chromatograms not
+chromatograms from raw data files.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A data.table with chromatogram/s.
 }
 }
 \if{html}{\out{<hr>}}
@@ -1156,8 +1122,7 @@ Gets a data.table with feature EICs following the targets from the arguments.
   rtExpand = 120,
   mzExpand = NULL,
   filtered = FALSE,
-  loaded = TRUE,
-  runParallel = FALSE
+  loaded = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -1222,10 +1187,6 @@ expanding left and right the mass range.}
 
 \item{\code{loaded}}{Logical. When \code{TRUE} and if available, previously
 loaded data will be used instead of extraction from raw data.}
-
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1254,8 +1215,7 @@ arguments.
   minIntensity = 1000,
   verbose = FALSE,
   filtered = FALSE,
-  loadedMS1 = TRUE,
-  runParallel = FALSE
+  loadedMS1 = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -1336,10 +1296,6 @@ result messages. When \code{FALSE}, some messages are omitted.}
 
 \item{\code{loadedMS1}}{Logical. When \code{TRUE} and if available, previously loaded MS1
 data is used instead of extraction from raw data.}
-
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1367,8 +1323,7 @@ arguments.
   minIntensity = 0,
   verbose = FALSE,
   filtered = FALSE,
-  loadedMS2 = TRUE,
-  runParallel = FALSE
+  loadedMS2 = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -1443,10 +1398,6 @@ result messages. When \code{FALSE}, some messages are omitted.}
 
 \item{\code{loadedMS2}}{Logical. When \code{TRUE} and if available, previously loaded MS2
 data is used instead of extraction from raw data.}
-
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1564,8 +1515,7 @@ Gets a data.table of averaged MS1 spectrum for feature groups in the analyses.
   minIntensity = 1000,
   groupBy = "groups",
   verbose = FALSE,
-  filtered = FALSE,
-  runParallel = FALSE
+  filtered = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -1657,10 +1607,6 @@ replicates, respectively.}
 result messages. When \code{FALSE}, some messages are omitted.}
 
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
-
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1690,8 +1636,7 @@ Gets a data.table of averaged MS2 spectrum for feature groups in the analyses.
   minIntensity = 100,
   groupBy = "groups",
   verbose = FALSE,
-  filtered = FALSE,
-  runParallel = FALSE
+  filtered = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -1777,10 +1722,6 @@ replicates, respectively.}
 result messages. When \code{FALSE}, some messages are omitted.}
 
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
-
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1972,7 +1913,6 @@ and time (\code{sec}) deviations.
   mzClust = 0.003,
   presence = 0.8,
   minIntensity = 0,
-  runParallel = FALSE,
   filtered = FALSE,
   onGroups = TRUE
 )}\if{html}{\out{</div>}}
@@ -2049,10 +1989,6 @@ present in all spectra) for traces during clustering of spectra.}
 
 \item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
-
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
 
 \item{\code{onGroups}}{Logical of length one. When TRUE results are return based on
@@ -2109,10 +2045,10 @@ Invisible.
 \if{html}{\out{<a id="method-MassSpecEngine-add_files"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-add_files}{}}}
 \subsection{Method \code{add_files()}}{
-Adds analyses based on mzML/mzXML files. Note that when adding new mzML/mzXML
-files, any existing grouping or features are removed.
+Adds analyses based on mzML/mzXML files. Note that when adding new mzML/mzXML files, any existing
+grouping or features are removed.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_files(files = NULL, runParallel = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_files(files = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -2124,10 +2060,6 @@ and \emph{blank} with the full file path of \emph{mzML} or \emph{mzXML} file/s
 (character), the replicate group name (character) and the associated blank
 replicate group name (character). Note the file paths must have the extension
 \emph{.mzML} or \emph{.mzXML}.}
-
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2178,31 +2110,6 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-add_spectra"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_spectra}{}}}
-\subsection{Method \code{add_spectra()}}{
-Adds spectra to analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_spectra(spectra = NULL, replace = TRUE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{spectra}}{A data.table with spectra from MS analyses as obtained
-by the method \code{get_spectra()} with columns "scan", "mz" and "intensity".
-Other columns might be added from specific processing algorithms!}
-
-\item{\code{replace}}{Logical. When \code{TRUE}, existing spectra are replaced by
-the new features.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-add_results"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-add_results}{}}}
 \subsection{Method \code{add_results()}}{
@@ -2242,8 +2149,7 @@ Loads all spectra from all analyses.
   allTraces = TRUE,
   isolationWindow = 1.3,
   minIntensityMS1 = 0,
-  minIntensityMS2 = 0,
-  runParallel = FALSE
+  minIntensityMS2 = 0
 )}\if{html}{\out{</div>}}
 }
 
@@ -2313,10 +2219,6 @@ data (i.e., MS1 data).}
 
 \item{\code{minIntensityMS2}}{Numeric value with the minimum intensity of level 2
 data (i.e., MS2 data).}
-
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2330,17 +2232,13 @@ Invisible.
 \subsection{Method \code{load_chromatograms()}}{
 Loads all chromatograms from all analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$load_chromatograms(chromatograms = NULL, runParallel = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$load_chromatograms(chromatograms = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{chromatograms}}{A character or integer vector with the ID name or the index of the chromatograms to extract.}
-
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2785,7 +2683,6 @@ Plots raw spectra in 3D for given MS analyses.
   isolationWindow = 1.3,
   minIntensityMS1 = 0,
   minIntensityMS2 = 0,
-  runParallel = FALSE,
   legendNames = TRUE,
   colorBy = "analyses",
   xVal = "rt",
@@ -2863,10 +2760,6 @@ data (i.e., MS1 data).}
 \item{\code{minIntensityMS2}}{Numeric value with the minimum intensity of level 2
 data (i.e., MS2 data).}
 
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
-
 \item{\code{legendNames}}{A character vector with the same length as the targets.}
 
 \item{\code{colorBy}}{A string of length 1. One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.}
@@ -2907,7 +2800,6 @@ Plots spectra given MS analyses.
   minIntensityMS2 = 0,
   raw_spectra = FALSE,
   loaded_spectra = TRUE,
-  runParallel = FALSE,
   averaged = TRUE,
   baseline = FALSE,
   smoothed = TRUE,
@@ -2994,10 +2886,6 @@ data (i.e., MS2 data).}
 
 \item{\code{loaded_spectra}}{Logical of length one. Set to \code{TRUE} for parsing loaded spectra not
 spectra from raw data files.}
-
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
 
 \item{\code{averaged}}{Logical of length one. Set to \code{TRUE} for plotting the averaged spectra.}
 
@@ -3140,12 +3028,12 @@ A plot.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-plot_xic"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_xic}{}}}
-\subsection{Method \code{plot_xic()}}{
-Plots extract ion chromatograms (EIC) and \emph{m/z} vs retention time from the analyses.
+\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_xic"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra_xic}{}}}
+\subsection{Method \code{plot_spectra_xic()}}{
+Plots spectra extract ion chromatograms (EIC) and \emph{m/z} vs retention time from the analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_xic(
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_xic(
   analyses = NULL,
   mass = NULL,
   mz = NULL,
@@ -3155,7 +3043,6 @@ Plots extract ion chromatograms (EIC) and \emph{m/z} vs retention time from the 
   sec = 60,
   millisec = 5,
   id = NULL,
-  runParallel = FALSE,
   legendNames = NULL,
   plotTargetMark = TRUE,
   targetsMark = NULL,
@@ -3215,10 +3102,6 @@ in milliseconds.}
 targets to be used as identifier/s. When not given, the id is built as a
 combination of the \emph{m/z} and retention time ranges or values.}
 
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
-
 \item{\code{legendNames}}{A character vector with the same length as the targets.}
 
 \item{\code{plotTargetMark}}{Logical, set to \code{TRUE} to plot a target mark.}
@@ -3241,12 +3124,12 @@ for all selected analyses.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-plot_eic"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_eic}{}}}
-\subsection{Method \code{plot_eic()}}{
-Plots extract ion chromatograms (EIC) from the analyses based on targets.
+\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_eic"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra_eic}{}}}
+\subsection{Method \code{plot_spectra_eic()}}{
+Plots spectra extract ion chromatograms (EIC) from the analyses based on targets.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_eic(
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_eic(
   analyses = NULL,
   mass = NULL,
   mz = NULL,
@@ -3256,7 +3139,6 @@ Plots extract ion chromatograms (EIC) from the analyses based on targets.
   sec = 60,
   millisec = 5,
   id = NULL,
-  runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
@@ -3318,10 +3200,6 @@ in milliseconds.}
 targets to be used as identifier/s. When not given, the id is built as a
 combination of the \emph{m/z} and retention time ranges or values.}
 
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
-
 \item{\code{legendNames}}{A character vector with the same length as the targets.}
 
 \item{\code{title}}{A string with the title.}
@@ -3347,12 +3225,12 @@ using \pkg{plotly}.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-plot_tic"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_tic}{}}}
-\subsection{Method \code{plot_tic()}}{
-Plots the total ion chromatogram (TIC) of the analyses.
+\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_tic"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra_tic}{}}}
+\subsection{Method \code{plot_spectra_tic()}}{
+Plots the spectra total ion chromatogram (TIC) of each analysis.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_tic(
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_tic(
   analyses = NULL,
   levels = c(1, 2),
   title = NULL,
@@ -3399,12 +3277,12 @@ using \pkg{plotly}.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-plot_bpc"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_bpc}{}}}
-\subsection{Method \code{plot_bpc()}}{
-Plots the base peak chromatogram (BPC) of the analyses.
+\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_bpc"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra_bpc}{}}}
+\subsection{Method \code{plot_spectra_bpc()}}{
+Plots the spectra base peak chromatogram (BPC) of each analysis.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_bpc(
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_bpc(
   analyses = NULL,
   levels = c(1, 2),
   title = NULL,
@@ -3454,12 +3332,12 @@ A plot.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-plot_ms2"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_ms2}{}}}
-\subsection{Method \code{plot_ms2()}}{
-Plots MS2 spectra from the analyses based on targets.
+\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_ms2"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra_ms2}{}}}
+\subsection{Method \code{plot_spectra_ms2()}}{
+Plots level 2 spectra from the analyses based on targets.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_ms2(
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_ms2(
   analyses = NULL,
   mass = NULL,
   mz = NULL,
@@ -3474,7 +3352,6 @@ Plots MS2 spectra from the analyses based on targets.
   presence = 0.8,
   verbose = FALSE,
   minIntensity = 0,
-  runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
@@ -3548,10 +3425,6 @@ result messages. When \code{FALSE}, some messages are omitted.}
 
 \item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
-
 \item{\code{legendNames}}{A character vector with the same length as the targets.}
 
 \item{\code{title}}{A string with the title.}
@@ -3566,12 +3439,12 @@ using \pkg{plotly}.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-plot_ms1"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_ms1}{}}}
-\subsection{Method \code{plot_ms1()}}{
-Plots MS1 spectra from the analyses based on targets.
+\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_ms1"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra_ms1}{}}}
+\subsection{Method \code{plot_spectra_ms1()}}{
+Plots level 1 spectra from the analyses based on targets.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_ms1(
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_ms1(
   analyses = NULL,
   mass = NULL,
   mz = NULL,
@@ -3585,7 +3458,6 @@ Plots MS1 spectra from the analyses based on targets.
   presence = 0.8,
   verbose = FALSE,
   minIntensity = 1000,
-  runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
@@ -3656,10 +3528,6 @@ result messages. When \code{FALSE}, some messages are omitted.}
 
 \item{\code{minIntensity}}{Numeric value with the minimum intensity.}
 
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
-
 \item{\code{legendNames}}{A character vector with the same length as the targets.}
 
 \item{\code{title}}{A string with the title.}
@@ -3695,7 +3563,6 @@ Plots features from analyses.
   mzExpand = NULL,
   loaded = TRUE,
   filtered = FALSE,
-  runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
@@ -3769,10 +3636,6 @@ loaded data will be used instead of extraction from raw data.}
 
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
 
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
-
 \item{\code{legendNames}}{A character vector with the same length as the targets.}
 
 \item{\code{title}}{A string with the title.}
@@ -3795,9 +3658,6 @@ non interactive plotting.}
 using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-plot.
 }
 }
 \if{html}{\out{<hr>}}
@@ -3904,15 +3764,12 @@ using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A plot.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-plot_features_ms1"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_features_ms1}{}}}
 \subsection{Method \code{plot_features_ms1()}}{
-Plots MS1 spectra from features in the analyses.
+Plots level 1 spectra from features in the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_features_ms1(
   analyses = NULL,
@@ -3932,7 +3789,6 @@ Plots MS1 spectra from features in the analyses.
   verbose = FALSE,
   filtered = FALSE,
   loadedMS1 = TRUE,
-  runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
@@ -4018,10 +3874,6 @@ result messages. When \code{FALSE}, some messages are omitted.}
 \item{\code{loadedMS1}}{Logical. When \code{TRUE} and if available, previously loaded MS1
 data is used instead of extraction from raw data.}
 
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
-
 \item{\code{legendNames}}{A character vector with the same length as the targets.}
 
 \item{\code{title}}{A string with the title.}
@@ -4034,15 +3886,12 @@ using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A plot.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-plot_features_ms2"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_features_ms2}{}}}
 \subsection{Method \code{plot_features_ms2()}}{
-Plots MS2 spectra from features in the analyses.
+Plots level 2 spectra from features in the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_features_ms2(
   analyses = NULL,
@@ -4061,7 +3910,6 @@ Plots MS2 spectra from features in the analyses.
   verbose = FALSE,
   filtered = FALSE,
   loadedMS2 = TRUE,
-  runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
@@ -4141,10 +3989,6 @@ result messages. When \code{FALSE}, some messages are omitted.}
 \item{\code{loadedMS2}}{Logical. When \code{TRUE} and if available, previously loaded MS2
 data is used instead of extraction from raw data.}
 
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
-
 \item{\code{legendNames}}{A character vector with the same length as the targets.}
 
 \item{\code{title}}{A string with the title.}
@@ -4156,23 +4000,6 @@ default) or \code{replicates}.}
 using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A plot.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-plot_alignment"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_alignment}{}}}
-\subsection{Method \code{plot_alignment()}}{
-Plots the results from the retention time alignment across analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_alignment()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-A plot with the retention time alignment differences
-for each sample.
 }
 }
 \if{html}{\out{<hr>}}
@@ -4193,7 +4020,6 @@ Plots feature groups EIC.
   rtExpand = 15,
   mzExpand = 0.005,
   filtered = FALSE,
-  runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
@@ -4260,10 +4086,6 @@ expanding left and right the mass range.}
 
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
 
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
-
 \item{\code{legendNames}}{A character vector with the same length as the targets.}
 
 \item{\code{title}}{A string with the title.}
@@ -4287,15 +4109,12 @@ using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A plot.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-plot_groups_ms1"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_groups_ms1}{}}}
 \subsection{Method \code{plot_groups_ms1()}}{
-Plots MS1 spectra from feature groups in the analyses.
+Plots level 1 spectra from feature groups in the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_groups_ms1(
   groups = NULL,
@@ -4318,7 +4137,6 @@ Plots MS1 spectra from feature groups in the analyses.
   groupBy = "groups",
   verbose = FALSE,
   filtered = FALSE,
-  runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
@@ -4415,10 +4233,6 @@ result messages. When \code{FALSE}, some messages are omitted.}
 
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
 
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
-
 \item{\code{legendNames}}{A character vector with the same length as the targets.}
 
 \item{\code{title}}{A string with the title.}
@@ -4431,15 +4245,12 @@ using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A plot.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-plot_groups_ms2"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_groups_ms2}{}}}
 \subsection{Method \code{plot_groups_ms2()}}{
-Plots MS1 spectra from feature groups in the analyses.
+Plots level 1 spectra from feature groups in the analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_groups_ms2(
   groups = NULL,
@@ -4461,7 +4272,6 @@ Plots MS1 spectra from feature groups in the analyses.
   groupBy = "groups",
   verbose = FALSE,
   filtered = FALSE,
-  runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
@@ -4552,10 +4362,6 @@ result messages. When \code{FALSE}, some messages are omitted.}
 
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
 
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
-
 \item{\code{legendNames}}{A character vector with the same length as the targets.}
 
 \item{\code{title}}{A string with the title.}
@@ -4568,16 +4374,13 @@ using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A plot.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-plot_groups_overview"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_groups_overview}{}}}
 \subsection{Method \code{plot_groups_overview()}}{
-Method to give an overview of the EIC, alignment and intensity variance
-from features within target feature groups.
+Method to give an overview of the EIC, alignment and intensity variance from features within
+target feature groups.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_groups_overview(
   analyses = NULL,
@@ -4593,7 +4396,6 @@ from features within target feature groups.
   mzExpand = 0.005,
   loaded = TRUE,
   filtered = FALSE,
-  runParallel = FALSE,
   legendNames = NULL,
   title = NULL,
   heights = c(0.35, 0.5, 0.15)
@@ -4660,10 +4462,6 @@ loaded data will be used instead of extraction from raw data.}
 
 \item{\code{filtered}}{Logical. When \code{TRUE}, filtered features/groups are considered.}
 
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
-
 \item{\code{legendNames}}{A character vector with the same length as the targets.}
 
 \item{\code{title}}{A string with the title.}
@@ -4673,22 +4471,16 @@ the first, second and third plot, respectively.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A plot.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-plot_internal_standards_qc"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_internal_standards_qc}{}}}
 \subsection{Method \code{plot_internal_standards_qc()}}{
-Plots the quality control assessment of internal standards.
+Plots the quality control assessment of the internal standards.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_internal_standards_qc()}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-A plot.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-plot_suspects"></a>}}
@@ -4717,7 +4509,6 @@ Plots suspects.
   rtExpand = 120,
   mzExpand = 0.005,
   loaded = TRUE,
-  runParallel = FALSE,
   colorBy = "targets"
 )}\if{html}{\out{</div>}}
 }
@@ -4727,8 +4518,7 @@ Plots suspects.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
-\item{\code{database}}{A data.frame with at least the columns name
-and mass, indicating the name and neutral monoisotopic
+\item{\code{database}}{A data.frame with at least the columns name and mass, indicating the name and neutral monoisotopic
 mass of the suspect targets.}
 
 \item{\code{features}}{A character vector with the feature id/s or a data.frame or
@@ -4805,24 +4595,16 @@ expanding left and right the mass range.}
 \item{\code{loaded}}{Logical. When \code{TRUE} and if available, previously
 loaded data will be used instead of extraction from raw data.}
 
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
-
 \item{\code{colorBy}}{A string of length 1. One of \code{analyses}, \code{targets} (the
 default) or \code{replicates}.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-The \code{ppm} and \code{sec} which indicate the
-mass (im ppm) and time (in seconds) deviations applied during the
+The \code{ppm} and \code{sec} which indicate the mass (im ppm) and time (in seconds) deviations applied during the
 screening.
 }
 
-\subsection{Returns}{
-A plot.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-map_isotopes"></a>}}
@@ -4930,9 +4712,6 @@ default) or \code{replicates}.}
 using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A plot.
 }
 }
 \if{html}{\out{<hr>}}

@@ -102,7 +102,7 @@ ms2$chrom_peaks
 
 
 
-ms2$plot_tic()
+ms2$plot_spectra_tic()
 
 
 
@@ -112,7 +112,7 @@ ms2$chrom_peaks
 
 ms2$plot_chrom_peaks(colorBy = "targets+analyses")
 
-ms2$plot_ms1(analyses = 6, rt = data.table(rtmin = 342 - 2.5, rtmax = 342 + 2.5), presence = 0.1, mzClust = 0.01, minIntensity = 50, interactive = FALSE)
+ms2$plot_spectra_ms1(analyses = 6, rt = data.table(rtmin = 342 - 2.5, rtmax = 342 + 2.5), presence = 0.1, mzClust = 0.01, minIntensity = 50, interactive = FALSE)
 
 dps <- Settings_deconvolute_spectra_charges_StreamFind(
   rtmin = 342 - 2.5,

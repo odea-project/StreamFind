@@ -30,7 +30,7 @@ headers <- ProjectHeaders(
 # Create the "Engine"
 ms <- MassSpecEngine$new(files = files, headers = headers)
 
-ms$plot_bpc(analyses = c(4, 10), levels = 1)
+ms$plot_spectra_bpc(analyses = c(4, 10), levels = 1)
 
 
 
@@ -166,7 +166,7 @@ ms$plot_internal_standards_qc()
 
 
 # EIC for given targets
-ms$plot_eic(
+ms$plot_spectra_eic(
   mass = 233.1131, # Naproxen-d3
   rt = 1169,
   ppm = 10,

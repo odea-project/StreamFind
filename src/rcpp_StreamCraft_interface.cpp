@@ -5,7 +5,6 @@
 #define STREAMCRAFT_HEADER_ONLY
 #include "StreamCraft/src/StreamCraft_lib.hpp"
 
-// [[Rcpp::plugins(openmp)]]
 // [[Rcpp::export]]
 Rcpp::List rcpp_parse_ms_analysis_v2(std::string file_path) {
   
@@ -19,7 +18,7 @@ Rcpp::List rcpp_parse_ms_analysis_v2(std::string file_path) {
   
   Rcpp::List empty_list;
   
-  sc::MS_ANALYSIS ana = file_path;
+  sc::MS_ANALYSIS ana(file_path);
   
   list_out["name"] = ana.file_name;
   
@@ -90,10 +89,10 @@ Rcpp::List rcpp_parse_ms_analysis_v2(std::string file_path) {
     hdl2["id"] = hd2.id;
     hdl2["array_length"] = hd2.array_length;
     hdl2["polarity"] = hd2.polarity;
-    hdl2["precursor_mz"] = hd2.precursor_mz;
-    hdl2["product_mz"] = hd2.product_mz;
-    hdl2["activation_type"] = hd2.activation_type;
-    hdl2["activation_ce"] = hd2.activation_ce;
+    hdl2["pre_mz"] = hd2.precursor_mz;
+    hdl2["pro_mz"] = hd2.product_mz;
+    // hdl2["activation_type"] = hd2.activation_type;
+    hdl2["pre_ce"] = hd2.activation_ce;
     
     hdl2.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
     
@@ -104,10 +103,6 @@ Rcpp::List rcpp_parse_ms_analysis_v2(std::string file_path) {
   }
   
   list_out["chromatograms"] = empty_df;
-  
-  list_out["features_eic"] = empty_list;
-  
-  list_out["features"] = empty_df;
   
   list_out["metadata"] = empty_list;
   
@@ -121,7 +116,7 @@ Rcpp::List rcpp_parse_ms_spectra_headers_v2(std::string file_path) {
   
   Rcpp::List list_out;
   
-  sc::MS_ANALYSIS ana = file_path;
+  sc::MS_ANALYSIS ana(file_path);
   
   if (ana.get_number_spectra() == 0) return list_out;
   
@@ -151,8 +146,8 @@ Rcpp::List rcpp_parse_ms_spectra_headers_v2(std::string file_path) {
   list_out["pre_mzhigh"] = headers.window_mzhigh;
   list_out["pre_scan"] = headers.precursor_scan;
   list_out["pre_mz"] = headers.precursor_mz;
-  list_out["precursor_charge"] = headers.precursor_charge;
-  list_out["precursor_intensity"] = headers.precursor_intensity;
+  list_out["pre_charge"] = headers.precursor_charge;
+  list_out["pre_intensity"] = headers.precursor_intensity;
   // list_out["activation_type"] = headers.activation_type;
   list_out["pre_ce"] = headers.activation_ce;
   
@@ -166,7 +161,7 @@ Rcpp::List rcpp_parse_ms_chromatograms_headers_v2(std::string file_path) {
   
   Rcpp::List list_out;
   
-  sc::MS_ANALYSIS ana = file_path;
+  sc::MS_ANALYSIS ana(file_path);
   
   if (ana.get_number_chromatograms() == 0) return list_out;
   
@@ -176,10 +171,10 @@ Rcpp::List rcpp_parse_ms_chromatograms_headers_v2(std::string file_path) {
   list_out["id"] = headers.id;
   list_out["array_length"] = headers.array_length;
   list_out["polarity"] = headers.polarity;
-  list_out["precursor_mz"] = headers.precursor_mz;
-  list_out["product_mz"] = headers.product_mz;
-  list_out["activation_type"] = headers.activation_type;
-  list_out["activation_ce"] = headers.activation_ce;
+  list_out["pre_mz"] = headers.precursor_mz;
+  list_out["pro_mz"] = headers.product_mz;
+  // list_out["activation_type"] = headers.activation_type;
+  list_out["pre_ce"] = headers.activation_ce;
   
   list_out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
   
@@ -193,43 +188,53 @@ Rcpp::List rcpp_parse_ms_spectra_v2(Rcpp::List analysis,
                                     double minIntensityMS1,
                                     double minIntensityMS2) {
   
-  // levels, targets, minIntensityMS1, minIntensityMS2
-  
   Rcpp::DataFrame empty_df;
   empty_df.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
   
   Rcpp::List out;
   
-  const std::string& file = analysis["file"];
+  const std::string file = analysis["file"];
   
   const Rcpp::List& hd = analysis["spectra_headers"];
   
-  const std::vector<int>& polarity = hd["polarity"];
-  const std::vector<int>& level = hd["level"];
-  const std::vector<double>& pre_mz = hd["pre_mz"];
-  const std::vector<double>& pre_mzlow = hd["pre_mzlow"];
-  const std::vector<double>& pre_mzhigh = hd["pre_mzhigh"];
-  const std::vector<double>& pre_ce = hd["pre_ce"];
-  const std::vector<double>& rt = hd["rt"];
-  const std::vector<double>& drift = hd["drift"];
+  const std::vector<int> polarity = hd["polarity"];
+  const std::vector<int> level = hd["level"];
+  const std::vector<double> pre_mz = hd["pre_mz"];
+  // const std::vector<double> pre_mzlow = hd["pre_mzlow"];
+  // const std::vector<double> pre_mzhigh = hd["pre_mzhigh"];
+  const std::vector<double> pre_ce = hd["pre_ce"];
+  const std::vector<double> rt = hd["rt"];
+  const std::vector<double> drift = hd["drift"];
+  
+  const double minIntLv1 = minIntensityMS1;
+  const double minIntLv2 = minIntensityMS2;
 
   const int number_spectra = rt.size();
   
-  std::vector<bool> filter(level.size(), false);
+  const int number_levels = levels.size();
+  
+  if (number_spectra == 0) return empty_df;
+  
+  std::vector<bool> level_filter(number_spectra, false);
   
   for (int i = 0; i < number_spectra; i++) {
-    if (std::find(levels.begin(), levels.end(), level[i]) != levels.end()) {
-      filter[i] = true;
+    for (int j = 0; j < number_levels; j++) {
+      if (level[i] == levels[j]) {
+        level_filter[i] = true;
+        break;
+      }
     }
   }
   
-  sc::MS_ANALYSIS ana = file;
+  const int n_tg = targets.nrow();
+  
+  sc::MS_ANALYSIS ana(file);
 
-  if (targets.nrow() == 0) {
+  if (n_tg == 0) {
     
     std::vector<int> indices;
     
-    for (int i = 0; i < number_spectra; i++) if (filter[i]) indices.push_back(i);
+    for (int i = 0; i < number_spectra; i++) if (level_filter[i]) indices.push_back(i);
     
     const std::vector<std::vector<std::vector<double>>> spectra = ana.get_spectra(indices);
     
@@ -245,13 +250,11 @@ Rcpp::List rcpp_parse_ms_spectra_v2(Rcpp::List analysis,
     
     for (int i = 0; i < number_spectra; i++) total_traces += spectra[i][0].size();
     
-    // add elements to the output list to hold the total_traces from each [i][j] spectra array
-    
     std::vector<int> polarity_out(total_traces);
     std::vector<int> level_out(total_traces);
     std::vector<double> pre_mz_out(total_traces);
-    std::vector<double> pre_mzlow_out(total_traces);
-    std::vector<double> pre_mzhigh_out(total_traces);
+    // std::vector<double> pre_mzlow_out(total_traces);
+    // std::vector<double> pre_mzhigh_out(total_traces);
     std::vector<double> pre_ce_out(total_traces);
     std::vector<double> rt_out(total_traces);
     std::vector<double> drift_out(total_traces);
@@ -269,8 +272,8 @@ Rcpp::List rcpp_parse_ms_spectra_v2(Rcpp::List analysis,
         polarity_out[trace] = polarity[i];
         level_out[trace] = level[i];
         pre_mz_out[trace] = pre_mz[i];
-        pre_mzlow_out[trace] = pre_mzlow[i];
-        pre_mzhigh_out[trace] = pre_mzhigh[i];
+        // pre_mzlow_out[trace] = pre_mzlow[i];
+        // pre_mzhigh_out[trace] = pre_mzhigh[i];
         pre_ce_out[trace] = pre_ce[i];
         rt_out[trace] = rt[i];
         drift_out[trace] = drift[i];
@@ -284,8 +287,8 @@ Rcpp::List rcpp_parse_ms_spectra_v2(Rcpp::List analysis,
     out["polarity"] = polarity_out;
     out["level"] = level_out;
     out["pre_mz"] = pre_mz_out;
-    out["pre_mzlow"] = pre_mzlow_out;
-    out["pre_mzhigh"] = pre_mzhigh_out;
+    // out["pre_mzlow"] = pre_mzlow_out;
+    // out["pre_mzhigh"] = pre_mzhigh_out;
     out["pre_ce"] = pre_ce_out;
     out["rt"] = rt_out;
     out["drift"] = drift_out;
@@ -297,199 +300,289 @@ Rcpp::List rcpp_parse_ms_spectra_v2(Rcpp::List analysis,
     
   } else {
     
+    std::vector<int> tg_idx(n_tg);
+    std::iota(tg_idx.begin(), tg_idx.end(), 0);
     
+    const std::vector<std::string> df_id = targets["id"];
+    std::vector<int> dummy_level(n_tg);
+    const std::vector<int> df_polarity = targets["polarity"];
+    const std::vector<bool> df_precursor = targets["precursor"];
+    const std::vector<double> df_mzmin = targets["mzmin"];
+    const std::vector<double> df_mzmax = targets["mzmax"];
+    const std::vector<double> df_rtmin = targets["rtmin"];
+    const std::vector<double> df_rtmax = targets["rtmax"];
+    const std::vector<double> df_driftmin = targets["driftmin"];
+    const std::vector<double> df_driftmax = targets["driftmax"];
     
-    
-    
-    
-    
-    
-    
-    
-    
+    sc::MS_TARGETS tg = {
+      tg_idx,
+      df_id,
+      dummy_level,
+      df_polarity,
+      df_precursor,
+      df_mzmin,
+      df_mzmax,
+      df_rtmin,
+      df_rtmax,
+      df_driftmin,
+      df_driftmax
+    };
+
+    std::set<int> idx;
+
+    for (int i = 0; i < n_tg; i++) {
+      for (int j = 0; j < number_spectra; j++) {
+
+        if (level_filter[j]) {
+          if ((rt[j] >= tg.rtmin[i] && rt[j] <= tg.rtmax[i]) || tg.rtmax[i] == 0) {
+            if (polarity[j] == tg.polarity[i]) {
+              if ((drift[j] >= tg.driftmin[i] && drift[j] <= tg.driftmax[i]) || tg.driftmax[i] == 0) {
+                if (tg.precursor[i]) {
+                  if ((pre_mz[j] >= tg.mzmin[i] && pre_mz[j] <= tg.mzmax[i]) || tg.mzmax[i] == 0) {
+                    idx.insert(j);
+                  }
+                } else {
+                  idx.insert(j);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    std::vector<int> idx_vector(idx.begin(), idx.end());
+
+    std::sort(idx_vector.begin(), idx_vector.end());
+
+    if (idx_vector.size() == 0) return empty_df;
+
+    const std::vector<std::vector<std::vector<double>>> spectra = ana.get_spectra(idx_vector);
+
+    const int number_spectra_targets = spectra.size();
+
+    if (number_spectra_targets == 0) return empty_df;
+
+    std::vector<std::vector<std::vector<double>>> res(n_tg);
+
+    std::vector<std::vector<int>> res_idx(n_tg);
+
+    // #pragma omp parallel for
+    for (int i = 0; i < n_tg; i++) {
+
+      res[i].resize(2);
+
+      for (int j = 0; j < number_spectra_targets; j++) {
+
+        const int& tg_polarity = polarity[idx_vector[j]];
+        const int& tg_level = level[idx_vector[j]];
+        const double& tg_pre_mz = pre_mz[idx_vector[j]];
+        // const double& tg_pre_mzlow = pre_mzlow[idx_vector[j]];
+        // const double& tg_pre_mzhigh = pre_mzhigh[idx_vector[j]];
+        const double& tg_rt = rt[idx_vector[j]];
+        const double& tg_drift = drift[idx_vector[j]];
+
+        if (tg.polarity[i] == tg_polarity) {
+
+          if (tg.rtmax[i] == 0 || (tg_rt >= tg.rtmin[i] && tg_rt <= tg.rtmax[i])) {
+
+            if (tg.driftmax[i] == 0 || (tg_drift >= tg.driftmin[i] && tg_drift <= tg.driftmax[i])) {
+
+              if (tg.precursor[i]) {
+
+                if ((tg_pre_mz >= tg.mzmin[i] && tg_pre_mz <= tg.mzmax[i]) || tg.mzmax[i] == 0) {
+
+                  const std::vector<double>& mzj = spectra[j][0];
+                  const std::vector<double>& intj = spectra[j][1];
+
+                  const int number_points = mzj.size();
+
+                  if (number_points == 0) continue;
+
+                  for (int k = 0; k < number_points; k++) {
+
+                    if (intj[k] >= minIntLv2 && tg_level == 2) {
+                      res[i][0].push_back(mzj[k]);
+                      res[i][1].push_back(intj[k]);
+                      res_idx[i].push_back(idx_vector[j]);
+                    }
+                  }
+                }
+              } else {
+
+                const std::vector<double>& mzj = spectra[j][0];
+                const std::vector<double>& intj = spectra[j][1];
+
+                const int number_points = mzj.size();
+
+                if (number_points == 0) continue;
+
+                for (int k = 0; k < number_points; k++) {
+
+                  if ((mzj[k] >= tg.mzmin[i] && mzj[k] <= tg.mzmax[i]) || tg.mzmax[i] == 0) {
+
+                    if ((intj[k] >= minIntLv2 && tg_level == 2) || (intj[k] >= minIntLv1 && tg_level == 1)) {
+                      res[i][0].push_back(mzj[k]);
+                      res[i][1].push_back(intj[k]);
+                      res_idx[i].push_back(idx_vector[j]);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    int total_traces = 0;
+
+    for (int i = 0; i < n_tg; i++) total_traces += res[i][0].size();
+
+    if (total_traces == 0) return empty_df;
+
+    std::vector<std::string> id_out(total_traces);
+    std::vector<int> polarity_out(total_traces);
+    std::vector<int> level_out(total_traces);
+    std::vector<double> pre_mz_out(total_traces);
+    // std::vector<double> pre_mzlow_out(total_traces);
+    // std::vector<double> pre_mzhigh_out(total_traces);
+    std::vector<double> pre_ce_out(total_traces);
+    std::vector<double> rt_out(total_traces);
+    std::vector<double> drift_out(total_traces);
+    std::vector<double> mz_out(total_traces);
+    std::vector<double> intensity_out(total_traces);
+
+    int trace = 0;
+
+    for (int i = 0; i < n_tg; i++) {
+
+      const int n = res[i][0].size();
+
+      if (n == 0) continue;
+
+      for (int j = 0; j < n; j++) {
+
+        id_out[trace] = tg.id[i];
+        polarity_out[trace] = polarity[res_idx[i][j]];
+        level_out[trace] = level[res_idx[i][j]];
+        pre_mz_out[trace] = pre_mz[res_idx[i][j]];
+        // pre_mzlow_out[trace] = pre_mzlow[res_idx[i][j]];
+        // pre_mzhigh_out[trace] = pre_mzhigh[res_idx[i][j]];
+        pre_ce_out[trace] = pre_ce[res_idx[i][j]];
+        rt_out[trace] = rt[res_idx[i][j]];
+        drift_out[trace] = drift[res_idx[i][j]];
+        mz_out[trace] = res[i][0][j];
+        intensity_out[trace] = res[i][1][j];
+
+        trace += 1;
+      }
+    }
+
+    out["id"] = id_out;
+    out["polarity"] = polarity_out;
+    out["level"] = level_out;
+    out["pre_mz"] = pre_mz_out;
+    // out["pre_mzlow"] = pre_mzlow_out;
+    // out["pre_mzhigh"] = pre_mzhigh_out;
+    out["pre_ce"] = pre_ce_out;
+    out["rt"] = rt_out;
+    out["drift"] = drift_out;
+    out["mz"] = mz_out;
+    out["intensity"] = intensity_out;
+
+    out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+
+    return out;
   }
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  // collapse the nested spectra into a data frame adding the rt for each level 1 spectra
-  
-  
-  
-  
-  
-  // if (result) {
-  //   pugi::xml_node root = doc.document_element();
-  //   
-  //   Rcpp::List run = analysis["spectra_headers"];
-  //   Rcpp::IntegerVector scan = run["scan"];
-  //   
-  //   if (scan.size() == 0) {
-  //     xml_utils::spectraHeaders headers = xml_utils::parse_spectra_headers(root);
-  //     Rcpp::List run = xml_utils::spectraHeaders_to_list(headers);
-  //     Rcpp::IntegerVector scan = run["scan"];
-  //   }
-  //   
-  //   if (scan.size() > 0) {
-  //     const Rcpp::IntegerVector& polarity = run["polarity"];
-  //     const Rcpp::IntegerVector& level = run["level"];
-  //     const Rcpp::IntegerVector& pre_scan = run["pre_scan"];
-  //     const Rcpp::NumericVector& pre_mz = run["pre_mz"];
-  //     const Rcpp::NumericVector& pre_mzlow = run["pre_mzlow"];
-  //     const Rcpp::NumericVector& pre_mzhigh = run["pre_mzhigh"];
-  //     const Rcpp::NumericVector& pre_ce = run["pre_ce"];
-  //     const Rcpp::NumericVector& rt = run["rt"];
-  //     const Rcpp::NumericVector& drift = run["drift"];
-  //     
-  //     Rcpp::ListOf<Rcpp::NumericMatrix> bins;
-  //     
-  //     // returns all spectra when index is NA
-  //     if (Rcpp::IntegerVector::is_na(index[0])) {
-  //       
-  //       index = run["index"];
-  //       bins = xml_utils::parse_spectra(root);
-  //       
-  //       // return only selected scans, by adapting the index vector
-  //     } else {
-  //       bins = xml_utils::parse_partial_spectra(root, index);
-  //     }
-  //     
-  //     int number_spectra = bins.size();
-  //     
-  //     if (number_spectra > 0) {
-  //       
-  //       int n_cols_bin = 0;
-  //       
-  //       for (int c = 0; c < number_spectra; c++) {
-  //         n_cols_bin = bins[c].ncol();
-  //         if (n_cols_bin > 0) {
-  //           break;
-  //         }
-  //       }
-  //       
-  //       if (n_cols_bin == 0) return empty_df;
-  //       
-  //       int n_cols = n_cols_bin + 11;
-  //       
-  //       int n_rows = 0;
-  //       for (int i = 0; i < number_spectra; i++) {
-  //         n_rows += bins[i].nrow();
-  //       }
-  //       
-  //       Rcpp::NumericMatrix out_mat(n_rows, n_cols_bin);
-  //       
-  //       Rcpp::IntegerVector index_out(n_rows);
-  //       Rcpp::IntegerVector scan_out(n_rows);
-  //       Rcpp::IntegerVector polarity_out(n_rows);
-  //       Rcpp::IntegerVector level_out(n_rows);
-  //       Rcpp::IntegerVector pre_scan_out(n_rows);
-  //       Rcpp::NumericVector pre_mz_out(n_rows);
-  //       Rcpp::NumericVector pre_mzlow_out(n_rows);
-  //       Rcpp::NumericVector pre_mzhigh_out(n_rows);
-  //       Rcpp::NumericVector pre_ce_out(n_rows);
-  //       Rcpp::NumericVector rt_out(n_rows);
-  //       Rcpp::NumericVector drift_out(n_rows);
-  //       
-  //       // bool has_ion_mobility = run["has_ion_mobility"];
-  //       // Rcpp::NumericVector drift_out;
-  //       // 
-  //       // if (has_ion_mobility) {
-  //       //   
-  //       // }
-  //       
-  //       int b = 0;
-  //       int rowOffset = 0;
-  //       
-  //       for (int i : index) {
-  //         
-  //         Rcpp::NumericMatrix bin = bins[b];
-  //         
-  //         int bin_rows = bin.nrow();
-  //         
-  //         if (bin_rows > 0) {
-  //           for (int r = 0; r < bin_rows; r++) {
-  //             
-  //             int offset = rowOffset + r;
-  //             
-  //             index_out[offset] = i;
-  //             scan_out[offset] = scan[i];
-  //             polarity_out[offset] = polarity[i];
-  //             level_out[offset] = level[i];
-  //             pre_scan_out[offset] = pre_scan[i];
-  //             pre_ce_out[offset] = pre_ce[i];
-  //             pre_mz_out[offset] = pre_mz[i];
-  //             pre_mzlow_out[offset] = pre_mzlow[i];
-  //             pre_mzhigh_out[offset] = pre_mzhigh[i];
-  //             rt_out[offset] = rt[i];
-  //             drift_out[offset] = drift[i];
-  //             
-  //             for (int j = 0; j < n_cols_bin; j++) {
-  //               out_mat(offset, j) = bin(r, j);
-  //             }
-  //           }
-  //           
-  //           rowOffset += bin_rows;
-  //         }
-  //         b += 1;
-  //       }
-  //       
-  //       Rcpp::List output(n_cols);
-  //       
-  //       output[0] = index_out;
-  //       output[1] = scan_out;
-  //       output[2] = polarity_out;
-  //       output[3] = level_out;
-  //       output[4] = pre_scan_out;
-  //       output[5] = pre_ce_out;
-  //       output[6] = pre_mz_out;
-  //       output[7] = pre_mzlow_out;
-  //       output[8] = pre_mzhigh_out;
-  //       output[9] = rt_out;
-  //       output[10] = drift_out;
-  //       
-  //       for (int i = 0; i < n_cols_bin; ++i) {
-  //         output[i + 11] = out_mat(Rcpp::_, i);
-  //       }
-  //       
-  //       const Rcpp::CharacterVector cols = {
-  //         "index",
-  //         "scan",
-  //         "polarity",
-  //         "level",
-  //         "pre_scan",
-  //         "pre_ce",
-  //         "pre_mz",
-  //         "pre_mzlow",
-  //         "pre_mzhigh",
-  //         "rt",
-  //         "drift",
-  //         "mz",
-  //         "intensity"
-  //       };
-  //       
-  //       output.attr("names") = cols;
-  //       
-  //       output.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-  //       
-  //       return output;
-  //       
-  //     } else {
-  //       Rcpp::Rcout << "\u2717 Requested spectra not found! " << std::endl;
-  //     }
-  //   } else {
-  //     Rcpp::Rcout << "\u2717 File does not have spectra! " << std::endl;
-  //   }
-  // } else {
-  //   Rcpp::Rcout << "\u2717 XML file could not be opened! " << result.description() << std::endl;
-  // }
-  
   return empty_df;
+}
+
+// [[Rcpp::export]]
+Rcpp::List rcpp_parse_ms_chromatograms_v2(Rcpp::List analysis, std::vector<int> idx) {
+  
+  Rcpp::DataFrame empty_df;
+  empty_df.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+  
+  Rcpp::List out;
+  
+  const std::string file = analysis["file"];
+  
+  const Rcpp::List& hd = analysis["chromatograms_headers"];
+  
+  const std::vector<int> index = hd["index"];
+  const std::vector<std::string> id = hd["id"];
+  const std::vector<int> polarity = hd["polarity"];
+  const std::vector<double> pre_mz = hd["pre_mz"];
+  const std::vector<double> pre_ce = hd["pre_ce"];
+  const std::vector<double> pro_mz = hd["pro_mz"];
+  
+  const int number_chromatograms = index.size();
+  
+  if (number_chromatograms == 0) return empty_df;
+  
+  sc::MS_ANALYSIS ana(file);
+  
+  if (idx.size() == 0) idx = index;
+  
+  const std::vector<std::vector<std::vector<double>>> chromatograms = ana.get_chromatograms(idx);
+  
+  const int number_extracted_chromatograms = chromatograms.size();
+  
+  if (number_extracted_chromatograms == 0) return empty_df;
+  
+  int total_traces = 0;
+  
+  for (int i = 0; i < number_extracted_chromatograms; i++) total_traces += chromatograms[i][0].size();
+  
+  if (total_traces == 0) return empty_df;
+    
+  std::vector<int> index_out(total_traces);
+  std::vector<std::string> id_out(total_traces);
+  std::vector<int> polarity_out(total_traces);
+  std::vector<double> pre_mz_out(total_traces);
+  std::vector<double> pre_ce_out(total_traces);
+  std::vector<double> pro_mz_out(total_traces);
+  std::vector<double> rt_out(total_traces);
+  std::vector<double> intensity_out(total_traces);
+    
+  int trace = 0;
+    
+  for (int i = 0; i < number_extracted_chromatograms; i++) {
+    
+    const std::vector<double>& rtj = chromatograms[i][0];
+    const std::vector<double>& intj = chromatograms[i][1];
+ 
+    const int n = rtj.size();
+    
+    if (n == 0) continue;
+      
+    for (int j = 0; j < n; j++) {
+      
+      index_out[trace] = index[i];
+      id_out[trace] = id[i];
+      polarity_out[trace] = polarity[i];
+      pre_mz_out[trace] = pre_mz[i];
+      pre_ce_out[trace] = pre_ce[i];
+      pro_mz_out[trace] = pro_mz[i];
+      rt_out[trace] = rtj[j];
+      intensity_out[trace] = intj[j];
+      
+      trace += 1;
+    }
+  }
+    
+  out["index"] = index_out;
+  out["id"] = id_out;
+  out["polarity"] = polarity_out;
+  out["pre_mz"] = pre_mz_out;
+  out["pre_ce"] = pre_ce_out;
+  out["pro_mz"] = pro_mz_out;
+  out["rt"] = rt_out;
+  out["intensity"] = intensity_out;
+  
+  out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+  
+  return out;
 }

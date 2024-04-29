@@ -189,12 +189,12 @@ List of function elements to access specific reference help pages.</p></dd>
 <li><p><a href="#method-MassSpecData-has_groups"><code>MassSpecData$has_groups()</code></a></p></li>
 <li><p><a href="#method-MassSpecData-plot_spectra"><code>MassSpecData$plot_spectra()</code></a></p></li>
 <li><p><a href="#method-MassSpecData-plot_chromatograms"><code>MassSpecData$plot_chromatograms()</code></a></p></li>
-<li><p><a href="#method-MassSpecData-plot_xic"><code>MassSpecData$plot_xic()</code></a></p></li>
-<li><p><a href="#method-MassSpecData-plot_eic"><code>MassSpecData$plot_eic()</code></a></p></li>
-<li><p><a href="#method-MassSpecData-plot_tic"><code>MassSpecData$plot_tic()</code></a></p></li>
-<li><p><a href="#method-MassSpecData-plot_bpc"><code>MassSpecData$plot_bpc()</code></a></p></li>
-<li><p><a href="#method-MassSpecData-plot_ms2"><code>MassSpecData$plot_ms2()</code></a></p></li>
-<li><p><a href="#method-MassSpecData-plot_ms1"><code>MassSpecData$plot_ms1()</code></a></p></li>
+<li><p><a href="#method-MassSpecData-plot_spectra_xic"><code>MassSpecData$plot_spectra_xic()</code></a></p></li>
+<li><p><a href="#method-MassSpecData-plot_spectra_eic"><code>MassSpecData$plot_spectra_eic()</code></a></p></li>
+<li><p><a href="#method-MassSpecData-plot_spectra_tic"><code>MassSpecData$plot_spectra_tic()</code></a></p></li>
+<li><p><a href="#method-MassSpecData-plot_spectra_bpc"><code>MassSpecData$plot_spectra_bpc()</code></a></p></li>
+<li><p><a href="#method-MassSpecData-plot_spectra_ms2"><code>MassSpecData$plot_spectra_ms2()</code></a></p></li>
+<li><p><a href="#method-MassSpecData-plot_spectra_ms1"><code>MassSpecData$plot_spectra_ms1()</code></a></p></li>
 <li><p><a href="#method-MassSpecData-plot_features"><code>MassSpecData$plot_features()</code></a></p></li>
 <li><p><a href="#method-MassSpecData-map_features"><code>MassSpecData$map_features()</code></a></p></li>
 <li><p><a href="#method-MassSpecData-plot_features_ms1"><code>MassSpecData$plot_features_ms1()</code></a></p></li>
@@ -4007,12 +4007,12 @@ using <span class="pkg">plotly</span>.</p></dd>
 <p>A plot.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecData-plot_xic"></a><div class="section">
-<h3 id="method-plot-xic-">Method <code>plot_xic()</code><a class="anchor" aria-label="anchor" href="#method-plot-xic-"></a></h3>
+</div><p></p><hr><a id="method-MassSpecData-plot_spectra_xic"></a><div class="section">
+<h3 id="method-plot-xic-">Method <code>plot_spectra_xic()</code><a class="anchor" aria-label="anchor" href="#method-plot-xic-"></a></h3>
 <p>Plots extract ion chromatograms (EIC) and <em>m/z</em> vs
 retention time from the analyses.</p><div class="section">
 <h4 id="usage-96">Usage<a class="anchor" aria-label="anchor" href="#usage-96"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">plot_xic</span><span class="op">(</span></span>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">plot_spectra_xic</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mass <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mz <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -4143,11 +4143,11 @@ for all selected analyses.</p></dd>
 <p>An interactive plot.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecData-plot_eic"></a><div class="section">
-<h3 id="method-plot-eic-">Method <code>plot_eic()</code><a class="anchor" aria-label="anchor" href="#method-plot-eic-"></a></h3>
+</div><p></p><hr><a id="method-MassSpecData-plot_spectra_eic"></a><div class="section">
+<h3 id="method-plot-eic-">Method <code>plot_spectra_eic()</code><a class="anchor" aria-label="anchor" href="#method-plot-eic-"></a></h3>
 <p>Plots extract ion chromatograms (EIC) from the analyses based on targets.</p><div class="section">
 <h4 id="usage-97">Usage<a class="anchor" aria-label="anchor" href="#usage-97"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">plot_eic</span><span class="op">(</span></span>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">plot_spectra_eic</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mass <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mz <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -4287,11 +4287,11 @@ using <span class="pkg">plotly</span>.</p></dd>
 <p>A plot.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecData-plot_tic"></a><div class="section">
-<h3 id="method-plot-tic-">Method <code>plot_tic()</code><a class="anchor" aria-label="anchor" href="#method-plot-tic-"></a></h3>
+</div><p></p><hr><a id="method-MassSpecData-plot_spectra_tic"></a><div class="section">
+<h3 id="method-plot-tic-">Method <code>plot_spectra_tic()</code><a class="anchor" aria-label="anchor" href="#method-plot-tic-"></a></h3>
 <p>Plots the total ion chromatogram (TIC) of the analyses.</p><div class="section">
 <h4 id="usage-98">Usage<a class="anchor" aria-label="anchor" href="#usage-98"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">plot_tic</span><span class="op">(</span></span>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">plot_spectra_tic</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,</span>
 <span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -4361,11 +4361,11 @@ using <span class="pkg">plotly</span>.</p></dd>
 <p>A plot.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecData-plot_bpc"></a><div class="section">
-<h3 id="method-plot-bpc-">Method <code>plot_bpc()</code><a class="anchor" aria-label="anchor" href="#method-plot-bpc-"></a></h3>
+</div><p></p><hr><a id="method-MassSpecData-plot_spectra_bpc"></a><div class="section">
+<h3 id="method-plot-bpc-">Method <code>plot_spectra_bpc()</code><a class="anchor" aria-label="anchor" href="#method-plot-bpc-"></a></h3>
 <p>Plots the base peak chromatogram (BPC) of the analyses.</p><div class="section">
 <h4 id="usage-99">Usage<a class="anchor" aria-label="anchor" href="#usage-99"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">plot_bpc</span><span class="op">(</span></span>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">plot_spectra_bpc</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,</span>
 <span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -4435,11 +4435,11 @@ using <span class="pkg">plotly</span>.</p></dd>
 <p>A plot.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecData-plot_ms2"></a><div class="section">
-<h3 id="method-plot-ms-">Method <code>plot_ms2()</code><a class="anchor" aria-label="anchor" href="#method-plot-ms-"></a></h3>
+</div><p></p><hr><a id="method-MassSpecData-plot_spectra_ms2"></a><div class="section">
+<h3 id="method-plot-ms-">Method <code>plot_spectra_ms2()</code><a class="anchor" aria-label="anchor" href="#method-plot-ms-"></a></h3>
 <p>Plots MS2 spectra from the analyses based on targets.</p><div class="section">
 <h4 id="usage-100">Usage<a class="anchor" aria-label="anchor" href="#usage-100"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">plot_ms2</span><span class="op">(</span></span>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">plot_spectra_ms2</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mass <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mz <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -4587,11 +4587,11 @@ using <span class="pkg">plotly</span>.</p></dd>
 <p>A plot.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecData-plot_ms1"></a><div class="section">
-<h3 id="method-plot-ms--1">Method <code>plot_ms1()</code><a class="anchor" aria-label="anchor" href="#method-plot-ms--1"></a></h3>
+</div><p></p><hr><a id="method-MassSpecData-plot_spectra_ms1"></a><div class="section">
+<h3 id="method-plot-ms--1">Method <code>plot_spectra_ms1()</code><a class="anchor" aria-label="anchor" href="#method-plot-ms--1"></a></h3>
 <p>Plots MS1 spectra from the analyses based on targets.</p><div class="section">
 <h4 id="usage-101">Usage<a class="anchor" aria-label="anchor" href="#usage-101"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">plot_ms1</span><span class="op">(</span></span>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecData</span><span class="op">$</span><span class="fu">plot_spectra_ms1</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mass <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mz <span class="op">=</span> <span class="cn">NULL</span>,</span>

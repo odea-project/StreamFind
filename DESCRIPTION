@@ -38,7 +38,13 @@ Imports:
     methods,
     checkmate,
     pracma,
-    baseline
+    baseline,
+    digest,
+    DBI,
+    RSQLite,
+    withr,
+    fst,
+    R.utils
 Suggests: 
     knitr,
     kableExtra,

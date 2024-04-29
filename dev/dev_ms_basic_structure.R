@@ -598,7 +598,7 @@ ms$plot_groups_ms1(
   colorBy = "targets+polarities"
 )
 #
-# ms$plot_eic(mass = diu, rt = diu_rt, colorBy = "targets+polarities")
+# ms$plot_spectra_eic(mass = diu, rt = diu_rt, colorBy = "targets+polarities")
 #
 # ms$get_groups_ms1(
 #   mass = diu, rt = diu_rt,
@@ -843,7 +843,7 @@ ms$get_spectra_ms2(analyses = 4, mz = 267.0702, rt = 1007.222, ppm = 20, sec = 3
 ms$get_spectra_ms2(analyses = 5, mz = 267.0702, rt = 1007.222, ppm = 20, sec = 30, mzClust = 0.01, isInAllSpectra = TRUE)
 
 
-ms$plot_ms1(analyses = 4,
+ms$plot_spectra_ms1(analyses = 4,
   mz = data.frame(mzmin = 239, mzmax = 245, rtmin = 1156, rtmax = 1158),
   isInAllSpectra = TRUE, verbose = TRUE
 )

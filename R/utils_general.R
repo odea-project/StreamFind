@@ -254,33 +254,188 @@
   cor_list
 }
 
-
-#' @title .make_hash
-#' 
-#' @description X
+#' @title recursiveApplyDT
+#'
+#' @description Recursive apply function for data.tables from patRoon package to use within the CoreEngine.
 #' 
 #' @noRd
+.recursiveApplyDT <- function(l, f, appl = lapply, ...) {
+  rec <- function(x) {
+    if (isS4(x)) {
+      for (sn in slotNames(x)) slot(x, sn) <- rec(slot(x, sn))
+    } else if (is.list(x)) {
+      if (is.data.table(x)) {
+        x <- f(x)
+      } else {
+        x <- "attributes<-"(appl(x, rec, ...), attributes(x))
+      }
+    }
+    return(x)
+  }
+  
+  rec(l)
+}
+
+#' @title prepareDTForComparison
 #' 
+#' @description From patRoon package to use within the CoreEngine.
+#' 
+#' @noRd
+.prepareDTForComparison <- function(dt) {
+  setattr(dt, ".internal.selfref", NULL)
+  setindex(dt, NULL)
+}
+
+#' @title .make_hash_for_cache
+#' 
+#' @description From patRoon package to use within the CoreEngine.
+#' 
+#' @noRd
 .make_hash <- function(...) {
   
+  args <- list(...)
+  
+  args <- .recursiveApplyDT(args, function(dt) .prepareDTForComparison(copy(dt)), sapply, simplify = FALSE)
+  
+  return(digest::digest(args, algo = "xxhash64"))
 }
+
+#' @title .get_cache_file
+#' 
+#' @description From patRoon package to use within the CoreEngine.
+#' 
+#' @noRd
+.openCacheDB <- function(file) {
+  DBI::dbConnect(RSQLite::SQLite(), file)
+}
+
+#' @title .get_cache_file
+#' 
+#' @description From patRoon package to use within the CoreEngine.
+#' 
+#' @noRd
+.closeCacheDB <- function(db) {
+  DBI::dbDisconnect(db)
+}
+
+#' @title .get_cache_file
+#' 
+#' @description From patRoon package to use within the CoreEngine.
+#' 
+#' @noRd
+.openCacheDBScope <- withr::local_(function(x, file) .openCacheDB(file), function(x) .closeCacheDB(x))
 
 #' @title .save_cache_data
 #' 
-#' @description X
+#' @description From patRoon package to use within the CoreEngine.
 #' 
 #' @noRd
-#' 
-.save_cache_data <- function() {
+.dbWithWriteTransaction <- function(conn, code) {
+  DBI::dbExecute(conn, "BEGIN IMMEDIATE")
+  rollback <- function(e) {
+    call <- DBI::dbExecute(conn, "ROLLBACK")
+    if (identical(call, FALSE)) {
+      stop(paste(
+        "Failed to rollback transaction.",
+        "Tried to roll back because an error occurred:",
+        conditionMessage(e)
+      ), call. = FALSE)
+    }
+    if (inherits(e, "error")) stop(e)
+  }
   
+  tryCatch({res <- force(code);  DBI::dbExecute(conn, "COMMIT"); res }, db_abort = rollback, error = rollback, interrupt = rollback)
 }
 
-#' @title .load_cache_data
+#' @title .save_cache_backend
 #' 
-#' @description X
+#' @description From patRoon package to use within the CoreEngine.
 #' 
 #' @noRd
 #' 
-.load_cache_data <- function() {
+.save_cache_backend <- function(file, category, data, hash) {
   
+  db <- .openCacheDBScope(file = file)
+  
+  RSQLite::sqliteSetBusyHandler(db, 300 * 1000) # UNDONE: make configurable?
+  
+  df <- data.frame(d = I(list(fst::compress_fst(serialize(data, NULL, xdr = FALSE)))))
+  
+  .dbWithWriteTransaction(db, {
+    DBI::dbExecute(db, sprintf("CREATE TABLE IF NOT EXISTS %s (hash TEXT UNIQUE, data BLOB)", category))
+    
+    DBI::dbExecute(db, sprintf("INSERT OR IGNORE INTO %s VALUES ('%s', :d)", category, hash), params = df)
+    DBI::dbExecute(db, sprintf("UPDATE %s SET data=(:d) WHERE changes()=0 AND hash='%s'", category, hash), params = df)
+    
+    if (DBI::dbGetQuery(db, sprintf("SELECT Count(*) FROM %s", category))[[1]] > 100000) {
+      DBI::dbExecute(db, sprintf("DELETE FROM %s WHERE ROWID in (SELECT min(ROWID) FROM %s)", category, category))
+    }
+  })
+}
+
+#' @title .load_cache_backend
+#' 
+#' @description From patRoon package to use within the CoreEngine.
+#' 
+#' @noRd
+#' 
+.load_cache_backend <- function(file, category, hashes) {
+  
+  db <- .openCacheDBScope(file = file)
+  
+  RSQLite::sqliteSetBusyHandler(db, 300 * 1000)
+  
+  ret <- NULL
+  
+  if (nrow(DBI::dbGetQuery(db, sprintf("SELECT 1 FROM sqlite_master WHERE type='table' AND name='%s'", category))) > 0) {
+    
+    if (length(hashes) == 1) {
+      df <- DBI::dbGetQuery(db, sprintf("SELECT data FROM %s WHERE hash='%s'", category, hashes))
+      
+      if (nrow(df) > 0) ret <- lapply(df$data, function(x) unserialize(fst::decompress_fst(x)))
+    
+    } else {
+      df <- DBI::dbGetQuery(db, sprintf("SELECT hash,data FROM %s WHERE hash IN (%s)", category, paste0(sprintf("'%s'", hashes), collapse = ",")))
+      
+      if (nrow(df) > 0) {
+        ret <- lapply(df$data, function(x) unserialize(fst::decompress_fst(x)))
+        
+        if (length(ret) > 0) {
+          names(ret) <- df$hash
+          ret <- ret[match(hashes, names(ret), nomatch = 0)]
+        }
+      }
+    }
+    
+    if (!is.null(ret) && length(ret) == 1) ret <- ret[[1]]
+  }
+  
+  ret <- .recursiveApplyDT(ret, setalloccol, sapply, simplify = FALSE)
+  
+  ret
+}
+
+#' @title .load_chache
+#' 
+#' @description Cache interface adapted from patRoon package.
+#' 
+#' @noRd
+.load_chache = function(category, ...) {
+  file <- "cache.sqlite"
+  list_out <- list()
+  hash <- .make_hash(...)
+  data <- .load_cache_backend(file, category, hash)
+  list_out[["hash"]] <- hash
+  list_out[["data"]] <- data
+  list_out
+}
+
+#' @title .save_cache
+#' 
+#' @description Cache interface adapted from patRoon package.
+#' 
+#' @noRd
+.save_cache = function(category, data, hash) {
+  file <- "cache.sqlite"
+  .save_cache_backend(file, category, data, hash)
 }

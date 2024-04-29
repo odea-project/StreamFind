@@ -2,6 +2,8 @@
 #' @importFrom Rcpp sourceCpp
 #'
 #' @importFrom utils packageVersion head
+#' 
+#' @importFrom R.utils printf
 #'
 #' @importFrom Rdpack reprompt
 #'
@@ -12,6 +14,7 @@
 #' @importFrom data.table is.data.table rbindlist as.data.table setnames
 #' @importFrom data.table setorder copy fread data.table `:=` setcolorder
 #' @importFrom data.table between setDTthreads CJ setnafill setkey
+#' @importFrom data.table setattr setindex setalloccol
 #'
 #' @importFrom parallelly supportsMulticore
 #'
@@ -46,7 +49,8 @@
 #' @importFrom plotly group_by
 #'
 #' @importFrom checkmate assert_count assert_double assert_choice assert_logical assert_vector assert_number
-#' @importFrom checkmate test_count test_double test_choice test_logical test_vector test_number
+#' @importFrom checkmate test_count test_double test_choice test_logical test_vector test_number 
+#' @importFrom checkmate assertString assertFlag
 #'
 #' @importFrom utils txtProgressBar setTxtProgressBar
 #' 
@@ -55,6 +59,16 @@
 #' @importFrom baseline baseline
 #' 
 #' @importFrom pracma findpeaks
+#' 
+#' @importFrom digest digest
+#' 
+#' @importFrom DBI dbConnect dbDisconnect dbExecute dbListTables
+#' 
+#' @importFrom RSQLite SQLite
+#' 
+#' @importFrom withr local_
+#' 
+#' @importFrom fst compress_fst
 #'
 #' @noRd
 NULL

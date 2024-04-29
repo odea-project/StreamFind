@@ -32,11 +32,8 @@ RamanAnalysis <- function(name = NA_character_,
   ))
 
   if (validate.RamanAnalysis(x)) {
-    
     x <- structure(x, class = c("RamanAnalysis", "Analysis"))
-    
     x
-    
   } else {
     NULL
   }

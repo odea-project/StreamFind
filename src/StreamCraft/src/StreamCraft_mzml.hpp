@@ -79,8 +79,8 @@ namespace sc {
         int extract_spec_scan() const;
         int extract_spec_array_length() const;
         int extract_spec_level() const;
-        std::string extract_spec_mode() const;
-        std::string extract_spec_polarity() const;
+        int extract_spec_mode() const;
+        int extract_spec_polarity() const;
         double extract_spec_lowmz() const;
         double extract_spec_highmz() const;
         double extract_spec_bpmz() const;
@@ -117,7 +117,7 @@ namespace sc {
         int extract_index() const;
         std::string extract_id() const;
         int extract_array_length() const;
-        std::string extract_polarity() const;
+        int extract_polarity() const;
         double extract_precursor_mz() const;
         std::string extract_activation_type() const;
         double extract_activation_ce() const;
@@ -164,8 +164,8 @@ namespace sc {
         std::vector<int> get_spectra_scan_number(std::vector<int> indices = {}) const;
         std::vector<int> get_spectra_array_length(std::vector<int> indices = {}) const;
         std::vector<int> get_spectra_level(std::vector<int> indices = {}) const;
-        std::vector<std::string> get_spectra_mode(std::vector<int> indices = {}) const;
-        std::vector<std::string> get_spectra_polarity(std::vector<int> indices = {}) const;
+        std::vector<int> get_spectra_mode(std::vector<int> indices = {}) const;
+        std::vector<int> get_spectra_polarity(std::vector<int> indices = {}) const;
         std::vector<double> get_spectra_lowmz(std::vector<int> indices = {}) const;
         std::vector<double> get_spectra_highmz(std::vector<int> indices = {}) const;
         std::vector<double> get_spectra_bpmz(std::vector<int> indices = {}) const;
@@ -179,8 +179,8 @@ namespace sc {
         std::vector<double> get_spectra_precursor_window_mzlow(std::vector<int> indices = {}) const;
         std::vector<double> get_spectra_precursor_window_mzhigh(std::vector<int> indices = {}) const;
         std::vector<double> get_spectra_collision_energy(std::vector<int> indices = {}) const;
-        std::vector<std::string> get_polarity() const;
-        std::vector<std::string> get_mode() const;
+        std::vector<int> get_polarity() const;
+        std::vector<int> get_mode() const;
         std::vector<int> get_level() const;
         double get_min_mz() const;
         double get_max_mz() const;

@@ -93,7 +93,7 @@ patRoon::clearCache("all")
 # StreamCraft interface --------------------------------------------------------
 
 
-ana <- parse_MassSpecAnalysis(files[1])
+ana <- parse_MassSpecAnalysis(files[10])
 
 validate(ana[[1]])
 
@@ -113,11 +113,20 @@ validate(ana[[1]])
 
 
 
+rcpp_parse_ms_analysis_v2(ms_files[1])
+
+
+
+
 # spectra ----------------------------------------------------------------------
 
-ms <- MassSpecEngine$new(files = files[1:3])
+ms <- MassSpecEngine$new(files = files[7:12])
+
+ms$get_chromatograms()
 
 ms$get_spectra()
+
+ms$plot_spectra_eic(mass = carb, rt = carb_rt, ppm = 10, sec = 15, colorBy = "analyses")
 
 ms$get_rt_end()
 
@@ -127,13 +136,9 @@ ms$get_spectra_polarity()
 
 ms$get_spectra_headers()
 
-
-
-
-
 ms$get_spectra_tic()
 
-ms$plot_bpc(levels = 1, colorBy = "replicates")
+ms$plot_spectra_bpc(levels = 1, colorBy = "replicates")
 
 ms$find_features()
 
@@ -189,11 +194,11 @@ write.csv(srm$get_chromatograms(), "chromatograms.csv", row.names = FALSE)
 
 
 
-ms$plot_eic(mass = diu, rt = diu_rt, ppm = 5, sec = 10)
+ms$plot_spectra_eic(mass = diu, rt = diu_rt, ppm = 5, sec = 10)
 
-# ms$plot_bpc(levels = 1, colorBy = "analyses", interactive = F)
+# ms$plot_spectra_bpc(levels = 1, colorBy = "analyses", interactive = F)
 
-ms$plot_eic(mass = afin_db$mass[66], colorBy = "targets")
+ms$plot_spectra_eic(mass = afin_db$mass[66], colorBy = "targets")
 
 spec <- ms$get_spectra(mass = afin_db$mass[66], rt = 358, ppm = 3, sec = 10, levels = 1, allTraces = FALSE)
 spec$unique_id <- paste0(spec$analysis, "_", spec$id, "_", spec$polarity)
@@ -225,11 +230,11 @@ ms$get_spectra(mass = afin_db$mass[2])
 
 
 
-ms$plot_eic(mz = afin_db$mass[2] + 1.00726, colorBy = "targets")
+ms$plot_spectra_eic(mz = afin_db$mass[2] + 1.00726, colorBy = "targets")
 
 ms$get_spectra_ms2(mass = afin_db$mass[2])
 
-ms$plot_bpc(levels = 1, colorBy = "analyses")
+ms$plot_spectra_bpc(levels = 1, colorBy = "analyses")
 
 
 
@@ -249,17 +254,17 @@ ms$get_spectra(analyses = c(2, 5), mass = diu, rt = diu_rt, sec = 120, levels = 
 
 # ms$plot_spectra(mass = diu, rt = diu_rt, colorBy = "analyses")
 
-# ms$plot_ms2(analyses = c(2, 5), mass = diu, rt = diu_rt, colorBy = "targets", interactive = T)
+# ms$plot_spectra_ms2(analyses = c(2, 5), mass = diu, rt = diu_rt, colorBy = "targets", interactive = T)
 
-ms$plot_ms1(analyses = c(2, 5), mass = diu, rt = diu_rt, interactive = F)
+ms$plot_spectra_ms1(analyses = c(2, 5), mass = diu, rt = diu_rt, interactive = F)
 
 ms$get_spectra_ms1(analyses = c(2, 5), mass = diu, rt = diu_rt)
 
 ms$get_spectra_tic()
 
-ms$plot_tic(levels = 1, colorBy = "polarities", interactive = F)
+ms$plot_spectra_tic(levels = 1, colorBy = "polarities", interactive = F)
 
-ms$plot_eic(mass = neutral_targets, colorBy = "targets", interactive = F, legendNames = TRUE)
+ms$plot_spectra_eic(mass = neutral_targets, colorBy = "targets", interactive = F, legendNames = TRUE)
 
 #ms$get_spectra_eic(mass = diu)
 

@@ -16,24 +16,14 @@ MassSpecAnalysis(
   file = NA_character_,
   format = NA_character_,
   type = NA_character_,
-  time_stamp = NA_character_,
   spectra_number = NA_integer_,
   spectra_mode = NA_character_,
   spectra_levels = NA_integer_,
-  mz_low = NA_real_,
-  mz_high = NA_real_,
-  rt_start = NA_real_,
-  rt_end = NA_real_,
-  polarity = NA_integer_,
-  has_ion_mobility = FALSE,
-  chromatograms_number = NA_integer_,
-  software = data.table(),
-  instrument = data.table(),
-  run = data.table(),
+  spectra_headers = data.table(),
   spectra = data.table(),
+  chromatograms_number = NA_integer_,
+  chromatograms_headers = data.table(),
   chromatograms = data.table(),
-  features_eic = list(),
-  features = data.table(),
   metadata = list()
 )
 
@@ -50,71 +40,29 @@ parse_MassSpecAnalysis(files = NULL, runParallel = FALSE)
 \arguments{
 \item{name}{\emph{mzML} or \emph{mzXML} file name without extension.}
 
-\item{replicate}{Character with length one, representing the analysis
-replicate group name.}
+\item{replicate}{Character with length one, representing the analysis replicate group name.}
 
-\item{blank}{Character with length one, representing the associated blank
-replicate group name.}
+\item{blank}{Character with length one, representing the associated blank replicate group name.}
 
 \item{file}{\emph{mzML} or \emph{mzXML} full file path (with extension).}
 
 \item{format}{Character with length one. One of \emph{mzML} or \emph{mzXML}.}
 
-\item{type}{Character with length one. Possible values as "MS" for only MS1
-spectral data, "MS/MS" for tandem spectral data (i.e., MS1 and MS2) or "SRM"
-for selected reaction monitoring data (i.e., no spectra only chromatograms).}
-
-\item{time_stamp}{Character with length one, representing the start time and
-date of the data acquisition.}
+\item{type}{Character with length one defining the type of analysis.}
 
 \item{spectra_number}{Integer with the number of spectra in the file.}
 
-\item{spectra_mode}{Character with length one. Possible values are \emph{centroid}
-, \emph{profile} or \code{NA} for centroided data, data in profile mode or mode not
-defined or absence spectra, respectively.}
-
-\item{spectra_levels}{Integer vector with the number of levels in the
-spectra (i.e., 1 or 1 and 2).}
-
-\item{mz_low}{Numeric length one with the lowest \emph{m/z} value detected
-in the spectra, in Da.}
-
-\item{mz_high}{Numeric length one with the highest \emph{m/z} value detected
-in the spectra, in Da.}
-
-\item{rt_start}{Numeric length one with the run start time, in seconds.}
-
-\item{rt_end}{Numeric length one with the run end time, in seconds.}
-
-\item{polarity}{Character length one. Possible values are \emph{positive},
-\emph{negative} or \emph{both} (the latter refers to polarity switching acquisition).}
-
-\item{has_ion_mobility}{Logical length one for presence or absence of drift
-separation from ion mobility.}
-
-\item{chromatograms_number}{Integer with the number of chromatograms in the
-file.}
-
-\item{software}{data.table with software info used to acquire/process the
-data (content is highly vendor dependent).}
-
-\item{instrument}{data.table with instrument info used to acquire the
-data (content is highly vendor dependent).}
-
-\item{run}{data.table run information for each spectrum.}
+\item{spectra_headers}{data.table run information for each spectrum.}
 
 \item{spectra}{data.table with the raw spectra (only present if loaded).}
 
-\item{chromatograms}{data.table with the raw chromatograms (only present
-if loaded).}
+\item{chromatograms_number}{Integer with the number of chromatograms in the file.}
 
-\item{features_eic}{list with the feature extracted ions chromatograms (EICs)
-from binning of spectra.}
+\item{chromatograms_headers}{data.table headers information for each chromatogram.}
 
-\item{features}{data.table with the features from data processing.}
+\item{chromatograms}{data.table with the raw chromatograms (only present if loaded).}
 
-\item{metadata}{List with flexible storage for experimental metadata
-(e.g., concentration, location, etc.).}
+\item{metadata}{List with flexible storage for experimental metadata (e.g., concentration, location, etc.).}
 
 \item{x}{A \emph{MassSpecAnalysis} S3 class object.}
 
@@ -139,8 +87,7 @@ Creates a \emph{MassSpecAnalysis} S3 class object.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{validate(MassSpecAnalysis)}: S3 method to validate a \emph{MassSpecAnalysis} S3 class object, returning a logical value of
-length one.
+\item \code{validate(MassSpecAnalysis)}: S3 method to validate a \emph{MassSpecAnalysis} S3 class object, returning a logical value of length one.
 
 \item \code{print(MassSpecAnalysis)}: S3 method to print the \emph{MassSpecAnalysis} S3 class object in the console.
 
@@ -149,7 +96,7 @@ length one.
 }}
 \section{Functions}{
 \itemize{
-\item \code{as.MassSpecAnalysis()}: S3 method to convert the argument value in a \emph{MassSpecAnalysis} S3 class object.
+\item \code{as.MassSpecAnalysis()}: S3 method to convert the argument files in a \emph{MassSpecAnalysis} S3 class object.
 
 \item \code{parse_MassSpecAnalysis()}: Parses information from \emph{mzML} or \emph{mzXML} file/s and returns a list with
 \emph{MassSpecAnalysis} S3 class object/s. On error, returns \code{NULL}.

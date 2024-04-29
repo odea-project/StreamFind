@@ -228,11 +228,11 @@
   fig
 }
 
-#' .plot_xic_interactive
+#' .plot_spectra_xic_interactive
 #'
 #' @noRd
 #'
-.plot_xic_interactive <- function(xic,
+.plot_spectra_xic_interactive <- function(xic,
                                   legendNames = NULL,
                                   plotTargetMark = TRUE,
                                   targetsMark = NULL,
@@ -450,11 +450,11 @@
   finalplot
 }
 
-#' .plot_eic_static
+#' .plot_spectra_eic_static
 #'
 #' @noRd
 #'
-.plot_eic_static <- function(eic = NULL,
+.plot_spectra_eic_static <- function(eic = NULL,
                              legendNames = NULL,
                              colorBy = "targets",
                              title = NULL,
@@ -534,11 +534,11 @@
   }
 }
 
-#' .plot_eic_interactive
+#' .plot_spectra_eic_interactive
 #'
 #' @noRd
 #'
-.plot_eic_interactive <- function(eic = NULL,
+.plot_spectra_eic_interactive <- function(eic = NULL,
                                   legendNames = NULL,
                                   colorBy = "targets",
                                   title = NULL,
@@ -619,11 +619,11 @@
   plot
 }
 
-#' .plot_bpc_interactive
+#' .plot_spectra_bpc_interactive
 #'
 #' @noRd
 #'
-.plot_bpc_interactive <- function(bpc = NULL,
+.plot_spectra_bpc_interactive <- function(bpc = NULL,
                                   legendNames = NULL,
                                   colorBy = "targets",
                                   title = NULL,
@@ -711,11 +711,11 @@
   plot
 }
 
-#' .plot_ms2_static
+#' .plot_spectra_ms2_static
 #'
 #' @noRd
 #'
-.plot_ms2_static <- function(ms2 = NULL,
+.plot_spectra_ms2_static <- function(ms2 = NULL,
                              legendNames = NULL,
                              colorBy = "targets",
                              title = NULL) {
@@ -779,11 +779,11 @@
   )
 }
 
-#' .plot_ms2_interactive
+#' .plot_spectra_ms2_interactive
 #'
 #' @noRd
 #'
-.plot_ms2_interactive <- function(ms2 = NULL, legendNames = NULL,
+.plot_spectra_ms2_interactive <- function(ms2 = NULL, legendNames = NULL,
                                   colorBy = "targets", title = NULL) {
   
   ms2 <- .make_colorBy_varkey(ms2, colorBy, legendNames)
@@ -858,11 +858,11 @@
   return(plot)
 }
 
-#' .plot_ms1_static
+#' .plot_spectra_ms1_static
 #'
 #' @noRd
 #'
-.plot_ms1_static <- function(ms1 = NULL,
+.plot_spectra_ms1_static <- function(ms1 = NULL,
                              legendNames = NULL,
                              colorBy = "targets",
                              title = NULL,
@@ -910,11 +910,11 @@
   legend("topleft", legend = levels(ms1$var), col = cl, lty = 1, cex = 0.8, bty = "n")
 }
 
-#' .plot_ms1_interactive
+#' .plot_spectra_ms1_interactive
 #'
 #' @noRd
 #'
-.plot_ms1_interactive <- function(ms1 = NULL,
+.plot_spectra_ms1_interactive <- function(ms1 = NULL,
                                   legendNames = NULL,
                                   colorBy = "targets",
                                   title = NULL,

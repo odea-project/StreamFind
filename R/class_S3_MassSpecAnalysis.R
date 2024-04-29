@@ -15,8 +15,6 @@
 #' @param chromatograms_number Integer with the number of chromatograms in the file.
 #' @param chromatograms_headers data.table headers information for each chromatogram.
 #' @param chromatograms data.table with the raw chromatograms (only present if loaded).
-#' @param features_eic list with the feature extracted ions chromatograms (EICs) from binning of spectra.
-#' @param features data.table with the features from data processing.
 #' @param metadata List with flexible storage for experimental metadata (e.g., concentration, location, etc.).
 #'
 #' @return An *MassSpecAnalysis* S3 class object.
@@ -37,57 +35,22 @@ MassSpecAnalysis <- function(name = NA_character_,
                              chromatograms_number = NA_integer_,
                              chromatograms_headers = data.table(),
                              chromatograms = data.table(),
-                             features_eic = list(),
-                             features = data.table(),
                              metadata = list()) {
   
   x <- Analysis(name, replicate, blank)
-
-  if (is.list(features)) features <- as.data.table(features)
-  
-  if (is.data.frame(features)) {
-    if ("ms1" %in% colnames(features)) {
-      features$ms1 <- lapply(features$ms1, function(z) {
-        if (!is.null(z)) z <- as.data.table(z)
-        z
-      })
-    }
-
-    if ("ms2" %in% colnames(features)) {
-      features$ms2 <- lapply(features$ms2, function(z) {
-        if (!is.null(z)) z <- as.data.table(z)
-        z
-      })
-    }
-    
-    if ("suspects" %in% colnames(features)) {
-      features$suspects <- lapply(features$suspects, function(z) {
-        if (!is.null(z)) z <- as.data.table(z)
-        z
-      })
-    }
-  }
-  
-  if (is.list(features_eic)) {
-    if (length(features_eic) > 0) {
-      features_eic <- lapply(features_eic, as.data.table)
-    }
-  }
 
   x <- c(x, list(
     "file" = as.character(file),
     "format" = as.character(format),
     "type" = as.character(type),
     "spectra_number" = as.integer(spectra_number),
-    "spectra_mode" = as.character(spectra_mode),
+    "spectra_mode" = as.integer(spectra_mode),
     "spectra_levels" = as.integer(spectra_levels),
     "spectra_headers" = as.data.table(spectra_headers),
     "spectra" = as.data.table(spectra),
     "chromatograms_number" = as.integer(chromatograms_number),
     "chromatograms_headers" = as.data.table(chromatograms_headers),
     "chromatograms" = as.data.table(chromatograms),
-    "features_eic" = features_eic,
-    "features" = features,
     "metadata" = metadata
   ))
 
@@ -170,16 +133,6 @@ validate.MassSpecAnalysis <- function(x = NULL) {
 
     if (!is.data.frame(x$chromatograms)) {
       warning("Analysis chromatograms entry not conform!")
-      valid <- FALSE
-    }
-
-    if (!is.list(x$features_eic)) {
-      warning("Analysis features_eic entry not conform!")
-      valid <- FALSE
-    }
-
-    if (!is.data.frame(x$features)) {
-      warning("Analysis features entry not conform!")
       valid <- FALSE
     }
 
@@ -320,41 +273,17 @@ parse_MassSpecAnalysis <- function(files = NULL, runParallel = FALSE) {
   
   analyses <- lapply(files, function(x) {
     
-    cached <- FALSE
+    cache <- .load_chache("parsed_ms_analyses", x)
     
-    if (.caches_data()) {
-      hash <- patRoon::makeHash(x)
-      ana <- patRoon::loadCacheData("parsed_ms_analyses", hash)
-      
-      if (!is.null(ana)) {
-        if (validate.MassSpecAnalysis(ana)) {
-          cached <- TRUE
-        } else {
-          ana <- NULL
-        }
-      }
+    if (!is.null(cache$data)) {
+      message("\U2139 Analysis loaded from cache!")
+      cache$data
       
     } else {
-      hash <- NULL
-      ana <- NULL
-    }
-    
-    if (!cached) {
-      message("\U2699 Parsing ", x, " MS file...", appendLF = FALSE)
       
-      ana <- rcpp_parse_ms_analysis_v2(x)
-      
-      if (ana$spectra_number > 0) {
-        int_polarity <- rep(0, nrow(ana$spectra_headers))
-        int_polarity[ana$spectra_headers$polarity == "positive"] <- 1
-        int_polarity[ana$spectra_headers$polarity == "negative"] <- -1
-        ana$spectra_headers$polarity <- int_polarity
+      message("\U2699 Parsing ", basename(x), "...", appendLF = FALSE)
         
-        int_mode <- rep(0, nrow(ana$spectra_headers))
-        int_mode[ana$spectra_headers$mode == "profile"] <- 1
-        int_mode[ana$spectra_headers$mode == "centroid"] <- 2
-        ana$spectra_headers$mode <- int_mode
-      }
+      ana <- rcpp_parse_ms_analysis_v2(x)
       
       class_ana <- class(ana)[1]
       
@@ -377,123 +306,18 @@ parse_MassSpecAnalysis <- function(files = NULL, runParallel = FALSE) {
       
       ana$blank <- blk
       
-      if (!is.null(hash)) {
-        patRoon::saveCacheData("parsed_ms_analyses", ana, hash)
-        message("\U1f5ab Parsed MS files cached!")
+      if (!is.null(cache$hash)) {
+        .save_cache("parsed_ms_analyses", ana, cache$hash)
+        message("\U1f5ab Parsed MS file cached!")
       }
-    } else {
-      message("\U2139 Analysis loaded from cache!")
+      
+      ana
     }
-    
-    ana
   })
   
   names(analyses) <- vapply(analyses, function(x) x$name, "")
   
   analyses <- analyses[order(names(analyses))]
-
-  # cached_analyses <- FALSE
-  # 
-  # if (.caches_data()) {
-  #   hash <- patRoon::makeHash(files)
-  #   analyses <- patRoon::loadCacheData("parsed_ms_analyses", hash)
-  # 
-  #   if (!is.null(analyses)) {
-  #     if (all(vapply(analyses, validate.MassSpecAnalysis, FALSE))) {
-  #       cached_analyses <- TRUE
-  #     } else {
-  #       analyses <- NULL
-  #     }
-  #   }
-  # 
-  # } else {
-  #   hash <- NULL
-  #   analyses <- NULL
-  # }
-  # 
-  # if (runParallel & length(files) > 1 & !cached_analyses) {
-  #   workers <- parallel::detectCores() - 1
-  #   if (length(files) < workers) workers <- length(files)
-  #   par_type <- "PSOCK"
-  #   if (parallelly::supportsMulticore()) par_type <- "FORK"
-  #   cl <- parallel::makeCluster(workers, type = par_type)
-  #   doParallel::registerDoParallel(cl)
-  # } else {
-  #   registerDoSEQ()
-  # }
-  # 
-  # if (!cached_analyses) {
-  #   message("\U2699 Parsing ", length(files),  " MS file/s...",
-  #     appendLF = FALSE
-  #   )
-  # 
-  #   i <- NULL
-  # 
-  #   vars <- c("rcpp_parse_ms_analysis")
-  # 
-  #   analyses <- foreach(i = files,
-  #     .packages = "StreamFind",
-  #     .export = vars
-  #   ) %dopar% { rcpp_parse_ms_analysis(i) }
-  #   
-  #   class_analyses <- vapply(analyses, function(x) class(x)[1], "")
-  # 
-  #   if (!all(class_analyses %in% "MassSpecAnalysis")) return(NULL)
-  # 
-  #   message(" Done!")
-  #   
-  #   if (runParallel & length(files) > 1) parallel::stopCluster(cl)
-  #   
-  #   
-  #   
-  #   
-  #   
-  #   
-  #   
-  #   
-  #   
-  #   
-  #   
-  #   if (!is.null(analyses)) {
-  #     if (all(is.na(replicates))) {
-  #       replicates <- vapply(analyses, function(x) x$name, "")
-  #       # replicates <- gsub("-", "_", replicates)
-  #       replicates <- sub("-[^-]+$", "", replicates)
-  #     }
-  #     
-  #     analyses <- Map(
-  #       function(x, y) {
-  #         x$replicate <- y
-  #         x
-  #       },
-  #       analyses, replicates
-  #     )
-  #     
-  #     if (!is.null(blanks) & length(blanks) == length(analyses)) {
-  #       if (all(blanks %in% replicates)) {
-  #         analyses <- Map(
-  #           function(x, y) {
-  #             x$blank <- y
-  #             x
-  #           },
-  #           analyses, blanks
-  #         )
-  #       }
-  #     }
-  #     
-  #     names(analyses) <- vapply(analyses, function(x) x$name, "")
-  #     
-  #     analyses <- analyses[order(names(analyses))]
-  #   }
-  # 
-  #   if (!is.null(hash)) {
-  #     patRoon::saveCacheData("parsed_ms_analyses", analyses, hash)
-  #     message("\U1f5ab Parsed MS files/s cached!")
-  #   }
-  # 
-  # } else {
-  #   message("\U2139 Analyses loaded from cache!")
-  # }
 
   analyses
 }

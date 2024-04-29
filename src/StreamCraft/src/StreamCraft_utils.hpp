@@ -17,8 +17,8 @@ namespace sc {
         virtual int extract_spec_scan() const = 0;
         virtual int extract_spec_array_length() const = 0;
         virtual int extract_spec_level() const = 0;
-        virtual std::string extract_spec_mode() const = 0;
-        virtual std::string extract_spec_polarity() const = 0;
+        virtual int extract_spec_mode() const = 0;
+        virtual int extract_spec_polarity() const = 0;
         virtual double extract_spec_lowmz() const = 0;
         virtual double extract_spec_highmz() const = 0;
         virtual double extract_spec_bpmz() const = 0;
@@ -40,8 +40,8 @@ namespace sc {
         int extract_spec_scan() const override { return spec.extract_spec_scan(); }
         int extract_spec_array_length() const override { return spec.extract_spec_array_length(); }
         int extract_spec_level() const override { return spec.extract_spec_level(); }
-        std::string extract_spec_mode() const override { return spec.extract_spec_mode(); }
-        std::string extract_spec_polarity() const override { return spec.extract_spec_polarity(); }
+        int extract_spec_mode() const override { return spec.extract_spec_mode(); }
+        int extract_spec_polarity() const override { return spec.extract_spec_polarity(); }
         double extract_spec_lowmz() const override { return spec.extract_spec_lowmz(); }
         double extract_spec_highmz() const override { return spec.extract_spec_highmz(); }
         double extract_spec_bpmz() const override { return spec.extract_spec_bpmz(); }
@@ -67,8 +67,8 @@ namespace sc {
       int number_spectra_binary_arrays;
       std::string format;
       std::string time_stamp;
-      std::vector<std::string> polarity;
-      std::vector<std::string> mode;
+      std::vector<int> polarity;
+      std::vector<int> mode;
       std::vector<int> level;
       std::string type;
       double min_mz;
@@ -89,8 +89,8 @@ namespace sc {
       std::vector<int> scan;
       std::vector<int> array_length;
       std::vector<int> level;
-      std::vector<std::string> mode;
-      std::vector<std::string> polarity;
+      std::vector<int> mode;
+      std::vector<int> polarity;
       std::vector<double> lowmz;
       std::vector<double> highmz;
       std::vector<double> bpmz;
@@ -147,7 +147,7 @@ namespace sc {
       std::vector<int> index;
       std::vector<std::string> id;
       std::vector<int> array_length;
-      std::vector<std::string> polarity;
+      std::vector<int> polarity;
       std::vector<double> precursor_mz;
       std::vector<std::string> activation_type;
       std::vector<double> activation_ce;
@@ -169,6 +169,8 @@ namespace sc {
       std::vector<int> index;
       std::vector<std::string> id;
       std::vector<int> level;
+      std::vector<int> polarity;
+      std::vector<bool> precursor;
       std::vector<double> mzmin;
       std::vector<double> mzmax;
       std::vector<double> rtmin;
@@ -180,6 +182,8 @@ namespace sc {
         index.resize(n);
         id.resize(n);
         level.resize(n);
+        polarity.resize(n);
+        precursor.resize(n);
         mzmin.resize(n);
         mzmax.resize(n);
         rtmin.resize(n);
@@ -193,6 +197,8 @@ namespace sc {
         target.index.push_back(index[i]);
         target.id.push_back(id[i]);
         target.level.push_back(level[i]);
+        target.polarity.push_back(polarity[i]);
+        target.precursor.push_back(precursor[i]);
         target.mzmin.push_back(mzmin[i]);
         target.mzmax.push_back(mzmax[i]);
         target.rtmin.push_back(rtmin[i]);

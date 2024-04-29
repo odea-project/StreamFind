@@ -206,12 +206,12 @@ List of function elements to access specific reference help pages.</p></dd>
 <li><p><a href="#method-MassSpecEngine-has_spectra_charges"><code>MassSpecEngine$has_spectra_charges()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-plot_spectra"><code>MassSpecEngine$plot_spectra()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-plot_chromatograms"><code>MassSpecEngine$plot_chromatograms()</code></a></p></li>
-<li><p><a href="#method-MassSpecEngine-plot_xic"><code>MassSpecEngine$plot_xic()</code></a></p></li>
-<li><p><a href="#method-MassSpecEngine-plot_eic"><code>MassSpecEngine$plot_eic()</code></a></p></li>
-<li><p><a href="#method-MassSpecEngine-plot_tic"><code>MassSpecEngine$plot_tic()</code></a></p></li>
-<li><p><a href="#method-MassSpecEngine-plot_bpc"><code>MassSpecEngine$plot_bpc()</code></a></p></li>
-<li><p><a href="#method-MassSpecEngine-plot_ms2"><code>MassSpecEngine$plot_ms2()</code></a></p></li>
-<li><p><a href="#method-MassSpecEngine-plot_ms1"><code>MassSpecEngine$plot_ms1()</code></a></p></li>
+<li><p><a href="#method-MassSpecEngine-plot_spectra_xic"><code>MassSpecEngine$plot_spectra_xic()</code></a></p></li>
+<li><p><a href="#method-MassSpecEngine-plot_spectra_eic"><code>MassSpecEngine$plot_spectra_eic()</code></a></p></li>
+<li><p><a href="#method-MassSpecEngine-plot_spectra_tic"><code>MassSpecEngine$plot_spectra_tic()</code></a></p></li>
+<li><p><a href="#method-MassSpecEngine-plot_spectra_bpc"><code>MassSpecEngine$plot_spectra_bpc()</code></a></p></li>
+<li><p><a href="#method-MassSpecEngine-plot_spectra_ms2"><code>MassSpecEngine$plot_spectra_ms2()</code></a></p></li>
+<li><p><a href="#method-MassSpecEngine-plot_spectra_ms1"><code>MassSpecEngine$plot_spectra_ms1()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-plot_features"><code>MassSpecEngine$plot_features()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-map_features"><code>MassSpecEngine$map_features()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-plot_features_ms1"><code>MassSpecEngine$plot_features_ms1()</code></a></p></li>
@@ -3294,11 +3294,11 @@ using <span class="pkg">plotly</span>.</p></dd>
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecEngine-plot_xic"></a><div class="section">
-<h3 id="method-plot-xic-">Method <code>plot_xic()</code><a class="anchor" aria-label="anchor" href="#method-plot-xic-"></a></h3>
+</div><p></p><hr><a id="method-MassSpecEngine-plot_spectra_xic"></a><div class="section">
+<h3 id="method-plot-xic-">Method <code>plot_spectra_xic()</code><a class="anchor" aria-label="anchor" href="#method-plot-xic-"></a></h3>
 <p>Plots extract ion chromatograms (EIC) and <em>m/z</em> vs retention time from the analyses.</p><div class="section">
 <h4 id="usage-66">Usage<a class="anchor" aria-label="anchor" href="#usage-66"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">plot_xic</span><span class="op">(</span></span>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">plot_spectra_xic</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mass <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mz <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -3424,11 +3424,11 @@ for all selected analyses.</p></dd>
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecEngine-plot_eic"></a><div class="section">
-<h3 id="method-plot-eic-">Method <code>plot_eic()</code><a class="anchor" aria-label="anchor" href="#method-plot-eic-"></a></h3>
+</div><p></p><hr><a id="method-MassSpecEngine-plot_spectra_eic"></a><div class="section">
+<h3 id="method-plot-eic-">Method <code>plot_spectra_eic()</code><a class="anchor" aria-label="anchor" href="#method-plot-eic-"></a></h3>
 <p>Plots extract ion chromatograms (EIC) from the analyses based on targets.</p><div class="section">
 <h4 id="usage-67">Usage<a class="anchor" aria-label="anchor" href="#usage-67"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">plot_eic</span><span class="op">(</span></span>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">plot_spectra_eic</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mass <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mz <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -3563,11 +3563,11 @@ using <span class="pkg">plotly</span>.</p></dd>
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecEngine-plot_tic"></a><div class="section">
-<h3 id="method-plot-tic-">Method <code>plot_tic()</code><a class="anchor" aria-label="anchor" href="#method-plot-tic-"></a></h3>
+</div><p></p><hr><a id="method-MassSpecEngine-plot_spectra_tic"></a><div class="section">
+<h3 id="method-plot-tic-">Method <code>plot_spectra_tic()</code><a class="anchor" aria-label="anchor" href="#method-plot-tic-"></a></h3>
 <p>Plots the total ion chromatogram (TIC) of the analyses.</p><div class="section">
 <h4 id="usage-68">Usage<a class="anchor" aria-label="anchor" href="#usage-68"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">plot_tic</span><span class="op">(</span></span>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">plot_spectra_tic</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,</span>
 <span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -3632,11 +3632,11 @@ using <span class="pkg">plotly</span>.</p></dd>
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecEngine-plot_bpc"></a><div class="section">
-<h3 id="method-plot-bpc-">Method <code>plot_bpc()</code><a class="anchor" aria-label="anchor" href="#method-plot-bpc-"></a></h3>
+</div><p></p><hr><a id="method-MassSpecEngine-plot_spectra_bpc"></a><div class="section">
+<h3 id="method-plot-bpc-">Method <code>plot_spectra_bpc()</code><a class="anchor" aria-label="anchor" href="#method-plot-bpc-"></a></h3>
 <p>Plots the base peak chromatogram (BPC) of the analyses.</p><div class="section">
 <h4 id="usage-69">Usage<a class="anchor" aria-label="anchor" href="#usage-69"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">plot_bpc</span><span class="op">(</span></span>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">plot_spectra_bpc</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,</span>
 <span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -3705,11 +3705,11 @@ using <span class="pkg">plotly</span>.</p></dd>
 <p>A plot.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecEngine-plot_ms2"></a><div class="section">
-<h3 id="method-plot-ms-">Method <code>plot_ms2()</code><a class="anchor" aria-label="anchor" href="#method-plot-ms-"></a></h3>
+</div><p></p><hr><a id="method-MassSpecEngine-plot_spectra_ms2"></a><div class="section">
+<h3 id="method-plot-ms-">Method <code>plot_spectra_ms2()</code><a class="anchor" aria-label="anchor" href="#method-plot-ms-"></a></h3>
 <p>Plots MS2 spectra from the analyses based on targets.</p><div class="section">
 <h4 id="usage-70">Usage<a class="anchor" aria-label="anchor" href="#usage-70"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">plot_ms2</span><span class="op">(</span></span>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">plot_spectra_ms2</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mass <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mz <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -3852,11 +3852,11 @@ using <span class="pkg">plotly</span>.</p></dd>
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecEngine-plot_ms1"></a><div class="section">
-<h3 id="method-plot-ms--1">Method <code>plot_ms1()</code><a class="anchor" aria-label="anchor" href="#method-plot-ms--1"></a></h3>
+</div><p></p><hr><a id="method-MassSpecEngine-plot_spectra_ms1"></a><div class="section">
+<h3 id="method-plot-ms--1">Method <code>plot_spectra_ms1()</code><a class="anchor" aria-label="anchor" href="#method-plot-ms--1"></a></h3>
 <p>Plots MS1 spectra from the analyses based on targets.</p><div class="section">
 <h4 id="usage-71">Usage<a class="anchor" aria-label="anchor" href="#usage-71"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">plot_ms1</span><span class="op">(</span></span>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">plot_spectra_ms1</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mass <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mz <span class="op">=</span> <span class="cn">NULL</span>,</span>

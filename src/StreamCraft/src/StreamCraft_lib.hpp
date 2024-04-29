@@ -23,8 +23,8 @@ namespace sc {
       virtual std::string get_format() = 0;
       virtual std::string get_type() = 0;
       virtual std::string get_time_stamp() = 0;
-      virtual std::vector<std::string> get_polarity() = 0;
-      virtual std::vector<std::string> get_mode() = 0;
+      virtual std::vector<int> get_polarity() = 0;
+      virtual std::vector<int> get_mode() = 0;
       virtual std::vector<int> get_level() = 0;
       virtual double get_min_mz() = 0;
       virtual double get_max_mz() = 0;
@@ -36,8 +36,8 @@ namespace sc {
       virtual std::vector<int> get_spectra_scan_number(std::vector<int> indices = {}) = 0;
       virtual std::vector<int> get_spectra_array_length(std::vector<int> indices = {}) = 0;
       virtual std::vector<int> get_spectra_level(std::vector<int> indices = {}) = 0;
-      virtual std::vector<std::string> get_spectra_mode(std::vector<int> indices = {}) = 0;
-      virtual std::vector<std::string> get_spectra_polarity(std::vector<int> indices = {}) = 0;
+      virtual std::vector<int> get_spectra_mode(std::vector<int> indices = {}) = 0;
+      virtual std::vector<int> get_spectra_polarity(std::vector<int> indices = {}) = 0;
       virtual std::vector<double> get_spectra_lowmz(std::vector<int> indices = {}) = 0;
       virtual std::vector<double> get_spectra_highmz(std::vector<int> indices = {}) = 0;
       virtual std::vector<double> get_spectra_bpmz(std::vector<int> indices = {}) = 0;
@@ -70,8 +70,8 @@ namespace sc {
       std::string get_format() { return ms.get_format(); }
       std::string get_type() { return ms.get_type(); }
       std::string get_time_stamp() { return ms.get_time_stamp(); }
-      std::vector<std::string> get_polarity() { return ms.get_polarity(); }
-      std::vector<std::string> get_mode() { return ms.get_mode(); }
+      std::vector<int> get_polarity() { return ms.get_polarity(); }
+      std::vector<int> get_mode() { return ms.get_mode(); }
       std::vector<int> get_level() { return ms.get_level(); }
       double get_min_mz() { return ms.get_min_mz(); }
       double get_max_mz() { return ms.get_max_mz(); }
@@ -83,8 +83,8 @@ namespace sc {
       std::vector<int> get_spectra_scan_number(std::vector<int> indices = {}) { return ms.get_spectra_scan_number(indices); }
       std::vector<int> get_spectra_array_length(std::vector<int> indices = {}) { return ms.get_spectra_array_length(indices); }
       std::vector<int> get_spectra_level(std::vector<int> indices = {}) { return ms.get_spectra_level(indices); }
-      std::vector<std::string> get_spectra_mode(std::vector<int> indices = {}) { return ms.get_spectra_mode(indices); }
-      std::vector<std::string> get_spectra_polarity(std::vector<int> indices = {}) { return ms.get_spectra_polarity(indices); }
+      std::vector<int> get_spectra_mode(std::vector<int> indices = {}) { return ms.get_spectra_mode(indices); }
+      std::vector<int> get_spectra_polarity(std::vector<int> indices = {}) { return ms.get_spectra_polarity(indices); }
       std::vector<double> get_spectra_lowmz(std::vector<int> indices = {}) { return ms.get_spectra_lowmz(indices); }
       std::vector<double> get_spectra_highmz(std::vector<int> indices = {}) { return ms.get_spectra_highmz(indices); }
       std::vector<double> get_spectra_bpmz(std::vector<int> indices = {}) { return ms.get_spectra_bpmz(indices); }
@@ -143,8 +143,8 @@ namespace sc {
       std::string get_type() { return ms->get_type(); }
       std::string get_time_stamp() { return ms->get_time_stamp(); }
       
-      std::vector<std::string> get_polarity() { return ms->get_polarity(); }
-      std::vector<std::string> get_mode() { return ms->get_mode(); }
+      std::vector<int> get_polarity() { return ms->get_polarity(); }
+      std::vector<int> get_mode() { return ms->get_mode(); }
       std::vector<int> get_level() { return ms->get_level(); }
       double get_min_mz() { return ms->get_min_mz(); }
       double get_max_mz() { return ms->get_max_mz(); }
@@ -157,8 +157,8 @@ namespace sc {
       std::vector<int> get_spectra_scan_number(std::vector<int> indices = {}) { return ms->get_spectra_scan_number(indices); }
       std::vector<int> get_spectra_array_length(std::vector<int> indices = {}) { return ms->get_spectra_array_length(indices); }
       std::vector<int> get_spectra_level(std::vector<int> indices = {}) { return ms->get_spectra_level(indices); }
-      std::vector<std::string> get_spectra_mode(std::vector<int> indices = {}) { return ms->get_spectra_mode(indices); }
-      std::vector<std::string> get_spectra_polarity(std::vector<int> indices = {}) { return ms->get_spectra_polarity(indices); }
+      std::vector<int> get_spectra_mode(std::vector<int> indices = {}) { return ms->get_spectra_mode(indices); }
+      std::vector<int> get_spectra_polarity(std::vector<int> indices = {}) { return ms->get_spectra_polarity(indices); }
       std::vector<double> get_spectra_lowmz(std::vector<int> indices = {}) { return ms->get_spectra_lowmz(indices); }
       std::vector<double> get_spectra_highmz(std::vector<int> indices = {}) { return ms->get_spectra_highmz(indices); }
       std::vector<double> get_spectra_bpmz(std::vector<int> indices = {}) { return ms->get_spectra_bpmz(indices); }

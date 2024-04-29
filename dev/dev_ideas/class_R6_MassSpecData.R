@@ -6120,7 +6120,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
       chromatograms$polarity <- pol_key[chromatograms$polarity]
       
       if (!interactive) {
-        .plot_eic_static(chromatograms, legendNames, colorBy, title, showLegend, xlim, ylim, cex)
+        .plot_spectra_eic_static(chromatograms, legendNames, colorBy, title, showLegend, xlim, ylim, cex)
         NULL
       } else {
         .plot_chromatograms_interactive(chromatograms, legendNames, colorBy, title, showLegend)
@@ -6149,7 +6149,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @return An interactive plot.
     #'
-    plot_xic = function(analyses = NULL,
+    plot_spectra_xic = function(analyses = NULL,
                         mass = NULL,
                         mz = NULL,
                         rt = NULL,
@@ -6183,7 +6183,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
         return(NULL)
       }
 
-      .plot_xic_interactive(
+      .plot_spectra_xic_interactive(
         xic,
         legendNames,
         plotTargetMark,
@@ -6199,7 +6199,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @return A plot.
     #'
-    plot_eic = function(analyses = NULL,
+    plot_spectra_eic = function(analyses = NULL,
                         mass = NULL,
                         mz = NULL,
                         rt = NULL,
@@ -6230,9 +6230,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!interactive) {
-        .plot_eic_static(eic, legendNames, colorBy, title, showLegend, xlim, ylim, cex)
+        .plot_spectra_eic_static(eic, legendNames, colorBy, title, showLegend, xlim, ylim, cex)
       } else {
-        .plot_eic_interactive(eic, legendNames, colorBy, title, showLegend)
+        .plot_spectra_eic_interactive(eic, legendNames, colorBy, title, showLegend)
       }
     },
 
@@ -6241,7 +6241,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @return A plot.
     #'
-    plot_tic = function(analyses = NULL,
+    plot_spectra_tic = function(analyses = NULL,
                         levels = c(1, 2),
                         title = NULL,
                         colorBy = "analyses",
@@ -6288,9 +6288,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       # }
 
       if (!interactive) {
-        .plot_eic_static(tic, legendNames, colorBy, title, showLegend, xlim, ylim, cex)
+        .plot_spectra_eic_static(tic, legendNames, colorBy, title, showLegend, xlim, ylim, cex)
       } else {
-        .plot_eic_interactive(tic, legendNames, colorBy, title, showLegend)
+        .plot_spectra_eic_interactive(tic, legendNames, colorBy, title, showLegend)
       }
     },
 
@@ -6299,7 +6299,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @return A plot.
     #'
-    plot_bpc = function(analyses = NULL,
+    plot_spectra_bpc = function(analyses = NULL,
                         levels = c(1, 2),
                         title = NULL,
                         colorBy = "analyses",
@@ -6346,9 +6346,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       # }
 
       if (!interactive) {
-        .plot_eic_static(bpc, legendNames, colorBy, title, showLegend, xlim, ylim, cex)
+        .plot_spectra_eic_static(bpc, legendNames, colorBy, title, showLegend, xlim, ylim, cex)
       } else {
-        .plot_bpc_interactive(bpc, legendNames, colorBy, title, showLegend)
+        .plot_spectra_bpc_interactive(bpc, legendNames, colorBy, title, showLegend)
       }
     },
 
@@ -6357,7 +6357,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @return A plot.
     #'
-    plot_ms2 = function(analyses = NULL,
+    plot_spectra_ms2 = function(analyses = NULL,
                         mass = NULL,
                         mz = NULL,
                         rt = NULL,
@@ -6392,9 +6392,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!interactive) {
-        .plot_ms2_static(ms2, legendNames, colorBy, title)
+        .plot_spectra_ms2_static(ms2, legendNames, colorBy, title)
       } else {
-        .plot_ms2_interactive(ms2, legendNames, colorBy, title)
+        .plot_spectra_ms2_interactive(ms2, legendNames, colorBy, title)
       }
     },
 
@@ -6405,7 +6405,7 @@ MassSpecData <- R6::R6Class("MassSpecData",
     #'
     #' @return A plot.
     #'
-    plot_ms1 = function(analyses = NULL,
+    plot_spectra_ms1 = function(analyses = NULL,
                         mass = NULL,
                         mz = NULL,
                         rt = NULL,
@@ -6440,9 +6440,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!interactive) {
-        .plot_ms1_static(ms1, legendNames, colorBy, title)
+        .plot_spectra_ms1_static(ms1, legendNames, colorBy, title)
       } else {
-        .plot_ms1_interactive(ms1, legendNames, colorBy, title, showText)
+        .plot_spectra_ms1_interactive(ms1, legendNames, colorBy, title, showText)
       }
     },
 
@@ -6601,9 +6601,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!interactive) {
-        .plot_ms1_static(ms1, legendNames, colorBy, title)
+        .plot_spectra_ms1_static(ms1, legendNames, colorBy, title)
       } else {
-        .plot_ms1_interactive(ms1, legendNames, colorBy, title)
+        .plot_spectra_ms1_interactive(ms1, legendNames, colorBy, title)
       }
     },
 
@@ -6649,9 +6649,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       }
 
       if (!interactive) {
-        .plot_ms2_static(ms2, legendNames, colorBy, title)
+        .plot_spectra_ms2_static(ms2, legendNames, colorBy, title)
       } else {
-        .plot_ms2_interactive(ms2, legendNames, colorBy, title)
+        .plot_spectra_ms2_interactive(ms2, legendNames, colorBy, title)
       }
     },
 
@@ -6843,9 +6843,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (grepl("analyses", colorBy) && grepl("targets", colorBy)) colorBy <- "replicates+targets"
 
       if (!interactive) {
-        .plot_ms1_static(ms1, legendNames, colorBy, title)
+        .plot_spectra_ms1_static(ms1, legendNames, colorBy, title)
       } else {
-        .plot_ms1_interactive(ms1, legendNames, colorBy, title)
+        .plot_spectra_ms1_interactive(ms1, legendNames, colorBy, title)
       }
     },
 
@@ -6911,9 +6911,9 @@ MassSpecData <- R6::R6Class("MassSpecData",
       if (grepl("analyses", colorBy) && grepl("targets", colorBy)) colorBy <- "replicates+targets"
 
       if (!interactive) {
-        .plot_ms2_static(ms2, legendNames, colorBy, title)
+        .plot_spectra_ms2_static(ms2, legendNames, colorBy, title)
       } else {
-        .plot_ms2_interactive(ms2, legendNames, colorBy, title)
+        .plot_spectra_ms2_interactive(ms2, legendNames, colorBy, title)
       }
     },
 
