@@ -54,8 +54,6 @@
 #'
 #' @importFrom utils txtProgressBar setTxtProgressBar
 #' 
-#' @importFrom patRoon featureTable
-#' 
 #' @importFrom baseline baseline
 #' 
 #' @importFrom pracma findpeaks

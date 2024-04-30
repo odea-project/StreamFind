@@ -210,7 +210,7 @@ ms_workflow_settings <- list(
   Settings_calculate_spectra_charges_StreamFind(roundVal = 15, relLowCut = 0.2, absLowCut = 8000),
   Settings_deconvolute_spectra_StreamFind(),
   Settings_smooth_spectra_movingaverage(windowSize = 15),
-  Settings_bin_spectra_StreamFind(bins = list("rt" = 2, "mass" = 25), refBinAnalysis = 1),
+  Settings_bin_spectra_StreamFind(bins = list("rt" = 5, "mass" = 20), refBinAnalysis = 1),
   Settings_average_spectra_StreamFind(),
   Settings_normalize_spectra_minmax(),
   Settings_normalize_spectra_blockweight()
@@ -316,6 +316,9 @@ mSpec <- ms$get_spectra()
 mmSpec <- matrix(mSpec$intensity, nrow = length(unique(mSpec$replicate)), ncol = length(unique(mSpec$bins)), byrow = TRUE, dimnames = list(unique(mSpec$replicate), unique(mSpec$bins)))
 
 fusedMat <- cbind(mmSpec, mrSpec)
+
+attr(fusedMat, "xaxis.name") = "Keys"
+attr(fusedMat, "xaxis.values") = seq_len(ncol(fusedMat))
 ```
 
 ```{r}
@@ -370,20 +373,65 @@ mdaplot(m$res$cal$scores, type = "p", show.labels = TRUE, show.lines = c(0, 0))
 mdaplot(m$loadings, type = "p", show.labels = TRUE, show.lines = c(0, 0))
 ```
 
-
-
-
-
+```{r}
+fusedMat2 <- prep.autoscale(fusedMat, center = FALSE, scale = TRUE)
+cl <- StreamFind:::.get_colors(rownames(fusedMat2))
+fig <- plot_ly()
+xVal <- seq_len(length(fusedMat2[1, ]))
+for (i in seq_len(nrow(fusedMat2))) {
+  fig <- fig %>% add_trace(
+    x = xVal,
+    y = fusedMat2[i, ],
+    type = "scatter", mode = "lines",
+    line = list(width = 0.5, color = unname(cl[i])),
+    name = names(cl)[i],
+    legendgroup = names(cl)[i],
+    showlegend = TRUE
+  )
+}
+xaxis <- list(
+  linecolor = toRGB("black"),
+  linewidth = 2, title = "Bins",
+  titlefont = list(size = 12, color = "black")
+)
+yaxis <- list(
+  linecolor = toRGB("black"),
+  linewidth = 2, title = "Intensity",
+  titlefont = list(size = 12, color = "black")
+)
+fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis)
+fig
+```
 
 ```{r, include=FALSE}
 
 m = pca(fusedMat, 3, scale = FALSE, info = "People PCA model")
+plot(m, show.labels = TRUE)
 
 par(mfrow = c(2, 2))
-mdaplot(m$res$cal$scores, type = "p", show.labels = TRUE, show.lines = c(0, 0))
-mdaplot(m$loadings, type = "p", show.labels = TRUE, show.lines = c(0, 0))
-plotResiduals(m$res$cal, show.labels = TRUE)
-plotVariance(m$res$cal, type = "h", show.labels = TRUE, labels = "values")
+plotVariance(m, type = "h", show.labels = TRUE)
+plotQDoF(m)
+plotT2DoF(m)
+plotDistDoF(m)
+
+
+par(mfrow = c(1, 2))
+plotQDoF(m, main = "DoF plot (classic)")
+
+m = setDistanceLimits(m, lim.type = "ddrobust")
+plotQDoF(m, main = "DoF plot (robust)")
+
+
+plotExtreme(m, comp = 1:2, main = "Extreme plot (cal)")
+
+plotLoadings(m, 1:2, type = 'l')
+
+
+# par(mfrow = c(2, 2))
+# mdaplot(m$res$cal$scores, type = "p", show.labels = TRUE, show.lines = c(0, 0))
+# mdaplot(m$loadings, type = "p", show.labels = TRUE, show.lines = c(0, 0))
+# plotResiduals(m$res$cal, show.labels = TRUE)
+# plotVariance(m$res$cal, type = "h", show.labels = TRUE, labels = "values")
 ```
 
 ```{r ,echo=FALSE,fig.width=10,fig.height=4}
@@ -424,9 +472,44 @@ loadings_plot %>% layout(
 
 ```
 
+### PLS
+
+```{r}
+
+library(mdatools)
+data(people)
+
+idx = seq(4, 32, 4)
+Xc = people[-idx, -4]
+yc = people[-idx, 4, drop = FALSE]
+Xt = people[idx, -4]
+yt = people[idx, 4, drop = FALSE]
+
+m = pls(Xc, yc, 7, scale = TRUE, info = "Shoesize prediction model")
+
+res = predict(m, Xt, yt)
+print(res)
 
 
-## PCA
+data(simdata)
+Xc = simdata$spectra.c
+yc = simdata$conc.c[, 1]
+Xt = simdata$spectra.t
+yt = simdata$conc.t[, 1]
+
+m = pls(Xc, yc, 10, x.test = Xt, y.test = yt)
+summary(m)
+
+plot(m)
+
+```
+
+
+
+
+## Other Methods
+
+### PCA in base R
 
 ```{r , include=FALSE, fig.width=10,fig.height=5}
 data_pca <- prcomp(fusedMat, center = TRUE, scale. = FALSE)
@@ -488,7 +571,7 @@ loadings_plot %>% layout(
 
 ```
 
-## Correlation Analysis
+### Correlation Analysis
 
 ```{r}
 # Calculate correlation matrix
@@ -498,7 +581,7 @@ correlation_matrix <- cor(fusedMat)
 print(correlation_matrix)
 ```
 
-## Distance Metrics
+### Distance Metrics
 
 ```{r}
 # Calculate Euclidean distance matrix
@@ -508,7 +591,7 @@ distance_matrix <- dist(fusedMat)
 print(distance_matrix)
 ```
 
-## Hierarchical Clustering
+### Hierarchical Clustering
 
 ```{r}
 # Perform hierarchical clustering
@@ -518,7 +601,7 @@ hc_result <- hclust(dist(fusedMat))
 plot(hc_result)
 ```
 
-## Multidimensional Scaling (MDS)
+### Multidimensional Scaling (MDS)
 
 ```{r}
 # Calculate Euclidean distance matrix
@@ -532,7 +615,7 @@ plot(mds_result[,1], mds_result[,2], pch = 19, col = "blue", xlab = "MDS1", ylab
 
 ```
 
-## Kernel Methods
+### Kernel Methods
 
 ```{r}
 # Example code for kernel PCA (assuming Gaussian kernel)
@@ -543,7 +626,7 @@ kpca_result <- kpca(fusedMat, kernel = "rbfdot")
 plot(kpca_result@pcv[,1], kpca_result@pcv[,2], pch = 19, col = "blue", xlab = "KPCA1", ylab = "KPCA2")
 ```
 
-## Feature Selection and Importance
+### Feature Selection and Importance
 
 ```{r}
 # Example code for feature selection (using random forest as an example)
@@ -566,7 +649,7 @@ barplot(sorted_var_scores, names.arg = sorted_var_names, las = 2, cex.names = 0.
 ```
 
 
-##  Cosine similarity and k-means clustering
+###  Cosine similarity and k-means clustering
 
 ```{r}
 vectors <- fusedMat
@@ -581,7 +664,7 @@ clusters <- kmeans(similarity_matrix, centers = k)
 print(clusters$cluster)
 ```
 
-## Similarity Measures
+### Similarity Measures
 
 ```{r}
 vectors <- fusedMat
@@ -602,19 +685,7 @@ for (i in 1:nrow(vectors)) {
 print(similarity_matrix)
 ```
 
-## PCA 2
-
-```{r}
-vectors <- fusedMat
-
-# Perform PCA
-pca_result <- prcomp(vectors)
-
-# Plot PCA results
-plot(pca_result$x[,1], pca_result$x[,2], pch = 19, col = "blue", xlab = "PC1", ylab = "PC2")
-```
-
-## k-nearest neighbors (KNN) classification
+### k-nearest neighbors (KNN) classification
 
 ```{r}
 training_data <- fusedMat[c(1, 4), ]  # Replace this with your actual training data
