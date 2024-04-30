@@ -25,6 +25,7 @@ The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecti
 \item \href{#method-RamanEngine-get_overview}{\code{RamanEngine$get_overview()}}
 \item \href{#method-RamanEngine-get_spectra}{\code{RamanEngine$get_spectra()}}
 \item \href{#method-RamanEngine-subset_analyses}{\code{RamanEngine$subset_analyses()}}
+\item \href{#method-RamanEngine-add_files}{\code{RamanEngine$add_files()}}
 \item \href{#method-RamanEngine-remove_analyses}{\code{RamanEngine$remove_analyses()}}
 \item \href{#method-RamanEngine-merge_spectra_time_series}{\code{RamanEngine$merge_spectra_time_series()}}
 \item \href{#method-RamanEngine-average_spectra}{\code{RamanEngine$average_spectra()}}
@@ -104,8 +105,7 @@ Creates an R6 class \emph{RamanEngine}. Child of \emph{CoreEngine} R6 class.
   headers = NULL,
   settings = NULL,
   analyses = NULL,
-  results = NULL,
-  runParallel = FALSE
+  results = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -136,10 +136,6 @@ processing method will be searched within the engine object.}
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{results}}{A named list of objects from processing methods.}
-
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -203,6 +199,26 @@ Subsets on analyses.
 }
 \subsection{Returns}{
 A new cloned engine with only the analyses as defined by the analyses argument.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-add_files"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-add_files}{}}}
+\subsection{Method \code{add_files()}}{
+Adds analyses based on asc files. Note that when adding new files, any existing results are removed.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$add_files(files = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{files}}{Vector with full paths of \strong{.asc} files from Raman analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
 }
 }
 \if{html}{\out{<hr>}}

@@ -43,6 +43,8 @@ std::string extractFileExtension(const std::string& filePath) {
 // [[Rcpp::export]]
 Rcpp::List rcpp_parse_asc_file(std::string file_path) {
   
+  Rcpp::List list_out;
+  
   std::string file_info = extractFileName(file_path);
   
   std::ifstream file(file_path);
@@ -101,7 +103,7 @@ Rcpp::List rcpp_parse_asc_file(std::string file_path) {
   
   data_list.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
   
-  return Rcpp::List::create(
+ list_out = Rcpp::List::create(
     Rcpp::Named("name") = file_info,
     Rcpp::Named("replicate") = file_info,
     Rcpp::Named("blank") = "",
@@ -110,12 +112,14 @@ Rcpp::List rcpp_parse_asc_file(std::string file_path) {
     Rcpp::Named("metadata") = metadata_list,
     Rcpp::Named("spectra") = data_list
   );
+  
+  list_out.attr("class") = Rcpp::CharacterVector::create("RamanAnalysis", "Analysis");
+  
+  return list_out;
 }
 
 // [[Rcpp::export]]
-void rcpp_write_asc_file(const std::string& file,
-                         Rcpp::List metadata_list,
-                         Rcpp::NumericMatrix spectra) {
+void rcpp_write_asc_file(const std::string& file, Rcpp::List metadata_list, Rcpp::NumericMatrix spectra) {
   
   std::map<std::string, std::string> metadata_map;
   

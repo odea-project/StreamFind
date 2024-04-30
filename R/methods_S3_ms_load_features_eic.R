@@ -18,8 +18,7 @@
     rtExpand = parameters$rtExpand,
     mzExpand = parameters$mzExpand,
     filtered = parameters$filtered,
-    loaded = FALSE,
-    runParallel = parameters$runParallel
+    loaded = FALSE
   )
   
   feat_eics_list <- split(feat_eics, feat_eics$analysis)

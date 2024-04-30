@@ -8,7 +8,6 @@
 #' @template arg-results
 #' @template arg-analyses
 #' @template arg-verbose
-#' @template arg-runParallel
 #' 
 #' @template arg-raman-target
 #' @template arg-ms-minIntensity
@@ -111,77 +110,21 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #'
     #' @param files Vector with full paths of **.asc** files from Raman analyses.
     #'
-    initialize = function(files = NULL, headers = NULL, settings = NULL, analyses = NULL, results = NULL, runParallel = FALSE) {
+    initialize = function(files = NULL, headers = NULL, settings = NULL, analyses = NULL, results = NULL) {
       
-      if (is.null(analyses) & !is.null(files)) {
+      if (!is.null(analyses)) {
         
-        cached_analyses <- FALSE
+        if (is(analyses, "RamanAnalysis")) analyses <- list(analyses)
         
-        analyses <- NULL
-        
-        if (.caches_data()) {
-          hash <- patRoon::makeHash(files)
-          
-          analyses <- patRoon::loadCacheData("parsed_raman_analyses", hash)
-          
-          if (!is.null(analyses)) {
-            message("\U2139 Raman analyses loaded from cache!")
-            cached_analyses <- TRUE
-          }
-          
-        } else {
-          hash <- NULL
+        if (!all(vapply(analyses, is, "RamanAnalysis"))) {
+          warning("The argument analyses must be a RamanAnalysis object or a list of RamanAnalysis objects! Not done.")
           analyses <- NULL
-        }
-        
-        if (is.null(analyses)) {
-          message("\U2699 Parsing ", length(files),  " Raman file/s..." ,appendLF = FALSE)
-          
-          if (!is.logical(runParallel)) runParallel <- FALSE
-          
-          if (runParallel & length(files) > 1) {
-            workers <- parallel::detectCores() - 1
-            if (length(files) < workers) workers <- length(files)
-            par_type <- "PSOCK"
-            if (parallelly::supportsMulticore()) par_type <- "FORK"
-            cl <- parallel::makeCluster(workers, type = par_type)
-            doParallel::registerDoParallel(cl)
-          } else {
-            registerDoSEQ()
-          }
-          
-          x <- NULL
-          
-          vars <- c("rcpp_parse_asc_file")
-          
-          analyses <- foreach(
-            x = files,
-            .packages = "StreamFind",
-            .export = vars
-            ) %dopar% { rcpp_parse_asc_file(x) }
-          
-          names(analyses) <- vapply(analyses, function(x) x$name, "")
-          
-          if (runParallel & length(files) > 1 & !cached_analyses) parallel::stopCluster(cl)
-          
-          message(" Done!")
-          
-          if (!cached_analyses & !is.null(hash)) {
-            if (!is.null(analyses)) {
-              message("\U1f5ab Parsed Raman analyses cached!")
-              patRoon::saveCacheData("parsed_raman_analyses", analyses, hash)
-            }
-          }
-        }
-        
-        analyses <- lapply(analyses, function(x) as.RamanAnalysis(x))
-        
-        if (is.null(analyses)) {
-          warning("No valid files were given! MassSpecEngine object is empty. \n")
         }
       }
       
       super$initialize(headers, settings, analyses, results)
+      
+      if (!is.null(files)) self$add_files(files)
       
       private$.register(
         "created",
@@ -341,6 +284,134 @@ RamanEngine <- R6::R6Class("RamanEngine",
       }
     },
     
+    ## ___ add -----
+    
+    #' @description Adds analyses based on asc files. Note that when adding new files, any existing results are removed.
+    #' 
+    #' @param files Vector with full paths of **.asc** files from Raman analyses.
+    #'
+    #' @return Invisible.
+    #'
+    add_files = function(files = NULL) {
+      
+      if (!is.null(files)) {
+        
+        if (is.data.frame(files)) {
+          
+          if ("file" %in% colnames(files)) {
+            
+            if ("replicate" %in% colnames(files)) {
+              replicates <- as.character(files$replicate)
+            } else {
+              replicates <- rep(NA_character_, nrow(files))
+            }
+            
+            if ("blank" %in% colnames(files)) {
+              blanks <- as.character(files$blank)
+            } else {
+              blanks <- rep(NA_character_, nrow(files))
+            }
+            
+            files <- files$file
+            
+          } else {
+            files <- ""
+          }
+          
+        } else {
+          replicates <- rep(NA_character_, length(files))
+          blanks <- rep(NA_character_, length(files))
+        }
+        
+        possible_ms_file_formats <- ".asc"
+        
+        valid_files <- vapply(files,
+          FUN.VALUE = FALSE,
+          function(x, possible_ms_file_formats) {
+            if (!file.exists(x)) {
+              return(FALSE)
+            }
+            if (FALSE %in% grepl(possible_ms_file_formats, x)) {
+              return(FALSE)
+            }
+            TRUE
+          }, possible_ms_file_formats = possible_ms_file_formats
+        )
+        
+        if (!all(valid_files)) {
+          warning("File/s not valid!")
+          return(NULL)
+        }
+        
+        names(replicates) <- as.character(files)
+        
+        names(blanks) <- as.character(files)
+        
+        analyses <- lapply(files, function(x) {
+          
+          cache <- .load_chache("parsed_raman_analyses", x)
+          
+          if (!is.null(cache$data)) {
+            message("\U2139 Analysis loaded from cache!")
+            cache$data
+            
+          } else {
+            
+            message("\U2699 Parsing ", basename(x), "...", appendLF = FALSE)
+            
+            ana <- rcpp_parse_asc_file(x)
+            
+            class_ana <- class(ana)[1]
+            
+            if (!class_ana %in% "RamanAnalysis") {
+              message(" Not Done!")
+              return(NULL)
+            }
+            
+            message(" Done!")
+            
+            rpl <- replicates[x]
+            
+            if (is.na(rpl)) {
+              rpl <- ana$name
+              rpl <- sub("-[^-]+$", "", rpl)
+            }
+            
+            ana$replicate <- rpl
+            
+            blk <- blanks[x]
+            
+            if (!is.na(blk)) ana$blank <- blk
+            
+            ana$blank <- blk
+            
+            if (!is.null(cache$hash)) {
+              .save_cache("parsed_raman_analyses", ana, cache$hash)
+              message("\U1f5ab Parsed file cached!")
+            }
+            
+            ana
+          }
+        })
+        
+        names(analyses) <- vapply(analyses, function(x) x[["name"]], "")
+        
+        analyses <- analyses[order(names(analyses))]
+        
+        if (all(vapply(analyses, function(x) "RamanAnalysis" %in% is(x), FALSE))) {
+          self$add_analyses(analyses)
+          
+        } else {
+          warning("Not all added files could be converted as RamanAnalysis!")
+        }
+        
+      } else {
+        warning("Files were not added!")
+      }
+      
+      invisible(self)
+    },
+    
     ## ___ remove -----
     
     #' @description Removes analyses.
@@ -367,7 +438,6 @@ RamanEngine <- R6::R6Class("RamanEngine",
           } else {
             sel <- names(private$.results$spectra$data) %in% c(analyses_left, replicates_left)
             private$.results$spectra$data <- private$.results$spectra$data[sel]
-            
           }
         }
       }

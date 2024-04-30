@@ -81,7 +81,7 @@
 #' @export
 #'
 MassSpecEngine <- R6::R6Class("MassSpecEngine",
-                              
+
   inherit = CoreEngine,
 
   # _ private fields -----
@@ -864,10 +864,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     initialize = function(files = NULL, headers = NULL, settings = NULL, analyses = NULL, results = NULL) {
       
-      if (!is.null(analyses)) {
-        
+      if (is.list(analyses)) {
         if (is(analyses, "MassSpecAnalysis")) analyses <- list(analyses)
-        
         if (!all(vapply(analyses, is, "MassSpecAnalysis"))) {
           warning("The argument analyses must be a MassSpecAnalysis object or a list of MassSpecAnalysis objects! Not done.")
           analyses <- NULL
@@ -3660,7 +3658,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
             
             class_ana <- class(ana)[1]
             
-            if (!class_ana %in% "MassSpecAnalysis") return(NULL)
+            if (!class_ana %in% "MassSpecAnalysis") {
+              message(" Not Done!")
+              return(NULL)
+            }
             
             message(" Done!")
             
@@ -3688,7 +3689,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           }
         })
         
-        names(analyses) <- vapply(analyses, function(x) x$name, "")
+        names(analyses) <- vapply(analyses, function(x) x[["name"]], "")
         
         analyses <- analyses[order(names(analyses))]
 

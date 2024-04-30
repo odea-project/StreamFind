@@ -46,8 +46,7 @@
       minIntensity = parameters$minIntensity,
       verbose = parameters$verbose,
       filtered = parameters$filtered,
-      loadedMS2 = FALSE,
-      runParallel = parameters$runParallel
+      loadedMS2 = FALSE
     )
   }
   
