@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_cluster_spectra_StreamFind}
 \alias{Settings_cluster_spectra_StreamFind}
-\alias{validate.Settings_cluster_spectra_StreamFind}
 \title{Settings_cluster_spectra_StreamFind}
 \usage{
 Settings_cluster_spectra_StreamFind(
@@ -10,26 +9,17 @@ Settings_cluster_spectra_StreamFind(
   clustVal = 0.001,
   presence = 0.1
 )
-
-\method{validate}{Settings_cluster_spectra_StreamFind}(x)
 }
 \arguments{
-\item{val}{}
+\item{val}{Character (length 1) with the variable to be used for clustering.}
 
-\item{clustVal}{}
+\item{clustVal}{Numeric (length 1) with the clustering value.}
 
-\item{presence}{}
-
-\item{x}{A Settings_cluster_spectra_StreamFind S3 class object.}
+\item{presence}{Numeric (length 1) with the minimum presence of traces in a cluster to be considered.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_cluster_spectra_StreamFind.
 }
 \description{
-Prototype.
+Clusters spectra based on a variable (i.e. column name).
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_cluster_spectra_StreamFind)}: Validates the object structure, returning a logical value of length one.
-
-}}

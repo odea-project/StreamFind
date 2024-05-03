@@ -2,28 +2,16 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_smooth_chromatograms_movingaverage}
 \alias{Settings_smooth_chromatograms_movingaverage}
-\alias{validate.Settings_smooth_chromatograms_movingaverage}
 \title{Settings_smooth_chromatograms_movingaverage}
 \usage{
 Settings_smooth_chromatograms_movingaverage(windowSize = 5, xValWindow = NULL)
-
-\method{validate}{Settings_smooth_chromatograms_movingaverage}(x)
 }
 \arguments{
-\item{windowSize}{}
-
-\item{xValWindow}{}
-
-\item{x}{A Settings_smooth_chromatograms_movingaverage S3 class object.}
+\item{windowSize}{Numeric (length 1) with the window size for the moving average.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_smooth_chromatograms_movingaverage.
 }
 \description{
-Prototype.
+Smooths chromatograms using the moving average algorithm.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_smooth_chromatograms_movingaverage)}: Validates the object structure, returning a logical value of length one.
-
-}}

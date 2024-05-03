@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_find_features_xcms3_centwave}
 \alias{Settings_find_features_xcms3_centwave}
-\alias{validate.Settings_find_features_xcms3_centwave}
 \title{Settings_find_features_xcms3_centwave}
 \usage{
 Settings_find_features_xcms3_centwave(
@@ -19,8 +18,6 @@ Settings_find_features_xcms3_centwave(
   firstBaselineCheck = FALSE,
   extendLengthMSW = FALSE
 )
-
-\method{validate}{Settings_find_features_xcms3_centwave}(x)
 }
 \arguments{
 \item{ppm}{numeric(1) defining the maximal tolerated m/z deviation in consecutive scans in parts per million (ppm)
@@ -83,11 +80,6 @@ Settings for finding features (i.e., chromatographic peaks) in mzML/mzXML files 
 \details{
 See the \link[patRoon]{findFeaturesXCMS3} function from the \pkg{patRoon} package for more information and requirements.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_find_features_xcms3_centwave)}: Validates the object structure, returning a logical value of length one.
-
-}}
 \references{
 \insertRef{patroon01}{StreamFind}
 

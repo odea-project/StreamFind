@@ -2,24 +2,13 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_normalize_spectra_minmax}
 \alias{Settings_normalize_spectra_minmax}
-\alias{validate.Settings_normalize_spectra_minmax}
 \title{Settings_normalize_spectra_minmax}
 \usage{
 Settings_normalize_spectra_minmax()
-
-\method{validate}{Settings_normalize_spectra_minmax}(x)
-}
-\arguments{
-\item{x}{A Settings_normalize_spectra_minmax S3 class object.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_normalize_spectra_minmax.
 }
 \description{
-Prototype.
+Normalizes spectra using the min-max algorithm.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_normalize_spectra_minmax)}: Validates the object structure, returning a logical value of length one.
-
-}}

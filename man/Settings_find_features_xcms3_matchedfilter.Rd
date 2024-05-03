@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_find_features_xcms3_matchedfilter}
 \alias{Settings_find_features_xcms3_matchedfilter}
-\alias{validate.Settings_find_features_xcms3_matchedfilter}
 \title{Settings_find_features_xcms3_matchedfilter}
 \usage{
 Settings_find_features_xcms3_matchedfilter(
@@ -17,8 +16,6 @@ Settings_find_features_xcms3_matchedfilter(
   mzdiff = 0.5,
   index = FALSE
 )
-
-\method{validate}{Settings_find_features_xcms3_matchedfilter}(x)
 }
 \arguments{
 \item{binSize}{numeric(1) specifying the width of the bins/slices in m/z dimension.}
@@ -68,11 +65,6 @@ which is optimal/preferred for low resolution LC-MS data. The function uses the 
 \details{
 See the \link[patRoon]{findFeaturesXCMS3} function from the \pkg{patRoon} package for more information and requirements.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_find_features_xcms3_matchedfilter)}: Validates the object structure, returning a logical value of length one.
-
-}}
 \references{
 \insertRef{patroon01}{StreamFind}
 

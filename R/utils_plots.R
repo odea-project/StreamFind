@@ -3271,8 +3271,8 @@
   if (showLegend) {
     legend(
       x = "topright",
-      inset = 0.2,
-      y.intersp = 2,
+      inset = 0.01,
+      y.intersp = 1.5,
       legend = names(cl),
       col = cl,
       lwd = 2,

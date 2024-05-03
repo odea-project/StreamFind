@@ -1,2 +1,1 @@
-#' @param loaded Logical. When `TRUE` and if available, previously
-#' loaded data will be used instead of extraction from raw data.
+#' @param loaded Logical (length 1). When `TRUE` and if available, loaded data will be used instead of raw data.

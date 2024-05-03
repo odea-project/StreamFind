@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_suspect_screening_forident}
 \alias{Settings_suspect_screening_forident}
-\alias{validate.Settings_suspect_screening_forident}
 \title{Settings_suspect_screening_forident}
 \usage{
 Settings_suspect_screening_forident(
@@ -11,8 +10,6 @@ Settings_suspect_screening_forident(
   path = getwd(),
   name = "feature_list"
 )
-
-\method{validate}{Settings_suspect_screening_forident}(x)
 }
 \arguments{
 \item{addMS2}{Logical length 1. When \code{TRUE} and MS2 data is available, the
@@ -36,11 +33,6 @@ A ProcessingSettings S3 class object with subclass Settings_suspect_screening_fo
 \description{
 Settings for performing suspect screening using the \href{https://water.for-ident.org/}{FOR-IDENT} platform.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_suspect_screening_forident)}: Validates the object structure, returning a logical value of length one.
-
-}}
 \note{
 After processing, a .txt file as defined by name and path is created with the
 list of features or feature groups to be imported in the FOR-IDENT platform

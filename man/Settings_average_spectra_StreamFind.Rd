@@ -2,26 +2,16 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_average_spectra_StreamFind}
 \alias{Settings_average_spectra_StreamFind}
-\alias{validate.Settings_average_spectra_StreamFind}
 \title{Settings_average_spectra_StreamFind}
 \usage{
 Settings_average_spectra_StreamFind(collapseTime = FALSE)
-
-\method{validate}{Settings_average_spectra_StreamFind}(x)
 }
 \arguments{
-\item{collapseTime}{Logical length 1. When \code{TRUE} the spectra are averaged, reducing the time variable.}
-
-\item{x}{A Settings_average_spectra_StreamFind S3 class object.}
+\item{collapseTime}{Logical (length 1). When \code{TRUE} the spectra are averaged, reducing the time variable.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_average_spectra_StreamFind.
 }
 \description{
-Prototype.
+Averages spectra based on analysis replicate groups.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_average_spectra_StreamFind)}: Validates the object structure, returning a logical value of length one.
-
-}}

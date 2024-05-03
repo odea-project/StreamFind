@@ -7,13 +7,10 @@
 #' @template arg-settings-and-list
 #' @template arg-results
 #' @template arg-analyses
-#' @template arg-verbose
-#' 
 #' @template arg-raman-target
 #' @template arg-ms-minIntensity
-#' 
 #' @template arg-settings
-#' 
+#' @template arg-chromatograms
 #' @template arg-title
 #' @template arg-legendNames
 #' @template arg-colorBy
@@ -705,6 +702,76 @@ RamanEngine <- R6::R6Class("RamanEngine",
       }
     },
     
+    #' @description Plots peaks from spectra from analyses.
+    #'
+    plot_spectra_peaks = function(analyses = NULL,
+                                  legendNames = NULL,
+                                  title = NULL,
+                                  colorBy = "analyses",
+                                  showLegend = TRUE,
+                                  xlim = NULL,
+                                  ylim = NULL,
+                                  cex = 0.6,
+                                  xLab = NULL,
+                                  yLab = NULL,
+                                  interactive = TRUE) {
+      
+      if (!self$has_spectra_peaks()) return(NULL)
+      
+      analyses <- private$.check_analyses_argument(analyses)
+      
+      if (is.null(analyses)) return(NULL)
+      
+      pks <- self$spectra_peaks
+      
+      pks <- pks[pks$analysis %in% analyses, ]
+      
+      if (nrow(pks) == 0) {
+        message("\U2717 Peaks not found for the targets!")
+        return(NULL)
+      }
+      
+      setnames(pks, c("mass", "massmin", "massmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
+      
+      sp_data <- self$get_results("spectra")
+      sp_data <- sp_data$spectra$data
+      sp_data <- sp_data[unique(pks$analysis)]
+      
+      if (self$has_averaged_spectra()) {
+        spec <- lapply(sp_data, function(x) x$average)
+        spec <- rbindlist(spec, fill = TRUE)
+        if ("rt" %in% colnames(spec)) spec$rt <- NULL
+        setnames(spec, c("mass", "massmin", "massmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
+        setnames(spec, c("mz", "mzmin", "mzmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
+        
+      } else {
+        spec <- lapply(sp_data, function(x) x$raw)
+        spec <- rbindlist(spec, fill = TRUE)
+        if ("rt" %in% colnames(spec)) spec$rt <- NULL
+        setnames(spec, c("mass", "massmin", "massmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
+        setnames(spec, c("mz", "mzmin", "mzmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
+      }
+      
+      if ("smoothed" %in% colnames(spec)) {
+        spec$raw <- spec$smoothed
+      }
+      
+      ids <- spec$id
+      names(ids) <- spec$analysis
+      ids <- ids[!duplicated(names(ids))]
+      
+      pks$id = ids[pks$analysis]
+      
+      if (is.null(xLab)) xLab <- "Mass / Da"
+      if (is.null(yLab)) yLab <- "Intensity"
+      
+      if (!interactive) {
+        .plot_chrom_peaks_static(spec, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
+      } else {
+        .plot_chrom_peaks_interactive(spec, pks, legendNames, colorBy, title, showLegend, xLab, yLab)
+      }
+    },
+    
     #' @description Plots chromatograms from analyses with spectra coupled to LC.
     #' 
     #' @param raw_spectra Logical of length one. Set to `TRUE` for parsing raw spectra not spectra results/processed.
@@ -752,6 +819,62 @@ RamanEngine <- R6::R6Class("RamanEngine",
       } else {
         warning("Column rt not found in spectra data.table!")
         NULL
+      }
+    },
+    
+    #' @description Plots peaks from chromatograms from analyses.
+    #'
+    plot_chromatograms_peaks = function(analyses = NULL,
+                                        chromatograms = NULL,
+                                        legendNames = NULL,
+                                        title = NULL,
+                                        colorBy = "targets",
+                                        showLegend = TRUE,
+                                        xlim = NULL,
+                                        ylim = NULL,
+                                        cex = 0.6,
+                                        xLab = NULL,
+                                        yLab = NULL,
+                                        interactive = TRUE) {
+      
+      if (!self$has_chromatograms_peaks()) return(NULL)
+      
+      analyses <- private$.check_analyses_argument(analyses)
+      
+      if (is.null(analyses)) return(NULL)
+      
+      pks <- self$chromatograms_peaks
+      pks <- rbindlist(pks)
+      pks <- pks[pks$analysis %in% analyses, ]
+      
+      if (is.numeric(chromatograms)) {
+        which_pks <- pks$index %in% chromatograms
+        pks <- pks[which_pks, ]
+        
+      } else if (is.character(chromatograms)) {
+        which_pks <- pks$id %in% chromatograms
+        pks <- pks[which_pks, ]
+        
+      } else if (!is.null(chromatograms)) {
+        return(NULL)
+      }
+      
+      if (nrow(pks) == 0) {
+        message("\U2717 Peaks not found for the targets!")
+        return(NULL)
+      }
+      
+      chroms <- self$get_chromatograms(analyses = analyses, chromatograms = chromatograms)
+      
+      if ("replicates" %in% colorBy) {
+        chroms$replicate <- self$get_replicate_names()[chroms$analysis]
+        pks$replicate <- self$get_replicate_names()[pks$analysis]
+      }
+      
+      if (!interactive) {
+        .plot_chrom_peaks_static(chroms, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
+      } else {
+        .plot_chrom_peaks_interactive(chroms, pks, legendNames, colorBy, title, showLegend, xLab, yLab)
       }
     },
     

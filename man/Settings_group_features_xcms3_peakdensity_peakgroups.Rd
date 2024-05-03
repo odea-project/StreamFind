@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_group_features_xcms3_peakdensity_peakgroups}
 \alias{Settings_group_features_xcms3_peakdensity_peakgroups}
-\alias{validate.Settings_group_features_xcms3_peakdensity_peakgroups}
 \title{Settings_group_features_xcms3_peakdensity_peakgroups}
 \usage{
 Settings_group_features_xcms3_peakdensity_peakgroups(
@@ -24,8 +23,6 @@ Settings_group_features_xcms3_peakdensity_peakgroups(
   subset = integer(),
   subsetAdjust = "average"
 )
-
-\method{validate}{Settings_group_features_xcms3_peakdensity_peakgroups}(x)
 }
 \arguments{
 \item{bw}{numeric(1) defining the bandwidth (standard deviation of the
@@ -109,11 +106,6 @@ package \pkg{patRoon} in the background.
 \details{
 See the \link[patRoon]{groupFeaturesXCMS3} function from the \pkg{patRoon} package for more information and requirements.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_group_features_xcms3_peakdensity_peakgroups)}: Validates the object structure, returning a logical value of length one.
-
-}}
 \references{
 \insertRef{patroon01}{StreamFind}
 

@@ -65,7 +65,6 @@ ms$add_replicate_names(rpls)$add_blank_names(blks)
 
 ffs <- Settings_find_features_openms()
 
-
 # Settings documentation
 # ?Settings_find_features_openms
 
@@ -186,11 +185,12 @@ ms$plot_groups_ms2(
 
 
 # Isotopic clusters
-View(ms$get_isotopes(
+ms$map_isotopes(
   analyses = 4,
   mass = db,
+  filtered = TRUE,
   ppm = 8, sec = 10
-))
+)
 
 
 

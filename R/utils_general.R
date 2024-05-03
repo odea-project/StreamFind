@@ -420,6 +420,7 @@
 #' @description Cache interface adapted from patRoon package.
 #' 
 #' @noRd
+#' 
 .load_chache = function(category, ...) {
   file <- "cache.sqlite"
   list_out <- list()

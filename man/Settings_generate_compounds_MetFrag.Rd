@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_generate_compounds_metfrag}
 \alias{Settings_generate_compounds_metfrag}
-\alias{validate.Settings_generate_compounds_metfrag}
 \title{Settings_generate_compounds_metfrag}
 \usage{
 Settings_generate_compounds_metfrag(
@@ -26,60 +25,63 @@ Settings_generate_compounds_metfrag(
   identifiers = NULL,
   extraOpts = NULL
 )
-
-\method{validate}{Settings_generate_compounds_metfrag}(x)
 }
 \arguments{
-\item{method}{}
+\item{method}{Character (length 1) with the method to be used for MetFrag execution: "CL" for MetFragCL and "R" for MetFragR.}
 
-\item{timeout}{}
+\item{timeout}{Numeric (length 1) with the maximum time (in seconds) before a MetFrag query for a feature group is stopped.}
 
-\item{timeoutRetries}{}
+\item{timeoutRetries}{Numeric (length 1) with the maximum number of retries after reaching a timeout before completely
+skipping the MetFrag query for a feature group.}
 
-\item{errorRetries}{}
+\item{errorRetries}{Numeric (length 1) with the maximum number of retries after an error occurred.}
 
-\item{topMost}{}
+\item{topMost}{Numeric (length 1) with the maximum number of top candidates to be returned.}
 
-\item{dbRelMzDev}{}
+\item{dbRelMzDev}{Numeric (length 1) with the relative mass deviation, in ppm, for the database search.}
 
-\item{fragRelMzDev}{}
+\item{fragRelMzDev}{Numeric (length 1) with the relative mass deviation, in ppm, for the fragment search.}
 
-\item{fragAbsMzDev}{}
+\item{fragAbsMzDev}{Numeric (length 1) with the absolute mass deviation, in Da, for the fragment search.}
 
-\item{adduct}{}
+\item{adduct}{Character (length 1) with the adduct to be used for the MetFrag annotation.}
 
-\item{database}{}
+\item{database}{Character (length 1) with the database to be used for the MetFrag annotation. Valid values are:
+"pubchem", "chemspider", "for-ident", "comptox", "pubchemlite", "kegg", "sdf", "psv" and "csv".}
 
-\item{extendedPubChem}{}
+\item{extendedPubChem}{Extended PubChem database is used for the MetFrag annotation when \code{database} is "pubchem".
+Valid values are: FALSE (never use it), TRUE (always use it) or "auto" (default, use if specified scorings demand it).}
 
-\item{chemSpiderToken}{}
+\item{chemSpiderToken}{Character (length 1) with the ChemSpider token to be used for the MetFrag annotation when
+\code{database} is "chemspider".}
 
-\item{scoreTypes}{}
+\item{scoreTypes}{Character vector with the score types to be used for the MetFrag annotation.}
 
-\item{scoreWeights}{}
+\item{scoreWeights}{Numeric vector with the score weights to be used for the MetFrag annotation.}
 
-\item{preProcessingFilters}{}
+\item{preProcessingFilters}{Character vector with the pre-processing filters to be used for the MetFrag annotation.}
 
-\item{postProcessingFilters}{}
+\item{postProcessingFilters}{Character vector with the post-processing filters to be used for the MetFrag annotation.}
 
-\item{maxCandidatesToStop}{}
+\item{maxCandidatesToStop}{Numeric (length 1) with the maximum number of candidates to be returned before stopping the
+MetFrag query for a feature group.}
 
-\item{identifiers}{}
+\item{identifiers}{A list containing for each feature group a character vector with database identifiers that should
+be used to find candidates for a feature group (the list should be named by feature group names). Can be \code{NULL}.}
 
-\item{extraOpts}{}
+\item{extraOpts}{A named list containing further settings MetFrag.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_generate_compounds_metfrag.
 }
 \description{
 Settings for generating compounds using \href{https://ipb-halle.github.io/MetFrag/}{MetFrag}.
-The algorithm is used via the function \link[patRoon]{generateCompounds} from the package \pkg{patRoon}.
+The algorithm is used via the function \link[patRoon]{generateCompounds} from the package \pkg{patRoon}. Therefore,
+it is highly recommended to check the original documentation of the function in \pkg{patRoon} for more details.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_generate_compounds_metfrag)}: Validates the object structure, returning a logical value of length one.
-
-}}
+\details{
+Detailed documentation can be found in \link[patRoon]{generateCompoundsMetFrag}.
+}
 \references{
 \insertRef{metfrag01}{StreamFind}
 

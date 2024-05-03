@@ -2,28 +2,15 @@
 % Please edit documentation in R/class_S3_ProjectHeaders.R
 \name{ProjectHeaders}
 \alias{ProjectHeaders}
-\alias{validate.ProjectHeaders}
-\alias{print.ProjectHeaders}
-\alias{asJSON.ProjectHeaders}
-\alias{as.ProjectHeaders}
 \title{\strong{ProjectHeaders} S3 class constructor, methods and functions}
 \usage{
 ProjectHeaders(...)
-
-\method{validate}{ProjectHeaders}(x)
-
-\method{print}{ProjectHeaders}(x, ...)
-
-\method{asJSON}{ProjectHeaders}(x)
-
-as.ProjectHeaders(value)
 }
 \arguments{
-\item{...}{Not used.}
-
-\item{x}{A ProjectHeaders S3 class object.}
-
-\item{value}{List to be checked and converted to ProjectHeaders S3 class.}
+\item{...}{Arguments to be added as headers. Note that all given arguments
+must be of length one. There is no type limitations. The name of the argument
+becomes the name of the header entry. Alternatively, a single list argument
+with the headers (all length one) can be given.}
 }
 \value{
 A ProjectHeaders S3 class object.
@@ -31,21 +18,6 @@ A ProjectHeaders S3 class object.
 \description{
 Creates a ProjectHeaders S3 class object.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(ProjectHeaders)}: Validates a ProjectHeaders S3 class object, returning a logical value of
-length one.
-
-\item \code{print(ProjectHeaders)}: Prints the ProjectHeaders S3 class object in the console.
-
-\item \code{asJSON(ProjectHeaders)}: Converts a ProjectHeaders S3 class object to a JSON string.
-
-}}
-\section{Functions}{
-\itemize{
-\item \code{as.ProjectHeaders()}: Converts the argument value into a ProjectHeaders S3 class object.
-
-}}
 \note{
 If an argument or element name is given, it must be type character.
 If an argument or element path is given, it must be type character and exist.

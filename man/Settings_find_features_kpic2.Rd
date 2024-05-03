@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_find_features_kpic2}
 \alias{Settings_find_features_kpic2}
-\alias{validate.Settings_find_features_kpic2}
 \title{Settings_find_features_kpic2}
 \usage{
 Settings_find_features_kpic2(
@@ -14,8 +13,6 @@ Settings_find_features_kpic2(
   kmeans = TRUE,
   alpha = 0.3
 )
-
-\method{validate}{Settings_find_features_kpic2}(x)
 }
 \arguments{
 \item{level}{Mass traces are only retained if their maximum values are over \code{level}.}
@@ -44,11 +41,6 @@ Settings for finding features (i.e., chromatographic peaks) in mzML/mzXML files 
 \details{
 See the \link[patRoon]{findFeaturesKPIC2} function from the \pkg{patRoon} package for more information and requirements.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_find_features_kpic2)}: Validates the object structure, returning a logical value of length one.
-
-}}
 \references{
 \insertRef{patroon01}{StreamFind}
 

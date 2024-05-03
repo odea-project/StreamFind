@@ -2,18 +2,10 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_find_features_qPeaks}
 \alias{Settings_find_features_qPeaks}
-\alias{validate.Settings_find_features_qPeaks}
 \title{Settings_find_features_qPeaks}
 \usage{
 Settings_find_features_qPeaks()
-
-\method{validate}{Settings_find_features_qPeaks}(x)
 }
 \description{
 Not yet implemented.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_find_features_qPeaks)}: Validates the object structure, returning a logical value of length one.
-
-}}

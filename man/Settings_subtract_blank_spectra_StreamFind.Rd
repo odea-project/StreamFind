@@ -2,24 +2,13 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_subtract_blank_spectra_StreamFind}
 \alias{Settings_subtract_blank_spectra_StreamFind}
-\alias{validate.Settings_subtract_blank_spectra_StreamFind}
 \title{Settings_subtract_blank_spectra_StreamFind}
 \usage{
 Settings_subtract_blank_spectra_StreamFind()
-
-\method{validate}{Settings_subtract_blank_spectra_StreamFind}(x)
-}
-\arguments{
-\item{x}{A Settings_subtract_blank_spectra_StreamFind S3 class object.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_subtract_blank_spectra_StreamFind.
 }
 \description{
-Prototype.
+Subtracts the blank spectra to each analysis according to the blank assignment.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_subtract_blank_spectra_StreamFind)}: Validates the object structure, returning a logical value of length one.
-
-}}

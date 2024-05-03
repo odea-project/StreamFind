@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_suspect_screening_patRoon}
 \alias{Settings_suspect_screening_patRoon}
-\alias{validate.Settings_suspect_screening_patRoon}
 \title{Settings_suspect_screening_patRoon}
 \usage{
 Settings_suspect_screening_patRoon(
@@ -11,8 +10,6 @@ Settings_suspect_screening_patRoon(
   mzWindow = 0.005,
   filtered = FALSE
 )
-
-\method{validate}{Settings_suspect_screening_patRoon}(x)
 }
 \arguments{
 \item{suspects}{A data.frame with suspect information. See section Suspect list format in \link[patRoon]{screenSuspects} for more information.}
@@ -21,7 +18,7 @@ Settings_suspect_screening_patRoon(
 
 \item{mzWindow}{The m/z window that will be used for matching a suspect (+/- feature data)..}
 
-\item{filtered}{Logical. When \code{TRUE}, filtered features/groups are considered.}
+\item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_suspect_screening_patRoon.
@@ -29,11 +26,6 @@ A ProcessingSettings S3 class object with subclass Settings_suspect_screening_pa
 \description{
 Settings for performing suspect screening using the function \link[patRoon]{screenSuspects} from the patRoon R package.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_suspect_screening_patRoon)}: Validates the object structure, returning a logical value of length one.
-
-}}
 \references{
 \insertRef{patroon01}{StreamFind}
 

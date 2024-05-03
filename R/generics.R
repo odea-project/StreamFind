@@ -6,12 +6,6 @@ validate <- function(x) {
 
 #' @noRd
 #' @export
-asJSON <- function(x) {
-  UseMethod("asJSON")
-}
-
-#' @noRd
-#' @export
 export <- function(x, ...) {
   UseMethod("export")
 }
@@ -76,11 +70,6 @@ export <- function(x, ...) {
 #' @noRd
 .s3_ms_centroid_spectra <- function(settings, self, private) {
   UseMethod(".s3_ms_centroid_spectra")
-}
-
-#' @noRd
-.s3_ms_correct_intensity <- function(settings, self, private) {
-  UseMethod(".s3_ms_correct_intensity")
 }
 
 #' @noRd
@@ -174,4 +163,9 @@ export <- function(x, ...) {
 
 .s3_ms_normalise_intensity <- function(settings, self, private) {
   UseMethod(".s3_ms_normalise_intensity")
+}
+
+#' @noRd
+.s3_ms_correct_intensity <- function(settings, self, private) {
+  UseMethod(".s3_ms_correct_intensity")
 }

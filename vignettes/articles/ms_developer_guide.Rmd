@@ -31,7 +31,7 @@ library(plotly)
 library(StreamFind)
 
 # Global options
-knitr::opts_chunk$set(echo = TRUE, fig.align = "center", fig.width = 9, results = "asis")
+knitr::opts_chunk$set(echo = TRUE, fig.align = "center", fig.width = 9, results = "asis", results = "markup", message = FALSE, warning = FALSE)
 
 # Working directory
 path_wd <- getwd()

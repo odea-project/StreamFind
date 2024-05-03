@@ -19,60 +19,30 @@
     x
   })
   
-  cached_analyses <- FALSE
-
-  if (.caches_data()) {
-    hash <- patRoon::makeHash(names(features), features, settings)
-    isotopes <- patRoon::loadCacheData("annotate_features", hash)
-
-    if (!is.null(isotopes)) cached_analyses <- TRUE
+  cache <- .load_chache("annotate_features", names(features), features, settings)
+  
+  if (!is.null(cache$data)) {
+    message("\U2139 Features annotation loaded from cache!")
+    isotopes <- cache$data
     
   } else {
-    hash <- NULL
-    isotopes <- NULL
-  }
-
-  parameters <- settings$parameters
-
-  if (parameters$runParallel & length(features) > 1 & !cached_analyses) {
-    workers <- parallel::detectCores() - 1
-    if (length(features) < workers) workers <- length(features)
-    par_type <- "PSOCK"
-    if (parallelly::supportsMulticore()) par_type <- "FORK"
-    cl <- parallel::makeCluster(workers, type = par_type)
-    doParallel::registerDoParallel(cl)
-  } else {
-    registerDoSEQ()
-  }
-
-  parameters$runParallel <- NULL
-
-  if (!cached_analyses) {
-    message("\U2699 Annotating features from ",
-      length(self$get_analyses()),
-      " analyses...",
-      appendLF = FALSE
-    )
-
-    i <- NULL
-
-    vars <- c("rcpp_ms_annotation_isotopes")
-
-    isotopes <- foreach(i = features, .packages = "StreamFind", .export = vars) %dopar% {
-      do.call("rcpp_ms_annotation_isotopes", c(list("features" = i), parameters))
-    }
-
+    
+    parameters <- settings$parameters
+    
+    message("\U2699 Annotating features from ", length(self$get_analyses()), " analyses...", appendLF = FALSE)
+    
+    isotopes <- lapply(features, function(x) {
+      do.call("rcpp_ms_annotation_isotopes", c(list("features" = x), parameters))
+    })
+    
     names(isotopes) <- names(features)
-  
+    
     message(" Done!")
     
-    if (!is.null(hash)) {
-      patRoon::saveCacheData("annotate_features", isotopes, hash)
+    if (!is.null(cache$hash)) {
+      .save_cache("bin_spectra", isotopes, cache$hash)
       message("\U1f5ab Annotated features cached!")
     }
-
-  } else {
-    message("\U2139 Features annotation loaded from cache!")
   }
   
   iso_col <- lapply(names(isotopes), function(x, isotopes, features) {
@@ -87,21 +57,15 @@
     
     temp_f_fts <- temp_f$feature
     
-    if (!all(temp_i_fts %in% temp_f_fts)) {
-      stop("Annotated features do not exist in features!")
-    }
+    if (!all(temp_i_fts %in% temp_f_fts)) stop("Annotated features do not exist in features!")
     
     temp_i <- temp_i[temp_f_fts]
     
-    if (!identical(names(temp_i), temp_f_fts)) {
-      stop("Annotated features do not match features!")
-    }
+    if (!identical(names(temp_i), temp_f_fts)) stop("Annotated features do not match features!")
 
     temp_i
-  },
-  isotopes = isotopes,
-  features = features
-  )
+    
+  }, isotopes = isotopes, features = features)
   
   names(iso_col) <- names(features)
   

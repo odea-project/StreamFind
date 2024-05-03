@@ -6,7 +6,7 @@
 #include "StreamCraft/src/StreamCraft_lib.hpp"
 
 // [[Rcpp::export]]
-Rcpp::List rcpp_parse_ms_analysis_v2(std::string file_path) {
+Rcpp::List rcpp_parse_ms_analysis(std::string file_path) {
   
   Rcpp::List list_out;
   
@@ -112,7 +112,7 @@ Rcpp::List rcpp_parse_ms_analysis_v2(std::string file_path) {
 }
 
 // [[Rcpp::export]]
-Rcpp::List rcpp_parse_ms_spectra_headers_v2(std::string file_path) {
+Rcpp::List rcpp_parse_ms_spectra_headers(std::string file_path) {
   
   Rcpp::List list_out;
   
@@ -157,7 +157,7 @@ Rcpp::List rcpp_parse_ms_spectra_headers_v2(std::string file_path) {
 }
 
 // [[Rcpp::export]]
-Rcpp::List rcpp_parse_ms_chromatograms_headers_v2(std::string file_path) {
+Rcpp::List rcpp_parse_ms_chromatograms_headers(std::string file_path) {
   
   Rcpp::List list_out;
   
@@ -182,11 +182,11 @@ Rcpp::List rcpp_parse_ms_chromatograms_headers_v2(std::string file_path) {
 }
 
 // [[Rcpp::export]]
-Rcpp::List rcpp_parse_ms_spectra_v2(Rcpp::List analysis,
-                                    std::vector<int> levels,
-                                    Rcpp::DataFrame targets,
-                                    double minIntensityMS1,
-                                    double minIntensityMS2) {
+Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
+                                 std::vector<int> levels,
+                                 Rcpp::DataFrame targets,
+                                 double minIntensityMS1,
+                                 double minIntensityMS2) {
   
   Rcpp::DataFrame empty_df;
   empty_df.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
@@ -500,7 +500,7 @@ Rcpp::List rcpp_parse_ms_spectra_v2(Rcpp::List analysis,
 }
 
 // [[Rcpp::export]]
-Rcpp::List rcpp_parse_ms_chromatograms_v2(Rcpp::List analysis, std::vector<int> idx) {
+Rcpp::List rcpp_parse_ms_chromatograms(Rcpp::List analysis, std::vector<int> idx) {
   
   Rcpp::DataFrame empty_df;
   empty_df.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");

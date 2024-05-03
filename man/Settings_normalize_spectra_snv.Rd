@@ -2,26 +2,16 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_normalize_spectra_snv}
 \alias{Settings_normalize_spectra_snv}
-\alias{validate.Settings_normalize_spectra_snv}
 \title{Settings_normalize_spectra_snv}
 \usage{
 Settings_normalize_spectra_snv(liftTozero = FALSE)
-
-\method{validate}{Settings_normalize_spectra_snv}(x)
 }
 \arguments{
-\item{liftTozero}{}
-
-\item{x}{A Settings_normalize_spectra_snv S3 class object.}
+\item{liftTozero}{Logical (length 1) indicating if the spectra should be lifted to zero.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_normalize_spectra_snv.
 }
 \description{
-Prototype.
+Normalizes spectra using the Standard Normal Variate (SNV) algorithm.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_normalize_spectra_snv)}: Validates the object structure, returning a logical value of length one.
-
-}}

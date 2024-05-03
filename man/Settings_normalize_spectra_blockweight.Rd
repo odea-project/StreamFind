@@ -2,24 +2,13 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_normalize_spectra_blockweight}
 \alias{Settings_normalize_spectra_blockweight}
-\alias{validate.Settings_normalize_spectra_blockweight}
 \title{Settings_normalize_spectra_blockweight}
 \usage{
 Settings_normalize_spectra_blockweight()
-
-\method{validate}{Settings_normalize_spectra_blockweight}(x)
-}
-\arguments{
-\item{x}{A Settings_normalize_spectra_blockweight S3 class object.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_normalize_spectra_blockweight.
 }
 \description{
-Prototype.
+Normalizes spectra using block weighting for downstream data evaluation.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_normalize_spectra_blockweight)}: Validates the object structure, returning a logical value of length one.
-
-}}

@@ -1,1 +1,1 @@
-#' @param showLegend Logical. Set to \code{TRUE} to show legend.
+#' @param showLegend Logical (length 1). Set to \code{TRUE} to show legend.

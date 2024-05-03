@@ -28,7 +28,7 @@ library(plotly)
 library(StreamFind)
 
 # Global options
-knitr::opts_chunk$set(echo = TRUE, fig.align = "center", fig.width = 9, results = "markup", comment = '')
+knitr::opts_chunk$set(echo = TRUE, fig.align = "center", fig.width = 9, results = "markup", comment = '', message = FALSE, warning = FALSE)
 
 # Working directory
 path_wd <- getwd()
@@ -152,9 +152,15 @@ Extra attributes are added to further describe the specific analysis.
 The structure and complexity of the class is therefore dependent on the type of data.  
 
 ```{r, message=FALSE}
-# Example for Mass Spectrometry data
-parse_MassSpecAnalysis(StreamFindData::get_ms_file_paths()[1])
+ms_file <- StreamFindData::get_ms_file_paths()[1]
+basename(ms_file)
 ```
+
+```{r}
+# Example for Mass Spectrometry analysis
+StreamFind:::rcpp_parse_ms_analysis(ms_file)
+```
+
 
 # Child engines
 
@@ -162,7 +168,7 @@ As above mentioned, the `CoreEngine` does not handle data processing directly. T
 engines. A simple example is given below for creating a child `RamanEngine` and accessing the spectra from the analyses 
 added as *.asc* files. Note that workflow and results are still empty, as no data processing methods were applied.  
 
-```{r message=FALSE}
+```{r}
 # Example raman .asc files
 raman_ex_files <- StreamFindData::get_raman_file_paths()
 raman <- RamanEngine$new(raman_ex_files)
@@ -201,30 +207,36 @@ ps <- list(
   Settings_average_spectra_StreamFind(),
   
   # Simple normalization based on maximum intensity
-  Settings_normalize_spectra_StreamFind(),
+  Settings_normalize_spectra_minmax(),
   
   # Background subtraction
   Settings_subtract_blank_spectra_StreamFind(),
   
-  # Removes a section from the spectra from -40 to 470
-  Settings_delete_spectra_section_StreamFind(list("shift" = c(-40, 470))),
-  
   # Applies smoothing based on moving average
-  Settings_smooth_spectra_StreamFind(windowSize = 2),
+  Settings_smooth_spectra_movingaverage(windowSize = 4),
+  
+  # Removes a section from the spectra from -40 to 470
+  Settings_delete_spectra_section_StreamFind(list("shift" = c(-40, 300))),
+  
+  # Removes a section from the spectra from -40 to 470
+  Settings_delete_spectra_section_StreamFind(list("shift" = c(2000, 3000))),
  
   # Performs baseline correction 
-  Settings_correct_spectra_baseline_StreamFind(method = "als", args = list(lambda = 3, p = 0.06, maxit = 10))
+  Settings_correct_spectra_baseline_baseline(method = "als", args = list(lambda = 3, p = 0.06, maxit = 10)),
+  
+  # Performs again normalization using mixmax
+  Settings_normalize_spectra_minmax()
 )
 ```
 
-```{r, message=FALSE}
+```{r}
 # The settings are added to the engine but not yet applied
 raman$add_settings(ps)
 
 raman$print_workflow()
 ```
 
-```{r, message=FALSE}
+```{r}
 # The data processing workflow is applied
 raman$run_workflow()
 ```
@@ -243,7 +255,7 @@ str(raman$get_results("spectra"))
 
 ```{r}
 # Averaged spectra can be obtained with the dedicated field
-raman$averaged_spectra
+raman$spectra
 ```
 
 ```{r}

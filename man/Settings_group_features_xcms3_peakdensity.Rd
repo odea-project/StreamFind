@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_group_features_xcms3_peakdensity}
 \alias{Settings_group_features_xcms3_peakdensity}
-\alias{validate.Settings_group_features_xcms3_peakdensity}
 \title{Settings_group_features_xcms3_peakdensity}
 \usage{
 Settings_group_features_xcms3_peakdensity(
@@ -12,8 +11,6 @@ Settings_group_features_xcms3_peakdensity(
   binSize = 0.008,
   maxFeatures = 100
 )
-
-\method{validate}{Settings_group_features_xcms3_peakdensity}(x)
 }
 \arguments{
 \item{bw}{numeric(1) defining the bandwidth (standard deviation of the smoothing kernel) to be used. This argument
@@ -41,11 +38,6 @@ The function uses the package \pkg{patRoon} in the background.
 \details{
 See the \link[patRoon]{groupFeaturesXCMS3} function from the \pkg{patRoon} package for more information and requirements.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_group_features_xcms3_peakdensity)}: Validates the object structure, returning a logical value of length one.
-
-}}
 \references{
 \insertRef{patroon01}{StreamFind}
 

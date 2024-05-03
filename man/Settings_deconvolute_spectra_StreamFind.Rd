@@ -2,28 +2,18 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_deconvolute_spectra_StreamFind}
 \alias{Settings_deconvolute_spectra_StreamFind}
-\alias{validate.Settings_deconvolute_spectra_StreamFind}
 \title{Settings_deconvolute_spectra_StreamFind}
 \usage{
 Settings_deconvolute_spectra_StreamFind(clustVal = 0.1, window = 20)
-
-\method{validate}{Settings_deconvolute_spectra_StreamFind}(x)
 }
 \arguments{
-\item{clustVal}{}
+\item{clustVal}{Numeric (length 1) with the clustering value for the charge deconvolution.}
 
-\item{window}{}
-
-\item{x}{A Settings_deconvolute_spectra_StreamFind S3 class object.}
+\item{window}{Optional numeric (length 1) with the window in \emph{m/z} for collecting traces of a given charge.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_deconvolute_spectra_StreamFind.
 }
 \description{
-Prototype.
+Deconvolutes the spectral mass-to-charge ratio (\emph{m/z}) to mass (Da) after assignment of charges.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_deconvolute_spectra_StreamFind)}: Validates the object structure, returning a logical value of length one.
-
-}}

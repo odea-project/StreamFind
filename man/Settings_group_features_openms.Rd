@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_group_features_openms}
 \alias{Settings_group_features_openms}
-\alias{validate.Settings_group_features_openms}
 \title{Settings_group_features_openms}
 \usage{
 Settings_group_features_openms(
@@ -16,8 +15,6 @@ Settings_group_features_openms(
   extraOptsGroup = NULL,
   verbose = FALSE
 )
-
-\method{validate}{Settings_group_features_openms}(x)
 }
 \arguments{
 \item{rtalign}{Logical length one. Set to TRUE to enable retention time alignment.}
@@ -58,11 +55,6 @@ The function uses the package \pkg{patRoon} in the background.
 \details{
 See the \link[patRoon]{groupFeaturesOpenMS} function from the \pkg{patRoon} package for more information and requirements.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_group_features_openms)}: Validates the object structure, returning a logical value of length one.
-
-}}
 \references{
 \insertRef{patroon01}{StreamFind}
 

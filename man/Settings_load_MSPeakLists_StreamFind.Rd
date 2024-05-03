@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_load_MSPeakLists_StreamFind}
 \alias{Settings_load_MSPeakLists_StreamFind}
-\alias{validate.Settings_load_MSPeakLists_StreamFind}
 \title{Settings_load_MSPeakLists_StreamFind}
 \usage{
 Settings_load_MSPeakLists_StreamFind(
@@ -13,8 +12,6 @@ Settings_load_MSPeakLists_StreamFind(
   avgFun = mean,
   method = "distance"
 )
-
-\method{validate}{Settings_load_MSPeakLists_StreamFind}(x)
 }
 \arguments{
 \item{clusterMzWindow}{m/z window (in Da) used for clustering m/z values
@@ -56,8 +53,3 @@ A ProcessingSettings S3 class object with subclass Settings_load_MSPeakLists_Str
 \description{
 Settings for converting loaded MS2 and MS1 spectra into a \code{MSPeakLists} object from patRoon.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_load_MSPeakLists_StreamFind)}: Validates the object structure, returning a logical value of length one.
-
-}}

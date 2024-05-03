@@ -2,28 +2,16 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_smooth_spectra_movingaverage}
 \alias{Settings_smooth_spectra_movingaverage}
-\alias{validate.Settings_smooth_spectra_movingaverage}
 \title{Settings_smooth_spectra_movingaverage}
 \usage{
 Settings_smooth_spectra_movingaverage(windowSize = 5, xValWindow = NULL)
-
-\method{validate}{Settings_smooth_spectra_movingaverage}(x)
 }
 \arguments{
-\item{windowSize}{}
-
-\item{xValWindow}{}
-
-\item{x}{A Settings_smooth_spectra_movingaverage S3 class object.}
+\item{windowSize}{Numeric (length 1) with the window size for the moving average.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_smooth_spectra_movingaverage.
 }
 \description{
-Prototype.
+Smooths spectra using the moving average algorithm.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_smooth_spectra_movingaverage)}: Validates the object structure, returning a logical value of length one.
-
-}}

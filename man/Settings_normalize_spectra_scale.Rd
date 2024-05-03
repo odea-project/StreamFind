@@ -2,24 +2,13 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_normalize_spectra_scale}
 \alias{Settings_normalize_spectra_scale}
-\alias{validate.Settings_normalize_spectra_scale}
 \title{Settings_normalize_spectra_scale}
 \usage{
 Settings_normalize_spectra_scale()
-
-\method{validate}{Settings_normalize_spectra_scale}(x)
-}
-\arguments{
-\item{x}{A Settings_normalize_spectra_scale S3 class object.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_normalize_spectra_scale.
 }
 \description{
-Prototype.
+Normalizes spectra using scaling based on the standard deviation.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_normalize_spectra_scale)}: Validates the object structure, returning a logical value of length one.
-
-}}

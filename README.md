@@ -89,8 +89,7 @@ research that StreamFind uses relies on other contributions. Therefore,
 we recommend to search within each citation for other contributions.  
 <br>
 
-<div id="refs" class="references csl-bib-body hanging-indent"
-entry-spacing="0">
+<div id="refs" class="references csl-bib-body hanging-indent">
 
 <div id="ref-xcms03" class="csl-entry">
 
@@ -207,6 +206,14 @@ Community Standard for Mass Spectrometry Data.” *Mol Cell Proteomics*.
 
 </div>
 
+<div id="ref-genform" class="csl-entry">
+
+Meringer, Markus, Stefan Reinker, Juan Zhang, and Alban Muller. 2011.
+“MS/MS Data Improves Automated Determination of Molecular Formulas by
+Mass Spectrometry.” *MATCH Commun. Math. Comput. Chem* 65 (2): 259–90.
+
+</div>
+
 <div id="ref-mzr01" class="csl-entry">
 
 Pedrioli, Patrick G A, Jimmy K Eng, Robert Hubley, Mathijs Vogelzang,
@@ -237,6 +244,33 @@ Analysis.” *Nature Methods* 13 (9): 741–48.
 
 </div>
 
+<div id="ref-metfrag02" class="csl-entry">
+
+Ruttkies, Christoph, Steffen Neumann, and Stefan Posch. 2019. “Improving
+MetFrag with Statistical Learning of Fragment Annotations.” *BMC
+Bioinformatics* 20 (1): 1–14.
+
+</div>
+
+<div id="ref-metfrag03" class="csl-entry">
+
+Ruttkies, Christoph, Emma L Schymanski, Nadine Strehmel, Juliane
+Hollender, Steffen Neumann, Antony J Williams, and Martin Krauss. 2019.
+“Supporting Non-Target Identification by Adding Hydrogen Deuterium
+Exchange MS/MS Capabilities to MetFrag.” *Analytical and Bioanalytical
+Chemistry* 411: 4683–4700.
+
+</div>
+
+<div id="ref-metfrag01" class="csl-entry">
+
+Ruttkies, Christoph, Emma L Schymanski, Sebastian Wolf, Juliane
+Hollender, and Steffen Neumann. 2016. “MetFrag Relaunched: Incorporating
+Strategies Beyond in Silico Fragmentation.” *Journal of Cheminformatics*
+8 (1): 1–16.
+
+</div>
+
 <div id="ref-xcms01" class="csl-entry">
 
 Smith, C.A., Want, E.J., O’Maille, G., Abagyan,R., Siuzdak, and G. 2006.
@@ -251,6 +285,23 @@ Chemistry* 78: 779–87.
 Tautenhahn, Ralf, Christoph Boettcher, and Steffen Neumann. 2008.
 “Highly Sensitive Feature Detection for High Resolution LC/MS.” *BMC
 Bioinformatics* 9: 504.
+
+</div>
+
+<div id="ref-metfrag04" class="csl-entry">
+
+Wolf, Sebastian, Stephan Schmidt, Matthias Müller-Hannemann, and Steffen
+Neumann. 2010. “In Silico Fragmentation for Computer Assisted
+Identification of Metabolite Mass Spectra.” *BMC Bioinformatics* 11:
+1–12.
+
+</div>
+
+<div id="ref-airpls01" class="csl-entry">
+
+Zhang, Zhi-Min, Shan Chen, and Yi-Zeng Liang. 2010. “Baseline Correction
+Using Adaptive Iteratively Reweighted Penalized Least Squares.”
+*Analyst* 135: 1138–46. <https://doi.org/10.1039/B922045C>.
 
 </div>
 

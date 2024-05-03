@@ -30,7 +30,7 @@ library(plotly)
 library(data.table)
 library(StreamFind)
 
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.align = "center", fig.width = 9, results = "asis", comment = "")
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.align = "center", fig.width = 9, results = "markup", comment = "")
 
 main_dir <- "C:/Users/apoli/Documents/iSoft/BSA_products"
 
@@ -212,7 +212,7 @@ The four different BSA products were measured using an online coupling of size e
 
 ```{r eval=FALSE}
 # Engine with all asc files for each spectrum and each BSA product
-#raman <- RamanEngine$new(raman_files, runParallel = FALSE)
+#raman <- RamanEngine$new(raman_files)
 
 # Folder names of each BSA product
 #base_dirs <- basename(dirname(raman_files))
@@ -227,7 +227,7 @@ The four different BSA products were measured using an online coupling of size e
 A new engine is created with the unified file for each BSA product and then plotted as a time series.
 
 ```{r}
-raman <- RamanEngine$new(raman_unified_files, runParallel = FALSE)
+raman <- RamanEngine$new(raman_unified_files)
 
 # Modifying the replicate names to match the MS analyses
 raman$add_replicate_names(unique(ms$get_replicate_names())[1:4])

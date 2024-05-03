@@ -2,12 +2,9 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_filter_features_StreamFind}
 \alias{Settings_filter_features_StreamFind}
-\alias{validate.Settings_filter_features_StreamFind}
 \title{Settings_filter_features_StreamFind}
 \usage{
 Settings_filter_features_StreamFind(minSnRatio = 3, excludeIsotopes = TRUE)
-
-\method{validate}{Settings_filter_features_StreamFind}(x)
 }
 \arguments{
 \item{minSnRatio}{Numeric (length 1) with the minimum signal-to-noise ratio.}
@@ -20,8 +17,3 @@ A ProcessingSettings S3 class object with subclass Settings_filter_features_Stre
 \description{
 Settings for filtering of features and feature groups.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_filter_features_StreamFind)}: Validates the object structure, returning a logical value of length one.
-
-}}

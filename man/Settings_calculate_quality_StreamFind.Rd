@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_calculate_quality_StreamFind}
 \alias{Settings_calculate_quality_StreamFind}
-\alias{validate.Settings_calculate_quality_StreamFind}
 \title{Settings_calculate_quality_StreamFind}
 \usage{
 Settings_calculate_quality_StreamFind(
@@ -12,20 +11,17 @@ Settings_calculate_quality_StreamFind(
   filtered = FALSE,
   runParallel = TRUE
 )
-
-\method{validate}{Settings_calculate_quality_StreamFind}(x)
 }
 \arguments{
-\item{rtExpand}{Numeric value with the retention time values (in seconds) for
-expanding left and right the mass range.}
+\item{rtExpand}{Numeric (length 1) with the retention time values (in seconds) for expanding left and right the
+retention time range.}
 
-\item{mzExpand}{Numeric value with the mass or mass-to-charge ratio
-(\emph{m/z}) (in Da) for expanding left and right the mass range.}
+\item{mzExpand}{Numeric (length 1) with the mass or mass-to-charge ratio (\emph{m/z}) (in Da) for expanding left and
+right the mass range.}
 
-\item{minTraces}{Numeric of length 1 with the minimum number traces for
-calculating feature quality.}
+\item{minTraces}{Numeric of length 1 with the minimum number traces for calculating feature quality.}
 
-\item{filtered}{Logical. When \code{TRUE}, filtered features/groups are considered.}
+\item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
 \item{runParallel}{Logical of length one. Set to \code{TRUE} for parallel
 processing. Note that parallel processing is not always faster due to
@@ -37,8 +33,3 @@ A ProcessingSettings S3 class object with subclass Settings_calculate_quality_St
 \description{
 Settings for calculating quality parameters of features (e.g., signal-to-noise (sn) ratio).
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_calculate_quality_StreamFind)}: Validates the object structure, returning a logical value of length one.
-
-}}

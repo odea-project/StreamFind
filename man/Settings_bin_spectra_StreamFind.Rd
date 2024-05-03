@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_bin_spectra_StreamFind}
 \alias{Settings_bin_spectra_StreamFind}
-\alias{validate.Settings_bin_spectra_StreamFind}
 \title{Settings_bin_spectra_StreamFind}
 \usage{
 Settings_bin_spectra_StreamFind(
@@ -11,8 +10,6 @@ Settings_bin_spectra_StreamFind(
   bins = NULL,
   refBinAnalysis = NULL
 )
-
-\method{validate}{Settings_bin_spectra_StreamFind}(x)
 }
 \arguments{
 \item{unitsVal}{Character of length one with the column name of the variable to be used for binning.}
@@ -31,8 +28,3 @@ Bins spectral data according to units of a given variable (e.g., 5 retention tim
 bins given as a named list of numeric values, where the names are the bin labels (i.e. the name of the column) and
 the values are the bin dimensions (e.g. 5 seconds).
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_bin_spectra_StreamFind)}: Validates the object structure, returning a logical value of length one.
-
-}}

@@ -2,30 +2,20 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_smooth_chromatograms_savgol}
 \alias{Settings_smooth_chromatograms_savgol}
-\alias{validate.Settings_smooth_chromatograms_savgol}
 \title{Settings_smooth_chromatograms_savgol}
 \usage{
 Settings_smooth_chromatograms_savgol(fl = 11, forder = 4, dorder = 0)
-
-\method{validate}{Settings_smooth_chromatograms_savgol}(x)
 }
 \arguments{
-\item{fl}{}
+\item{fl}{Numeric (length 1) with the filter length (for instance fl = 51..151), has to be odd.}
 
-\item{forder}{}
+\item{forder}{Numeric (length 1) with the order of the filter (2 = quadratic filter, 4 = quartic).}
 
-\item{dorder}{}
-
-\item{x}{A Settings_smooth_chromatograms_savgol S3 class object.}
+\item{dorder}{Numeric (length 1) with the order of the derivative (0 = smoothing, 1 = first derivative, etc.).}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_smooth_chromatograms_savgol.
 }
 \description{
-Prototype.
+Smooths chromatograms using the Savitzky-Golay algorithm from the \pkg{pracma} package.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_smooth_chromatograms_savgol)}: Validates the object structure, returning a logical value of length one.
-
-}}

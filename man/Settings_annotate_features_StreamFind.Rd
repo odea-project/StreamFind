@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_annotate_features_StreamFind}
 \alias{Settings_annotate_features_StreamFind}
-\alias{validate.Settings_annotate_features_StreamFind}
 \title{Settings_annotate_features_StreamFind}
 \usage{
 Settings_annotate_features_StreamFind(
@@ -11,11 +10,8 @@ Settings_annotate_features_StreamFind(
   mode = "small molecules",
   maxCharge = 1,
   rtWindowAlignment = 0.3,
-  maxGaps = 1,
-  runParallel = FALSE
+  maxGaps = 1
 )
-
-\method{validate}{Settings_annotate_features_StreamFind}(x)
 }
 \arguments{
 \item{maxIsotopes}{Numeric (length 1) with the maximum number of isotopic steps.}
@@ -31,10 +27,6 @@ Possible elements are C, H, N, O, S, Cl, Br.}
 for retrieving isotopic candidates.}
 
 \item{maxGaps}{Numeric (length 1) with the maximum of allowed gaps in isotopic chains.}
-
-\item{runParallel}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_annotate_features_StreamFind.
@@ -46,8 +38,3 @@ mass increment to match the maximum chain length. Then, the mass difference  of 
 \code{elements} and a given monoisotopic ion (i.e., feature) are targeted. Each candidate is then evaluated according to
 the mass error and the expected relative intensity range as defined by the \code{mode}.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_annotate_features_StreamFind)}: Validates the object structure, returning a logical value of length one.
-
-}}

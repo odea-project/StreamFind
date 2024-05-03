@@ -2,31 +2,24 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_correct_chromatograms_baseline_baseline}
 \alias{Settings_correct_chromatograms_baseline_baseline}
-\alias{validate.Settings_correct_chromatograms_baseline_baseline}
 \title{Settings_correct_chromatograms_baseline_baseline}
 \usage{
 Settings_correct_chromatograms_baseline_baseline(
   method = "als",
   args = list(lambda = 5, p = 0.05, maxit = 10)
 )
-
-\method{validate}{Settings_correct_chromatograms_baseline_baseline}(x)
 }
 \arguments{
-\item{method}{}
+\item{method}{Character (length 1) with the method to be used for baseline correction. Possible values are "als",
+"fillPeaks", "irls", "lowpass", "medianWindow", "modpolyfit", "peakDetection", "rfbaseline", "rollingBall", "shirley"
+and "TAP".}
 
-\item{args}{}
-
-\item{x}{A Settings_correct_chromatograms_baseline_baseline S3 class object.}
+\item{args}{List with additional arguments for the selected method. See the documentation of the \pkg{baseline} package
+for more details.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_correct_chromatograms_baseline_baseline.
 }
 \description{
-Prototype.
+Performs baseline correction to chromatograms using the \pkg{baseline} package.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_correct_chromatograms_baseline_baseline)}: Validates the object structure, returning a logical value of length one.
-
-}}

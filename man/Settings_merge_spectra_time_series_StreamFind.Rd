@@ -2,12 +2,9 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_merge_spectra_time_series_StreamFind}
 \alias{Settings_merge_spectra_time_series_StreamFind}
-\alias{validate.Settings_merge_spectra_time_series_StreamFind}
 \title{Settings_merge_spectra_time_series_StreamFind}
 \usage{
 Settings_merge_spectra_time_series_StreamFind(preCut = 2)
-
-\method{validate}{Settings_merge_spectra_time_series_StreamFind}(x)
 }
 \arguments{
 \item{preCut}{The number of pre Raman scans to exclude when merging.}
@@ -16,10 +13,5 @@ Settings_merge_spectra_time_series_StreamFind(preCut = 2)
 A ProcessingSettings S3 class object with subclass Settings_merge_spectra_time_series_StreamFind.
 }
 \description{
-Prototype.
+Merges Raman spectra based on time series data. It collapses data files into a single file.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_merge_spectra_time_series_StreamFind)}: Validates the object structure, returning a logical value of length one.
-
-}}

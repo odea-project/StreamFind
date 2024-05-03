@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_integrate_chromatograms_StreamFind}
 \alias{Settings_integrate_chromatograms_StreamFind}
-\alias{validate.Settings_integrate_chromatograms_StreamFind}
 \title{Settings_integrate_chromatograms_StreamFind}
 \usage{
 Settings_integrate_chromatograms_StreamFind(
@@ -14,34 +13,26 @@ Settings_integrate_chromatograms_StreamFind(
   maxPeakWidth = 120,
   minSN = 10
 )
-
-\method{validate}{Settings_integrate_chromatograms_StreamFind}(x)
 }
 \arguments{
-\item{merge}{}
+\item{merge}{Logical (length 1) indicating if the nearby peaks should be merged.}
 
-\item{closeByThreshold}{}
+\item{closeByThreshold}{Numeric (length 1) with the maximum distance between peaks to be merged.}
 
-\item{minPeakHeight}{}
+\item{minPeakHeight}{Numeric (length 1) with the minimum peak height to be considered.}
 
-\item{minPeakDistance}{}
+\item{minPeakDistance}{Numeric (length 1) with the minimum distance between peaks.}
 
-\item{minPeakWidth}{}
+\item{minPeakWidth}{Numeric (length 1) with the minimum peak width.}
 
-\item{maxPeakWidth}{}
+\item{maxPeakWidth}{Numeric (length 1) with the maximum peak width.}
 
-\item{minSN}{}
-
-\item{x}{A Settings_integrate_chromatograms_StreamFind S3 class object.}
+\item{minSN}{Numeric (length 1) with the minimum signal-to-noise ratio.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_integrate_chromatograms_StreamFind.
 }
 \description{
-Prototype.
+Integrates chromatograms using the function \code{findpeaks} from the package \pkg{pracma} with natively
+added peak exclusion and evaluation steps.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_integrate_chromatograms_StreamFind)}: Validates the object structure, returning a logical value of length one.
-
-}}

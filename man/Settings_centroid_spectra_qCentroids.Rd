@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_centroid_spectra_qCentroids}
 \alias{Settings_centroid_spectra_qCentroids}
-\alias{validate.Settings_centroid_spectra_qCentroids}
 \title{Settings_centroid_spectra_qCentroids}
 \usage{
 Settings_centroid_spectra_qCentroids(
@@ -10,19 +9,11 @@ Settings_centroid_spectra_qCentroids(
   mode = 1,
   runParallel = FALSE
 )
-
-\method{validate}{Settings_centroid_spectra_qCentroids}(x)
 }
 \arguments{
 \item{maxScale}{Integer of length one. Maximum scale as integer (default is 5) for defining the scale limit for the peak model.}
 
 \item{mode}{Integer of length one. \code{0} for debugging, \code{1} for silent mode (the default) and \code{2} for progress bar mode.}
-
-\item{runParallel}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
-
-\item{x}{A Settings_centroid_spectra_qCentroids S3 class object.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_centroid_spectra_qCentroids.
@@ -31,11 +22,6 @@ A ProcessingSettings S3 class object with subclass Settings_centroid_spectra_qCe
 Centroids profile spectra using the \href{https://link.springer.com/article/10.1007/s00216-022-04224-y}{qCentroids}
 algorithm, which is part of the \href{https://github.com/odea-project/qAlgorithms}{qAlgorithms} library.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_centroid_spectra_qCentroids)}: Validates the object structure, returning a logical value of length one.
-
-}}
 \references{
 \insertRef{qcentroids01}{StreamFind}
 }

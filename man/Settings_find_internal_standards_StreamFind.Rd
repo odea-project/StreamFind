@@ -2,17 +2,13 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_find_internal_standards_StreamFind}
 \alias{Settings_find_internal_standards_StreamFind}
-\alias{validate.Settings_find_internal_standards_StreamFind}
 \title{Settings_find_internal_standards_StreamFind}
 \usage{
 Settings_find_internal_standards_StreamFind(database = NULL, ppm = 5, sec = 10)
-
-\method{validate}{Settings_find_internal_standards_StreamFind}(x)
 }
 \arguments{
-\item{database}{A data.frame with at least the columns name, mass, and rt
-indicating the name, neutral monoisotopic mass and retention time of the
-internal standards, respectively.}
+\item{database}{A data.frame with at least the columns name, mass, and rt indicating the name, neutral monoisotopic
+mass and retention time of the internal standards, respectively.}
 
 \item{ppm}{Numeric of length one with the mass deviation, in ppm.}
 
@@ -24,8 +20,3 @@ A ProcessingSettings S3 class object with subclass Settings_find_internal_standa
 \description{
 Settings for finding internal standards using a data.frame.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_find_internal_standards_StreamFind)}: Validates the object structure, returning a logical value of length one.
-
-}}

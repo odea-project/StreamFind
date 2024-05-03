@@ -6,23 +6,10 @@
 #' @template arg-settings-and-list
 #' @template arg-results
 #' @template arg-analyses
-#' @template arg-verbose
-#' 
 #' @template arg-save-format
 #' @template arg-save-name
 #' @template arg-save-path
 #' @template arg-import-file
-#' 
-#' @template arg-chromatograms
-#' 
-#' @template arg-title
-#' @template arg-legendNames
-#' @template arg-colorBy
-#' @template arg-labs
-#' @template arg-interactive
-#' @template arg-xlim-ylim
-#' @template arg-cex
-#' @template arg-showLegend
 #'
 #' @export
 #'
@@ -185,8 +172,38 @@ CoreEngine <- R6::R6Class("CoreEngine",
   ),
   
   # _ active bindings -----
-  
-  active = list( ),
+  active = list(
+    
+    #' @field headers List of project headers.
+    #' 
+    headers = function() {
+      private$.headers 
+    },
+    
+    #' @field settings List of processing settings.
+    #' 
+    settings = function() {
+      private$.settings
+    },
+    
+    #' @field history Audit trail of changes.
+    #' 
+    history = function() { 
+      private$.history 
+    },
+    
+    #' @field analyses List of analyses.
+    #' 
+    analyses = function() {
+      private$.analyses
+    },
+    
+    #' @field results List of results.
+    #' 
+    results = function() {
+      private$.results
+    }
+  ),
     
   # _ public fields/methods -----
   public = list(
@@ -309,8 +326,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     #' @description Gets the headers list.
     #'
-    #' @param value A character vector with the name/s of the header elements.
-    #' When `NULL` (the default), the entire headers list is returned.
+    #' @param value A character vector with the name/s of the header elements. When `NULL` (the default), the entire 
+    #' headers list is returned.
     #'
     get_headers = function(value = NULL) {
       if (is.null(value)) {
@@ -345,8 +362,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
       length(private$.analyses)
     },
     
-    #' @description Gets an overview data.table with all the analysis names, 
-    #' replicates, associated blank replicates, and full file paths.
+    #' @description Gets an overview data.table with all the analysis names,replicates, associated blank replicates, 
+    #' and full file paths.
     #'
     get_overview = function() {
       if (length(private$.analyses) > 0) {
@@ -524,10 +541,6 @@ CoreEngine <- R6::R6Class("CoreEngine",
     },
     
     #' @description Adds processing settings.
-    #'
-    #' @param settings A named list of ProcessingSettings S3 class objects or a single ProcessingSettings S3 class 
-    #' object. The list names should match the call name of each ProcessingSettings object. Alternatively, a named
-    #' list with call name, algorithm and parameters to be transformed and added as ProcessingSettings S3 class object.
     #'
     #' @param replace Logical of length one. When `TRUE`, existing settings are 
     #' replaced by the new settings with the same call name, except settings for
@@ -770,8 +783,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     #' @description Adds or redefines the analysis replicate names.
     #'
-    #' @param value A character vector with the analysis replicate names.
-    #' Must be of the same length as the number of analyses.
+    #' @param value A character vector with the analysis replicate names. Must be of the same length as the number of analyses.
     #'
     #' @return Invisible.
     #'
@@ -805,8 +817,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     #' @description Adds or redefines the analysis blank replicate names.
     #'
-    #' @param value A character vector with the analysis blank replicate names.
-    #' Must be of the same length as the number of analyses.
+    #' @param value A character vector with the analysis blank replicate names. Must be of the same length as the number of analyses.
     #'
     #' @return Invisible.
     #'
@@ -947,8 +958,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     #' @description Removes headers entries. Note that the name, path and date headers cannot be removed only changed.
     #'
-    #' @param value A character vector with the name/s of the elements in headers
-    #' to be removed.
+    #' @param value A character vector with the name/s of the elements in headers to be removed.
     #'
     #' @return Invisible.
     #'
@@ -1209,135 +1219,6 @@ CoreEngine <- R6::R6Class("CoreEngine",
       if (is.null(names)) names <- names(private$.results)
       !all(vapply(private$.results[names], is.null, FALSE))
     },
-
-    ## ___ plot -----
-    
-    #' @description Plots peaks from chromatograms from analyses.
-    #'
-    plot_chromatograms_peaks = function(analyses = NULL,
-                                        chromatograms = NULL,
-                                        legendNames = NULL,
-                                        title = NULL,
-                                        colorBy = "targets",
-                                        showLegend = TRUE,
-                                        xlim = NULL,
-                                        ylim = NULL,
-                                        cex = 0.6,
-                                        xLab = NULL,
-                                        yLab = NULL,
-                                        interactive = TRUE) {
-      
-      if (!self$has_chromatograms_peaks()) return(NULL)
-      
-      analyses <- private$.check_analyses_argument(analyses)
-      
-      if (is.null(analyses)) return(NULL)
-      
-      pks <- self$chromatograms_peaks
-      pks <- rbindlist(pks)
-      pks <- pks[pks$analysis %in% analyses, ]
-      
-      if (is.numeric(chromatograms)) {
-        which_pks <- pks$index %in% chromatograms
-        pks <- pks[which_pks, ]
-        
-      } else if (is.character(chromatograms)) {
-        which_pks <- pks$id %in% chromatograms
-        pks <- pks[which_pks, ]
-        
-      } else if (!is.null(chromatograms)) {
-        return(NULL)
-      }
-      
-      if (nrow(pks) == 0) {
-        message("\U2717 Peaks not found for the targets!")
-        return(NULL)
-      }
-      
-      chroms <- self$get_chromatograms(analyses = analyses, chromatograms = chromatograms)
-      
-      if ("replicates" %in% colorBy) {
-        chroms$replicate <- self$get_replicate_names()[chroms$analysis]
-        pks$replicate <- self$get_replicate_names()[pks$analysis]
-      }
-      
-      if (!interactive) {
-        .plot_chrom_peaks_static(chroms, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
-      } else {
-        .plot_chrom_peaks_interactive(chroms, pks, legendNames, colorBy, title, showLegend, xLab, yLab)
-      }
-    },
-    
-    #' @description Plots peaks from spectra from analyses.
-    #'
-    plot_spectra_peaks = function(analyses = NULL,
-                                  legendNames = NULL,
-                                  title = NULL,
-                                  colorBy = "analyses",
-                                  showLegend = TRUE,
-                                  xlim = NULL,
-                                  ylim = NULL,
-                                  cex = 0.6,
-                                  xLab = NULL,
-                                  yLab = NULL,
-                                  interactive = TRUE) {
-      
-      if (!self$has_spectra_peaks()) return(NULL)
-      
-      analyses <- private$.check_analyses_argument(analyses)
-      
-      if (is.null(analyses)) return(NULL)
-      
-      pks <- self$spectra_peaks
-      
-      pks <- pks[pks$analysis %in% analyses, ]
-      
-      if (nrow(pks) == 0) {
-        message("\U2717 Peaks not found for the targets!")
-        return(NULL)
-      }
-      
-      setnames(pks, c("mass", "massmin", "massmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
-      
-      sp_data <- self$get_results("spectra")
-      sp_data <- sp_data$spectra$data
-      sp_data <- sp_data[unique(pks$analysis)]
-      
-      if (self$has_averaged_spectra()) {
-        spec <- lapply(sp_data, function(x) x$average)
-        spec <- rbindlist(spec, fill = TRUE)
-        if ("rt" %in% colnames(spec)) spec$rt <- NULL
-        setnames(spec, c("mass", "massmin", "massmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
-        setnames(spec, c("mz", "mzmin", "mzmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
-        
-      } else {
-        spec <- lapply(sp_data, function(x) x$raw)
-        spec <- rbindlist(spec, fill = TRUE)
-        if ("rt" %in% colnames(spec)) spec$rt <- NULL
-        setnames(spec, c("mass", "massmin", "massmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
-        setnames(spec, c("mz", "mzmin", "mzmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
-      }
-      
-      if ("smoothed" %in% colnames(spec)) {
-        spec$raw <- spec$smoothed
-      }
-      
-      ids <- spec$id
-      names(ids) <- spec$analysis
-      ids <- ids[!duplicated(names(ids))]
-      
-      pks$id = ids[pks$analysis]
-      
-      if (is.null(xLab)) xLab <- "Mass / Da"
-      if (is.null(yLab)) yLab <- "Intensity"
-      
-      if (!interactive) {
-        .plot_chrom_peaks_static(spec, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
-      } else {
-        .plot_chrom_peaks_interactive(spec, pks, legendNames, colorBy, title, showLegend, xLab, yLab)
-      }
-    },
-    
     
     ## ___ processing -----
     
@@ -1367,7 +1248,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' @description Saves the headers list as the defined \code{format} in \code{path} and returns invisible.
     #'
     save_headers = function(format = "json", name = "headers", path = getwd()) {
+      
       if (format %in% "json") {
+        
         js_headers <- toJSON(
           private$.headers,
           dataframe = "columns",
@@ -1382,12 +1265,11 @@ CoreEngine <- R6::R6Class("CoreEngine",
           pretty = TRUE,
           force = TRUE
         )
+        
         write(js_headers, file = paste0(path, "/", name, ".json"))
       }
       
-      if (format %in% "rds") {
-        saveRDS(private$.headers, file = paste0(path, "/", name, ".rds"))
-      }
+      if (format %in% "rds") saveRDS(private$.headers, file = paste0(path, "/", name, ".rds"))
       
       invisible(self)
     },
@@ -1404,6 +1286,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       names(js_settings) <- vapply(js_settings, function(x) x$call, NA_character_)
       
       if (format %in% "json") {
+        
         js_settings <- toJSON(
           js_settings,
           dataframe = "columns",
@@ -1418,12 +1301,11 @@ CoreEngine <- R6::R6Class("CoreEngine",
           pretty = TRUE,
           force = TRUE
         )
+        
         write(js_settings, file = paste0(path, "/", name, ".json"))
       }
       
-      if (format %in% "rds") {
-        saveRDS(self$get_settings(call), file = paste0(path, "/", name, ".rds"))
-      }
+      if (format %in% "rds") saveRDS(self$get_settings(call), file = paste0(path, "/", name, ".rds"))
       
       invisible(self)
     },
@@ -1435,6 +1317,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       analyses <- self$get_analyses(analyses)
       
       if (format %in% "json") {
+        
         js_analyses <- toJSON(
           analyses,
           dataframe = "columns",
@@ -1453,9 +1336,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
         write(js_analyses, file = paste0(path, "/", name, ".json"))
       }
       
-      if (format %in% "rds") {
-        saveRDS(analyses, file = paste0(path, "/", name, ".rds"))
-      }
+      if (format %in% "rds") saveRDS(analyses, file = paste0(path, "/", name, ".rds"))
       
       invisible(self)
     },
@@ -1465,6 +1346,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     save = function(format = "json", name = "EngineData", path = getwd()) {
       
       if (format %in% "json") {
+        
         list_all <- list()
         
         headers <- private$.headers
@@ -1497,9 +1379,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
         write(js_all, file = paste0(path, "/", name, ".", "json"))
       }
       
-      if (format %in% "rds") {
-        saveRDS(self, file = paste0(path, "/", name, ".rds"))
-      }
+      if (format %in% "rds") saveRDS(self, file = paste0(path, "/", name, ".rds"))
       
       invisible(self)
     },
@@ -1511,35 +1391,44 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' @return Invisible.
     #'
     import_headers = function(file = NA_character_) {
+      
       if (file.exists(file)) {
+        
         headers <- NULL
+        
         if (file_ext(file) %in% "json") headers <- fromJSON(file)
         if (file_ext(file) %in% "rds") headers <- readRDS(file)
+        
         self$add_headers(headers)
         
       } else {
         warning("File not found in given path!")
       }
+      
       invisible(self)
     },
     
     #' @description Imports processing settings from a \emph{rds} or \emph{json} file.
     #'
-    #' @param replace Logical. When `TRUE`, existing settings are replaced by
-    #' the new settings with the same call name.
+    #' @param replace Logical. When `TRUE`, existing settings are replaced by the new settings with the same call name.
     #'
     #' @return Invisible.
     #'
     import_settings = function(file = NA_character_, replace = TRUE) {
+      
       if (file.exists(file)) {
+        
         settings <- NULL
+        
         if (file_ext(file) %in% "json") settings <- fromJSON(file)
         if (file_ext(file) %in% "rds") settings <- readRDS(file)
+        
         self$add_settings(settings, replace)
         
       } else {
         warning("File not found in given path!")
       }
+      
       invisible(self)
     },
     
@@ -1548,16 +1437,20 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' @return Invisible.
     #'
     import_analyses = function(file = NA_character_) {
+      
       if (file.exists(file)) {
+        
         analyses <- NULL
-        if (file_ext(file) %in% "json") {
-          analyses <- fromJSON(file, simplifyDataFrame = FALSE)
-        }
+        
+        if (file_ext(file) %in% "json") analyses <- fromJSON(file, simplifyDataFrame = FALSE)
         if (file_ext(file) %in% "rds") analyses <- readRDS(file)
+        
         self$add_analyses(analyses)
+        
       } else {
         warning("File not found in given path!")
       }
+      
       invisible(self)
     },
     
@@ -1570,7 +1463,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
     import = function(file = NA_character_) {
       
       if (file.exists(file)) {
+        
         if (file_ext(file) %in% "json") {
+          
           js_ms <- fromJSON(file, simplifyDataFrame = FALSE)
           
           fields_present <- names(js_ms)
@@ -1594,9 +1489,27 @@ CoreEngine <- R6::R6Class("CoreEngine",
           }
           
           if ("results" %in% fields_present) {
-            private$.results <- js_ms[["results"]]
+            warning("Results cannot be yet imported from a json file!")
           }
         }
+        
+        if (file_ext(file) %in% "rds") {
+          
+          ms <- readRDS(file)
+          
+          if (is(ms, "CoreEngine")) {
+            
+            private$.headers <- ms$headers
+            private$.settings <- ms$settings
+            private$.analyses <- ms$analyses
+            private$.history <- ms$history
+            private$.results <- ms$results
+            
+          } else {
+            warning("The file is not a CoreEngine object!")
+          }
+        }
+        
       } else {
         warning("File not found in given path!")
         NULL

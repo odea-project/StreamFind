@@ -44,9 +44,8 @@
       mzClust = parameters$mzClust,
       presence = parameters$presence,
       minIntensity = parameters$minIntensity,
-      verbose = parameters$verbose,
       filtered = parameters$filtered,
-      loadedMS2 = FALSE
+      loaded = FALSE
     )
   }
   

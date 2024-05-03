@@ -1,1 +1,1 @@
-#' @param minIntensity Numeric value with the minimum intensity.
+#' @param minIntensity Numeric (length 1) with the minimum intensity.

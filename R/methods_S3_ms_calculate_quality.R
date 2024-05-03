@@ -36,40 +36,28 @@
   if (nrow(eic) > 0) {
 
     analyses <- self$get_analysis_names()
-
-    cached_analyses <- FALSE
-
-    if (.caches_data()) {
-      hash <- patRoon::makeHash(analyses, eic, fts, settings)
-      quality <- patRoon::loadCacheData("calculate_quality", hash)
-
-      if (!is.null(quality)) {
-        check <- vapply(names(quality),
-          function(x, quality, fts) {
-            temp_i <- names(quality[[x]])
-            temp_f <- fts[[x]]$feature
-            s_id <- all(temp_i %in% temp_f)
-            all(s_id)
-            FALSE
-          },
-          quality = quality,
-          fts = fts,
-          FALSE
-        )
-
-        if (all(check)) {
-          cached_analyses <- TRUE
-          
-        } else {
-          quality <- NULL
-        }
-      }
+    
+    cache <- .load_chache("calculate_quality", analyses, eic, fts, settings)
+    
+    if (!is.null(cache$data)) {
+      
+      quality <- cache$data
+      
+      check <- vapply(names(quality), function(x, quality, fts) {
+        temp_i <- names(quality[[x]])
+        temp_f <- fts[[x]]$feature
+        s_id <- all(temp_i %in% temp_f)
+        all(s_id)
+        FALSE
+      }, quality = quality, fts = fts, FALSE)
+      
+      if (!all(check)) quality <- NULL
+      
     } else {
-      hash <- NULL
       quality <- NULL
     }
     
-    if (parameters$runParallel && length(analyses) > 1 && !cached_analyses) {
+    if (parameters$runParallel && length(analyses) > 1) {
       workers <- parallel::detectCores() - 1
       if (length(analyses) < workers) workers <- length(analyses)
       par_type <- "PSOCK"
@@ -80,20 +68,14 @@
       registerDoSEQ()
     }
 
-    if (!cached_analyses) {
-      message("\U2699 Calculating features quality from ",
-        length(self$get_analyses()),
-        " analyses...",
-        appendLF = FALSE
-      )
+    if (is.null(quality)) {
+      
+      message("\U2699 Calculating features quality from ", length(self$get_analyses()), " analyses...", appendLF = FALSE)
 
       fts_eics <- lapply(analyses, function(x, eic, fts) {
-
         eic_t <- eic[eic$analysis %in% x, ]
         eic_t[["analysis"]] <- NULL
-
         list("a" = x, "e" = eic_t, "f" = fts[[x]])
-
       }, eic = eic, fts = fts)
       
       i <- NULL
@@ -399,16 +381,14 @@
         results
       }
 
-      if (parameters$runParallel && length(analyses) > 1 && !cached_analyses) {
-        stopCluster(cl)
-      }
+      if (parameters$runParallel && length(analyses) > 1) stopCluster(cl)
 
       names(quality) <- analyses
 
       message(" Done!")
       
-      if (!is.null(hash)) {
-        patRoon::saveCacheData("calculate_quality", quality, hash)
+      if (!is.null(cache$hash)) {
+        .save_cache("calculate_quality", quality, cache$hash)
         message("\U1f5ab Calculated features quality parameters cached!")
       }
       

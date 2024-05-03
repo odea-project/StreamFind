@@ -2,18 +2,10 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_bin_spectra_qBinning}
 \alias{Settings_bin_spectra_qBinning}
-\alias{validate.Settings_bin_spectra_qBinning}
 \title{Settings_bin_spectra_qBinning}
 \usage{
 Settings_bin_spectra_qBinning()
-
-\method{validate}{Settings_bin_spectra_qBinning}(x)
 }
 \description{
 Not yet implemented.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_bin_spectra_qBinning)}: Validates the object structure, returning a logical value of length one.
-
-}}

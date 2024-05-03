@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_load_features_eic_StreamFind}
 \alias{Settings_load_features_eic_StreamFind}
-\alias{validate.Settings_load_features_eic_StreamFind}
 \title{Settings_load_features_eic_StreamFind}
 \usage{
 Settings_load_features_eic_StreamFind(
@@ -10,17 +9,15 @@ Settings_load_features_eic_StreamFind(
   mzExpand = 0,
   filtered = FALSE
 )
-
-\method{validate}{Settings_load_features_eic_StreamFind}(x)
 }
 \arguments{
-\item{rtExpand}{Numeric value with the retention time values (in seconds) for
-expanding left and right the mass range.}
+\item{rtExpand}{Numeric (length 1) with the retention time values (in seconds) for expanding left and right the
+retention time range.}
 
-\item{mzExpand}{Numeric value with the mass or mass-to-charge ratio
-(\emph{m/z}) (in Da) for expanding left and right the mass range.}
+\item{mzExpand}{Numeric (length 1) with the mass or mass-to-charge ratio (\emph{m/z}) (in Da) for expanding left and
+right the mass range.}
 
-\item{filtered}{Logical. When \code{TRUE}, filtered features/groups are considered.}
+\item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_load_features_eic_StreamFind.
@@ -28,8 +25,3 @@ A ProcessingSettings S3 class object with subclass Settings_load_features_eic_St
 \description{
 Settings for loading spectra EIC for feature groups.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_load_features_eic_StreamFind)}: Validates the object structure, returning a logical value of length one.
-
-}}

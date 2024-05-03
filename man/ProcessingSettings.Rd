@@ -2,11 +2,6 @@
 % Please edit documentation in R/class_S3_ProcessingSettings.R
 \name{ProcessingSettings}
 \alias{ProcessingSettings}
-\alias{validate.ProcessingSettings}
-\alias{print.ProcessingSettings}
-\alias{asJSON.ProcessingSettings}
-\alias{export.ProcessingSettings}
-\alias{as.ProcessingSettings}
 \title{\strong{ProcessingSettings} S3 class constructor, methods and functions}
 \usage{
 ProcessingSettings(
@@ -20,32 +15,17 @@ ProcessingSettings(
   link = NA_character_,
   doi = NA_character_
 )
-
-\method{validate}{ProcessingSettings}(x)
-
-\method{print}{ProcessingSettings}(x, ...)
-
-\method{asJSON}{ProcessingSettings}(x)
-
-\method{export}{ProcessingSettings}(x, format = "json", name = "settings", path = getwd(), ...)
-
-as.ProcessingSettings(value)
 }
 \arguments{
-\item{call}{Character of length one with the name of the method where the
-processing settings are to be applied.}
+\item{call}{Character of length one with the name of the method where theprocessing settings are to be applied.}
 
-\item{algorithm}{Character of length one with the name of the algorithm to
-be used.}
+\item{algorithm}{Character of length one with the name of the algorithm to be used.}
 
-\item{parameters}{List with parameters specific for the method \code{call} and
-\code{algorithm}.}
+\item{parameters}{List with parameters specific for the method \code{call} and \code{algorithm}.}
 
-\item{version}{Character of length one with the version of the processing
-settings.}
+\item{version}{Character of length one with the version of the processing settings.}
 
-\item{software}{Character of length one with the name of the software or
-package.}
+\item{software}{Character of length one with the name of the software or package.}
 
 \item{developer}{Character of length one with the name of the developer/s.}
 
@@ -54,47 +34,11 @@ package.}
 \item{link}{Character of length one with the a web link.}
 
 \item{doi}{Character of length one with the DOI of algorithm.}
-
-\item{x}{A ProcessingSettings S3 class object.}
-
-\item{...}{Not used.}
-
-\item{format}{A string. Possible values are \code{json} and \code{rds} for saving as
-JSON or RDS formats, respectively.}
-
-\item{name}{String with the name of the file to be saved.}
-
-\item{path}{String with the directory of the file to be saved.}
-
-\item{value}{A list to be checked and/or converted to ProcessingSettings S3
-class.}
 }
 \value{
 A ProcessingSettings S3 class
 }
 \description{
-Creates a ProcessingSettings S3 class object. The ProcessingSettings are used
-in \pkg{StreamFind} for processing data in a given data class method.
+Creates a ProcessingSettings S3 class object. The ProcessingSettings are used in \pkg{StreamFind} for
+processing data in a given data class method.
 }
-\details{
-See the documentation of the method where the processing settings
-are to be applied for more information about applicable algorithms and
-parameters.
-}
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(ProcessingSettings)}: Validates a ProcessingSettings S3 class object, returning a logical value of
-length one.
-
-\item \code{print(ProcessingSettings)}: Prints the ProcessingSettings S3 class object in the console.
-
-\item \code{asJSON(ProcessingSettings)}: Converts a ProcessingSettings S3 class object to a JSON string.
-
-\item \code{export(ProcessingSettings)}: Exports a ProcessingSettings S3 class object to a JSON or RDS file.
-
-}}
-\section{Functions}{
-\itemize{
-\item \code{as.ProcessingSettings()}: Converts the argument in a ProcessingSettings S3 class object.
-
-}}

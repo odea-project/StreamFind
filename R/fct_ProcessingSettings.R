@@ -10,7 +10,6 @@
 #'
 #' @param maxScale Integer of length one. Maximum scale as integer (default is 5) for defining the scale limit for the peak model.
 #' @param mode Integer of length one. `0` for debugging, `1` for silent mode (the default) and `2` for progress bar mode.
-#' @template arg-runParallel
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_centroid_spectra_qCentroids.
 #'
@@ -26,8 +25,7 @@ Settings_centroid_spectra_qCentroids <- function(maxScale = 5, mode = 1, runPara
     algorithm = "qCentroids",
     parameters = list(
       maxScale = maxScale,
-      mode = mode,
-      runParallel = runParallel
+      mode = mode
     ),
     version = as.character(packageVersion("StreamFind")),
     software = "qAlgorithms",
@@ -40,19 +38,15 @@ Settings_centroid_spectra_qCentroids <- function(maxScale = 5, mode = 1, runPara
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_centroid_spectra_qCentroids Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_centroid_spectra_qCentroids S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_centroid_spectra_qCentroids <- function(x) {
   all(
     checkmate::test_choice(x$call, "centroid_spectra"),
     checkmate::test_choice(x$algorithm, "qCentroids"),
     checkmate::test_int(x$parameters$maxScale),
-    checkmate::test_int(x$parameters$mode),
-    checkmate::test_logical(x$parameters$runParallel, max.len = 1)
+    checkmate::test_int(x$parameters$mode)
   )
 }
 
@@ -89,9 +83,8 @@ Settings_bin_spectra_qBinning <- function() {
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_bin_spectra_qBinning Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_bin_spectra_qBinning <- function(x) {
   all(
@@ -142,10 +135,8 @@ Settings_bin_spectra_StreamFind <- function(unitsVal = NULL,
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_bin_spectra_StreamFind
-#' Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_bin_spectra_StreamFind <- function(x) {
   all(
@@ -191,10 +182,8 @@ Settings_find_features_qPeaks <- function() {
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_find_features_qPeaks
-#' Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_find_features_qPeaks <- function(x) {
   all(
@@ -310,10 +299,8 @@ Settings_find_features_xcms3_centwave <- function(ppm = 12,
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_find_features_xcms3_centwave
-#' Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_find_features_xcms3_centwave <- function(x) {
   all(
@@ -425,10 +412,8 @@ Settings_find_features_xcms3_matchedfilter <- function(binSize = 0.5,
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_find_features_xcms3_matchedfilter
-#' Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_find_features_xcms3_matchedfilter <- function(x) {
   all(
@@ -508,8 +493,7 @@ validate.Settings_find_features_xcms3_matchedfilter <- function(x) {
 #' with many analyses files. However, useFFMIntensities=TRUE is still somewhat
 #' experimental, may be less accurate and requires a recent version of OpenMS
 #' (>=2.7).
-#' @param verbose Logical of length one. When TRUE adds processing information
-#' to the console.
+#' @param verbose Logical of length one. When TRUE adds processing information to the console.
 #'
 #' @details See the \link[patRoon]{findFeaturesOpenMS} function from the \pkg{patRoon} package for more information and requirements.
 #'
@@ -589,9 +573,8 @@ Settings_find_features_openms <- function(noiseThrInt = 1000,
   return(settings)
 }
 
-#' @describeIn Settings_find_features_openms Validates the object structure, returning a logical value of length one.
-#' 
 #' @export
+#' @noRd
 #'
 validate.Settings_find_features_openms <- function(x) {
   all(
@@ -687,10 +670,8 @@ Settings_find_features_kpic2 <- function(level = 500,
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_find_features_kpic2
-#' Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_find_features_kpic2 <- function(x) {
   all(
@@ -781,9 +762,8 @@ Settings_group_features_xcms3_peakdensity <- function(bw = 5,
   return(settings)
 }
 
-#' @describeIn Settings_group_features_xcms3_peakdensity Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_group_features_xcms3_peakdensity <- function(x) {
   all(
@@ -946,9 +926,8 @@ Settings_group_features_xcms3_peakdensity_peakgroups <- function(bw = 5,
   return(settings)
 }
 
-#' @describeIn Settings_group_features_xcms3_peakdensity_peakgroups Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_group_features_xcms3_peakdensity_peakgroups <- function(x) {
   all(
@@ -1061,9 +1040,8 @@ Settings_group_features_openms <- function(rtalign = FALSE,
   return(settings)
 }
 
-#' @describeIn Settings_group_features_openms Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_group_features_openms <- function(x) {
   all(
@@ -1099,7 +1077,6 @@ validate.Settings_group_features_openms <- function(x) {
 #' @template arg-ms-presence
 #' @template arg-ms-minIntensity
 #' @template arg-ms-filtered
-#' @template arg-verbose
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_load_features_ms1_StreamFind.
 #'
@@ -1110,8 +1087,7 @@ Settings_load_features_ms1_StreamFind <- function(rtWindow = c(-2, 2),
                                                   mzClust = 0.005,
                                                   presence = 0.8,
                                                   minIntensity = 250,
-                                                  filtered = FALSE,
-                                                  verbose = FALSE) {
+                                                  filtered = FALSE) {
   
   settings <- list(
     call = "load_features_ms1",
@@ -1122,8 +1098,7 @@ Settings_load_features_ms1_StreamFind <- function(rtWindow = c(-2, 2),
       "mzClust" = mzClust,
       "presence" = presence,
       "minIntensity" = minIntensity,
-      "filtered" = filtered,
-      "verbose" = verbose
+      "filtered" = filtered
     ),
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",
@@ -1136,9 +1111,8 @@ Settings_load_features_ms1_StreamFind <- function(rtWindow = c(-2, 2),
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_load_features_ms1_StreamFind Validates the object structure, returning a logical value of length one.
-#' 
 #' @export
+#' @noRd
 #'
 validate.Settings_load_features_ms1_StreamFind <- function(x) {
   all(
@@ -1148,8 +1122,7 @@ validate.Settings_load_features_ms1_StreamFind <- function(x) {
     checkmate::test_double(as.numeric(x$parameters$mzWindow), max.len = 2),
     checkmate::test_number(x$parameters$mzClust),
     checkmate::test_number(x$parameters$minIntensity),
-    checkmate::test_logical(x$parameters$filtered, max.len = 1),
-    checkmate::test_logical(x$parameters$verbose, max.len = 1)
+    checkmate::test_logical(x$parameters$filtered, max.len = 1)
   )
 }
 
@@ -1164,7 +1137,6 @@ validate.Settings_load_features_ms1_StreamFind <- function(x) {
 #' @template arg-ms-presence
 #' @template arg-ms-minIntensity
 #' @template arg-ms-filtered
-#' @template arg-verbose
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_load_features_ms2_StreamFind.
 #'
@@ -1174,8 +1146,7 @@ Settings_load_features_ms2_StreamFind <- function(isolationWindow = 1.3,
                                                   mzClust = 0.005,
                                                   presence = 0.8,
                                                   minIntensity = 10,
-                                                  filtered = FALSE,
-                                                  verbose = FALSE) {
+                                                  filtered = FALSE) {
   
   settings <- list(
     call = "load_features_ms2",
@@ -1185,8 +1156,7 @@ Settings_load_features_ms2_StreamFind <- function(isolationWindow = 1.3,
       "mzClust" = mzClust,
       "presence" = presence,
       "minIntensity" = minIntensity,
-      "filtered" = filtered,
-      "verbose" = verbose
+      "filtered" = filtered
     ),
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",
@@ -1199,9 +1169,8 @@ Settings_load_features_ms2_StreamFind <- function(isolationWindow = 1.3,
  as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_load_features_ms2_StreamFind Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_load_features_ms2_StreamFind <- function(x) {
   all(
@@ -1210,8 +1179,7 @@ validate.Settings_load_features_ms2_StreamFind <- function(x) {
     checkmate::test_number(x$parameters$isolationWindow),
     checkmate::test_number(x$parameters$mzClust),
     checkmate::test_number(x$parameters$minIntensity),
-    checkmate::test_logical(x$parameters$filtered, max.len = 1),
-    checkmate::test_logical(x$parameters$verbose, max.len = 1)
+    checkmate::test_logical(x$parameters$filtered, max.len = 1)
   )
 }
 
@@ -1252,9 +1220,8 @@ Settings_load_features_eic_StreamFind <- function(rtExpand = 120, mzExpand = 0, 
   return(settings)
 }
 
-#' @describeIn Settings_load_features_eic_StreamFind Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_load_features_eic_StreamFind <- function(x) {
   all(
@@ -1357,9 +1324,8 @@ Settings_load_MSPeakLists_patRoon <- function(maxMSRtWindow = 5,
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_load_MSPeakLists_patRoon Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_load_MSPeakLists_patRoon <- function(x) {
   all(
@@ -1443,9 +1409,8 @@ Settings_load_MSPeakLists_StreamFind <- function(clusterMzWindow = 0.005,
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_load_MSPeakLists_StreamFind Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_load_MSPeakLists_StreamFind <- function(x) {
   all(
@@ -1499,9 +1464,8 @@ Settings_filter_features_StreamFind <- function(minSnRatio = 3, excludeIsotopes 
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_filter_features_StreamFind Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_filter_features_StreamFind <- function(x) {
   all(
@@ -1617,9 +1581,8 @@ Settings_filter_features_patRoon <- function(absMinIntensity = NULL,
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_filter_features_patRoon Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_filter_features_patRoon <- function(x) {
   all(
@@ -1685,7 +1648,6 @@ validate.Settings_filter_features_patRoon <- function(x) {
 #' @param rtWindowAlignment Numeric (length 1) with the proportion of the monoisotopic feature time window to be used 
 #' for retrieving isotopic candidates.
 #' @param maxGaps Numeric (length 1) with the maximum of allowed gaps in isotopic chains.
-#' @template arg-runParallel
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_annotate_features_StreamFind.
 #'
@@ -1696,8 +1658,7 @@ Settings_annotate_features_StreamFind <- function(maxIsotopes = 5,
                                                   mode = "small molecules",
                                                   maxCharge = 1,
                                                   rtWindowAlignment = 0.3,
-                                                  maxGaps = 1,
-                                                  runParallel = FALSE) {
+                                                  maxGaps = 1) {
   
   settings <- list(
     call = "annotate_features",
@@ -1708,8 +1669,7 @@ Settings_annotate_features_StreamFind <- function(maxIsotopes = 5,
       "mode" = mode,
       "maxCharge" = maxCharge,
       "rtWindowAlignment" = rtWindowAlignment,
-      "maxGaps" = maxGaps,
-      "runParallel" = runParallel
+      "maxGaps" = maxGaps
     ),
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",
@@ -1722,9 +1682,8 @@ Settings_annotate_features_StreamFind <- function(maxIsotopes = 5,
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_annotate_features_StreamFind Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_annotate_features_StreamFind <- function(x) {
   all(
@@ -1765,7 +1724,6 @@ validate.Settings_annotate_features_StreamFind <- function(x) {
 #' @template arg-ms-mzClust
 #' @template arg-ms-presence
 #' @template arg-ms-minIntensity
-#' @template arg-runParallel
 #' @template arg-ms-filtered
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_suspect_screening_StreamFind.
@@ -1781,7 +1739,6 @@ Settings_suspect_screening_StreamFind <- function(database = NULL,
                                                   mzClust = 0.003,
                                                   presence = 0.8,
                                                   minIntensity = 0,
-                                                  runParallel = FALSE,
                                                   filtered = FALSE) {
   
   settings <- list(
@@ -1797,7 +1754,6 @@ Settings_suspect_screening_StreamFind <- function(database = NULL,
       "mzClust" = mzClust,
       "presence" = presence,
       "minIntensity" = minIntensity,
-      "runParallel" = runParallel,
       "filtered" = filtered
     ),
     version = as.character(packageVersion("StreamFind")),
@@ -1811,9 +1767,8 @@ Settings_suspect_screening_StreamFind <- function(database = NULL,
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_suspect_screening_StreamFind Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_suspect_screening_StreamFind <- function(x) {
   
@@ -1893,9 +1848,8 @@ Settings_suspect_screening_forident <- function(addMS2 = FALSE,
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_suspect_screening_forident Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_suspect_screening_forident <- function(x) {
   all(
@@ -1950,9 +1904,8 @@ Settings_suspect_screening_patRoon <- function(suspects = NULL, rtWindow = 12, m
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_suspect_screening_patRoon Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_suspect_screening_patRoon <- function(x) {
   
@@ -1984,9 +1937,8 @@ validate.Settings_suspect_screening_patRoon <- function(x) {
 #'
 #' @description Settings for finding internal standards using a data.frame.
 #'
-#' @param database A data.frame with at least the columns name, mass, and rt
-#' indicating the name, neutral monoisotopic mass and retention time of the
-#' internal standards, respectively.
+#' @param database A data.frame with at least the columns name, mass, and rt indicating the name, neutral monoisotopic 
+#' mass and retention time of the internal standards, respectively.
 #' @template arg-ms-ppm
 #' @template arg-ms-sec
 #'
@@ -2016,9 +1968,8 @@ Settings_find_internal_standards_StreamFind <- function(database = NULL, ppm = 5
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_find_internal_standards_StreamFind Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_find_internal_standards_StreamFind <- function(x) {
   
@@ -2051,8 +2002,7 @@ validate.Settings_find_internal_standards_StreamFind <- function(x) {
 #'
 #' @template arg-ms-rtExpand 
 #' @template arg-ms-mzExpand 
-#' @param minTraces Numeric of length 1 with the minimum number traces for 
-#' calculating feature quality.
+#' @param minTraces Numeric of length 1 with the minimum number traces for calculating feature quality.
 #' @template arg-ms-filtered 
 #' @template arg-runParallel 
 #'
@@ -2088,11 +2038,8 @@ Settings_calculate_quality_StreamFind <- function(rtExpand = 120,
   as.ProcessingSettings(settings)
 }
 
-
-
-#' @describeIn Settings_calculate_quality_StreamFind Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_calculate_quality_StreamFind <- function(x) {
   all(
@@ -2117,28 +2064,37 @@ validate.Settings_calculate_quality_StreamFind <- function(x) {
 #' @title Settings_generate_formulas_genform
 #'
 #' @description Settings for generating formulas using the algorithm \href{https://sourceforge.net/projects/genform/}{GenForm}. 
-#' The algorithm is used via the function \link[patRoon]{generateFormulas} from the package \pkg{patRoon}.
+#' The algorithm is used via the function \link[patRoon]{generateFormulas} from the package \pkg{patRoon}. Therefore, 
+#' it is highly recommended to check the original documentation of the function in \pkg{patRoon} for more details.
 #' 
-#' @param relMzDev 
-#' @param elements 
-#' @param hetero 
-#' @param oc 
-#' @param thrMS 
-#' @param thrMSMS 
-#' @param thrComb 
-#' @param maxCandidates 
-#' @param extraOpts 
-#' @param calculateFeatures 
-#' @param featThreshold 
-#' @param featThresholdAnn 
-#' @param absAlignMzDev 
-#' @param MSMode 
-#' @param isolatePrec 
-#' @param timeout 
-#' @param topMost 
-#' @param batchSize 
+#' @param relMzDev Numeric (length 1) with the relative mass deviation, in ppm.
+#' @param elements Character vector with the elements to use for formulae annotation. Always try to work with a minimal 
+#' set by excluding elements you don't expect.
+#' @param hetero Logical (length 1) indicating if heteroatoms are allowed in the formulae.
+#' @param oc Logical (length 1) indicating presence of at least one carbon in the formulae.
+#' @param thrMS, thrMSMS, thrComb Numeric (length 1) Sets the thresholds for the GenForm MS score (isoScore), MS/MS score 
+#' (MSMSScore) and combined score (combMatch). Sets the thms/thmsms/thcomb command line options, respectively. Set to 
+#' NULL for no threshold.
+#' @param maxCandidates Numeric (length 1) with the maximum number of candidates to be generated.
+#' @param extraOpts Character (length 1) with extra CLI options to be passed to the GenForm algorithm.
+#' @param calculateFeatures Logical (length 1) indicating if features should be calculated.
+#' @param featThreshold Numeric (length 1). If `calculateFeatures` is TRUE the minimum presence (from 0 to 1) of features 
+#' with formula annotation to be considered for the respective feature group. 
+#' @param featThresholdAnn Numeric (length 1). As `featThreshold`, but only considers features with annotations.
+#' @param absAlignMzDev Numeric (length 1). When the group formula annotation consensus is made from feature annotations, 
+#' the \emph{m/z} values of annotated MS/MS fragments may slightly deviate from those of the corresponding group MS/MS 
+#' peak list. The `absAlignMzDev` argument specifies the maximum \emph{m/z} window used to re-align the mass peaks.
+#' @param MSMode Character (length 1) with the MS mode to be used. Possible values are "MS", "MSMS", or "both".
+#' @param isolatePrec Settings used for isolation of precursor mass peaks and their isotopes. This isolation is highly 
+#' important for accurate isotope scoring of candidates, as non-relevant mass peaks will dramatically decrease the score. 
+#' The value of `isolatePrec` should either be a `list` with parameters (see the `filter` method for `MSPeakLists` for 
+#' more details), `TRUE` for default parameters or `FALSE` for no isolation (e.g. when you already performed isolation 
+#' with the filter method). The `z` parameter (charge) is automatically deduced from the adduct used for annotation 
+#' (unless `isolatePrec` is FALSE), hence any custom `z` setting is ignored.
+#' @param timeout Numeric (length 1) with the maximum time in seconds to wait for the GenForm algorithm to finish.
+#' @param topMost Numeric (length 1) with the maximum number of top candidates to be returned.
+#' @param batchSize Maximum number of `GenForm` commands that should be run sequentially in each parallel process.
 #' 
-#'
 #' @return A ProcessingSettings S3 class object with subclass Settings_generate_formulas_genform.
 #' 
 #' @references
@@ -2203,14 +2159,31 @@ Settings_generate_formulas_genform <- function(relMzDev = 5,
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_generate_formulas_genform Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_generate_formulas_genform <- function(x) {
   all(
     checkmate::test_choice(x$call, "generate_formulas"),
-    checkmate::test_choice(x$algorithm, "genform")
+    checkmate::test_choice(x$algorithm, "genform"),
+    checkmate::test_number(x$parameters$relMzDev),
+    checkmate::test_character(x$parameters$elements, min.len = 1),
+    checkmate::test_logical(x$parameters$hetero, len = 1),
+    checkmate::test_logical(x$parameters$oc, len = 1),
+    checkmate::test_numeric(x$parameters$thrMS, len = 1, null.ok = TRUE),
+    checkmate::test_numeric(x$parameters$thrMSMS, len = 1, null.ok = TRUE),
+    checkmate::test_numeric(x$parameters$thrComb, len = 1, null.ok = TRUE),
+    checkmate::test_numeric(x$parameters$maxCandidates, len = 1),
+    checkmate::test_character(x$parameters$extraOpts, null.ok = TRUE),
+    checkmate::test_logical(x$parameters$calculateFeatures, len = 1),
+    checkmate::test_numeric(x$parameters$featThreshold, len = 1, null.ok = TRUE),
+    checkmate::test_numeric(x$parameters$featThresholdAnn, len = 1, null.ok = TRUE),
+    checkmate::test_numeric(x$parameters$absAlignMzDev, len = 1, null.ok = TRUE),
+    checkmate::test_choice(x$parameters$MSMode, c("MS", "MSMS", "both")),
+    checkmate::test_choice(x$parameters$isolatePrec, c(TRUE, FALSE, list())),
+    checkmate::test_numeric(x$parameters$timeout, len = 1),
+    checkmate::test_numeric(x$parameters$topMost, len = 1),
+    checkmate::test_numeric(x$parameters$batchSize, len = 1)
   )
 }
 
@@ -2225,27 +2198,36 @@ validate.Settings_generate_formulas_genform <- function(x) {
 #' @title Settings_generate_compounds_metfrag
 #'
 #' @description Settings for generating compounds using \href{https://ipb-halle.github.io/MetFrag/}{MetFrag}. 
-#' The algorithm is used via the function \link[patRoon]{generateCompounds} from the package \pkg{patRoon}.
+#' The algorithm is used via the function \link[patRoon]{generateCompounds} from the package \pkg{patRoon}. Therefore, 
+#' it is highly recommended to check the original documentation of the function in \pkg{patRoon} for more details.
 #' 
-#' @param method 
-#' @param timeout 
-#' @param timeoutRetries 
-#' @param errorRetries 
-#' @param topMost 
-#' @param dbRelMzDev 
-#' @param fragRelMzDev 
-#' @param fragAbsMzDev 
-#' @param adduct 
-#' @param database 
-#' @param extendedPubChem 
-#' @param chemSpiderToken 
-#' @param scoreTypes 
-#' @param scoreWeights 
-#' @param preProcessingFilters 
-#' @param postProcessingFilters 
-#' @param maxCandidatesToStop 
-#' @param identifiers 
-#' @param extraOpts 
+#' @param method Character (length 1) with the method to be used for MetFrag execution: "CL" for MetFragCL and "R" for MetFragR.
+#' @param timeout Numeric (length 1) with the maximum time (in seconds) before a MetFrag query for a feature group is stopped.
+#' @param timeoutRetries Numeric (length 1) with the maximum number of retries after reaching a timeout before completely 
+#' skipping the MetFrag query for a feature group.
+#' @param errorRetries Numeric (length 1) with the maximum number of retries after an error occurred.
+#' @param topMost Numeric (length 1) with the maximum number of top candidates to be returned.
+#' @param dbRelMzDev Numeric (length 1) with the relative mass deviation, in ppm, for the database search.
+#' @param fragRelMzDev Numeric (length 1) with the relative mass deviation, in ppm, for the fragment search.
+#' @param fragAbsMzDev Numeric (length 1) with the absolute mass deviation, in Da, for the fragment search.
+#' @param adduct Character (length 1) with the adduct to be used for the MetFrag annotation.
+#' @param database Character (length 1) with the database to be used for the MetFrag annotation. Valid values are: 
+#' "pubchem", "chemspider", "for-ident", "comptox", "pubchemlite", "kegg", "sdf", "psv" and "csv".
+#' @param extendedPubChem Extended PubChem database is used for the MetFrag annotation when `database` is "pubchem".
+#' Valid values are: FALSE (never use it), TRUE (always use it) or "auto" (default, use if specified scorings demand it).
+#' @param chemSpiderToken Character (length 1) with the ChemSpider token to be used for the MetFrag annotation when
+#' `database` is "chemspider".
+#' @param scoreTypes Character vector with the score types to be used for the MetFrag annotation. 
+#' @param scoreWeights Numeric vector with the score weights to be used for the MetFrag annotation.
+#' @param preProcessingFilters Character vector with the pre-processing filters to be used for the MetFrag annotation.
+#' @param postProcessingFilters Character vector with the post-processing filters to be used for the MetFrag annotation.
+#' @param maxCandidatesToStop Numeric (length 1) with the maximum number of candidates to be returned before stopping the
+#' MetFrag query for a feature group.
+#' @param identifiers A list containing for each feature group a character vector with database identifiers that should 
+#' be used to find candidates for a feature group (the list should be named by feature group names). Can be `NULL`.
+#' @param extraOpts A named list containing further settings MetFrag.
+#' 
+#' @details Detailed documentation can be found in \link[patRoon]{generateCompoundsMetFrag}.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_generate_compounds_metfrag.
 #' 
@@ -2320,14 +2302,32 @@ Settings_generate_compounds_metfrag <- function(method = "CL",
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_generate_compounds_metfrag Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_generate_compounds_metfrag <- function(x) {
   all(
     checkmate::test_choice(x$call, "generate_compounds"),
-    checkmate::test_choice(x$algorithm, "metfrag")
+    checkmate::test_choice(x$algorithm, "metfrag"),
+    checkmate::test_choice(x$parameters$method, c("CL", "R")),
+    checkmate::test_number(x$parameters$timeout),
+    checkmate::test_number(x$parameters$timeoutRetries),
+    checkmate::test_number(x$parameters$errorRetries),
+    checkmate::test_number(x$parameters$topMost),
+    checkmate::test_number(x$parameters$dbRelMzDev),
+    checkmate::test_number(x$parameters$fragRelMzDev),
+    checkmate::test_number(x$parameters$fragAbsMzDev),
+    checkmate::test_character(x$parameters$adduct, null.ok = TRUE),
+    checkmate::test_choice(x$parameters$database, c("pubchem", "chemspider", "for-ident", "comptox", "pubchemlite", "kegg", "sdf", "psv", "csv")),
+    checkmate::test_choice(x$parameters$extendedPubChem, c("auto", TRUE, FALSE)),
+    checkmate::test_character(x$parameters$chemSpiderToken),
+    checkmate::test_character(x$parameters$scoreTypes, min.len = 1),
+    checkmate::test_numeric(x$parameters$scoreWeights, min.len = 1),
+    checkmate::test_character(x$parameters$preProcessingFilters, min.len = 1),
+    checkmate::test_character(x$parameters$postProcessingFilters, min.len = 1),
+    checkmate::test_number(x$parameters$maxCandidatesToStop),
+    checkmate::test_list(x$parameters$identifiers, len = 1, null.ok = TRUE),
+    checkmate::test_list(x$parameters$extraOpts, len = 1, null.ok = TRUE)
   )
 }
 
@@ -2341,15 +2341,16 @@ validate.Settings_generate_compounds_metfrag <- function(x) {
 
 #' @title Settings_integrate_chromatograms_StreamFind
 #'
-#' @description Prototype.
+#' @description Integrates chromatograms using the function `findpeaks` from the package \pkg{pracma} with natively 
+#' added peak exclusion and evaluation steps.
 #' 
-#' @param merge 
-#' @param closeByThreshold 
-#' @param minPeakHeight 
-#' @param minPeakDistance 
-#' @param minPeakWidth 
-#' @param maxPeakWidth 
-#' @param minSN 
+#' @param merge Logical (length 1) indicating if the nearby peaks should be merged.
+#' @param closeByThreshold Numeric (length 1) with the maximum distance between peaks to be merged.
+#' @param minPeakHeight Numeric (length 1) with the minimum peak height to be considered.
+#' @param minPeakDistance Numeric (length 1) with the minimum distance between peaks.
+#' @param minPeakWidth Numeric (length 1) with the minimum peak width.
+#' @param maxPeakWidth Numeric (length 1) with the maximum peak width.
+#' @param minSN Numeric (length 1) with the minimum signal-to-noise ratio.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_integrate_chromatograms_StreamFind.
 #'
@@ -2386,19 +2387,26 @@ Settings_integrate_chromatograms_StreamFind <- function(merge = TRUE,
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_integrate_chromatograms_StreamFind
-#' Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_integrate_chromatograms_StreamFind S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_integrate_chromatograms_StreamFind <- function(x) {
   all(
     checkmate::test_choice(x$call, "integrate_chromatograms"),
-    checkmate::test_choice(x$algorithm, "StreamFind")
+    checkmate::test_choice(x$algorithm, "StreamFind"),
+    checkmate::test_logical(x$parameters$merge, max.len = 1),
+    checkmate::test_number(x$parameters$closeByThreshold),
+    checkmate::test_number(x$parameters$minPeakHeight),
+    checkmate::test_number(x$parameters$minPeakDistance),
+    checkmate::test_number(x$parameters$minPeakWidth),
+    checkmate::test_number(x$parameters$maxPeakWidth),
+    checkmate::test_number(x$parameters$minSN)
   )
 }
+
+
+
+
 
 # ______________________________________________________________________________________________________________________
 # calculate_spectra_charges -----
@@ -2406,19 +2414,18 @@ validate.Settings_integrate_chromatograms_StreamFind <- function(x) {
 
 #' @title Settings_calculate_spectra_charges_StreamFind
 #'
-#' @description Prototype.
+#' @description Calculates spectral charges from multi-charged compounds (e.g. proteins and monoclonal antibodies) for
+#' mass deconvolution.
 #' 
-#' @param roundVal 
-#' @param relLowCut 
-#' @param absLowCut 
+#' @param roundVal Numeric (length 1) with the rounding value for the m/z values before applying charge clustering.
+#' @param relLowCut Numeric (length 1) with the relative low cut for the charge clustering.
+#' @param absLowCut Numeric (length 1) with the absolute low cut for the charge clustering.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_calculate_spectra_charges_StreamFind.
 #'
 #' @export
 #'
-Settings_calculate_spectra_charges_StreamFind <- function(roundVal = 35,
-                                                          relLowCut = 0.2,
-                                                          absLowCut = 300) {
+Settings_calculate_spectra_charges_StreamFind <- function(roundVal = 35, relLowCut = 0.2, absLowCut = 300) {
   
   settings <- list(
     call = "calculate_spectra_charges",
@@ -2439,19 +2446,22 @@ Settings_calculate_spectra_charges_StreamFind <- function(roundVal = 35,
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_calculate_spectra_charges_StreamFind
-#' Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_calculate_spectra_charges_StreamFind S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_calculate_spectra_charges_StreamFind <- function(x) {
   all(
     checkmate::test_choice(x$call, "calculate_spectra_charges"),
-    checkmate::test_choice(x$algorithm, "StreamFind")
+    checkmate::test_choice(x$algorithm, "StreamFind"),
+    checkmate::test_number(x$parameters$roundVal),
+    checkmate::test_number(x$parameters$relLowCut),
+    checkmate::test_number(x$parameters$absLowCut)
   )
 }
+
+
+
+
 
 # ______________________________________________________________________________________________________________________
 # deconvolute_spectra -----
@@ -2459,10 +2469,10 @@ validate.Settings_calculate_spectra_charges_StreamFind <- function(x) {
 
 #' @title Settings_deconvolute_spectra_StreamFind
 #'
-#' @description Prototype.
+#' @description Deconvolutes the spectral mass-to-charge ratio (\emph{m/z}) to mass (Da) after assignment of charges.
 #' 
-#' @param clustVal 
-#' @param window 
+#' @param clustVal Numeric (length 1) with the clustering value for the charge deconvolution.
+#' @param window Optional numeric (length 1) with the window in \emph{m/z} for collecting traces of a given charge.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_deconvolute_spectra_StreamFind.
 #'
@@ -2488,17 +2498,15 @@ Settings_deconvolute_spectra_StreamFind <- function(clustVal = 0.1, window = 20)
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_deconvolute_spectra_StreamFind
-#' Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_deconvolute_spectra_StreamFind S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_deconvolute_spectra_StreamFind <- function(x) {
   all(
     checkmate::test_choice(x$call, "deconvolute_spectra"),
-    checkmate::test_choice(x$algorithm, "StreamFind")
+    checkmate::test_choice(x$algorithm, "StreamFind"),
+    checkmate::test_number(x$parameters$clustVal),
+    checkmate::test_number(x$parameters$window, null.ok = TRUE)
   )
 }
 
@@ -2508,9 +2516,9 @@ validate.Settings_deconvolute_spectra_StreamFind <- function(x) {
 
 #' @title Settings_average_spectra_StreamFind
 #'
-#' @description Prototype.
+#' @description Averages spectra based on analysis replicate groups.
 #' 
-#' @param collapseTime Logical length 1. When `TRUE` the spectra are averaged, reducing the time variable.
+#' @param collapseTime Logical (length 1). When `TRUE` the spectra are averaged, reducing the time variable.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_average_spectra_StreamFind.
 #'
@@ -2535,19 +2543,20 @@ Settings_average_spectra_StreamFind <- function(collapseTime = FALSE) {
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_average_spectra_StreamFind
-#' Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_average_spectra_StreamFind S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_average_spectra_StreamFind <- function(x) {
   all(
     checkmate::test_choice(x$call, "average_spectra"),
-    checkmate::test_choice(x$algorithm, "StreamFind")
+    checkmate::test_choice(x$algorithm, "StreamFind"),
+    checkmate::test_logical(x$parameters$collapseTime, max.len = 1)
   )
 }
+
+
+
+
 
 # ______________________________________________________________________________________________________________________
 # cluster_spectra -----
@@ -2555,11 +2564,11 @@ validate.Settings_average_spectra_StreamFind <- function(x) {
 
 #' @title Settings_cluster_spectra_StreamFind
 #'
-#' @description Prototype.
+#' @description Clusters spectra based on a variable (i.e. column name).
 #' 
-#' @param val 
-#' @param clustVal 
-#' @param presence 
+#' @param val Character (length 1) with the variable to be used for clustering.
+#' @param clustVal Numeric (length 1) with the clustering value.
+#' @param presence Numeric (length 1) with the minimum presence of traces in a cluster to be considered.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_cluster_spectra_StreamFind.
 #'
@@ -2586,19 +2595,22 @@ Settings_cluster_spectra_StreamFind <- function(val = "mz", clustVal = 0.001, pr
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_cluster_spectra_StreamFind
-#' Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_cluster_spectra_StreamFind S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_cluster_spectra_StreamFind <- function(x) {
   all(
     checkmate::test_choice(x$call, "cluster_spectra"),
-    checkmate::test_choice(x$algorithm, "StreamFind")
+    checkmate::test_choice(x$algorithm, "StreamFind"),
+    checkmate::test_character(x$parameters$val, min.len = 1),
+    checkmate::test_number(x$parameters$clustVal),
+    checkmate::test_number(x$parameters$presence)
   )
 }
+
+
+
+
 
 # ______________________________________________________________________________________________________________________
 # subtract_blank_spectra -----
@@ -2606,7 +2618,7 @@ validate.Settings_cluster_spectra_StreamFind <- function(x) {
 
 #' @title Settings_subtract_blank_spectra_StreamFind
 #'
-#' @description Prototype.
+#' @description Subtracts the blank spectra to each analysis according to the blank assignment.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_subtract_blank_spectra_StreamFind.
 #'
@@ -2629,12 +2641,8 @@ Settings_subtract_blank_spectra_StreamFind <- function() {
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_subtract_blank_spectra_StreamFind
-#' Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_subtract_blank_spectra_StreamFind S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_subtract_blank_spectra_StreamFind <- function(x) {
   all(
@@ -2643,23 +2651,29 @@ validate.Settings_subtract_blank_spectra_StreamFind <- function(x) {
   )
 }
 
+
+
+
+
 # ______________________________________________________________________________________________________________________
 # correct_chromatograms_baseline -----
 # ______________________________________________________________________________________________________________________
 
 #' @title Settings_correct_chromatograms_baseline_baseline
 #'
-#' @description Prototype.
+#' @description Performs baseline correction to chromatograms using the \pkg{baseline} package.
 #' 
-#' @param method 
-#' @param args 
+#' @param method Character (length 1) with the method to be used for baseline correction. Possible values are "als",
+#' "fillPeaks", "irls", "lowpass", "medianWindow", "modpolyfit", "peakDetection", "rfbaseline", "rollingBall", "shirley" 
+#' and "TAP".
+#' @param args List with additional arguments for the selected method. See the documentation of the \pkg{baseline} package
+#' for more details.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_correct_chromatograms_baseline_baseline.
 #'
 #' @export
 #'
-Settings_correct_chromatograms_baseline_baseline <- function(method = "als",
-                                                             args = list(lambda = 5, p = 0.05, maxit = 10)) {
+Settings_correct_chromatograms_baseline_baseline <- function(method = "als", args = list(lambda = 5, p = 0.05, maxit = 10)) {
   
   settings <- list(
     call = "correct_chromatograms_baseline",
@@ -2679,29 +2693,33 @@ Settings_correct_chromatograms_baseline_baseline <- function(method = "als",
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_correct_chromatograms_baseline_baseline
-#' Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_correct_chromatograms_baseline_baseline S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_correct_chromatograms_baseline_baseline <- function(x) {
   all(
     checkmate::test_choice(x$call, "correct_chromatograms_baseline"),
-    checkmate::test_choice(x$algorithm, "baseline")
+    checkmate::test_choice(x$algorithm, "baseline"),
+    checkmate::test_choice(x$parameters$method, c("als", "fillPeaks", "irls", "lowpass", "medianWindow", "modpolyfit", 
+                                                  "peakDetection", "rfbaseline", "rollingBall", "shirley", "TAP")),
+    checkmate::test_list(x$parameters$args, len = 1)
   )
 }
 
 #' @title Settings_correct_chromatograms_baseline_airpls
 #'
-#' @description Prototype.
+#' @description Performs baseline correction using adaptive iteratively reweighted Penalized Least Squares (airPLS) 
+#' based on the algorithm from Zhi-Min Zhang.
 #' 
-#' @param lambda 
-#' @param differences 
-#' @param itermax 
+#' @param lambda Numeric (length 1) with the smoothing intensity. the higher the `lambda` the higher the smoothing.
+#' @param differences Integer (length 1) indicating the order of the difference of penalties
+#' @param itermax Integer (length 1) with the maximum number of iterations.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_correct_chromatograms_baseline_airpls.
+#' 
+#' @references
+#' 
+#' \insertRef{airpls01}{StreamFind}
 #'
 #' @export
 #'
@@ -2710,9 +2728,7 @@ Settings_correct_chromatograms_baseline_airpls <- function(lambda = 10, differen
   settings <- list(
     call = "correct_chromatograms_baseline",
     algorithm = "airpls",
-    parameters = list(
-      lambda = lambda, differences = differences, itermax = itermax
-    ),
+    parameters = list(lambda = lambda, differences = differences, itermax = itermax),
     version = NA_character_,
     software = "airPLS",
     developer = "Zhi-Min Zhang",
@@ -2724,19 +2740,22 @@ Settings_correct_chromatograms_baseline_airpls <- function(lambda = 10, differen
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_correct_chromatograms_baseline_airpls
-#' Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_correct_chromatograms_baseline_airpls S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_correct_chromatograms_baseline_airpls <- function(x) {
   all(
     checkmate::test_choice(x$call, "correct_chromatograms_baseline"),
-    checkmate::test_choice(x$algorithm, "airpls")
+    checkmate::test_choice(x$algorithm, "airpls"),
+    checkmate::test_number(x$parameters$lambda),
+    checkmate::test_integer(as.integer(x$parameters$differences)),
+    checkmate::test_integer(as.integer(x$parameters$itermax))
   )
 }
+
+
+
+
 
 # ______________________________________________________________________________________________________________________
 # correct_spectra_baseline -----
@@ -2744,25 +2763,24 @@ validate.Settings_correct_chromatograms_baseline_airpls <- function(x) {
 
 #' @title Settings_correct_spectra_baseline_baseline
 #'
-#' @description Prototype.
+#' @description Performs baseline correction to spectra using the \pkg{baseline} package.
 #' 
-#' @param method 
-#' @param args 
+#' @param method Character (length 1) with the method to be used for baseline correction. Possible values are "als",
+#' "fillPeaks", "irls", "lowpass", "medianWindow", "modpolyfit", "peakDetection", "rfbaseline", "rollingBall", "shirley" 
+#' and "TAP".
+#' @param args List with additional arguments for the selected method. See the documentation of the \pkg{baseline} package
+#' for more details.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_correct_spectra_baseline_baseline.
 #'
 #' @export
 #'
-Settings_correct_spectra_baseline_baseline <- function(method = "als",
-                                                       args = list(lambda = 5, p = 0.05, maxit = 10)) {
+Settings_correct_spectra_baseline_baseline <- function(method = "als", args = list(lambda = 5, p = 0.05, maxit = 10)) {
   
   settings <- list(
     call = "correct_spectra_baseline",
     algorithm = "baseline",
-    parameters = list(
-      method = method,
-      args = args
-    ),
+    parameters = list(method = method, args = args),
     version = as.character(packageVersion("baseline")),
     software = "baseline",
     developer = "Kristian Hovde Liland and Bjørn-Helge Mevik",
@@ -2774,29 +2792,35 @@ Settings_correct_spectra_baseline_baseline <- function(method = "als",
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_correct_spectra_baseline_baseline
-#' Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_correct_spectra_baseline_baseline S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_correct_spectra_baseline_baseline <- function(x) {
   all(
     checkmate::test_choice(x$call, "correct_spectra_baseline"),
-    checkmate::test_choice(x$algorithm, "baseline")
+    checkmate::test_choice(x$algorithm, "baseline"),
+    checkmate::test_choice(x$parameters$method, c("als", "fillPeaks", "irls", "lowpass", "medianWindow", "modpolyfit", 
+                                                  "peakDetection", "rfbaseline", "rollingBall", "shirley", "TAP")),
+    checkmate::test_list(x$parameters$args, len = 1)
   )
 }
 
+
+
 #' @title Settings_correct_spectra_baseline_airpls
 #'
-#' @description Prototype.
+#' @description Performs baseline correction using adaptive iteratively reweighted Penalized Least Squares (airPLS) 
+#' based on the algorithm from Zhi-Min Zhang.
 #' 
-#' @param lambda 
-#' @param differences 
-#' @param itermax 
+#' @param lambda Numeric (length 1) with the smoothing intensity. the higher the `lambda` the higher the smoothing.
+#' @param differences Integer (length 1) indicating the order of the difference of penalties
+#' @param itermax Integer (length 1) with the maximum number of iterations.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_correct_spectra_baseline_airpls.
+#' 
+#' @references
+#' 
+#' \insertRef{airpls01}{StreamFind}
 #'
 #' @export
 #'
@@ -2819,19 +2843,22 @@ Settings_correct_spectra_baseline_airpls <- function(lambda = 10, differences = 
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_correct_spectra_baseline_airpls
-#' Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_correct_spectra_baseline_airpls S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_correct_spectra_baseline_airpls <- function(x) {
   all(
     checkmate::test_choice(x$call, "correct_spectra_baseline"),
-    checkmate::test_choice(x$algorithm, "airpls")
+    checkmate::test_choice(x$algorithm, "airpls"),
+    checkmate::test_number(x$parameters$lambda),
+    checkmate::test_integer(as.integer(x$parameters$differences)),
+    checkmate::test_integer(as.integer(x$parameters$itermax))
   )
 }
+
+
+
+
 
 # ______________________________________________________________________________________________________________________
 # smooth_chromatograms -----
@@ -2839,10 +2866,9 @@ validate.Settings_correct_spectra_baseline_airpls <- function(x) {
 
 #' @title Settings_smooth_chromatograms_movingaverage
 #'
-#' @description Prototype.
+#' @description Smooths chromatograms using the moving average algorithm.
 #' 
-#' @param windowSize 
-#' @param xValWindow 
+#' @param windowSize Numeric (length 1) with the window size for the moving average.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_smooth_chromatograms_movingaverage.
 #'
@@ -2853,10 +2879,7 @@ Settings_smooth_chromatograms_movingaverage <- function(windowSize = 5, xValWind
   settings <- list(
     call = "smooth_chromatograms",
     algorithm = "movingaverage",
-    parameters = list(
-      windowSize = windowSize,
-      xValWindow = xValWindow
-    ),
+    parameters = list(windowSize = windowSize),
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",
     developer = "Ricardo Cunha",
@@ -2868,27 +2891,26 @@ Settings_smooth_chromatograms_movingaverage <- function(windowSize = 5, xValWind
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_smooth_chromatograms_movingaverage
-#' Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_smooth_chromatograms_movingaverage S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_smooth_chromatograms_movingaverage <- function(x) {
   all(
     checkmate::test_choice(x$call, "smooth_chromatograms"),
-    checkmate::test_choice(x$algorithm, "movingaverage")
+    checkmate::test_choice(x$algorithm, "movingaverage"),
+    checkmate::test_number(x$parameters$windowSize)
   )
 }
 
+
+
 #' @title Settings_smooth_chromatograms_savgol
 #'
-#' @description Prototype.
+#' @description Smooths chromatograms using the Savitzky-Golay algorithm from the \pkg{pracma} package.
 #' 
-#' @param fl 
-#' @param forder 
-#' @param dorder 
+#' @param fl Numeric (length 1) with the filter length (for instance fl = 51..151), has to be odd.
+#' @param forder Numeric (length 1) with the order of the filter (2 = quadratic filter, 4 = quartic).
+#' @param dorder Numeric (length 1) with the order of the derivative (0 = smoothing, 1 = first derivative, etc.).
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_smooth_chromatograms_savgol.
 #'
@@ -2915,17 +2937,16 @@ Settings_smooth_chromatograms_savgol <- function(fl = 11, forder = 4, dorder = 0
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_smooth_chromatograms_savgol
-#' Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_smooth_chromatograms_savgol S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_smooth_chromatograms_savgol <- function(x) {
   all(
     checkmate::test_choice(x$call, "smooth_chromatograms"),
-    checkmate::test_choice(x$algorithm, "savgol")
+    checkmate::test_choice(x$algorithm, "savgol"),
+    checkmate::test_number(x$parameters$fl),
+    checkmate::test_number(x$parameters$forder),
+    checkmate::test_number(x$parameters$dorder)
   )
 }
 
@@ -2935,10 +2956,9 @@ validate.Settings_smooth_chromatograms_savgol <- function(x) {
 
 #' @title Settings_smooth_spectra_movingaverage
 #'
-#' @description Prototype.
+#' @description Smooths spectra using the moving average algorithm.
 #' 
-#' @param windowSize 
-#' @param xValWindow 
+#' @param windowSize Numeric (length 1) with the window size for the moving average. 
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_smooth_spectra_movingaverage.
 #'
@@ -2949,10 +2969,7 @@ Settings_smooth_spectra_movingaverage <- function(windowSize = 5, xValWindow = N
   settings <- list(
     call = "smooth_spectra",
     algorithm = "movingaverage",
-    parameters = list(
-      windowSize = windowSize,
-      xValWindow = xValWindow
-    ),
+    parameters = list(windowSize = windowSize),
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",
     developer = "Ricardo Cunha",
@@ -2964,27 +2981,24 @@ Settings_smooth_spectra_movingaverage <- function(windowSize = 5, xValWindow = N
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_smooth_spectra_movingaverage
-#' Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_smooth_spectra_movingaverage S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_smooth_spectra_movingaverage <- function(x) {
   all(
     checkmate::test_choice(x$call, "smooth_spectra"),
-    checkmate::test_choice(x$algorithm, "movingaverage")
+    checkmate::test_choice(x$algorithm, "movingaverage"),
+    checkmate::test_number(x$parameters$windowSize)
   )
 }
 
 #' @title Settings_smooth_spectra_savgol
 #'
-#' @description Prototype.
+#' @description Smooths spectra using the Savitzky-Golay algorithm from the \pkg{pracma} package.
 #' 
-#' @param fl 
-#' @param forder 
-#' @param dorder 
+#' @param fl Numeric (length 1) with the filter length (for instance fl = 51..151), has to be odd.
+#' @param forder Numeric (length 1) with the order of the filter (2 = quadratic filter, 4 = quartic).
+#' @param dorder Numeric (length 1) with the order of the derivative (0 = smoothing, 1 = first derivative, etc.).
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_smooth_spectra_savgol.
 #'
@@ -3011,76 +3025,30 @@ Settings_smooth_spectra_savgol <- function(fl = 11, forder = 4, dorder = 0) {
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_smooth_spectra_savgol
-#' Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_smooth_spectra_savgol S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_smooth_spectra_savgol <- function(x) {
   all(
     checkmate::test_choice(x$call, "smooth_spectra"),
-    checkmate::test_choice(x$algorithm, "savgol")
+    checkmate::test_choice(x$algorithm, "savgol"),
+    checkmate::test_number(x$parameters$fl),
+    checkmate::test_number(x$parameters$forder),
+    checkmate::test_number(x$parameters$dorder)
   )
 }
+
+
+
+
 
 # ______________________________________________________________________________________________________________________
 # normalize_spectra -----
 # ______________________________________________________________________________________________________________________
 
-#' @title Settings_normalize_spectra_StreamFind
-#'
-#' @description Prototype.
-#' 
-#' @param liftTozero 
-#' @param xName 
-#' @param xVal 
-#'
-#' @return A ProcessingSettings S3 class object with subclass Settings_normalize_spectra_StreamFind.
-#'
-#' @export
-#'
-Settings_normalize_spectra_StreamFind <- function(liftTozero = FALSE,
-                                                  xName = NULL,
-                                                  xVal = NULL) {
-  
-  settings <- list(
-    call = "normalize_spectra",
-    algorithm = "StreamFind",
-    parameters = list(
-      liftTozero = liftTozero,
-      xName = xName,
-      xVal = xVal
-    ),
-    version = as.character(packageVersion("StreamFind")),
-    software = "StreamFind",
-    developer = "Ricardo Cunha",
-    contact = "cunha@iuta.de",
-    link = "https://odea-project.github.io/StreamFind",
-    doi = NA_character_
-  )
-  
-  as.ProcessingSettings(settings)
-}
-
-#' @describeIn Settings_normalize_spectra_StreamFind
-#' Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_normalize_spectra_StreamFind S3 class object.
-#'
-#' @export
-#'
-validate.Settings_normalize_spectra_StreamFind <- function(x) {
-  all(
-    checkmate::test_choice(x$call, "normalize_spectra"),
-    checkmate::test_choice(x$algorithm, "StreamFind")
-  )
-}
-
 #' @title Settings_normalize_spectra_minmax
 #'
-#' @description Prototype.
+#' @description Normalizes spectra using the min-max algorithm.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_normalize_spectra_minmax.
 #'
@@ -3103,12 +3071,8 @@ Settings_normalize_spectra_minmax <- function() {
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_normalize_spectra_minmax
-#' Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_normalize_spectra_minmax S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_normalize_spectra_minmax <- function(x) {
   all(
@@ -3117,11 +3081,13 @@ validate.Settings_normalize_spectra_minmax <- function(x) {
   )
 }
 
+
+
 #' @title Settings_normalize_spectra_snv
 #'
-#' @description Prototype.
+#' @description Normalizes spectra using the Standard Normal Variate (SNV) algorithm.
 #' 
-#' @param liftTozero 
+#' @param liftTozero Logical (length 1) indicating if the spectra should be lifted to zero.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_normalize_spectra_snv.
 #'
@@ -3144,23 +3110,22 @@ Settings_normalize_spectra_snv <- function(liftTozero = FALSE) {
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_normalize_spectra_snv
-#' Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_normalize_spectra_snv S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_normalize_spectra_snv <- function(x) {
   all(
     checkmate::test_choice(x$call, "normalize_spectra"),
-    checkmate::test_choice(x$algorithm, "snv")
+    checkmate::test_choice(x$algorithm, "snv"),
+    checkmate::test_logical(x$parameters$liftTozero, max.len = 1)
   )
 }
 
+
+
 #' @title Settings_normalize_spectra_scale
 #'
-#' @description Prototype.
+#' @description Normalizes spectra using scaling based on the standard deviation.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_normalize_spectra_scale.
 #'
@@ -3172,23 +3137,19 @@ Settings_normalize_spectra_scale <- function() {
     call = "normalize_spectra",
     algorithm = "scale",
     parameters = list(),
-    version = NA_character_,
-    software = NA_character_,
-    developer = NA_character_,
-    contact = NA_character_,
-    link = NA_character_,
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_
   )
   
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_normalize_spectra_scale
-#' Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_normalize_spectra_scale S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_normalize_spectra_scale <- function(x) {
   all(
@@ -3197,9 +3158,11 @@ validate.Settings_normalize_spectra_scale <- function(x) {
   )
 }
 
+
+
 #' @title Settings_normalize_spectra_blockweight
 #'
-#' @description Prototype.
+#' @description Normalizes spectra using block weighting for downstream data evaluation.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_normalize_spectra_blockweight.
 #'
@@ -3211,23 +3174,19 @@ Settings_normalize_spectra_blockweight <- function() {
     call = "normalize_spectra",
     algorithm = "blockweight",
     parameters = list(),
-    version = NA_character_,
-    software = NA_character_,
-    developer = NA_character_,
-    contact = NA_character_,
-    link = NA_character_,
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_
   )
   
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_normalize_spectra_blockweight
-#' Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_normalize_spectra_blockweight S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_normalize_spectra_blockweight <- function(x) {
   all(
@@ -3236,9 +3195,11 @@ validate.Settings_normalize_spectra_blockweight <- function(x) {
   )
 }
 
+
+
 #' @title Settings_normalize_spectra_meancenter
 #'
-#' @description Prototype.
+#' @description Normalizes spectra using mean centering.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_normalize_spectra_meancenter.
 #'
@@ -3250,23 +3211,19 @@ Settings_normalize_spectra_meancenter <- function() {
     call = "normalize_spectra",
     algorithm = "meancenter",
     parameters = list(),
-    version = NA_character_,
-    software = NA_character_,
-    developer = NA_character_,
-    contact = NA_character_,
-    link = NA_character_,
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_
   )
   
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_normalize_spectra_meancenter
-#' Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_normalize_spectra_meancenter S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_normalize_spectra_meancenter <- function(x) {
   all(
@@ -3275,23 +3232,26 @@ validate.Settings_normalize_spectra_meancenter <- function(x) {
   )
 }
 
+
+
+
+
 # ______________________________________________________________________________________________________________________
 # subtract_spectra_section -----
 # ______________________________________________________________________________________________________________________
 
 #' @title Settings_subtract_spectra_section_StreamFind
 #'
-#' @description Prototype.
+#' @description Subtracts a section of the spectra based on a variable (i.e. column name).
 #' 
-#' @param sectionVal 
-#' @param sectionWindow 
+#' @param sectionVal Character (length 1) with the variable to be used for sectioning.
+#' @param sectionWindow Numeric (length 2) with the window for the sectioning.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_subtract_spectra_section_StreamFind.
 #'
 #' @export
 #'
-Settings_subtract_spectra_section_StreamFind <- function(sectionVal = "rt",
-                                                         sectionWindow = c(10, 200)) {
+Settings_subtract_spectra_section_StreamFind <- function(sectionVal = "rt", sectionWindow = c(10, 200)) {
   
   settings <- list(
     call = "subtract_spectra_section",
@@ -3311,19 +3271,21 @@ Settings_subtract_spectra_section_StreamFind <- function(sectionVal = "rt",
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_subtract_spectra_section_StreamFind
-#' Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_subtract_spectra_section_StreamFind S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_subtract_spectra_section_StreamFind <- function(x) {
   all(
     checkmate::test_choice(x$call, "subtract_spectra_section"),
-    checkmate::test_choice(x$algorithm, "StreamFind")
+    checkmate::test_choice(x$algorithm, "StreamFind"),
+    checkmate::test_character(x$parameters$sectionVal, min.len = 1),
+    checkmate::test_numeric(x$parameters$sectionWindow, len = 2)
   )
 }
+
+
+
+
 
 # ______________________________________________________________________________________________________________________
 # delete_spectra_section -----
@@ -3331,9 +3293,10 @@ validate.Settings_subtract_spectra_section_StreamFind <- function(x) {
 
 #' @title Settings_delete_spectra_section_StreamFind
 #'
-#' @description Prototype.
+#' @description Deletes a section of the spectra based on a named list of data ranges for a given variable (i.e. column name).
 #' 
-#' @param section 
+#' @param section Named list with the variable to be used for sectioning and the window for the sectioning. The names 
+#' should match column names in the data.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_delete_spectra_section_StreamFind.
 #'
@@ -3356,19 +3319,20 @@ Settings_delete_spectra_section_StreamFind <- function(section = list()) {
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_delete_spectra_section_StreamFind
-#' Validates the object structure, returning a logical value of length one.
-#'
-#' @param x A Settings_delete_spectra_section_StreamFind S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_delete_spectra_section_StreamFind <- function(x) {
   all(
     checkmate::test_choice(x$call, "delete_spectra_section"),
-    checkmate::test_choice(x$algorithm, "StreamFind")
+    checkmate::test_choice(x$algorithm, "StreamFind"),
+    checkmate::test_named_list(x$parameters$section)
   )
 }
+
+
+
+
 
 # ______________________________________________________________________________________________________________________
 # merge_spectra_time_series -----
@@ -3376,7 +3340,7 @@ validate.Settings_delete_spectra_section_StreamFind <- function(x) {
 
 #' @title Settings_merge_spectra_time_series_StreamFind
 #'
-#' @description Prototype.
+#' @description Merges Raman spectra based on time series data. It collapses data files into a single file.
 #' 
 #' @param preCut The number of pre Raman scans to exclude when merging.
 #'
@@ -3401,13 +3365,13 @@ Settings_merge_spectra_time_series_StreamFind <- function(preCut = 2) {
   as.ProcessingSettings(settings)
 }
 
-#' @describeIn Settings_merge_spectra_time_series_StreamFind Validates the object structure, returning a logical value of length one.
-#'
 #' @export
+#' @noRd
 #'
 validate.Settings_merge_spectra_time_series_StreamFind <- function(x) {
   all(
     checkmate::test_choice(x$call, "merge_spectra_time_series"),
-    checkmate::test_choice(x$algorithm, "StreamFind")
+    checkmate::test_choice(x$algorithm, "StreamFind"),
+    checkmate::test_number(x$parameters$preCut)
   )
 }

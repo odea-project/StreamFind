@@ -10,42 +10,42 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// rcpp_parse_ms_analysis_v2
-Rcpp::List rcpp_parse_ms_analysis_v2(std::string file_path);
-RcppExport SEXP _StreamFind_rcpp_parse_ms_analysis_v2(SEXP file_pathSEXP) {
+// rcpp_parse_ms_analysis
+Rcpp::List rcpp_parse_ms_analysis(std::string file_path);
+RcppExport SEXP _StreamFind_rcpp_parse_ms_analysis(SEXP file_pathSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type file_path(file_pathSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_parse_ms_analysis_v2(file_path));
+    rcpp_result_gen = Rcpp::wrap(rcpp_parse_ms_analysis(file_path));
     return rcpp_result_gen;
 END_RCPP
 }
-// rcpp_parse_ms_spectra_headers_v2
-Rcpp::List rcpp_parse_ms_spectra_headers_v2(std::string file_path);
-RcppExport SEXP _StreamFind_rcpp_parse_ms_spectra_headers_v2(SEXP file_pathSEXP) {
+// rcpp_parse_ms_spectra_headers
+Rcpp::List rcpp_parse_ms_spectra_headers(std::string file_path);
+RcppExport SEXP _StreamFind_rcpp_parse_ms_spectra_headers(SEXP file_pathSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type file_path(file_pathSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_parse_ms_spectra_headers_v2(file_path));
+    rcpp_result_gen = Rcpp::wrap(rcpp_parse_ms_spectra_headers(file_path));
     return rcpp_result_gen;
 END_RCPP
 }
-// rcpp_parse_ms_chromatograms_headers_v2
-Rcpp::List rcpp_parse_ms_chromatograms_headers_v2(std::string file_path);
-RcppExport SEXP _StreamFind_rcpp_parse_ms_chromatograms_headers_v2(SEXP file_pathSEXP) {
+// rcpp_parse_ms_chromatograms_headers
+Rcpp::List rcpp_parse_ms_chromatograms_headers(std::string file_path);
+RcppExport SEXP _StreamFind_rcpp_parse_ms_chromatograms_headers(SEXP file_pathSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type file_path(file_pathSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_parse_ms_chromatograms_headers_v2(file_path));
+    rcpp_result_gen = Rcpp::wrap(rcpp_parse_ms_chromatograms_headers(file_path));
     return rcpp_result_gen;
 END_RCPP
 }
-// rcpp_parse_ms_spectra_v2
-Rcpp::List rcpp_parse_ms_spectra_v2(Rcpp::List analysis, std::vector<int> levels, Rcpp::DataFrame targets, double minIntensityMS1, double minIntensityMS2);
-RcppExport SEXP _StreamFind_rcpp_parse_ms_spectra_v2(SEXP analysisSEXP, SEXP levelsSEXP, SEXP targetsSEXP, SEXP minIntensityMS1SEXP, SEXP minIntensityMS2SEXP) {
+// rcpp_parse_ms_spectra
+Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis, std::vector<int> levels, Rcpp::DataFrame targets, double minIntensityMS1, double minIntensityMS2);
+RcppExport SEXP _StreamFind_rcpp_parse_ms_spectra(SEXP analysisSEXP, SEXP levelsSEXP, SEXP targetsSEXP, SEXP minIntensityMS1SEXP, SEXP minIntensityMS2SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -54,19 +54,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::DataFrame >::type targets(targetsSEXP);
     Rcpp::traits::input_parameter< double >::type minIntensityMS1(minIntensityMS1SEXP);
     Rcpp::traits::input_parameter< double >::type minIntensityMS2(minIntensityMS2SEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_parse_ms_spectra_v2(analysis, levels, targets, minIntensityMS1, minIntensityMS2));
+    rcpp_result_gen = Rcpp::wrap(rcpp_parse_ms_spectra(analysis, levels, targets, minIntensityMS1, minIntensityMS2));
     return rcpp_result_gen;
 END_RCPP
 }
-// rcpp_parse_ms_chromatograms_v2
-Rcpp::List rcpp_parse_ms_chromatograms_v2(Rcpp::List analysis, std::vector<int> idx);
-RcppExport SEXP _StreamFind_rcpp_parse_ms_chromatograms_v2(SEXP analysisSEXP, SEXP idxSEXP) {
+// rcpp_parse_ms_chromatograms
+Rcpp::List rcpp_parse_ms_chromatograms(Rcpp::List analysis, std::vector<int> idx);
+RcppExport SEXP _StreamFind_rcpp_parse_ms_chromatograms(SEXP analysisSEXP, SEXP idxSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::List >::type analysis(analysisSEXP);
     Rcpp::traits::input_parameter< std::vector<int> >::type idx(idxSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_parse_ms_chromatograms_v2(analysis, idx));
+    rcpp_result_gen = Rcpp::wrap(rcpp_parse_ms_chromatograms(analysis, idx));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -171,11 +171,11 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_StreamFind_rcpp_parse_ms_analysis_v2", (DL_FUNC) &_StreamFind_rcpp_parse_ms_analysis_v2, 1},
-    {"_StreamFind_rcpp_parse_ms_spectra_headers_v2", (DL_FUNC) &_StreamFind_rcpp_parse_ms_spectra_headers_v2, 1},
-    {"_StreamFind_rcpp_parse_ms_chromatograms_headers_v2", (DL_FUNC) &_StreamFind_rcpp_parse_ms_chromatograms_headers_v2, 1},
-    {"_StreamFind_rcpp_parse_ms_spectra_v2", (DL_FUNC) &_StreamFind_rcpp_parse_ms_spectra_v2, 5},
-    {"_StreamFind_rcpp_parse_ms_chromatograms_v2", (DL_FUNC) &_StreamFind_rcpp_parse_ms_chromatograms_v2, 2},
+    {"_StreamFind_rcpp_parse_ms_analysis", (DL_FUNC) &_StreamFind_rcpp_parse_ms_analysis, 1},
+    {"_StreamFind_rcpp_parse_ms_spectra_headers", (DL_FUNC) &_StreamFind_rcpp_parse_ms_spectra_headers, 1},
+    {"_StreamFind_rcpp_parse_ms_chromatograms_headers", (DL_FUNC) &_StreamFind_rcpp_parse_ms_chromatograms_headers, 1},
+    {"_StreamFind_rcpp_parse_ms_spectra", (DL_FUNC) &_StreamFind_rcpp_parse_ms_spectra, 5},
+    {"_StreamFind_rcpp_parse_ms_chromatograms", (DL_FUNC) &_StreamFind_rcpp_parse_ms_chromatograms, 2},
     {"_StreamFind_rcpp_fill_bin_spectra", (DL_FUNC) &_StreamFind_rcpp_fill_bin_spectra, 5},
     {"_StreamFind_rcpp_ms_annotation_isotopes", (DL_FUNC) &_StreamFind_rcpp_ms_annotation_isotopes, 11},
     {"_StreamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_StreamFind_rcpp_ms_cluster_spectra, 4},

@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_find_features_openms}
 \alias{Settings_find_features_openms}
-\alias{validate.Settings_find_features_openms}
 \title{Settings_find_features_openms}
 \usage{
 Settings_find_features_openms(
@@ -30,8 +29,6 @@ Settings_find_features_openms(
   useFFMIntensities = FALSE,
   verbose = FALSE
 )
-
-\method{validate}{Settings_find_features_openms}(x)
 }
 \arguments{
 \item{noiseThrInt}{Intensity threshold below which peaks are regarded as noise.}
@@ -108,8 +105,7 @@ with many analyses files. However, useFFMIntensities=TRUE is still somewhat
 experimental, may be less accurate and requires a recent version of OpenMS
 (>=2.7).}
 
-\item{verbose}{Logical of length one. When TRUE adds processing information
-to the console.}
+\item{verbose}{Logical of length one. When TRUE adds processing information to the console.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_find_features_openms.
@@ -123,11 +119,6 @@ The function uses the package \pkg{patRoon} in the background.
 \details{
 See the \link[patRoon]{findFeaturesOpenMS} function from the \pkg{patRoon} package for more information and requirements.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_find_features_openms)}: Validates the object structure, returning a logical value of length one.
-
-}}
 \references{
 \insertRef{patroon01}{StreamFind}
 

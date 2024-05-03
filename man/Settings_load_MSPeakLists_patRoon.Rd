@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_load_MSPeakLists_patRoon}
 \alias{Settings_load_MSPeakLists_patRoon}
-\alias{validate.Settings_load_MSPeakLists_patRoon}
 \title{Settings_load_MSPeakLists_patRoon}
 \usage{
 Settings_load_MSPeakLists_patRoon(
@@ -16,8 +15,6 @@ Settings_load_MSPeakLists_patRoon(
   method = "hclust",
   retainPrecursorMSMS = TRUE
 )
-
-\method{validate}{Settings_load_MSPeakLists_patRoon}(x)
 }
 \arguments{
 \item{maxMSRtWindow}{Maximum chromatographic peak window used for spectrum
@@ -75,8 +72,3 @@ A ProcessingSettings S3 class object with subclass Settings_load_MSPeakLists_pat
 \description{
 Settings for loading MS2 and MS1 spectra for feature groups.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_load_MSPeakLists_patRoon)}: Validates the object structure, returning a logical value of length one.
-
-}}

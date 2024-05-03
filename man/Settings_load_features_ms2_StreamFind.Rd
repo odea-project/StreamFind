@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_load_features_ms2_StreamFind}
 \alias{Settings_load_features_ms2_StreamFind}
-\alias{validate.Settings_load_features_ms2_StreamFind}
 \title{Settings_load_features_ms2_StreamFind}
 \usage{
 Settings_load_features_ms2_StreamFind(
@@ -10,30 +9,23 @@ Settings_load_features_ms2_StreamFind(
   mzClust = 0.005,
   presence = 0.8,
   minIntensity = 10,
-  filtered = FALSE,
-  verbose = FALSE
+  filtered = FALSE
 )
-
-\method{validate}{Settings_load_features_ms2_StreamFind}(x)
 }
 \arguments{
 \item{isolationWindow}{Numeric value with the isolation window (in Da)
 applied for ion isolation and fragmentation during acquisition of tandem
 data (i.e., MS2 data).}
 
-\item{mzClust}{Numeric value with the mass deviation threshold (in Da) to
-cluster mass traces. Highly dependent on the mass resolution of the MS data.}
+\item{mzClust}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
+on the mass resolution of the MS data.}
 
-\item{presence}{Numeric of length one with the required presence ratio from
-0 (i.e., doesn't need to be present in any spectra) to 1 (i.e., must be
-present in all spectra) for traces during clustering of spectra.}
+\item{presence}{Numeric (length 1) with the required presence ratio from 0 (i.e., doesn't need to be present in any
+spectra) to 1 (i.e., must be present in all spectra) for traces during clustering of spectra.}
 
-\item{minIntensity}{Numeric value with the minimum intensity.}
+\item{minIntensity}{Numeric (length 1) with the minimum intensity.}
 
-\item{filtered}{Logical. When \code{TRUE}, filtered features/groups are considered.}
-
-\item{verbose}{Logical with length one. Set \code{TRUE} to output diagnostic and
-result messages. When \code{FALSE}, some messages are omitted.}
+\item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_load_features_ms2_StreamFind.
@@ -41,8 +33,3 @@ A ProcessingSettings S3 class object with subclass Settings_load_features_ms2_St
 \description{
 Settings for loading MS2 spectra for features.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_load_features_ms2_StreamFind)}: Validates the object structure, returning a logical value of length one.
-
-}}

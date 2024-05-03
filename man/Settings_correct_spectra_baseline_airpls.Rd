@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_correct_spectra_baseline_airpls}
 \alias{Settings_correct_spectra_baseline_airpls}
-\alias{validate.Settings_correct_spectra_baseline_airpls}
 \title{Settings_correct_spectra_baseline_airpls}
 \usage{
 Settings_correct_spectra_baseline_airpls(
@@ -10,26 +9,21 @@ Settings_correct_spectra_baseline_airpls(
   differences = 1,
   itermax = 20
 )
-
-\method{validate}{Settings_correct_spectra_baseline_airpls}(x)
 }
 \arguments{
-\item{lambda}{}
+\item{lambda}{Numeric (length 1) with the smoothing intensity. the higher the \code{lambda} the higher the smoothing.}
 
-\item{differences}{}
+\item{differences}{Integer (length 1) indicating the order of the difference of penalties}
 
-\item{itermax}{}
-
-\item{x}{A Settings_correct_spectra_baseline_airpls S3 class object.}
+\item{itermax}{Integer (length 1) with the maximum number of iterations.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_correct_spectra_baseline_airpls.
 }
 \description{
-Prototype.
+Performs baseline correction using adaptive iteratively reweighted Penalized Least Squares (airPLS)
+based on the algorithm from Zhi-Min Zhang.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_correct_spectra_baseline_airpls)}: Validates the object structure, returning a logical value of length one.
-
-}}
+\references{
+\insertRef{airpls01}{StreamFind}
+}

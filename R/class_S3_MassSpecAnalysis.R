@@ -65,12 +65,8 @@ MassSpecAnalysis <- function(name = NA_character_,
   }
 }
 
-#' @describeIn MassSpecAnalysis
-#' S3 method to validate a *MassSpecAnalysis* S3 class object, returning a logical value of length one.
-#'
-#' @param x A *MassSpecAnalysis* S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.MassSpecAnalysis <- function(x = NULL) {
   
@@ -147,12 +143,9 @@ validate.MassSpecAnalysis <- function(x = NULL) {
   valid
 }
 
-#' @describeIn MassSpecAnalysis
-#' S3 method to print the *MassSpecAnalysis* S3 class object in the console.
-#'
-#' @param ... Not used.
-#'
 #' @export
+#' @noRd
+#'
 print.MassSpecAnalysis <- function(x, ...) {
   cat("\n")
   cat(
@@ -175,149 +168,10 @@ print.MassSpecAnalysis <- function(x, ...) {
   cat("\n")
 }
 
-#' @describeIn MassSpecAnalysis
-#' S3 method to converts a *MassSpecAnalysis* S3 class object into a JSON string.
-#'
 #' @export
-asJSON.MassSpecAnalysis <- function(x) {
-  toJSON(
-    x,
-    dataframe = "columns",
-    Date = "ISO8601",
-    POSIXt = "string",
-    factor = "string",
-    complex = "string",
-    null = "null",
-    na = "null",
-    auto_unbox = FALSE,
-    digits = 8,
-    pretty = TRUE,
-    force = TRUE
-  )
-}
-
-#' @describeIn MassSpecAnalysis
-#' S3 method to convert the argument files in a *MassSpecAnalysis* S3 class object.
+#' @noRd
 #'
-#' @param value A list to be checked and/or converted to *MassSpecAnalysis* S3 class.
-#'
-#' @export
 as.MassSpecAnalysis <- function(value) {
   if (length(value) == 1 & is.list(value)) value <- value[[1]]
   do.call(MassSpecAnalysis, value)
-}
-
-#' @describeIn MassSpecAnalysis
-#' Parses information from *mzML* or *mzXML* file/s and returns a list with
-#' *MassSpecAnalysis* S3 class object/s. On error, returns \code{NULL}.
-#'
-#' @param files A character vector with *mzML* or *mzXML* full file path/s.
-#' Alternatively, a data.frame with the column/s file, replicate and blank
-#' with the full file path/s, the replicate group name/s (string) and the
-#' associated blank replicate group name (string).
-#' @template arg-runParallel
-#'
-#' @export
-parse_MassSpecAnalysis <- function(files = NULL, runParallel = FALSE) {
-
-  if (is.data.frame(files)) {
-    
-    if ("file" %in% colnames(files)) {
-      
-      if ("replicate" %in% colnames(files)) {
-        replicates <- as.character(files$replicate)
-      } else {
-        replicates <- rep(NA_character_, nrow(files))
-      }
-      
-      if ("blank" %in% colnames(files)) {
-        blanks <- as.character(files$blank)
-      } else {
-        blanks <- rep(NA_character_, nrow(files))
-      }
-      
-      files <- files$file
-      
-    } else {
-      files <- ""
-    }
-
-  } else {
-    replicates <- rep(NA_character_, length(files))
-    blanks <- rep(NA_character_, length(files))
-  }
-
-  possible_ms_file_formats <- ".mzML|.mzXML"
-
-  valid_files <- vapply(files,
-    FUN.VALUE = FALSE,
-    function(x, possible_ms_file_formats) {
-      if (!file.exists(x)) {
-        return(FALSE)
-      }
-      if (FALSE %in% grepl(possible_ms_file_formats, x)) {
-        return(FALSE)
-      }
-      TRUE
-    }, possible_ms_file_formats = possible_ms_file_formats
-  )
-
-  if (!all(valid_files)) {
-    warning("File/s not valid!")
-    return(NULL)
-  }
-  
-  names(replicates) <- as.character(files)
-  
-  names(blanks) <- as.character(files)
-  
-  analyses <- lapply(files, function(x) {
-    
-    cache <- .load_chache("parsed_ms_analyses", x)
-    
-    if (!is.null(cache$data)) {
-      message("\U2139 Analysis loaded from cache!")
-      cache$data
-      
-    } else {
-      
-      message("\U2699 Parsing ", basename(x), "...", appendLF = FALSE)
-        
-      ana <- rcpp_parse_ms_analysis_v2(x)
-      
-      class_ana <- class(ana)[1]
-      
-      if (!class_ana %in% "MassSpecAnalysis") return(NULL)
-      
-      message(" Done!")
-      
-      rpl <- replicates[x]
-      
-      if (is.na(rpl)) {
-        rpl <- ana$name
-        rpl <- sub("-[^-]+$", "", rpl)
-      }
-      
-      ana$replicate <- rpl
-      
-      blk <- blanks[x]
-      
-      if (!is.na(blk)) ana$blank <- blk
-      
-      ana$blank <- blk
-      
-      if (!is.null(cache$hash)) {
-        .save_cache("parsed_ms_analyses", ana, cache$hash)
-        message("\U1f5ab Parsed MS file cached!")
-      }
-      
-      ana
-    }
-  })
-  
-  names(analyses) <- vapply(analyses, function(x) x$name, "")
-  
-  analyses <- analyses[order(names(analyses))]
-
-  analyses
 }

@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_calculate_spectra_charges_StreamFind}
 \alias{Settings_calculate_spectra_charges_StreamFind}
-\alias{validate.Settings_calculate_spectra_charges_StreamFind}
 \title{Settings_calculate_spectra_charges_StreamFind}
 \usage{
 Settings_calculate_spectra_charges_StreamFind(
@@ -10,26 +9,18 @@ Settings_calculate_spectra_charges_StreamFind(
   relLowCut = 0.2,
   absLowCut = 300
 )
-
-\method{validate}{Settings_calculate_spectra_charges_StreamFind}(x)
 }
 \arguments{
-\item{roundVal}{}
+\item{roundVal}{Numeric (length 1) with the rounding value for the m/z values before applying charge clustering.}
 
-\item{relLowCut}{}
+\item{relLowCut}{Numeric (length 1) with the relative low cut for the charge clustering.}
 
-\item{absLowCut}{}
-
-\item{x}{A Settings_calculate_spectra_charges_StreamFind S3 class object.}
+\item{absLowCut}{Numeric (length 1) with the absolute low cut for the charge clustering.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_calculate_spectra_charges_StreamFind.
 }
 \description{
-Prototype.
+Calculates spectral charges from multi-charged compounds (e.g. proteins and monoclonal antibodies) for
+mass deconvolution.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_calculate_spectra_charges_StreamFind)}: Validates the object structure, returning a logical value of length one.
-
-}}

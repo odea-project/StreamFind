@@ -2,7 +2,6 @@
 % Please edit documentation in R/fct_ProcessingSettings.R
 \name{Settings_filter_features_patRoon}
 \alias{Settings_filter_features_patRoon}
-\alias{validate.Settings_filter_features_patRoon}
 \title{Settings_filter_features_patRoon}
 \usage{
 Settings_filter_features_patRoon(
@@ -40,8 +39,6 @@ Settings_filter_features_patRoon(
   removeNA = FALSE,
   negate = FALSE
 )
-
-\method{validate}{Settings_filter_features_patRoon}(x)
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_filter_features_patRoon.
@@ -58,8 +55,3 @@ filters require. Thus, not all filters can be applied to features.
 See \code{\link[patRoon]{features-class}} and \code{\link[patRoon]{replicateGroupSubtract}}
 for further information.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(Settings_filter_features_patRoon)}: Validates the object structure, returning a logical value of length one.
-
-}}

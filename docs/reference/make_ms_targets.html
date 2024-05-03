@@ -35,6 +35,7 @@ retention and drift time ranges return 0 and vice versa."><!-- mathjax --><scrip
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/demo_ms_raman_fusion_bsa.html">Fusion of Mass Spectrometry and Raman Spectroscopy Data</a>
     <a class="dropdown-item" href="../articles/demo_ozonation_project.html">Evaluation of Wastewater Ozonation with Mass Spectrometry</a>
     <a class="dropdown-item" href="../articles/framework.html">StreamFind General Introduction</a>
     <a class="dropdown-item" href="../articles/ms_developer_guide.html">StreamFind Developer Guide</a>
@@ -85,18 +86,14 @@ retention and drift time ranges return 0 and vice versa.</p>
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>mz</dt>
-<dd><p>A vector with target <em>m/z</em> value/s (in Da) or a two columns
-data.table or data.frame named <code>mzmin</code> and <code>mzmax</code> with minimum and maximum
-<em>m/z</em> values (in Da), respectively. Alternatively, <em>m/z</em> (in Da)
-and retention time values (in seconds) can be given as one data.table or
-data.frame with columns named <code>mz</code> and <code>rt</code> and/or <code>drift</code>. Then, the
-deviations given in the <code>ppm</code>, <code>sec</code> and <code>millisec</code> arguments
-are used to calculate the ranges. Also works with a data.table or data.frame
-with minimum and maximum values of <em>m/z</em>, retention time and drift time
-targets. In this case, the column names must be <code>mzmin</code>, <code>mzmax</code>, <code>rtmin</code>,
-<code>rtmax</code>, <code>driftmin</code> and <code>driftmax</code>. Note that when mass/time ranges
-are given, the <code>ppm</code>, <code>sec</code> and <code>millisec</code> arguments are
-not used.</p></dd>
+<dd><p>A vector with target <em>m/z</em> value/s (in Da) or a two columns data.table or data.frame named <code>mzmin</code> and
+<code>mzmax</code> with minimum and maximum <em>m/z</em> values (in Da), respectively. Alternatively, <em>m/z</em> (in Da) and
+retention time values (in seconds) can be given as one data.table or data.frame with columns named <code>mz</code> and <code>rt</code>
+and/or <code>drift</code>. Then, the deviations given in the <code>ppm</code>, <code>sec</code> and <code>millisec</code> arguments are used to
+calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of <em>m/z</em>,
+retention time and drift time targets. In this case, the column names must be <code>mzmin</code>, <code>mzmax</code>, <code>rtmin</code>, <code>rtmax</code>,
+<code>driftmin</code> and <code>driftmax</code>. Note that when mass/time ranges are given, the <code>ppm</code>, <code>sec</code> and <code>millisec</code>
+arguments are not used.</p></dd>
 
 
 <dt>rt</dt>

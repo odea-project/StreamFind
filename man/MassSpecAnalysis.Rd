@@ -2,11 +2,6 @@
 % Please edit documentation in R/class_S3_MassSpecAnalysis.R
 \name{MassSpecAnalysis}
 \alias{MassSpecAnalysis}
-\alias{validate.MassSpecAnalysis}
-\alias{print.MassSpecAnalysis}
-\alias{asJSON.MassSpecAnalysis}
-\alias{as.MassSpecAnalysis}
-\alias{parse_MassSpecAnalysis}
 \title{\strong{MassSpecAnalysis} S3 class constructor, methods and functions}
 \usage{
 MassSpecAnalysis(
@@ -26,16 +21,6 @@ MassSpecAnalysis(
   chromatograms = data.table(),
   metadata = list()
 )
-
-\method{validate}{MassSpecAnalysis}(x = NULL)
-
-\method{print}{MassSpecAnalysis}(x, ...)
-
-\method{asJSON}{MassSpecAnalysis}(x)
-
-as.MassSpecAnalysis(value)
-
-parse_MassSpecAnalysis(files = NULL, runParallel = FALSE)
 }
 \arguments{
 \item{name}{\emph{mzML} or \emph{mzXML} file name without extension.}
@@ -63,21 +48,6 @@ parse_MassSpecAnalysis(files = NULL, runParallel = FALSE)
 \item{chromatograms}{data.table with the raw chromatograms (only present if loaded).}
 
 \item{metadata}{List with flexible storage for experimental metadata (e.g., concentration, location, etc.).}
-
-\item{x}{A \emph{MassSpecAnalysis} S3 class object.}
-
-\item{...}{Not used.}
-
-\item{value}{A list to be checked and/or converted to \emph{MassSpecAnalysis} S3 class.}
-
-\item{files}{A character vector with \emph{mzML} or \emph{mzXML} full file path/s.
-Alternatively, a data.frame with the column/s file, replicate and blank
-with the full file path/s, the replicate group name/s (string) and the
-associated blank replicate group name (string).}
-
-\item{runParallel}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
 }
 \value{
 An \emph{MassSpecAnalysis} S3 class object.
@@ -85,20 +55,3 @@ An \emph{MassSpecAnalysis} S3 class object.
 \description{
 Creates a \emph{MassSpecAnalysis} S3 class object.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate(MassSpecAnalysis)}: S3 method to validate a \emph{MassSpecAnalysis} S3 class object, returning a logical value of length one.
-
-\item \code{print(MassSpecAnalysis)}: S3 method to print the \emph{MassSpecAnalysis} S3 class object in the console.
-
-\item \code{asJSON(MassSpecAnalysis)}: S3 method to converts a \emph{MassSpecAnalysis} S3 class object into a JSON string.
-
-}}
-\section{Functions}{
-\itemize{
-\item \code{as.MassSpecAnalysis()}: S3 method to convert the argument files in a \emph{MassSpecAnalysis} S3 class object.
-
-\item \code{parse_MassSpecAnalysis()}: Parses information from \emph{mzML} or \emph{mzXML} file/s and returns a list with
-\emph{MassSpecAnalysis} S3 class object/s. On error, returns \code{NULL}.
-
-}}
