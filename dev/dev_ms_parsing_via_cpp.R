@@ -2,21 +2,21 @@
 # resources --------------------------------------------------------------------
 
 ## files -----------------------------------------------------------------------
-all_files <- StreamFindData::get_ms_file_paths()
+# all_files <- StreamFindData::get_ms_file_paths()
 # files <- all_files[grepl("mrm", all_files)]
 # files <- all_files[1:3]
 # files <- all_files[grepl("influent|blank", all_files)]
-files <- all_files[grepl("o3sw", all_files)]
+# files <- all_files[grepl("o3sw", all_files)]
 
-path <- "C:/Users/Ricardo Cunha/Documents/Work/example_ms_files"
-# files <- list.files(path, pattern = ".mzML", full.names = TRUE)
+path <- "C:/Users/apoli/Documents/example_ms_files"
+files <- list.files(path, pattern = ".mzML", full.names = TRUE)
 
 ## databases -------------------------------------------------------------------
 db <- StreamFindData::get_ms_tof_spiked_chemicals()
 
 db_cols <- c("name", "mass", "rt")
-carbamazepin_d10 <- db[db$name %in% "Carbamazepin-d10", db_cols, with = FALSE]
-diuron_d6 <- db[db$name %in% "Diuron-d6", db_cols, with = FALSE]
+carbamazepin_d10 <- db[db$name %in% "Carbamazepin-D10", db_cols, with = FALSE]
+diuron_d6 <- db[db$name %in% "Diuron-D6", db_cols, with = FALSE]
 carb_pos <- carbamazepin_d10$mass + 1.007276
 carb <- carbamazepin_d10$mass
 carb_rt <- carbamazepin_d10$rt
@@ -53,9 +53,9 @@ cols <- c("name", "formula", "mass", "rt")
 # tof_db <- data.table::fread(tof_db)
 # tof_db <- tof_db[, cols, with = FALSE]
 
-afin_db <- paste0(path, "/Composition_Mix-Fusion.csv")
-afin_db <- data.table::fread(afin_db)
-afin_db <- afin_db[, cols, with = FALSE]
+# afin_db <- paste0(path, "/Composition_Mix-Fusion.csv")
+# afin_db <- data.table::fread(afin_db)
+# afin_db <- afin_db[, cols, with = FALSE]
 
 # ude_db <- paste0(path, "/mix1_orbitrap_ude.csv")
 # ude_db <- data.table::fread(ude_db)
@@ -63,23 +63,21 @@ afin_db <- afin_db[, cols, with = FALSE]
 
 ## settings --------------------------------------------------------------------
 
-settings <- list(
-  Settings_find_features_xcms3_centwave(),
-  Settings_group_features_xcms3_peakdensity(),
-  Settings_filter_features_StreamFind(
-    minIntensity = 5000,
-    minSnRatio = 20,
-    maxGroupSd = 30,
-    blank = 5,
-    minGroupAbundance = 3,
-    excludeIsotopes = TRUE
-  ),
-  Settings_load_features_ms1_StreamFind(),
-  Settings_load_features_ms2_StreamFind(),
-  Settings_load_groups_ms1_StreamFind(),
-  Settings_load_groups_ms2_StreamFind()
-  
-)
+# settings <- list(
+#   Settings_find_features_xcms3_centwave(),
+#   Settings_group_features_xcms3_peakdensity(),
+#   Settings_filter_features_StreamFind(
+#     minIntensity = 5000,
+#     minSnRatio = 20,
+#     maxGroupSd = 30,
+#     blank = 5,
+#     minGroupAbundance = 3,
+#     excludeIsotopes = TRUE
+#   ),
+#   Settings_load_features_ms1_StreamFind(),
+#   Settings_load_features_ms2_StreamFind()
+#   
+# )
 
 # cached -----------------------------------------------------------------------
 
@@ -90,11 +88,57 @@ settings <- list(
 # patRoon::clearCache("load_groups_ms1")
 # patRoon::clearCache("load_groups_ms2")
 
-# patRoon::clearCache("all")
+patRoon::clearCache("all")
+
+# StreamCraft interface --------------------------------------------------------
+
+
+ana <- parse_MassSpecAnalysis(files[10])
+
+validate(ana[[1]])
+
+# make a benchmark with rcpp_parse_msAnalysis(files) vs rcpp_parse_ms_analysis_v2(files) and compare the results
+
+# testSpeed <- microbenchmark::microbenchmark(
+#   rcpp_parse_ms_analysis(files[1]),
+#   rcpp_parse_ms_analysis_v2(files[1]),
+#   times = 3
+# )
+# 
+# testSpeed <- microbenchmark::microbenchmark(
+#   rcpp_parse_spectra_headers(files[1]),
+#   rcpp_parse_ms_spectra_headers_v2(files[1]),
+#   times = 3
+# )
+
+
+
+rcpp_parse_ms_analysis_v2(ms_files[1])
+
+
+
 
 # spectra ----------------------------------------------------------------------
 
-ms <- MassSpecData$new(files = files)
+ms <- MassSpecEngine$new(files = files[7:12])
+
+ms$get_chromatograms()
+
+ms$get_spectra()
+
+ms$plot_spectra_eic(mass = carb, rt = carb_rt, ppm = 10, sec = 15, colorBy = "analyses")
+
+ms$get_rt_end()
+
+ms$get_spectra_mode()
+
+ms$get_spectra_polarity()
+
+ms$get_spectra_headers()
+
+ms$get_spectra_tic()
+
+ms$plot_spectra_bpc(levels = 1, colorBy = "replicates")
 
 ms$find_features()
 
@@ -150,11 +194,11 @@ write.csv(srm$get_chromatograms(), "chromatograms.csv", row.names = FALSE)
 
 
 
-ms$plot_eic(mass = diu, rt = diu_rt, ppm = 5, sec = 10)
+ms$plot_spectra_eic(mass = diu, rt = diu_rt, ppm = 5, sec = 10)
 
-# ms$plot_bpc(levels = 1, colorBy = "analyses", interactive = F)
+# ms$plot_spectra_bpc(levels = 1, colorBy = "analyses", interactive = F)
 
-ms$plot_eic(mass = afin_db$mass[66], colorBy = "targets")
+ms$plot_spectra_eic(mass = afin_db$mass[66], colorBy = "targets")
 
 spec <- ms$get_spectra(mass = afin_db$mass[66], rt = 358, ppm = 3, sec = 10, levels = 1, allTraces = FALSE)
 spec$unique_id <- paste0(spec$analysis, "_", spec$id, "_", spec$polarity)
@@ -173,24 +217,24 @@ rcpp_ms_cluster_spectra(spec, mzClust = 0.001, presence = 0.8, verbose = TRUE)
 
 
 
-# ms$get_ms2()
+# ms$get_spectra_ms2()
 
 rcpp_parse_ms_analysis_spectra(ms$get_analyses()[[1]])
 
 
 ms$get_run()
 
-ms$get_polarities()
+ms$get_spectra_polarity()
 
 ms$get_spectra(mass = afin_db$mass[2])
 
 
 
-ms$plot_eic(mz = afin_db$mass[2] + 1.00726, colorBy = "targets")
+ms$plot_spectra_eic(mz = afin_db$mass[2] + 1.00726, colorBy = "targets")
 
-ms$get_ms2(mass = afin_db$mass[2])
+ms$get_spectra_ms2(mass = afin_db$mass[2])
 
-ms$plot_bpc(levels = 1, colorBy = "analyses")
+ms$plot_spectra_bpc(levels = 1, colorBy = "analyses")
 
 
 
@@ -210,21 +254,21 @@ ms$get_spectra(analyses = c(2, 5), mass = diu, rt = diu_rt, sec = 120, levels = 
 
 # ms$plot_spectra(mass = diu, rt = diu_rt, colorBy = "analyses")
 
-# ms$plot_ms2(analyses = c(2, 5), mass = diu, rt = diu_rt, colorBy = "targets", interactive = T)
+# ms$plot_spectra_ms2(analyses = c(2, 5), mass = diu, rt = diu_rt, colorBy = "targets", interactive = T)
 
-ms$plot_ms1(analyses = c(2, 5), mass = diu, rt = diu_rt, interactive = F)
+ms$plot_spectra_ms1(analyses = c(2, 5), mass = diu, rt = diu_rt, interactive = F)
 
-ms$get_ms1(analyses = c(2, 5), mass = diu, rt = diu_rt)
+ms$get_spectra_ms1(analyses = c(2, 5), mass = diu, rt = diu_rt)
 
-ms$get_tic()
+ms$get_spectra_tic()
 
-ms$plot_tic(levels = 1, colorBy = "polarities", interactive = F)
+ms$plot_spectra_tic(levels = 1, colorBy = "polarities", interactive = F)
 
-ms$plot_eic(mass = neutral_targets, colorBy = "targets", interactive = F, legendNames = TRUE)
+ms$plot_spectra_eic(mass = neutral_targets, colorBy = "targets", interactive = F, legendNames = TRUE)
 
-#ms$get_eic(mass = diu)
+#ms$get_spectra_eic(mass = diu)
 
-#ms$get_eic(mz = diu_pos)
+#ms$get_spectra_eic(mz = diu_pos)
 
 
 

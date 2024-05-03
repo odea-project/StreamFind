@@ -1,2 +1,1 @@
-#' @param minIntensityFeatures Numeric value with the minimum intensity for
-#' features.
+#' @param minIntensityFeatures Numeric (length 1) with the minimum intensity for features.

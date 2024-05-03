@@ -1,1 +1,1 @@
-#' @param ppmMS2 Numeric of length one with the mass deviation, in ppm for MS2.
+#' @param ppmMS2 Numeric (length 1) with the mass deviation for MS2, in ppm.

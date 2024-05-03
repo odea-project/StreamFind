@@ -27,6 +27,7 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/demo_ms_raman_fusion_bsa.html">Fusion of Mass Spectrometry and Raman Spectroscopy Data</a>
     <a class="dropdown-item" href="../articles/demo_ozonation_project.html">Evaluation of Wastewater Ozonation with Mass Spectrometry</a>
     <a class="dropdown-item" href="../articles/framework.html">StreamFind General Introduction</a>
     <a class="dropdown-item" href="../articles/ms_developer_guide.html">StreamFind Developer Guide</a>
@@ -69,24 +70,24 @@ List of function elements to access specific reference help pages.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="active-bindings">Active bindings<a class="anchor" aria-label="anchor" href="#active-bindings"></a></h2>
-    <p></p><div class="r6-active-bindings"><dl><dt><code>chromatograms</code></dt>
-<dd><p><code>data.table</code> with processed chromatograms for each analyses.</p></dd>
+    <p></p><div class="r6-active-bindings"><dl><dt><code>headers</code></dt>
+<dd><p>List of project headers.</p></dd>
 
 
-<dt><code>chromatograms_peaks</code></dt>
-<dd><p><code>data.table</code> with integrated peaks from chromatograms for each analyses.</p></dd>
+<dt><code>settings</code></dt>
+<dd><p>List of processing settings.</p></dd>
 
 
-<dt><code>spectra</code></dt>
-<dd><p>List of spectra <code>data.table</code> objects for each analysis.</p></dd>
+<dt><code>history</code></dt>
+<dd><p>Audit trail of changes.</p></dd>
 
 
-<dt><code>averaged_spectra</code></dt>
-<dd><p>List of averaged spectra <code>data.table</code> each analysis/replicate.</p></dd>
+<dt><code>analyses</code></dt>
+<dd><p>List of analyses.</p></dd>
 
 
-<dt><code>spectra_peaks</code></dt>
-<dd><p><code>data.table</code> with integrated spectra peaks for each analysis.</p></dd>
+<dt><code>results</code></dt>
+<dd><p>List of results.</p></dd>
 
 
 </dl><p></p></div>
@@ -134,13 +135,6 @@ List of function elements to access specific reference help pages.</p></dd>
 <li><p><a href="#method-CoreEngine-has_settings"><code>CoreEngine$has_settings()</code></a></p></li>
 <li><p><a href="#method-CoreEngine-has_analyses"><code>CoreEngine$has_analyses()</code></a></p></li>
 <li><p><a href="#method-CoreEngine-has_results"><code>CoreEngine$has_results()</code></a></p></li>
-<li><p><a href="#method-CoreEngine-has_chromatograms"><code>CoreEngine$has_chromatograms()</code></a></p></li>
-<li><p><a href="#method-CoreEngine-has_chromatograms_peaks"><code>CoreEngine$has_chromatograms_peaks()</code></a></p></li>
-<li><p><a href="#method-CoreEngine-has_spectra"><code>CoreEngine$has_spectra()</code></a></p></li>
-<li><p><a href="#method-CoreEngine-has_spectra_peaks"><code>CoreEngine$has_spectra_peaks()</code></a></p></li>
-<li><p><a href="#method-CoreEngine-has_averaged_spectra"><code>CoreEngine$has_averaged_spectra()</code></a></p></li>
-<li><p><a href="#method-CoreEngine-plot_chromatograms_peaks"><code>CoreEngine$plot_chromatograms_peaks()</code></a></p></li>
-<li><p><a href="#method-CoreEngine-plot_spectra_peaks"><code>CoreEngine$plot_spectra_peaks()</code></a></p></li>
 <li><p><a href="#method-CoreEngine-run_workflow"><code>CoreEngine$run_workflow()</code></a></p></li>
 <li><p><a href="#method-CoreEngine-save_headers"><code>CoreEngine$save_headers()</code></a></p></li>
 <li><p><a href="#method-CoreEngine-save_settings"><code>CoreEngine$save_settings()</code></a></p></li>
@@ -245,8 +239,8 @@ as ProcessingSettings object.</p></dd>
 <div class="section">
 <h4 id="arguments-1">Arguments<a class="anchor" aria-label="anchor" href="#arguments-1"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>value</code></dt>
-<dd><p>A character vector with the name/s of the header elements.
-When <code>NULL</code> (the default), the entire headers list is returned.</p></dd>
+<dd><p>A character vector with the name/s of the header elements. When <code>NULL</code> (the default), the entire
+headers list is returned.</p></dd>
 
 
 </dl><p></p></div>
@@ -286,8 +280,8 @@ When <code>NULL</code> (the default), the entire headers list is returned.</p></
 
 </div><p></p><hr><a id="method-CoreEngine-get_overview"></a><div class="section">
 <h3 id="method-get-overview-">Method <code>get_overview()</code><a class="anchor" aria-label="anchor" href="#method-get-overview-"></a></h3>
-<p>Gets an overview data.table with all the analysis names,
-replicates, associated blank replicates, and full file paths.</p><div class="section">
+<p>Gets an overview data.table with all the analysis names,replicates, associated blank replicates,
+and full file paths.</p><div class="section">
 <h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">get_overview</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
@@ -481,9 +475,11 @@ with the headers (all length one) can be given.</p></dd>
 <div class="section">
 <h4 id="arguments-12">Arguments<a class="anchor" aria-label="anchor" href="#arguments-12"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>settings</code></dt>
-<dd><p>A named list of ProcessingSettings S3 class objects or a single ProcessingSettings S3 class
-object. The list names should match the call name of each ProcessingSettings object. Alternatively, a named
-list with call name, algorithm and parameters to be transformed and added as ProcessingSettings S3 class object.</p></dd>
+<dd><p>A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.</p></dd>
 
 
 <dt><code>replace</code></dt>
@@ -529,8 +525,7 @@ methods that can be applied more than once.</p></dd>
 <div class="section">
 <h4 id="arguments-14">Arguments<a class="anchor" aria-label="anchor" href="#arguments-14"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>value</code></dt>
-<dd><p>A character vector with the analysis replicate names.
-Must be of the same length as the number of analyses.</p></dd>
+<dd><p>A character vector with the analysis replicate names. Must be of the same length as the number of analyses.</p></dd>
 
 
 </dl><p></p></div>
@@ -550,8 +545,7 @@ Must be of the same length as the number of analyses.</p></dd>
 <div class="section">
 <h4 id="arguments-15">Arguments<a class="anchor" aria-label="anchor" href="#arguments-15"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>value</code></dt>
-<dd><p>A character vector with the analysis blank replicate names.
-Must be of the same length as the number of analyses.</p></dd>
+<dd><p>A character vector with the analysis blank replicate names. Must be of the same length as the number of analyses.</p></dd>
 
 
 </dl><p></p></div>
@@ -614,8 +608,7 @@ using any extra columns of the data.frame or data.table.</p></dd>
 <div class="section">
 <h4 id="arguments-18">Arguments<a class="anchor" aria-label="anchor" href="#arguments-18"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>value</code></dt>
-<dd><p>A character vector with the name/s of the elements in headers
-to be removed.</p></dd>
+<dd><p>A character vector with the name/s of the elements in headers to be removed.</p></dd>
 
 
 </dl><p></p></div>
@@ -746,197 +739,10 @@ data is patRoon.</p></dd>
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-CoreEngine-has_chromatograms"></a><div class="section">
-<h3 id="method-has-chromatograms-">Method <code>has_chromatograms()</code><a class="anchor" aria-label="anchor" href="#method-has-chromatograms-"></a></h3>
-<p>Checks if there are chromatograms, returning <code>TRUE</code> or <code>FALSE</code>.</p><div class="section">
-<h4 id="usage-37">Usage<a class="anchor" aria-label="anchor" href="#usage-37"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">has_chromatograms</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-
-</div><p></p><hr><a id="method-CoreEngine-has_chromatograms_peaks"></a><div class="section">
-<h3 id="method-has-chromatograms-peaks-">Method <code>has_chromatograms_peaks()</code><a class="anchor" aria-label="anchor" href="#method-has-chromatograms-peaks-"></a></h3>
-<p>Checks if there are integrated peaks from chromatograms, returning <code>TRUE</code> or <code>FALSE</code>.</p><div class="section">
-<h4 id="usage-38">Usage<a class="anchor" aria-label="anchor" href="#usage-38"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">has_chromatograms_peaks</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-
-</div><p></p><hr><a id="method-CoreEngine-has_spectra"></a><div class="section">
-<h3 id="method-has-spectra-">Method <code>has_spectra()</code><a class="anchor" aria-label="anchor" href="#method-has-spectra-"></a></h3>
-<p>Checks if there are spectra, returning <code>TRUE</code> or <code>FALSE</code>.</p><div class="section">
-<h4 id="usage-39">Usage<a class="anchor" aria-label="anchor" href="#usage-39"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">has_spectra</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-
-</div><p></p><hr><a id="method-CoreEngine-has_spectra_peaks"></a><div class="section">
-<h3 id="method-has-spectra-peaks-">Method <code>has_spectra_peaks()</code><a class="anchor" aria-label="anchor" href="#method-has-spectra-peaks-"></a></h3>
-<p>Checks if there are spectra peaks, returning <code>TRUE</code> or <code>FALSE</code>.</p><div class="section">
-<h4 id="usage-40">Usage<a class="anchor" aria-label="anchor" href="#usage-40"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">has_spectra_peaks</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-
-</div><p></p><hr><a id="method-CoreEngine-has_averaged_spectra"></a><div class="section">
-<h3 id="method-has-averaged-spectra-">Method <code>has_averaged_spectra()</code><a class="anchor" aria-label="anchor" href="#method-has-averaged-spectra-"></a></h3>
-<p>Checks if there are average spectra, returning <code>TRUE</code> or <code>FALSE</code>.</p><div class="section">
-<h4 id="usage-41">Usage<a class="anchor" aria-label="anchor" href="#usage-41"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">has_averaged_spectra</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-
-</div><p></p><hr><a id="method-CoreEngine-plot_chromatograms_peaks"></a><div class="section">
-<h3 id="method-plot-chromatograms-peaks-">Method <code>plot_chromatograms_peaks()</code><a class="anchor" aria-label="anchor" href="#method-plot-chromatograms-peaks-"></a></h3>
-<p>Plots peaks from chromatograms from analyses.</p><div class="section">
-<h4 id="usage-42">Usage<a class="anchor" aria-label="anchor" href="#usage-42"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">plot_chromatograms_peaks</span><span class="op">(</span></span>
-<span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  chromatograms <span class="op">=</span> <span class="cn">NA_integer_</span>,</span>
-<span>  legendNames <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  colorBy <span class="op">=</span> <span class="st">"targets"</span>,</span>
-<span>  showLegend <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  xlim <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  ylim <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  cex <span class="op">=</span> <span class="fl">0.6</span>,</span>
-<span>  xLab <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  yLab <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  interactive <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-25">Arguments<a class="anchor" aria-label="anchor" href="#arguments-25"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
-<dd><p>A numeric/character vector with the number/name of the analyses.</p></dd>
-
-
-<dt><code>chromatograms</code></dt>
-<dd><p>A character or integer vector with the ID name or the index of the chromatograms to extract.</p></dd>
-
-
-<dt><code>legendNames</code></dt>
-<dd><p>A character vector with the same length as the targets or
-<code>TRUE</code> or <code>FALSE</code> for using the name in added targets as legend of the plot.</p></dd>
-
-
-<dt><code>title</code></dt>
-<dd><p>A string with the title.</p></dd>
-
-
-<dt><code>colorBy</code></dt>
-<dd><p>A string defining how to legend the plot. Possible values are
-<code>analyses</code>, <code>targets</code> (the default) or <code>replicates</code>. Other options are possible
-for specific plotting methods.</p></dd>
-
-
-<dt><code>showLegend</code></dt>
-<dd><p>Logical. Set to <code>TRUE</code> to show legend.</p></dd>
-
-
-<dt><code>xlim</code></dt>
-<dd><p>A length one or two numeric vector for setting the <em>x</em> limits of the plot.</p></dd>
-
-
-<dt><code>ylim</code></dt>
-<dd><p>A length one or two numeric vector for setting the <em>y</em> limits of the plot.</p></dd>
-
-
-<dt><code>cex</code></dt>
-<dd><p>A length one numeric value defining the scale of the legend for non interactive plotting.</p></dd>
-
-
-<dt><code>xLab</code></dt>
-<dd><p>A string with the title for the x axis.</p></dd>
-
-
-<dt><code>yLab</code></dt>
-<dd><p>A string with the title for the y axis.</p></dd>
-
-
-<dt><code>interactive</code></dt>
-<dd><p>Logical. When <code>TRUE</code>, the data is plotted interactively using <span class="pkg">plotly</span>.</p></dd>
-
-
-</dl><p></p></div>
-</div>
-
-</div><p></p><hr><a id="method-CoreEngine-plot_spectra_peaks"></a><div class="section">
-<h3 id="method-plot-spectra-peaks-">Method <code>plot_spectra_peaks()</code><a class="anchor" aria-label="anchor" href="#method-plot-spectra-peaks-"></a></h3>
-<p>Plots peaks from spectra from analyses.</p><div class="section">
-<h4 id="usage-43">Usage<a class="anchor" aria-label="anchor" href="#usage-43"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">plot_spectra_peaks</span><span class="op">(</span></span>
-<span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  legendNames <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  colorBy <span class="op">=</span> <span class="st">"analyses"</span>,</span>
-<span>  showLegend <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  xlim <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  ylim <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  cex <span class="op">=</span> <span class="fl">0.6</span>,</span>
-<span>  xLab <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  yLab <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  interactive <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-26">Arguments<a class="anchor" aria-label="anchor" href="#arguments-26"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
-<dd><p>A numeric/character vector with the number/name of the analyses.</p></dd>
-
-
-<dt><code>legendNames</code></dt>
-<dd><p>A character vector with the same length as the targets or
-<code>TRUE</code> or <code>FALSE</code> for using the name in added targets as legend of the plot.</p></dd>
-
-
-<dt><code>title</code></dt>
-<dd><p>A string with the title.</p></dd>
-
-
-<dt><code>colorBy</code></dt>
-<dd><p>A string defining how to legend the plot. Possible values are
-<code>analyses</code>, <code>targets</code> (the default) or <code>replicates</code>. Other options are possible
-for specific plotting methods.</p></dd>
-
-
-<dt><code>showLegend</code></dt>
-<dd><p>Logical. Set to <code>TRUE</code> to show legend.</p></dd>
-
-
-<dt><code>xlim</code></dt>
-<dd><p>A length one or two numeric vector for setting the <em>x</em> limits of the plot.</p></dd>
-
-
-<dt><code>ylim</code></dt>
-<dd><p>A length one or two numeric vector for setting the <em>y</em> limits of the plot.</p></dd>
-
-
-<dt><code>cex</code></dt>
-<dd><p>A length one numeric value defining the scale of the legend for non interactive plotting.</p></dd>
-
-
-<dt><code>xLab</code></dt>
-<dd><p>A string with the title for the x axis.</p></dd>
-
-
-<dt><code>yLab</code></dt>
-<dd><p>A string with the title for the y axis.</p></dd>
-
-
-<dt><code>interactive</code></dt>
-<dd><p>Logical. When <code>TRUE</code>, the data is plotted interactively using <span class="pkg">plotly</span>.</p></dd>
-
-
-</dl><p></p></div>
-</div>
-
 </div><p></p><hr><a id="method-CoreEngine-run_workflow"></a><div class="section">
 <h3 id="method-run-workflow-">Method <code>run_workflow()</code><a class="anchor" aria-label="anchor" href="#method-run-workflow-"></a></h3>
 <p>Runs all processing results represented by added processing settings.</p><div class="section">
-<h4 id="usage-44">Usage<a class="anchor" aria-label="anchor" href="#usage-44"></a></h4>
+<h4 id="usage-37">Usage<a class="anchor" aria-label="anchor" href="#usage-37"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">run_workflow</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -948,12 +754,12 @@ for specific plotting methods.</p></dd>
 </div><p></p><hr><a id="method-CoreEngine-save_headers"></a><div class="section">
 <h3 id="method-save-headers-">Method <code>save_headers()</code><a class="anchor" aria-label="anchor" href="#method-save-headers-"></a></h3>
 <p>Saves the headers list as the defined <code>format</code> in <code>path</code> and returns invisible.</p><div class="section">
-<h4 id="usage-45">Usage<a class="anchor" aria-label="anchor" href="#usage-45"></a></h4>
+<h4 id="usage-38">Usage<a class="anchor" aria-label="anchor" href="#usage-38"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">save_headers</span><span class="op">(</span>format <span class="op">=</span> <span class="st">"json"</span>, name <span class="op">=</span> <span class="st">"headers"</span>, path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-27">Arguments<a class="anchor" aria-label="anchor" href="#arguments-27"></a></h4>
+<h4 id="arguments-25">Arguments<a class="anchor" aria-label="anchor" href="#arguments-25"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>format</code></dt>
 <dd><p>A string. Possible values are <code>json</code> and <code>rds</code> for saving as JSON or RDS formats, respectively.</p></dd>
 
@@ -972,7 +778,7 @@ for specific plotting methods.</p></dd>
 </div><p></p><hr><a id="method-CoreEngine-save_settings"></a><div class="section">
 <h3 id="method-save-settings-">Method <code>save_settings()</code><a class="anchor" aria-label="anchor" href="#method-save-settings-"></a></h3>
 <p>Saves  the settings list as the defined <code>format</code> in <code>path</code> and returns invisible.</p><div class="section">
-<h4 id="usage-46">Usage<a class="anchor" aria-label="anchor" href="#usage-46"></a></h4>
+<h4 id="usage-39">Usage<a class="anchor" aria-label="anchor" href="#usage-39"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">save_settings</span><span class="op">(</span></span>
 <span>  call <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  format <span class="op">=</span> <span class="st">"json"</span>,</span>
@@ -982,7 +788,7 @@ for specific plotting methods.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-28">Arguments<a class="anchor" aria-label="anchor" href="#arguments-28"></a></h4>
+<h4 id="arguments-26">Arguments<a class="anchor" aria-label="anchor" href="#arguments-26"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>call</code></dt>
 <dd><p>A string or a vector of strings with the name/s of the processing method/s to be saved.
 When <code>call</code> is <code>NULL</code> all settings are saved.</p></dd>
@@ -1006,7 +812,7 @@ When <code>call</code> is <code>NULL</code> all settings are saved.</p></dd>
 </div><p></p><hr><a id="method-CoreEngine-save_analyses"></a><div class="section">
 <h3 id="method-save-analyses-">Method <code>save_analyses()</code><a class="anchor" aria-label="anchor" href="#method-save-analyses-"></a></h3>
 <p>Saves the list of analyses as the defined <code>format</code> in <code>path</code> and returns invisible.</p><div class="section">
-<h4 id="usage-47">Usage<a class="anchor" aria-label="anchor" href="#usage-47"></a></h4>
+<h4 id="usage-40">Usage<a class="anchor" aria-label="anchor" href="#usage-40"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">save_analyses</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  format <span class="op">=</span> <span class="st">"json"</span>,</span>
@@ -1016,7 +822,7 @@ When <code>call</code> is <code>NULL</code> all settings are saved.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-29">Arguments<a class="anchor" aria-label="anchor" href="#arguments-29"></a></h4>
+<h4 id="arguments-27">Arguments<a class="anchor" aria-label="anchor" href="#arguments-27"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
 <dd><p>A numeric/character vector with the number/name of the analyses.</p></dd>
 
@@ -1039,12 +845,12 @@ When <code>call</code> is <code>NULL</code> all settings are saved.</p></dd>
 </div><p></p><hr><a id="method-CoreEngine-save"></a><div class="section">
 <h3 id="method-save-">Method <code><a href="https://rdrr.io/r/base/save.html" class="external-link">save()</a></code><a class="anchor" aria-label="anchor" href="#method-save-"></a></h3>
 <p>Saves the data of the engine as the defined by <code>format</code> in the <code>path</code> and returns invisible.</p><div class="section">
-<h4 id="usage-48">Usage<a class="anchor" aria-label="anchor" href="#usage-48"></a></h4>
+<h4 id="usage-41">Usage<a class="anchor" aria-label="anchor" href="#usage-41"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">save</span><span class="op">(</span>format <span class="op">=</span> <span class="st">"json"</span>, name <span class="op">=</span> <span class="st">"EngineData"</span>, path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-30">Arguments<a class="anchor" aria-label="anchor" href="#arguments-30"></a></h4>
+<h4 id="arguments-28">Arguments<a class="anchor" aria-label="anchor" href="#arguments-28"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>format</code></dt>
 <dd><p>A string. Possible values are <code>json</code> and <code>rds</code> for saving as JSON or RDS formats, respectively.</p></dd>
 
@@ -1063,12 +869,12 @@ When <code>call</code> is <code>NULL</code> all settings are saved.</p></dd>
 </div><p></p><hr><a id="method-CoreEngine-import_headers"></a><div class="section">
 <h3 id="method-import-headers-">Method <code>import_headers()</code><a class="anchor" aria-label="anchor" href="#method-import-headers-"></a></h3>
 <p>Imports headers from a <em>rds</em> or <em>json</em> file.</p><div class="section">
-<h4 id="usage-49">Usage<a class="anchor" aria-label="anchor" href="#usage-49"></a></h4>
+<h4 id="usage-42">Usage<a class="anchor" aria-label="anchor" href="#usage-42"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">import_headers</span><span class="op">(</span>file <span class="op">=</span> <span class="cn">NA_character_</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-31">Arguments<a class="anchor" aria-label="anchor" href="#arguments-31"></a></h4>
+<h4 id="arguments-29">Arguments<a class="anchor" aria-label="anchor" href="#arguments-29"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>file</code></dt>
 <dd><p>A <em>json</em> or <em>rds</em> file to be imported.</p></dd>
 
@@ -1083,19 +889,18 @@ When <code>call</code> is <code>NULL</code> all settings are saved.</p></dd>
 </div><p></p><hr><a id="method-CoreEngine-import_settings"></a><div class="section">
 <h3 id="method-import-settings-">Method <code>import_settings()</code><a class="anchor" aria-label="anchor" href="#method-import-settings-"></a></h3>
 <p>Imports processing settings from a <em>rds</em> or <em>json</em> file.</p><div class="section">
-<h4 id="usage-50">Usage<a class="anchor" aria-label="anchor" href="#usage-50"></a></h4>
+<h4 id="usage-43">Usage<a class="anchor" aria-label="anchor" href="#usage-43"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">import_settings</span><span class="op">(</span>file <span class="op">=</span> <span class="cn">NA_character_</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-32">Arguments<a class="anchor" aria-label="anchor" href="#arguments-32"></a></h4>
+<h4 id="arguments-30">Arguments<a class="anchor" aria-label="anchor" href="#arguments-30"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>file</code></dt>
 <dd><p>A <em>json</em> or <em>rds</em> file to be imported.</p></dd>
 
 
 <dt><code>replace</code></dt>
-<dd><p>Logical. When <code>TRUE</code>, existing settings are replaced by
-the new settings with the same call name.</p></dd>
+<dd><p>Logical. When <code>TRUE</code>, existing settings are replaced by the new settings with the same call name.</p></dd>
 
 
 </dl><p></p></div>
@@ -1108,12 +913,12 @@ the new settings with the same call name.</p></dd>
 </div><p></p><hr><a id="method-CoreEngine-import_analyses"></a><div class="section">
 <h3 id="method-import-analyses-">Method <code>import_analyses()</code><a class="anchor" aria-label="anchor" href="#method-import-analyses-"></a></h3>
 <p>Imports analyses from an <em>rds</em> or <em>json</em> file.</p><div class="section">
-<h4 id="usage-51">Usage<a class="anchor" aria-label="anchor" href="#usage-51"></a></h4>
+<h4 id="usage-44">Usage<a class="anchor" aria-label="anchor" href="#usage-44"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">import_analyses</span><span class="op">(</span>file <span class="op">=</span> <span class="cn">NA_character_</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-33">Arguments<a class="anchor" aria-label="anchor" href="#arguments-33"></a></h4>
+<h4 id="arguments-31">Arguments<a class="anchor" aria-label="anchor" href="#arguments-31"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>file</code></dt>
 <dd><p>A <em>json</em> or <em>rds</em> file to be imported.</p></dd>
 
@@ -1128,12 +933,12 @@ the new settings with the same call name.</p></dd>
 </div><p></p><hr><a id="method-CoreEngine-import"></a><div class="section">
 <h3 id="method-import-">Method <code>import()</code><a class="anchor" aria-label="anchor" href="#method-import-"></a></h3>
 <p>Imports a CoreEngine saved as <em>json</em> or <em>rds</em>.</p><div class="section">
-<h4 id="usage-52">Usage<a class="anchor" aria-label="anchor" href="#usage-52"></a></h4>
+<h4 id="usage-45">Usage<a class="anchor" aria-label="anchor" href="#usage-45"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">import</span><span class="op">(</span>file <span class="op">=</span> <span class="cn">NA_character_</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-34">Arguments<a class="anchor" aria-label="anchor" href="#arguments-34"></a></h4>
+<h4 id="arguments-32">Arguments<a class="anchor" aria-label="anchor" href="#arguments-32"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>file</code></dt>
 <dd><p>A <em>json</em> or <em>rds</em> file representing a CoreEngine.</p></dd>
 
@@ -1148,7 +953,7 @@ the new settings with the same call name.</p></dd>
 </div><p></p><hr><a id="method-CoreEngine-processing_methods"></a><div class="section">
 <h3 id="method-processing-methods-">Method <code>processing_methods()</code><a class="anchor" aria-label="anchor" href="#method-processing-methods-"></a></h3>
 <p>Data.table with available data processing methods.</p><div class="section">
-<h4 id="usage-53">Usage<a class="anchor" aria-label="anchor" href="#usage-53"></a></h4>
+<h4 id="usage-46">Usage<a class="anchor" aria-label="anchor" href="#usage-46"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">processing_methods</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -1156,12 +961,12 @@ the new settings with the same call name.</p></dd>
 </div><p></p><hr><a id="method-CoreEngine-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-54">Usage<a class="anchor" aria-label="anchor" href="#usage-54"></a></h4>
+<h4 id="usage-47">Usage<a class="anchor" aria-label="anchor" href="#usage-47"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-35">Arguments<a class="anchor" aria-label="anchor" href="#arguments-35"></a></h4>
+<h4 id="arguments-33">Arguments<a class="anchor" aria-label="anchor" href="#arguments-33"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 

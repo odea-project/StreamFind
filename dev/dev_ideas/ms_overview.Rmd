@@ -279,14 +279,14 @@ ms$has_loaded_spectra()
 
 ## Plot methods
 
-Within the MassSpecData class object, standardized methods for plotting data are also available. All plot methods use data that can be obtained with get methods, meaning that the user is able to re-plot the data with a different approach/style. For instance, the `get_tic()` method can be used to obtain the total ion chromatogram (TIC) as a `data.table` with columns *analysis*, *rt* and *intensity*, as shown below for the first analysis. The same TIC data can be directly plotted using the `plot_tic()` method, as shown below.
+Within the MassSpecData class object, standardized methods for plotting data are also available. All plot methods use data that can be obtained with get methods, meaning that the user is able to re-plot the data with a different approach/style. For instance, the `get_spectra_tic()` method can be used to obtain the total ion chromatogram (TIC) as a `data.table` with columns *analysis*, *rt* and *intensity*, as shown below for the first analysis. The same TIC data can be directly plotted using the `plot_spectra_tic()` method, as shown below.
 
 ```{r get-tic-first-analysis}
-head(ms$get_tic(analyses = 1))
+head(ms$get_spectra_tic(analyses = 1))
 ```
 
 ```{r plot-tic} 
-ms$plot_tic(analyses = 1)
+ms$plot_spectra_tic(analyses = 1)
 ```
 
 <br>
@@ -302,7 +302,7 @@ ms$plot_features()
 Most plot methods have the *interactive* argument which is set to `TRUE` by default for using the [plotly](https://plotly.com/r/) package to plot the data. A static version of the plot using the base `plot()` function can be obtained by setting interactive to `FALSE`, as shown below for the base peak chromatogram (BPC) of all analyses in the `ms` object. By typing `ms$plot`, other available plot methods are listed. The documentation `?MassSpecData` also contains detailed information and usage examples for available plot methods.
  
 ```{r plot-bpc-static}
-ms$plot_bpc(interactive = FALSE)
+ms$plot_spectra_bpc(interactive = FALSE)
 ```
 
 ## Save methods
@@ -413,7 +413,7 @@ ms$get_replicate_names()
 ms$get_blank_names()
 
 # getter for polarities
-ms$get_polarities(analyses = "00_hrms_s_is_pos_cent-r003")
+ms$get_spectra_polarity(analyses = "00_hrms_s_is_pos_cent-r003")
 
 # getter for lower mz value
 ms$get_mz_low(c("00_hrms_s_is_pos_cent-r001", "00_hrms_s_is_pos_cent-r003"))
@@ -428,16 +428,16 @@ ms$get_rt_start()
 ms$get_rt_end()
 
 # getter for MS levels. Note that it returns a list not a vector!
-ms$get_spectra_levels()
+ms$get_spectra_level()
 
 # getter for spectra mode
 ms$get_spectra_mode()
 
 # getter for TIC
-head(ms$get_tic(analyses = 2))
+head(ms$get_spectra_tic(analyses = 2))
 
 # getter for BPC
-head(ms$get_bpc())
+head(ms$get_spectra_bpc())
 ```
 
 ## Making spectra targets
@@ -552,7 +552,7 @@ all(round(apply(t2[, 2:7], 2, sd), digits = 4) == 0)
 
 ## Get and plot spectra
 
-Besides the `get_tic()` and `get_bpc()` methods (shown above). There are four methods to get low level spectra from analyses: `get_spectra()`, `get_eic()`, `get_ms1()` and `get_ms2()`. All methods use the same arguments as the function `make_ms_targets()` to build MS targets and the *analyses* argument to specify which MassSpecAnalysis objects to query the data. All methods return a `data.table`. The documentation in `?MassSpecData` has detailed information about the use of each method. For each get method, a plot method is available with similar interface. Below each get and plot method is demonstrated for the defined targets.
+Besides the `get_spectra_tic()` and `get_spectra_bpc()` methods (shown above). There are four methods to get low level spectra from analyses: `get_spectra()`, `get_spectra_eic()`, `get_spectra_ms1()` and `get_spectra_ms2()`. All methods use the same arguments as the function `make_ms_targets()` to build MS targets and the *analyses* argument to specify which MassSpecAnalysis objects to query the data. All methods return a `data.table`. The documentation in `?MassSpecData` has detailed information about the use of each method. For each get method, a plot method is available with similar interface. Below each get and plot method is demonstrated for the defined targets.
 
 ### Mass traces
 
@@ -583,36 +583,36 @@ ms$plot_spectra(
 )
 ```
 
-Another plotting option for raw spectra is the `plot_xic()` method as shown below. This method returns a two row plot with traces intensity vs retention time on top and *m/z* vs retention time below. A `targetsMark` can be defined to illustrate the area of expected *m/z* and retention time targets. Below, the targets1 rt and mz columns with narrower ppm and sec deviations (i.e., 5 ppm and 10 seconds, respectively) is used to show the area where Carbamazepin-d10 is expected for potential identification.
+Another plotting option for raw spectra is the `plot_spectra_xic()` method as shown below. This method returns a two row plot with traces intensity vs retention time on top and *m/z* vs retention time below. A `targetsMark` can be defined to illustrate the area of expected *m/z* and retention time targets. Below, the targets1 rt and mz columns with narrower ppm and sec deviations (i.e., 5 ppm and 10 seconds, respectively) is used to show the area where Carbamazepin-d10 is expected for potential identification.
 
 ```{r plot-xic}
-ms$plot_xic(analyses = 1:2, mz = targets1[2,],
+ms$plot_spectra_xic(analyses = 1:2, mz = targets1[2,],
   targetsMark = targets1[2, c("rt", "mz")], ppmMark = 5, secMark = 10)
 ```
 
 ### EIC
 
-The extracted ion chromatogram (EIC) can be obtained with `get_eic()` and plotted with `plot_eic()` method. The interface is very similar as the previous methods, with analyses and make targets arguments used to specify each analyses to parse the data and which traces to retrieve.
+The extracted ion chromatogram (EIC) can be obtained with `get_spectra_eic()` and plotted with `plot_spectra_eic()` method. The interface is very similar as the previous methods, with analyses and make targets arguments used to specify each analyses to parse the data and which traces to retrieve.
 
 ```{r get-eic-01}
-ms$get_eic(analyses = 1, mz = mz1, rt = rt1, ppm = 5, sec = 10)
+ms$get_spectra_eic(analyses = 1, mz = mz1, rt = rt1, ppm = 5, sec = 10)
 ```
 
 ```{r plot-eic-01}
-ms$plot_eic(mz = targets1, interactive = FALSE)
+ms$plot_spectra_eic(mz = targets1, interactive = FALSE)
 ```
 
 ```{r plot-eic-02}
-ms$plot_eic(mz = targets1, colorBy = "analyses")
+ms$plot_spectra_eic(mz = targets1, colorBy = "analyses")
 ```
 
 ### MS1 and MS2 spectra
 
-While the EIC method collects and sums the traces in each retention time value (i.e., in each scan), the `get_ms1()` and `get_ms2()` methods average the mass traces in a given retention time interval, returning an averaged spectrum representing several scans. The averaging is based on clustering the mass traces according to a given `mzClust` argument as demonstrated below for both MS1 and MS2 data.
+While the EIC method collects and sums the traces in each retention time value (i.e., in each scan), the `get_spectra_ms1()` and `get_spectra_ms2()` methods average the mass traces in a given retention time interval, returning an averaged spectrum representing several scans. The averaging is based on clustering the mass traces according to a given `mzClust` argument as demonstrated below for both MS1 and MS2 data.
 
 ```{r get-ms1}
 # MS1 averaged spectrum of targets from 247 to 257 (Carbamazepin-d10) and 239 to 245 (Diuron-d6) m/z and +/- 1 second the retention time of each target
-ms$get_ms1(analyses = 3, mzClust = 0.005,
+ms$get_spectra_ms1(analyses = 3, mzClust = 0.005,
   mz = data.frame("mzmin" = c(247, 239), "mzmax" = c(257, 245)),
   rt = data.frame("rtmin" = targets1$rt - 1, "rtmax" = targets1$rt + 1)
 ) 
@@ -620,7 +620,7 @@ ms$get_ms1(analyses = 3, mzClust = 0.005,
 
 ```{r plot-ms1}
 # In the plot, the Carbamazepin-d10 and Diuron-d6 isotopes can be distinguished
-ms$plot_ms1(analyses = 3,
+ms$plot_spectra_ms1(analyses = 3,
   mz = data.frame("mzmin" = c(247, 239), "mzmax" = c(257, 245)),
   rt = data.frame("rtmin" = targets1$rt - 1, "rtmax" = targets1$rt + 1),
   mzClust = 0.005, interactive = FALSE
@@ -629,12 +629,12 @@ ms$plot_ms1(analyses = 3,
 
 ```{r get-ms2}
 # MS2 data of Diuron-d6 for analysis 1
-ms$get_ms2(analyses = 1, mz = targets1[2, ])
+ms$get_spectra_ms2(analyses = 1, mz = targets1[2, ])
 ```
 
 ```{r plot-ms2-01}
 # MS2 data plot of Diuron-d6 in all analyses
-ms$plot_ms2(mz = targets1[2 ,], 
+ms$plot_spectra_ms2(mz = targets1[2 ,], 
   mzClust = 0.005, minIntensity = 50,
   colorBy = "analyses", verbose = FALSE)
 ```
@@ -642,7 +642,7 @@ ms$plot_ms2(mz = targets1[2 ,],
 ```{r plot-ms2-02}
 # MS2 data plot of both targets in analyses 3
 # Note that "minIntensity" argument was increased to 500 counts, resulting in a cleaner averaged spectrum
-ms$plot_ms2(analyses = 3, mz = targets1, 
+ms$plot_spectra_ms2(analyses = 3, mz = targets1, 
   mzClust = 0.005, minIntensity = 500,
   colorBy = "targets", verbose = FALSE)
 ```

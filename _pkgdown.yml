@@ -45,6 +45,14 @@ reference:
   contents:
     - starts_with("Settings_bin_spectra")
 
+- subtitle: cluster_spectra
+  contents:
+    - starts_with("Settings_cluster_spectra")
+
+- subtitle: correct_chromatograms_baseline
+  contents:
+    - starts_with("Settings_correct_chromatograms_baseline")
+
 - subtitle: correct_spectra_baseline
   contents:
     - starts_with("Settings_correct_spectra_baseline")
@@ -69,13 +77,17 @@ reference:
   contents:
     - starts_with("Settings_calculate_quality")
 
+- subtitle: calculate_spectra_charges
+  contents:
+    - starts_with("Settings_calculate_spectra_charges")
+
 - subtitle: centroid_spectra
   contents:
     - starts_with("Settings_centroid_spectra")
 
-- subtitle: deconvolute_spectra_charges
+- subtitle: deconvolute_spectra
   contents:
-    - starts_with("Settings_deconvolute_spectra_charges")
+    - starts_with("Settings_deconvolute_spectra")
 
 - subtitle: filter_features
   contents:
@@ -121,6 +133,10 @@ reference:
   contents:
     - starts_with("Settings_normalize_spectra")
 
+- subtitle: smooth_chromatograms
+  contents:
+    - starts_with("Settings_smooth_chromatograms")
+
 - subtitle: smooth_spectra
   contents:
     - starts_with("Settings_smooth_spectra")
@@ -132,7 +148,6 @@ reference:
 - subtitle: subtract_spectra_section
   contents:
     - starts_with("Settings_subtract_spectra_section")
-
 
 - subtitle: General get and save default settings
   desc: >
@@ -151,3 +166,4 @@ reference:
     - import_MassSpecEngine
     - combine_MassSpecEngine
     - make_ms_targets
+    - clear_cache

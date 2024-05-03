@@ -9,6 +9,15 @@ The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecti
 \section{Super class}{
 \code{\link[StreamFind:CoreEngine]{StreamFind::CoreEngine}} -> \code{RamanEngine}
 }
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
+\describe{
+\item{\code{raw_spectra}}{List of raw spectra \code{data.table} objects for each analysis.}
+
+\item{\code{spectra}}{List of spectra \code{data.table} objects for each analysis.}
+}
+\if{html}{\out{</div>}}
+}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
@@ -16,6 +25,7 @@ The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecti
 \item \href{#method-RamanEngine-get_overview}{\code{RamanEngine$get_overview()}}
 \item \href{#method-RamanEngine-get_spectra}{\code{RamanEngine$get_spectra()}}
 \item \href{#method-RamanEngine-subset_analyses}{\code{RamanEngine$subset_analyses()}}
+\item \href{#method-RamanEngine-add_files}{\code{RamanEngine$add_files()}}
 \item \href{#method-RamanEngine-remove_analyses}{\code{RamanEngine$remove_analyses()}}
 \item \href{#method-RamanEngine-merge_spectra_time_series}{\code{RamanEngine$merge_spectra_time_series()}}
 \item \href{#method-RamanEngine-average_spectra}{\code{RamanEngine$average_spectra()}}
@@ -26,8 +36,12 @@ The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecti
 \item \href{#method-RamanEngine-delete_spectra_section}{\code{RamanEngine$delete_spectra_section()}}
 \item \href{#method-RamanEngine-smooth_spectra}{\code{RamanEngine$smooth_spectra()}}
 \item \href{#method-RamanEngine-normalize_spectra}{\code{RamanEngine$normalize_spectra()}}
+\item \href{#method-RamanEngine-has_spectra}{\code{RamanEngine$has_spectra()}}
 \item \href{#method-RamanEngine-plot_spectra}{\code{RamanEngine$plot_spectra()}}
+\item \href{#method-RamanEngine-plot_spectra_baseline}{\code{RamanEngine$plot_spectra_baseline()}}
+\item \href{#method-RamanEngine-plot_spectra_peaks}{\code{RamanEngine$plot_spectra_peaks()}}
 \item \href{#method-RamanEngine-plot_chromatograms}{\code{RamanEngine$plot_chromatograms()}}
+\item \href{#method-RamanEngine-plot_chromatograms_peaks}{\code{RamanEngine$plot_chromatograms_peaks()}}
 \item \href{#method-RamanEngine-processing_methods}{\code{RamanEngine$processing_methods()}}
 \item \href{#method-RamanEngine-clone}{\code{RamanEngine$clone()}}
 }
@@ -58,19 +72,12 @@ The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecti
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_types"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_types'><code>StreamFind::CoreEngine$get_types()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_workflow_overview"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_workflow_overview'><code>StreamFind::CoreEngine$get_workflow_overview()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_analyses'><code>StreamFind::CoreEngine$has_analyses()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_averaged_spectra"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_averaged_spectra'><code>StreamFind::CoreEngine$has_averaged_spectra()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_chromatograms"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_chromatograms'><code>StreamFind::CoreEngine$has_chromatograms()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_chromatograms_peaks"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_chromatograms_peaks'><code>StreamFind::CoreEngine$has_chromatograms_peaks()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_results"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_results'><code>StreamFind::CoreEngine$has_results()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_settings'><code>StreamFind::CoreEngine$has_settings()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_spectra"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_spectra'><code>StreamFind::CoreEngine$has_spectra()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_spectra_peaks"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_spectra_peaks'><code>StreamFind::CoreEngine$has_spectra_peaks()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import'><code>StreamFind::CoreEngine$import()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_analyses'><code>StreamFind::CoreEngine$import_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_headers'><code>StreamFind::CoreEngine$import_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_settings'><code>StreamFind::CoreEngine$import_settings()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="plot_chromatograms_peaks"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-plot_chromatograms_peaks'><code>StreamFind::CoreEngine$plot_chromatograms_peaks()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="plot_spectra_peaks"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-plot_spectra_peaks'><code>StreamFind::CoreEngine$plot_spectra_peaks()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print'><code>StreamFind::CoreEngine$print()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_analyses'><code>StreamFind::CoreEngine$print_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_headers'><code>StreamFind::CoreEngine$print_headers()</code></a></span></li>
@@ -98,8 +105,7 @@ Creates an R6 class \emph{RamanEngine}. Child of \emph{CoreEngine} R6 class.
   headers = NULL,
   settings = NULL,
   analyses = NULL,
-  results = NULL,
-  runParallel = FALSE
+  results = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -121,19 +127,13 @@ the call name of each ProcessingSettings object. Alternatively, a named
 list with call name, algorithm and parameters to be transformed and added
 as ProcessingSettings object.}
 
-\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
-applicable to the processing method. Alternatively, a named
-list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
-ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the engine object.}
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name applicable to the processing method.
+Alternatively, a named list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as ProcessingSettings
+S3 class object. When not given, settings for the processing method will be searched within the engine object.}
 
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{results}}{A named list of objects from processing methods.}
-
-\item{\code{runParallel}}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
 }
 \if{html}{\out{</div>}}
 }
@@ -158,7 +158,8 @@ Gets a \code{data.table} with spectra from analyses.
   analyses = NULL,
   rt = NULL,
   shift = NULL,
-  minIntensity = 0
+  minIntensity = 0,
+  raw_spectra = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -171,7 +172,9 @@ Gets a \code{data.table} with spectra from analyses.
 
 \item{\code{shift}}{Numeric of length two with the minimum and maximum shift, in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
 
-\item{\code{minIntensity}}{Numeric value with the minimum intensity.}
+\item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
+
+\item{\code{raw_spectra}}{Logical of length one. Set to \code{TRUE} for parsing raw spectra not spectra results/processed.}
 }
 \if{html}{\out{</div>}}
 }
@@ -194,6 +197,26 @@ Subsets on analyses.
 }
 \subsection{Returns}{
 A new cloned engine with only the analyses as defined by the analyses argument.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-add_files"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-add_files}{}}}
+\subsection{Method \code{add_files()}}{
+Adds analyses based on asc files. Note that when adding new files, any existing results are removed.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$add_files(files = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{files}}{Vector with full paths of \strong{.asc} files from Raman analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
 }
 }
 \if{html}{\out{<hr>}}
@@ -235,11 +258,9 @@ the call name of each ProcessingSettings object. Alternatively, a named
 list with call name, algorithm and parameters to be transformed and added
 as ProcessingSettings object.}
 
-\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
-applicable to the processing method. Alternatively, a named
-list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
-ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the engine object.}
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name applicable to the processing method.
+Alternatively, a named list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as ProcessingSettings
+S3 class object. When not given, settings for the processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -265,11 +286,9 @@ the call name of each ProcessingSettings object. Alternatively, a named
 list with call name, algorithm and parameters to be transformed and added
 as ProcessingSettings object.}
 
-\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
-applicable to the processing method. Alternatively, a named
-list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
-ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the engine object.}
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name applicable to the processing method.
+Alternatively, a named list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as ProcessingSettings
+S3 class object. When not given, settings for the processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -295,11 +314,9 @@ the call name of each ProcessingSettings object. Alternatively, a named
 list with call name, algorithm and parameters to be transformed and added
 as ProcessingSettings object.}
 
-\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
-applicable to the processing method. Alternatively, a named
-list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
-ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the engine object.}
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name applicable to the processing method.
+Alternatively, a named list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as ProcessingSettings
+S3 class object. When not given, settings for the processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -325,11 +342,9 @@ the call name of each ProcessingSettings object. Alternatively, a named
 list with call name, algorithm and parameters to be transformed and added
 as ProcessingSettings object.}
 
-\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
-applicable to the processing method. Alternatively, a named
-list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
-ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the engine object.}
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name applicable to the processing method.
+Alternatively, a named list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as ProcessingSettings
+S3 class object. When not given, settings for the processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -355,11 +370,9 @@ the call name of each ProcessingSettings object. Alternatively, a named
 list with call name, algorithm and parameters to be transformed and added
 as ProcessingSettings object.}
 
-\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
-applicable to the processing method. Alternatively, a named
-list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
-ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the engine object.}
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name applicable to the processing method.
+Alternatively, a named list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as ProcessingSettings
+S3 class object. When not given, settings for the processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -385,11 +398,9 @@ the call name of each ProcessingSettings object. Alternatively, a named
 list with call name, algorithm and parameters to be transformed and added
 as ProcessingSettings object.}
 
-\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
-applicable to the processing method. Alternatively, a named
-list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
-ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the engine object.}
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name applicable to the processing method.
+Alternatively, a named list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as ProcessingSettings
+S3 class object. When not given, settings for the processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -415,11 +426,9 @@ the call name of each ProcessingSettings object. Alternatively, a named
 list with call name, algorithm and parameters to be transformed and added
 as ProcessingSettings object.}
 
-\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
-applicable to the processing method. Alternatively, a named
-list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
-ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the engine object.}
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name applicable to the processing method.
+Alternatively, a named list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as ProcessingSettings
+S3 class object. When not given, settings for the processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -445,11 +454,9 @@ the call name of each ProcessingSettings object. Alternatively, a named
 list with call name, algorithm and parameters to be transformed and added
 as ProcessingSettings object.}
 
-\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
-applicable to the processing method. Alternatively, a named
-list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
-ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the engine object.}
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name applicable to the processing method.
+Alternatively, a named list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as ProcessingSettings
+S3 class object. When not given, settings for the processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -475,11 +482,9 @@ the call name of each ProcessingSettings object. Alternatively, a named
 list with call name, algorithm and parameters to be transformed and added
 as ProcessingSettings object.}
 
-\item{\code{settings}}{A ProcessingSettings S3 class object with the call name
-applicable to the processing method. Alternatively, a named
-list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as
-ProcessingSettings S3 class object. When not given, settings for the
-processing method will be searched within the engine object.}
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name applicable to the processing method.
+Alternatively, a named list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as ProcessingSettings
+S3 class object. When not given, settings for the processing method will be searched within the engine object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -488,12 +493,82 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-has_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-has_spectra}{}}}
+\subsection{Method \code{has_spectra()}}{
+Checks if there are spectra, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$has_spectra()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-RamanEngine-plot_spectra"></a>}}
 \if{latex}{\out{\hypertarget{method-RamanEngine-plot_spectra}{}}}
 \subsection{Method \code{plot_spectra()}}{
 Plots spectra for given \emph{RamanAnalyses}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{RamanEngine$plot_spectra(
+  analyses = NULL,
+  rt = NULL,
+  shift = NULL,
+  minIntensity = 0,
+  raw_spectra = FALSE,
+  xVal = "shift",
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  cex = 0.6,
+  showLegend = TRUE,
+  colorBy = "analyses",
+  interactive = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+
+\item{\code{rt}}{Numeric of length two with the minimum and maximum retention time, in seconds.}
+
+\item{\code{shift}}{Numeric of length two with the minimum and maximum shift, in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
+
+\item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
+
+\item{\code{raw_spectra}}{Logical of length one. Set to \code{TRUE} for parsing raw spectra not spectra results/processed.}
+
+\item{\code{xVal}}{Character of length one. Possible are "rt" or "shift" for using the retention time or the shift
+as x axis, respectively.}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{cex}}{Numeric (length 1) defining the scale of the legend for non interactive plotting.}
+
+\item{\code{showLegend}}{Logical (length 1). Set to \code{TRUE} to show legend.}
+
+\item{\code{colorBy}}{A string defining how to legend the plot. Possible values are \code{analyses}, \code{targets} (the default) or
+\code{replicates}.}
+
+\item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A plot.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-plot_spectra_baseline"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-plot_spectra_baseline}{}}}
+\subsection{Method \code{plot_spectra_baseline()}}{
+Plots spectra corrected for given \emph{RamanAnalyses}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$plot_spectra_baseline(
   analyses = NULL,
   rt = NULL,
   shift = NULL,
@@ -518,7 +593,7 @@ Plots spectra for given \emph{RamanAnalyses}.
 
 \item{\code{shift}}{Numeric of length two with the minimum and maximum shift, in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
 
-\item{\code{minIntensity}}{Numeric value with the minimum intensity.}
+\item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
 
 \item{\code{xVal}}{Character of length one. Possible are "rt" or "shift" for using the retention time or the shift
 as x axis, respectively.}
@@ -529,20 +604,70 @@ as x axis, respectively.}
 
 \item{\code{title}}{A string with the title.}
 
-\item{\code{cex}}{A length one numeric value defining the scale of the legend for non interactive plotting.}
+\item{\code{cex}}{Numeric (length 1) defining the scale of the legend for non interactive plotting.}
 
-\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
+\item{\code{showLegend}}{Logical (length 1). Set to \code{TRUE} to show legend.}
 
-\item{\code{colorBy}}{A string defining how to legend the plot. Possible values are
-\code{analyses}, \code{targets} (the default) or \code{replicates}. Other options are possible
-for specific plotting methods.}
+\item{\code{colorBy}}{A string defining how to legend the plot. Possible values are \code{analyses}, \code{targets} (the default) or
+\code{replicates}.}
 
-\item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+\item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
 A plot.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-plot_spectra_peaks"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-plot_spectra_peaks}{}}}
+\subsection{Method \code{plot_spectra_peaks()}}{
+Plots peaks from spectra from analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$plot_spectra_peaks(
+  analyses = NULL,
+  legendNames = NULL,
+  title = NULL,
+  colorBy = "analyses",
+  showLegend = TRUE,
+  xlim = NULL,
+  ylim = NULL,
+  cex = 0.6,
+  xLab = NULL,
+  yLab = NULL,
+  interactive = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+
+\item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
+the added targets as legend of the plot.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{colorBy}}{A string defining how to legend the plot. Possible values are \code{analyses}, \code{targets} (the default) or
+\code{replicates}.}
+
+\item{\code{showLegend}}{Logical (length 1). Set to \code{TRUE} to show legend.}
+
+\item{\code{xlim}}{A length one or two numeric vector for setting the \emph{x} limits of the plot.}
+
+\item{\code{ylim}}{A length one or two numeric vector for setting the \emph{y} limits of the plot.}
+
+\item{\code{cex}}{Numeric (length 1) defining the scale of the legend for non interactive plotting.}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
+\item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+}
+\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -556,6 +681,7 @@ Plots chromatograms from analyses with spectra coupled to LC.
   rt = NULL,
   shift = NULL,
   minIntensity = 0,
+  raw_spectra = FALSE,
   xLab = NULL,
   yLab = NULL,
   title = NULL,
@@ -575,7 +701,9 @@ Plots chromatograms from analyses with spectra coupled to LC.
 
 \item{\code{shift}}{Numeric of length two with the minimum and maximum shift, in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
 
-\item{\code{minIntensity}}{Numeric value with the minimum intensity.}
+\item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
+
+\item{\code{raw_spectra}}{Logical of length one. Set to \code{TRUE} for parsing raw spectra not spectra results/processed.}
 
 \item{\code{xLab}}{A string with the title for the x axis.}
 
@@ -583,20 +711,73 @@ Plots chromatograms from analyses with spectra coupled to LC.
 
 \item{\code{title}}{A string with the title.}
 
-\item{\code{cex}}{A length one numeric value defining the scale of the legend for non interactive plotting.}
+\item{\code{cex}}{Numeric (length 1) defining the scale of the legend for non interactive plotting.}
 
-\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
+\item{\code{showLegend}}{Logical (length 1). Set to \code{TRUE} to show legend.}
 
-\item{\code{colorBy}}{A string defining how to legend the plot. Possible values are
-\code{analyses}, \code{targets} (the default) or \code{replicates}. Other options are possible
-for specific plotting methods.}
+\item{\code{colorBy}}{A string defining how to legend the plot. Possible values are \code{analyses}, \code{targets} (the default) or
+\code{replicates}.}
 
-\item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+\item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
 A plot.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-plot_chromatograms_peaks"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-plot_chromatograms_peaks}{}}}
+\subsection{Method \code{plot_chromatograms_peaks()}}{
+Plots peaks from chromatograms from analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$plot_chromatograms_peaks(
+  analyses = NULL,
+  chromatograms = NULL,
+  legendNames = NULL,
+  title = NULL,
+  colorBy = "targets",
+  showLegend = TRUE,
+  xlim = NULL,
+  ylim = NULL,
+  cex = 0.6,
+  xLab = NULL,
+  yLab = NULL,
+  interactive = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+
+\item{\code{chromatograms}}{A character or integer vector with the ID (i.e. name) or the index of the chromatograms.}
+
+\item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
+the added targets as legend of the plot.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{colorBy}}{A string defining how to legend the plot. Possible values are \code{analyses}, \code{targets} (the default) or
+\code{replicates}.}
+
+\item{\code{showLegend}}{Logical (length 1). Set to \code{TRUE} to show legend.}
+
+\item{\code{xlim}}{A length one or two numeric vector for setting the \emph{x} limits of the plot.}
+
+\item{\code{ylim}}{A length one or two numeric vector for setting the \emph{y} limits of the plot.}
+
+\item{\code{cex}}{Numeric (length 1) defining the scale of the legend for non interactive plotting.}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
+\item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+}
+\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}

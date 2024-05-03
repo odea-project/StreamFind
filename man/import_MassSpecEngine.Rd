@@ -13,6 +13,5 @@ import_MassSpecEngine(file)
 A \code{MassSpecEngine} class object.
 }
 \description{
-Function to import a \code{MassSpecEngine} class object from a saved
-\emph{json} or \emph{rds} file.
+Function to import a \code{MassSpecEngine} class object from a saved \emph{json} or \emph{rds} file.
 }

@@ -17,15 +17,15 @@ List of function elements to access specific reference help pages.}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{chromatograms}}{\code{data.table} with processed chromatograms for each analyses.}
+\item{\code{headers}}{List of project headers.}
 
-\item{\code{chromatograms_peaks}}{\code{data.table} with integrated peaks from chromatograms for each analyses.}
+\item{\code{settings}}{List of processing settings.}
 
-\item{\code{spectra}}{List of spectra \code{data.table} objects for each analysis.}
+\item{\code{history}}{Audit trail of changes.}
 
-\item{\code{averaged_spectra}}{List of averaged spectra \code{data.table} each analysis/replicate.}
+\item{\code{analyses}}{List of analyses.}
 
-\item{\code{spectra_peaks}}{\code{data.table} with integrated spectra peaks for each analysis.}
+\item{\code{results}}{List of results.}
 }
 \if{html}{\out{</div>}}
 }
@@ -69,13 +69,6 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-CoreEngine-has_settings}{\code{CoreEngine$has_settings()}}
 \item \href{#method-CoreEngine-has_analyses}{\code{CoreEngine$has_analyses()}}
 \item \href{#method-CoreEngine-has_results}{\code{CoreEngine$has_results()}}
-\item \href{#method-CoreEngine-has_chromatograms}{\code{CoreEngine$has_chromatograms()}}
-\item \href{#method-CoreEngine-has_chromatograms_peaks}{\code{CoreEngine$has_chromatograms_peaks()}}
-\item \href{#method-CoreEngine-has_spectra}{\code{CoreEngine$has_spectra()}}
-\item \href{#method-CoreEngine-has_spectra_peaks}{\code{CoreEngine$has_spectra_peaks()}}
-\item \href{#method-CoreEngine-has_averaged_spectra}{\code{CoreEngine$has_averaged_spectra()}}
-\item \href{#method-CoreEngine-plot_chromatograms_peaks}{\code{CoreEngine$plot_chromatograms_peaks()}}
-\item \href{#method-CoreEngine-plot_spectra_peaks}{\code{CoreEngine$plot_spectra_peaks()}}
 \item \href{#method-CoreEngine-run_workflow}{\code{CoreEngine$run_workflow()}}
 \item \href{#method-CoreEngine-save_headers}{\code{CoreEngine$save_headers()}}
 \item \href{#method-CoreEngine-save_settings}{\code{CoreEngine$save_settings()}}
@@ -189,8 +182,8 @@ Gets the headers list.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{value}}{A character vector with the name/s of the header elements.
-When \code{NULL} (the default), the entire headers list is returned.}
+\item{\code{value}}{A character vector with the name/s of the header elements. When \code{NULL} (the default), the entire
+headers list is returned.}
 }
 \if{html}{\out{</div>}}
 }
@@ -236,8 +229,8 @@ Gets the number of analyses.
 \if{html}{\out{<a id="method-CoreEngine-get_overview"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-get_overview}{}}}
 \subsection{Method \code{get_overview()}}{
-Gets an overview data.table with all the analysis names,
-replicates, associated blank replicates, and full file paths.
+Gets an overview data.table with all the analysis names,replicates, associated blank replicates,
+and full file paths.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_overview()}\if{html}{\out{</div>}}
 }
@@ -447,9 +440,11 @@ Adds processing settings.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{settings}}{A named list of ProcessingSettings S3 class objects or a single ProcessingSettings S3 class
-object. The list names should match the call name of each ProcessingSettings object. Alternatively, a named
-list with call name, algorithm and parameters to be transformed and added as ProcessingSettings S3 class object.}
+\item{\code{settings}}{A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.}
 
 \item{\code{replace}}{Logical of length one. When \code{TRUE}, existing settings are
 replaced by the new settings with the same call name, except settings for
@@ -493,8 +488,7 @@ Adds or redefines the analysis replicate names.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{value}}{A character vector with the analysis replicate names.
-Must be of the same length as the number of analyses.}
+\item{\code{value}}{A character vector with the analysis replicate names. Must be of the same length as the number of analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -514,8 +508,7 @@ Adds or redefines the analysis blank replicate names.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{value}}{A character vector with the analysis blank replicate names.
-Must be of the same length as the number of analyses.}
+\item{\code{value}}{A character vector with the analysis blank replicate names. Must be of the same length as the number of analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -578,8 +571,7 @@ Removes headers entries. Note that the name, path and date headers cannot be rem
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{value}}{A character vector with the name/s of the elements in headers
-to be removed.}
+\item{\code{value}}{A character vector with the name/s of the elements in headers to be removed.}
 }
 \if{html}{\out{</div>}}
 }
@@ -709,163 +701,6 @@ Checks if results are present, returning \code{TRUE} or \code{FALSE}.
 results data. The actual names depends of the applied algorithms. For
 instance, when algorithms via patRoon are used, the name of the module
 data is patRoon.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-has_chromatograms"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-has_chromatograms}{}}}
-\subsection{Method \code{has_chromatograms()}}{
-Checks if there are chromatograms, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_chromatograms()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-has_chromatograms_peaks"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-has_chromatograms_peaks}{}}}
-\subsection{Method \code{has_chromatograms_peaks()}}{
-Checks if there are integrated peaks from chromatograms, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_chromatograms_peaks()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-has_spectra"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-has_spectra}{}}}
-\subsection{Method \code{has_spectra()}}{
-Checks if there are spectra, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_spectra()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-has_spectra_peaks"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-has_spectra_peaks}{}}}
-\subsection{Method \code{has_spectra_peaks()}}{
-Checks if there are spectra peaks, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_spectra_peaks()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-has_averaged_spectra"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-has_averaged_spectra}{}}}
-\subsection{Method \code{has_averaged_spectra()}}{
-Checks if there are average spectra, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_averaged_spectra()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-plot_chromatograms_peaks"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-plot_chromatograms_peaks}{}}}
-\subsection{Method \code{plot_chromatograms_peaks()}}{
-Plots peaks from chromatograms from analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$plot_chromatograms_peaks(
-  analyses = NULL,
-  chromatograms = NA_integer_,
-  legendNames = NULL,
-  title = NULL,
-  colorBy = "targets",
-  showLegend = TRUE,
-  xlim = NULL,
-  ylim = NULL,
-  cex = 0.6,
-  xLab = NULL,
-  yLab = NULL,
-  interactive = TRUE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-
-\item{\code{chromatograms}}{A character or integer vector with the ID name or the index of the chromatograms to extract.}
-
-\item{\code{legendNames}}{A character vector with the same length as the targets or
-\code{TRUE} or \code{FALSE} for using the name in added targets as legend of the plot.}
-
-\item{\code{title}}{A string with the title.}
-
-\item{\code{colorBy}}{A string defining how to legend the plot. Possible values are
-\code{analyses}, \code{targets} (the default) or \code{replicates}. Other options are possible
-for specific plotting methods.}
-
-\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
-
-\item{\code{xlim}}{A length one or two numeric vector for setting the \emph{x} limits of the plot.}
-
-\item{\code{ylim}}{A length one or two numeric vector for setting the \emph{y} limits of the plot.}
-
-\item{\code{cex}}{A length one numeric value defining the scale of the legend for non interactive plotting.}
-
-\item{\code{xLab}}{A string with the title for the x axis.}
-
-\item{\code{yLab}}{A string with the title for the y axis.}
-
-\item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-plot_spectra_peaks"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-plot_spectra_peaks}{}}}
-\subsection{Method \code{plot_spectra_peaks()}}{
-Plots peaks from spectra from analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$plot_spectra_peaks(
-  analyses = NULL,
-  legendNames = NULL,
-  title = NULL,
-  colorBy = "analyses",
-  showLegend = TRUE,
-  xlim = NULL,
-  ylim = NULL,
-  cex = 0.6,
-  xLab = NULL,
-  yLab = NULL,
-  interactive = TRUE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-
-\item{\code{legendNames}}{A character vector with the same length as the targets or
-\code{TRUE} or \code{FALSE} for using the name in added targets as legend of the plot.}
-
-\item{\code{title}}{A string with the title.}
-
-\item{\code{colorBy}}{A string defining how to legend the plot. Possible values are
-\code{analyses}, \code{targets} (the default) or \code{replicates}. Other options are possible
-for specific plotting methods.}
-
-\item{\code{showLegend}}{Logical. Set to \code{TRUE} to show legend.}
-
-\item{\code{xlim}}{A length one or two numeric vector for setting the \emph{x} limits of the plot.}
-
-\item{\code{ylim}}{A length one or two numeric vector for setting the \emph{y} limits of the plot.}
-
-\item{\code{cex}}{A length one numeric value defining the scale of the legend for non interactive plotting.}
-
-\item{\code{xLab}}{A string with the title for the x axis.}
-
-\item{\code{yLab}}{A string with the title for the y axis.}
-
-\item{\code{interactive}}{Logical. When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1016,8 +851,7 @@ Imports processing settings from a \emph{rds} or \emph{json} file.
 \describe{
 \item{\code{file}}{A \emph{json} or \emph{rds} file to be imported.}
 
-\item{\code{replace}}{Logical. When \code{TRUE}, existing settings are replaced by
-the new settings with the same call name.}
+\item{\code{replace}}{Logical. When \code{TRUE}, existing settings are replaced by the new settings with the same call name.}
 }
 \if{html}{\out{</div>}}
 }

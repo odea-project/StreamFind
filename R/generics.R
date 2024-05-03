@@ -6,12 +6,6 @@ validate <- function(x) {
 
 #' @noRd
 #' @export
-asJSON <- function(x) {
-  UseMethod("asJSON")
-}
-
-#' @noRd
-#' @export
 export <- function(x, ...) {
   UseMethod("export")
 }
@@ -26,6 +20,16 @@ export <- function(x, ...) {
 #' @noRd
 .s3_bin_spectra <- function(settings, self, private) {
   UseMethod(".s3_bin_spectra")
+}
+
+#' @noRd
+.s3_cluster_spectra <- function(settings, self, private) {
+  UseMethod(".s3_cluster_spectra")
+}
+
+#' @noRd
+.s3_correct_chromatograms_baseline <- function(settings, self, private) {
+  UseMethod(".s3_correct_chromatograms_baseline")
 }
 
 #' @noRd
@@ -59,18 +63,18 @@ export <- function(x, ...) {
 }
 
 #' @noRd
+.s3_ms_calculate_spectra_charges <- function(settings, self, private) {
+  UseMethod(".s3_ms_calculate_spectra_charges")
+}
+
+#' @noRd
 .s3_ms_centroid_spectra <- function(settings, self, private) {
   UseMethod(".s3_ms_centroid_spectra")
 }
 
 #' @noRd
-.s3_ms_correct_intensity <- function(settings, self, private) {
-  UseMethod(".s3_ms_correct_intensity")
-}
-
-#' @noRd
-.s3_deconvolute_spectra_charges <- function(settings, self, private) {
-  UseMethod(".s3_deconvolute_spectra_charges")
+.s3_ms_deconvolute_spectra <- function(settings, self, private) {
+  UseMethod(".s3_ms_deconvolute_spectra")
 }
 
 #' @noRd
@@ -132,6 +136,11 @@ export <- function(x, ...) {
 }
 
 #' @noRd
+.s3_smooth_chromatograms <- function(settings, self, private) {
+  UseMethod(".s3_smooth_chromatograms")
+}
+
+#' @noRd
 .s3_smooth_spectra <- function(settings, self, private) {
   UseMethod(".s3_smooth_spectra")
 }
@@ -154,4 +163,9 @@ export <- function(x, ...) {
 
 .s3_ms_normalise_intensity <- function(settings, self, private) {
   UseMethod(".s3_ms_normalise_intensity")
+}
+
+#' @noRd
+.s3_ms_correct_intensity <- function(settings, self, private) {
+  UseMethod(".s3_ms_correct_intensity")
 }

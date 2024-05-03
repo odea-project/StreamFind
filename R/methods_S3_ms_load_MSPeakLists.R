@@ -252,7 +252,7 @@
     "retainPrecursorMSMS" = TRUE
   )
   
-  pol <- self$get_polarities()[names(plist)]
+  pol <- self$get_spectra_polarity()[names(plist)]
   
   if (length(unique(pol)) > 1) {
     

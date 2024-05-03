@@ -1,27 +1,17 @@
 #' **ProcessingSettings** S3 class constructor, methods and functions
 #'
-#' @description
-#' Creates a ProcessingSettings S3 class object. The ProcessingSettings are used
-#' in \pkg{StreamFind} for processing data in a given data class method.
+#' @description Creates a ProcessingSettings S3 class object. The ProcessingSettings are used in \pkg{StreamFind} for 
+#' processing data in a given data class method.
 #'
-#' @param call Character of length one with the name of the method where the 
-#' processing settings are to be applied.
-#' @param algorithm Character of length one with the name of the algorithm to
-#' be used.
-#' @param parameters List with parameters specific for the method `call` and
-#' `algorithm`.
-#' @param version Character of length one with the version of the processing
-#' settings.
-#' @param software Character of length one with the name of the software or
-#' package.
+#' @param call Character of length one with the name of the method where theprocessing settings are to be applied.
+#' @param algorithm Character of length one with the name of the algorithm to be used.
+#' @param parameters List with parameters specific for the method `call` and `algorithm`.
+#' @param version Character of length one with the version of the processing settings.
+#' @param software Character of length one with the name of the software or package.
 #' @param developer Character of length one with the name of the developer/s.
 #' @param contact Character of length one with the email of the developer.
 #' @param link Character of length one with the a web link.
 #' @param doi Character of length one with the DOI of algorithm.
-#'
-#' @details See the documentation of the method where the processing settings
-#' are to be applied for more information about applicable algorithms and
-#' parameters.
 #'
 #' @return A ProcessingSettings S3 class
 #'
@@ -74,12 +64,6 @@ ProcessingSettings <- function(call = NA_character_,
     algo <- paste0("Settings_", x$call, "_" , x$algorithm)
     
     s3_classes <- append(s3_classes, algo)
-    
-    # TODO add validation for StreamFind implemented algorithm, may a list of added native algorithms
-    if ("StreamFind" %in% x$software) {
-      page <- "https://odea-project.github.io/StreamFind/reference/"
-      x$link <- paste0(page, algo, ".html")
-    }
   }
   
   patRoon_algorithms <- c("openms", "xcms", "xcms3", "envipick", "sirius", "kpic2", "safd", "GenForm", "MetFrag")
@@ -97,13 +81,8 @@ ProcessingSettings <- function(call = NA_character_,
   }
 }
 
-#' @describeIn ProcessingSettings
-#' Validates a ProcessingSettings S3 class object, returning a logical value of
-#' length one.
-#'
-#' @param x A ProcessingSettings S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.ProcessingSettings <- function(x) {
   
@@ -148,12 +127,9 @@ validate.ProcessingSettings <- function(x) {
   }
 }
 
-#' @describeIn ProcessingSettings
-#' Prints the ProcessingSettings S3 class object in the console.
-#'
-#' @param ... Not used.
-#'
 #' @export
+#' @noRd
+#'
 print.ProcessingSettings <- function(x, ...) {
   cat("\n")
   cat("", class(x)[1], "\n")
@@ -242,43 +218,15 @@ print.ProcessingSettings <- function(x, ...) {
   }
 }
 
-#' @describeIn ProcessingSettings
-#' Converts a ProcessingSettings S3 class object to a JSON string.
-#'
 #' @export
-asJSON.ProcessingSettings <- function(x) {
-  toJSON(
-    x,
-    dataframe = "columns",
-    Date = "ISO8601",
-    POSIXt = "string",
-    factor = "string",
-    complex = "string",
-    null = "null",
-    na = "null",
-    auto_unbox = FALSE,
-    digits = 8,
-    pretty = TRUE,
-    force = TRUE
-  )
-}
-
-#' @describeIn ProcessingSettings
-#' Exports a ProcessingSettings S3 class object to a JSON or RDS file.
+#' @noRd
 #'
-#' @template arg-ms-save-format
-#' @template arg-ms-save-name
-#' @template arg-ms-save-path
-#'
-#' @export
-#'
-export.ProcessingSettings <- function(x,
-                                      format = "json",
-                                      name = "settings",
-                                      path = getwd(), ...) {
+export.ProcessingSettings <- function(x, format = "json", name = "settings", path = getwd(), ...) {
 
   if ("ProcessingSettings" %in% class(x)) {
+    
     if (validate(x)) {
+      
       if (format %in% "json") {
         settings <- toJSON(
           x,
@@ -297,20 +245,14 @@ export.ProcessingSettings <- function(x,
         write(settings, file = paste0(path, "/", name, ".json"))
       }
 
-      if (format %in% "rds") {
-        saveRDS(settings, file = paste0(path, "/", name, ".rds"))
-      }
+      if (format %in% "rds") saveRDS(settings, file = paste0(path, "/", name, ".rds"))
     }
   }
 }
 
-#' @describeIn ProcessingSettings
-#' Converts the argument in a ProcessingSettings S3 class object.
-#'
-#' @param value A list to be checked and/or converted to ProcessingSettings S3
-#' class.
-#'
 #' @export
+#' @noRd
+#'
 as.ProcessingSettings <- function(value) {
   
   if (length(value) == 1 && is.list(value)) value <- value[[1]]

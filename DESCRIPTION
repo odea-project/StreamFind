@@ -38,7 +38,13 @@ Imports:
     methods,
     checkmate,
     pracma,
-    baseline
+    baseline,
+    digest,
+    DBI,
+    RSQLite,
+    withr,
+    fst,
+    R.utils
 Suggests: 
     knitr,
     kableExtra,
@@ -58,4 +64,6 @@ Encoding: UTF-8
 Language: en-US
 RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE, r6 = TRUE)
+SystemRequirements:
+    C++17, OpenMP
 LinkingTo: Rcpp

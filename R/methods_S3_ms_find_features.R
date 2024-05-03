@@ -93,7 +93,7 @@
   
   for (x in patRoon::analyses(pat)) {
     pat@features[[x]]$filtered <- FALSE
-    pol <- self$get_polarities(x)
+    pol <- self$get_spectra_polarity(x)
     if ("positive" %in% pol) adduct_val <- -1.007276
     if ("negative" %in% pol) adduct_val <- 1.007276
     pat@features[[x]]$mass <- pat@features[[x]]$mz + adduct_val

@@ -44,6 +44,7 @@
 <li class="active nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/demo_ms_raman_fusion_bsa.html">Fusion of Mass Spectrometry and Raman Spectroscopy Data</a>
     <a class="dropdown-item" href="../articles/demo_ozonation_project.html">Evaluation of Wastewater Ozonation with Mass Spectrometry</a>
     <a class="dropdown-item" href="../articles/framework.html">StreamFind General Introduction</a>
     <a class="dropdown-item" href="../articles/ms_developer_guide.html">StreamFind Developer Guide</a>
@@ -82,7 +83,7 @@ Cunha</h4>
                   <a class="author_email" href="mailto:#"></a><a href="mailto:cunha@iuta.de" class="email">cunha@iuta.de</a>
       
                   
-            <h4 data-toc-skip class="date">11 March, 2024</h4>
+            <h4 data-toc-skip class="date">03 May, 2024</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/odea-project/StreamFind/blob/HEAD/vignettes/articles/ms_developer_guide.Rmd" class="external-link"><code>vignettes/articles/ms_developer_guide.Rmd</code></a></small>
       <div class="d-none name"><code>ms_developer_guide.Rmd</code></div>
@@ -152,20 +153,18 @@ be accessed and processed via the public methods. Below the creation of
 a <em>MassSpecEngine</em> object and the way to access and change data
 is briefly shown.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ms</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/MassSpecEngine.html">MassSpecEngine</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## ✓ Engine created!</span></span></code></pre>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ms</span><span class="op">$</span><span class="fu">add_headers</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Example"</span>, author <span class="op">=</span> <span class="st">"Person A"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## ✓ Added headers!</span></span></code></pre>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ms</span><span class="op">$</span><span class="fu">get_headers</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">ms</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/MassSpecEngine.html">MassSpecEngine</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">ms</span><span class="op">$</span><span class="fu">add_headers</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Example"</span>, author <span class="op">=</span> <span class="st">"Person A"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">ms</span><span class="op">$</span><span class="fu">get_headers</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">##   ProjectHeaders </span></span>
 <span><span class="co">##   name: Example</span></span>
 <span><span class="co">##   author: Person A</span></span>
 <span><span class="co">##   path: NA</span></span>
-<span><span class="co">##   date: 2024-03-11 17:19:12.601286</span></span></code></pre>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<span><span class="co">##   date: 2024-05-03 17:25:14.265383</span></span></code></pre>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># print method. Note that MS data files were not yet added!</span></span>
 <span><span class="va">ms</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
@@ -173,7 +172,7 @@ is briefly shown.</p>
 <span><span class="co">## name          Example</span></span>
 <span><span class="co">## author        Person A</span></span>
 <span><span class="co">## path          NA</span></span>
-<span><span class="co">## date          2024-03-11 17:19:12.601286</span></span>
+<span><span class="co">## date          2024-05-03 17:25:14.265383</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Workflow empty </span></span>
 <span><span class="co">## </span></span>
@@ -189,7 +188,7 @@ data with the defined settings or parameters. The structure of a
 <em>ProcessingSettings</em> is exemplified below for the algorithm
 <code>openms</code> to be applied to the method
 <code>MassSpecEngine$find_features()</code>.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ffs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Settings_find_features_openms.html">Settings_find_features_openms</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">ffs</span></span></code></pre></div>
@@ -234,17 +233,16 @@ function always including
 given in the Semantics (@ref(semantics)). Then, the
 <em>ProcessingSettings</em> can be directly added to the
 <em>MassSpecEngine</em>.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ms</span><span class="op">$</span><span class="fu">add_settings</span><span class="op">(</span><span class="va">ffs</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## ✓ find_features processing settings added!</span></span></code></pre>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ms</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ms</span><span class="op">$</span><span class="fu">add_settings</span><span class="op">(</span><span class="va">ffs</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">ms</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## MassSpecEngine</span></span>
 <span><span class="co">## name          Example</span></span>
 <span><span class="co">## author        Person A</span></span>
 <span><span class="co">## path          NA</span></span>
-<span><span class="co">## date          2024-03-11 17:19:12.601286</span></span>
+<span><span class="co">## date          2024-05-03 17:25:14.265383</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Workflow</span></span>
 <span><span class="co">##  1: find_features (openms)</span></span>
@@ -254,14 +252,14 @@ given in the Semantics (@ref(semantics)). Then, the
 <span><span class="co">## Results empty</span></span></code></pre>
 <p>Alternatively, the <em>ProcessingSettings</em> can be saved as a JSON
 string and imported from a JSON file, as demonstrated below.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/save_default_ProcessingSettings.html">save_default_ProcessingSettings</a></span><span class="op">(</span></span>
 <span>  call <span class="op">=</span> <span class="st">"find_features"</span>,</span>
 <span>  algorithm <span class="op">=</span> <span class="st">"xcms3_centwave"</span>,</span>
 <span>  name <span class="op">=</span> <span class="st">"ffs"</span>,</span>
 <span>  path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jsonlite/man/prettify.html" class="external-link">prettify</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="st">"~/github/StreamFind/vignettes/articles/ffs.json"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## {</span></span>
 <span><span class="co">##     "call": [</span></span>
@@ -339,18 +337,17 @@ string and imported from a JSON file, as demonstrated below.</p>
 <span><span class="co">##     ]</span></span>
 <span><span class="co">## }</span></span>
 <span><span class="co">## </span></span></code></pre>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ms</span><span class="op">$</span><span class="fu">import_settings</span><span class="op">(</span><span class="st">"~/github/StreamFind/vignettes/articles/ffs.json"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## ✓ find_features processing settings replaced!</span></span></code></pre>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># "openms" replaced by "xcms3_centwave"</span></span>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ms</span><span class="op">$</span><span class="fu">import_settings</span><span class="op">(</span><span class="st">"~/github/StreamFind/vignettes/articles/ffs.json"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># "openms" replaced by "xcms3_centwave"</span></span>
 <span><span class="va">ms</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## MassSpecEngine</span></span>
 <span><span class="co">## name          Example</span></span>
 <span><span class="co">## author        Person A</span></span>
 <span><span class="co">## path          NA</span></span>
-<span><span class="co">## date          2024-03-11 17:19:12.601286</span></span>
+<span><span class="co">## date          2024-05-03 17:25:14.265383</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Workflow</span></span>
 <span><span class="co">##  1: find_features (xcms3_centwave)</span></span>
@@ -367,7 +364,7 @@ dedicated validation method to ensure that the parameters and metadata
 are in conformity (as shown below). The validation of a
 <em>ProcessingSettings</em> is always performed before applying it to a
 processing method.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">validate</span><span class="op">(</span><span class="va">ffs</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] TRUE</span></span></code></pre>
 <p>Besides the S3 class <em>ProcessingSettings</em>, the
@@ -388,7 +385,7 @@ Implementation of new processing methods and/or algorithms must consider
 this structure. In the section Implementation (@ref(implementation)) the
 process of adding new methods and algorithms is described in more
 detail.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">ffs</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "ProcessingSettings"            "Settings_find_features_openms"</span></span>
 <span><span class="co">## [3] "patRoon"</span></span></code></pre>
@@ -419,8 +416,8 @@ the association of the settings with the respective processing method.
 Functions or methods not available to the user (i.e., not exported via
 the package NAMESPACE) are written with <code>.</code> at the beginning,
 followed by <em>underscore</em> to separate words (e.g.,
-<em>.get_colors()</em> or <em>.plot_ms2_static()</em>). This is also
-applied to the S3 generics of the processing modules, which use the
+<em>.get_colors()</em> or <em>.plot_spectra_ms2_static()</em>). This is
+also applied to the S3 generics of the processing modules, which use the
 syntax <code>.s3_ms_[module method]</code> (e.g.,
 <code>.s3_ms_find_features</code> or
 <code>.s3_ms_group_features</code>).</p>

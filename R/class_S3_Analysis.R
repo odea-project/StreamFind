@@ -37,12 +37,8 @@ Analysis <- function(name = NA_character_,
   }
 }
 
-#' @describeIn Analysis
-#' S3 method to validate an *Analysis* S3 class object, returning a logical value of length one.
-#'
-#' @param x An *Analysis* S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.Analysis <- function(x = NULL) {
   valid <- FALSE
@@ -74,12 +70,9 @@ validate.Analysis <- function(x = NULL) {
   valid
 }
 
-#' @describeIn Analysis
-#' S3 method to print an *Analysis* S3 class object in the console.
-#'
-#' @param ... Not used.
-#'
 #' @export
+#' @noRd
+#'
 print.Analysis <- function(x, ...) {
   cat("\n")
   cat(
@@ -93,33 +86,9 @@ print.Analysis <- function(x, ...) {
   )
 }
 
-#' @describeIn Analysis
-#' S3 method to convert an *Analysis* S3 class object to a JSON string.
-#'
 #' @export
-asJSON.Analysis <- function(x) {
-  toJSON(
-    x,
-    dataframe = "columns",
-    Date = "ISO8601",
-    POSIXt = "string",
-    factor = "string",
-    complex = "string",
-    null = "null",
-    na = "null",
-    auto_unbox = FALSE,
-    digits = 8,
-    pretty = TRUE,
-    force = TRUE
-  )
-}
-
-#' @describeIn Analysis
-#' S3 method to convert the argument value to an *Analysis* S3 class object.
+#' @noRd
 #'
-#' @param value A list to be checked and/or converted to *Analysis* S3 class.
-#'
-#' @export
 as.Analysis <- function(value) {
   if (length(value) == 1 & is.list(value)) value <- value[[1]]
   do.call(Analysis, value)

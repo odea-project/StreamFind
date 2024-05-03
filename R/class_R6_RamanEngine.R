@@ -7,14 +7,10 @@
 #' @template arg-settings-and-list
 #' @template arg-results
 #' @template arg-analyses
-#' @template arg-verbose
-#' @template arg-runParallel
-#' 
 #' @template arg-raman-target
 #' @template arg-ms-minIntensity
-#' 
 #' @template arg-settings
-#' 
+#' @template arg-chromatograms
 #' @template arg-title
 #' @template arg-legendNames
 #' @template arg-colorBy
@@ -32,96 +28,100 @@ RamanEngine <- R6::R6Class("RamanEngine",
   inherit = CoreEngine,
 
   # _ private fields -----
-  private = list(
-
-    ## .averaged -----
-    .averaged = NULL
-
-  ),
+  private = list( ),
   
   # _ active bindings -----
   
-  active = list( ),
+  active = list(
+    
+    #' @field raw_spectra List of raw spectra `data.table` objects for each analysis.
+    #'
+    raw_spectra = function() {
+      
+      res <- lapply(self$get_analyses(), function(x) x$spectra)
+      
+      names(res) <- self$get_analysis_names()
+      
+      res <- Map(function(x, y) {
+        x$analysis <- y
+        x
+      }, res, names(res))
+      
+      res
+    },
+    
+    #' @field spectra List of spectra `data.table` objects for each analysis.
+    #'
+    spectra = function(value) {
+      
+      if (missing(value)) {
+        
+        if (self$has_results("spectra")) {
+          res <- private$.results$spectra
+          res <- lapply(res, function(x) x$spectra)
+          
+        } else {
+          res <- lapply(self$get_analyses(), function(x) x$spectra)
+          names(res) <- self$get_analysis_names()
+          res <- Map(function(x, y) {
+            x$analysis <- y
+            x
+          }, res, names(res))
+        }
+        
+        res
+        
+      } else {
+        
+        if (self$has_results("spectra")) {
+          
+          if (identical(names(private$.results$spectra), names(value))) {
+            private$.results$spectra <- Map(function(x, y) {
+              x$spectra <- y
+              x
+            }, private$.results$spectra, value)
+            
+          } else {
+            private$.results[["spectra"]] <- Map(function(x, y) {
+              x <- list("spectra" = y)
+              x
+            }, names(value), value)
+          }
+          
+        } else {
+          private$.results[["spectra"]] <- Map(function(x, y) {
+            x <- list("spectra" = y)
+            x
+          }, names(value), value)
+        }
+        
+        invisible(self)
+      }
+    }
+  ),
 
-  # _ public fields/methods -----
+  # _ public fields -----
   public = list(
 
-    ## ___ system -----
     #' @description Creates an R6 class *RamanEngine*. Child of *CoreEngine* R6 class.
     #'
     #' @param files Vector with full paths of **.asc** files from Raman analyses.
     #'
-    initialize = function(files = NULL, headers = NULL, settings = NULL, analyses = NULL, results = NULL, runParallel = FALSE) {
+    initialize = function(files = NULL, headers = NULL, settings = NULL, analyses = NULL, results = NULL) {
       
-      if (is.null(analyses) & !is.null(files)) {
+      if (!is.null(analyses)) {
         
-        cached_analyses <- FALSE
+        if (is(analyses, "RamanAnalysis")) analyses <- list(analyses)
         
-        analyses <- NULL
-        
-        if (.caches_data()) {
-          hash <- patRoon::makeHash(files)
-          
-          analyses <- patRoon::loadCacheData("parsed_raman_analyses", hash)
-          
-          if (!is.null(analyses)) {
-            message("\U2139 Raman analyses loaded from cache!")
-            cached_analyses <- TRUE
-          }
-          
-        } else {
-          hash <- NULL
+        if (!all(vapply(analyses, is, "RamanAnalysis"))) {
+          warning("The argument analyses must be a RamanAnalysis object or a list of RamanAnalysis objects! Not done.")
           analyses <- NULL
-        }
-        
-        if (is.null(analyses)) {
-          message("\U2699 Parsing ", length(files),  " Raman file/s..." ,appendLF = FALSE)
-          
-          if (!is.logical(runParallel)) runParallel <- FALSE
-          
-          if (runParallel & length(files) > 1) {
-            workers <- parallel::detectCores() - 1
-            if (length(files) < workers) workers <- length(files)
-            par_type <- "PSOCK"
-            if (parallelly::supportsMulticore()) par_type <- "FORK"
-            cl <- parallel::makeCluster(workers, type = par_type)
-            doParallel::registerDoParallel(cl)
-          } else {
-            registerDoSEQ()
-          }
-          
-          x <- NULL
-          
-          vars <- c("rcpp_parse_asc_file")
-          
-          analyses <- foreach(
-            x = files,
-            .packages = "StreamFind",
-            .export = vars
-            ) %dopar% { rcpp_parse_asc_file(x) }
-          
-          names(analyses) <- vapply(analyses, function(x) x$name, "")
-          
-          if (runParallel & length(files) > 1 & !cached_analyses) parallel::stopCluster(cl)
-          
-          message(" Done!")
-          
-          if (!cached_analyses & !is.null(hash)) {
-            if (!is.null(analyses)) {
-              message("\U1f5ab Parsed Raman analyses cached!")
-              patRoon::saveCacheData("parsed_raman_analyses", analyses, hash)
-            }
-          }
-        }
-        
-        analyses <- lapply(analyses, function(x) as.RamanAnalysis(x))
-        
-        if (is.null(analyses)) {
-          warning("No valid files were given! MassSpecEngine object is empty. \n")
         }
       }
       
       super$initialize(headers, settings, analyses, results)
+      
+      if (!is.null(files)) self$add_files(files)
       
       private$.register(
         "created",
@@ -169,36 +169,41 @@ RamanEngine <- R6::R6Class("RamanEngine",
     },
 
     #' @description Gets a `data.table` with spectra from analyses.
+    #' 
+    #' @param raw_spectra Logical of length one. Set to `TRUE` for parsing raw spectra not spectra results/processed.
     #'
-    get_spectra = function(analyses = NULL, rt = NULL, shift = NULL, minIntensity = 0) {
+    get_spectra = function(analyses = NULL, rt = NULL, shift = NULL, minIntensity = 0, raw_spectra = FALSE) {
 
       analyses <- private$.check_analyses_argument(analyses)
       
       if (is.null(analyses)) return(data.frame())
       
-      if (self$has_averaged_spectra()) {
-        spec <- self$averaged_spectra
+      if (self$has_spectra() && !raw_spectra) {
+        spec <- self$spectra
         spec <- rbindlist(spec, fill = TRUE)
         
         if ("analysis" %in% colnames(spec)) {
           spec <- spec[spec$analysis %in% analyses, ]
           
+          if (!"replicate" %in% colnames(spec)) spec$replicate <- self$get_replicate_names()[spec$analysis]
+          
         } else if ("replicate" %in% colnames(spec)) {
           rpl <- self$get_replicate_names()
           rpl <- rpl[analyses]
           spec <- spec[spec$replicate %in% unname(rpl)]
-          spec$analysis <- spec$replicate
-          setcolorder(spec, c("analysis", "replicate"))
+          
+          if (!"analysis" %in% colnames(spec)) spec$analysis <- spec$replicate
         }
-        
-      } else if (self$has_spectra()) {
-        spec <- self$spectra
-        spec <- rbindlist(spec, fill = TRUE)
-        spec <- spec[spec$analysis %in% analyses]
         
       } else {
         spec <- lapply(private$.analyses[analyses], function(x) x$spectra)
         spec <- rbindlist(spec, idcol = "analysis", fill = TRUE)
+        spec$replicate <- self$get_replicate_names()[spec$analysis] 
+      }
+      
+      if (nrow(spec) == 0) {
+        warning("No spectra found!")
+        return(spec)
       }
       
       if (!is.null(rt) && length(rt) == 2 && "rt" %in% colnames(spec)) {
@@ -214,10 +219,12 @@ RamanEngine <- R6::R6Class("RamanEngine",
       }
       
       if ("rt" %in% colnames(spec)) {
-        setorder(spec, shift, rt, analysis)
+        setorder(spec, analysis, rt, shift)
       } else {
-        setorder(spec, shift, analysis)
+        setorder(spec, analysis, shift)
       }
+      
+      setcolorder(spec, c("analysis", "replicate"))
       
       spec
     },
@@ -274,6 +281,134 @@ RamanEngine <- R6::R6Class("RamanEngine",
       }
     },
     
+    ## ___ add -----
+    
+    #' @description Adds analyses based on asc files. Note that when adding new files, any existing results are removed.
+    #' 
+    #' @param files Vector with full paths of **.asc** files from Raman analyses.
+    #'
+    #' @return Invisible.
+    #'
+    add_files = function(files = NULL) {
+      
+      if (!is.null(files)) {
+        
+        if (is.data.frame(files)) {
+          
+          if ("file" %in% colnames(files)) {
+            
+            if ("replicate" %in% colnames(files)) {
+              replicates <- as.character(files$replicate)
+            } else {
+              replicates <- rep(NA_character_, nrow(files))
+            }
+            
+            if ("blank" %in% colnames(files)) {
+              blanks <- as.character(files$blank)
+            } else {
+              blanks <- rep(NA_character_, nrow(files))
+            }
+            
+            files <- files$file
+            
+          } else {
+            files <- ""
+          }
+          
+        } else {
+          replicates <- rep(NA_character_, length(files))
+          blanks <- rep(NA_character_, length(files))
+        }
+        
+        possible_ms_file_formats <- ".asc"
+        
+        valid_files <- vapply(files,
+          FUN.VALUE = FALSE,
+          function(x, possible_ms_file_formats) {
+            if (!file.exists(x)) {
+              return(FALSE)
+            }
+            if (FALSE %in% grepl(possible_ms_file_formats, x)) {
+              return(FALSE)
+            }
+            TRUE
+          }, possible_ms_file_formats = possible_ms_file_formats
+        )
+        
+        if (!all(valid_files)) {
+          warning("File/s not valid!")
+          return(NULL)
+        }
+        
+        names(replicates) <- as.character(files)
+        
+        names(blanks) <- as.character(files)
+        
+        analyses <- lapply(files, function(x) {
+          
+          cache <- .load_chache("parsed_raman_analyses", x)
+          
+          if (!is.null(cache$data)) {
+            message("\U2139 Analysis loaded from cache!")
+            cache$data
+            
+          } else {
+            
+            message("\U2699 Parsing ", basename(x), "...", appendLF = FALSE)
+            
+            ana <- rcpp_parse_asc_file(x)
+            
+            class_ana <- class(ana)[1]
+            
+            if (!class_ana %in% "RamanAnalysis") {
+              message(" Not Done!")
+              return(NULL)
+            }
+            
+            message(" Done!")
+            
+            rpl <- replicates[x]
+            
+            if (is.na(rpl)) {
+              rpl <- ana$name
+              rpl <- sub("-[^-]+$", "", rpl)
+            }
+            
+            ana$replicate <- rpl
+            
+            blk <- blanks[x]
+            
+            if (!is.na(blk)) ana$blank <- blk
+            
+            ana$blank <- blk
+            
+            if (!is.null(cache$hash)) {
+              .save_cache("parsed_raman_analyses", ana, cache$hash)
+              message("\U1f5ab Parsed file cached!")
+            }
+            
+            ana
+          }
+        })
+        
+        names(analyses) <- vapply(analyses, function(x) x[["name"]], "")
+        
+        analyses <- analyses[order(names(analyses))]
+        
+        if (all(vapply(analyses, function(x) "RamanAnalysis" %in% is(x), FALSE))) {
+          self$add_analyses(analyses)
+          
+        } else {
+          warning("Not all added files could be converted as RamanAnalysis!")
+        }
+        
+      } else {
+        warning("Files were not added!")
+      }
+      
+      invisible(self)
+    },
+    
     ## ___ remove -----
     
     #' @description Removes analyses.
@@ -300,7 +435,6 @@ RamanEngine <- R6::R6Class("RamanEngine",
           } else {
             sel <- names(private$.results$spectra$data) %in% c(analyses_left, replicates_left)
             private$.results$spectra$data <- private$.results$spectra$data[sel]
-            
           }
         }
       }
@@ -356,7 +490,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #' 
     correct_spectra_baseline = function(settings) {
       
-      if (missing(settings)) settings <- Settings_correct_spectra_baseline_StreamFind()
+      if (missing(settings)) settings <- Settings_correct_spectra_baseline_airpls()
       
       .dispatch_process_method("correct_spectra_baseline", settings, self, private)
       
@@ -408,7 +542,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #' 
     smooth_spectra = function(settings) {
       
-      if (missing(settings)) settings <- Settings_smooth_spectra_StreamFind()
+      if (missing(settings)) settings <- Settings_smooth_spectra_movingaverage()
       
       .dispatch_process_method("smooth_spectra", settings, self, private)
       
@@ -428,12 +562,27 @@ RamanEngine <- R6::R6Class("RamanEngine",
       invisible(self)
     },
     
+    ## ___ has -----
+    
+    #' @description Checks if there are spectra, returning `TRUE` or `FALSE`.
+    #'
+    has_spectra = function() {
+      
+      if (self$has_results("spectra")) {
+        sum(vapply(private$.results$spectra, function(x) nrow(x$spectra), 0)) > 0
+        
+      } else {
+        all(vapply(self$get_analyses(), function(x) nrow(x$spectra) > 0, FALSE))
+      }
+    },
+    
     ## ___ plot -----
     
     #' @description Plots spectra for given *RamanAnalyses*.
     #'
     #' @param xVal Character of length one. Possible are "rt" or "shift" for using the retention time or the shift 
     #' as x axis, respectively.
+    #' @param raw_spectra Logical of length one. Set to `TRUE` for parsing raw spectra not spectra results/processed.
     #'
     #' @return A plot.
     #' 
@@ -441,6 +590,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
                             rt = NULL,
                             shift = NULL,
                             minIntensity = 0,
+                            raw_spectra = FALSE,
                             xVal = "shift",
                             xLab = NULL,
                             yLab = NULL,
@@ -450,14 +600,20 @@ RamanEngine <- R6::R6Class("RamanEngine",
                             colorBy = "analyses",
                             interactive = TRUE) {
       
-      spectra <- self$get_spectra(analyses, rt, shift, minIntensity)
+      spectra <- self$get_spectra(analyses, rt, shift, minIntensity, raw_spectra)
+      
+      if (nrow(spectra) == 0) {
+        warning("No spectra found for the defined targets!")
+        return(NULL)
+      }
       
       if ("rt" %in% xVal) {
-        spectra <- spectra[, .(shift = unique(rt), intensity = sum(intensity)), by = c("analysis", "rt")]
+        spectra <- spectra[, .(intensity = sum(intensity)), by = c("analysis", "rt")]
         if (is.null(xLab)) xLab = "Retention time / seconds"
+        setnames(spectra, "rt", "shift")
         
       } else if ("shift" %in% xVal) {
-        spectra <- spectra[, .(shift = unique(shift), intensity = mean(intensity)), by = c("analysis", "shift")]
+        spectra <- spectra[, .(intensity = mean(intensity)), by = c("analysis", "shift")]
         if (is.null(xLab)) {
           if (interactive) {
             xLab = "Raman shift / cm<sup>-1</sup>"
@@ -471,23 +627,154 @@ RamanEngine <- R6::R6Class("RamanEngine",
       
       if (is.null(yLab)) yLab = "Raman intensity / A.U."
       
-      spectra$intensity <- spectra$intensity - min(spectra$intensity)
+      spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames = NULL)
       
-      if ("replicates" %in% colorBy) {
-        spectra$replicate <- self$get_replicate_names()[spectra$analysis]
+      setnames(spectra, "shift", "x")
+      
+      if (!interactive) {
+        return(.plot_x_spectra_static(spectra, xLab, yLab, title, cex, showLegend))
+        
+      } else {
+        return(.plot_x_spectra_interactive(spectra, xLab, yLab, title, colorBy))
       }
+    },
+    
+    #' @description Plots spectra corrected for given *RamanAnalyses*.
+    #'
+    #' @param xVal Character of length one. Possible are "rt" or "shift" for using the retention time or the shift 
+    #' as x axis, respectively.
+    #'
+    #' @return A plot.
+    #' 
+    plot_spectra_baseline = function(analyses = NULL,
+                                     rt = NULL,
+                                     shift = NULL,
+                                     minIntensity = 0,
+                                     xVal = "shift",
+                                     xLab = NULL,
+                                     yLab = NULL,
+                                     title = NULL,
+                                     cex = 0.6,
+                                     showLegend = TRUE,
+                                     colorBy = "analyses",
+                                     interactive = TRUE) {
+      
+      spectra <- self$get_spectra(analyses, rt, shift, minIntensity, raw_spectra = FALSE)
+      
+      if (!("baseline" %in% colnames(spectra) && "raw" %in% colnames(spectra))) {
+        warning("Baseline not found!")
+        return(NULL)
+      }
+      
+      if ("rt" %in% xVal) {
+        spectra <- spectra[, .(baseline = sum(baseline), raw = sum(raw)), by = c("analysis", "rt")]
+        
+        if (is.null(xLab)) xLab = "Retention time / seconds"
+        
+        setnames(spectra, "rt", "shift")
+        
+      } else if ("shift" %in% xVal) {
+        
+        spectra <- spectra[, .(baseline = mean(baseline), raw = mean(raw)), by = c("analysis", "shift")]
+        
+        if (is.null(xLab)) {
+          if (interactive) {
+            xLab = "Raman shift / cm<sup>-1</sup>"
+          } else {
+            xLab = expression("Raman shift / cm"^"-1")
+          }
+        }
+      }
+      
+      spectra <- unique(spectra)
+      
+      if (is.null(yLab)) yLab = "Raman intensity / A.U."
       
       spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames = NULL)
       
+      setnames(spectra, "shift", "x")
+      
       if (!interactive) {
-        return(.plot_raman_spectra_static(spectra, xLab, yLab, title, cex, showLegend))
+        return(.plot_x_spectra_baseline_static(spectra, xLab, yLab, title, cex, showLegend))
         
       } else {
-        return(.plot_raman_spectra_interactive(spectra, xLab, yLab, title, colorBy))
+        return(.plot_x_spectra_baseline_interactive(spectra, xLab, yLab, title, colorBy))
+      }
+    },
+    
+    #' @description Plots peaks from spectra from analyses.
+    #'
+    plot_spectra_peaks = function(analyses = NULL,
+                                  legendNames = NULL,
+                                  title = NULL,
+                                  colorBy = "analyses",
+                                  showLegend = TRUE,
+                                  xlim = NULL,
+                                  ylim = NULL,
+                                  cex = 0.6,
+                                  xLab = NULL,
+                                  yLab = NULL,
+                                  interactive = TRUE) {
+      
+      if (!self$has_spectra_peaks()) return(NULL)
+      
+      analyses <- private$.check_analyses_argument(analyses)
+      
+      if (is.null(analyses)) return(NULL)
+      
+      pks <- self$spectra_peaks
+      
+      pks <- pks[pks$analysis %in% analyses, ]
+      
+      if (nrow(pks) == 0) {
+        message("\U2717 Peaks not found for the targets!")
+        return(NULL)
+      }
+      
+      setnames(pks, c("mass", "massmin", "massmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
+      
+      sp_data <- self$get_results("spectra")
+      sp_data <- sp_data$spectra$data
+      sp_data <- sp_data[unique(pks$analysis)]
+      
+      if (self$has_averaged_spectra()) {
+        spec <- lapply(sp_data, function(x) x$average)
+        spec <- rbindlist(spec, fill = TRUE)
+        if ("rt" %in% colnames(spec)) spec$rt <- NULL
+        setnames(spec, c("mass", "massmin", "massmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
+        setnames(spec, c("mz", "mzmin", "mzmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
+        
+      } else {
+        spec <- lapply(sp_data, function(x) x$raw)
+        spec <- rbindlist(spec, fill = TRUE)
+        if ("rt" %in% colnames(spec)) spec$rt <- NULL
+        setnames(spec, c("mass", "massmin", "massmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
+        setnames(spec, c("mz", "mzmin", "mzmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
+      }
+      
+      if ("smoothed" %in% colnames(spec)) {
+        spec$raw <- spec$smoothed
+      }
+      
+      ids <- spec$id
+      names(ids) <- spec$analysis
+      ids <- ids[!duplicated(names(ids))]
+      
+      pks$id = ids[pks$analysis]
+      
+      if (is.null(xLab)) xLab <- "Mass / Da"
+      if (is.null(yLab)) yLab <- "Intensity"
+      
+      if (!interactive) {
+        .plot_chrom_peaks_static(spec, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
+      } else {
+        .plot_chrom_peaks_interactive(spec, pks, legendNames, colorBy, title, showLegend, xLab, yLab)
       }
     },
     
     #' @description Plots chromatograms from analyses with spectra coupled to LC.
+    #' 
+    #' @param raw_spectra Logical of length one. Set to `TRUE` for parsing raw spectra not spectra results/processed.
     #'
     #' @return A plot.
     #' 
@@ -495,6 +782,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
                                   rt = NULL,
                                   shift = NULL,
                                   minIntensity = 0,
+                                  raw_spectra = FALSE,
                                   xLab = NULL,
                                   yLab = NULL,
                                   title = NULL,
@@ -503,7 +791,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
                                   colorBy = "analyses",
                                   interactive = TRUE) {
       
-      spectra <- self$get_spectra(analyses, rt, shift, minIntensity)
+      spectra <- self$get_spectra(analyses, rt, shift, minIntensity, raw_spectra)
       
       if ("rt" %in% colnames(spectra)) {
         
@@ -517,24 +805,76 @@ RamanEngine <- R6::R6Class("RamanEngine",
         
         if (is.null(xLab)) xLab = "Retention time / seconds"
         
-        if ("replicates" %in% colorBy) {
-          spectra$replicate <- self$get_replicate_names()[spectra$analysis]
-        }
-        
         spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames = NULL)
         
-        setnames(spectra, "rt", "shift")
+        setnames(spectra, "rt", "x")
         
         if (!interactive) {
-          return(.plot_raman_spectra_static(spectra, xLab, yLab, title, cex, showLegend))
+          return(.plot_x_spectra_static(spectra, xLab, yLab, title, cex, showLegend))
           
         } else {
-          return(.plot_raman_spectra_interactive(spectra, xLab, yLab, title, colorBy))
+          return(.plot_x_spectra_interactive(spectra, xLab, yLab, title, colorBy))
         }
 
       } else {
         warning("Column rt not found in spectra data.table!")
         NULL
+      }
+    },
+    
+    #' @description Plots peaks from chromatograms from analyses.
+    #'
+    plot_chromatograms_peaks = function(analyses = NULL,
+                                        chromatograms = NULL,
+                                        legendNames = NULL,
+                                        title = NULL,
+                                        colorBy = "targets",
+                                        showLegend = TRUE,
+                                        xlim = NULL,
+                                        ylim = NULL,
+                                        cex = 0.6,
+                                        xLab = NULL,
+                                        yLab = NULL,
+                                        interactive = TRUE) {
+      
+      if (!self$has_chromatograms_peaks()) return(NULL)
+      
+      analyses <- private$.check_analyses_argument(analyses)
+      
+      if (is.null(analyses)) return(NULL)
+      
+      pks <- self$chromatograms_peaks
+      pks <- rbindlist(pks)
+      pks <- pks[pks$analysis %in% analyses, ]
+      
+      if (is.numeric(chromatograms)) {
+        which_pks <- pks$index %in% chromatograms
+        pks <- pks[which_pks, ]
+        
+      } else if (is.character(chromatograms)) {
+        which_pks <- pks$id %in% chromatograms
+        pks <- pks[which_pks, ]
+        
+      } else if (!is.null(chromatograms)) {
+        return(NULL)
+      }
+      
+      if (nrow(pks) == 0) {
+        message("\U2717 Peaks not found for the targets!")
+        return(NULL)
+      }
+      
+      chroms <- self$get_chromatograms(analyses = analyses, chromatograms = chromatograms)
+      
+      if ("replicates" %in% colorBy) {
+        chroms$replicate <- self$get_replicate_names()[chroms$analysis]
+        pks$replicate <- self$get_replicate_names()[pks$analysis]
+      }
+      
+      if (!interactive) {
+        .plot_chrom_peaks_static(chroms, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
+      } else {
+        .plot_chrom_peaks_interactive(chroms, pks, legendNames, colorBy, title, showLegend, xLab, yLab)
       }
     },
     
@@ -548,6 +888,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
       
       data.table(
         name = c(
+          "merge_spectra_time_series",
           "average_spectra",
           "subtract_blank_spectra",
           "correct_spectra_baseline",
@@ -563,9 +904,10 @@ RamanEngine <- R6::R6Class("RamanEngine",
           1,
           1,
           1,
+          1,
           Inf,
           Inf,
-          1
+          Inf
         )
       )
     }

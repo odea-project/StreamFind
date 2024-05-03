@@ -228,11 +228,11 @@
   fig
 }
 
-#' .plot_xic_interactive
+#' .plot_spectra_xic_interactive
 #'
 #' @noRd
 #'
-.plot_xic_interactive <- function(xic,
+.plot_spectra_xic_interactive <- function(xic,
                                   legendNames = NULL,
                                   plotTargetMark = TRUE,
                                   targetsMark = NULL,
@@ -450,11 +450,11 @@
   finalplot
 }
 
-#' .plot_eic_static
+#' .plot_spectra_eic_static
 #'
 #' @noRd
 #'
-.plot_eic_static <- function(eic = NULL,
+.plot_spectra_eic_static <- function(eic = NULL,
                              legendNames = NULL,
                              colorBy = "targets",
                              title = NULL,
@@ -534,11 +534,11 @@
   }
 }
 
-#' .plot_eic_interactive
+#' .plot_spectra_eic_interactive
 #'
 #' @noRd
 #'
-.plot_eic_interactive <- function(eic = NULL,
+.plot_spectra_eic_interactive <- function(eic = NULL,
                                   legendNames = NULL,
                                   colorBy = "targets",
                                   title = NULL,
@@ -619,11 +619,11 @@
   plot
 }
 
-#' .plot_bpc_interactive
+#' .plot_spectra_bpc_interactive
 #'
 #' @noRd
 #'
-.plot_bpc_interactive <- function(bpc = NULL,
+.plot_spectra_bpc_interactive <- function(bpc = NULL,
                                   legendNames = NULL,
                                   colorBy = "targets",
                                   title = NULL,
@@ -711,11 +711,11 @@
   plot
 }
 
-#' .plot_ms2_static
+#' .plot_spectra_ms2_static
 #'
 #' @noRd
 #'
-.plot_ms2_static <- function(ms2 = NULL,
+.plot_spectra_ms2_static <- function(ms2 = NULL,
                              legendNames = NULL,
                              colorBy = "targets",
                              title = NULL) {
@@ -779,11 +779,11 @@
   )
 }
 
-#' .plot_ms2_interactive
+#' .plot_spectra_ms2_interactive
 #'
 #' @noRd
 #'
-.plot_ms2_interactive <- function(ms2 = NULL, legendNames = NULL,
+.plot_spectra_ms2_interactive <- function(ms2 = NULL, legendNames = NULL,
                                   colorBy = "targets", title = NULL) {
   
   ms2 <- .make_colorBy_varkey(ms2, colorBy, legendNames)
@@ -858,14 +858,15 @@
   return(plot)
 }
 
-#' .plot_ms1_static
+#' .plot_spectra_ms1_static
 #'
 #' @noRd
 #'
-.plot_ms1_static <- function(ms1 = NULL,
+.plot_spectra_ms1_static <- function(ms1 = NULL,
                              legendNames = NULL,
                              colorBy = "targets",
-                             title = NULL) {
+                             title = NULL,
+                             showText = FALSE) {
   
   ms1 <- .make_colorBy_varkey(ms1, colorBy, legendNames)
   
@@ -889,42 +890,31 @@
        xaxt = "n"
   )
   
-  text(
-    x = ms1$mz, y = ms1$intensity, adj = c(-0.1, 0.25),
-    labels = ms1$text, vfont = NULL,
-    cex = 0.6, col = ms1$color, font = NULL, srt = 90
-  )
+  if (showText) {
+    text(
+      x = ms1$mz, y = ms1$intensity, adj = c(-0.1, 0.25),
+      labels = ms1$text, vfont = NULL,
+      cex = 0.6, col = ms1$color, font = NULL, srt = 90
+    )
+  }
   
   ticksMin <- plyr::round_any(min(ms1$mz, na.rm = TRUE) * 0.9, 10)
   ticksMax <- plyr::round_any(max(ms1$mz, na.rm = TRUE) * 1.1, 10)
   
-  axis(1, seq(ticksMin, ticksMax, 10),
-       lwd = 1.5, cex.axis = 0.8
-  )
+  axis(1, seq(ticksMin, ticksMax, 10),lwd = 1.5, cex.axis = 0.8)
   
-  axis(1, seq(ticksMin, ticksMax, 5),
-       labels = FALSE, lwd = 1, col = "darkgray"
-  )
+  axis(1, seq(ticksMin, ticksMax, 5), labels = FALSE, lwd = 1, col = "darkgray")
   
-  axis(1, seq(ticksMin, ticksMax, 2.5),
-       labels = FALSE, lwd = 0.5, col = "darkgray"
-  )
+  axis(1, seq(ticksMin, ticksMax, 2.5), labels = FALSE, lwd = 0.5, col = "darkgray")
   
-  legend(
-    "topleft",
-    legend = levels(ms1$var),
-    col = cl,
-    lty = 1,
-    cex = 0.8,
-    bty = "n"
-  )
+  legend("topleft", legend = levels(ms1$var), col = cl, lty = 1, cex = 0.8, bty = "n")
 }
 
-#' .plot_ms1_interactive
+#' .plot_spectra_ms1_interactive
 #'
 #' @noRd
 #'
-.plot_ms1_interactive <- function(ms1 = NULL,
+.plot_spectra_ms1_interactive <- function(ms1 = NULL,
                                   legendNames = NULL,
                                   colorBy = "targets",
                                   title = NULL,
@@ -1767,7 +1757,7 @@
   }
   plot2 <- hide_colorbar(plot2)
   
-  plot3 <- plot_ly(features, x = features$analysis)
+  plot3 <- plot_ly(features, x = sort(unique(features$analysis)))
   
   for (g in leg) {
     df_3 <- features[features$var == g, ]
@@ -1779,8 +1769,9 @@
         "intensity" = 0
       )
       df_3 <- rbind(df_3[, c("analysis", "var", "intensity")], extra)
-      df_3 <- df_3[order(df_3$analysis), ]
     }
+    
+    df_3 <- df_3[order(df_3$analysis), ]
     
     plot3 <- plot3 %>% add_trace(df_3,
                                  x = df_3$analysis,
@@ -2792,7 +2783,7 @@
   
   ids <- unique(res$unique_ids)
   
-  xlab <- "Mass / Da"
+  xlab <- expression(italic("m/z ") / " Da")
   ylab <- "Intensity / counts"
   if (!is.null(xLab)) xlab <- xLab
   if (!is.null(yLab)) ylab <- yLab
@@ -2886,7 +2877,7 @@
     font = list(size = 12, color = "black")
   )
   
-  xlab <- "Mass / Da"
+  xlab <- "<i>m/z</i> / Da"
   ylab <- "Intensity / counts"
   if (!is.null(xLab)) xlab <- xLab
   if (!is.null(yLab)) ylab <- yLab
@@ -3000,6 +2991,8 @@
   
   ids <- unique(peaks$unique_ids)
   
+  if (!"raw" %in% colnames(chroms)) chroms$raw <- chroms$intensity
+  
   xlab <- "Retention time / seconds"
   ylab <- "Intensity / counts"
   if (!is.null(xLab)) xlab <- xLab
@@ -3067,7 +3060,7 @@
       col = cl[lt]
     )
     
-    if (!"baseline" %in% colnames(chrom)) chrom$baseline <- rep(0, nrow(chrom))
+    if (!"baseline" %in% colnames(chrom)) pk_chrom$baseline <- rep(min(pk_chrom$raw), nrow(pk_chrom))
     
     polygon(
       c(pk_chrom$rt, rev(pk_chrom$rt)),
@@ -3118,6 +3111,8 @@
   cl <- .get_colors(leg)
   
   ids <- unique(peaks$unique_ids)
+  
+  if (!"raw" %in% colnames(chroms)) chroms$raw <- chroms$intensity
   
   title <- list(
     text = title, x = 0.13, y = 0.98,
@@ -3188,7 +3183,7 @@
       "</br> intensity: ", round(pk$intensity[1], digits = 0)
     )
     
-    if (!"baseline" %in% colnames(chrom)) chrom$baseline <- rep(0, nrow(chrom))
+    if (!"baseline" %in% colnames(chrom)) pk_chrom$baseline <- rep(min(pk_chrom$raw), nrow(pk_chrom))
     
     plot <- plot %>% add_trace(
       x = c(pk_chrom$rt, rev(pk_chrom$rt)),
@@ -3226,11 +3221,11 @@
   plot
 }
 
-#' .plot_raman_spectra_static
+#' .plot_x_spectra_static
 #' 
 #' @noRd
 #'
-.plot_raman_spectra_static <- function(spectra, xLab, yLab, title, cex, showLegend) {
+.plot_x_spectra_static <- function(spectra, xLab, yLab, title, cex, showLegend) {
   
   
   cl <- .get_colors(unique(spectra$var))
@@ -3239,7 +3234,7 @@
   
   loop_key <- unique(spectra$loop)
   
-  xr <- c(min(spectra$shift), max(spectra$shift))
+  xr <- c(min(spectra$x), max(spectra$x))
   if (showLegend) {
     xr[2] <- xr[2] * 1.01
   }
@@ -3248,7 +3243,7 @@
   
   if (is.null(cex) || !is.numeric(cex)) cex <- 1
   
-  plot(spectra$shift,
+  plot(spectra$x,
        type = "n",
        xlab = xLab,
        ylab = yLab,
@@ -3264,7 +3259,7 @@
     lt <- unique(spectra$var[select_vector])
     
     lines(
-      x = spectra$shift[select_vector],
+      x = spectra$x[select_vector],
       y = spectra$intensity[select_vector],
       type = "l",
       pch = 19,
@@ -3276,6 +3271,8 @@
   if (showLegend) {
     legend(
       x = "topright",
+      inset = 0.01,
+      y.intersp = 1.5,
       legend = names(cl),
       col = cl,
       lwd = 2,
@@ -3286,11 +3283,11 @@
   }
 }
 
-#' .plot_raman_spectra_interactive
+#' .plot_x_spectra_interactive
 #' 
 #' @noRd
 #'
-.plot_raman_spectra_interactive <- function(spectra, xLab, yLab, title, colorBy) {
+.plot_x_spectra_interactive <- function(spectra, xLab, yLab, title, colorBy) {
   
   leg <- unique(spectra$var)
   
@@ -3326,7 +3323,7 @@
   for (t in loop_key) {
     select_vector <- spectra$loop %in% t
     lt <- unique(spectra$var[select_vector])
-    x <- spectra$shift[select_vector]
+    x <- spectra$x[select_vector]
     y <- spectra$intensity[select_vector]
     
     plot <- plot %>% add_trace(
@@ -3338,6 +3335,158 @@
       name = lt,
       legendgroup = lt,
       showlegend = showL[lt],
+      hovertemplate = paste("<br>x: %{x}<br>", "y: %{y}")
+    )
+    
+    if (length(y) >= 1) showL[lt] <- FALSE
+  }
+  
+  plot <- plot %>% plotly::layout(
+    legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
+    xaxis = xaxis,
+    yaxis = yaxis,
+    title = title
+  )
+  
+  plot
+}
+
+#' .plot_x_spectra_baseline_static
+#' 
+#' @noRd
+#'
+.plot_x_spectra_baseline_static <- function(spectra, xLab, yLab, title, cex, showLegend) {
+  
+  cl <- .get_colors(unique(spectra$var))
+  
+  spectra$loop <- paste0(spectra$analysis, spectra$id, spectra$var)
+  
+  loop_key <- unique(spectra$loop)
+  
+  xr <- c(min(spectra$x), max(spectra$x))
+  if (showLegend) {
+    xr[2] <- xr[2] * 1.01
+  }
+  
+  intr <- c(0, max(spectra$raw))
+  
+  if (is.null(cex) || !is.numeric(cex)) cex <- 1
+  
+  plot(spectra$x,
+       type = "n",
+       xlab = xLab,
+       ylab = yLab,
+       xlim = xr,
+       ylim = intr,
+       main = title
+  )
+  
+  for (t in loop_key) {
+    
+    select_vector <- spectra$loop %in% t
+    
+    lt <- unique(spectra$var[select_vector])
+    
+    lines(
+      x = spectra$x[select_vector],
+      y = spectra$raw[select_vector],
+      type = "l",
+      lty = 1,
+      lwd = 1,
+      pch = 19,
+      cex = 0.5,
+      col = cl[lt]
+    )
+    
+    lines(
+      x = spectra$x[select_vector],
+      y = spectra$baseline[select_vector],
+      type = "l",
+      lty = 2,
+      lwd = 2,
+      pch = 19,
+      cex = 0.5,
+      col = cl[lt]
+    )
+  }
+  
+  if (showLegend) {
+    legend(
+      x = "topright",
+      legend = names(cl),
+      col = cl,
+      lwd = 2,
+      lty = 1,
+      cex = cex,
+      bty = "n"
+    )
+  }
+}
+
+#' .plot_x_spectra_baseline_interactive
+#' 
+#' @noRd
+#'
+.plot_x_spectra_baseline_interactive <- function(spectra, xLab, yLab, title, colorBy) {
+  
+  leg <- unique(spectra$var)
+  
+  cl <- .get_colors(leg)
+  
+  spectra$loop <- paste0(spectra$analysis, spectra$id, spectra$var)
+  
+  loop_key <- unique(spectra$loop)
+  
+  title <- list(
+    text = title, x = 0.13, y = 0.98,
+    font = list(size = 12, color = "black")
+  )
+  
+  xaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2, title = xLab,
+    titlefont = list(size = 12, color = "black")
+  )
+  
+  yaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2, title = yLab,
+    titlefont = list(size = 12, color = "black")
+  )
+  
+  plot <- plot_ly()
+  
+  showL <- rep(TRUE, length(leg))
+  
+  names(showL) <- leg
+  
+  for (t in loop_key) {
+    select_vector <- spectra$loop %in% t
+    lt <- unique(spectra$var[select_vector])
+    x <- spectra$x[select_vector]
+    y <- spectra$raw[select_vector]
+    y2 <- spectra$baseline[select_vector]
+    
+    plot <- plot %>% add_trace(
+      x = x,
+      y = y,
+      type = "scatter", mode = "lines+markers",
+      line = list(width = 0.5, color = unname(cl[lt])),
+      marker = list(size = 2, color = unname(cl[lt])),
+      name = lt,
+      legendgroup = lt,
+      showlegend = showL[lt],
+      hovertemplate = paste("<br>x: %{x}<br>", "y: %{y}")
+    )
+    
+    plot <- plot %>% add_trace(
+      x = x,
+      y = y2,
+      type = "scatter", mode = "lines",
+      line = list(width = 2, color = unname(cl[lt]), dash = 'dash'),
+      name = lt,
+      legendgroup = lt,
+      showlegend = FALSE,
       hovertemplate = paste("<br>x: %{x}<br>", "y: %{y}")
     )
     

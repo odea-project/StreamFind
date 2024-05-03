@@ -139,30 +139,30 @@ test_that("get chromatograms", {
 })
 
 test_that("get tic and bpc", {
-  expect_s3_class(ms$get_tic(2), "data.frame")
-  expect_true("intensity" %in% colnames(ms$get_tic(2:3)))
-  expect_s3_class(ms$get_bpc(2), "data.frame")
-  expect_true("mz" %in% colnames(ms$get_bpc(2:3)))
+  expect_s3_class(ms$get_spectra_tic(2), "data.frame")
+  expect_true("intensity" %in% colnames(ms$get_spectra_tic(2:3)))
+  expect_s3_class(ms$get_spectra_bpc(2), "data.frame")
+  expect_true("mz" %in% colnames(ms$get_spectra_bpc(2:3)))
 })
 
 test_that("get EIC, MS1 and MS2 spectra", {
-  expect_s3_class(ms$get_eic(4, mz = targets), "data.table")
-  expect_true("rt" %in% colnames(ms$get_eic(4, mz = targets)))
-  expect_s3_class(ms$get_ms1(4,
+  expect_s3_class(ms$get_spectra_eic(4, mz = targets), "data.table")
+  expect_true("rt" %in% colnames(ms$get_spectra_eic(4, mz = targets)))
+  expect_s3_class(ms$get_spectra_ms1(4,
     mz = targets, minIntensity = 10000
   ), "data.table")
-  expect_true("mz" %in% colnames(ms$get_ms1(4,
+  expect_true("mz" %in% colnames(ms$get_spectra_ms1(4,
     mz = targets, minIntensity = 10000
   )))
-  expect_s3_class(ms$get_ms2(4, mz = targets), "data.table")
-  expect_true("is_pre" %in% colnames(ms$get_ms2(4, mz = targets)))
+  expect_s3_class(ms$get_spectra_ms2(4, mz = targets), "data.table")
+  expect_true("is_pre" %in% colnames(ms$get_spectra_ms2(4, mz = targets)))
 })
 
-# ms$plot_tic(colorBy = "replicates")
-# ms$plot_bpc(colorBy = "replicates")
-# ms$plot_xic(analyses = 4:5, mz = targets, targetsMark = targets)
-# ms$plot_eic(analyses = 4:5, mz = targets, title = "Test plot!")
-# ms$plot_ms2(analyses = 4:5, mz = targets, minIntensity = 500)
+# ms$plot_spectra_tic(colorBy = "replicates")
+# ms$plot_spectra_bpc(colorBy = "replicates")
+# ms$plot_spectra_xic(analyses = 4:5, mz = targets, targetsMark = targets)
+# ms$plot_spectra_eic(analyses = 4:5, mz = targets, title = "Test plot!")
+# ms$plot_spectra_ms2(analyses = 4:5, mz = targets, minIntensity = 500)
 
 settings_ff <- Settings_find_features_xcms3_centwave(
   ppm = 12,

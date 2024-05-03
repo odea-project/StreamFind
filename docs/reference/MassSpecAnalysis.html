@@ -27,6 +27,7 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/demo_ms_raman_fusion_bsa.html">Fusion of Mass Spectrometry and Raman Spectroscopy Data</a>
     <a class="dropdown-item" href="../articles/demo_ozonation_project.html">Evaluation of Wastewater Ozonation with Mass Spectrometry</a>
     <a class="dropdown-item" href="../articles/framework.html">StreamFind General Introduction</a>
     <a class="dropdown-item" href="../articles/ms_developer_guide.html">StreamFind Developer Guide</a>
@@ -66,39 +67,16 @@
 <span>  file <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
 <span>  format <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
 <span>  type <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
-<span>  time_stamp <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
 <span>  spectra_number <span class="op">=</span> <span class="cn">NA_integer_</span>,</span>
 <span>  spectra_mode <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
 <span>  spectra_levels <span class="op">=</span> <span class="cn">NA_integer_</span>,</span>
-<span>  mz_low <span class="op">=</span> <span class="cn">NA_real_</span>,</span>
-<span>  mz_high <span class="op">=</span> <span class="cn">NA_real_</span>,</span>
-<span>  rt_start <span class="op">=</span> <span class="cn">NA_real_</span>,</span>
-<span>  rt_end <span class="op">=</span> <span class="cn">NA_real_</span>,</span>
-<span>  polarity <span class="op">=</span> <span class="cn">NA_integer_</span>,</span>
-<span>  has_ion_mobility <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  chromatograms_number <span class="op">=</span> <span class="cn">NA_integer_</span>,</span>
-<span>  software <span class="op">=</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  instrument <span class="op">=</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  run <span class="op">=</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  spectra_headers <span class="op">=</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  spectra <span class="op">=</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  chromatograms_number <span class="op">=</span> <span class="cn">NA_integer_</span>,</span>
+<span>  chromatograms_headers <span class="op">=</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  chromatograms <span class="op">=</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  features_eic <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  features <span class="op">=</span> <span class="fu">data.table</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  metadata <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># S3 method for MassSpecAnalysis</span></span>
-<span><span class="fu">validate</span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># S3 method for MassSpecAnalysis</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># S3 method for MassSpecAnalysis</span></span>
-<span><span class="fu">asJSON</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">as.MassSpecAnalysis</span><span class="op">(</span><span class="va">value</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">parse_MassSpecAnalysis</span><span class="op">(</span>files <span class="op">=</span> <span class="cn">NULL</span>, runParallel <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -108,13 +86,11 @@
 
 
 <dt>replicate</dt>
-<dd><p>Character with length one, representing the analysis
-replicate group name.</p></dd>
+<dd><p>Character with length one, representing the analysis replicate group name.</p></dd>
 
 
 <dt>blank</dt>
-<dd><p>Character with length one, representing the associated blank
-replicate group name.</p></dd>
+<dd><p>Character with length one, representing the associated blank replicate group name.</p></dd>
 
 
 <dt>file</dt>
@@ -126,75 +102,14 @@ replicate group name.</p></dd>
 
 
 <dt>type</dt>
-<dd><p>Character with length one. Possible values as "MS" for only MS1
-spectral data, "MS/MS" for tandem spectral data (i.e., MS1 and MS2) or "SRM"
-for selected reaction monitoring data (i.e., no spectra only chromatograms).</p></dd>
-
-
-<dt>time_stamp</dt>
-<dd><p>Character with length one, representing the start time and
-date of the data acquisition.</p></dd>
+<dd><p>Character with length one defining the type of analysis.</p></dd>
 
 
 <dt>spectra_number</dt>
 <dd><p>Integer with the number of spectra in the file.</p></dd>
 
 
-<dt>spectra_mode</dt>
-<dd><p>Character with length one. Possible values are <em>centroid</em>
-, <em>profile</em> or <code>NA</code> for centroided data, data in profile mode or mode not
-defined or absence spectra, respectively.</p></dd>
-
-
-<dt>spectra_levels</dt>
-<dd><p>Integer vector with the number of levels in the
-spectra (i.e., 1 or 1 and 2).</p></dd>
-
-
-<dt>mz_low</dt>
-<dd><p>Numeric length one with the lowest <em>m/z</em> value detected
-in the spectra, in Da.</p></dd>
-
-
-<dt>mz_high</dt>
-<dd><p>Numeric length one with the highest <em>m/z</em> value detected
-in the spectra, in Da.</p></dd>
-
-
-<dt>rt_start</dt>
-<dd><p>Numeric length one with the run start time, in seconds.</p></dd>
-
-
-<dt>rt_end</dt>
-<dd><p>Numeric length one with the run end time, in seconds.</p></dd>
-
-
-<dt>polarity</dt>
-<dd><p>Character length one. Possible values are <em>positive</em>,
-<em>negative</em> or <em>both</em> (the latter refers to polarity switching acquisition).</p></dd>
-
-
-<dt>has_ion_mobility</dt>
-<dd><p>Logical length one for presence or absence of drift
-separation from ion mobility.</p></dd>
-
-
-<dt>chromatograms_number</dt>
-<dd><p>Integer with the number of chromatograms in the
-file.</p></dd>
-
-
-<dt>software</dt>
-<dd><p>data.table with software info used to acquire/process the
-data (content is highly vendor dependent).</p></dd>
-
-
-<dt>instrument</dt>
-<dd><p>data.table with instrument info used to acquire the
-data (content is highly vendor dependent).</p></dd>
-
-
-<dt>run</dt>
+<dt>spectra_headers</dt>
 <dd><p>data.table run information for each spectrum.</p></dd>
 
 
@@ -202,48 +117,20 @@ data (content is highly vendor dependent).</p></dd>
 <dd><p>data.table with the raw spectra (only present if loaded).</p></dd>
 
 
+<dt>chromatograms_number</dt>
+<dd><p>Integer with the number of chromatograms in the file.</p></dd>
+
+
+<dt>chromatograms_headers</dt>
+<dd><p>data.table headers information for each chromatogram.</p></dd>
+
+
 <dt>chromatograms</dt>
-<dd><p>data.table with the raw chromatograms (only present
-if loaded).</p></dd>
-
-
-<dt>features_eic</dt>
-<dd><p>list with the feature extracted ions chromatograms (EICs)
-from binning of spectra.</p></dd>
-
-
-<dt>features</dt>
-<dd><p>data.table with the features from data processing.</p></dd>
+<dd><p>data.table with the raw chromatograms (only present if loaded).</p></dd>
 
 
 <dt>metadata</dt>
-<dd><p>List with flexible storage for experimental metadata
-(e.g., concentration, location, etc.).</p></dd>
-
-
-<dt>x</dt>
-<dd><p>A <em>MassSpecAnalysis</em> S3 class object.</p></dd>
-
-
-<dt>...</dt>
-<dd><p>Not used.</p></dd>
-
-
-<dt>value</dt>
-<dd><p>A list to be checked and/or converted to <em>MassSpecAnalysis</em> S3 class.</p></dd>
-
-
-<dt>files</dt>
-<dd><p>A character vector with <em>mzML</em> or <em>mzXML</em> full file path/s.
-Alternatively, a data.frame with the column/s file, replicate and blank
-with the full file path/s, the replicate group name/s (string) and the
-associated blank replicate group name (string).</p></dd>
-
-
-<dt>runParallel</dt>
-<dd><p>Logical of length one. Set to <code>TRUE</code> for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.</p></dd>
+<dd><p>List with flexible storage for experimental metadata (e.g., concentration, location, etc.).</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -252,21 +139,6 @@ overhead.</p></dd>
 
 <p>An <em>MassSpecAnalysis</em> S3 class object.</p>
     </div>
-    <div class="section level2">
-    <h2 id="methods-by-generic-">Methods (by generic)<a class="anchor" aria-label="anchor" href="#methods-by-generic-"></a></h2>
-    
-<ul><li><p><code>validate(MassSpecAnalysis)</code>: S3 method to validate a <em>MassSpecAnalysis</em> S3 class object, returning a logical value of
-length one.</p></li>
-<li><p><code>print(MassSpecAnalysis)</code>: S3 method to print the <em>MassSpecAnalysis</em> S3 class object in the console.</p></li>
-<li><p><code>asJSON(MassSpecAnalysis)</code>: S3 method to converts a <em>MassSpecAnalysis</em> S3 class object into a JSON string.</p></li>
-</ul></div>
-    <div class="section level2">
-    <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>
-    
-<ul><li><p><code>as.MassSpecAnalysis()</code>: S3 method to convert the argument value in a <em>MassSpecAnalysis</em> S3 class object.</p></li>
-<li><p><code>parse_MassSpecAnalysis()</code>: Parses information from <em>mzML</em> or <em>mzXML</em> file/s and returns a list with
-<em>MassSpecAnalysis</em> S3 class object/s. On error, returns <code>NULL</code>.</p></li>
-</ul></div>
 
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>

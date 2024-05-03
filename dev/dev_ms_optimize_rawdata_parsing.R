@@ -55,7 +55,7 @@ test$get_analyses(2)
 test$get_analysis_names()
 test$get_replicate_names(4)
 test$get_blank_names(6)
-test$get_polarities(3)
+test$get_spectra_polarity(3)
 
 rtr = data.frame(min = c(900, 1200), max = c(950, 1400))
 

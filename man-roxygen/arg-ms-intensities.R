@@ -1,2 +1,1 @@
-#' @param intensities Logical. When `TRUE`, feature intensity values
-#' are returned.
+#' @param intensities Logical (length 1). When `TRUE`, feature intensity values are returned.

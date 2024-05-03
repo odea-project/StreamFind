@@ -1,7 +1,6 @@
 #' **ProjectHeaders** S3 class constructor, methods and functions
 #'
-#' @description
-#' Creates a ProjectHeaders S3 class object.
+#' @description Creates a ProjectHeaders S3 class object.
 #'
 #' @template arg-headers-ellipsis
 #'
@@ -46,13 +45,8 @@ ProjectHeaders <- function(...) {
   }
 }
 
-#' @describeIn ProjectHeaders
-#' Validates a ProjectHeaders S3 class object, returning a logical value of
-#' length one.
-#'
-#' @param x A ProjectHeaders S3 class object.
-#'
 #' @export
+#' @noRd
 #'
 validate.ProjectHeaders <- function(x) {
 
@@ -112,12 +106,9 @@ validate.ProjectHeaders <- function(x) {
   valid
 }
 
-#' @describeIn ProjectHeaders
-#' Prints the ProjectHeaders S3 class object in the console.
-#'
-#' @param ... Not used.
-#'
 #' @export
+#' @noRd
+#'
 print.ProjectHeaders <- function(x, ...) {
   cat("\n")
   cat(
@@ -129,33 +120,9 @@ print.ProjectHeaders <- function(x, ...) {
   }
 }
 
-#' @describeIn ProjectHeaders
-#' Converts a ProjectHeaders S3 class object to a JSON string.
-#'
 #' @export
-asJSON.ProjectHeaders <- function(x) {
-  toJSON(
-    x,
-    dataframe = "columns",
-    Date = "ISO8601",
-    POSIXt = "string",
-    factor = "string",
-    complex = "string",
-    null = "null",
-    na = "null",
-    auto_unbox = FALSE,
-    digits = 8,
-    pretty = TRUE,
-    force = TRUE
-  )
-}
-
-#' @describeIn ProjectHeaders
-#' Converts the argument value into a ProjectHeaders S3 class object.
+#' @noRd
 #'
-#' @param value List to be checked and converted to ProjectHeaders S3 class.
-#'
-#' @export
 as.ProjectHeaders <- function(value) {
   ProjectHeaders(value = value)
 }

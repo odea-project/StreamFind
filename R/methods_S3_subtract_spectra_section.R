@@ -9,10 +9,7 @@
   
   intensity <- NULL
   
-  if (self$has_averaged_spectra()) {
-    spec_list <- self$averaged_spectra
-    
-  } else if (self$has_spectra()) {
+  if (self$has_spectra()) {
     spec_list <- self$spectra
     
   } else {
@@ -69,11 +66,14 @@
               
               res <- res[res[[sectionVal]] < sectionWindow[1] | res[[sectionVal]] > sectionWindow[2], ]
               
-              if (nrow(res) > 0) {
-                
-                for (i in unique(res$rt)) res$intensity[res$rt == i] <- res$intensity[res$rt == i] - cutSec$intensity
-                
-              }
+              res_list <- split(res, res$rt)
+              
+              res_list <- lapply(res_list, function(z, cutSec) {
+                z$intensity <- z$intensity - cutSec$intensity
+                z
+              }, cutSec = cutSec)
+              
+              res <- rbindlist(res_list)
             }
           }
         }
@@ -88,27 +88,7 @@
     }
   }
   
-  if (self$has_averaged_spectra()) {
-    private$.results$spectra$data <- Map(
-      function(x, y) {
-        x$average <- y
-        x
-      },#
-      private$.results$spectra$data, spec_cut
-    )
-    
-  } else {
-    
-    spec_list <- Map(function(x, y) list("spectra" = x, "average" = y), spec_list, spec_cut)
-    
-    self$add_results(
-      list("spectra" = list(
-        "data" = spec_list,
-        "software" = "StreamFind",
-        "version" = as.character(packageVersion("StreamFind"))
-      ))
-    )
-  }
+  self$spectra <- spec_cut
   
   message(paste0("\U2713 ", "Spectra section subtracted!"))
   

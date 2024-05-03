@@ -83,7 +83,7 @@ make_ms_targets <- function(mz = NULL,
       if (!is.null(id) & length(id) == length(rt)) {
         targets$id <- id
       } else {
-        targets$id <- paste(targets$rtmin, "-", targets$rtmax, sep = "")
+        targets$id <- paste(round(targets$rtmin, digits = 0), "-", round(targets$rtmax, digits = 0), sep = "")
       }
       
       # as table
@@ -135,7 +135,7 @@ make_ms_targets <- function(mz = NULL,
       } else if ("id" %in% colnames(rt)) {
         targets$id <- rt$id
       } else {
-        targets$id <- paste(targets$rtmin, "-", targets$rtmax, sep = "")
+        targets$id <- paste(round(targets$rtmin, digits = 0), "-", round(targets$rtmax, digits = 0), sep = "")
       }
       
       if ("analysis" %in% colnames(rt)) targets$analysis <- rt$analysis
@@ -198,7 +198,7 @@ make_ms_targets <- function(mz = NULL,
       if (!is.null(id) & length(id) == length(drift)) {
         targets$id <- id
       } else {
-        targets$id <- paste(targets$driftmin, "-", targets$driftmax, sep = "")
+        targets$id <- paste(round(targets$driftmin, digits = 0), "-", round(targets$driftmax, digits = 0), sep = "")
       }
       
       # as table
@@ -250,7 +250,7 @@ make_ms_targets <- function(mz = NULL,
       } else if ("id" %in% colnames(drift)) {
         targets$id <- drift$id
       } else {
-        targets$id <- paste(targets$driftmin, "-", targets$driftmax, sep = "")
+        targets$id <- paste(round(targets$driftmin, digits = 1), "-", round(targets$driftmax, digits = 0), sep = "")
       }
       
       if ("analysis" %in% colnames(drift)) targets$analysis <- drift$analysis
@@ -291,29 +291,29 @@ make_ms_targets <- function(mz = NULL,
       
     } else if (with_drift) {
       targets$id <- paste(
-        round(targets$mzmin, 4),
+        round(targets$mzmin, 3),
         "-",
-        round(targets$mzmax, 4),
+        round(targets$mzmax, 3),
         "/",
-        round(targets$rtmin, 1),
+        round(targets$rtmin, 0),
         "-",
-        round(targets$rtmax, 1),
+        round(targets$rtmax, 0),
         "/",
-        round(targets$driftmin, 1),
+        round(targets$driftmin, 0),
         "-",
-        round(targets$driftmax, 1),
+        round(targets$driftmax, 0),
         sep = ""
       )
       
     } else {
       targets$id <- paste(
-        round(targets$mzmin, 4),
+        round(targets$mzmin, 3),
         "-",
-        round(targets$mzmax, 4),
+        round(targets$mzmax, 3),
         "/",
-        round(targets$rtmin, 1),
+        round(targets$rtmin, 0),
         "-",
-        round(targets$rtmax, 1),
+        round(targets$rtmax, 0),
         sep = ""
       )
     }
@@ -434,29 +434,29 @@ make_ms_targets <- function(mz = NULL,
       
     } else if (with_drift) {
       targets$id <- paste(
-        round(targets$mzmin, 4),
+        round(targets$mzmin, 3),
         "-",
-        round(targets$mzmax, 4),
+        round(targets$mzmax, 3),
         "/",
-        round(targets$rtmin, 1),
+        round(targets$rtmin, 0),
         "-",
-        round(targets$rtmax, 1),
+        round(targets$rtmax, 0),
         "/",
-        round(targets$driftmin, 1),
+        round(targets$driftmin, 0),
         "-",
-        round(targets$driftmax, 1),
+        round(targets$driftmax, 0),
         sep = ""
       )
       
     } else {
       targets$id <- paste(
-        round(targets$mzmin, 4),
+        round(targets$mzmin, 3),
         "-",
-        round(targets$mzmax, 4),
+        round(targets$mzmax, 3),
         "/",
-        round(targets$rtmin, 1),
+        round(targets$rtmin, 0),
         "-",
-        round(targets$rtmax, 1),
+        round(targets$rtmax, 0),
         sep = ""
       )
     }

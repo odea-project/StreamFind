@@ -38,10 +38,7 @@
 #'
 .s3_bin_spectra.Settings_bin_spectra_StreamFind <- function(settings, self, private) {
   
-  if (self$has_averaged_spectra()) {
-    spec_list <- self$averaged_spectra
-    
-  } else if (self$has_spectra()) {
+  if (self$has_spectra()) {
     spec_list <- self$spectra
     
   } else {
@@ -49,159 +46,167 @@
     return(FALSE)
   }
   
-  valSpectrumUnits = settings$parameters$valSpectrumUnits
+  unitsVal = settings$parameters$unitsVal
   
-  windowSpectrumUnits = settings$parameters$windowSpectrumUnits
+  unitsNumber = settings$parameters$unitsNumber
   
-  xVals = settings$parameters$xVals #c("rt", "shift")
+  bins = settings$parameters$bins
   
-  xWindows = settings$parameters$xWindows
+  refBinAnalysis = settings$parameters$refBinAnalysis
   
-  cached_analyses <- FALSE
+  cache <- .load_chache("bin_spectra", spec_list, settings)
   
-  if (.caches_data()) {
-    hash <- patRoon::makeHash(spec_list, settings)
-    spec_binned <- patRoon::loadCacheData("bin_spectra", hash)
-    
-    if (!is.null(spec_binned)) {
-      check <- identical(names(spec_binned), names(spec_list))
-      
-      if (all(check)) {
-        cached_analyses <- TRUE
-        
-      } else {
-        spec_binned <- NULL
-      }
-    }
-  } else {
-    hash <- NULL
-    spec_binned <- NULL
+  if (!is.null(cache$data)) {
+    message("\U2139 Spectra loaded from cache!")
+    self$spectra <- cache$data
+    message(paste0("\U2713 ", "Spectra binned!"))
+    return(TRUE)
   }
   
-  if (is.null(spec_binned)) {
-    
-    spec_binned <- lapply(spec_list, function(x) {
-      
-      if (nrow(x) == 0) return(data.table())
-      
-      if (!is.null(valSpectrumUnits) && !is.null(windowSpectrumUnits)) {
-        
-        unitVal <- unique(x[[valSpectrumUnits]])
-        
-        max_i <- length(unitVal) # maximum number of scan
-        
-        min_i <- 1
-        
-        unitSections <- seq(min_i, max_i, windowSpectrumUnits)
-        
-        idx <- seq_len(max_i)
-        
-        binKey <- rep(NA_integer_, max_i)
-        
-        for (i in unitSections) binKey[idx >= i] <- i
-        
-        names(binKey) <- as.character(unitVal)
-        
-        res <- data.table("intensity" = x$intensity, "bin_key" = binKey[as.character(x[[valSpectrumUnits]])])
-        
-        if (is.null(xVals)) {
-          xVals <- colnames(x)
-          xVals <- xVals[!xVals %in% c("analysis", "replicate", "intensity")]
-        }
-        
-        for (i in xVals) res[[i]] <- x[[i]]
-        
-        valKeys <- xVals[!xVals %in% valSpectrumUnits]
-        
-        res <- res[, .(x = mean(x), intensity = mean(intensity)), by = c("bin_key", valKeys), env = list(x = valSpectrumUnits)]
-        
-        res <- unique(res)
-        
-        setcolorder(res, c(valSpectrumUnits, valKeys, "intensity"))
-        
-        res$bin_key <- NULL
-        
-        if ("replicate" %in% colnames(x)) {
-          res$replicate <- unique(x$replicate)
-          setcolorder(res, c("replicate"))
-        }
-        
-        if ("analysis" %in% colnames(x)) {
-          res$analysis <- unique(x$analysis)
-          setcolorder(res, c("analysis"))
-        }
-        
-        res
-        
-      } else {
-        
-        max_x <- max(x[[xVal]])
-        min_x <- min(x[[xVal]])
-        
-        max_x2 <- max(x[[x2Val]])
-        min_x2 <- min(x[[x2Val]])
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-      }
-      
-      # x_all <- seq(round(min_x, digits = 0), round(max_x , digits = 0), rt_bin_size)
-      # x2_all <- seq(round(min_x2, digits = 0), round(max_x2 , digits = 0), mz_bin_size)
-      # 
-      # bins_number <- length(rts_all) * length(mzs_all)
-      # bins_id <- rep(NA_character_, bins_number)
-      # mat <- matrix(rep(1, bins_number * 2), nrow = bins_number, ncol = 2)
-      # counter <- 0
-      # for (i in seq_len(length(rts_all))) {
-      #   for (j in seq_len(length(mzs_all))) {
-      #     bins_id[counter + j] <- paste0(rts_all[i], "-", mzs_all[j])
-      #     mat[counter + j, 1] <- rts_all[i]
-      #     mat[counter + j, 2] <- mzs_all[j]
-      #   }
-      #   counter <- counter + j
-      # }
-      # dimnames(mat) <- list(bins_id, c("rt", "mz"))
-      # as.data.frame(mat)
-      
-    })
-    
-    if (!is.null(hash)) {
-      patRoon::saveCacheData("bin_spectra", spec_binned, hash)
-      message("\U1f5ab Binned spectra cached!")
+  useRefBins <- FALSE
+  ref_bins_seq_list <- NULL
+  ref_bin_matrix <- NULL
+  ref_bin_key <- NULL
+  
+  if (!is.null(refBinAnalysis)) {
+    if (is.numeric(refBinAnalysis) && length(refBinAnalysis) == 1) {
+      refBinAnalysis <- self$get_analysis_names()[refBinAnalysis]
     }
     
+    if (!is.character(refBinAnalysis)) {
+      warning("Reference analysis not found! Not done.")
+      return(FALSE)
+    }
+    
+    refSpec <- spec_list[[refBinAnalysis]]
+    
+    if (nrow(refSpec) == 0) {
+      warning("Reference analysis not found! Not done.")
+      return(FALSE)
+    }
+    
+    if (!is.null(bins)) {
+      
+      if (!all(names(bins) %in% colnames(refSpec))) stop("Names in bins not found in spectra columns")
+      
+      .make_bin_sequence <- function(vec, bin_size) seq(round(min(vec), digits = 0), round(max(vec) , digits = 0), bin_size)
+      
+      ref_bins_seq_list <- Map(function(name, val) .make_bin_sequence(refSpec[[name]], val), names(bins), bins)
+      
+      ref_bin_matrix <- as.data.frame(do.call(expand.grid, ref_bins_seq_list))
+      
+      colnames(ref_bin_matrix) <- names(bins)
+      
+      ref_bin_key <- apply(ref_bin_matrix, 1, function(x) paste0(x, collapse = "-"))
+      
+      useRefBins <- TRUE
+    }
+  }
+    
+  spec_binned <- lapply(spec_list, function(x) {
+    
+    if (nrow(x) == 0) return(data.table())
+    
+    # performs binning based on number of units, i.e. traces, for a given dimension
+    if (!is.null(unitsVal) && !is.null(unitsNumber) && is.null(bins)) {
+      
+      intensity <- NULL
+      
+      unitVal <- unique(x[[unitsVal]])
+      
+      max_i <- length(unitVal) # maximum number of scan
+      
+      min_i <- 1
+      
+      unitSections <- seq(min_i, max_i, unitsNumber)
+      
+      idx <- seq_len(max_i)
+      
+      binKey <- rep(NA_integer_, max_i)
+      
+      for (i in unitSections) binKey[idx >= i] <- i
+      
+      names(binKey) <- as.character(unitVal)
+      
+      res <- data.table("intensity" = x$intensity, "bin_key" = binKey[as.character(x[[unitsVal]])])
+      
+      xVals <- colnames(x)
+      
+      xVals <- xVals[!xVals %in% c("analysis", "replicate", "intensity")]
+      
+      for (i in xVals) res[[i]] <- x[[i]]
+      
+      valKeys <- xVals[!xVals %in% unitsVal]
+      
+      res <- res[, .(x = mean(x), intensity = mean(intensity)), by = c("bin_key", valKeys), env = list(x = unitsVal)]
+      
+      res <- unique(res)
+      
+      setcolorder(res, c(unitsVal, valKeys, "intensity"))
+      
+      res$bin_key <- NULL
+      
+      if ("replicate" %in% colnames(x)) {
+        res$replicate <- unique(x$replicate)
+        setcolorder(res, c("replicate"))
+      }
+      
+      if ("analysis" %in% colnames(x)) {
+        res$analysis <- unique(x$analysis)
+        setcolorder(res, c("analysis"))
+      }
+      
+      res
+    
+    } else if (!is.null(bins)) {
+      
+      if (useRefBins) {
+        bins_seq_list <- ref_bins_seq_list
+        bin_matrix <- ref_bin_matrix
+        bin_key <- ref_bin_key
+      
+      } else {
+        
+        if (!all(names(bins) %in% colnames(x))) stop("Names in bins not fouond in spectra columns!")
+        
+        .make_bin_sequence <- function(vec, bin_size) seq(round(min(vec), digits = 0), round(max(vec) , digits = 0), bin_size)
+        
+        bins_seq_list <- Map(function(name, val) .make_bin_sequence(x[[name]], val), names(bins), bins)
+        
+        bin_matrix <- as.data.frame(do.call(expand.grid, bins_seq_list))
+        
+        colnames(bin_matrix) <- names(bins)
+        
+        bin_key <- apply(bin_matrix, 1, function(x) paste0(x, collapse = "-"))
+      }
+      
+      ints <- rcpp_fill_bin_spectra(x, bin_matrix, bins, overlap = 0.1, summaryFunction = "mean")
+      
+      out <- data.table(
+        "analysis" = unique(x$analysis),
+        "id" = unique(x$id),
+        "polarity" = unique(x$polarity),
+        "rt" = bin_matrix$rt,
+        "mass" = bin_matrix$mass,
+        "intensity" = ints,
+        "bins" = bin_key
+      )
+      
+      out
+      
+    } else {
+      x
+    }
+    
+  })
+    
+  if (!is.null(cache$hash)) {
+    .save_cache("bin_spectra", spec_binned, cache$hash)
+    message("\U1f5ab Binned spectra cached!")
   }
   
-  if (self$has_averaged_spectra()) {
-    
-    private$.results$spectra$data <- Map(
-      function(x, y) {
-        x$average <- y
-        x
-      },#
-      private$.results$spectra$data, spec_binned
-    )
-    
-  } else {
-    
-    spec_list <- Map(function(x, y) list("spectra" = x, "average" = y), spec_list, spec_binned)
-    
-    self$add_results(
-      list("spectra" = list(
-        "data" = spec_list,
-        "software" = "StreamFind",
-        "version" = as.character(packageVersion("StreamFind"))
-      ))
-    )
-  }
-  
+  self$spectra <- spec_binned
+
   message(paste0("\U2713 ", "Spectra binned!"))
   
   TRUE

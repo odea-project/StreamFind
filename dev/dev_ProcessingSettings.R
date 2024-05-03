@@ -23,7 +23,7 @@ ms <- MassSpecData$new(fl)
 ms$import_settings("./settings.json")
 ms$find_features()
 
-ms$plot_bpc()
+ms$plot_spectra_bpc()
 
 fts <- ms$get_features()
 fts <- fts[order(fts$mz), ]

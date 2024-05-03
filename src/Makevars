@@ -1,2 +1,2 @@
 PKG_CXXFLAGS = -I"$(R_HOME)/include" -fopenmp
-PKG_LIBS = -L"$(R_HOME)/bin/x64" -lz
+PKG_LIBS = -L"$(R_HOME)/bin/x64" -lz -fopenmp

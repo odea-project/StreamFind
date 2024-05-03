@@ -27,6 +27,7 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/demo_ms_raman_fusion_bsa.html">Fusion of Mass Spectrometry and Raman Spectroscopy Data</a>
     <a class="dropdown-item" href="../articles/demo_ozonation_project.html">Evaluation of Wastewater Ozonation with Mass Spectrometry</a>
     <a class="dropdown-item" href="../articles/framework.html">StreamFind General Introduction</a>
     <a class="dropdown-item" href="../articles/ms_developer_guide.html">StreamFind Developer Guide</a>
@@ -59,32 +60,16 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ProjectHeaders</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># S3 method for ProjectHeaders</span></span>
-<span><span class="fu">validate</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># S3 method for ProjectHeaders</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># S3 method for ProjectHeaders</span></span>
-<span><span class="fu">asJSON</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">as.ProjectHeaders</span><span class="op">(</span><span class="va">value</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ProjectHeaders</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>...</dt>
-<dd><p>Not used.</p></dd>
-
-
-<dt>x</dt>
-<dd><p>A ProjectHeaders S3 class object.</p></dd>
-
-
-<dt>value</dt>
-<dd><p>List to be checked and converted to ProjectHeaders S3 class.</p></dd>
+<dd><p>Arguments to be added as headers. Note that all given arguments
+must be of length one. There is no type limitations. The name of the argument
+becomes the name of the header entry. Alternatively, a single list argument
+with the headers (all length one) can be given.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -93,19 +78,6 @@
 
 <p>A ProjectHeaders S3 class object.</p>
     </div>
-    <div class="section level2">
-    <h2 id="methods-by-generic-">Methods (by generic)<a class="anchor" aria-label="anchor" href="#methods-by-generic-"></a></h2>
-    
-<ul><li><p><code>validate(ProjectHeaders)</code>: Validates a ProjectHeaders S3 class object, returning a logical value of
-length one.</p></li>
-<li><p><code>print(ProjectHeaders)</code>: Prints the ProjectHeaders S3 class object in the console.</p></li>
-<li><p><code>asJSON(ProjectHeaders)</code>: Converts a ProjectHeaders S3 class object to a JSON string.</p></li>
-</ul></div>
-    <div class="section level2">
-    <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>
-    
-<ul><li><p><code>as.ProjectHeaders()</code>: Converts the argument value into a ProjectHeaders S3 class object.</p></li>
-</ul></div>
     <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
     <p>If an argument or element name is given, it must be type character.

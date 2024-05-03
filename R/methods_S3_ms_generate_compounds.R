@@ -41,7 +41,7 @@
     parameters$adduct <- NULL
     
   } else {
-    pol <- unique(unname(self$get_polarities()))
+    pol <- unique(unname(self$get_spectra_polarity()))
     
     if ("positive" %in% pol) parameters$adduct <- "[M+H]+"
     

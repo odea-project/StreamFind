@@ -50,47 +50,60 @@ dbsus <- db[!grepl("IS", db$tag), ]
 
 ps <- list(
   
-  Settings_find_features_openms(),
+  Settings_find_features_openms()
   
-  Settings_annotate_features_StreamFind(),
+  # Settings_annotate_features_StreamFind(),
+  # 
+  # Settings_group_features_openms(),
 
-  Settings_group_features_openms(),
-
-  Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
-
-  Settings_filter_features_StreamFind(excludeIsotopes = TRUE),
-
-  Settings_filter_features_patRoon(absMinIntensity = 5000, maxReplicateIntRSD = 30, blankThreshold = 10, absMinReplicateAbundance = 3),
-
-  Settings_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005),
-
-  Settings_calculate_quality_StreamFind(runParallel = FALSE),
-
-  Settings_filter_features_StreamFind(minSnRatio = 5),
-
-  Settings_load_features_ms1_StreamFind(runParallel = FALSE),
-
-  Settings_load_features_ms2_StreamFind(runParallel = FALSE),
-
-  Settings_load_MSPeakLists_StreamFind(), # Check patRoon function for issues with MSPeakLists!!!
-  
-  # Settings_generate_formulas_genform(),
-  
-  Settings_generate_compounds_metfrag()
-
+  # Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
+  # 
+  # Settings_filter_features_StreamFind(excludeIsotopes = TRUE),
+  # 
+  # Settings_filter_features_patRoon(absMinIntensity = 5000, maxReplicateIntRSD = 30, blankThreshold = 10, absMinReplicateAbundance = 3),
+  # 
+  # Settings_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005),
+  # 
+  # Settings_calculate_quality_StreamFind(runParallel = FALSE),
+  # 
+  # Settings_filter_features_StreamFind(minSnRatio = 5),
+  # 
+  # Settings_load_features_ms1_StreamFind(runParallel = FALSE),
+  # 
+  # Settings_load_features_ms2_StreamFind(runParallel = FALSE),
+  # 
+  # Settings_load_MSPeakLists_StreamFind(), # Check patRoon function for issues with MSPeakLists!!!
+  # 
+  # # Settings_generate_formulas_genform(),
+  # 
+  # # Settings_generate_compounds_metfrag()
+  # 
+  # # TODO add suspect screning results to featureGroups?
   # Settings_suspect_screening_StreamFind(database = dbsus, ppm = 5, sec = 10)
 )
 
 ms <- MassSpecEngine$new(files = ms_files_df, settings = ps)
+
+ms$save(format = "json")
+
+ms <- MassSpecEngine$new()
+
+ms$import("EngineData.json")
+
+ms$get_analyses()
+
+is(ms, "CoreEngine")
+
+
+ms$plot_spectra_bpc(interactive = F)
+
+names(ms)
 
 ms$run_workflow()
 
 comp <- patRoon::as.data.table(ms$compounds)
 
 View(comp[comp$group %in% ms$get_groups(mass = dbsus)$group, ])
-
-
-
 
 View(ms$get_results("patRoon"))
 
@@ -101,8 +114,7 @@ ms$get_isotopes(
 )
 
 
-
-
+ms$map_isotopes(analyses = 5, mass = db[c(3, 24)], legendNames = TRUE, filtered = TRUE)
 
 
 # MS2Tox and MS2Quant
@@ -153,7 +165,7 @@ ms$get_suspects()
 
 ms$plot_internal_standards_qc()
 
-ms$plot_eic(analyses = 13:15, mass = dbis[5, ])
+ms$plot_spectra_eic(analyses = 13:15, mass = dbis[5, ])
 
 
 
@@ -230,7 +242,7 @@ View(ms$get_results("patRoon"))
 # 
 # ms$get_features_ms1(analyses = 1, mass = dbis[1, ])
 # 
-# ms$get_ms2(analyses = 4, mass = dbsus)
+# ms$get_spectra_ms2(analyses = 4, mass = dbsus)
 # 
 # ms$get_features_ms2(analyses = 4, mass = dbsus)
 # 
@@ -256,7 +268,7 @@ ms$featureGroups
 
 
 
-ms$plot_bpc(colorBy = "replicates", levels = 1)
+ms$plot_spectra_bpc(colorBy = "replicates", levels = 1)
 
 
 
