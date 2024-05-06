@@ -45,7 +45,7 @@ clear_cache <- function(what = NULL) {
         warning("No cache found that matches given pattern. Currently stored caches: ", paste0(tables, collapse = ", "))
         
       } else {
-        for (tab in matchedTables) DBI::dbExecute(db, utils::sprintf("DROP TABLE IF EXISTS %s", tab))
+        for (tab in matchedTables) DBI::dbExecute(db, sprintf("DROP TABLE IF EXISTS %s", tab))
         DBI::dbExecute(db, "VACUUM")
         message("\U2713 Removed caches: ", paste0(matchedTables, collapse = ", "))
       }

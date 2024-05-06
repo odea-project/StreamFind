@@ -852,7 +852,6 @@ CoreEngine <- R6::R6Class("CoreEngine",
       } else {
         warning("Not done, check the value!")
       }
-      invisible(self)
     },
     
     #' @description Adds metadata to analyses.

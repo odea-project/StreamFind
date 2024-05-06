@@ -3502,3 +3502,130 @@
   
   plot
 }
+
+#' .plot_x_spectra_baseline_interactive
+#' 
+#' @noRd
+#'
+.map_x_spectra <- function(spectra,
+                           xLab = NULL, yLab = NULL, title = NULL,
+                           colorBy = "analyses",
+                           legendNames = NULL,
+                           xlim = NULL, ylim = NULL) {
+  
+  spec <- .make_colorBy_varkey(spectra, colorBy, legendNames)
+  
+  leg <- unique(spec$var)
+  
+  cl <- .get_colors(leg)
+  
+  brighter_color <- function(color_hex, factor = 1.5) {
+    # Convert hexadecimal color to RGB values
+    color_rgb <- col2rgb(color_hex)
+    
+    # Calculate brighter RGB values
+    brighter_rgb <- color_rgb * factor
+    
+    # Ensure RGB values are within [0, 255] range
+    brighter_rgb[brighter_rgb > 255] <- 255
+    
+    # Convert RGB values back to hexadecimal format
+    brighter_hex <- rgb(brighter_rgb[1, ], brighter_rgb[2, ], brighter_rgb[3, ], maxColorValue = 255)
+    
+    return(brighter_hex)
+  }
+  
+  # for each element in cl return a brighter version of the color
+  cl_l <- vapply(cl, function(x) brighter_color(x, factor = 2), "")
+  
+  cl_d <- vapply(cl, function(x) brighter_color(x, factor = 0.5), "")
+  
+  # show colors in cl with scales show
+  scales::show_col(cl)
+  
+  cl_grad <- lapply(seq_len(length(cl)), function(x) {
+    scales::col_numeric(palette = c(cl_l[x], cl_d[x]), domain = NULL)
+  })
+  
+  names(cl_grad) <- names(cl)
+  
+  spec$loop <- spec$var
+  
+  loop_key <- unique(spec$loop)
+  
+  if (length(xlim) == 1) {
+    rtr <- c(min(spec$rt) - xlim, max(spec$rt) + xlim)
+  } else if (length(xlim) == 2) {
+    rtr <- xlim
+  } else {
+    rtr <- c(min(spec$rt), max(spec$rt))
+  }
+  
+  if (length(ylim) == 1) {
+    mzr <- c(min(spec$mz) - ylim, max(spec$mz) + ylim)
+  } else if (length(ylim) == 2) {
+    mzr <- ylim
+  } else {
+    mzr <- c(min(spec$mz), max(spec$mz))
+  }
+  
+  title <- list(text = title, x = 0.13, y = 0.98, font = list(size = 12, color = "black"))
+  
+  if (is.null(xLab)) xLab = "Retention time / seconds"
+  
+  if (is.null(yLab)) yLab = "<i>m/z</i> / Da"
+  
+  xaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2, title = xLab,
+    titlefont = list(size = 12, color = "black")
+  )
+  
+  yaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2, title = yLab,
+    titlefont = list(size = 12, color = "black")
+  )
+  
+  showL <- rep(TRUE, length(leg))
+  
+  names(showL) <- leg
+  
+  plot <- plot_ly()
+  
+  for (t in loop_key) {
+    select_vector <- spec$loop %in% t
+    lt <- unique(spec$var[select_vector])
+    x <- spec$rt[select_vector]
+    y <- spec$mz[select_vector]
+    z <- spec$intensity[select_vector]
+    lt_colors <- cl_grad[[lt]]
+    z_normalized <- (z - min(z)) / (max(z) - min(z))
+    
+    point_colors <- lt_colors(z_normalized)
+    
+    plot <- plot %>% add_trace(
+      x = x,
+      y = y,
+      type = "scatter",
+      mode = "markers",
+      inherit = FALSE,
+      marker = list(size = 1, color = point_colors),
+      name = lt,
+      legendgroup = lt,
+      showlegend = showL[lt],
+      hovertemplate = paste("<br>x: %{x}<br>", "y: %{y}")
+    )
+    
+    if (length(y) >= 1) showL[lt] <- FALSE
+  }
+  
+  plot <- plot %>% plotly::layout(
+    legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
+    xaxis = xaxis,
+    yaxis = yaxis,
+    title = title
+  ) %>% hide_colorbar()
+  
+  plot
+}

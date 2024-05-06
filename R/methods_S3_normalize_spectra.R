@@ -24,7 +24,7 @@
         temp_x <- lapply(temp_x, function(z) {
           max_int <- max(z$intensity)
           min_int <- min(z$intensity)
-          z$intensity <- (z$intensity - min_int) / (max_int - min_int)
+          z$intensity <- (z$intensity - min_int) / (max_int - min_int + abs(min_int))
           z
         })
         
@@ -167,7 +167,7 @@
     
     if (nrow(x) > 0) {
       
-      if ("rt" %in% colnames(x)) {
+      if ("rt" %in% colnames(x) %in% "shift" %in% colnames(x)) {
         temp_x <- split(x, x$rt)
         
         temp_x <- lapply(temp_x, function(z) {

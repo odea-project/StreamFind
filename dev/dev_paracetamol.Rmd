@@ -1,0 +1,778 @@
+---
+title: 'Fusion of Mass Spectrometry and Raman Spectroscopy Data'
+subtitle: |
+  | Comparison of paracetamol deviations
+  | <br>
+author:
+  name: Ricardo Cunha
+  email: cunha@iuta.de
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  bookdown::html_document2:
+    fig_caption: true
+    toc: true
+    number_sections: true
+    toc_float: true
+vignette: >
+  %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{Fusion of Mass Spectrometry and Raman Spectroscopy Data}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+library(kableExtra)
+library(magrittr)
+library(ggplot2)
+library(plotly)
+library(data.table)
+library(StreamFind)
+
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.align = "center", fig.width = 9, results = "asis", comment = "")
+
+main_dir <- "C:/Users/apoli/Documents/iSoft/Paracetamol"
+
+ms_dir <- paste0(main_dir, "/ms/mzml")
+
+ms_files <- list.files(ms_dir, pattern = ".mzML", full.names = TRUE)
+
+raman_dir <- paste0(main_dir, "/raman")
+
+raman_files <- list.files(raman_dir, pattern = ".asc", full.names = TRUE)
+```
+
+<style>
+pre {
+  overflow-x: auto;
+}
+pre code {
+  word-wrap: normal;
+  white-space: pre;
+}
+</style>
+
+<br>
+
+<br>
+
+***
+
+# Introduction
+
+# Pre-processing
+
+## MS
+
+```{r}
+ms <- MassSpecEngine$new(files = ms_files, headers = list(name = "BSA Quality Evaluation Project"))
+
+ms$add_replicate_names(
+  c(rep("fiz_1", 3),
+    rep("fiz_2", 3),
+    rep("fiz_3", 3),
+    rep("set_32_1", 3),
+    rep("set_32_2", 3),
+    rep("set_32_3", 3),
+    rep("set_33_1", 3),
+    rep("set_33_2", 3),
+    rep("set_33_3", 3),
+    rep("fiz_caff_1", 3),
+    rep("fiz_caff_2", 3),
+    rep("fiz_caff_3", 3),
+    rep("fiz_ass_1", 3),
+    rep("fiz_ass_2", 3),
+    rep("fiz_ass_3", 3),
+    rep("fiz2_1", 3),
+    rep("fiz2_2", 3),
+    rep("fiz2_3", 3),
+    rep("fiz_acid_1", 3),
+    rep("fiz_acid_2", 3),
+    rep("fiz_acid_3", 3),
+    rep("ass_1", 3),
+    rep("ass_2", 3),
+    rep("ass_3", 3),
+    rep("ass2_1", 3),
+    rep("ass2_2", 3),
+    rep("ass2_3", 3),
+    rep("caff_1", 3),
+    rep("caff_2", 3),
+    rep("caff_3", 3),
+    rep("par_1", 3),
+    rep("par_2", 3),
+    rep("par_3", 3),
+    rep("blank", 23)
+  )
+)
+
+# View(ms$get_overview())
+```
+
+```{r, fig.cap="Total ion chromatograms for each analysis replicate."}
+# ms$plot_spectra_tic(colorBy = "replicates")
+
+# only blanks
+# ms$plot_spectra_tic(analyses = 100:122, colorBy = "analyses")
+```
+
+```{r}
+ms <- ms$subset_analyses(analyses = c(1:9, 28:72, 82:99, 118:121))
+ms$add_blank_names(rep("blank", 76))
+ms$load_spectra()
+```
+
+```{r}
+ms_workflow_settings <- list(
+  Settings_bin_spectra_StreamFind(bins = list("rt" = 5, "mz" = 2), refBinAnalysis = 1),
+  Settings_normalize_spectra_minmax(),
+  Settings_average_spectra_StreamFind(),
+  Settings_subtract_blank_spectra_StreamFind(negativeToZero = TRUE),
+  Settings_normalize_spectra_blockweight()
+)
+
+ms$add_settings(ms_workflow_settings)
+
+ms$print_workflow()
+```
+
+```{r}
+ms$run_workflow()
+```
+
+```{r ,fig.cap="Deconvoluted and pre-processed spectra for each analysis."}
+ms$plot_spectra()
+```
+
+## Raman
+
+```{r}
+raman <- RamanEngine$new(raman_files)
+
+raman$add_replicate_names(
+  c(
+    rep("ass_1", 3),
+    rep("ass_2", 3),
+    rep("ass_3", 3),
+    rep("caff_1", 3),
+    rep("caff_2", 3),
+    rep("caff_3", 3),
+    rep("blank", 9),
+    rep("fiz_1", 3),
+    rep("fiz_2", 3),
+    rep("fiz_3", 3),
+    rep("fiz_ass_1", 3),
+    rep("fiz_ass_2", 3),
+    rep("fiz_ass_3", 3),
+    rep("fiz_ass_b_2", 9),
+    rep("fiz_caff_1", 3),
+    rep("fiz_caff_2", 3),
+    rep("fiz_caff_3", 3),
+    rep("fiz_b", 9),
+    rep("fiz2_1", 3),
+    rep("fiz2_2", 3),
+    rep("fiz2_3", 3),
+    rep("fiz_d", 9),
+    rep("background", 4),
+    rep("fiz_acid_1", 3),
+    rep("fiz_acid_2", 3),
+    rep("fiz_acid_3", 3),
+    rep("par_1", 3),
+    rep("par_odd", 3),
+    rep("par_3", 3),
+    rep("par_2", 3),
+    rep("cali_150_mgml", 9),
+    rep("cali_010_mgml", 9),
+    rep("cali_025_mgml", 9),
+    rep("cali_050_mgml", 9),
+    rep("cali_075_mgml", 9),
+    rep("background", 4)
+  )
+)
+
+# View(raman$get_overview())
+```
+
+```{r ,fig.cap="Raw averaged Raman spectra for each BSA product between minute 5.5 and 8."}
+# raman$plot_spectra(colorBy = "replicates")
+```
+
+```{r}
+raman <- raman$subset_analyses(analyses = c(1:45, 55:63, 73:81, 95:106, 110:115))
+raman$add_blank_names(rep("blank", 81))
+```
+
+```{r}
+raman_workflow_settings <- list(
+  Settings_average_spectra_StreamFind(),
+  Settings_subtract_blank_spectra_StreamFind(),
+  Settings_smooth_spectra_savgol(fl = 21, forder = 4, dorder = 0),
+  Settings_delete_spectra_section_StreamFind(list("shift" = c(-100, 350))),
+  Settings_delete_spectra_section_StreamFind(list("shift" = c(1800, 2500))),
+  Settings_correct_spectra_baseline_airpls(lambda = 45, differences = 1, itermax = 30),
+  Settings_normalize_spectra_minmax(),
+  Settings_normalize_spectra_blockweight()
+)
+
+raman$add_settings(raman_workflow_settings)
+
+raman$print_workflow()
+```
+
+```{r}
+raman$run_workflow()
+```
+
+```{r ,fig.cap="Processed Raman spectra for each BSA product."}
+raman$plot_spectra()
+```
+
+# Fusion
+
+```{r}
+rSpec <- raman$get_spectra()
+rSpec <- rSpec[order(rSpec$replicate), ]
+mrSpec <- matrix(rSpec$intensity, nrow = length(unique(rSpec$replicate)), ncol = length(unique(rSpec$shift)), byrow = TRUE, dimnames = list(as.character(unique(rSpec$replicate)), as.character(unique(rSpec$shift))))
+
+mSpec <- ms$get_spectra()
+mSpec <- mSpec[order(mSpec$replicate), ]
+mmSpec <- matrix(mSpec$intensity, nrow = length(unique(mSpec$replicate)), ncol = length(unique(mSpec$bins)), byrow = TRUE, dimnames = list(unique(mSpec$replicate), unique(mSpec$bins)))
+
+fusedMat <- cbind(mmSpec, mrSpec)
+
+attr(fusedMat, "xaxis.name") = "Keys"
+attr(fusedMat, "xaxis.values") = seq_len(ncol(fusedMat))
+```
+
+```{r}
+cl <- StreamFind:::.get_colors(rownames(fusedMat))
+fig <- plot_ly()
+xVal <- seq_len(length(fusedMat[1, ]))
+for (i in seq_len(nrow(fusedMat))) {
+  fig <- fig %>% add_trace(
+    x = xVal,
+    y = fusedMat[i, ],
+    type = "scatter", mode = "lines",
+    line = list(width = 0.5, color = unname(cl[i])),
+    name = names(cl)[i],
+    legendgroup = names(cl)[i],
+    showlegend = TRUE
+  )
+}
+xaxis <- list(
+  linecolor = toRGB("black"),
+  linewidth = 2, title = "Bins",
+  titlefont = list(size = 12, color = "black")
+)
+yaxis <- list(
+  linecolor = toRGB("black"),
+  linewidth = 2, title = "Intensity",
+  titlefont = list(size = 12, color = "black")
+)
+fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis)
+fig
+```
+
+# Statistic analysis (via mdatools)
+
+### PCA
+
+```{r, include=FALSE}
+library(mdatools)
+data(people)
+
+m = pca(people, 7, scale = TRUE, info = "People PCA model")
+m = selectCompNum(m, 5)
+
+print(m$res$cal)
+
+par(mfrow = c(1, 2))
+mdaplot(m$res$cal$scores, type = "p", show.labels = TRUE, show.lines = c(0, 0))
+mdaplot(m$loadings, type = "p", show.labels = TRUE, show.lines = c(0, 0))
+```
+
+```{r}
+fusedMat2 <- prep.autoscale(fusedMat, center = FALSE, scale = TRUE)
+cl <- StreamFind:::.get_colors(rownames(fusedMat2))
+fig <- plot_ly()
+xVal <- seq_len(length(fusedMat2[1, ]))
+for (i in seq_len(nrow(fusedMat2))) {
+  fig <- fig %>% add_trace(
+    x = xVal,
+    y = fusedMat2[i, ],
+    type = "scatter", mode = "lines",
+    line = list(width = 0.5, color = unname(cl[i])),
+    name = names(cl)[i],
+    legendgroup = names(cl)[i],
+    showlegend = TRUE
+  )
+}
+xaxis <- list(
+  linecolor = toRGB("black"),
+  linewidth = 2, title = "Bins",
+  titlefont = list(size = 12, color = "black")
+)
+yaxis <- list(
+  linecolor = toRGB("black"),
+  linewidth = 2, title = "Intensity",
+  titlefont = list(size = 12, color = "black")
+)
+fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis)
+fig
+```
+
+```{r, include=FALSE}
+
+m = pca(fusedMat, 3, scale = FALSE, info = "People PCA model")
+plot(m, show.labels = TRUE)
+mdaplot(m$res$cal$scores, type = "p", show.labels = TRUE, show.lines = c(0, 0))
+
+par(mfrow = c(2, 2))
+plotVariance(m, type = "h", show.labels = TRUE)
+plotQDoF(m)
+plotT2DoF(m)
+plotDistDoF(m)
+
+
+par(mfrow = c(1, 2))
+plotQDoF(m, main = "DoF plot (classic)")
+
+m = setDistanceLimits(m, lim.type = "ddrobust")
+plotQDoF(m, main = "DoF plot (robust)")
+
+
+plotExtreme(m, comp = 1:2, main = "Extreme plot (cal)")
+
+plotLoadings(m, 1:2, type = 'l')
+
+
+# par(mfrow = c(2, 2))
+# mdaplot(m$res$cal$scores, type = "p", show.labels = TRUE, show.lines = c(0, 0))
+# mdaplot(m$loadings, type = "p", show.labels = TRUE, show.lines = c(0, 0))
+# plotResiduals(m$res$cal, show.labels = TRUE)
+# plotVariance(m$res$cal, type = "h", show.labels = TRUE, labels = "values")
+```
+
+```{r ,echo=FALSE,fig.width=10,fig.height=4}
+
+library(plotly)
+
+loadings_plot <- plot_ly()
+
+loadings_plot <- loadings_plot %>% add_trace(
+  x = m$loadings[rownames(m$loadings) %in% colnames(mrSpec), "Comp 1"],
+  y = m$loadings[rownames(m$loadings) %in% colnames(mrSpec), "Comp 2"],
+  type = "scatter",
+  mode = "markers+text",
+  text = rownames(m$loadings)[(rownames(m$loadings) %in% colnames(mrSpec))],
+  textfont = list(size = 14),
+  legendgroup = "Raman",
+  name = "Raman",
+  marker = list(size = 10)
+)
+ 
+loadings_plot <- loadings_plot %>% add_trace(
+  x = m$loadings[rownames(m$loadings) %in% colnames(mmSpec), "Comp 1"],
+  y = m$loadings[rownames(m$loadings) %in% colnames(mmSpec), "Comp 2"],
+  type = "scatter",
+  mode = "markers+text",
+  text = rownames(m$loadings)[(rownames(m$loadings) %in% colnames(mmSpec))],
+  textfont = list(size = 14),
+  legendgroup = "MS",
+  name = "MS",
+  marker = list(size = 10, color = "red")
+)
+
+loadings_plot %>% layout(
+    title = "PCA Loadings Plot",
+    xaxis = list(title = "Principal Component 1"),
+    yaxis = list(title = "Principal Component 2")
+  )
+
+```
+
+### PLS
+
+```{r}
+
+library(mdatools)
+data(people)
+
+idx = seq(4, 32, 4)
+Xc = people[-idx, -4]
+yc = people[-idx, 4, drop = FALSE]
+Xt = people[idx, -4]
+yt = people[idx, 4, drop = FALSE]
+
+m = pls(Xc, yc, 7, scale = TRUE, cv = 1, info = "Shoesize prediction model")
+
+par(mfrow = c(2, 2))
+plotRegcoeffs(m)
+plotRegcoeffs(m, ncomp = 2)
+plot(m$coeffs, ncomp = 3, type = "b", show.labels = TRUE)
+plot(m$coeffs, ncomp = 2)
+
+par(mfrow = c(1, 2))
+plotPredictions(m)
+plotPredictions(m, ncomp = 1)
+
+plotVIPScores(m, show.labels = TRUE)
+
+res = predict(m, Xt, yt)
+print(res)
+
+
+data(simdata)
+Xc = simdata$spectra.c
+yc = simdata$conc.c[, 1]
+Xt = simdata$spectra.t
+yt = simdata$conc.t[, 1]
+
+m = pls(Xc, yc, 10, x.test = Xt, y.test = yt, ncomp.selcrit = "min")
+summary(m)
+
+plot(m)
+
+```
+
+### PLS-DA
+
+```{r}
+data(iris)
+
+cal.ind = c(1:25, 51:75, 101:125)
+val.ind = c(26:50, 76:100, 126:150)
+
+Xc = iris[cal.ind, 1:4]
+Xv = iris[val.ind, 1:4]
+
+cc.all = iris[cal.ind, 5]
+cv.all = iris[val.ind, 5]
+
+cc.vir = cc.all == "virginica"
+cv.vir = cv.all == "virginica"
+show(cc.vir)
+
+m.all = plsda(Xc, cc.all, 3, cv = 1)
+m.vir = plsda(Xc, cc.vir, 3, cv = 1, classname = "virginica")
+
+summary(m.all)
+
+par(mfrow = c(1, 2))
+plotPredictions(m.all)
+plotPredictions(m.vir)
+
+res = predict(m.all, Xv, cv.all)
+summary(res)
+
+par(mfrow = c(1, 1))
+plotPredictions(res, show.labels = TRUE)
+
+```
+
+### SIMCA
+```{r}
+idx = seq(1, nrow(iris), by = 2)
+
+# split the values
+Xc = iris[idx, 1:4]
+cc = iris[idx, 5]
+
+Xt = iris[-idx, 1:4]
+ct = iris[-idx, 5]
+```
+
+### MCR
+
+```{r}
+
+data(carbs)
+m = mcrpure(carbs$D, ncomp = 3, offset = 0.10)
+summary(m)
+
+par(mfcol = c(2, 2))
+plotContributions(m)
+plotSpectra(m)
+plotSpectra(m, comp = 2)
+plotContributions(m, comp = 2)
+
+S = prep.norm(mda.t(carbs$S), "length")
+S.hat = prep.norm(mda.t(m$resspec), "length")
+
+c = predict(m, mda.t(carbs$S))
+c = c / apply(c, 2, sum)
+show(c)
+```
+
+
+```{r}
+m = mcrpure(fusedMat, ncomp = 2, offset = 0.10)
+summary(m)
+
+par(mfcol = c(2, 2))
+plotContributions(m)
+plotSpectra(m)
+plotSpectra(m, comp = 1)
+plotContributions(m, comp = 1)
+
+par(mfcol = c(1, 2))
+plotVariance(m)
+plotCumVariance(m)
+
+plotPuritySpectra(m, ylim = c(0, 1600))
+
+
+
+
+
+```
+
+
+## Other Methods
+
+### PCA in base R
+
+```{r , include=FALSE, fig.width=10,fig.height=5}
+data_pca <- prcomp(fusedMat, center = TRUE, scale. = FALSE)
+pcs <- data_pca$x
+pc_data <- data.frame(PC1 = pcs[, 1], PC2 = pcs[, 2], Species = rownames(pcs))
+pca_plot <- plot_ly(
+  data = pc_data,
+  x = ~PC1,
+  y = ~PC2,
+  type = "scatter",
+  mode = "markers+text",
+  text = ~Species,
+  textfont = list(size = 14),
+  marker = list(size = 12),
+  textposition = "top center"
+) %>%
+  layout(
+    title = "PCA Plot with Annotations",
+    xaxis = list(title = "Principal Component 1"),
+    yaxis = list(title = "Principal Component 2")
+  )
+pca_plot
+```
+
+```{r ,echo=FALSE,fig.width=10,fig.height=4}
+loadings <- as.data.frame(data_pca$rotation[, 1:2])
+
+loadings_plot <- plot_ly()
+
+loadings_plot <- loadings_plot %>% add_trace(
+  x = loadings[rownames(loadings) %in% colnames(mrSpec), "PC1"],
+  y = loadings[rownames(loadings) %in% colnames(mrSpec), "PC2"],
+  type = "scatter",
+  mode = "markers+text",
+  text = rownames(loadings)[(rownames(loadings) %in% colnames(mrSpec))],
+  textfont = list(size = 14),
+  legendgroup = "Raman",
+  name = "Raman",
+  marker = list(size = 10)
+)
+ 
+loadings_plot <- loadings_plot %>% add_trace(
+  x = loadings[rownames(loadings) %in% colnames(mmSpec), "PC1"],
+  y = loadings[rownames(loadings) %in% colnames(mmSpec), "PC2"],
+  type = "scatter",
+  mode = "markers+text",
+  text = rownames(loadings)[(rownames(loadings) %in% colnames(mmSpec))],
+  textfont = list(size = 14),
+  legendgroup = "MS",
+  name = "MS",
+  marker = list(size = 10, color = "red")
+)
+
+loadings_plot %>% layout(
+    title = "PCA Loadings Plot",
+    xaxis = list(title = "Principal Component 1"),
+    yaxis = list(title = "Principal Component 2")
+  )
+
+```
+
+### Correlation Analysis
+
+```{r}
+# Calculate correlation matrix
+correlation_matrix <- cor(fusedMat)
+
+# Print correlation matrix
+print(correlation_matrix)
+```
+
+### Distance Metrics
+
+```{r}
+# Calculate Euclidean distance matrix
+distance_matrix <- dist(fusedMat)
+
+# Print distance matrix
+print(distance_matrix)
+```
+
+### Hierarchical Clustering
+
+```{r}
+# Perform hierarchical clustering
+hc_result <- hclust(dist(fusedMat))
+
+# Plot dendrogram
+plot(hc_result)
+```
+
+### Multidimensional Scaling (MDS)
+
+```{r}
+# Calculate Euclidean distance matrix
+distance_matrix <- dist(fusedMat)
+
+# Perform MDS
+mds_result <- cmdscale(distance_matrix)
+
+# Plot MDS results
+plot(mds_result[,1], mds_result[,2], pch = 19, col = "blue", xlab = "MDS1", ylab = "MDS2")
+
+```
+
+### Kernel Methods
+
+```{r}
+# Example code for kernel PCA (assuming Gaussian kernel)
+library(kernlab)
+kpca_result <- kpca(fusedMat, kernel = "rbfdot")
+
+# Plot kernel PCA results
+plot(kpca_result@pcv[,1], kpca_result@pcv[,2], pch = 19, col = "blue", xlab = "KPCA1", ylab = "KPCA2")
+```
+
+### Feature Selection and Importance
+
+```{r}
+# Example code for feature selection (using random forest as an example)
+library(randomForest)
+rf_model <- randomForest(fusedMat, importance = TRUE)
+print(importance(rf_model))
+
+var_importance <- importance(rf_model)
+var_names <- rownames(var_importance)
+var_scores <- var_importance[,"MeanDecreaseAccuracy"]  # Adjust column name as needed
+
+# Sort variables by importance score
+sorted_indices <- order(var_scores, decreasing = TRUE)
+sorted_var_names <- var_names[sorted_indices]
+sorted_var_scores <- var_scores[sorted_indices]
+
+# Create bar plot
+barplot(sorted_var_scores, names.arg = sorted_var_names, las = 2, cex.names = 0.8,
+        main = "Variable Importance", xlab = "Variables", ylab = "Importance Score")
+```
+
+
+###  Cosine similarity and k-means clustering
+
+```{r}
+vectors <- fusedMat
+
+similarity_matrix <- tcrossprod(vectors) / (sqrt(rowSums(vectors^2)) %*% t(sqrt(rowSums(vectors^2))))
+
+# Perform k-means clustering
+k <- 3  # Number of clusters
+clusters <- kmeans(similarity_matrix, centers = k)
+
+# Print cluster assignments
+print(clusters$cluster)
+```
+
+### Similarity Measures
+
+```{r}
+vectors <- fusedMat
+
+# Calculate cosine similarity between pairs of vectors
+cosine_similarity <- function(x, y) {
+  return(sum(x * y) / (sqrt(sum(x^2)) * sqrt(sum(y^2))))
+}
+
+similarity_matrix <- matrix(NA, nrow = nrow(vectors), ncol = nrow(vectors))
+for (i in 1:nrow(vectors)) {
+  for (j in 1:nrow(vectors)) {
+    similarity_matrix[i, j] <- cosine_similarity(vectors[i,], vectors[j,])
+  }
+}
+
+# Print similarity matrix
+print(similarity_matrix)
+```
+
+### k-nearest neighbors (KNN) classification
+
+```{r}
+training_data <- fusedMat[c(1, 4), ]  # Replace this with your actual training data
+test_data <- fusedMat[2:3, ]  # Replace this with your actual test data
+labels <- rownames(fusedMat[c(1, 4), ])  # Replace this with your actual labels for training data
+
+# Train KNN model
+library(class)
+knn_model <- knn(train = training_data, test = test_data, cl = labels, k = 3)
+
+# Print predicted labels for test data
+print(knn_model)
+```
+
+## Partial Least Squares (PLS)
+
+Not applicable!
+
+```{r}
+# Example data
+X <- fusedMat  # Replace this with your actual predictor variables
+Y <- seq_len(nrow(fusedMat))  # Replace this with your actual response variable
+
+# Perform PLS regression
+library(pls)
+pls_model <- plsr(Y ~ X, ncomp = 2)  # You can adjust the number of components (ncomp) as needed
+
+# Predict using the PLS model
+predicted_values <- predict(pls_model, newdata = X)
+
+# Print predicted values
+print(predicted_values)
+```
+
+## Support Vector Regression (SVR)
+
+Not applicable!
+
+```{r}
+# Example data
+X <- matrix(rnorm(100), nrow = 10)  # Replace this with your actual predictor variables
+Y <- rnorm(10)  # Replace this with your actual response variable
+
+# Train SVR model
+library(e1071)
+svr_model <- svm(Y ~ ., data = as.data.frame(X), kernel = "radial", epsilon = 0.1, cost = 1)  # Adjust parameters as needed
+
+# Predict using the SVR model
+predicted_values <- predict(svr_model, newdata = as.data.frame(X))
+
+# Print predicted values
+print(predicted_values)
+
+```
+
+## MCR-ALS (Multivariate Curve Resolution - Alternating Least Squares) 
+
+```{r}
+
+# Perform MCR-ALS analysis
+mcr_result <- mcr(fusedMat, nfac = 2)  # You can adjust the number of components (nfac) as needed
+
+# Print MCR-ALS results
+print(mcr_result)
+
+```
+
+
+

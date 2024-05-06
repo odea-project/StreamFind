@@ -113,7 +113,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
         
         if (is(analyses, "RamanAnalysis")) analyses <- list(analyses)
         
-        if (!all(vapply(analyses, is, "RamanAnalysis"))) {
+        if (!all(vapply(analyses, function(x) is(x, "RamanAnalysis"), FALSE))) {
           warning("The argument analyses must be a RamanAnalysis object or a list of RamanAnalysis objects! Not done.")
           analyses <- NULL
         }
@@ -626,6 +626,12 @@ RamanEngine <- R6::R6Class("RamanEngine",
       spectra <- unique(spectra)
       
       if (is.null(yLab)) yLab = "Raman intensity / A.U."
+      
+      if ("replicates" %in% colorBy) {
+        if (!"replicate" %in% colnames(spectra)) {
+          spectra$replicate <- self$get_replicate_names()[spectra$analysis]
+        }
+      }
       
       spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames = NULL)
       

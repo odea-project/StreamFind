@@ -187,6 +187,7 @@
         "id" = unique(x$id),
         "polarity" = unique(x$polarity),
         "rt" = bin_matrix$rt,
+        "mz" = bin_matrix$mz,
         "mass" = bin_matrix$mass,
         "intensity" = ints,
         "bins" = bin_key

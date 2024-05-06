@@ -848,8 +848,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     initialize = function(files = NULL, headers = NULL, settings = NULL, analyses = NULL, results = NULL) {
       
       if (is.list(analyses)) {
+        
         if (is(analyses, "MassSpecAnalysis")) analyses <- list(analyses)
-        if (!all(vapply(analyses, is, "MassSpecAnalysis"))) {
+        
+        if (!all(vapply(analyses, function(x) is(x, "MassSpecAnalysis"), FALSE))) {
           warning("The argument analyses must be a MassSpecAnalysis object or a list of MassSpecAnalysis objects! Not done.")
           analyses <- NULL
         }
@@ -3678,6 +3680,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     #' @param value A character vector with the analysis replicate names.
     #' Must be of the same length as the number of analyses.
+    #' 
+    #' @note Removes all results if present in the engine as may be affected but modified correspondence.
     #'
     #' @return Invisible.
     #'
@@ -3694,6 +3698,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     #' @param value A character vector with the analysis blank replicate names.
     #' Must be of the same length as the number of analyses.
+    #' 
+    #' @note Removes all results if present in the engine as may be affected but modified correspondence.
     #'
     #' @return Invisible.
     #'
@@ -6128,6 +6134,19 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       invisible(self)
     },
+    
+    #' @description Subtracts spectra from correspondent blank analysis replicates.
+    #'
+    #' @return Invisible.
+    #' 
+    subtract_blank_spectra = function(settings) {
+      
+      if (missing(settings)) settings <- Settings_subtract_blank_spectra_StreamFind()
+      
+      .dispatch_process_method("subtract_blank_spectra", settings, self, private)
+      
+      invisible(self)
+    },
 
     ## ___ check -----
 
@@ -6259,7 +6278,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           "smooth_spectra",
           "correct_spectra_baseline",
           "normalize_spectra",
-          "average_spectra"
+          "average_spectra",
+          "subtract_blank_spectra"
         ),
         max = c(
           1,
@@ -6287,6 +6307,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           Inf,
           1,
           Inf,
+          1,
           1
         )
       )

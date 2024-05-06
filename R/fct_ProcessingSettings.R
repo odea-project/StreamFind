@@ -2619,17 +2619,19 @@ validate.Settings_cluster_spectra_StreamFind <- function(x) {
 #' @title Settings_subtract_blank_spectra_StreamFind
 #'
 #' @description Subtracts the blank spectra to each analysis according to the blank assignment.
+#' 
+#' @param negativeToZero Logical (length 1) indicating if negative values should be set to zero.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_subtract_blank_spectra_StreamFind.
 #'
 #' @export
 #'
-Settings_subtract_blank_spectra_StreamFind <- function() {
+Settings_subtract_blank_spectra_StreamFind <- function(negativeToZero = FALSE) {
   
   settings <- list(
     call = "subtract_blank_spectra",
     algorithm = "StreamFind",
-    parameters = list(),
+    parameters = list(negativeToZero = negativeToZero),
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",
     developer = "Ricardo Cunha",
@@ -2647,7 +2649,8 @@ Settings_subtract_blank_spectra_StreamFind <- function() {
 validate.Settings_subtract_blank_spectra_StreamFind <- function(x) {
   all(
     checkmate::test_choice(x$call, "subtract_blank_spectra"),
-    checkmate::test_choice(x$algorithm, "StreamFind")
+    checkmate::test_choice(x$algorithm, "StreamFind"),
+    checkmate::test_logical(x$parameters$negativeToZero, max.len = 1)
   )
 }
 
