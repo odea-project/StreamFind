@@ -8,6 +8,11 @@ The MassSpecEngine R6 class is a framework for parsing, processing, inspecting a
 mass spectrometry (MS) data. The MassSpecEngine is using \href{https://github.com/rickhelmus/patRoon}{patRoon} for
 assembly of Non-Target Screening data processing workflows.
 }
+\note{
+Removes all results if present in the engine as may be affected but modified correspondence.
+
+Removes all results if present in the engine as may be affected but modified correspondence.
+}
 \references{
 \insertRef{patroon01}{StreamFind}
 
@@ -180,6 +185,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-correct_spectra_baseline}{\code{MassSpecEngine$correct_spectra_baseline()}}
 \item \href{#method-MassSpecEngine-normalize_spectra}{\code{MassSpecEngine$normalize_spectra()}}
 \item \href{#method-MassSpecEngine-average_spectra}{\code{MassSpecEngine$average_spectra()}}
+\item \href{#method-MassSpecEngine-subtract_blank_spectra}{\code{MassSpecEngine$subtract_blank_spectra()}}
 \item \href{#method-MassSpecEngine-check_correspondence}{\code{MassSpecEngine$check_correspondence()}}
 \item \href{#method-MassSpecEngine-report}{\code{MassSpecEngine$report()}}
 \item \href{#method-MassSpecEngine-processing_methods}{\code{MassSpecEngine$processing_methods()}}
@@ -5071,6 +5077,28 @@ Invisible.
 Averages spectra based on assigned analysis replicates.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$average_spectra(settings)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name applicable to the processing method.
+Alternatively, a named list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as ProcessingSettings
+S3 class object. When not given, settings for the processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-subtract_blank_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-subtract_blank_spectra}{}}}
+\subsection{Method \code{subtract_blank_spectra()}}{
+Subtracts spectra from correspondent blank analysis replicates.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$subtract_blank_spectra(settings)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
