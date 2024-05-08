@@ -62,37 +62,29 @@
       
       tg <- tg[cutRt, ]
       
-      if (nrow(tg) == 0) return(NULL)
+      if (nrow(tg) == 0) return(data.table())
       
       if (with_im) {
         cutIM <- .trim_vector(tg$drift, targets$driftmin[z], targets$driftmax[z])
         tg <- tg[cutIM, ]
       }
       
-      if (nrow(tg) == 0) return(NULL)
+      if (nrow(tg) == 0) return(data.table())
       
       if ("polarity" %in% colnames(targets)) tg <- tg[tg$polarity == targets$polarity[z], ]
       
-      if (nrow(tg) == 0) return(NULL)
+      if (nrow(tg) == 0) return(data.table())
       
       if (nrow(tg) > 0) {
         
-        if (!targets$precursor[z]) {
+        if (targets$precursor[z]) {
           
           tg <- tg[tg$level == 2, ]
           
-          if (nrow(tg) == 0) return(NULL)
+          if (nrow(tg) == 0) return(data.table())
           
           cutPreMZ <- .trim_vector(tg$pre_mz, targets$mzmin[z], targets$mzmax[z])
           tg <- tg[cutPreMZ, ]
-          
-          # cutMZ <- .trim_vector(tg$mz, targets$mzmin[z], targets$mzmax[z])
-          # tg <- tg[tg$level == 2 | (tg$level == 1 & cutMZ), ]
-          # 
-          # if (nrow(tg) > 0) {
-          #   cutPreMZ <- .trim_vector(tg$pre_mz, preMZr$mzmin[z], preMZr$mzmax[z])
-          #   tg <- tg[tg$level == 1 | (tg$level == 2 & cutPreMZ), ]
-          # }
           
         } else {
           cutMZ <- .trim_vector(tg$mz, targets$mzmin[z], targets$mzmax[z])
@@ -100,19 +92,18 @@
         }
       }
       
-      if (nrow(tg) == 0) return(NULL)
+      if (nrow(tg) == 0) return(data.table())
       
       if (nrow(tg) > 0) tg$id <- targets$id[z]
       
       tg
     },
     traces = traces,
-    targets = targets
+    targets = targets,
+    with_im = with_im
   )
   
-  tg_list <- tg_list[!is.null(tg_list)]
-  
-  tg_df <- do.call("rbind", tg_list)
+  tg_df <- rbindlist(tg_list, fill = TRUE)
   
   tg_df
 }

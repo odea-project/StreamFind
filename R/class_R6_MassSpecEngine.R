@@ -1424,7 +1424,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
             
             if ("analysis" %in% colnames(targets)) targets <- targets[targets$analysis %in% x$name, ]
             
-            if (now(targets) > 0) {
+            if (nrow(targets) > 0) {
               
               if ("polarity" %in% colnames(targets)) temp <- temp[temp$polarity == targets$polarity, ]
               
@@ -1432,10 +1432,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                 temp <- .trim_spectra_targets(temp, targets, with_im)
                 
               } else {
-                temp <- data.frame()
+                temp <- data.table()
               }
             } else {
-              temp <- data.frame()
+              temp <- data.table()
             }
           }
 
@@ -4738,7 +4738,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       spec <- .make_colorBy_varkey(spec, colorBy, legendNames = NULL)
       
-      unique_key <- c("var", "x")
+      unique_key <- c("analysis", "var", "x")
       
       spec <- spec[, .(intensity = sum(intensity)), by = c(unique_key)]
       

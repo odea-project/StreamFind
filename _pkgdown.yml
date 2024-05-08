@@ -14,7 +14,7 @@ reference:
     - CoreEngine
     - MassSpecEngine
     - RamanEngine
-
+    - StatisticEngine
 
 - title: S3 classes
   desc: >

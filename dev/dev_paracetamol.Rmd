@@ -247,6 +247,25 @@ mmSpec <- matrix(mSpec$intensity, nrow = length(unique(mSpec$replicate)), ncol =
 
 fusedMat <- cbind(mmSpec, mrSpec)
 
+
+stat <- StatisticEngine$new(data = fusedMat)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 attr(fusedMat, "xaxis.name") = "Keys"
 attr(fusedMat, "xaxis.values") = seq_len(ncol(fusedMat))
 
