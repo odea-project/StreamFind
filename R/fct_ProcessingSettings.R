@@ -3378,3 +3378,93 @@ validate.Settings_merge_spectra_time_series_StreamFind <- function(x) {
     checkmate::test_number(x$parameters$preCut)
   )
 }
+
+# ______________________________________________________________________________________________________________________
+# make_pca_model -----
+# ______________________________________________________________________________________________________________________
+
+#' @title Settings_make_pca_model_mdatools
+#'
+#' @description Makes a Principle Component Analysis (PCA) model based on the R package \pkg{mdatools}.
+#' 
+#' @param ncomp Integer (length 1) with the number of components to be calculated.
+#' @param center Logical (length 1) indicating if the data should be centered.
+#' @param scale Logical (length 1) indicating if the data should be scaled.
+#' @param exclrows Integer vector with the row indices to be excluded.
+#' @param exclcols Integer vector with the column indices to be excluded.
+#' @param x.test Matrix with the test data.
+#' @param method Character (length 1) with the method to be used for PCA. Possible values are "svd" and "nipals".
+#' @param rand Integer (length 1) with the random seed.
+#' @param lim.type Character (length 1) with the type of limit for the PCA. Possible values are "jm" Jackson-Mudholkar 
+#' approach, "chisq" based on chi-square distribution, "ddmoments" and "ddrobust" related to data driven method. It is
+#' highly recommended to concult the original documentation in \link[mdatools]{pca} for more information.
+#' @param alpha Numeric (length 1) with the alpha value for the PCA.
+#' @param gamma Numeric (length 1) with the gamma value for the PCA.
+#' @param info Character (length 1) with additional information.
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_make_pca_model_mdatools.
+#'
+#' @export
+#'
+Settings_make_pca_model_mdatools <- function(ncomp = NULL,
+                                  center = FALSE,
+                                  scale = FALSE,
+                                  exclrows = NULL,
+                                  exclcols = NULL,
+                                  x.test = NULL,
+                                  method = "svd",
+                                  rand = NULL,
+                                  lim.type = "ddmoments",
+                                  alpha = 0.05,
+                                  gamma = 0.01,
+                                  info = "") {
+  
+  settings <- list(
+    call = "make_pca_model",
+    algorithm = "mdatools",
+    parameters = list(
+      ncomp = ncomp,
+      center = center,
+      scale = scale,
+      exclrows = exclrows,
+      exclcols = exclcols,
+      x.test = x.test,
+      method = method,
+      rand = rand,
+      lim.type = lim.type,
+      alpha = alpha,
+      gamma = gamma,
+      info = info
+    ),
+    version = as.character(packageVersion("mdatools")),
+    software = "mdatools",
+    developer = "Sergey Kucheryavskiy",
+    contact = "svk@bio.aau.dk",
+    link = "https://github.com/svkucheryavski/mdatools",
+    doi = "10.1016/j.chemolab.2020.103937"
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @export
+#' @noRd
+#'
+validate.Settings_normalize_spectra_minmax <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "make_pca_model"),
+    checkmate::test_choice(x$algorithm, "mdatools"),
+    checkmate::test_number(x$parameters$ncomp),
+    checkmate::test_logical(x$parameters$center, max.len = 1),
+    checkmate::test_logical(x$parameters$scale, max.len = 1),
+    checkmate::test_integer(x$parameters$exclrows),
+    checkmate::test_integer(x$parameters$exclcols),
+    checkmate::test_matrix(x$parameters$x.test),
+    checkmate::test_choice(x$parameters$method, c("svd", "nipals")),
+    checkmate::test_integer(x$parameters$rand),
+    checkmate::test_choice(x$parameters$lim.type, c("jm", "chisq", "ddmoments", "ddrobust")),
+    checkmate::test_number(x$parameters$alpha),
+    checkmate::test_number(x$parameters$gamma),
+    checkmate::test_character(x$parameters$info)
+  )
+}

@@ -3528,7 +3528,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
 
     ## ___ add/update -----
 
-    #' @description Adds analyses. Note that when adding new analyses, any existing grouping of features are removed.
+    #' @description Adds analyses. Note that when adding new analyses, any existing results are removed.
     #'
     #' @param analyses A MassSpecAnalysis S3 class object or a list with MassSpecAnalysis S3 class objects as 
     #' elements (see `?MassSpecAnalysis` for more information).

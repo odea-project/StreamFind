@@ -67,6 +67,8 @@
 #' @importFrom withr local_
 #' 
 #' @importFrom fst compress_fst
+#' 
+#' @importFrom mdatools pca plotResiduals
 #'
 #' @noRd
 NULL

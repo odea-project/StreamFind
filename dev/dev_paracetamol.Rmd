@@ -241,30 +241,19 @@ rSpec <- raman$get_spectra()
 rSpec <- rSpec[order(rSpec$replicate), ]
 mrSpec <- matrix(rSpec$intensity, nrow = length(unique(rSpec$replicate)), ncol = length(unique(rSpec$shift)), byrow = TRUE, dimnames = list(as.character(unique(rSpec$replicate)), as.character(round(unique(rSpec$shift), digits = 1))))
 
-mSpec <- ms$get_spectra()
+mSpec <- ms2$get_spectra()
 mSpec <- mSpec[order(mSpec$replicate), ]
 mmSpec <- matrix(mSpec$intensity, nrow = length(unique(mSpec$replicate)), ncol = length(unique(mSpec$bins)), byrow = TRUE, dimnames = list(unique(mSpec$replicate), unique(mSpec$bins)))
 
 fusedMat <- cbind(mmSpec, mrSpec)
 
 
-stat <- StatisticEngine$new(data = fusedMat)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# stat <- StatisticEngine$new(data = fusedMat)
+# stat$make_pca_model(Settings_make_pca_model_mdatools(center = TRUE, ncomp = 3))
+# stat$plot_model_scores()
+# stat$plot_model_loadings()
+# stat$plot_model_residuals()
+# subset matrix for 1 row but keep matrix not vector
 
 attr(fusedMat, "xaxis.name") = "Keys"
 attr(fusedMat, "xaxis.values") = seq_len(ncol(fusedMat))
@@ -383,27 +372,48 @@ subplot(
 Using Principle Components Analysis (PCA) for unsupervised evaluation.
 
 ```{r}
+library(mdatools)
 # rownames(fusedMat)
 main_set <- fusedMat[c(14:15, 18), ]
 test_set <- fusedMat[c(1:13, 16:17, 19:30), ]
 
-m3 = pca(main_set, 2, center = FALSE, scale = FALSE, info = "Unsupervised PCA model", alpha = 1E-1, gamma = 1E-2)
+m3 = pca(main_set, 3, center = FALSE, scale = FALSE, info = "Unsupervised PCA model", alpha = 1E-1, gamma = 1E-2)
 
 plot(m3)
 
 res = predict(m3, test_set)
 
+plot(res)
+
 c = categorize(m3, res)
 
 names(c) <- rownames(test_set)
 
-plotResiduals(m3, 
+plotResiduals(m3,
+  ncomp = 2,
   res = list("train" = m3$res$cal, "new" = res),
   norm = TRUE, show.labels = TRUE,
   lim.col = c("red", "orange"), lim.lwd = c(2, 2), lim.lty = c(1, 2)
 )
 
+plotResiduals(res, show.plot = FALSE, norm = TRUE)
+
+
+
 print(c)
+
+is(m3$res$cal, "ldecomp")
+
+stat <- StatisticEngine$new(data = main_set)
+stat$make_pca_model(Settings_make_pca_model_mdatools(center = FALSE, ncomp = 3, alpha = 1E-1, gamma = 1E-2))
+stat$predict(test_set)
+
+stat$plot_predicted_distances()
+
+
+
+
+
 ```
 
 ## Supervised (classification)

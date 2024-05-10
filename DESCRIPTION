@@ -44,7 +44,8 @@ Imports:
     RSQLite,
     withr,
     fst,
-    R.utils
+    R.utils,
+    mdatools
 Suggests: 
     knitr,
     kableExtra,

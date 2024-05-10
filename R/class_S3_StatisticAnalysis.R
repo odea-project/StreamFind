@@ -20,10 +20,7 @@ StatisticAnalysis <- function(name = NA_character_,
   
   x <- Analysis(name, replicate, blank)
 
-  x <- c(x, list(
-    "data" = as.matrix(data),
-    "classes" = as.character(classes)
-  ))
+  x <- c(x, list("data" = data, "classes" = as.character(classes)))
 
   if (validate.StatisticAnalysis(x)) {
     x <- structure(x, class = c("StatisticAnalysis", "Analysis"))
@@ -41,12 +38,16 @@ validate.StatisticAnalysis <- function(x = NULL) {
   valid <- validate.Analysis(x)
 
   if (valid) {
-    name <- x$name
     
-    if (is.matrix(data)) {
+    if (is.matrix(x$data)) {
       
-      if (ncol(data) != 1) {
+      if (nrow(x$data) != 1) {
         warning("Analysis data columns not conform!")
+        valid <- FALSE
+      }
+      
+      if (rownames(x$data)[1] != x$name) {
+        warning("Analysis data row name not conform!")
         valid <- FALSE
       }
       
@@ -78,7 +79,8 @@ print.StatisticAnalysis <- function(x, ...) {
     "  name              ", x$name, "\n",
     "  replicate         ", x$replicate, "\n",
     "  blank             ", x$blank, "\n",
-    "  classes           ", x$classes, "\n",
+    "  N. variables      ", ncol(x$data), "\n",
+    "  classes           ", paste(x$classes, collapse = ", "), "\n",
     sep = ""
   )
   cat("\n")

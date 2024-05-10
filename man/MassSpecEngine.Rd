@@ -1867,7 +1867,7 @@ analysis replicate group.}
 \if{html}{\out{<a id="method-MassSpecEngine-add_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-add_analyses}{}}}
 \subsection{Method \code{add_analyses()}}{
-Adds analyses. Note that when adding new analyses, any existing grouping of features are removed.
+Adds analyses. Note that when adding new analyses, any existing results are removed.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_analyses(analyses = NULL)}\if{html}{\out{</div>}}
 }

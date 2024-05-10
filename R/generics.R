@@ -48,6 +48,11 @@ export <- function(x, ...) {
 }
 
 #' @noRd
+.s3_make_pca_model <- function(settings, self, private) {
+  UseMethod(".s3_make_pca_model")
+}
+
+#' @noRd
 .s3_merge_spectra_time_series <- function(settings, self, private) {
   UseMethod(".s3_merge_spectra_time_series")
 }
