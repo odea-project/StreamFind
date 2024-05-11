@@ -38,7 +38,6 @@ and data row names are used as analyses names.
 \item \href{#method-StatisticEngine-get_model_scores}{\code{StatisticEngine$get_model_scores()}}
 \item \href{#method-StatisticEngine-get_model_loadings}{\code{StatisticEngine$get_model_loadings()}}
 \item \href{#method-StatisticEngine-get_model_residuals}{\code{StatisticEngine$get_model_residuals()}}
-\item \href{#method-StatisticEngine-get_predicted_distances}{\code{StatisticEngine$get_predicted_distances()}}
 \item \href{#method-StatisticEngine-add_analyses}{\code{StatisticEngine$add_analyses()}}
 \item \href{#method-StatisticEngine-add_data}{\code{StatisticEngine$add_data()}}
 \item \href{#method-StatisticEngine-make_pca_model}{\code{StatisticEngine$make_pca_model()}}
@@ -204,15 +203,6 @@ Gets model residuals.
 }
 \if{html}{\out{</div>}}
 }
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-StatisticEngine-get_predicted_distances"></a>}}
-\if{latex}{\out{\hypertarget{method-StatisticEngine-get_predicted_distances}{}}}
-\subsection{Method \code{get_predicted_distances()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$get_predicted_distances()}\if{html}{\out{</div>}}
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-StatisticEngine-add_analyses"></a>}}
@@ -430,9 +420,8 @@ Plots model loadings.
 Plots scores of the model.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_predicted_distances(
-  analyses = NULL,
+  pc = NULL,
   interactive = TRUE,
-  npcs = NULL,
   title = NULL,
   showText = TRUE,
   showLegend = TRUE
@@ -442,11 +431,9 @@ Plots scores of the model.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{pc}}{Integer (length 1) with the principle component to use for categorization.}
 
 \item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
-
-\item{\code{npcs}}{The principle components to plot.}
 
 \item{\code{title}}{A string with the title.}
 

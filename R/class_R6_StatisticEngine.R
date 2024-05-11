@@ -280,24 +280,6 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       dt
     },
     
-    get_predicted_distances = function() {
-      
-      res <- self$get_results("predicted")
-      
-      if (length(res) > 0) {
-        res <- res$predicted$results
-        
-        if (!is.null(res)) {
-          list("t2" = res$T2, "q" = res$Q, "cat" = res$categories)
-          
-        } else {
-          NULL
-        }
-      } else {
-        NULL
-      }
-    },
-    
     ## ___ add -----
     
     #' @description Adds analyses. Note that when adding new analyses, any existing results are removed.
@@ -434,8 +416,6 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       }
       
       res <- do.call("predict", list(self$model, data))
-      
-      res$categories <- mdatools::categorize(self$model, res)
       
       self$predicted <- list("results" = res, "data" = data)
       
@@ -725,11 +705,10 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     
     #' @description Plots scores of the model.
     #' 
-    #' @param npcs The principle components to plot.
+    #' @param pc Integer (length 1) with the principle component to use for categorization.
     #' 
-    plot_predicted_distances = function(analyses = NULL,
+    plot_predicted_distances = function(pc = NULL,
                                         interactive = TRUE,
-                                        npcs = NULL,
                                         title = NULL,
                                         showText = TRUE,
                                         showLegend = TRUE) {
@@ -748,16 +727,23 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
         return(NULL)
       }
       
-      if (!is.null(npcs)) {
+      if (!is.null(pc)) {
         
-        if (npcs > ncol(q)) {
-          warning("The number of principle components to plot is larger than the number of components in the model! Not done.")
+        if (length(pc) != 1) {
+          warning("The principle component must be a single integer! Not done.")
+          return(NULL)
+        }
+        
+        if (pc < 1 || pc > model$ncomp) {
+          warning("The principle component must be in the range of the number of components in the model! Not done.")
           return(NULL)
         }
         
       } else {
-        npcs <- model$ncomp.selected
+        pc <- 1
       }
+      
+      predicted$results$categories <- mdatools::categorize(self$model, predicted$results, pc)
       
       Qlim <- model$Qlim
       
@@ -765,9 +751,9 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       
       res = list("model" = model$res$cal, "predicted" = predicted$results)
       
-      lim_data <- ldecomp.getLimitsCoordinates(Qlim, T2lim, ncomp = npcs, norm = TRUE, log = FALSE)
+      lim_data <- ldecomp.getLimitsCoordinates(Qlim, T2lim, ncomp = pc, norm = TRUE, log = FALSE)
       
-      plot_data <- lapply(res, function(x) plotResiduals(x, ncomp = npcs, norm = TRUE, log = FALSE, show.plot = FALSE))
+      plot_data <- lapply(res, function(x) plotResiduals(x, ncomp = pc, norm = TRUE, log = FALSE, show.plot = FALSE))
       
       cat <- list("model" = rep("model", nrow(plot_data[[1]])), "predicted" = predicted$results$categories)
       
