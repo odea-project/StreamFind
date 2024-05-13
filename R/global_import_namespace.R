@@ -64,7 +64,7 @@
 #' 
 #' @importFrom RSQLite SQLite
 #' 
-#' @importFrom withr local_
+#' @importFrom withr local_ defer
 #' 
 #' @importFrom fst compress_fst
 #' 
