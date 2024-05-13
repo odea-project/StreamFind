@@ -3388,8 +3388,6 @@ validate.Settings_merge_spectra_time_series_StreamFind <- function(x) {
 #' @description Makes a Principle Component Analysis (PCA) model based on the R package \pkg{mdatools}.
 #' 
 #' @param ncomp Integer (length 1) with the number of components to be calculated.
-#' @param center Logical (length 1) indicating if the data should be centered.
-#' @param scale Logical (length 1) indicating if the data should be scaled.
 #' @param exclrows Integer vector with the row indices to be excluded.
 #' @param exclcols Integer vector with the column indices to be excluded.
 #' @param x.test Matrix with the test data.
@@ -3407,25 +3405,21 @@ validate.Settings_merge_spectra_time_series_StreamFind <- function(x) {
 #' @export
 #'
 Settings_make_pca_model_mdatools <- function(ncomp = NULL,
-                                  center = FALSE,
-                                  scale = FALSE,
-                                  exclrows = NULL,
-                                  exclcols = NULL,
-                                  x.test = NULL,
-                                  method = "svd",
-                                  rand = NULL,
-                                  lim.type = "ddmoments",
-                                  alpha = 0.05,
-                                  gamma = 0.01,
-                                  info = "") {
+                                             exclrows = NULL,
+                                             exclcols = NULL,
+                                             x.test = NULL,
+                                             method = "svd",
+                                             rand = NULL,
+                                             lim.type = "ddmoments",
+                                             alpha = 0.05,
+                                             gamma = 0.01,
+                                             info = "") {
   
   settings <- list(
     call = "make_pca_model",
     algorithm = "mdatools",
     parameters = list(
       ncomp = ncomp,
-      center = center,
-      scale = scale,
       exclrows = exclrows,
       exclcols = exclcols,
       x.test = x.test,
@@ -3455,8 +3449,6 @@ validate.Settings_normalize_spectra_minmax <- function(x) {
     checkmate::test_choice(x$call, "make_pca_model"),
     checkmate::test_choice(x$algorithm, "mdatools"),
     checkmate::test_number(x$parameters$ncomp),
-    checkmate::test_logical(x$parameters$center, max.len = 1),
-    checkmate::test_logical(x$parameters$scale, max.len = 1),
     checkmate::test_integer(x$parameters$exclrows),
     checkmate::test_integer(x$parameters$exclcols),
     checkmate::test_matrix(x$parameters$x.test),

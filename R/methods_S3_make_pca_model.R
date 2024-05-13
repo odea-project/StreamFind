@@ -18,8 +18,8 @@
   
   if (is.null(ncomp)) ncomp = min(nrow(mat) - 1, ncol(mat), 20)
   
-  center <- settings$parameters$center
-  scale <- settings$parameters$scale
+  center <- FALSE
+  scale <- FALSE
   exclrows <- settings$parameters$exclrows
   exclcols <- settings$parameters$exclcols
   x.test <- settings$parameters$x.test

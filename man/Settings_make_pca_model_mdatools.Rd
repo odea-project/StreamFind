@@ -6,8 +6,6 @@
 \usage{
 Settings_make_pca_model_mdatools(
   ncomp = NULL,
-  center = FALSE,
-  scale = FALSE,
   exclrows = NULL,
   exclcols = NULL,
   x.test = NULL,
@@ -21,10 +19,6 @@ Settings_make_pca_model_mdatools(
 }
 \arguments{
 \item{ncomp}{Integer (length 1) with the number of components to be calculated.}
-
-\item{center}{Logical (length 1) indicating if the data should be centered.}
-
-\item{scale}{Logical (length 1) indicating if the data should be scaled.}
 
 \item{exclrows}{Integer vector with the row indices to be excluded.}
 

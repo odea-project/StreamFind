@@ -51,15 +51,24 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #'
     data = function() {
       
-      res <- lapply(self$get_analyses(), function(x) x$data)
-      
-      names <- self$get_analysis_names()
-     
-      res <- do.call(rbind, res)
-      
-      rownames(res) <- names
-      
-      res
+      if (self$has_results("data")) {
+        
+        res <- self$get_results("data")
+        
+        res
+        
+      } else {
+        
+        res <- lapply(self$get_analyses(), function(x) x$data)
+        
+        names <- self$get_analysis_names()
+        
+        res <- do.call(rbind, res)
+        
+        rownames(res) <- names
+        
+        res
+      }
     },
     
     #' @field model Statistic model.
@@ -767,8 +776,6 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
         
         cl <- split(cl, names(cl))
         
-        # names(cl[[2]]) <- as.character(cat[[2]])
-        
         cl[[2]][cat[[2]] == "outlier"] <- toRGB("darkred")
         cl[[2]][cat[[2]] == "extreme"] <- toRGB("orange")
         cl[[2]][cat[[2]] == "regular"] <- toRGB("#41AB5D")
@@ -778,6 +785,28 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
         names(cl[[2]])[cat[[2]] == "regular"] <- "regular"
         
         fig <- plot_ly()
+        
+        fig <- fig %>% add_trace(
+          x = lim_data[[1]][, 1],
+          y = lim_data[[1]][, 2],
+          type = "scatter",
+          mode = "lines",
+          line = list(width = 1.5, color = toRGB("orange"), dash = "dash"),
+          name = "Extreme Limit",
+          legendgroup = "Extreme",
+          showlegend = showLegend
+        )
+        
+        fig <- fig %>% add_trace(
+          x = lim_data[[2]][, 1],
+          y = lim_data[[2]][, 2],
+          type = "scatter",
+          mode = "lines",
+          line = list(width = 1.5, color = toRGB("darkred")),
+          name = "Outlier Limit",
+          legendgroup = "Outlier Limit",
+          showlegend = showLegend
+        )
         
         for (i in seq_len(length(plot_data))) {
           
@@ -806,28 +835,6 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
             showlegend = showLegend
           )
         }
-        
-        fig <- fig %>% add_trace(
-          x = lim_data[[1]][, 1],
-          y = lim_data[[1]][, 2],
-          type = "scatter",
-          mode = "lines",
-          line = list(width = 2, color = toRGB("orange")),
-          name = "Extreme Limit",
-          legendgroup = "Extreme",
-          showlegend = showLegend
-        )
-        
-        fig <- fig %>% add_trace(
-          x = lim_data[[2]][, 1],
-          y = lim_data[[2]][, 2],
-          type = "scatter",
-          mode = "lines",
-          line = list(width = 2, color = toRGB("darkred")),
-          name = "Outlier Limit",
-          legendgroup = "Outlier Limit",
-          showlegend = showLegend
-        )
         
         xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = "Score distance (h/h0)", titlefont = list(size = 12, color = "black"))
         yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = "Orthogonal distance (q/q0)", titlefont = list(size = 12, color = "black"))

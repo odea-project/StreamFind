@@ -65,6 +65,10 @@ reference:
   contents:
     - starts_with("Settings_integrate_chromatograms")
 
+- subtitle: make_pca_model
+  contents:
+    - starts_with("make_pca_model")
+
 - subtitle: merge_spectra_time_series
   contents:
     - starts_with("Settings_merge_spectra_time_series")
