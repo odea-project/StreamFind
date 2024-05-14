@@ -2866,6 +2866,8 @@
   
   res <- .make_colorBy_varkey(res, colorBy, legendNames)
   
+  setorder(res, var)
+  
   leg <- unique(res$var)
   
   cl <- .get_colors(leg)

@@ -4765,7 +4765,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       if (is.null(yLab)) yLab = "Intensity / counts"
       
-      setorder(spec, x)
+      setorder(spec, var, x)
 
       if (!interactive) {
         return(.plot_x_spectra_static(spec, xLab, yLab, title, cex, showLegend))
