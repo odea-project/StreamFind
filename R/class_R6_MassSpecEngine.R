@@ -1471,6 +1471,12 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
 
           spec <- rcpp_parse_ms_spectra(x, levels, targets, minIntensityMS1, minIntensityMS2)
           
+          if ("id" %in% colnames(spec)) {
+            setorder(spec, id, rt, mz)
+          } else {
+            setorder(spec, rt, mz)
+          }
+          
           message(" Done!")
           
           if (nrow(spec) == 0) return(data.frame())

@@ -354,77 +354,110 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
     std::vector<int> idx_vector(idx.begin(), idx.end());
 
     std::sort(idx_vector.begin(), idx_vector.end());
-
-    if (idx_vector.size() == 0) return empty_df;
-
-    const std::vector<std::vector<std::vector<double>>> spectra = ana.get_spectra(idx_vector);
-
-    const int number_spectra_targets = spectra.size();
+    
+    // Rcpp::Rcout << "idx_vector: ";
+    // for (auto it = idx.begin(); it != idx.end(); ++it) {
+    //   Rcpp::Rcout << *it << " ";
+    // }
+    // Rcpp::Rcout << std::endl;
+    
+    const int number_spectra_targets = idx_vector.size();
 
     if (number_spectra_targets == 0) return empty_df;
-
-    std::vector<std::vector<std::vector<double>>> res(n_tg);
-
-    std::vector<std::vector<int>> res_idx(n_tg);
-
-    // #pragma omp parallel for
-    for (int i = 0; i < n_tg; i++) {
-
-      res[i].resize(2);
-
-      for (int j = 0; j < number_spectra_targets; j++) {
-
-        const int& tg_polarity = polarity[idx_vector[j]];
-        const int& tg_level = level[idx_vector[j]];
-        const double& tg_pre_mz = pre_mz[idx_vector[j]];
-        // const double& tg_pre_mzlow = pre_mzlow[idx_vector[j]];
-        // const double& tg_pre_mzhigh = pre_mzhigh[idx_vector[j]];
-        const double& tg_rt = rt[idx_vector[j]];
-        const double& tg_drift = drift[idx_vector[j]];
-
-        if (tg.polarity[i] == tg_polarity) {
-
-          if (tg.rtmax[i] == 0 || (tg_rt >= tg.rtmin[i] && tg_rt <= tg.rtmax[i])) {
-
-            if (tg.driftmax[i] == 0 || (tg_drift >= tg.driftmin[i] && tg_drift <= tg.driftmax[i])) {
-
-              if (tg.precursor[i]) {
-
-                if ((tg_pre_mz >= tg.mzmin[i] && tg_pre_mz <= tg.mzmax[i]) || tg.mzmax[i] == 0) {
-
-                  const std::vector<double>& mzj = spectra[j][0];
-                  const std::vector<double>& intj = spectra[j][1];
-
-                  const int number_points = mzj.size();
-
-                  if (number_points == 0) continue;
-
-                  for (int k = 0; k < number_points; k++) {
-
-                    if (intj[k] >= minIntLv2 && tg_level == 2) {
-                      res[i][0].push_back(mzj[k]);
-                      res[i][1].push_back(intj[k]);
-                      res_idx[i].push_back(idx_vector[j]);
+    
+    std::vector<std::string> id_out;
+    std::vector<int> polarity_out;
+    std::vector<int> level_out;
+    std::vector<double> pre_mz_out;
+    // std::vector<double> pre_mzlow_out;
+    // std::vector<double> pre_mzhigh_out;
+    std::vector<double> pre_ce_out;
+    std::vector<double> rt_out;
+    std::vector<double> drift_out;
+    std::vector<double> mz_out;
+    std::vector<double> intensity_out;
+    
+    #pragma omp parallel
+    {
+      std::vector<std::string> id_priv;
+      std::vector<int> polarity_priv;
+      std::vector<int> level_priv;
+      std::vector<double> pre_mz_priv;
+      // std::vector<double> pre_mzlow_priv;
+      // std::vector<double> pre_mzhigh_priv;
+      std::vector<double> pre_ce_priv;
+      std::vector<double> rt_priv;
+      std::vector<double> drift_priv;
+      std::vector<double> mz_priv;
+      std::vector<double> intensity_priv;
+    
+      #pragma omp for
+      for (int i = 0; i < number_spectra_targets; i++) {
+        
+        const std::vector<int> i_idx = { idx_vector[i] };
+        
+        std::vector<std::vector<std::vector<double>>> spectra = ana.get_spectra(i_idx);
+        
+        const int n_traces = spectra[0][1].size();
+        
+        if (n_traces == 0) continue;
+        
+        const int& i_polarity = polarity[i];
+        const int& i_level = level[i];
+        const double& i_pre_mz = pre_mz[i];
+        // const double& i_pre_mzlow = pre_mzlow[i];
+        // const double& i_pre_mzhigh = pre_mzhigh[i];
+        const double& i_rt = rt[i];
+        const double& i_drift = drift[i];
+        
+        for (int j = 0; j < n_tg; j++) {
+          
+          if (tg.polarity[j] == i_polarity) {
+            
+            if (tg.rtmax[j] == 0 || (i_rt >= tg.rtmin[j] && i_rt <= tg.rtmax[j])) {
+              
+              if (tg.driftmax[j] == 0 || (i_drift >= tg.driftmin[j] && i_drift <= tg.driftmax[j])) {
+                
+                if (tg.precursor[j]) {
+                  
+                  if ((i_pre_mz >= tg.mzmin[j] && i_pre_mz <= tg.mzmax[j]) || tg.mzmax[j] == 0) {
+                    
+                    for (int k = 0; k < n_traces; k++) {
+                      
+                      if (spectra[0][1][k] >= minIntLv2 && i_level == 2) {
+                        id_priv.push_back(tg.id[j]);
+                        polarity_priv.push_back(i_polarity);
+                        level_priv.push_back(i_level);
+                        pre_mz_priv.push_back(i_pre_mz);
+                        // pre_mzlow_priv.push_back(i_pre_mzlow);
+                        // pre_mzhigh_priv.push_back(i_pre_mzhigh);
+                        pre_ce_priv.push_back(pre_ce[i]);
+                        rt_priv.push_back(i_rt);
+                        drift_priv.push_back(i_drift);
+                        mz_priv.push_back(spectra[0][0][k]);
+                        intensity_priv.push_back(spectra[0][1][k]);
+                      }
                     }
                   }
-                }
-              } else {
-
-                const std::vector<double>& mzj = spectra[j][0];
-                const std::vector<double>& intj = spectra[j][1];
-
-                const int number_points = mzj.size();
-
-                if (number_points == 0) continue;
-
-                for (int k = 0; k < number_points; k++) {
-
-                  if ((mzj[k] >= tg.mzmin[i] && mzj[k] <= tg.mzmax[i]) || tg.mzmax[i] == 0) {
-
-                    if ((intj[k] >= minIntLv2 && tg_level == 2) || (intj[k] >= minIntLv1 && tg_level == 1)) {
-                      res[i][0].push_back(mzj[k]);
-                      res[i][1].push_back(intj[k]);
-                      res_idx[i].push_back(idx_vector[j]);
+                } else {
+                  
+                  for (int k = 0; k < n_traces; k++) {
+                    
+                    if ((spectra[0][0][k] >= tg.mzmin[j] && spectra[0][0][k] <= tg.mzmax[j]) || tg.mzmax[j] == 0) {
+                      
+                      if ((spectra[0][1][k] >= minIntLv2 && i_level == 2) || (spectra[0][1][k] >= minIntLv1 && i_level == 1)) {
+                        id_priv.push_back(tg.id[j]);
+                        polarity_priv.push_back(i_polarity);
+                        level_priv.push_back(i_level);
+                        pre_mz_priv.push_back(i_pre_mz);
+                        // pre_mzlow_priv.push_back(i_pre_mzlow);
+                        // pre_mzhigh_priv.push_back(i_pre_mzhigh);
+                        pre_ce_priv.push_back(pre_ce[i]);
+                        rt_priv.push_back(i_rt);
+                        drift_priv.push_back(i_drift);
+                        mz_priv.push_back(spectra[0][0][k]);
+                        intensity_priv.push_back(spectra[0][1][k]);
+                      }
                     }
                   }
                 }
@@ -433,51 +466,178 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
           }
         }
       }
-    }
-
-    int total_traces = 0;
-
-    for (int i = 0; i < n_tg; i++) total_traces += res[i][0].size();
-
-    if (total_traces == 0) return empty_df;
-
-    std::vector<std::string> id_out(total_traces);
-    std::vector<int> polarity_out(total_traces);
-    std::vector<int> level_out(total_traces);
-    std::vector<double> pre_mz_out(total_traces);
-    // std::vector<double> pre_mzlow_out(total_traces);
-    // std::vector<double> pre_mzhigh_out(total_traces);
-    std::vector<double> pre_ce_out(total_traces);
-    std::vector<double> rt_out(total_traces);
-    std::vector<double> drift_out(total_traces);
-    std::vector<double> mz_out(total_traces);
-    std::vector<double> intensity_out(total_traces);
-
-    int trace = 0;
-
-    for (int i = 0; i < n_tg; i++) {
-
-      const int n = res[i][0].size();
-
-      if (n == 0) continue;
-
-      for (int j = 0; j < n; j++) {
-
-        id_out[trace] = tg.id[i];
-        polarity_out[trace] = polarity[res_idx[i][j]];
-        level_out[trace] = level[res_idx[i][j]];
-        pre_mz_out[trace] = pre_mz[res_idx[i][j]];
-        // pre_mzlow_out[trace] = pre_mzlow[res_idx[i][j]];
-        // pre_mzhigh_out[trace] = pre_mzhigh[res_idx[i][j]];
-        pre_ce_out[trace] = pre_ce[res_idx[i][j]];
-        rt_out[trace] = rt[res_idx[i][j]];
-        drift_out[trace] = drift[res_idx[i][j]];
-        mz_out[trace] = res[i][0][j];
-        intensity_out[trace] = res[i][1][j];
-
-        trace += 1;
+      
+      #pragma omp critical
+      {
+        id_out.insert(id_out.end(), id_priv.begin(), id_priv.end());
+        polarity_out.insert(polarity_out.end(), polarity_priv.begin(), polarity_priv.end());
+        level_out.insert(level_out.end(), level_priv.begin(), level_priv.end());
+        pre_mz_out.insert(pre_mz_out.end(), pre_mz_priv.begin(), pre_mz_priv.end());
+        // pre_mzlow_out.insert(pre_mzlow_out.end(), pre_mzlow_priv.begin(), pre_mzlow_priv.end());
+        // pre_mzhigh_out.insert(pre_mzhigh_out.end(), pre_mzhigh_priv.begin(), pre_mzhigh_priv.end());
+        pre_ce_out.insert(pre_ce_out.end(), pre_ce_priv.begin(), pre_ce_priv.end());
+        rt_out.insert(rt_out.end(), rt_priv.begin(), rt_priv.end());
+        drift_out.insert(drift_out.end(), drift_priv.begin(), drift_priv.end());
+        mz_out.insert(mz_out.end(), mz_priv.begin(), mz_priv.end());
+        intensity_out.insert(intensity_out.end(), intensity_priv.begin(), intensity_priv.end());
       }
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    // const std::vector<std::vector<std::vector<double>>> spectra = ana.get_spectra(idx_vector);
+    // 
+    // const int number_spectra_targets = spectra.size();
+    // 
+    // if (number_spectra_targets == 0) return empty_df;
+    // 
+    // std::vector<std::vector<std::vector<double>>> res(n_tg);
+    // 
+    // std::vector<std::vector<int>> res_idx(n_tg);
+    // 
+    // // #pragma omp parallel for
+    // for (int i = 0; i < n_tg; i++) {
+    // 
+    //   res[i].resize(2);
+    // 
+    //   for (int j = 0; j < number_spectra_targets; j++) {
+    // 
+    //     const int& tg_polarity = polarity[idx_vector[j]];
+    //     const int& tg_level = level[idx_vector[j]];
+    //     const double& tg_pre_mz = pre_mz[idx_vector[j]];
+    //     // const double& tg_pre_mzlow = pre_mzlow[idx_vector[j]];
+    //     // const double& tg_pre_mzhigh = pre_mzhigh[idx_vector[j]];
+    //     const double& tg_rt = rt[idx_vector[j]];
+    //     const double& tg_drift = drift[idx_vector[j]];
+    // 
+    //     if (tg.polarity[i] == tg_polarity) {
+    // 
+    //       if (tg.rtmax[i] == 0 || (tg_rt >= tg.rtmin[i] && tg_rt <= tg.rtmax[i])) {
+    // 
+    //         if (tg.driftmax[i] == 0 || (tg_drift >= tg.driftmin[i] && tg_drift <= tg.driftmax[i])) {
+    // 
+    //           if (tg.precursor[i]) {
+    // 
+    //             if ((tg_pre_mz >= tg.mzmin[i] && tg_pre_mz <= tg.mzmax[i]) || tg.mzmax[i] == 0) {
+    // 
+    //               const std::vector<double>& mzj = spectra[j][0];
+    //               const std::vector<double>& intj = spectra[j][1];
+    // 
+    //               const int number_points = mzj.size();
+    // 
+    //               if (number_points == 0) continue;
+    // 
+    //               for (int k = 0; k < number_points; k++) {
+    // 
+    //                 if (intj[k] >= minIntLv2 && tg_level == 2) {
+    //                   res[i][0].push_back(mzj[k]);
+    //                   res[i][1].push_back(intj[k]);
+    //                   res_idx[i].push_back(idx_vector[j]);
+    //                 }
+    //               }
+    //             }
+    //           } else {
+    // 
+    //             const std::vector<double>& mzj = spectra[j][0];
+    //             const std::vector<double>& intj = spectra[j][1];
+    // 
+    //             const int number_points = mzj.size();
+    // 
+    //             if (number_points == 0) continue;
+    // 
+    //             for (int k = 0; k < number_points; k++) {
+    // 
+    //               if ((mzj[k] >= tg.mzmin[i] && mzj[k] <= tg.mzmax[i]) || tg.mzmax[i] == 0) {
+    // 
+    //                 if ((intj[k] >= minIntLv2 && tg_level == 2) || (intj[k] >= minIntLv1 && tg_level == 1)) {
+    //                   res[i][0].push_back(mzj[k]);
+    //                   res[i][1].push_back(intj[k]);
+    //                   res_idx[i].push_back(idx_vector[j]);
+    //                 }
+    //               }
+    //             }
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
+    // 
+    // int total_traces = 0;
+    // 
+    // for (int i = 0; i < n_tg; i++) total_traces += res[i][0].size();
+    // 
+    // if (total_traces == 0) return empty_df;
+    // 
+    // std::vector<std::string> id_out(total_traces);
+    // std::vector<int> polarity_out(total_traces);
+    // std::vector<int> level_out(total_traces);
+    // std::vector<double> pre_mz_out(total_traces);
+    // // std::vector<double> pre_mzlow_out(total_traces);
+    // // std::vector<double> pre_mzhigh_out(total_traces);
+    // std::vector<double> pre_ce_out(total_traces);
+    // std::vector<double> rt_out(total_traces);
+    // std::vector<double> drift_out(total_traces);
+    // std::vector<double> mz_out(total_traces);
+    // std::vector<double> intensity_out(total_traces);
+    // 
+    // int trace = 0;
+    // 
+    // for (int i = 0; i < n_tg; i++) {
+    // 
+    //   const int n = res[i][0].size();
+    // 
+    //   if (n == 0) continue;
+    // 
+    //   for (int j = 0; j < n; j++) {
+    // 
+    //     id_out[trace] = tg.id[i];
+    //     polarity_out[trace] = polarity[res_idx[i][j]];
+    //     level_out[trace] = level[res_idx[i][j]];
+    //     pre_mz_out[trace] = pre_mz[res_idx[i][j]];
+    //     // pre_mzlow_out[trace] = pre_mzlow[res_idx[i][j]];
+    //     // pre_mzhigh_out[trace] = pre_mzhigh[res_idx[i][j]];
+    //     pre_ce_out[trace] = pre_ce[res_idx[i][j]];
+    //     rt_out[trace] = rt[res_idx[i][j]];
+    //     drift_out[trace] = drift[res_idx[i][j]];
+    //     mz_out[trace] = res[i][0][j];
+    //     intensity_out[trace] = res[i][1][j];
+    // 
+    //     trace += 1;
+    //   }
+    // }
 
     out["id"] = id_out;
     out["polarity"] = polarity_out;

@@ -2,14 +2,14 @@
 # resources --------------------------------------------------------------------
 
 ## files -----------------------------------------------------------------------
-# all_files <- StreamFindData::get_ms_file_paths()
-# files <- all_files[grepl("mrm", all_files)]
-# files <- all_files[1:3]
-# files <- all_files[grepl("influent|blank", all_files)]
-# files <- all_files[grepl("o3sw", all_files)]
+all_files <- StreamFindData::get_ms_file_paths()
+files <- all_files[grepl("mrm", all_files)]
+files <- all_files[1:3]
+files <- all_files[grepl("influent|blank", all_files)]
+files <- all_files[grepl("o3sw", all_files)]
 
-path <- "C:/Users/apoli/Documents/example_ms_files"
-files <- list.files(path, pattern = ".mzML", full.names = TRUE)
+# path <- "C:/Users/apoli/Documents/example_ms_files"
+# files <- list.files(path, pattern = ".mzML", full.names = TRUE)
 
 ## databases -------------------------------------------------------------------
 db <- StreamFindData::get_ms_tof_spiked_chemicals()
@@ -88,12 +88,14 @@ cols <- c("name", "formula", "mass", "rt")
 # patRoon::clearCache("load_groups_ms1")
 # patRoon::clearCache("load_groups_ms2")
 
-patRoon::clearCache("all")
+clear_cache("all")
 
 # StreamCraft interface --------------------------------------------------------
 
 
-ana <- parse_MassSpecAnalysis(files[10])
+
+ana <- rcpp_parse_ms_analysis(files[10])
+
 
 validate(ana[[1]])
 
@@ -113,20 +115,18 @@ validate(ana[[1]])
 
 
 
-rcpp_parse_ms_analysis_v2(ms_files[1])
+rcpp_parse_ms_analysis(ms_files[1])
 
 
 
 
 # spectra ----------------------------------------------------------------------
 
-ms <- MassSpecEngine$new(files = files[7:12])
+clear_cache("parsed_ms_spectra")
 
-ms$get_chromatograms()
+ms <- MassSpecEngine$new(files = files[4:6])
 
-ms$get_spectra()
-
-ms$plot_spectra_eic(mass = carb, rt = carb_rt, ppm = 10, sec = 15, colorBy = "analyses")
+ms$plot_spectra_eic(mz = carb, ppm = 10, sec = 15, colorBy = "analyses")
 
 ms$get_rt_end()
 
