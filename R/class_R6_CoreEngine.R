@@ -33,6 +33,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
     ## ___ .results -----
     .results = NULL,
     
+    ## ___ .cache_file -----
+    .cache_file = NULL,
+    
     ## ___ .utils -----
     
     # Registers changes in the history private field.
@@ -202,6 +205,12 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' 
     results = function() {
       private$.results
+    },
+    
+    #' @field cache_file Full path to the cache file.
+    #' 
+    cache_file = function() {
+      private$.cache_file
     }
   ),
     
@@ -1242,6 +1251,82 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
     
+    ## ___ cache -----
+    
+    #' @description Caches the engine data to a **sqlite** file.
+    #' 
+    #' @param name A string with the name of the cache file. If \code{NULL}, the name is set to the engine class name 
+    #' and the date.
+    #'
+    cache_data = function(file = NULL) {
+      
+      if (is.null(file)) file <- private$.cache_file
+      
+      if (is.null(file)) file <- paste0(getwd(), "/" ,is(self), "_", format(private$.headers$date, "%Y%m%d%H%M%S"))
+      
+      private$.cache_file <- file
+      
+      data <- list(
+        headers = private$.headers,
+        settings = private$.settings,
+        analyses = private$.analyses,
+        history = private$.history,
+        results = private$.results,
+        cache_file = private$.cache_file
+      )
+      
+      hash <- .make_hash(is(self))
+      
+      .save_cache(is(self), data, hash, file)
+      
+      if (file.exists(file)) {
+        message("\U2713 Data cached!")
+        
+      } else {
+        warning("Data not cached!")
+      }
+      
+      invisible(self)
+    },
+    
+    #' @description Loads the data from an **sqlite** file.
+    #' 
+    #' @param file A string with the full path to the **sqlite** file. When \code{NULL} and not cache file is assigned 
+    #' in the engine, a file chooser dialog is opened.
+    #' 
+    load_cache = function(file = NULL) {
+      
+      if (is.null(file)) file <- private$.cache_file
+      
+      if (is.null(file)) file <- file.choose()
+      
+      if (!file.exists(file)) {
+        warning("File does not exist!")
+        return(invisible(self))
+      }
+      
+      hash <- .make_hash(is(self))
+      
+      data <- .load_cache_backend(file, is(self), hash)
+      
+      if (!is.null(data)) {
+        
+        private$.headers <- data$headers
+        private$.settings <- data$settings
+        private$.analyses <- data$analyses
+        private$.history <- data$history
+        private$.results <- data$results
+        private$.cache_file <- file
+        
+        message("\U2713 Data loaded from cache!")
+        
+      } else {
+        warning("No data loaded from cache!")
+      }
+      
+      invisible(self)
+    },
+    
     ## ___ save -----
     
     #' @description Saves the headers list as the defined \code{format} in \code{path} and returns invisible.
@@ -1517,7 +1602,100 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
     
-    ## ___ report -----
+    ## ___ app -----
+    
+    open_app = function() {
+      
+      library(shiny)
+      library(shinydashboard)
+      
+      ui <- dashboardPage(
+        dashboardHeader(title = is(self)),
+        dashboardSidebar(
+          sidebarMenu(
+            menuItem("Overview", tabName = "overview", icon = icon("dashboard")),
+            menuItem("Analyses", tabName = "analyses", icon = icon("th"))
+          )
+        ),
+        dashboardBody(
+          tabItems(
+            # First tab content
+            tabItem(tabName = "overview",
+                    fluidRow(
+                      box(title = "Headers", status = "primary", solidHeader = TRUE, width = 12,
+                        uiOutput("headers")
+                      ),
+                      box(title = "Analyses Overview", status = "primary", solidHeader = TRUE, width = 12,
+                        tableOutput("overview_dt")
+                      ),
+                    )
+            ),
+            # Second tab content
+            tabItem(tabName = "analyses",
+              fluidRow(
+                box(title = "Box 3", status = "warning", solidHeader = TRUE, "Content for box 3"),
+                box(title = "Box 4", status = "warning", solidHeader = TRUE, "Content for box 4")
+              )
+            )
+          )
+        )
+      )
+      
+      # Define the server logic
+      server <- function(input, output) {
+        output$overview_dt <- renderTable({
+          self$get_overview()
+        })
+        
+        output$headers <- renderUI({
+          header_text <- paste(names(private$.headers), ": ", unlist(private$.headers), collapse = "<br>")
+          HTML(header_text)
+        })
+      }
+  
+      # ui <- fluidPage(
+      #   titlePanel("App Example"),
+      #   sidebarLayout(
+      #     sidebarPanel(
+      #       actionButton("analyses", "show analyses names")
+      #     ),
+      #     mainPanel(
+      #       textOutput("value")
+      #     )
+      #   )
+      # )
+      # 
+      # server <- function(input, output, session) {
+      #   
+      #   engine <- list(
+      #     headers = private$.headers,
+      #     settings = private$.settings,
+      #     analyses = private$.analyses,
+      #     history = private$.history,
+      #     results = private$.results,
+      #     cache_file = private$.cache_file
+      #   )
+      #   
+      #   
+      #   output$value <- renderText({
+      #     req(input$analyses)
+      #     isolate(names(engine$analyses))
+      #   })
+      # }
+
+      shinyApp(ui = ui, server = server)
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    },
     
     ## ___ info -----
     

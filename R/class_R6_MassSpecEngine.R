@@ -883,9 +883,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         
         ov$type <- vapply(private$.analyses, function(x) x$type, "")
         
-        ov$polarity <- vapply(private$.analyses, function(x) paste(x$polarity, collapse = "; "), "")
+        pols <- self$get_spectra_polarity()
         
-        ov$spectra <- vapply(private$.analyses, function(x) x$spectra_number, 0)
+        ov$polarity <- vapply(names(private$.analyses), function(x) paste(pols[x], collapse = "; "), "")
+        
+        ov$spectra <- vapply(private$.analyses, function(x) round(x$spectra_number, digits = 0), 0)
         
         if (any(self$get_chromatograms_number() > 0)) {
           ov$chromatograms <- vapply(private$.analyses, function(x) x$chromatograms_number, 0)

@@ -412,8 +412,7 @@
 #' 
 #' @noRd
 #' 
-.load_chache = function(category, ...) {
-  file <- "cache.sqlite"
+.load_chache = function(category = NULL, ..., file = "cache.sqlite") {
   list_out <- list()
   hash <- .make_hash(...)
   data <- .load_cache_backend(file, category, hash)
@@ -427,7 +426,6 @@
 #' @description Cache interface adapted from patRoon package.
 #' 
 #' @noRd
-.save_cache = function(category, data, hash) {
-  file <- "cache.sqlite"
+.save_cache = function(category = NULL, data = NULL, hash = NULL, file = "cache.sqlite") {
   .save_cache_backend(file, category, data, hash)
 }

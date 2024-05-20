@@ -92,13 +92,6 @@ clear_cache("all")
 
 # StreamCraft interface --------------------------------------------------------
 
-
-
-ana <- rcpp_parse_ms_analysis(files[10])
-
-
-validate(ana[[1]])
-
 # make a benchmark with rcpp_parse_msAnalysis(files) vs rcpp_parse_ms_analysis_v2(files) and compare the results
 
 # testSpeed <- microbenchmark::microbenchmark(
@@ -126,9 +119,15 @@ clear_cache("parsed_ms_spectra")
 
 ms <- MassSpecEngine$new(files = files[4:6])
 
-ms$plot_spectra_eic(mz = carb, ppm = 10, sec = 15, colorBy = "analyses")
+ms$get_overview()
 
-ms$get_rt_end()
+ms$open_app()
+
+ms$cache_data()
+
+ms$load_cache()
+
+ms$plot_spectra_eic(mz = carb, ppm = 10, sec = 15, colorBy = "analyses")
 
 ms$get_spectra_mode()
 

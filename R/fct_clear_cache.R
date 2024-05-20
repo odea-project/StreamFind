@@ -9,9 +9,8 @@
 #'
 #' @export
 #'
-clear_cache <- function(what = NULL) {
+clear_cache <- function(what = NULL, file = "cache.sqlite") {
   checkmate::assertString(what, na.ok = FALSE, null.ok = TRUE)
-  file <- "cache.sqlite"
   
   if (!file.exists(file)) {
     message("\U2139 No cache file found, nothing to do.")
