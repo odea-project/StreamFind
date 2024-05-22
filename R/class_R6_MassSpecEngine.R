@@ -115,21 +115,19 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     analysisInfo = function() {
       
       if (self$has_results("patRoon")) {
-        private$.results$patRoon$data@analysisInfo
+        anaInfo <- private$.results$patRoon$data@analysisInfo
+        anaInfo <- anaInfo[anaInfo$analysis %in% self$get_analysis_names(), ]
+        anaInfo
         
       } else if (self$get_number_analyses() > 0) {
-        
         anaInfo <- self$get_overview()
-        
         anaInfo <- data.frame(
           "path" = dirname(anaInfo$file),
           "analysis" = anaInfo$analysis,
           "group" = anaInfo$replicate,
           "blank" = anaInfo$blank
         )
-        
         anaInfo$blank[is.na(anaInfo$blank)] <- ""
-        
         anaInfo
         
       } else {
@@ -160,12 +158,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           
           if (self$has_results("patRoon")) {
             
-            if (identical(value@analysisInfo, self$analysisInfo)) {
+            if (identical(self$analysisInfo$analysis, value@analysisInfo$analysis)) {
               
               if ("features" %in% is(private$.results$patRoon$data)) {
                 
-                if (identical(unname(self$get_analysis_names()), names(value@features))) {
-                  
+                if (all(unname(self$get_analysis_names()) %in% names(value@features))) {
                   private$.results$patRoon$data <- value
                   
                 } else {
@@ -861,14 +858,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       if (!is.null(files)) self$add_files(files)
 
-      private$.register(
-        "created",
-        "MassSpecEngine",
-        headers$name,
-        "StreamFind",
-        as.character(packageVersion("StreamFind")),
-        paste(c(headers$author, headers$path), collapse = ", ")
-      )
+      private$.register("created", "MassSpecEngine", headers$name, paste(c(headers$author, headers$path), collapse = ", "))
     },
 
     ## ___ get -----
@@ -3684,42 +3674,6 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       invisible(self)
     },
     
-    #' @description Adds or redefines the analysis replicate names.
-    #'
-    #' @param value A character vector with the analysis replicate names.
-    #' Must be of the same length as the number of analyses.
-    #' 
-    #' @note Removes all results if present in the engine as may be affected but modified correspondence.
-    #'
-    #' @return Invisible.
-    #'
-    add_replicate_names = function(value = NULL) {
-      
-      super$add_replicate_names(value)
-      
-      self$remove_results()
-      
-      invisible(self)
-    },
-    
-    #' @description Adds or redefines the analysis blank replicate names.
-    #'
-    #' @param value A character vector with the analysis blank replicate names.
-    #' Must be of the same length as the number of analyses.
-    #' 
-    #' @note Removes all results if present in the engine as may be affected but modified correspondence.
-    #'
-    #' @return Invisible.
-    #'
-    add_blank_names = function(value = NULL) {
-      
-      super$add_blank_names(value)
-      
-      self$remove_results()
-      
-      invisible(self)
-    },
-    
     #' @description Adds data from results to the engine.
     #'
     #' @param value A named list with data from results.
@@ -3788,15 +3742,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           private$.analyses, spec_list
         )
         
-        private$.register(
-          "added",
-          "analyses",
-          "raw spectra",
-          NA_character_,
-          NA_character_,
-          NA_character_
-        )
-        
+        private$.register("added", "analyses", "raw spectra")
         message("\U2713 ", " Spectra loaded!")
 
       } else {
@@ -3828,15 +3774,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
             private$.analyses, chrom_list
           )
 
-          private$.register(
-            "loaded",
-            "analyses",
-            "raw chromatograms",
-            NA_character_,
-            NA_character_,
-            NA_character_
-          )
-
+          private$.register("loaded", "analyses", "raw chromatograms")
           message("\U2713 Chromatograms loaded to all analyses!")
 
         } else {
@@ -3905,14 +3843,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
 
         self$remove_results("patRoon")
 
-        private$.register(
-          "removed",
-          "features",
-          "all",
-          NA_character_,
-          NA_character_,
-          NA_character_
-        )
+        private$.register("removed", "results", "features", "all")
 
         message("\U2713 Removed all features!")
 
@@ -3933,15 +3864,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           x
         })
         
-        private$.register(
-          "removed",
-          "filtered features",
-          n_filtered_features,
-          NA_character_,
-          NA_character_,
-          NA_character_
-        )
-        
+        private$.register("removed", "results", "filtered features", n_filtered_features)
         message("\U2713 Removed ", n_filtered_features, " feature/s!")
       }
 
@@ -3995,15 +3918,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           
           if (n_feat_after < n_feat_before) {
             
-            private$.register(
-              "removed",
-              "features",
-              n_feat_before - n_feat_after,
-              NA_character_,
-              NA_character_,
-              NA_character_
-            )
-            
+            private$.register("removed", "results", "features", n_feat_before - n_feat_after)
             message("\U2713 Removed ", n_feat_before - n_feat_after, " feature/s!")
             
           } else {
@@ -4058,15 +3973,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           
           private$.results$patRoon$filtered <- filtered_feature_list
 
-          private$.register(
-            "removed",
-            "features_ms1",
-            "all",
-            NA_character_,
-            NA_character_,
-            NA_character_
-          )
-
+          private$.register("removed", "results", "features_ms1", "all")
           message("\U2713 Removed all MS1 spectra from features!")
 
         } else {
@@ -4115,16 +4022,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           
           private$.results$patRoon$filtered <- filtered_feature_list
 
-          private$.register(
-            "removed",
-            "features_ms2",
-            "all",
-            NA_character_,
-            NA_character_,
-            NA_character_
-          )
-
+          private$.register("removed", "results", "features_ms2", "all")
           message("\U2713 Removed all MS2 spectra from features!")
+          
         } else {
           message("\U2717 Features MS2 spectra not loaded!")
         }
@@ -4161,15 +4061,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         
         self$remove_features(filtered = TRUE)
 
-        private$.register(
-          "removed",
-          "feature groups",
-          "all",
-          NA_character_,
-          NA_character_,
-          NA_character_
-        )
-
+        private$.register("removed", "results", "feature groups", "all")
         message("\U2713 Removed all groups!")
 
         return(invisible(self))
@@ -4206,16 +4098,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           }
           
           if (n_groups_after < n_groups) {
-            
-            private$.register(
-              "removed",
-              "feature groups",
-              n_groups - n_groups_after,
-              NA_character_,
-              NA_character_,
-              NA_character_
-            )
-            
+            private$.register("removed", "results", "feature groups", n_groups - n_groups_after)
             message("\U2713 Removed ", n_groups - n_groups_after, " group/s!")
           }
           

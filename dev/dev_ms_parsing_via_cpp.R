@@ -88,7 +88,7 @@ cols <- c("name", "formula", "mass", "rt")
 # patRoon::clearCache("load_groups_ms1")
 # patRoon::clearCache("load_groups_ms2")
 
-clear_cache("all")
+# clear_cache("all")
 
 # StreamCraft interface --------------------------------------------------------
 
@@ -106,26 +106,30 @@ clear_cache("all")
 #   times = 3
 # )
 
-
-
-rcpp_parse_ms_analysis(ms_files[1])
+# rcpp_parse_ms_analysis(ms_files[1])
 
 
 
 
 # spectra ----------------------------------------------------------------------
+# clear_cache("all")
 
-clear_cache("parsed_ms_spectra")
 
 ms <- MassSpecEngine$new(files = files[4:6])
+ms$find_features(Settings_find_features_openms())
+ms$save(paste0(getwd(), "/ms.sqlite"))
+ms$run_app()
 
-ms$get_overview()
 
-ms$open_app()
+ms$remove_analyses(1)
 
-ms$cache_data()
+ms$save()
 
-ms$load_cache()
+ms$load()
+
+
+
+
 
 ms$plot_spectra_eic(mz = carb, ppm = 10, sec = 15, colorBy = "analyses")
 

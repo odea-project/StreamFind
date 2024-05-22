@@ -123,14 +123,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
       
       if (!is.null(files)) self$add_files(files)
       
-      private$.register(
-        "created",
-        "RamanEngine",
-        headers$name,
-        "StreamFind",
-        as.character(packageVersion("StreamFind")),
-        paste(c(headers$author, headers$path), collapse = ", ")
-      )
+      private$.register("created", "RamanEngine", headers$name, paste(c(headers$author, headers$path), collapse = ", "))
     },
     
     ## ___ get -----

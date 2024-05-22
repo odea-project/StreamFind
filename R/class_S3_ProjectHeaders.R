@@ -5,10 +5,9 @@
 #' @template arg-headers-ellipsis
 #'
 #' @note If an argument or element name is given, it must be type character.
-#' If an argument or element path is given, it must be type character and exist.
+#' If an argument or element file is given, it must be type character and exist on disk.
 #' If an argument or element date is given, it must be class POSIXct or POSIXt.
-#' If given date is character, conversion to class POSIXct or POSIXt is
-#' attempted.
+#' If given date is character, conversion to class POSIXct or POSIXt is attempted.
 #'
 #' @return A ProjectHeaders S3 class object.
 #'
@@ -35,7 +34,7 @@ ProjectHeaders <- function(...) {
 
   if (!"name" %in% x_names) x$name <- NA_character_
   if (!"author" %in% x_names) x$author <- NA_character_
-  if (!"path" %in% x_names) x$path <- NA_character_
+  if (!"file" %in% x_names) x$file <- NA_character_
   if (!"date" %in% x_names) x$date <- Sys.time()
 
   if (validate.ProjectHeaders(x)) {
@@ -67,8 +66,8 @@ validate.ProjectHeaders <- function(x) {
       valid <- FALSE
     }
 
-    if (!all(c("name", "author", "path", "date") %in% names(x))) {
-      warning("ProjectHeaders must contain at least entries name, author, path and date!")
+    if (!all(c("name", "author", "file", "date") %in% names(x))) {
+      warning("ProjectHeaders must contain at least entries name, author, file and date!")
       valid <- FALSE
     }
 
@@ -86,10 +85,10 @@ validate.ProjectHeaders <- function(x) {
       }
     }
 
-    if ("path" %in% names(x)) {
-      if (!is.na(x$path)) {
-        if (!dir.exists(x$path)) {
-          warning("ProjectHeaders entry path must exist!")
+    if ("file" %in% names(x)) {
+      if (!is.na(x$file)) {
+        if (!file.exists(x$file)) {
+          warning("ProjectHeaders entry file must exist!")
           valid <- FALSE
         }
       }

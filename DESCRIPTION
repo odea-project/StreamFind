@@ -45,7 +45,9 @@ Imports:
     withr,
     fst,
     R.utils,
-    mdatools
+    mdatools,
+    shiny,
+    shinydashboard
 Suggests: 
     knitr,
     kableExtra,

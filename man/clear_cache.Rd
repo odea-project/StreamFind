@@ -4,7 +4,7 @@
 \alias{clear_cache}
 \title{clear_cache}
 \usage{
-clear_cache(what = NULL)
+clear_cache(what = NULL, file = "cache.sqlite")
 }
 \description{
 Clears cached data using the approach as in the patRoon package.

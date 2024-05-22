@@ -6,24 +6,15 @@
 #' @noRd
 #'
 .dispatch_process_method <- function(method, settings, self, private) {
-  
   call_method <- paste0(".s3_", method)
-  
   method_to_settings <- sub(".s3_ms_", "", call_method)
-  
   method_to_settings <- sub(".s3_", "", method_to_settings)
-  
   settings <- private$.get_call_settings(settings, method_to_settings)
-  
   if (is.null(settings)) return(FALSE)
-  
   processed <- do.call(call_method, list(settings, self, private))
-  
   if (processed) {
-    
     if (!private$.settings_already_stored(settings)) self$add_settings(settings)
-    
-    private$.register("processed", NA_character_, settings$call, settings$software, NA_character_, settings$algorithm)
+    private$.register("processed", settings$call, settings$algorithm, settings$software)
   }
 }
 

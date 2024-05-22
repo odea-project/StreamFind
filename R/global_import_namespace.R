@@ -69,6 +69,10 @@
 #' @importFrom fst compress_fst
 #' 
 #' @importFrom mdatools pca plotResiduals
+#' 
+#' @import shiny
+#' 
+#' @import shinydashboard
 #'
 #' @noRd
 NULL
