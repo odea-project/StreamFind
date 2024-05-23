@@ -20,8 +20,7 @@ Creates a ProjectHeaders S3 class object.
 }
 \note{
 If an argument or element name is given, it must be type character.
-If an argument or element path is given, it must be type character and exist.
+If an argument or element file is given, it must be type character and exist on disk.
 If an argument or element date is given, it must be class POSIXct or POSIXt.
-If given date is character, conversion to class POSIXct or POSIXt is
-attempted.
+If given date is character, conversion to class POSIXct or POSIXt is attempted.
 }

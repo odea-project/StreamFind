@@ -8,11 +8,6 @@ The MassSpecEngine R6 class is a framework for parsing, processing, inspecting a
 mass spectrometry (MS) data. The MassSpecEngine is using \href{https://github.com/rickhelmus/patRoon}{patRoon} for
 assembly of Non-Target Screening data processing workflows.
 }
-\note{
-Removes all results if present in the engine as may be affected but modified correspondence.
-
-Removes all results if present in the engine as may be affected but modified correspondence.
-}
 \references{
 \insertRef{patroon01}{StreamFind}
 
@@ -104,8 +99,6 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-get_internal_standards}{\code{MassSpecEngine$get_internal_standards()}}
 \item \href{#method-MassSpecEngine-add_analyses}{\code{MassSpecEngine$add_analyses()}}
 \item \href{#method-MassSpecEngine-add_files}{\code{MassSpecEngine$add_files()}}
-\item \href{#method-MassSpecEngine-add_replicate_names}{\code{MassSpecEngine$add_replicate_names()}}
-\item \href{#method-MassSpecEngine-add_blank_names}{\code{MassSpecEngine$add_blank_names()}}
 \item \href{#method-MassSpecEngine-add_results}{\code{MassSpecEngine$add_results()}}
 \item \href{#method-MassSpecEngine-load_spectra}{\code{MassSpecEngine$load_spectra()}}
 \item \href{#method-MassSpecEngine-load_chromatograms}{\code{MassSpecEngine$load_chromatograms()}}
@@ -195,8 +188,10 @@ List of function elements to access specific reference help pages.}
 \if{html}{\out{
 <details><summary>Inherited methods</summary>
 <ul>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_blank_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_blank_names'><code>StreamFind::CoreEngine$add_blank_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_headers'><code>StreamFind::CoreEngine$add_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_metadata"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_metadata'><code>StreamFind::CoreEngine$add_metadata()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_replicate_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_replicate_names'><code>StreamFind::CoreEngine$add_replicate_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_settings'><code>StreamFind::CoreEngine$add_settings()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export'><code>StreamFind::CoreEngine$export()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export_analyses'><code>StreamFind::CoreEngine$export_analyses()</code></a></span></li>
@@ -267,7 +262,7 @@ replicate group name (character). Note the file paths must have the extension
 \item{\code{headers}}{A named list with headers or a ProjectHeaders S3 class object.
 Each list element must have length one. There is no type restrictions
 except for name (must be type character length 1), author (must be type
-character length 1), path (must be type character length 1) and date (must
+character length 1), file (must be type character length 1) and date (must
 be class POSIXct or class POSIXt length 1). See more information in
 \code{?ProjectHeaders}.}
 
@@ -1906,48 +1901,6 @@ and \emph{blank} with the full file path of \emph{mzML} or \emph{mzXML} file/s
 (character), the replicate group name (character) and the associated blank
 replicate group name (character). Note the file paths must have the extension
 \emph{.mzML} or \emph{.mzXML}.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-add_replicate_names"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_replicate_names}{}}}
-\subsection{Method \code{add_replicate_names()}}{
-Adds or redefines the analysis replicate names.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_replicate_names(value = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A character vector with the analysis replicate names.
-Must be of the same length as the number of analyses.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-add_blank_names"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_blank_names}{}}}
-\subsection{Method \code{add_blank_names()}}{
-Adds or redefines the analysis blank replicate names.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_blank_names(value = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A character vector with the analysis blank replicate names.
-Must be of the same length as the number of analyses.}
 }
 \if{html}{\out{</div>}}
 }

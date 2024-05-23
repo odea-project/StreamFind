@@ -11,7 +11,8 @@
 
   server <- function(input, output, session) {
     
-    # Utility functions -----
+    # _Utility functions -----
+    
     .add_notifications <- function(warnings, name_msg, msg) {
       showNotification(msg, duration = 5, type = "warning")
       warnings[[name_msg]] <- msg
@@ -34,9 +35,9 @@
         engine$add_replicate_names(replicates)
         engine$add_blank_names(blanks)
         reactive_overview_analyses(engine$get_overview())
-        # warnings <- reactive_warnings()
-        # warnings[["analyses_needs_update"]] <- NULL
-        # reactive_warnings(warnings)
+        warnings <- reactive_warnings()
+        warnings[["analyses_needs_update"]] <- NULL
+        reactive_warnings(warnings)
       }, warning = function(w) {
         showNotification(conditionMessage(w), duration = 10, type = "warning")
       }, error = function(e) {
@@ -44,7 +45,7 @@
       })
     }
     
-    # Constants -----
+    # _Constants -----
     engine_call <- get(engine_type, envir = .GlobalEnv)
     engine_call_new <- engine_call[["new"]]
     engine <- suppressMessages(do.call(engine_call_new, list()))
@@ -52,21 +53,107 @@
     wdir <- getwd()
     save_file <- engine$save_file
     initial_engine_history <- engine$history
+    mandatory_header_names <- c("name", "author", "file", "date")
   
     message("Running Shiny app for ", engine_type, "... ")
   
-    # Reactive values -----
-    
+    # _Reactive values -----
     reactive_headers <- reactiveVal(engine$get_headers())
     reactive_overview_analyses <- reactiveVal(engine$get_overview())
     reactive_warnings <- reactiveVal(list())
     reactive_history <- reactiveVal(engine$history)
     reactive_saved_history <- reactiveVal(initial_engine_history)
-    reactive_del_buttons_headers <- reactiveVal(list())
     
-    ## Reactive observers -----
+    # _Global observers -----
     
-    ### Update engine headers -----
+    ## obs Unsaved changes -----
+    observe({
+      if (!identical(reactive_history(), reactive_saved_history()) && !"unsaved_changes" %in% names(reactive_warnings())) {
+        reactive_warnings(.add_notifications(reactive_warnings(), "unsaved_changes", "Unsaved changes in the engine!"))
+      }
+    })
+  
+    # _Outputs and Events -----
+    
+    ## out Warnings menu -----
+    output$warningMenu <- renderMenu({
+      warnings <- reactive_warnings()
+      msgs <- lapply(warnings, function(x) { notificationItem(text = x) })
+      dropdownMenu(type = "notifications", .list = msgs)
+    })
+    
+    ## out Save engine -----
+    output$save_engine <- renderUI({
+      if ("unsaved_changes" %in% names(reactive_warnings())) {
+        div(style = "margin-bottom: 20px;", actionButton("save_engine_button", label = "Save Engine", width = 200, class = "btn-danger"))
+      }
+    })
+    
+    ### event Save -----
+    observeEvent(input$save_engine_button, {
+      engine$save(save_file)
+      reactive_warnings(.remove_notifications(reactive_warnings(), "unsaved_changes"))
+      reactive_headers(engine$get_headers())
+      reactive_overview_analyses(engine$get_overview())
+      reactive_saved_history(engine$history)
+      reactive_history(engine$history)
+    })
+    
+    ## out Reset engine -----
+    output$reset_engine <- renderUI({
+      if ("unsaved_changes" %in% names(reactive_warnings())) {
+        div(style = "margin-bottom: 20px;", actionButton("reset_engine_button", label = "Discard Changes", width = 200, class = "btn-danger"))
+      }
+    })
+    
+    ### event Reset -----
+    observeEvent(input$reset_engine_button, {
+      engine$load(save_file)
+      reactive_warnings(.remove_notifications(reactive_warnings(), "unsaved_changes"))
+      reactive_headers(engine$get_headers())
+      reactive_overview_analyses(engine$get_overview())
+      reactive_saved_history(engine$history)
+      reactive_history(engine$history)
+    })
+  
+    ## _Overview -----
+    
+    ### out Info -----
+    output$wdir <- renderUI({ HTML(paste("<b>Working directory:</b>", wdir)) })
+    
+    ### out Headers -----
+    output$headers <- renderUI({
+      headers <- reactive_headers()
+      lapply(names(headers), function(name) {
+        if (name %in% mandatory_header_names) {
+          div(tags$b(name), ": ", headers[[name]], br())
+        } else {
+          id <- paste0("button_header_del_", name)
+          observeEvent(input[[id]], {
+            headers <- reactive_headers()
+            headers[[name]] <- NULL
+            reactive_headers(headers)
+          }, ignoreInit = TRUE)
+          div(
+            actionButton(id, label = NULL, icon = icon("trash"), width = '40px'), #button_ids[[name]]
+            tags$b(name), ": ", headers[[name]], br()
+          )
+        }
+      })
+    })
+    
+    #### event Add headers -----
+    observeEvent(input$add_header_button, {
+      if (input$new_header_name != "" && input$new_header_value != "") {
+        headers <- reactive_headers()
+        headers[[input$new_header_name]] <- input$new_header_value
+        reactive_headers(headers)
+        updateTextInput(session, "new_header_name", value = "")
+        updateTextInput(session, "new_header_value", value = "")
+      }
+    })
+    
+    #### obs Update headers -----
     observe({
       reactive_header_names <- names(reactive_headers())
       engine_header_names <- names(engine$headers)
@@ -79,242 +166,71 @@
       }
     })
     
-    ### Removes engine analyses -----
-    observe({
-      reactive_analyses <- reactive_overview_analyses()$analysis
-      engine_analyses <- engine$get_overview()$analysis
-      if (!identical(reactive_analyses, engine_analyses)) {
-        analyses_to_remove <- engine_analyses[!engine_analyses %in% reactive_analyses]
-        if (length(analyses_to_remove) > 0) engine$remove_analyses(analyses_to_remove)
-        reactive_history(engine$history)
-      }
-    })
-    
-    ### Check for unsaved changes -----
-    observe({
-      # browser()
-      # if (!identical(reactive_history(), reactive_saved_history()) && !"unsaved_changes" %in% names(reactive_warnings())) {
-      #   reactive_warnings(.add_notifications(reactive_warnings(), "unsaved_changes", "Unsaved changes in the engine!"))
-      # }
-      # browser()
-    })
-  
-    # Outputs -----
-    
-    ## Menus -----
-    output$warningMenu <- renderMenu({
-      warnings <- reactive_warnings()
-      msgs <- lapply(warnings, function(x) { notificationItem(text = x) })
-      dropdownMenu(type = "notifications", .list = msgs)
-    })
-  
-    ## Overview -----
-    
-    ### Info block -----
-    output$wdir <- renderUI({ HTML(paste("<b>Working directory:</b>", wdir)) })
-    
-    output$save_engine <- renderUI({
-      if ("unsaved_changes" %in% names(reactive_warnings())) {
-        div(style = "margin-bottom: 20px;", actionButton("save_engine_button", label = "Save Engine", width = 200, class = "btn-danger"))
-      }
-    })
-    
-    output$reset_engine <- renderUI({
-      if ("unsaved_changes" %in% names(reactive_warnings())) {
-        div(style = "margin-bottom: 20px;", actionButton("reset_engine_button", label = "Discard Changes", width = 200, class = "btn-danger"))
-      }
-    })
-    
-    #### Save event -----
-    observeEvent(input$save_engine_button, {
-      engine$save(save_file)
-      reactive_warnings(.remove_notifications(reactive_warnings(), "unsaved_changes"))
-      reactive_headers(engine$get_headers())
-      reactive_overview_analyses(engine$get_overview())
-      reactive_saved_history(engine$history)
-      reactive_history(engine$history)
-    })
-    
-    #### Reset event -----
-    observeEvent(input$reset_engine_button, {
-      engine$load(save_file)
-      reactive_warnings(.remove_notifications(reactive_warnings(), "unsaved_changes"))
-      reactive_headers(engine$get_headers())
-      reactive_overview_analyses(engine$get_overview())
-      reactive_saved_history(engine$history)
-      reactive_history(engine$history)
-    })
-    
-    ### Headers -----
-    output$headers <- renderUI({
-      
-      browser()
-      
-      headers <- reactive_headers()
-      time_stamp <- format(Sys.time(), "%Y%m%d%H%M%OS4")
-      time_stamp <- gsub("\\.", "", time_stamp)
-      button_ids <- lapply(names(headers), function(name) paste0("remove_", name, "_", time_stamp))
-      names(button_ids) <- names(headers)
-      
-      if (!all(names(headers) %in% c("name", "author", "file", "date"))) {
-        reactive_del_buttons_headers(button_ids)
-      }
-      
-      browser()
-      
-      lapply(names(headers), function(name) {
-        if (name %in% c("name", "author", "file", "date")) {
-          div(tags$b(name), ": ", headers[[name]], br())
-        } else {
-          div(
-            actionButton(button_ids[[name]], label = NULL, icon = icon("trash"), width = '40px'),
-            tags$b(name), ": ", headers[[name]], br()
-          )
-        }
-      })
-    })
-    
-    #### Delete event -----
-    observeEvent(names(reactive_headers()), {
-      browser()
-      lapply(names(reactive_headers()), function(name) {
-        if (!(name %in% c("name", "author", "file", "date"))) {
-          browser()
-          observeEvent(input[[reactive_del_buttons_headers()[[name]]]], {
-            headers <- reactive_headers()
-            headers[[name]] <- NULL
-            reactive_headers(headers)
-          })
-        }
-      })
-      browser()
-    })
-    
-    #### Add event -----
-    observeEvent(input$add_header_button, {
-      if (input$new_header_name != "" && input$new_header_value != "") {
-        headers <- reactive_headers()
-        headers[[input$new_header_name]] <- input$new_header_value
-        reactive_headers(headers)
-        updateTextInput(session, "new_header_name", value = "")
-        updateTextInput(session, "new_header_value", value = "")
-      }
-    })
-    
-    ### Analyses -----
+    ### out Analyses -----
     output$overview_analyses <- renderUI({
       analyses <- reactive_overview_analyses()
       number_analyses <- nrow(analyses)
+      
       if (number_analyses > 0) {
+        
         replicates <- unique(c(analyses$replicate, analyses$blank))
+        
         ui_labels <- list(labels = c("   ", "Analysis", "Replicate", "Blank"))
+        
         ui_elements <- lapply(seq_len(number_analyses), function(i) {
           name <- analyses$analysis[i]
+          rpl <- analyses$replicate[i]
+          blk <- analyses$blank[i]
+          if (is.na(blk)) blk <- "NA"
+          button_id <- paste0("del_analysis_", name)
+          text_rpl_id <- paste0("set_replicate_name_", name)
+          text_blk_id <- paste0("set_blank_name_", name)
+          
+          #### event Remove analysis -----
+          observeEvent(input[[button_id]], {
+            analyses <- reactive_overview_analyses()
+            analyses <- analyses[analyses$analysis != name, ]
+            reactive_overview_analyses(analyses)
+          }, ignoreInit = TRUE)
+          
+          #### event Update analyses -----
+          observeEvent(input[[text_rpl_id]], {
+            if (!(input[[text_rpl_id]] %in% rpl) && !("analyses_needs_update" %in% names(reactive_warnings()))) {
+              msg <- "Engine analyses are not updated!"
+              reactive_warnings(.add_notifications(reactive_warnings(), "analyses_needs_update", msg))
+            }
+          })
+          
+          #### event Update analyses -----
+          observeEvent(input[[text_blk_id]], {
+            if (!(input[[text_blk_id]] %in% blk) && !("analyses_needs_update" %in% names(reactive_warnings()))) {
+              msg <- "Engine analyses are not updated!"
+              reactive_warnings(.add_notifications(reactive_warnings(), "analyses_needs_update", msg))
+            }
+          })
+          
           list(
-            actionButton(paste0("remove_", name), label = NULL, icon = icon("trash"), width = '40px'),
+            actionButton(button_id, label = NULL, icon = icon("trash"), width = '40px'),
             tags$b(name),
-            textInput(paste0("replicate_", name), label = NULL, value = analyses$replicate[i], width = "100%"),
-            selectInput(paste0("blank_", name), label = NULL, choices = replicates, selected = analyses$blank[i], width = "100%")
+            textInput(text_rpl_id, label = NULL, value = analyses$replicate[i], width = "100%"),
+            selectInput(text_blk_id, label = NULL, choices = replicates, selected = analyses$blank[i], width = "100%")
           )
         })
+        
         ui_elements <- c(ui_labels, ui_elements)
+        
         tagList(
           fluidRow(
-            column(1, .wrap_analyses_ui_in_divs(lapply(ui_elements, function(x) x[[1]]))),  # Remove button
-            column(4, .wrap_analyses_ui_in_divs(lapply(ui_elements, function(x) x[[2]]))),  # Text output
-            column(4, .wrap_analyses_ui_in_divs(lapply(ui_elements, function(x) x[[3]]))),  # Text input
-            column(3, .wrap_analyses_ui_in_divs(lapply(ui_elements, function(x) x[[4]])))   # Select input
+            column(1, .wrap_analyses_ui_in_divs(lapply(ui_elements, function(x) x[[1]]))),
+            column(4, .wrap_analyses_ui_in_divs(lapply(ui_elements, function(x) x[[2]]))),
+            column(4, .wrap_analyses_ui_in_divs(lapply(ui_elements, function(x) x[[3]]))),
+            column(3, .wrap_analyses_ui_in_divs(lapply(ui_elements, function(x) x[[4]])))
           )
         )
       }
     })
     
-    #### Delete and modified event -----
-    # observeEvent(reactive_overview_analyses()$analysis, {
-    #   reactive_replicates <- reactive_overview_analyses()$replicate
-    #   names(reactive_replicates) <- reactive_overview_analyses()$analysis
-    #   reactive_blanks <- reactive_overview_analyses()$blank
-    #   reactive_blanks[is.na(reactive_blanks)] <- "NA"
-    #   names(reactive_blanks) <- reactive_overview_analyses()$analysis
-    #   
-    #   lapply(reactive_overview_analyses()$analysis, function(name) {
-    #     
-    #     observeEvent(input[[paste0("remove_", name)]], {
-    #       analyses <- reactive_overview_analyses()
-    #       analyses <- analyses[analyses$analysis != name, ]
-    #       reactive_overview_analyses(analyses)
-    #       # removeUI(selector = paste0("remove_", "name"))
-    #     })
-    # 
-    #     observeEvent(input[[paste0("replicate_", name)]], {
-    #       if (!is.null(input[[paste0("replicate_", name)]])) {
-    #         if (input[[paste0("replicate_", name)]] != reactive_replicates[name] && !"analyses_needs_update" %in% names(reactive_warnings())) {
-    #           msg <- "Engine analyses are not updated!"
-    #           reactive_warnings(.add_notifications(reactive_warnings(), "analyses_needs_update", msg))
-    #         }
-    #       }
-    #     })
-    # 
-    #     observeEvent(input[[paste0("blank_", name)]], {
-    #       if (!is.null(input[[paste0("blank_", name)]])) {
-    #         if (!(input[[paste0("blank_", name)]] %in% reactive_blanks[name]) && !("analyses_needs_update" %in% names(reactive_warnings()))) {
-    #           msg <- "Engine analyses are not updated!"
-    #           reactive_warnings(.add_notifications(reactive_warnings(), "analyses_needs_update", msg))
-    #         }
-    #       }
-    #     })
-    #   })
-    # })
-    
-    observe({
-      # Update the reactive_replicates and reactive_blanks whenever reactive_overview_analyses()$analysis changes
-      analyses <- reactive_overview_analyses()$analysis
-      reactive_replicates <- reactive_overview_analyses()$replicate
-      names(reactive_replicates) <- analyses
-      reactive_blanks <- reactive_overview_analyses()$blank
-      reactive_blanks[is.na(reactive_blanks)] <- "NA"
-      names(reactive_blanks) <- analyses
-      
-      lapply(analyses, function(name) {
-        # Observer for the remove button
-        observe({
-          
-          browser()
-          
-          if (reactive_delete_analysis_bottum_counter[[name]] < input[[paste0("remove_", name)]]) {
-            analyses <- reactive_overview_analyses()
-            analyses <- analyses[analyses$analysis != name, ]
-            reactive_overview_analyses(analyses)
-            reactive_delete_analysis_bottum_counter[[name]] <- input[[paste0("remove_", name)]]
-          }
-          
-        }) %>% bindEvent(input[[paste0("remove_", name)]], ignoreNULL = TRUE)
-        
-        # Observer for the replicate input
-        observe({
-          if (!is.null(input[[paste0("replicate_", name)]])) {
-            if (input[[paste0("replicate_", name)]] != reactive_replicates[name] &&
-                !"analyses_needs_update" %in% names(reactive_warnings())) {
-              msg <- "Engine analyses are not updated!"
-              reactive_warnings(.add_notifications(reactive_warnings(), "analyses_needs_update", msg))
-            }
-          }
-        }) %>% bindEvent(input[[paste0("replicate_", name)]], ignoreNULL = TRUE)
-        
-        # Observer for the blank input
-        observe({
-          if (!is.null(input[[paste0("blank_", name)]])) {
-            if (!(input[[paste0("blank_", name)]] %in% reactive_blanks[name]) &&
-                !"analyses_needs_update" %in% names(reactive_warnings())) {
-              msg <- "Engine analyses are not updated!"
-              reactive_warnings(.add_notifications(reactive_warnings(), "analyses_needs_update", msg))
-            }
-          }
-        }) %>% bindEvent(input[[paste0("blank_", name)]], ignoreNULL = TRUE)
-      })
-    })
-    
-    #### Add event -----
+    #### event Add analyses -----
     observeEvent(input$add_analyses_button, {
       files <- utils::choose.files(default = wdir)
       number_files <- length(files)
@@ -340,11 +256,11 @@
       }
     })
     
-    #### Update event -----
+    #### event Update analyses -----
     observeEvent(input$update_analyses_button, {
-      replicates <- vapply(reactive_overview_analyses()$analysis, function(name) input[[paste0("replicate_", name)]], NA_character_)
+      replicates <- vapply(reactive_overview_analyses()$analysis, function(name) input[[paste0("set_replicate_name_", name)]], NA_character_)
       replicates[replicates == "NA"] <- NA_character_
-      blanks <- vapply(reactive_overview_analyses()$analysis, function(name) input[[paste0("blank_", name)]], NA_character_)
+      blanks <- vapply(reactive_overview_analyses()$analysis, function(name) input[[paste0("set_blank_name_", name)]], NA_character_)
       blanks[blanks == "NA"] <- NA_character_
       if (engine$has_results()) {
         showModal(modalDialog(
@@ -366,18 +282,44 @@
       }
     })
     
-    #### Reset event -----
+    #### event Reset analyses -----
     observeEvent(input$reset_analyses_button, {
       analyses <- reactive_overview_analyses()
       analyses$blank[is.na(analyses$blank)] <- "NA"
       number_analyses <- nrow(analyses)
       lapply(seq_len(number_analyses), function(i) {
-        updateTextInput(session, paste0("replicate_", analyses$analysis[i]), value = analyses$replicate[i])
-        updateSelectInput(session, paste0("blank_", analyses$analysis[i]), selected = analyses$blank[i])
+        updateTextInput(session, paste0("set_replicate_name_", analyses$analysis[i]), value = analyses$replicate[i])
+        updateSelectInput(session, paste0("set_blank_name_", analyses$analysis[i]), selected = analyses$blank[i])
       })
       warnings <- reactive_warnings()
       warnings[["analyses_needs_update"]] <- NULL
       reactive_warnings(warnings)
+    })
+    
+    ### obs Removes analyses -----
+    observe({
+      reactive_analyses <- reactive_overview_analyses()$analysis
+      engine_analyses <- engine$get_overview()$analysis
+      if (!identical(reactive_analyses, engine_analyses)) {
+        analyses_to_remove <- engine_analyses[!engine_analyses %in% reactive_analyses]
+        if (length(analyses_to_remove) > 0) engine$remove_analyses(analyses_to_remove)
+        reactive_history(engine$history)
+      }
+    })
+    
+    ## _Explorer -----
+    
+    ### out Summary plot -----
+    output$summary_plot <- plotly::renderPlotly({
+      
+      if (engine_type %in% "MassSpecEngine") {
+        plot <- engine$plot_spectra_tic()
+        
+      } else if (engine_type %in% "RamanEngine") {
+        plot <- engine$plot_spectra()
+      }
+      
+      plot
     })
   }
 

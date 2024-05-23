@@ -7,6 +7,10 @@
 The CoreEngine R6 class is a basic data processor with generic methods for handling data.
 }
 \note{
+Removes all results if present in the engine as may be affected but modified correspondence.
+
+Removes all results if present in the engine as may be affected but modified correspondence.
+
 The engine data is saved in an \strong{sqlite} file and loaded in the app. If save file is defined in the engine
 it is used, otherwise the save file name is automatically set to the engine class name and the date. Changes made
 in the app can be saved in the \strong{sqlite} file and then loaded for scripting.
@@ -112,7 +116,7 @@ Creates an R6 CoreEngine class object.
 \item{\code{headers}}{A named list with headers or a ProjectHeaders S3 class object.
 Each list element must have length one. There is no type restrictions
 except for name (must be type character length 1), author (must be type
-character length 1), path (must be type character length 1) and date (must
+character length 1), file (must be type character length 1) and date (must
 be class POSIXct or class POSIXt length 1). See more information in
 \code{?ProjectHeaders}.}
 
@@ -502,9 +506,6 @@ Adds or redefines the analysis replicate names.
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-Invisible.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-add_blank_names"></a>}}
@@ -521,9 +522,6 @@ Adds or redefines the analysis blank replicate names.
 \item{\code{value}}{A character vector with the analysis blank replicate names. Must be of the same length as the number of analyses.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
 }
 }
 \if{html}{\out{<hr>}}
@@ -734,14 +732,14 @@ Invisible.
 \subsection{Method \code{save()}}{
 Saves the engine data as \strong{sqlite} file.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$save(file = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$save(file = NA_character_)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{A string with the full file path of the \strong{sqlite} file. If \code{NULL} and no save file is defined
-in the engine, the  save file name is automatically created with the engine class name and the date.}
+\item{\code{file}}{A string with the full file path of the \strong{sqlite} file. If \code{NA} (the default) and no file
+header is defined in the engine, the file name is automatically created with the engine class name and the date.}
 }
 \if{html}{\out{</div>}}
 }
@@ -752,14 +750,14 @@ in the engine, the  save file name is automatically created with the engine clas
 \subsection{Method \code{load()}}{
 Loads the engine data from an \strong{sqlite} file.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$load(file = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$load(file = NA_character_)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{A string with the full file path of the \strong{sqlite} file. If \code{NULL} and no save file is defined
-in the engine, the  save file name is automatically created with the engine class name and the date.}
+\item{\code{file}}{A string with the full file path of the \strong{sqlite} file. If \code{NA} (the default) and no file
+header is defined in the engine, the file name is automatically created with the engine class name and the date.}
 }
 \if{html}{\out{</div>}}
 }

@@ -33,9 +33,9 @@
             
             box(width = 12, solidHeader = TRUE, uiOutput("wdir")),
             
-            box(title = "Headers", width = 12, solidHeader = TRUE, uiOutput("headers")),
-            
             column(12, uiOutput("save_engine"), uiOutput("reset_engine")),
+            
+            box(title = "Headers", width = 12, solidHeader = TRUE, uiOutput("headers")),
             
             column(12,
               fluidRow(
@@ -68,9 +68,11 @@
         ),
         
         tabItem(tabName = "explorer",
+          
           fluidRow(
-            box(title = "Box 3", status = "warning", solidHeader = TRUE, "Content for box 3"),
-            box(title = "Box 4", status = "warning", solidHeader = TRUE, "Content for box 4")
+            
+            box(width = 12, solidHeader = TRUE, plotly::plotlyOutput("summary_plot")),
+            
           )
         )
       )

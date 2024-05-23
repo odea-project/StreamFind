@@ -116,10 +116,12 @@ cols <- c("name", "formula", "mass", "rt")
 
 
 ms <- MassSpecEngine$new(files = files[4:6])
-ms$find_features(Settings_find_features_openms())
+# ms$find_features(Settings_find_features_openms())
 ms$save(paste0(getwd(), "/ms.sqlite"))
 ms$run_app()
 
+
+View(ms$get_spectra_headers()[ms$get_spectra_headers()$polarity != 0, ])
 
 ms$remove_analyses(1)
 
@@ -127,6 +129,16 @@ ms$save()
 
 ms$load()
 
+
+file <- file.choose()
+clear_cache("all")
+ms <- MassSpecEngine$new(files = file)
+ms$plot_spectra_tic(levels = 2)
+
+
+tar <- data.frame(mzmin = 268.1912 - 0.01, mzmax = 268.1912 + 0.01, polarity = 1)
+
+ms$plot_spectra(mz = tar, level = 1)
 
 
 
