@@ -309,17 +309,25 @@
     
     ## _Explorer -----
     
-    ### out Summary plot -----
-    output$summary_plot <- plotly::renderPlotly({
-      
+    ### out Explorer -----
+    output$explorer_ui <- renderUI({
       if (engine_type %in% "MassSpecEngine") {
-        plot <- engine$plot_spectra_tic()
+        .mod_MassSpecEngine_summary_Server("summary", engine, reactive_overview_analyses)
+        .mod_MassSpecEngine_summary_UI("summary", engine)
         
       } else if (engine_type %in% "RamanEngine") {
-        plot <- engine$plot_spectra()
+        .mod_RamanEngine_summary_Server("summary", engine, reactive_overview_analyses)
+        .mod_RamanEngine_summary_UI("summary", engine)
+        
+      } else {
+        div("Explorer not implemented for engine type ", engine_type)
       }
-      
-      plot
+    })
+    
+    ## _History -----
+    output$"history_table" <- renderDataTable({
+      h_list <- reactive_history()
+      rbindlist(h_list, fill = TRUE)
     })
   }
 

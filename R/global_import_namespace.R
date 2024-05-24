@@ -73,6 +73,8 @@
 #' @import shiny
 #' 
 #' @import shinydashboard
+#' 
+#' @import shinycssloaders
 #'
 #' @noRd
 NULL

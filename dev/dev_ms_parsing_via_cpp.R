@@ -8,8 +8,8 @@ files <- all_files[1:3]
 files <- all_files[grepl("influent|blank", all_files)]
 files <- all_files[grepl("o3sw", all_files)]
 
-# path <- "C:/Users/apoli/Documents/example_ms_files"
-# files <- list.files(path, pattern = ".mzML", full.names = TRUE)
+path <- "C:/Users/apoli/Documents/example_ms_files"
+files <- list.files(path, pattern = ".mzML", full.names = TRUE)
 
 ## databases -------------------------------------------------------------------
 db <- StreamFindData::get_ms_tof_spiked_chemicals()
@@ -115,10 +115,18 @@ cols <- c("name", "formula", "mass", "rt")
 # clear_cache("all")
 
 
-ms <- MassSpecEngine$new(files = files[4:6])
+ms <- MassSpecEngine$new(files = files[13:18])
 # ms$find_features(Settings_find_features_openms())
 ms$save(paste0(getwd(), "/ms.sqlite"))
 ms$run_app()
+
+
+ms$plot_spectra_tic(levels = 1, colorBy = "polarities")
+
+rfiles <- StreamFindData::get_raman_file_paths()
+raman <- RamanEngine$new(files = rfiles)
+raman$save(paste0(getwd(), "/raman.sqlite"))
+raman$run_app()
 
 
 View(ms$get_spectra_headers()[ms$get_spectra_headers()$polarity != 0, ])

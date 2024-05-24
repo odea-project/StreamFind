@@ -9,7 +9,7 @@
 #'
 .make_app_ui <- function(self) {
   
-  # library(shinyjs)
+  library(shinycssloaders)
 
   ui <- dashboardPage(skin = "black",
     
@@ -19,7 +19,10 @@
       
       sidebarMenu(
         menuItem("Overview", tabName = "overview", icon = NULL),
-        menuItem("Explorer", tabName = "explorer", icon = NULL)
+        menuItem("Explorer", tabName = "explorer", icon = NULL),
+        menuItem("Workflow", tabName = "workflow", icon = NULL),
+        menuItem("Results", tabName = "results", icon = NULL),
+        menuItem("Audit Trail", tabName = "history", icon = NULL)
       )
     ),
     
@@ -71,9 +74,40 @@
           
           fluidRow(
             
-            box(width = 12, solidHeader = TRUE, plotly::plotlyOutput("summary_plot")),
+            uiOutput("explorer_ui")
+            
+            # box(title = "Spectra Summary", width = 12, solidHeader = TRUE, withSpinner(plotly::plotlyOutput("summary_plot", height = "500px"), color = "black")),
+            # 
+            # column(12, uiOutput("summary_plot_controls")),
             
           )
+        ),
+        
+        tabItem(tabName = "workflow",
+                
+                fluidRow(
+                  
+                  # box(width = 12, solidHeader = TRUE, ),
+                  
+                )
+        ),
+        
+        tabItem(tabName = "results",
+                
+                fluidRow(
+                  
+                  # box(width = 12, solidHeader = TRUE, ),
+                  
+                )
+        ),
+        
+        tabItem(tabName = "history",
+                
+                fluidRow(
+                  
+                  box(width = 12, solidHeader = TRUE, dataTableOutput("history_table")),
+                  
+                )
         )
       )
     )
