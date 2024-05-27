@@ -36,6 +36,17 @@ ProjectHeaders <- function(...) {
   if (!"author" %in% x_names) x$author <- NA_character_
   if (!"file" %in% x_names) x$file <- NA_character_
   if (!"date" %in% x_names) x$date <- Sys.time()
+  
+  if (!is.na(x$file)) {
+    
+    if (!grepl(".sqlite", x$file)) {
+      warning("ProjectHeaders file must have extension .sqlite!")
+      x$file <- NA_character_
+      
+    } else {
+      if (!file.exists(x$file)) file.create(x$file)
+    }
+  }
 
   if (validate.ProjectHeaders(x)) {
     structure(x, class = "ProjectHeaders")

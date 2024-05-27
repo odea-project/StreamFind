@@ -8,8 +8,8 @@ files <- all_files[1:3]
 files <- all_files[grepl("influent|blank", all_files)]
 files <- all_files[grepl("o3sw", all_files)]
 
-path <- "C:/Users/apoli/Documents/example_ms_files"
-files <- list.files(path, pattern = ".mzML", full.names = TRUE)
+# path <- "C:/Users/apoli/Documents/example_ms_files"
+# files <- list.files(path, pattern = ".mzML", full.names = TRUE)
 
 ## databases -------------------------------------------------------------------
 db <- StreamFindData::get_ms_tof_spiked_chemicals()
@@ -115,7 +115,7 @@ cols <- c("name", "formula", "mass", "rt")
 # clear_cache("all")
 
 
-ms <- MassSpecEngine$new(files = files[13:18])
+ms <- MassSpecEngine$new(files = files) #files[13:18]
 # ms$find_features(Settings_find_features_openms())
 ms$save(paste0(getwd(), "/ms.sqlite"))
 ms$run_app()

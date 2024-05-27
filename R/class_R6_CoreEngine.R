@@ -176,7 +176,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     #' @field history Audit trail of changes.
     #' 
-    history = function() { 
+    history = function() {
       private$.history 
     },
     

@@ -62,35 +62,13 @@
             
             box(title = "Analyses", width = 12, solidHeader = TRUE, uiOutput("overview_analyses")),
             
-            column(width = 12,
-              actionButton("add_analyses_button", label = "Add Analysis Files", width = 200),
-              actionButton("update_analyses_button", label =  "Update Analyses", width = 200),
-              actionButton("reset_analyses_button", label =  "Discard Changes", width = 200)
-            ),
+            column(width = 12, uiOutput("analyses_overview_buttons")),
           )
         ),
         
-        tabItem(tabName = "explorer",
-          
-          fluidRow(
-            
-            uiOutput("explorer_ui")
-            
-            # box(title = "Spectra Summary", width = 12, solidHeader = TRUE, withSpinner(plotly::plotlyOutput("summary_plot", height = "500px"), color = "black")),
-            # 
-            # column(12, uiOutput("summary_plot_controls")),
-            
-          )
-        ),
+        tabItem(tabName = "explorer", fluidRow(uiOutput("explorer_ui"))),
         
-        tabItem(tabName = "workflow",
-                
-                fluidRow(
-                  
-                  # box(width = 12, solidHeader = TRUE, ),
-                  
-                )
-        ),
+        tabItem(tabName = "workflow", fluidRow(uiOutput("workflow_ui"))),
         
         tabItem(tabName = "results",
                 
