@@ -421,10 +421,10 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       
       if (!requireNamespace("mdatools", quietly = TRUE)) {
         warning("Package mdatools not found but required! Not done.")
-        return(invisible())
+        return(invisible(self))
       }
       
-      res <- do.call("predict", list(self$model, data))
+      res <- do.call("mdatools::predict", list(self$model, data))
       
       self$predicted <- list("results" = res, "data" = data)
       
@@ -752,6 +752,11 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
         pc <- 1
       }
       
+      if (!requireNamespace("mdatools", quietly = TRUE)) {
+        warning("Package mdatools not found but required! Not done.")
+        return(invisible(self))
+      }
+      
       predicted$results$categories <- mdatools::categorize(self$model, predicted$results, pc)
       
       Qlim <- model$Qlim
@@ -760,9 +765,9 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       
       res = list("model" = model$res$cal, "predicted" = predicted$results)
       
-      lim_data <- ldecomp.getLimitsCoordinates(Qlim, T2lim, ncomp = pc, norm = TRUE, log = FALSE)
+      lim_data <- mdatools::ldecomp.getLimitsCoordinates(Qlim, T2lim, ncomp = pc, norm = TRUE, log = FALSE)
       
-      plot_data <- lapply(res, function(x) plotResiduals(x, ncomp = pc, norm = TRUE, log = FALSE, show.plot = FALSE))
+      plot_data <- lapply(res, function(x) mdatools::plotResiduals(x, ncomp = pc, norm = TRUE, log = FALSE, show.plot = FALSE))
       
       cat <- list("model" = rep("model", nrow(plot_data[[1]])), "predicted" = predicted$results$categories)
       
@@ -824,8 +829,6 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
             y = unname(plot_data[[i]][, 2])[idx],
             type = "scatter",
             mode = "markers+text",
-            # color = names(cl[[i]]),
-            # colors = cl[[i]],
             text = text,
             textfont = list(size = 14, color = cl[[i]][idx]),
             textposition = "top",

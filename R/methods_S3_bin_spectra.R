@@ -67,6 +67,7 @@
   ref_bins_seq_list <- NULL
   ref_bin_matrix <- NULL
   ref_bin_key <- NULL
+  . <- NULL
   
   if (!is.null(refBinAnalysis)) {
     if (is.numeric(refBinAnalysis) && length(refBinAnalysis) == 1) {

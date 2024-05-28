@@ -38,6 +38,12 @@ todor::todor()
 
 #gsub(".*M(.*)\\].*", "\\1", adduct_ion)
 
+file_path <- "R/fct_ProcessingSettings.R"
+file_content <- readLines(file_path, encoding = "UTF-8")
+non_ascii_lines <- grep("[^\x01-\x7F]", file_content, value = TRUE)
+cat("Non-ASCII characters found in the following lines:\n")
+print(non_ascii_lines)
+
 
 # Others -----------------------------------------------------------------------
 

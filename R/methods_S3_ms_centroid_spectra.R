@@ -38,50 +38,18 @@
   spectra_list <- lapply(self$get_analyses(), function(x) x$spectra)
 
   parameters <- settings$parameters
+  
+  message("\U2699 Centroiding spectra for ", length(self$get_analyses()), " analyses using qCentroids...", appendLF = FALSE)
 
-  if (parameters$runParallel && length(spectra_list) > 1) {
-    workers <- parallel::detectCores() - 1
-    if (length(spectra_list) < workers) workers <- length(spectra_list)
-    par_type <- "PSOCK"
-    if (parallelly::supportsMulticore()) par_type <- "FORK"
-    cl <- parallel::makeCluster(workers, type = par_type)
-    doParallel::registerDoParallel(cl)
+  centroided_spectra_list <- lapply(spectra_list, function(i) {
+    do.call("rcpp_centroid_spectra_qCentroids", list("spectra" = i, maxScale = parameters$maxScale, mode = parameters$mode))
+  })
 
-  } else {
-    registerDoSEQ()
-  }
+  names(centroided_spectra_list) <- self$get_analysis_names()
 
-  if (TRUE) {
-    message("\U2699 Centroiding spectra for ",
-      length(self$get_analyses()),
-      " analyses using qCentroids...",
-      appendLF = FALSE
-    )
+  self$add_spectra(centroided_spectra_list, replace = TRUE)
 
-    i <- NULL
+  message(" Done!")
 
-    vars <- c("rcpp_centroid_spectra_qCentroids")
-
-    centroided_spectra_list <- foreach(i = spectra_list,
-      .packages = "StreamFind",
-      .export = vars
-    ) %dopar% {
-      do.call(
-        "rcpp_centroid_spectra_qCentroids", 
-        list(
-          "spectra" = i,
-          maxScale = parameters$maxScale,
-          mode = parameters$mode
-        )
-      )
-    }
-
-    names(centroided_spectra_list) <- self$get_analysis_names()
-
-    self$add_spectra(centroided_spectra_list, replace = TRUE)
-
-    message(" Done!")
-  }
-
-  return(FALSE)
+  TRUE
 }

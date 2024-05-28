@@ -7,6 +7,11 @@
 #'
 .s3_ms_load_MSPeakLists.Settings_load_MSPeakLists_patRoon <- function(settings, self, private) {
   
+  if (!requireNamespace("patRoon", quietly = TRUE)) {
+    warning("patRoon package not found! Install it for finding features.")
+    return(FALSE)
+  }
+  
   if (!self$has_groups()) {
     warning("Feature groups not found! Not loaded.")
     return(FALSE)
@@ -57,6 +62,11 @@
 #'
 .s3_ms_load_MSPeakLists.Settings_load_MSPeakLists_StreamFind <- function(settings, self, private) {
   
+  if (!requireNamespace("patRoon", quietly = TRUE)) {
+    warning("patRoon package not found! Install it for finding features.")
+    return(FALSE)
+  }
+  
   if (!self$has_groups()) {
     warning("Feature groups not found! Not loaded.")
     return(FALSE)
@@ -92,6 +102,11 @@
 #' @noRd
 #'
 .convert_ms1_ms2_columns_to_MSPeakLists <- function(self, parameters) {
+  
+  if (!requireNamespace("patRoon", quietly = TRUE)) {
+    warning("patRoon package not found! Install it for finding features.")
+    return(FALSE)
+  }
   
   half_clustWindow <- parameters$clusterMzWindow / 2
   

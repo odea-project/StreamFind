@@ -6,7 +6,7 @@
 #' @param replicate Character with length one, representing the analysis replicate group name.
 #' @param blank Character with length one, representing the associated blank replicate group name.
 #' @param file *asc* full file path (with extension).
-#' @param type 
+#' @param type String with the type of analysis.
 #' @param metadata List of analysis metadata taken from the *asc* file or added.
 #' @param spectra data.table with the raw spectra.
 #'
@@ -39,9 +39,12 @@ RamanAnalysis <- function(name = NA_character_,
   }
 }
 
+#' @describeIn validate Validates a RamanAnalysis S3 object
+#' 
+#' @param x A RamanAnalysis S3 object.
+#' 
 #' @export
-#' @noRd
-#'
+#' 
 validate.RamanAnalysis <- function(x = NULL) {
   
   valid <- validate.Analysis(x)
@@ -91,9 +94,7 @@ print.RamanAnalysis <- function(x, ...) {
   cat("\n")
 }
 
-#' @export
 #' @noRd
-#'
 as.RamanAnalysis <- function(value) {
   if (length(value) == 1 & is.list(value)) value <- value[[1]]
   do.call(RamanAnalysis, value)

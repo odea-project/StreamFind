@@ -1,4 +1,3 @@
-
 #' .make_app_ui
 #' 
 #' @description Creates the user interface for the Shiny app.
@@ -8,88 +7,72 @@
 #' @noRd
 #'
 .make_app_ui <- function(self) {
-  
-  library(shinycssloaders)
 
-  ui <- dashboardPage(skin = "black",
+  ui <- shinydashboard::dashboardPage(skin = "black",
     
-    dashboardHeader(title = is(self), dropdownMenuOutput("warningMenu")),
+    shinydashboard::dashboardHeader(title = is(self), shinydashboard::dropdownMenuOutput("warningMenu")),
     
-    dashboardSidebar(
+    shinydashboard::dashboardSidebar(
       
-      sidebarMenu(
-        menuItem("Overview", tabName = "overview", icon = NULL),
-        menuItem("Explorer", tabName = "explorer", icon = NULL),
-        menuItem("Workflow", tabName = "workflow", icon = NULL),
-        menuItem("Results", tabName = "results", icon = NULL),
-        menuItem("Audit Trail", tabName = "history", icon = NULL)
+      shinydashboard::sidebarMenu(
+        shinydashboard::menuItem("Overview", tabName = "overview", icon = NULL),
+        shinydashboard::menuItem("Explorer", tabName = "explorer", icon = NULL),
+        shinydashboard::menuItem("Workflow", tabName = "workflow", icon = NULL),
+        shinydashboard::menuItem("Results", tabName = "results", icon = NULL),
+        shinydashboard::menuItem("Audit Trail", tabName = "history", icon = NULL)
       )
     ),
     
-    dashboardBody(
+    shinydashboard::dashboardBody(
       
-      tabItems(
+      shinydashboard::tabItems(
         
-        tabItem(tabName = "overview",
+        shinydashboard::tabItem(tabName = "overview",
                 
-          fluidRow(
+            shiny::fluidRow(
             
-            box(width = 12, solidHeader = TRUE, uiOutput("wdir")),
+            shinydashboard::box(width = 12, solidHeader = TRUE, shiny::uiOutput("wdir")),
             
-            column(12, uiOutput("save_engine"), uiOutput("reset_engine")),
+            shiny::column(12, shiny::uiOutput("save_engine"), shiny::uiOutput("reset_engine")),
             
-            box(title = "Headers", width = 12, solidHeader = TRUE, uiOutput("headers")),
+            shinydashboard::box(title = "Headers", width = 12, solidHeader = TRUE, shiny::uiOutput("headers")),
             
-            column(12,
-              fluidRow(
-                column(12,
-                  div(style = "display: flex; align-items: center; justify-content: space-between;",
-                    tags$b(style = "width: 110px; margin-bottom: 15px;", "Header name: "),
-                    textInput("new_header_name", label = NULL, width = '100%')
+            shiny::column(12,
+              shiny::fluidRow(
+                shiny::column(12,
+                    htmltools::div(style = "display: flex; align-items: center; justify-content: space-between;",
+                    htmltools::tags$b(style = "width: 110px; margin-bottom: 15px;", "Header name: "),
+                    shiny::textInput("new_header_name", label = NULL, width = '100%')
                   )
                 ),
-                column(12,
-                  div(style = "display: flex; align-items: center; justify-content: space-between;",
-                    tags$b(style = "width: 110px; margin-bottom: 15px;", "Header value: "),
-                    textInput("new_header_value", label = NULL, width = '100%')
+                shiny::column(12,
+                    htmltools::div(style = "display: flex; align-items: center; justify-content: space-between;",
+                    htmltools::tags$b(style = "width: 110px; margin-bottom: 15px;", "Header value: "),
+                    shiny::textInput("new_header_value", label = NULL, width = '100%')
                   )
                 )
               ),
               
-              actionButton("add_header_button", label = "Add Entry", width = 200),
-              div(style = "margin-bottom: 20px;")
+              shiny::actionButton("add_header_button", label = "Add Entry", width = 200),
+              htmltools::div(style = "margin-bottom: 20px;")
             ),
             
-            box(title = "Analyses", width = 12, solidHeader = TRUE, uiOutput("overview_analyses")),
+            shinydashboard::box(title = "Analyses", width = 12, solidHeader = TRUE, shiny::uiOutput("overview_analyses")),
             
-            column(width = 12, uiOutput("analyses_overview_buttons")),
+            shiny::column(width = 12, shiny::uiOutput("analyses_overview_buttons")),
           )
         ),
         
-        tabItem(tabName = "explorer", fluidRow(uiOutput("explorer_ui"))),
+        shinydashboard::tabItem(tabName = "explorer", shiny::fluidRow(shiny::uiOutput("explorer_ui"))),
         
-        tabItem(tabName = "workflow", fluidRow(uiOutput("workflow_ui"))),
+        shinydashboard::tabItem(tabName = "workflow", shiny::fluidRow(shiny::uiOutput("workflow_ui"))),
         
-        tabItem(tabName = "results",
-                
-                fluidRow(
-                  
-                  # box(width = 12, solidHeader = TRUE, ),
-                  
-                )
-        ),
+        shinydashboard::tabItem(tabName = "results", shiny::fluidRow()),
         
-        tabItem(tabName = "history",
-                
-                fluidRow(
-                  
-                  box(width = 12, solidHeader = TRUE, dataTableOutput("history_table")),
-                  
-                )
-        )
+        shinydashboard::tabItem(tabName = "history", shiny::fluidRow(shinydashboard::box(width = 12, solidHeader = TRUE, shiny::dataTableOutput("history_table"))))
       )
     )
   )
 
-  return(ui)
+  ui
 }

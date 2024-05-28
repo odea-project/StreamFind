@@ -4,11 +4,7 @@
 \alias{Settings_centroid_spectra_qCentroids}
 \title{Settings_centroid_spectra_qCentroids}
 \usage{
-Settings_centroid_spectra_qCentroids(
-  maxScale = 5,
-  mode = 1,
-  runParallel = FALSE
-)
+Settings_centroid_spectra_qCentroids(maxScale = 5, mode = 1)
 }
 \arguments{
 \item{maxScale}{Integer of length one. Maximum scale as integer (default is 5) for defining the scale limit for the peak model.}

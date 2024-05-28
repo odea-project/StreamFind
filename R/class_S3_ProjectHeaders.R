@@ -55,9 +55,12 @@ ProjectHeaders <- function(...) {
   }
 }
 
+#' @describeIn validate Validates a ProjectHeaders S3 object.
+#' 
+#' @param x A ProjectHeaders S3 object.
+#' 
 #' @export
-#' @noRd
-#'
+#' 
 validate.ProjectHeaders <- function(x) {
 
   if (missing(x)) x <- NULL
@@ -130,9 +133,7 @@ print.ProjectHeaders <- function(x, ...) {
   }
 }
 
-#' @export
 #' @noRd
-#'
 as.ProjectHeaders <- function(value) {
   ProjectHeaders(value = value)
 }

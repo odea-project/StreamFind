@@ -182,24 +182,19 @@ trim_ms_files_spectra <- function(files, MS1 = TRUE, MS2 = TRUE,
                                   mzWindow_ms2 = NULL,
                                   intensityThreshold = NULL, copyMetadata = TRUE,
                                   path = NULL, prefix = "trim_") {
-  requireNamespace("mzR")
+  
+  if (!requireNamespace("mzR", quietly = TRUE)) return(warning("mzR package not found!"))
 
-  if (!is.null(rtWindow) & !is.numeric(rtWindow)) {
-    return(warning("rtWindow must be numeric!"))
-  }
+  if (!is.null(rtWindow) & !is.numeric(rtWindow)) return(warning("rtWindow must be numeric!"))
 
   if (!is.null(rtWindow) & length(rtWindow) != 2) {
-    return(warning("rtWindow not valid! A vector with
-            length 2 is expected for time range, in seconds."))
+    return(warning("rtWindow not valid! A vector with length 2 is expected for time range, in seconds."))
   }
 
-  if (!is.null(mzWindow) & !is.numeric(mzWindow)) {
-    return(warning("mzWindow must be numeric!"))
-  }
+  if (!is.null(mzWindow) & !is.numeric(mzWindow)) return(warning("mzWindow must be numeric!"))
 
   if (!is.null(mzWindow) & length(mzWindow) != 2) {
-    return(warning("mzWindow not valid! A numeric vector with
-            length 2 is expected for m/z range, in Da."))
+    return(warning("mzWindow not valid! A numeric vector with length 2 is expected for m/z range, in Da."))
   }
 
   if (!is.null(mzWindow_ms2)) {
@@ -208,8 +203,7 @@ trim_ms_files_spectra <- function(files, MS1 = TRUE, MS2 = TRUE,
     }
 
     if (length(mzWindow_ms2) != 2) {
-      return(warning("mzWindow_ms not valid! A numeric vector with
-            length 2 is expected for m/z range, in Da."))
+      return(warning("mzWindow_ms not valid! A numeric vector with length 2 is expected for m/z range, in Da."))
     }
   }
 
@@ -220,9 +214,7 @@ trim_ms_files_spectra <- function(files, MS1 = TRUE, MS2 = TRUE,
       return(warning("Intensity threshold must be numeric!"))
     }
 
-    if (length(intensityThreshold) > 2) {
-      return(warning("Intensity threshold must be maximum of length 2!"))
-    }
+    if (length(intensityThreshold) > 2) return(warning("Intensity threshold must be maximum of length 2!"))
 
     if (length(intensityThreshold) == 2) {
       intThresMS1 <- intensityThreshold[1]

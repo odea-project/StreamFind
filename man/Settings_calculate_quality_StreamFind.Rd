@@ -8,8 +8,7 @@ Settings_calculate_quality_StreamFind(
   rtExpand = 120,
   mzExpand = 3e-04,
   minTraces = 6,
-  filtered = FALSE,
-  runParallel = TRUE
+  filtered = FALSE
 )
 }
 \arguments{
@@ -22,10 +21,6 @@ right the mass range.}
 \item{minTraces}{Numeric of length 1 with the minimum number traces for calculating feature quality.}
 
 \item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
-
-\item{runParallel}{Logical of length one. Set to \code{TRUE} for parallel
-processing. Note that parallel processing is not always faster due to
-overhead.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_calculate_quality_StreamFind.

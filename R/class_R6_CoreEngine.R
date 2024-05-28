@@ -72,20 +72,14 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #
     .get_analyses_entry = function(analyses = NULL, value = NA_character_) {
       analyses <- private$.check_analyses_argument(analyses)
-      
       if (is.null(analyses)) return(NULL)
       output <- lapply(private$.analyses, function(x, value) {
-        
         temp <- x[[value]]
         names(temp) <- rep(x$name, length(temp))
         temp
-        
       }, value = value)
-      
       output <- unname(output)
-      
       output <- unlist(output, recursive = FALSE, use.names = TRUE)
-      
       output[names(output) %in% analyses]
     },
     
@@ -209,12 +203,12 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' (see `?Analysis` for more information).
     #'
     initialize = function(headers = NULL, settings = NULL, analyses = NULL, results = NULL) {
+      private$.register("created", "CoreEngine", headers$name, paste(c(headers$author, headers$path), collapse = ", "))
       if (is.null(headers)) headers <- ProjectHeaders()
       if (!is.null(headers)) suppressMessages(self$add_headers(headers))
       if (!is.null(settings)) suppressMessages(self$add_settings(settings))
       if (!is.null(analyses)) suppressMessages(self$add_analyses(analyses))
       if (!is.null(results)) suppressMessages(self$add_results(results))
-      private$.register("created", "CoreEngine", headers$name, paste(c(headers$author, headers$path), collapse = ", "))
       message("\U2713 Engine created!")
     },
     
@@ -327,7 +321,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     get_history = function() {
       
       if (is.list(private$.history)) {
-        rbindlist(private$.history, fill = TRUE)
+        data.table::rbindlist(private$.history, fill = TRUE)
         
       } else {
         private$.history
@@ -353,7 +347,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     get_overview = function() {
       if (length(private$.analyses) > 0) {
         
-        df <- data.table(
+        df <- data.table::data.table(
           "analysis" = vapply(private$.analyses, function(x) x$name, ""),
           "replicate" = vapply(private$.analyses, function(x) x$replicate, ""),
           "blank" = vapply(private$.analyses, function(x) x$blank, "")
@@ -446,7 +440,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #'
     get_workflow_overview = function() {
       if (self$has_settings()) {
-        data.table(
+        data.table::data.table(
           "call" = vapply(private$.settings, function(x) x$call, ""),
           "algorithm" = vapply(private$.settings, function(x) x$algorithm, ""),
           "developer" = vapply(private$.settings, function(x) paste(x$developer, collapse = "; "), ""),
@@ -454,7 +448,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
           "link" = vapply(private$.settings, function(x) x$link, "")
         )
       } else {
-        data.table()
+        data.table::data.table()
       }
     },
     
@@ -1166,7 +1160,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       
       if (format %in% "json") {
         
-        js_headers <- toJSON(
+        js_headers <- jsonlite::toJSON(
           private$.headers,
           dataframe = "columns",
           Date = "ISO8601",
@@ -1202,7 +1196,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       
       if (format %in% "json") {
         
-        js_settings <- toJSON(
+        js_settings <- jsonlite::toJSON(
           js_settings,
           dataframe = "columns",
           Date = "ISO8601",
@@ -1233,7 +1227,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       
       if (format %in% "json") {
         
-        js_analyses <- toJSON(
+        js_analyses <- jsonlite::toJSON(
           analyses,
           dataframe = "columns",
           Date = "ISO8601",
@@ -1276,7 +1270,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
         if (!is.null(history)) list_all$history <- history
         if (!is.null(results)) list_all$results <- results
         
-        js_all <- toJSON(
+        js_all <- jsonlite::toJSON(
           list_all,
           dataframe = "columns",
           Date = "ISO8601",
@@ -1311,8 +1305,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
         
         headers <- NULL
         
-        if (file_ext(file) %in% "json") headers <- fromJSON(file)
-        if (file_ext(file) %in% "rds") headers <- readRDS(file)
+        if (tools::file_ext(file) %in% "json") headers <- jsonlite::fromJSON(file)
+        if (tools::file_ext(file) %in% "rds") headers <- readRDS(file)
         
         self$add_headers(headers)
         
@@ -1333,8 +1327,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
         
         settings <- NULL
         
-        if (file_ext(file) %in% "json") settings <- fromJSON(file)
-        if (file_ext(file) %in% "rds") settings <- readRDS(file)
+        if (tools::file_ext(file) %in% "json") settings <- jsonlite::fromJSON(file)
+        if (tools::file_ext(file) %in% "rds") settings <- readRDS(file)
         
         self$add_settings(settings, replace)
         
@@ -1353,8 +1347,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
         
         analyses <- NULL
         
-        if (file_ext(file) %in% "json") analyses <- fromJSON(file, simplifyDataFrame = FALSE)
-        if (file_ext(file) %in% "rds") analyses <- readRDS(file)
+        if (tools::file_ext(file) %in% "json") analyses <- jsonlite::fromJSON(file, simplifyDataFrame = FALSE)
+        if (tools::file_ext(file) %in% "rds") analyses <- readRDS(file)
         
         self$add_analyses(analyses)
         
@@ -1375,9 +1369,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
       
       if (file.exists(file)) {
         
-        if (file_ext(file) %in% "json") {
+        if (tools::file_ext(file) %in% "json") {
           
-          js_ms <- fromJSON(file, simplifyDataFrame = FALSE)
+          js_ms <- jsonlite::fromJSON(file, simplifyDataFrame = FALSE)
           
           fields_present <- names(js_ms)
           
@@ -1441,7 +1435,38 @@ CoreEngine <- R6::R6Class("CoreEngine",
       self$save()
       engine_save_file <- self$save_file
       engine_type <- is(self)
-      shinyApp(ui = .make_app_ui(self), server = .make_app_server(engine_type, engine_save_file))
+      
+      if (!requireNamespace("shiny", quietly = TRUE)) {
+        warning("Shiny package not installed!")
+        return(invisible(self))
+      }
+      
+      if (!requireNamespace("htmltools", quietly = TRUE)) {
+        warning("htmltools package not installed!")
+        return(invisible(self))
+      }
+      
+      if (!requireNamespace("shinydashboard", quietly = TRUE)) {
+        warning("shinydashboard package not installed!")
+        return(invisible(self))
+      }
+      
+      if (!requireNamespace("shinycssloaders", quietly = TRUE)) {
+        warning("shinycssloaders package not installed!")
+        return(invisible(self))
+      }
+      
+      if (!requireNamespace("shinyFiles", quietly = TRUE)) {
+        warning("shinyFiles package not installed!")
+        return(invisible(self))
+      }
+      
+      if (!requireNamespace("sortable", quietly = TRUE)) {
+        warning("sortable package not installed!")
+        return(invisible(self))
+      }
+      
+      shiny::shinyApp(ui = .make_app_ui(self), server = .make_app_server(engine_type, engine_save_file))
     },
     
     ## ___ info -----
@@ -1451,7 +1476,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' @description Data.table with available data processing methods.
     #'
     processing_methods = function() {
-      data.table(name = character(), max = numeric())
+      data.table::data.table(name = character(), max = numeric())
     },
     
     ### ___ help -----
@@ -1460,7 +1485,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' List of function elements to access specific reference help pages.
     help = list(
       methods = function() {
-        browseURL("https://odea-project.github.io/StreamFind/reference/CoreEngine.html#methods")
+        utils::browseURL("https://odea-project.github.io/StreamFind/reference/CoreEngine.html#methods")
       }
     )
   )

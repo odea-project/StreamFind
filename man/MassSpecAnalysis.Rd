@@ -12,8 +12,6 @@ MassSpecAnalysis(
   format = NA_character_,
   type = NA_character_,
   spectra_number = NA_integer_,
-  spectra_mode = NA_character_,
-  spectra_levels = NA_integer_,
   spectra_headers = data.table(),
   spectra = data.table(),
   chromatograms_number = NA_integer_,

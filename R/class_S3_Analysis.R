@@ -37,9 +37,12 @@ Analysis <- function(name = NA_character_,
   }
 }
 
+#' @describeIn validate description Validates an Analysis S3 object.
+#' 
+#' @param x An Analysis S3 object.
+#' 
 #' @export
-#' @noRd
-#'
+#' 
 validate.Analysis <- function(x = NULL) {
   valid <- FALSE
   name <- NA_character_
@@ -86,9 +89,7 @@ print.Analysis <- function(x, ...) {
   )
 }
 
-#' @export
 #' @noRd
-#'
 as.Analysis <- function(value) {
   if (length(value) == 1 & is.list(value)) value <- value[[1]]
   do.call(Analysis, value)

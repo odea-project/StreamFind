@@ -8,6 +8,8 @@ files <- all_files[1:3]
 files <- all_files[grepl("influent|blank", all_files)]
 files <- all_files[grepl("o3sw", all_files)]
 
+
+
 # path <- "C:/Users/apoli/Documents/example_ms_files"
 # files <- list.files(path, pattern = ".mzML", full.names = TRUE)
 

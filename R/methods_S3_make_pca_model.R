@@ -30,7 +30,7 @@
   gamma <- settings$parameters$gamma
   info <- settings$parameters$info
   
-  m <- pca(
+  m <- mdatools::pca(
     x = mat, ncomp = ncomp, center = center, scale = scale, exclrows = exclrows, exclcols = exclcols, x.test = x.test, 
     method = method, rand = rand, lim.type = lim.type, alpha = alpha, gamma = gamma, info = info
   )

@@ -81,9 +81,12 @@ ProcessingSettings <- function(call = NA_character_,
   }
 }
 
+#' @describeIn validate Validates a ProcessingSettings S3 object.
+#' 
+#' @param x A ProcessingSettings S3 object.
+#' 
 #' @export
-#' @noRd
-#'
+#' 
 validate.ProcessingSettings <- function(x) {
   
   valid <- FALSE
@@ -218,41 +221,7 @@ print.ProcessingSettings <- function(x, ...) {
   }
 }
 
-#' @export
 #' @noRd
-#'
-export.ProcessingSettings <- function(x, format = "json", name = "settings", path = getwd(), ...) {
-
-  if ("ProcessingSettings" %in% class(x)) {
-    
-    if (validate(x)) {
-      
-      if (format %in% "json") {
-        settings <- toJSON(
-          x,
-          dataframe = "columns",
-          Date = "ISO8601",
-          POSIXt = "string",
-          factor = "string",
-          complex = "string",
-          null = "null",
-          na = "null",
-          auto_unbox = FALSE,
-          digits = 8,
-          pretty = TRUE,
-          force = TRUE
-        )
-        write(settings, file = paste0(path, "/", name, ".json"))
-      }
-
-      if (format %in% "rds") saveRDS(settings, file = paste0(path, "/", name, ".rds"))
-    }
-  }
-}
-
-#' @export
-#' @noRd
-#'
 as.ProcessingSettings <- function(value) {
   
   if (length(value) == 1 && is.list(value)) value <- value[[1]]

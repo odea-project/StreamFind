@@ -2,6 +2,9 @@
 #'
 #' @description Clears cached data using the approach as in the patRoon package.
 #' 
+#' @param what A character string specifying the cache to remove. If NULL, a list of available caches is shown.
+#' @param file A character string specifying the cache file to use. Default is "cache.sqlite".
+#' 
 #' @references
 #' \insertRef{patroon01}{StreamFind}
 #'
@@ -34,8 +37,12 @@ clear_cache <- function(what = NULL, file = "cache.sqlite") {
       
     } else if (is.null(what) || !nzchar(what)) {
       tableRows <- unlist(sapply(tables, function(tab) DBI::dbGetQuery(db, sprintf("SELECT Count(*) FROM %s", tab))))
-      printf("Please specify which cache you want to remove. Available are:\n%s", paste0(sprintf("- %s (%d rows)\n", tables, tableRows), collapse = ""))
-      printf("- all (removes complete cache database)\n")
+      formatted_strings <- sprintf("- %s (%d rows)\n", tables, tableRows)
+      combined_string <- paste(formatted_strings, collapse = "")
+      message("Please specify which cache you want to remove. Available are:\n",
+        combined_string, "- all (removes complete cache database)\n",
+        sep = ""
+      )
       
     } else {
       matchedTables <- grep(what, tables, value = TRUE)

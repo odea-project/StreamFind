@@ -59,12 +59,6 @@ retain the precursor mass peak even if is not among the \code{topMost} peaks.
 Note that MS precursor mass peaks are always kept. Furthermore, note
 that precursor peaks in both MS and MS/MS data may still be removed by
 intensity thresholds (this is unlike the filter method function).}
-
-\item{pruneMissingPrecursorMS}{For MS data only: if TRUE then peak lists
-without a precursor peak are removed. Note that even when this is set to
-FALSE, functionality that relies on MS (not MS/MS) peak lists (e.g.
-formulae calculation) will still skip calculation if a precursor is not
-found.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_load_MSPeakLists_patRoon.

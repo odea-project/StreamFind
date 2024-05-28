@@ -6,6 +6,11 @@
 \usage{
 clear_cache(what = NULL, file = "cache.sqlite")
 }
+\arguments{
+\item{what}{A character string specifying the cache to remove. If NULL, a list of available caches is shown.}
+
+\item{file}{A character string specifying the cache file to use. Default is "cache.sqlite".}
+}
 \description{
 Clears cached data using the approach as in the patRoon package.
 }

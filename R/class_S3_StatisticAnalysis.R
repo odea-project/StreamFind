@@ -30,9 +30,12 @@ StatisticAnalysis <- function(name = NA_character_,
   }
 }
 
+#' @describeIn validate Validates a StatisticAnalysis S3 object
+#' 
+#' @param x A StatisticAnalysis S3 object.
+#' 
 #' @export
-#' @noRd
-#'
+#' 
 validate.StatisticAnalysis <- function(x = NULL) {
   
   valid <- validate.Analysis(x)
@@ -86,9 +89,7 @@ print.StatisticAnalysis <- function(x, ...) {
   cat("\n")
 }
 
-#' @export
 #' @noRd
-#'
 as.StatisticAnalysis <- function(value) {
   if (length(value) == 1 & is.list(value)) value <- value[[1]]
   do.call(StatisticAnalysis, value)

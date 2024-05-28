@@ -28,8 +28,10 @@
     Vcol <- colors[seq_len(Ncol)]
     Ncol <- length(obj)
     char <- NULL
-    count <- dplyr::count(data.frame(n = seq_len(Ncol), char = obj), char)
-    Vcol <- rep(Vcol, times = count[, "n"])
+    df <- data.frame(n = seq_len(Ncol), char = obj)
+    count <- table(df$char)
+    count <- as.data.frame(count)
+    Vcol <- rep(Vcol, times = count[, "Freq"])
     names(Vcol) <- obj
   } else {
     Vcol <- colors[seq_len(Ncol)]
@@ -3542,12 +3544,9 @@
   
   cl_d <- vapply(cl, function(x) brighter_color(x, factor = 0.5), "")
   
-  # show colors in cl with scales show
-  scales::show_col(cl)
+  show_col(cl)
   
-  cl_grad <- lapply(seq_len(length(cl)), function(x) {
-    scales::col_numeric(palette = c(cl_l[x], cl_d[x]), domain = NULL)
-  })
+  cl_grad <- lapply(seq_len(length(cl)), function(x) col_numeric(palette = c(cl_l[x], cl_d[x]), domain = NULL))
   
   names(cl_grad) <- names(cl)
   

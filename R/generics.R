@@ -1,13 +1,13 @@
-#' @noRd
+#' @title Validate
+#' 
+#' @description Validates an object.
+#' 
+#' @param x An object.
+#' 
 #' @export
+#' 
 validate <- function(x) {
   UseMethod("validate")
-}
-
-#' @noRd
-#' @export
-export <- function(x, ...) {
-  UseMethod("export")
 }
 
 ## Processing Methods -----

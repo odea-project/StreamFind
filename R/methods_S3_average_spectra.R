@@ -20,6 +20,8 @@
   
   if ("analysis" %in% colnames(spec)) {
     
+    . <- NULL
+    
     rpl <- self$get_replicate_names()
     
     spec$replicate <- rpl[spec$analysis]

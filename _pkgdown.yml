@@ -27,6 +27,7 @@ reference:
     - Analysis
     - MassSpecAnalysis
     - RamanAnalysis
+    - StatisticAnalysis
 
 
 - title: Processing settings
@@ -67,7 +68,7 @@ reference:
 
 - subtitle: make_pca_model
   contents:
-    - starts_with("make_pca_model")
+    - starts_with("Settings_make_pca_model")
 
 - subtitle: merge_spectra_time_series
   contents:
@@ -162,6 +163,10 @@ reference:
     - get_default_ProcessingSettings
     - save_default_ProcessingSettings
 
+
+- title: S3 Generics
+  contents:
+    - validate
 
 - title: Other MS functions
   contents:

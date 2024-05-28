@@ -75,20 +75,22 @@ std::vector<double> sc::utils::decode_little_endian(const std::string& str, cons
 
   std::vector<unsigned char> bytes(str.begin(), str.end());
 
-  int bytes_size = (bytes.size() / precision);
-  
+  if (precision != sizeof(double) && precision != sizeof(float)) {
+    throw std::invalid_argument("Precision must be sizeof(double) or sizeof(float)!");
+  }
+
+  size_t bytes_size = bytes.size() / precision;
   std::vector<double> result(bytes_size);
 
-  for (int i = 0; i < bytes_size; ++i) {
-
-    if (precision == 8) {
-      result[i] = reinterpret_cast<double&>(bytes[i * precision]);
-
-    } else if (precision == 4) {
+  for (size_t i = 0; i < bytes_size; ++i) {
+    if (precision == sizeof(double)) {
+      double doubleValue;
+      std::memcpy(&doubleValue, &bytes[i * precision], sizeof(double));
+      result[i] = doubleValue;
+    } else if (precision == sizeof(float)) {
       float floatValue;
       std::memcpy(&floatValue, &bytes[i * precision], sizeof(float));
       result[i] = static_cast<double>(floatValue);
-
     } else {
       throw("Precision must be 4 (32-bit) or 8 (64-bit)!");
     }
@@ -104,32 +106,31 @@ std::vector<double> sc::utils::decode_big_endian(const std::string& str, const i
 
   std::vector<unsigned char> bytes(str.begin(), str.end());
 
-  int bytes_size = (bytes.size() / precision);
-  
+  if (precision != sizeof(double) && precision != sizeof(float)) {
+    throw std::invalid_argument("Precision must be sizeof(double) or sizeof(float)!");
+  }
+
+  size_t bytes_size = bytes.size() / precision;
   std::vector<double> result(bytes_size);
 
-  for (int i = 0; i < bytes_size; ++i) {
+  for (size_t i = 0; i < bytes_size; ++i) {
 
-    if (precision == 8) {
+    if (precision == sizeof(double)) {
       uint64_t value = 0;
-
       for (int j = 0; j < precision; ++j) {
         value = (value << 8) | bytes[i * precision + j];
       }
-
-      result[i] = reinterpret_cast<double&>(value);
-
-    } else if (precision == 4) {
+      double doubleValue;
+      std::memcpy(&doubleValue, &value, sizeof(double));
+      result[i] = doubleValue;
+    } else if (precision == sizeof(float)) {
       uint32_t value = 0;
-      
       for (int j = 0; j < precision; ++j) {
         value = (value << 8) | bytes[i * precision + j];
       }
-      
-      float floatValue = reinterpret_cast<float&>(value);
-      
+      float floatValue;
+      std::memcpy(&floatValue, &value, sizeof(float));
       result[i] = static_cast<double>(floatValue);
-
     } else {
       throw("Precision must be 4 (32-bit) or 8 (64-bit)!");
     }

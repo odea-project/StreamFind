@@ -35,9 +35,14 @@ set by excluding elements you don't expect.}
 
 \item{oc}{Logical (length 1) indicating presence of at least one carbon in the formulae.}
 
-\item{thrMS, }{thrMSMS, thrComb Numeric (length 1) Sets the thresholds for the GenForm MS score (isoScore), MS/MS score
-(MSMSScore) and combined score (combMatch). Sets the thms/thmsms/thcomb command line options, respectively. Set to
-NULL for no threshold.}
+\item{thrMS}{Numeric (length 1) Sets the thresholds for the GenForm MS score (isoScore). Sets the thms command line
+options, respectively. Set to NULL for no threshold.}
+
+\item{thrMSMS}{Numeric (length 1) Sets the thresholds for the GenForm MS/MS score (MSMSScore). Sets the thmsms
+command line options, respectively. Set to NULL for no threshold.}
+
+\item{thrComb}{Numeric (length 1) Sets the thresholds for the GenForm combined score (combMatch). Sets the thcomb
+command line options, respectively. Set to NULL for no threshold.}
 
 \item{maxCandidates}{Numeric (length 1) with the maximum number of candidates to be generated.}
 

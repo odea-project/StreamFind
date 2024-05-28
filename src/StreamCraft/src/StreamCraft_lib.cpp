@@ -72,7 +72,7 @@ std::vector<std::vector<std::vector<double>>> sc::MS_ANALYSIS::extract_spectra_t
     for (int j = 0; j < number_rts; j++) {
 
       if (levels[j] == targets.level[i] || targets.level[i] == 0) {
-        if ((rts[j] >= targets.rtmin[i] && rts[j] <= targets.rtmax[i]) || targets.rtmax[i] == 0) {  
+        if ((rts[j] >= targets.rtmin[i] && rts[j] <= targets.rtmax[i]) || targets.rtmax[i] == 0) {
           idx.insert(j);
         }
       }
@@ -273,7 +273,7 @@ std::vector<std::vector<std::vector<double>>> sc::MS_ANALYSIS::get_spectra_targe
 
   const int number_spectra = get_number_spectra();
 
-  int number_targets = targets.index.size();
+  const int number_targets = targets.index.size();
 
   std::vector<std::vector<std::vector<double>>> res;
 
@@ -293,6 +293,14 @@ std::vector<std::vector<std::vector<double>>> sc::MS_ANALYSIS::get_spectra_targe
     std::cerr << "No binary arrays found in file!" << std::endl;
     return res;
   }
+
+  
+
+
+
+
+
+
 
   bool with_drift = false;
 

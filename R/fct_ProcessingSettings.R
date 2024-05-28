@@ -18,7 +18,7 @@
 #'
 #' @export
 #'
-Settings_centroid_spectra_qCentroids <- function(maxScale = 5, mode = 1, runParallel = FALSE) {
+Settings_centroid_spectra_qCentroids <- function(maxScale = 5, mode = 1) {
   
   settings <- list(
     call = "centroid_spectra",
@@ -1274,11 +1274,6 @@ validate.Settings_load_features_eic_StreamFind <- function(x) {
 #' fastcluster package), and "distance", to use the between peak distance.
 #' The latter method may reduces processing time and memory requirements,
 #' at the potential cost of reduced accuracy.
-#' @param pruneMissingPrecursorMS For MS data only: if TRUE then peak lists
-#' without a precursor peak are removed. Note that even when this is set to
-#' FALSE, functionality that relies on MS (not MS/MS) peak lists (e.g.
-#' formulae calculation) will still skip calculation if a precursor is not
-#' found.
 #' @param retainPrecursorMSMS For MS/MS data only: if TRUE then always
 #' retain the precursor mass peak even if is not among the `topMost` peaks.
 #' Note that MS precursor mass peaks are always kept. Furthermore, note
@@ -1370,11 +1365,6 @@ validate.Settings_load_MSPeakLists_patRoon <- function(x) {
 #' fastcluster package), and "distance", to use the between peak distance.
 #' The latter method may reduces processing time and memory requirements,
 #' at the potential cost of reduced accuracy.
-#' @param pruneMissingPrecursorMS For MS data only: if TRUE then peak lists
-#' without a precursor peak are removed. Note that even when this is set to
-#' FALSE, functionality that relies on MS (not MS/MS) peak lists (e.g.
-#' formulae calculation) will still skip calculation if a precursor is not
-#' found.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_load_MSPeakLists_StreamFind.
 #'
@@ -1484,6 +1474,41 @@ validate.Settings_filter_features_StreamFind <- function(x) {
 #'  in \code{\link[patRoon]{replicateGroupSubtract}} from patRoon package.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_filter_features_patRoon.
+#' 
+#' @param absMinIntensity Numeric length one. Minimum absolute intensity for a feature.
+#' @param relMinIntensity Numeric length one. Minimum relative intensity for a feature.
+#' @param preAbsMinIntensity Numeric length one. Minimum absolute intensity for a feature before grouping.
+#' @param preRelMinIntensity Numeric length one. Minimum relative intensity for a feature before grouping.
+#' @param absMinAnalyses Numeric length one. Minimum number of analyses a feature must be present in.
+#' @param relMinAnalyses Numeric length one. Minimum relative number of analyses a feature must be present in.
+#' @param absMinReplicates Numeric length one. Minimum number of replicates a feature must be present in.
+#' @param relMinReplicates Numeric length one. Minimum relative number of replicates a feature must be present in.
+#' @param absMinFeatures Numeric length one. Minimum number of features a feature group must contain.
+#' @param relMinFeatures Numeric length one. Minimum relative number of features a feature group must contain.
+#' @param absMinReplicateAbundance Numeric length one. Minimum absolute abundance of a replicate.
+#' @param relMinReplicateAbundance Numeric length one. Minimum relative abundance of a replicate.
+#' @param absMinConc Numeric length one. Minimum absolute concentration of a feature.
+#' @param relMinConc Numeric length one. Minimum relative concentration of a feature.
+#' @param absMaxTox Numeric length one. Maximum absolute toxicity of a feature.
+#' @param relMaxTox Numeric length one. Maximum relative toxicity of a feature.
+#' @param absMinConcTox Numeric length one. Minimum absolute concentration of a feature to be considered toxic.
+#' @param relMinConcTox Numeric length one. Minimum relative concentration of a feature to be considered toxic.
+#' @param maxReplicateIntRSD Numeric length one. Maximum relative standard deviation of intensities within a replicate.
+#' @param blankThreshold Numeric length one. Maximum intensity of a feature to be considered a blank.
+#' @param retentionRange Numeric length two. Retention time range (in seconds) for a feature.
+#' @param mzRange Numeric length two. m/z range (in Da) for a feature.
+#' @param mzDefectRange Numeric length two. m/z defect range (in Da) for a feature.
+#' @param chromWidthRange Numeric length two. Chromatographic width range (in seconds) for a feature.
+#' @param featQualityRange Numeric length two. Feature quality range for a feature.
+#' @param groupQualityRange Numeric length two. Group quality range for a feature group.
+#' @param rGroups List of replicate groups.
+#' @param results Only keep feature groups that have results in the object specified by results. See 
+#' \code{\link[patRoon]{replicateGroupSubtract}} for further information.
+#' @param removeBlanks Logical length one. Remove blank samples.
+#' @param removeISTDs Logical length one. Remove internal standards.
+#' @param checkFeaturesSession Check features session.
+#' @param removeNA Logical length one. Remove NA values.
+#' @param negate Logical length one. Negate the filter.
 #'
 #' @details Note that when filters are applied to features or feature groups 
 #' these require specific results from processing modules. For instance, 
@@ -2004,7 +2029,6 @@ validate.Settings_find_internal_standards_StreamFind <- function(x) {
 #' @template arg-ms-mzExpand 
 #' @param minTraces Numeric of length 1 with the minimum number traces for calculating feature quality.
 #' @template arg-ms-filtered 
-#' @template arg-runParallel 
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_calculate_quality_StreamFind.
 #'
@@ -2013,8 +2037,7 @@ validate.Settings_find_internal_standards_StreamFind <- function(x) {
 Settings_calculate_quality_StreamFind <- function(rtExpand = 120,
                                                   mzExpand = 0.0003,
                                                   minTraces = 6,
-                                                  filtered = FALSE,
-                                                  runParallel = TRUE) {
+                                                  filtered = FALSE) {
   
   settings <- list(
     call = "calculate_quality",
@@ -2024,8 +2047,7 @@ Settings_calculate_quality_StreamFind <- function(rtExpand = 120,
       "rtExpand" = rtExpand,
       "mzExpand" = mzExpand,
       "minTraces" = minTraces,
-      "filtered" = filtered,
-      "runParallel" = runParallel
+      "filtered" = filtered
     ),
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",
@@ -2072,9 +2094,12 @@ validate.Settings_calculate_quality_StreamFind <- function(x) {
 #' set by excluding elements you don't expect.
 #' @param hetero Logical (length 1) indicating if heteroatoms are allowed in the formulae.
 #' @param oc Logical (length 1) indicating presence of at least one carbon in the formulae.
-#' @param thrMS, thrMSMS, thrComb Numeric (length 1) Sets the thresholds for the GenForm MS score (isoScore), MS/MS score 
-#' (MSMSScore) and combined score (combMatch). Sets the thms/thmsms/thcomb command line options, respectively. Set to 
-#' NULL for no threshold.
+#' @param thrMS Numeric (length 1) Sets the thresholds for the GenForm MS score (isoScore). Sets the thms command line 
+#' options, respectively. Set to NULL for no threshold.
+#' @param thrMSMS Numeric (length 1) Sets the thresholds for the GenForm MS/MS score (MSMSScore). Sets the thmsms 
+#' command line options, respectively. Set to NULL for no threshold.
+#' @param thrComb Numeric (length 1) Sets the thresholds for the GenForm combined score (combMatch). Sets the thcomb 
+#' command line options, respectively. Set to NULL for no threshold.
 #' @param maxCandidates Numeric (length 1) with the maximum number of candidates to be generated.
 #' @param extraOpts Character (length 1) with extra CLI options to be passed to the GenForm algorithm.
 #' @param calculateFeatures Logical (length 1) indicating if features should be calculated.
@@ -2687,7 +2712,7 @@ Settings_correct_chromatograms_baseline_baseline <- function(method = "als", arg
     ),
     version = as.character(packageVersion("baseline")),
     software = "baseline",
-    developer = "Kristian Hovde Liland and Bjørn-Helge Mevik",
+    developer = "Kristian Hovde Liland",
     contact = "kristian.liland@nmbu.no",
     link = "https://github.com/khliland/baseline/",
     doi = "10.1366/000370210792434350"
@@ -2786,7 +2811,7 @@ Settings_correct_spectra_baseline_baseline <- function(method = "als", args = li
     parameters = list(method = method, args = args),
     version = as.character(packageVersion("baseline")),
     software = "baseline",
-    developer = "Kristian Hovde Liland and Bjørn-Helge Mevik",
+    developer = "Kristian Hovde Liland",
     contact = "kristian.liland@nmbu.no",
     link = "https://github.com/khliland/baseline/",
     doi = "10.1366/000370210792434350"
@@ -2877,7 +2902,7 @@ validate.Settings_correct_spectra_baseline_airpls <- function(x) {
 #'
 #' @export
 #'
-Settings_smooth_chromatograms_movingaverage <- function(windowSize = 5, xValWindow = NULL) {
+Settings_smooth_chromatograms_movingaverage <- function(windowSize = 5) {
   
   settings <- list(
     call = "smooth_chromatograms",
@@ -2967,7 +2992,7 @@ validate.Settings_smooth_chromatograms_savgol <- function(x) {
 #'
 #' @export
 #'
-Settings_smooth_spectra_movingaverage <- function(windowSize = 5, xValWindow = NULL) {
+Settings_smooth_spectra_movingaverage <- function(windowSize = 5) {
   
   settings <- list(
     call = "smooth_spectra",
@@ -3104,7 +3129,7 @@ Settings_normalize_spectra_snv <- function(liftTozero = FALSE) {
     parameters = list(liftTozero = liftTozero),
     version = NA_character_,
     software = NA_character_,
-    developer = "Jürgen Schram",
+    developer = "J\u00FCrgen Schram",
     contact = "schram@hsnr.de",
     link = NA_character_,
     doi = "10.1016/j.trac.2018.12.004"
@@ -3328,8 +3353,8 @@ Settings_delete_spectra_section_StreamFind <- function(section = list()) {
 validate.Settings_delete_spectra_section_StreamFind <- function(x) {
   all(
     checkmate::test_choice(x$call, "delete_spectra_section"),
-    checkmate::test_choice(x$algorithm, "StreamFind"),
-    checkmate::test_named_list(x$parameters$section)
+    checkmate::test_choice(x$algorithm, "StreamFind")
+    # TODO add section checks in validation of Settings_delete_spectra_section_StreamFind
   )
 }
 
