@@ -9,7 +9,7 @@
 .mod_RamanEngine_summary_UI <- function(id, engine) {
   ns <- shiny::NS(id)
   htmltools::tagList(
-    box(title = "Spectra Summary", width = 12, solidHeader = TRUE, shiny::uiOutput(ns("summary_plot_ui"))),
+    shinydashboard::box(title = "Spectra Summary", width = 12, solidHeader = TRUE, shiny::uiOutput(ns("summary_plot_ui"))),
     shiny::column(12, shiny::uiOutput(ns("summary_plot_controls")))
   )
 }

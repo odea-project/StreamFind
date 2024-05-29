@@ -8,7 +8,7 @@
 #' 
 .mod_MassSpecEngine_summary_UI <- function(id, engine) {
   ns <- shiny::NS(id)
-  tagList(
+  htmltools::tagList(
     shinydashboard::box(title = "Spectra summary", width = 12, solidHeader = TRUE, shiny::uiOutput(ns("summary_plot_ui"))),
     shiny::column(12, shiny::uiOutput(ns("summary_plot_controls"))),
     shinydashboard::box(title = "Chromatograms", width = 12, solidHeader = TRUE, shiny::uiOutput(ns("chrom_plot_ui"))),
@@ -46,7 +46,7 @@
     # out Summary plot UI -----
     output$summary_plot_ui <- shiny::renderUI({
       if (nrow(analyses()) == 0) {
-        htmltools::div(style = "margin-top: 20px;", h4("No analyses found!"))
+        htmltools::div(style = "margin-top: 20px;", htmltools::h4("No analyses found!"))
       } else if (has_spectra()) {
         if (!is.null(input$summary_plot_interactive)) {
           if (input$summary_plot_interactive) {
@@ -133,7 +133,7 @@
           }
         }
       } else {
-        htmltools::div(style = "margin-top: 20px;", h4("No chromatograms found!"))
+        htmltools::div(style = "margin-top: 20px;", htmltools::h4("No chromatograms found!"))
       }
     })
     

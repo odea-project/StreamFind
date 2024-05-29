@@ -193,6 +193,9 @@
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_load_MSPeakLists_StreamFind.html</loc>
   </url>
   <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/Settings_make_pca_model_mdatools.html</loc>
+  </url>
+  <url>
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_merge_spectra_time_series_StreamFind.html</loc>
   </url>
   <url>
@@ -238,9 +241,18 @@
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_suspect_screening_StreamFind.html</loc>
   </url>
   <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/StatisticAnalysis.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/StatisticEngine.html</loc>
+  </url>
+  <url>
     <loc>https://odea-project.github.io/StreamFind/reference/StreamFind-package.html</loc>
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/trim_ms_files_spectra.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/validate.html</loc>
   </url>
 </urlset>

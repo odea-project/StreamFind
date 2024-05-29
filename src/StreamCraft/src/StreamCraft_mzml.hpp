@@ -53,22 +53,6 @@ namespace sc {
         std::string data_value;
         std::string data_unit;
         std::string data_name_short;
-
-        void print() const {
-          std::cout << std::endl;
-          std::cout << "Index:                     " << index << std::endl;
-          std::cout << "Precision original string: " << precision_name << std::endl;
-          std::cout << "Precision accession:       " << precision_accession << std::endl;
-          std::cout << "Precision:                 " << precision_int << std::endl;
-          std::cout << "Precision type:            " << precision_type << std::endl;
-          std::cout << "Compression:               " << compression << std::endl;
-          std::cout << "Data name:                 " << data_name << std::endl;
-          std::cout << "Data accession:            " << data_accession << std::endl;
-          std::cout << "Data value:                " << data_value << std::endl;
-          std::cout << "Data unit:                 " << data_unit << std::endl;
-          std::cout << "Data short name:           " << data_name_short << std::endl;
-          std::cout << std::endl;
-        };
     };
 
     class MZML_SPECTRUM {
@@ -150,8 +134,6 @@ namespace sc {
         std::vector<pugi::xml_node> chrom_nodes;
 
         MZML(const std::string& file);
-        void print() const;
-        void print_spectra_binary_metadata() const;
         std::string get_format() const { return format; };
         int get_number_spectra() const;
         int get_number_chromatograms() const;
@@ -198,10 +180,6 @@ namespace sc {
         std::unique_ptr<VIRTUAL_MS_SPECTRUM> get_generic_spectrum(const int& idx) const {return std::make_unique<MS_SPECTRUM<MZML_SPECTRUM>>(MZML_SPECTRUM(spectra_nodes[idx]));};
         void write_spectra(const std::vector<std::vector<std::vector<double>>>& spectra, const std::vector<std::string>& names, MS_SPECTRA_MODE mode, bool compress, bool save, std::string save_suffix);
     }; // class MZML
-
-    void test_extract_spectra_mzml(const std::string& file);
-    void test_extract_chromatograms_mzml(const std::string& file);
-
   }; // namespace mzml
 }; // namespace sc
 

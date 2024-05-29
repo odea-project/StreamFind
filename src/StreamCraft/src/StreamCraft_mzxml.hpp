@@ -27,14 +27,6 @@ namespace sc {
         std::string compression;
         bool compressed;
         std::string byte_order;
-
-        void print() const {
-          std::cout << std::endl;
-          std::cout << "Precision:                 " << precision << std::endl;
-          std::cout << "Compression:               " << compression << std::endl;
-          std::cout << "Byte order:           " << byte_order << std::endl;
-          std::cout << std::endl;
-        };
     };
 
     class MZXML_SPECTRUM {
@@ -80,8 +72,6 @@ namespace sc {
         std::vector<pugi::xml_node> spectra_nodes;
 
         MZXML(const std::string& file);
-        void print() const;
-        void print_binary_metadata() const { get_spectra_binary_metadata().print(); };
         std::string get_format() const { return format; };
         int get_number_spectra() const;
         int get_number_chromatograms() const { return 0; };
@@ -104,28 +94,23 @@ namespace sc {
         std::vector<double> get_spectra_rt(std::vector<int> indices = {}) const;
         std::vector<double> get_spectra_drift(std::vector<int> indices = {}) const {
           std::vector<double> drift;
-          std::cout << "mzXML format does not hold drift values!" << std::endl;
           return drift;
         };
         std::vector<int> get_spectra_precursor_scan(std::vector<int> indices = {}) const {
           std::vector<int> precursor_scan;
-          std::cout << "mzXML format does not hold precursor scan values!" << std::endl;
           return precursor_scan;
         };
         std::vector<double> get_spectra_precursor_mz(std::vector<int> indices = {}) const;
         std::vector<double> get_spectra_precursor_window_mz(std::vector<int> indices = {}) const {
           std::vector<double> precursor_window_mz;
-          std::cout << "mzXML format does not hold precursor window mz values!" << std::endl;
           return precursor_window_mz;
         };
         std::vector<double> get_spectra_precursor_window_mzlow(std::vector<int> indices = {}) const {
           std::vector<double> precursor_window_mzlow;
-          std::cout << "mzXML format does not hold precursor window mz low values!" << std::endl;
           return precursor_window_mzlow;
         };
         std::vector<double> get_spectra_precursor_window_mzhigh(std::vector<int> indices = {}) const {
           std::vector<double> precursor_window_mzhigh;
-          std::cout << "mzXML format does not hold precursor window mz high values!" << std::endl;
           return precursor_window_mzhigh;
         };
         std::vector<double> get_spectra_collision_energy(std::vector<int> indices = {}) const;
@@ -141,13 +126,11 @@ namespace sc {
         MS_SPECTRA_HEADERS get_spectra_headers(std::vector<int> indices = {}) const;
         MS_CHROMATOGRAMS_HEADERS get_chromatograms_headers(std::vector<int> indices = {}) const {
           MS_CHROMATOGRAMS_HEADERS chromatograms_headers;
-          std::cout << "mzXML format does not have chromatograms!" << std::endl;
           return chromatograms_headers;
         };
         std::vector<std::vector<std::vector<double>>> get_spectra(std::vector<int> indices = {}) const;
         std::vector<std::vector<std::vector<double>>> get_chromatograms(std::vector<int> indices = {}) const {
           std::vector<std::vector<std::vector<double>>> chromatograms;
-          std::cout << "mzXML format does not have chromatograms!" << std::endl;
           return chromatograms;
         };
         MZXML_SPECTRUM get_spectrum(const int& idx) const { return MZXML_SPECTRUM(spectra_nodes[idx]); };
@@ -155,9 +138,6 @@ namespace sc {
         std::vector<std::vector<std::string>> get_software() const;
         std::vector<std::vector<std::string>> get_hardware() const;
     }; // class MZXML
-
-    void test_extract_spectra_mzxml(const std::string& file);
-
   }; // namespace mzxml
 }; // namespace sc
 

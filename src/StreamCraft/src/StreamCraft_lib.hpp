@@ -11,8 +11,6 @@
 #include "StreamCraft_mzxml.hpp"
 
 namespace sc {
-
-  void welcome();
   
   class VIRTUAL_MS_FILE {
     public:
@@ -182,9 +180,6 @@ namespace sc {
       std::unique_ptr<VIRTUAL_MS_SPECTRUM> get_spectrum(int index) { return ms->get_spectrum(index); }
 
       std::vector<std::vector<std::vector<double>>> get_spectra_targets(const MS_TARGETS& targets);
-      std::vector<std::vector<std::vector<double>>> get_spectra_dda_targets(const MS_TARGETS& targets);
-      
-      void print();
   };
 
 }; // namespace sc

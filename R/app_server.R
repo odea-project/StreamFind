@@ -94,7 +94,7 @@
     ## out Warnings menu -----
     output$warningMenu <- shinydashboard::renderMenu({
       warnings <- reactive_warnings()
-      msgs <- lapply(warnings, function(x) { notificationItem(text = x) })
+      msgs <- lapply(warnings, function(x) { shinydashboard::notificationItem(text = x) })
       shinydashboard::dropdownMenu(type = "notifications", .list = msgs)
     })
     

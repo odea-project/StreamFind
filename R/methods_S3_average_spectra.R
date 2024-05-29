@@ -21,6 +21,7 @@
   if ("analysis" %in% colnames(spec)) {
     
     . <- NULL
+    baseline <- NULL
     
     rpl <- self$get_replicate_names()
     

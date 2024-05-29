@@ -224,11 +224,6 @@ namespace sc {
     std::string encode_base64(const std::string& str);
 
     std::string decode_base64(const std::string& encoded_string);
-
-    void test_encoding_decoding_little_endian(const std::vector<double>& input, const int& precision);
-
-    void test_encoding_decoding_big_endian(const std::vector<double>& input, const int& precision);
-
   }; // namespace utils
 };
 
