@@ -133,8 +133,7 @@ namespace sc {
           std::vector<std::vector<std::vector<double>>> chromatograms;
           return chromatograms;
         };
-        MZXML_SPECTRUM get_spectrum(const int& idx) const { return MZXML_SPECTRUM(spectra_nodes[idx]); };
-        std::unique_ptr<VIRTUAL_MS_SPECTRUM> get_generic_spectrum(const int& idx) const {return std::make_unique<MS_SPECTRUM<MZXML_SPECTRUM>>(MZXML_SPECTRUM(spectra_nodes[idx]));};
+        MS_SPECTRUM get_spectrum(const int& idx) const;
         std::vector<std::vector<std::string>> get_software() const;
         std::vector<std::vector<std::string>> get_hardware() const;
     }; // class MZXML

@@ -1592,6 +1592,51 @@ std::vector<std::vector<std::string>> sc::mzml::MZML::get_hardware() const {
   return output;
 };
 
+sc::MS_SPECTRUM sc::mzml::MZML::get_spectrum(const int& idx) const {
+
+  sc::MS_SPECTRUM spectrum;
+
+  if (idx < 0 || idx >= get_number_spectra()) return spectrum;
+
+  const sc::MZML_SPECTRUM spec = spectra_nodes[idx];
+
+  spectrum.index = spec.extract_spec_index();
+  spectrum.scan = spec.extract_spec_scan();
+  spectrum.array_length = spec.extract_spec_array_length();
+  spectrum.level = spec.extract_spec_level();
+  spectrum.mode = spec.extract_spec_mode();
+  spectrum.polarity = spec.extract_spec_polarity();
+  spectrum.lowmz = spec.extract_spec_lowmz();
+  spectrum.highmz = spec.extract_spec_highmz();
+  spectrum.bpmz = spec.extract_spec_bpmz();
+  spectrum.bpint = spec.extract_spec_bpint();
+  spectrum.tic = spec.extract_spec_tic();
+  spectrum.rt = spec.extract_scan_rt();
+  spectrum.drift = spec.extract_scan_drift();
+
+  if (spec.has_precursor()) {
+    spectrum.window_mz = spec.extract_window_mz();
+    spectrum.window_mzlow = spec.extract_window_mzlow();
+    spectrum.window_mzhigh = spec.extract_window_mzhigh();
+
+    if (spec.has_selected_ion()) {
+      spectrum.precursor_mz = spec.extract_ion_mz();
+      spectrum.precursor_intensity = spec.extract_ion_intensity();
+      spectrum.precursor_charge = spec.extract_ion_charge();
+    }
+
+    if (spec.has_activation()) {
+      spectrum.activation_ce = spec.extract_activation_ce();
+    }
+  }
+
+  const std::vector<MZML_BINARY_METADATA> mtd = spec.extract_binary_metadata();
+
+  spectrum.binary_data = spec.extract_binary_data(mtd);
+
+  return spectrum;
+};
+
 void sc::mzml::MZML::write_spectra(
   const std::vector<std::vector<std::vector<double>>>& spectra,
   const std::vector<std::string>& names, MS_SPECTRA_MODE mode, bool compress, bool save, std::string save_suffix) {

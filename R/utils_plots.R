@@ -457,13 +457,13 @@
 #' @noRd
 #'
 .plot_spectra_eic_static <- function(eic = NULL,
-                             legendNames = NULL,
-                             colorBy = "targets",
-                             title = NULL,
-                             showLegend = TRUE,
-                             xlim = NULL,
-                             ylim = NULL,
-                             cex = 0.6) {
+                                     legendNames = NULL,
+                                     colorBy = "targets",
+                                     title = NULL,
+                                     showLegend = TRUE,
+                                     xlim = NULL,
+                                     ylim = NULL,
+                                     cex = 0.6) {
   
   eic <- .make_colorBy_varkey(eic, colorBy, legendNames)
   
@@ -541,10 +541,10 @@
 #' @noRd
 #'
 .plot_spectra_eic_interactive <- function(eic = NULL,
-                                  legendNames = NULL,
-                                  colorBy = "targets",
-                                  title = NULL,
-                                  showLegend = TRUE) {
+                                          legendNames = NULL,
+                                          colorBy = "targets",
+                                          title = NULL,
+                                          showLegend = TRUE) {
   
   eic <- .make_colorBy_varkey(eic, colorBy, legendNames)
   
@@ -626,10 +626,10 @@
 #' @noRd
 #'
 .plot_spectra_bpc_interactive <- function(bpc = NULL,
-                                  legendNames = NULL,
-                                  colorBy = "targets",
-                                  title = NULL,
-                                  showLegend = TRUE) {
+                                          legendNames = NULL,
+                                          colorBy = "targets",
+                                          title = NULL,
+                                          showLegend = TRUE) {
   
   bpc <- .make_colorBy_varkey(bpc, colorBy, legendNames)
   
@@ -717,10 +717,7 @@
 #'
 #' @noRd
 #'
-.plot_spectra_ms2_static <- function(ms2 = NULL,
-                             legendNames = NULL,
-                             colorBy = "targets",
-                             title = NULL) {
+.plot_spectra_ms2_static <- function(ms2 = NULL, legendNames = NULL, colorBy = "targets", title = NULL) {
   
   ms2 <- .make_colorBy_varkey(ms2, colorBy, legendNames)
   
@@ -785,8 +782,7 @@
 #'
 #' @noRd
 #'
-.plot_spectra_ms2_interactive <- function(ms2 = NULL, legendNames = NULL,
-                                  colorBy = "targets", title = NULL) {
+.plot_spectra_ms2_interactive <- function(ms2 = NULL, legendNames = NULL, colorBy = "targets", title = NULL) {
   
   ms2 <- .make_colorBy_varkey(ms2, colorBy, legendNames)
   
@@ -864,11 +860,7 @@
 #'
 #' @noRd
 #'
-.plot_spectra_ms1_static <- function(ms1 = NULL,
-                             legendNames = NULL,
-                             colorBy = "targets",
-                             title = NULL,
-                             showText = FALSE) {
+.plot_spectra_ms1_static <- function(ms1 = NULL, legendNames = NULL, colorBy = "targets", title = NULL, showText = FALSE) {
   
   ms1 <- .make_colorBy_varkey(ms1, colorBy, legendNames)
   
@@ -916,11 +908,7 @@
 #'
 #' @noRd
 #'
-.plot_spectra_ms1_interactive <- function(ms1 = NULL,
-                                  legendNames = NULL,
-                                  colorBy = "targets",
-                                  title = NULL,
-                                  showText = TRUE) {
+.plot_spectra_ms1_interactive <- function(ms1 = NULL, legendNames = NULL, colorBy = "targets", title = NULL, showText = TRUE) {
   
   ms1 <- .make_colorBy_varkey(ms1, colorBy, legendNames)
   
@@ -1013,7 +1001,7 @@
   
   features$unique_ids <- paste0(features$feature, features$analysis)
   
-  ids <- unique(eic$unique_ids)
+  ids <- unique(features$unique_ids)
   
   if (is.numeric(xlim) & length(xlim) == 1) {
     rtr <- c(min(eic$rt) - xlim, max(eic$rt) + xlim)
@@ -1181,7 +1169,7 @@
   
   features$unique_ids <- paste0(features$feature, features$analysis)
   
-  ids <- unique(eic$unique_ids)
+  ids <- unique(features$unique_ids)
   
   plot_qlt <- FALSE
   
@@ -1604,8 +1592,9 @@
     uid <- unique(eic$uid[eic$var == g])
     
     for (u in uid) {
-      df <- eic[eic$uid == u, ]
       ft <- features[features$uid == u, ]
+      if (nrow(ft) == 0) next
+      df <- eic[eic$uid == u, ]
       
       plot <- plot %>% add_trace(df,
                                  x = df$rt,
@@ -2566,8 +2555,9 @@
     uid <- unique(eic$uid[eic$var == g])
     
     for (u in uid) {
-      df <- eic[eic$uid == u, ]
       ft <- suspects[suspects$uid == u, ]
+      if (nrow(ft) == 0) next
+      df <- eic[eic$uid == u, ]
       
       plot <- plot %>% add_trace(
         df,

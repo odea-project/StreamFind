@@ -818,3 +818,34 @@ std::vector<std::vector<std::string>> sc::mzxml::MZXML::get_hardware() const {
 
   return output;
 };
+
+sc::MS_SPECTRUM sc::mzxml::MZXML::get_spectrum(const int& idx) const {
+
+  const sc::MZXML_SPECTRUM& spec(spectra_nodes[idx]);
+
+  sc::MS_SPECTRUM spectrum;
+
+  spectrum.index = spec.extract_spec_index();
+  spectrum.scan = spec.extract_spec_scan();
+  spectrum.array_length = spec.extract_spec_array_length();
+  spectrum.level = spec.extract_spec_level();
+  spectrum.mode = spec.extract_spec_mode();
+  spectrum.polarity = spec.extract_spec_polarity();
+  spectrum.lowmz = spec.extract_spec_lowmz();
+  spectrum.highmz = spec.extract_spec_highmz();
+  spectrum.bpmz = spec.extract_spec_bpmz();
+  spectrum.bpint = spec.extract_spec_bpint();
+  spectrum.tic = spec.extract_spec_tic();
+  spectrum.rt = spec.extract_scan_rt();
+
+  if (spec.has_precursor()) {
+    spectrum.precursor_mz = spec.extract_ion_mz();
+    spectrum.activation_ce = spec.extract_activation_ce();
+  }
+
+  const sc::MZXML_BINARY_METADATA binary_metadata = spec.extract_binary_metadata();
+
+  spectrum.binary_data = spec.extract_binary_data(binary_metadata);
+
+  return spectrum;
+};

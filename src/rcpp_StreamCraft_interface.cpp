@@ -402,13 +402,13 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
         
         if (n_traces == 0) continue;
         
-        const int& i_polarity = polarity[i];
-        const int& i_level = level[i];
-        const double& i_pre_mz = pre_mz[i];
-        // const double& i_pre_mzlow = pre_mzlow[i];
-        // const double& i_pre_mzhigh = pre_mzhigh[i];
-        const double& i_rt = rt[i];
-        const double& i_drift = drift[i];
+        const int& i_polarity = polarity[i_idx[0]];
+        const int& i_level = level[i_idx[0]];
+        const double& i_pre_mz = pre_mz[i_idx[0]];
+        // const double& i_pre_mzlow = pre_mzlow[i_idx[0]];
+        // const double& i_pre_mzhigh = pre_mzhigh[i_idx[0]];
+        const double& i_rt = rt[i_idx[0]];
+        const double& i_drift = drift[i_idx[0]];
         
         for (int j = 0; j < n_tg; j++) {
           
@@ -431,7 +431,7 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
                         pre_mz_priv.push_back(i_pre_mz);
                         // pre_mzlow_priv.push_back(i_pre_mzlow);
                         // pre_mzhigh_priv.push_back(i_pre_mzhigh);
-                        pre_ce_priv.push_back(pre_ce[i]);
+                        pre_ce_priv.push_back(pre_ce[i_idx[0]]);
                         rt_priv.push_back(i_rt);
                         drift_priv.push_back(i_drift);
                         mz_priv.push_back(spectra[0][0][k]);
@@ -452,7 +452,7 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
                         pre_mz_priv.push_back(i_pre_mz);
                         // pre_mzlow_priv.push_back(i_pre_mzlow);
                         // pre_mzhigh_priv.push_back(i_pre_mzhigh);
-                        pre_ce_priv.push_back(pre_ce[i]);
+                        pre_ce_priv.push_back(pre_ce[i_idx[0]]);
                         rt_priv.push_back(i_rt);
                         drift_priv.push_back(i_drift);
                         mz_priv.push_back(spectra[0][0][k]);

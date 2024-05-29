@@ -176,8 +176,7 @@ namespace sc {
         std::vector<std::vector<std::vector<double>>> get_chromatograms(std::vector<int> indices = {}) const;
         std::vector<std::vector<std::string>> get_software() const;
         std::vector<std::vector<std::string>> get_hardware() const;
-        MZML_SPECTRUM get_spectrum(const int& idx) const {return MZML_SPECTRUM(spectra_nodes[idx]);};
-        std::unique_ptr<VIRTUAL_MS_SPECTRUM> get_generic_spectrum(const int& idx) const {return std::make_unique<MS_SPECTRUM<MZML_SPECTRUM>>(MZML_SPECTRUM(spectra_nodes[idx]));};
+        MS_SPECTRUM get_spectrum(const int& idx) const;
         void write_spectra(const std::vector<std::vector<std::vector<double>>>& spectra, const std::vector<std::string>& names, MS_SPECTRA_MODE mode, bool compress, bool save, std::string save_suffix);
     }; // class MZML
   }; // namespace mzml

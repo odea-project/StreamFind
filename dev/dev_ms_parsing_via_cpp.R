@@ -143,12 +143,17 @@ ms$load()
 file <- file.choose()
 clear_cache("all")
 ms <- MassSpecEngine$new(files = file)
-ms$plot_spectra_tic(levels = 2)
+ms$plot_spectra_bpc(levels = 1)
 
+ms$get_spectra_mode()
 
-tar <- data.frame(mzmin = 268.1912 - 0.01, mzmax = 268.1912 + 0.01, polarity = 1)
+tar <- data.frame(
+  mzmin = c(268.1912 - 0.01, 237.1022 - 0.01, 130.1087 - 0.01),
+  mzmax = c(268.1912 + 0.01, 237.1022 + 0.01, 130.1087 + 0.01),
+  polarity = c(1, 1, 1)
+)
 
-ms$plot_spectra(mz = tar, level = 1)
+ms$plot_spectra(mz = tar, level = 1, colorBy = "targets")
 
 
 
