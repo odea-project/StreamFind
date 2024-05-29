@@ -2604,8 +2604,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
             sn = round(max(vapply(quality, function(x) if (!is.null(x)) x$sn else 0, 0), na.rm = TRUE), digits = 1),
             iso = min(vapply(isotope, function(x) if (!is.null(x)) x$step else 0, 0)),
             istd = paste0(unique(vapply(istd, function(x) if (!is.null(x)) x$name else NA_character_, NA_character_)), collapse = "; "),
-            filtered = all(filtered),
-            filter = paste(unique(filter), collapse = "; ")
+            filtered = all(filtered)
           ), by = "group"]
           
           fgroups <- fgroups[fts_meta, on = "group"]
@@ -5358,6 +5357,89 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       analyses <- private$.check_analyses_argument(analyses)
 
       .plot_groups_overview_aux(fts, eic, heights, analyses)
+    },
+    
+    #' @description Method to plot the intensity profile of feature groups across the analyses.
+    #' 
+    plot_groups_profile = function(analyses = NULL,
+                                   groups = NULL,
+                                   mass = NULL,
+                                   mz = NULL,
+                                   rt = NULL,
+                                   drift = NULL,
+                                   ppm = 20,
+                                   sec = 60,
+                                   millisec = 5,
+                                   filtered = FALSE,
+                                   legendNames = NULL,
+                                   title = NULL) {
+      
+      fts <- self$get_features(analyses, groups, mass, mz, rt, drift, ppm, sec, millisec, filtered)
+      
+      if (nrow(fts) == 0) {
+        message("\U2717 Features not found for the targets!")
+        return(NULL)
+      }
+      
+      if (is.character(legendNames) & length(legendNames) == length(unique(fts$group))) {
+        leg <- legendNames
+        names(leg) <- unique(fts$group)
+        leg <- leg[fts$group]
+        fts$var <- leg[fts$group]
+      } else if (isTRUE(legendNames) & "name" %in% colnames(fts)) {
+        leg <- fts$name
+        fts$var <- fts$name
+      } else {
+        leg <- fts$group
+        fts$var <- fts$group
+      }
+      
+      u_leg <- unique(leg)
+      
+      colors <- .get_colors(u_leg)
+      
+      analyses <- private$.check_analyses_argument(analyses)
+      
+      plot <- plot_ly(fts, x = sort(unique(fts$analysis)))
+      
+      for (g in u_leg) {
+        df <- fts[fts$var == g, ]
+        
+        if (!all(analyses %in% df$analysis)) {
+          extra <- data.frame(
+            "analysis" = analyses[!analyses %in% df$analysis],
+            "var" = g,
+            "intensity" = 0
+          )
+          df <- rbind(df[, c("analysis", "var", "intensity")], extra)
+        }
+        
+        df <- df[order(df$analysis), ]
+        
+        plot <- plot %>% add_trace(df,
+          x = df$analysis,
+          y = df$intensity / max(df$intensity),
+          type = "scatter", mode = "lines",
+          line = list(width = 1, color = colors[g]),
+          connectgaps = FALSE,
+          name = g,
+          legendgroup = g,
+          showlegend = TRUE
+        )
+      }
+      
+      xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = NULL)
+      
+      yaxis <- list(
+        linecolor = toRGB("black"), linewidth = 2,
+        title = "Normalized intensity",
+        titlefont = list(size = 12, color = "black"),
+        tick0 = 0, dtick = 0.25, range = c(0, 1.5)
+      )
+      
+      plot <- plot %>% plotly::layout(xaxis = xaxis, yaxis = yaxis)
+      
+      plot
     },
 
     #' @description Plots the quality control assessment of the internal standards.
