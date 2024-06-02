@@ -14,6 +14,15 @@
   
   if (!validate(settings)) return(FALSE)
   
+  cache <- .load_chache("find_internal_standards", ms$featureGroups, settings)
+  
+  if (!is.null(cache$data)) {
+    if (private$.add_features_column("istd", cache$data)) {
+      message("\U2139 Internal standards annotation loaded from cache!")
+      return(TRUE)
+    }
+  }
+  
   database <- settings$parameters$database
   
   database <- as.data.table(database)
@@ -35,10 +44,7 @@
     intensity <- database$intensity
     names(intensity) <- database$name
     
-    internal_standards$rec <- round(
-      (internal_standards$intensity / intensity[internal_standards$istd_name]) * 100, 
-      digits = 1
-    )
+    internal_standards$rec <- round((internal_standards$intensity / intensity[internal_standards$istd_name]) * 100, digits = 1)
     
   } else if ("area" %in% colnames(database)) {
     area <- database$area
@@ -139,8 +145,12 @@
     
     if (private$.add_features_column("istd", istd_col)) {
       
-      message("\U2713 ", length(unique(internal_standards$name)), " internal standards found and tagged!")
+      if (!is.null(cache$hash)) {
+        .save_cache("find_internal_standards", istd_col, cache$hash)
+        message("\U1f5ab Internal standards annotation cached!")
+      }
       
+      message("\U2713 ", length(unique(internal_standards$name)), " internal standards found and tagged!")
       TRUE
       
     } else {

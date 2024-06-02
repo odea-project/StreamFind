@@ -94,6 +94,10 @@ reference:
   contents:
     - starts_with("Settings_deconvolute_spectra")
 
+- subtitle: fill_features
+  contents:
+    - starts_with("Settings_fill_features")
+
 - subtitle: filter_features
   contents:
     - starts_with("Settings_filter_features")
@@ -129,6 +133,10 @@ reference:
 - subtitle: load_MSPeakLists
   contents:
     - starts_with("Settings_load_MSPeakLists")
+
+- subtitle: normalize_features
+  contents:
+    - starts_with("Settings_normalize_features")
 
 - subtitle: suspect_screening
   contents:

@@ -82,6 +82,10 @@ validate <- function(x) {
   UseMethod(".s3_ms_deconvolute_spectra")
 }
 
+.s3_ms_fill_features <- function(settings, self, private) {
+  UseMethod(".s3_ms_fill_features")
+}
+
 #' @noRd
 .s3_ms_filter_features <- function(settings, self, private) {
   UseMethod(".s3_ms_filter_features")
@@ -131,6 +135,11 @@ validate <- function(x) {
 }
 
 #' @noRd
+.s3_ms_normalize_features <- function(settings, self, private) {
+  UseMethod(".s3_ms_normalize_features")
+}
+
+#' @noRd
 .s3_ms_suspect_screening <- function(settings, self, private) {
   UseMethod(".s3_ms_suspect_screening")
 }
@@ -161,14 +170,6 @@ validate <- function(x) {
 }
 
 ## Nor Used Yet -----
-
-.s3_ms_fill_features <- function(settings, self, private) {
-  UseMethod(".s3_ms_fill_features")
-}
-
-.s3_ms_normalise_intensity <- function(settings, self, private) {
-  UseMethod(".s3_ms_normalise_intensity")
-}
 
 #' @noRd
 .s3_ms_correct_intensity <- function(settings, self, private) {

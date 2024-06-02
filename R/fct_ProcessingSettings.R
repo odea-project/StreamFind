@@ -1420,6 +1420,98 @@ validate.Settings_load_MSPeakLists_StreamFind <- function(x) {
 
 
 # ______________________________________________________________________________________________________________________
+# normalize_features -----
+# ______________________________________________________________________________________________________________________
+
+#' @title Settings_normalize_features_patRoon_tic
+#' 
+#' @description Settings for normalizing features using the Total Ion Current (TIC) method from the patRoon package.
+#' 
+#' @return A ProcessingSettings S3 class object with subclass Settings_normalize_features_patRoon_tic.
+#' 
+#' @references
+#' \insertRef{patroon01}{StreamFind}
+#' 
+#' \insertRef{patroon02}{StreamFind}
+#' 
+#' @export
+#
+Settings_normalize_features_patRoon_tic <- function() {
+  
+  settings <- list(
+    call = "normalize_features",
+    algorithm = "patRoon_tic",
+    parameters = list(),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    software = "patRoon",
+    developer = "Rick Helmus",
+    contact = "r.helmus@uva.nl",
+    link = "https://github.com/rickhelmus/patRoon",
+    doi = "10.21105/joss.04029"
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @export
+#' @noRd
+#'
+Settings_normalize_features_patRoon_tic <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "normalize_features"),
+    checkmate::test_choice(x$algorithm, "patRoon_tic")
+  )
+}
+
+
+
+
+
+# ______________________________________________________________________________________________________________________
+# fill_features -----
+# ______________________________________________________________________________________________________________________
+
+#' @title Settings_fill_features_StreamFind
+#'
+#' @description Settings for filling missing values in features.
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_fill_features_StreamFind.
+#'
+#' @export
+#'
+Settings_fill_features_StreamFind <- function() {
+  
+  settings <- list(
+    call = "fill_features",
+    algorithm = "StreamFind",
+    parameters = list(),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @export
+#' @noRd
+#'
+validate.Settings_fill_features_StreamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "fill_features"),
+    checkmate::test_choice(x$algorithm, "StreamFind")
+  )
+}
+
+
+
+
+
+# ______________________________________________________________________________________________________________________
 # filter_features -----
 # ______________________________________________________________________________________________________________________
 

@@ -148,15 +148,12 @@ ms$plot_spectra_bpc(levels = 1)
 ms$get_spectra_mode()
 
 tar <- data.frame(
-  mzmin = c(268.1912 - 0.01, 237.1022 - 0.01, 130.1087 - 0.01),
-  mzmax = c(268.1912 + 0.01, 237.1022 + 0.01, 130.1087 + 0.01),
+  mzmin = c(268.1912 - 0.005, 237.1022 - 0.005, 130.1087 - 0.005),
+  mzmax = c(268.1912 + 0.005, 237.1022 + 0.005, 130.1087 + 0.005),
   polarity = c(1, 1, 1)
 )
 
-ms$plot_spectra(mz = tar, level = 1, colorBy = "targets")
-
-
-
+ms$plot_spectra_eic(mz = tar, colorBy = "targets")
 
 ms$plot_spectra_eic(mz = carb, ppm = 10, sec = 15, colorBy = "analyses")
 

@@ -146,6 +146,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-plot_groups_ms1}{\code{MassSpecEngine$plot_groups_ms1()}}
 \item \href{#method-MassSpecEngine-plot_groups_ms2}{\code{MassSpecEngine$plot_groups_ms2()}}
 \item \href{#method-MassSpecEngine-plot_groups_overview}{\code{MassSpecEngine$plot_groups_overview()}}
+\item \href{#method-MassSpecEngine-plot_groups_profile}{\code{MassSpecEngine$plot_groups_profile()}}
 \item \href{#method-MassSpecEngine-plot_internal_standards_qc}{\code{MassSpecEngine$plot_internal_standards_qc()}}
 \item \href{#method-MassSpecEngine-plot_suspects}{\code{MassSpecEngine$plot_suspects()}}
 \item \href{#method-MassSpecEngine-map_isotopes}{\code{MassSpecEngine$map_isotopes()}}
@@ -4068,6 +4069,80 @@ the added targets as legend of the plot.}
 \item{\code{title}}{A string with the title.}
 
 \item{\code{heights}}{A numeric vector of length 3 to control the height of the first, second and third plot, respectively.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-plot_groups_profile"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_groups_profile}{}}}
+\subsection{Method \code{plot_groups_profile()}}{
+Method to plot the intensity profile of feature groups across the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_groups_profile(
+  analyses = NULL,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  drift = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  filtered = FALSE,
+  normalized = TRUE,
+  legendNames = NULL,
+  title = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+
+\item{\code{groups}}{A numeric or character vector with the number or ID of feature groups, respectively.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
+and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
+and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
+minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
+must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
+\code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
+\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
+retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
+and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
+calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
+retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
+\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{rt}}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+a two columns data.table or data.frame with minimum and maximum drift
+time values (in milliseconds).}
+
+\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
+
+\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+
+\item{\code{millisec}}{Numeric of length one with the drift time deviation,
+in milliseconds.}
+
+\item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
+
+\item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
+the added targets as legend of the plot.}
+
+\item{\code{title}}{A string with the title.}
 }
 \if{html}{\out{</div>}}
 }

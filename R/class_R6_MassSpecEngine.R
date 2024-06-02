@@ -1460,18 +1460,20 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           }
           
           message("\U2699 Parsing spectra from ", basename(x$file), "...", appendLF = FALSE)
+          
+          if ("analysis" %in% colnames(targets)) targets <- targets[targets$analysis %in% x$name, ]
 
           spec <- rcpp_parse_ms_spectra(x, levels, targets, minIntensityMS1, minIntensityMS2)
+          
+          message(" Done!")
+          
+          if (nrow(spec) == 0) return(data.table())
           
           if ("id" %in% colnames(spec)) {
             setorder(spec, id, rt, mz)
           } else {
             setorder(spec, rt, mz)
           }
-          
-          message(" Done!")
-          
-          if (nrow(spec) == 0) return(data.frame())
           
           if (!any(spec$drift > 0)) spec$drift <- NULL
           
@@ -3559,10 +3561,18 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         
         if (is.data.frame(files)) {
           
+          if (all(c("path", "analysis") %in% colnames(files))) {
+            files$file <- vapply(seq_len(nrow(files)), function(x) {
+              list.files(files$path[x], pattern = files$analysis[x], full.names = TRUE, recursive = FALSE)
+            }, "")
+          }
+          
           if ("file" %in% colnames(files)) {
             
             if ("replicate" %in% colnames(files)) {
               replicates <- as.character(files$replicate)
+            } else if ("group" %in% colnames(files)) {
+              replicates <- as.character(files$group)
             } else {
               replicates <- rep(NA_character_, nrow(files))
             }
@@ -5371,6 +5381,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                    sec = 60,
                                    millisec = 5,
                                    filtered = FALSE,
+                                   normalized = TRUE,
                                    legendNames = NULL,
                                    title = NULL) {
       
@@ -5380,6 +5391,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         message("\U2717 Features not found for the targets!")
         return(NULL)
       }
+      
+      if (!"polarity" %in% colnames(df)) {
+        polarities <- self$get_spectra_polarity()
+        fts$polarity <- polarities[fts$analysis]
+      }
+      
+      if (normalized && "intensity_rel" %in% colnames(fts)) fts$intensity <- as.numeric(fts$intensity_rel)
       
       if (is.character(legendNames) & length(legendNames) == length(unique(fts$group))) {
         leg <- legendNames
@@ -5408,17 +5426,32 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         if (!all(analyses %in% df$analysis)) {
           extra <- data.frame(
             "analysis" = analyses[!analyses %in% df$analysis],
+            "polarity" = polarities[!analyses %in% df$analysis],
             "var" = g,
             "intensity" = 0
           )
-          df <- rbind(df[, c("analysis", "var", "intensity")], extra)
+          df <- rbind(df[, c("analysis", "var", "intensity", "polarity")], extra)
         }
         
         df <- df[order(df$analysis), ]
         
+        if (normalized) {
+          
+          if (length(unique(df$polarity)) > 1) {
+            
+            for (p in unique(df$polarity)) {
+              max_int <- max(df$intensity[df$polarity == p])
+              if (max_int > 0) df$intensity[df$polarity == p] <- df$intensity[df$polarity == p] / max_int
+            }
+          } else {
+            max_int <- max(df$intensity)
+            if (max_int > 0) df$intensity <- df$intensity / max_int
+          }
+        }
+        
         plot <- plot %>% add_trace(df,
           x = df$analysis,
-          y = df$intensity / max(df$intensity),
+          y = df$intensity,
           type = "scatter", mode = "lines",
           line = list(width = 1, color = colors[g]),
           connectgaps = FALSE,
@@ -5433,8 +5466,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       yaxis <- list(
         linecolor = toRGB("black"), linewidth = 2,
         title = "Normalized intensity",
-        titlefont = list(size = 12, color = "black"),
-        tick0 = 0, dtick = 0.25, range = c(0, 1.5)
+        titlefont = list(size = 12, color = "black")
       )
       
       plot <- plot %>% plotly::layout(xaxis = xaxis, yaxis = yaxis)
@@ -5910,6 +5942,17 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
 
       invisible(self)
     },
+    
+    #' @description Fills missing features in analyses of feature groups.
+    #'
+    #' @return Invisible.
+    #'
+    fill_features = function(settings = NULL) {
+      
+      .dispatch_process_method("ms_fill_features", settings, self, private)
+      
+      invisible(self)
+    },
 
     #' @description Filters features and feature groups according to defined settings.
     #'
@@ -6252,7 +6295,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           "correct_spectra_baseline",
           "normalize_spectra",
           "average_spectra",
-          "subtract_blank_spectra"
+          "subtract_blank_spectra",
+          "normalize_features"
         ),
         max = c(
           1,
@@ -6280,6 +6324,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           Inf,
           1,
           Inf,
+          1,
           1,
           1
         )

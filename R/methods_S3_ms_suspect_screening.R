@@ -12,6 +12,15 @@
   }
   
   if (!validate(settings)) return(FALSE)
+  
+  cache <- .load_chache("suspect_sreening", ms$features, settings)
+  
+  if (!is.null(cache$data)) {
+    if (private$.add_features_column("suspects", cache$data)) {
+      message("\U2139 Suspect screening annotation loaded from cache!")
+      return(TRUE)
+    }
+  }
 
   suspect_features <- self$get_suspects(
     database = settings$parameters$database,
@@ -79,12 +88,16 @@
     
     if (private$.add_features_column("suspects", sus_col)) {
       
+      if (!is.null(cache$hash)) {
+        .save_cache("suspect_sreening", sus_col, cache$hash)
+        message("\U1f5ab Suspect screening annotation cached!")
+      }
+      
       TRUE
       
     } else {
       FALSE
     }
-    
   } else {
     FALSE
   }

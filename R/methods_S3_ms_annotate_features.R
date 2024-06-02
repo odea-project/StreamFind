@@ -40,7 +40,7 @@
     message(" Done!")
     
     if (!is.null(cache$hash)) {
-      .save_cache("bin_spectra", isotopes, cache$hash)
+      .save_cache("annotate_features", isotopes, cache$hash)
       message("\U1f5ab Annotated features cached!")
     }
   }
