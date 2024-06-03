@@ -2022,8 +2022,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
             fts <- fts[sel, ]
 
             if ("name" %in% colnames(target_id)) {
-              ids <- unique(target_id$name)
-              names(ids) <- unique(target_id$group)
+              ids <- target_id$name
+              names(ids) <- target_id$group
+              ids <- ids[!duplicated(names(ids))]
               fts$name <- ids[fts$group]
             }
 
@@ -5420,9 +5421,15 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       analyses <- private$.check_analyses_argument(analyses)
       
+      showLeg <- rep(TRUE, length(u_leg))
+      names(showLeg) <- u_leg
+      
+      rpls <- self$get_replicate_names()
+      
       plot <- plot_ly(fts, x = sort(unique(fts$analysis)))
       
       for (g in u_leg) {
+        
         df <- fts[fts$var == g, ]
         
         if (!all(analyses %in% df$analysis)) {
@@ -5455,12 +5462,32 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           x = df$analysis,
           y = df$intensity,
           type = "scatter", mode = "lines",
-          line = list(width = 1, color = colors[g]),
+          line = list(width = 0.5, color = colors[g], dash = "dash"),
           connectgaps = FALSE,
           name = g,
           legendgroup = g,
-          showlegend = TRUE
+          showlegend = FALSE
         )
+        
+        df$replicate <- rpls[df$analysis]
+        
+        for (r in unique(df$replicate)) {
+          df_r <- df[df$replicate %in%  r, ]
+          
+          plot <- plot %>% add_trace(df,
+            x = df_r$analysis,
+            y = df_r$intensity,
+            type = "scatter", mode = "lines+markers",
+            line = list(width = 1.5, color = colors[g]),
+            marker = list(size = 5, color = colors[g]),
+            connectgaps = FALSE,
+            name = g,
+            legendgroup = g,
+            showlegend = showLeg[g]
+          )
+          
+          showLeg[g] <- FALSE
+        }
       }
       
       xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = NULL)
