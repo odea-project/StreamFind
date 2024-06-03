@@ -1475,17 +1475,20 @@ Settings_normalize_features_patRoon_tic <- function(x) {
 #' @title Settings_fill_features_StreamFind
 #'
 #' @description Settings for filling missing values in features.
+#' 
+#' @template arg-ms-rtExpand
+#' @template arg-ms-mzExpand
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_fill_features_StreamFind.
 #'
 #' @export
 #'
-Settings_fill_features_StreamFind <- function() {
+Settings_fill_features_StreamFind <- function(rtExpand = 1, mzExpand = 0.0005) {
   
   settings <- list(
     call = "fill_features",
     algorithm = "StreamFind",
-    parameters = list(),
+    parameters = list(rtExpand = rtExpand, mzExpand = mzExpand),
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",
     developer = "Ricardo Cunha",
@@ -1503,7 +1506,9 @@ Settings_fill_features_StreamFind <- function() {
 validate.Settings_fill_features_StreamFind <- function(x) {
   all(
     checkmate::test_choice(x$call, "fill_features"),
-    checkmate::test_choice(x$algorithm, "StreamFind")
+    checkmate::test_choice(x$algorithm, "StreamFind"),
+    checkmate::test_numeric(x$parameters$rtExpand, len = 1),
+    checkmate::test_numeric(x$parameters$mzExpand, len = 1)
   )
 }
 

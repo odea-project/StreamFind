@@ -4,7 +4,14 @@
 \alias{Settings_fill_features_StreamFind}
 \title{Settings_fill_features_StreamFind}
 \usage{
-Settings_fill_features_StreamFind(minSnRatio = 3, excludeIsotopes = TRUE)
+Settings_fill_features_StreamFind(rtExpand = 1, mzExpand = 5e-04)
+}
+\arguments{
+\item{rtExpand}{Numeric (length 1) with the retention time values (in seconds) for expanding left and right the
+retention time range.}
+
+\item{mzExpand}{Numeric (length 1) with the mass or mass-to-charge ratio (\emph{m/z}) (in Da) for expanding left and
+right the mass range.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_fill_features_StreamFind.

@@ -162,6 +162,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-bin_spectra}{\code{MassSpecEngine$bin_spectra()}}
 \item \href{#method-MassSpecEngine-find_features}{\code{MassSpecEngine$find_features()}}
 \item \href{#method-MassSpecEngine-group_features}{\code{MassSpecEngine$group_features()}}
+\item \href{#method-MassSpecEngine-fill_features}{\code{MassSpecEngine$fill_features()}}
 \item \href{#method-MassSpecEngine-filter_features}{\code{MassSpecEngine$filter_features()}}
 \item \href{#method-MassSpecEngine-annotate_features}{\code{MassSpecEngine$annotate_features()}}
 \item \href{#method-MassSpecEngine-find_internal_standards}{\code{MassSpecEngine$find_internal_standards()}}
@@ -4139,6 +4140,8 @@ in milliseconds.}
 
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
+\item{\code{normalized}}{Logical (length 1). When \code{TRUE} the profile intensities are normalized.}
+
 \item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
 the added targets as legend of the plot.}
 
@@ -4730,6 +4733,28 @@ Invisible.
 Groups and possibly aligns features across analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$group_features(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name applicable to the processing method.
+Alternatively, a named list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as ProcessingSettings
+S3 class object. When not given, settings for the processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-fill_features"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-fill_features}{}}}
+\subsection{Method \code{fill_features()}}{
+Fills missing features in analyses of feature groups.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$fill_features(settings = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

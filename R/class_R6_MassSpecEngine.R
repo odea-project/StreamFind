@@ -5371,6 +5371,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     
     #' @description Method to plot the intensity profile of feature groups across the analyses.
     #' 
+    #' @param normalized Logical (length 1). When `TRUE` the profile intensities are normalized.
+    #' 
     plot_groups_profile = function(analyses = NULL,
                                    groups = NULL,
                                    mass = NULL,

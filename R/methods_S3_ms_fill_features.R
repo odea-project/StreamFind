@@ -47,8 +47,9 @@
     return(FALSE)
   }
   
-  rt_expand <- 1
-  mz_expand <- 0.0005
+  rt_expand <- settings$parameters$rtExpand
+  
+  mz_expand <- settings$parameters$mzExpand
   
   to_complete <- fts[fts$name %in% rpl_incomplete$name, ]
   
