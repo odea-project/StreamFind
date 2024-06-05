@@ -5395,7 +5395,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         return(NULL)
       }
       
-      if (!"polarity" %in% colnames(df)) {
+      if (!"polarity" %in% colnames(fts)) {
         polarities <- self$get_spectra_polarity()
         fts$polarity <- polarities[fts$analysis]
       }
