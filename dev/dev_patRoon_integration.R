@@ -55,9 +55,9 @@ ms <- MassSpecEngine$new(files = anaInfo)
 ms$add_settings(list(
   Settings_find_features_openms(),
   Settings_group_features_openms(),
-  Settings_fill_features_StreamFind()
+  Settings_fill_features_StreamFind(),
   # Settings_annotate_features_StreamFind(),
-  # Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
+  Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10)
   # Settings_filter_features_StreamFind(excludeIsotopes = TRUE),
   # Settings_filter_features_patRoon(absMinIntensity = 5000, maxReplicateIntRSD = 30, blankThreshold = 5, absMinReplicateAbundance = 3),
   # Settings_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005),
@@ -74,6 +74,8 @@ ms$plot_groups_profile(groups = ms$get_internal_standards()$group, normalized = 
 ms$get_features(mass = dbis[1, ], filtered = TRUE)
 
 ms$plot_features(mass = dbis[1, ], legendNames = FALSE, filtered = TRUE, colorBy = "analyses+targets")
+
+ms$plot_spectra_xic(analyses = c())
 
 # ms$plot_groups_profile(mass = dbsus, legendNames = TRUE)
 
