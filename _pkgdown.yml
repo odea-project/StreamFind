@@ -138,13 +138,17 @@ reference:
   contents:
     - starts_with("Settings_normalize_features")
 
-- subtitle: suspect_screening
-  contents:
-    - starts_with("Settings_suspect_screening")
-
 - subtitle: normalize_spectra
   contents:
     - starts_with("Settings_normalize_spectra")
+
+- subtitle: prepare_classification
+  contents:
+    - starts_with("Settings_prepare_classification")
+
+- subtitle: suspect_screening
+  contents:
+    - starts_with("Settings_suspect_screening")
 
 - subtitle: smooth_chromatograms
   contents:

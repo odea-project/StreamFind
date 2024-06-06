@@ -75,7 +75,7 @@ ms$get_features(mass = dbis[1, ], filtered = TRUE)
 
 ms$plot_features(mass = dbis[1, ], legendNames = FALSE, filtered = TRUE, colorBy = "analyses+targets")
 
-ms$plot_spectra_xic(analyses = c())
+ms$plot_spectra_xic(analyses = 1, mass = dbis[1, ])
 
 # ms$plot_groups_profile(mass = dbsus, legendNames = TRUE)
 

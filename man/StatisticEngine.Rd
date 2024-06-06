@@ -14,6 +14,9 @@ Note that the model must be created before prediction and data must have the sam
 the model. Also, any pre-processing applied to the model data should be applied to the data before prediction.
 Note that only numeric values are accepted in data and the data column names are used as variable names
 and data row names are used as analyses names.
+
+Note that the classification must be prepared before using the method \code{prepare_classification} and data
+must have the same number of variables as the analyses in the engine.
 }
 \section{Super class}{
 \code{\link[StreamFind:CoreEngine]{StreamFind::CoreEngine}} -> \code{StatisticEngine}
@@ -25,7 +28,9 @@ and data row names are used as analyses names.
 
 \item{\code{model}}{Statistic model.}
 
-\item{\code{predicted}}{Predicted results model.}
+\item{\code{prediction_results}}{Prediction results from model.}
+
+\item{\code{classification_results}}{Classification results.}
 }
 \if{html}{\out{</div>}}
 }
@@ -34,14 +39,18 @@ and data row names are used as analyses names.
 \itemize{
 \item \href{#method-StatisticEngine-new}{\code{StatisticEngine$new()}}
 \item \href{#method-StatisticEngine-get_overview}{\code{StatisticEngine$get_overview()}}
+\item \href{#method-StatisticEngine-get_classes}{\code{StatisticEngine$get_classes()}}
 \item \href{#method-StatisticEngine-get_number_variables}{\code{StatisticEngine$get_number_variables()}}
 \item \href{#method-StatisticEngine-get_model_scores}{\code{StatisticEngine$get_model_scores()}}
 \item \href{#method-StatisticEngine-get_model_loadings}{\code{StatisticEngine$get_model_loadings()}}
 \item \href{#method-StatisticEngine-get_model_residuals}{\code{StatisticEngine$get_model_residuals()}}
 \item \href{#method-StatisticEngine-add_analyses}{\code{StatisticEngine$add_analyses()}}
 \item \href{#method-StatisticEngine-add_data}{\code{StatisticEngine$add_data()}}
+\item \href{#method-StatisticEngine-add_classes}{\code{StatisticEngine$add_classes()}}
 \item \href{#method-StatisticEngine-make_pca_model}{\code{StatisticEngine$make_pca_model()}}
+\item \href{#method-StatisticEngine-prepare_classification}{\code{StatisticEngine$prepare_classification()}}
 \item \href{#method-StatisticEngine-predict}{\code{StatisticEngine$predict()}}
+\item \href{#method-StatisticEngine-classify}{\code{StatisticEngine$classify()}}
 \item \href{#method-StatisticEngine-plot_data}{\code{StatisticEngine$plot_data()}}
 \item \href{#method-StatisticEngine-plot_model_scores}{\code{StatisticEngine$plot_model_scores()}}
 \item \href{#method-StatisticEngine-plot_model_residuals}{\code{StatisticEngine$plot_model_residuals()}}
@@ -154,6 +163,16 @@ Gets an overview data.frame of all the analyses.
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-StatisticEngine-get_classes"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-get_classes}{}}}
+\subsection{Method \code{get_classes()}}{
+Gets the class of each analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$get_classes()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-StatisticEngine-get_number_variables"></a>}}
 \if{latex}{\out{\hypertarget{method-StatisticEngine-get_number_variables}{}}}
 \subsection{Method \code{get_number_variables()}}{
@@ -246,6 +265,23 @@ Adds data to the \emph{StatisticEngine} object.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-StatisticEngine-add_classes"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-add_classes}{}}}
+\subsection{Method \code{add_classes()}}{
+Adds classes to the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$add_classes(classes)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{classes}}{A character vector with the classes.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-StatisticEngine-make_pca_model"></a>}}
 \if{latex}{\out{\hypertarget{method-StatisticEngine-make_pca_model}{}}}
 \subsection{Method \code{make_pca_model()}}{
@@ -270,12 +306,53 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-StatisticEngine-prepare_classification"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-prepare_classification}{}}}
+\subsection{Method \code{prepare_classification()}}{
+Prepares for classification of a test set added by the method \code{classify}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$prepare_classification(settings)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A named list of ProcessingSettings objects or a
+single ProcessingSettings object. The list names should match
+the call name of each ProcessingSettings object. Alternatively, a named
+list with call name, algorithm and parameters to be transformed and added
+as ProcessingSettings object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-StatisticEngine-predict"></a>}}
 \if{latex}{\out{\hypertarget{method-StatisticEngine-predict}{}}}
 \subsection{Method \code{predict()}}{
 Predicts the data using the model.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$predict(data = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{data}}{Data.frame, data-table or matrix with data.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-StatisticEngine-classify"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-classify}{}}}
+\subsection{Method \code{classify()}}{
+Classifies the data using the classification labels of the analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$classify(data = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

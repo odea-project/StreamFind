@@ -102,36 +102,20 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       }
     },
     
-    #' @field predicted Predicted results model.
+    #' @field prediction_results Prediction results from model.
     #'
-    predicted = function(value) {
-      
-      if (missing(value)) {
-        
-        res <- self$get_results("predicted")
-        
-        if (length(res) > 0) {
-          
-          res$predicted
-          
-        } else {
-          NULL
-        }
-      } else {
-        
-        self$add_results(
-          list(
-            "predicted" = list(
-              "results" = value[["results"]],
-              "data" = value[["data"]],
-              "software" = "mdatools",
-              "version" = as.character(packageVersion("mdatools"))
-            )
-          )
-        )
-        
-        invisible(self)
-      }
+    prediction_results = function() {  
+      res <- self$get_results("prediction")
+      if (length(res) > 0) return(res$prediction[["results"]])
+      NULL
+    },
+    
+    #' @field classification_results Classification results.
+    #' 
+    classification_results = function() {
+      res <- self$get_results("classification")
+      if (length(res) > 0) return(res$classification[["results"]])
+      NULL
     }
   ),
 
@@ -160,14 +144,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
      
       if (!is.null(data)) self$add_data(data)
      
-      private$.register(
-        "created",
-        "StatisticEngine",
-        headers$name,
-        "StreamFind",
-        as.character(packageVersion("StreamFind")),
-        paste(c(headers$author, headers$path), collapse = ", ")
-      )
+      private$.register("created", "StatisticEngine", headers$name, paste(c(headers$author, headers$path), collapse = ", "))
     },
     
     ## ___ get -----
@@ -182,7 +159,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
         
         ov$nvars <- vapply(private$.analyses, function(x) ncol(x$data), 0)
         
-        ov$class <- vapply(private$.analyses, function(x) paste(x$classes, collapse = ", "), NA_character_)
+        ov$class <- vapply(private$.analyses, function(x) x$class, NA_character_)
         
         row.names(ov) <- seq_len(nrow(ov))
         
@@ -190,6 +167,18 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
        
       } else {
        data.frame()
+      }
+    },
+    
+    #' @description Gets the class of each analysis.
+    #' 
+    get_classes = function() {
+      if (length(private$.analyses) > 0) {
+        classes <- vapply(private$.analyses, function(x) x$class, NA_character_)
+        names(classes) <- self$get_analysis_names()
+        classes
+      } else {
+        NULL
       }
     },
     
@@ -324,7 +313,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #' @param data Data.frame, data-table or matrix with data.
     #'  
     add_data = function(data) {
-           
+
       if (!is.data.frame(data) && !is(data, "data.table") && !is.matrix(data)) {
         warning("The data must be a data.frame, data.table or matrix! Not done.")
         return(invisible())
@@ -353,6 +342,32 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       self$add_analyses(analyses)
     },
     
+    #' @description Adds classes to the analyses.
+    #' 
+    #' @param classes A character vector with the classes.
+    #' 
+    add_classes = function(classes) {
+      
+      if (!is.character(classes)) {
+        warning("The classes must be a character vector! Not done.")
+        return(invisible())
+      }
+      
+      if (length(classes) != self$get_number_analyses()) {
+        warning("The number of classes must be equal to the number of analyses! Not done.")
+        return(invisible())
+      }
+      
+      private$.analyses <- Map(function(x, y) {
+        x$class <- y
+        x
+      }, private$.analyses, classes)
+      
+      private$.register("added", "analyses", "classes", paste(unique(classes), collapse = "; "))
+      
+      invisible(self)
+    },
+    
     ## ___ processing -----
     
     #' @description Makes a Principle Component Analysis (PCA) model.
@@ -364,6 +379,17 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       # if (missing(settings)) settings <- Settings_make_pca_model_StreamFind()
       
       .dispatch_process_method("make_pca_model", settings, self, private)
+      
+      invisible(self)
+    },
+    
+    #' @description Prepares for classification of a test set added by the method `classify`.
+    #'
+    #' @return Invisible.
+    #'
+    prepare_classification = function(settings) {
+      
+      .dispatch_process_method("prepare_classification", settings, self, private)
       
       invisible(self)
     },
@@ -424,11 +450,56 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
         return(invisible(self))
       }
       
-      res <- do.call("mdatools::predict", list(self$model, data))
+      res <- do.call("predict", list(self$model, data))
       
-      self$predicted <- list("results" = res, "data" = data)
+      self$add_results(list("prediction" = list("results" = res, "data" = data)))
       
       message(paste0("\U2713 ", "Predicted results added!"))
+      
+      invisible(self)
+    },
+    
+    #' @description Classifies the data using the classification labels of the analysis.
+    #' 
+    #' @note Note that the classification must be prepared before using the method `prepare_classification` and data 
+    #' must have the same number of variables as the analyses in the engine.
+    #' 
+    #' @param data Data.frame, data-table or matrix with data.
+    #' 
+    classify = function(data = NULL) {
+      
+      if (!self$has_results("classification")) {
+        warning("Classification instructions not found! Not done.")
+        return(invisible())
+      }
+      
+      classification <- self$get_results("classification")[[1]]
+      
+      train_data <- list()
+      train_data[[classification$conditions$train_var]] <- self$data
+      train_data[[classification$conditions$label_var]] <- factor(self$get_classes())
+      train_data[[classification$conditions$test_var]] <- data
+      
+      res <- do.call(classification$func, c(train_data, classification$conditions$args))
+      
+      # check is res has attr prob
+      if (!is.null(attr(res, "prob"))) {
+        prob = round(attr(res, "prob"), digits = 1)
+      } else {
+       prob = NULL
+      }
+      
+      res <- data.table::data.table(analysis = rownames(data), class = knn_model)
+      
+      res$probability <- prob
+      
+      classification$data <- data
+      
+      classification$results <- res
+      
+      self$add_results(list("classification" = classification))
+      
+      message(paste0("\U2713 ", "Classification results added!"))
       
       invisible(self)
     },
@@ -729,7 +800,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
         return(NULL)
       }
       
-      predicted <- self$predicted
+      predicted <- self$prediction_results
       
       if (is.null(predicted)) {
         warning("Predicted results not found! Not done.")
@@ -749,7 +820,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
         }
         
       } else {
-        pc <- 1
+        pc <- model$ncomp.selected
       }
       
       if (!requireNamespace("mdatools", quietly = TRUE)) {
@@ -757,37 +828,43 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
         return(invisible(self))
       }
       
-      predicted$results$categories <- mdatools::categorize(self$model, predicted$results, pc)
+      predicted$categories <- mdatools::categorize(self$model, predicted, pc)
       
       Qlim <- model$Qlim
       
       T2lim <- model$T2lim
       
-      res = list("model" = model$res$cal, "predicted" = predicted$results)
+      res = list("model" = model$res$cal, "predicted" = predicted)
       
       lim_data <- mdatools::ldecomp.getLimitsCoordinates(Qlim, T2lim, ncomp = pc, norm = TRUE, log = FALSE)
       
       plot_data <- lapply(res, function(x) mdatools::plotResiduals(x, ncomp = pc, norm = TRUE, log = FALSE, show.plot = FALSE))
       
-      cat <- list("model" = rep("model", nrow(plot_data[[1]])), "predicted" = predicted$results$categories)
+      cat <- list("model" = rep("model", nrow(plot_data[[1]])), "predicted" = predicted$categories)
+      
+      names(cat$model) <- rownames(plot_data$model)
+      
+      names(cat$predicted) <- rownames(plot_data$predicted)
       
       if (!interactive) {
         
         NULL
         
       } else {
+        keys <- c(cat$model, as.character(cat$predicted))
+        names(keys) <- c(names(cat$model), names(cat$predicted))
         
-        cl <- .get_colors(c(rep("model", nrow(plot_data[[1]])), rep("predicted", nrow(plot_data[[2]]))))
+        plot_data_df <- lapply(plot_data, as.data.table)
+        plot_data_df <- data.table::rbindlist(plot_data_df, idcol = "type")
+        plot_data_df$type <- keys
         
-        cl <- split(cl, names(cl))
+        ukeys <- unique(keys)
         
-        cl[[2]][cat[[2]] == "outlier"] <- toRGB("darkred")
-        cl[[2]][cat[[2]] == "extreme"] <- toRGB("orange")
-        cl[[2]][cat[[2]] == "regular"] <- toRGB("#41AB5D")
-        
-        names(cl[[2]])[cat[[2]] == "outlier"] <- "outlier"
-        names(cl[[2]])[cat[[2]] == "extreme"] <- "extreme"
-        names(cl[[2]])[cat[[2]] == "regular"] <- "regular"
+        cl <- rep(toRGB("#737373"), length(ukeys))
+        cl[ukeys %in% "outlier"] <- toRGB("darkred")
+        cl[ukeys %in% "extreme"] <- toRGB("orange")
+        cl[ukeys %in% "regular"] <- toRGB("#41AB5D")
+        names(cl) <- ukeys
         
         fig <- plot_ly()
         
@@ -813,28 +890,28 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
           showlegend = showLegend
         )
         
-        for (i in seq_len(length(plot_data))) {
+        for (i in ukeys) {
+          
+          sel <- keys %in% i
           
           if (showText) {
-            text <- paste0(rownames(plot_data[[i]]), "(", as.character(cat[[i]]), ")")
+            text_label <- paste0(names(keys[sel]), "(", keys[sel], ")")
             
           } else {
-            text <- NULL
+            text_label <- NULL
           }
           
-          idx <- order(names(cl[[i]]))
-          
           fig <- fig %>% add_trace(
-            x = unname(plot_data[[i]][, 1])[idx],
-            y = unname(plot_data[[i]][, 2])[idx],
+            x = plot_data_df[sel, 2][[1]],
+            y = plot_data_df[sel, 3][[1]],
             type = "scatter",
             mode = "markers+text",
-            text = text,
-            textfont = list(size = 14, color = cl[[i]][idx]),
+            text = text_label,
+            textfont = list(size = 14, color = cl[i]),
             textposition = "top",
-            marker = list(size = 10, color = cl[[i]][idx]),
-            name = names(cl[[i]][idx]),
-            legendgroup = names(cl[[i]][idx]),
+            marker = list(size = 10, color = cl[i]),
+            name = i,
+            legendgroup = i,
             showlegend = showLegend
           )
         }
@@ -857,9 +934,11 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     processing_methods = function() {
       data.table(
         name = c(
-          "make_pca_model"
+          "make_pca_model",
+          "prepare_classification"
         ),
         max = c(
+          1,
           1
         )
       )

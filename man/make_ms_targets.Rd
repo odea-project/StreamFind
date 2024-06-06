@@ -44,13 +44,11 @@ targets to be used as identifier/s. When not given, the id is built as a
 combination of the \emph{m/z} and retention time ranges or values.}
 }
 \value{
-A data.frame with columns: \emph{id}, \emph{mz}, \emph{rt}, \emph{drift}, \emph{mzmin},
-\emph{mzmax}, \emph{rtmin}, \emph{rtmax}, \emph{driftmin} and \emph{driftmax}.
+A data.frame with columns: \emph{id}, \emph{mz}, \emph{rt}, \emph{drift}, \emph{mzmin}, \emph{mzmax}, \emph{rtmin}, \emph{rtmax}, \emph{driftmin} and
+\emph{driftmax}.
 }
 \description{
-Helper function to build \emph{m/z} and retention time and/or
-drift time targets for searching the MS data. Each target is composed of an
-id, \emph{m/z} (in Da), retention time (in seconds) and drift time (in
-milliseconds) ranges. When mass is defined without time variables, the
-retention and drift time ranges return 0 and vice versa.
+Helper function to build \emph{m/z} and retention time and/or drift time targets for searching MS data.
+Each target is composed of an id, \emph{m/z} (in Da), retention time (in seconds) and drift time (in milliseconds)
+ranges.
 }

@@ -9,7 +9,7 @@ StatisticAnalysis(
   replicate = NA_character_,
   blank = NA_character_,
   data = matrix(),
-  classes = NA_character_
+  class = NA_character_
 )
 }
 \arguments{

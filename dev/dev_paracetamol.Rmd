@@ -241,26 +241,11 @@ rSpec <- raman$get_spectra()
 rSpec <- rSpec[order(rSpec$replicate), ]
 mrSpec <- matrix(rSpec$intensity, nrow = length(unique(rSpec$replicate)), ncol = length(unique(rSpec$shift)), byrow = TRUE, dimnames = list(as.character(unique(rSpec$replicate)), as.character(round(unique(rSpec$shift), digits = 1))))
 
-mSpec <- ms2$get_spectra()
+mSpec <- ms$get_spectra()
 mSpec <- mSpec[order(mSpec$replicate), ]
 mmSpec <- matrix(mSpec$intensity, nrow = length(unique(mSpec$replicate)), ncol = length(unique(mSpec$bins)), byrow = TRUE, dimnames = list(unique(mSpec$replicate), unique(mSpec$bins)))
 
 fusedMat <- cbind(mmSpec, mrSpec)
-
-
-# stat <- StatisticEngine$new(data = fusedMat)
-# stat$make_pca_model(Settings_make_pca_model_mdatools(center = TRUE, ncomp = 3))
-# stat$plot_model_scores()
-# stat$plot_model_loadings()
-# stat$plot_model_residuals()
-# subset matrix for 1 row but keep matrix not vector
-
-attr(fusedMat, "xaxis.name") = "Keys"
-attr(fusedMat, "xaxis.values") = seq_len(ncol(fusedMat))
-
-# Mean centering improves separation but can we do it?
-library(mdatools)
-fusedMat = prep.autoscale(fusedMat, center = TRUE, scale = FALSE)
 ```
 
 ```{r}
@@ -294,126 +279,18 @@ fig
 
 # Statistic analysis
 
-## Overall PCA
-
-```{r, include=FALSE}
-library(mdatools)
-m = pca(fusedMat, 3, center = FALSE, scale = FALSE, info = "Overall PCA model")
-```
-
-```{r ,echo=FALSE,fig.width=10,fig.height=4}
-library(plotly)
-
-cl <- StreamFind:::.get_colors(rownames(fusedMat))
-scores_polt <- plot_ly()
-
-scores_polt <- scores_polt %>% add_trace(
-  x = m$res$cal$scores[, "Comp 1"],
-  y = m$res$cal$scores[, "Comp 2"],
-  type = "scatter",
-  mode = "markers+text",
-  color = names(cl),
-  colors = cl,
-  text = rownames(m$res$cal$scores),
-  textfont = list(size = 14, color = cl),
-  textposition = "top",
-  marker = list(size = 10, color = cl),
-  showlegend = FALSE
-)
-
-scores_polt <- scores_polt %>% layout(
-  xaxis = list(title = "Principal Component 1"),
-  yaxis = list(title = "Principal Component 2")
-)
-
-cl2 <- StreamFind:::.get_colors(1:2)
-loadings_plot <- plot_ly()
-
-loadings_plot <- loadings_plot %>% add_trace(
-  x = m$loadings[rownames(m$loadings) %in% colnames(mrSpec), "Comp 1"],
-  y = m$loadings[rownames(m$loadings) %in% colnames(mrSpec), "Comp 2"],
-  type = "scatter",
-  mode = "markers+text",
-  text = rownames(m$loadings)[(rownames(m$loadings) %in% colnames(mrSpec))],
-  textfont = list(size = 14, color = cl2[1]),
-  textposition = "top",
-  legendgroup = "Raman",
-  name = "Raman",
-  marker = list(size = 10, color = cl2[1])
-)
- 
-loadings_plot <- loadings_plot %>% add_trace(
-  x = m$loadings[rownames(m$loadings) %in% colnames(mmSpec), "Comp 1"],
-  y = m$loadings[rownames(m$loadings) %in% colnames(mmSpec), "Comp 2"],
-  type = "scatter",
-  mode = "markers+text",
-  text = rownames(m$loadings)[(rownames(m$loadings) %in% colnames(mmSpec))],
-  textfont = list(size = 14, color = cl2[2]),
-  textposition = "top",
-  legendgroup = "MS",
-  name = "MS",
-  marker = list(size = 10, color = cl2[2])
-)
-
-loadings_plot <- loadings_plot %>% layout(
-  xaxis = list(title = "Principal Component 1"),
-  yaxis = list(title = "Principal Component 2")
-)
-
-subplot(
-  scores_polt, loadings_plot, nrows = 1,
-  shareX = FALSE, shareY = FALSE, titleX = TRUE, titleY = TRUE,
-  margin = 0.1
-)
-```
-
 ## Unsupervised
 
 Using Principle Components Analysis (PCA) for unsupervised evaluation.
 
 ```{r}
-library(mdatools)
-# rownames(fusedMat)
-main_set <- fusedMat[c(14:15, 18), ]
-test_set <- fusedMat[c(1:13, 16:17, 19:30), ]
-
-m3 = pca(main_set, 3, center = FALSE, scale = FALSE, info = "Unsupervised PCA model", alpha = 1E-1, gamma = 1E-2)
-
-plot(m3)
-
-res = predict(m3, test_set)
-
-plot(res)
-
-c = categorize(m3, res)
-
-names(c) <- rownames(test_set)
-
-plotResiduals(m3,
-  ncomp = 2,
-  res = list("train" = m3$res$cal, "new" = res),
-  norm = TRUE, show.labels = TRUE,
-  lim.col = c("red", "orange"), lim.lwd = c(2, 2), lim.lty = c(1, 2)
-)
-
-plotResiduals(res, show.plot = FALSE, norm = TRUE)
-
-
-
-print(c)
-
-is(m3$res$cal, "ldecomp")
+main_set <- fusedMat[c(8:9, 10, 12, 14:15, 17:18), ]
+test_set <- fusedMat[c(1:7, 11, 13, 16, 19:30), ]
 
 stat <- StatisticEngine$new(data = main_set)
-stat$make_pca_model(Settings_make_pca_model_mdatools(center = FALSE, ncomp = 3, alpha = 1E-1, gamma = 1E-2))
+stat$make_pca_model(Settings_make_pca_model_mdatools(ncomp = 3, alpha = 0.005, gamma = 0.0005))
 stat$predict(test_set)
-
 stat$plot_predicted_distances()
-
-
-
-
-
 ```
 
 ## Supervised (classification)
@@ -422,23 +299,20 @@ Using k-nearest neighbors (KNN) for classification.
 
 ```{r}
 train_set <- fusedMat[c(grep("_1", rownames(fusedMat)), grep("_2", rownames(fusedMat))), ]
-
 train_set <- train_set[order(rownames(train_set)), ]
 
 test_set <- fusedMat[grep("_3", rownames(fusedMat)), ]
 
-labels <- factor(c(rep("ass", 2), rep("caff", 2), rep("fiz_acid", 2), rep("fiz_ass", 2), rep("fiz_caff", 2),
-  rep("fiz_altered", 2), rep("fiz_altered", 2), rep("fiz", 2), rep("fiz", 2), rep("par", 2))
+labels <- c(
+  rep("ass", 2), rep("caff", 2), rep("fiz_acid", 2), rep("fiz_ass", 2), rep("fiz_caff", 2),
+  rep("fiz_altered", 2), rep("fiz_altered", 2), rep("fiz", 2), rep("fiz", 2), rep("par", 2)
 )
 
-library(class)
-
-knn_model <- knn(train = train_set, test = test_set, cl = labels, k = 3, prob = FALSE)
-
-names(knn_model) <- rownames(test_set)
-
-data.frame(class = knn_model)
-# print(knn_model)
+stat2 <- StatisticEngine$new(data = train_set)
+stat2$add_classes(labels)
+stat2$prepare_classification(Settings_prepare_classification_knn(k = 3))
+stat2$classify(test_set)
+stat2$classification_results
 ```
 
 ## Other
@@ -448,6 +322,28 @@ Using Hierarchical Clustering.
 ```{r}
 hc_result <- hclust(dist(fusedMat), method = "ward.D2")
 plot(hc_result)
+```
+
+## Old code
+
+```{r include=FALSE}
+# library(mdatools)
+# m3 = pca(main_set, 3, center = FALSE, scale = FALSE, info = "Unsupervised PCA model", alpha = 0.005, gamma = 0.0005)
+# plot(m3, show.labels = TRUE)
+# res = predict(m3, test_set)
+# plot(res, show.labels = TRUE)
+# c = categorize(m3, res, 3)
+# names(c) <- rownames(test_set)
+# c
+# plotResiduals(m3,
+#   ncomp = 3,
+#   res = list("train" = m3$res$cal, "new" = res),
+#   norm = TRUE, show.labels = TRUE,
+#   lim.col = c("red", "orange"), lim.lwd = c(2, 2), lim.lty = c(1, 2)
+# )
+# plotResiduals(ncomp = 1, res, show.plot = FALSE, norm = TRUE)
+# print(c)
+# is(m3$res$cal, "ldecomp")
 ```
 
 

@@ -48,6 +48,11 @@ validate <- function(x) {
 }
 
 #' @noRd
+.s3_prepare_classification <- function(settings, self, private) {
+  UseMethod(".s3_prepare_classification")
+}
+
+#' @noRd
 .s3_make_pca_model <- function(settings, self, private) {
   UseMethod(".s3_make_pca_model")
 }

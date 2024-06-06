@@ -1,8 +1,13 @@
 Package: StreamFind
 Title: Framework and workflows for data analysis in the water cycle
 Version: 0.2.0
-Authors@R: person("Ricardo", "Cunha", email="cunha@iuta.de", role=c("cre", "aut"),
-    comment = c(ORCID = "0000-0002-6791-0119"))
+Authors@R: c(
+    person(
+        "Ricardo", "Cunha", email="cunha@iuta.de", role=c("cre", "aut"), comment = c(ORCID = "0000-0002-6791-0119")
+    ),
+    person(
+        "Walter", "Laurito", email="laurito@fzi.de", role = "ctb"
+    ))
 Description: The StreamFind R package is a framework for spectrometric and 
     spectroscopic data processing with focus on environmental and quality 
     studies of the water cycle. The StreamFind R package aims to stimulate 
@@ -18,7 +23,7 @@ Imports:
     R6,
     data.table,
     checkmate,
-    Rcpp (>= 1.0.8),
+    Rcpp,
     Rdpack,
     magrittr,
     grDevices,
@@ -47,6 +52,7 @@ Suggests:
     Matrix,
     pracma,
     mdatools,
+    class,
     shiny,
     shinydashboard,
     shinycssloaders,
@@ -56,7 +62,7 @@ Suggests:
     knitr,
     kableExtra,
     rmarkdown,
-    testthat (>= 3.0.0)
+    testthat
 VignetteBuilder: 
     knitr
 RdMacros: 

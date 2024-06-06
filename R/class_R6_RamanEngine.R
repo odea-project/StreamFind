@@ -242,7 +242,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
           
           newAnalyses <- self$get_analyses(keepAnalyses)
           
-          new_ms <- suppressMessages(RamanEngine$new(
+          new_engine <- suppressMessages(RamanEngine$new(
             headers = self$get_headers(),
             settings = self$get_settings(),
             analyses = newAnalyses
@@ -250,21 +250,21 @@ RamanEngine <- R6::R6Class("RamanEngine",
           
           if (self$has_results("spectra")) {
             
-            analyses_left <- new_ms$get_analysis_names()
+            analyses_left <- new_engine$get_analysis_names()
             
-            replicates_left <- new_ms$get_replicate_names()[analyses_left]
+            replicates_left <- new_engine$get_replicate_names()[analyses_left]
             
             if (!is.null(analyses_left)) {
               sel <- names(private$.results$spectra$data) %in% c(analyses_left, replicates_left)
               res <- private$.results$spectra
               res <- res$data[sel]
-              suppressMessages(new_ms$add_results(res))
+              suppressMessages(new_engine$add_results(res))
             }
           }
           
-          message("\U2713 Subset with ", new_ms$get_number_analyses(), " analyses created!")
+          message("\U2713 Subset with ", new_engine$get_number_analyses(), " analyses created!")
           
-          return(new_ms)
+          return(new_engine)
           
         } else {
           warning("No analyses selected to subset! Not done.")

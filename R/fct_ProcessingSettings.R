@@ -3552,7 +3552,7 @@ Settings_make_pca_model_mdatools <- function(ncomp = NULL,
       gamma = gamma,
       info = info
     ),
-    version = as.character(packageVersion("mdatools")),
+    version = as.character(packageVersion("StreamFind")),
     software = "mdatools",
     developer = "Sergey Kucheryavskiy",
     contact = "svk@bio.aau.dk",
@@ -3580,5 +3580,50 @@ validate.Settings_normalize_spectra_minmax <- function(x) {
     checkmate::test_number(x$parameters$alpha),
     checkmate::test_number(x$parameters$gamma),
     checkmate::test_character(x$parameters$info)
+  )
+}
+
+# ______________________________________________________________________________________________________________________
+# make_classification_model -----
+# ______________________________________________________________________________________________________________________
+
+#' @title Settings_prepare_classification_knn
+#' 
+#' @description Prepares a classification model using the k-nearest neighbors (knn) algorithm from package \pkg{class}.
+#' 
+#' @param k Integer (length 1) with the number of neighbors to be used.
+#' @param l Integer (length 1) with the minimum vote for definite decision, otherwise doubt.
+#' (More precisely, less than k-l dissenting votes are allowed, even if k is increased by ties.)
+#' 
+Settings_prepare_classification_knn <- function(k = 3, l = 0) {
+  
+  settings <- list(
+    call = "prepare_classification",
+    algorithm = "knn",
+    parameters = list(
+      k = k,
+      l = l,
+      prob = TRUE
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "class",
+    developer = "Brian D. Ripley",
+    contact = "ripley@stats.ox.ac.uk",
+    link = "https://cran.r-project.org/web/packages/class/index.html",
+    doi = "10.1017/CBO9780511812651"
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @export
+#' @noRd
+#' 
+validate.Settings_prepare_classification_knn <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "prepare_classification"),
+    checkmate::test_choice(x$algorithm, "knn"),
+    checkmate::test_number(x$parameters$k),
+    checkmate::test_number(x$parameters$l)
   )
 }
