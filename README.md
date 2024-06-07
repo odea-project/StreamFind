@@ -89,7 +89,8 @@ research that StreamFind uses relies on other contributions. Therefore,
 we recommend to search within each citation for other contributions.  
 <br>
 
-<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="refs" class="references csl-bib-body hanging-indent"
+entry-spacing="0">
 
 <div id="ref-xcms03" class="csl-entry">
 
@@ -184,6 +185,14 @@ Kessner, Darren, Matt Chambers, Robert Burke, David Agus, and Parag
 Mallick. 2008. “ProteoWizard: Open Source Software for Rapid Proteomics
 Tools Development.” *Bioinformatics* 24 (21): 2534–36.
 <https://doi.org/10.1093/bioinformatics/btn323>.
+
+</div>
+
+<div id="ref-mdatools01" class="csl-entry">
+
+Kucheryavskiy, Sergey. 2020. “Mdatools – r Package for Chemometrics.”
+*Chemometrics and Intelligent Laboratory Systems* 198: 103937.
+https://doi.org/<https://doi.org/10.1016/j.chemolab.2020.103937>.
 
 </div>
 
@@ -285,6 +294,22 @@ Chemistry* 78: 779–87.
 Tautenhahn, Ralf, Christoph Boettcher, and Steffen Neumann. 2008.
 “Highly Sensitive Feature Detection for High Resolution LC/MS.” *BMC
 Bioinformatics* 9: 504.
+
+</div>
+
+<div id="ref-class01" class="csl-entry">
+
+Venables, W. N., and B. D. Ripley. 2002. *Modern Applied Statistics with
+s*. Fourth. New York: Springer. <https://www.stats.ox.ac.uk/pub/MASS4/>.
+
+</div>
+
+<div id="ref-mdatools02" class="csl-entry">
+
+Windig, Willem, Neal B. Gallagher, Jeremy M. Shaver, and Barry M. Wise.
+2005. “A New Approach for Interactive Self-Modeling Mixture Analysis.”
+*Chemometrics and Intelligent Laboratory Systems* 77 (1): 85–96.
+https://doi.org/<https://doi.org/10.1016/j.chemolab.2004.06.009>.
 
 </div>
 
