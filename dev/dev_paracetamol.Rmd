@@ -288,7 +288,7 @@ main_set <- fusedMat[c(8:9, 10, 12, 14:15, 17:18), ]
 test_set <- fusedMat[c(1:7, 11, 13, 16, 19:30), ]
 
 stat <- StatisticEngine$new(data = main_set)
-stat$make_pca_model(Settings_make_pca_model_mdatools(ncomp = 3, alpha = 0.005, gamma = 0.0005))
+stat$make_model(Settings_make_model_pca_mdatools(ncomp = 3, alpha = 0.005, gamma = 0.0005))
 stat$predict(test_set)
 stat$plot_predicted_distances()
 ```

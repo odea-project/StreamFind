@@ -250,10 +250,11 @@ raman_workflow_settings <- list(
   Settings_bin_spectra_StreamFind(unitsVal = "rt", unitsNumber = 3),
   Settings_normalize_spectra_minmax(),
   Settings_subtract_spectra_section_StreamFind(sectionWindow = c(0, 3)),
-  Settings_smooth_spectra_savgol(fl = 21, forder = 4, dorder = 0),
-  Settings_delete_spectra_section_StreamFind(list("shift" = c(-100, 330))),
+  Settings_delete_spectra_section_StreamFind(list("shift" = c(-100, 315))),
+  Settings_smooth_spectra_savgol(fl = 9, forder = 2, dorder = 0),
+  Settings_delete_spectra_section_StreamFind(list("shift" = c(315, 330))),
   Settings_delete_spectra_section_StreamFind(list("shift" = c(1800, 2600))),
-  Settings_correct_spectra_baseline_airpls(lambda = 45, differences = 1, itermax = 30),
+  Settings_correct_spectra_baseline_baseline(method = "als", args = list(lambda = 3, p = 0.1, maxit = 10)),
   Settings_delete_spectra_section_StreamFind(list("rt" = c(0, 5.5))),
   Settings_delete_spectra_section_StreamFind(list("rt" = c(8, 11))),
   Settings_average_spectra_StreamFind(collapseTime = TRUE),
@@ -324,4 +325,104 @@ fig
 
 # Statistic analysis
 
-Coming soon!
+For evaluation of the differences between the BSA products with the fused data, a statistic analysis is performed via the statisticEngine.
+
+## PCA
+
+```{r}
+stat <- StatisticEngine$new(data = fusedMat)
+stat$make_model(Settings_make_model_pca_mdatools(ncomp = 2, alpha = 0.05, gamma = 0.02))
+```
+
+```{r, fig.cap="PCA scores plot for the fused data."}
+stat$plot_model_scores()
+```
+
+```{r, fig.cap="PCA summary plot using the original mdatools R package."}
+# the mdatools S3 class model object is obtained via the active binding of the StatisticEngine
+plot(stat$model)
+```
+
+## MCR purity
+
+```{r}
+
+
+
+stat <- StatisticEngine$new(data = fusedMat)
+stat$make_model(Settings_make_model_mcrpure_mdatools(ncomp = 2))
+stat$get_model_explained_variance()
+stat$plot_model_resolved_spectra()
+
+
+
+m <- stat$model
+
+
+
+m$resspec
+
+
+
+
+
+
+
+library(mdatools)
+m = mcrpure(fusedMat, ncomp = 3)
+summary(m)
+
+par(mfcol = c(2, 2))
+plotSpectra(m)
+plotContributions(m)
+plotSpectra(m, comp = 2)
+plotContributions(m, comp = 2)
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -197,6 +197,36 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       }
     },
     
+    #' @description Gets model explained variance.
+    #'
+    get_model_explained_variance = function() {
+      
+      m <- self$model
+      
+      if (is.null(m)) {
+        warning("Model not found! Not done.")
+        return(NULL)
+      }
+      
+      var <- NULL
+      
+      switch(is(m),
+        "pca" = {
+          var <- m$res$cal$expvar
+        },
+        "mcr" = {
+          var <- m$variance
+        }
+      )
+      
+      if (is.null(var)) {
+        warning("Explained variance not found! Not done.")
+        return(NULL)
+      }
+      
+      var
+    },
+    
     #' @description Gets model scores.
     #'
     get_model_scores = function(analyses = NULL) {
@@ -272,6 +302,39 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       
       if (nrow(dt) == 0) {
         warning("Analyses not found! Not done.")
+        return(NULL)
+      }
+      
+      dt
+    },
+    
+    #' @description Gets model resolved spectra.
+    #' 
+    #' @param pcs Integer vector with the principle components.
+    #' 
+    get_model_resolved_spectra = function(pcs = NULL) {
+      
+      m <- self$model
+      
+      if (is.null(m)) {
+        warning("Model not found! Not done.")
+        return(NULL)
+      }
+      
+      dt <- m$resspec
+      
+      if (is.null(dt)) {
+        warning("Resolved spectra not found! Not done.")
+        return(NULL)
+      }
+      
+      if (!is.null(pcs)) {
+        checkmate::assert_integerish(pc)
+        dt <- dt[pcs, , drop = FALSE]
+      }
+      
+      if (nrow(dt) == 0) {
+        warning("PCs not found! Not done.")
         return(NULL)
       }
       
@@ -370,15 +433,13 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     
     ## ___ processing -----
     
-    #' @description Makes a Principle Component Analysis (PCA) model.
+    #' @description Makes a model based on applied settings.
     #'
     #' @return Invisible.
     #'
-    make_pca_model = function(settings) {
+    make_model = function(settings) {
       
-      # if (missing(settings)) settings <- Settings_make_pca_model_StreamFind()
-      
-      .dispatch_process_method("make_pca_model", settings, self, private)
+      .dispatch_process_method("make_model", settings, self, private)
       
       invisible(self)
     },
@@ -390,6 +451,8 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     prepare_classification = function(settings) {
       
       .dispatch_process_method("prepare_classification", settings, self, private)
+      
+      if (self$has_results("prediction")) self$remove_results("prediction")
       
       invisible(self)
     },
@@ -561,7 +624,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     
     #' @description Plots scores of the model.
     #' 
-    #' @param pcs A vector with the principle components to plot.
+    #' @param pcs A numeric vector (length 2) with the principle components to plot.
     #' 
     plot_model_scores = function(analyses = NULL,
                                  interactive = TRUE,
@@ -586,6 +649,8 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       
       dt <- dt[, pcs, drop = FALSE]
       
+      var <- self$get_model_explained_variance()
+      
       if (!interactive) {
         
         NULL
@@ -600,13 +665,22 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
           x = seq_len(nrow(dt))
           y = dt[, 1]
           xLab = "Analysis Index"
-          yLab = paste0("PC", pcs)
-          
+          if (!is.null(var)) {
+            yLab = paste0("PC", pcs, "(", round(var[pcs], digits = 0) ,"%)")
+          } else {
+            yLab = paste0("PC", pcs)
+          }
         } else {
           x = dt[, 1]
           y = dt[, 2]
-          xLab = paste0("PC", pcs[1])
-          yLab = paste0("PC", pcs[2])
+          
+          if (!is.null(var)) {
+            xLab = paste0("PC", pcs[1], "(", round(var[pcs[1]], digits = 0) ,"%)")
+            yLab = paste0("PC", pcs[2], "(", round(var[pcs[2]], digits = 0) ,"%)")
+          } else {
+            xLab = paste0("PC", pcs[1])
+            yLab = paste0("PC", pcs[2])
+          }
         }
         
         if (showText) text <- rownames(dt) else text <- NULL
@@ -783,6 +857,68 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       }
     },
     
+    #' @description Plots model resolved spectra.
+    #' 
+    #' @param pcs Integer vectors with the principle component to use for categorization.
+    #' @param original Logical, if TRUE the original data is plotted.
+    #' 
+    plot_model_resolved_spectra = function(interactive = TRUE,
+                                           pcs = NULL,
+                                           original = TRUE,
+                                           title = NULL,
+                                           showText = TRUE,
+                                           showLegend = TRUE) {
+      
+      dt <- self$get_model_resolved_spectra(pcs)
+      
+      if (is.null(dt)) return(NULL)
+      
+      if (original) {
+        data <- t(self$data)
+        dt <- cbind(data, dt)
+        for (i in seq_len(ncol(dt))) dt[, i] <- dt[, i] / max(dt[, i])
+      }
+      
+      if (!interactive) {
+        
+        NULL
+        
+      } else {
+        
+        cl <- .get_colors(colnames(dt))
+        
+        fig <- plot_ly()
+        
+        x = seq_len(nrow(dt))
+        
+        xLab = "Var Index"
+        
+        yLab = "Intensity"
+        
+        for (i in seq_len(length(cl))) {
+          
+          fig <- fig %>% add_trace(
+            x = x,
+            y = dt[, i],
+            type = "scatter",
+            mode = "markers+lines",
+            line = list(size = 0.3, color = cl[i]),
+            marker = list(size = 2, color = cl[i]),
+            name = names(cl[i]),
+            legendgroup = names(cl[i]),
+            showlegend = TRUE
+          )
+        }
+        
+        xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"))
+        yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
+        
+        fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
+        
+        fig
+      }
+    },
+    
     #' @description Plots scores of the model.
     #' 
     #' @param pc Integer (length 1) with the principle component to use for categorization.
@@ -934,7 +1070,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     processing_methods = function() {
       data.table(
         name = c(
-          "make_pca_model",
+          "make_model",
           "prepare_classification"
         ),
         max = c(

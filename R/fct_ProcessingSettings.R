@@ -3502,10 +3502,10 @@ validate.Settings_merge_spectra_time_series_StreamFind <- function(x) {
 }
 
 # ______________________________________________________________________________________________________________________
-# make_pca_model -----
+# make_model -----
 # ______________________________________________________________________________________________________________________
 
-#' @title Settings_make_pca_model_mdatools
+#' @title Settings_make_model_pca_mdatools
 #'
 #' @description Makes a Principle Component Analysis (PCA) model based on the R package \pkg{mdatools}.
 #' 
@@ -3521,12 +3521,15 @@ validate.Settings_merge_spectra_time_series_StreamFind <- function(x) {
 #' @param alpha Numeric (length 1) with the alpha value for the PCA.
 #' @param gamma Numeric (length 1) with the gamma value for the PCA.
 #' @param info Character (length 1) with additional information.
+#' 
+#' @references
+#' \insertRef{mdatools01}{StreamFind}
 #'
-#' @return A ProcessingSettings S3 class object with subclass Settings_make_pca_model_mdatools.
+#' @return A ProcessingSettings S3 class object with subclass Settings_make_model_pca_mdatools.
 #'
 #' @export
 #'
-Settings_make_pca_model_mdatools <- function(ncomp = NULL,
+Settings_make_model_pca_mdatools <- function(ncomp = NULL,
                                              exclrows = NULL,
                                              exclcols = NULL,
                                              x.test = NULL,
@@ -3538,8 +3541,8 @@ Settings_make_pca_model_mdatools <- function(ncomp = NULL,
                                              info = "") {
   
   settings <- list(
-    call = "make_pca_model",
-    algorithm = "mdatools",
+    call = "make_model",
+    algorithm = "pca_mdatools",
     parameters = list(
       ncomp = ncomp,
       exclrows = exclrows,
@@ -3566,10 +3569,10 @@ Settings_make_pca_model_mdatools <- function(ncomp = NULL,
 #' @export
 #' @noRd
 #'
-validate.Settings_normalize_spectra_minmax <- function(x) {
+validate.Settings_make_model_pca_mdatools <- function(x) {
   all(
-    checkmate::test_choice(x$call, "make_pca_model"),
-    checkmate::test_choice(x$algorithm, "mdatools"),
+    checkmate::test_choice(x$call, "make_model"),
+    checkmate::test_choice(x$algorithm, "pca_mdatools"),
     checkmate::test_number(x$parameters$ncomp),
     checkmate::test_integer(x$parameters$exclrows),
     checkmate::test_integer(x$parameters$exclcols),
@@ -3583,8 +3586,77 @@ validate.Settings_normalize_spectra_minmax <- function(x) {
   )
 }
 
+#' @title Settings_make_model_mcrpure_mdatools
+#'
+#' @description Makes a Multivariate Curve Resolution (MCR) purity model based on the R package \pkg{mdatools}.
+#' 
+#' @param ncomp Integer (length 1) with the number of components to be calculated.
+#' @param purevars Integer vector with the indices of the pure variables (optional).
+#' @param offset Numeric (length 1) offset for correcting noise in computing maximum angles (should be value within 0 and 1).
+#' @param exclrows Integer vector with the row indices to be excluded.
+#' @param exclcols Integer vector with the column indices to be excluded.
+#' @param info Character (length 1) with additional information.
+#' 
+#' @references
+#' \insertRef{mdatools01}{StreamFind}
+#' 
+#' \insertRef{mdatools02}{StreamFind}
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_make_model_mcrpure_mdatools.
+#'
+#' @export
+#'
+Settings_make_model_mcrpure_mdatools <- function(ncomp = NULL,
+                                                 purevars = NULL,
+                                                 offset = 0.05,
+                                                 exclrows = NULL,
+                                                 exclcols = NULL,
+                                                 info = "") {
+  
+  settings <- list(
+    call = "make_model",
+    algorithm = "mcrpure_mdatools",
+    parameters = list(
+      ncomp = ncomp,
+      purevars = purevars,
+      offset = offset,
+      exclrows = exclrows,
+      exclcols = exclcols,
+      info = info
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "mdatools",
+    developer = "Sergey Kucheryavskiy",
+    contact = "svk@bio.aau.dk",
+    link = "https://github.com/svkucheryavski/mdatools",
+    doi = "10.1016/j.chemolab.2020.103937"
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @export
+#' @noRd
+#'
+validate.Settings_make_model_pca_mdatools <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "make_model"),
+    checkmate::test_choice(x$algorithm, "mcrpure_mdatools"),
+    checkmate::test_number(x$parameters$ncomp),
+    checkmate::test_integer(x$parameters$purevars),
+    checkmate::test_number(x$parameters$offset),
+    checkmate::test_integer(x$parameters$exclrows),
+    checkmate::test_integer(x$parameters$exclcols),
+    checkmate::test_character(x$parameters$info)
+  )
+}
+
+
+
+
+
 # ______________________________________________________________________________________________________________________
-# make_classification_model -----
+# prepare_classification -----
 # ______________________________________________________________________________________________________________________
 
 #' @title Settings_prepare_classification_knn
@@ -3594,6 +3666,13 @@ validate.Settings_normalize_spectra_minmax <- function(x) {
 #' @param k Integer (length 1) with the number of neighbors to be used.
 #' @param l Integer (length 1) with the minimum vote for definite decision, otherwise doubt.
 #' (More precisely, less than k-l dissenting votes are allowed, even if k is increased by ties.)
+#' 
+#' @references
+#' \insertRef{class01}{StreamFind}
+#' 
+#' @return A ProcessingSettings S3 class object with subclass Settings_prepare_classification_knn.
+#'
+#' @export
 #' 
 Settings_prepare_classification_knn <- function(k = 3, l = 0) {
   
@@ -3610,7 +3689,7 @@ Settings_prepare_classification_knn <- function(k = 3, l = 0) {
     developer = "Brian D. Ripley",
     contact = "ripley@stats.ox.ac.uk",
     link = "https://cran.r-project.org/web/packages/class/index.html",
-    doi = "10.1017/CBO9780511812651"
+    doi = "ISBN 0-387-95457-0"
   )
   
   as.ProcessingSettings(settings)

@@ -53,8 +53,8 @@ validate <- function(x) {
 }
 
 #' @noRd
-.s3_make_pca_model <- function(settings, self, private) {
-  UseMethod(".s3_make_pca_model")
+.s3_make_model <- function(settings, self, private) {
+  UseMethod(".s3_make_model")
 }
 
 #' @noRd

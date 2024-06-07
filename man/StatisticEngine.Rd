@@ -41,13 +41,15 @@ must have the same number of variables as the analyses in the engine.
 \item \href{#method-StatisticEngine-get_overview}{\code{StatisticEngine$get_overview()}}
 \item \href{#method-StatisticEngine-get_classes}{\code{StatisticEngine$get_classes()}}
 \item \href{#method-StatisticEngine-get_number_variables}{\code{StatisticEngine$get_number_variables()}}
+\item \href{#method-StatisticEngine-get_model_explained_variance}{\code{StatisticEngine$get_model_explained_variance()}}
 \item \href{#method-StatisticEngine-get_model_scores}{\code{StatisticEngine$get_model_scores()}}
 \item \href{#method-StatisticEngine-get_model_loadings}{\code{StatisticEngine$get_model_loadings()}}
 \item \href{#method-StatisticEngine-get_model_residuals}{\code{StatisticEngine$get_model_residuals()}}
+\item \href{#method-StatisticEngine-get_model_resolved_spectra}{\code{StatisticEngine$get_model_resolved_spectra()}}
 \item \href{#method-StatisticEngine-add_analyses}{\code{StatisticEngine$add_analyses()}}
 \item \href{#method-StatisticEngine-add_data}{\code{StatisticEngine$add_data()}}
 \item \href{#method-StatisticEngine-add_classes}{\code{StatisticEngine$add_classes()}}
-\item \href{#method-StatisticEngine-make_pca_model}{\code{StatisticEngine$make_pca_model()}}
+\item \href{#method-StatisticEngine-make_model}{\code{StatisticEngine$make_model()}}
 \item \href{#method-StatisticEngine-prepare_classification}{\code{StatisticEngine$prepare_classification()}}
 \item \href{#method-StatisticEngine-predict}{\code{StatisticEngine$predict()}}
 \item \href{#method-StatisticEngine-classify}{\code{StatisticEngine$classify()}}
@@ -55,6 +57,7 @@ must have the same number of variables as the analyses in the engine.
 \item \href{#method-StatisticEngine-plot_model_scores}{\code{StatisticEngine$plot_model_scores()}}
 \item \href{#method-StatisticEngine-plot_model_residuals}{\code{StatisticEngine$plot_model_residuals()}}
 \item \href{#method-StatisticEngine-plot_model_loadings}{\code{StatisticEngine$plot_model_loadings()}}
+\item \href{#method-StatisticEngine-plot_model_resolved_spectra}{\code{StatisticEngine$plot_model_resolved_spectra()}}
 \item \href{#method-StatisticEngine-plot_predicted_distances}{\code{StatisticEngine$plot_predicted_distances()}}
 \item \href{#method-StatisticEngine-processing_methods}{\code{StatisticEngine$processing_methods()}}
 \item \href{#method-StatisticEngine-clone}{\code{StatisticEngine$clone()}}
@@ -183,6 +186,16 @@ Gets the number of variables.
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-StatisticEngine-get_model_explained_variance"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-get_model_explained_variance}{}}}
+\subsection{Method \code{get_model_explained_variance()}}{
+Gets model explained variance.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$get_model_explained_variance()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-StatisticEngine-get_model_scores"></a>}}
 \if{latex}{\out{\hypertarget{method-StatisticEngine-get_model_scores}{}}}
 \subsection{Method \code{get_model_scores()}}{
@@ -222,6 +235,23 @@ Gets model residuals.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-StatisticEngine-get_model_resolved_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-get_model_resolved_spectra}{}}}
+\subsection{Method \code{get_model_resolved_spectra()}}{
+Gets model resolved spectra.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$get_model_resolved_spectra(pcs = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{pcs}}{Integer vector with the principle components.}
 }
 \if{html}{\out{</div>}}
 }
@@ -282,12 +312,12 @@ Adds classes to the analyses.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-StatisticEngine-make_pca_model"></a>}}
-\if{latex}{\out{\hypertarget{method-StatisticEngine-make_pca_model}{}}}
-\subsection{Method \code{make_pca_model()}}{
-Makes a Principle Component Analysis (PCA) model.
+\if{html}{\out{<a id="method-StatisticEngine-make_model"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-make_model}{}}}
+\subsection{Method \code{make_model()}}{
+Makes a model based on applied settings.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$make_pca_model(settings)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$make_model(settings)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -417,7 +447,7 @@ Plots scores of the model.
 
 \item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
 
-\item{\code{pcs}}{A vector with the principle components to plot.}
+\item{\code{pcs}}{A numeric vector (length 2) with the principle components to plot.}
 
 \item{\code{title}}{A string with the title.}
 
@@ -483,6 +513,40 @@ Plots model loadings.
 \item{\code{pcs}}{A vector with the principle components to plot.}
 
 \item{\code{colorKey}}{A character vector with the color key for the loading variables.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{showText}}{Logical (length 1), set to \code{TRUE} to show the text annotations.}
+
+\item{\code{showLegend}}{Logical (length 1). Set to \code{TRUE} to show legend.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-StatisticEngine-plot_model_resolved_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-plot_model_resolved_spectra}{}}}
+\subsection{Method \code{plot_model_resolved_spectra()}}{
+Plots model resolved spectra.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_model_resolved_spectra(
+  interactive = TRUE,
+  pcs = NULL,
+  original = TRUE,
+  title = NULL,
+  showText = TRUE,
+  showLegend = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+
+\item{\code{pcs}}{Integer vectors with the principle component to use for categorization.}
+
+\item{\code{original}}{Logical, if TRUE the original data is plotted.}
 
 \item{\code{title}}{A string with the title.}
 
