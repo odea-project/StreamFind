@@ -115,21 +115,19 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     analysisInfo = function() {
       
       if (self$has_results("patRoon")) {
-        private$.results$patRoon$data@analysisInfo
+        anaInfo <- private$.results$patRoon$data@analysisInfo
+        anaInfo <- anaInfo[anaInfo$analysis %in% self$get_analysis_names(), ]
+        anaInfo
         
       } else if (self$get_number_analyses() > 0) {
-        
         anaInfo <- self$get_overview()
-        
         anaInfo <- data.frame(
           "path" = dirname(anaInfo$file),
           "analysis" = anaInfo$analysis,
           "group" = anaInfo$replicate,
           "blank" = anaInfo$blank
         )
-        
         anaInfo$blank[is.na(anaInfo$blank)] <- ""
-        
         anaInfo
         
       } else {
@@ -160,12 +158,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           
           if (self$has_results("patRoon")) {
             
-            if (identical(value@analysisInfo, self$analysisInfo)) {
+            if (identical(self$analysisInfo$analysis, value@analysisInfo$analysis)) {
               
               if ("features" %in% is(private$.results$patRoon$data)) {
                 
-                if (identical(unname(self$get_analysis_names()), names(value@features))) {
-                  
+                if (all(unname(self$get_analysis_names()) %in% names(value@features))) {
                   private$.results$patRoon$data <- value
                   
                 } else {
@@ -848,8 +845,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     initialize = function(files = NULL, headers = NULL, settings = NULL, analyses = NULL, results = NULL) {
       
       if (is.list(analyses)) {
+        
         if (is(analyses, "MassSpecAnalysis")) analyses <- list(analyses)
-        if (!all(vapply(analyses, is, "MassSpecAnalysis"))) {
+        
+        if (!all(vapply(analyses, function(x) is(x, "MassSpecAnalysis"), FALSE))) {
           warning("The argument analyses must be a MassSpecAnalysis object or a list of MassSpecAnalysis objects! Not done.")
           analyses <- NULL
         }
@@ -859,14 +858,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       if (!is.null(files)) self$add_files(files)
 
-      private$.register(
-        "created",
-        "MassSpecEngine",
-        headers$name,
-        "StreamFind",
-        as.character(packageVersion("StreamFind")),
-        paste(c(headers$author, headers$path), collapse = ", ")
-      )
+      private$.register("created", "MassSpecEngine", headers$name, paste(c(headers$author, headers$path), collapse = ", "))
     },
 
     ## ___ get -----
@@ -881,9 +873,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         
         ov$type <- vapply(private$.analyses, function(x) x$type, "")
         
-        ov$polarity <- vapply(private$.analyses, function(x) paste(x$polarity, collapse = "; "), "")
+        pols <- self$get_spectra_polarity()
         
-        ov$spectra <- vapply(private$.analyses, function(x) x$spectra_number, 0)
+        ov$polarity <- vapply(names(private$.analyses), function(x) paste(pols[x], collapse = "; "), "")
+        
+        ov$spectra <- vapply(private$.analyses, function(x) round(x$spectra_number, digits = 0), 0)
         
         if (any(self$get_chromatograms_number() > 0)) {
           ov$chromatograms <- vapply(private$.analyses, function(x) x$chromatograms_number, 0)
@@ -1422,7 +1416,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
             
             if ("analysis" %in% colnames(targets)) targets <- targets[targets$analysis %in% x$name, ]
             
-            if (now(targets) > 0) {
+            if (nrow(targets) > 0) {
               
               if ("polarity" %in% colnames(targets)) temp <- temp[temp$polarity == targets$polarity, ]
               
@@ -1430,10 +1424,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                 temp <- .trim_spectra_targets(temp, targets, with_im)
                 
               } else {
-                temp <- data.frame()
+                temp <- data.table()
               }
             } else {
-              temp <- data.frame()
+              temp <- data.table()
             }
           }
 
@@ -1466,12 +1460,20 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           }
           
           message("\U2699 Parsing spectra from ", basename(x$file), "...", appendLF = FALSE)
+          
+          if ("analysis" %in% colnames(targets)) targets <- targets[targets$analysis %in% x$name, ]
 
           spec <- rcpp_parse_ms_spectra(x, levels, targets, minIntensityMS1, minIntensityMS2)
           
           message(" Done!")
           
-          if (nrow(spec) == 0) return(data.frame())
+          if (nrow(spec) == 0) return(data.table())
+          
+          if ("id" %in% colnames(spec)) {
+            setorder(spec, id, rt, mz)
+          } else {
+            setorder(spec, rt, mz)
+          }
           
           if (!any(spec$drift > 0)) spec$drift <- NULL
           
@@ -2020,8 +2022,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
             fts <- fts[sel, ]
 
             if ("name" %in% colnames(target_id)) {
-              ids <- unique(target_id$name)
-              names(ids) <- unique(target_id$group)
+              ids <- target_id$name
+              names(ids) <- target_id$group
+              ids <- ids[!duplicated(names(ids))]
               fts$name <- ids[fts$group]
             }
 
@@ -2604,8 +2607,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
             sn = round(max(vapply(quality, function(x) if (!is.null(x)) x$sn else 0, 0), na.rm = TRUE), digits = 1),
             iso = min(vapply(isotope, function(x) if (!is.null(x)) x$step else 0, 0)),
             istd = paste0(unique(vapply(istd, function(x) if (!is.null(x)) x$name else NA_character_, NA_character_)), collapse = "; "),
-            filtered = all(filtered),
-            filter = paste(unique(filter), collapse = "; ")
+            filtered = all(filtered)
           ), by = "group"]
           
           fgroups <- fgroups[fts_meta, on = "group"]
@@ -3526,7 +3528,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
 
     ## ___ add/update -----
 
-    #' @description Adds analyses. Note that when adding new analyses, any existing grouping of features are removed.
+    #' @description Adds analyses. Note that when adding new analyses, any existing results are removed.
     #'
     #' @param analyses A MassSpecAnalysis S3 class object or a list with MassSpecAnalysis S3 class objects as 
     #' elements (see `?MassSpecAnalysis` for more information).
@@ -3560,10 +3562,18 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         
         if (is.data.frame(files)) {
           
+          if (all(c("path", "analysis") %in% colnames(files))) {
+            files$file <- vapply(seq_len(nrow(files)), function(x) {
+              list.files(files$path[x], pattern = files$analysis[x], full.names = TRUE, recursive = FALSE)
+            }, "")
+          }
+          
           if ("file" %in% colnames(files)) {
             
             if ("replicate" %in% colnames(files)) {
               replicates <- as.character(files$replicate)
+            } else if ("group" %in% colnames(files)) {
+              replicates <- as.character(files$group)
             } else {
               replicates <- rep(NA_character_, nrow(files))
             }
@@ -3674,38 +3684,6 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       invisible(self)
     },
     
-    #' @description Adds or redefines the analysis replicate names.
-    #'
-    #' @param value A character vector with the analysis replicate names.
-    #' Must be of the same length as the number of analyses.
-    #'
-    #' @return Invisible.
-    #'
-    add_replicate_names = function(value = NULL) {
-      
-      super$add_replicate_names(value)
-      
-      self$remove_results()
-      
-      invisible(self)
-    },
-    
-    #' @description Adds or redefines the analysis blank replicate names.
-    #'
-    #' @param value A character vector with the analysis blank replicate names.
-    #' Must be of the same length as the number of analyses.
-    #'
-    #' @return Invisible.
-    #'
-    add_blank_names = function(value = NULL) {
-      
-      super$add_blank_names(value)
-      
-      self$remove_results()
-      
-      invisible(self)
-    },
-    
     #' @description Adds data from results to the engine.
     #'
     #' @param value A named list with data from results.
@@ -3774,15 +3752,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           private$.analyses, spec_list
         )
         
-        private$.register(
-          "added",
-          "analyses",
-          "raw spectra",
-          NA_character_,
-          NA_character_,
-          NA_character_
-        )
-        
+        private$.register("added", "analyses", "raw spectra")
         message("\U2713 ", " Spectra loaded!")
 
       } else {
@@ -3814,15 +3784,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
             private$.analyses, chrom_list
           )
 
-          private$.register(
-            "loaded",
-            "analyses",
-            "raw chromatograms",
-            NA_character_,
-            NA_character_,
-            NA_character_
-          )
-
+          private$.register("loaded", "analyses", "raw chromatograms")
           message("\U2713 Chromatograms loaded to all analyses!")
 
         } else {
@@ -3891,14 +3853,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
 
         self$remove_results("patRoon")
 
-        private$.register(
-          "removed",
-          "features",
-          "all",
-          NA_character_,
-          NA_character_,
-          NA_character_
-        )
+        private$.register("removed", "results", "features", "all")
 
         message("\U2713 Removed all features!")
 
@@ -3919,15 +3874,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           x
         })
         
-        private$.register(
-          "removed",
-          "filtered features",
-          n_filtered_features,
-          NA_character_,
-          NA_character_,
-          NA_character_
-        )
-        
+        private$.register("removed", "results", "filtered features", n_filtered_features)
         message("\U2713 Removed ", n_filtered_features, " feature/s!")
       }
 
@@ -3981,15 +3928,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           
           if (n_feat_after < n_feat_before) {
             
-            private$.register(
-              "removed",
-              "features",
-              n_feat_before - n_feat_after,
-              NA_character_,
-              NA_character_,
-              NA_character_
-            )
-            
+            private$.register("removed", "results", "features", n_feat_before - n_feat_after)
             message("\U2713 Removed ", n_feat_before - n_feat_after, " feature/s!")
             
           } else {
@@ -4044,15 +3983,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           
           private$.results$patRoon$filtered <- filtered_feature_list
 
-          private$.register(
-            "removed",
-            "features_ms1",
-            "all",
-            NA_character_,
-            NA_character_,
-            NA_character_
-          )
-
+          private$.register("removed", "results", "features_ms1", "all")
           message("\U2713 Removed all MS1 spectra from features!")
 
         } else {
@@ -4101,16 +4032,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           
           private$.results$patRoon$filtered <- filtered_feature_list
 
-          private$.register(
-            "removed",
-            "features_ms2",
-            "all",
-            NA_character_,
-            NA_character_,
-            NA_character_
-          )
-
+          private$.register("removed", "results", "features_ms2", "all")
           message("\U2713 Removed all MS2 spectra from features!")
+          
         } else {
           message("\U2717 Features MS2 spectra not loaded!")
         }
@@ -4147,15 +4071,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         
         self$remove_features(filtered = TRUE)
 
-        private$.register(
-          "removed",
-          "feature groups",
-          "all",
-          NA_character_,
-          NA_character_,
-          NA_character_
-        )
-
+        private$.register("removed", "results", "feature groups", "all")
         message("\U2713 Removed all groups!")
 
         return(invisible(self))
@@ -4192,16 +4108,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           }
           
           if (n_groups_after < n_groups) {
-            
-            private$.register(
-              "removed",
-              "feature groups",
-              n_groups - n_groups_after,
-              NA_character_,
-              NA_character_,
-              NA_character_
-            )
-            
+            private$.register("removed", "results", "feature groups", n_groups - n_groups_after)
             message("\U2713 Removed ", n_groups - n_groups_after, " group/s!")
           }
           
@@ -4732,7 +4639,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       spec <- .make_colorBy_varkey(spec, colorBy, legendNames = NULL)
       
-      unique_key <- c("var", "x")
+      unique_key <- c("analysis", "var", "x")
       
       spec <- spec[, .(intensity = sum(intensity)), by = c(unique_key)]
       
@@ -4759,7 +4666,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       if (is.null(yLab)) yLab = "Intensity / counts"
       
-      setorder(spec, x)
+      setorder(spec, var, x)
 
       if (!interactive) {
         return(.plot_x_spectra_static(spec, xLab, yLab, title, cex, showLegend))
@@ -5462,6 +5369,139 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
 
       .plot_groups_overview_aux(fts, eic, heights, analyses)
     },
+    
+    #' @description Method to plot the intensity profile of feature groups across the analyses.
+    #' 
+    #' @param normalized Logical (length 1). When `TRUE` the profile intensities are normalized.
+    #' 
+    plot_groups_profile = function(analyses = NULL,
+                                   groups = NULL,
+                                   mass = NULL,
+                                   mz = NULL,
+                                   rt = NULL,
+                                   drift = NULL,
+                                   ppm = 20,
+                                   sec = 60,
+                                   millisec = 5,
+                                   filtered = FALSE,
+                                   normalized = TRUE,
+                                   legendNames = NULL,
+                                   title = NULL) {
+      
+      fts <- self$get_features(analyses, groups, mass, mz, rt, drift, ppm, sec, millisec, filtered)
+      
+      if (nrow(fts) == 0) {
+        message("\U2717 Features not found for the targets!")
+        return(NULL)
+      }
+      
+      if (!"polarity" %in% colnames(fts)) {
+        polarities <- self$get_spectra_polarity()
+        fts$polarity <- polarities[fts$analysis]
+      }
+      
+      if (normalized && "intensity_rel" %in% colnames(fts)) fts$intensity <- as.numeric(fts$intensity_rel)
+      
+      if (is.character(legendNames) & length(legendNames) == length(unique(fts$group))) {
+        leg <- legendNames
+        names(leg) <- unique(fts$group)
+        leg <- leg[fts$group]
+        fts$var <- leg[fts$group]
+      } else if (isTRUE(legendNames) & "name" %in% colnames(fts)) {
+        leg <- fts$name
+        fts$var <- fts$name
+      } else {
+        leg <- fts$group
+        fts$var <- fts$group
+      }
+      
+      u_leg <- unique(leg)
+      
+      colors <- .get_colors(u_leg)
+      
+      analyses <- private$.check_analyses_argument(analyses)
+      
+      showLeg <- rep(TRUE, length(u_leg))
+      names(showLeg) <- u_leg
+      
+      rpls <- self$get_replicate_names()
+      
+      plot <- plot_ly(fts, x = sort(unique(fts$analysis)))
+      
+      for (g in u_leg) {
+        
+        df <- fts[fts$var == g, ]
+        
+        if (!all(analyses %in% df$analysis)) {
+          extra <- data.frame(
+            "analysis" = analyses[!analyses %in% df$analysis],
+            "polarity" = polarities[!analyses %in% df$analysis],
+            "var" = g,
+            "intensity" = 0
+          )
+          df <- rbind(df[, c("analysis", "var", "intensity", "polarity")], extra)
+        }
+        
+        df <- df[order(df$analysis), ]
+        
+        if (normalized) {
+          
+          if (length(unique(df$polarity)) > 1) {
+            
+            for (p in unique(df$polarity)) {
+              max_int <- max(df$intensity[df$polarity == p])
+              if (max_int > 0) df$intensity[df$polarity == p] <- df$intensity[df$polarity == p] / max_int
+            }
+          } else {
+            max_int <- max(df$intensity)
+            if (max_int > 0) df$intensity <- df$intensity / max_int
+          }
+        }
+        
+        plot <- plot %>% add_trace(df,
+          x = df$analysis,
+          y = df$intensity,
+          type = "scatter", mode = "lines",
+          line = list(width = 0.5, color = colors[g], dash = "dash"),
+          connectgaps = FALSE,
+          name = g,
+          legendgroup = g,
+          showlegend = FALSE
+        )
+        
+        df$replicate <- rpls[df$analysis]
+        
+        for (r in unique(df$replicate)) {
+          df_r <- df[df$replicate %in%  r, ]
+          
+          plot <- plot %>% add_trace(df,
+            x = df_r$analysis,
+            y = df_r$intensity,
+            type = "scatter", mode = "lines+markers",
+            line = list(width = 1.5, color = colors[g]),
+            marker = list(size = 5, color = colors[g]),
+            connectgaps = FALSE,
+            name = g,
+            legendgroup = g,
+            showlegend = showLeg[g]
+          )
+          
+          showLeg[g] <- FALSE
+        }
+      }
+      
+      xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = NULL)
+      
+      yaxis <- list(
+        linecolor = toRGB("black"), linewidth = 2,
+        title = "Normalized intensity",
+        titlefont = list(size = 12, color = "black")
+      )
+      
+      plot <- plot %>% plotly::layout(xaxis = xaxis, yaxis = yaxis)
+      
+      plot
+    },
 
     #' @description Plots the quality control assessment of the internal standards.
     #'
@@ -5931,6 +5971,17 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
 
       invisible(self)
     },
+    
+    #' @description Fills missing features in analyses of feature groups.
+    #'
+    #' @return Invisible.
+    #'
+    fill_features = function(settings = NULL) {
+      
+      .dispatch_process_method("ms_fill_features", settings, self, private)
+      
+      invisible(self)
+    },
 
     #' @description Filters features and feature groups according to defined settings.
     #'
@@ -6128,6 +6179,19 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       invisible(self)
     },
+    
+    #' @description Subtracts spectra from correspondent blank analysis replicates.
+    #'
+    #' @return Invisible.
+    #' 
+    subtract_blank_spectra = function(settings) {
+      
+      if (missing(settings)) settings <- Settings_subtract_blank_spectra_StreamFind()
+      
+      .dispatch_process_method("subtract_blank_spectra", settings, self, private)
+      
+      invisible(self)
+    },
 
     ## ___ check -----
 
@@ -6259,7 +6323,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           "smooth_spectra",
           "correct_spectra_baseline",
           "normalize_spectra",
-          "average_spectra"
+          "average_spectra",
+          "subtract_blank_spectra",
+          "normalize_features"
         ),
         max = c(
           1,
@@ -6287,6 +6353,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           Inf,
           1,
           Inf,
+          1,
+          1,
           1
         )
       )

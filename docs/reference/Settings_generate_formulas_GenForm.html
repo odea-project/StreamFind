@@ -107,10 +107,19 @@ set by excluding elements you don't expect.</p></dd>
 <dd><p>Logical (length 1) indicating presence of at least one carbon in the formulae.</p></dd>
 
 
-<dt>thrMS, </dt>
-<dd><p>thrMSMS, thrComb Numeric (length 1) Sets the thresholds for the GenForm MS score (isoScore), MS/MS score
-(MSMSScore) and combined score (combMatch). Sets the thms/thmsms/thcomb command line options, respectively. Set to
-NULL for no threshold.</p></dd>
+<dt>thrMS</dt>
+<dd><p>Numeric (length 1) Sets the thresholds for the GenForm MS score (isoScore). Sets the thms command line
+options, respectively. Set to NULL for no threshold.</p></dd>
+
+
+<dt>thrMSMS</dt>
+<dd><p>Numeric (length 1) Sets the thresholds for the GenForm MS/MS score (MSMSScore). Sets the thmsms
+command line options, respectively. Set to NULL for no threshold.</p></dd>
+
+
+<dt>thrComb</dt>
+<dd><p>Numeric (length 1) Sets the thresholds for the GenForm combined score (combMatch). Sets the thcomb
+command line options, respectively. Set to NULL for no threshold.</p></dd>
 
 
 <dt>maxCandidates</dt>

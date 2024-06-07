@@ -67,6 +67,7 @@
   ref_bins_seq_list <- NULL
   ref_bin_matrix <- NULL
   ref_bin_key <- NULL
+  . <- NULL
   
   if (!is.null(refBinAnalysis)) {
     if (is.numeric(refBinAnalysis) && length(refBinAnalysis) == 1) {
@@ -187,6 +188,7 @@
         "id" = unique(x$id),
         "polarity" = unique(x$polarity),
         "rt" = bin_matrix$rt,
+        "mz" = bin_matrix$mz,
         "mass" = bin_matrix$mass,
         "intensity" = ints,
         "bins" = bin_key

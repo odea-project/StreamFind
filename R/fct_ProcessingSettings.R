@@ -18,7 +18,7 @@
 #'
 #' @export
 #'
-Settings_centroid_spectra_qCentroids <- function(maxScale = 5, mode = 1, runParallel = FALSE) {
+Settings_centroid_spectra_qCentroids <- function(maxScale = 5, mode = 1) {
   
   settings <- list(
     call = "centroid_spectra",
@@ -1274,11 +1274,6 @@ validate.Settings_load_features_eic_StreamFind <- function(x) {
 #' fastcluster package), and "distance", to use the between peak distance.
 #' The latter method may reduces processing time and memory requirements,
 #' at the potential cost of reduced accuracy.
-#' @param pruneMissingPrecursorMS For MS data only: if TRUE then peak lists
-#' without a precursor peak are removed. Note that even when this is set to
-#' FALSE, functionality that relies on MS (not MS/MS) peak lists (e.g.
-#' formulae calculation) will still skip calculation if a precursor is not
-#' found.
 #' @param retainPrecursorMSMS For MS/MS data only: if TRUE then always
 #' retain the precursor mass peak even if is not among the `topMost` peaks.
 #' Note that MS precursor mass peaks are always kept. Furthermore, note
@@ -1370,11 +1365,6 @@ validate.Settings_load_MSPeakLists_patRoon <- function(x) {
 #' fastcluster package), and "distance", to use the between peak distance.
 #' The latter method may reduces processing time and memory requirements,
 #' at the potential cost of reduced accuracy.
-#' @param pruneMissingPrecursorMS For MS data only: if TRUE then peak lists
-#' without a precursor peak are removed. Note that even when this is set to
-#' FALSE, functionality that relies on MS (not MS/MS) peak lists (e.g.
-#' formulae calculation) will still skip calculation if a precursor is not
-#' found.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_load_MSPeakLists_StreamFind.
 #'
@@ -1422,6 +1412,103 @@ validate.Settings_load_MSPeakLists_StreamFind <- function(x) {
     checkmate::test_numeric(x$parameters$minIntensityPost, len = 1),
     checkmate::test_function(x$parameters$avgFun),
     checkmate::test_choice(x$parameters$method, c("hclust", "distance"))
+  )
+}
+
+
+
+
+
+# ______________________________________________________________________________________________________________________
+# normalize_features -----
+# ______________________________________________________________________________________________________________________
+
+#' @title Settings_normalize_features_patRoon_tic
+#' 
+#' @description Settings for normalizing features using the Total Ion Current (TIC) method from the patRoon package.
+#' 
+#' @return A ProcessingSettings S3 class object with subclass Settings_normalize_features_patRoon_tic.
+#' 
+#' @references
+#' \insertRef{patroon01}{StreamFind}
+#' 
+#' \insertRef{patroon02}{StreamFind}
+#' 
+#' @export
+#
+Settings_normalize_features_patRoon_tic <- function() {
+  
+  settings <- list(
+    call = "normalize_features",
+    algorithm = "patRoon_tic",
+    parameters = list(),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    software = "patRoon",
+    developer = "Rick Helmus",
+    contact = "r.helmus@uva.nl",
+    link = "https://github.com/rickhelmus/patRoon",
+    doi = "10.21105/joss.04029"
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @export
+#' @noRd
+#'
+validate.Settings_normalize_features_patRoon_tic <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "normalize_features"),
+    checkmate::test_choice(x$algorithm, "patRoon_tic")
+  )
+}
+
+
+
+
+
+# ______________________________________________________________________________________________________________________
+# fill_features -----
+# ______________________________________________________________________________________________________________________
+
+#' @title Settings_fill_features_StreamFind
+#'
+#' @description Settings for filling missing values in features.
+#' 
+#' @template arg-ms-rtExpand
+#' @template arg-ms-mzExpand
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_fill_features_StreamFind.
+#'
+#' @export
+#'
+Settings_fill_features_StreamFind <- function(rtExpand = 1, mzExpand = 0.0005) {
+  
+  settings <- list(
+    call = "fill_features",
+    algorithm = "StreamFind",
+    parameters = list(rtExpand = rtExpand, mzExpand = mzExpand),
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @export
+#' @noRd
+#'
+validate.Settings_fill_features_StreamFind <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "fill_features"),
+    checkmate::test_choice(x$algorithm, "StreamFind"),
+    checkmate::test_numeric(x$parameters$rtExpand, len = 1),
+    checkmate::test_numeric(x$parameters$mzExpand, len = 1)
   )
 }
 
@@ -1484,6 +1571,41 @@ validate.Settings_filter_features_StreamFind <- function(x) {
 #'  in \code{\link[patRoon]{replicateGroupSubtract}} from patRoon package.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_filter_features_patRoon.
+#' 
+#' @param absMinIntensity Numeric length one. Minimum absolute intensity for a feature.
+#' @param relMinIntensity Numeric length one. Minimum relative intensity for a feature.
+#' @param preAbsMinIntensity Numeric length one. Minimum absolute intensity for a feature before grouping.
+#' @param preRelMinIntensity Numeric length one. Minimum relative intensity for a feature before grouping.
+#' @param absMinAnalyses Numeric length one. Minimum number of analyses a feature must be present in.
+#' @param relMinAnalyses Numeric length one. Minimum relative number of analyses a feature must be present in.
+#' @param absMinReplicates Numeric length one. Minimum number of replicates a feature must be present in.
+#' @param relMinReplicates Numeric length one. Minimum relative number of replicates a feature must be present in.
+#' @param absMinFeatures Numeric length one. Minimum number of features a feature group must contain.
+#' @param relMinFeatures Numeric length one. Minimum relative number of features a feature group must contain.
+#' @param absMinReplicateAbundance Numeric length one. Minimum absolute abundance of a replicate.
+#' @param relMinReplicateAbundance Numeric length one. Minimum relative abundance of a replicate.
+#' @param absMinConc Numeric length one. Minimum absolute concentration of a feature.
+#' @param relMinConc Numeric length one. Minimum relative concentration of a feature.
+#' @param absMaxTox Numeric length one. Maximum absolute toxicity of a feature.
+#' @param relMaxTox Numeric length one. Maximum relative toxicity of a feature.
+#' @param absMinConcTox Numeric length one. Minimum absolute concentration of a feature to be considered toxic.
+#' @param relMinConcTox Numeric length one. Minimum relative concentration of a feature to be considered toxic.
+#' @param maxReplicateIntRSD Numeric length one. Maximum relative standard deviation of intensities within a replicate.
+#' @param blankThreshold Numeric length one. Maximum intensity of a feature to be considered a blank.
+#' @param retentionRange Numeric length two. Retention time range (in seconds) for a feature.
+#' @param mzRange Numeric length two. m/z range (in Da) for a feature.
+#' @param mzDefectRange Numeric length two. m/z defect range (in Da) for a feature.
+#' @param chromWidthRange Numeric length two. Chromatographic width range (in seconds) for a feature.
+#' @param featQualityRange Numeric length two. Feature quality range for a feature.
+#' @param groupQualityRange Numeric length two. Group quality range for a feature group.
+#' @param rGroups List of replicate groups.
+#' @param results Only keep feature groups that have results in the object specified by results. See 
+#' \code{\link[patRoon]{replicateGroupSubtract}} for further information.
+#' @param removeBlanks Logical length one. Remove blank samples.
+#' @param removeISTDs Logical length one. Remove internal standards.
+#' @param checkFeaturesSession Check features session.
+#' @param removeNA Logical length one. Remove NA values.
+#' @param negate Logical length one. Negate the filter.
 #'
 #' @details Note that when filters are applied to features or feature groups 
 #' these require specific results from processing modules. For instance, 
@@ -2004,7 +2126,6 @@ validate.Settings_find_internal_standards_StreamFind <- function(x) {
 #' @template arg-ms-mzExpand 
 #' @param minTraces Numeric of length 1 with the minimum number traces for calculating feature quality.
 #' @template arg-ms-filtered 
-#' @template arg-runParallel 
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_calculate_quality_StreamFind.
 #'
@@ -2013,8 +2134,7 @@ validate.Settings_find_internal_standards_StreamFind <- function(x) {
 Settings_calculate_quality_StreamFind <- function(rtExpand = 120,
                                                   mzExpand = 0.0003,
                                                   minTraces = 6,
-                                                  filtered = FALSE,
-                                                  runParallel = TRUE) {
+                                                  filtered = FALSE) {
   
   settings <- list(
     call = "calculate_quality",
@@ -2024,8 +2144,7 @@ Settings_calculate_quality_StreamFind <- function(rtExpand = 120,
       "rtExpand" = rtExpand,
       "mzExpand" = mzExpand,
       "minTraces" = minTraces,
-      "filtered" = filtered,
-      "runParallel" = runParallel
+      "filtered" = filtered
     ),
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",
@@ -2072,9 +2191,12 @@ validate.Settings_calculate_quality_StreamFind <- function(x) {
 #' set by excluding elements you don't expect.
 #' @param hetero Logical (length 1) indicating if heteroatoms are allowed in the formulae.
 #' @param oc Logical (length 1) indicating presence of at least one carbon in the formulae.
-#' @param thrMS, thrMSMS, thrComb Numeric (length 1) Sets the thresholds for the GenForm MS score (isoScore), MS/MS score 
-#' (MSMSScore) and combined score (combMatch). Sets the thms/thmsms/thcomb command line options, respectively. Set to 
-#' NULL for no threshold.
+#' @param thrMS Numeric (length 1) Sets the thresholds for the GenForm MS score (isoScore). Sets the thms command line 
+#' options, respectively. Set to NULL for no threshold.
+#' @param thrMSMS Numeric (length 1) Sets the thresholds for the GenForm MS/MS score (MSMSScore). Sets the thmsms 
+#' command line options, respectively. Set to NULL for no threshold.
+#' @param thrComb Numeric (length 1) Sets the thresholds for the GenForm combined score (combMatch). Sets the thcomb 
+#' command line options, respectively. Set to NULL for no threshold.
 #' @param maxCandidates Numeric (length 1) with the maximum number of candidates to be generated.
 #' @param extraOpts Character (length 1) with extra CLI options to be passed to the GenForm algorithm.
 #' @param calculateFeatures Logical (length 1) indicating if features should be calculated.
@@ -2254,7 +2376,7 @@ Settings_generate_compounds_metfrag <- function(method = "CL",
                                                 topMost = 5,
                                                 dbRelMzDev = 8,
                                                 fragRelMzDev = 10,
-                                                fragAbsMzDev = 0.002,
+                                                fragAbsMzDev = 0.005,
                                                 adduct = NULL,
                                                 database = "comptox",
                                                 extendedPubChem = "auto",
@@ -2619,17 +2741,19 @@ validate.Settings_cluster_spectra_StreamFind <- function(x) {
 #' @title Settings_subtract_blank_spectra_StreamFind
 #'
 #' @description Subtracts the blank spectra to each analysis according to the blank assignment.
+#' 
+#' @param negativeToZero Logical (length 1) indicating if negative values should be set to zero.
 #'
 #' @return A ProcessingSettings S3 class object with subclass Settings_subtract_blank_spectra_StreamFind.
 #'
 #' @export
 #'
-Settings_subtract_blank_spectra_StreamFind <- function() {
+Settings_subtract_blank_spectra_StreamFind <- function(negativeToZero = FALSE) {
   
   settings <- list(
     call = "subtract_blank_spectra",
     algorithm = "StreamFind",
-    parameters = list(),
+    parameters = list(negativeToZero = negativeToZero),
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",
     developer = "Ricardo Cunha",
@@ -2647,7 +2771,8 @@ Settings_subtract_blank_spectra_StreamFind <- function() {
 validate.Settings_subtract_blank_spectra_StreamFind <- function(x) {
   all(
     checkmate::test_choice(x$call, "subtract_blank_spectra"),
-    checkmate::test_choice(x$algorithm, "StreamFind")
+    checkmate::test_choice(x$algorithm, "StreamFind"),
+    checkmate::test_logical(x$parameters$negativeToZero, max.len = 1)
   )
 }
 
@@ -2684,7 +2809,7 @@ Settings_correct_chromatograms_baseline_baseline <- function(method = "als", arg
     ),
     version = as.character(packageVersion("baseline")),
     software = "baseline",
-    developer = "Kristian Hovde Liland and Bjørn-Helge Mevik",
+    developer = "Kristian Hovde Liland",
     contact = "kristian.liland@nmbu.no",
     link = "https://github.com/khliland/baseline/",
     doi = "10.1366/000370210792434350"
@@ -2783,7 +2908,7 @@ Settings_correct_spectra_baseline_baseline <- function(method = "als", args = li
     parameters = list(method = method, args = args),
     version = as.character(packageVersion("baseline")),
     software = "baseline",
-    developer = "Kristian Hovde Liland and Bjørn-Helge Mevik",
+    developer = "Kristian Hovde Liland",
     contact = "kristian.liland@nmbu.no",
     link = "https://github.com/khliland/baseline/",
     doi = "10.1366/000370210792434350"
@@ -2874,7 +2999,7 @@ validate.Settings_correct_spectra_baseline_airpls <- function(x) {
 #'
 #' @export
 #'
-Settings_smooth_chromatograms_movingaverage <- function(windowSize = 5, xValWindow = NULL) {
+Settings_smooth_chromatograms_movingaverage <- function(windowSize = 5) {
   
   settings <- list(
     call = "smooth_chromatograms",
@@ -2964,7 +3089,7 @@ validate.Settings_smooth_chromatograms_savgol <- function(x) {
 #'
 #' @export
 #'
-Settings_smooth_spectra_movingaverage <- function(windowSize = 5, xValWindow = NULL) {
+Settings_smooth_spectra_movingaverage <- function(windowSize = 5) {
   
   settings <- list(
     call = "smooth_spectra",
@@ -3101,7 +3226,7 @@ Settings_normalize_spectra_snv <- function(liftTozero = FALSE) {
     parameters = list(liftTozero = liftTozero),
     version = NA_character_,
     software = NA_character_,
-    developer = "Jürgen Schram",
+    developer = "J\u00FCrgen Schram",
     contact = "schram@hsnr.de",
     link = NA_character_,
     doi = "10.1016/j.trac.2018.12.004"
@@ -3325,8 +3450,8 @@ Settings_delete_spectra_section_StreamFind <- function(section = list()) {
 validate.Settings_delete_spectra_section_StreamFind <- function(x) {
   all(
     checkmate::test_choice(x$call, "delete_spectra_section"),
-    checkmate::test_choice(x$algorithm, "StreamFind"),
-    checkmate::test_named_list(x$parameters$section)
+    checkmate::test_choice(x$algorithm, "StreamFind")
+    # TODO add section checks in validation of Settings_delete_spectra_section_StreamFind
   )
 }
 
@@ -3373,5 +3498,211 @@ validate.Settings_merge_spectra_time_series_StreamFind <- function(x) {
     checkmate::test_choice(x$call, "merge_spectra_time_series"),
     checkmate::test_choice(x$algorithm, "StreamFind"),
     checkmate::test_number(x$parameters$preCut)
+  )
+}
+
+# ______________________________________________________________________________________________________________________
+# make_model -----
+# ______________________________________________________________________________________________________________________
+
+#' @title Settings_make_model_pca_mdatools
+#'
+#' @description Makes a Principle Component Analysis (PCA) model based on the R package \pkg{mdatools}.
+#' 
+#' @param ncomp Integer (length 1) with the number of components to be calculated.
+#' @param exclrows Integer vector with the row indices to be excluded.
+#' @param exclcols Integer vector with the column indices to be excluded.
+#' @param x.test Matrix with the test data.
+#' @param method Character (length 1) with the method to be used for PCA. Possible values are "svd" and "nipals".
+#' @param rand Integer (length 1) with the random seed.
+#' @param lim.type Character (length 1) with the type of limit for the PCA. Possible values are "jm" Jackson-Mudholkar 
+#' approach, "chisq" based on chi-square distribution, "ddmoments" and "ddrobust" related to data driven method. It is
+#' highly recommended to concult the original documentation in \link[mdatools]{pca} for more information.
+#' @param alpha Numeric (length 1) with the alpha value for the PCA.
+#' @param gamma Numeric (length 1) with the gamma value for the PCA.
+#' @param info Character (length 1) with additional information.
+#' 
+#' @references
+#' \insertRef{mdatools01}{StreamFind}
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_make_model_pca_mdatools.
+#'
+#' @export
+#'
+Settings_make_model_pca_mdatools <- function(ncomp = NULL,
+                                             exclrows = NULL,
+                                             exclcols = NULL,
+                                             x.test = NULL,
+                                             method = "svd",
+                                             rand = NULL,
+                                             lim.type = "ddmoments",
+                                             alpha = 0.05,
+                                             gamma = 0.01,
+                                             info = "") {
+  
+  settings <- list(
+    call = "make_model",
+    algorithm = "pca_mdatools",
+    parameters = list(
+      ncomp = ncomp,
+      exclrows = exclrows,
+      exclcols = exclcols,
+      x.test = x.test,
+      method = method,
+      rand = rand,
+      lim.type = lim.type,
+      alpha = alpha,
+      gamma = gamma,
+      info = info
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "mdatools",
+    developer = "Sergey Kucheryavskiy",
+    contact = "svk@bio.aau.dk",
+    link = "https://github.com/svkucheryavski/mdatools",
+    doi = "10.1016/j.chemolab.2020.103937"
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @export
+#' @noRd
+#'
+validate.Settings_make_model_pca_mdatools <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "make_model"),
+    checkmate::test_choice(x$algorithm, "pca_mdatools"),
+    checkmate::test_number(x$parameters$ncomp),
+    checkmate::test_integer(x$parameters$exclrows),
+    checkmate::test_integer(x$parameters$exclcols),
+    checkmate::test_matrix(x$parameters$x.test),
+    checkmate::test_choice(x$parameters$method, c("svd", "nipals")),
+    checkmate::test_integer(x$parameters$rand),
+    checkmate::test_choice(x$parameters$lim.type, c("jm", "chisq", "ddmoments", "ddrobust")),
+    checkmate::test_number(x$parameters$alpha),
+    checkmate::test_number(x$parameters$gamma),
+    checkmate::test_character(x$parameters$info)
+  )
+}
+
+#' @title Settings_make_model_mcrpure_mdatools
+#'
+#' @description Makes a Multivariate Curve Resolution (MCR) purity model based on the R package \pkg{mdatools}.
+#' 
+#' @param ncomp Integer (length 1) with the number of components to be calculated.
+#' @param purevars Integer vector with the indices of the pure variables (optional).
+#' @param offset Numeric (length 1) offset for correcting noise in computing maximum angles (should be value within 0 and 1).
+#' @param exclrows Integer vector with the row indices to be excluded.
+#' @param exclcols Integer vector with the column indices to be excluded.
+#' @param info Character (length 1) with additional information.
+#' 
+#' @references
+#' \insertRef{mdatools01}{StreamFind}
+#' 
+#' \insertRef{mdatools02}{StreamFind}
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_make_model_mcrpure_mdatools.
+#'
+#' @export
+#'
+Settings_make_model_mcrpure_mdatools <- function(ncomp = NULL,
+                                                 purevars = NULL,
+                                                 offset = 0.05,
+                                                 exclrows = NULL,
+                                                 exclcols = NULL,
+                                                 info = "") {
+  
+  settings <- list(
+    call = "make_model",
+    algorithm = "mcrpure_mdatools",
+    parameters = list(
+      ncomp = ncomp,
+      purevars = purevars,
+      offset = offset,
+      exclrows = exclrows,
+      exclcols = exclcols,
+      info = info
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "mdatools",
+    developer = "Sergey Kucheryavskiy",
+    contact = "svk@bio.aau.dk",
+    link = "https://github.com/svkucheryavski/mdatools",
+    doi = "10.1016/j.chemolab.2020.103937"
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @export
+#' @noRd
+#'
+validate.Settings_make_model_pca_mdatools <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "make_model"),
+    checkmate::test_choice(x$algorithm, "mcrpure_mdatools"),
+    checkmate::test_number(x$parameters$ncomp),
+    checkmate::test_integer(x$parameters$purevars),
+    checkmate::test_number(x$parameters$offset),
+    checkmate::test_integer(x$parameters$exclrows),
+    checkmate::test_integer(x$parameters$exclcols),
+    checkmate::test_character(x$parameters$info)
+  )
+}
+
+
+
+
+
+# ______________________________________________________________________________________________________________________
+# prepare_classification -----
+# ______________________________________________________________________________________________________________________
+
+#' @title Settings_prepare_classification_knn
+#' 
+#' @description Prepares a classification model using the k-nearest neighbors (knn) algorithm from package \pkg{class}.
+#' 
+#' @param k Integer (length 1) with the number of neighbors to be used.
+#' @param l Integer (length 1) with the minimum vote for definite decision, otherwise doubt.
+#' (More precisely, less than k-l dissenting votes are allowed, even if k is increased by ties.)
+#' 
+#' @references
+#' \insertRef{class01}{StreamFind}
+#' 
+#' @return A ProcessingSettings S3 class object with subclass Settings_prepare_classification_knn.
+#'
+#' @export
+#' 
+Settings_prepare_classification_knn <- function(k = 3, l = 0) {
+  
+  settings <- list(
+    call = "prepare_classification",
+    algorithm = "knn",
+    parameters = list(
+      k = k,
+      l = l,
+      prob = TRUE
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "class",
+    developer = "Brian D. Ripley",
+    contact = "ripley@stats.ox.ac.uk",
+    link = "https://cran.r-project.org/web/packages/class/index.html",
+    doi = "ISBN 0-387-95457-0"
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @export
+#' @noRd
+#' 
+validate.Settings_prepare_classification_knn <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "prepare_classification"),
+    checkmate::test_choice(x$algorithm, "knn"),
+    checkmate::test_number(x$parameters$k),
+    checkmate::test_number(x$parameters$l)
   )
 }

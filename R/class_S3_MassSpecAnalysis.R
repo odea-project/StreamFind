@@ -28,8 +28,6 @@ MassSpecAnalysis <- function(name = NA_character_,
                              format = NA_character_,
                              type = NA_character_,
                              spectra_number = NA_integer_,
-                             spectra_mode = NA_character_,
-                             spectra_levels = NA_integer_,
                              spectra_headers = data.table(),
                              spectra = data.table(),
                              chromatograms_number = NA_integer_,
@@ -44,8 +42,6 @@ MassSpecAnalysis <- function(name = NA_character_,
     "format" = as.character(format),
     "type" = as.character(type),
     "spectra_number" = as.integer(spectra_number),
-    "spectra_mode" = as.integer(spectra_mode),
-    "spectra_levels" = as.integer(spectra_levels),
     "spectra_headers" = as.data.table(spectra_headers),
     "spectra" = as.data.table(spectra),
     "chromatograms_number" = as.integer(chromatograms_number),
@@ -65,9 +61,10 @@ MassSpecAnalysis <- function(name = NA_character_,
   }
 }
 
+#' @describeIn validate Validates an MassSpecAnalysis S3 object.
+#' 
 #' @export
-#' @noRd
-#'
+#' 
 validate.MassSpecAnalysis <- function(x = NULL) {
   
   valid <- validate.Analysis(x)
@@ -168,9 +165,7 @@ print.MassSpecAnalysis <- function(x, ...) {
   cat("\n")
 }
 
-#' @export
 #' @noRd
-#'
 as.MassSpecAnalysis <- function(value) {
   if (length(value) == 1 & is.list(value)) value <- value[[1]]
   do.call(MassSpecAnalysis, value)

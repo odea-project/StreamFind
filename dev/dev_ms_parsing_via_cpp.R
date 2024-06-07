@@ -2,14 +2,16 @@
 # resources --------------------------------------------------------------------
 
 ## files -----------------------------------------------------------------------
-# all_files <- StreamFindData::get_ms_file_paths()
-# files <- all_files[grepl("mrm", all_files)]
-# files <- all_files[1:3]
-# files <- all_files[grepl("influent|blank", all_files)]
-# files <- all_files[grepl("o3sw", all_files)]
+all_files <- StreamFindData::get_ms_file_paths()
+files <- all_files[grepl("mrm", all_files)]
+files <- all_files[1:3]
+files <- all_files[grepl("influent|blank", all_files)]
+files <- all_files[grepl("o3sw", all_files)]
 
-path <- "C:/Users/apoli/Documents/example_ms_files"
-files <- list.files(path, pattern = ".mzML", full.names = TRUE)
+
+
+# path <- "C:/Users/apoli/Documents/example_ms_files"
+# files <- list.files(path, pattern = ".mzML", full.names = TRUE)
 
 ## databases -------------------------------------------------------------------
 db <- StreamFindData::get_ms_tof_spiked_chemicals()
@@ -48,6 +50,8 @@ neutral_targets <- make_ms_targets(
 )
 
 cols <- c("name", "formula", "mass", "rt")
+
+
 
 # tof_db <- paste0(path, "/qc_MS2_pos.csv")
 # tof_db <- data.table::fread(tof_db)
@@ -88,14 +92,9 @@ cols <- c("name", "formula", "mass", "rt")
 # patRoon::clearCache("load_groups_ms1")
 # patRoon::clearCache("load_groups_ms2")
 
-patRoon::clearCache("all")
+# clear_cache("all")
 
 # StreamCraft interface --------------------------------------------------------
-
-
-ana <- parse_MassSpecAnalysis(files[10])
-
-validate(ana[[1]])
 
 # make a benchmark with rcpp_parse_msAnalysis(files) vs rcpp_parse_ms_analysis_v2(files) and compare the results
 
@@ -111,24 +110,57 @@ validate(ana[[1]])
 #   times = 3
 # )
 
+# rcpp_parse_ms_analysis(ms_files[1])
 
 
-rcpp_parse_ms_analysis_v2(ms_files[1])
+# NTS Working group -------------------------------------------------------------
 
 
 
 
 # spectra ----------------------------------------------------------------------
+# clear_cache("all")
 
-ms <- MassSpecEngine$new(files = files[7:12])
 
-ms$get_chromatograms()
+ms <- MassSpecEngine$new(files = files) #files[13:18]
+# ms$find_features(Settings_find_features_openms())
+ms$save(paste0(getwd(), "/ms.sqlite"))
+ms$run_app()
 
-ms$get_spectra()
 
-ms$plot_spectra_eic(mass = carb, rt = carb_rt, ppm = 10, sec = 15, colorBy = "analyses")
+ms$plot_spectra_tic(levels = 1, colorBy = "polarities")
 
-ms$get_rt_end()
+rfiles <- StreamFindData::get_raman_file_paths()
+raman <- RamanEngine$new(files = rfiles)
+raman$save(paste0(getwd(), "/raman.sqlite"))
+raman$run_app()
+
+
+View(ms$get_spectra_headers()[ms$get_spectra_headers()$polarity != 0, ])
+
+ms$remove_analyses(1)
+
+ms$save()
+
+ms$load()
+
+
+file <- file.choose()
+clear_cache("all")
+ms <- MassSpecEngine$new(files = file)
+ms$plot_spectra_bpc(levels = 1)
+
+ms$get_spectra_mode()
+
+tar <- data.frame(
+  mzmin = c(268.1912 - 0.005, 237.1022 - 0.005, 130.1087 - 0.005),
+  mzmax = c(268.1912 + 0.005, 237.1022 + 0.005, 130.1087 + 0.005),
+  polarity = c(1, 1, 1)
+)
+
+ms$plot_spectra_eic(mz = tar, colorBy = "targets")
+
+ms$plot_spectra_eic(mz = carb, ppm = 10, sec = 15, colorBy = "analyses")
 
 ms$get_spectra_mode()
 

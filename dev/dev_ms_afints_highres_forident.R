@@ -1,6 +1,6 @@
 
 #path <- "F:/example_ms_files"
-path <- "C:/Users/Ricardo Cunha/Documents/Work/example_ms_files"
+path <- "C:/Users/apoli/Documents/example_ms_files"
 
 
 
@@ -29,8 +29,7 @@ afs <- Settings_annotate_features_StreamFind(
   mode = "small molecules",
   maxCharge = 1,
   rtWindowAlignment = 0.5,
-  maxGaps = 1,
-  runParallel = FALSE
+  maxGaps = 1
 )
 
 
@@ -38,7 +37,7 @@ afs <- Settings_annotate_features_StreamFind(
 
 # tof --------------------------------------------------------------------------
 
-tof_fl <- files[18]
+tof_fl <- files[41]
 
 tof_ffs <- Settings_find_features_xcms3_centwave(
   ppm = 12,
@@ -55,22 +54,16 @@ tof_ffs <- Settings_find_features_xcms3_centwave(
   extendLengthMSW = FALSE
 )
 
-tof_ms <- MassSpecData$new(
-  files = tof_fl,
-  headers = list(name = "tof"),
-  settings = list(tof_ffs, afs)
-)
+tof_ms <- MassSpecEngine$new(files = tof_fl, headers = list(name = "tof"))
 
-tof_ms$find_features()$annotate_features()
-
-tof_suspects <- tof_ms$get_suspects(database = tof_db, ppm = 8, sec = 10)
+tof_ms$plot_spectra_eic(mz = tof_db, ppm = 20, sec = 30)
 
 
 
 
 # afin --------------------------------------------------------------------------
 
-afin_fl <- files[5]
+afin_fl <- files[29]
 
 afin_ffs <- Settings_find_features_xcms3_centwave(
   ppm = 3,
@@ -87,24 +80,16 @@ afin_ffs <- Settings_find_features_xcms3_centwave(
   extendLengthMSW = FALSE
 )
 
-afin_ms <- MassSpecData$new(
-  files = afin_fl,
-  headers = list(name = "afin"),
-  settings = list(afin_ffs, afs)
-)
+afin_ms <- MassSpecEngine$new(files = afin_fl, headers = list(name = "afin"))
 
-afin_ms$find_features()$annotate_features()
-
-afin_suspects <- afin_ms$get_suspects(database = afin_db, ppm = 5, sec = 10)
-
-afin_ms$map_components(features = afin_suspects[c(11, 31), ], legendNames = TRUE)
+afin_ms$plot_spectra_eic(mz = afin_db[!is.na(afin_db$rt), ], ppm = 10, sec = 30)
 
 
 
 
 # ude --------------------------------------------------------------------------
 
-ude_fl <- files[8]
+ude_fl <- files[32]
 
 ude_ffs <- Settings_find_features_xcms3_centwave(
   ppm = 4,
@@ -121,16 +106,21 @@ ude_ffs <- Settings_find_features_xcms3_centwave(
   extendLengthMSW = FALSE
 )
 
-ude_ms <- MassSpecData$new(
-  files = ude_fl,
-  headers = list(name = "ude"),
-  settings = list(ude_ffs, afs)
-)
+ude_ms <- MassSpecEngine$new(files = ude_fl, headers = list(name = "ude"))
 
-ude_ms$find_features()$annotate_features()
+ude_ms$plot_spectra_eic(mz = ude_db, ppm = 5, sec = 30)
 
-ude_suspects <- ude_ms$get_suspects(database = ude_db, ppm = 5, sec = 10)
 
+
+# xic comparison tof vs orbitrap ----------------------------------------------
+
+toforb <- c(tof_fl, ude_fl)
+
+toforb_ms <- MassSpecEngine$new(files = toforb, headers = list(name = "toforb"))
+
+meto_db <- rbind(tof_db[tof_db$name %in% "Metoprolol", ], ude_db[ude_db$name %in% "Metoprolol", ])
+
+toforb_ms$plot_spectra_xic(mz = meto_db, ppm = 20, sec = 240)
 
 
 
@@ -162,7 +152,73 @@ file.remove("feature_list_forident.txt")
 
 
 
+samples <- seq_len(100)
+intensities <- c(sample(10000:15000, 99), 6000)
+intensities_av <- mean(intensities)
+intensities_sd <- sd(intensities)
 
+
+z_scores <- (intensities - intensities_av) / intensities_sd
+
+z_score_lower <- -3
+
+z_score_upper <- 3
+
+outliers_zscore <- intensities[abs(z_scores) > 3]
+
+fig <- plot_ly(x = samples, showlegend = FALSE)
+
+# Add intensity markers
+fig <- fig %>% add_trace(x = samples, y = intensities, type = "scatter", mode = "markers", marker = list(size = 10), name = "Intensity")
+
+# Add Z-score line
+fig <- fig %>% add_trace(x = samples, y = z_scores, type = "scatter", mode = "lines", line = list(color = "black", width = 2, dash = "dash"), name = "Z-Score", yaxis = "y2")
+
+# Add Z-score lower limit line
+fig <- fig %>% add_trace(x = samples, y = rep(z_score_lower, length(samples)), type = "scatter", mode = "lines", line = list(color = "darkred", width = 2), name = "Lower Limit", yaxis = "y2")
+
+# Add Z-score upper limit line
+fig <- fig %>% add_trace(x = samples, y = rep(z_score_upper, length(samples)), type = "scatter", mode = "lines", line = list(color = "orange", width = 2), name = "Upper Limit", yaxis = "y2")
+
+# Add layout with secondary y-axis
+fig <- fig %>% layout(
+  title = "",
+  xaxis = list(title = "Samples"),
+  yaxis = list(title = "TNFF"),
+  yaxis2 = list(
+    title = "Z",
+    overlaying = "y",
+    side = "right",
+    automargin = TRUE
+  ),
+  margin = list(l = 50, r = 70)
+)
+
+fig
+
+
+
+Q1 <- quantile(intensities, 0.30)
+Q3 <- quantile(intensities, 0.70)
+IQR <- Q3 - Q1
+lower_bound <- Q1 - 1.5 * IQR
+upper_bound <- Q3 + 1.5 * IQR
+
+outliers_iqr <- intensities[intensities < lower_bound | intensities > upper_bound]
+
+fig <- plot_ly(x = samples, showlegend = FALSE)
+
+fig <- fig %>% add_trace(x = samples, y = intensities, type = "scatter", mode = "markers", marker = list(size = 10))
+
+# Add a horizantal line with upper and lower limits based on the standard deviation
+
+fig <- fig %>% add_trace(y = rep(lower_bound, length(samples)), type = "scatter", mode = "lines", line = list(color = "darkred", width = 2), name = "Limit")
+
+fig <- fig %>% add_trace(y = rep(upper_bound, length(samples)), type = "scatter", mode = "lines", line = list(color = "orange", width = 2), name = "Limit")
+
+fig <-  fig %>% layout(title = "", xaxis = list(title = "Samples"), yaxis = list(title = "TNFF"))
+
+fig
 
 
 

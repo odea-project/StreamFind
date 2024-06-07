@@ -56,17 +56,6 @@
     } else {
       quality <- NULL
     }
-    
-    if (parameters$runParallel && length(analyses) > 1) {
-      workers <- parallel::detectCores() - 1
-      if (length(analyses) < workers) workers <- length(analyses)
-      par_type <- "PSOCK"
-      if (parallelly::supportsMulticore()) par_type <- "FORK"
-      cl <- parallel::makeCluster(workers, type = par_type)
-      doParallel::registerDoParallel(cl)
-    } else {
-      registerDoSEQ()
-    }
 
     if (is.null(quality)) {
       
@@ -77,10 +66,8 @@
         eic_t[["analysis"]] <- NULL
         list("a" = x, "e" = eic_t, "f" = fts[[x]])
       }, eic = eic, fts = fts)
-      
-      i <- NULL
 
-      quality <- foreach(i = fts_eics, .packages = c("data.table", "StreamFind")) %dopar% {
+      quality <- lapply(fts_eics, function(i) {
         
         ana <- i$a
 
@@ -353,35 +340,33 @@
 
           results[[it]] <- pk_model
 
-          id_T <- NA_character_
-          ana_T <- NA_character_
-          # id_T = "mz326.23_rt959_f132"
-          # ana_T = "03_tof_ww_is_pos_o3sw_effluent-r001"
-          # id_T <- "mz287.12_rt913_f24"
-          # ana_T <- "03_tof_ww_is_pos_o3sw_effluent-r003"
-          if (ft$feature %in% id_T && ana == ana_T) {
-            browser()
-
-            plotly::plot_ly() %>%
-              plotly::add_trace(x = pk_ft$rt, y = pk_ft$intensity, name = "all", type = "scatter", mode = "markers", marker = list(color = "gray")) %>%
-              plotly::add_trace(x = pk_eic$rt, y = pk_ints, name = "used", type = "scatter", mode = "markers", marker = list(color = "black")) %>%
-              plotly::add_trace(x = pk_eic$rt, y = corrected_ints, name = "corrected", type = "scatter", mode = "markers", marker = list(color = "blue")) %>%
-              plotly::add_trace(x = pk_eic$rt, y = predicted_ints, type = "scatter", name = "predicted", mode = "lines", line = list(color = "red"))
-
-            self$plot_features(
-              analyses = ana_T,
-              features = id_T,
-              filtered = TRUE,
-              mzExpand = 0.001,
-              loaded = FALSE
-            )
-          }
+          # id_T <- NA_character_
+          # ana_T <- NA_character_
+          # # id_T = "mz326.23_rt959_f132"
+          # # ana_T = "03_tof_ww_is_pos_o3sw_effluent-r001"
+          # # id_T <- "mz287.12_rt913_f24"
+          # # ana_T <- "03_tof_ww_is_pos_o3sw_effluent-r003"
+          # if (ft$feature %in% id_T && ana == ana_T) {
+          #   browser()
+          # 
+          #   plotly::plot_ly() %>%
+          #     plotly::add_trace(x = pk_ft$rt, y = pk_ft$intensity, name = "all", type = "scatter", mode = "markers", marker = list(color = "gray")) %>%
+          #     plotly::add_trace(x = pk_eic$rt, y = pk_ints, name = "used", type = "scatter", mode = "markers", marker = list(color = "black")) %>%
+          #     plotly::add_trace(x = pk_eic$rt, y = corrected_ints, name = "corrected", type = "scatter", mode = "markers", marker = list(color = "blue")) %>%
+          #     plotly::add_trace(x = pk_eic$rt, y = predicted_ints, type = "scatter", name = "predicted", mode = "lines", line = list(color = "red"))
+          # 
+          #   self$plot_features(
+          #     analyses = ana_T,
+          #     features = id_T,
+          #     filtered = TRUE,
+          #     mzExpand = 0.001,
+          #     loaded = FALSE
+          #   )
+          # }
         }# end for loop
         
         results
-      }
-
-      if (parameters$runParallel && length(analyses) > 1) stopCluster(cl)
+      })
 
       names(quality) <- analyses
 

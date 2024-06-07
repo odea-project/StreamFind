@@ -9,7 +9,7 @@
   
   mat <- matrix(as.numeric(vec), nrow = 1)
   
-  mat <- do.call("baseline", c(list(spectra = mat, method = method), opts))
+  mat <- do.call(baseline::baseline, c(list(spectra = mat, method = method), opts))
   
   i_baseline <- as.numeric(mat@baseline)
   
@@ -97,7 +97,6 @@
 }
 
 .airPLS_by_zmzhang <- function(x, lambda = 10, differences = 1, itermax = 20){
-  
   x = as.vector(x)
   m = length(x)
   w = rep(1,m)
@@ -117,7 +116,7 @@
     w[m] = exp(i*max(d[d<0])/sum_smaller)
     i=i+1
   }
-  return(z) 
+  return(z)
 }
 
 #' @title .s3_correct_spectra_baseline.Settings_correct_spectra_baseline_airpls
@@ -136,6 +135,11 @@
   
   if (!self$has_spectra()) {
     warning("Spectra not found! Not done.")
+    return(FALSE)
+  }
+  
+  if (!requireNamespace("Matrix", quietly = TRUE)) {
+    warning("Package Matrix not found but required! Not done.")
     return(FALSE)
   }
   

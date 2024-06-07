@@ -99,8 +99,6 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-get_internal_standards}{\code{MassSpecEngine$get_internal_standards()}}
 \item \href{#method-MassSpecEngine-add_analyses}{\code{MassSpecEngine$add_analyses()}}
 \item \href{#method-MassSpecEngine-add_files}{\code{MassSpecEngine$add_files()}}
-\item \href{#method-MassSpecEngine-add_replicate_names}{\code{MassSpecEngine$add_replicate_names()}}
-\item \href{#method-MassSpecEngine-add_blank_names}{\code{MassSpecEngine$add_blank_names()}}
 \item \href{#method-MassSpecEngine-add_results}{\code{MassSpecEngine$add_results()}}
 \item \href{#method-MassSpecEngine-load_spectra}{\code{MassSpecEngine$load_spectra()}}
 \item \href{#method-MassSpecEngine-load_chromatograms}{\code{MassSpecEngine$load_chromatograms()}}
@@ -148,6 +146,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-plot_groups_ms1}{\code{MassSpecEngine$plot_groups_ms1()}}
 \item \href{#method-MassSpecEngine-plot_groups_ms2}{\code{MassSpecEngine$plot_groups_ms2()}}
 \item \href{#method-MassSpecEngine-plot_groups_overview}{\code{MassSpecEngine$plot_groups_overview()}}
+\item \href{#method-MassSpecEngine-plot_groups_profile}{\code{MassSpecEngine$plot_groups_profile()}}
 \item \href{#method-MassSpecEngine-plot_internal_standards_qc}{\code{MassSpecEngine$plot_internal_standards_qc()}}
 \item \href{#method-MassSpecEngine-plot_suspects}{\code{MassSpecEngine$plot_suspects()}}
 \item \href{#method-MassSpecEngine-map_isotopes}{\code{MassSpecEngine$map_isotopes()}}
@@ -163,6 +162,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-bin_spectra}{\code{MassSpecEngine$bin_spectra()}}
 \item \href{#method-MassSpecEngine-find_features}{\code{MassSpecEngine$find_features()}}
 \item \href{#method-MassSpecEngine-group_features}{\code{MassSpecEngine$group_features()}}
+\item \href{#method-MassSpecEngine-fill_features}{\code{MassSpecEngine$fill_features()}}
 \item \href{#method-MassSpecEngine-filter_features}{\code{MassSpecEngine$filter_features()}}
 \item \href{#method-MassSpecEngine-annotate_features}{\code{MassSpecEngine$annotate_features()}}
 \item \href{#method-MassSpecEngine-find_internal_standards}{\code{MassSpecEngine$find_internal_standards()}}
@@ -180,6 +180,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-correct_spectra_baseline}{\code{MassSpecEngine$correct_spectra_baseline()}}
 \item \href{#method-MassSpecEngine-normalize_spectra}{\code{MassSpecEngine$normalize_spectra()}}
 \item \href{#method-MassSpecEngine-average_spectra}{\code{MassSpecEngine$average_spectra()}}
+\item \href{#method-MassSpecEngine-subtract_blank_spectra}{\code{MassSpecEngine$subtract_blank_spectra()}}
 \item \href{#method-MassSpecEngine-check_correspondence}{\code{MassSpecEngine$check_correspondence()}}
 \item \href{#method-MassSpecEngine-report}{\code{MassSpecEngine$report()}}
 \item \href{#method-MassSpecEngine-processing_methods}{\code{MassSpecEngine$processing_methods()}}
@@ -189,9 +190,15 @@ List of function elements to access specific reference help pages.}
 \if{html}{\out{
 <details><summary>Inherited methods</summary>
 <ul>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_blank_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_blank_names'><code>StreamFind::CoreEngine$add_blank_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_headers'><code>StreamFind::CoreEngine$add_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_metadata"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_metadata'><code>StreamFind::CoreEngine$add_metadata()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_replicate_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_replicate_names'><code>StreamFind::CoreEngine$add_replicate_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-add_settings'><code>StreamFind::CoreEngine$add_settings()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export'><code>StreamFind::CoreEngine$export()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export_analyses'><code>StreamFind::CoreEngine$export_analyses()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export_headers'><code>StreamFind::CoreEngine$export_headers()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export_settings'><code>StreamFind::CoreEngine$export_settings()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_analyses'><code>StreamFind::CoreEngine$get_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_analysis_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_analysis_names'><code>StreamFind::CoreEngine$get_analysis_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_blank_names"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_blank_names'><code>StreamFind::CoreEngine$get_blank_names()</code></a></span></li>
@@ -214,6 +221,7 @@ List of function elements to access specific reference help pages.}
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_analyses'><code>StreamFind::CoreEngine$import_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_headers'><code>StreamFind::CoreEngine$import_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_settings'><code>StreamFind::CoreEngine$import_settings()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="load"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-load'><code>StreamFind::CoreEngine$load()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print'><code>StreamFind::CoreEngine$print()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_analyses'><code>StreamFind::CoreEngine$print_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_headers'><code>StreamFind::CoreEngine$print_headers()</code></a></span></li>
@@ -222,11 +230,9 @@ List of function elements to access specific reference help pages.}
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_headers'><code>StreamFind::CoreEngine$remove_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_results"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_results'><code>StreamFind::CoreEngine$remove_results()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_settings'><code>StreamFind::CoreEngine$remove_settings()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_app"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_app'><code>StreamFind::CoreEngine$run_app()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_workflow'><code>StreamFind::CoreEngine$run_workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-save'><code>StreamFind::CoreEngine$save()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-save_analyses'><code>StreamFind::CoreEngine$save_analyses()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-save_headers'><code>StreamFind::CoreEngine$save_headers()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-save_settings'><code>StreamFind::CoreEngine$save_settings()</code></a></span></li>
 </ul>
 </details>
 }}
@@ -258,7 +264,7 @@ replicate group name (character). Note the file paths must have the extension
 \item{\code{headers}}{A named list with headers or a ProjectHeaders S3 class object.
 Each list element must have length one. There is no type restrictions
 except for name (must be type character length 1), author (must be type
-character length 1), path (must be type character length 1) and date (must
+character length 1), file (must be type character length 1) and date (must
 be class POSIXct or class POSIXt length 1). See more information in
 \code{?ProjectHeaders}.}
 
@@ -1861,7 +1867,7 @@ analysis replicate group.}
 \if{html}{\out{<a id="method-MassSpecEngine-add_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-add_analyses}{}}}
 \subsection{Method \code{add_analyses()}}{
-Adds analyses. Note that when adding new analyses, any existing grouping of features are removed.
+Adds analyses. Note that when adding new analyses, any existing results are removed.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_analyses(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -1897,48 +1903,6 @@ and \emph{blank} with the full file path of \emph{mzML} or \emph{mzXML} file/s
 (character), the replicate group name (character) and the associated blank
 replicate group name (character). Note the file paths must have the extension
 \emph{.mzML} or \emph{.mzXML}.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-add_replicate_names"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_replicate_names}{}}}
-\subsection{Method \code{add_replicate_names()}}{
-Adds or redefines the analysis replicate names.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_replicate_names(value = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A character vector with the analysis replicate names.
-Must be of the same length as the number of analyses.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-add_blank_names"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_blank_names}{}}}
-\subsection{Method \code{add_blank_names()}}{
-Adds or redefines the analysis blank replicate names.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_blank_names(value = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A character vector with the analysis blank replicate names.
-Must be of the same length as the number of analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -4111,6 +4075,82 @@ the added targets as legend of the plot.}
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-plot_groups_profile"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_groups_profile}{}}}
+\subsection{Method \code{plot_groups_profile()}}{
+Method to plot the intensity profile of feature groups across the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_groups_profile(
+  analyses = NULL,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  drift = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  filtered = FALSE,
+  normalized = TRUE,
+  legendNames = NULL,
+  title = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+
+\item{\code{groups}}{A numeric or character vector with the number or ID of feature groups, respectively.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
+and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
+and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
+minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
+must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
+\code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
+\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
+retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
+and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
+calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
+retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
+\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{rt}}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+a two columns data.table or data.frame with minimum and maximum drift
+time values (in milliseconds).}
+
+\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
+
+\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+
+\item{\code{millisec}}{Numeric of length one with the drift time deviation,
+in milliseconds.}
+
+\item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
+
+\item{\code{normalized}}{Logical (length 1). When \code{TRUE} the profile intensities are normalized.}
+
+\item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
+the added targets as legend of the plot.}
+
+\item{\code{title}}{A string with the title.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-plot_internal_standards_qc"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_internal_standards_qc}{}}}
 \subsection{Method \code{plot_internal_standards_qc()}}{
@@ -4709,6 +4749,28 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-fill_features"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-fill_features}{}}}
+\subsection{Method \code{fill_features()}}{
+Fills missing features in analyses of feature groups.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$fill_features(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name applicable to the processing method.
+Alternatively, a named list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as ProcessingSettings
+S3 class object. When not given, settings for the processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-filter_features"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-filter_features}{}}}
 \subsection{Method \code{filter_features()}}{
@@ -5071,6 +5133,28 @@ Invisible.
 Averages spectra based on assigned analysis replicates.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$average_spectra(settings)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings S3 class object with the call name applicable to the processing method.
+Alternatively, a named list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as ProcessingSettings
+S3 class object. When not given, settings for the processing method will be searched within the engine object.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-subtract_blank_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-subtract_blank_spectra}{}}}
+\subsection{Method \code{subtract_blank_spectra()}}{
+Subtracts spectra from correspondent blank analysis replicates.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$subtract_blank_spectra(settings)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

@@ -12,7 +12,7 @@ Settings_generate_compounds_metfrag(
   topMost = 5,
   dbRelMzDev = 8,
   fragRelMzDev = 10,
-  fragAbsMzDev = 0.002,
+  fragAbsMzDev = 0.005,
   adduct = NULL,
   database = "comptox",
   extendedPubChem = "auto",

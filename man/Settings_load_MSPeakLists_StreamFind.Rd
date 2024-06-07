@@ -40,12 +40,6 @@ values are "hclust", used for hierarchical clustering (using the
 fastcluster package), and "distance", to use the between peak distance.
 The latter method may reduces processing time and memory requirements,
 at the potential cost of reduced accuracy.}
-
-\item{pruneMissingPrecursorMS}{For MS data only: if TRUE then peak lists
-without a precursor peak are removed. Note that even when this is set to
-FALSE, functionality that relies on MS (not MS/MS) peak lists (e.g.
-formulae calculation) will still skip calculation if a precursor is not
-found.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_load_MSPeakLists_StreamFind.

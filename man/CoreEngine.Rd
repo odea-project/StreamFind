@@ -6,6 +6,15 @@
 \description{
 The CoreEngine R6 class is a basic data processor with generic methods for handling data.
 }
+\note{
+Removes all results if present in the engine as may be affected but modified correspondence.
+
+Removes all results if present in the engine as may be affected but modified correspondence.
+
+The engine data is saved in an \strong{sqlite} file and loaded in the app. If save file is defined in the engine
+it is used, otherwise the save file name is automatically set to the engine class name and the date. Changes made
+in the app can be saved in the \strong{sqlite} file and then loaded for scripting.
+}
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
@@ -26,6 +35,8 @@ List of function elements to access specific reference help pages.}
 \item{\code{analyses}}{List of analyses.}
 
 \item{\code{results}}{List of results.}
+
+\item{\code{save_file}}{Full path to the save file of the engine data.}
 }
 \if{html}{\out{</div>}}
 }
@@ -70,14 +81,17 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-CoreEngine-has_analyses}{\code{CoreEngine$has_analyses()}}
 \item \href{#method-CoreEngine-has_results}{\code{CoreEngine$has_results()}}
 \item \href{#method-CoreEngine-run_workflow}{\code{CoreEngine$run_workflow()}}
-\item \href{#method-CoreEngine-save_headers}{\code{CoreEngine$save_headers()}}
-\item \href{#method-CoreEngine-save_settings}{\code{CoreEngine$save_settings()}}
-\item \href{#method-CoreEngine-save_analyses}{\code{CoreEngine$save_analyses()}}
 \item \href{#method-CoreEngine-save}{\code{CoreEngine$save()}}
+\item \href{#method-CoreEngine-load}{\code{CoreEngine$load()}}
+\item \href{#method-CoreEngine-export_headers}{\code{CoreEngine$export_headers()}}
+\item \href{#method-CoreEngine-export_settings}{\code{CoreEngine$export_settings()}}
+\item \href{#method-CoreEngine-export_analyses}{\code{CoreEngine$export_analyses()}}
+\item \href{#method-CoreEngine-export}{\code{CoreEngine$export()}}
 \item \href{#method-CoreEngine-import_headers}{\code{CoreEngine$import_headers()}}
 \item \href{#method-CoreEngine-import_settings}{\code{CoreEngine$import_settings()}}
 \item \href{#method-CoreEngine-import_analyses}{\code{CoreEngine$import_analyses()}}
 \item \href{#method-CoreEngine-import}{\code{CoreEngine$import()}}
+\item \href{#method-CoreEngine-run_app}{\code{CoreEngine$run_app()}}
 \item \href{#method-CoreEngine-processing_methods}{\code{CoreEngine$processing_methods()}}
 \item \href{#method-CoreEngine-clone}{\code{CoreEngine$clone()}}
 }
@@ -102,7 +116,7 @@ Creates an R6 CoreEngine class object.
 \item{\code{headers}}{A named list with headers or a ProjectHeaders S3 class object.
 Each list element must have length one. There is no type restrictions
 except for name (must be type character length 1), author (must be type
-character length 1), path (must be type character length 1) and date (must
+character length 1), file (must be type character length 1) and date (must
 be class POSIXct or class POSIXt length 1). See more information in
 \code{?ProjectHeaders}.}
 
@@ -492,9 +506,6 @@ Adds or redefines the analysis replicate names.
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-Invisible.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-add_blank_names"></a>}}
@@ -511,9 +522,6 @@ Adds or redefines the analysis blank replicate names.
 \item{\code{value}}{A character vector with the analysis blank replicate names. Must be of the same length as the number of analyses.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
 }
 }
 \if{html}{\out{<hr>}}
@@ -719,12 +727,48 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-save_headers"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-save_headers}{}}}
-\subsection{Method \code{save_headers()}}{
-Saves the headers list as the defined \code{format} in \code{path} and returns invisible.
+\if{html}{\out{<a id="method-CoreEngine-save"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-save}{}}}
+\subsection{Method \code{save()}}{
+Saves the engine data as \strong{sqlite} file.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$save_headers(format = "json", name = "headers", path = getwd())}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$save(file = NA_character_)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file}}{A string with the full file path of the \strong{sqlite} file. If \code{NA} (the default) and no file
+header is defined in the engine, the file name is automatically created with the engine class name and the date.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-load"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-load}{}}}
+\subsection{Method \code{load()}}{
+Loads the engine data from an \strong{sqlite} file.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$load(file = NA_character_)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file}}{A string with the full file path of the \strong{sqlite} file. If \code{NA} (the default) and no file
+header is defined in the engine, the file name is automatically created with the engine class name and the date.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-export_headers"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-export_headers}{}}}
+\subsection{Method \code{export_headers()}}{
+Exports the headers as \emph{json} (the default) or \emph{rds}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$export_headers(format = "json", name = "headers", path = getwd())}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -740,12 +784,12 @@ Saves the headers list as the defined \code{format} in \code{path} and returns i
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-save_settings"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-save_settings}{}}}
-\subsection{Method \code{save_settings()}}{
-Saves  the settings list as the defined \code{format} in \code{path} and returns invisible.
+\if{html}{\out{<a id="method-CoreEngine-export_settings"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-export_settings}{}}}
+\subsection{Method \code{export_settings()}}{
+Exports the settings as \emph{json} (the default) or \emph{rds}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$save_settings(
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$export_settings(
   call = NULL,
   format = "json",
   name = "settings",
@@ -756,7 +800,7 @@ Saves  the settings list as the defined \code{format} in \code{path} and returns
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{call}}{A string or a vector of strings with the name/s of the processing method/s to be saved.
+\item{\code{call}}{A string or a vector of strings with the name/s of the processing method/s to be exported.
 When \code{call} is \code{NULL} all settings are saved.}
 
 \item{\code{format}}{A string. Possible values are \code{json} and \code{rds} for saving as JSON or RDS formats, respectively.}
@@ -769,12 +813,12 @@ When \code{call} is \code{NULL} all settings are saved.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-save_analyses"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-save_analyses}{}}}
-\subsection{Method \code{save_analyses()}}{
-Saves the list of analyses as the defined \code{format} in \code{path} and returns invisible.
+\if{html}{\out{<a id="method-CoreEngine-export_analyses"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-export_analyses}{}}}
+\subsection{Method \code{export_analyses()}}{
+Exports the analyses as \emph{json} (the default) or \emph{rds}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$save_analyses(
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$export_analyses(
   analyses = NULL,
   format = "json",
   name = "analyses",
@@ -797,12 +841,12 @@ Saves the list of analyses as the defined \code{format} in \code{path} and retur
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-save"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-save}{}}}
-\subsection{Method \code{save()}}{
-Saves the data of the engine as the defined by \code{format} in the \code{path} and returns invisible.
+\if{html}{\out{<a id="method-CoreEngine-export"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-export}{}}}
+\subsection{Method \code{export()}}{
+Exports the engine data as as \emph{json} (the default) or \emph{rds}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$save(format = "json", name = "EngineData", path = getwd())}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$export(format = "json", name = "EngineData", path = getwd())}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -821,7 +865,7 @@ Saves the data of the engine as the defined by \code{format} in the \code{path} 
 \if{html}{\out{<a id="method-CoreEngine-import_headers"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-import_headers}{}}}
 \subsection{Method \code{import_headers()}}{
-Imports headers from a \emph{rds} or \emph{json} file.
+Imports headers from an \emph{rds} or \emph{json} file.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$import_headers(file = NA_character_)}\if{html}{\out{</div>}}
 }
@@ -841,7 +885,7 @@ Invisible.
 \if{html}{\out{<a id="method-CoreEngine-import_settings"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-import_settings}{}}}
 \subsection{Method \code{import_settings()}}{
-Imports processing settings from a \emph{rds} or \emph{json} file.
+Imports settings from an \emph{rds} or \emph{json} file.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$import_settings(file = NA_character_, replace = TRUE)}\if{html}{\out{</div>}}
 }
@@ -854,9 +898,6 @@ Imports processing settings from a \emph{rds} or \emph{json} file.
 \item{\code{replace}}{Logical. When \code{TRUE}, existing settings are replaced by the new settings with the same call name.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
 }
 }
 \if{html}{\out{<hr>}}
@@ -874,9 +915,6 @@ Imports analyses from an \emph{rds} or \emph{json} file.
 \item{\code{file}}{A \emph{json} or \emph{rds} file to be imported.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
 }
 }
 \if{html}{\out{<hr>}}
@@ -898,6 +936,16 @@ Imports a CoreEngine saved as \emph{json} or \emph{rds}.
 \subsection{Returns}{
 Invisible.
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-run_app"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-run_app}{}}}
+\subsection{Method \code{run_app()}}{
+Runs a Shiny app to explore and manage the engine.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$run_app()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-processing_methods"></a>}}

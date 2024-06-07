@@ -18,6 +18,11 @@
     return(FALSE)
   }
   
+  if (!requireNamespace("Matrix", quietly = TRUE)) {
+    warning("Package Matrix not found but required! Not done.")
+    return(FALSE)
+  }
+  
   chrom_list <- self$chromatograms
   
   chrom_list <- lapply(chrom_list, function(x, lambda, differences, itermax) {

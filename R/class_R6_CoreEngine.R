@@ -37,28 +37,16 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     # Registers changes in the history private field.
     #
-    .register = function(
-      action = NA_character_,
-      object = NA_character_,
-      name = NA_character_,
-      software = NA_character_,
-      version = NA_character_,
-      details = NA_character_) {
-      
+    .register = function(action = NA_character_, data = NA_character_, name = NA_character_, details = NA_character_) {
       date_time <- Sys.time()
-      
       if (is.null(private$.history)) private$.history <- list()
-      
       private$.history[[as.character.POSIXt(date_time)]] <- data.table(
         "time" = date_time,
         "action" = action,
-        "object" = object,
+        "data" = data,
         "name" = name,
-        "software" = software,
-        "version" = version,
         "details" = details
       )
-      
       invisible(self)
     },
   
@@ -84,20 +72,14 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #
     .get_analyses_entry = function(analyses = NULL, value = NA_character_) {
       analyses <- private$.check_analyses_argument(analyses)
-      
       if (is.null(analyses)) return(NULL)
       output <- lapply(private$.analyses, function(x, value) {
-        
         temp <- x[[value]]
         names(temp) <- rep(x$name, length(temp))
         temp
-        
       }, value = value)
-      
       output <- unname(output)
-      
       output <- unlist(output, recursive = FALSE, use.names = TRUE)
-      
       output[names(output) %in% analyses]
     },
     
@@ -188,7 +170,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     #' @field history Audit trail of changes.
     #' 
-    history = function() { 
+    history = function() {
       private$.history 
     },
     
@@ -202,6 +184,12 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' 
     results = function() {
       private$.results
+    },
+    
+    #' @field save_file Full path to the save file of the engine data. 
+    #' 
+    save_file = function() {
+      self$headers$file
     }
   ),
     
@@ -215,21 +203,12 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' (see `?Analysis` for more information).
     #'
     initialize = function(headers = NULL, settings = NULL, analyses = NULL, results = NULL) {
-      
+      private$.register("created", "CoreEngine", headers$name, paste(c(headers$author, headers$path), collapse = ", "))
       if (is.null(headers)) headers <- ProjectHeaders()
-      
       if (!is.null(headers)) suppressMessages(self$add_headers(headers))
-      
       if (!is.null(settings)) suppressMessages(self$add_settings(settings))
-      
       if (!is.null(analyses)) suppressMessages(self$add_analyses(analyses))
-      
       if (!is.null(results)) suppressMessages(self$add_results(results))
-      
-      private$.register("created", "CoreEngine", headers$name, "StreamFind", as.character(packageVersion("StreamFind")),
-        paste(c(headers$author, headers$path), collapse = ", ")
-      )
-      
       message("\U2713 Engine created!")
     },
     
@@ -244,7 +223,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       cat(
         "name          ", private$.headers$name, "\n",
         "author        ", private$.headers$author, "\n",
-        "path          ", private$.headers$path, "\n",
+        "file          ", private$.headers$file, "\n",
         "date          ", as.character(private$.headers$date), "\n",
         sep = ""
       )
@@ -342,7 +321,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     get_history = function() {
       
       if (is.list(private$.history)) {
-        rbindlist(private$.history, fill = TRUE)
+        data.table::rbindlist(private$.history, fill = TRUE)
         
       } else {
         private$.history
@@ -368,7 +347,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     get_overview = function() {
       if (length(private$.analyses) > 0) {
         
-        df <- data.table(
+        df <- data.table::data.table(
           "analysis" = vapply(private$.analyses, function(x) x$name, ""),
           "replicate" = vapply(private$.analyses, function(x) x$replicate, ""),
           "blank" = vapply(private$.analyses, function(x) x$blank, "")
@@ -461,7 +440,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #'
     get_workflow_overview = function() {
       if (self$has_settings()) {
-        data.table(
+        data.table::data.table(
           "call" = vapply(private$.settings, function(x) x$call, ""),
           "algorithm" = vapply(private$.settings, function(x) x$algorithm, ""),
           "developer" = vapply(private$.settings, function(x) paste(x$developer, collapse = "; "), ""),
@@ -469,7 +448,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
           "link" = vapply(private$.settings, function(x) x$link, "")
         )
       } else {
-        data.table()
+        data.table::data.table()
       }
     },
     
@@ -520,16 +499,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
           private$.headers <- new_headers
           
           lapply(names(headers), function(x, new_headers) {
-            private$.register(
-              "added",
-              "ProjectHeaders",
-              x,
-              NA_character_,
-              NA_character_,
-              new_headers[x]
-            )
+            private$.register("added", "headers", x, new_headers[x])
           }, new_headers = new_headers)
-          
           
           message("\U2713 Added headers!")
         }
@@ -607,45 +578,18 @@ CoreEngine <- R6::R6Class("CoreEngine",
                 # case when repeating can happen with replace = TRUE as long as duplicated in call_names
                 if (!(x$call %in% only_one_possible) & any(duplicated(call_names))) {
                   private$.settings <- c(private$.settings, list(x))
-                  
-                  private$.register(
-                    "added",
-                    "ProcessingSettings",
-                    x$call,
-                    "StreamFind",
-                    x$version,
-                    x$algorithm
-                  )
-                  
+                  private$.register("added", "settings", x$call, x$algorithm)
                   message(paste0("\U2713 ", x$call, " processing settings added!"))
                   
                 } else {
                   private$.settings[which(x$call %in% stored_calls)] <- list(x)
-                  
-                  private$.register(
-                    "replaced",
-                    "ProcessingSettings",
-                    x$call,
-                    "StreamFind",
-                    x$version,
-                    x$algorithm
-                  )
-                  
+                  private$.register("replaced", "settings", x$call, x$algorithm)
                   message(paste0("\U2713 ", x$call, " processing settings replaced!"))
                 }
                 
               } else {
                 private$.settings <- c(private$.settings, list(x))
-                
-                private$.register(
-                  "added",
-                  "ProcessingSettings",
-                  x$call,
-                  "StreamFind",
-                  x$version,
-                  x$algorithm
-                )
-                
+                private$.register("added", "settings", x$call, x$algorithm)
                 message(paste0("\U2713 ", x$call, " processing settings added!"))
               }
               
@@ -653,32 +597,13 @@ CoreEngine <- R6::R6Class("CoreEngine",
               
               if (x$call %in% only_one_possible && x$call %in% stored_calls) {
                 message("\U2139 ", x$call, " replaced as only one is possible!")
-                
                 private$.settings[which(x$call %in% stored_calls)] <- list(x)
-                
-                private$.register(
-                  "replaced",
-                  "ProcessingSettings",
-                  x$call,
-                  "StreamFind",
-                  x$version,
-                  x$algorithm
-                )
-                
+                private$.register("replaced", "settings", x$call, x$algorithm)
                 message(paste0("\U2713 ", x$call, " processing settings replaced!"))
                 
               } else {
                 private$.settings <- c(private$.settings, list(x))
-                
-                private$.register(
-                  "added",
-                  "ProcessingSettings",
-                  x$call,
-                  "StreamFind",
-                  x$version,
-                  x$algorithm
-                )
-                
+                private$.register("added", "settings", x$call, x$algorithm)
                 message(paste0("\U2713 ", x$call, " processing settings added!"))
               }
             }
@@ -750,24 +675,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
             
             private$.analyses <- new_analyses
             
-            lapply(analyses, function(x) {
-              private$.register(
-                "added",
-                class(x),
-                x$name,
-                "StreamFind",
-                x$version,
-                x$file
-              )
-            })
+            lapply(analyses, function(x) private$.register("added", "analysis", x$name, x$file))
             
-            message(
-              paste0(
-                "\U2713 ",
-                length(new_analyses) - old_size,
-                " analyses added!"
-              )
-            )
+            message(paste0("\U2713 ", length(new_analyses) - old_size, " analyses added!"))
             
           } else {
             warning("Duplicated analysis names not allowed! Not done.")
@@ -784,11 +694,14 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' @description Adds or redefines the analysis replicate names.
     #'
     #' @param value A character vector with the analysis replicate names. Must be of the same length as the number of analyses.
-    #'
-    #' @return Invisible.
+    #' 
+    #' @note Removes all results if present in the engine as may be affected but modified correspondence.
     #'
     add_replicate_names = function(value = NULL) {
+      
       if (is.character(value) && length(value) == self$get_number_analyses()) {
+        
+        self$remove_results()
         
         private$.analyses <- Map(
           function(x, y) {
@@ -798,15 +711,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
           private$.analyses, value
         )
         
-        private$.register(
-          "added",
-          "analyses",
-          "replicate names",
-          NA_character_,
-          NA_character_,
-          NA_character_
-        )
-        
+        private$.register("added", "analyses", "replicate names")
         message("\U2713 Replicate names added!")
         
       } else {
@@ -818,13 +723,15 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' @description Adds or redefines the analysis blank replicate names.
     #'
     #' @param value A character vector with the analysis blank replicate names. Must be of the same length as the number of analyses.
-    #'
-    #' @return Invisible.
+    #' 
+    #' @note Removes all results if present in the engine as may be affected but modified correspondence.
     #'
     add_blank_names = function(value = NULL) {
       if (is.character(value) & length(value) == self$get_number_analyses()) {
         
-        if (all(value %in% self$get_replicate_names())) {
+        if (all(value %in% c(self$get_replicate_names(), NA_character_))) {
+          
+          self$remove_results()
           
           private$.analyses <- Map(
             function(x, y) {
@@ -834,15 +741,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
             private$.analyses, value
           )
           
-          private$.register(
-            "added",
-            "analyses",
-            "blank names",
-            NA_character_,
-            NA_character_,
-            NA_character_
-          )
-          
+          private$.register("added", "analyses", "blank names")
           message("\U2713 Blank names added!")
           
         } else {
@@ -852,7 +751,6 @@ CoreEngine <- R6::R6Class("CoreEngine",
       } else {
         warning("Not done, check the value!")
       }
-      invisible(self)
     },
     
     #' @description Adds metadata to analyses.
@@ -895,15 +793,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
                 private$.analyses, value
               )
               
-              private$.register(
-                "added",
-                "analyses",
-                "metadata",
-                NA_character_,
-                NA_character_,
-                paste(col_names, collapse = "; ")
-              )
-              
+              private$.register("added", "analyses", "metadata", paste(col_names, collapse = "; "))
               message("\U2713 Metadata ", paste(col_names, collapse = ", "), " added!")
               
             } else {
@@ -939,9 +829,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
           
           private$.results[x] <- value[x]
           
-          # TODO add heck for replicate or analyses names
+          # TODO add check for replicate or analyses names
           
-          private$.register("added", "results", x, NA_character_,NA_character_, NA_character_)
+          private$.register("added", "results", x)
           
           message(paste0("\U2713 ", x, " data added to results!"))
           
@@ -964,10 +854,10 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #'
     remove_headers = function(value = NULL) {
       if (!is.null(value)) {
-        value <- value[!(value %in% c("name", "author", "path", "date"))]
+        value <- value[!(value %in% c("name", "author", "file", "date"))]
         
         if (length(value) == 0) {
-          warning("Name, author, path and date headers cannot be removed!")
+          warning("Name, author, file and date headers cannot be removed!")
           value <- NA_character_
         }
         
@@ -975,39 +865,24 @@ CoreEngine <- R6::R6Class("CoreEngine",
         
         lapply(value, function(x) {
           if (x %in% names(private$.headers)) {
-            private$.register(
-              "removed",
-              "ProjectHeaders",
-              x,
-              NA_character_,
-              NA_character_,
-              private$.headers[[x]]
-            )
-            
+            private$.register("removed", "headers", x, private$.headers[[x]])
             private$.headers[x] <- NULL
           }
         })
         
       } else {
-        to_remove <- names(private$.headers) %in% c("name", "author", "path", "date")
+        to_remove <- names(private$.headers) %in% c("name", "author", "file", "date")
         to_remove <- names(private$.headers)[!to_remove]
         private$.headers[to_remove] <- NULL
         
         if (length(to_remove) > 1) {
           details <- paste(to_remove, collapse = ", ")
           
-          private$.register(
-            "removed",
-            "ProjectHeaders",
-            "all",
-            NA_character_,
-            NA_character_,
-            details
-          )
-          
+          private$.register("removed", "headers", "all", details)
           message("\U2713 Removed headers: \n",paste(to_remove, collapse = "\n"))
           
         } else {
+          private$.register("removed", "headers", "all")
           message("\U2713 Removed all headers except name, author, path and date!")
         }
       }
@@ -1025,19 +900,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
     remove_settings = function(call = NULL) {
       
       if (is.null(call)) {
-        lapply(private$.settings, function(x) {
-          private$.register(
-            "removed",
-            "ProcessingSettings",
-            x$call,
-            "StreamFind",
-            x$version,
-            x$algorithm
-          )
-        })
-        
+        lapply(private$.settings, function(x) private$.register("removed", "settings", x$call, x$algorithm))
         private$.settings <- NULL
-        
         cat("Removed all processing settings! \n")
         
       } else {
@@ -1051,18 +915,10 @@ CoreEngine <- R6::R6Class("CoreEngine",
         
         if (length(call) > 0) {
           lapply(private$.settings[to_remove], function(x) {
-            private$.register(
-              "removed",
-              "ProcessingSettings",
-              x$call,
-              "StreamFind",
-              x$version,
-              x$algorithm
-            )
+            private$.register("removed", "settings", x$call, x$algorithm)
           })
           
           private$.settings[to_remove] <- NULL
-          
           message("\U2713 Removed settings for:\n",paste(all_calls[to_remove], collapse = "\n"))
           
         } else {
@@ -1091,20 +947,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
         analysesLeft <- self$get_analyses(keepAnalyses)
         
         if (length(removeAnalyses) > 0) {
-          
           private$.analyses <- analysesLeft
-          
-          lapply(removeAnalyses, function(x) {
-            private$.register(
-              "removed",
-              "Analysis",
-              x,
-              NA_character_,
-              NA_character_,
-              NA_character_
-            )
-          })
-          
+          lapply(removeAnalyses, function(x) private$.register("removed", "analysis", x))
           message("\U2713 Removed analyses:\n", paste(removeAnalyses, collapse = "\n"))
           
         } else {
@@ -1112,19 +956,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
         }
         
       } else {
-        lapply(private$.analyses, function(x) {
-          private$.register(
-            "removed",
-            "Analysis",
-            x,
-            NA_character_,
-            NA_character_,
-            NA_character_
-          )
-        })
-        
+        lapply(private$.analyses, function(x) private$.register("removed", "analysis", x))
         private$.analyses <- NULL
-        
         message("\U2713 Removed all analyses!")
       }
       
@@ -1139,9 +972,14 @@ CoreEngine <- R6::R6Class("CoreEngine",
       
       if (missing(results)) {
         private$.results <- NULL
+        private$.register("removed", "results", "all")
         
       } else {
-        for (i in results) if (self$has_results(i)) private$.results[[i]] <- NULL
+        for (i in results) if (self$has_results(i)) {
+          private$.register("removed", "results", "i")
+          private$.results[[i]] <- NULL
+          
+        }
       }
       
       invisible(self)
@@ -1243,15 +1081,86 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
     
-    ## ___ save -----
+    ## ___ save/load -----
     
-    #' @description Saves the headers list as the defined \code{format} in \code{path} and returns invisible.
+    #' @description Saves the engine data as **sqlite** file.
+    #' 
+    #' @param file A string with the full file path of the **sqlite** file. If \code{NA} (the default) and no file 
+    #' header is defined in the engine, the file name is automatically created with the engine class name and the date.
     #'
-    save_headers = function(format = "json", name = "headers", path = getwd()) {
+    save = function(file = NA_character_) {
+      
+      if (is.na(file)) file <- self$save_file
+      
+      if (is.na(file)) file <- paste0(getwd(), "/" ,is(self), "_", format(private$.headers$date, "%Y%m%d%H%M%S"), ".sqlite")
+      
+      if (!file.exists(file)) file.create(file)
+      
+      self$add_headers(file = file)
+      
+      data <- list(
+        headers = private$.headers,
+        settings = private$.settings,
+        analyses = private$.analyses,
+        history = private$.history,
+        results = private$.results
+      )
+      
+      hash <- .make_hash(is(self))
+      
+      .save_cache(is(self), data, hash, file)
+      
+      if (file.exists(file)) {
+        message("\U2713 Engine data saved in ", file, "!")
+        
+      } else {
+        warning("Data not saved!")
+      }
+      
+      invisible(self)
+    },
+    
+    #' @description Loads the engine data from an **sqlite** file.
+    #' 
+    #' @param file A string with the full file path of the **sqlite** file. If \code{NA} (the default) and no file 
+    #' header is defined in the engine, the file name is automatically created with the engine class name and the date.
+    #' 
+    load = function(file = NA_character_) {
+      if (is.na(file)) file <- self$save_file
+      if (is.na(file)) file <- file.choose()
+      
+      if (!file.exists(file)) {
+        warning("File does not exist!")
+        return(invisible(self))
+      }
+      
+      hash <- .make_hash(is(self))
+      data <- .load_cache_backend(file, is(self), hash)
+      
+      if (!is.null(data)) {
+        private$.headers <- data$headers
+        private$.settings <- data$settings
+        private$.analyses <- data$analyses
+        private$.history <- data$history
+        private$.results <- data$results
+        message("\U2713 Engine data loaded from ", file, "!")
+        
+      } else {
+        warning("No data loaded from cache!")
+      }
+      
+      invisible(self)
+    },
+    
+    ## ___ export -----
+    
+    #' @description Exports the headers as \emph{json} (the default) or \emph{rds}.
+    #'
+    export_headers = function(format = "json", name = "headers", path = getwd()) {
       
       if (format %in% "json") {
         
-        js_headers <- toJSON(
+        js_headers <- jsonlite::toJSON(
           private$.headers,
           dataframe = "columns",
           Date = "ISO8601",
@@ -1274,12 +1183,12 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
     
-    #' @description Saves  the settings list as the defined \code{format} in \code{path} and returns invisible.
+    #' @description Exports the settings as \emph{json} (the default) or \emph{rds}.
     #'
-    #' @param call A string or a vector of strings with the name/s of the processing method/s to be saved. 
+    #' @param call A string or a vector of strings with the name/s of the processing method/s to be exported. 
     #' When `call` is \code{NULL} all settings are saved.
     #'
-    save_settings = function(call = NULL, format = "json", name = "settings", path = getwd()) {
+    export_settings = function(call = NULL, format = "json", name = "settings", path = getwd()) {
       
       js_settings <- self$get_settings(call)
       
@@ -1287,7 +1196,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       
       if (format %in% "json") {
         
-        js_settings <- toJSON(
+        js_settings <- jsonlite::toJSON(
           js_settings,
           dataframe = "columns",
           Date = "ISO8601",
@@ -1310,15 +1219,15 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
     
-    #' @description Saves the list of analyses as the defined \code{format} in \code{path} and returns invisible.
+    #' @description Exports the analyses as \emph{json} (the default) or \emph{rds}.
     #'
-    save_analyses = function(analyses = NULL, format = "json", name = "analyses", path = getwd()) {
+    export_analyses = function(analyses = NULL, format = "json", name = "analyses", path = getwd()) {
       
       analyses <- self$get_analyses(analyses)
       
       if (format %in% "json") {
         
-        js_analyses <- toJSON(
+        js_analyses <- jsonlite::toJSON(
           analyses,
           dataframe = "columns",
           Date = "ISO8601",
@@ -1341,9 +1250,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
     
-    #' @description Saves the data of the engine as the defined by `format` in the \code{path} and returns invisible.
+    #' @description Exports the engine data as as \emph{json} (the default) or \emph{rds}.
     #'
-    save = function(format = "json", name = "EngineData", path = getwd()) {
+    export = function(format = "json", name = "EngineData", path = getwd()) {
       
       if (format %in% "json") {
         
@@ -1361,7 +1270,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
         if (!is.null(history)) list_all$history <- history
         if (!is.null(results)) list_all$results <- results
         
-        js_all <- toJSON(
+        js_all <- jsonlite::toJSON(
           list_all,
           dataframe = "columns",
           Date = "ISO8601",
@@ -1386,7 +1295,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     ## ___ import -----
     
-    #' @description Imports headers from a \emph{rds} or \emph{json} file.
+    #' @description Imports headers from an \emph{rds} or \emph{json} file.
     #'
     #' @return Invisible.
     #'
@@ -1396,8 +1305,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
         
         headers <- NULL
         
-        if (file_ext(file) %in% "json") headers <- fromJSON(file)
-        if (file_ext(file) %in% "rds") headers <- readRDS(file)
+        if (tools::file_ext(file) %in% "json") headers <- jsonlite::fromJSON(file)
+        if (tools::file_ext(file) %in% "rds") headers <- readRDS(file)
         
         self$add_headers(headers)
         
@@ -1408,11 +1317,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
     
-    #' @description Imports processing settings from a \emph{rds} or \emph{json} file.
+    #' @description Imports settings from an \emph{rds} or \emph{json} file.
     #'
     #' @param replace Logical. When `TRUE`, existing settings are replaced by the new settings with the same call name.
-    #'
-    #' @return Invisible.
     #'
     import_settings = function(file = NA_character_, replace = TRUE) {
       
@@ -1420,8 +1327,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
         
         settings <- NULL
         
-        if (file_ext(file) %in% "json") settings <- fromJSON(file)
-        if (file_ext(file) %in% "rds") settings <- readRDS(file)
+        if (tools::file_ext(file) %in% "json") settings <- jsonlite::fromJSON(file)
+        if (tools::file_ext(file) %in% "rds") settings <- readRDS(file)
         
         self$add_settings(settings, replace)
         
@@ -1434,16 +1341,14 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     #' @description Imports analyses from an \emph{rds} or \emph{json} file.
     #'
-    #' @return Invisible.
-    #'
     import_analyses = function(file = NA_character_) {
       
       if (file.exists(file)) {
         
         analyses <- NULL
         
-        if (file_ext(file) %in% "json") analyses <- fromJSON(file, simplifyDataFrame = FALSE)
-        if (file_ext(file) %in% "rds") analyses <- readRDS(file)
+        if (tools::file_ext(file) %in% "json") analyses <- jsonlite::fromJSON(file, simplifyDataFrame = FALSE)
+        if (tools::file_ext(file) %in% "rds") analyses <- readRDS(file)
         
         self$add_analyses(analyses)
         
@@ -1464,9 +1369,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
       
       if (file.exists(file)) {
         
-        if (file_ext(file) %in% "json") {
+        if (tools::file_ext(file) %in% "json") {
           
-          js_ms <- fromJSON(file, simplifyDataFrame = FALSE)
+          js_ms <- jsonlite::fromJSON(file, simplifyDataFrame = FALSE)
           
           fields_present <- names(js_ms)
           
@@ -1518,7 +1423,51 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
     
-    ## ___ report -----
+    ## ___ app -----
+    
+    #' @description Runs a Shiny app to explore and manage the engine.
+    #' 
+    #' @note The engine data is saved in an **sqlite** file and loaded in the app. If save file is defined in the engine
+    #' it is used, otherwise the save file name is automatically set to the engine class name and the date. Changes made
+    #' in the app can be saved in the **sqlite** file and then loaded for scripting.
+    #' 
+    run_app = function() {
+      self$save()
+      engine_save_file <- self$save_file
+      engine_type <- is(self)
+      
+      if (!requireNamespace("shiny", quietly = TRUE)) {
+        warning("Shiny package not installed!")
+        return(invisible(self))
+      }
+      
+      if (!requireNamespace("htmltools", quietly = TRUE)) {
+        warning("htmltools package not installed!")
+        return(invisible(self))
+      }
+      
+      if (!requireNamespace("shinydashboard", quietly = TRUE)) {
+        warning("shinydashboard package not installed!")
+        return(invisible(self))
+      }
+      
+      if (!requireNamespace("shinycssloaders", quietly = TRUE)) {
+        warning("shinycssloaders package not installed!")
+        return(invisible(self))
+      }
+      
+      if (!requireNamespace("shinyFiles", quietly = TRUE)) {
+        warning("shinyFiles package not installed!")
+        return(invisible(self))
+      }
+      
+      if (!requireNamespace("sortable", quietly = TRUE)) {
+        warning("sortable package not installed!")
+        return(invisible(self))
+      }
+      
+      shiny::shinyApp(ui = .make_app_ui(self), server = .make_app_server(engine_type, engine_save_file))
+    },
     
     ## ___ info -----
     
@@ -1527,7 +1476,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' @description Data.table with available data processing methods.
     #'
     processing_methods = function() {
-      data.table(name = character(), max = numeric())
+      data.table::data.table(name = character(), max = numeric())
     },
     
     ### ___ help -----
@@ -1536,7 +1485,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' List of function elements to access specific reference help pages.
     help = list(
       methods = function() {
-        browseURL("https://odea-project.github.io/StreamFind/reference/CoreEngine.html#methods")
+        utils::browseURL("https://odea-project.github.io/StreamFind/reference/CoreEngine.html#methods")
       }
     )
   )

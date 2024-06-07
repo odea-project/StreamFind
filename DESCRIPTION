@@ -1,8 +1,13 @@
 Package: StreamFind
 Title: Framework and workflows for data analysis in the water cycle
 Version: 0.2.0
-Authors@R: person("Ricardo", "Cunha", email="cunha@iuta.de", role=c("cre", "aut"),
-    comment = c(ORCID = "0000-0002-6791-0119"))
+Authors@R: c(
+    person(
+        "Ricardo", "Cunha", email="cunha@iuta.de", role=c("cre", "aut"), comment = c(ORCID = "0000-0002-6791-0119")
+    ),
+    person(
+        "Walter", "Laurito", email="laurito@fzi.de", role = "ctb"
+    ))
 Description: The StreamFind R package is a framework for spectrometric and 
     spectroscopic data processing with focus on environmental and quality 
     studies of the water cycle. The StreamFind R package aims to stimulate 
@@ -15,46 +20,49 @@ URL: https://github.com/odea-project/StreamFind,
 BugReports: https://github.com/odea-project/StreamFind/issues
 Depends: R (>= 4.3.0)
 Imports: 
-    data.table,
     R6,
+    data.table,
+    checkmate,
+    Rcpp,
+    Rdpack,
+    magrittr,
     grDevices,
     jsonlite,
     plotly,
     RColorBrewer,
+    scales,
     stats,
     tools,
     utils,
-    Rcpp (>= 1.0.8),
-    magrittr,
-    Rdpack,
-    gtools,
-    dplyr,
     plyr,
     tidyr,
-    parallelly,
-    doParallel,
-    parallel,
-    foreach,
     methods,
-    checkmate,
-    pracma,
-    baseline,
     digest,
     DBI,
     RSQLite,
     withr,
-    fst,
-    R.utils
+    fst
 Suggests: 
+    StreamFindData,
+    mzR,
+    patRoon,
+    xcms,
+    KPIC,
+    baseline,
+    Matrix,
+    pracma,
+    mdatools,
+    class,
+    shiny,
+    shinydashboard,
+    shinycssloaders,
+    shinyFiles,
+    htmltools,
+    sortable,
     knitr,
     kableExtra,
     rmarkdown,
-    testthat (>= 3.0.0),
-    KPIC,
-    xcms,
-    mzR,
-    patRoon,
-    StreamFindData
+    testthat
 VignetteBuilder: 
     knitr
 RdMacros: 
@@ -64,6 +72,5 @@ Encoding: UTF-8
 Language: en-US
 RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE, r6 = TRUE)
-SystemRequirements:
-    C++17, OpenMP
+SystemRequirements: C++17, OpenMP
 LinkingTo: Rcpp

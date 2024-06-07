@@ -14,7 +14,7 @@ reference:
     - CoreEngine
     - MassSpecEngine
     - RamanEngine
-
+    - StatisticEngine
 
 - title: S3 classes
   desc: >
@@ -27,6 +27,7 @@ reference:
     - Analysis
     - MassSpecAnalysis
     - RamanAnalysis
+    - StatisticAnalysis
 
 
 - title: Processing settings
@@ -65,6 +66,10 @@ reference:
   contents:
     - starts_with("Settings_integrate_chromatograms")
 
+- subtitle: make_model
+  contents:
+    - starts_with("Settings_make_model")
+
 - subtitle: merge_spectra_time_series
   contents:
     - starts_with("Settings_merge_spectra_time_series")
@@ -88,6 +93,10 @@ reference:
 - subtitle: deconvolute_spectra
   contents:
     - starts_with("Settings_deconvolute_spectra")
+
+- subtitle: fill_features
+  contents:
+    - starts_with("Settings_fill_features")
 
 - subtitle: filter_features
   contents:
@@ -125,13 +134,21 @@ reference:
   contents:
     - starts_with("Settings_load_MSPeakLists")
 
-- subtitle: suspect_screening
+- subtitle: normalize_features
   contents:
-    - starts_with("Settings_suspect_screening")
+    - starts_with("Settings_normalize_features")
 
 - subtitle: normalize_spectra
   contents:
     - starts_with("Settings_normalize_spectra")
+
+- subtitle: prepare_classification
+  contents:
+    - starts_with("Settings_prepare_classification")
+
+- subtitle: suspect_screening
+  contents:
+    - starts_with("Settings_suspect_screening")
 
 - subtitle: smooth_chromatograms
   contents:
@@ -158,6 +175,10 @@ reference:
     - get_default_ProcessingSettings
     - save_default_ProcessingSettings
 
+
+- title: S3 Generics
+  contents:
+    - validate
 
 - title: Other MS functions
   contents:

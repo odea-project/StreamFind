@@ -7,6 +7,11 @@
 #'
 .s3_ms_load_MSPeakLists.Settings_load_MSPeakLists_patRoon <- function(settings, self, private) {
   
+  if (!requireNamespace("patRoon", quietly = TRUE)) {
+    warning("patRoon package not found! Install it for finding features.")
+    return(FALSE)
+  }
+  
   if (!self$has_groups()) {
     warning("Feature groups not found! Not loaded.")
     return(FALSE)
@@ -57,6 +62,11 @@
 #'
 .s3_ms_load_MSPeakLists.Settings_load_MSPeakLists_StreamFind <- function(settings, self, private) {
   
+  if (!requireNamespace("patRoon", quietly = TRUE)) {
+    warning("patRoon package not found! Install it for finding features.")
+    return(FALSE)
+  }
+  
   if (!self$has_groups()) {
     warning("Feature groups not found! Not loaded.")
     return(FALSE)
@@ -64,7 +74,7 @@
   
   if (!(self$has_loaded_features_ms1() && self$has_loaded_features_ms2())) {
     warning("Features MS1 and/or MS2 not loaded! Not done.")
-    return(NULL)
+    return(FALSE)
   }
   
   parameters <- settings$parameters
@@ -92,6 +102,11 @@
 #' @noRd
 #'
 .convert_ms1_ms2_columns_to_MSPeakLists <- function(self, parameters) {
+  
+  if (!requireNamespace("patRoon", quietly = TRUE)) {
+    warning("patRoon package not found! Install it for finding features.")
+    return(FALSE)
+  }
   
   half_clustWindow <- parameters$clusterMzWindow / 2
   
@@ -143,20 +158,15 @@
       
       if (!is.null(MS[[1]])) {
         
-        if (!"is_pre" %in% colnames(MS[[1]])) {
+        if (!"is_pre" %in% colnames(MS[[1]])) MS[[1]]$is_pre <- rep(FALSE, nrow(MS[[1]]))
           
-          t_mz_min <- features$mzmin[features$group %in% x2]
-          t_mz_max <- features$mzmax[features$group %in% x2]
+        t_mz_min <- features$mzmin[features$group %in% x2]
+        t_mz_max <- features$mzmax[features$group %in% x2]
           
-          MS[[1]][["is_pre"]] <- vapply(MS[[1]][["mz"]], function(x, t_mz_min, t_mz_max) {
-              x >= t_mz_min - half_clustWindow  & x <= t_mz_max + half_clustWindow
-            }, t_mz_min = t_mz_min, t_mz_max = t_mz_max, FALSE
-          )
-          
-          if (!TRUE %in% MS[[1]][["is_pre"]]) {
-            browser()
-          }
-        }
+        MS[[1]][["is_pre"]] <- vapply(MS[[1]][["mz"]], function(x, t_mz_min, t_mz_max) {
+            x >= t_mz_min - half_clustWindow  & x <= t_mz_max + half_clustWindow
+          }, t_mz_min = t_mz_min, t_mz_max = t_mz_max, FALSE
+        )
       }
       
       MSMS <- features$ms2[features$group %in% x2]
@@ -181,7 +191,7 @@
   
   plist <- plist[vapply(plist, function(x) length(x) > 0, FALSE)]
   
-  run_list <- lapply(self$get_analysis_names(), function(x) self$get_run(x))
+  run_list <- lapply(self$get_analysis_names(), function(x) self$get_spectra_headers(x))
   
   mlist <- Map(function(x, y) {
     
@@ -199,11 +209,7 @@
     
     y$polarity <- pol_key[pol_col]
     
-    setnames(y,
-      c("index", "level", "ce", "pre_mz"),
-      c("seqNum", "msLevel", "collisionEnergy", "precursorMZ"),
-      skip_absent = TRUE
-    )
+    setnames(y, c("index", "level", "ce", "pre_mz"), c("seqNum", "msLevel", "collisionEnergy", "precursorMZ"), skip_absent = TRUE)
     
     glist <- lapply(groups, function(x2, features, y) {
       
@@ -248,7 +254,7 @@
     "minIntensityPost" = parameters$minIntensityPost,
     "avgFun" = parameters$avgFun,
     "method" = parameters$method,
-    "pruneMissingPrecursorMS" = TRUE,
+    "pruneMissingPrecursorMS" = FALSE,
     "retainPrecursorMSMS" = TRUE
   )
   

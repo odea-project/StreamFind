@@ -136,6 +136,9 @@
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_delete_spectra_section_StreamFind.html</loc>
   </url>
   <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/Settings_fill_features_StreamFind.html</loc>
+  </url>
+  <url>
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_filter_features_patRoon.html</loc>
   </url>
   <url>
@@ -193,7 +196,19 @@
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_load_MSPeakLists_StreamFind.html</loc>
   </url>
   <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/Settings_make_model_mcrpure_mdatools.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/Settings_make_model_pca_mdatools.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/Settings_make_pca_model_mdatools.html</loc>
+  </url>
+  <url>
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_merge_spectra_time_series_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/Settings_normalize_features_patRoon_tic.html</loc>
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_normalize_spectra_blockweight.html</loc>
@@ -209,6 +224,9 @@
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_normalize_spectra_snv.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/Settings_prepare_classification_knn.html</loc>
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_smooth_chromatograms_movingaverage.html</loc>
@@ -238,9 +256,18 @@
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_suspect_screening_StreamFind.html</loc>
   </url>
   <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/StatisticAnalysis.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/StatisticEngine.html</loc>
+  </url>
+  <url>
     <loc>https://odea-project.github.io/StreamFind/reference/StreamFind-package.html</loc>
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/trim_ms_files_spectra.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/validate.html</loc>
   </url>
 </urlset>

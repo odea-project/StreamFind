@@ -1,5 +1,5 @@
 
-#' @title .s3_ms_bin_spectra.Settings_filter_features_StreamFind
+#' @title .s3_ms_filter_features.Settings_filter_features_StreamFind
 #'
 #' @description Filter features and feature groups using the algorithm StreamFind.
 #'
@@ -45,9 +45,8 @@
       features <- self$features@features
       
       features <- lapply(features, function(x) {
-        
         if ("isotope" %in% colnames(x)) {
-          iso <- vapply(x$isotope, function(z) z$step, NA_integer_)
+          iso <- vapply(x$isotope, function(z) z[["step"]], NA_integer_)
           iso[is.na(iso)] <- 0
           sel <- iso > 0
           x$filtered[sel] <- TRUE
@@ -86,7 +85,7 @@
       features <- lapply(features, function(x) {
         
         if ("quality" %in% colnames(x)) {
-          qlt <- vapply(x$quality, function(z) if (!is.null(z)) z$sn else NA_real_, NA_real_)
+          qlt <- vapply(x$quality, function(z) if (!is.null(z)) z[["sn"]] else NA_real_, NA_real_)
           qlt[is.na(qlt)] <- 0
           sel <- qlt <= value
           x$filtered[sel] <- TRUE
@@ -604,7 +603,7 @@
   TRUE
 }
 
-#' @title .s3_ms_bin_spectra.Settings_filter_features_patRoon
+#' @title .s3_ms_filter_features.Settings_filter_features_patRoon
 #'
 #' @description Filter features and feature groups using the algorithm patRoon.
 #'

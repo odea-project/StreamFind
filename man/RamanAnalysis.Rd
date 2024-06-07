@@ -23,7 +23,7 @@ RamanAnalysis(
 
 \item{file}{\emph{asc} full file path (with extension).}
 
-\item{type}{}
+\item{type}{String with the type of analysis.}
 
 \item{metadata}{List of analysis metadata taken from the \emph{asc} file or added.}
 

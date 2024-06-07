@@ -4,7 +4,7 @@
 \alias{Settings_smooth_chromatograms_movingaverage}
 \title{Settings_smooth_chromatograms_movingaverage}
 \usage{
-Settings_smooth_chromatograms_movingaverage(windowSize = 5, xValWindow = NULL)
+Settings_smooth_chromatograms_movingaverage(windowSize = 5)
 }
 \arguments{
 \item{windowSize}{Numeric (length 1) with the window size for the moving average.}

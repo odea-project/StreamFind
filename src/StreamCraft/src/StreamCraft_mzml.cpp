@@ -4,6 +4,7 @@
 #include <cstring>
 #include <algorithm>
 #include <set>
+#include <stdexcept>
 
 int sc::mzml::MZML_SPECTRUM::extract_spec_index() const {
   return spec.attribute("index").as_int();
@@ -235,7 +236,7 @@ std::vector<sc::MZML_BINARY_METADATA> sc::mzml::MZML_SPECTRUM::extract_binary_me
       mtd.precision_int = 32;
 
     } else {
-      throw("Encoding precision with accession MS:1000521, MS:1000522 or MS:1000523 not found!");
+      throw std::runtime_error("Encoding precision with accession MS:1000521, MS:1000522 or MS:1000523 not found!");
     }
 
     const pugi::xml_node node_comp_zlib = bin.find_child_by_attribute("cvParam", "accession", "MS:1000574");
@@ -250,7 +251,7 @@ std::vector<sc::MZML_BINARY_METADATA> sc::mzml::MZML_SPECTRUM::extract_binary_me
       mtd.compressed = false;
 
     } else {
-      throw("Compression with accession MS:1000574 or MS:1000576 not found!");
+      throw std::runtime_error("Compression with accession MS:1000574 or MS:1000576 not found!");
     }
 
     bool has_bin_data_type = false;
@@ -277,7 +278,7 @@ std::vector<sc::MZML_BINARY_METADATA> sc::mzml::MZML_SPECTRUM::extract_binary_me
     }
 
     if (!has_bin_data_type) {
-      throw("Encoded data type could not be found matching the mzML official vocabolary!");
+      throw std::runtime_error("Encoded data type could not be found matching the mzML official vocabolary!");
     }
 
     if (mtd.data_name_short == "other") {
@@ -311,7 +312,7 @@ std::vector<std::vector<double>> sc::mzml::MZML_SPECTRUM::extract_binary_data(co
   const int number_spectra_binary_arrays = mtd.size();
 
   if (number_spectra_binary_arrays != number_bins) {
-    throw("Binary array length does not match binary array length binary metadata!");
+    throw std::runtime_error("Binary array length does not match binary array length binary metadata!");
   }
 
   spectrum.resize(number_bins);
@@ -334,7 +335,7 @@ std::vector<std::vector<double>> sc::mzml::MZML_SPECTRUM::extract_binary_data(co
 
     int bin_array_size = spectrum[counter].size();
 
-    if (bin_array_size != number_traces) throw("Number of traces in binary array does not match the value of the spectrum header!");
+    if (bin_array_size != number_traces) throw std::runtime_error("Number of traces in binary array does not match the value of the spectrum header!");
 
     if (mtd[counter].data_name_short == "time") {
       pugi::xml_node node_unit = bin.find_child_by_attribute("cvParam", "unitCvRef", "UO");
@@ -462,7 +463,7 @@ std::vector<std::vector<double>> sc::mzml::MZML_CHROMATOGRAM::extract_binary_dat
       mtd.precision_int = 32;
 
     } else {
-      throw("Encoding precision with accession MS:1000521, MS:1000522 or MS:1000523 not found!");
+      throw std::runtime_error("Encoding precision with accession MS:1000521, MS:1000522 or MS:1000523 not found!");
     }
 
     const pugi::xml_node node_comp = bin.find_child_by_attribute("cvParam", "accession", "MS:1000574");
@@ -502,7 +503,7 @@ std::vector<std::vector<double>> sc::mzml::MZML_CHROMATOGRAM::extract_binary_dat
     }
 
     if (!has_bin_data_type) {
-      throw("Encoded data type could not be found matching the mzML official vocabolary!");
+      throw std::runtime_error("Encoded data type could not be found matching the mzML official vocabolary!");
     }
 
     if (mtd.data_name_short == "other") {
@@ -530,7 +531,7 @@ std::vector<std::vector<double>> sc::mzml::MZML_CHROMATOGRAM::extract_binary_dat
     const int bin_array_size = chromatogram[counter].size();
 
     if (bin_array_size != number_traces) {
-      throw("Number of traces in binary array does not match the value of the chromatogram header!");
+      throw std::runtime_error("Number of traces in binary array does not match the value of the chromatogram header!");
     }
 
     if (mtd.data_name_short == "time") {
@@ -550,7 +551,7 @@ std::vector<std::vector<double>> sc::mzml::MZML_CHROMATOGRAM::extract_binary_dat
   if (counter > 0) {
     for (int i = 1; i < counter; i++) {
       if (chromatogram[0].size() != chromatogram[i].size()) {
-        throw("Number of traces in binary arrays of the chromatogram does not match!");
+        throw std::runtime_error("Number of traces in binary arrays of the chromatogram does not match!");
       }
     }
   }
@@ -579,62 +580,15 @@ sc::mzml::MZML::MZML(const std::string& file) {
   if (loading_result) {
     root = doc.document_element();
 
-    if (!root) {
-      std::cerr << "Root element is empty!" << std::endl;
-
-    } else {
+    if (root) {
       format = root.name();
-
-      if ("indexedmzML" == format) {
-        format = "mzML";
-
-      } else {
-        std::cerr << "Root element must be indexedmzML!" << std::endl;
+      if ("indexedmzML" == format) format = "mzML";
+      if (format == "mzML") {
+        root = root.first_child();
+        name = root.name();
+        if (get_number_spectra() > 0) spectra_nodes = link_vector_spectra_nodes();
+        if (get_number_chromatograms() > 0) chrom_nodes = link_vector_chrom_nodes();
       }
-    }
-
-  } else {
-    std::cerr << "mzML file could not be opened!" << std::endl << loading_result.description() << std::endl;
-  }
-
-  if (format == "mzML") {
-    root = root.first_child();
-  }
-
-  name = root.name();
-
-  if (get_number_spectra() > 0) spectra_nodes = link_vector_spectra_nodes();
-  if (get_number_chromatograms() > 0) chrom_nodes = link_vector_chrom_nodes();
-};
-
-void sc::mzml::MZML::print() const {
-  std::cout << name << std::endl;
-  std::cout << std::endl;
-  std::cout << " File:                      " << file_path << std::endl;
-  std::cout << std::endl;
-  std::cout << " Number of spectra:         " << get_number_spectra() << std::endl;
-  // std::cout << " Spectra mode (first):      " << get_spectra_mode() << std::endl;
-  std::cout << " Number of binnary arrays:  " << get_number_spectra_binary_arrays() << std::endl;
-  std::cout << " Name of binary arrays:     ";
-  // if (number_spectra_binary_arrays > 0) {
-  //   for (int i = 0; i < number_spectra_binary_arrays; ++i) {
-  //     std::cout << spectra_binary_metadata[i].data_name_short;
-  //     if (i < (number_spectra_binary_arrays -1)) {
-  //       std::cout << ", ";
-  //     }
-  //   }
-  // }
-  std::cout << std::endl;
-  std::cout << std::endl;
-  std::cout << " Number of chromatograms:   " << get_number_chromatograms() << std::endl;
-  std::cout << std::endl;
-};
-
-void sc::mzml::MZML::print_spectra_binary_metadata() const {
-  const std::vector<MZML_BINARY_METADATA> mtd = get_spectra_binary_metadata();
-  if (mtd.size() > 0) {
-    for (size_t i = 0; i < mtd.size(); ++i) {
-      mtd[i].print();
     }
   }
 };
@@ -653,9 +607,6 @@ std::vector<pugi::xml_node> sc::mzml::MZML::link_vector_spectra_nodes() const {
     for (pugi::xml_node child = spec_list.first_child(); child; child = child.next_sibling()) {
       spectra.push_back(child);
     }
-  
-  } else {
-    std::cerr << "Spectra list not found in the mzML file!" << std::endl;
   }
   
   return spectra;
@@ -675,9 +626,6 @@ std::vector<pugi::xml_node> sc::mzml::MZML::link_vector_chrom_nodes() const {
     for (pugi::xml_node child = chrom_list.first_child(); child; child = child.next_sibling()) {
       chrom_nodes.push_back(child);
     }
-  
-  } else {
-    std::cerr << "Chromatogram list not found in the mzML file!" << std::endl;
   }
   
   return chrom_nodes;
@@ -778,10 +726,7 @@ std::vector<int> sc::mzml::MZML::get_spectra_index(std::vector<int> indices) con
   
   std::vector<int> idxs;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzML file!" << std::endl;
-    return idxs;
-  }
+  if (number_spectra == 0) return idxs;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -809,10 +754,7 @@ std::vector<int> sc::mzml::MZML::get_spectra_scan_number(std::vector<int> indice
   
   std::vector<int> scans;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzML file!" << std::endl;
-    return scans;
-  }
+  if (number_spectra == 0) return scans;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -840,10 +782,7 @@ std::vector<int> sc::mzml::MZML::get_spectra_array_length(std::vector<int> indic
   
   std::vector<int> lengths;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzML file!" << std::endl;
-    return lengths;
-  }
+  if (number_spectra == 0) return lengths;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -871,10 +810,7 @@ std::vector<int> sc::mzml::MZML::get_spectra_level(std::vector<int> indices) con
   
   std::vector<int> levels;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzML file!" << std::endl;
-    return levels;
-  }
+  if (number_spectra == 0) return levels;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -902,10 +838,7 @@ std::vector<int> sc::mzml::MZML::get_spectra_mode(std::vector<int> indices) cons
   
   std::vector<int> modes;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzML file!" << std::endl;
-    return modes;
-  }
+  if (number_spectra == 0) return modes;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -933,10 +866,7 @@ std::vector<int> sc::mzml::MZML::get_spectra_polarity(std::vector<int> indices) 
   
   std::vector<int> polarities;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzML file!" << std::endl;
-    return polarities;
-  }
+  if (number_spectra == 0) return polarities;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -964,10 +894,7 @@ std::vector<double> sc::mzml::MZML::get_spectra_lowmz(std::vector<int> indices) 
   
   std::vector<double> lowmzs;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzML file!" << std::endl;
-    return lowmzs;
-  }
+  if (number_spectra == 0) return lowmzs;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -995,10 +922,7 @@ std::vector<double> sc::mzml::MZML::get_spectra_highmz(std::vector<int> indices)
   
   std::vector<double> highmzs;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzML file!" << std::endl;
-    return highmzs;
-  }
+  if (number_spectra == 0) return highmzs;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -1026,10 +950,7 @@ std::vector<double> sc::mzml::MZML::get_spectra_bpmz(std::vector<int> indices) c
   
   std::vector<double> bpmzs;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzML file!" << std::endl;
-    return bpmzs;
-  }
+  if (number_spectra == 0) return bpmzs;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -1057,10 +978,7 @@ std::vector<double> sc::mzml::MZML::get_spectra_bpint(std::vector<int> indices) 
   
   std::vector<double> bpints;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzML file!" << std::endl;
-    return bpints;
-  }
+  if (number_spectra == 0) return bpints;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -1088,10 +1006,7 @@ std::vector<double> sc::mzml::MZML::get_spectra_tic(std::vector<int> indices) co
   
   std::vector<double> tics;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzML file!" << std::endl;
-    return tics;
-  }
+  if (number_spectra == 0) return tics;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -1119,10 +1034,7 @@ std::vector<double> sc::mzml::MZML::get_spectra_rt(std::vector<int> indices) con
   
   std::vector<double> rts;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzML file!" << std::endl;
-    return rts;
-  }
+  if (number_spectra == 0) return rts;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -1150,10 +1062,7 @@ std::vector<double> sc::mzml::MZML::get_spectra_drift(std::vector<int> indices) 
   
   std::vector<double> dts;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzML file!" << std::endl;
-    return dts;
-  }
+  if (number_spectra == 0) return dts;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -1181,10 +1090,7 @@ std::vector<int> sc::mzml::MZML::get_spectra_precursor_scan(std::vector<int> ind
   
   std::vector<int> scans;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzML file!" << std::endl;
-    return scans;
-  }
+  if (number_spectra == 0) return scans;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -1212,10 +1118,7 @@ std::vector<double> sc::mzml::MZML::get_spectra_precursor_mz(std::vector<int> in
   
   std::vector<double> mzs;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzML file!" << std::endl;
-    return mzs;
-  }
+  if (number_spectra == 0) return mzs;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -1243,10 +1146,7 @@ std::vector<double> sc::mzml::MZML::get_spectra_precursor_window_mz(std::vector<
   
   std::vector<double> mzs;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzML file!" << std::endl;
-    return mzs;
-  }
+  if (number_spectra == 0) return mzs;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -1274,10 +1174,7 @@ std::vector<double> sc::mzml::MZML::get_spectra_precursor_window_mzlow(std::vect
   
   std::vector<double> offsets;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzML file!" << std::endl;
-    return offsets;
-  }
+  if (number_spectra == 0) return offsets;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -1305,10 +1202,7 @@ std::vector<double> sc::mzml::MZML::get_spectra_precursor_window_mzhigh(std::vec
   
   std::vector<double> offsets;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzML file!" << std::endl;
-    return offsets;
-  }
+  if (number_spectra == 0) return offsets;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -1336,10 +1230,7 @@ std::vector<double> sc::mzml::MZML::get_spectra_collision_energy(std::vector<int
   
   std::vector<double> energies;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzML file!" << std::endl;
-    return energies;
-  }
+  if (number_spectra == 0) return energies;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -1434,10 +1325,7 @@ sc::MS_SPECTRA_HEADERS sc::mzml::MZML::get_spectra_headers(std::vector<int> indi
 
   sc::MS_SPECTRA_HEADERS headers;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzML file!" << std::endl;
-    return headers;
-  }
+  if (number_spectra == 0) return headers;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -1448,15 +1336,9 @@ sc::MS_SPECTRA_HEADERS sc::mzml::MZML::get_spectra_headers(std::vector<int> indi
   
   const int n = idxs.size();
 
-  if (n == 0) {
-    std::cerr << "No indices given!" << std::endl;
-    return headers;
-  }
+  if (n == 0) return headers;
 
-  if (spectra_nodes.size() == 0) {
-    std::cerr << "No spectra found!" << std::endl;
-    return headers;
-  }
+  if (spectra_nodes.size() == 0) return headers;
 
   headers.resize_all(n);
 
@@ -1513,10 +1395,7 @@ sc::MS_CHROMATOGRAMS_HEADERS sc::mzml::MZML::get_chromatograms_headers(std::vect
 
   sc::MS_CHROMATOGRAMS_HEADERS headers;
 
-  if (number_chromatograms == 0) {
-    std::cerr << "There are no chromatograms in the mzML file!" << std::endl;
-    return headers;
-  }
+  if (number_chromatograms == 0) return headers;
 
   if (indices.size() == 0) {
     indices.resize(number_chromatograms);
@@ -1527,15 +1406,9 @@ sc::MS_CHROMATOGRAMS_HEADERS sc::mzml::MZML::get_chromatograms_headers(std::vect
 
   const int n = idxs.size();
 
-  if (n == 0) {
-    std::cerr << "No indices given!" << std::endl;
-    return headers;
-  }
+  if (n == 0) return headers;
 
-  if (chrom_nodes.size() == 0) {
-    std::cerr << "No chromatograms found!" << std::endl;
-    return headers;
-  }
+  if (chrom_nodes.size() == 0) return headers;
 
   headers.resize_all(n);
 
@@ -1573,10 +1446,7 @@ std::vector<std::vector<std::vector<double>>> sc::mzml::MZML::get_spectra(std::v
 
   std::vector<std::vector<std::vector<double>>> sp;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzML file!" << std::endl;
-    return sp;
-  }
+  if (number_spectra == 0) return sp;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -1587,15 +1457,9 @@ std::vector<std::vector<std::vector<double>>> sc::mzml::MZML::get_spectra(std::v
 
   const int n = idxs.size();
 
-  if (n == 0) {
-    std::cerr << "No indices given!" << std::endl;
-    return sp;
-  }
+  if (n == 0) return sp;
 
-  if (spectra_nodes.size() == 0) {
-    std::cerr << "No spectra found!" << std::endl;
-    return sp;
-  }
+  if (spectra_nodes.size() == 0) return sp;
 
   sp.resize(n);
 
@@ -1617,10 +1481,7 @@ std::vector<std::vector<std::vector<double>>> sc::mzml::MZML::get_chromatograms(
 
   std::vector<std::vector<std::vector<double>>> chr;
 
-  if (number_chromatograms == 0) {
-    std::cerr << "There are no chromatograms in the mzML file!" << std::endl;
-    return chr;
-  }
+  if (number_chromatograms == 0) return chr;
   
   if (indices.size() == 0) {
     indices.resize(number_chromatograms);
@@ -1631,15 +1492,9 @@ std::vector<std::vector<std::vector<double>>> sc::mzml::MZML::get_chromatograms(
 
   int n = idxs.size();
 
-  if (n == 0) {
-    std::cerr << "Warning: No indices given!" << std::endl;
-    return chr;
-  }
+  if (n == 0) return chr;
 
-  if (chrom_nodes.size() == 0) {
-    std::cerr << "No chromatograms found!" << std::endl;
-    return chr;
-  }
+  if (chrom_nodes.size() == 0) return chr;
 
   chr.resize(n);
 
@@ -1737,19 +1592,58 @@ std::vector<std::vector<std::string>> sc::mzml::MZML::get_hardware() const {
   return output;
 };
 
+sc::MS_SPECTRUM sc::mzml::MZML::get_spectrum(const int& idx) const {
+
+  sc::MS_SPECTRUM spectrum;
+
+  if (idx < 0 || idx >= get_number_spectra()) return spectrum;
+
+  const sc::MZML_SPECTRUM spec = spectra_nodes[idx];
+
+  spectrum.index = spec.extract_spec_index();
+  spectrum.scan = spec.extract_spec_scan();
+  spectrum.array_length = spec.extract_spec_array_length();
+  spectrum.level = spec.extract_spec_level();
+  spectrum.mode = spec.extract_spec_mode();
+  spectrum.polarity = spec.extract_spec_polarity();
+  spectrum.lowmz = spec.extract_spec_lowmz();
+  spectrum.highmz = spec.extract_spec_highmz();
+  spectrum.bpmz = spec.extract_spec_bpmz();
+  spectrum.bpint = spec.extract_spec_bpint();
+  spectrum.tic = spec.extract_spec_tic();
+  spectrum.rt = spec.extract_scan_rt();
+  spectrum.drift = spec.extract_scan_drift();
+
+  if (spec.has_precursor()) {
+    spectrum.window_mz = spec.extract_window_mz();
+    spectrum.window_mzlow = spec.extract_window_mzlow();
+    spectrum.window_mzhigh = spec.extract_window_mzhigh();
+
+    if (spec.has_selected_ion()) {
+      spectrum.precursor_mz = spec.extract_ion_mz();
+      spectrum.precursor_intensity = spec.extract_ion_intensity();
+      spectrum.precursor_charge = spec.extract_ion_charge();
+    }
+
+    if (spec.has_activation()) {
+      spectrum.activation_ce = spec.extract_activation_ce();
+    }
+  }
+
+  const std::vector<MZML_BINARY_METADATA> mtd = spec.extract_binary_metadata();
+
+  spectrum.binary_data = spec.extract_binary_data(mtd);
+
+  return spectrum;
+};
+
 void sc::mzml::MZML::write_spectra(
   const std::vector<std::vector<std::vector<double>>>& spectra,
   const std::vector<std::string>& names, MS_SPECTRA_MODE mode, bool compress, bool save, std::string save_suffix) {
 
-  if (spectra.size() == 0) {
-    std::cerr << "No spectra to write!" << std::endl;
-    return;
-  }
+  if (spectra.size() == 0) return;
 
-  if (spectra[0].size() != names.size()) {
-    std::cerr << "Number of spectra and names do not match!" << std::endl;
-    return;
-  }
+  if (spectra[0].size() != names.size()) return;
 
   std::string search_run = "//run";
   
@@ -1765,13 +1659,9 @@ void sc::mzml::MZML::write_spectra(
       spectra_nodes.push_back(child);
     }
 
-    if (spectra_nodes.size() != spectra.size()) {
-      std::cerr << "Number of spectra in the file and the number of spectra to write do not match!" << std::endl;
-      return;
-    }
+    if (spectra_nodes.size() != spectra.size()) return;
 
   } else {
-    std::cerr << "Spectrum list not found in the mzML file!" << std::endl;
     return;
   }
 
@@ -1913,89 +1803,10 @@ void sc::mzml::MZML::write_spectra(
 
     std::string new_file_path = file_dir + "/" + file_name + save_suffix + "." + file_extension;
 
-    if (new_file_path == file_path) {
-      std::cerr << "The new file path is the same as the original file path!" << std::endl;
-      return;
-    }
+    if (new_file_path == file_path) return;
     
     if (std::filesystem::exists(new_file_path)) std::filesystem::remove(new_file_path);
 
-    if (!doc.save_file(new_file_path.c_str())) std::cerr << "Error saving the file!" << std::endl;
+    doc.save_file(new_file_path.c_str());
   }
-};
-
-void sc::mzml::test_extract_spectra_mzml(const std::string& file) {
-  std::cout << std::endl;
-  std::cout << std::endl;
-  std::cout << "Test Extract Spectra mzML file:" << std::endl;
-  std::cout << std::endl;
-
-  MZML mzml(file);
-
-  std::cout << "Root name: " << mzml.name << std::endl;
-
-  std::cout << "Number of spectra: " << mzml.get_number_spectra() << std::endl;
-
-  MS_SPECTRA_HEADERS hd;
-
-  hd = mzml.get_spectra_headers();
-
-  int number = hd.index.size();
-
-  std::cout << "Size of vector in headers struct: " << number << std::endl;
-
-  std::cout << "Retention time of 10th spectrum: " << hd.rt[10] << std::endl;
-
-  std::cout << "Number of binary arrays: " << mzml.get_number_spectra_binary_arrays() << std::endl;
-
-  std::vector<std::vector<std::vector<double>>> spectra;
-
-  std::vector<int> indices = {10, 15};
-
-  spectra = mzml.get_spectra(indices);
-
-  std::cout << "Number of extracted spectra: " << spectra.size() << std::endl;
-
-  std::cout << "Number of traces in the first extracted spectrum: " << spectra[0][0].size() << std::endl;
-
-  std::cout << std::endl;
-};
-
-void sc::mzml::test_extract_chromatograms_mzml(const std::string& file) {
-  std::cout << std::endl;
-  std::cout << std::endl;
-  std::cout << "Test Chromatograms mzML file:" << std::endl;
-  std::cout << std::endl;
-
-  MZML mzml(file);
-
-  std::cout << "Root name: " << mzml.name << std::endl;
-
-  std::cout << "Number of chromatograms: " << mzml.get_number_chromatograms() << std::endl;
-
-  MS_CHROMATOGRAMS_HEADERS ch;
-
-  ch = mzml.get_chromatograms_headers();
-
-  int number_chroms = ch.index.size();
-
-  std::cout << "Size of vector in headers chroms struct: " << number_chroms << std::endl;
-
-  std::cout << "Polarity of 5th chrom: " << ch.polarity[5] << std::endl;
-
-  std::vector<std::vector<std::vector<double>>> chroms;
-
-  std::vector<int> indices = {1, 5, 6};
-
-  chroms = mzml.get_chromatograms(indices);
-
-  std::cout << "Number of extracted chroms: " << chroms.size() << std::endl;
-
-  std::cout << "Number of variables in 1st chromatogram: " << chroms[0].size() << std::endl;
-
-  std::cout << "Number of variables in 6th chromatogram: " << chroms[2].size() << std::endl;
-
-  std::cout << "Number of traces in the first extracted chrom: " << chroms[0][0].size() << std::endl;
-
-  std::cout << std::endl;
 };

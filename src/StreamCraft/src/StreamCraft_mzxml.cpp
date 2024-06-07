@@ -142,8 +142,7 @@ std::vector<std::vector<double>> sc::mzxml::MZXML_SPECTRUM::extract_binary_data(
     res = utils::decode_little_endian(decoded_string, mtd.precision / 8);
 
   } else {
-    std::cerr << "Byte order must be big_endian or little_endian!" << std::endl;
-    return(spectrum);
+    throw std::runtime_error("Byte order must be big_endian or little_endian!");
   }
 
   for (int i = 0; i < number_traces; i++) {
@@ -164,9 +163,6 @@ std::vector<pugi::xml_node> sc::mzxml::MZXML::link_vector_spectra_nodes() const 
     for (pugi::xml_node child = msrun.child("scan"); child; child = child.next_sibling()) {
       spectra.push_back(child);
     }
-
-  } else {
-    std::cerr << "msRun not found in the mzXML file!" << std::endl;
   }
   
   return spectra;
@@ -193,37 +189,16 @@ sc::mzxml::MZXML::MZXML(const std::string& file) {
   if (loading_result) {
     root = doc.document_element();
 
-    if (!root) {
-      std::cerr << "Root element is empty!" << std::endl;
-
-    } else {
+    if (root) {
       format = root.name();
 
       if ("mzXML" == format) {
         format = "mzXML";
-
-      } else {
-        std::cerr << "Root element must be mzXML!" << std::endl;
+        name = root.name();
+        if (get_number_spectra() > 0) spectra_nodes = link_vector_spectra_nodes();
       }
     }
-
-  } else {
-    std::cerr << "mzXML file could not be opened!" << std::endl << loading_result.description() << std::endl;
   }
-
-  name = root.name();
-
-  if (get_number_spectra() > 0) spectra_nodes = link_vector_spectra_nodes();
-};
-
-void sc::mzxml::MZXML::print() const {
-  std::cout << name << std::endl;
-  std::cout << std::endl;
-  std::cout << " File:                      " << file_path << std::endl;
-  std::cout << std::endl;
-  std::cout << " Number of spectra:         " << get_number_spectra() << std::endl;
-  // std::cout << " Spectra mode (first):      " << first_spectra_headers.spec_mode[0] << std::endl;
-  std::cout << std::endl;
 };
 
 int sc::mzxml::MZXML::get_number_spectra() const {
@@ -275,10 +250,7 @@ std::vector<int> sc::mzxml::MZXML::get_spectra_index(std::vector<int> indices) c
   
   std::vector<int> idxs;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzXML file!" << std::endl;
-    return idxs;
-  }
+  if (number_spectra == 0) return idxs;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -306,10 +278,7 @@ std::vector<int> sc::mzxml::MZXML::get_spectra_scan_number(std::vector<int> indi
   
   std::vector<int> scans;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzXML file!" << std::endl;
-    return scans;
-  }
+  if (number_spectra == 0) return scans;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -337,10 +306,7 @@ std::vector<int> sc::mzxml::MZXML::get_spectra_array_length(std::vector<int> ind
   
   std::vector<int> lengths;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzXML file!" << std::endl;
-    return lengths;
-  }
+  if (number_spectra == 0) return lengths;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -368,10 +334,7 @@ std::vector<int> sc::mzxml::MZXML::get_spectra_level(std::vector<int> indices) c
   
   std::vector<int> levels;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzXML file!" << std::endl;
-    return levels;
-  }
+  if (number_spectra == 0) return levels;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -399,10 +362,7 @@ std::vector<int> sc::mzxml::MZXML::get_spectra_mode(std::vector<int> indices) co
   
   std::vector<int> modes;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzXML file!" << std::endl;
-    return modes;
-  }
+  if (number_spectra == 0) return modes;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -430,10 +390,7 @@ std::vector<int> sc::mzxml::MZXML::get_spectra_polarity(std::vector<int> indices
   
   std::vector<int> polarities;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzXML file!" << std::endl;
-    return polarities;
-  }
+  if (number_spectra == 0) return polarities;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -461,10 +418,7 @@ std::vector<double> sc::mzxml::MZXML::get_spectra_lowmz(std::vector<int> indices
   
   std::vector<double> lowmzs;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzXML file!" << std::endl;
-    return lowmzs;
-  }
+  if (number_spectra == 0) return lowmzs;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -492,10 +446,7 @@ std::vector<double> sc::mzxml::MZXML::get_spectra_highmz(std::vector<int> indice
   
   std::vector<double> highmzs;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzXML file!" << std::endl;
-    return highmzs;
-  }
+  if (number_spectra == 0) return highmzs;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -523,10 +474,7 @@ std::vector<double> sc::mzxml::MZXML::get_spectra_bpmz(std::vector<int> indices)
   
   std::vector<double> bpmzs;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzXML file!" << std::endl;
-    return bpmzs;
-  }
+  if (number_spectra == 0) return bpmzs;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -554,10 +502,7 @@ std::vector<double> sc::mzxml::MZXML::get_spectra_bpint(std::vector<int> indices
   
   std::vector<double> bpints;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzXML file!" << std::endl;
-    return bpints;
-  }
+  if (number_spectra == 0) return bpints;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -585,10 +530,7 @@ std::vector<double> sc::mzxml::MZXML::get_spectra_tic(std::vector<int> indices) 
   
   std::vector<double> tics;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzXML file!" << std::endl;
-    return tics;
-  }
+  if (number_spectra == 0) return tics;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -616,10 +558,7 @@ std::vector<double> sc::mzxml::MZXML::get_spectra_rt(std::vector<int> indices) c
   
   std::vector<double> rts;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzXML file!" << std::endl;
-    return rts;
-  }
+  if (number_spectra == 0) return rts;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -647,10 +586,7 @@ std::vector<double> sc::mzxml::MZXML::get_spectra_precursor_mz(std::vector<int> 
   
   std::vector<double> mzs;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzXML file!" << std::endl;
-    return mzs;
-  }
+  if (number_spectra == 0) return mzs;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -678,10 +614,7 @@ std::vector<double> sc::mzxml::MZXML::get_spectra_collision_energy(std::vector<i
   
   std::vector<double> energies;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzXML file!" << std::endl;
-    return energies;
-  }
+  if (number_spectra == 0) return energies;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -770,10 +703,7 @@ sc::MS_SPECTRA_HEADERS sc::mzxml::MZXML::get_spectra_headers(std::vector<int> in
 
   sc::MS_SPECTRA_HEADERS headers;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzXML file!" << std::endl;
-    return headers;
-  }
+  if (number_spectra == 0) return headers;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -784,15 +714,9 @@ sc::MS_SPECTRA_HEADERS sc::mzxml::MZXML::get_spectra_headers(std::vector<int> in
   
   const int n = idxs.size();
 
-  if (n == 0) {
-    std::cerr << "No indices given!" << std::endl;
-    return headers;
-  }
+  if (n == 0) return headers;
 
-  if (spectra_nodes.size() == 0) {
-    std::cerr << "No spectra found!" << std::endl;
-    return headers;
-  }
+  if (spectra_nodes.size() == 0) return headers;
 
   headers.resize_all(n);
 
@@ -829,10 +753,7 @@ std::vector<std::vector<std::vector<double>>> sc::mzxml::MZXML::get_spectra(std:
 
   std::vector<std::vector<std::vector<double>>> sp;
 
-  if (number_spectra == 0) {
-    std::cerr << "There are no spectra in the mzXML file!" << std::endl;
-    return sp;
-  }
+  if (number_spectra == 0) return sp;
 
   if (indices.size() == 0) {
     indices.resize(number_spectra);
@@ -843,15 +764,9 @@ std::vector<std::vector<std::vector<double>>> sc::mzxml::MZXML::get_spectra(std:
 
   const int n = idxs.size();
 
-  if (n == 0) {
-    std::cerr << "No indices given!" << std::endl;
-    return sp;
-  }
+  if (n == 0) return sp;
 
-  if (spectra_nodes.size() == 0) {
-    std::cerr << "No spectra found!" << std::endl;
-    return sp;
-  }
+  if (spectra_nodes.size() == 0) return sp;
 
   sp.resize(n);
 
@@ -904,41 +819,33 @@ std::vector<std::vector<std::string>> sc::mzxml::MZXML::get_hardware() const {
   return output;
 };
 
-void sc::mzxml::test_extract_spectra_mzxml(const std::string& file) {
-  
-  std::cout << std::endl;
-  std::cout << std::endl;
-  std::cout << "Test Extract Spectra mzXML file:" << std::endl;
-  std::cout << std::endl;
+sc::MS_SPECTRUM sc::mzxml::MZXML::get_spectrum(const int& idx) const {
 
-  MZXML mzxml(file);
+  const sc::MZXML_SPECTRUM& spec(spectra_nodes[idx]);
 
-  std::cout << "Root name: " << mzxml.name << std::endl;
+  sc::MS_SPECTRUM spectrum;
 
-  std::cout << "Number of spectra: " << mzxml.get_number_spectra() << std::endl;
+  spectrum.index = spec.extract_spec_index();
+  spectrum.scan = spec.extract_spec_scan();
+  spectrum.array_length = spec.extract_spec_array_length();
+  spectrum.level = spec.extract_spec_level();
+  spectrum.mode = spec.extract_spec_mode();
+  spectrum.polarity = spec.extract_spec_polarity();
+  spectrum.lowmz = spec.extract_spec_lowmz();
+  spectrum.highmz = spec.extract_spec_highmz();
+  spectrum.bpmz = spec.extract_spec_bpmz();
+  spectrum.bpint = spec.extract_spec_bpint();
+  spectrum.tic = spec.extract_spec_tic();
+  spectrum.rt = spec.extract_scan_rt();
 
-  MS_SPECTRA_HEADERS hd;
+  if (spec.has_precursor()) {
+    spectrum.precursor_mz = spec.extract_ion_mz();
+    spectrum.activation_ce = spec.extract_activation_ce();
+  }
 
-  hd = mzxml.get_spectra_headers();
+  const sc::MZXML_BINARY_METADATA binary_metadata = spec.extract_binary_metadata();
 
-  int number = hd.index.size();
+  spectrum.binary_data = spec.extract_binary_data(binary_metadata);
 
-  std::cout << "Size of vector in headers struct: " << number << std::endl;
-
-  std::cout << "Retention time of 10th spectrum: " << hd.rt[10] << std::endl;
-
-  std::cout << "Number of binary arrays: " << mzxml.get_number_spectra_binary_arrays() << std::endl;
-
-  std::vector<std::vector<std::vector<double>>> spectra;
-
-  std::vector<int> indices = {10, 15};
-
-  spectra = mzxml.get_spectra(indices);
-
-  std::cout << "Number of extracted spectra: " << spectra.size() << std::endl;
-
-  std::cout << "Number of traces in the first extracted spectrum: " << spectra[0][0].size() << std::endl;
-
-  std::cout << std::endl;
-  
+  return spectrum;
 };

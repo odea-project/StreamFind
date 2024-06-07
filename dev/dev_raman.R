@@ -4,6 +4,62 @@
 # wd <- "E:/iSoft"
 wd <- "C:/Users/apoli/Documents/iSoft"
 
+## Paracetamol ---------
+
+### MS -----------------
+
+ms_dir <- paste0(wd, "/Paracetamol/ms/mzml")
+ms_files <- list.files(par_dir, pattern = ".mzML", full.names = TRUE)
+ms <- MassSpecEngine$new(par_files)
+ms$add_replicate_names(
+  c(rep("set_31", 9),
+    rep("set_32", 9),
+    rep("set_33", 9),
+    rep("set_34", 9),
+    rep("set_35", 9),
+    rep("set_36", 9),
+    rep("set_37", 9),
+    rep("set_38", 9),
+    rep("set_39", 9),
+    rep("set_40", 9),
+    rep("set_41", 9),
+    rep("set_blank", 23))
+)
+
+ms$plot_spectra_tic(colorBy = "replicates", interactive = FALSE, cex = 1)
+
+
+
+
+
+
+
+
+
+raman_dir <- paste0(wd, "/Paracetamol/raman")
+raman_files <- list.files(raman_dir, pattern = ".asc", full.names = TRUE)
+raman <- RamanEngine$new(raman_files[1:90])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# .map_x_spectra(par$get_spectra(analyses = c(1, 76, 111)), colorBy = "replicates")
 
 ## BVCZ ---------
 

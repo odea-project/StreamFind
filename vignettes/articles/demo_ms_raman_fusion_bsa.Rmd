@@ -247,16 +247,16 @@ As for MS data, the workflow for Raman data is also assembled using an ordered l
 
 ```{r}
 raman_workflow_settings <- list(
-  Settings_bin_spectra_StreamFind(unitsVal = "rt", unitsNumber = 3),
+  Settings_bin_spectra_StreamFind(unitsVal = "rt", unitsNumber = 5),
   Settings_normalize_spectra_minmax(),
-  Settings_subtract_spectra_section_StreamFind(sectionWindow = c(0, 3)),
-  Settings_smooth_spectra_savgol(fl = 21, forder = 4, dorder = 0),
-  Settings_delete_spectra_section_StreamFind(list("shift" = c(-100, 330))),
+  Settings_subtract_spectra_section_StreamFind(sectionVal = "rt", sectionWindow = c(0, 3)), # time window
+  Settings_delete_spectra_section_StreamFind(list("shift" = c(-100, 315))),
+  Settings_smooth_spectra_savgol(fl = 9, forder = 2, dorder = 0),
+  Settings_delete_spectra_section_StreamFind(list("shift" = c(315, 330))),
+  Settings_correct_spectra_baseline_baseline(method = "als", args = list(lambda = 4, p = 0.1, maxit = 10)),
   Settings_delete_spectra_section_StreamFind(list("shift" = c(1800, 2600))),
-  Settings_correct_spectra_baseline_airpls(lambda = 45, differences = 1, itermax = 30),
   Settings_delete_spectra_section_StreamFind(list("rt" = c(0, 5.5))),
-  Settings_delete_spectra_section_StreamFind(list("rt" = c(8, 11))),
-  Settings_average_spectra_StreamFind(collapseTime = TRUE),
+  Settings_delete_spectra_section_StreamFind(list("rt" = c(7, 11))),
   Settings_normalize_spectra_minmax(),
   Settings_normalize_spectra_blockweight()
 )
@@ -271,6 +271,11 @@ A particularity of the workflow for Raman data is that the background subtractio
 ```{r}
 raman$run_workflow()
 ```
+
+```{r, fig.cap="Baseline correction for each spectra."}
+raman$plot_spectra_baseline()
+```
+
 
 ```{r ,fig.cap="Processed Raman spectra for each BSA product."}
 raman$plot_spectra()
@@ -324,4 +329,99 @@ fig
 
 # Statistic analysis
 
-Coming soon!
+A statistic analysis is performed with the statisticEngine for evaluation of the differences between the BSA products.
+
+## PCA
+
+The fused data is used to create a PCA model with the *StatisticEngine* using processing settings based on the [mdatools](https://www.mdatools.com/docs/pca.html) package.
+
+```{r}
+stat <- StatisticEngine$new(data = fusedMat)
+stat$make_model(Settings_make_model_pca_mdatools(ncomp = 2, alpha = 0.05, gamma = 0.02))
+summary(stat$model) # summary method is from mdatools
+```
+
+```{r, fig.cap="PCA scores plot for the fused data."}
+stat$plot_model_scores()
+```
+
+```{r, fig.cap="PCA loadings plot for the fused data."}
+stat$plot_model_loadings(colorKey = rep(c("MS", "Raman"), c(ncol(mmSpec), ncol(mrSpec))))
+```
+
+```{r, fig.cap="PCA summary plot using the original mdatools R package."}
+# the mdatools S3 class model object is obtained via the active binding of the StatisticEngine
+plot(stat$model) # plot method from mdatools
+```
+
+A clear separation of the BSA wAgwS product from the other products is observed in the PCA scores plot. The loadings plot shows the contribution of the MS and Raman data to the separation.
+
+## MCR purity
+
+Another approach for the statistic analysis is to use the MCR pure model (based on [mdatools](https://www.mdatools.com/docs/mcr--purity.html) R package) to evaluate the purity level in the analyses.
+
+```{r}
+# Note that the model in the engine will be overwritten by the new mcr pure model
+stat$make_model(Settings_make_model_mcrpure_mdatools(ncomp = 2, offset = 0.05))
+summary(stat$model)
+```
+
+```{r, fig.cap="MCR pure model resolved spectra and the original spectra from the fused data."}
+stat$plot_model_resolved_spectra()
+```
+
+A clear separation of the BSA product wAgwS from the other products is observed in the resolved spectra plot. This is expected as the wAgwS is fatty-acid free in contrast to the other BSA products. This difference would not be so evident with MS data only. In contrast, the contribution of fatty-acid contamination makes the identification of BSA in the Raman data more difficult. Yet, BSA presence in the wAgwS BSA product is evident with MS data. Using fused data from MS and Raman both compositional and structural information can be combined for a more comprehensive quality evaluation.
+
+```{r, include=FALSE}
+# library(mdatools)
+# m = mcrpure(fusedMat, ncomp = 3)
+# summary(m)
+# par(mfcol = c(2, 2))
+# plotSpectra(m)
+# plotContributions(m)
+# plotSpectra(m, comp = 2)
+# plotContributions(m, comp = 2)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

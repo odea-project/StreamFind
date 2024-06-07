@@ -4,7 +4,10 @@
 \alias{Settings_subtract_blank_spectra_StreamFind}
 \title{Settings_subtract_blank_spectra_StreamFind}
 \usage{
-Settings_subtract_blank_spectra_StreamFind()
+Settings_subtract_blank_spectra_StreamFind(negativeToZero = FALSE)
+}
+\arguments{
+\item{negativeToZero}{Logical (length 1) indicating if negative values should be set to zero.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_subtract_blank_spectra_StreamFind.

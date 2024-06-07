@@ -44,6 +44,8 @@
   
   if (is.null(spec_cut)) {
     
+    . <- NULL
+    
     spec_cut <- lapply(spec_list, function(x) {
       
       if (nrow(x) == 0) return(data.table())

@@ -83,7 +83,7 @@ Cunha</h4>
                   <a class="author_email" href="mailto:#"></a><a href="mailto:cunha@iuta.de" class="email">cunha@iuta.de</a>
       
                   
-            <h4 data-toc-skip class="date">03 May, 2024</h4>
+            <h4 data-toc-skip class="date">07 June, 2024</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/odea-project/StreamFind/blob/HEAD/vignettes/articles/ms_developer_guide.Rmd" class="external-link"><code>vignettes/articles/ms_developer_guide.Rmd</code></a></small>
       <div class="d-none name"><code>ms_developer_guide.Rmd</code></div>
@@ -162,8 +162,8 @@ is briefly shown.</p>
 <span><span class="co">##   ProjectHeaders </span></span>
 <span><span class="co">##   name: Example</span></span>
 <span><span class="co">##   author: Person A</span></span>
-<span><span class="co">##   path: NA</span></span>
-<span><span class="co">##   date: 2024-05-03 17:25:14.265383</span></span></code></pre>
+<span><span class="co">##   file: NA</span></span>
+<span><span class="co">##   date: 2024-06-07 15:51:02.905424</span></span></code></pre>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># print method. Note that MS data files were not yet added!</span></span>
 <span><span class="va">ms</span></span></code></pre></div>
@@ -171,8 +171,8 @@ is briefly shown.</p>
 <span><span class="co">## MassSpecEngine</span></span>
 <span><span class="co">## name          Example</span></span>
 <span><span class="co">## author        Person A</span></span>
-<span><span class="co">## path          NA</span></span>
-<span><span class="co">## date          2024-05-03 17:25:14.265383</span></span>
+<span><span class="co">## file          NA</span></span>
+<span><span class="co">## date          2024-06-07 15:51:02.905424</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Workflow empty </span></span>
 <span><span class="co">## </span></span>
@@ -241,8 +241,8 @@ given in the Semantics (@ref(semantics)). Then, the
 <span><span class="co">## MassSpecEngine</span></span>
 <span><span class="co">## name          Example</span></span>
 <span><span class="co">## author        Person A</span></span>
-<span><span class="co">## path          NA</span></span>
-<span><span class="co">## date          2024-05-03 17:25:14.265383</span></span>
+<span><span class="co">## file          NA</span></span>
+<span><span class="co">## date          2024-06-07 15:51:02.905424</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Workflow</span></span>
 <span><span class="co">##  1: find_features (openms)</span></span>
@@ -346,8 +346,8 @@ string and imported from a JSON file, as demonstrated below.</p>
 <span><span class="co">## MassSpecEngine</span></span>
 <span><span class="co">## name          Example</span></span>
 <span><span class="co">## author        Person A</span></span>
-<span><span class="co">## path          NA</span></span>
-<span><span class="co">## date          2024-05-03 17:25:14.265383</span></span>
+<span><span class="co">## file          NA</span></span>
+<span><span class="co">## date          2024-06-07 15:51:02.905424</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Workflow</span></span>
 <span><span class="co">##  1: find_features (xcms3_centwave)</span></span>
@@ -365,7 +365,7 @@ are in conformity (as shown below). The validation of a
 <em>ProcessingSettings</em> is always performed before applying it to a
 processing method.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">validate</span><span class="op">(</span><span class="va">ffs</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">ffs</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] TRUE</span></span></code></pre>
 <p>Besides the S3 class <em>ProcessingSettings</em>, the
 <em>ProcessingSettings</em> object receives other class names that are

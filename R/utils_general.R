@@ -6,24 +6,15 @@
 #' @noRd
 #'
 .dispatch_process_method <- function(method, settings, self, private) {
-  
   call_method <- paste0(".s3_", method)
-  
   method_to_settings <- sub(".s3_ms_", "", call_method)
-  
   method_to_settings <- sub(".s3_", "", method_to_settings)
-  
   settings <- private$.get_call_settings(settings, method_to_settings)
-  
   if (is.null(settings)) return(FALSE)
-  
   processed <- do.call(call_method, list(settings, self, private))
-  
   if (processed) {
-    
     if (!private$.settings_already_stored(settings)) self$add_settings(settings)
-    
-    private$.register("processed", NA_character_, settings$call, settings$software, NA_character_, settings$algorithm)
+    private$.register("processed", settings$call, settings$algorithm, settings$software)
   }
 }
 
@@ -62,37 +53,29 @@
       
       tg <- tg[cutRt, ]
       
-      if (nrow(tg) == 0) return(NULL)
+      if (nrow(tg) == 0) return(data.table())
       
       if (with_im) {
         cutIM <- .trim_vector(tg$drift, targets$driftmin[z], targets$driftmax[z])
         tg <- tg[cutIM, ]
       }
       
-      if (nrow(tg) == 0) return(NULL)
+      if (nrow(tg) == 0) return(data.table())
       
       if ("polarity" %in% colnames(targets)) tg <- tg[tg$polarity == targets$polarity[z], ]
       
-      if (nrow(tg) == 0) return(NULL)
+      if (nrow(tg) == 0) return(data.table())
       
       if (nrow(tg) > 0) {
         
-        if (!targets$precursor[z]) {
+        if (targets$precursor[z]) {
           
           tg <- tg[tg$level == 2, ]
           
-          if (nrow(tg) == 0) return(NULL)
+          if (nrow(tg) == 0) return(data.table())
           
           cutPreMZ <- .trim_vector(tg$pre_mz, targets$mzmin[z], targets$mzmax[z])
           tg <- tg[cutPreMZ, ]
-          
-          # cutMZ <- .trim_vector(tg$mz, targets$mzmin[z], targets$mzmax[z])
-          # tg <- tg[tg$level == 2 | (tg$level == 1 & cutMZ), ]
-          # 
-          # if (nrow(tg) > 0) {
-          #   cutPreMZ <- .trim_vector(tg$pre_mz, preMZr$mzmin[z], preMZr$mzmax[z])
-          #   tg <- tg[tg$level == 1 | (tg$level == 2 & cutPreMZ), ]
-          # }
           
         } else {
           cutMZ <- .trim_vector(tg$mz, targets$mzmin[z], targets$mzmax[z])
@@ -100,19 +83,18 @@
         }
       }
       
-      if (nrow(tg) == 0) return(NULL)
+      if (nrow(tg) == 0) return(data.table())
       
       if (nrow(tg) > 0) tg$id <- targets$id[z]
       
       tg
     },
     traces = traces,
-    targets = targets
+    targets = targets,
+    with_im = with_im
   )
   
-  tg_list <- tg_list[!is.null(tg_list)]
-  
-  tg_df <- do.call("rbind", tg_list)
+  tg_df <- rbindlist(tg_list, fill = TRUE)
   
   tg_df
 }
@@ -421,8 +403,7 @@
 #' 
 #' @noRd
 #' 
-.load_chache = function(category, ...) {
-  file <- "cache.sqlite"
+.load_chache = function(category = NULL, ..., file = "cache.sqlite") {
   list_out <- list()
   hash <- .make_hash(...)
   data <- .load_cache_backend(file, category, hash)
@@ -436,7 +417,6 @@
 #' @description Cache interface adapted from patRoon package.
 #' 
 #' @noRd
-.save_cache = function(category, data, hash) {
-  file <- "cache.sqlite"
+.save_cache = function(category = NULL, data = NULL, hash = NULL, file = "cache.sqlite") {
   .save_cache_backend(file, category, data, hash)
 }

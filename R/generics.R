@@ -1,13 +1,13 @@
-#' @noRd
+#' @title Validate
+#' 
+#' @description Validates an object.
+#' 
+#' @param x An object.
+#' 
 #' @export
+#' 
 validate <- function(x) {
   UseMethod("validate")
-}
-
-#' @noRd
-#' @export
-export <- function(x, ...) {
-  UseMethod("export")
 }
 
 ## Processing Methods -----
@@ -48,6 +48,16 @@ export <- function(x, ...) {
 }
 
 #' @noRd
+.s3_prepare_classification <- function(settings, self, private) {
+  UseMethod(".s3_prepare_classification")
+}
+
+#' @noRd
+.s3_make_model <- function(settings, self, private) {
+  UseMethod(".s3_make_model")
+}
+
+#' @noRd
 .s3_merge_spectra_time_series <- function(settings, self, private) {
   UseMethod(".s3_merge_spectra_time_series")
 }
@@ -75,6 +85,10 @@ export <- function(x, ...) {
 #' @noRd
 .s3_ms_deconvolute_spectra <- function(settings, self, private) {
   UseMethod(".s3_ms_deconvolute_spectra")
+}
+
+.s3_ms_fill_features <- function(settings, self, private) {
+  UseMethod(".s3_ms_fill_features")
 }
 
 #' @noRd
@@ -126,6 +140,11 @@ export <- function(x, ...) {
 }
 
 #' @noRd
+.s3_ms_normalize_features <- function(settings, self, private) {
+  UseMethod(".s3_ms_normalize_features")
+}
+
+#' @noRd
 .s3_ms_suspect_screening <- function(settings, self, private) {
   UseMethod(".s3_ms_suspect_screening")
 }
@@ -156,14 +175,6 @@ export <- function(x, ...) {
 }
 
 ## Nor Used Yet -----
-
-.s3_ms_fill_features <- function(settings, self, private) {
-  UseMethod(".s3_ms_fill_features")
-}
-
-.s3_ms_normalise_intensity <- function(settings, self, private) {
-  UseMethod(".s3_ms_normalise_intensity")
-}
 
 #' @noRd
 .s3_ms_correct_intensity <- function(settings, self, private) {

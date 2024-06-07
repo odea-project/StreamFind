@@ -111,6 +111,10 @@
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_replicate_names"><a href="CoreEngine.html#method-add_replicate_names"><code>StreamFind::CoreEngine$add_replicate_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_results"><a href="CoreEngine.html#method-add_results"><code>StreamFind::CoreEngine$add_results()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="add_settings"><a href="CoreEngine.html#method-add_settings"><code>StreamFind::CoreEngine$add_settings()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export"><a href="CoreEngine.html#method-export"><code>StreamFind::CoreEngine$export()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_analyses"><a href="CoreEngine.html#method-export_analyses"><code>StreamFind::CoreEngine$export_analyses()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_headers"><a href="CoreEngine.html#method-export_headers"><code>StreamFind::CoreEngine$export_headers()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_settings"><a href="CoreEngine.html#method-export_settings"><code>StreamFind::CoreEngine$export_settings()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_analyses"><a href="CoreEngine.html#method-get_analyses"><code>StreamFind::CoreEngine$get_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_analysis_names"><a href="CoreEngine.html#method-get_analysis_names"><code>StreamFind::CoreEngine$get_analysis_names()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_blank_names"><a href="CoreEngine.html#method-get_blank_names"><code>StreamFind::CoreEngine$get_blank_names()</code></a></span></li>
@@ -133,6 +137,7 @@
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_analyses"><a href="CoreEngine.html#method-import_analyses"><code>StreamFind::CoreEngine$import_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_headers"><a href="CoreEngine.html#method-import_headers"><code>StreamFind::CoreEngine$import_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_settings"><a href="CoreEngine.html#method-import_settings"><code>StreamFind::CoreEngine$import_settings()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="load"><a href="CoreEngine.html#method-load"><code>StreamFind::CoreEngine$load()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print"><a href="CoreEngine.html#method-print"><code>StreamFind::CoreEngine$print()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_analyses"><a href="CoreEngine.html#method-print_analyses"><code>StreamFind::CoreEngine$print_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_headers"><a href="CoreEngine.html#method-print_headers"><code>StreamFind::CoreEngine$print_headers()</code></a></span></li>
@@ -141,11 +146,9 @@
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_headers"><a href="CoreEngine.html#method-remove_headers"><code>StreamFind::CoreEngine$remove_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_results"><a href="CoreEngine.html#method-remove_results"><code>StreamFind::CoreEngine$remove_results()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_settings"><a href="CoreEngine.html#method-remove_settings"><code>StreamFind::CoreEngine$remove_settings()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_app"><a href="CoreEngine.html#method-run_app"><code>StreamFind::CoreEngine$run_app()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_workflow"><a href="CoreEngine.html#method-run_workflow"><code>StreamFind::CoreEngine$run_workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save"><a href="CoreEngine.html#method-save"><code>StreamFind::CoreEngine$save()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save_analyses"><a href="CoreEngine.html#method-save_analyses"><code>StreamFind::CoreEngine$save_analyses()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save_headers"><a href="CoreEngine.html#method-save_headers"><code>StreamFind::CoreEngine$save_headers()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save_settings"><a href="CoreEngine.html#method-save_settings"><code>StreamFind::CoreEngine$save_settings()</code></a></span></li>
 </ul></details></p><hr><a id="method-RamanEngine-new"></a><div class="section">
 <h3 id="method-new-">Method <code>new()</code><a class="anchor" aria-label="anchor" href="#method-new-"></a></h3>
 <p>Creates an R6 class <em>RamanEngine</em>. Child of <em>CoreEngine</em> R6 class.</p><div class="section">
@@ -169,7 +172,7 @@
 <dd><p>A named list with headers or a ProjectHeaders S3 class object.
 Each list element must have length one. There is no type restrictions
 except for name (must be type character length 1), author (must be type
-character length 1), path (must be type character length 1) and date (must
+character length 1), file (must be type character length 1) and date (must
 be class POSIXct or class POSIXt length 1). See more information in
 <code><a href="ProjectHeaders.html">?ProjectHeaders</a></code>.</p></dd>
 

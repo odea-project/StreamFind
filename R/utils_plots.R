@@ -28,8 +28,10 @@
     Vcol <- colors[seq_len(Ncol)]
     Ncol <- length(obj)
     char <- NULL
-    count <- dplyr::count(data.frame(n = seq_len(Ncol), char = obj), char)
-    Vcol <- rep(Vcol, times = count[, "n"])
+    df <- data.frame(n = seq_len(Ncol), char = obj)
+    count <- table(df$char)
+    count <- as.data.frame(count)
+    Vcol <- rep(Vcol, times = count[, "Freq"])
     names(Vcol) <- obj
   } else {
     Vcol <- colors[seq_len(Ncol)]
@@ -455,13 +457,13 @@
 #' @noRd
 #'
 .plot_spectra_eic_static <- function(eic = NULL,
-                             legendNames = NULL,
-                             colorBy = "targets",
-                             title = NULL,
-                             showLegend = TRUE,
-                             xlim = NULL,
-                             ylim = NULL,
-                             cex = 0.6) {
+                                     legendNames = NULL,
+                                     colorBy = "targets",
+                                     title = NULL,
+                                     showLegend = TRUE,
+                                     xlim = NULL,
+                                     ylim = NULL,
+                                     cex = 0.6) {
   
   eic <- .make_colorBy_varkey(eic, colorBy, legendNames)
   
@@ -539,10 +541,10 @@
 #' @noRd
 #'
 .plot_spectra_eic_interactive <- function(eic = NULL,
-                                  legendNames = NULL,
-                                  colorBy = "targets",
-                                  title = NULL,
-                                  showLegend = TRUE) {
+                                          legendNames = NULL,
+                                          colorBy = "targets",
+                                          title = NULL,
+                                          showLegend = TRUE) {
   
   eic <- .make_colorBy_varkey(eic, colorBy, legendNames)
   
@@ -624,10 +626,10 @@
 #' @noRd
 #'
 .plot_spectra_bpc_interactive <- function(bpc = NULL,
-                                  legendNames = NULL,
-                                  colorBy = "targets",
-                                  title = NULL,
-                                  showLegend = TRUE) {
+                                          legendNames = NULL,
+                                          colorBy = "targets",
+                                          title = NULL,
+                                          showLegend = TRUE) {
   
   bpc <- .make_colorBy_varkey(bpc, colorBy, legendNames)
   
@@ -715,10 +717,7 @@
 #'
 #' @noRd
 #'
-.plot_spectra_ms2_static <- function(ms2 = NULL,
-                             legendNames = NULL,
-                             colorBy = "targets",
-                             title = NULL) {
+.plot_spectra_ms2_static <- function(ms2 = NULL, legendNames = NULL, colorBy = "targets", title = NULL) {
   
   ms2 <- .make_colorBy_varkey(ms2, colorBy, legendNames)
   
@@ -783,8 +782,7 @@
 #'
 #' @noRd
 #'
-.plot_spectra_ms2_interactive <- function(ms2 = NULL, legendNames = NULL,
-                                  colorBy = "targets", title = NULL) {
+.plot_spectra_ms2_interactive <- function(ms2 = NULL, legendNames = NULL, colorBy = "targets", title = NULL) {
   
   ms2 <- .make_colorBy_varkey(ms2, colorBy, legendNames)
   
@@ -862,11 +860,7 @@
 #'
 #' @noRd
 #'
-.plot_spectra_ms1_static <- function(ms1 = NULL,
-                             legendNames = NULL,
-                             colorBy = "targets",
-                             title = NULL,
-                             showText = FALSE) {
+.plot_spectra_ms1_static <- function(ms1 = NULL, legendNames = NULL, colorBy = "targets", title = NULL, showText = FALSE) {
   
   ms1 <- .make_colorBy_varkey(ms1, colorBy, legendNames)
   
@@ -914,11 +908,7 @@
 #'
 #' @noRd
 #'
-.plot_spectra_ms1_interactive <- function(ms1 = NULL,
-                                  legendNames = NULL,
-                                  colorBy = "targets",
-                                  title = NULL,
-                                  showText = TRUE) {
+.plot_spectra_ms1_interactive <- function(ms1 = NULL, legendNames = NULL, colorBy = "targets", title = NULL, showText = TRUE) {
   
   ms1 <- .make_colorBy_varkey(ms1, colorBy, legendNames)
   
@@ -1011,7 +1001,7 @@
   
   features$unique_ids <- paste0(features$feature, features$analysis)
   
-  ids <- unique(eic$unique_ids)
+  ids <- unique(features$unique_ids)
   
   if (is.numeric(xlim) & length(xlim) == 1) {
     rtr <- c(min(eic$rt) - xlim, max(eic$rt) + xlim)
@@ -1179,7 +1169,7 @@
   
   features$unique_ids <- paste0(features$feature, features$analysis)
   
-  ids <- unique(eic$unique_ids)
+  ids <- unique(features$unique_ids)
   
   plot_qlt <- FALSE
   
@@ -1602,8 +1592,9 @@
     uid <- unique(eic$uid[eic$var == g])
     
     for (u in uid) {
-      df <- eic[eic$uid == u, ]
       ft <- features[features$uid == u, ]
+      if (nrow(ft) == 0) next
+      df <- eic[eic$uid == u, ]
       
       plot <- plot %>% add_trace(df,
                                  x = df$rt,
@@ -2564,8 +2555,9 @@
     uid <- unique(eic$uid[eic$var == g])
     
     for (u in uid) {
-      df <- eic[eic$uid == u, ]
       ft <- suspects[suspects$uid == u, ]
+      if (nrow(ft) == 0) next
+      df <- eic[eic$uid == u, ]
       
       plot <- plot %>% add_trace(
         df,
@@ -2865,6 +2857,8 @@
   res$unique_ids <- paste0(res$analysis, "_", res$id)
   
   res <- .make_colorBy_varkey(res, colorBy, legendNames)
+  
+  setorder(res, var)
   
   leg <- unique(res$var)
   
@@ -3499,6 +3493,130 @@
     yaxis = yaxis,
     title = title
   )
+  
+  plot
+}
+
+#' .plot_x_spectra_baseline_interactive
+#' 
+#' @noRd
+#'
+.map_x_spectra <- function(spectra,
+                           xLab = NULL, yLab = NULL, title = NULL,
+                           colorBy = "analyses",
+                           legendNames = NULL,
+                           xlim = NULL, ylim = NULL) {
+  
+  spec <- .make_colorBy_varkey(spectra, colorBy, legendNames)
+  
+  leg <- unique(spec$var)
+  
+  cl <- .get_colors(leg)
+  
+  brighter_color <- function(color_hex, factor = 1.5) {
+    # Convert hexadecimal color to RGB values
+    color_rgb <- col2rgb(color_hex)
+    
+    # Calculate brighter RGB values
+    brighter_rgb <- color_rgb * factor
+    
+    # Ensure RGB values are within [0, 255] range
+    brighter_rgb[brighter_rgb > 255] <- 255
+    
+    # Convert RGB values back to hexadecimal format
+    brighter_hex <- rgb(brighter_rgb[1, ], brighter_rgb[2, ], brighter_rgb[3, ], maxColorValue = 255)
+    
+    return(brighter_hex)
+  }
+  
+  # for each element in cl return a brighter version of the color
+  cl_l <- vapply(cl, function(x) brighter_color(x, factor = 2), "")
+  
+  cl_d <- vapply(cl, function(x) brighter_color(x, factor = 0.5), "")
+  
+  show_col(cl)
+  
+  cl_grad <- lapply(seq_len(length(cl)), function(x) col_numeric(palette = c(cl_l[x], cl_d[x]), domain = NULL))
+  
+  names(cl_grad) <- names(cl)
+  
+  spec$loop <- spec$var
+  
+  loop_key <- unique(spec$loop)
+  
+  if (length(xlim) == 1) {
+    rtr <- c(min(spec$rt) - xlim, max(spec$rt) + xlim)
+  } else if (length(xlim) == 2) {
+    rtr <- xlim
+  } else {
+    rtr <- c(min(spec$rt), max(spec$rt))
+  }
+  
+  if (length(ylim) == 1) {
+    mzr <- c(min(spec$mz) - ylim, max(spec$mz) + ylim)
+  } else if (length(ylim) == 2) {
+    mzr <- ylim
+  } else {
+    mzr <- c(min(spec$mz), max(spec$mz))
+  }
+  
+  title <- list(text = title, x = 0.13, y = 0.98, font = list(size = 12, color = "black"))
+  
+  if (is.null(xLab)) xLab = "Retention time / seconds"
+  
+  if (is.null(yLab)) yLab = "<i>m/z</i> / Da"
+  
+  xaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2, title = xLab,
+    titlefont = list(size = 12, color = "black")
+  )
+  
+  yaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2, title = yLab,
+    titlefont = list(size = 12, color = "black")
+  )
+  
+  showL <- rep(TRUE, length(leg))
+  
+  names(showL) <- leg
+  
+  plot <- plot_ly()
+  
+  for (t in loop_key) {
+    select_vector <- spec$loop %in% t
+    lt <- unique(spec$var[select_vector])
+    x <- spec$rt[select_vector]
+    y <- spec$mz[select_vector]
+    z <- spec$intensity[select_vector]
+    lt_colors <- cl_grad[[lt]]
+    z_normalized <- (z - min(z)) / (max(z) - min(z))
+    
+    point_colors <- lt_colors(z_normalized)
+    
+    plot <- plot %>% add_trace(
+      x = x,
+      y = y,
+      type = "scatter",
+      mode = "markers",
+      inherit = FALSE,
+      marker = list(size = 1, color = point_colors),
+      name = lt,
+      legendgroup = lt,
+      showlegend = showL[lt],
+      hovertemplate = paste("<br>x: %{x}<br>", "y: %{y}")
+    )
+    
+    if (length(y) >= 1) showL[lt] <- FALSE
+  }
+  
+  plot <- plot %>% plotly::layout(
+    legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
+    xaxis = xaxis,
+    yaxis = yaxis,
+    title = title
+  ) %>% hide_colorbar()
   
   plot
 }
