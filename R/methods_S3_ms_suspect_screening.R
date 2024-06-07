@@ -13,7 +13,7 @@
   
   if (!validate(settings)) return(FALSE)
   
-  cache <- .load_chache("suspect_sreening", ms$features, settings)
+  cache <- .load_chache("suspect_sreening", self$features, settings)
   
   if (!is.null(cache$data)) {
     if (private$.add_features_column("suspects", cache$data)) {

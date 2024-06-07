@@ -6,7 +6,7 @@
 #' @param replicate Character (length 1), representing the analysis replicate group name.
 #' @param blank Character (length 1), representing the associated blank replicate group name.
 #' @param data Matrix with 1 row and columns equal to the number of variables.
-#' @param classes Character vector with the analysis classes.
+#' @param class Character vector with the analysis classes.
 #'
 #' @return An *StatisticAnalysis* S3 class object.
 #'

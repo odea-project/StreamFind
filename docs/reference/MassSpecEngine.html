@@ -245,6 +245,7 @@ List of function elements to access specific reference help pages.</p></dd>
 <li><p><a href="#method-MassSpecEngine-plot_groups_ms1"><code>MassSpecEngine$plot_groups_ms1()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-plot_groups_ms2"><code>MassSpecEngine$plot_groups_ms2()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-plot_groups_overview"><code>MassSpecEngine$plot_groups_overview()</code></a></p></li>
+<li><p><a href="#method-MassSpecEngine-plot_groups_profile"><code>MassSpecEngine$plot_groups_profile()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-plot_internal_standards_qc"><code>MassSpecEngine$plot_internal_standards_qc()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-plot_suspects"><code>MassSpecEngine$plot_suspects()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-map_isotopes"><code>MassSpecEngine$map_isotopes()</code></a></p></li>
@@ -260,6 +261,7 @@ List of function elements to access specific reference help pages.</p></dd>
 <li><p><a href="#method-MassSpecEngine-bin_spectra"><code>MassSpecEngine$bin_spectra()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-find_features"><code>MassSpecEngine$find_features()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-group_features"><code>MassSpecEngine$group_features()</code></a></p></li>
+<li><p><a href="#method-MassSpecEngine-fill_features"><code>MassSpecEngine$fill_features()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-filter_features"><code>MassSpecEngine$filter_features()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-annotate_features"><code>MassSpecEngine$annotate_features()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-find_internal_standards"><code>MassSpecEngine$find_internal_standards()</code></a></p></li>
@@ -5109,10 +5111,109 @@ the added targets as legend of the plot.</p></dd>
 </dl><p></p></div>
 </div>
 
+</div><p></p><hr><a id="method-MassSpecEngine-plot_groups_profile"></a><div class="section">
+<h3 id="method-plot-groups-profile-">Method <code>plot_groups_profile()</code><a class="anchor" aria-label="anchor" href="#method-plot-groups-profile-"></a></h3>
+<p>Method to plot the intensity profile of feature groups across the analyses.</p><div class="section">
+<h4 id="usage-84">Usage<a class="anchor" aria-label="anchor" href="#usage-84"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">plot_groups_profile</span><span class="op">(</span></span>
+<span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  groups <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  mass <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  mz <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  rt <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  drift <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  ppm <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>  sec <span class="op">=</span> <span class="fl">60</span>,</span>
+<span>  millisec <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>  filtered <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  normalized <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  legendNames <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  title <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-73">Arguments<a class="anchor" aria-label="anchor" href="#arguments-73"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
+<dd><p>A numeric/character vector with the number/name of the analyses.</p></dd>
+
+
+<dt><code>groups</code></dt>
+<dd><p>A numeric or character vector with the number or ID of feature groups, respectively.</p></dd>
+
+
+<dt><code>mass</code></dt>
+<dd><p>A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named <code>min</code>
+and <code>max</code> with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
+data.frame with columns named <code>mass</code> and <code>rt</code> and/or <code>drift</code>. Then, the deviations given in the <code>ppm</code>, <code>sec</code>
+and <code>millisec</code>  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
+minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
+must be <code>min</code>, <code>max</code>, <code>rtmin</code>, <code>rtmax</code>, <code>driftmin</code> and <code>driftmax</code>. Note that when mass/time ranges are given, the
+<code>ppm</code>, <code>sec</code> and <code>millisec</code>
+arguments are not used.</p></dd>
+
+
+<dt><code>mz</code></dt>
+<dd><p>A vector with target <em>m/z</em> value/s (in Da) or a two columns data.table or data.frame named <code>mzmin</code> and
+<code>mzmax</code> with minimum and maximum <em>m/z</em> values (in Da), respectively. Alternatively, <em>m/z</em> (in Da) and
+retention time values (in seconds) can be given as one data.table or data.frame with columns named <code>mz</code> and <code>rt</code>
+and/or <code>drift</code>. Then, the deviations given in the <code>ppm</code>, <code>sec</code> and <code>millisec</code> arguments are used to
+calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of <em>m/z</em>,
+retention time and drift time targets. In this case, the column names must be <code>mzmin</code>, <code>mzmax</code>, <code>rtmin</code>, <code>rtmax</code>,
+<code>driftmin</code> and <code>driftmax</code>. Note that when mass/time ranges are given, the <code>ppm</code>, <code>sec</code> and <code>millisec</code>
+arguments are not used.</p></dd>
+
+
+<dt><code>rt</code></dt>
+<dd><p>A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).</p></dd>
+
+
+<dt><code>drift</code></dt>
+<dd><p>A vector with target drift time values (in milliseconds) or
+a two columns data.table or data.frame with minimum and maximum drift
+time values (in milliseconds).</p></dd>
+
+
+<dt><code>ppm</code></dt>
+<dd><p>Numeric of length one with the mass deviation, in ppm.</p></dd>
+
+
+<dt><code>sec</code></dt>
+<dd><p>Numeric of length one with the time deviation, in seconds.</p></dd>
+
+
+<dt><code>millisec</code></dt>
+<dd><p>Numeric of length one with the drift time deviation,
+in milliseconds.</p></dd>
+
+
+<dt><code>filtered</code></dt>
+<dd><p>Logical (length 1). When <code>TRUE</code>, filtered features/groups are considered.</p></dd>
+
+
+<dt><code>normalized</code></dt>
+<dd><p>Logical (length 1). When <code>TRUE</code> the profile intensities are normalized.</p></dd>
+
+
+<dt><code>legendNames</code></dt>
+<dd><p>A character vector with the same length as the targets or <code>TRUE</code> or <code>FALSE</code> for using the name in
+the added targets as legend of the plot.</p></dd>
+
+
+<dt><code>title</code></dt>
+<dd><p>A string with the title.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
 </div><p></p><hr><a id="method-MassSpecEngine-plot_internal_standards_qc"></a><div class="section">
 <h3 id="method-plot-internal-standards-qc-">Method <code>plot_internal_standards_qc()</code><a class="anchor" aria-label="anchor" href="#method-plot-internal-standards-qc-"></a></h3>
 <p>Plots the quality control assessment of the internal standards.</p><div class="section">
-<h4 id="usage-84">Usage<a class="anchor" aria-label="anchor" href="#usage-84"></a></h4>
+<h4 id="usage-85">Usage<a class="anchor" aria-label="anchor" href="#usage-85"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">plot_internal_standards_qc</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -5120,7 +5221,7 @@ the added targets as legend of the plot.</p></dd>
 </div><p></p><hr><a id="method-MassSpecEngine-plot_suspects"></a><div class="section">
 <h3 id="method-plot-suspects-">Method <code>plot_suspects()</code><a class="anchor" aria-label="anchor" href="#method-plot-suspects-"></a></h3>
 <p>Plots suspects.</p><div class="section">
-<h4 id="usage-85">Usage<a class="anchor" aria-label="anchor" href="#usage-85"></a></h4>
+<h4 id="usage-86">Usage<a class="anchor" aria-label="anchor" href="#usage-86"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">plot_suspects</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  database <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -5147,7 +5248,7 @@ the added targets as legend of the plot.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-73">Arguments<a class="anchor" aria-label="anchor" href="#arguments-73"></a></h4>
+<h4 id="arguments-74">Arguments<a class="anchor" aria-label="anchor" href="#arguments-74"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
 <dd><p>A numeric/character vector with the number/name of the analyses.</p></dd>
 
@@ -5273,7 +5374,7 @@ screening.</p>
 </div><p></p><hr><a id="method-MassSpecEngine-map_isotopes"></a><div class="section">
 <h3 id="method-map-isotopes-">Method <code>map_isotopes()</code><a class="anchor" aria-label="anchor" href="#method-map-isotopes-"></a></h3>
 <p>Maps isotopic clusters in the analyses.</p><div class="section">
-<h4 id="usage-86">Usage<a class="anchor" aria-label="anchor" href="#usage-86"></a></h4>
+<h4 id="usage-87">Usage<a class="anchor" aria-label="anchor" href="#usage-87"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">map_isotopes</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  groups <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -5298,7 +5399,7 @@ screening.</p>
 </div>
 
 <div class="section">
-<h4 id="arguments-74">Arguments<a class="anchor" aria-label="anchor" href="#arguments-74"></a></h4>
+<h4 id="arguments-75">Arguments<a class="anchor" aria-label="anchor" href="#arguments-75"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
 <dd><p>A numeric/character vector with the number/name of the analyses.</p></dd>
 
@@ -5404,7 +5505,7 @@ Mixed use (e.g. <code>analyses+polarities</code>) is also possible.</p></dd>
 </div><p></p><hr><a id="method-MassSpecEngine-plot_chromatograms_peaks"></a><div class="section">
 <h3 id="method-plot-chromatograms-peaks-">Method <code>plot_chromatograms_peaks()</code><a class="anchor" aria-label="anchor" href="#method-plot-chromatograms-peaks-"></a></h3>
 <p>Plots peaks from chromatograms from analyses.</p><div class="section">
-<h4 id="usage-87">Usage<a class="anchor" aria-label="anchor" href="#usage-87"></a></h4>
+<h4 id="usage-88">Usage<a class="anchor" aria-label="anchor" href="#usage-88"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">plot_chromatograms_peaks</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  chromatograms <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -5422,7 +5523,7 @@ Mixed use (e.g. <code>analyses+polarities</code>) is also possible.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-75">Arguments<a class="anchor" aria-label="anchor" href="#arguments-75"></a></h4>
+<h4 id="arguments-76">Arguments<a class="anchor" aria-label="anchor" href="#arguments-76"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
 <dd><p>A numeric/character vector with the number/name of the analyses.</p></dd>
 
@@ -5479,7 +5580,7 @@ Mixed use (e.g. <code>analyses+polarities</code>) is also possible.</p></dd>
 </div><p></p><hr><a id="method-MassSpecEngine-plot_spectra_charges"></a><div class="section">
 <h3 id="method-plot-spectra-charges-">Method <code>plot_spectra_charges()</code><a class="anchor" aria-label="anchor" href="#method-plot-spectra-charges-"></a></h3>
 <p>Plots charge assignment of deconvoluted spectra from analyses.</p><div class="section">
-<h4 id="usage-88">Usage<a class="anchor" aria-label="anchor" href="#usage-88"></a></h4>
+<h4 id="usage-89">Usage<a class="anchor" aria-label="anchor" href="#usage-89"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">plot_spectra_charges</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  legendNames <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -5496,7 +5597,7 @@ Mixed use (e.g. <code>analyses+polarities</code>) is also possible.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-76">Arguments<a class="anchor" aria-label="anchor" href="#arguments-76"></a></h4>
+<h4 id="arguments-77">Arguments<a class="anchor" aria-label="anchor" href="#arguments-77"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
 <dd><p>A numeric/character vector with the number/name of the analyses.</p></dd>
 
@@ -5549,7 +5650,7 @@ Mixed use (e.g. <code>analyses+polarities</code>) is also possible.</p></dd>
 </div><p></p><hr><a id="method-MassSpecEngine-plot_deconvoluted_spectra"></a><div class="section">
 <h3 id="method-plot-deconvoluted-spectra-">Method <code>plot_deconvoluted_spectra()</code><a class="anchor" aria-label="anchor" href="#method-plot-deconvoluted-spectra-"></a></h3>
 <p>Plots deconvoluted spectra in given MS analyses.</p><div class="section">
-<h4 id="usage-89">Usage<a class="anchor" aria-label="anchor" href="#usage-89"></a></h4>
+<h4 id="usage-90">Usage<a class="anchor" aria-label="anchor" href="#usage-90"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">plot_deconvoluted_spectra</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  legendNames <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -5564,7 +5665,7 @@ Mixed use (e.g. <code>analyses+polarities</code>) is also possible.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-77">Arguments<a class="anchor" aria-label="anchor" href="#arguments-77"></a></h4>
+<h4 id="arguments-78">Arguments<a class="anchor" aria-label="anchor" href="#arguments-78"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
 <dd><p>A numeric/character vector with the number/name of the analyses.</p></dd>
 
@@ -5609,7 +5710,7 @@ Mixed use (e.g. <code>analyses+polarities</code>) is also possible.</p></dd>
 </div><p></p><hr><a id="method-MassSpecEngine-plot_spectra_peaks"></a><div class="section">
 <h3 id="method-plot-spectra-peaks-">Method <code>plot_spectra_peaks()</code><a class="anchor" aria-label="anchor" href="#method-plot-spectra-peaks-"></a></h3>
 <p>Plots peaks from spectra from analyses.</p><div class="section">
-<h4 id="usage-90">Usage<a class="anchor" aria-label="anchor" href="#usage-90"></a></h4>
+<h4 id="usage-91">Usage<a class="anchor" aria-label="anchor" href="#usage-91"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">plot_spectra_peaks</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  legendNames <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -5626,7 +5727,7 @@ Mixed use (e.g. <code>analyses+polarities</code>) is also possible.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-78">Arguments<a class="anchor" aria-label="anchor" href="#arguments-78"></a></h4>
+<h4 id="arguments-79">Arguments<a class="anchor" aria-label="anchor" href="#arguments-79"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
 <dd><p>A numeric/character vector with the number/name of the analyses.</p></dd>
 
@@ -5679,12 +5780,12 @@ Mixed use (e.g. <code>analyses+polarities</code>) is also possible.</p></dd>
 </div><p></p><hr><a id="method-MassSpecEngine-load_features_eic"></a><div class="section">
 <h3 id="method-load-features-eic-">Method <code>load_features_eic()</code><a class="anchor" aria-label="anchor" href="#method-load-features-eic-"></a></h3>
 <p>Loads features EICs in each analyses.</p><div class="section">
-<h4 id="usage-91">Usage<a class="anchor" aria-label="anchor" href="#usage-91"></a></h4>
+<h4 id="usage-92">Usage<a class="anchor" aria-label="anchor" href="#usage-92"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">load_features_eic</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-79">Arguments<a class="anchor" aria-label="anchor" href="#arguments-79"></a></h4>
+<h4 id="arguments-80">Arguments<a class="anchor" aria-label="anchor" href="#arguments-80"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>settings</code></dt>
 <dd><p>A ProcessingSettings S3 class object with the call name applicable to the processing method.
 Alternatively, a named list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as ProcessingSettings
@@ -5701,12 +5802,12 @@ S3 class object. When not given, settings for the processing method will be sear
 </div><p></p><hr><a id="method-MassSpecEngine-load_features_ms1"></a><div class="section">
 <h3 id="method-load-features-ms-">Method <code>load_features_ms1()</code><a class="anchor" aria-label="anchor" href="#method-load-features-ms-"></a></h3>
 <p>Loads and average MS1 spectra from features in the analyses.</p><div class="section">
-<h4 id="usage-92">Usage<a class="anchor" aria-label="anchor" href="#usage-92"></a></h4>
+<h4 id="usage-93">Usage<a class="anchor" aria-label="anchor" href="#usage-93"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">load_features_ms1</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-80">Arguments<a class="anchor" aria-label="anchor" href="#arguments-80"></a></h4>
+<h4 id="arguments-81">Arguments<a class="anchor" aria-label="anchor" href="#arguments-81"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>settings</code></dt>
 <dd><p>A ProcessingSettings S3 class object with the call name applicable to the processing method.
 Alternatively, a named list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as ProcessingSettings
@@ -5723,12 +5824,12 @@ S3 class object. When not given, settings for the processing method will be sear
 </div><p></p><hr><a id="method-MassSpecEngine-load_features_ms2"></a><div class="section">
 <h3 id="method-load-features-ms--1">Method <code>load_features_ms2()</code><a class="anchor" aria-label="anchor" href="#method-load-features-ms--1"></a></h3>
 <p>Loads and average MS2 spectra from features in the analyses.</p><div class="section">
-<h4 id="usage-93">Usage<a class="anchor" aria-label="anchor" href="#usage-93"></a></h4>
+<h4 id="usage-94">Usage<a class="anchor" aria-label="anchor" href="#usage-94"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">load_features_ms2</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-81">Arguments<a class="anchor" aria-label="anchor" href="#arguments-81"></a></h4>
+<h4 id="arguments-82">Arguments<a class="anchor" aria-label="anchor" href="#arguments-82"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>settings</code></dt>
 <dd><p>A ProcessingSettings S3 class object with the call name applicable to the processing method.
 Alternatively, a named list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as ProcessingSettings
@@ -5745,12 +5846,12 @@ S3 class object. When not given, settings for the processing method will be sear
 </div><p></p><hr><a id="method-MassSpecEngine-load_MSPeakLists"></a><div class="section">
 <h3 id="method-load-mspeaklists-">Method <code>load_MSPeakLists()</code><a class="anchor" aria-label="anchor" href="#method-load-mspeaklists-"></a></h3>
 <p>Loads MS1 and MS2 spectra and converts to a <code>MSPeakLists</code> object from patRoon.</p><div class="section">
-<h4 id="usage-94">Usage<a class="anchor" aria-label="anchor" href="#usage-94"></a></h4>
+<h4 id="usage-95">Usage<a class="anchor" aria-label="anchor" href="#usage-95"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">load_MSPeakLists</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-82">Arguments<a class="anchor" aria-label="anchor" href="#arguments-82"></a></h4>
+<h4 id="arguments-83">Arguments<a class="anchor" aria-label="anchor" href="#arguments-83"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>settings</code></dt>
 <dd><p>A ProcessingSettings S3 class object with the call name applicable to the processing method.
 Alternatively, a named list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as ProcessingSettings
@@ -5767,12 +5868,12 @@ S3 class object. When not given, settings for the processing method will be sear
 </div><p></p><hr><a id="method-MassSpecEngine-centroid_spectra"></a><div class="section">
 <h3 id="method-centroid-spectra-">Method <code>centroid_spectra()</code><a class="anchor" aria-label="anchor" href="#method-centroid-spectra-"></a></h3>
 <p>Centroids profile spectra data for each MS analysis.</p><div class="section">
-<h4 id="usage-95">Usage<a class="anchor" aria-label="anchor" href="#usage-95"></a></h4>
+<h4 id="usage-96">Usage<a class="anchor" aria-label="anchor" href="#usage-96"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">centroid_spectra</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-83">Arguments<a class="anchor" aria-label="anchor" href="#arguments-83"></a></h4>
+<h4 id="arguments-84">Arguments<a class="anchor" aria-label="anchor" href="#arguments-84"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>settings</code></dt>
 <dd><p>A ProcessingSettings S3 class object with the call name applicable to the processing method.
 Alternatively, a named list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as ProcessingSettings
@@ -5789,12 +5890,12 @@ S3 class object. When not given, settings for the processing method will be sear
 </div><p></p><hr><a id="method-MassSpecEngine-bin_spectra"></a><div class="section">
 <h3 id="method-bin-spectra-">Method <code>bin_spectra()</code><a class="anchor" aria-label="anchor" href="#method-bin-spectra-"></a></h3>
 <p>Bins centroided spectra for each MS analysis.</p><div class="section">
-<h4 id="usage-96">Usage<a class="anchor" aria-label="anchor" href="#usage-96"></a></h4>
+<h4 id="usage-97">Usage<a class="anchor" aria-label="anchor" href="#usage-97"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">bin_spectra</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-84">Arguments<a class="anchor" aria-label="anchor" href="#arguments-84"></a></h4>
+<h4 id="arguments-85">Arguments<a class="anchor" aria-label="anchor" href="#arguments-85"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>settings</code></dt>
 <dd><p>A ProcessingSettings S3 class object with the call name applicable to the processing method.
 Alternatively, a named list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as ProcessingSettings
@@ -5813,12 +5914,12 @@ S3 class object. When not given, settings for the processing method will be sear
 <p>Finds features (i.e. chromatographic peaks) in the spectra
 data of the analyses. Note, MS data structure requirements vary between
 the available processing algorithm for finding features.</p><div class="section">
-<h4 id="usage-97">Usage<a class="anchor" aria-label="anchor" href="#usage-97"></a></h4>
+<h4 id="usage-98">Usage<a class="anchor" aria-label="anchor" href="#usage-98"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">find_features</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-85">Arguments<a class="anchor" aria-label="anchor" href="#arguments-85"></a></h4>
+<h4 id="arguments-86">Arguments<a class="anchor" aria-label="anchor" href="#arguments-86"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>settings</code></dt>
 <dd><p>A ProcessingSettings S3 class object with the call name applicable to the processing method.
 Alternatively, a named list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as ProcessingSettings
@@ -5835,12 +5936,12 @@ S3 class object. When not given, settings for the processing method will be sear
 </div><p></p><hr><a id="method-MassSpecEngine-group_features"></a><div class="section">
 <h3 id="method-group-features-">Method <code>group_features()</code><a class="anchor" aria-label="anchor" href="#method-group-features-"></a></h3>
 <p>Groups and possibly aligns features across analyses.</p><div class="section">
-<h4 id="usage-98">Usage<a class="anchor" aria-label="anchor" href="#usage-98"></a></h4>
+<h4 id="usage-99">Usage<a class="anchor" aria-label="anchor" href="#usage-99"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">group_features</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-86">Arguments<a class="anchor" aria-label="anchor" href="#arguments-86"></a></h4>
+<h4 id="arguments-87">Arguments<a class="anchor" aria-label="anchor" href="#arguments-87"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>settings</code></dt>
 <dd><p>A ProcessingSettings S3 class object with the call name applicable to the processing method.
 Alternatively, a named list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as ProcessingSettings
@@ -5854,15 +5955,37 @@ S3 class object. When not given, settings for the processing method will be sear
 <p>Invisible.</p>
 </div>
 
+</div><p></p><hr><a id="method-MassSpecEngine-fill_features"></a><div class="section">
+<h3 id="method-fill-features-">Method <code>fill_features()</code><a class="anchor" aria-label="anchor" href="#method-fill-features-"></a></h3>
+<p>Fills missing features in analyses of feature groups.</p><div class="section">
+<h4 id="usage-100">Usage<a class="anchor" aria-label="anchor" href="#usage-100"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">fill_features</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-88">Arguments<a class="anchor" aria-label="anchor" href="#arguments-88"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>settings</code></dt>
+<dd><p>A ProcessingSettings S3 class object with the call name applicable to the processing method.
+Alternatively, a named list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as ProcessingSettings
+S3 class object. When not given, settings for the processing method will be searched within the engine object.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-42">Returns<a class="anchor" aria-label="anchor" href="#returns-42"></a></h4>
+<p>Invisible.</p>
+</div>
+
 </div><p></p><hr><a id="method-MassSpecEngine-filter_features"></a><div class="section">
 <h3 id="method-filter-features-">Method <code>filter_features()</code><a class="anchor" aria-label="anchor" href="#method-filter-features-"></a></h3>
 <p>Filters features and feature groups according to defined settings.</p><div class="section">
-<h4 id="usage-99">Usage<a class="anchor" aria-label="anchor" href="#usage-99"></a></h4>
+<h4 id="usage-101">Usage<a class="anchor" aria-label="anchor" href="#usage-101"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">filter_features</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-87">Arguments<a class="anchor" aria-label="anchor" href="#arguments-87"></a></h4>
+<h4 id="arguments-89">Arguments<a class="anchor" aria-label="anchor" href="#arguments-89"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>settings</code></dt>
 <dd><p>A ProcessingSettings S3 class object with the call name applicable to the processing method.
 Alternatively, a named list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as ProcessingSettings
@@ -5879,19 +6002,19 @@ obtained with the method <code>get_features()</code>.</p>
 </div>
 
 <div class="section">
-<h4 id="returns-42">Returns<a class="anchor" aria-label="anchor" href="#returns-42"></a></h4>
+<h4 id="returns-43">Returns<a class="anchor" aria-label="anchor" href="#returns-43"></a></h4>
 <p>Invisible.</p>
 </div>
 
 </div><p></p><hr><a id="method-MassSpecEngine-annotate_features"></a><div class="section">
 <h3 id="method-annotate-features-">Method <code>annotate_features()</code><a class="anchor" aria-label="anchor" href="#method-annotate-features-"></a></h3>
 <p>Annotates isotopic features according to defined settings.</p><div class="section">
-<h4 id="usage-100">Usage<a class="anchor" aria-label="anchor" href="#usage-100"></a></h4>
+<h4 id="usage-102">Usage<a class="anchor" aria-label="anchor" href="#usage-102"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">annotate_features</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-88">Arguments<a class="anchor" aria-label="anchor" href="#arguments-88"></a></h4>
+<h4 id="arguments-90">Arguments<a class="anchor" aria-label="anchor" href="#arguments-90"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>settings</code></dt>
 <dd><p>A ProcessingSettings S3 class object with the call name applicable to the processing method.
 Alternatively, a named list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as ProcessingSettings
@@ -5906,77 +6029,19 @@ S3 class object. When not given, settings for the processing method will be sear
 </div>
 
 <div class="section">
-<h4 id="returns-43">Returns<a class="anchor" aria-label="anchor" href="#returns-43"></a></h4>
+<h4 id="returns-44">Returns<a class="anchor" aria-label="anchor" href="#returns-44"></a></h4>
 <p>Invisible.</p>
 </div>
 
 </div><p></p><hr><a id="method-MassSpecEngine-find_internal_standards"></a><div class="section">
 <h3 id="method-find-internal-standards-">Method <code>find_internal_standards()</code><a class="anchor" aria-label="anchor" href="#method-find-internal-standards-"></a></h3>
 <p>Finds internal standards in features according to defined settings.</p><div class="section">
-<h4 id="usage-101">Usage<a class="anchor" aria-label="anchor" href="#usage-101"></a></h4>
+<h4 id="usage-103">Usage<a class="anchor" aria-label="anchor" href="#usage-103"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">find_internal_standards</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-89">Arguments<a class="anchor" aria-label="anchor" href="#arguments-89"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>settings</code></dt>
-<dd><p>A ProcessingSettings S3 class object with the call name applicable to the processing method.
-Alternatively, a named list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as ProcessingSettings
-S3 class object. When not given, settings for the processing method will be searched within the engine object.</p></dd>
-
-
-</dl><p></p></div>
-</div>
-<div class="section">
-<h4 id="returns-44">Returns<a class="anchor" aria-label="anchor" href="#returns-44"></a></h4>
-<p>Invisible.</p>
-</div>
-
-</div><p></p><hr><a id="method-MassSpecEngine-suspect_screening"></a><div class="section">
-<h3 id="method-suspect-screening-">Method <code>suspect_screening()</code><a class="anchor" aria-label="anchor" href="#method-suspect-screening-"></a></h3>
-<p>Screens for suspect targets in features according to defined settings.</p><div class="section">
-<h4 id="usage-102">Usage<a class="anchor" aria-label="anchor" href="#usage-102"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">suspect_screening</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-90">Arguments<a class="anchor" aria-label="anchor" href="#arguments-90"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>settings</code></dt>
-<dd><p>A ProcessingSettings S3 class object with the call name applicable to the processing method.
-Alternatively, a named list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as ProcessingSettings
-S3 class object. When not given, settings for the processing method will be searched within the engine object.</p></dd>
-
-
-</dl><p></p></div>
-</div>
-
-</div><p></p><hr><a id="method-MassSpecEngine-calculate_quality"></a><div class="section">
-<h3 id="method-calculate-quality-">Method <code>calculate_quality()</code><a class="anchor" aria-label="anchor" href="#method-calculate-quality-"></a></h3>
-<p>Calculates quality parameters of features that can be used for filtering/prioritization.</p><div class="section">
-<h4 id="usage-103">Usage<a class="anchor" aria-label="anchor" href="#usage-103"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">calculate_quality</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
 <h4 id="arguments-91">Arguments<a class="anchor" aria-label="anchor" href="#arguments-91"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>settings</code></dt>
-<dd><p>A ProcessingSettings S3 class object with the call name applicable to the processing method.
-Alternatively, a named list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as ProcessingSettings
-S3 class object. When not given, settings for the processing method will be searched within the engine object.</p></dd>
-
-
-</dl><p></p></div>
-</div>
-
-</div><p></p><hr><a id="method-MassSpecEngine-generate_formulas"></a><div class="section">
-<h3 id="method-generate-formulas-">Method <code>generate_formulas()</code><a class="anchor" aria-label="anchor" href="#method-generate-formulas-"></a></h3>
-<p>Generates formulas from feature groups using the package patRoon.</p><div class="section">
-<h4 id="usage-104">Usage<a class="anchor" aria-label="anchor" href="#usage-104"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">generate_formulas</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-92">Arguments<a class="anchor" aria-label="anchor" href="#arguments-92"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>settings</code></dt>
 <dd><p>A ProcessingSettings S3 class object with the call name applicable to the processing method.
 Alternatively, a named list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as ProcessingSettings
@@ -5990,11 +6055,29 @@ S3 class object. When not given, settings for the processing method will be sear
 <p>Invisible.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecEngine-generate_compounds"></a><div class="section">
-<h3 id="method-generate-compounds-">Method <code>generate_compounds()</code><a class="anchor" aria-label="anchor" href="#method-generate-compounds-"></a></h3>
-<p>Generates compounds from feature groups using the package patRoon.</p><div class="section">
+</div><p></p><hr><a id="method-MassSpecEngine-suspect_screening"></a><div class="section">
+<h3 id="method-suspect-screening-">Method <code>suspect_screening()</code><a class="anchor" aria-label="anchor" href="#method-suspect-screening-"></a></h3>
+<p>Screens for suspect targets in features according to defined settings.</p><div class="section">
+<h4 id="usage-104">Usage<a class="anchor" aria-label="anchor" href="#usage-104"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">suspect_screening</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-92">Arguments<a class="anchor" aria-label="anchor" href="#arguments-92"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>settings</code></dt>
+<dd><p>A ProcessingSettings S3 class object with the call name applicable to the processing method.
+Alternatively, a named list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as ProcessingSettings
+S3 class object. When not given, settings for the processing method will be searched within the engine object.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-MassSpecEngine-calculate_quality"></a><div class="section">
+<h3 id="method-calculate-quality-">Method <code>calculate_quality()</code><a class="anchor" aria-label="anchor" href="#method-calculate-quality-"></a></h3>
+<p>Calculates quality parameters of features that can be used for filtering/prioritization.</p><div class="section">
 <h4 id="usage-105">Usage<a class="anchor" aria-label="anchor" href="#usage-105"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">generate_compounds</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">calculate_quality</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -6007,16 +6090,12 @@ S3 class object. When not given, settings for the processing method will be sear
 
 </dl><p></p></div>
 </div>
-<div class="section">
-<h4 id="returns-46">Returns<a class="anchor" aria-label="anchor" href="#returns-46"></a></h4>
-<p>Invisible.</p>
-</div>
 
-</div><p></p><hr><a id="method-MassSpecEngine-smooth_chromatograms"></a><div class="section">
-<h3 id="method-smooth-chromatograms-">Method <code>smooth_chromatograms()</code><a class="anchor" aria-label="anchor" href="#method-smooth-chromatograms-"></a></h3>
-<p>Smooths chromatograms in each analyses.</p><div class="section">
+</div><p></p><hr><a id="method-MassSpecEngine-generate_formulas"></a><div class="section">
+<h3 id="method-generate-formulas-">Method <code>generate_formulas()</code><a class="anchor" aria-label="anchor" href="#method-generate-formulas-"></a></h3>
+<p>Generates formulas from feature groups using the package patRoon.</p><div class="section">
 <h4 id="usage-106">Usage<a class="anchor" aria-label="anchor" href="#usage-106"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">smooth_chromatograms</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">generate_formulas</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -6030,15 +6109,15 @@ S3 class object. When not given, settings for the processing method will be sear
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-47">Returns<a class="anchor" aria-label="anchor" href="#returns-47"></a></h4>
+<h4 id="returns-46">Returns<a class="anchor" aria-label="anchor" href="#returns-46"></a></h4>
 <p>Invisible.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecEngine-correct_chromatograms_baseline"></a><div class="section">
-<h3 id="method-correct-chromatograms-baseline-">Method <code>correct_chromatograms_baseline()</code><a class="anchor" aria-label="anchor" href="#method-correct-chromatograms-baseline-"></a></h3>
-<p>Corrects the baseline of chromatograms in each analyses.</p><div class="section">
+</div><p></p><hr><a id="method-MassSpecEngine-generate_compounds"></a><div class="section">
+<h3 id="method-generate-compounds-">Method <code>generate_compounds()</code><a class="anchor" aria-label="anchor" href="#method-generate-compounds-"></a></h3>
+<p>Generates compounds from feature groups using the package patRoon.</p><div class="section">
 <h4 id="usage-107">Usage<a class="anchor" aria-label="anchor" href="#usage-107"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">correct_chromatograms_baseline</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">generate_compounds</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -6052,15 +6131,15 @@ S3 class object. When not given, settings for the processing method will be sear
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-48">Returns<a class="anchor" aria-label="anchor" href="#returns-48"></a></h4>
+<h4 id="returns-47">Returns<a class="anchor" aria-label="anchor" href="#returns-47"></a></h4>
 <p>Invisible.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecEngine-integrate_chromatograms"></a><div class="section">
-<h3 id="method-integrate-chromatograms-">Method <code>integrate_chromatograms()</code><a class="anchor" aria-label="anchor" href="#method-integrate-chromatograms-"></a></h3>
-<p>Integrates chromatograms, returning a peak list for each chromatogram for each analyses.</p><div class="section">
+</div><p></p><hr><a id="method-MassSpecEngine-smooth_chromatograms"></a><div class="section">
+<h3 id="method-smooth-chromatograms-">Method <code>smooth_chromatograms()</code><a class="anchor" aria-label="anchor" href="#method-smooth-chromatograms-"></a></h3>
+<p>Smooths chromatograms in each analyses.</p><div class="section">
 <h4 id="usage-108">Usage<a class="anchor" aria-label="anchor" href="#usage-108"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">integrate_chromatograms</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">smooth_chromatograms</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -6074,15 +6153,15 @@ S3 class object. When not given, settings for the processing method will be sear
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-49">Returns<a class="anchor" aria-label="anchor" href="#returns-49"></a></h4>
+<h4 id="returns-48">Returns<a class="anchor" aria-label="anchor" href="#returns-48"></a></h4>
 <p>Invisible.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecEngine-cluster_spectra"></a><div class="section">
-<h3 id="method-cluster-spectra-">Method <code>cluster_spectra()</code><a class="anchor" aria-label="anchor" href="#method-cluster-spectra-"></a></h3>
-<p>Clusters spectra based on a value name.</p><div class="section">
+</div><p></p><hr><a id="method-MassSpecEngine-correct_chromatograms_baseline"></a><div class="section">
+<h3 id="method-correct-chromatograms-baseline-">Method <code>correct_chromatograms_baseline()</code><a class="anchor" aria-label="anchor" href="#method-correct-chromatograms-baseline-"></a></h3>
+<p>Corrects the baseline of chromatograms in each analyses.</p><div class="section">
 <h4 id="usage-109">Usage<a class="anchor" aria-label="anchor" href="#usage-109"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">cluster_spectra</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">correct_chromatograms_baseline</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -6096,15 +6175,15 @@ S3 class object. When not given, settings for the processing method will be sear
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-50">Returns<a class="anchor" aria-label="anchor" href="#returns-50"></a></h4>
+<h4 id="returns-49">Returns<a class="anchor" aria-label="anchor" href="#returns-49"></a></h4>
 <p>Invisible.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecEngine-calculate_spectra_charges"></a><div class="section">
-<h3 id="method-calculate-spectra-charges-">Method <code>calculate_spectra_charges()</code><a class="anchor" aria-label="anchor" href="#method-calculate-spectra-charges-"></a></h3>
-<p>Calculate charges from spectra with multi-charged compounds, such as monoclonal antibodies.</p><div class="section">
+</div><p></p><hr><a id="method-MassSpecEngine-integrate_chromatograms"></a><div class="section">
+<h3 id="method-integrate-chromatograms-">Method <code>integrate_chromatograms()</code><a class="anchor" aria-label="anchor" href="#method-integrate-chromatograms-"></a></h3>
+<p>Integrates chromatograms, returning a peak list for each chromatogram for each analyses.</p><div class="section">
 <h4 id="usage-110">Usage<a class="anchor" aria-label="anchor" href="#usage-110"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">calculate_spectra_charges</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">integrate_chromatograms</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -6118,15 +6197,15 @@ S3 class object. When not given, settings for the processing method will be sear
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-51">Returns<a class="anchor" aria-label="anchor" href="#returns-51"></a></h4>
+<h4 id="returns-50">Returns<a class="anchor" aria-label="anchor" href="#returns-50"></a></h4>
 <p>Invisible.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecEngine-deconvolute_spectra"></a><div class="section">
-<h3 id="method-deconvolute-spectra-">Method <code>deconvolute_spectra()</code><a class="anchor" aria-label="anchor" href="#method-deconvolute-spectra-"></a></h3>
-<p>Deconvolutes spectra with calculated charges from multi-charged compounds, such as monoclonal antibodies.</p><div class="section">
+</div><p></p><hr><a id="method-MassSpecEngine-cluster_spectra"></a><div class="section">
+<h3 id="method-cluster-spectra-">Method <code>cluster_spectra()</code><a class="anchor" aria-label="anchor" href="#method-cluster-spectra-"></a></h3>
+<p>Clusters spectra based on a value name.</p><div class="section">
 <h4 id="usage-111">Usage<a class="anchor" aria-label="anchor" href="#usage-111"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">deconvolute_spectra</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">cluster_spectra</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -6140,15 +6219,15 @@ S3 class object. When not given, settings for the processing method will be sear
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-52">Returns<a class="anchor" aria-label="anchor" href="#returns-52"></a></h4>
+<h4 id="returns-51">Returns<a class="anchor" aria-label="anchor" href="#returns-51"></a></h4>
 <p>Invisible.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecEngine-smooth_spectra"></a><div class="section">
-<h3 id="method-smooth-spectra-">Method <code>smooth_spectra()</code><a class="anchor" aria-label="anchor" href="#method-smooth-spectra-"></a></h3>
-<p>Smooths the spectra in each analysis/replicate.</p><div class="section">
+</div><p></p><hr><a id="method-MassSpecEngine-calculate_spectra_charges"></a><div class="section">
+<h3 id="method-calculate-spectra-charges-">Method <code>calculate_spectra_charges()</code><a class="anchor" aria-label="anchor" href="#method-calculate-spectra-charges-"></a></h3>
+<p>Calculate charges from spectra with multi-charged compounds, such as monoclonal antibodies.</p><div class="section">
 <h4 id="usage-112">Usage<a class="anchor" aria-label="anchor" href="#usage-112"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">smooth_spectra</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">calculate_spectra_charges</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -6162,15 +6241,15 @@ S3 class object. When not given, settings for the processing method will be sear
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-53">Returns<a class="anchor" aria-label="anchor" href="#returns-53"></a></h4>
+<h4 id="returns-52">Returns<a class="anchor" aria-label="anchor" href="#returns-52"></a></h4>
 <p>Invisible.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecEngine-correct_spectra_baseline"></a><div class="section">
-<h3 id="method-correct-spectra-baseline-">Method <code>correct_spectra_baseline()</code><a class="anchor" aria-label="anchor" href="#method-correct-spectra-baseline-"></a></h3>
-<p>Corrects the spectra baseline.</p><div class="section">
+</div><p></p><hr><a id="method-MassSpecEngine-deconvolute_spectra"></a><div class="section">
+<h3 id="method-deconvolute-spectra-">Method <code>deconvolute_spectra()</code><a class="anchor" aria-label="anchor" href="#method-deconvolute-spectra-"></a></h3>
+<p>Deconvolutes spectra with calculated charges from multi-charged compounds, such as monoclonal antibodies.</p><div class="section">
 <h4 id="usage-113">Usage<a class="anchor" aria-label="anchor" href="#usage-113"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">correct_spectra_baseline</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">deconvolute_spectra</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -6184,15 +6263,15 @@ S3 class object. When not given, settings for the processing method will be sear
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-54">Returns<a class="anchor" aria-label="anchor" href="#returns-54"></a></h4>
+<h4 id="returns-53">Returns<a class="anchor" aria-label="anchor" href="#returns-53"></a></h4>
 <p>Invisible.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecEngine-normalize_spectra"></a><div class="section">
-<h3 id="method-normalize-spectra-">Method <code>normalize_spectra()</code><a class="anchor" aria-label="anchor" href="#method-normalize-spectra-"></a></h3>
-<p>Normalizes spectra in each analysis/replicate.</p><div class="section">
+</div><p></p><hr><a id="method-MassSpecEngine-smooth_spectra"></a><div class="section">
+<h3 id="method-smooth-spectra-">Method <code>smooth_spectra()</code><a class="anchor" aria-label="anchor" href="#method-smooth-spectra-"></a></h3>
+<p>Smooths the spectra in each analysis/replicate.</p><div class="section">
 <h4 id="usage-114">Usage<a class="anchor" aria-label="anchor" href="#usage-114"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">normalize_spectra</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">smooth_spectra</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -6206,15 +6285,15 @@ S3 class object. When not given, settings for the processing method will be sear
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-55">Returns<a class="anchor" aria-label="anchor" href="#returns-55"></a></h4>
+<h4 id="returns-54">Returns<a class="anchor" aria-label="anchor" href="#returns-54"></a></h4>
 <p>Invisible.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecEngine-average_spectra"></a><div class="section">
-<h3 id="method-average-spectra-">Method <code>average_spectra()</code><a class="anchor" aria-label="anchor" href="#method-average-spectra-"></a></h3>
-<p>Averages spectra based on assigned analysis replicates.</p><div class="section">
+</div><p></p><hr><a id="method-MassSpecEngine-correct_spectra_baseline"></a><div class="section">
+<h3 id="method-correct-spectra-baseline-">Method <code>correct_spectra_baseline()</code><a class="anchor" aria-label="anchor" href="#method-correct-spectra-baseline-"></a></h3>
+<p>Corrects the spectra baseline.</p><div class="section">
 <h4 id="usage-115">Usage<a class="anchor" aria-label="anchor" href="#usage-115"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">average_spectra</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">correct_spectra_baseline</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -6228,15 +6307,15 @@ S3 class object. When not given, settings for the processing method will be sear
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-56">Returns<a class="anchor" aria-label="anchor" href="#returns-56"></a></h4>
+<h4 id="returns-55">Returns<a class="anchor" aria-label="anchor" href="#returns-55"></a></h4>
 <p>Invisible.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecEngine-subtract_blank_spectra"></a><div class="section">
-<h3 id="method-subtract-blank-spectra-">Method <code>subtract_blank_spectra()</code><a class="anchor" aria-label="anchor" href="#method-subtract-blank-spectra-"></a></h3>
-<p>Subtracts spectra from correspondent blank analysis replicates.</p><div class="section">
+</div><p></p><hr><a id="method-MassSpecEngine-normalize_spectra"></a><div class="section">
+<h3 id="method-normalize-spectra-">Method <code>normalize_spectra()</code><a class="anchor" aria-label="anchor" href="#method-normalize-spectra-"></a></h3>
+<p>Normalizes spectra in each analysis/replicate.</p><div class="section">
 <h4 id="usage-116">Usage<a class="anchor" aria-label="anchor" href="#usage-116"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">subtract_blank_spectra</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">normalize_spectra</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -6250,14 +6329,58 @@ S3 class object. When not given, settings for the processing method will be sear
 </dl><p></p></div>
 </div>
 <div class="section">
+<h4 id="returns-56">Returns<a class="anchor" aria-label="anchor" href="#returns-56"></a></h4>
+<p>Invisible.</p>
+</div>
+
+</div><p></p><hr><a id="method-MassSpecEngine-average_spectra"></a><div class="section">
+<h3 id="method-average-spectra-">Method <code>average_spectra()</code><a class="anchor" aria-label="anchor" href="#method-average-spectra-"></a></h3>
+<p>Averages spectra based on assigned analysis replicates.</p><div class="section">
+<h4 id="usage-117">Usage<a class="anchor" aria-label="anchor" href="#usage-117"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">average_spectra</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-105">Arguments<a class="anchor" aria-label="anchor" href="#arguments-105"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>settings</code></dt>
+<dd><p>A ProcessingSettings S3 class object with the call name applicable to the processing method.
+Alternatively, a named list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as ProcessingSettings
+S3 class object. When not given, settings for the processing method will be searched within the engine object.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
 <h4 id="returns-57">Returns<a class="anchor" aria-label="anchor" href="#returns-57"></a></h4>
+<p>Invisible.</p>
+</div>
+
+</div><p></p><hr><a id="method-MassSpecEngine-subtract_blank_spectra"></a><div class="section">
+<h3 id="method-subtract-blank-spectra-">Method <code>subtract_blank_spectra()</code><a class="anchor" aria-label="anchor" href="#method-subtract-blank-spectra-"></a></h3>
+<p>Subtracts spectra from correspondent blank analysis replicates.</p><div class="section">
+<h4 id="usage-118">Usage<a class="anchor" aria-label="anchor" href="#usage-118"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">subtract_blank_spectra</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-106">Arguments<a class="anchor" aria-label="anchor" href="#arguments-106"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>settings</code></dt>
+<dd><p>A ProcessingSettings S3 class object with the call name applicable to the processing method.
+Alternatively, a named list with <code>call</code>, <code>algorithm</code> and <code>parameters</code> to be transformed and used as ProcessingSettings
+S3 class object. When not given, settings for the processing method will be searched within the engine object.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-58">Returns<a class="anchor" aria-label="anchor" href="#returns-58"></a></h4>
 <p>Invisible.</p>
 </div>
 
 </div><p></p><hr><a id="method-MassSpecEngine-check_correspondence"></a><div class="section">
 <h3 id="method-check-correspondence-">Method <code>check_correspondence()</code><a class="anchor" aria-label="anchor" href="#method-check-correspondence-"></a></h3>
 <p>Checks the correspondence of features within feature groups, returning <code>TRUE</code> or <code>FALSE</code>.</p><div class="section">
-<h4 id="usage-117">Usage<a class="anchor" aria-label="anchor" href="#usage-117"></a></h4>
+<h4 id="usage-119">Usage<a class="anchor" aria-label="anchor" href="#usage-119"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">check_correspondence</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -6267,7 +6390,7 @@ S3 class object. When not given, settings for the processing method will be sear
 <p>Saves the HTML report from the function <a href="https://rdrr.io/pkg/patRoon/man/reporting.html" class="external-link">report</a> from the package <span class="pkg">patRoon</span>.
 The interface is exactly the same and the arguments description are taken from the documentation in <span class="pkg">patRoon</span>.
 Therefore, for further information, we recommend to consult directly the function <a href="https://rdrr.io/pkg/patRoon/man/reporting.html" class="external-link">report</a> in <span class="pkg">patRoon</span>.</p><div class="section">
-<h4 id="usage-118">Usage<a class="anchor" aria-label="anchor" href="#usage-118"></a></h4>
+<h4 id="usage-120">Usage<a class="anchor" aria-label="anchor" href="#usage-120"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">report</span><span class="op">(</span></span>
 <span>  path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"/report"</span><span class="op">)</span>,</span>
 <span>  filtered <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -6282,7 +6405,7 @@ Therefore, for further information, we recommend to consult directly the functio
 </div>
 
 <div class="section">
-<h4 id="arguments-105">Arguments<a class="anchor" aria-label="anchor" href="#arguments-105"></a></h4>
+<h4 id="arguments-107">Arguments<a class="anchor" aria-label="anchor" href="#arguments-107"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>path</code></dt>
 <dd><p>Character (length 1) with the path to the report destination.</p></dd>
 
@@ -6328,14 +6451,14 @@ the report settings file. See <a href="https://rdrr.io/pkg/patRoon/man/reporting
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-58">Returns<a class="anchor" aria-label="anchor" href="#returns-58"></a></h4>
+<h4 id="returns-59">Returns<a class="anchor" aria-label="anchor" href="#returns-59"></a></h4>
 <p>An interactive HTML report from the package <span class="pkg">patRoon</span>.</p>
 </div>
 
 </div><p></p><hr><a id="method-MassSpecEngine-processing_methods"></a><div class="section">
 <h3 id="method-processing-methods-">Method <code>processing_methods()</code><a class="anchor" aria-label="anchor" href="#method-processing-methods-"></a></h3>
 <p>A data.table with available data processing methods.</p><div class="section">
-<h4 id="usage-119">Usage<a class="anchor" aria-label="anchor" href="#usage-119"></a></h4>
+<h4 id="usage-121">Usage<a class="anchor" aria-label="anchor" href="#usage-121"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">processing_methods</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -6343,12 +6466,12 @@ the report settings file. See <a href="https://rdrr.io/pkg/patRoon/man/reporting
 </div><p></p><hr><a id="method-MassSpecEngine-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-120">Usage<a class="anchor" aria-label="anchor" href="#usage-120"></a></h4>
+<h4 id="usage-122">Usage<a class="anchor" aria-label="anchor" href="#usage-122"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-106">Arguments<a class="anchor" aria-label="anchor" href="#arguments-106"></a></h4>
+<h4 id="arguments-108">Arguments<a class="anchor" aria-label="anchor" href="#arguments-108"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 

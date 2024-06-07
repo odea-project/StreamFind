@@ -794,6 +794,8 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       
       dt <- dt[, pcs, drop = FALSE]
       
+      var <- self$get_model_explained_variance()
+      
       if (!interactive) {
         
         NULL
@@ -802,7 +804,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
         
         if (!is.null(colorKey)) {
           
-          if (length(colorKey) != ncol(dt)) {
+          if (length(colorKey) != nrow(dt)) {
             warning("The color key must have the same length as the number of variables in the loadings! Not done.")
             return(NULL)
           }
@@ -821,13 +823,23 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
           x = seq_len(nrow(dt))
           y = dt[, 1]
           xLab = "Analysis Index"
-          yLab = paste0("PC", pcs)
+          if (!is.null(var)) {
+            yLab = paste0("PC", pcs, "(", round(var[pcs], digits = 0) ,"%)")
+          } else {
+            yLab = paste0("PC", pcs)
+          }
           
         } else {
           x = dt[, 1]
           y = dt[, 2]
-          xLab = paste0("PC", pcs[1])
-          yLab = paste0("PC", pcs[2])
+          
+          if (!is.null(var)) {
+            xLab = paste0("PC", pcs[1], "(", round(var[pcs[1]], digits = 0) ,"%)")
+            yLab = paste0("PC", pcs[2], "(", round(var[pcs[2]], digits = 0) ,"%)")
+          } else {
+            xLab = paste0("PC", pcs[1])
+            yLab = paste0("PC", pcs[2])
+          }
         }
         
         if (showText) text <- rownames(dt) else text <- NULL

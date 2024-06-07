@@ -21,7 +21,7 @@ StatisticAnalysis(
 
 \item{data}{Matrix with 1 row and columns equal to the number of variables.}
 
-\item{classes}{Character vector with the analysis classes.}
+\item{class}{Character vector with the analysis classes.}
 }
 \value{
 An \emph{StatisticAnalysis} S3 class object.

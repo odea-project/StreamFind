@@ -4,7 +4,7 @@
 \alias{Settings_normalize_features_patRoon_tic}
 \title{Settings_normalize_features_patRoon_tic}
 \usage{
-Settings_normalize_features_patRoon_tic(x)
+Settings_normalize_features_patRoon_tic()
 }
 \value{
 A ProcessingSettings S3 class object with subclass Settings_normalize_features_patRoon_tic.

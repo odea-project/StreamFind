@@ -1457,7 +1457,7 @@ Settings_normalize_features_patRoon_tic <- function() {
 #' @export
 #' @noRd
 #'
-Settings_normalize_features_patRoon_tic <- function(x) {
+validate.Settings_normalize_features_patRoon_tic <- function(x) {
   all(
     checkmate::test_choice(x$call, "normalize_features"),
     checkmate::test_choice(x$algorithm, "patRoon_tic")

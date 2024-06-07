@@ -14,7 +14,7 @@
   
   if (!validate(settings)) return(FALSE)
   
-  cache <- .load_chache("find_internal_standards", ms$featureGroups, settings)
+  cache <- .load_chache("find_internal_standards", self$featureGroups, settings)
   
   if (!is.null(cache$data)) {
     if (private$.add_features_column("istd", cache$data)) {

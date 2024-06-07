@@ -16,8 +16,9 @@
   group <- NULL
   name <- NULL
   N <- NULL
+  . <- NULL
   
-  cache <- .load_chache("fill_features", ms$featureGroups, settings)
+  cache <- .load_chache("fill_features", self$featureGroups, settings)
   
   if (!is.null(cache$data)) {
     message("\U2139 Filled features loaded from cache!")
