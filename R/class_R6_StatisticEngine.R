@@ -552,7 +552,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
        prob = NULL
       }
       
-      res <- data.table::data.table(analysis = rownames(data), class = knn_model)
+      res <- data.table::data.table(analysis = rownames(data), class = res)
       
       res$probability <- prob
       

@@ -1,7 +1,7 @@
 ---
-title: 'Fusion of Mass Spectrometry and Raman Spectroscopy Data'
+title: 'Fusion of Mass Spectrometry and Raman Spectroscopy Data Case Study 2'
 subtitle: |
-  | Comparison of paracetamol deviations
+  | Detection of quality deviations in paracetamol products
   | <br>
 author:
   name: Ricardo Cunha
@@ -65,31 +65,31 @@ pre code {
 
 ## MS
 
-```{r}
+```{r ms-setup, include=FALSE}
 ms <- MassSpecEngine$new(files = ms_files, headers = list(name = "BSA Quality Evaluation Project"))
 
 ms$add_replicate_names(
-  c(rep("fiz1_1", 3),
-    rep("fiz1_2", 3),
-    rep("fiz1_3", 3),
-    rep("fiz2_1", 3),
-    rep("fiz2_2", 3),
-    rep("fiz2_3", 3),
-    rep("fiz3_1", 3),
-    rep("fiz3_2", 3),
-    rep("fiz3_3", 3),
-    rep("fiz_caff_1", 3),
-    rep("fiz_caff_2", 3),
-    rep("fiz_caff_3", 3),
-    rep("fiz_ass_1", 3),
-    rep("fiz_ass_2", 3),
-    rep("fiz_ass_3", 3),
-    rep("fiz4_1", 3),
-    rep("fiz4_2", 3),
-    rep("fiz4_3", 3),
-    rep("fiz_acid_1", 3),
-    rep("fiz_acid_2", 3),
-    rep("fiz_acid_3", 3),
+  c(rep("fiz_a1", 3),
+    rep("fiz_a2", 3),
+    rep("fiz_a3", 3),
+    rep("fiz_b1", 3),
+    rep("fiz_b2", 3),
+    rep("fiz_b3", 3),
+    rep("fiz_c1", 3),
+    rep("fiz_c2", 3),
+    rep("fiz_c3", 3),
+    rep("fiz_caff1", 3),
+    rep("fiz_caff2", 3),
+    rep("fiz_caff3", 3),
+    rep("fiz_ass1", 3),
+    rep("fiz_ass2", 3),
+    rep("fiz_ass3", 3),
+    rep("fiz_d1", 3),
+    rep("fiz_d2", 3),
+    rep("fiz_d3", 3),
+    rep("fiz_acid1", 3),
+    rep("fiz_acid2", 3),
+    rep("fiz_acid3", 3),
     rep("ass_n_1", 3),
     rep("ass_n_2", 3),
     rep("ass_n_3", 3),
@@ -106,23 +106,40 @@ ms$add_replicate_names(
   )
 )
 
-# View(ms$get_overview())
-```
-
-```{r, fig.cap="Total ion chromatograms for each analysis replicate."}
-# ms$plot_spectra_tic(colorBy = "replicates")
-
-# only blanks
-# ms$plot_spectra_tic(analyses = 100:122, colorBy = "analyses")
-```
-
-```{r}
 ms <- ms$subset_analyses(analyses = c(1:63, 73:99, 118:121))
+
 ms$add_blank_names(rep("blank", 94))
+
 ms$load_spectra()
 ```
 
-```{r}
+```{r ms-overview, echo=FALSE}
+ov <- ms$get_overview()[, 1:3]
+setorder(ov, replicate)
+ov$description <- c(
+  rep("Aspirine standard", 9),
+  rep("Reference background", 4),
+  rep("Caffein", 9),
+  rep("Paracetamol product", 9),
+  rep("Paracetamol with acetic acid", 9),
+  rep("Paracetamol with aspirine", 9),
+  rep("Paracetamol product", 9),
+  rep("Paracetamol product", 9),
+  rep("Paracetamol with caffein", 9),
+  rep("Paracetamol product", 9),
+  rep("Paracetamol standard", 9)
+)
+
+kable(ov, caption = "Overview of MS analyses and respective analysis replicate groups and blanks.") %>%
+kable_styling(font_size = 12, bootstrap_options = c("striped", "hover", "condensed", "responsive"), fixed_thead = TRUE) %>%
+scroll_box(width = "100%", height = "400px")
+```
+
+```{r plot-ms-tic, fig.cap="Total ion chromatogram (TIC) for each analysis replicate."}
+ms$plot_spectra_tic(colorBy = "replicates")
+```
+
+```{r ms-workflow}
 ms_workflow_settings <- list(
   Settings_bin_spectra_StreamFind(bins = list("rt" = 5, "mz" = 2), refBinAnalysis = 1),
   Settings_normalize_spectra_minmax(),
@@ -136,17 +153,21 @@ ms$add_settings(ms_workflow_settings)
 ms$print_workflow()
 ```
 
-```{r}
+```{r ms-run-workflow}
 ms$run_workflow()
 ```
 
-```{r ,fig.cap="Deconvoluted and pre-processed spectra for each analysis."}
+```{r plot-ms-spectra, fig.cap="Pre-processed spectra for each analysis. Retention time dimension in he created bins is collapsed for each mass-to-charge ratio"}
 ms$plot_spectra()
+```
+
+```{r ms-spectra}
+ms$get_spectra()[1:10, ]
 ```
 
 ## Raman
 
-```{r}
+```{r raman-setup, include=FALSE}
 raman <- RamanEngine$new(raman_files)
 
 raman$add_replicate_names(
@@ -158,31 +179,31 @@ raman$add_replicate_names(
     rep("caff_2", 3),
     rep("caff_3", 3),
     rep("blank", 9),
-    rep("fiz3_1", 3),
-    rep("fiz3_2", 3),
-    rep("fiz3_3", 3),
+    rep("fiz_c1", 3),
+    rep("fiz_c2", 3),
+    rep("fiz_c3", 3),
     rep("fiz_ass_n_1", 3),
     rep("fiz_ass_n_2", 3),
     rep("fiz_ass_n_3", 3),
-    rep("fiz_ass_1", 3),
-    rep("fiz_ass_2", 3),
-    rep("fiz_ass_3", 3),
-    rep("fiz_caff_1", 3),
-    rep("fiz_caff_2", 3),
-    rep("fiz_caff_3", 3),
-    rep("fiz1_1", 3),
-    rep("fiz1_2", 3),
-    rep("fiz1_3", 3),
-    rep("fiz4_1", 3),
-    rep("fiz4_2", 3),
-    rep("fiz4_3", 3),
-    rep("fiz2_1", 3),
-    rep("fiz2_2", 3),
-    rep("fiz2_3", 3),
+    rep("fiz_ass1", 3),
+    rep("fiz_ass2", 3),
+    rep("fiz_ass3", 3),
+    rep("fiz_caff1", 3),
+    rep("fiz_caff2", 3),
+    rep("fiz_caff3", 3),
+    rep("fiz_a1", 3),
+    rep("fiz_a2", 3),
+    rep("fiz_a3", 3),
+    rep("fiz_d1", 3),
+    rep("fiz_d2", 3),
+    rep("fiz_d3", 3),
+    rep("fiz_b1", 3),
+    rep("fiz_b2", 3),
+    rep("fiz_b3", 3),
     rep("background", 4),
-    rep("fiz_acid_1", 3),
-    rep("fiz_acid_2", 3),
-    rep("fiz_acid_3", 3),
+    rep("fiz_acid1", 3),
+    rep("fiz_acid2", 3),
+    rep("fiz_acid3", 3),
     rep("par_1", 3),
     rep("par_odd", 3),
     rep("par_3", 3),
@@ -196,20 +217,18 @@ raman$add_replicate_names(
   )
 )
 
-# View(raman$get_overview())
-```
+ramanQuant <- raman$subset_analyses(analyses = c(19:27, 116:160))
+ramanQuant$add_blank_names(rep("blank", 54))
 
-```{r ,fig.cap="Raw averaged Raman spectra for each BSA product between minute 5.5 and 8."}
-# raman$plot_spectra(colorBy = "replicates")
-```
-
-```{r}
 raman <- raman$subset_analyses(analyses = c(1:36, 46:90, 95:106, 110:115))
 raman$add_blank_names(rep("blank", 99))
+```
+
+```{r plot-raman-raw, fig.cap="Raw averaged Raman spectra for each analysis replicate."}
 raman$plot_spectra(colorBy = "replicates")
 ```
 
-```{r}
+```{r raman-workflow}
 raman_workflow_settings <- list(
   Settings_average_spectra_StreamFind(),
   Settings_subtract_blank_spectra_StreamFind(),
@@ -226,17 +245,17 @@ raman$add_settings(raman_workflow_settings)
 raman$print_workflow()
 ```
 
-```{r}
+```{r raman-run-workflow}
 raman$run_workflow()
 ```
 
-```{r ,fig.cap="Processed Raman spectra for each BSA product."}
+```{r plot-raman-spectra, fig.cap="Pre-processed Raman spectra for analysis replicate."}
 raman$plot_spectra()
 ```
 
 # Fusion
 
-```{r}
+```{r fusion}
 rSpec <- raman$get_spectra()
 rSpec <- rSpec[order(rSpec$replicate), ]
 mrSpec <- matrix(rSpec$intensity, nrow = length(unique(rSpec$replicate)), ncol = length(unique(rSpec$shift)), byrow = TRUE, dimnames = list(as.character(unique(rSpec$replicate)), as.character(round(unique(rSpec$shift), digits = 1))))
@@ -246,9 +265,12 @@ mSpec <- mSpec[order(mSpec$replicate), ]
 mmSpec <- matrix(mSpec$intensity, nrow = length(unique(mSpec$replicate)), ncol = length(unique(mSpec$bins)), byrow = TRUE, dimnames = list(unique(mSpec$replicate), unique(mSpec$bins)))
 
 fusedMat <- cbind(mmSpec, mrSpec)
+
+# Matrix is mean centered but not scaled
+fusedMat <- mdatools::prep.autoscale(fusedMat, center = TRUE, scale = FALSE)
 ```
 
-```{r}
+```{r plot-fused, include=FALSE, fig.cap="Fused spectra."}
 cl <- StreamFind:::.get_colors(rownames(fusedMat))
 fig <- plot_ly()
 xVal <- seq_len(length(fusedMat[1, ]))
@@ -281,33 +303,52 @@ fig
 
 ## Unsupervised
 
-Using Principle Components Analysis (PCA) for unsupervised evaluation.
+Principle Components Analysis (PCA) for unsupervised evaluation.
 
-```{r}
-main_set <- fusedMat[c(8:9, 10, 12, 14:15, 17:18), ]
-test_set <- fusedMat[c(1:7, 11, 13, 16, 19:30), ]
+```{r sets-show}
+main_set <- fusedMat[c(7:8, 16, 18, 20:21, 25:27), ]
+rownames(main_set)
 
+test_set <- fusedMat[c(1:6, 9:15, 17, 19, 22:24, 28:30), ]
+rownames(test_set)
+```
+
+```{r pca-engine, fig.cap="PCA model (native plot from mdatools R package).", fig.height=9}}
 stat <- StatisticEngine$new(data = main_set)
-stat$make_model(Settings_make_model_pca_mdatools(ncomp = 3, alpha = 0.005, gamma = 0.0005))
+stat$make_model(Settings_make_model_pca_mdatools(ncomp = 2, alpha = 5E-3, gamma = 5E-4))
+plot(stat$model)
+```
+
+```{r pca-predict, fig.cap="PCA model prediction distances. For more information about the distances plese consult the mdatools guide in https://mdatools.com/docs/pca--distances-and-limits.html."}
 stat$predict(test_set)
 stat$plot_predicted_distances()
 ```
 
 ## Supervised (classification)
 
-Using k-nearest neighbors (KNN) for classification.
+k-nearest neighbors (KNN) for classification.
 
-```{r}
-train_set <- fusedMat[c(grep("_1", rownames(fusedMat)), grep("_2", rownames(fusedMat))), ]
+```{r sets-show-knn}
+train_set <- fusedMat[c(grep("1", rownames(fusedMat)), grep("2", rownames(fusedMat))), ]
 train_set <- train_set[order(rownames(train_set)), ]
+rownames(train_set)
 
-test_set <- fusedMat[grep("_3", rownames(fusedMat)), ]
+test_set <- fusedMat[grep("3", rownames(fusedMat)), ]
+rownames(test_set)
+```
 
-labels <- c(
-  rep("ass", 2), rep("caff", 2), rep("fiz_acid", 2), rep("fiz_ass", 2), rep("fiz_caff", 2),
-  rep("fiz_altered", 2), rep("fiz_altered", 2), rep("fiz", 2), rep("fiz", 2), rep("par", 2)
-)
+```{r knn-classes}
+labels <- c(rep("ass", 2), rep("caff", 2), rep("fiz", 2), rep("fiz_acid", 2), rep("fiz_ass", 2),
+  rep("fiz", 2), rep("fiz", 2), rep("fiz_caff", 2), rep("fiz", 2), rep("par", 2))
+```
 
+```{r knn-classes-show, echo=FALSE}
+kable(data.frame(replicate = rownames(train_set), class = labels), caption = "Clss assignment for training set.") %>%
+kable_styling(font_size = 12, bootstrap_options = c("striped", "hover", "condensed", "responsive"), fixed_thead = TRUE) %>%
+scroll_box(width = "100%", height = "400px")
+```
+
+```{r knn-engine}
 stat2 <- StatisticEngine$new(data = train_set)
 stat2$add_classes(labels)
 stat2$prepare_classification(Settings_prepare_classification_knn(k = 3))
@@ -315,36 +356,123 @@ stat2$classify(test_set)
 stat2$classification_results
 ```
 
-## Other
+# Raman quantification
 
-Using Hierarchical Clustering.
+```{r ov-raman-conc, include=FALSE}
+ov2 <- ramanQuant$get_overview()[, 1:3]
+setorder(ov2, replicate)
+ov2$concentration <- as.numeric(c(rep(0, 9), sub(".*?(\\d+).*", "\\1", ov2$replicate[10:nrow(ov2)]))) / 10
+
+kable(ov2, caption = "Overview of Raman analyses for quantification with respective concentration.") %>%
+kable_styling(font_size = 12, bootstrap_options = c("striped", "hover", "condensed", "responsive"), fixed_thead = TRUE) %>%
+scroll_box(width = "100%", height = "400px")
+```
+
+```{r plot-raman-conc-raw, fig.cap="Raw averaged Raman spectra for each analysis replicate."}
+ramanQuant$plot_spectra(colorBy = "replicates")
+```
+
+```{r raman-conc-workflow}
+raman_workflow_settings <- list(
+  Settings_average_spectra_StreamFind(),
+  Settings_subtract_blank_spectra_StreamFind(),
+  Settings_smooth_spectra_savgol(fl = 21, forder = 4, dorder = 0),
+  Settings_delete_spectra_section_StreamFind(list("shift" = c(-100, 350))),
+  Settings_delete_spectra_section_StreamFind(list("shift" = c(1800, 2500))),
+  Settings_correct_spectra_baseline_airpls(lambda = 45, differences = 1, itermax = 30)
+)
+
+ramanQuant$add_settings(raman_workflow_settings)
+
+ramanQuant$print_workflow()
+```
+
+```{r raman-conc-run-workflow}
+ramanQuant$run_workflow()
+```
+
+```{r plot-raman-conc-spectra, fig.cap="Pre-processed Raman spectra for analysis replicate."}
+ramanQuant$plot_spectra()
+```
+
+```{r raman-quant-mat}
+rSpecQuant <- ramanQuant$get_spectra()
+rSpecQuant <- rSpecQuant[order(rSpecQuant$replicate), ]
+mrSpecQuant <- matrix(
+  rSpecQuant$intensity,
+  nrow = length(unique(rSpecQuant$replicate)),
+  ncol = length(unique(rSpecQuant$shift)),
+  byrow = TRUE,
+  dimnames = list(as.character(unique(rSpecQuant$replicate)), as.character(round(unique(rSpecQuant$shift), digits = 1)))
+)
+```
 
 ```{r}
-hc_result <- hclust(dist(fusedMat), method = "ward.D2")
-plot(hc_result)
+
+ramanQuant$plot_spectra_baseline()
+
+library(mdatools)
+m1 = mcrals(mrSpecQuant, ncomp = 2)
+plotSpectra(m1)
+
+
+summary(m1)
+
+conc_ov <- ov2[, c(2, 4)]
+conc_ov <- unique(conc_ov)
+
+show(head(m1$rescont))
+
+plot(conc_ov$concentration[-1], m1$rescont[, 2], type = "l")
+
+x <- conc_ov$concentration[-1]
+y <- m1$rescont[, 2]
+linear_model <- lm(x  ~  y)
+
+summary_linear_model <- summary(linear_model)
+r_squared <- summary_linear_model$r.squared
+r_squared
+
+predict(lm(m1$rescont[, 2] ~ conc_ov$concentration[-1]), data.frame(x = 372.8276, 199, 399, 349), se.fit = TRUE)
+
+predict(linear_model, data.frame(x = c(m1$rescont[, 2], 334)))
+
+
+
+new_rescont_value <- 1200  # replace with your actual new value
+
+# Create a data frame with the new value
+new_data <- data.frame(y = new_rescont_value)
+
+# Use predict to get the predicted concentration
+predicted_concentration <- predict(linear_model, newdata = new_data)
+
+# Print the predicted concentration
+print(predicted_concentration)
+
 ```
 
-## Old code
 
-```{r include=FALSE}
-# library(mdatools)
-# m3 = pca(main_set, 3, center = FALSE, scale = FALSE, info = "Unsupervised PCA model", alpha = 0.005, gamma = 0.0005)
-# plot(m3, show.labels = TRUE)
-# res = predict(m3, test_set)
-# plot(res, show.labels = TRUE)
-# c = categorize(m3, res, 3)
-# names(c) <- rownames(test_set)
-# c
-# plotResiduals(m3,
-#   ncomp = 3,
-#   res = list("train" = m3$res$cal, "new" = res),
-#   norm = TRUE, show.labels = TRUE,
-#   lim.col = c("red", "orange"), lim.lwd = c(2, 2), lim.lty = c(1, 2)
-# )
-# plotResiduals(ncomp = 1, res, show.plot = FALSE, norm = TRUE)
-# print(c)
-# is(m3$res$cal, "ldecomp")
-```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
