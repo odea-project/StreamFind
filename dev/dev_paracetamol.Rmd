@@ -36,11 +36,19 @@ main_dir <- "C:/Users/apoli/Documents/iSoft/Paracetamol"
 
 ms_dir <- paste0(main_dir, "/ms/mzml")
 
+ms_dir_extra <- paste0(main_dir, "/ms/extra/mzml")
+
 ms_files <- list.files(ms_dir, pattern = ".mzML", full.names = TRUE)
+
+ms_files_extra <- list.files(ms_dir_extra, pattern = ".mzML", full.names = TRUE)
 
 raman_dir <- paste0(main_dir, "/raman")
 
+raman_dir_extra <- paste0(main_dir, "/raman/extra")
+
 raman_files <- list.files(raman_dir, pattern = ".asc", full.names = TRUE)
+
+raman_files_extra <- list.files(raman_dir_extra, pattern = ".asc", full.names = TRUE)
 ```
 
 <style>
@@ -253,6 +261,10 @@ raman$run_workflow()
 raman$plot_spectra()
 ```
 
+```{r raman-spectra}
+raman$get_spectra()[1:10, ]
+```
+
 # Fusion
 
 ```{r fusion}
@@ -300,6 +312,38 @@ fig
 ```
 
 # Statistic analysis
+
+```{r extra-data, include=FALSE}
+ms_extra <- MassSpecEngine$new(files = ms_files_extra[c(5:40, 49:60)])
+
+ms_extra$add_replicate_names(
+  c(
+    rep("fiz_e01", 3),
+    rep("fiz_e02", 3),
+    rep("fiz_e03", 3),
+    rep("fiz_e04", 3),
+    rep("fiz_e05", 3),
+    rep("fiz_e06", 3),
+    rep("fiz_e07", 3),
+    rep("fiz_e08", 3),
+    rep("fiz_e09", 3),
+    rep("fiz_e10", 3),
+    rep("fiz_e11", 3),
+    rep("fiz_e12", 3),
+    rep("blank", 12)
+  )
+)
+
+ms_extra$add_blank_names(rep("blank", 48))
+
+ms_extra$load_spectra()
+
+ms_extra$add_settings(ms_workflow_settings)
+
+ms_extra$run_workflow()
+
+ms_extra$plot_spectra()
+```
 
 ## Unsupervised
 
@@ -356,7 +400,7 @@ stat2$classify(test_set)
 stat2$classification_results
 ```
 
-# Raman quantification
+# Quantification with Raman
 
 ```{r ov-raman-conc, include=FALSE}
 ov2 <- ramanQuant$get_overview()[, 1:3]
@@ -407,7 +451,7 @@ mrSpecQuant <- matrix(
 )
 ```
 
-```{r}
+```{r, include=FALSE, eval=FALSE}
 
 ramanQuant$plot_spectra_baseline()
 
