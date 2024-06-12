@@ -129,7 +129,7 @@
       
       names(binKey) <- as.character(unitVal)
       
-      res <- data.table("intensity" = x$intensity, "bin_key" = binKey[as.character(x[[unitsVal]])])
+      res <- data.table::data.table("intensity" = x$intensity, "bin_key" = binKey[as.character(x[[unitsVal]])])
       
       xVals <- colnames(x)
       
@@ -139,7 +139,13 @@
       
       valKeys <- xVals[!xVals %in% unitsVal]
       
-      res <- res[, .(x = mean(x), intensity = mean(intensity)), by = c("bin_key", valKeys), env = list(x = unitsVal)]
+      res[["x"]] <- res[[unitsVal]]
+      
+      res <- res[, .(x = mean(x), intensity = mean(intensity)), by = c("bin_key", valKeys)]
+      
+      res[[unitsVal]] <- res[["x"]]
+      
+      res$x <- NULL
       
       res <- unique(res)
       

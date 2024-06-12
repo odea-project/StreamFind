@@ -4,10 +4,28 @@
     <loc>https://odea-project.github.io/StreamFind/404.html</loc>
   </url>
   <url>
+    <loc>https://odea-project.github.io/StreamFind/articles/articles/demo_ms_raman_fusion_bsa.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/articles/articles/demo_ozonation_project.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/articles/articles/demo_paracetamol.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/articles/articles/framework.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/articles/articles/ms_developer_guide.html</loc>
+  </url>
+  <url>
     <loc>https://odea-project.github.io/StreamFind/articles/demo_ms_raman_fusion_bsa.html</loc>
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/articles/demo_ozonation_project.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/articles/demo_paracetamol.html</loc>
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/articles/framework.html</loc>
@@ -182,6 +200,9 @@
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_load_MSPeakLists_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/Settings_make_model_mcrals_mdatools.html</loc>
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/Settings_make_model_mcrpure_mdatools.html</loc>

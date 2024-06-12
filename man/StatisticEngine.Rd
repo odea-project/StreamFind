@@ -17,6 +17,8 @@ and data row names are used as analyses names.
 
 Note that the classification must be prepared before using the method \code{prepare_classification} and data
 must have the same number of variables as the analyses in the engine.
+
+Note that only the model MCR is valid for quantification and concentrations must be added to analyses.
 }
 \section{Super class}{
 \code{\link[StreamFind:CoreEngine]{StreamFind::CoreEngine}} -> \code{StatisticEngine}
@@ -40,24 +42,29 @@ must have the same number of variables as the analyses in the engine.
 \item \href{#method-StatisticEngine-new}{\code{StatisticEngine$new()}}
 \item \href{#method-StatisticEngine-get_overview}{\code{StatisticEngine$get_overview()}}
 \item \href{#method-StatisticEngine-get_classes}{\code{StatisticEngine$get_classes()}}
+\item \href{#method-StatisticEngine-get_concentrations}{\code{StatisticEngine$get_concentrations()}}
 \item \href{#method-StatisticEngine-get_number_variables}{\code{StatisticEngine$get_number_variables()}}
 \item \href{#method-StatisticEngine-get_model_explained_variance}{\code{StatisticEngine$get_model_explained_variance()}}
 \item \href{#method-StatisticEngine-get_model_scores}{\code{StatisticEngine$get_model_scores()}}
 \item \href{#method-StatisticEngine-get_model_loadings}{\code{StatisticEngine$get_model_loadings()}}
 \item \href{#method-StatisticEngine-get_model_residuals}{\code{StatisticEngine$get_model_residuals()}}
 \item \href{#method-StatisticEngine-get_model_resolved_spectra}{\code{StatisticEngine$get_model_resolved_spectra()}}
+\item \href{#method-StatisticEngine-get_model_contributions}{\code{StatisticEngine$get_model_contributions()}}
 \item \href{#method-StatisticEngine-add_analyses}{\code{StatisticEngine$add_analyses()}}
 \item \href{#method-StatisticEngine-add_data}{\code{StatisticEngine$add_data()}}
 \item \href{#method-StatisticEngine-add_classes}{\code{StatisticEngine$add_classes()}}
+\item \href{#method-StatisticEngine-add_concentrations}{\code{StatisticEngine$add_concentrations()}}
 \item \href{#method-StatisticEngine-make_model}{\code{StatisticEngine$make_model()}}
 \item \href{#method-StatisticEngine-prepare_classification}{\code{StatisticEngine$prepare_classification()}}
 \item \href{#method-StatisticEngine-predict}{\code{StatisticEngine$predict()}}
 \item \href{#method-StatisticEngine-classify}{\code{StatisticEngine$classify()}}
+\item \href{#method-StatisticEngine-quantify}{\code{StatisticEngine$quantify()}}
 \item \href{#method-StatisticEngine-plot_data}{\code{StatisticEngine$plot_data()}}
 \item \href{#method-StatisticEngine-plot_model_scores}{\code{StatisticEngine$plot_model_scores()}}
 \item \href{#method-StatisticEngine-plot_model_residuals}{\code{StatisticEngine$plot_model_residuals()}}
 \item \href{#method-StatisticEngine-plot_model_loadings}{\code{StatisticEngine$plot_model_loadings()}}
 \item \href{#method-StatisticEngine-plot_model_resolved_spectra}{\code{StatisticEngine$plot_model_resolved_spectra()}}
+\item \href{#method-StatisticEngine-plot_model_contributions}{\code{StatisticEngine$plot_model_contributions()}}
 \item \href{#method-StatisticEngine-plot_predicted_distances}{\code{StatisticEngine$plot_predicted_distances()}}
 \item \href{#method-StatisticEngine-processing_methods}{\code{StatisticEngine$processing_methods()}}
 \item \href{#method-StatisticEngine-clone}{\code{StatisticEngine$clone()}}
@@ -176,6 +183,16 @@ Gets the class of each analysis.
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-StatisticEngine-get_concentrations"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-get_concentrations}{}}}
+\subsection{Method \code{get_concentrations()}}{
+Gets the concentration of each analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$get_concentrations()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-StatisticEngine-get_number_variables"></a>}}
 \if{latex}{\out{\hypertarget{method-StatisticEngine-get_number_variables}{}}}
 \subsection{Method \code{get_number_variables()}}{
@@ -257,6 +274,23 @@ Gets model resolved spectra.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-StatisticEngine-get_model_contributions"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-get_model_contributions}{}}}
+\subsection{Method \code{get_model_contributions()}}{
+Gets the model contributions.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$get_model_contributions(pcs = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{pcs}}{Integer vector with the principle components.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-StatisticEngine-add_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-StatisticEngine-add_analyses}{}}}
 \subsection{Method \code{add_analyses()}}{
@@ -307,6 +341,23 @@ Adds classes to the analyses.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{classes}}{A character vector with the classes.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-StatisticEngine-add_concentrations"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-add_concentrations}{}}}
+\subsection{Method \code{add_concentrations()}}{
+Adds concentrations to the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$add_concentrations(concentrations = NA_real_)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{concentrations}}{A numeric vector with the concentrations.}
 }
 \if{html}{\out{</div>}}
 }
@@ -392,6 +443,16 @@ Classifies the data using the classification labels of the analysis.
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-StatisticEngine-quantify"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-quantify}{}}}
+\subsection{Method \code{quantify()}}{
+Evaluates the model for quantification.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$quantify()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-StatisticEngine-plot_data"></a>}}
@@ -547,6 +608,37 @@ Plots model resolved spectra.
 \item{\code{pcs}}{Integer vectors with the principle component to use for categorization.}
 
 \item{\code{original}}{Logical, if TRUE the original data is plotted.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{showText}}{Logical (length 1), set to \code{TRUE} to show the text annotations.}
+
+\item{\code{showLegend}}{Logical (length 1). Set to \code{TRUE} to show legend.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-StatisticEngine-plot_model_contributions"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-plot_model_contributions}{}}}
+\subsection{Method \code{plot_model_contributions()}}{
+Plots model contributions.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_model_contributions(
+  interactive = TRUE,
+  pcs = NULL,
+  title = NULL,
+  showText = TRUE,
+  showLegend = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+
+\item{\code{pcs}}{Integer vectors with the principle component to use for categorization.}
 
 \item{\code{title}}{A string with the title.}
 

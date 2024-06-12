@@ -1,5 +1,5 @@
 ---
-title: 'Evaluation of Wastewater Ozonation with Mass Spectrometry'
+title: 'Evaluation of wastewater ozonation with mass spectrometry'
 author:
   name: Ricardo Cunha
   email: cunha@iuta.de

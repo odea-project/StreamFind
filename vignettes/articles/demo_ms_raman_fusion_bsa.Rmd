@@ -1,7 +1,7 @@
 ---
-title: 'Fusion of Mass Spectrometry and Raman Spectroscopy Data'
+title: 'Comparison of different bovine serum albumin products'
 subtitle: |
-  | Comparison of different bovine serum albumin formulations
+  | Fusion of mass spectrometry and raman spectroscopy data
   | <br>
 author:
   name: Ricardo Cunha
@@ -32,7 +32,9 @@ library(StreamFind)
 
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.align = "center", fig.width = 9, results = "markup", comment = "")
 
-main_dir <- "C:/Users/apoli/Documents/iSoft/BSA_products"
+main_dir <- "E:/iSoft/BSA_products" # StreamFind Workstation
+
+# main_dir <- "C:/Users/apoli/Documents/iSoft/BSA_products" # Ricardo laptop
 
 all_files <- list.files(main_dir, full.names = TRUE)
 
@@ -329,7 +331,7 @@ fig
 
 # Statistic analysis
 
-A statistic analysis is performed with the statisticEngine for evaluation of the differences between the BSA products.
+A statistic analysis is performed with the *StatisticEngine* for evaluation of the differences between the BSA products.
 
 ## PCA
 
@@ -349,7 +351,7 @@ stat$plot_model_scores()
 stat$plot_model_loadings(colorKey = rep(c("MS", "Raman"), c(ncol(mmSpec), ncol(mrSpec))))
 ```
 
-```{r, fig.cap="PCA summary plot using the original mdatools R package."}
+```{r, fig.cap="PCA summary plot using the original mdatools R package.", fig.height=9}
 # the mdatools S3 class model object is obtained via the active binding of the StatisticEngine
 plot(stat$model) # plot method from mdatools
 ```

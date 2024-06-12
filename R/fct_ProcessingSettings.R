@@ -3638,7 +3638,7 @@ Settings_make_model_mcrpure_mdatools <- function(ncomp = NULL,
 #' @export
 #' @noRd
 #'
-validate.Settings_make_model_pca_mdatools <- function(x) {
+validate.Settings_make_model_mcrpure_mdatools <- function(x) {
   all(
     checkmate::test_choice(x$call, "make_model"),
     checkmate::test_choice(x$algorithm, "mcrpure_mdatools"),
@@ -3647,6 +3647,97 @@ validate.Settings_make_model_pca_mdatools <- function(x) {
     checkmate::test_number(x$parameters$offset),
     checkmate::test_integer(x$parameters$exclrows),
     checkmate::test_integer(x$parameters$exclcols),
+    checkmate::test_character(x$parameters$info)
+  )
+}
+
+#' @title Settings_make_model_mcrals_mdatools
+#'
+#' @description Makes a Multivariate Curve Resolution (MCR) model using Alternating Least Squares (ALS) based on the 
+#' R package \pkg{mdatools}.
+#' 
+#' @param ncomp Integer (length 1) with the number of components to be calculated.
+#' @param cont.constraints List with constraints to be applied to contributions (see details in \link[mdatools]{mcrals}).
+#' @param spec.constraints List with constraints to be applied to spectra (see details in \link[mdatools]{mcrals}).
+#' @param cont.solver Character (length 1) with the name of the to solve the pure components contributions (see details 
+#' in \link[mdatools]{mcrals}).
+#' @param spec.solver Character (length 1) with the name of the function to solve the pure components spectra (see 
+#' details in \link[mdatools]{mcrals}).
+#' @param exclrows Integer vector with the row indices to be excluded.
+#' @param exclcols Integer vector with the column indices to be excluded.
+#' @param verbose Logical (length 1) indicating if the function should be verbose.
+#' @param max.niter Integer (length 1) with the maximum number of iterations.
+#' @param tol Numeric (length 1) with the tolerance for convergence.
+#' @param info Character (length 1) with additional information.
+#' 
+#' @note The functionality to define the initial pure components spectra as well as forcing concentration and spectra 
+#' values are not included in this integration of \link[mdatools]{mcrals}.
+#' 
+#' @references
+#' \insertRef{mdatools01}{StreamFind}
+#' 
+#' \insertRef{mdatools02}{StreamFind}
+#'
+#' @return A ProcessingSettings S3 class object with subclass Settings_make_model_mcrals_mdatools.
+#'
+#' @export
+#'
+Settings_make_model_mcrals_mdatools <- function(ncomp = NULL,
+                                                cont.constraints = list(),
+                                                spec.constraints = list(),
+                                                cont.solver = "mcrals.nnls",
+                                                spec.solver = "mcrals.nnls",
+                                                exclrows = NULL,
+                                                exclcols = NULL,
+                                                verbose = FALSE,
+                                                max.niter = 100,
+                                                tol = 10^-6,
+                                                info = "") {
+  
+  settings <- list(
+    call = "make_model",
+    algorithm = "mcrals_mdatools",
+    parameters = list(
+      ncomp = ncomp,
+      cont.constraints = cont.constraints,
+      spec.constraints = spec.constraints,
+      cont.solver = cont.solver,
+      spec.solver = spec.solver,
+      exclrows = exclrows,
+      exclcols = exclcols,
+      verbose = verbose,
+      max.niter = max.niter,
+      tol = tol,
+      info = info
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "mdatools",
+    developer = "Sergey Kucheryavskiy",
+    contact = "svk@bio.aau.dk",
+    link = "https://github.com/svkucheryavski/mdatools",
+    doi = "10.1016/j.chemolab.2020.103937"
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @export
+#' @noRd
+#'
+validate.Settings_make_model_mcrals_mdatools <- function(x) {
+  all(
+    checkmate::test_choice(x$call, "make_model"),
+    checkmate::test_choice(x$algorithm, "mcrals_mdatools"),
+    checkmate::test_number(x$parameters$ncomp),
+    checkmate::test_list(x$parameters$cont.constraints),
+    checkmate::test_list(x$parameters$spec.constraints),
+    checkmate::test_choice(x$parameters$cont.solver, c("mcrals.nnls", "mcrals.ols")),
+    checkmate::test_choice(x$parameters$spec.solver, c("mcrals.nnls", "mcrals.ols")),
+    checkmate::test_integer(x$parameters$exclrows),
+    checkmate::test_integer(x$parameters$exclcols),
+    checkmate::test_logical(x$parameters$verbose, max.len = 1),
+    checkmate::test_number(x$parameters$max.niter),
+    checkmate::test_number(x$parameters$tol),
     checkmate::test_character(x$parameters$info)
   )
 }

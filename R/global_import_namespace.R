@@ -20,7 +20,7 @@
 #'
 #' @importFrom jsonlite toJSON fromJSON
 #'
-#' @importFrom stats sd cor coef nls var
+#' @importFrom stats sd cor coef nls var runif lm
 #'
 #' @importFrom graphics axis legend lines points polygon rect text
 #'

@@ -1,13 +1,14 @@
-pandoc: 3.1.11
+pandoc: 3.1.2
 pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   demo_ms_raman_fusion_bsa: demo_ms_raman_fusion_bsa.html
   demo_ozonation_project: demo_ozonation_project.html
+  demo_paracetamol: demo_paracetamol.html
   framework: framework.html
   ms_developer_guide: ms_developer_guide.html
   StreamFind: StreamFind.html
-last_built: 2024-06-07T14:48Z
+last_built: 2024-06-12T06:12Z
 urls:
   reference: https://odea-project.github.io/StreamFind/reference
   article: https://odea-project.github.io/StreamFind/articles

@@ -79,6 +79,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-get_spectra_tic}{\code{MassSpecEngine$get_spectra_tic()}}
 \item \href{#method-MassSpecEngine-get_spectra_bpc}{\code{MassSpecEngine$get_spectra_bpc()}}
 \item \href{#method-MassSpecEngine-get_spectra}{\code{MassSpecEngine$get_spectra()}}
+\item \href{#method-MassSpecEngine-get_spectra_matrix}{\code{MassSpecEngine$get_spectra_matrix()}}
 \item \href{#method-MassSpecEngine-get_spectra_eic}{\code{MassSpecEngine$get_spectra_eic()}}
 \item \href{#method-MassSpecEngine-get_spectra_ms1}{\code{MassSpecEngine$get_spectra_ms1()}}
 \item \href{#method-MassSpecEngine-get_spectra_ms2}{\code{MassSpecEngine$get_spectra_ms2()}}
@@ -665,6 +666,23 @@ data (i.e., MS2 data).}
 \item{\code{raw_spectra}}{Logical of length one. Set to \code{TRUE} for parsing raw spectra not spectra results/processed.}
 
 \item{\code{loaded_spectra}}{Logical of length one. Set to \code{TRUE} for parsing loaded spectra not raw data files.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-get_spectra_matrix"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_matrix}{}}}
+\subsection{Method \code{get_spectra_matrix()}}{
+Gets a matrix with spectra from analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_matrix(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }

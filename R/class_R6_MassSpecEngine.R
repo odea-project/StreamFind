@@ -1506,6 +1506,35 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         data.table()
       }
     },
+    
+    #' @description Gets a matrix with spectra from analyses.
+    #' 
+    get_spectra_matrix = function(analyses = NULL) {
+      
+      analyses <- private$.check_analyses_argument(analyses)
+      
+      mat <- self$get_spectra(analyses)
+      
+      if (nrow(mat) == 0) return(matrix())
+      
+      mat <- mat[order(mat$analysis), ]
+      
+      if ("bins" %in% colnames(mat)) {
+        col_key <- unique(mat$bins)
+      } else if ("drift" %in% colnames(mat)) {
+        col_key <- unique(paste0("r", mat$rt, "_m", mat$mz, "_d", mat$drift, "_p", mat$polarity, "_l", mat$level))
+      } else {
+        col_key <- unique(paste0("r", mat$rt, "_m", mat$mz, "_p", mat$polarity, "_l", mat$level))
+      }
+      
+      matrix(
+        mat$intensity,
+        nrow = length(unique(mat$analysis)),
+        ncol = length(col_key),
+        byrow = TRUE,
+        dimnames = list(as.character(unique(mat$analysis)), as.character(col_key))
+      )
+    },
 
     #' @description Gets spectra extract ion chromatograms (EIC) from the analyses based on targets as a data.table.
     #'
