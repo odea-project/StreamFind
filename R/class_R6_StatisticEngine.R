@@ -182,6 +182,18 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       }
     },
     
+    #' @description Gets the concentration of each analysis.
+    #' 
+    get_concentrations = function() {
+      if (length(private$.analyses) > 0) {
+        concentrations <- vapply(private$.analyses, function(x) x$concentration, NA_real_)
+        names(concentrations) <- self$get_analysis_names()
+        concentrations
+      } else {
+        NULL
+      }
+    },
+    
     #' @description Gets the number of variables.
     #' 
     get_number_variables = function() {
@@ -341,6 +353,36 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       dt
     },
     
+    #' @description Gets the model contributions.
+    #' 
+    #' @param pcs Integer vector with the principle components.
+    #' 
+    get_model_contributions = function(pcs = NULL) {
+      
+      m <- self$model
+      
+      if (is.null(m)) {
+        warning("Model not found! Not done.")
+        return(NULL)
+      }
+      
+      dt <- m$rescont
+      
+      if (!is.null(pcs)) {
+        checkmate::assert_integerish(pc)
+        dt <- dt[pcs, , drop = FALSE]
+      }
+      
+      if (is.null(dt)) {
+        warning("Contributions not found! Not done.")
+        return(NULL)
+      }
+      
+      rownames(dt) <- self$get_analysis_names()
+      
+      dt
+    },
+    
     ## ___ add -----
     
     #' @description Adds analyses. Note that when adding new analyses, any existing results are removed.
@@ -427,6 +469,32 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       }, private$.analyses, classes)
       
       private$.register("added", "analyses", "classes", paste(unique(classes), collapse = "; "))
+      
+      invisible(self)
+    },
+    
+    #' @description Adds concentrations to the analyses.
+    #' 
+    #' @param concentrations A numeric vector with the concentrations.
+    #' 
+    add_concentrations = function(concentrations = NA_real_) {
+      
+      if (!is.numeric(concentrations)) {
+        warning("The concentrations must be a numeric vector! Not done.")
+        return(invisible())
+      }
+      
+      if (length(concentrations) != self$get_number_analyses()) {
+        warning("The number of concentrations must be equal to the number of analyses! Not done.")
+        return(invisible())
+      }
+      
+      private$.analyses <- Map(function(x, y) {
+        x$concentration <- y
+        x
+      }, private$.analyses, concentrations)
+      
+      private$.register("added", "analyses", "concentrations", paste(unique(concentrations), collapse = "; "))
       
       invisible(self)
     },
@@ -567,6 +635,70 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       invisible(self)
     },
     
+    #' @description Evaluates the model for quantification.
+    #' 
+    #' @note Note that only the model MCR is valid for quantification and concentrations must be added to analyses.
+    #' 
+    quantify = function() {
+      
+      if (is.null(self$model)) {
+        warning("Model not found! Not done.")
+        return(invisible())
+      }
+      
+      if (is(self$model) != "mcr") {
+        warning("Model must be MCR for quantification! Not done.")
+        return(invisible())
+      }
+      
+      if (all(is.na(self$get_concentrations()))) {
+        warning("Concentrations must be added to the analyses for quantification! Not done.")
+        return(invisible())
+      }
+      
+      concentrations <- self$get_concentrations()
+      
+      contributions <- self$get_model_contributions()
+      
+      res <- list()
+      
+      for (i in seq_len(ncol(contributions))) {
+        
+        c_i <- concentrations
+        
+        x <- c_i[!is.na(c_i)]
+        
+        y <- stat3$get_model_contributions()[, i][!is.na(c_i)]
+        
+        linear_model <- lm(x  ~  y)
+        
+        summary_linear_model <- summary(linear_model)
+        
+        r_squared <- summary_linear_model$r.squared
+        
+        to_quantify <- is.na(c_i)
+        
+        for (j in seq_len(length(c_i))) {
+          
+          if (to_quantify[j]) {
+            mcr_val <- data.frame(y = contributions[, i][j])
+            c_i[j] <- predict(linear_model, newdata = mcr_val)
+          }
+        }
+        
+        res[[colnames(contributions)[i]]] <- list(
+          "r_squared" = r_squared,
+          "quantification" = data.table::data.table(
+            "analysis" = rownames(contributions),
+            "mcr_value" = contributions[, i],
+            "concentration" = c_i
+          )
+        )
+      }
+      
+      res
+    },
+    
     ## ___ plot -----
     
     #' @description Plots the raw data in analyses.
@@ -590,7 +722,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       
       if (!interactive) {
         
-        
+        NULL
         
       } else {
         
@@ -916,6 +1048,60 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
             mode = "markers+lines",
             line = list(size = 0.3, color = cl[i]),
             marker = list(size = 2, color = cl[i]),
+            name = names(cl[i]),
+            legendgroup = names(cl[i]),
+            showlegend = TRUE
+          )
+        }
+        
+        xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"))
+        yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
+        
+        fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
+        
+        fig
+      }
+    },
+    
+    #' @description Plots model contributions.
+    #' 
+    #' @param pcs Integer vectors with the principle component to use for categorization.
+    #' 
+    plot_model_contributions = function(interactive = TRUE,
+                                        pcs = NULL,
+                                        title = NULL,
+                                        showText = TRUE,
+                                        showLegend = TRUE) {
+      
+      dt <- self$get_model_contributions(pcs)
+      
+      if (is.null(dt)) return(NULL)
+      
+      if (!interactive) {
+        
+        NULL
+        
+      } else {
+        
+        cl <- .get_colors(colnames(dt))
+        
+        fig <- plot_ly()
+        
+        x = rownames(dt)
+        
+        xLab = "Analysis Index"
+        
+        yLab = "Contribution"
+        
+        for (i in seq_len(length(cl))) {
+          
+          fig <- fig %>% add_trace(
+            x = x,
+            y = dt[, i],
+            type = "scatter",
+            mode = "markers+lines",
+            line = list(size = 0.3, color = cl[i], dash = 'dash'),
+            marker = list(size = 5, color = cl[i]),
             name = names(cl[i]),
             legendgroup = names(cl[i]),
             showlegend = TRUE

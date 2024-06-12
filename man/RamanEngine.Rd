@@ -24,6 +24,7 @@ The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecti
 \item \href{#method-RamanEngine-new}{\code{RamanEngine$new()}}
 \item \href{#method-RamanEngine-get_overview}{\code{RamanEngine$get_overview()}}
 \item \href{#method-RamanEngine-get_spectra}{\code{RamanEngine$get_spectra()}}
+\item \href{#method-RamanEngine-get_spectra_matrix}{\code{RamanEngine$get_spectra_matrix()}}
 \item \href{#method-RamanEngine-subset_analyses}{\code{RamanEngine$subset_analyses()}}
 \item \href{#method-RamanEngine-add_files}{\code{RamanEngine$add_files()}}
 \item \href{#method-RamanEngine-remove_analyses}{\code{RamanEngine$remove_analyses()}}
@@ -178,6 +179,23 @@ Gets a \code{data.table} with spectra from analyses.
 \item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
 
 \item{\code{raw_spectra}}{Logical of length one. Set to \code{TRUE} for parsing raw spectra not spectra results/processed.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-get_spectra_matrix"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-get_spectra_matrix}{}}}
+\subsection{Method \code{get_spectra_matrix()}}{
+Gets a matrix with spectra from analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$get_spectra_matrix(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
