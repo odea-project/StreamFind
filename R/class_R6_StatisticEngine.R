@@ -682,7 +682,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
           
           if (to_quantify[j]) {
             mcr_val <- data.frame(y = contributions[, i][j])
-            c_i[j] <- predict(linear_model, newdata = mcr_val)
+            c_i[j] <- stats::predict(linear_model, newdata = mcr_val)
           }
         }
         
@@ -746,6 +746,50 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
         }
         
         xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"))
+        yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
+        
+        fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
+        
+        fig
+      }
+    },
+    
+    #' @description Plots the model explained cumulative variance.
+    #' 
+    plot_model_explained_variance = function(interactive = TRUE, xLab = NULL, yLab = NULL, title = NULL) {
+      
+      variance <- self$get_model_explained_variance()
+      
+      if (is.null(variance)) {
+        warning("Explained model or variance not found!")
+        return(NULL)
+      }
+      
+      variance <- cumsum(variance)
+      
+      if (is.null(xLab)) xLab <- "Principle Components"
+      
+      if (is.null(yLab)) yLab <- "Explained Variance (%)"
+      
+      if (!interactive) {
+        plot(variance, type = "b", xlab = xLab, ylab = yLab, main = "Explained Variance")
+        
+      } else {
+        
+        fig <- plot_ly()
+        
+        fig <- fig %>% add_trace(
+          x = seq_along(variance),
+          y = variance,
+          type = "scatter",
+          mode = "lines+markers",
+          line = list(width = 2),
+          marker = list(size = 10),
+          name = "Explained Variance",
+          showlegend = TRUE
+        )
+        
+        xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"), dtick = 1)
         yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
         
         fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
