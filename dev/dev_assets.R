@@ -20,6 +20,7 @@ devtools::load_all() #Ctrl+Shift+L
 # Lists TODOs
 todor::todor()
 
+zlibbioc::pkgconfig()
 
 # Code lines -------------------------------------------------------------------
 

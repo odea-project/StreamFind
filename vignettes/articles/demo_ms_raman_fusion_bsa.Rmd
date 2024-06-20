@@ -32,9 +32,8 @@ library(StreamFind)
 
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.align = "center", fig.width = 9, results = "markup", comment = "")
 
-main_dir <- "E:/iSoft/BSA_products" # StreamFind Workstation
-
-# main_dir <- "C:/Users/apoli/Documents/iSoft/BSA_products" # Ricardo laptop
+#main_dir <- "E:/iSoft/BSA_products" # StreamFind Workstation
+main_dir <- "C:/Users/apoli/Documents/iSoft/BSA_products" # Ricardo laptop
 
 all_files <- list.files(main_dir, full.names = TRUE)
 

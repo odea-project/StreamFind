@@ -492,13 +492,24 @@ Plots the raw data in analyses.
 \subsection{Method \code{plot_model_explained_variance()}}{
 Plots the model explained cumulative variance.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_model_explained_variance(interactive = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_model_explained_variance(
+  interactive = TRUE,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
+\item{\code{title}}{A string with the title.}
 }
 \if{html}{\out{</div>}}
 }
