@@ -60,6 +60,7 @@ Note that only the model MCR is valid for quantification and concentrations must
 \item \href{#method-StatisticEngine-classify}{\code{StatisticEngine$classify()}}
 \item \href{#method-StatisticEngine-quantify}{\code{StatisticEngine$quantify()}}
 \item \href{#method-StatisticEngine-plot_data}{\code{StatisticEngine$plot_data()}}
+\item \href{#method-StatisticEngine-plot_model_explained_variance}{\code{StatisticEngine$plot_model_explained_variance()}}
 \item \href{#method-StatisticEngine-plot_model_scores}{\code{StatisticEngine$plot_model_scores()}}
 \item \href{#method-StatisticEngine-plot_model_residuals}{\code{StatisticEngine$plot_model_residuals()}}
 \item \href{#method-StatisticEngine-plot_model_loadings}{\code{StatisticEngine$plot_model_loadings()}}
@@ -474,6 +475,34 @@ Plots the raw data in analyses.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
+\item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
+\item{\code{title}}{A string with the title.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-StatisticEngine-plot_model_explained_variance"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-plot_model_explained_variance}{}}}
+\subsection{Method \code{plot_model_explained_variance()}}{
+Plots the model explained cumulative variance.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_model_explained_variance(
+  interactive = TRUE,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
 \item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
 
 \item{\code{xLab}}{A string with the title for the x axis.}

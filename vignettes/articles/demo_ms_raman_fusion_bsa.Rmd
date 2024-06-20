@@ -32,9 +32,8 @@ library(StreamFind)
 
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.align = "center", fig.width = 9, results = "markup", comment = "")
 
-main_dir <- "E:/iSoft/BSA_products" # StreamFind Workstation
-
-# main_dir <- "C:/Users/apoli/Documents/iSoft/BSA_products" # Ricardo laptop
+#main_dir <- "E:/iSoft/BSA_products" # StreamFind Workstation
+main_dir <- "C:/Users/apoli/Documents/iSoft/BSA_products" # Ricardo laptop
 
 all_files <- list.files(main_dir, full.names = TRUE)
 
@@ -214,16 +213,16 @@ The four different BSA products were measured using an online coupling of size e
 
 ```{r eval=FALSE}
 # Engine with all asc files for each spectrum and each BSA product
-#raman <- RamanEngine$new(raman_files)
+# raman <- RamanEngine$new(raman_files)
 
 # Folder names of each BSA product
-#base_dirs <- basename(dirname(raman_files))
+# base_dirs <- basename(dirname(raman_files))
 
 # The folder name is used as replicate name, which is also used as file name for the unified data file
-#raman$add_replicate_names(base_dirs)
+# raman$add_replicate_names(base_dirs)
 
 # The spectra are merged into a time series for each BSA product
-#raman$merge_spectra_time_series()
+# raman$merge_spectra_time_series()
 ```
 
 A new engine is created with the unified file for each BSA product and then plotted as a time series.
@@ -249,16 +248,17 @@ As for MS data, the workflow for Raman data is also assembled using an ordered l
 
 ```{r}
 raman_workflow_settings <- list(
-  Settings_bin_spectra_StreamFind(unitsVal = "rt", unitsNumber = 5),
-  Settings_normalize_spectra_minmax(),
+  Settings_bin_spectra_StreamFind(unitsVal = "rt", unitsNumber = 19),
+  # Settings_normalize_spectra_minmax(),
   Settings_subtract_spectra_section_StreamFind(sectionVal = "rt", sectionWindow = c(0, 3)), # time window
   Settings_delete_spectra_section_StreamFind(list("shift" = c(-100, 315))),
-  Settings_smooth_spectra_savgol(fl = 9, forder = 2, dorder = 0),
+  Settings_smooth_spectra_savgol(fl = 11, forder = 2, dorder = 0),
   Settings_delete_spectra_section_StreamFind(list("shift" = c(315, 330))),
-  Settings_correct_spectra_baseline_baseline(method = "als", args = list(lambda = 4, p = 0.1, maxit = 10)),
-  Settings_delete_spectra_section_StreamFind(list("shift" = c(1800, 2600))),
+  Settings_delete_spectra_section_StreamFind(list("shift" = c(2300, 2600))),
+  Settings_correct_spectra_baseline_airpls(lambda = 60, differences = 1),
+  Settings_correct_spectra_baseline_baseline(method = "als", args = list(lambda = 3, p = 0.015, maxit = 10)),
   Settings_delete_spectra_section_StreamFind(list("rt" = c(0, 5.5))),
-  Settings_delete_spectra_section_StreamFind(list("rt" = c(7, 11))),
+  Settings_delete_spectra_section_StreamFind(list("rt" = c(8, 11))),
   Settings_normalize_spectra_minmax(),
   Settings_normalize_spectra_blockweight()
 )
