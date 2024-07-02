@@ -540,7 +540,7 @@ A data.table.
 \subsection{Method \code{get_spectra_tic()}}{
 Gets the total ion chromatogram (TIC) of each analysis.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_tic(analyses = NULL, levels = c(1, 2))}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_tic(analyses = NULL, levels = c(1, 2), rt = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -549,6 +549,8 @@ Gets the total ion chromatogram (TIC) of each analysis.
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{levels}}{Integer vector with the levels of MS data.}
+
+\item{\code{rt}}{Numeric (length 2). The retention time range to filter the TIC.}
 }
 \if{html}{\out{</div>}}
 }
@@ -562,7 +564,7 @@ A data.table with the TIC chromatogram.
 \subsection{Method \code{get_spectra_bpc()}}{
 Gets the base peak chromatogram (BPC) of each analysis.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_bpc(analyses = NULL, levels = c(1, 2))}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_bpc(analyses = NULL, levels = c(1, 2), rt = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -571,6 +573,8 @@ Gets the base peak chromatogram (BPC) of each analysis.
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{levels}}{Integer vector with the levels of MS data.}
+
+\item{\code{rt}}{Numeric (length 2). The retention time range to filter the BPC.}
 }
 \if{html}{\out{</div>}}
 }
@@ -3000,6 +3004,7 @@ Plots the spectra total ion chromatogram (TIC) of each analysis.
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_tic(
   analyses = NULL,
   levels = c(1, 2),
+  rt = NULL,
   title = NULL,
   colorBy = "analyses",
   legendNames = NULL,
@@ -3017,6 +3022,10 @@ Plots the spectra total ion chromatogram (TIC) of each analysis.
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{levels}}{Integer vector with the levels of MS data.}
+
+\item{\code{rt}}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
 
 \item{\code{title}}{A string with the title.}
 
@@ -3048,6 +3057,7 @@ Plots the spectra base peak chromatogram (BPC) of each analysis.
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_bpc(
   analyses = NULL,
   levels = c(1, 2),
+  rt = NULL,
   title = NULL,
   colorBy = "analyses",
   legendNames = NULL,
@@ -3065,6 +3075,10 @@ Plots the spectra base peak chromatogram (BPC) of each analysis.
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{levels}}{Integer vector with the levels of MS data.}
+
+\item{\code{rt}}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
 
 \item{\code{title}}{A string with the title.}
 

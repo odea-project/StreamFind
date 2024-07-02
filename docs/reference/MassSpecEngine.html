@@ -636,7 +636,7 @@ algorithm and parameters to be transformed and added as ProcessingSettings objec
 <h3 id="method-get-spectra-tic-">Method <code>get_spectra_tic()</code><a class="anchor" aria-label="anchor" href="#method-get-spectra-tic-"></a></h3>
 <p>Gets the total ion chromatogram (TIC) of each analysis.</p><div class="section">
 <h4 id="usage-14">Usage<a class="anchor" aria-label="anchor" href="#usage-14"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">get_spectra_tic</span><span class="op">(</span>analyses <span class="op">=</span> <span class="cn">NULL</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">get_spectra_tic</span><span class="op">(</span>analyses <span class="op">=</span> <span class="cn">NULL</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, rt <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -647,6 +647,10 @@ algorithm and parameters to be transformed and added as ProcessingSettings objec
 
 <dt><code>levels</code></dt>
 <dd><p>Integer vector with the levels of MS data.</p></dd>
+
+
+<dt><code>rt</code></dt>
+<dd><p>Numeric (length 2). The retention time range to filter the TIC.</p></dd>
 
 
 </dl><p></p></div>
@@ -660,7 +664,7 @@ algorithm and parameters to be transformed and added as ProcessingSettings objec
 <h3 id="method-get-spectra-bpc-">Method <code>get_spectra_bpc()</code><a class="anchor" aria-label="anchor" href="#method-get-spectra-bpc-"></a></h3>
 <p>Gets the base peak chromatogram (BPC) of each analysis.</p><div class="section">
 <h4 id="usage-15">Usage<a class="anchor" aria-label="anchor" href="#usage-15"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">get_spectra_bpc</span><span class="op">(</span>analyses <span class="op">=</span> <span class="cn">NULL</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">get_spectra_bpc</span><span class="op">(</span>analyses <span class="op">=</span> <span class="cn">NULL</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, rt <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -671,6 +675,10 @@ algorithm and parameters to be transformed and added as ProcessingSettings objec
 
 <dt><code>levels</code></dt>
 <dd><p>Integer vector with the levels of MS data.</p></dd>
+
+
+<dt><code>rt</code></dt>
+<dd><p>Numeric (length 2). The retention time range to filter the BPC.</p></dd>
 
 
 </dl><p></p></div>
@@ -3646,6 +3654,7 @@ Mixed use (e.g. <code>analyses+polarities</code>) is also possible.</p></dd>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">plot_spectra_tic</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>  rt <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  colorBy <span class="op">=</span> <span class="st">"analyses"</span>,</span>
 <span>  legendNames <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -3665,6 +3674,12 @@ Mixed use (e.g. <code>analyses+polarities</code>) is also possible.</p></dd>
 
 <dt><code>levels</code></dt>
 <dd><p>Integer vector with the levels of MS data.</p></dd>
+
+
+<dt><code>rt</code></dt>
+<dd><p>A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).</p></dd>
 
 
 <dt><code>title</code></dt>
@@ -3711,6 +3726,7 @@ the added targets as legend of the plot.</p></dd>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">plot_spectra_bpc</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>  rt <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  colorBy <span class="op">=</span> <span class="st">"analyses"</span>,</span>
 <span>  legendNames <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -3730,6 +3746,12 @@ the added targets as legend of the plot.</p></dd>
 
 <dt><code>levels</code></dt>
 <dd><p>Integer vector with the levels of MS data.</p></dd>
+
+
+<dt><code>rt</code></dt>
+<dd><p>A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).</p></dd>
 
 
 <dt><code>title</code></dt>
