@@ -1169,10 +1169,12 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     #' @description Gets the total ion chromatogram (TIC) of each analysis.
+    #' 
+    #' @param rt Numeric (length 2). The retention time range to filter the TIC.
     #'
     #' @return A data.table with the TIC chromatogram.
     #'
-    get_spectra_tic = function(analyses = NULL, levels = c(1, 2)) {
+    get_spectra_tic = function(analyses = NULL, levels = c(1, 2), rt = NULL) {
 
       analyses <- private$.check_analyses_argument(analyses)
 
@@ -1190,15 +1192,25 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       tic <- rbindlist(tic, idcol = "analysis", fill = TRUE)
 
       tic <- tic[tic$level %in% levels, ]
+      
+      if (!is.null(rt)) {
+        if (length(rt) == 2 && is.numeric(rt)) {
+          rt <- sort(rt)
+          sel <- tic$rt >= rt[1] & tic$rt <= rt[2]
+          tic <- tic[sel, ]
+        }
+      }
 
       tic
     },
 
     #' @description Gets the base peak chromatogram (BPC) of each analysis.
+    #' 
+    #' @param rt Numeric (length 2). The retention time range to filter the BPC.
     #'
     #' @return A character vector.
     #'
-    get_spectra_bpc = function(analyses = NULL, levels = c(1, 2)) {
+    get_spectra_bpc = function(analyses = NULL, levels = c(1, 2), rt = NULL) {
       
       analyses <- private$.check_analyses_argument(analyses)
 
@@ -1217,6 +1229,14 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       bpc <- rbindlist(bpc, idcol = "analysis", fill = TRUE)
 
       bpc <- bpc[bpc$level %in% levels, ]
+      
+      if (!is.null(rt)) {
+        if (length(rt) == 2 && is.numeric(rt)) {
+          rt <- sort(rt)
+          sel <- bpc$rt >= rt[1] & bpc$rt <= rt[2]
+          bpc <- bpc[sel, ]
+        }
+      }
 
       bpc
     },
@@ -4886,6 +4906,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     plot_spectra_tic = function(analyses = NULL,
                                 levels = c(1, 2),
+                                rt = NULL,
                                 title = NULL,
                                 colorBy = "analyses",
                                 legendNames = NULL,
@@ -4895,7 +4916,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 cex = 0.6,
                                 interactive = TRUE) {
 
-      tic <- self$get_spectra_tic(analyses, levels)
+      tic <- self$get_spectra_tic(analyses, levels, rt)
 
       if (nrow(tic) == 0) {
         message("\U2717 TIC not found for the analyses!")
@@ -4919,6 +4940,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     plot_spectra_bpc = function(analyses = NULL,
                                 levels = c(1, 2),
+                                rt = NULL,
                                 title = NULL,
                                 colorBy = "analyses",
                                 legendNames = NULL,
@@ -4928,7 +4950,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 cex = 0.6,
                                 interactive = TRUE) {
 
-      bpc <- self$get_spectra_bpc(analyses, levels)
+      bpc <- self$get_spectra_bpc(analyses, levels, rt)
 
       if (nrow(bpc) == 0) {
         message("\U2717 BPC not found for the analyses!")
