@@ -1,5 +1,8 @@
+library(StreamFind)
+library(StreamFindData)
+
 # resources --------------------------------------------------------------------
-## files -----------------------------------------------------------------------
+## files -------------------------------------------------------x----------------
 all_ms_files <- StreamFindData::get_ms_file_paths()
 mrm_files <- all_ms_files[grepl("mrm", all_ms_files)]
 ms_files <- all_ms_files[grepl("influent|blank", all_ms_files)]
