@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  streamfind:
+    build: .
+    ports:
+      - "3838:3838"
+    volumes:
+      - .:/app
+    container_name: streamfind
