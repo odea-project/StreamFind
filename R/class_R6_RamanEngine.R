@@ -466,9 +466,9 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #' 
     merge_spectra_time_series = function(settings) {
       
-      if (missing(settings)) settings <- Settings_merge_spectra_time_series_StreamFind()
+      if (missing(settings)) settings <- RamanSettings_MergeSpectraTimeSeries_StreamFind()
       
-      .dispatch_process_method("merge_spectra_time_series", settings, self, private)
+      .dispatch_process_method("Raman", "MergeSpectraTimeSeries", settings, self, private)
       
       invisible(self)
     },
@@ -479,9 +479,9 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #' 
     average_spectra = function(settings) {
       
-      if (missing(settings)) settings <- Settings_average_spectra_StreamFind()
+      if (missing(settings)) settings <- RamanSettings_AverageSpectra_StreamFind()
       
-      .dispatch_process_method("average_spectra", settings, self, private)
+      .dispatch_process_method("Raman", "AverageSpectra", settings, self, private)
       
       invisible(self)
     },
@@ -492,9 +492,9 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #' 
     subtract_blank_spectra = function(settings) {
       
-      if (missing(settings)) settings <- Settings_subtract_blank_spectra_StreamFind()
+      if (missing(settings)) settings <- RamanSettings_SubtractBlankSpectra_StreamFind()
       
-      .dispatch_process_method("subtract_blank_spectra", settings, self, private)
+      .dispatch_process_method("Raman", "SubtractBlankSpectra", settings, self, private)
       
       invisible(self)
     },
@@ -505,9 +505,9 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #' 
     correct_spectra_baseline = function(settings) {
       
-      if (missing(settings)) settings <- Settings_correct_spectra_baseline_airpls()
+      if (missing(settings)) settings <- RamanSettings_CorrectSpectraBaseline_airpls()
       
-      .dispatch_process_method("correct_spectra_baseline", settings, self, private)
+      .dispatch_process_method("Raman", "CorrectSpectraBaseline", settings, self, private)
       
       invisible(self)
     },
@@ -518,9 +518,9 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #' 
     bin_spectra = function(settings) {
       
-      if (missing(settings)) settings <- Settings_bin_spectra_StreamFind()
+      if (missing(settings)) settings <- RamanSettings_BinSpectra_StreamFind()
       
-      .dispatch_process_method("bin_spectra", settings, self, private) 
+      .dispatch_process_method("Raman", "BinSpectra", settings, self, private)
       
       invisible(self)
     },
@@ -531,9 +531,9 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #' 
     subtract_spectra_section = function(settings) {
       
-      if (missing(settings)) settings <- Settings_subtract_spectra_section_StreamFind()
+      if (missing(settings)) settings <- RamanSettings_SubtractSpectraSection_StreamFind()
       
-      .dispatch_process_method("subtract_spectra_section", settings, self, private)
+      .dispatch_process_method("Raman", "SubtractSpectraSection", settings, self, private)
       
       invisible(self)
     },
@@ -544,9 +544,9 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #' 
     delete_spectra_section = function(settings) {
       
-      if (missing(settings)) settings <- Settings_subtract_spectra_section_StreamFind()
+      if (missing(settings)) settings <- RamanSettings_DeleteSpectraSection_StreamFind()
       
-      .dispatch_process_method("delete_spectra_section", settings, self, private)
+      .dispatch_process_method("Raman", "DeleteSpectraSection", settings, self, private)
       
       invisible(self)
     },
@@ -557,9 +557,9 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #' 
     smooth_spectra = function(settings) {
       
-      if (missing(settings)) settings <- Settings_smooth_spectra_movingaverage()
+      if (missing(settings)) settings <- RamanSettings_SmoothSpectra_movingaverage()
       
-      .dispatch_process_method("smooth_spectra", settings, self, private)
+      .dispatch_process_method("Raman", "SmoothSpectra", settings, self, private)
       
       invisible(self)
     },
@@ -570,9 +570,9 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #' 
     normalize_spectra = function(settings) {
       
-      if (missing(settings)) settings <- Settings_normalize_spectra_StreamFind()
+      if (missing(settings)) settings <- RamanSettings_NormalizeSpectra_StreamFind()
       
-      .dispatch_process_method("normalize_spectra", settings, self, private)
+      .dispatch_process_method("Raman", "NormalizeSpectra", settings, self, private)
       
       invisible(self)
     },
@@ -906,31 +906,17 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #' @description A data.table with available data processing methods.
     #'
     processing_methods = function() {
-      
-      data.table(
-        name = c(
-          "merge_spectra_time_series",
-          "average_spectra",
-          "subtract_blank_spectra",
-          "correct_spectra_baseline",
-          "bin_spectra",
-          "subtract_spectra_section",
-          "delete_spectra_section",
-          "smooth_spectra",
-          "normalize_spectra"
-        ),
-        max = c(
-          1,
-          1,
-          1,
-          1,
-          1,
-          1,
-          Inf,
-          Inf,
-          Inf
-        )
-      )
+      ps <- list()
+      ps[["MergeSpectraTimeSeries"]] <- 1
+      ps[["AverageSpectra"]] <- 1
+      ps[["SubtractBlankSpectra"]] <- 1
+      ps[["CorrectSpectraBaseline"]] <- 1
+      ps[["BinSpectra"]] <- 1
+      ps[["SubtractSpectraSection"]] <- 1
+      ps[["DeleteSpectraSection"]] <- Inf
+      ps[["SmoothSpectra"]] <- Inf
+      ps[["NormalizeSpectra"]] <- Inf
+      data.table(name = names(ps), max = unlist(ps))
     }
   )
 )

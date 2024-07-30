@@ -116,15 +116,16 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     # Extracts and validates ProcessingSettings for a given call.
     #
-    .get_call_settings = function(settings, call) {
+    .get_call_settings = function(settings, engine, call) {
       
       checkmate::assert_choice(call, self$processing_methods()$name)
+      checkmate::assert_choice(paste0(engine,"Engine"), is(self))
       
       if (is.null(settings)) settings <- self$get_settings(call)
       
       if (is.null(settings)) return(NULL)
       
-      cols_check <- c("call", "algorithm", "parameters")
+      cols_check <- c("engine", "call", "algorithm", "parameters")
       
       if (all(cols_check %in% names(settings))) settings <- list(settings)
       
@@ -1071,7 +1072,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
         lapply(self$get_settings(), function(x) {
           call <- x$call
           message("\U2699 Running ", call, " with ", x$algorithm)
-          do.call(self[[call]], list("settings" = x))
+          .dispatch_process_method(x$engine, x$call, x, self, private)
+          
+          # do.call(self[[call]], list("settings" = x))
         })
         
       } else {

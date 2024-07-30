@@ -12,6 +12,12 @@
 # settings <- ProcessingSettings()
 # settings
 
+MassSpecSettings_BinSpectra_StreamFind()
+
+ms <- MassSpecEngine$new(files = StreamFindData::get_ms_file_paths()[1])
+ms$add_settings(MassSpecSettings_BinSpectra_StreamFind())
+ms$run_workflow()
+
 # ana <- Analysis()
 # ana
 
@@ -81,6 +87,9 @@ ps <- list(
   # # TODO add suspect screning results to featureGroups?
   # Settings_suspect_screening_StreamFind(database = dbsus, ppm = 5, sec = 10)
 )
+
+
+
 
 ms <- MassSpecEngine$new(files = ms_files_df, settings = ps)
 

@@ -128,12 +128,12 @@ ms$load_chromatograms("TIC")
 
 ```{r}
 # Smoothing of the TIC chromatogram for improving peak finding
-ms$smooth_chromatograms(Settings_smooth_chromatograms_movingaverage(windowSize = 5))
+ms$smooth_chromatograms(MassSpecSettings_SmoothChromatograms_movingaverage(windowSize = 5))
 ```
 
 ```{r}
 # Settings for integration of the TIC
-ps_ic <- Settings_integrate_chromatograms_StreamFind(
+ps_ic <- MassSpecSettings_IntegrateChromatograms_StreamFind(
   merge = TRUE,
   closeByThreshold = 5,
   minPeakHeight = 3E6,
@@ -179,14 +179,14 @@ Below we create an ordered list of *ProcessingSettings* objects for each process
 
 ```{r}
 ms_workflow_settings <- list(
-  Settings_cluster_spectra_StreamFind(val = "mz", clustVal = 0.01, presence = 0.2),
-  Settings_calculate_spectra_charges_StreamFind(roundVal = 15, relLowCut = 0.2, absLowCut = 8000),
-  Settings_deconvolute_spectra_StreamFind(),
-  Settings_smooth_spectra_movingaverage(windowSize = 15),
-  Settings_bin_spectra_StreamFind(bins = list("rt" = 5, "mass" = 20), refBinAnalysis = 1),
-  Settings_average_spectra_StreamFind(),
-  Settings_normalize_spectra_minmax(),
-  Settings_normalize_spectra_blockweight()
+  MassSpecSettings_ClusterSpectra_StreamFind(val = "mz", clustVal = 0.01, presence = 0.2),
+  MassSpecSettings_CalculateSpectraCharges_StreamFind(roundVal = 15, relLowCut = 0.2, absLowCut = 8000),
+  MassSpecSettings_DeconvoluteSpectra_StreamFind(),
+  MassSpecSettings_SmoothSpectra_movingaverage(windowSize = 15),
+  MassSpecSettings_BinSpectra_StreamFind(bins = list("rt" = 5, "mass" = 20), refBinAnalysis = 1),
+  MassSpecSettings_AverageSpectra_StreamFind(),
+  MassSpecSettings_NormalizeSpectra_minmax(),
+  MassSpecSettings_NormalizeSpectra_blockweight()
 )
 
 # Remove the settings added to integrate the TIC chromatograms
@@ -248,19 +248,19 @@ As for MS data, the workflow for Raman data is also assembled using an ordered l
 
 ```{r}
 raman_workflow_settings <- list(
-  Settings_bin_spectra_StreamFind(unitsVal = "rt", unitsNumber = 19),
-  # Settings_normalize_spectra_minmax(),
-  Settings_subtract_spectra_section_StreamFind(sectionVal = "rt", sectionWindow = c(0, 3)), # time window
-  Settings_delete_spectra_section_StreamFind(list("shift" = c(-100, 315))),
-  Settings_smooth_spectra_savgol(fl = 11, forder = 2, dorder = 0),
-  Settings_delete_spectra_section_StreamFind(list("shift" = c(315, 330))),
-  Settings_delete_spectra_section_StreamFind(list("shift" = c(2300, 2600))),
-  Settings_correct_spectra_baseline_airpls(lambda = 60, differences = 1),
-  Settings_correct_spectra_baseline_baseline(method = "als", args = list(lambda = 3, p = 0.015, maxit = 10)),
-  Settings_delete_spectra_section_StreamFind(list("rt" = c(0, 5.5))),
-  Settings_delete_spectra_section_StreamFind(list("rt" = c(8, 11))),
-  Settings_normalize_spectra_minmax(),
-  Settings_normalize_spectra_blockweight()
+  RamanSettings_BinSpectra_StreamFind(unitsVal = "rt", unitsNumber = 19),
+  #RamanSettings_NormalizeSpectra_minmax(),
+  RamanSettings_SubtractSpectraSection_StreamFind(sectionVal = "rt", sectionWindow = c(0, 3)), # time window
+  RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(-100, 315))),
+  RamanSettings_SmoothSpectra_savgol(fl = 11, forder = 2, dorder = 0),
+  RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(315, 330))),
+  RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(2300, 2600))),
+  #RamanSettings_CorrectSpectraBaseline_airpls(lambda = 60, differences = 1),
+  RamanSettings_CorrectSpectraBaseline_baseline(method = "als", args = list(lambda = 3, p = 0.015, maxit = 10)),
+  RamanSettings_DeleteSpectraSection_StreamFind(list("rt" = c(0, 5.5))),
+  RamanSettings_DeleteSpectraSection_StreamFind(list("rt" = c(8, 11))),
+  RamanSettings_NormalizeSpectra_minmax(),
+  RamanSettings_NormalizeSpectra_blockweight()
 )
 
 raman$add_settings(raman_workflow_settings)
@@ -339,7 +339,7 @@ The fused data is used to create a PCA model with the *StatisticEngine* using pr
 
 ```{r}
 stat <- StatisticEngine$new(data = fusedMat)
-stat$make_model(Settings_make_model_pca_mdatools(ncomp = 2, alpha = 0.05, gamma = 0.02))
+stat$make_model(StatisticSettings_MakeModel_pca_mdatools(ncomp = 2, alpha = 0.05, gamma = 0.02))
 summary(stat$model) # summary method is from mdatools
 ```
 
@@ -364,7 +364,7 @@ Another approach for the statistic analysis is to use the MCR pure model (based 
 
 ```{r}
 # Note that the model in the engine will be overwritten by the new mcr pure model
-stat$make_model(Settings_make_model_mcrpure_mdatools(ncomp = 2, offset = 0.05))
+stat$make_model(StatisticSettings_MakeModel_mcrpure_mdatools(ncomp = 2, offset = 0.05))
 summary(stat$model)
 ```
 

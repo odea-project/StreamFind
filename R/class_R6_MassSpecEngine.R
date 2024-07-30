@@ -5931,9 +5931,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     load_features_eic = function(settings) {
       
-      if (missing(settings)) settings <- Settings_load_features_eic_StreamFind()
+      if (missing(settings)) settings <- MassSpecSettings_LoadFeaturesEIC_StreamFind()
       
-      .dispatch_process_method("ms_load_features_eic", settings, self, private)
+      .dispatch_process_method("MassSpec", "LoadFeaturesEIC", settings, self, private)
       
       invisible(self)
     },
@@ -5944,9 +5944,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     load_features_ms1 = function(settings) {
       
-      if (missing(settings)) settings <- Settings_load_features_ms1_StreamFind()
+      if (missing(settings)) settings <- MassSpecSettings_LoadFeaturesMS1_StreamFind()
       
-      .dispatch_process_method("ms_load_features_ms1", settings, self, private)
+      .dispatch_process_method("MassSpec", "LoadFeaturesMS1", settings, self, private)
       
       invisible(self)
     },
@@ -5957,9 +5957,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     load_features_ms2 = function(settings) {
       
-      if (missing(settings)) settings <- Settings_load_features_ms2_StreamFind()
+      if (missing(settings)) settings <- MassSpecSettings_LoadFeaturesMS2_StreamFind()
       
-      .dispatch_process_method("ms_load_features_ms2", settings, self, private)
+      .dispatch_process_method("MassSpec", "LoadFeaturesMS2", settings, self, private)
       
       invisible(self)
     },
@@ -5970,9 +5970,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     load_MSPeakLists = function(settings) {
       
-      if (missing(settings)) settings <- Settings_load_MSPeakLists_StreamFind()
+      if (missing(settings)) settings <- MassSpecSettings_LoadMSPeakLists_StreamFind()
       
-      .dispatch_process_method("ms_load_MSPeakLists", settings, self, private)
+      .dispatch_process_method("MassSpec", "LoadMSPeakLists", settings, self, private)
       
       invisible(self)
     },
@@ -5983,18 +5983,18 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     centroid_spectra = function(settings = NULL) {
       
-      .dispatch_process_method("ms_centroid_spectra", settings, self, private)
+      .dispatch_process_method("MassSpec", "CentroidSpectra", settings, self, private)
       
       invisible(self)
     },
 
-    #' @description Bins centroided spectra for each MS analysis.
+    #' @description Bins spectra for each MS analysis.
     #'
     #' @return Invisible.
     #'
     bin_spectra = function(settings = NULL) {
       
-      .dispatch_process_method("bin_spectra", settings, self, private)
+      .dispatch_process_method("MassSpec", "BinSpectra", settings, self, private)
 
       invisible(self)
     },
@@ -6007,7 +6007,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     find_features = function(settings = NULL) {
       
-      .dispatch_process_method("ms_find_features", settings, self, private)
+      .dispatch_process_method("MassSpec", "FindFeatures", settings, self, private)
 
       invisible(self)
     },
@@ -6018,7 +6018,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     group_features = function(settings = NULL) {
 
-      .dispatch_process_method("ms_group_features", settings, self, private)
+      .dispatch_process_method("MassSpec", "GroupFeatures", settings, self, private)
 
       invisible(self)
     },
@@ -6029,7 +6029,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     fill_features = function(settings = NULL) {
       
-      .dispatch_process_method("ms_fill_features", settings, self, private)
+      .dispatch_process_method("MassSpec", "FillFeatures", settings, self, private)
       
       invisible(self)
     },
@@ -6044,7 +6044,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     filter_features = function(settings = NULL) {
       
-      .dispatch_process_method("ms_filter_features", settings, self, private)
+      .dispatch_process_method("MassSpec", "FilterFeatures", settings, self, private)
       
       invisible(self)
     },
@@ -6057,7 +6057,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     annotate_features = function(settings = NULL) {
       
-      .dispatch_process_method("ms_annotate_features", settings, self, private)
+      .dispatch_process_method("MassSpec", "AnnotateFeatures", settings, self, private)
 
       invisible(self)
     },
@@ -6068,7 +6068,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     find_internal_standards = function(settings = NULL) {
       
-      .dispatch_process_method("ms_find_internal_standards", settings, self, private)
+      .dispatch_process_method("MassSpec", "FindInternalStandards", settings, self, private)
 
       invisible(self)
     },
@@ -6077,7 +6077,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     suspect_screening = function(settings = NULL) {
 
-      .dispatch_process_method("ms_suspect_screening", settings, self, private)
+      .dispatch_process_method("MassSpec", "SuspectScreening", settings, self, private)
 
       invisible(self)
     },
@@ -6086,7 +6086,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     calculate_quality = function(settings = NULL) {
 
-      .dispatch_process_method("ms_calculate_quality", settings, self, private)
+      .dispatch_process_method("MassSpec", "CalculateQuality", settings, self, private)
 
       invisible(self)
     },
@@ -6097,7 +6097,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     generate_formulas = function(settings = NULL) {
       
-      .dispatch_process_method("ms_generate_formulas", settings, self, private)
+      .dispatch_process_method("MassSpec", "GenerateFormulas", settings, self, private)
       
       invisible(self)
     },
@@ -6108,7 +6108,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     generate_compounds = function(settings = NULL) {
       
-      .dispatch_process_method("ms_generate_compounds", settings, self, private)
+      .dispatch_process_method("MassSpec", "GenerateCompounds", settings, self, private)
       
       invisible(self)
     },
@@ -6119,7 +6119,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     smooth_chromatograms = function(settings = NULL) {
       
-      .dispatch_process_method("smooth_chromatograms", settings, self, private)
+      .dispatch_process_method("MassSpec", "SmoothChromatograms", settings, self, private)
       
       invisible(self)
     },
@@ -6130,7 +6130,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     correct_chromatograms_baseline = function(settings = NULL) {
       
-      .dispatch_process_method("correct_chromatograms_baseline", settings, self, private)
+      .dispatch_process_method("MassSpec", "CorrectChromatogramsBaseline", settings, self, private)
       
       invisible(self)
     },
@@ -6141,7 +6141,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     integrate_chromatograms = function(settings = NULL) {
       
-      .dispatch_process_method("integrate_chromatograms", settings, self, private)
+      .dispatch_process_method("MassSpec", "IntegrateChromatograms", settings, self, private)
       
       invisible(self)
     },
@@ -6152,7 +6152,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     cluster_spectra = function(settings = NULL) {
       
-      .dispatch_process_method("cluster_spectra", settings, self, private)
+      .dispatch_process_method("MassSpec", "ClusterSpectra", settings, self, private)
       
       invisible(self)
     },
@@ -6163,7 +6163,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     calculate_spectra_charges = function(settings = NULL) {
       
-      .dispatch_process_method("ms_calculate_spectra_charges", settings, self, private)
+      .dispatch_process_method("MassSpec", "CalculateSpectraCharges", settings, self, private)
       
       invisible(self)
     },
@@ -6174,7 +6174,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     deconvolute_spectra = function(settings = NULL) {
       
-      .dispatch_process_method("ms_deconvolute_spectra", settings, self, private)
+      .dispatch_process_method("MassSpec", "DeconvoluteSpectra", settings, self, private)
       
       invisible(self)
     },
@@ -6187,7 +6187,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       if (missing(settings)) settings <- Settings_smooth_spectra_movingaverage()
       
-      .dispatch_process_method("smooth_spectra", settings, self, private)
+      .dispatch_process_method("MassSpec", "SmoothSpectra", settings, self, private)
       
       invisible(self)
     },
@@ -6200,7 +6200,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       if (missing(settings)) settings <- Settings_correct_spectra_baseline_airpls()
       
-      .dispatch_process_method("correct_spectra_baseline", settings, self, private)
+      .dispatch_process_method("MassSpec", "CorrectSpectraBaseline", settings, self, private)
       
       invisible(self)
     },
@@ -6211,9 +6211,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' 
     normalize_spectra = function(settings) {
       
-      if (missing(settings)) settings <- Settings_normalize_spectra_StreamFind()
+      if (missing(settings)) settings <- MassSpecSettings_NormalizeSpectra_StreamFind()
       
-      .dispatch_process_method("normalize_spectra", settings, self, private)
+      .dispatch_process_method("MassSpec", "NormalizeSpectra", settings, self, private)
       
       invisible(self)
     },
@@ -6224,9 +6224,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' 
     average_spectra = function(settings) {
       
-      if (missing(settings)) settings <- Settings_average_spectra_StreamFind()
+      if (missing(settings)) settings <- MassSpecSettings_AverageSpectra_StreamFind()
       
-      .dispatch_process_method("average_spectra", settings, self, private)
+      .dispatch_process_method("MassSpec", "AverageSpectra", settings, self, private)
       
       invisible(self)
     },
@@ -6237,9 +6237,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' 
     subtract_blank_spectra = function(settings) {
       
-      if (missing(settings)) settings <- Settings_subtract_blank_spectra_StreamFind()
+      if (missing(settings)) settings <- MassSpecSettings_SubtractBlankSpectra_StreamFind()
       
-      .dispatch_process_method("subtract_blank_spectra", settings, self, private)
+      .dispatch_process_method("MassSpec", "SubtractBlankSpectra", settings, self, private)
       
       invisible(self)
     },
@@ -6346,69 +6346,36 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description A data.table with available data processing methods.
     #'
     processing_methods = function() {
-      
-      data.table(
-        name = c(
-          "centroid_spectra",
-          "bin_spectra",
-          "find_features",
-          "annotate_features",
-          "load_features_eic",
-          "load_features_ms1",
-          "load_features_ms2",
-          "load_MSPeakLists",
-          "group_features",
-          "fill_features",
-          "filter_features",
-          "suspect_screening",
-          "find_internal_standards",
-          "calculate_quality",
-          "generate_formulas",
-          "generate_compounds",
-          "smooth_chromatograms",
-          "correct_chromatograms_baseline",
-          "integrate_chromatograms",
-          "cluster_spectra",
-          "calculate_spectra_charges",
-          "deconvolute_spectra",
-          "smooth_spectra",
-          "correct_spectra_baseline",
-          "normalize_spectra",
-          "average_spectra",
-          "subtract_blank_spectra",
-          "normalize_features"
-        ),
-        max = c(
-          1,
-          1,
-          1,
-          1,
-          1,
-          1,
-          1,
-          1,
-          1,
-          1,
-          Inf,
-          1,
-          1,
-          1,
-          1,
-          1,
-          1,
-          1,
-          1,
-          1,
-          1,
-          1,
-          Inf,
-          1,
-          Inf,
-          1,
-          1,
-          1
-        )
-      )
+      ps <- list()
+      ps[["CentroidSpectra"]] <- 1
+      ps[["BinSpectra"]] <- 1
+      ps[["FindFeatures"]] <- 1
+      ps[["AnnotateFeatures"]] <- 1
+      ps[["LoadFeaturesEIC"]] <- 1
+      ps[["LoadFeaturesMS1"]] <- 1
+      ps[["LoadFeaturesMS2"]] <- 1
+      ps[["LoadMSPeakLists"]] <- 1
+      ps[["GroupFeatures"]] <- 1
+      ps[["FillFeatures"]] <- 1
+      ps[["FilterFeatures"]] <- Inf
+      ps[["SuspectScreening"]] <- 1
+      ps[["FindInternalStandards"]] <- 1
+      ps[["CalculateQuality"]] <- 1
+      ps[["GenerateFormulas"]] <- 1
+      ps[["GenerateCompounds"]] <- 1
+      ps[["SmoothChromatograms"]] <- 1
+      ps[["CorrectChromatogramsBaseline"]] <- 1
+      ps[["IntegrateChromatograms"]] <- 1
+      ps[["ClusterSpectra"]] <- 1
+      ps[["CalculateSpectraCharges"]] <- 1
+      ps[["DeconvoluteSpectra"]] <- 1
+      ps[["SmoothSpectra"]] <- Inf
+      ps[["CorrectSpectraBaseline"]] <- 1
+      ps[["NormalizeSpectra"]] <- Inf
+      ps[["AverageSpectra"]] <- 1
+      ps[["SubtractBlankSpectra"]] <- 1
+      ps[["NormalizeFeatures"]] <- 1
+      data.table(name = names(ps), max = unlist(ps))
     },
 
     ### ___ help -----
@@ -6418,51 +6385,6 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     help = list(
       methods = function() {
         browseURL("https://odea-project.github.io/StreamFind/reference/MassSpecEngine.html#methods")
-      },
-      get_groups = function() {
-        browseURL("https://odea-project.github.io/StreamFind/reference/MassSpecEngine.html#method-MassSpecEngine-get_groups")
-      },
-      get_features = function() {
-        browseURL("https://odea-project.github.io/StreamFind/reference/MassSpecEngine.html#method-MassSpecEngine-get_features")
-      },
-      settings_centroid_spectra = function() {
-        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#centroid-spectra")
-      },
-      settings_bin_spectra = function() {
-        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#bin-spectra")
-      },
-      settings_find_features = function() {
-        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#find-features")
-      },
-      settings_annotate_features = function() {
-        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#annotate-features")
-      },
-      settings_load_features_eic = function() {
-        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#load-features-eic")
-      },
-      settings_load_features_ms1 = function() {
-        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#load-features-ms1")
-      },
-      settings_load_features_ms2 = function() {
-        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#load-features-ms2")
-      },
-      settings_group_features = function() {
-        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#group-features")
-      },
-      settings_fill_features = function() {
-        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#fill-features")
-      },
-      settings_filter_features = function() {
-        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#filter-features")
-      },
-      settings_suspect_screening = function() {
-        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#suspect-screening")
-      },
-      settings_find_internal_standards = function() {
-        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#find-internal-standards")
-      },
-      settings_calculate_quality = function() {
-        browseURL("https://odea-project.github.io/StreamFind/reference/index.html#calculate-quality")
       }
     )
   )

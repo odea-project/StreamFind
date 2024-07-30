@@ -507,7 +507,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #'
     make_model = function(settings) {
       
-      .dispatch_process_method("make_model", settings, self, private)
+      .dispatch_process_method("Statistic", "MakeModel", settings, self, private)
       
       invisible(self)
     },
@@ -518,7 +518,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #'
     prepare_classification = function(settings) {
       
-      .dispatch_process_method("prepare_classification", settings, self, private)
+      .dispatch_process_method("Statistic", "PrepareClassification", settings, self, private)
       
       if (self$has_results("prediction")) self$remove_results("prediction")
       
@@ -1310,16 +1310,10 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #' @description A data.table with available data processing methods.
     #'
     processing_methods = function() {
-      data.table(
-        name = c(
-          "make_model",
-          "prepare_classification"
-        ),
-        max = c(
-          1,
-          1
-        )
-      )
+      ps <- list()
+      ps[["MakeModel"]] <- 1
+      ps[["PrepareClassification"]] <- 1
+      data.table(name = names(ps), max = unlist(ps))
     }
   )
 )

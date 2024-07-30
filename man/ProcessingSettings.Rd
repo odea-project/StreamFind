@@ -5,6 +5,7 @@
 \title{\strong{ProcessingSettings} S3 class constructor, methods and functions}
 \usage{
 ProcessingSettings(
+  engine = NA_character_,
   call = NA_character_,
   algorithm = NA_character_,
   parameters = NULL,
@@ -17,7 +18,9 @@ ProcessingSettings(
 )
 }
 \arguments{
-\item{call}{Character of length one with the name of the method where theprocessing settings are to be applied.}
+\item{engine}{Character of length one with the name of the engine where the processing settings are to be applied.}
+
+\item{call}{Character of length one with the name of the method where the processing settings are to be applied.}
 
 \item{algorithm}{Character of length one with the name of the algorithm to be used.}
 

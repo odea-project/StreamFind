@@ -1,11 +1,11 @@
 
-#' @title .s3_ms_find_features.patRoon
+#' @title .s3_FindFeatures.patRoon
 #'
 #' @description Finds features using the package patRoon.
 #'
 #' @noRd
 #'
-.s3_ms_find_features.patRoon <- function(settings, self, private) {
+.s3_FindFeatures.patRoon <- function(settings, self, private) {
   
   anaInfo <- self$analysisInfo
   
@@ -104,13 +104,13 @@
   TRUE
 }
 
-#' @title .s3_ms_find_features.Settings_find_features_qPeaks
+#' @title .s3_FindFeatures.MassSpecSettings_FindFeatures_qPeaks
 #'
 #' @description Finds features using the algorithm qPeaks.
 #'
 #' @noRd
 #'
-.s3_ms_find_features.Settings_find_features_qPeaks <- function(settings, self, private) {
+.s3_FindFeatures.MassSpecSettings_FindFeatures_qPeaks <- function(settings, self, private) {
   
   message("Finding features with qPeaks...", appendLF = TRUE)
   

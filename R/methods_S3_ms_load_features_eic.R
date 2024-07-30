@@ -1,11 +1,11 @@
 
-#' @title .s3_ms_load_features_eic.Settings_load_features_eic_StreamFind
+#' @title .s3_LoadFeaturesEIC.MassSpecSettings_LoadFeaturesEIC_StreamFind
 #'
 #' @description Loads the extracted ion chromatogram for each feature.
 #'
 #' @noRd
 #'
-.s3_ms_load_features_eic.Settings_load_features_eic_StreamFind <- function(settings, self, private) {
+.s3_LoadFeaturesEIC.MassSpecSettings_LoadFeaturesEIC_StreamFind <- function(settings, self, private) {
   
   if (!any(self$has_features())) {
     warning("Features not found! Not loaded.")
