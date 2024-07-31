@@ -151,7 +151,7 @@ Data processing is performed by modules according to [*ProcessingSettings*](http
 
 ```{r ffs}
 # Get ProcessingSettings for finding features using the openms algorithm
-ffs <- Settings_find_features_openms()
+ffs <- MassSpecSettings_FindFeatures_openms()
 
 # Print in console the details of the ProcessingSettings
 ffs
@@ -161,43 +161,43 @@ ffs
 
 # List with other workflow module settings
 other_settings <- list(
-  Settings_annotate_features_StreamFind(),
+  MassSpecSettings_AnnotateFeatures_StreamFind(),
 
-  Settings_group_features_openms(),
+  MassSpecSettings_GroupFeatures_openms(),
   
   # Modifying the parameters with the constructor arguments
   # db_is is a data.table with the name, mass and expected retention time of spiked internal standards, as shown below
-  Settings_find_internal_standards_StreamFind(
+  MassSpecSettings_FindInternalStandards_StreamFind(
     database = db_is,
     ppm = 8,
     sec = 10
   ),
   
-  Settings_filter_features_StreamFind(excludeIsotopes = TRUE),
+  MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE),
   
-  Settings_filter_features_patRoon(
+  MassSpecSettings_FilterFeatures_patRoon(
     absMinIntensity = 5000,
     maxReplicateIntRSD = 30,
     blankThreshold = 10,
     absMinReplicateAbundance = 3
   ),
 
-  Settings_load_features_eic_StreamFind(
+  MassSpecSettings_LoadFeaturesEIC_StreamFind(
     rtExpand = 60,
     mzExpand = 0.0005
   ),
 
-  Settings_load_features_ms1_StreamFind(),
+  MassSpecSettings_LoadFeaturesMS1_StreamFind(),
 
-  Settings_load_features_ms2_StreamFind(),
+  MassSpecSettings_LoadFeaturesMS2_StreamFind(),
 
-  Settings_calculate_quality_StreamFind(),
+  MassSpecSettings_CalculateQuality_StreamFind(),
   
-  Settings_filter_features_StreamFind(minSnRatio = 5),
+  MassSpecSettings_FilterFeatures_StreamFind(minSnRatio = 5),
   
   # db_with_ms2 is a database with suspect chemical standards
   # includes MS2 data (i.e., fragmentation pattern) from standards
-  Settings_suspect_screening_StreamFind(
+  MassSpecSettings_SuspectScreening_StreamFind(
     database = db_with_ms2,
     ppm = 10,
     sec = 15,

@@ -13,6 +13,191 @@ validate <- function(x) {
 ## Processing Methods -----
 
 #' @noRd
+.s3_AverageSpectra <- function(settings, self, private) {
+  UseMethod(".s3_AverageSpectra")
+}
+
+#' @noRd
+.s3_BinSpectra <- function(settings, self, private) {
+  UseMethod(".s3_BinSpectra")
+}
+
+#' @noRd
+.s3_ClusterSpectra <- function(settings, self, private) {
+  UseMethod(".s3_ClusterSpectra")
+}
+
+#' @noRd
+.s3_CorrectChromatogramsBaseline <- function(settings, self, private) {
+  UseMethod(".s3_CorrectChromatogramsBaseline")
+}
+
+#' @noRd
+.s3_CorrectSpectraBaseline <- function(settings, self, private) {
+  UseMethod(".s3_CorrectSpectraBaseline")
+}
+
+#' @noRd
+.s3_DeleteSpectraSection <- function(settings, self, private) {
+  UseMethod(".s3_DeleteSpectraSection")
+}
+
+#' @noRd
+.s3_IntegrateChromatograms <- function(settings, self, private) {
+  UseMethod(".s3_IntegrateChromatograms")
+}
+
+#' @noRd
+.s3_PrepareClassification <- function(settings, self, private) {
+  UseMethod(".s3_PrepareClassification")
+}
+
+#' @noRd
+.s3_MakeModel <- function(settings, self, private) {
+  UseMethod(".s3_MakeModel")
+}
+
+#' @noRd
+.s3_MergeSpectraTimeSeries <- function(settings, self, private) {
+  UseMethod(".s3_MergeSpectraTimeSeries")
+}
+
+#' @noRd
+.s3_AnnotateFeatures <- function(settings, self, private) {
+  UseMethod(".s3_AnnotateFeatures")
+}
+
+#' @noRd
+.s3_CalculateQuality <- function(settings, self, private) {
+  UseMethod(".s3_CalculateQuality")
+}
+
+#' @noRd
+.s3_CalculateSpectraCharges <- function(settings, self, private) {
+  UseMethod(".s3_CalculateSpectraCharges")
+}
+
+#' @noRd
+.s3_CentroidSpectra <- function(settings, self, private) {
+  UseMethod(".s3_CentroidSpectra")
+}
+
+#' @noRd
+.s3_DeconvoluteSpectra <- function(settings, self, private) {
+  UseMethod(".s3_DeconvoluteSpectra")
+}
+
+#' @noRd
+.s3_FillFeatures <- function(settings, self, private) {
+  UseMethod(".s3_FillFeatures")
+}
+
+#' @noRd
+.s3_FilterFeatures <- function(settings, self, private) {
+  UseMethod(".s3_FilterFeatures")
+}
+
+#' @noRd
+.s3_FindFeatures <- function(settings, self, private) {
+  UseMethod(".s3_FindFeatures")
+}
+
+#' @noRd
+.s3_FindInternalStandards <- function(settings, self, private) {
+  UseMethod(".s3_FindInternalStandards")
+}
+
+#' @noRd
+.s3_GenerateCompounds <- function(settings, self, private) {
+  UseMethod(".s3_GenerateCompounds")
+}
+
+#' @noRd
+.s3_GenerateFormulas <- function(settings, self, private) {
+  UseMethod(".s3_GenerateFormulas")
+}
+
+#' @noRd
+.s3_GroupFeatures <- function(settings, self, private) {
+  UseMethod(".s3_GroupFeatures")
+}
+
+#' @noRd
+.s3_LoadFeaturesEIC <- function(settings, self, private) {
+  UseMethod(".s3_LoadFeaturesEIC")
+}
+
+#' @noRd
+.s3_LoadFeaturesMS1 <- function(settings, self, private) {
+  UseMethod(".s3_LoadFeaturesMS1")
+}
+
+#' @noRd
+.s3_LoadFeaturesMS2 <- function(settings, self, private) {
+  UseMethod(".s3_LoadFeaturesMS2")
+}
+
+#' @noRd
+.s3_LoadMSPeakLists <- function(settings, self, private) {
+  UseMethod(".s3_LoadMSPeakLists")
+}
+
+#' @noRd
+.s3_NormalizeFeatures <- function(settings, self, private) {
+  UseMethod(".s3_NormalizeFeatures")
+}
+
+#' @noRd
+.s3_SuspectScreening <- function(settings, self, private) {
+  UseMethod(".s3_SuspectScreening")
+}
+
+#' @noRd
+.s3_NormalizeSpectra <- function(settings, self, private) {
+  UseMethod(".s3_NormalizeSpectra")
+}
+
+#' @noRd
+.s3_SmoothChromatograms <- function(settings, self, private) {
+  UseMethod(".s3_SmoothChromatograms")
+}
+
+#' @noRd
+.s3_SmoothSpectra <- function(settings, self, private) {
+  UseMethod(".s3_SmoothSpectra")
+}
+
+#' @noRd
+.s3_SubtractBlankSpectra <- function(settings, self, private) {
+  UseMethod(".s3_SubtractBlankSpectra")
+}
+
+#' @noRd
+.s3_SubtractSpectraSection <- function(settings, self, private) {
+  UseMethod(".s3_SubtractSpectraSection")
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#' @noRd
 .s3_average_spectra <- function(settings, self, private) {
   UseMethod(".s3_average_spectra")
 }

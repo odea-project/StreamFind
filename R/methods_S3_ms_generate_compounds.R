@@ -1,11 +1,11 @@
 
-#' @title .s3_ms_generate_compounds.Settings_generate_compounds_metfrag
+#' @title .s3_GenerateCompounds.MassSpecSettings_GenerateCompounds_metfrag
 #'
 #' @description Generate compounds for feature groups using MetFrag.
 #'
 #' @noRd
 #'
-.s3_ms_generate_compounds.Settings_generate_compounds_metfrag <- function(settings, self, private) {
+.s3_GenerateCompounds.MassSpecSettings_GenerateCompounds_metfrag <- function(settings, self, private) {
   
   if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found! Install it for finding features.")

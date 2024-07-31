@@ -5,11 +5,9 @@
 #'
 #' @noRd
 #'
-.dispatch_process_method <- function(method, settings, self, private) {
+.dispatch_process_method <- function(engine, method, settings, self, private) {
   call_method <- paste0(".s3_", method)
-  method_to_settings <- sub(".s3_ms_", "", call_method)
-  method_to_settings <- sub(".s3_", "", method_to_settings)
-  settings <- private$.get_call_settings(settings, method_to_settings)
+  settings <- private$.get_call_settings(settings, engine, method)
   if (is.null(settings)) return(FALSE)
   processed <- do.call(call_method, list(settings, self, private))
   if (processed) {

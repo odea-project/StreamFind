@@ -28,6 +28,9 @@
     <loc>https://odea-project.github.io/StreamFind/articles/demo_paracetamol.html</loc>
   </url>
   <url>
+    <loc>https://odea-project.github.io/StreamFind/articles/developer_guide.html</loc>
+  </url>
+  <url>
     <loc>https://odea-project.github.io/StreamFind/articles/framework.html</loc>
   </url>
   <url>
@@ -82,6 +85,141 @@
     <loc>https://odea-project.github.io/StreamFind/reference/MassSpecEngine.html</loc>
   </url>
   <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_AnnotateFeatures_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_AverageSpectra_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_BinSpectra_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_CalculateQuality_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_CalculateSpectraCharges_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_CentroidSpectra_qCentroids.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_ClusterSpectra_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_CorrectChromatogramsBaseline_airpls.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_CorrectChromatogramsBaseline_baseline.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_CorrectSpectraBaseline_airpls.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_CorrectSpectraBaseline_baseline.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_DeconvoluteSpectra_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_FillFeatures_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_FilterFeatures_patRoon.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_FilterFeatures_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_FindFeatures_kpic2.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_FindFeatures_openms.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_FindFeatures_qPeaks.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_FindFeatures_xcms3_centwave.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_FindFeatures_xcms3_matchedfilter.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_FindInternalStandards_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_GenerateCompounds_metfrag.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_GenerateFormulas_genform.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_GroupFeatures_openms.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_GroupFeatures_xcms3_peakdensity.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_IntegrateChromatograms_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_LoadFeaturesEIC_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_LoadFeaturesMS1_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_LoadFeaturesMS2_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_LoadMSPeakLists_patRoon.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_LoadMSPeakLists_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_NormalizeSpectra_blockweight.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_NormalizeSpectra_meancenter.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_NormalizeSpectra_minmax.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_NormalizeSpectra_scale.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_NormalizeSpectra_snv.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_SmoothChromatograms_movingaverage.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_SmoothChromatograms_savgol.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_SmoothSpectra_movingaverage.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_SmoothSpectra_savgol.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_SubtractBlankSpectra_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_SuspectScreening_forident.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_SuspectScreening_patRoon.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_SuspectScreening_StreamFind.html</loc>
+  </url>
+  <url>
     <loc>https://odea-project.github.io/StreamFind/reference/pipe.html</loc>
   </url>
   <url>
@@ -95,6 +233,51 @@
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/RamanEngine.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/RamanSettings_AverageSpectra_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/RamanSettings_BinSpectra_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/RamanSettings_CorrectSpectraBaseline_airpls.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/RamanSettings_CorrectSpectraBaseline_baseline.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/RamanSettings_DeleteSpectraSection_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/RamanSettings_MergeSpectraTimeSeries_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/RamanSettings_NormalizeSpectra_blockweight.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/RamanSettings_NormalizeSpectra_meancenter.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/RamanSettings_NormalizeSpectra_minmax.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/RamanSettings_NormalizeSpectra_scale.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/RamanSettings_NormalizeSpectra_snv.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/RamanSettings_SmoothSpectra_movingaverage.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/RamanSettings_SmoothSpectra_savgol.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/RamanSettings_SubtractBlankSpectra_StreamFind.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/RamanSettings_SubtractSpectraSection_StreamFind.html</loc>
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/save_default_ProcessingSettings.html</loc>
@@ -266,6 +449,18 @@
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/StatisticEngine.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/StatisticSettings_MakeModel_mcrals_mdatools.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/StatisticSettings_MakeModel_mcrpure_mdatools.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/StatisticSettings_MakeModel_pca_mdatools.html</loc>
+  </url>
+  <url>
+    <loc>https://odea-project.github.io/StreamFind/reference/StatisticSettings_PrepareClassification_knn.html</loc>
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/StreamFind-package.html</loc>

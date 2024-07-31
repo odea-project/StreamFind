@@ -12,7 +12,7 @@
 #'
 #' @importFrom tools file_ext
 #' 
-#' 
+#' @import zlibbioc
 #'
 #' @importFrom plyr round_any
 #' 

@@ -1,11 +1,11 @@
 
-#' @title .s3_ms_deconvolute_spectra.Settings_deconvolute_spectra_StreamFind
+#' @title .s3_DeconvoluteSpectra.MassSpecSettings_DeconvoluteSpectra_StreamFind
 #'
 #' @description Deconvolutes spectra according to calculated charges from multi-charged compounds.
 #'
 #' @noRd
 #'
-.s3_ms_deconvolute_spectra.Settings_deconvolute_spectra_StreamFind <- function(settings, self, private) {
+.s3_DeconvoluteSpectra.MassSpecSettings_DeconvoluteSpectra_StreamFind <- function(settings, self, private) {
   
   parameters <- settings$parameters
   

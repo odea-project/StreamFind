@@ -10,8 +10,8 @@
 #'
 #' @export
 #'
-get_default_ProcessingSettings <- function(call = NA_character_, algorithm = NA_character_) {
-  class_string <- paste0("Settings_", call, "_", algorithm)
+get_default_ProcessingSettings <- function(engine = NA_character_, call = NA_character_, algorithm = NA_character_) {
+  class_string <- paste0(engine,"Settings_", call, "_", algorithm)
   do.call(class_string, list())
 }
 
@@ -30,13 +30,14 @@ get_default_ProcessingSettings <- function(call = NA_character_, algorithm = NA_
 #'
 #' @export
 #'
-save_default_ProcessingSettings <- function(call = NA_character_,
+save_default_ProcessingSettings <- function(engine = NA_character_,
+                                            call = NA_character_,
                                             algorithm = NA_character_,
                                             format = "json", 
                                             name = "settings",
                                             path = getwd()) {
 
-  settings <- get_default_ProcessingSettings(call, algorithm)
+  settings <- get_default_ProcessingSettings(engine, call, algorithm)
 
   if (format %in% "json") {
     

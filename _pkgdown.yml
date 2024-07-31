@@ -38,133 +38,137 @@ reference:
     algorithm for each MS processing method. Below the available subclasses
     for _ProcessingSettings_ are listed for each processing method.
 
-- subtitle: average_spectra
+- subtitle: Average Spectra
   contents:
-    - starts_with("Settings_average_spectra")
+    - matches("Settings_AverageSpectra")
 
-- subtitle: bin_spectra
+- subtitle: Bin Spectra
   contents:
-    - starts_with("Settings_bin_spectra")
+    - matches("Settings_BinSpectra")
 
-- subtitle: cluster_spectra
+- subtitle: Cluster Spectra
   contents:
-    - starts_with("Settings_cluster_spectra")
+    - matches("Settings_ClusterSpectra")
 
-- subtitle: correct_chromatograms_baseline
+- subtitle: Correct Chromatograms Baseline
   contents:
-    - starts_with("Settings_correct_chromatograms_baseline")
+    matches("Settings_CorrectChromatogramsBaseline")
 
-- subtitle: correct_spectra_baseline
+- subtitle: Correct Spectra Baseline
   contents:
-    - starts_with("Settings_correct_spectra_baseline")
+    - matches("Settings_CorrectSpectraBaseline")
 
-- subtitle: delete_spectra_section
+- subtitle: Delete Spectra Section
   contents:
-    - starts_with("Settings_delete_spectra_section")
+    - matches("Settings_delete_spectra_section")
 
-- subtitle: integrate_chromatograms
+- subtitle: Integrate Chromatograms
   contents:
-    - starts_with("Settings_integrate_chromatograms")
+    - matches("Settings_IntegrateChromatograms")
 
-- subtitle: make_model
+- subtitle: Make Model
   contents:
-    - starts_with("Settings_make_model")
+    - matches("Settings_MakeModel")
 
-- subtitle: merge_spectra_time_series
+- subtitle: Merge Spectra Time Series
   contents:
-    - starts_with("Settings_merge_spectra_time_series")
+    - matches("Settings_MergeSpectraTimeSeries")
 
-- subtitle: annotate_features
+- subtitle: Annotate Features
   contents:
-    - starts_with("Settings_annotate_features")
+    - matches("Settings_AnnotateFeatures")
 
-- subtitle: calculate_quality
+- subtitle: Calculate Quality
   contents:
-    - starts_with("Settings_calculate_quality")
+    - matches("Settings_CalculateQuality")
 
-- subtitle: calculate_spectra_charges
+- subtitle: Calculate Spectra Charges
   contents:
-    - starts_with("Settings_calculate_spectra_charges")
+    - matches("Settings_CalculateSpectraCharges")
 
-- subtitle: centroid_spectra
+- subtitle: Centroid Spectra
   contents:
-    - starts_with("Settings_centroid_spectra")
+    - matches("Settings_CentroidSpectra")
 
-- subtitle: deconvolute_spectra
+- subtitle: Deconvolute Spectra
   contents:
-    - starts_with("Settings_deconvolute_spectra")
+    - matches("Settings_DeconvoluteSpectra")
 
-- subtitle: fill_features
+- subtitle: Delete Spectra Section
   contents:
-    - starts_with("Settings_fill_features")
+    - matches("Settings_DeleteSpectraSection")
 
-- subtitle: filter_features
+- subtitle: Fill Features
   contents:
-    - starts_with("Settings_filter_features")
+    - matches("Settings_FillFeatures")
 
-- subtitle: find_features
+- subtitle: Filter Features
   contents:
-    - starts_with("Settings_find_features")
+    - matches("Settings_FilterFeatures")
 
-- subtitle: find_internal_standards
+- subtitle: Find Features
   contents:
-    - starts_with("Settings_find_internal_standards")
+    - matches("Settings_FindFeatures")
 
-- subtitle: generate_compounds
+- subtitle: Find Internal Standards
   contents:
-    - starts_with("Settings_generate_compounds")
+    - matches("Settings_FindInternalStandards")
 
-- subtitle: generate_formulas
+- subtitle: Generate Compounds
   contents:
-    - starts_with("Settings_generate_formulas")
+    - matches("Settings_GenerateCompounds")
 
-- subtitle: group_features
+- subtitle: Generate Formulas
   contents:
-    - starts_with("Settings_group_features")
+    - matches("Settings_GenerateFormulas")
 
-- subtitle: load_features_eic
+- subtitle: GroupFeatures
   contents:
-    - starts_with("Settings_load_features_eic")
+    - matches("Settings_GroupFeatures")
 
-- subtitle: load_features MS1 and MS2 spectra
+- subtitle: Load Features EIC
   contents:
-    - starts_with("Settings_load_features_ms")
+    - matches("Settings_LoadFeaturesEIC")
 
-- subtitle: load_MSPeakLists
+- subtitle: Load Features MS1 and MS2 spectra
   contents:
-    - starts_with("Settings_load_MSPeakLists")
+    - matches("Settings_LoadFeaturesMS")
 
-- subtitle: normalize_features
+- subtitle: Load MSPeakLists
   contents:
-    - starts_with("Settings_normalize_features")
+    - matches("Settings_LoadMSPeakLists")
 
-- subtitle: normalize_spectra
+- subtitle: Normalize Features
   contents:
-    - starts_with("Settings_normalize_spectra")
+    - matches("Settings_NormalizeFeatures")
 
-- subtitle: prepare_classification
+- subtitle: Normalize Spectra
   contents:
-    - starts_with("Settings_prepare_classification")
+    - matches("Settings_NormalizeSpectra")
 
-- subtitle: suspect_screening
+- subtitle: Prepare Classification
   contents:
-    - starts_with("Settings_suspect_screening")
+    - matches("Settings_PrepareClassification")
 
-- subtitle: smooth_chromatograms
+- subtitle: Suspect Screening
   contents:
-    - starts_with("Settings_smooth_chromatograms")
+    - matches("Settings_SuspectScreening")
 
-- subtitle: smooth_spectra
+- subtitle: Smooth Chromatograms
   contents:
-    - starts_with("Settings_smooth_spectra")
+    - matches("Settings_SmoothChromatograms")
 
-- subtitle: subtract_blank_spectra
+- subtitle: Smooth Spectra
   contents:
-    - starts_with("Settings_subtract_blank_spectra")
+    - matches("Settings_SmoothSpectra")
 
-- subtitle: subtract_spectra_section
+- subtitle: Subtract Blank Spectra
   contents:
-    - starts_with("Settings_subtract_spectra_section")
+    - matches("Settings_SubtractBlankSpectra")
+
+- subtitle: Subtract Spectra Section
+  contents:
+    - matches("Settings_SubtractSpectraSection")
 
 - subtitle: General get and save default settings
   desc: >

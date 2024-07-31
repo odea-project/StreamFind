@@ -1,10 +1,10 @@
-#' @title .s3_ms_calculate_quality.Settings_calculate_quality_StreamFind
+#' @title .s3_CalculateQuality.MassSpecSettings_CalculateQuality_StreamFind
 #'
 #' @description Calculates quality parameters of features.
 #'
 #' @noRd
 #'
-.s3_ms_calculate_quality.Settings_calculate_quality_StreamFind <- function(settings, self, private) {
+.s3_CalculateQuality.MassSpecSettings_CalculateQuality_StreamFind <- function(settings, self, private) {
 
   if (!any(self$has_features())) {
     warning("Features not found! Not calculated.")

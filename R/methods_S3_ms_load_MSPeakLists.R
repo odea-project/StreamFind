@@ -1,11 +1,11 @@
 
-#' @title .s3_ms_load_MSPeakLists.Settings_load_MSPeakLists_patRoon
+#' @title .s3_LoadMSPeakLists.MassSpecSettings_LoadMSPeakLists_patRoon
 #'
 #' @description Creates a MSPeakLists object from patRoon.
 #'
 #' @noRd
 #'
-.s3_ms_load_MSPeakLists.Settings_load_MSPeakLists_patRoon <- function(settings, self, private) {
+.s3_LoadMSPeakLists.MassSpecSettings_LoadMSPeakLists_patRoon <- function(settings, self, private) {
   
   if (!requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found! Install it for finding features.")
@@ -54,13 +54,13 @@
   }
 }
 
-#' @title .s3_ms_load_MSPeakLists.Settings_load_MSPeakLists_StreamFind
+#' @title .s3_LoadMSPeakLists.MassSpecSettings_LoadMSPeakLists_StreamFind
 #'
 #' @description Converts loaded ms1 ans ms2 spectra into a MSPeakLists object from patRoon.
 #'
 #' @noRd
 #'
-.s3_ms_load_MSPeakLists.Settings_load_MSPeakLists_StreamFind <- function(settings, self, private) {
+.s3_LoadMSPeakLists.MassSpecSettings_LoadMSPeakLists_StreamFind <- function(settings, self, private) {
   
   if (!requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found! Install it for finding features.")

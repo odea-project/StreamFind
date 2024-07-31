@@ -1,11 +1,11 @@
 
-#' @title .s3_ms_group_features.patRoon
+#' @title .s3_GroupFeatures.patRoon
 #'
 #' @description Groups features using the package patRoon.
 #'
 #' @noRd
 #'
-.s3_ms_group_features.patRoon <- function(settings, self, private) {
+.s3_GroupFeatures.patRoon <- function(settings, self, private) {
   
   if (!requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found! Install it for finding features.")

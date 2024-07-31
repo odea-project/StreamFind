@@ -1,11 +1,11 @@
 
-#' @title .s3_ms_load_features_ms1.Settings_load_features_ms1_StreamFind
+#' @title .s3_LoadFeaturesMS1.MassSpecSettings_LoadFeaturesMS1_StreamFind
 #'
 #' @description Loads the ms1 spectra for each feature.
 #'
 #' @noRd
 #'
-.s3_ms_load_features_ms1.Settings_load_features_ms1_StreamFind <- function(settings, self, private) {
+.s3_LoadFeaturesMS1.MassSpecSettings_LoadFeaturesMS1_StreamFind <- function(settings, self, private) {
   
   if (!any(self$has_features())) {
     warning("Features not found! Not loaded.")

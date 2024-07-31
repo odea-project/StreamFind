@@ -4716,7 +4716,7 @@ Invisible.
 \if{html}{\out{<a id="method-MassSpecEngine-bin_spectra"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-bin_spectra}{}}}
 \subsection{Method \code{bin_spectra()}}{
-Bins centroided spectra for each MS analysis.
+Bins spectra for each MS analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$bin_spectra(settings = NULL)}\if{html}{\out{</div>}}
 }

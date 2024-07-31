@@ -162,11 +162,11 @@ scroll_box(width = "100%", height = "400px")
 
 ```{r ms-workflow}
 ms_workflow_settings <- list(
-  Settings_bin_spectra_StreamFind(bins = list("rt" = 5, "mz" = 2), refBinAnalysis = 1),
-  Settings_normalize_spectra_minmax(),
-  Settings_average_spectra_StreamFind(),
-  Settings_subtract_blank_spectra_StreamFind(negativeToZero = TRUE),
-  Settings_normalize_spectra_blockweight()
+  MassSpecSettings_BinSpectra_StreamFind(bins = list("rt" = 5, "mz" = 2), refBinAnalysis = 1),
+  MassSpecSettings_NormalizeSpectra_minmax(),
+  MassSpecSettings_AverageSpectra_StreamFind(),
+  MassSpecSettings_SubtractBlankSpectra_StreamFind(negativeToZero = TRUE),
+  MassSpecSettings_NormalizeSpectra_blockweight()
 )
 
 ms$add_settings(ms_workflow_settings)
@@ -281,14 +281,14 @@ scroll_box(width = "100%", height = "400px")
 
 ```{r raman-workflow}
 raman_workflow_settings <- list(
-  Settings_average_spectra_StreamFind(),
-  Settings_subtract_blank_spectra_StreamFind(),
-  Settings_smooth_spectra_savgol(fl = 21, forder = 4, dorder = 0),
-  Settings_delete_spectra_section_StreamFind(list("shift" = c(-100, 350))),
-  Settings_delete_spectra_section_StreamFind(list("shift" = c(1800, 2500))),
-  Settings_correct_spectra_baseline_airpls(lambda = 45, differences = 1, itermax = 30),
-  Settings_normalize_spectra_minmax(),
-  Settings_normalize_spectra_blockweight()
+  RamanSettings_AverageSpectra_StreamFind(),
+  RamanSettings_SubtractBlankSpectra_StreamFind(),
+  RamanSettings_SmoothSpectra_savgol(fl = 21, forder = 4, dorder = 0),
+  RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(-100, 350))),
+  RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(1800, 2500))),
+  RamanSettings_CorrectSpectraBaseline_airpls(lambda = 45, differences = 1, itermax = 30),
+  RamanSettings_NormalizeSpectra_minmax(),
+  RamanSettings_NormalizeSpectra_blockweight()
 )
 
 raman$add_settings(raman_workflow_settings)
@@ -364,7 +364,7 @@ rownames(test_set)
 ```{r pca-engine, fig.cap="PCA model (native plot from mdatools R package).", fig.height=9}
 stat <- StatisticEngine$new(data = main_set)
 # The alpha and gamma parameters are used to evaluate the model limits
-stat$make_model(Settings_make_model_pca_mdatools(ncomp = 3, alpha = 1E-4, gamma = 1E-5))
+stat$make_model(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 1E-4, gamma = 1E-5))
 # Original plot from mdatools R package
 plot(stat$model)
 ```
@@ -395,7 +395,7 @@ labels <- c(rep("ass", 2), rep("caff", 2), rep("fiz", 2), rep("fiz_acid", 2), re
 ```{r knn-engine}
 stat2 <- StatisticEngine$new(data = train_set)
 stat2$add_classes(labels)
-stat2$prepare_classification(Settings_prepare_classification_knn(k = 3))
+stat2$prepare_classification(StatisticSettings_PrepareClassification_knn(k = 3))
 stat2$classify(test_set)
 stat2$classification_results
 ```
@@ -407,7 +407,7 @@ ms_spec_mat <- mdatools::prep.autoscale(ms_spec_mat, center = TRUE, scale = FALS
 main_set_ms <- ms_spec_mat[c(7:9, 16:21, 25:33), ]
 test_set_ms <- ms_spec_mat[c(1:6, 10:15, 22:24, 34:42), ]
 stat_ms <- StatisticEngine$new(data = main_set_ms)
-stat_ms$make_model(Settings_make_model_pca_mdatools(ncomp = 3, alpha = 1E-4, gamma = 1E-5))
+stat_ms$make_model(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 1E-4, gamma = 1E-5))
 ```
 
 ```{r plot-pca-only-ms, fig.cap="PCA model for MS data only (native plot from mdatools R package).", fig.height=9}
@@ -428,7 +428,7 @@ raman_spec_mat <- mdatools::prep.autoscale(raman_spec_mat, center = TRUE, scale 
 main_set_raman <- raman_spec_mat[c(7:9, 16:21, 25:33), ]
 test_set_raman <- raman_spec_mat[c(1:6, 10:15, 22:24, 34:42), ]
 stat_raman <- StatisticEngine$new(data = main_set_raman)
-stat_raman$make_model(Settings_make_model_pca_mdatools(ncomp = 3, alpha = 1E-4, gamma = 1E-5))
+stat_raman$make_model(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 1E-4, gamma = 1E-5))
 ```
 
 ```{r plot-pca-only-raman, fig.cap="PCA model for Raman data only (native plot from mdatools R package).", fig.height=9}
@@ -464,12 +464,12 @@ raman_quant$plot_spectra(colorBy = "replicates")
 
 ```{r raman-conc-workflow}
 raman_workflow_settings <- list(
-  Settings_average_spectra_StreamFind(),
-  Settings_subtract_blank_spectra_StreamFind(),
-  Settings_smooth_spectra_savgol(fl = 21, forder = 4, dorder = 0),
-  Settings_delete_spectra_section_StreamFind(list("shift" = c(-100, 350))),
-  Settings_delete_spectra_section_StreamFind(list("shift" = c(1800, 2500))),
-  Settings_correct_spectra_baseline_airpls(lambda = 45, differences = 1, itermax = 30)
+  RamanSettings_AverageSpectra_StreamFind(),
+  RamanSettings_SubtractBlankSpectra_StreamFind(),
+  RamanSettings_SmoothSpectra_savgol(fl = 21, forder = 4, dorder = 0),
+  RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(-100, 350))),
+  RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(1800, 2500))),
+  RamanSettings_CorrectSpectraBaseline_airpls(lambda = 45, differences = 1, itermax = 30)
 )
 
 raman_quant$add_settings(raman_workflow_settings)
@@ -492,7 +492,7 @@ The quantification of paracetamol from the Raman spectra is performed using the 
 ```{r mcrals-show}
 stat3 <- StatisticEngine$new(data = raman_quant$get_spectra_matrix())
 stat3$add_concentrations(c(1, 2.5, 5.0, 7.5, 15.0, NA_real_)) # add concentrations, with NA for unknown
-stat3$make_model(Settings_make_model_mcrals_mdatools(ncomp = 3))
+stat3$make_model(StatisticSettings_MakeModel_mcrals_mdatools(ncomp = 3))
 summary(stat3$model)
 ```
 

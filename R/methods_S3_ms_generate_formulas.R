@@ -1,11 +1,11 @@
 
-#' @title .s3_ms_generate_formulas.Settings_generate_formulas_genform
+#' @title .s3_GenerateFormulas.MassSpecSettings_GenerateFormulas_genform
 #'
 #' @description Generate formulas for feature groups using GenForm.
 #'
 #' @noRd
 #'
-.s3_ms_generate_formulas.Settings_generate_formulas_genform <- function(settings, self, private) {
+.s3_GenerateFormulas.MassSpecSettings_GenerateFormulas_genform <- function(settings, self, private) {
   
   if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found! Install it for finding features.")
