@@ -5,10 +5,10 @@ articles:
   demo_ms_raman_fusion_bsa: demo_ms_raman_fusion_bsa.html
   demo_ozonation_project: demo_ozonation_project.html
   demo_paracetamol: demo_paracetamol.html
+  developer_guide: developer_guide.html
   framework: framework.html
-  ms_developer_guide: ms_developer_guide.html
   StreamFind: StreamFind.html
-last_built: 2024-07-02T11:22Z
+last_built: 2024-07-31T08:33Z
 urls:
   reference: https://odea-project.github.io/StreamFind/reference
   article: https://odea-project.github.io/StreamFind/articles

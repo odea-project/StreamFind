@@ -4,7 +4,11 @@
 \alias{get_default_ProcessingSettings}
 \title{get_default_ProcessingSettings}
 \usage{
-get_default_ProcessingSettings(call = NA_character_, algorithm = NA_character_)
+get_default_ProcessingSettings(
+  engine = NA_character_,
+  call = NA_character_,
+  algorithm = NA_character_
+)
 }
 \arguments{
 \item{call}{Character (length 1) with the method call name.}

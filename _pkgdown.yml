@@ -40,131 +40,135 @@ reference:
 
 - subtitle: Average Spectra
   contents:
-    - "*Settings_AverageSpectra*")
+    - matches("Settings_AverageSpectra")
 
 - subtitle: Bin Spectra
   contents:
-    - "*Settings_BinSpectra*"
+    - matches("Settings_BinSpectra")
 
 - subtitle: Cluster Spectra
   contents:
-    - "*Settings_ClusterSpectra*"
+    - matches("Settings_ClusterSpectra")
 
 - subtitle: Correct Chromatograms Baseline
   contents:
-    "*Settings_CorrectChromatogramsBaseline*"
+    matches("Settings_CorrectChromatogramsBaseline")
 
 - subtitle: Correct Spectra Baseline
   contents:
-    - "*Settings_CorrectSpectraBaseline*"
+    - matches("Settings_CorrectSpectraBaseline")
 
 - subtitle: Delete Spectra Section
   contents:
-    - "*Settings_delete_spectra_section*"
+    - matches("Settings_delete_spectra_section")
 
 - subtitle: Integrate Chromatograms
   contents:
-    - "*Settings_IntegrateChromatograms*"
+    - matches("Settings_IntegrateChromatograms")
 
 - subtitle: Make Model
   contents:
-    - "*Settings_MakeModel*"
+    - matches("Settings_MakeModel")
 
 - subtitle: Merge Spectra Time Series
   contents:
-    - "*Settings_MergeSpectraTimeSeries*"
+    - matches("Settings_MergeSpectraTimeSeries")
 
 - subtitle: Annotate Features
   contents:
-    - "*Settings_AnnotateFeatures*"
+    - matches("Settings_AnnotateFeatures")
 
 - subtitle: Calculate Quality
   contents:
-    - "*Settings_CalculateQuality*"
+    - matches("Settings_CalculateQuality")
 
 - subtitle: Calculate Spectra Charges
   contents:
-    - "*Settings_CalculateSpectraCharges*"
+    - matches("Settings_CalculateSpectraCharges")
 
 - subtitle: Centroid Spectra
   contents:
-    - "*Settings_CentroidSpectra*"
+    - matches("Settings_CentroidSpectra")
 
 - subtitle: Deconvolute Spectra
   contents:
-    - "*Settings_DeconvoluteSpectra*"
+    - matches("Settings_DeconvoluteSpectra")
+
+- subtitle: Delete Spectra Section
+  contents:
+    - matches("Settings_DeleteSpectraSection")
 
 - subtitle: Fill Features
   contents:
-    - "*Settings_FillFeatures*"
+    - matches("Settings_FillFeatures")
 
 - subtitle: Filter Features
   contents:
-    - "*Settings_FilterFeatures*"
+    - matches("Settings_FilterFeatures")
 
 - subtitle: Find Features
   contents:
-    - "*Settings_FindFeatures*"
+    - matches("Settings_FindFeatures")
 
 - subtitle: Find Internal Standards
   contents:
-    - "*Settings_FindInternalStandards*"
+    - matches("Settings_FindInternalStandards")
 
 - subtitle: Generate Compounds
   contents:
-    - "*Settings_GenerateCompounds*"
+    - matches("Settings_GenerateCompounds")
 
 - subtitle: Generate Formulas
   contents:
-    - "*Settings_GenerateFormulas*"
+    - matches("Settings_GenerateFormulas")
 
 - subtitle: GroupFeatures
   contents:
-    - "*Settings_GroupFeatures*"
+    - matches("Settings_GroupFeatures")
 
 - subtitle: Load Features EIC
   contents:
-    - "*Settings_LoadFeaturesEIC*"
+    - matches("Settings_LoadFeaturesEIC")
 
 - subtitle: Load Features MS1 and MS2 spectra
   contents:
-    - "*Settings_LoadFeaturesMS*")
+    - matches("Settings_LoadFeaturesMS")
 
 - subtitle: Load MSPeakLists
   contents:
-    - "*Settings_LoadMSPeakLists*"
+    - matches("Settings_LoadMSPeakLists")
 
 - subtitle: Normalize Features
   contents:
-    - "*Settings_NormalizeFeatures*"
+    - matches("Settings_NormalizeFeatures")
 
 - subtitle: Normalize Spectra
   contents:
-    - "*Settings_NormalizeSpectra*"
+    - matches("Settings_NormalizeSpectra")
 
 - subtitle: Prepare Classification
   contents:
-    - "*Settings_PrepareClassification*"
+    - matches("Settings_PrepareClassification")
 
 - subtitle: Suspect Screening
   contents:
-    - "*Settings_SuspectScreening*"
+    - matches("Settings_SuspectScreening")
 
 - subtitle: Smooth Chromatograms
   contents:
-    - "*Settings_SmoothChromatograms*"
+    - matches("Settings_SmoothChromatograms")
 
 - subtitle: Smooth Spectra
   contents:
-    - "Settings_SmoothSpectra*"
+    - matches("Settings_SmoothSpectra")
 
 - subtitle: Subtract Blank Spectra
   contents:
-    - "Settings_SubtractBlankSpectra*"
+    - matches("Settings_SubtractBlankSpectra")
 
 - subtitle: Subtract Spectra Section
   contents:
-    - "*Settings_SubtractSpectraSection*"
+    - matches("Settings_SubtractSpectraSection")
 
 - subtitle: General get and save default settings
   desc: >

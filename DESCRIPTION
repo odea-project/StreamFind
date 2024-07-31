@@ -41,7 +41,8 @@ Imports:
     DBI,
     RSQLite,
     withr,
-    fst
+    fst,
+    zlibbioc
 Suggests: 
     StreamFindData,
     mzR,

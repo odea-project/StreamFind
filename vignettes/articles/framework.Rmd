@@ -123,17 +123,17 @@ This way, the `ProcessingSettings` objects are use as instructions to assemble a
 ProcessingSettings()
 ```
 
-A `ProcessingSettings` object must always have the call name of the processing method, the name and version of the algorithm to be applied, the origin software, the main developer name and contact as well as a link to further information and the DOI, when available.
+A `ProcessingSettings` object must always have the engine type to be aplied, the call name of the processing method, the name of the algorithm to be applied, the origin software, the main developer name and contact as well as a link to further information and the DOI, when available.
 Lastly but not least, the parameters which is a flexible list of conditions to apply the algorithm during data processing.
 As example, `ProcessingSettings` for centroiding MS data using the qCentroids from the [qAlgorihtms](https://github.com/odea-project/qAlgorithms) and for annotating features using a native algorithm from StreamFind R library are shown below.
 Each `ProcessingSettings` object has a dedicated constructor method with documentation to support the usage.  
 
 ```{r}
-Settings_centroid_spectra_qCentroids()
+MassSpecSettings_CentroidSpectra_qCentroids()
 ```
 
 ```{r}
-Settings_annotate_features_StreamFind()
+MassSpecSettings_AnnotateFeatures_StreamFind()
 ```
 
 ## Analysis
@@ -204,28 +204,28 @@ list of `ProcessingSettings` for processing the Raman spectra.
 ```{r}
 ps <- list(
   # Averages the spectra for each analysis replicate
-  Settings_average_spectra_StreamFind(),
+  RamanSettings_AverageSpectra_StreamFind(),
   
   # Simple normalization based on maximum intensity
-  Settings_normalize_spectra_minmax(),
+  RamanSettings_NormalizeSpectra_minmax(),
   
   # Background subtraction
-  Settings_subtract_blank_spectra_StreamFind(),
+  RamanSettings_SubtractBlankSpectra_StreamFind(),
   
   # Applies smoothing based on moving average
-  Settings_smooth_spectra_movingaverage(windowSize = 4),
+  RamanSettings_SmoothSpectra_movingaverage(windowSize = 4),
   
   # Removes a section from the spectra from -40 to 470
-  Settings_delete_spectra_section_StreamFind(list("shift" = c(-40, 300))),
+  RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(-40, 300))),
   
   # Removes a section from the spectra from -40 to 470
-  Settings_delete_spectra_section_StreamFind(list("shift" = c(2000, 3000))),
+  RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(2000, 3000))),
  
   # Performs baseline correction 
-  Settings_correct_spectra_baseline_baseline(method = "als", args = list(lambda = 3, p = 0.06, maxit = 10)),
+  RamanSettings_CorrectSpectraBaseline_baseline(method = "als", args = list(lambda = 3, p = 0.06, maxit = 10)),
   
-  # Performs again normalization using mixmax
-  Settings_normalize_spectra_minmax()
+  # Performs again normalization using minimum and maximum
+  RamanSettings_NormalizeSpectra_minmax()
 )
 ```
 
