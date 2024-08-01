@@ -1,11 +1,6 @@
 
-#' .s3_CentroidSpectra.MassSpecSettings_CentroidSpectra_qCentroids
-#'
-#' @description Centroids profile spectra.
-#'
 #' @noRd
-#'
-.s3_CentroidSpectra.MassSpecSettings_CentroidSpectra_qCentroids <- function(settings, self) {
+.process.MassSpecSettings_CentroidSpectra_qCentroids <- function(settings, self) {
 
   message("Centroiding spectra with qCentroids...", appendLF = TRUE)
   

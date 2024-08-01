@@ -1,11 +1,6 @@
 
-#' @title .s3_AnnotateFeatures.MassSpecSettings_AnnotateFeatures_StreamFind
-#'
-#' @description Annotates features with isotopes.
-#'
 #' @noRd
-#'
-.s3_AnnotateFeatures.MassSpecSettings_AnnotateFeatures_StreamFind <- function(settings, self, private) {
+.process.MassSpecSettings_AnnotateFeatures_StreamFind <- function(settings, self, private) {
 
   if (!any(self$has_features())) {
     warning("Features were not found! Run find_features method first!")

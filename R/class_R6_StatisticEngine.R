@@ -22,24 +22,18 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
   # _ private fields -----
   private = list(
     .check_list_analyses_data_conformity = function(analyses) {
-      
       if (length(analyses) > 0) {
-        
         nvars <- vapply(analyses, function(x) ncol(x$data), 0)
-        
         if (!all(nvars == nvars[1])) {
           warning("The number of variables in the analyses must be equal! Not done.")
           return(FALSE)
         }
-        
         vars <- lapply(analyses, function(x) colnames(x$data))
-        
         if (!all(vapply(vars, function(x) all(x == vars[[1]]), FALSE))) {
           warning("The variables in the analyses must be equal! Not done.")
           return(FALSE)
         }
       }
-      
       TRUE
     }
   ),
@@ -50,23 +44,14 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #' @field data Matrix of the data, where rows represent analyses and columns variables.
     #'
     data = function() {
-      
       if (self$has_results("data")) {
-        
         res <- self$get_results("data")
-        
         res
-        
       } else {
-        
         res <- lapply(self$get_analyses(), function(x) x$data)
-        
         names <- self$get_analysis_names()
-        
         res <- do.call(rbind, res)
-        
         rownames(res) <- names
-        
         res
       }
     },
@@ -74,20 +59,14 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #' @field model Statistic model.
     #'
     model = function(value) {
-      
       if (missing(value)) {
-        
         res <- self$get_results("model")
-        
         if (length(res) > 0) {
-          
           res$model$data
-          
         } else {
           NULL
         }
       } else {
-        
         self$add_results(
           list(
             "model" = list(
@@ -97,7 +76,6 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
             )
           )
         )
-        
         invisible(self)
       }
     },
@@ -127,23 +105,16 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #' @param data Data.frame, data-table or matrix with data.
     #'
     initialize = function(data = NULL, headers = NULL, settings = NULL, analyses = NULL, results = NULL) {
-     
       if (!is.null(analyses)) {
-       
         if (is(analyses, "StatisticAnalysis")) analyses <- list(analyses)
-        
         if (!all(vapply(analyses, function(x) is(x, "StatisticAnalysis"), FALSE))) {
           warning("The argument analyses must be a StatisticAnalysis object or a list of StatisticAnalysis objects! Not done.")
           analyses <- NULL
         }
-       
         if (!private$.check_list_analyses_data_conformity(analyses)) analyses <- NULL
       }
-     
       super$initialize(headers, settings, analyses, results)
-     
       if (!is.null(data)) self$add_data(data)
-     
       private$.register("created", "StatisticEngine", headers$name, paste(c(headers$author, headers$path), collapse = ", "))
     },
     
@@ -152,19 +123,12 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #' @description Gets an overview data.frame of all the analyses.
     #'
     get_overview = function() {
-     
       if (length(private$.analyses) > 0) {
-       
         ov <- super$get_overview()
-        
         ov$nvars <- vapply(private$.analyses, function(x) ncol(x$data), 0)
-        
         ov$class <- vapply(private$.analyses, function(x) x$class, NA_character_)
-        
         row.names(ov) <- seq_len(nrow(ov))
-        
         ov
-       
       } else {
        data.frame()
       }
@@ -197,13 +161,9 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #' @description Gets the number of variables.
     #' 
     get_number_variables = function() {
-      
       if (length(private$.analyses) > 0) {
-        
         nvars <- vapply(private$.analyses, function(x) ncol(x$data), 0)
-        
         unique(nvars)
-        
       } else {
         0
       }
@@ -212,16 +172,12 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #' @description Gets model explained variance.
     #'
     get_model_explained_variance = function() {
-      
       m <- self$model
-      
       if (is.null(m)) {
         warning("Model not found! Not done.")
         return(NULL)
       }
-      
       var <- NULL
-      
       switch(is(m),
         "pca" = {
           var <- m$res$cal$expvar
@@ -230,93 +186,70 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
           var <- m$variance
         }
       )
-      
       if (is.null(var)) {
         warning("Explained variance not found! Not done.")
         return(NULL)
       }
-      
       var
     },
     
     #' @description Gets model scores.
     #'
     get_model_scores = function(analyses = NULL) {
-      
       analyses <- private$.check_analyses_argument(analyses)
-      
       m <- self$model
-      
       if (is.null(m)) {
         warning("Model not found! Not done.")
         return(NULL)
       }
-      
       dt <- m$res$cal$scores
-      
       if (is.null(dt)) {
         warning("Scores not found! Not done.")
         return(NULL)
       }
-      
       dt <- dt[analyses, , drop = FALSE]
-      
       if (nrow(dt) == 0) {
         warning("Analyses not found! Not done.")
         return(NULL)
       }
-      
       dt
     },
     
     #' @description Gets model loadings.
     #' 
     get_model_loadings = function() {
-      
       m <- self$model
-      
       if (is.null(m)) {
         warning("Model not found! Not done.")
         return(NULL)
       }
-      
       dt <- m$loadings
-      
       if (is.null(dt)) {
         warning("Loadings not found! Not done.")
         return(NULL)
       }
-      
       dt
     },
     
     #' @description Gets model residuals.
     #' 
     get_model_residuals = function(analyses = NULL) {
-      
       analyses <- private$.check_analyses_argument(analyses)
-      
       m <- self$model
-      
       if (is.null(m)) {
         warning("Model not found! Not done.")
         return(NULL)
       }
-      
       dt <- m$res$cal$residuals
-      
       if (is.null(dt)) {
         warning("Residuals not found! Not done.")
         return(NULL)
       }
-      
       dt <- dt[analyses, , drop = FALSE]
-      
       if (nrow(dt) == 0) {
         warning("Analyses not found! Not done.")
         return(NULL)
       }
-      
       dt
     },
     
@@ -393,20 +326,13 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #' @return Invisible.
     #'
     add_analyses = function(analyses = NULL) {
-      
       analyses <- private$.validate_list_analyses(analyses, childClass = "StatisticAnalysis")
-      
       if (!is.null(analyses)) {
-        
         if (!private$.check_list_analyses_data_conformity(analyses)) return(invisible())
-        
         n_analyses <- self$get_number_analyses()
-        
         super$add_analyses(analyses)
-        
         if (self$get_number_analyses() > n_analyses) self$remove_results()
       }
-      
       invisible(self)
     },
     
@@ -500,30 +426,6 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     },
     
     ## ___ processing -----
-    
-    #' @description Makes a model based on applied settings.
-    #'
-    #' @return Invisible.
-    #'
-    make_model = function(settings) {
-      
-      .dispatch_process_method("Statistic", "MakeModel", settings, self, private)
-      
-      invisible(self)
-    },
-    
-    #' @description Prepares for classification of a test set added by the method `classify`.
-    #'
-    #' @return Invisible.
-    #'
-    prepare_classification = function(settings) {
-      
-      .dispatch_process_method("Statistic", "PrepareClassification", settings, self, private)
-      
-      if (self$has_results("prediction")) self$remove_results("prediction")
-      
-      invisible(self)
-    },
     
     #' @description Predicts the data using the model.
     #' 

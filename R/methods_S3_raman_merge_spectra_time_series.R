@@ -1,7 +1,6 @@
 
 #' @noRd
-#'
-.s3_MergeSpectraTimeSeries.RamanSettings_MergeSpectraTimeSeries_StreamFind <- function(settings, self, private) {
+.process.RamanSettings_MergeSpectraTimeSeries_StreamFind <- function(settings, self, private) {
   
   preCut <- settings$parameters$preCut
   

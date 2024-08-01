@@ -1,11 +1,6 @@
 
-#' @title .s3_SubtractBlankSpectra.MassSpecSettings_SubtractBlankSpectra_StreamFind
-#'
-#' @description Subtracts blank analyses according to blank correspondence.
-#'
 #' @noRd
-#'
-.s3_SubtractBlankSpectra.MassSpecSettings_SubtractBlankSpectra_StreamFind <- function(settings, self, private) {
+.process.MassSpecSettings_SubtractBlankSpectra_StreamFind <- function(settings, self, private) {
   
   ntozero <- settings$parameters$negativeToZero
   

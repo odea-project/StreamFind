@@ -4,19 +4,7 @@
     <loc>https://odea-project.github.io/StreamFind/404.html</loc>
   </url>
   <url>
-    <loc>https://odea-project.github.io/StreamFind/articles/articles/demo_ms_raman_fusion_bsa.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/articles/articles/demo_ozonation_project.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/articles/articles/demo_paracetamol.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/articles/articles/framework.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/articles/articles/ms_developer_guide.html</loc>
+    <loc>https://odea-project.github.io/StreamFind/articles/app_guide.html</loc>
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/articles/demo_ms_raman_fusion_bsa.html</loc>
@@ -35,9 +23,6 @@
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/articles/ms_developer_guide.html</loc>
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/articles/StreamFind.html</loc>
@@ -281,168 +266,6 @@
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/save_default_ProcessingSettings.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_annotate_features_StreamFind.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_average_spectra_StreamFind.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_bin_spectra_qBinning.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_bin_spectra_StreamFind.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_calculate_quality_StreamFind.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_calculate_spectra_charges_StreamFind.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_centroid_spectra_qCentroids.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_cluster_spectra_StreamFind.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_correct_chromatograms_baseline_airpls.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_correct_chromatograms_baseline_baseline.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_correct_spectra_baseline_airpls.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_correct_spectra_baseline_baseline.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_deconvolute_spectra_StreamFind.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_delete_spectra_section_StreamFind.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_fill_features_StreamFind.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_filter_features_patRoon.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_filter_features_StreamFind.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_find_features_kpic2.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_find_features_openms.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_find_features_qPeaks.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_find_features_xcms3_centwave.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_find_features_xcms3_matchedfilter.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_find_internal_standards_StreamFind.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_generate_compounds_MetFrag.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_generate_formulas_GenForm.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_group_features_openms.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_group_features_xcms3_peakdensity.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_group_features_xcms3_peakdensity_peakgroups.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_integrate_chromatograms_StreamFind.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_load_features_eic_StreamFind.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_load_features_ms1_StreamFind.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_load_features_ms2_StreamFind.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_load_MSPeakLists_patRoon.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_load_MSPeakLists_StreamFind.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_make_model_mcrals_mdatools.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_make_model_mcrpure_mdatools.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_make_model_pca_mdatools.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_merge_spectra_time_series_StreamFind.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_normalize_features_patRoon_tic.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_normalize_spectra_blockweight.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_normalize_spectra_meancenter.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_normalize_spectra_minmax.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_normalize_spectra_scale.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_normalize_spectra_snv.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_prepare_classification_knn.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_smooth_chromatograms_movingaverage.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_smooth_chromatograms_savgol.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_smooth_spectra_movingaverage.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_smooth_spectra_savgol.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_subtract_blank_spectra_StreamFind.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_subtract_spectra_section_StreamFind.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_suspect_screening_forident.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_suspect_screening_patRoon.html</loc>
-  </url>
-  <url>
-    <loc>https://odea-project.github.io/StreamFind/reference/Settings_suspect_screening_StreamFind.html</loc>
   </url>
   <url>
     <loc>https://odea-project.github.io/StreamFind/reference/StatisticAnalysis.html</loc>

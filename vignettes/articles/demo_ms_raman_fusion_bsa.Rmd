@@ -128,7 +128,7 @@ ms$load_chromatograms("TIC")
 
 ```{r}
 # Smoothing of the TIC chromatogram for improving peak finding
-ms$smooth_chromatograms(MassSpecSettings_SmoothChromatograms_movingaverage(windowSize = 5))
+ms$process(MassSpecSettings_SmoothChromatograms_movingaverage(windowSize = 5))
 ```
 
 ```{r}
@@ -147,7 +147,7 @@ ps_ic
 ```
 
 ```{r}
-ms$integrate_chromatograms(ps_ic)
+ms$process(ps_ic)
 ```
 
 ```{r ,fig.cap="TIC with integrated peaks."}
@@ -339,7 +339,7 @@ The fused data is used to create a PCA model with the *StatisticEngine* using pr
 
 ```{r}
 stat <- StatisticEngine$new(data = fusedMat)
-stat$make_model(StatisticSettings_MakeModel_pca_mdatools(ncomp = 2, alpha = 0.05, gamma = 0.02))
+stat$process(StatisticSettings_MakeModel_pca_mdatools(ncomp = 2, alpha = 0.05, gamma = 0.02))
 summary(stat$model) # summary method is from mdatools
 ```
 
@@ -364,7 +364,7 @@ Another approach for the statistic analysis is to use the MCR pure model (based 
 
 ```{r}
 # Note that the model in the engine will be overwritten by the new mcr pure model
-stat$make_model(StatisticSettings_MakeModel_mcrpure_mdatools(ncomp = 2, offset = 0.05))
+stat$process(StatisticSettings_MakeModel_mcrpure_mdatools(ncomp = 2, offset = 0.05))
 summary(stat$model)
 ```
 

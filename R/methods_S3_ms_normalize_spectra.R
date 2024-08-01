@@ -1,11 +1,6 @@
 
-#' @title .s3_NormalizeSpectra.MassSpecSettings_NormalizeSpectra_minmax
-#'
-#' @description Normalizes intensity based on mix and max.
-#'
 #' @noRd
-#'
-.s3_NormalizeSpectra.MassSpecSettings_NormalizeSpectra_minmax <- function(settings, self, private) {
+.process.MassSpecSettings_NormalizeSpectra_minmax <- function(settings, self, private) {
   
   if (!self$has_spectra()) {
     warning("Spectra not found! Not done.")
@@ -48,13 +43,10 @@
   TRUE
 }
 
-#' @title .s3_NormalizeSpectra.MassSpecSettings_NormalizeSpectra_snv
-#'
-  #' @description Normalizes intensity based on standard normal variate (SNV) transformation.
-#'
+
+
 #' @noRd
-#'
-.s3_NormalizeSpectra.MassSpecSettings_NormalizeSpectra_snv <- function(settings, self, private) {
+.process.MassSpecSettings_NormalizeSpectra_snv <- function(settings, self, private) {
   
   if (!self$has_spectra()) {
     warning("Spectra not found! Not done.")
@@ -101,13 +93,10 @@
   TRUE
 }
 
-#' @title .s3_NormalizeSpectra.MassSpecSettings_NormalizeSpectra_scale
-#'
-#' @description Scales spectra based on the standard deviation.
-#'
+
+
 #' @noRd
-#'
-.s3_NormalizeSpectra.MassSpecSettings_NormalizeSpectra_scale <- function(settings, self, private) {
+.process.MassSpecSettings_NormalizeSpectra_scale <- function(settings, self, private) {
   
   if (!self$has_spectra()) {
     warning("Spectra not found! Not done.")
@@ -148,13 +137,10 @@
   TRUE
 }
 
-#' @title .s3_NormalizeSpectra.MassSpecSettings_NormalizeSpectra_blockweight
-#'
-#' @description Scales spectra based on the standard deviation.
-#'
+
+
 #' @noRd
-#'
-.s3_NormalizeSpectra.MassSpecSettings_NormalizeSpectra_blockweight <- function(settings, self, private) {
+.process.MassSpecSettings_NormalizeSpectra_blockweight <- function(settings, self, private) {
   
   if (!self$has_spectra()) {
     warning("Spectra not found! Not done.")
@@ -193,13 +179,10 @@
   TRUE
 }
 
-#' @title .s3_NormalizeSpectra.MassSpecSettings_NormalizeSpectra_meancenter
-#'
-#' @description Performs a mean center normalzation to spectra.
-#'
+
+
 #' @noRd
-#'
-.s3_NormalizeSpectra.MassSpecSettings_NormalizeSpectra_meancenter <- function(settings, self, private) {
+.process.MassSpecSettings_NormalizeSpectra_meancenter <- function(settings, self, private) {
   
   if (!self$has_spectra()) {
     warning("Spectra not found! Not done.")

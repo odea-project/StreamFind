@@ -13,73 +13,81 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 <img width="60%" src="man/figures/logo_StreamFind.png" alt="Logo" />
 </p>
 
-The StreamFind project, entitled “Flexible data analysis and workflow
-designer to identify chemicals in the water cycle”, is funded by the
-[Bundesministerium für Bildung und Forschung
-(BMBF)](https://www.bmbf.de) and is a cooperation between the [Institut
-für Umwelt & Energie, Technik & Analytik e. V.
+The StreamFind is developed within the project [“Flexible data analysis
+and workflow designer to identify chemicals in the water
+cycle”](https://www.bildung-forschung.digital/digitalezukunft/de/wissen/Datenkompetenzen/datenkompetenzen_wissenschaftlichen_nachwuchs/Projekte/stream_find.html),
+which is funded by the [Bundesministerium für Bildung und Forschung
+(BMBF)](https://www.bmbf.de). The development is carried out by the
+[Institut für Umwelt & Energie, Technik & Analytik e. V.
 (IUTA)](https://www.iuta.de), the [Forschungszentrum Informatik
 (FZI)](https://www.fzi.de/) and supporting partners. The goal of the
-StreamFind project is the development and assembly of data processing
-workflows for mass spectrometry and spectroscopy and the application of
-the workflows in environmental and quality studies of the water cycle.
-The StreamFind aims to stimulate the use of advanced data analysis
-(e.g., non-target screening, statistical analysis, etc.) in routine
-studies, promoting standardization of data processing and structure and
-easing the retrospective evaluation of data. The StreamFind platform is
-directed to academics but also technicians, due to the aspired
-comprehensive documentation, well categorized set of integrated modular
-functions and the graphical user interface.  
-<br> The library of
-[StreamFind](https://github.com/odea-project/StreamFind) is an R package
-(this repository). The graphical user interface (GUI) is a Web App
-developed in JavaScript and can be found in the
-[StreamFind-App](https://github.com/odea-project/StreamFind-App)
-repository. The StreamFind development is ongoing, please [contact
+StreamFind is to develop and assemble data processing workflows for
+different types of analytical data (e.g., mass spectrometry and
+spectroscopy) and to apply the workflows in different fields (e.g.,
+environmental and quality studies of the water cycle). StreamFind aims
+to stimulate the use of advanced data analysis (e.g., non-target
+screening, statistical analysis, etc.) in routine studies, to promote
+standardization of data structure and processing, and to facilitate
+retrospective data evaluation. The StreamFind platform is aimed at
+scientists, but also at technicians, due to its comprehensive
+documentation, its well categorized set of integrated modular functions
+and its embedded graphical user interface.  
+<br> The StreamFind development is ongoing, please [contact
 us](mailto:cunha@iuta.de) for questions or collaboration.
 
 <img src="man/figures/logo_group.png" width="100%" style="display: block; margin: auto;" />
 
 ## Installation
 
-For installation of the StreamFind R package, it is recommended to first
-install the dependencies. Besides [R](https://cran.r-project.org/) and
-[RTools](https://cran.r-project.org/bin/windows/Rtools/) (the latter is
-only recommended for Windows users), the StreamFind depends on the
-[patRoon](https://github.com/rickhelmus/patRoon) R package and its
-dependencies. The patRoon R package combines several tools for basic and
-advanced data processing and can be used interchangeably with the
-StreamFind R package. Installation instructions for patRoon and its
-dependencies can be found
-[here](https://rickhelmus.github.io/patRoon/handbook_bd/manual-installation.html#r-prerequisites).
-
-Then, the StreamFind R package can be installed from the GitHub
-repository.
+Pre-requisites for the StreamFind are the
+[R](https://cran.r-project.org/) software and the
+[RTools](https://cran.r-project.org/bin/windows/Rtools/) (only
+applicable for Windows users). RTools is needed for compiling the C++
+code used in the StreamFind R package. Assuming that R and RTools are
+installed, the StreamFind R package can be installed from the GitHub
+repository via the [BiocManager](https://www.bioconductor.org/install/).
 
 ``` r
-remotes::install_github("odea-project/StreamFind", dependencies = TRUE)
+if (!require("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install("odea-project/StreamFind", dependencies = TRUE)
 ```
+
+## Other dependencies
+
+The StreamFind depends on other open source software to process
+different analytical data. For instance, for non-target screening using
+mass spectrometry the StreamFind uses the
+[patRoon](https://github.com/rickhelmus/patRoon) R package and its own
+dependencies. Installation instructions for patRoon and its dependencies
+can be found
+[here](https://rickhelmus.github.io/patRoon/handbook_bd/manual-installation.html#r-prerequisites).
+Consult the documentation for dependencies of other data types.
+
+## Suplementary data
 
 The supplementary
 [StreamFindData](https://github.com/odea-project/StreamFindData) R
 package holds the data used in examples and other documentation assets
-of the StreamFind R package and can also be installed from the GitHub
-repository.
+of the StreamFind and can also be installed from the GitHub repository.
 
 ``` r
-remotes::install_github("odea-project/StreamFindData")
+if (!require("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install("odea-project/StreamFindData")
 ```
 
-### Documentation
+## Documentation
 
 The documentation and usage examples of the StreamFind R package can be
 found in the [reference
 page](https://odea-project.github.io/StreamFind/reference/index.html)
 and
 [articles](https://odea-project.github.io/StreamFind/articles/index.html)
-of the [webpage](https://odea-project.github.io/StreamFind/index.html).
+of the [webpage](https://odea-project.github.io/StreamFind/index.html),
+respectively.
 
-# References
+## References
 
 The StreamFind is open source due to public funding and the extensive
 contribution from scientific literature as well as existing open source

@@ -1,15 +1,10 @@
 
-#' @title .s3_AverageSpectra.MassSpecSettings_AverageSpectra_StreamFind
-#'
-#' @description Averaging of spectra.
-#'
 #' @noRd
-#'
-.s3_AverageSpectra.MassSpecSettings_AverageSpectra_StreamFind <- function(settings, self, private) {
+.process.MassSpecSettings_AverageSpectra_StreamFind <- function(settings, self, private) {
   
   spec <- self$spectra
   
-  spec <- rbindlist(spec, fill = TRUE)
+  spec <- data.table::rbindlist(spec, fill = TRUE)
   
   if (nrow(spec) == 0) {
     warning("Spectra not found! Not done.")
@@ -21,6 +16,7 @@
   if ("analysis" %in% colnames(spec)) {
     
     . <- NULL
+    
     baseline <- NULL
     
     rpl <- self$get_replicate_names()
@@ -35,7 +31,7 @@
       
       rt = NULL
       
-      res <- copy(x)
+      res <- data.table::copy(x)
       
       res[["analysis"]] <- NULL
       
@@ -80,7 +76,7 @@
       
       res <- unique(res)
       
-      setcolorder(res, c("replicate"))
+      data.table::setcolorder(res, c("replicate"))
       
       res
       

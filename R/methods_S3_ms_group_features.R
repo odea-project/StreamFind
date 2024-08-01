@@ -1,11 +1,6 @@
 
-#' @title .s3_GroupFeatures.patRoon
-#'
-#' @description Groups features using the package patRoon.
-#'
 #' @noRd
-#'
-.s3_GroupFeatures.patRoon <- function(settings, self, private) {
+.process.GroupFeatures_patRoon <- function(settings, self, private) {
   
   if (!requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found! Install it for finding features.")
@@ -20,7 +15,7 @@
   pat_features <- self$features
 
   algorithm <- settings$algorithm
-
+  
   if (grepl("_", algorithm, fixed = FALSE)) algorithm <- gsub("^(.*?)_.*$", "\\1", algorithm)
 
   if ("xcms" %in% algorithm || "xcms3" %in% algorithm) {

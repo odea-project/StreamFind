@@ -1,21 +1,4 @@
 
-#' .dispatch_process_method
-#'
-#' @description Function to dispatch the processing method according to the defined processing settings object.
-#'
-#' @noRd
-#'
-.dispatch_process_method <- function(engine, method, settings, self, private) {
-  call_method <- paste0(".s3_", method)
-  settings <- private$.get_call_settings(settings, engine, method)
-  if (is.null(settings)) return(FALSE)
-  processed <- do.call(call_method, list(settings, self, private))
-  if (processed) {
-    if (!private$.settings_already_stored(settings)) self$add_settings(settings)
-    private$.register("processed", settings$call, settings$algorithm, settings$software)
-  }
-}
-
 #' .trim_vector
 #' 
 #' @description Asset function for fast trimming of a vector based on a list of ranges.
@@ -417,4 +400,25 @@
 #' @noRd
 .save_cache = function(category = NULL, data = NULL, hash = NULL, file = "cache.sqlite") {
   .save_cache_backend(file, category, data, hash)
+}
+
+#' @title .convert_to_json
+#'
+#' @description Converts an object to json string using custom conditions.
+#' 
+#' @noRd
+.convert_to_json <- function(data) {
+  jsonlite::toJSON(
+    data,
+    dataframe = "columns",
+    Date = "ISO8601",
+    POSIXt = "string",
+    factor = "string",
+    complex = "string",
+    null = "null",
+    na = "null",
+    digits = 6,
+    pretty = TRUE,
+    force = TRUE
+  )
 }

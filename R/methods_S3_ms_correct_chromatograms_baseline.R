@@ -1,11 +1,6 @@
 
-#' @title .s3_CorrectChromatogramsBaseline.MassSpecSettings_CorrectChromatogramsBaseline_airpls
-#'
-#' @description Corrects baseline from chromatograms using airPLS.
-#'
 #' @noRd
-#'
-.s3_CorrectChromatogramsBaseline.MassSpecSettings_CorrectChromatogramsBaseline_airpls <- function(settings, self, private) {
+.process.MassSpecSettings_CorrectChromatogramsBaseline_airpls <- function(settings, self, private) {
   
   lambda = settings$parameters$lambda
   
@@ -63,13 +58,8 @@
   TRUE
 }
 
-#' @title .s3_CorrectChromatogramsBaseline.MassSpecSettings_CorrectChromatogramsBaseline_baseline
-#'
-#' @description Corrects baseline from spectra.
-#'
 #' @noRd
-#'
-.s3_CorrectChromatogramsBaseline.MassSpecSettings_CorrectChromatogramsBaseline_baseline <- function(settings, self, private) {
+.process.MassSpecSettings_CorrectChromatogramsBaseline_baseline <- function(settings, self, private) {
   
   if (!requireNamespace("baseline", quietly = TRUE)) {
     warning("Package baseline not found but required! Not done.")

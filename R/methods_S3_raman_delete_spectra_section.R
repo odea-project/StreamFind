@@ -1,7 +1,6 @@
 
 #' @noRd
-#'
-.s3_DeleteSpectraSection.RamanSettings_DeleteSpectraSection_StreamFind <- function(settings, self, private) {
+.process.RamanSettings_DeleteSpectraSection_StreamFind <- function(settings, self, private) {
   
   section <- settings$parameters$section
   

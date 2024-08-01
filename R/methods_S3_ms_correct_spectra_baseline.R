@@ -26,13 +26,10 @@
   list("mat" = mat, "baseline" = i_baseline, "corrected" = i_corrected)
 }
 
-#' @title .s3_CorrectSpectraBaseline.MassSpecSettings_CorrectSpectraBaseline_baseline
-#'
-#' @description Corrects baseline from spectra.
-#'
+
+
 #' @noRd
-#'
-.s3_CorrectSpectraBaseline.MassSpecSettings_CorrectSpectraBaseline_baseline <- function(settings, self, private) {
+.process.MassSpecSettings_CorrectSpectraBaseline_baseline <- function(settings, self, private) {
   
   if (!requireNamespace("baseline", quietly = TRUE)) {
     warning("Package baseline not found but required! Not done.")
@@ -119,13 +116,10 @@
   return(z)
 }
 
-#' @title .s3_CorrectSpectraBaseline.MassSpecSettings_CorrectSpectraBaseline_airpls
-#'
-#' @description Corrects baseline from spectra using airPLS.
-#'
+
+
 #' @noRd
-#'
-.s3_CorrectSpectraBaseline.MassSpecSettings_CorrectSpectraBaseline_airpls <- function(settings, self, private) {
+.process.MassSpecSettings_CorrectSpectraBaseline_airpls <- function(settings, self, private) {
   
   lambda = settings$parameters$lambda
   
