@@ -1,11 +1,6 @@
 
-#' @title .s3_SmoothChromatograms.MassSpecSettings_SmoothChromatograms_savgol
-#'
-#' @description Smooths chromatograms based on Savitzky and Golay from pracma package.
-#'
 #' @noRd
-#'
-.s3_SmoothChromatograms.MassSpecSettings_SmoothChromatograms_savgol <- function(settings, self, private) {
+.process.MassSpecSettings_SmoothChromatograms_savgol <- function(settings, self, private) {
   
   if (!requireNamespace("pracma", quietly = TRUE)) {
     warning("Package pracma not found but required! Not done.")
@@ -37,7 +32,7 @@
           z
         })
         
-        x <- rbindlist(temp_x)
+        x <- data.table::rbindlist(temp_x)
         
       } else {
         x$intensity <- pracma::savgol(x$intensity, fl = fl, forder = forder, dorder = dorder)
@@ -55,13 +50,10 @@
   TRUE
 }
 
-#' @title .s3_SmoothChromatograms.MassSpecSettings_SmoothChromatograms_movingaverage
-#'
-#' @description Smooths chromatograms using a moving average approach.
-#'
+
+
 #' @noRd
-#'
-.s3_SmoothChromatograms.MassSpecSettings_SmoothChromatograms_movingaverage <- function(settings, self, private) {
+.process.MassSpecSettings_SmoothChromatograms_movingaverage <- function(settings, self, private) {
   
   windowSize <- settings$parameters$windowSize
   
@@ -84,7 +76,7 @@
           z
         })
         
-        x <- rbindlist(temp_x)
+        x <- data.table::rbindlist(temp_x)
         
       } else {
         x$intensity <- .moving_average(x$intensity, windowSize = windowSize)

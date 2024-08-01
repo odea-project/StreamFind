@@ -11,6 +11,8 @@ Removes all results if present in the engine as may be affected but modified cor
 
 Removes all results if present in the engine as may be affected but modified correspondence.
 
+If there are ProcessingSettings objects with the same call names it is better to use \code{run_workflow()}.
+
 The engine data is saved in an \strong{sqlite} file and loaded in the app. If save file is defined in the engine
 it is used, otherwise the save file name is automatically set to the engine class name and the date. Changes made
 in the app can be saved in the \strong{sqlite} file and then loaded for scripting.
@@ -80,6 +82,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-CoreEngine-has_settings}{\code{CoreEngine$has_settings()}}
 \item \href{#method-CoreEngine-has_analyses}{\code{CoreEngine$has_analyses()}}
 \item \href{#method-CoreEngine-has_results}{\code{CoreEngine$has_results()}}
+\item \href{#method-CoreEngine-process}{\code{CoreEngine$process()}}
 \item \href{#method-CoreEngine-run_workflow}{\code{CoreEngine$run_workflow()}}
 \item \href{#method-CoreEngine-save}{\code{CoreEngine$save()}}
 \item \href{#method-CoreEngine-load}{\code{CoreEngine$load()}}
@@ -373,7 +376,7 @@ Gets the processing settings list.
 \if{html}{\out{<a id="method-CoreEngine-get_settings_names"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-get_settings_names}{}}}
 \subsection{Method \code{get_settings_names()}}{
-Gets the names of all processing methods in added processing settings as a character vector.
+Gets the call names of all processing methods in added processing settings as a character vector.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_settings_names()}\if{html}{\out{</div>}}
 }
@@ -462,7 +465,7 @@ as ProcessingSettings object.}
 
 \item{\code{replace}}{Logical of length one. When \code{TRUE}, existing settings are
 replaced by the new settings with the same call name, except settings for
-methods that can be applied more than once.}
+methods that can be applied more than once. The default is \code{FALSE}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -709,6 +712,24 @@ Checks if results are present, returning \code{TRUE} or \code{FALSE}.
 results data. The actual names depends of the applied algorithms. For
 instance, when algorithms via patRoon are used, the name of the module
 data is patRoon.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-process"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-process}{}}}
+\subsection{Method \code{process()}}{
+Runs a processing method with the provided settings.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$process(settings = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{settings}}{A ProcessingSettings object or a character string with the call name of a previously added
+ProcessingSettings in the engine.}
 }
 \if{html}{\out{</div>}}
 }

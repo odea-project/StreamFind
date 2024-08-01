@@ -1,11 +1,6 @@
 
-#' @title .s3_LoadMSPeakLists.MassSpecSettings_LoadMSPeakLists_patRoon
-#'
-#' @description Creates a MSPeakLists object from patRoon.
-#'
 #' @noRd
-#'
-.s3_LoadMSPeakLists.MassSpecSettings_LoadMSPeakLists_patRoon <- function(settings, self, private) {
+.process.MassSpecSettings_LoadMSPeakLists_patRoon <- function(settings, self, private) {
   
   if (!requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found! Install it for finding features.")
@@ -54,13 +49,8 @@
   }
 }
 
-#' @title .s3_LoadMSPeakLists.MassSpecSettings_LoadMSPeakLists_StreamFind
-#'
-#' @description Converts loaded ms1 ans ms2 spectra into a MSPeakLists object from patRoon.
-#'
 #' @noRd
-#'
-.s3_LoadMSPeakLists.MassSpecSettings_LoadMSPeakLists_StreamFind <- function(settings, self, private) {
+.process.MassSpecSettings_LoadMSPeakLists_StreamFind <- function(settings, self, private) {
   
   if (!requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found! Install it for finding features.")
@@ -95,12 +85,7 @@
   }
 }
 
-#' .convert_ms1_ms2_columns_to_MSPeakLists
-#'
-#' @description Helper function to Convert loaded ms1 ans ms2 spectra into a MSPeakLists object from patRoon.
-#'
 #' @noRd
-#'
 .convert_ms1_ms2_columns_to_MSPeakLists <- function(self, parameters) {
   
   if (!requireNamespace("patRoon", quietly = TRUE)) {

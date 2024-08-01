@@ -271,13 +271,10 @@
   pks
 }
 
-#' @title .s3_IntegrateChromatograms.MassSpecSettings_IntegrateChromatograms_StreamFind
-#'
-#' @description Integrates chromatograms the pracma R package with modifications.
-#'
+
+
 #' @noRd
-#'
-.s3_IntegrateChromatograms.MassSpecSettings_IntegrateChromatograms_StreamFind <- function(settings, self, private) {
+.process.MassSpecSettings_IntegrateChromatograms_StreamFind <- function(settings, self, private) {
   
   if (!self$has_chromatograms()) {
     warning("Chromatograms not found! Not done.")

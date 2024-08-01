@@ -63,13 +63,10 @@
   output
 }
 
-#' @title .s3_SmoothSpectra.MassSpecSettings_SmoothSpectra_movingaverage
-#'
-#' @description Smooths spectra using a moving average approach.
-#'
+
+
 #' @noRd
-#'
-.s3_SmoothSpectra.MassSpecSettings_SmoothSpectra_movingaverage <- function(settings, self, private) {
+.process.MassSpecSettings_SmoothSpectra_movingaverage <- function(settings, self, private) {
   
   windowSize <- settings$parameters$windowSize
   
@@ -110,13 +107,10 @@
   TRUE
 }
 
-#' @title .s3_SmoothSpectra.MassSpecSettings_SmoothSpectra_savgol
-#'
-#' @description Smooths of spectra based on Savitzky and Golay from pracma package.
-#'
+
+
 #' @noRd
-#'
-.s3_SmoothSpectra.MassSpecSettings_SmoothSpectra_savgol <- function(settings, self, private) {
+.process.MassSpecSettings_SmoothSpectra_savgol <- function(settings, self, private) {
   
   if (!requireNamespace("pracma", quietly = TRUE)) {
     warning("Package pracma not found but required! Not done.")

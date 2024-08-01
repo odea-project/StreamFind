@@ -54,8 +54,6 @@ Note that only the model MCR is valid for quantification and concentrations must
 \item \href{#method-StatisticEngine-add_data}{\code{StatisticEngine$add_data()}}
 \item \href{#method-StatisticEngine-add_classes}{\code{StatisticEngine$add_classes()}}
 \item \href{#method-StatisticEngine-add_concentrations}{\code{StatisticEngine$add_concentrations()}}
-\item \href{#method-StatisticEngine-make_model}{\code{StatisticEngine$make_model()}}
-\item \href{#method-StatisticEngine-prepare_classification}{\code{StatisticEngine$prepare_classification()}}
 \item \href{#method-StatisticEngine-predict}{\code{StatisticEngine$predict()}}
 \item \href{#method-StatisticEngine-classify}{\code{StatisticEngine$classify()}}
 \item \href{#method-StatisticEngine-quantify}{\code{StatisticEngine$quantify()}}
@@ -112,6 +110,7 @@ Note that only the model MCR is valid for quantification and concentrations must
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_headers'><code>StreamFind::CoreEngine$print_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_results"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_results'><code>StreamFind::CoreEngine$print_results()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_workflow'><code>StreamFind::CoreEngine$print_workflow()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="process"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-process'><code>StreamFind::CoreEngine$process()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_analyses'><code>StreamFind::CoreEngine$remove_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_headers'><code>StreamFind::CoreEngine$remove_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_results"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_results'><code>StreamFind::CoreEngine$remove_results()</code></a></span></li>
@@ -361,54 +360,6 @@ Adds concentrations to the analyses.
 \item{\code{concentrations}}{A numeric vector with the concentrations.}
 }
 \if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-StatisticEngine-make_model"></a>}}
-\if{latex}{\out{\hypertarget{method-StatisticEngine-make_model}{}}}
-\subsection{Method \code{make_model()}}{
-Makes a model based on applied settings.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$make_model(settings)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{settings}}{A named list of ProcessingSettings objects or a
-single ProcessingSettings object. The list names should match
-the call name of each ProcessingSettings object. Alternatively, a named
-list with call name, algorithm and parameters to be transformed and added
-as ProcessingSettings object.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-StatisticEngine-prepare_classification"></a>}}
-\if{latex}{\out{\hypertarget{method-StatisticEngine-prepare_classification}{}}}
-\subsection{Method \code{prepare_classification()}}{
-Prepares for classification of a test set added by the method \code{classify}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$prepare_classification(settings)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{settings}}{A named list of ProcessingSettings objects or a
-single ProcessingSettings object. The list names should match
-the call name of each ProcessingSettings object. Alternatively, a named
-list with call name, algorithm and parameters to be transformed and added
-as ProcessingSettings object.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
 }
 }
 \if{html}{\out{<hr>}}

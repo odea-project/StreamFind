@@ -1,11 +1,6 @@
 
-#' @title .s3_CalculateSpectraCharges.MassSpecSettings_CalculateSpectraCharges_StreamFind
-#'
-#' @description Calculate spectra charges from multi-charged compounds.
-#'
 #' @noRd
-#'
-.s3_CalculateSpectraCharges.MassSpecSettings_CalculateSpectraCharges_StreamFind <- function(settings, self, private) {
+.process.MassSpecSettings_CalculateSpectraCharges_StreamFind <- function(settings, self, private) {
 
   parameters <- settings$parameters
   

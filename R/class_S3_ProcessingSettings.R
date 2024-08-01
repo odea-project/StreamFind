@@ -73,7 +73,8 @@ ProcessingSettings <- function(engine = NA_character_,
   patRoon_algorithms <- c("openms", "xcms", "xcms3", "envipick", "sirius", "kpic2", "safd", "GenForm", "MetFrag")
 
   if (any(vapply(patRoon_algorithms, function(a) grepl(a, x$algorithm, fixed = FALSE), FALSE))) {
-    s3_classes <- append(s3_classes, "patRoon")
+    if (x$call %in% "FindFeatures") s3_classes <- append(s3_classes, "FindFeatures_patRoon")
+    if (x$call %in% "GroupFeatures") s3_classes <- append(s3_classes, "GroupFeatures_patRoon")
   }
   
   x <- structure(x, class = s3_classes)

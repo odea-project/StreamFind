@@ -229,13 +229,6 @@ The modules assigned by the added *ProcessingSettings* can be processed by `run_
 ms$run_workflow()
 ```
 
-Alternatively, the modules can be processed by chaining, as shown below. By chaining, the order can be modified as the modules are individually called.
-
-```{r do-workflow-chain, eval=FALSE}
-# Alternatively, the modules can be chained
-ms$find_features()$annotate_features()$group_features()$filter_features()
-```
-
 # Results
 
 The created features and feature groups can be inspected as `data.table` objects or plotted by dedicated modules in the *MassSpecEngine*.
@@ -272,7 +265,7 @@ ms$plot_groups_overview(mass = db, ppm = 5, sec = 10, legendNames = TRUE)
 
 ## Filtered not removed
 
-The `filter_features()` module was applied to filter features out according to defined conditions/thresholds. The filtered features were not removed but just tagged as filtered and a filter tag was assigned. For instance, when the method `MassSpecEngine$get_features()` is run with `filtered` argument set to `TRUE`, the filtered features are also shown. Below, we search for the internal standards added to each analysis that were filtered when applying the blank subtraction, receiving the tag **blank** in the *filter* column and `TRUE` in the *filtered* column.
+The *FilterFeatures* module was applied to filter features out according to defined conditions/thresholds. The filtered features were not removed but just tagged as filtered and a filter tag was assigned. For instance, when the method `MassSpecEngine$get_features()` is run with `filtered` argument set to `TRUE`, the filtered features are also shown. Below, we search for the internal standards added to each analysis that were filtered when applying the blank subtraction, receiving the tag **blank** in the *filter* column and `TRUE` in the *filtered* column.
 
 ```{r database-is-show}
 db_is
@@ -285,7 +278,7 @@ ms$get_groups(mass = db_is, ppm = 8, sec = 10, average = TRUE, filtered = TRUE)
 
 ## Internal Stanards
 
-The module `MassSpecEngine$find_internal_standards()` was applied and the results can be obtained with the dedicated method `MassSpecEngine$get_internal_standards()` or plotted as a quality overview using the method `MassSpecEngine$plot_internal_standards_qc()`, as shown below. The plot gives an overview of the mass, retention time and intensity variance of the internal stadards across the analyses in the project. 
+The method *FindInternalStandards* was applied and the results can be obtained with the dedicated method `MassSpecEngine$get_internal_standards()` or plotted as a quality overview using the method `MassSpecEngine$plot_internal_standards_qc()`, as shown below. The plot gives an overview of the mass, retention time and intensity variance of the internal stadards across the analyses in the project. 
 
 ```{r plot_is_qc, fig.height=10}
 ms$plot_internal_standards_qc()
@@ -293,7 +286,7 @@ ms$plot_internal_standards_qc()
 
 ## Isotopes
 
-The method `annotate_features()` was applied to annotate the natural isotopes within the MS data. Implementation of adducts and in source fragments annotation is planned but not yet available with the StreamFind algorithm. The method `MassSpecEngine$get_isotopes()` can be used to search for isotopes, as shown below for the analysis number 11. Because the filter `excludeIsotopes` was applied, the isotopic features are filtered out with tag **isotope** or **minIntensity** when filtered by `minIntensity`, which was applied first. Although the first isotope of Diclofenac (i.e., the <sup>13</sup>C) was not found, the second was annotated as the `maxGaps` argument in settings was set to 1. This is a frequent case for compounds with halogens.
+The method *AnnotateFeatures* was applied to annotate the natural isotopes within the MS data. Implementation of adducts and in source fragments annotation is planned but not yet available with the StreamFind algorithm. The method `MassSpecEngine$get_isotopes()` can be used to search for isotopes, as shown below for the analysis number 11. Because the filter `excludeIsotopes` was applied, the isotopic features are filtered out with tag **isotope** or **minIntensity** when filtered by `minIntensity`, which was applied first. Although the first isotope of Diclofenac (i.e., the <sup>13</sup>C) was not found, the second was annotated as the `maxGaps` argument in settings was set to 1. This is a frequent case for compounds with halogens.
 
 ```{r show-isotopes}
 # Isotopes of Diclofenac and Candesartan in analysis 5

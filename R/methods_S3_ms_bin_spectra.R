@@ -1,11 +1,6 @@
 
-#' @title .s3_BinSpectra.MassSpecSettings_BinSpectra_qBinning
-#'
-#' @description Bins spectra using the algorithm qBinning.
-#'
 #' @noRd
-#'
-.s3_BinSpectra.MassSpecSettings_BinSpectra_qBinning <- function(settings, self, private) {
+.process.MassSpecSettings_BinSpectra_qBinning <- function(settings, self, private) {
   
   message("Binning spectra with qBinning...", appendLF = TRUE)
   
@@ -30,13 +25,10 @@
   FALSE
 }
 
-#' @title .s3_BinSpectra.MassSpecSettings_BinSpectra_StreamFind
-#'
-#' @description Bins spectra.
-#'
+
+
 #' @noRd
-#'
-.s3_BinSpectra.MassSpecSettings_BinSpectra_StreamFind <- function(settings, self, private) {
+.process.MassSpecSettings_BinSpectra_StreamFind <- function(settings, self, private) {
   
   if (self$has_spectra()) {
     spec_list <- self$spectra

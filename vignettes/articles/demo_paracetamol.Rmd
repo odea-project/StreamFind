@@ -364,7 +364,7 @@ rownames(test_set)
 ```{r pca-engine, fig.cap="PCA model (native plot from mdatools R package).", fig.height=9}
 stat <- StatisticEngine$new(data = main_set)
 # The alpha and gamma parameters are used to evaluate the model limits
-stat$make_model(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 1E-4, gamma = 1E-5))
+stat$process(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 1E-4, gamma = 1E-5))
 # Original plot from mdatools R package
 plot(stat$model)
 ```
@@ -395,7 +395,7 @@ labels <- c(rep("ass", 2), rep("caff", 2), rep("fiz", 2), rep("fiz_acid", 2), re
 ```{r knn-engine}
 stat2 <- StatisticEngine$new(data = train_set)
 stat2$add_classes(labels)
-stat2$prepare_classification(StatisticSettings_PrepareClassification_knn(k = 3))
+stat2$process(StatisticSettings_PrepareClassification_knn(k = 3))
 stat2$classify(test_set)
 stat2$classification_results
 ```
@@ -407,7 +407,7 @@ ms_spec_mat <- mdatools::prep.autoscale(ms_spec_mat, center = TRUE, scale = FALS
 main_set_ms <- ms_spec_mat[c(7:9, 16:21, 25:33), ]
 test_set_ms <- ms_spec_mat[c(1:6, 10:15, 22:24, 34:42), ]
 stat_ms <- StatisticEngine$new(data = main_set_ms)
-stat_ms$make_model(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 1E-4, gamma = 1E-5))
+stat_ms$process(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 1E-4, gamma = 1E-5))
 ```
 
 ```{r plot-pca-only-ms, fig.cap="PCA model for MS data only (native plot from mdatools R package).", fig.height=9}
@@ -428,7 +428,7 @@ raman_spec_mat <- mdatools::prep.autoscale(raman_spec_mat, center = TRUE, scale 
 main_set_raman <- raman_spec_mat[c(7:9, 16:21, 25:33), ]
 test_set_raman <- raman_spec_mat[c(1:6, 10:15, 22:24, 34:42), ]
 stat_raman <- StatisticEngine$new(data = main_set_raman)
-stat_raman$make_model(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 1E-4, gamma = 1E-5))
+stat_raman$process(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 1E-4, gamma = 1E-5))
 ```
 
 ```{r plot-pca-only-raman, fig.cap="PCA model for Raman data only (native plot from mdatools R package).", fig.height=9}
@@ -492,7 +492,7 @@ The quantification of paracetamol from the Raman spectra is performed using the 
 ```{r mcrals-show}
 stat3 <- StatisticEngine$new(data = raman_quant$get_spectra_matrix())
 stat3$add_concentrations(c(1, 2.5, 5.0, 7.5, 15.0, NA_real_)) # add concentrations, with NA for unknown
-stat3$make_model(StatisticSettings_MakeModel_mcrals_mdatools(ncomp = 3))
+stat3$process(StatisticSettings_MakeModel_mcrals_mdatools(ncomp = 3))
 summary(stat3$model)
 ```
 

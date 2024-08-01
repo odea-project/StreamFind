@@ -1,11 +1,6 @@
 
-#' @title .s3_ClusterSpectra.MassSpecSettings_ClusterSpectra_StreamFind
-#'
-#' @description Averaging of spectra.
-#'
 #' @noRd
-#'
-.s3_ClusterSpectra.MassSpecSettings_ClusterSpectra_StreamFind <- function(settings, self, private) {
+.process.MassSpecSettings_ClusterSpectra_StreamFind <- function(settings, self, private) {
   
   val <- settings$parameters$val
   

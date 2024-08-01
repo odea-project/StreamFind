@@ -1,7 +1,6 @@
 
 #' @noRd
-#'
-.s3_SubtractSpectraSection.RamanSettings_SubtractSpectraSection_StreamFind <- function(settings, self, private) {
+.process.RamanSettings_SubtractSpectraSection_StreamFind <- function(settings, self, private) {
   
   intensity <- NULL
   

@@ -1,7 +1,6 @@
 
 #' @noRd
-#'
-.s3_PrepareClassification.StatisticSettings_PrepareClassification_knn <- function(settings, self, private) {
+.process.StatisticSettings_PrepareClassification_knn <- function(settings, self, private) {
   
   if (!requireNamespace("class", quietly = TRUE)) {
     warning("The package 'class' is not available! Not done.")

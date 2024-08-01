@@ -1,7 +1,6 @@
 
 #' @noRd
-#'
-.s3_MakeModel.StatisticSettings_MakeModel_pca_mdatools <- function(settings, self, private) {
+.process.StatisticSettings_MakeModel_pca_mdatools <- function(settings, self, private) {
   
   if (!requireNamespace("mdatools", quietly = TRUE)) {
     warning("The package 'mdatools' is not available! Not done.")
@@ -38,9 +37,10 @@
   TRUE
 }
 
+
+
 #' @noRd
-#'
-.s3_MakeModel.StatisticSettings_MakeModel_mcrpure_mdatools <- function(settings, self, private) {
+.process.StatisticSettings_MakeModel_mcrpure_mdatools <- function(settings, self, private) {
   
   if (!requireNamespace("mdatools", quietly = TRUE)) {
     warning("The package 'mdatools' is not available! Not done.")
@@ -81,9 +81,10 @@
   TRUE
 }
 
+
+
 #' @noRd
-#'
-.s3_MakeModel.StatisticSettings_MakeModel_mcrals_mdatools <- function(settings, self, private) {
+.process.StatisticSettings_MakeModel_mcrals_mdatools <- function(settings, self, private) {
   
   if (!requireNamespace("mdatools", quietly = TRUE)) {
     warning("The package 'mdatools' is not available! Not done.")

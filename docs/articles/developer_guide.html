@@ -44,6 +44,7 @@
 <li class="active nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/app_guide.html">StreamFind App Guide</a>
     <a class="dropdown-item" href="../articles/demo_ms_raman_fusion_bsa.html">Comparison of different bovine serum albumin products</a>
     <a class="dropdown-item" href="../articles/demo_ozonation_project.html">Evaluation of wastewater ozonation with mass spectrometry</a>
     <a class="dropdown-item" href="../articles/demo_paracetamol.html">Detection of quality deviations in paracetamol products</a>
@@ -84,7 +85,7 @@ Cunha</h4>
                   <a class="author_email" href="mailto:#"></a><a href="mailto:cunha@iuta.de" class="email">cunha@iuta.de</a>
       
                   
-            <h4 data-toc-skip class="date">31 July, 2024</h4>
+            <h4 data-toc-skip class="date">01 August, 2024</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/odea-project/StreamFind/blob/HEAD/vignettes/articles/developer_guide.Rmd" class="external-link"><code>vignettes/articles/developer_guide.Rmd</code></a></small>
       <div class="d-none name"><code>developer_guide.Rmd</code></div>
@@ -161,10 +162,10 @@ is briefly shown.</p>
 <span><span class="va">ms</span><span class="op">$</span><span class="fu">get_headers</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">##   ProjectHeaders </span></span>
-<span><span class="co">##   name: Example</span></span>
-<span><span class="co">##   author: Person A</span></span>
 <span><span class="co">##   file: NA</span></span>
-<span><span class="co">##   date: 2024-07-31 10:40:37.242803</span></span></code></pre>
+<span><span class="co">##   date: 2024-08-01 10:06:11.943092</span></span>
+<span><span class="co">##   name: Example</span></span>
+<span><span class="co">##   author: Person A</span></span></code></pre>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># print method. Note that MS data files were not yet added!</span></span>
 <span><span class="va">ms</span></span></code></pre></div>
@@ -173,7 +174,7 @@ is briefly shown.</p>
 <span><span class="co">## name          Example</span></span>
 <span><span class="co">## author        Person A</span></span>
 <span><span class="co">## file          NA</span></span>
-<span><span class="co">## date          2024-07-31 10:40:37.242803</span></span>
+<span><span class="co">## date          2024-08-01 10:06:11.943092</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Workflow empty </span></span>
 <span><span class="co">## </span></span>
@@ -245,7 +246,7 @@ More details are given in the Semantics (@ref(semantics)). Then, the
 <span><span class="co">## name          Example</span></span>
 <span><span class="co">## author        Person A</span></span>
 <span><span class="co">## file          NA</span></span>
-<span><span class="co">## date          2024-07-31 10:40:37.242803</span></span>
+<span><span class="co">## date          2024-08-01 10:06:11.943092</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Workflow</span></span>
 <span><span class="co">##  1: FindFeatures (openms)</span></span>
@@ -354,7 +355,7 @@ string and imported from a JSON file, as demonstrated below.</p>
 <span><span class="co">## name          Example</span></span>
 <span><span class="co">## author        Person A</span></span>
 <span><span class="co">## file          NA</span></span>
-<span><span class="co">## date          2024-07-31 10:40:37.242803</span></span>
+<span><span class="co">## date          2024-08-01 10:06:11.943092</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Workflow</span></span>
 <span><span class="co">##  1: FindFeatures (xcms3_centwave)</span></span>
@@ -397,7 +398,7 @@ detail.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">ffs</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "ProcessingSettings"                  </span></span>
 <span><span class="co">## [2] "MassSpecSettings_FindFeatures_openms"</span></span>
-<span><span class="co">## [3] "patRoon"</span></span></code></pre>
+<span><span class="co">## [3] "FindFeatures_patRoon"</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="semantics">Semantics<a class="anchor" aria-label="anchor" href="#semantics"></a>

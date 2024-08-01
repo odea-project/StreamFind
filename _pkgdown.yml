@@ -5,170 +5,51 @@ template:
 
 reference:
 
-- title: "R6 classes: Data processing engines"
+- title: Data Processing Engines
   desc: >
-    The R6 classes are used as processing engines for reading, processing, 
-    inspecting and storing data. Note that _MassSpecData_ is to
-    be replaced by _MassSpecEngine_ in future versions.
+    R6 classes are used as processing engines for reading, processing, inspecting and storing data.
   contents:
     - CoreEngine
     - MassSpecEngine
     - RamanEngine
     - StatisticEngine
 
-- title: S3 classes
+- title: Project Headers
   desc: >
-    S3 classes are implemented to harmonize, verify and dispatch data within
-    the R6 classes. _ProjectHeaders_ and _ProcessingSettings_ S3 classes are
-    used in all R6 classes.
+    The _ProjectHeaders_ S3 class is used to store, assign and dispatch the project headers to the processing engines.
   contents:
     - ProjectHeaders
-    - ProcessingSettings
+
+- title: Analysis
+  desc: >
+    The _Analysis_ S3 class and data dedicated childs are used to store, assign and dispatch the analysis data to the processing engines.
+  contents:
     - Analysis
     - MassSpecAnalysis
     - RamanAnalysis
     - StatisticAnalysis
-
 
 - title: Processing settings
   desc: >
     The _ProcessingSettings_ S3 class is used to store, assign and dispatch
     the algorithm and respective parameters to processing methods. The
     _ProcessingSettings_ object obtains a subclass according to the assinged
-    algorithm for each MS processing method. Below the available subclasses
-    for _ProcessingSettings_ are listed for each processing method.
-
-- subtitle: Average Spectra
+    algorithm for each engine and processing method. Below the available subclasses
+    for _ProcessingSettings_ are listed for each type of processing engine.
   contents:
-    - matches("Settings_AverageSpectra")
+    - ProcessingSettings
 
-- subtitle: Bin Spectra
+- subtitle: MassSpec Settings
   contents:
-    - matches("Settings_BinSpectra")
+    - matches("MassSpecSettings")
 
-- subtitle: Cluster Spectra
+- subtitle: Raman Settings
   contents:
-    - matches("Settings_ClusterSpectra")
-
-- subtitle: Correct Chromatograms Baseline
+    - matches("RamanSettings")
+    
+- subtitle: Statistic Settings
   contents:
-    matches("Settings_CorrectChromatogramsBaseline")
-
-- subtitle: Correct Spectra Baseline
-  contents:
-    - matches("Settings_CorrectSpectraBaseline")
-
-- subtitle: Delete Spectra Section
-  contents:
-    - matches("Settings_delete_spectra_section")
-
-- subtitle: Integrate Chromatograms
-  contents:
-    - matches("Settings_IntegrateChromatograms")
-
-- subtitle: Make Model
-  contents:
-    - matches("Settings_MakeModel")
-
-- subtitle: Merge Spectra Time Series
-  contents:
-    - matches("Settings_MergeSpectraTimeSeries")
-
-- subtitle: Annotate Features
-  contents:
-    - matches("Settings_AnnotateFeatures")
-
-- subtitle: Calculate Quality
-  contents:
-    - matches("Settings_CalculateQuality")
-
-- subtitle: Calculate Spectra Charges
-  contents:
-    - matches("Settings_CalculateSpectraCharges")
-
-- subtitle: Centroid Spectra
-  contents:
-    - matches("Settings_CentroidSpectra")
-
-- subtitle: Deconvolute Spectra
-  contents:
-    - matches("Settings_DeconvoluteSpectra")
-
-- subtitle: Delete Spectra Section
-  contents:
-    - matches("Settings_DeleteSpectraSection")
-
-- subtitle: Fill Features
-  contents:
-    - matches("Settings_FillFeatures")
-
-- subtitle: Filter Features
-  contents:
-    - matches("Settings_FilterFeatures")
-
-- subtitle: Find Features
-  contents:
-    - matches("Settings_FindFeatures")
-
-- subtitle: Find Internal Standards
-  contents:
-    - matches("Settings_FindInternalStandards")
-
-- subtitle: Generate Compounds
-  contents:
-    - matches("Settings_GenerateCompounds")
-
-- subtitle: Generate Formulas
-  contents:
-    - matches("Settings_GenerateFormulas")
-
-- subtitle: GroupFeatures
-  contents:
-    - matches("Settings_GroupFeatures")
-
-- subtitle: Load Features EIC
-  contents:
-    - matches("Settings_LoadFeaturesEIC")
-
-- subtitle: Load Features MS1 and MS2 spectra
-  contents:
-    - matches("Settings_LoadFeaturesMS")
-
-- subtitle: Load MSPeakLists
-  contents:
-    - matches("Settings_LoadMSPeakLists")
-
-- subtitle: Normalize Features
-  contents:
-    - matches("Settings_NormalizeFeatures")
-
-- subtitle: Normalize Spectra
-  contents:
-    - matches("Settings_NormalizeSpectra")
-
-- subtitle: Prepare Classification
-  contents:
-    - matches("Settings_PrepareClassification")
-
-- subtitle: Suspect Screening
-  contents:
-    - matches("Settings_SuspectScreening")
-
-- subtitle: Smooth Chromatograms
-  contents:
-    - matches("Settings_SmoothChromatograms")
-
-- subtitle: Smooth Spectra
-  contents:
-    - matches("Settings_SmoothSpectra")
-
-- subtitle: Subtract Blank Spectra
-  contents:
-    - matches("Settings_SubtractBlankSpectra")
-
-- subtitle: Subtract Spectra Section
-  contents:
-    - matches("Settings_SubtractSpectraSection")
+    - matches("StatisticSettings")
 
 - subtitle: General get and save default settings
   desc: >
