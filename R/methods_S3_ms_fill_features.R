@@ -12,6 +12,7 @@
   name <- NULL
   N <- NULL
   . <- NULL
+  .N <- NULL
   
   cache <- .load_chache("fill_features", self$featureGroups, settings)
   
@@ -69,7 +70,7 @@
       polarity <- x$polarity[1]
     }
     
-    out <- data.table(
+    out <- data.table::data.table(
       analysis = missing_anas,
       feature = NA_character_,
       rt = mean(x$rt),
@@ -93,17 +94,13 @@
     out
   })
   
-  to_complete <- rbindlist(to_complete)
+  to_complete <- data.table::rbindlist(to_complete)
+  to_complete$name <- paste0(to_complete$name, "_", to_complete$analysis)
   
-  spec <- self$get_spectra(mz = to_complete, levels = 1)
-  
-  spec$id <- paste0(spec$id, "_", spec$analysis)
-  
+  spec <- self$get_spectra(mz = data.table::copy(to_complete), levels = 1)
   spec <- split(spec, spec$id)
   
-  to_complete$id <- paste0(to_complete$name, "_", to_complete$analysis)
-  
-  to_complete <- split(to_complete, to_complete$id)
+  to_complete <- split(to_complete, to_complete$name)
   
   new_fts <- lapply(names(to_complete), function(x) {
     
@@ -147,10 +144,10 @@
     ft
   })
   
-  new_fts <- rbindlist(new_fts)
+  new_fts <- data.table::rbindlist(new_fts)
   new_fts$replicate <- NULL
   new_fts$name <- NULL
-  new_fts$id <- NULL
+  new_fts[["id"]] <- NULL
   new_fts$polarity <- NULL
   new_fts_list <- split(new_fts, new_fts$analysis)
   
@@ -174,13 +171,31 @@
     
     nfts$feature <- nfts_id
     
-    cfts <- rbindlist(list(x, nfts), fill = TRUE)
-    
-    setnames(cfts, c("feature", "rt", "rtmin", "rtmax"), c("ID", "ret", "retmin", "retmax"))
+    cfts <- data.table::rbindlist(list(x, nfts), fill = TRUE)
     
     cfts$analysis <- NULL
     
     cfts
+  })
+  
+  fts_filled <- lapply(fts_filled, function(x) {
+    data.table::setnames(x, c("feature", "rt", "rtmin", "rtmax"), c("ID", "ret", "retmin", "retmax"))
+    
+    # if ("isotope" %in% colnames(x)) {
+    #   sel_nulls <- vapply(x$isotope, function(y) {
+    #     if (is.null(y)) {
+    #       TRUE
+    #     } else {
+    #       FALSE
+    #     }
+    #   }, FALSE)
+    #   
+    #   list_dummies <- lapply(x$ID[sel_nulls], function(y) list())
+    #   names(list_dummies) <- x$ID[sel_nulls]
+    #   x$isotope[sel_nulls] <- list_dummies
+    # }
+    
+    x
   })
   
   fg <- self$featureGroups

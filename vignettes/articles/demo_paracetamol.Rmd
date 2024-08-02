@@ -69,7 +69,11 @@ pre code {
 
 ***
 
+This article demonstrates how StreamFind can be used to assess quality deviations of Fizamol paracetamol products using Mass Spectrometry (MS) combined with Raman Spectroscopy data. Each product was measured with MS and Raman. The data is pre-processed and fused to be used in unsupervised and supervised statistical analysis. Finally, the quality of the products is evaluated based on the statistical analysis. The quantity of paracetamol in the products is also estimated via statistic analysis.
+
 # Pre-processing
+
+The data is pre-processed using StreamFind's built-in data dedicated engines for MS and Raman data. Pre-processing workflows for each data type are executed before data fusion to improve statistic analysis.
 
 ## MS
 
@@ -136,7 +140,7 @@ ms$load_spectra()
 
 ```{r ms-overview, echo=FALSE}
 ov <- ms$get_overview()[, 1:3]
-setorder(ov, replicate)
+data.table::setorder(ov, replicate)
 ov$description <- c(
   rep("Aspirin standard", 9),
   rep("Reference background", 4),
@@ -257,7 +261,7 @@ raman$add_blank_names(c(rep("blank", 81), rep("blank_e", 9), rep("blank", 9), re
 
 ```{r raman-overview, echo=FALSE}
 raman_ov <- raman$get_overview()[, 1:3]
-setorder(raman_ov, replicate)
+data.table::setorder(raman_ov, replicate)
 raman_ov$description <- c(
   rep("Aspirin standard", 9),
   rep("Reference background", 9),
@@ -310,11 +314,13 @@ raman$get_spectra()[1:10, ]
 
 # Fusion
 
+The statistical analysis is performed on the fused data for combining orthogonal information in MS and Raman data.
+
 ```{r fusion}
 ms_spec_mat <- ms$get_spectra_matrix()
 raman_spec_mat <- raman$get_spectra_matrix()
 fused_mat <- cbind(ms_spec_mat, raman_spec_mat)
-# The matrix is mean centered using the mdatools R package
+# the matrix is mean centered using the mdatools R package
 fused_mat <- mdatools::prep.autoscale(fused_mat, center = TRUE, scale = FALSE)
 ```
 
@@ -363,9 +369,9 @@ rownames(test_set)
 
 ```{r pca-engine, fig.cap="PCA model (native plot from mdatools R package).", fig.height=9}
 stat <- StatisticEngine$new(data = main_set)
-# The alpha and gamma parameters are used to evaluate the model limits
+# the alpha and gamma parameters are used to evaluate the model limits
 stat$process(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 1E-4, gamma = 1E-5))
-# Original plot from mdatools R package
+# original plot from mdatools R package
 plot(stat$model)
 ```
 
@@ -448,8 +454,8 @@ In the case of only using Raman data for evaluation of quality deviations, the s
 raman_quant <- raman_all$subset_analyses(analyses = c(19:27, 161:205, 155:157))
 raman_quant$add_blank_names(rep("blank", 57))
 
-ov_quant <- copy(raman_quant$get_overview()[, 1:3])
-setorder(ov_quant, replicate)
+ov_quant <- data.table::copy(raman_quant$get_overview()[, 1:3])
+data.table::setorder(ov_quant, replicate)
 ov_quant$concentration <- as.numeric(c(rep(0, 9), sub(".*?(\\d+).*", "\\1", ov_quant$replicate[10:nrow(ov_quant)]))) / 10
 ov_quant$concentration[ov_quant$replicate %in% "par_3"] <- NA_real_
 

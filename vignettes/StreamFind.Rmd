@@ -14,16 +14,26 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Introduction to StreamFind
+# Introduction
 
-The goal of the StreamFind is to boost competences of researchers and graduate students for data analysis while promoting the use of open source software and deployment of algorithms and processing concepts from the scientific literature. The focus is the development and assembly of data processing workflows for different analytical data (e.g., mass spectrometry and Raman spectroscopy) and the application of the workflows in diverse fields (e.g., environmental and quality studies of the water cycle). The StreamFind can be used by R scripting or via the embedded shiny graphical user interface. For more information and usage see the [articles](https://odea-project.github.io/StreamFind/articles/index.html):
+The goal of StreamFind is to boost competences of researchers and graduate students for data analysis while promoting the use of open source software and deployment of algorithms and processing concepts from the scientific literature. The focus is the development and assembly of data processing workflows for different analytical data (e.g., mass spectrometry and Raman spectroscopy) and the application of the workflows in diverse fields (e.g., environmental and quality studies of the water cycle). The StreamFind can be used via R scripting or via the embedded shiny graphical user interface. See the [articles](https://odea-project.github.io/StreamFind/articles/index.html) for tutorials and usage examples.
 
- - [StreamFind General Introduction](https://odea-project.github.io/StreamFind/articles/framework.html)
- - [StreamFind Developer Guide](https://odea-project.github.io/StreamFind/articles/developer_guide.html)
- - [Evaluation of wastewater ozonation with mass spectrometry](https://odea-project.github.io/StreamFind/articles/demo_ozonation_project.html)
- - [Comparison of different bovine serum albumin products](https://odea-project.github.io/StreamFind/articles/demo_ms_raman_fusion_bsa.html)
- - [Detection of quality deviations in paracetamol products](https://odea-project.github.io/StreamFind/articles/demo_paracetamol.html)
+# Guides
 
-# Development in progress
+-   [General Introduction](https://odea-project.github.io/StreamFind/articles/general_guide.html)
+
+-   [App Guide](https://odea-project.github.io/StreamFind/articles/app_guide.html)
+
+-   [Developer Guide](https://odea-project.github.io/StreamFind/articles/developer_guide.html)
+
+# Examples
+
+-   [Evaluation of wastewater ozonation with mass spectrometry](https://odea-project.github.io/StreamFind/articles/demo_ozonation_project.html)
+
+-   [Comparison of different bovine serum albumin products](https://odea-project.github.io/StreamFind/articles/demo_ms_raman_fusion_bsa.html)
+
+-   [Detection of quality deviations in paracetamol products](https://odea-project.github.io/StreamFind/articles/demo_paracetamol.html)
+
+# Development
 
 The life cycle of the StreamFind R package is [experimental](https://lifecycle.r-lib.org/articles/stages.html). Please [contact us](mailto:cunha@iuta.de) for questions, suggestions, issues or collaboration. **Stay tuned!**

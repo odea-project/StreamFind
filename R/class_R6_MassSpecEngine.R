@@ -3032,7 +3032,14 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       }
       
       if (is.numeric(clusters)) {
-        fts_clusters <- vapply(fts$isotope, function(x) x$cluster, NA_real_)
+        fts_clusters <- vapply(fts$isotope, function(x) {
+          if (length(x) == 0) {
+            NA_real_
+          } else {
+            x$cluster
+          }
+        }, NA_real_)
+        
         fts <- fts[fts_clusters %in% clusters, ]
         
         if (nrow(fts) == 0) return(data.table())
@@ -3040,9 +3047,17 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         fts$cluster <- fts_clusters
         
       } else {
-        fts_clusters <- vapply(fts$isotope, function(x) x$cluster, NA_real_)
+        fts_clusters <- vapply(fts$isotope, function(x) {
+          if (length(x) == 0) {
+            NA_real_
+          } else {
+            x$cluster
+          }
+        }, NA_real_)
         fts$cluster <- fts_clusters
       }
+      
+      fts <- fts[!is.na(fts$cluster), ]
       
       all_fts <- self$get_features(filtered = TRUE)
       
@@ -3051,7 +3066,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       isos <- lapply(isos, function(x, all_fts) {
         i_fts <- all_fts[all_fts$analysis %in% x$analysis, ]
         i_iso <- i_fts$isotope
-        sel <- vapply(i_iso, function(z) z$cluster, NA_real_) %in% x$cluster
+        sel <- vapply(i_iso, function(z) {
+          if (length(z) == 0) {
+            NA_real_
+          } else {
+            z$cluster
+          }
+        }, NA_real_) %in% x$cluster
         sel_iso <- i_iso[sel]
         sel_iso <- lapply(sel_iso, function(z) as.data.table(z))
         sel_iso <- rbindlist(sel_iso)
@@ -3472,12 +3493,23 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           istd$mzr <- round(istd$mzmax - istd$mzmin, digits = 4)
           
           if ("isotope" %in% colnames(istd)) {
-            istd$iso_n <- vapply(istd$isotope, function(x) x$cluster_size, 0)
-            istd$iso_c <- vapply(istd$isotope, function(x) x$carbons, 0)
-            
+            istd$iso_n <- vapply(istd$isotope, function(x) {
+              if (length(x) == 0) {
+                NA_real_
+              } else {
+                x$cluster_size
+              }
+            }, NA_real_)
+            istd$iso_c <- vapply(istd$isotope, function(x) {
+              if (length(x) == 0) {
+                NA_real_
+              } else {
+                x$carbons
+              }
+            }, NA_real_)
           } else {
-            istd$iso_n <- NA
-            istd$iso_c <- NA
+            istd$iso_n <- NA_real_
+            istd$iso_c <- NA_real_
           }
           
           if (self$has_groups() & average) {
