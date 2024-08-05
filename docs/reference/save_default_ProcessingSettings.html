@@ -29,11 +29,12 @@ in the defined path and with the defined name."><!-- mathjax --><script src="htt
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/app_guide.html">StreamFind App Guide</a>
     <a class="dropdown-item" href="../articles/demo_ms_raman_fusion_bsa.html">Comparison of different bovine serum albumin products</a>
     <a class="dropdown-item" href="../articles/demo_ozonation_project.html">Evaluation of wastewater ozonation with mass spectrometry</a>
     <a class="dropdown-item" href="../articles/demo_paracetamol.html">Detection of quality deviations in paracetamol products</a>
+    <a class="dropdown-item" href="../articles/developer_guide.html">StreamFind Developer Guide</a>
     <a class="dropdown-item" href="../articles/framework.html">StreamFind General Introduction</a>
-    <a class="dropdown-item" href="../articles/ms_developer_guide.html">StreamFind Developer Guide</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -65,6 +66,7 @@ in the defined <code>path</code> and with the defined <code>name</code>.</p>
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">save_default_ProcessingSettings</span><span class="op">(</span></span>
+<span>  engine <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
 <span>  call <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
 <span>  algorithm <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
 <span>  format <span class="op">=</span> <span class="st">"json"</span>,</span>

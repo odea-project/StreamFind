@@ -1,5 +1,7 @@
 #' @import R6
 #' 
+#' @import S7
+#' 
 #' @import data.table
 #' 
 #' @import checkmate
@@ -11,6 +13,11 @@
 #' @importFrom utils packageVersion head tail write.csv txtProgressBar setTxtProgressBar
 #'
 #' @importFrom tools file_ext
+#' 
+#' @import zlibbioc
+#' 
+#' @import S7
+#' 
 #' 
 #' 
 #'

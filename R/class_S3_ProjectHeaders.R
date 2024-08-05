@@ -38,7 +38,6 @@ ProjectHeaders <- function(...) {
   if (!"date" %in% x_names) x$date <- Sys.time()
   
   if (!is.na(x$file)) {
-    
     if (!grepl(".sqlite", x$file)) {
       warning("ProjectHeaders file must have extension .sqlite!")
       x$file <- NA_character_
@@ -47,7 +46,7 @@ ProjectHeaders <- function(...) {
       if (!file.exists(x$file)) file.create(x$file)
     }
   }
-
+  
   if (validate.ProjectHeaders(x)) {
     structure(x, class = "ProjectHeaders")
   } else {
@@ -62,43 +61,43 @@ ProjectHeaders <- function(...) {
 #' @export
 #' 
 validate.ProjectHeaders <- function(x) {
-
+  
   if (missing(x)) x <- NULL
-
+  
   valid <- FALSE
-
+  
   if (is.list(x)) {
     valid <- TRUE
-
+    
     if (!all(vapply(x, function(x) length(x) == 1, FALSE))) {
       warning("All headers must be of length 1!")
       valid <- FALSE
     }
-
+    
     if (length(unique(names(x))) != length(x)) {
       warning("ProjectHeaders must have names and not permitted duplicated names!")
       valid <- FALSE
     }
-
+    
     if (!all(c("name", "author", "file", "date") %in% names(x))) {
       warning("ProjectHeaders must contain at least entries name, author, file and date!")
       valid <- FALSE
     }
-
+    
     if ("name" %in% names(x)) {
       if (!is.character(x$name)) {
         warning("ProjectHeaders entry name must be character length 1!")
         valid <- FALSE
       }
     }
-
+    
     if ("author" %in% names(x)) {
       if (!is.character(x$author)) {
         warning("ProjectHeaders entry author must be character length 1!")
         valid <- FALSE
       }
     }
-
+    
     if ("file" %in% names(x)) {
       if (!is.na(x$file)) {
         if (!file.exists(x$file)) {
@@ -107,7 +106,7 @@ validate.ProjectHeaders <- function(x) {
         }
       }
     }
-
+    
     if ("date" %in% names(x)) {
       if (!all(grepl("POSIXct|POSIXt", class(x$date)))) {
         warning("ProjectHeaders entry date class must be POSIXct or POSIXt length 1!")
@@ -115,7 +114,7 @@ validate.ProjectHeaders <- function(x) {
       }
     }
   }
-
+  
   valid
 }
 

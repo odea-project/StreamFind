@@ -27,11 +27,12 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/app_guide.html">StreamFind App Guide</a>
     <a class="dropdown-item" href="../articles/demo_ms_raman_fusion_bsa.html">Comparison of different bovine serum albumin products</a>
     <a class="dropdown-item" href="../articles/demo_ozonation_project.html">Evaluation of wastewater ozonation with mass spectrometry</a>
     <a class="dropdown-item" href="../articles/demo_paracetamol.html">Detection of quality deviations in paracetamol products</a>
+    <a class="dropdown-item" href="../articles/developer_guide.html">StreamFind Developer Guide</a>
     <a class="dropdown-item" href="../articles/framework.html">StreamFind General Introduction</a>
-    <a class="dropdown-item" href="../articles/ms_developer_guide.html">StreamFind Developer Guide</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -64,6 +65,7 @@
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
     <p>Removes all results if present in the engine as may be affected but modified correspondence.</p>
 <p>Removes all results if present in the engine as may be affected but modified correspondence.</p>
+<p>If there are ProcessingSettings objects with the same call names it is better to use <code>run_workflow()</code>.</p>
 <p>The engine data is saved in an <strong>sqlite</strong> file and loaded in the app. If save file is defined in the engine
 it is used, otherwise the save file name is automatically set to the engine class name and the date. Changes made
 in the app can be saved in the <strong>sqlite</strong> file and then loaded for scripting.</p>
@@ -148,6 +150,7 @@ List of function elements to access specific reference help pages.</p></dd>
 <li><p><a href="#method-CoreEngine-has_settings"><code>CoreEngine$has_settings()</code></a></p></li>
 <li><p><a href="#method-CoreEngine-has_analyses"><code>CoreEngine$has_analyses()</code></a></p></li>
 <li><p><a href="#method-CoreEngine-has_results"><code>CoreEngine$has_results()</code></a></p></li>
+<li><p><a href="#method-CoreEngine-process"><code>CoreEngine$process()</code></a></p></li>
 <li><p><a href="#method-CoreEngine-run_workflow"><code>CoreEngine$run_workflow()</code></a></p></li>
 <li><p><a href="#method-CoreEngine-save"><code>CoreEngine$save()</code></a></p></li>
 <li><p><a href="#method-CoreEngine-load"><code>CoreEngine$load()</code></a></p></li>
@@ -417,7 +420,7 @@ and full file paths.</p><div class="section">
 
 </div><p></p><hr><a id="method-CoreEngine-get_settings_names"></a><div class="section">
 <h3 id="method-get-settings-names-">Method <code>get_settings_names()</code><a class="anchor" aria-label="anchor" href="#method-get-settings-names-"></a></h3>
-<p>Gets the names of all processing methods in added processing settings as a character vector.</p><div class="section">
+<p>Gets the call names of all processing methods in added processing settings as a character vector.</p><div class="section">
 <h4 id="usage-18">Usage<a class="anchor" aria-label="anchor" href="#usage-18"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">get_settings_names</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
@@ -501,7 +504,7 @@ as ProcessingSettings object.</p></dd>
 <dt><code>replace</code></dt>
 <dd><p>Logical of length one. When <code>TRUE</code>, existing settings are
 replaced by the new settings with the same call name, except settings for
-methods that can be applied more than once.</p></dd>
+methods that can be applied more than once. The default is <code>FALSE</code>.</p></dd>
 
 
 </dl><p></p></div>
@@ -747,10 +750,27 @@ data is patRoon.</p></dd>
 </dl><p></p></div>
 </div>
 
+</div><p></p><hr><a id="method-CoreEngine-process"></a><div class="section">
+<h3 id="method-process-">Method <code>process()</code><a class="anchor" aria-label="anchor" href="#method-process-"></a></h3>
+<p>Runs a processing method with the provided settings.</p><div class="section">
+<h4 id="usage-37">Usage<a class="anchor" aria-label="anchor" href="#usage-37"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">process</span><span class="op">(</span>settings <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-25">Arguments<a class="anchor" aria-label="anchor" href="#arguments-25"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>settings</code></dt>
+<dd><p>A ProcessingSettings object or a character string with the call name of a previously added
+ProcessingSettings in the engine.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
 </div><p></p><hr><a id="method-CoreEngine-run_workflow"></a><div class="section">
 <h3 id="method-run-workflow-">Method <code>run_workflow()</code><a class="anchor" aria-label="anchor" href="#method-run-workflow-"></a></h3>
 <p>Runs all processing results represented by added processing settings.</p><div class="section">
-<h4 id="usage-37">Usage<a class="anchor" aria-label="anchor" href="#usage-37"></a></h4>
+<h4 id="usage-38">Usage<a class="anchor" aria-label="anchor" href="#usage-38"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">run_workflow</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -762,25 +782,8 @@ data is patRoon.</p></dd>
 </div><p></p><hr><a id="method-CoreEngine-save"></a><div class="section">
 <h3 id="method-save-">Method <code><a href="https://rdrr.io/r/base/save.html" class="external-link">save()</a></code><a class="anchor" aria-label="anchor" href="#method-save-"></a></h3>
 <p>Saves the engine data as <strong>sqlite</strong> file.</p><div class="section">
-<h4 id="usage-38">Usage<a class="anchor" aria-label="anchor" href="#usage-38"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">save</span><span class="op">(</span>file <span class="op">=</span> <span class="cn">NA_character_</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-25">Arguments<a class="anchor" aria-label="anchor" href="#arguments-25"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>file</code></dt>
-<dd><p>A string with the full file path of the <strong>sqlite</strong> file. If <code>NA</code> (the default) and no file
-header is defined in the engine, the file name is automatically created with the engine class name and the date.</p></dd>
-
-
-</dl><p></p></div>
-</div>
-
-</div><p></p><hr><a id="method-CoreEngine-load"></a><div class="section">
-<h3 id="method-load-">Method <code><a href="https://rdrr.io/r/base/load.html" class="external-link">load()</a></code><a class="anchor" aria-label="anchor" href="#method-load-"></a></h3>
-<p>Loads the engine data from an <strong>sqlite</strong> file.</p><div class="section">
 <h4 id="usage-39">Usage<a class="anchor" aria-label="anchor" href="#usage-39"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">load</span><span class="op">(</span>file <span class="op">=</span> <span class="cn">NA_character_</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">save</span><span class="op">(</span>file <span class="op">=</span> <span class="cn">NA_character_</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -793,15 +796,32 @@ header is defined in the engine, the file name is automatically created with the
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-CoreEngine-export_headers"></a><div class="section">
-<h3 id="method-export-headers-">Method <code>export_headers()</code><a class="anchor" aria-label="anchor" href="#method-export-headers-"></a></h3>
-<p>Exports the headers as <em>json</em> (the default) or <em>rds</em>.</p><div class="section">
+</div><p></p><hr><a id="method-CoreEngine-load"></a><div class="section">
+<h3 id="method-load-">Method <code><a href="https://rdrr.io/r/base/load.html" class="external-link">load()</a></code><a class="anchor" aria-label="anchor" href="#method-load-"></a></h3>
+<p>Loads the engine data from an <strong>sqlite</strong> file.</p><div class="section">
 <h4 id="usage-40">Usage<a class="anchor" aria-label="anchor" href="#usage-40"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">export_headers</span><span class="op">(</span>format <span class="op">=</span> <span class="st">"json"</span>, name <span class="op">=</span> <span class="st">"headers"</span>, path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">load</span><span class="op">(</span>file <span class="op">=</span> <span class="cn">NA_character_</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-27">Arguments<a class="anchor" aria-label="anchor" href="#arguments-27"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>file</code></dt>
+<dd><p>A string with the full file path of the <strong>sqlite</strong> file. If <code>NA</code> (the default) and no file
+header is defined in the engine, the file name is automatically created with the engine class name and the date.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-CoreEngine-export_headers"></a><div class="section">
+<h3 id="method-export-headers-">Method <code>export_headers()</code><a class="anchor" aria-label="anchor" href="#method-export-headers-"></a></h3>
+<p>Exports the headers as <em>json</em> (the default) or <em>rds</em>.</p><div class="section">
+<h4 id="usage-41">Usage<a class="anchor" aria-label="anchor" href="#usage-41"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">export_headers</span><span class="op">(</span>format <span class="op">=</span> <span class="st">"json"</span>, name <span class="op">=</span> <span class="st">"headers"</span>, path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-28">Arguments<a class="anchor" aria-label="anchor" href="#arguments-28"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>format</code></dt>
 <dd><p>A string. Possible values are <code>json</code> and <code>rds</code> for saving as JSON or RDS formats, respectively.</p></dd>
 
@@ -820,7 +840,7 @@ header is defined in the engine, the file name is automatically created with the
 </div><p></p><hr><a id="method-CoreEngine-export_settings"></a><div class="section">
 <h3 id="method-export-settings-">Method <code>export_settings()</code><a class="anchor" aria-label="anchor" href="#method-export-settings-"></a></h3>
 <p>Exports the settings as <em>json</em> (the default) or <em>rds</em>.</p><div class="section">
-<h4 id="usage-41">Usage<a class="anchor" aria-label="anchor" href="#usage-41"></a></h4>
+<h4 id="usage-42">Usage<a class="anchor" aria-label="anchor" href="#usage-42"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">export_settings</span><span class="op">(</span></span>
 <span>  call <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  format <span class="op">=</span> <span class="st">"json"</span>,</span>
@@ -830,7 +850,7 @@ header is defined in the engine, the file name is automatically created with the
 </div>
 
 <div class="section">
-<h4 id="arguments-28">Arguments<a class="anchor" aria-label="anchor" href="#arguments-28"></a></h4>
+<h4 id="arguments-29">Arguments<a class="anchor" aria-label="anchor" href="#arguments-29"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>call</code></dt>
 <dd><p>A string or a vector of strings with the name/s of the processing method/s to be exported.
 When <code>call</code> is <code>NULL</code> all settings are saved.</p></dd>
@@ -854,7 +874,7 @@ When <code>call</code> is <code>NULL</code> all settings are saved.</p></dd>
 </div><p></p><hr><a id="method-CoreEngine-export_analyses"></a><div class="section">
 <h3 id="method-export-analyses-">Method <code>export_analyses()</code><a class="anchor" aria-label="anchor" href="#method-export-analyses-"></a></h3>
 <p>Exports the analyses as <em>json</em> (the default) or <em>rds</em>.</p><div class="section">
-<h4 id="usage-42">Usage<a class="anchor" aria-label="anchor" href="#usage-42"></a></h4>
+<h4 id="usage-43">Usage<a class="anchor" aria-label="anchor" href="#usage-43"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">export_analyses</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  format <span class="op">=</span> <span class="st">"json"</span>,</span>
@@ -864,7 +884,7 @@ When <code>call</code> is <code>NULL</code> all settings are saved.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-29">Arguments<a class="anchor" aria-label="anchor" href="#arguments-29"></a></h4>
+<h4 id="arguments-30">Arguments<a class="anchor" aria-label="anchor" href="#arguments-30"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
 <dd><p>A numeric/character vector with the number/name of the analyses.</p></dd>
 
@@ -887,12 +907,12 @@ When <code>call</code> is <code>NULL</code> all settings are saved.</p></dd>
 </div><p></p><hr><a id="method-CoreEngine-export"></a><div class="section">
 <h3 id="method-export-">Method <code>export()</code><a class="anchor" aria-label="anchor" href="#method-export-"></a></h3>
 <p>Exports the engine data as as <em>json</em> (the default) or <em>rds</em>.</p><div class="section">
-<h4 id="usage-43">Usage<a class="anchor" aria-label="anchor" href="#usage-43"></a></h4>
+<h4 id="usage-44">Usage<a class="anchor" aria-label="anchor" href="#usage-44"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">export</span><span class="op">(</span>format <span class="op">=</span> <span class="st">"json"</span>, name <span class="op">=</span> <span class="st">"EngineData"</span>, path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-30">Arguments<a class="anchor" aria-label="anchor" href="#arguments-30"></a></h4>
+<h4 id="arguments-31">Arguments<a class="anchor" aria-label="anchor" href="#arguments-31"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>format</code></dt>
 <dd><p>A string. Possible values are <code>json</code> and <code>rds</code> for saving as JSON or RDS formats, respectively.</p></dd>
 
@@ -911,12 +931,12 @@ When <code>call</code> is <code>NULL</code> all settings are saved.</p></dd>
 </div><p></p><hr><a id="method-CoreEngine-import_headers"></a><div class="section">
 <h3 id="method-import-headers-">Method <code>import_headers()</code><a class="anchor" aria-label="anchor" href="#method-import-headers-"></a></h3>
 <p>Imports headers from an <em>rds</em> or <em>json</em> file.</p><div class="section">
-<h4 id="usage-44">Usage<a class="anchor" aria-label="anchor" href="#usage-44"></a></h4>
+<h4 id="usage-45">Usage<a class="anchor" aria-label="anchor" href="#usage-45"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">import_headers</span><span class="op">(</span>file <span class="op">=</span> <span class="cn">NA_character_</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-31">Arguments<a class="anchor" aria-label="anchor" href="#arguments-31"></a></h4>
+<h4 id="arguments-32">Arguments<a class="anchor" aria-label="anchor" href="#arguments-32"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>file</code></dt>
 <dd><p>A <em>json</em> or <em>rds</em> file to be imported.</p></dd>
 
@@ -931,12 +951,12 @@ When <code>call</code> is <code>NULL</code> all settings are saved.</p></dd>
 </div><p></p><hr><a id="method-CoreEngine-import_settings"></a><div class="section">
 <h3 id="method-import-settings-">Method <code>import_settings()</code><a class="anchor" aria-label="anchor" href="#method-import-settings-"></a></h3>
 <p>Imports settings from an <em>rds</em> or <em>json</em> file.</p><div class="section">
-<h4 id="usage-45">Usage<a class="anchor" aria-label="anchor" href="#usage-45"></a></h4>
+<h4 id="usage-46">Usage<a class="anchor" aria-label="anchor" href="#usage-46"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">import_settings</span><span class="op">(</span>file <span class="op">=</span> <span class="cn">NA_character_</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-32">Arguments<a class="anchor" aria-label="anchor" href="#arguments-32"></a></h4>
+<h4 id="arguments-33">Arguments<a class="anchor" aria-label="anchor" href="#arguments-33"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>file</code></dt>
 <dd><p>A <em>json</em> or <em>rds</em> file to be imported.</p></dd>
 
@@ -951,12 +971,12 @@ When <code>call</code> is <code>NULL</code> all settings are saved.</p></dd>
 </div><p></p><hr><a id="method-CoreEngine-import_analyses"></a><div class="section">
 <h3 id="method-import-analyses-">Method <code>import_analyses()</code><a class="anchor" aria-label="anchor" href="#method-import-analyses-"></a></h3>
 <p>Imports analyses from an <em>rds</em> or <em>json</em> file.</p><div class="section">
-<h4 id="usage-46">Usage<a class="anchor" aria-label="anchor" href="#usage-46"></a></h4>
+<h4 id="usage-47">Usage<a class="anchor" aria-label="anchor" href="#usage-47"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">import_analyses</span><span class="op">(</span>file <span class="op">=</span> <span class="cn">NA_character_</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-33">Arguments<a class="anchor" aria-label="anchor" href="#arguments-33"></a></h4>
+<h4 id="arguments-34">Arguments<a class="anchor" aria-label="anchor" href="#arguments-34"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>file</code></dt>
 <dd><p>A <em>json</em> or <em>rds</em> file to be imported.</p></dd>
 
@@ -967,12 +987,12 @@ When <code>call</code> is <code>NULL</code> all settings are saved.</p></dd>
 </div><p></p><hr><a id="method-CoreEngine-import"></a><div class="section">
 <h3 id="method-import-">Method <code>import()</code><a class="anchor" aria-label="anchor" href="#method-import-"></a></h3>
 <p>Imports a CoreEngine saved as <em>json</em> or <em>rds</em>.</p><div class="section">
-<h4 id="usage-47">Usage<a class="anchor" aria-label="anchor" href="#usage-47"></a></h4>
+<h4 id="usage-48">Usage<a class="anchor" aria-label="anchor" href="#usage-48"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">import</span><span class="op">(</span>file <span class="op">=</span> <span class="cn">NA_character_</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-34">Arguments<a class="anchor" aria-label="anchor" href="#arguments-34"></a></h4>
+<h4 id="arguments-35">Arguments<a class="anchor" aria-label="anchor" href="#arguments-35"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>file</code></dt>
 <dd><p>A <em>json</em> or <em>rds</em> file representing a CoreEngine.</p></dd>
 
@@ -987,7 +1007,7 @@ When <code>call</code> is <code>NULL</code> all settings are saved.</p></dd>
 </div><p></p><hr><a id="method-CoreEngine-run_app"></a><div class="section">
 <h3 id="method-run-app-">Method <code>run_app()</code><a class="anchor" aria-label="anchor" href="#method-run-app-"></a></h3>
 <p>Runs a Shiny app to explore and manage the engine.</p><div class="section">
-<h4 id="usage-48">Usage<a class="anchor" aria-label="anchor" href="#usage-48"></a></h4>
+<h4 id="usage-49">Usage<a class="anchor" aria-label="anchor" href="#usage-49"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">run_app</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -995,7 +1015,7 @@ When <code>call</code> is <code>NULL</code> all settings are saved.</p></dd>
 </div><p></p><hr><a id="method-CoreEngine-processing_methods"></a><div class="section">
 <h3 id="method-processing-methods-">Method <code>processing_methods()</code><a class="anchor" aria-label="anchor" href="#method-processing-methods-"></a></h3>
 <p>Data.table with available data processing methods.</p><div class="section">
-<h4 id="usage-49">Usage<a class="anchor" aria-label="anchor" href="#usage-49"></a></h4>
+<h4 id="usage-50">Usage<a class="anchor" aria-label="anchor" href="#usage-50"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">processing_methods</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -1003,12 +1023,12 @@ When <code>call</code> is <code>NULL</code> all settings are saved.</p></dd>
 </div><p></p><hr><a id="method-CoreEngine-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-50">Usage<a class="anchor" aria-label="anchor" href="#usage-50"></a></h4>
+<h4 id="usage-51">Usage<a class="anchor" aria-label="anchor" href="#usage-51"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-35">Arguments<a class="anchor" aria-label="anchor" href="#arguments-35"></a></h4>
+<h4 id="arguments-36">Arguments<a class="anchor" aria-label="anchor" href="#arguments-36"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 

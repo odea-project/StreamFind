@@ -1,11 +1,6 @@
 
-#' @title .s3_ms_annotate_features.Settings_annotate_features_StreamFind
-#'
-#' @description Annotates features with isotopes.
-#'
 #' @noRd
-#'
-.s3_ms_annotate_features.Settings_annotate_features_StreamFind <- function(settings, self, private) {
+.process.MassSpecSettings_AnnotateFeatures_StreamFind <- function(settings, self, private) {
 
   if (!any(self$has_features())) {
     warning("Features were not found! Run find_features method first!")
@@ -53,7 +48,7 @@
     
     names(temp_i) <- temp_i_fts
     
-    temp_f <- copy(features[[x]])
+    temp_f <- data.table::copy(features[[x]])
     
     temp_f_fts <- temp_f$feature
     

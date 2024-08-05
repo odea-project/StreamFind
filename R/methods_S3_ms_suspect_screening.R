@@ -1,10 +1,6 @@
-#' @title .s3_ms_suspect_screening.Settings_suspect_screening_StreamFind
-#'
-#' @description Makes suspect screening on features.
-#'
+
 #' @noRd
-#'
-.s3_ms_suspect_screening.Settings_suspect_screening_StreamFind <- function(settings, self, private) {
+.process.MassSpecSettings_SuspectScreening_StreamFind <- function(settings, self, private) {
 
   if (!any(self$has_features())) {
     warning("There are no features! Run find_features first!")
@@ -103,13 +99,10 @@
   }
 }
 
-#' @title .s3_ms_suspect_screening.Settings_suspect_screening_forident
-#'
-#' @description Makes suspect screening on features.
-#'
+
+
 #' @noRd
-#'
-.s3_ms_suspect_screening.Settings_suspect_screening_forident <- function(settings, self, private) {
+.process.MassSpecSettings_SuspectScreening_forident <- function(settings, self, private) {
 
   if (!any(self$has_features())) {
     warning("There are no features! Run find_features first!")
@@ -237,13 +230,10 @@
   TRUE
 }
 
-#' @title .s3_ms_suspect_screening.Settings_suspect_screening_patRoon
-#'
-#' @description Makes suspect screening on feature groups.
-#'
+
+
 #' @noRd
-#'
-.s3_ms_suspect_screening.Settings_suspect_screening_patRoon <- function(settings, self, private) {
+.process.MassSpecSettings_SuspectScreening_patRoon <- function(settings, self, private) {
   
   if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found! Install it for finding features.")

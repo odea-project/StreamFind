@@ -27,11 +27,12 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/app_guide.html">StreamFind App Guide</a>
     <a class="dropdown-item" href="../articles/demo_ms_raman_fusion_bsa.html">Comparison of different bovine serum albumin products</a>
     <a class="dropdown-item" href="../articles/demo_ozonation_project.html">Evaluation of wastewater ozonation with mass spectrometry</a>
     <a class="dropdown-item" href="../articles/demo_paracetamol.html">Detection of quality deviations in paracetamol products</a>
+    <a class="dropdown-item" href="../articles/developer_guide.html">StreamFind Developer Guide</a>
     <a class="dropdown-item" href="../articles/framework.html">StreamFind General Introduction</a>
-    <a class="dropdown-item" href="../articles/ms_developer_guide.html">StreamFind Developer Guide</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -117,8 +118,6 @@ must have the same number of variables as the analyses in the engine.</p>
 <li><p><a href="#method-StatisticEngine-add_data"><code>StatisticEngine$add_data()</code></a></p></li>
 <li><p><a href="#method-StatisticEngine-add_classes"><code>StatisticEngine$add_classes()</code></a></p></li>
 <li><p><a href="#method-StatisticEngine-add_concentrations"><code>StatisticEngine$add_concentrations()</code></a></p></li>
-<li><p><a href="#method-StatisticEngine-make_model"><code>StatisticEngine$make_model()</code></a></p></li>
-<li><p><a href="#method-StatisticEngine-prepare_classification"><code>StatisticEngine$prepare_classification()</code></a></p></li>
 <li><p><a href="#method-StatisticEngine-predict"><code>StatisticEngine$predict()</code></a></p></li>
 <li><p><a href="#method-StatisticEngine-classify"><code>StatisticEngine$classify()</code></a></p></li>
 <li><p><a href="#method-StatisticEngine-quantify"><code>StatisticEngine$quantify()</code></a></p></li>
@@ -170,6 +169,7 @@ must have the same number of variables as the analyses in the engine.</p>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_headers"><a href="CoreEngine.html#method-print_headers"><code>StreamFind::CoreEngine$print_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_results"><a href="CoreEngine.html#method-print_results"><code>StreamFind::CoreEngine$print_results()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_workflow"><a href="CoreEngine.html#method-print_workflow"><code>StreamFind::CoreEngine$print_workflow()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="process"><a href="CoreEngine.html#method-process"><code>StreamFind::CoreEngine$process()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_analyses"><a href="CoreEngine.html#method-remove_analyses"><code>StreamFind::CoreEngine$remove_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_headers"><a href="CoreEngine.html#method-remove_headers"><code>StreamFind::CoreEngine$remove_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_results"><a href="CoreEngine.html#method-remove_results"><code>StreamFind::CoreEngine$remove_results()</code></a></span></li>
@@ -406,63 +406,15 @@ elements (see <code><a href="StatisticAnalysis.html">?StatisticAnalysis</a></cod
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-StatisticEngine-make_model"></a><div class="section">
-<h3 id="method-make-model-">Method <code>make_model()</code><a class="anchor" aria-label="anchor" href="#method-make-model-"></a></h3>
-<p>Makes a model based on applied settings.</p><div class="section">
-<h4 id="usage-15">Usage<a class="anchor" aria-label="anchor" href="#usage-15"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">StatisticEngine</span><span class="op">$</span><span class="fu">make_model</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-9">Arguments<a class="anchor" aria-label="anchor" href="#arguments-9"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>settings</code></dt>
-<dd><p>A named list of ProcessingSettings objects or a
-single ProcessingSettings object. The list names should match
-the call name of each ProcessingSettings object. Alternatively, a named
-list with call name, algorithm and parameters to be transformed and added
-as ProcessingSettings object.</p></dd>
-
-
-</dl><p></p></div>
-</div>
-<div class="section">
-<h4 id="returns-1">Returns<a class="anchor" aria-label="anchor" href="#returns-1"></a></h4>
-<p>Invisible.</p>
-</div>
-
-</div><p></p><hr><a id="method-StatisticEngine-prepare_classification"></a><div class="section">
-<h3 id="method-prepare-classification-">Method <code>prepare_classification()</code><a class="anchor" aria-label="anchor" href="#method-prepare-classification-"></a></h3>
-<p>Prepares for classification of a test set added by the method <code>classify</code>.</p><div class="section">
-<h4 id="usage-16">Usage<a class="anchor" aria-label="anchor" href="#usage-16"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">StatisticEngine</span><span class="op">$</span><span class="fu">prepare_classification</span><span class="op">(</span><span class="va">settings</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-10">Arguments<a class="anchor" aria-label="anchor" href="#arguments-10"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>settings</code></dt>
-<dd><p>A named list of ProcessingSettings objects or a
-single ProcessingSettings object. The list names should match
-the call name of each ProcessingSettings object. Alternatively, a named
-list with call name, algorithm and parameters to be transformed and added
-as ProcessingSettings object.</p></dd>
-
-
-</dl><p></p></div>
-</div>
-<div class="section">
-<h4 id="returns-2">Returns<a class="anchor" aria-label="anchor" href="#returns-2"></a></h4>
-<p>Invisible.</p>
-</div>
-
 </div><p></p><hr><a id="method-StatisticEngine-predict"></a><div class="section">
 <h3 id="method-predict-">Method <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code><a class="anchor" aria-label="anchor" href="#method-predict-"></a></h3>
 <p>Predicts the data using the model.</p><div class="section">
-<h4 id="usage-17">Usage<a class="anchor" aria-label="anchor" href="#usage-17"></a></h4>
+<h4 id="usage-15">Usage<a class="anchor" aria-label="anchor" href="#usage-15"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">StatisticEngine</span><span class="op">$</span><span class="fu">predict</span><span class="op">(</span>data <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-11">Arguments<a class="anchor" aria-label="anchor" href="#arguments-11"></a></h4>
+<h4 id="arguments-9">Arguments<a class="anchor" aria-label="anchor" href="#arguments-9"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>data</code></dt>
 <dd><p>Data.frame, data-table or matrix with data.</p></dd>
 
@@ -473,12 +425,12 @@ as ProcessingSettings object.</p></dd>
 </div><p></p><hr><a id="method-StatisticEngine-classify"></a><div class="section">
 <h3 id="method-classify-">Method <code>classify()</code><a class="anchor" aria-label="anchor" href="#method-classify-"></a></h3>
 <p>Classifies the data using the classification labels of the analysis.</p><div class="section">
-<h4 id="usage-18">Usage<a class="anchor" aria-label="anchor" href="#usage-18"></a></h4>
+<h4 id="usage-16">Usage<a class="anchor" aria-label="anchor" href="#usage-16"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">StatisticEngine</span><span class="op">$</span><span class="fu">classify</span><span class="op">(</span>data <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-12">Arguments<a class="anchor" aria-label="anchor" href="#arguments-12"></a></h4>
+<h4 id="arguments-10">Arguments<a class="anchor" aria-label="anchor" href="#arguments-10"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>data</code></dt>
 <dd><p>Data.frame, data-table or matrix with data.</p></dd>
 
@@ -489,7 +441,7 @@ as ProcessingSettings object.</p></dd>
 </div><p></p><hr><a id="method-StatisticEngine-quantify"></a><div class="section">
 <h3 id="method-quantify-">Method <code>quantify()</code><a class="anchor" aria-label="anchor" href="#method-quantify-"></a></h3>
 <p>Evaluates the model for quantification.</p><div class="section">
-<h4 id="usage-19">Usage<a class="anchor" aria-label="anchor" href="#usage-19"></a></h4>
+<h4 id="usage-17">Usage<a class="anchor" aria-label="anchor" href="#usage-17"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">StatisticEngine</span><span class="op">$</span><span class="fu">quantify</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -497,7 +449,7 @@ as ProcessingSettings object.</p></dd>
 </div><p></p><hr><a id="method-StatisticEngine-plot_data"></a><div class="section">
 <h3 id="method-plot-data-">Method <code>plot_data()</code><a class="anchor" aria-label="anchor" href="#method-plot-data-"></a></h3>
 <p>Plots the raw data in analyses.</p><div class="section">
-<h4 id="usage-20">Usage<a class="anchor" aria-label="anchor" href="#usage-20"></a></h4>
+<h4 id="usage-18">Usage<a class="anchor" aria-label="anchor" href="#usage-18"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">StatisticEngine</span><span class="op">$</span><span class="fu">plot_data</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  interactive <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -508,7 +460,7 @@ as ProcessingSettings object.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-13">Arguments<a class="anchor" aria-label="anchor" href="#arguments-13"></a></h4>
+<h4 id="arguments-11">Arguments<a class="anchor" aria-label="anchor" href="#arguments-11"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
 <dd><p>A numeric/character vector with the number/name of the analyses.</p></dd>
 
@@ -535,7 +487,7 @@ as ProcessingSettings object.</p></dd>
 </div><p></p><hr><a id="method-StatisticEngine-plot_model_explained_variance"></a><div class="section">
 <h3 id="method-plot-model-explained-variance-">Method <code>plot_model_explained_variance()</code><a class="anchor" aria-label="anchor" href="#method-plot-model-explained-variance-"></a></h3>
 <p>Plots the model explained cumulative variance.</p><div class="section">
-<h4 id="usage-21">Usage<a class="anchor" aria-label="anchor" href="#usage-21"></a></h4>
+<h4 id="usage-19">Usage<a class="anchor" aria-label="anchor" href="#usage-19"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">StatisticEngine</span><span class="op">$</span><span class="fu">plot_model_explained_variance</span><span class="op">(</span></span>
 <span>  interactive <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  xLab <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -545,7 +497,7 @@ as ProcessingSettings object.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-14">Arguments<a class="anchor" aria-label="anchor" href="#arguments-14"></a></h4>
+<h4 id="arguments-12">Arguments<a class="anchor" aria-label="anchor" href="#arguments-12"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>interactive</code></dt>
 <dd><p>Logical (length 1). When <code>TRUE</code>, the data is plotted interactively using <span class="pkg">plotly</span>.</p></dd>
 
@@ -568,7 +520,7 @@ as ProcessingSettings object.</p></dd>
 </div><p></p><hr><a id="method-StatisticEngine-plot_model_scores"></a><div class="section">
 <h3 id="method-plot-model-scores-">Method <code>plot_model_scores()</code><a class="anchor" aria-label="anchor" href="#method-plot-model-scores-"></a></h3>
 <p>Plots scores of the model.</p><div class="section">
-<h4 id="usage-22">Usage<a class="anchor" aria-label="anchor" href="#usage-22"></a></h4>
+<h4 id="usage-20">Usage<a class="anchor" aria-label="anchor" href="#usage-20"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">StatisticEngine</span><span class="op">$</span><span class="fu">plot_model_scores</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  interactive <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -580,7 +532,7 @@ as ProcessingSettings object.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-15">Arguments<a class="anchor" aria-label="anchor" href="#arguments-15"></a></h4>
+<h4 id="arguments-13">Arguments<a class="anchor" aria-label="anchor" href="#arguments-13"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
 <dd><p>A numeric/character vector with the number/name of the analyses.</p></dd>
 
@@ -611,7 +563,7 @@ as ProcessingSettings object.</p></dd>
 </div><p></p><hr><a id="method-StatisticEngine-plot_model_residuals"></a><div class="section">
 <h3 id="method-plot-model-residuals-">Method <code>plot_model_residuals()</code><a class="anchor" aria-label="anchor" href="#method-plot-model-residuals-"></a></h3>
 <p>Plots residuals of the model.</p><div class="section">
-<h4 id="usage-23">Usage<a class="anchor" aria-label="anchor" href="#usage-23"></a></h4>
+<h4 id="usage-21">Usage<a class="anchor" aria-label="anchor" href="#usage-21"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">StatisticEngine</span><span class="op">$</span><span class="fu">plot_model_residuals</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  interactive <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -622,7 +574,7 @@ as ProcessingSettings object.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-16">Arguments<a class="anchor" aria-label="anchor" href="#arguments-16"></a></h4>
+<h4 id="arguments-14">Arguments<a class="anchor" aria-label="anchor" href="#arguments-14"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
 <dd><p>A numeric/character vector with the number/name of the analyses.</p></dd>
 
@@ -649,7 +601,7 @@ as ProcessingSettings object.</p></dd>
 </div><p></p><hr><a id="method-StatisticEngine-plot_model_loadings"></a><div class="section">
 <h3 id="method-plot-model-loadings-">Method <code>plot_model_loadings()</code><a class="anchor" aria-label="anchor" href="#method-plot-model-loadings-"></a></h3>
 <p>Plots model loadings.</p><div class="section">
-<h4 id="usage-24">Usage<a class="anchor" aria-label="anchor" href="#usage-24"></a></h4>
+<h4 id="usage-22">Usage<a class="anchor" aria-label="anchor" href="#usage-22"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">StatisticEngine</span><span class="op">$</span><span class="fu">plot_model_loadings</span><span class="op">(</span></span>
 <span>  interactive <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  pcs <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>,</span>
@@ -661,7 +613,7 @@ as ProcessingSettings object.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-17">Arguments<a class="anchor" aria-label="anchor" href="#arguments-17"></a></h4>
+<h4 id="arguments-15">Arguments<a class="anchor" aria-label="anchor" href="#arguments-15"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>interactive</code></dt>
 <dd><p>Logical (length 1). When <code>TRUE</code>, the data is plotted interactively using <span class="pkg">plotly</span>.</p></dd>
 
@@ -692,7 +644,7 @@ as ProcessingSettings object.</p></dd>
 </div><p></p><hr><a id="method-StatisticEngine-plot_model_resolved_spectra"></a><div class="section">
 <h3 id="method-plot-model-resolved-spectra-">Method <code>plot_model_resolved_spectra()</code><a class="anchor" aria-label="anchor" href="#method-plot-model-resolved-spectra-"></a></h3>
 <p>Plots model resolved spectra.</p><div class="section">
-<h4 id="usage-25">Usage<a class="anchor" aria-label="anchor" href="#usage-25"></a></h4>
+<h4 id="usage-23">Usage<a class="anchor" aria-label="anchor" href="#usage-23"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">StatisticEngine</span><span class="op">$</span><span class="fu">plot_model_resolved_spectra</span><span class="op">(</span></span>
 <span>  interactive <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  pcs <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -704,7 +656,7 @@ as ProcessingSettings object.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-18">Arguments<a class="anchor" aria-label="anchor" href="#arguments-18"></a></h4>
+<h4 id="arguments-16">Arguments<a class="anchor" aria-label="anchor" href="#arguments-16"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>interactive</code></dt>
 <dd><p>Logical (length 1). When <code>TRUE</code>, the data is plotted interactively using <span class="pkg">plotly</span>.</p></dd>
 
@@ -735,7 +687,7 @@ as ProcessingSettings object.</p></dd>
 </div><p></p><hr><a id="method-StatisticEngine-plot_model_contributions"></a><div class="section">
 <h3 id="method-plot-model-contributions-">Method <code>plot_model_contributions()</code><a class="anchor" aria-label="anchor" href="#method-plot-model-contributions-"></a></h3>
 <p>Plots model contributions.</p><div class="section">
-<h4 id="usage-26">Usage<a class="anchor" aria-label="anchor" href="#usage-26"></a></h4>
+<h4 id="usage-24">Usage<a class="anchor" aria-label="anchor" href="#usage-24"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">StatisticEngine</span><span class="op">$</span><span class="fu">plot_model_contributions</span><span class="op">(</span></span>
 <span>  interactive <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  pcs <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -746,7 +698,7 @@ as ProcessingSettings object.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-19">Arguments<a class="anchor" aria-label="anchor" href="#arguments-19"></a></h4>
+<h4 id="arguments-17">Arguments<a class="anchor" aria-label="anchor" href="#arguments-17"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>interactive</code></dt>
 <dd><p>Logical (length 1). When <code>TRUE</code>, the data is plotted interactively using <span class="pkg">plotly</span>.</p></dd>
 
@@ -773,7 +725,7 @@ as ProcessingSettings object.</p></dd>
 </div><p></p><hr><a id="method-StatisticEngine-plot_predicted_distances"></a><div class="section">
 <h3 id="method-plot-predicted-distances-">Method <code>plot_predicted_distances()</code><a class="anchor" aria-label="anchor" href="#method-plot-predicted-distances-"></a></h3>
 <p>Plots scores of the model.</p><div class="section">
-<h4 id="usage-27">Usage<a class="anchor" aria-label="anchor" href="#usage-27"></a></h4>
+<h4 id="usage-25">Usage<a class="anchor" aria-label="anchor" href="#usage-25"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">StatisticEngine</span><span class="op">$</span><span class="fu">plot_predicted_distances</span><span class="op">(</span></span>
 <span>  pc <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  interactive <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -784,7 +736,7 @@ as ProcessingSettings object.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-20">Arguments<a class="anchor" aria-label="anchor" href="#arguments-20"></a></h4>
+<h4 id="arguments-18">Arguments<a class="anchor" aria-label="anchor" href="#arguments-18"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>pc</code></dt>
 <dd><p>Integer (length 1) with the principle component to use for categorization.</p></dd>
 
@@ -811,7 +763,7 @@ as ProcessingSettings object.</p></dd>
 </div><p></p><hr><a id="method-StatisticEngine-processing_methods"></a><div class="section">
 <h3 id="method-processing-methods-">Method <code>processing_methods()</code><a class="anchor" aria-label="anchor" href="#method-processing-methods-"></a></h3>
 <p>A data.table with available data processing methods.</p><div class="section">
-<h4 id="usage-28">Usage<a class="anchor" aria-label="anchor" href="#usage-28"></a></h4>
+<h4 id="usage-26">Usage<a class="anchor" aria-label="anchor" href="#usage-26"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">StatisticEngine</span><span class="op">$</span><span class="fu">processing_methods</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -819,12 +771,12 @@ as ProcessingSettings object.</p></dd>
 </div><p></p><hr><a id="method-StatisticEngine-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-29">Usage<a class="anchor" aria-label="anchor" href="#usage-29"></a></h4>
+<h4 id="usage-27">Usage<a class="anchor" aria-label="anchor" href="#usage-27"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">StatisticEngine</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-21">Arguments<a class="anchor" aria-label="anchor" href="#arguments-21"></a></h4>
+<h4 id="arguments-19">Arguments<a class="anchor" aria-label="anchor" href="#arguments-19"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 

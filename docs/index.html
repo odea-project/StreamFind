@@ -54,11 +54,12 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="articles/app_guide.html">StreamFind App Guide</a>
     <a class="dropdown-item" href="articles/demo_ms_raman_fusion_bsa.html">Comparison of different bovine serum albumin products</a>
     <a class="dropdown-item" href="articles/demo_ozonation_project.html">Evaluation of wastewater ozonation with mass spectrometry</a>
     <a class="dropdown-item" href="articles/demo_paracetamol.html">Detection of quality deviations in paracetamol products</a>
+    <a class="dropdown-item" href="articles/developer_guide.html">StreamFind Developer Guide</a>
     <a class="dropdown-item" href="articles/framework.html">StreamFind General Introduction</a>
-    <a class="dropdown-item" href="articles/ms_developer_guide.html">StreamFind Developer Guide</a>
   </div>
 </li>
       </ul>
@@ -87,28 +88,39 @@
 
 <p align="center" width="100%">
 <img width="60%" src="reference/figures/logo_StreamFind.png" alt="Logo"></p>
-<p>The StreamFind project, entitled “Flexible data analysis and workflow designer to identify chemicals in the water cycle”, is funded by the <a href="https://www.bmbf.de" class="external-link">Bundesministerium für Bildung und Forschung (BMBF)</a> and is a cooperation between the <a href="https://www.iuta.de" class="external-link">Institut für Umwelt &amp; Energie, Technik &amp; Analytik e. V. (IUTA)</a>, the <a href="https://www.fzi.de/" class="external-link">Forschungszentrum Informatik (FZI)</a> and supporting partners. The goal of the StreamFind project is the development and assembly of data processing workflows for mass spectrometry and spectroscopy and the application of the workflows in environmental and quality studies of the water cycle. The StreamFind aims to stimulate the use of advanced data analysis (e.g., non-target screening, statistical analysis, etc.) in routine studies, promoting standardization of data processing and structure and easing the retrospective evaluation of data. The StreamFind platform is directed to academics but also technicians, due to the aspired comprehensive documentation, well categorized set of integrated modular functions and the graphical user interface.<br><br> The library of <a href="https://github.com/odea-project/StreamFind" class="external-link">StreamFind</a> is an R package (this repository). The graphical user interface (GUI) is a Web App developed in JavaScript and can be found in the <a href="https://github.com/odea-project/StreamFind-App" class="external-link">StreamFind-App</a> repository. The StreamFind development is ongoing, please <a href="mailto:cunha@iuta.de">contact us</a> for questions or collaboration.</p>
+<p>The StreamFind is developed within the project <a href="https://www.bildung-forschung.digital/digitalezukunft/de/wissen/Datenkompetenzen/datenkompetenzen_wissenschaftlichen_nachwuchs/Projekte/stream_find.html" class="external-link">“Flexible data analysis and workflow designer to identify chemicals in the water cycle”</a>, which is funded by the <a href="https://www.bmbf.de" class="external-link">Bundesministerium für Bildung und Forschung (BMBF)</a>. The development is carried out by the <a href="https://www.iuta.de" class="external-link">Institut für Umwelt &amp; Energie, Technik &amp; Analytik e. V. (IUTA)</a>, the <a href="https://www.fzi.de/" class="external-link">Forschungszentrum Informatik (FZI)</a> and supporting partners. The goal of the StreamFind is to develop and assemble data processing workflows for different types of analytical data (e.g., mass spectrometry and spectroscopy) and to apply the workflows in different fields (e.g., environmental and quality studies of the water cycle). StreamFind aims to stimulate the use of advanced data analysis (e.g., non-target screening, statistical analysis, etc.) in routine studies, to promote standardization of data structure and processing, and to facilitate retrospective data evaluation. The StreamFind platform is aimed at scientists, but also at technicians, due to its comprehensive documentation, its well categorized set of integrated modular functions and its embedded graphical user interface.<br><br> The StreamFind development is ongoing, please <a href="mailto:cunha@iuta.de">contact us</a> for questions or collaboration.</p>
 <p><img src="reference/figures/logo_group.png" width="100%" style="display: block; margin: auto;"></p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>For installation of the StreamFind R package, it is recommended to first install the dependencies. Besides <a href="https://cran.r-project.org/" class="external-link">R</a> and <a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link">RTools</a> (the latter is only recommended for Windows users), the StreamFind depends on the <a href="https://github.com/rickhelmus/patRoon" class="external-link">patRoon</a> R package and its dependencies. The patRoon R package combines several tools for basic and advanced data processing and can be used interchangeably with the StreamFind R package. Installation instructions for patRoon and its dependencies can be found <a href="https://rickhelmus.github.io/patRoon/handbook_bd/manual-installation.html#r-prerequisites" class="external-link">here</a>.</p>
-<p>Then, the StreamFind R package can be installed from the GitHub repository.</p>
+<p>Pre-requisites for the StreamFind are the <a href="https://cran.r-project.org/" class="external-link">R</a> software and the <a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link">RTools</a> (only applicable for Windows users). RTools is needed for compiling the C++ code used in the StreamFind R package. Assuming that R and RTools are installed, the StreamFind R package can be installed from the GitHub repository via the <a href="https://www.bioconductor.org/install/" class="external-link">BiocManager</a>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"odea-project/StreamFind"</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p>The supplementary <a href="https://github.com/odea-project/StreamFindData" class="external-link">StreamFindData</a> R package holds the data used in examples and other documentation assets of the StreamFind R package and can also be installed from the GitHub repository.</p>
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://bioconductor.github.io/BiocManager/" class="external-link">"BiocManager"</a></span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span></span>
+<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"odea-project/StreamFind"</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="other-dependencies">Other dependencies<a class="anchor" aria-label="anchor" href="#other-dependencies"></a>
+</h2>
+<p>The StreamFind depends on other open source software to process different analytical data. For instance, for non-target screening using mass spectrometry the StreamFind uses the <a href="https://github.com/rickhelmus/patRoon" class="external-link">patRoon</a> R package and its own dependencies. Installation instructions for patRoon and its dependencies can be found <a href="https://rickhelmus.github.io/patRoon/handbook_bd/manual-installation.html#r-prerequisites" class="external-link">here</a>. Consult the documentation for dependencies of other data types.</p>
+</div>
+<div class="section level2">
+<h2 id="suplementary-data">Suplementary data<a class="anchor" aria-label="anchor" href="#suplementary-data"></a>
+</h2>
+<p>The supplementary <a href="https://github.com/odea-project/StreamFindData" class="external-link">StreamFindData</a> R package holds the data used in examples and other documentation assets of the StreamFind and can also be installed from the GitHub repository.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"odea-project/StreamFindData"</span><span class="op">)</span></span></code></pre></div>
-<div class="section level3">
-<h3 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
-</h3>
-<p>The documentation and usage examples of the StreamFind R package can be found in the <a href="https://odea-project.github.io/StreamFind/reference/index.html">reference page</a> and <a href="https://odea-project.github.io/StreamFind/articles/index.html">articles</a> of the <a href="https://odea-project.github.io/StreamFind/index.html">webpage</a>.</p>
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://bioconductor.github.io/BiocManager/" class="external-link">"BiocManager"</a></span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span></span>
+<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"odea-project/StreamFindData"</span><span class="op">)</span></span></code></pre></div>
 </div>
+<div class="section level2">
+<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
+</h2>
+<p>The documentation and usage examples of the StreamFind R package can be found in the <a href="https://odea-project.github.io/StreamFind/reference/index.html">reference page</a> and <a href="https://odea-project.github.io/StreamFind/articles/index.html">articles</a> of the <a href="https://odea-project.github.io/StreamFind/index.html">webpage</a>, respectively.</p>
 </div>
-</div>
-<div class="section level1">
-<h1 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
-</h1>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
 <p>The StreamFind is open source due to public funding and the extensive contribution from scientific literature as well as existing open source software. Below, we reference the research and software that is used within StreamFind. Please note that each open source software or research that StreamFind uses relies on other contributions. Therefore, we recommend to search within each citation for other contributions.<br><br></p>
 <div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
 <div id="ref-xcms03" class="csl-entry">
@@ -194,7 +206,7 @@ Zhang, Zhi-Min, Shan Chen, and Yi-Zeng Liang. 2010. “Baseline Correction Using
 </div>
 </div>
 </div>
-
+</div>
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">

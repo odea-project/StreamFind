@@ -1,9 +1,22 @@
 
+## S7 Trial
+
+# a <- MassSpecSettings_BinSpectra_StreamFind_S7()
+# run(a)
+# export(a)
+# b <- ProcessingSettings_S7()
+# c <- read(b, file = "settings.json")
+# show(c)
+# ?ProcessingSettings_S7
+
+
+
+
+
 ## Core development
 
-# R6 class: CoreEngine
-# core <- CoreEngine$new()
-# core
+core <- CoreEngine$new()
+core$run_app()
 
 # S3 classes: ProjectHeaders, ProcessingSettings, Analysis
 # phead <- ProjectHeaders()
@@ -12,9 +25,14 @@
 # settings <- ProcessingSettings()
 # settings
 
+# MassSpecSettings_BinSpectra_StreamFind()
+# 
+# ms <- MassSpecEngine$new(files = StreamFindData::get_ms_file_paths()[1])
+# ms$add_settings(MassSpecSettings_BinSpectra_StreamFind())
+# ms$run_workflow()
+
 # ana <- Analysis()
 # ana
-
 # r1 <- RamanEngine$new(files = StreamFindData::get_raman_file_paths())
 # r1$get_number_analyses()
 # r1$plot_spectra(colorBy = "replicates")
@@ -50,41 +68,46 @@ dbsus <- db[!grepl("IS", db$tag), ]
 
 ps <- list(
   
-  Settings_find_features_openms()
+  MassSpecSettings_FindFeatures_openms(),
   
-  # Settings_annotate_features_StreamFind(),
+  MassSpecSettings_AnnotateFeatures_StreamFind()
+  
+  # MassSpecSettings_GroupFeatures_openms(),
   # 
-  # Settings_group_features_openms(),
-
-  # Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
+  # MassSpecSettings_FindInternalStandards_StreamFind(database = dbis, ppm = 8, sec = 10),
   # 
-  # Settings_filter_features_StreamFind(excludeIsotopes = TRUE),
+  # MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE),
   # 
-  # Settings_filter_features_patRoon(absMinIntensity = 5000, maxReplicateIntRSD = 30, blankThreshold = 10, absMinReplicateAbundance = 3),
+  # MassSpecSettings_FilterFeatures_patRoon(absMinIntensity = 5000, maxReplicateIntRSD = 30, blankThreshold = 10, absMinReplicateAbundance = 3),
   # 
-  # Settings_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005),
+  # MassSpecSettings_LoadFeaturesEIC_StreamFind(rtExpand = 60, mzExpand = 0.0005),
   # 
-  # Settings_calculate_quality_StreamFind(runParallel = FALSE),
+  # MassSpecSettings_CalculateQuality_StreamFind(),
   # 
-  # Settings_filter_features_StreamFind(minSnRatio = 5),
+  # MassSpecSettings_FilterFeatures_StreamFind(minSnRatio = 5),
   # 
-  # Settings_load_features_ms1_StreamFind(runParallel = FALSE),
+  # MassSpecSettings_LoadFeaturesMS1_StreamFind(),
   # 
-  # Settings_load_features_ms2_StreamFind(runParallel = FALSE),
+  # MassSpecSettings_LoadFeaturesMS2_StreamFind(),
   # 
-  # Settings_load_MSPeakLists_StreamFind(), # Check patRoon function for issues with MSPeakLists!!!
+  # MassSpecSettings_LoadMSPeakLists_StreamFind(), # Check patRoon function for issues with MSPeakLists!!!
   # 
-  # # Settings_generate_formulas_genform(),
+  # #MassSpecSettings_GenerateFormulas_genform(),
   # 
-  # # Settings_generate_compounds_metfrag()
+  # #MassSpecSettings_GenerateCompounds_metfrag()
   # 
-  # # TODO add suspect screning results to featureGroups?
-  # Settings_suspect_screening_StreamFind(database = dbsus, ppm = 5, sec = 10)
+  # MassSpecSettings_SuspectScreening_StreamFind(database = dbsus, ppm = 5, sec = 10)
 )
 
-ms <- MassSpecEngine$new(files = ms_files_df, settings = ps)
+ms <- MassSpecEngine$new(files = ms_files_df[10, ], settings = ps)
 
-ms$save(format = "json")
+ms$run_workflow()
+
+
+
+
+
+ms$save()
 
 ms <- MassSpecEngine$new()
 

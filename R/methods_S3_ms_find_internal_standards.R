@@ -1,11 +1,6 @@
 
-#' @title .s3_ms_find_internal_standards.Settings_find_internal_standards_StreamFind
-#'
-#' @description Finds internal standards in the features/groups.
-#'
 #' @noRd
-#'
-.s3_ms_find_internal_standards.Settings_find_internal_standards_StreamFind <- function(settings, self, private) {
+.process.MassSpecSettings_FindInternalStandards_StreamFind <- function(settings, self, private) {
   
   if (!any(self$has_features())) {
     warning("There are no features! Run find_features first!")

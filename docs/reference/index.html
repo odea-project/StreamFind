@@ -27,11 +27,12 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/app_guide.html">StreamFind App Guide</a>
     <a class="dropdown-item" href="../articles/demo_ms_raman_fusion_bsa.html">Comparison of different bovine serum albumin products</a>
     <a class="dropdown-item" href="../articles/demo_ozonation_project.html">Evaluation of wastewater ozonation with mass spectrometry</a>
     <a class="dropdown-item" href="../articles/demo_paracetamol.html">Detection of quality deviations in paracetamol products</a>
+    <a class="dropdown-item" href="../articles/developer_guide.html">StreamFind Developer Guide</a>
     <a class="dropdown-item" href="../articles/framework.html">StreamFind General Introduction</a>
-    <a class="dropdown-item" href="../articles/ms_developer_guide.html">StreamFind Developer Guide</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -54,9 +55,9 @@
     </div>
 
     <div class="section level2">
-      <h2 id="r-classes-data-processing-engines">R6 classes: Data processing engines<a class="anchor" aria-label="anchor" href="#r-classes-data-processing-engines"></a></h2>
+      <h2 id="data-processing-engines">Data Processing Engines<a class="anchor" aria-label="anchor" href="#data-processing-engines"></a></h2>
       
-      <p class="section-desc"></p><p>The R6 classes are used as processing engines for reading, processing, inspecting and storing data. Note that <em>MassSpecData</em> is to be replaced by <em>MassSpecEngine</em> in future versions.</p>
+      <p class="section-desc"></p><p>R6 classes are used as processing engines for reading, processing, inspecting and storing data.</p>
 
       
     </div><div id="" class="section level2">
@@ -85,9 +86,9 @@
         </dt>
         <dd><strong>StatisticEngine</strong> R6 class and methods</dd>
       </dl></div><div class="section level2">
-      <h2 id="s-classes">S3 classes<a class="anchor" aria-label="anchor" href="#s-classes"></a></h2>
+      <h2 id="project-headers">Project Headers<a class="anchor" aria-label="anchor" href="#project-headers"></a></h2>
       
-      <p class="section-desc"></p><p>S3 classes are implemented to harmonize, verify and dispatch data within the R6 classes. <em>ProjectHeaders</em> and <em>ProcessingSettings</em> S3 classes are used in all R6 classes.</p>
+      <p class="section-desc"></p><p>The <em>ProjectHeaders</em> S3 class is used to store, assign and dispatch the project headers to the processing engines.</p>
 
       
     </div><div id="" class="section level2">
@@ -100,12 +101,18 @@
           <code><a href="ProjectHeaders.html">ProjectHeaders()</a></code> 
         </dt>
         <dd><strong>ProjectHeaders</strong> S3 class constructor, methods and functions</dd>
-      </dl><dl><dt>
-          
-          <code><a href="ProcessingSettings.html">ProcessingSettings()</a></code> 
-        </dt>
-        <dd><strong>ProcessingSettings</strong> S3 class constructor, methods and functions</dd>
-      </dl><dl><dt>
+      </dl></div><div class="section level2">
+      <h2 id="analysis">Analysis<a class="anchor" aria-label="anchor" href="#analysis"></a></h2>
+      
+      <p class="section-desc"></p><p>The <em>Analysis</em> S3 class and data dedicated childs are used to store, assign and dispatch the analysis data to the processing engines.</p>
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
           
           <code><a href="Analysis.html">Analysis()</a></code> 
         </dt>
@@ -128,13 +135,7 @@
       </dl></div><div class="section level2">
       <h2 id="processing-settings">Processing settings<a class="anchor" aria-label="anchor" href="#processing-settings"></a></h2>
       
-      <p class="section-desc"></p><p>The <em>ProcessingSettings</em> S3 class is used to store, assign and dispatch the algorithm and respective parameters to processing methods. The <em>ProcessingSettings</em> object obtains a subclass according to the assinged algorithm for each MS processing method. Below the available subclasses for <em>ProcessingSettings</em> are listed for each processing method.</p>
-
-      
-    </div><div class="section level2">
-      
-      <h3 id="average-spectra">average_spectra<a class="anchor" aria-label="anchor" href="#average-spectra"></a></h3>
-      
+      <p class="section-desc"></p><p>The <em>ProcessingSettings</em> S3 class is used to store, assign and dispatch the algorithm and respective parameters to processing methods. The <em>ProcessingSettings</em> object obtains a subclass according to the assinged algorithm for each engine and processing method. Below the available subclasses for <em>ProcessingSettings</em> are listed for each type of processing engine.</p>
 
       
     </div><div id="" class="section level2">
@@ -144,12 +145,12 @@
 
       <dl><dt>
           
-          <code><a href="Settings_average_spectra_StreamFind.html">Settings_average_spectra_StreamFind()</a></code> 
+          <code><a href="ProcessingSettings.html">ProcessingSettings()</a></code> 
         </dt>
-        <dd>Settings_average_spectra_StreamFind</dd>
+        <dd><strong>ProcessingSettings</strong> S3 class constructor, methods and functions</dd>
       </dl></div><div class="section level2">
       
-      <h3 id="bin-spectra">bin_spectra<a class="anchor" aria-label="anchor" href="#bin-spectra"></a></h3>
+      <h3 id="massspec-settings">MassSpec Settings<a class="anchor" aria-label="anchor" href="#massspec-settings"></a></h3>
       
 
       
@@ -160,266 +161,232 @@
 
       <dl><dt>
           
-          <code><a href="Settings_bin_spectra_qBinning.html">Settings_bin_spectra_qBinning()</a></code> 
+          <code><a href="MassSpecSettings_AnnotateFeatures_StreamFind.html">MassSpecSettings_AnnotateFeatures_StreamFind()</a></code> 
         </dt>
-        <dd>Settings_bin_spectra_qBinning</dd>
+        <dd>MassSpecSettings_AnnotateFeatures_StreamFind</dd>
       </dl><dl><dt>
           
-          <code><a href="Settings_bin_spectra_StreamFind.html">Settings_bin_spectra_StreamFind()</a></code> 
+          <code><a href="MassSpecSettings_AverageSpectra_StreamFind.html">MassSpecSettings_AverageSpectra_StreamFind()</a></code> 
         </dt>
-        <dd>Settings_bin_spectra_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="cluster-spectra">cluster_spectra<a class="anchor" aria-label="anchor" href="#cluster-spectra"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_cluster_spectra_StreamFind.html">Settings_cluster_spectra_StreamFind()</a></code> 
-        </dt>
-        <dd>Settings_cluster_spectra_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="correct-chromatograms-baseline">correct_chromatograms_baseline<a class="anchor" aria-label="anchor" href="#correct-chromatograms-baseline"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_correct_chromatograms_baseline_airpls.html">Settings_correct_chromatograms_baseline_airpls()</a></code> 
-        </dt>
-        <dd>Settings_correct_chromatograms_baseline_airpls</dd>
+        <dd>MassSpecSettings_AverageSpectra_StreamFind</dd>
       </dl><dl><dt>
           
-          <code><a href="Settings_correct_chromatograms_baseline_baseline.html">Settings_correct_chromatograms_baseline_baseline()</a></code> 
+          <code><a href="MassSpecSettings_BinSpectra_StreamFind.html">MassSpecSettings_BinSpectra_StreamFind()</a></code> 
         </dt>
-        <dd>Settings_correct_chromatograms_baseline_baseline</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="correct-spectra-baseline">correct_spectra_baseline<a class="anchor" aria-label="anchor" href="#correct-spectra-baseline"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_correct_spectra_baseline_airpls.html">Settings_correct_spectra_baseline_airpls()</a></code> 
-        </dt>
-        <dd>Settings_correct_spectra_baseline_airpls</dd>
+        <dd>MassSpecSettings_BinSpectra_StreamFind</dd>
       </dl><dl><dt>
           
-          <code><a href="Settings_correct_spectra_baseline_baseline.html">Settings_correct_spectra_baseline_baseline()</a></code> 
+          <code><a href="MassSpecSettings_CalculateQuality_StreamFind.html">MassSpecSettings_CalculateQuality_StreamFind()</a></code> 
         </dt>
-        <dd>Settings_correct_spectra_baseline_baseline</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="delete-spectra-section">delete_spectra_section<a class="anchor" aria-label="anchor" href="#delete-spectra-section"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_delete_spectra_section_StreamFind.html">Settings_delete_spectra_section_StreamFind()</a></code> 
-        </dt>
-        <dd>Settings_delete_spectra_section_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="integrate-chromatograms">integrate_chromatograms<a class="anchor" aria-label="anchor" href="#integrate-chromatograms"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_integrate_chromatograms_StreamFind.html">Settings_integrate_chromatograms_StreamFind()</a></code> 
-        </dt>
-        <dd>Settings_integrate_chromatograms_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="make-model">make_model<a class="anchor" aria-label="anchor" href="#make-model"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_make_model_mcrals_mdatools.html">Settings_make_model_mcrals_mdatools()</a></code> 
-        </dt>
-        <dd>Settings_make_model_mcrals_mdatools</dd>
+        <dd>MassSpecSettings_CalculateQuality_StreamFind</dd>
       </dl><dl><dt>
           
-          <code><a href="Settings_make_model_mcrpure_mdatools.html">Settings_make_model_mcrpure_mdatools()</a></code> 
+          <code><a href="MassSpecSettings_CalculateSpectraCharges_StreamFind.html">MassSpecSettings_CalculateSpectraCharges_StreamFind()</a></code> 
         </dt>
-        <dd>Settings_make_model_mcrpure_mdatools</dd>
+        <dd>MassSpecSettings_CalculateSpectraCharges_StreamFind</dd>
       </dl><dl><dt>
           
-          <code><a href="Settings_make_model_pca_mdatools.html">Settings_make_model_pca_mdatools()</a></code> 
+          <code><a href="MassSpecSettings_CentroidSpectra_qCentroids.html">MassSpecSettings_CentroidSpectra_qCentroids()</a></code> 
         </dt>
-        <dd>Settings_make_model_pca_mdatools</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="merge-spectra-time-series">merge_spectra_time_series<a class="anchor" aria-label="anchor" href="#merge-spectra-time-series"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_merge_spectra_time_series_StreamFind.html">Settings_merge_spectra_time_series_StreamFind()</a></code> 
-        </dt>
-        <dd>Settings_merge_spectra_time_series_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="annotate-features">annotate_features<a class="anchor" aria-label="anchor" href="#annotate-features"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_annotate_features_StreamFind.html">Settings_annotate_features_StreamFind()</a></code> 
-        </dt>
-        <dd>Settings_annotate_features_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="calculate-quality">calculate_quality<a class="anchor" aria-label="anchor" href="#calculate-quality"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_calculate_quality_StreamFind.html">Settings_calculate_quality_StreamFind()</a></code> 
-        </dt>
-        <dd>Settings_calculate_quality_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="calculate-spectra-charges">calculate_spectra_charges<a class="anchor" aria-label="anchor" href="#calculate-spectra-charges"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_calculate_spectra_charges_StreamFind.html">Settings_calculate_spectra_charges_StreamFind()</a></code> 
-        </dt>
-        <dd>Settings_calculate_spectra_charges_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="centroid-spectra">centroid_spectra<a class="anchor" aria-label="anchor" href="#centroid-spectra"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_centroid_spectra_qCentroids.html">Settings_centroid_spectra_qCentroids()</a></code> 
-        </dt>
-        <dd>Settings_centroid_spectra_qCentroids</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="deconvolute-spectra">deconvolute_spectra<a class="anchor" aria-label="anchor" href="#deconvolute-spectra"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_deconvolute_spectra_StreamFind.html">Settings_deconvolute_spectra_StreamFind()</a></code> 
-        </dt>
-        <dd>Settings_deconvolute_spectra_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="fill-features">fill_features<a class="anchor" aria-label="anchor" href="#fill-features"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_fill_features_StreamFind.html">Settings_fill_features_StreamFind()</a></code> 
-        </dt>
-        <dd>Settings_fill_features_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="filter-features">filter_features<a class="anchor" aria-label="anchor" href="#filter-features"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_filter_features_patRoon.html">Settings_filter_features_patRoon()</a></code> 
-        </dt>
-        <dd>Settings_filter_features_patRoon</dd>
+        <dd>MassSpecSettings_CentroidSpectra_qCentroids</dd>
       </dl><dl><dt>
           
-          <code><a href="Settings_filter_features_StreamFind.html">Settings_filter_features_StreamFind()</a></code> 
+          <code><a href="MassSpecSettings_ClusterSpectra_StreamFind.html">MassSpecSettings_ClusterSpectra_StreamFind()</a></code> 
         </dt>
-        <dd>Settings_filter_features_StreamFind</dd>
+        <dd>MassSpecSettings_ClusterSpectra_StreamFind</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_CorrectChromatogramsBaseline_airpls.html">MassSpecSettings_CorrectChromatogramsBaseline_airpls()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_CorrectChromatogramsBaseline_airpls</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_CorrectChromatogramsBaseline_baseline.html">MassSpecSettings_CorrectChromatogramsBaseline_baseline()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_CorrectChromatogramsBaseline_baseline</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_CorrectSpectraBaseline_airpls.html">MassSpecSettings_CorrectSpectraBaseline_airpls()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_CorrectSpectraBaseline_airpls</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_CorrectSpectraBaseline_baseline.html">MassSpecSettings_CorrectSpectraBaseline_baseline()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_CorrectSpectraBaseline_baseline</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_DeconvoluteSpectra_StreamFind.html">MassSpecSettings_DeconvoluteSpectra_StreamFind()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_DeconvoluteSpectra_StreamFind</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_FillFeatures_StreamFind.html">MassSpecSettings_FillFeatures_StreamFind()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_FillFeatures_StreamFind</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_FilterFeatures_patRoon.html">MassSpecSettings_FilterFeatures_patRoon()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_FilterFeatures_patRoon</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_FilterFeatures_StreamFind.html">MassSpecSettings_FilterFeatures_StreamFind()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_FilterFeatures_StreamFind</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_FindFeatures_kpic2.html">MassSpecSettings_FindFeatures_kpic2()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_FindFeatures_kpic2</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_FindFeatures_openms.html">MassSpecSettings_FindFeatures_openms()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_FindFeatures_openms</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_FindFeatures_qPeaks.html">MassSpecSettings_FindFeatures_qPeaks()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_FindFeatures_qPeaks</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_FindFeatures_xcms3_centwave.html">MassSpecSettings_FindFeatures_xcms3_centwave()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_FindFeatures_xcms3_centwave</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_FindFeatures_xcms3_matchedfilter.html">MassSpecSettings_FindFeatures_xcms3_matchedfilter()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_FindFeatures_xcms3_matchedfilter</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_FindInternalStandards_StreamFind.html">MassSpecSettings_FindInternalStandards_StreamFind()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_FindInternalStandards_StreamFind</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_GenerateCompounds_metfrag.html">MassSpecSettings_GenerateCompounds_metfrag()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_GenerateCompounds_metfrag</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_GenerateFormulas_genform.html">MassSpecSettings_GenerateFormulas_genform()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_GenerateFormulas_genform</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_GroupFeatures_openms.html">MassSpecSettings_GroupFeatures_openms()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_GroupFeatures_openms</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_GroupFeatures_xcms3_peakdensity.html">MassSpecSettings_GroupFeatures_xcms3_peakdensity()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_GroupFeatures_xcms3_peakdensity</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups.html">MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_IntegrateChromatograms_StreamFind.html">MassSpecSettings_IntegrateChromatograms_StreamFind()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_IntegrateChromatograms_StreamFind</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_LoadFeaturesEIC_StreamFind.html">MassSpecSettings_LoadFeaturesEIC_StreamFind()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_LoadFeaturesEIC_StreamFind</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_LoadFeaturesMS1_StreamFind.html">MassSpecSettings_LoadFeaturesMS1_StreamFind()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_LoadFeaturesMS1_StreamFind</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_LoadFeaturesMS2_StreamFind.html">MassSpecSettings_LoadFeaturesMS2_StreamFind()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_LoadFeaturesMS2_StreamFind</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_LoadMSPeakLists_patRoon.html">MassSpecSettings_LoadMSPeakLists_patRoon()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_LoadMSPeakLists_patRoon</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_LoadMSPeakLists_StreamFind.html">MassSpecSettings_LoadMSPeakLists_StreamFind()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_LoadMSPeakLists_StreamFind</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_NormalizeSpectra_blockweight.html">MassSpecSettings_NormalizeSpectra_blockweight()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_NormalizeSpectra_blockweight</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_NormalizeSpectra_meancenter.html">MassSpecSettings_NormalizeSpectra_meancenter()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_NormalizeSpectra_meancenter</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_NormalizeSpectra_minmax.html">MassSpecSettings_NormalizeSpectra_minmax()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_NormalizeSpectra_minmax</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_NormalizeSpectra_scale.html">MassSpecSettings_NormalizeSpectra_scale()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_NormalizeSpectra_scale</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_NormalizeSpectra_snv.html">MassSpecSettings_NormalizeSpectra_snv()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_NormalizeSpectra_snv</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_SmoothChromatograms_movingaverage.html">MassSpecSettings_SmoothChromatograms_movingaverage()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_SmoothChromatograms_movingaverage</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_SmoothChromatograms_savgol.html">MassSpecSettings_SmoothChromatograms_savgol()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_SmoothChromatograms_savgol</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_SmoothSpectra_movingaverage.html">MassSpecSettings_SmoothSpectra_movingaverage()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_SmoothSpectra_movingaverage</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_SmoothSpectra_savgol.html">MassSpecSettings_SmoothSpectra_savgol()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_SmoothSpectra_savgol</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_SubtractBlankSpectra_StreamFind.html">MassSpecSettings_SubtractBlankSpectra_StreamFind()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_SubtractBlankSpectra_StreamFind</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_SuspectScreening_forident.html">MassSpecSettings_SuspectScreening_forident()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_SuspectScreening_forident</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_SuspectScreening_patRoon.html">MassSpecSettings_SuspectScreening_patRoon()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_SuspectScreening_patRoon</dd>
+      </dl><dl><dt>
+          
+          <code><a href="MassSpecSettings_SuspectScreening_StreamFind.html">MassSpecSettings_SuspectScreening_StreamFind()</a></code> 
+        </dt>
+        <dd>MassSpecSettings_SuspectScreening_StreamFind</dd>
       </dl></div><div class="section level2">
       
-      <h3 id="find-features">find_features<a class="anchor" aria-label="anchor" href="#find-features"></a></h3>
+      <h3 id="raman-settings">Raman Settings<a class="anchor" aria-label="anchor" href="#raman-settings"></a></h3>
       
 
       
@@ -430,32 +397,82 @@
 
       <dl><dt>
           
-          <code><a href="Settings_find_features_kpic2.html">Settings_find_features_kpic2()</a></code> 
+          <code><a href="RamanSettings_AverageSpectra_StreamFind.html">RamanSettings_AverageSpectra_StreamFind()</a></code> 
         </dt>
-        <dd>Settings_find_features_kpic2</dd>
+        <dd>RamanSettings_AverageSpectra_StreamFind</dd>
       </dl><dl><dt>
           
-          <code><a href="Settings_find_features_openms.html">Settings_find_features_openms()</a></code> 
+          <code><a href="RamanSettings_BinSpectra_StreamFind.html">RamanSettings_BinSpectra_StreamFind()</a></code> 
         </dt>
-        <dd>Settings_find_features_openms</dd>
+        <dd>RamanSettings_BinSpectra_StreamFind</dd>
       </dl><dl><dt>
           
-          <code><a href="Settings_find_features_qPeaks.html">Settings_find_features_qPeaks()</a></code> 
+          <code><a href="RamanSettings_CorrectSpectraBaseline_airpls.html">RamanSettings_CorrectSpectraBaseline_airpls()</a></code> 
         </dt>
-        <dd>Settings_find_features_qPeaks</dd>
+        <dd>RamanSettings_CorrectSpectraBaseline_airpls</dd>
       </dl><dl><dt>
           
-          <code><a href="Settings_find_features_xcms3_centwave.html">Settings_find_features_xcms3_centwave()</a></code> 
+          <code><a href="RamanSettings_CorrectSpectraBaseline_baseline.html">RamanSettings_CorrectSpectraBaseline_baseline()</a></code> 
         </dt>
-        <dd>Settings_find_features_xcms3_centwave</dd>
+        <dd>RamanSettings_CorrectSpectraBaseline_baseline</dd>
       </dl><dl><dt>
           
-          <code><a href="Settings_find_features_xcms3_matchedfilter.html">Settings_find_features_xcms3_matchedfilter()</a></code> 
+          <code><a href="RamanSettings_DeleteSpectraSection_StreamFind.html">RamanSettings_DeleteSpectraSection_StreamFind()</a></code> 
         </dt>
-        <dd>Settings_find_features_xcms3_matchedfilter</dd>
+        <dd>RamanSettings_DeleteSpectraSection_StreamFind</dd>
+      </dl><dl><dt>
+          
+          <code><a href="RamanSettings_MergeSpectraTimeSeries_StreamFind.html">RamanSettings_MergeSpectraTimeSeries_StreamFind()</a></code> 
+        </dt>
+        <dd>RamanSettings_MergeSpectraTimeSeries_StreamFind</dd>
+      </dl><dl><dt>
+          
+          <code><a href="RamanSettings_NormalizeSpectra_blockweight.html">RamanSettings_NormalizeSpectra_blockweight()</a></code> 
+        </dt>
+        <dd>RamanSettings_NormalizeSpectra_blockweight</dd>
+      </dl><dl><dt>
+          
+          <code><a href="RamanSettings_NormalizeSpectra_meancenter.html">RamanSettings_NormalizeSpectra_meancenter()</a></code> 
+        </dt>
+        <dd>RamanSettings_NormalizeSpectra_meancenter</dd>
+      </dl><dl><dt>
+          
+          <code><a href="RamanSettings_NormalizeSpectra_minmax.html">RamanSettings_NormalizeSpectra_minmax()</a></code> 
+        </dt>
+        <dd>RamanSettings_NormalizeSpectra_minmax</dd>
+      </dl><dl><dt>
+          
+          <code><a href="RamanSettings_NormalizeSpectra_scale.html">RamanSettings_NormalizeSpectra_scale()</a></code> 
+        </dt>
+        <dd>RamanSettings_NormalizeSpectra_scale</dd>
+      </dl><dl><dt>
+          
+          <code><a href="RamanSettings_NormalizeSpectra_snv.html">RamanSettings_NormalizeSpectra_snv()</a></code> 
+        </dt>
+        <dd>RamanSettings_NormalizeSpectra_snv</dd>
+      </dl><dl><dt>
+          
+          <code><a href="RamanSettings_SmoothSpectra_movingaverage.html">RamanSettings_SmoothSpectra_movingaverage()</a></code> 
+        </dt>
+        <dd>RamanSettings_SmoothSpectra_movingaverage</dd>
+      </dl><dl><dt>
+          
+          <code><a href="RamanSettings_SmoothSpectra_savgol.html">RamanSettings_SmoothSpectra_savgol()</a></code> 
+        </dt>
+        <dd>RamanSettings_SmoothSpectra_savgol</dd>
+      </dl><dl><dt>
+          
+          <code><a href="RamanSettings_SubtractBlankSpectra_StreamFind.html">RamanSettings_SubtractBlankSpectra_StreamFind()</a></code> 
+        </dt>
+        <dd>RamanSettings_SubtractBlankSpectra_StreamFind</dd>
+      </dl><dl><dt>
+          
+          <code><a href="RamanSettings_SubtractSpectraSection_StreamFind.html">RamanSettings_SubtractSpectraSection_StreamFind()</a></code> 
+        </dt>
+        <dd>RamanSettings_SubtractSpectraSection_StreamFind</dd>
       </dl></div><div class="section level2">
       
-      <h3 id="find-internal-standards">find_internal_standards<a class="anchor" aria-label="anchor" href="#find-internal-standards"></a></h3>
+      <h3 id="statistic-settings">Statistic Settings<a class="anchor" aria-label="anchor" href="#statistic-settings"></a></h3>
       
 
       
@@ -466,293 +483,24 @@
 
       <dl><dt>
           
-          <code><a href="Settings_find_internal_standards_StreamFind.html">Settings_find_internal_standards_StreamFind()</a></code> 
+          <code><a href="StatisticSettings_MakeModel_mcrals_mdatools.html">StatisticSettings_MakeModel_mcrals_mdatools()</a></code> 
         </dt>
-        <dd>Settings_find_internal_standards_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="generate-compounds">generate_compounds<a class="anchor" aria-label="anchor" href="#generate-compounds"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_generate_compounds_metfrag.html">Settings_generate_compounds_metfrag()</a></code> 
-        </dt>
-        <dd>Settings_generate_compounds_metfrag</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="generate-formulas">generate_formulas<a class="anchor" aria-label="anchor" href="#generate-formulas"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_generate_formulas_genform.html">Settings_generate_formulas_genform()</a></code> 
-        </dt>
-        <dd>Settings_generate_formulas_genform</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="group-features">group_features<a class="anchor" aria-label="anchor" href="#group-features"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_group_features_openms.html">Settings_group_features_openms()</a></code> 
-        </dt>
-        <dd>Settings_group_features_openms</dd>
+        <dd>StatisticSettings_MakeModel_mcrals_mdatools</dd>
       </dl><dl><dt>
           
-          <code><a href="Settings_group_features_xcms3_peakdensity.html">Settings_group_features_xcms3_peakdensity()</a></code> 
+          <code><a href="StatisticSettings_MakeModel_mcrpure_mdatools.html">StatisticSettings_MakeModel_mcrpure_mdatools()</a></code> 
         </dt>
-        <dd>Settings_group_features_xcms3_peakdensity</dd>
+        <dd>StatisticSettings_MakeModel_mcrpure_mdatools</dd>
       </dl><dl><dt>
           
-          <code><a href="Settings_group_features_xcms3_peakdensity_peakgroups.html">Settings_group_features_xcms3_peakdensity_peakgroups()</a></code> 
+          <code><a href="StatisticSettings_MakeModel_pca_mdatools.html">StatisticSettings_MakeModel_pca_mdatools()</a></code> 
         </dt>
-        <dd>Settings_group_features_xcms3_peakdensity_peakgroups</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="load-features-eic">load_features_eic<a class="anchor" aria-label="anchor" href="#load-features-eic"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_load_features_eic_StreamFind.html">Settings_load_features_eic_StreamFind()</a></code> 
-        </dt>
-        <dd>Settings_load_features_eic_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="load-features-ms-and-ms-spectra">load_features MS1 and MS2 spectra<a class="anchor" aria-label="anchor" href="#load-features-ms-and-ms-spectra"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_load_features_ms1_StreamFind.html">Settings_load_features_ms1_StreamFind()</a></code> 
-        </dt>
-        <dd>Settings_load_features_ms1_StreamFind</dd>
+        <dd>StatisticSettings_MakeModel_pca_mdatools</dd>
       </dl><dl><dt>
           
-          <code><a href="Settings_load_features_ms2_StreamFind.html">Settings_load_features_ms2_StreamFind()</a></code> 
+          <code><a href="StatisticSettings_PrepareClassification_knn.html">StatisticSettings_PrepareClassification_knn()</a></code> 
         </dt>
-        <dd>Settings_load_features_ms2_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="load-mspeaklists">load_MSPeakLists<a class="anchor" aria-label="anchor" href="#load-mspeaklists"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_load_MSPeakLists_patRoon.html">Settings_load_MSPeakLists_patRoon()</a></code> 
-        </dt>
-        <dd>Settings_load_MSPeakLists_patRoon</dd>
-      </dl><dl><dt>
-          
-          <code><a href="Settings_load_MSPeakLists_StreamFind.html">Settings_load_MSPeakLists_StreamFind()</a></code> 
-        </dt>
-        <dd>Settings_load_MSPeakLists_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="normalize-features">normalize_features<a class="anchor" aria-label="anchor" href="#normalize-features"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_normalize_features_patRoon_tic.html">Settings_normalize_features_patRoon_tic()</a></code> 
-        </dt>
-        <dd>Settings_normalize_features_patRoon_tic</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="normalize-spectra">normalize_spectra<a class="anchor" aria-label="anchor" href="#normalize-spectra"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_normalize_spectra_blockweight.html">Settings_normalize_spectra_blockweight()</a></code> 
-        </dt>
-        <dd>Settings_normalize_spectra_blockweight</dd>
-      </dl><dl><dt>
-          
-          <code><a href="Settings_normalize_spectra_meancenter.html">Settings_normalize_spectra_meancenter()</a></code> 
-        </dt>
-        <dd>Settings_normalize_spectra_meancenter</dd>
-      </dl><dl><dt>
-          
-          <code><a href="Settings_normalize_spectra_minmax.html">Settings_normalize_spectra_minmax()</a></code> 
-        </dt>
-        <dd>Settings_normalize_spectra_minmax</dd>
-      </dl><dl><dt>
-          
-          <code><a href="Settings_normalize_spectra_scale.html">Settings_normalize_spectra_scale()</a></code> 
-        </dt>
-        <dd>Settings_normalize_spectra_scale</dd>
-      </dl><dl><dt>
-          
-          <code><a href="Settings_normalize_spectra_snv.html">Settings_normalize_spectra_snv()</a></code> 
-        </dt>
-        <dd>Settings_normalize_spectra_snv</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="prepare-classification">prepare_classification<a class="anchor" aria-label="anchor" href="#prepare-classification"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_prepare_classification_knn.html">Settings_prepare_classification_knn()</a></code> 
-        </dt>
-        <dd>Settings_prepare_classification_knn</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="suspect-screening">suspect_screening<a class="anchor" aria-label="anchor" href="#suspect-screening"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_suspect_screening_forident.html">Settings_suspect_screening_forident()</a></code> 
-        </dt>
-        <dd>Settings_suspect_screening_forident</dd>
-      </dl><dl><dt>
-          
-          <code><a href="Settings_suspect_screening_patRoon.html">Settings_suspect_screening_patRoon()</a></code> 
-        </dt>
-        <dd>Settings_suspect_screening_patRoon</dd>
-      </dl><dl><dt>
-          
-          <code><a href="Settings_suspect_screening_StreamFind.html">Settings_suspect_screening_StreamFind()</a></code> 
-        </dt>
-        <dd>Settings_suspect_screening_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="smooth-chromatograms">smooth_chromatograms<a class="anchor" aria-label="anchor" href="#smooth-chromatograms"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_smooth_chromatograms_movingaverage.html">Settings_smooth_chromatograms_movingaverage()</a></code> 
-        </dt>
-        <dd>Settings_smooth_chromatograms_movingaverage</dd>
-      </dl><dl><dt>
-          
-          <code><a href="Settings_smooth_chromatograms_savgol.html">Settings_smooth_chromatograms_savgol()</a></code> 
-        </dt>
-        <dd>Settings_smooth_chromatograms_savgol</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="smooth-spectra">smooth_spectra<a class="anchor" aria-label="anchor" href="#smooth-spectra"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_smooth_spectra_movingaverage.html">Settings_smooth_spectra_movingaverage()</a></code> 
-        </dt>
-        <dd>Settings_smooth_spectra_movingaverage</dd>
-      </dl><dl><dt>
-          
-          <code><a href="Settings_smooth_spectra_savgol.html">Settings_smooth_spectra_savgol()</a></code> 
-        </dt>
-        <dd>Settings_smooth_spectra_savgol</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="subtract-blank-spectra">subtract_blank_spectra<a class="anchor" aria-label="anchor" href="#subtract-blank-spectra"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_subtract_blank_spectra_StreamFind.html">Settings_subtract_blank_spectra_StreamFind()</a></code> 
-        </dt>
-        <dd>Settings_subtract_blank_spectra_StreamFind</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="subtract-spectra-section">subtract_spectra_section<a class="anchor" aria-label="anchor" href="#subtract-spectra-section"></a></h3>
-      
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="Settings_subtract_spectra_section_StreamFind.html">Settings_subtract_spectra_section_StreamFind()</a></code> 
-        </dt>
-        <dd>Settings_subtract_spectra_section_StreamFind</dd>
+        <dd>StatisticSettings_PrepareClassification_knn</dd>
       </dl></div><div class="section level2">
       
       <h3 id="general-get-and-save-default-settings">General get and save default settings<a class="anchor" aria-label="anchor" href="#general-get-and-save-default-settings"></a></h3>

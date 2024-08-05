@@ -1,11 +1,6 @@
 
-#' @title .s3_ms_filter_features.Settings_filter_features_StreamFind
-#'
-#' @description Filter features and feature groups using the algorithm StreamFind.
-#'
 #' @noRd
-#'
-.s3_ms_filter_features.Settings_filter_features_StreamFind <- function(settings, self, private) {
+.process.MassSpecSettings_FilterFeatures_StreamFind <- function(settings, self, private) {
   
   if (!self$has_features()) {
     warning("There are no features! Run find_features first!")
@@ -603,13 +598,10 @@
   TRUE
 }
 
-#' @title .s3_ms_filter_features.Settings_filter_features_patRoon
-#'
-#' @description Filter features and feature groups using the algorithm patRoon.
-#'
+
+
 #' @noRd
-#'
-.s3_ms_filter_features.Settings_filter_features_patRoon <- function(settings, self, private) {
+.process.MassSpecSettings_FilterFeatures_patRoon <- function(settings, self, private) {
   
   if (FALSE & requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found! Install it for finding features.")

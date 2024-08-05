@@ -2,8 +2,9 @@
 #'
 #' @description Creates a ProcessingSettings S3 class object. The ProcessingSettings are used in \pkg{StreamFind} for 
 #' processing data in a given data class method.
-#'
-#' @param call Character of length one with the name of the method where theprocessing settings are to be applied.
+#' 
+#' @param engine Character of length one with the name of the engine where the processing settings are to be applied.
+#' @param call Character of length one with the name of the method where the processing settings are to be applied.
 #' @param algorithm Character of length one with the name of the algorithm to be used.
 #' @param parameters List with parameters specific for the method `call` and `algorithm`.
 #' @param version Character of length one with the version of the processing settings.
@@ -17,7 +18,8 @@
 #'
 #' @export
 #'
-ProcessingSettings <- function(call = NA_character_,
+ProcessingSettings <- function(engine = NA_character_,
+                               call = NA_character_,
                                algorithm = NA_character_,
                                parameters = NULL,
                                version = NA_character_,
@@ -28,6 +30,7 @@ ProcessingSettings <- function(call = NA_character_,
                                doi = NA_character_) {
 
   x <- list(
+    "engine" = engine,
     "call" = call,
     "algorithm" = algorithm,
     "parameters" = parameters,
@@ -39,6 +42,8 @@ ProcessingSettings <- function(call = NA_character_,
     "doi" = doi
   )
 
+  x$engine <- as.character(x$engine)
+  
   x$call <- as.character(x$call)
   
   x$algorithm <- as.character(x$algorithm)
@@ -46,6 +51,8 @@ ProcessingSettings <- function(call = NA_character_,
   x$parameters <- as.list(x$parameters)
   
   x$version <- as.character(x$version)
+  
+  if (is.na(x$version)) x$version <- as.character(packageVersion("StreamFind"))
   
   x$software <- as.character(x$software)
   
@@ -59,19 +66,17 @@ ProcessingSettings <- function(call = NA_character_,
   
   s3_classes <- "ProcessingSettings"
   
-  if (!is.na(x$algorithm)) {
-    
-    algo <- paste0("Settings_", x$call, "_" , x$algorithm)
-    
-    s3_classes <- append(s3_classes, algo)
+  if (!is.na(x$engine) && !is.na(x$call) && !is.na(x$algorithm)) {
+    s3_classes <- append(s3_classes, paste0(x$engine, "Settings", "_", x$call, "_" , x$algorithm))
   }
   
   patRoon_algorithms <- c("openms", "xcms", "xcms3", "envipick", "sirius", "kpic2", "safd", "GenForm", "MetFrag")
 
   if (any(vapply(patRoon_algorithms, function(a) grepl(a, x$algorithm, fixed = FALSE), FALSE))) {
-    s3_classes <- append(s3_classes, "patRoon")
+    if (x$call %in% "FindFeatures") s3_classes <- append(s3_classes, "FindFeatures_patRoon")
+    if (x$call %in% "GroupFeatures") s3_classes <- append(s3_classes, "GroupFeatures_patRoon")
   }
-
+  
   x <- structure(x, class = s3_classes)
 
   if (validate(x)) {
@@ -93,10 +98,16 @@ validate.ProcessingSettings <- function(x) {
   
   if (is.list(x)) {
     
-    if (all(c("call", "algorithm", "parameters") %in% names(x))) {
+    if (all(c("engine", "call", "algorithm", "parameters") %in% names(x))) {
+      
       valid <- TRUE
 
-      if (!length(x$call) == 1 && !all(is.character(x$algorithm))) {
+      if (!length(x$engine) == 1 && !all(is.character(x$engine))) {
+        warning("Engine entry must be of length 1 and type character!")
+        valid <- FALSE
+      }
+      
+      if (!length(x$call) == 1 && !all(is.character(x$call))) {
         warning("Call entry must be of length 1!")
         valid <- FALSE
       }
@@ -117,7 +128,7 @@ validate.ProcessingSettings <- function(x) {
       }
 
     } else {
-      warning("Settings elements must be named call, algorithm and parameters!")
+      warning("Settings elements must be named engine, call, algorithm and parameters!")
     }
   }
 
@@ -137,6 +148,7 @@ print.ProcessingSettings <- function(x, ...) {
   cat("\n")
   cat("", class(x)[1], "\n")
   cat(
+    " engine       ", x$engine, "\n",
     " call         ", x$call, "\n",
     " algorithm    ", x$algorithm, "\n",
     " version      ", x$version, "\n",
@@ -226,13 +238,16 @@ as.ProcessingSettings <- function(value) {
   
   if (length(value) == 1 && is.list(value)) value <- value[[1]]
   
-  must_have_elements <- c("call", "algorithm", "parameters")
+  must_have_elements <- c("engine", "call", "algorithm", "parameters")
   
   if (!all(must_have_elements %in% names(value))) return(NULL)
 
-  if (!"version" %in% names(value)) value$version <- NA_character_
+  if (!"version" %in% names(value)) value$version <- as.character(packageVersion("StreamFind"))
+  
+  if (is.na(value$version)) value$version <- as.character(packageVersion("StreamFind"))
 
   ProcessingSettings(
+    value$engine,
     value$call,
     value$algorithm,
     value$parameters,

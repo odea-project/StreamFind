@@ -1,11 +1,6 @@
 
-#' @title .s3_ms_fill_features.Settings_fill_features_StreamFind
-#'
-#' @description Settings for filling missing features.
-#'
 #' @noRd
-#'
-.s3_ms_fill_features.Settings_fill_features_StreamFind <- function(settings, self, private) {
+.process.MassSpecSettings_FillFeatures_StreamFind <- function(settings, self, private) {
   
   if (!self$has_groups()) {
     warning("There are no features groups! Run find_features and group_features first!")

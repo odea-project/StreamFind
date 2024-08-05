@@ -21,6 +21,7 @@ BugReports: https://github.com/odea-project/StreamFind/issues
 Depends: R (>= 4.3.0)
 Imports: 
     R6,
+    S7,
     data.table,
     checkmate,
     Rcpp,
@@ -41,7 +42,8 @@ Imports:
     DBI,
     RSQLite,
     withr,
-    fst
+    fst,
+    zlibbioc
 Suggests: 
     StreamFindData,
     mzR,

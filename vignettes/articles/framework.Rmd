@@ -64,22 +64,11 @@ pre code {
 
 ***
 
-# Platform
-
-The StreamFind platform is a data processing workflow designer with a microservices architecture.
-Besides data processing, the platform can also be used for data management, visualization and reporting.
-This guide focuses on describing the general framework behind the StreamFind, using the already available R library as example.
-Development of the StreamFind platform as Python and C++ libraries is planned and will support other types of data.
-The behavior and usage of the StreanFind is expected to be similar across R, Python and C++.
-This is achieved by using reference classes with harmonized methods for the different languages.
-For instance, the StreamFind R library is centered around [R6](https://r6.r-lib.org/index.html) classes, serving as data 
-processing engines (used as metaphor) for different types of data (e.g. mass spectrometry (MS) and Raman spectroscopy data).  
+The StreamFind R package is a data processing workflow designer. Besides data processing, the platform can also be used for data management, visualization and reporting. This guide focuses on describing the general framework behind StreamFind. The StreamFind is centered around [R6](https://r6.r-lib.org/index.html) classes, serving as data processing engines (used as metaphor) for different types of data (e.g. mass spectrometry (MS) and Raman spectroscopy data).  
 
 # Data processing engines
 
-Data processing engines are fundamentally reference classes with methods to manage, process, visualize and report data within a project.
-The `CoreEngine` is the parent class of all other data specific engines.
-As parent, the `CoreEngine` manages the project information via the class `ProjectHeaders` and registers the audit trail as well as other uniform functions (e.g. adding and removing analyses from the project) across child data dedicated engines.  
+Data processing engines are fundamentally reference classes with methods to manage, process, visualize and report data within a project. The `CoreEngine` is the parent class of all other data specific engines (e.g. `MassSpecEngine` and `RamanEngine`). As parent, the `CoreEngine` manages the project information via the class `ProjectHeaders`, registers the audit trail, and contains uniform functions across child data dedicated engines (e.g. adding and removing analyses from the project).  
 
 ```{r}
 core <- CoreEngine$new()
@@ -87,19 +76,11 @@ core <- CoreEngine$new()
 core
 ```
 
-Note that when an empty `CoreEngine` is created, required `ProjectHeaders` are created with name, author, path and date.
-Yet, `ProjectHeaders` can be specified directly during creation of the `CoreEngine` via the argument `headers` or added to the engine as shown in \@ref(project-headers).
-The `CoreEngine` does not directly handles data processing.
-Processing methods are data specific and therefore, are used via the data dedicated engines (e.g., `MassSpecEngine` and `RamanEngine`). 
-Yet, the framework to manage the data processing workflow and the results are implemented in the `CoreEngine` 
-and are therefore, harmonized across engines.  
+Note that when an empty `CoreEngine` is created, required `ProjectHeaders` are created with name, author, path and date. Yet, `ProjectHeaders` can be specified directly during creation of the `CoreEngine` via the argument `headers` or added to the engine as shown in \@ref(project-headers). The `CoreEngine` does not directly handle data processing. Processing methods are data specific and therefore, are used via the data dedicated engines. Yet, the framework to manage the data processing workflow and the results are implemented in the `CoreEngine` and are therefore, harmonized across engines.  
 
 ## Project headers
 
-The `ProjectHeaders` class is meant to hold project information that can be used to identify the engine when for example, 
-combining different engines, or to add extra information, such as description, location, etc.
-The user can add any kind of attribute but it must have length one and be named.
-Below, `ProjectHeaders` are created and added to the `CoreEngine`.  
+The `ProjectHeaders` S3 class is meant to hold project information that can be used to identify the engine when for example, combining different engines, or to add extra information, such as description, location, etc. The user can add any kind of attribute but it must have length one and be named. Below, `ProjectHeaders` are created and added to the `CoreEngine`.  
 
 ```{r}
 headers <- ProjectHeaders(
@@ -115,58 +96,52 @@ core$get_headers()
 
 ## ProcessingSettings
 
-The unit of a data processing workflow in a data dedicated engine is a data processing method, which uses a specific algorithm for data processing.
-To harmonize the diversity of processing methods and algorithms available, a general `ProcessingSettings` is used (shown below).
-This way, the `ProcessingSettings` objects are use as instructions to assemble a data processing workflow within the engine.  
+Data processing workflows in StreamFind are assembled by combining different processing methods in a specific order. Each processing method uses a specific algorithm for processing/transforming data at a given stage of the workflow. Thus, to harmonize the diversity of processing methods and algorithms available, a general `ProcessingSettings` is used (shown below). This way, the `ProcessingSettings` objects are use as instructions to assemble a data processing workflow within an engine.  
 
 ```{r}
 ProcessingSettings()
 ```
 
-A `ProcessingSettings` object must always have the call name of the processing method, the name and version of the algorithm to be applied, the origin software, the main developer name and contact as well as a link to further information and the DOI, when available.
-Lastly but not least, the parameters which is a flexible list of conditions to apply the algorithm during data processing.
-As example, `ProcessingSettings` for centroiding MS data using the qCentroids from the [qAlgorihtms](https://github.com/odea-project/qAlgorithms) and for annotating features using a native algorithm from StreamFind R library are shown below.
-Each `ProcessingSettings` object has a dedicated constructor method with documentation to support the usage.  
+A `ProcessingSettings` object must always have the engine type, the call name of the processing method, the name of the algorithm to be used, the origin software, the main developer name and contact as well as a link to further information and the DOI, when available. Lastly but not least, the parameters which is a flexible list of conditions to apply the algorithm during data processing. As example, `ProcessingSettings` for centroiding MS data using the qCentroids from the [qAlgorihtms](https://github.com/odea-project/qAlgorithms) and for annotating features using a native algorithm from StreamFind are shown below. Each `ProcessingSettings` object has a dedicated constructor method with documentation to support the usage. Help pages for processing methods can be obtained with the native R function `?` or `help()`.  
 
 ```{r}
-Settings_centroid_spectra_qCentroids()
+MassSpecSettings_CentroidSpectra_qCentroids()
 ```
 
 ```{r}
-Settings_annotate_features_StreamFind()
+MassSpecSettings_AnnotateFeatures_StreamFind()
 ```
 
-## Analysis
+## Saving and loading
 
-The actual data for a given engine is handled via dedicated analysis class objects.
-Similar to the engines, these have the class `Analysis` as parent class to handle common attributes and methods.
-For instance, name, replicate and blank are example of common attributes across different data types.  
+The `CoreEngine` also holds the functionality to save the project in the engine (as a SQLite file) and load it back. The `save()` method saves the project and the `load()` method loads it, as shown below.  
 
 ```{r}
-Analysis()
-```
-
-A child example is given below for the `MassSpecAnalysis` class to be used in the `MassSpecEngine`.
-The method `parse_MassSpecAnalysis` uses a vector with file paths as argument, returning a list of `MassSpecAnalysis` object for each file path.
-Extra attributes are added to further describe the specific analysis.
-The structure and complexity of the class is therefore dependent on the type of data.  
-
-```{r, message=FALSE}
-ms_file <- StreamFindData::get_ms_file_paths()[1]
-basename(ms_file)
+project_file_path <- file.path(getwd(), "/project.sqlite")
+core$save(project_file_path)
 ```
 
 ```{r}
-# Example for Mass Spectrometry analysis
-StreamFind:::rcpp_parse_ms_analysis(ms_file)
+file.exists(project_file_path)
 ```
 
+```{r}
+new_core <- CoreEngine$new()
+new_core$load(project_file_path)
+```
 
-# Child engines
+```{r}
+# The headers are has the core object although a new_core object was created with default headers
+new_core$get_headers()
+```
 
-As above mentioned, the `CoreEngine` does not handle data processing directly. The data processing is delegated to child 
-engines. A simple example is given below for creating a child `RamanEngine` and accessing the spectra from the analyses 
-added as *.asc* files. Note that workflow and results are still empty, as no data processing methods were applied.  
+```{r include=FALSE}
+file.remove(project_file_path)
+```
+
+# Data specific engines
+
+As above mentioned, the `CoreEngine` does not handle data processing directly. The data processing is delegated to child engines. A simple example is given below by creating a child `RamanEngine` and accessing the spectra from the analyses (added as full paths to *.asc* files on disk). Note that the workflow and results are still empty, as no data processing methods were applied.  
 
 ```{r}
 # Example raman .asc files
@@ -182,9 +157,7 @@ raman$plot_spectra(interactive = FALSE)
 
 # Editing analyses set 
 
-For data processing, the analyses replicate names and the correspondent blank analysis replicates can be assigned with 
-dedicated methods, as shown below. For instance, the replicate names are used for averaging the spectra in correspondent 
-analyses and the assigned blanks are used for background subtraction, as shown below in \@ref(data-processing).  
+For data processing, the analysis replicate names and the correspondent blank analysis replicates can be assigned with dedicated methods, as shown below. For instance, the replicate names are used for averaging the spectra in correspondent analyses and the assigned blanks are used for background subtraction, as shown below in \@ref(data-processing).  
 
 ```{r}
 raman$add_replicate_names(c(rep("Sample", 11), rep("Blank", 11)))
@@ -196,36 +169,40 @@ raman$add_blank_names(rep("Blank", 22))
 raman
 ```
 
-# Data processing
+```{r}
+raman$plot_spectra(interactive = FALSE, colorBy = "replicates")
+```
 
-As above mentioned, `ProcessingSettings` are used to design the data processing workflow. Below we create a simple 
+# Data processing workflow
+
+As above mentioned, `ProcessingSettings` are used to design an ordered data processing workflow. Below we create a simple 
 list of `ProcessingSettings` for processing the Raman spectra.
 
 ```{r}
 ps <- list(
   # Averages the spectra for each analysis replicate
-  Settings_average_spectra_StreamFind(),
+  RamanSettings_AverageSpectra_StreamFind(),
   
   # Simple normalization based on maximum intensity
-  Settings_normalize_spectra_minmax(),
+  RamanSettings_NormalizeSpectra_minmax(),
   
   # Background subtraction
-  Settings_subtract_blank_spectra_StreamFind(),
+  RamanSettings_SubtractBlankSpectra_StreamFind(),
   
   # Applies smoothing based on moving average
-  Settings_smooth_spectra_movingaverage(windowSize = 4),
+  RamanSettings_SmoothSpectra_movingaverage(windowSize = 4),
   
   # Removes a section from the spectra from -40 to 470
-  Settings_delete_spectra_section_StreamFind(list("shift" = c(-40, 300))),
+  RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(-40, 300))),
   
   # Removes a section from the spectra from -40 to 470
-  Settings_delete_spectra_section_StreamFind(list("shift" = c(2000, 3000))),
+  RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(2000, 3000))),
  
   # Performs baseline correction 
-  Settings_correct_spectra_baseline_baseline(method = "als", args = list(lambda = 3, p = 0.06, maxit = 10)),
+  RamanSettings_CorrectSpectraBaseline_baseline(method = "als", args = list(lambda = 3, p = 0.06, maxit = 10)),
   
-  # Performs again normalization using mixmax
-  Settings_normalize_spectra_minmax()
+  # Performs again normalization using minimum and maximum
+  RamanSettings_NormalizeSpectra_minmax()
 )
 ```
 
@@ -246,8 +223,8 @@ raman$run_workflow()
 Once the data processing methods are applied, the results can be accessed with the `get_results()` method.  
 
 ```{r}
-# The spectra data module is added after processing the Raman spectra 
-raman$print_results()
+# The spectra results is added after processing the Raman spectra 
+raman
 
 # The structure of the spectra results
 str(raman$get_results("spectra"))
@@ -262,5 +239,9 @@ raman$spectra
 # Modified spectra which results in a single spectrum
 raman$plot_spectra()
 ```
+
+# Conclusion
+
+This quick guide introduced the general framework behind StreamFind. The StreamFind is a data processing workflow designer that uses R6 classes to manage, process, visualize and report data within a project. The `CoreEngine` is the parent class of all other data specific engines and manages the project information via the class `ProjectHeaders`. The `ProcessingSettings` are used to harmonize the diversity of processing methods and algorithms available. The data processing is delegated to child engines, such as the `RamanEngine` and `MassSpecEngine`. The data processing workflow is assembled by combining different processing methods in a specific order. The results can be accessed with the `get_results()` method or dedicated methods (e.g. `spectra` and `plot_spectra`). StreamFind can also be used via the embedded shiny app for a graphical user interface. See the [StreamFind App Guide](https://odea-project.github.io/StreamFind/articles/app_guide.html) for more information.
 
 ***

@@ -1,11 +1,6 @@
 
-#' @title .s3_ms_calculate_spectra_charges.Settings_calculate_spectra_charges_StreamFind
-#'
-#' @description Calculate spectra charges from multi-charged compounds.
-#'
 #' @noRd
-#'
-.s3_ms_calculate_spectra_charges.Settings_calculate_spectra_charges_StreamFind <- function(settings, self, private) {
+.process.MassSpecSettings_CalculateSpectraCharges_StreamFind <- function(settings, self, private) {
 
   parameters <- settings$parameters
   
@@ -33,9 +28,9 @@
       
       x$cluster <- round(x$mz / roundVal) * roundVal
       
-      sp <- copy(x)
+      sp <- data.table::copy(x)
       
-      setorder(sp, -intensity)
+      data.table::setorder(sp, -intensity)
       
       sp$mzLow <- NA_real_
       sp$mzHigh <- NA_real_
@@ -56,7 +51,7 @@
       
       sp2 <- sp[, .(intensity = max(intensity)), by = c("mz", "cluster")]
       
-      setorder(sp2, -mz)
+      data.table::setorder(sp2, -mz)
       
       for (i in seq_len(nrow(sp2))) {
         
@@ -81,7 +76,7 @@
       
       sp2 <- unique(sp2)
       
-      setorder(sp2, -intensity)
+      data.table::setorder(sp2, -intensity)
       
       if (!is.null(absLowCut)) {
         sp2 <- sp2[sp2$intensity > absLowCut, ]
@@ -90,7 +85,7 @@
         sp2 <- sp2[sp2$intensity / sp2$intensity[1] > relLowCut, ]
       }
       
-      if (nrow(sp2) == 0) return(data.table())
+      if (nrow(sp2) == 0) return(data.table::data.table())
       
       # plot_charges_temp <- function(x, sp, sp2, absLowCut, relLowCut, roundVal) {
       #   
@@ -172,7 +167,7 @@
       
       res <- unique(res)
       
-      setorder(res, mz)
+      data.table::setorder(res, mz)
       
       res$z <- NA_integer_
       
@@ -185,11 +180,11 @@
       
       res <- res[!is.na(res$z), ]
       
-      if (nrow(res) == 0) return(data.table())
+      if (nrow(res) == 0) return(data.table::data.table())
       
       res <- res[-1, ] # removes the first as mass estimation might be affected by incomplete cluster
       
-      if (nrow(res) == 0) return(data.table())
+      if (nrow(res) == 0) return(data.table::data.table())
       
       res$mass <- NA_real_
       
@@ -241,7 +236,7 @@
       res
 
     } else {
-      data.table()
+      data.table::data.table()
     }
     
   }, roundVal = roundVal, relLowCut = relLowCut, absLowCut = absLowCut)

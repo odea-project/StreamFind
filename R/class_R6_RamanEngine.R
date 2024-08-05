@@ -457,126 +457,6 @@ RamanEngine <- R6::R6Class("RamanEngine",
       invisible(self)
     },
     
-    ## ___ processing -----
-    
-    #' @description Merges spectra for given *RamanAnalyses* from the same chromatographic separation when using 
-    #' LC-Raman coupling.
-    #'
-    #' @return Invisible.
-    #' 
-    merge_spectra_time_series = function(settings) {
-      
-      if (missing(settings)) settings <- Settings_merge_spectra_time_series_StreamFind()
-      
-      .dispatch_process_method("merge_spectra_time_series", settings, self, private)
-      
-      invisible(self)
-    },
-    
-    #' @description Averages spectra based on assigned analysis replicates.
-    #'
-    #' @return Invisible.
-    #' 
-    average_spectra = function(settings) {
-      
-      if (missing(settings)) settings <- Settings_average_spectra_StreamFind()
-      
-      .dispatch_process_method("average_spectra", settings, self, private)
-      
-      invisible(self)
-    },
-    
-    #' @description Subtracts spectra from correspondent blank analysis replicates.
-    #'
-    #' @return Invisible.
-    #' 
-    subtract_blank_spectra = function(settings) {
-      
-      if (missing(settings)) settings <- Settings_subtract_blank_spectra_StreamFind()
-      
-      .dispatch_process_method("subtract_blank_spectra", settings, self, private)
-      
-      invisible(self)
-    },
-    
-    #' @description Corrects the spectra baseline.
-    #'
-    #' @return Invisible.
-    #' 
-    correct_spectra_baseline = function(settings) {
-      
-      if (missing(settings)) settings <- Settings_correct_spectra_baseline_airpls()
-      
-      .dispatch_process_method("correct_spectra_baseline", settings, self, private)
-      
-      invisible(self)
-    },
-    
-    #' @description Bins spectra in units, according to a given window size.
-    #'
-    #' @return Invisible.
-    #' 
-    bin_spectra = function(settings) {
-      
-      if (missing(settings)) settings <- Settings_bin_spectra_StreamFind()
-      
-      .dispatch_process_method("bin_spectra", settings, self, private) 
-      
-      invisible(self)
-    },
-    
-    #' @description Subtracts each spectra by a spectra section in each analysis.
-    #'
-    #' @return Invisible.
-    #' 
-    subtract_spectra_section = function(settings) {
-      
-      if (missing(settings)) settings <- Settings_subtract_spectra_section_StreamFind()
-      
-      .dispatch_process_method("subtract_spectra_section", settings, self, private)
-      
-      invisible(self)
-    },
-    
-    #' @description Deletes a section of spectra in each analysis.
-    #'
-    #' @return Invisible.
-    #' 
-    delete_spectra_section = function(settings) {
-      
-      if (missing(settings)) settings <- Settings_subtract_spectra_section_StreamFind()
-      
-      .dispatch_process_method("delete_spectra_section", settings, self, private)
-      
-      invisible(self)
-    },
-    
-    #' @description Smooths the spectra in each analysis/replicate.
-    #'
-    #' @return Invisible.
-    #' 
-    smooth_spectra = function(settings) {
-      
-      if (missing(settings)) settings <- Settings_smooth_spectra_movingaverage()
-      
-      .dispatch_process_method("smooth_spectra", settings, self, private)
-      
-      invisible(self)
-    },
-    
-    #' @description Normalizes spectra in each analysis/replicate.
-    #'
-    #' @return Invisible.
-    #' 
-    normalize_spectra = function(settings) {
-      
-      if (missing(settings)) settings <- Settings_normalize_spectra_StreamFind()
-      
-      .dispatch_process_method("normalize_spectra", settings, self, private)
-      
-      invisible(self)
-    },
-    
     ## ___ has -----
     
     #' @description Checks if there are spectra, returning `TRUE` or `FALSE`.
@@ -906,31 +786,17 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #' @description A data.table with available data processing methods.
     #'
     processing_methods = function() {
-      
-      data.table(
-        name = c(
-          "merge_spectra_time_series",
-          "average_spectra",
-          "subtract_blank_spectra",
-          "correct_spectra_baseline",
-          "bin_spectra",
-          "subtract_spectra_section",
-          "delete_spectra_section",
-          "smooth_spectra",
-          "normalize_spectra"
-        ),
-        max = c(
-          1,
-          1,
-          1,
-          1,
-          1,
-          1,
-          Inf,
-          Inf,
-          Inf
-        )
-      )
+      ps <- list()
+      ps[["MergeSpectraTimeSeries"]] <- 1
+      ps[["AverageSpectra"]] <- 1
+      ps[["SubtractBlankSpectra"]] <- 1
+      ps[["CorrectSpectraBaseline"]] <- 1
+      ps[["BinSpectra"]] <- 1
+      ps[["SubtractSpectraSection"]] <- 1
+      ps[["DeleteSpectraSection"]] <- Inf
+      ps[["SmoothSpectra"]] <- Inf
+      ps[["NormalizeSpectra"]] <- Inf
+      data.table(name = names(ps), max = unlist(ps))
     }
   )
 )
