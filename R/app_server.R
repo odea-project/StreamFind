@@ -279,7 +279,7 @@
     
     # _Workflow -----
     output$workflow_ui <- shiny::renderUI({
-      .mod_workflow_Server("workflow", engine, reactive_workflow)
+      .mod_workflow_Server("workflow", engine, engine_type, reactive_workflow, reactive_warnings, reactive_history, volumes)
       .mod_workflow_UI("workflow")
     })
     
