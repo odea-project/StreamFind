@@ -212,7 +212,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
         warning("Analyses not found! Not done.")
         return(NULL)
       }
-      dt
+      as.data.table(dt, keep.rownames = "analysis")
     },
     
     #' @description Gets model loadings.
@@ -228,7 +228,8 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
         warning("Loadings not found! Not done.")
         return(NULL)
       }
-      dt
+      browser()
+      as.data.table(dt)
     },
     
     #' @description Gets model residuals.
@@ -703,11 +704,13 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #' @description Plots scores of the model.
     #' 
     #' @param pcs A numeric vector (length 2) with the principle components to plot.
+    #' @param colorGroups A factor character vector with the color groups for the scores.
     #' 
     plot_model_scores = function(analyses = NULL,
                                  interactive = TRUE,
                                  pcs = 1:2,
                                  title = NULL,
+                                 colorGroups = NULL,
                                  showText = TRUE,
                                  showLegend = TRUE) {
       
@@ -725,8 +728,6 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
         return(NULL)
       }
       
-      dt <- dt[, pcs, drop = FALSE]
-      
       var <- self$get_model_explained_variance()
       
       if (!interactive) {
@@ -735,13 +736,27 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
         
       } else {
         
-        cl <- .get_colors(rownames(dt))
+        if (!is.null(colorGroups)) {
+          
+          if (length(colorGroups) != nrow(dt)) {
+            warning("The color groups must have the same length as the number of analyses in the scores! Not done.")
+            return(NULL)
+          }
+          
+          colorGroups <- gsub(" ", "_", colorGroups)
+          dt$var_name <- as.character(colorGroups)
+          cl <- .get_colors(unique(colorGroups))
+          
+        } else {
+          dt$var_name <- dt$analysis
+          cl <- .get_colors(rownames(dt))
+        }
         
-        fig <- plot_ly()
+        dt <- dt[order(dt$var_name), ]
         
         if (ncol(dt) == 1) {
-          x = seq_len(nrow(dt))
-          y = dt[, 1]
+          x_val = seq_len(nrow(dt))
+          y_val = dt[[2]]
           xLab = "Analysis Index"
           if (!is.null(var)) {
             yLab = paste0("PC", pcs, "(", round(var[pcs], digits = 0) ,"%)")
@@ -749,8 +764,8 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
             yLab = paste0("PC", pcs)
           }
         } else {
-          x = dt[, 1]
-          y = dt[, 2]
+          x_val = dt[[1 + pcs[1]]]
+          y_val = dt[[1 + pcs[2]]]
           
           if (!is.null(var)) {
             xLab = paste0("PC", pcs[1], "(", round(var[pcs[1]], digits = 0) ,"%)")
@@ -761,24 +776,28 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
           }
         }
         
-        if (showText) text <- rownames(dt) else text <- NULL
-          
+        if (showText) {
+          text <- paste0(dt$analysis, "\n", dt$var_name)
+        } else {
+          text <- NULL
+        }
+        
+        fig <- plot_ly()
+        
         fig <- fig %>% add_trace(
-          x = x,
-          y = y,
+          x = x_val,
+          y = y_val,
           type = "scatter",
           mode = "markers+text",
-          color = names(cl),
-          colors = cl,
+          name = dt$var_name,
+          legendgroup = dt$var_name,
+          marker = list(size = 10, color = cl[dt$var_name]),
           text = text,
-          textfont = list(size = 14, color = cl),
+          textfont = list(size = 14, color = cl[dt$var_name]),
           textposition = "top",
-          marker = list(size = 10, color = cl),
-          name = names(cl),
-          legendgroup = names(cl),
           showlegend = showLegend
         )
-          
+        
         xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"))
         yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
         

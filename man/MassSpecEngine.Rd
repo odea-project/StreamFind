@@ -2986,6 +2986,7 @@ Plots the spectra total ion chromatogram (TIC) of each analysis.
   xlim = NULL,
   ylim = NULL,
   cex = 0.6,
+  downsize = 1,
   interactive = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -3016,6 +3017,8 @@ the added targets as legend of the plot.}
 \item{\code{ylim}}{A length one or two numeric vector for setting the \emph{y} limits of the plot.}
 
 \item{\code{cex}}{Numeric (length 1) defining the scale of the legend for non interactive plotting.}
+
+\item{\code{downsize}}{An integer of length one to downsize the TIC plot. The default is 1.}
 
 \item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
 }

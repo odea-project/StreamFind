@@ -68,11 +68,11 @@ pre code {
 
 # Introduction
 
-Mass Spectrometry (MS) and Raman spectroscopy (Raman) are orthogonal techniques. While MS measures the chemical composition of a given sample, Raman is able to provide structural information of the constituents. This orthogonality is interesting when applying quality evaluation workflows, where both chemical composition and structural integrity are relevant. In this article, we show how MS and Raman can be pre-processed and fused for a combined statistical evaluation to support quality control. As test sets, we use four different bovine serum albumin (BSA) products.
+Mass Spectrometry (MS) and Raman spectroscopy (Raman) are orthogonal techniques. While MS measures the chemical composition of a given sample, Raman is able to provide structural information of the constituents. This orthogonality is interesting when applying quality evaluation workflows, where both chemical composition and structural integrity are relevant. In this article, we show how MS and Raman can be pre-processed and fused for a combined statistical evaluation to support quality control. As test sets, we use four different bovine serum albumin (BSA) products where we evaluate the quality of the active product ingreedient (API).
 
 # Pre-processing
 
-The preliminary processing is applied differently for MS and Raman as the raw data structure does not allow direct fusion of the data. Therefore, in the following two sub-chapters we describe the pre-processing workflow steps for MS and Raman data.
+The preliminary processing is applied differently for MS and Raman data as the data structure does not allow direct fusion of the data. Therefore, in the following two sub-chapters we describe the pre-processing workflow steps for MS and Raman data.
 
 ## MS
 
@@ -83,7 +83,7 @@ The four different BSA products were measured in triplicate in full scan MS mode
 basename(ms_files_d)
 ```
 
-The first step is conversion to open source *mzML* format using *MSConvert* from [ProteoWizard](https://proteowizard.sourceforge.io/index.html) CLI, as shwon below.
+The first step is conversion to open source *mzML* format using *MSConvert* from [ProteoWizard](https://proteowizard.sourceforge.io/index.html) CLI, as shown below.
 
 ```{r eval=FALSE}
 # Add option to centroid MS1 data before conversion
@@ -98,7 +98,7 @@ After conversion, the *mzML* files are created in the same directory. The conver
 basename(ms_files)
 ```
 
-With the *mzML* files, a new *MassSpecEngine* is created to start the MS pre-processing project. Below the engine is created and the analysis replicate names are modified to properly assign the analyses within each replicate measurement.
+With the *mzML* files, a *MassSpecEngine* is created to pre-process the MS data and the analysis replicate names are modified to properly assign the analyses within each replicate measurement.
 
 ```{r}
 ms <- MassSpecEngine$new(files = ms_files, headers = list(name = "BSA Quality Evaluation Project"))
@@ -110,7 +110,7 @@ ms$add_replicate_names(sub("_\\d+$", "", ms$get_analysis_names()))
 ms
 ```
 
-```{r, fig.cap="Total ion chromatograms for each analysis replicate."}
+```{r, fig.cap="Total ion chromatograms (TIC) for each analysis replicate."}
 ms$plot_spectra_tic(colorBy = "replicates")
 ```
 
@@ -154,7 +154,7 @@ ms$process(ps_ic)
 ms$plot_chromatograms_peaks(colorBy = "replicates")
 ```
 
-The average retention time of the main peak was `r mean(ms$chromatograms_peaks$rt)` seconds with a standard deviation of `r sd(ms$chromatograms_peaks$rt)`. The following step is to estimate the *m/z* range of BSA for deconvolution of charges. For this, the MS1 spectra of the peak retention time +/- 0.1 seconds is plotted.
+The average retention time of the main peak was `r mean(ms$chromatograms_peaks$rt)` seconds with a standard deviation of `r sd(ms$chromatograms_peaks$rt)`. The following step is to estimate the *m/z* range of BSA for deconvolution of charges.
 
 ```{r, fig.cap="Spectra of BSA for each analysis replicate at the peak maximum."}
 ms$plot_spectra_ms1(rt = mean(rbindlist(ms$chromatograms_peaks)$rt), sec = 0.5,
@@ -175,7 +175,7 @@ spectra_ranges <- data.table("mzmin" = 1200, "mzmax" = 2000, "rtmin" = av_rt - 1
 ms$load_spectra(mz = spectra_ranges)
 ```
 
-Below we create an ordered list of *ProcessingSettings* objects for each processing method to be applied and add the list to the engine. The exact parameters for each method can be optimized individually by calling the specific method directly. Once the settings are added, the workflow can be inspected with the `print_workflow()` method.
+The workflow is an ordered list of *ProcessingSettings* objects for each workflow step, which is added to the engine. The exact parameters for each method can be optimized individually by calling the specific method directly. Once the settings are added, the workflow can be inspected with the `print_workflow()` method.
 
 ```{r}
 ms_workflow_settings <- list(
@@ -197,7 +197,7 @@ ms$add_settings(ms_workflow_settings)
 ms$print_workflow()
 ```
 
-The `run_workflow()` method is called to run the data processing. The workflow will be applied in the order the methods were added to the engine.
+The `run_workflow()` method is called to run the data processing.
 
 ```{r}
 ms$run_workflow()
@@ -236,29 +236,40 @@ raman$add_replicate_names(unique(ms$get_replicate_names())[1:4])
 raman
 ```
 
-```{r ,fig.cap="Time series chromatogram for each BSA product. Each data point is a Raman spectrum at a specific retention time."}
+```{r, include=FALSE}
+corr_spectra <- raman$spectra
+corr_spectra_4 <- corr_spectra[[4]]
+corr_spectra_4$rt <- corr_spectra_4$rt - 68.545
+corr_spectra_4 <- corr_spectra_4[corr_spectra_4$rt > 0, ]
+corr_spectra[[4]] <- corr_spectra_4
+corr_spectra <- lapply(corr_spectra, function(x) x[x$rt < 800, ])
+raman$spectra <- corr_spectra
+```
+
+
+```{r, fig.cap="Time series chromatogram for each BSA product. Each data point is a Raman spectrum at a specific retention time."}
 raman$plot_chromatograms(yLab = "Abbundance sum for each spectrum", colorBy = "analyses")
 ```
 
-```{r ,fig.cap="Raw averaged Raman spectra for each BSA product between minute 5.5 and 8."}
-raman$plot_spectra(rt = c(5.5, 8), colorBy = "analyses")
+```{r, fig.cap="Raw averaged Raman spectra for each BSA product between 430 and 440 seconds."}
+raman$plot_spectra(rt = c(430, 440), colorBy = "analyses")
 ```
 
 As for MS data, the workflow for Raman data is also assembled using an ordered list of processing settings, as shown below. 
 
 ```{r}
 raman_workflow_settings <- list(
-  RamanSettings_BinSpectra_StreamFind(unitsVal = "rt", unitsNumber = 19),
+  RamanSettings_BinSpectra_StreamFind(unitsVal = "rt", unitsNumber = 20),
   #RamanSettings_NormalizeSpectra_minmax(),
-  RamanSettings_SubtractSpectraSection_StreamFind(sectionVal = "rt", sectionWindow = c(0, 3)), # time window
+  RamanSettings_SubtractSpectraSection_StreamFind(sectionVal = "rt", sectionWindow = c(0, 200)), # time window
   RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(-100, 315))),
   RamanSettings_SmoothSpectra_savgol(fl = 11, forder = 2, dorder = 0),
   RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(315, 330))),
   RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(2300, 2600))),
-  #RamanSettings_CorrectSpectraBaseline_airpls(lambda = 60, differences = 1),
   RamanSettings_CorrectSpectraBaseline_baseline(method = "als", args = list(lambda = 3, p = 0.015, maxit = 10)),
-  RamanSettings_DeleteSpectraSection_StreamFind(list("rt" = c(0, 5.5))),
-  RamanSettings_DeleteSpectraSection_StreamFind(list("rt" = c(8, 11))),
+  RamanSettings_DeleteSpectraSection_StreamFind(list("rt" = c(0, 420))),
+  RamanSettings_DeleteSpectraSection_StreamFind(list("rt" = c(430, 900))),
+  RamanSettings_AverageSpectra_StreamFind(),
   RamanSettings_NormalizeSpectra_minmax(),
   RamanSettings_NormalizeSpectra_blockweight()
 )
@@ -356,8 +367,6 @@ stat$plot_model_loadings(colorKey = rep(c("MS", "Raman"), c(ncol(mmSpec), ncol(m
 plot(stat$model) # plot method from mdatools
 ```
 
-A clear separation of the BSA wAgwS product from the other products is observed in the PCA scores plot. The loadings plot shows the contribution of the MS and Raman data to the separation.
-
 ## MCR purity
 
 Another approach for the statistic analysis is to use the MCR pure model (based on [mdatools](https://www.mdatools.com/docs/mcr--purity.html) R package) to evaluate the purity level in the analyses.
@@ -371,59 +380,4 @@ summary(stat$model)
 ```{r, fig.cap="MCR pure model resolved spectra and the original spectra from the fused data."}
 stat$plot_model_resolved_spectra()
 ```
-
-A clear separation of the BSA product wAgwS from the other products is observed in the resolved spectra plot. This is expected as the wAgwS is fatty-acid free in contrast to the other BSA products. This difference would not be so evident with MS data only. In contrast, the contribution of fatty-acid contamination makes the identification of BSA in the Raman data more difficult. Yet, BSA presence in the wAgwS BSA product is evident with MS data. Using fused data from MS and Raman both compositional and structural information can be combined for a more comprehensive quality evaluation.
-
-```{r, include=FALSE}
-# library(mdatools)
-# m = mcrpure(fusedMat, ncomp = 3)
-# summary(m)
-# par(mfcol = c(2, 2))
-# plotSpectra(m)
-# plotContributions(m)
-# plotSpectra(m, comp = 2)
-# plotContributions(m, comp = 2)
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

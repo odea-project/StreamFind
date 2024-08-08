@@ -958,7 +958,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
       message("\U2699 Running ", call, " using ", settings$algorithm)
       processed <- do.call(".process", list(settings, self, private))
       if (processed) {
-        if (!private$.settings_already_stored(settings)) self$add_settings(settings)
+        settings_can_repeat <- self$processing_methods()$name[self$processing_methods()$max > 1]
+        settings_can_repeat <- length(settings_can_repeat) > 0
+        if (!private$.settings_already_stored(settings) || settings_can_repeat) self$add_settings(settings)
         private$.register("processed", settings$call, settings$algorithm, settings$software)
       }
       invisible(self)
@@ -970,7 +972,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #'
     run_workflow = function() {
       if (self$has_settings()) {
-        lapply(self$get_settings(), function(x) self$process(x))
+        settings_list <- self$get_settings()
+        private$.settings <- NULL
+        lapply(settings_list, function(x) self$process(x))
       } else {
         warning("There are no processing settings to run!")
       }

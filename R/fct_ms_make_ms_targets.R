@@ -53,9 +53,7 @@ make_ms_targets <- function(mz = NULL, rt = NULL, drift = NULL, ppm = 20, sec = 
   
   checkmate::assert_numeric(millisec, len = 1, null.ok = TRUE)
   
-  checkmate::assert_character(id, null.ok = TRUE)
-
-  if (is.vector(id)) id <- data.table::data.table(id = id)
+  checkmate::assert_character(as.character(id), null.ok = TRUE)
   
   if (is.data.frame(mz) & "name" %in% colnames(mz)) data.table::setnames(mz, "name", "id")
   
@@ -64,7 +62,6 @@ make_ms_targets <- function(mz = NULL, rt = NULL, drift = NULL, ppm = 20, sec = 
   if (is.data.frame(drift) & "name" %in% colnames(drift)) data.table::setnames(drift, "name", "id")
   
   targets <- data.table::data.table(
-    id = NA_character_,
     mz = 0, rt = 0, drift = 0,
     mzmin = 0, mzmax = 0, rtmin = 0, rtmax = 0, driftmin = 0, driftmax = 0
   )
@@ -202,9 +199,9 @@ make_ms_targets <- function(mz = NULL, rt = NULL, drift = NULL, ppm = 20, sec = 
   targets$driftmin[targets$driftmin < 0] <- 0
   targets$driftmax[targets$driftmax < 0] <- 0
   
+  if (!is.null(id)) if (length(id) == nrow(targets)) targets$id <- id
+  
   if (!"id" %in% colnames(targets)) {
-    
-    if (is.data.frame(id)) if (nrow(id) == nrow(targets)) targets$id <- id$id
     
     if (!"id" %in% colnames(targets)) {
       targets$id <- paste(

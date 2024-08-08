@@ -217,7 +217,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
             
           } else {
             
-            if (all(patRoon::analyses(value) %in% self$get_analysis_names())) {
+            if (identical(patRoon::analyses(value), unname(self$get_analysis_names()))) {
               
               pols <- self$get_spectra_polarity()
               
@@ -227,6 +227,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                   value[pols %in% "negative"],
                   adducts = list("[M+H]+", "[M-H]-")
                 )
+                if ("features" %in% is(value)) {
+                  value@analysisInfo <- value@analysisInfo[order(value@analysisInfo$analysis), ]
+                  value@features <- value@features[order(names(value@features))]
+                }
               }
               
               filtered <- lapply(patRoon::analyses(value), function(x) value@features[[x]][0, ])
@@ -245,7 +249,6 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                   )
                 )
               )
-              
             } else {
               
               # TODO add features from scratch loading analyses files, mostly when the engine is empty
@@ -1113,42 +1116,38 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       names(value) <- NULL
       
       value <- unlist(value)
+
+      if (length(value) > length(analyses)) {
+
+        value <- vapply(private$.analyses[analyses], function(x) {
+          spectra_headers <- x$spectra_headers
+          polarity <- spectra_headers$polarity
+
+          scans_pos <- length(polarity[polarity == 1])
+          scans_neg <- length(polarity[polarity == -1])
+
+          ratio <- scans_pos/scans_neg
+
+          if (ratio < 1.2 & ratio > 0.8) {
+            warning("Multiple polarities detected! Currently, find_features algorithms cannot handled multiple polarities properly.", )
+            return(NA_character_)
+
+          } else if (ratio > 1.2) {
+            per_pos_pol <- round((scans_pos / nrow(spectra_headers)) * 100, digits = 0)
+            # warning("Multiple polarities detected but positive polarity is present in ", per_pos_pol, "% of the spectra! Advisable to remove data from negative ionization." )
+            return("positive")
+
+          } else {
+            per_neg_pol <- round((scans_neg / nrow(spectra_headers)) * 100, digits = 0)
+            # warning("Multiple polarities detected but negative polarity is present in ", per_neg_pol, "% of the spectra! Advisable to remove data from positive ionization." )
+            return("negative")
+          }
+        }, "")
+
+        names(value) <- analyses
+      }
       
       value
-
-      # if (length(polarities) > length(analyses)) {
-      #   message("\U2139 Multiple polarities detected in each analysis! Some find_features algorithms cannot handled multiple polarities properly.")
-      # }
-
-      # if (length(polarities) > length(analyses)) {
-      #
-      #   polarities <- vapply(private$.analyses[analyses], function(x) {
-      #     spectra_headers <- x$spectra_headers
-      #     polarity <- spectra_headers$polarity
-      #
-      #     scans_pos <- length(polarity[polarity == 1])
-      #     scans_neg <- length(polarity[polarity == -1])
-      #
-      #     ratio <- scans_pos/scans_neg
-      #
-      #     if (ratio < 1.2 & ratio > 0.8) {
-      #       warning("Multiple polarities detected! Currently, find_features algorithms cannot handled multiple polarities properly.", )
-      #       return(NA_character_)
-      #
-      #     } else if (ratio > 1.2) {
-      #       per_pos_pol <- round((scans_pos / nrow(spectra_headers)) * 100, digits = 0)
-      #       warning("Multiple polarities detected but positive polarity is present in ", per_pos_pol, "% of the spectra! Advisable to remove data from negative ionization." )
-      #       return("positive")
-      #
-      #     } else {
-      #       per_neg_pol <- round((scans_neg / nrow(spectra_headers)) * 100, digits = 0)
-      #       warning("Multiple polarities detected but negative polarity is present in ", per_neg_pol, "% of the spectra! Advisable to remove data from positive ionization." )
-      #       return("negative")
-      #     }
-      #   }, "")
-      #
-      #   names(polarities) <- analyses
-      # }
     },
 
     #' @description Gets the spectra headers data.table of each analysis.
@@ -2017,6 +2016,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       if (!filtered) fts <- fts[!fts$filtered, ]
       
+      fts$feature <- as.character(fts$feature)
+      
       if (!is.null(features)) {
         target_id <- features
         
@@ -2624,13 +2625,16 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
             fts_sd <- copy(fts_av)
             fts_sd$intensity <- NULL
             fts_sd$analysis <- paste(fts_sd$analysis, "_sd", sep = "")
-            fts_sd <- tidyr::spread(fts_sd[, c("group", "analysis", "sd"), with = TRUE], key = analysis, value = sd, fill = NA)
+            fts_sd <- data.table::dcast(fts_sd[, c("group", "analysis", "sd"), with = TRUE], group ~ analysis, value.var = "sd")
+            fts_sd[is.na(fts_sd)] <- 0
             fts_av$sd <- NULL
-            fts_av <- tidyr::spread(fts_av, key = analysis, value = intensity, fill = 0)
+            fts_av <- data.table::dcast(fts_av, group ~ analysis, value.var = "intensity")
+            fts_av[is.na(fts_av)] <- 0
             
           } else {
             fts_av <- fts[, .(intensity = max(intensity)), by = c("group", "analysis")]
-            fts_av <- tidyr::spread(fts_av, key = analysis, value = intensity, fill = 0)
+            fts_av <- data.table::dcast(fts_av, group ~ analysis, value.var = "intensity")
+            fts_av[is.na(fts_av)] <- 0
           }
         }
         
@@ -2652,7 +2656,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
             mass = round(mean(mass), digits = 4),
             rtdev = round(max(rtmax - rtmin), digits = 0),
             massdev = round(max(mzmax - mzmin), digits = 4),
-            presence = round(length(feature) / self$get_number_analyses() * 100, digits = 0),
+            presence = round(length(feature) / self$get_number_analyses() * 100, digits = 1),
+            maxint = round(max(intensity), digits = 0),
             sn = round(max(vapply(quality, function(x) if (!is.null(x)) x$sn else 0, 0), na.rm = TRUE), digits = 1),
             iso = min(vapply(isotope, function(x) if (!is.null(x)) x$step else 0, 0)),
             istd = paste0(unique(vapply(istd, function(x) if (!is.null(x)) x$name else NA_character_, NA_character_)), collapse = "; "),
@@ -3032,7 +3037,14 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       }
       
       if (is.numeric(clusters)) {
-        fts_clusters <- vapply(fts$isotope, function(x) x$cluster, NA_real_)
+        fts_clusters <- vapply(fts$isotope, function(x) {
+          if (length(x) == 0) {
+            NA_real_
+          } else {
+            x$cluster
+          }
+        }, NA_real_)
+        
         fts <- fts[fts_clusters %in% clusters, ]
         
         if (nrow(fts) == 0) return(data.table())
@@ -3040,9 +3052,17 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         fts$cluster <- fts_clusters
         
       } else {
-        fts_clusters <- vapply(fts$isotope, function(x) x$cluster, NA_real_)
+        fts_clusters <- vapply(fts$isotope, function(x) {
+          if (length(x) == 0) {
+            NA_real_
+          } else {
+            x$cluster
+          }
+        }, NA_real_)
         fts$cluster <- fts_clusters
       }
+      
+      fts <- fts[!is.na(fts$cluster), ]
       
       all_fts <- self$get_features(filtered = TRUE)
       
@@ -3051,7 +3071,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       isos <- lapply(isos, function(x, all_fts) {
         i_fts <- all_fts[all_fts$analysis %in% x$analysis, ]
         i_iso <- i_fts$isotope
-        sel <- vapply(i_iso, function(z) z$cluster, NA_real_) %in% x$cluster
+        sel <- vapply(i_iso, function(z) {
+          if (length(z) == 0) {
+            NA_real_
+          } else {
+            z$cluster
+          }
+        }, NA_real_) %in% x$cluster
         sel_iso <- i_iso[sel]
         sel_iso <- lapply(sel_iso, function(z) as.data.table(z))
         sel_iso <- rbindlist(sel_iso)
@@ -3472,12 +3498,23 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           istd$mzr <- round(istd$mzmax - istd$mzmin, digits = 4)
           
           if ("isotope" %in% colnames(istd)) {
-            istd$iso_n <- vapply(istd$isotope, function(x) x$cluster_size, 0)
-            istd$iso_c <- vapply(istd$isotope, function(x) x$carbons, 0)
-            
+            istd$iso_n <- vapply(istd$isotope, function(x) {
+              if (length(x) == 0) {
+                NA_real_
+              } else {
+                x$cluster_size
+              }
+            }, NA_real_)
+            istd$iso_c <- vapply(istd$isotope, function(x) {
+              if (length(x) == 0) {
+                NA_real_
+              } else {
+                x$carbons
+              }
+            }, NA_real_)
           } else {
-            istd$iso_n <- NA
-            istd$iso_c <- NA
+            istd$iso_n <- NA_real_
+            istd$iso_c <- NA_real_
           }
           
           if (self$has_groups() & average) {
@@ -4903,6 +4940,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     #' @description Plots the spectra total ion chromatogram (TIC) of each analysis.
+    #' 
+    #' @param downsize An integer of length one to downsize the TIC plot. The default is 1.
     #'
     plot_spectra_tic = function(analyses = NULL,
                                 levels = c(1, 2),
@@ -4914,9 +4953,12 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 xlim = NULL,
                                 ylim = NULL,
                                 cex = 0.6,
+                                downsize = 1,
                                 interactive = TRUE) {
 
       tic <- self$get_spectra_tic(analyses, levels, rt)
+      
+      tic <- tic[, .(intensity = mean(intensity)), by = .(rt = floor(rt / downsize) * downsize, analysis, level)]
 
       if (nrow(tic) == 0) {
         message("\U2717 TIC not found for the analyses!")

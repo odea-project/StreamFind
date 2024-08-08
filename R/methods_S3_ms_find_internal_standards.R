@@ -20,8 +20,8 @@
   
   database <- settings$parameters$database
   
-  database <- as.data.table(database)
-
+  database <- data.table::as.data.table(database)
+  
   internal_standards <- self$get_suspects(
     database = database,
     ppm = settings$parameters$ppm,

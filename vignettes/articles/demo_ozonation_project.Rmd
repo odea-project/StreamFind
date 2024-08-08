@@ -26,20 +26,13 @@ library(magrittr)
 library(ggplot2)
 library(plotly)
 library(StreamFind)
-
-# Global options
 knitr::opts_chunk$set(echo = TRUE, fig.align = "center", fig.width = 9, results = "markup", comment = "", message = FALSE, warning = FALSE)
-
-# Working directory
 path_wd <- getwd()
 ```
 
 ```{r resources, include=FALSE}
-# MS files
 all_files <- StreamFindData::get_ms_file_paths()
 files <- all_files[grepl("blank|influent|o3sw", all_files)]
-
-# Chemicals database
 db_all <- StreamFindData::get_ms_tof_spiked_chemicals()
 db_all <- db_all[grepl("S", db_all$tag), ]
 cols <- c("name", "formula", "mass", "rt", "tag")
@@ -71,13 +64,13 @@ pre code {
 
 # Introduction
 
-In this article, we demonstrate how the StreamFind R package can be used to evaluate ozonation of secondary wastewater effluent (i.e., effluent of the aerated biological treatment) using mass spectrometry (MS). A set of 18 *mzML* files, representing blank, influent and effluent measurements in triplicate for both positive and negative ionization mode, are used.
+In this article we demonstrate how StreamFind can be used to evaluate ozonation of secondary wastewater effluent (i.e., effluent of the aerated biological treatment) using mass spectrometry (MS). A set of 18 *mzML* files, representing blank, influent and effluent measurements in triplicate for both positive and negative ionization modes, are used.
 
 ```{r files}
 basename(files)
 ```
 
-The showcase will use the StreamFind main class *MassSpecEngine*, which encapsulates all tools required for parsing, storing, processing and visualizing MS data. Note that not all methods/functions will be shown as the demonstration focuses of the workflow to assess wastewater ozonation. For a complete overview of the StreamFind R package for mass spectrometry, the article [StreamFind for mass spectrometry](XXX) is recommended.
+The showcase will use the StreamFind main class *MassSpecEngine*, which encapsulates all tools required for parsing, storing, processing and visualizing MS data. Note that not all methods/functions will be shown as the demonstration focuses of the workflow to assess wastewater ozonation.
 
 # *MassSpecEngine*
 
@@ -95,7 +88,7 @@ ms
 
 # *ProjectHeaders*
 
-Project headers (e.g., name, author and description) can be added to the *MassSpecEngine* using the `MassSpecEngine$add_headers()`. The headers are converted to an S3 [*ProjectHeaders*](https://odea-project.github.io/StreamFind/reference/ProjectHeaders.html) class object in the *MassSpecEngine*, where it goes through a validation to ensure conformity (more details [here](https://odea-project.github.io/StreamFind/reference/ProjectHeaders.html)).
+Project headers (e.g., name, author and description) can be added to the *MassSpecEngine* using the `MassSpecEngine$add_headers()`. The headers are converted to an S3 *ProjectHeaders* class object in the *MassSpecEngine*, where it goes through a validation to ensure conformity (more details [here](https://odea-project.github.io/StreamFind/reference/ProjectHeaders.html)).
 
 ```{r add-headers}
 # Add headers to the MassSpecEngine
@@ -147,7 +140,7 @@ ms$get_overview()[, 1:5]
 
 # *ProcessingSettings*
 
-Data processing is performed by modules according to [*ProcessingSettings*](https://odea-project.github.io/StreamFind/reference/ProcessingSettings.html). The S3 *ProcessingSettings* class objects are obtained via the respective [`Settings_[module name]_[algorithm name]`](https://odea-project.github.io/StreamFind/reference/index.html#processing-settings-for-ms-data) constructor functions, attributing the respective subclass. Below we obtain the *ProcessingSettings* for the module `find_features()` using the algorithm *openms*. The parameters for each processing module can be changed via the constructor arguments. Documentation for each *ProcessingSettings* subclass can be found in the [StreamFind reference documentation](https://odea-project.github.io/StreamFind/reference/index.html).
+Data processing is performed by steps according to [*ProcessingSettings*](https://odea-project.github.io/StreamFind/reference/ProcessingSettings.html). The S3 *ProcessingSettings* class objects are obtained via the respective [`[Engine type]Settings_[module name]_[algorithm name]`](https://odea-project.github.io/StreamFind/reference/index.html#processing-settings-for-ms-data) constructor functions, attributing the respective subclass. Below we obtain the *ProcessingSettings* for the step `FindFeatures` using the algorithm *openms*. The parameters for each processing module can be changed via the constructor arguments. Documentation for each *ProcessingSettings* subclass can be found in the [StreamFind reference documentation](https://odea-project.github.io/StreamFind/reference/index.html).
 
 ```{r ffs}
 # Get ProcessingSettings for finding features using the openms algorithm
@@ -158,30 +151,41 @@ ffs
 ```
 
 ```{r other-settings}
-
 # List with other workflow module settings
 other_settings <- list(
+  
+  # Annotation of natural isotopes
   MassSpecSettings_AnnotateFeatures_StreamFind(),
-
+  
+  # Grouping features across analyses
   MassSpecSettings_GroupFeatures_openms(),
   
+  # Fill features with missing data
+  # Reduces false negatives
+  MassSpecSettings_FillFeatures_StreamFind(),
+  
   # Modifying the parameters with the constructor arguments
-  # db_is is a data.table with the name, mass and expected retention time of spiked internal standards, as shown below
+  # db_is is a data.table with the
+  # name, mass and expected retention time of 
+  # spiked internal standards, as shown below
   MassSpecSettings_FindInternalStandards_StreamFind(
     database = db_is,
     ppm = 8,
     sec = 10
   ),
   
+  # Filter annotated natural isotopes
   MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE),
   
+  # Filter features using other parameters
   MassSpecSettings_FilterFeatures_patRoon(
     absMinIntensity = 5000,
     maxReplicateIntRSD = 30,
     blankThreshold = 10,
     absMinReplicateAbundance = 3
   ),
-
+  
+  # Loads feature extracted ion chromatograms (EIC)
   MassSpecSettings_LoadFeaturesEIC_StreamFind(
     rtExpand = 60,
     mzExpand = 0.0005
@@ -190,9 +194,11 @@ other_settings <- list(
   MassSpecSettings_LoadFeaturesMS1_StreamFind(),
 
   MassSpecSettings_LoadFeaturesMS2_StreamFind(),
-
+  
+  # Calculate quality metrics for each feature
   MassSpecSettings_CalculateQuality_StreamFind(),
   
+  # Filter features based on minimum signal-to-noise ratio
   MassSpecSettings_FilterFeatures_StreamFind(minSnRatio = 5),
   
   # db_with_ms2 is a database with suspect chemical standards
@@ -235,7 +241,7 @@ The created features and feature groups can be inspected as `data.table` objects
 
 ## `data.table` objects
 
-The features and feature groups can be obtained as `data.table` with the `MassSpecEngine$get_features()` and `MassSpecEngine$get_groups()` methods. The methods also allow to look for specific features/feature groups using mass, mass-to-charge ratio, retention time and drift time targets, as show below for a small set of compound targets where mass and retention time expected value are known. Note that drift time is only applicable for MS data with ion mobility separation.
+The features and feature groups can be obtained as `data.table` with the `MassSpecEngine$get_features()` and `MassSpecEngine$get_groups()` methods. The methods also allow to look for specific features/feature groups using mass, mass-to-charge ratio, retention time and drift time targets, as show below for a small set of compound targets where mass and retention time expected values are known. Note that drift time is only applicable for MS data with ion mobility separation.
 
 ```{r database-show}
 db
@@ -265,20 +271,20 @@ ms$plot_groups_overview(mass = db, ppm = 5, sec = 10, legendNames = TRUE)
 
 ## Filtered not removed
 
-The *FilterFeatures* module was applied to filter features out according to defined conditions/thresholds. The filtered features were not removed but just tagged as filtered and a filter tag was assigned. For instance, when the method `MassSpecEngine$get_features()` is run with `filtered` argument set to `TRUE`, the filtered features are also shown. Below, we search for the internal standards added to each analysis that were filtered when applying the blank subtraction, receiving the tag **blank** in the *filter* column and `TRUE` in the *filtered* column.
+The *FilterFeatures* method was applied to filter features according to defined conditions/thresholds. The filtered features were not removed but just tagged as filtered. For instance, when the method `MassSpecEngine$get_features()` is run with `filtered` argument set to `TRUE`, the filtered features are also shown. Below, we search for the internal standards added to each analysis that were filtered when applying the blank subtraction, receiving `TRUE` in the *filtered* column.
 
 ```{r database-is-show}
 db_is
 ```
 
 ```{r show-filtered-is}
-# set filtered to TRUE for showing filtered features/feature groups
+# Set filtered to TRUE for showing filtered features/feature groups
 ms$get_groups(mass = db_is, ppm = 8, sec = 10, average = TRUE, filtered = TRUE)
 ```
 
 ## Internal Stanards
 
-The method *FindInternalStandards* was applied and the results can be obtained with the dedicated method `MassSpecEngine$get_internal_standards()` or plotted as a quality overview using the method `MassSpecEngine$plot_internal_standards_qc()`, as shown below. The plot gives an overview of the mass, retention time and intensity variance of the internal stadards across the analyses in the project. 
+The method *FindInternalStandards* was applied and the results can be obtained with the dedicated method `MassSpecEngine$get_internal_standards()` or plotted as a quality overview using the method `MassSpecEngine$plot_internal_standards_qc()`, as shown below. The plot gives an overview of the mass, retention time and intensity variance of the internal standards across the analyses in the project.
 
 ```{r plot_is_qc, fig.height=10}
 ms$plot_internal_standards_qc()
@@ -286,7 +292,7 @@ ms$plot_internal_standards_qc()
 
 ## Isotopes
 
-The method *AnnotateFeatures* was applied to annotate the natural isotopes within the MS data. Implementation of adducts and in source fragments annotation is planned but not yet available with the StreamFind algorithm. The method `MassSpecEngine$get_isotopes()` can be used to search for isotopes, as shown below for the analysis number 11. Because the filter `excludeIsotopes` was applied, the isotopic features are filtered out with tag **isotope** or **minIntensity** when filtered by `minIntensity`, which was applied first. Although the first isotope of Diclofenac (i.e., the <sup>13</sup>C) was not found, the second was annotated as the `maxGaps` argument in settings was set to 1. This is a frequent case for compounds with halogens.
+The method *AnnotateFeatures* was applied to annotate the natural isotopes within the MS data. Implementation of adducts and in source fragments annotation is planned but not yet available with the StreamFind algorithm. The method `MassSpecEngine$get_isotopes()` can be used to search for isotopes, as shown below for the analysis number 5. Because the filters `excludeIsotopes` and `minIntensity` were applied, the isotopic features are likely filtered.
 
 ```{r show-isotopes}
 # Isotopes of Diclofenac and Candesartan in analysis 5
@@ -297,7 +303,7 @@ ms$get_isotopes(
 )
 ```
 
-The isotopes can also be visualized with the method `MassSpecEngine$map_isotopes()`, as shown below for the internal standards added to analysis 11. Note that again the `filtered` argument was set to `TRUE` to return also filtered features.
+The isotopes can also be visualized with the method `MassSpecEngine$map_isotopes()`, as shown below for the internal standards added to analysis 5. Note that again the `filtered` argument was set to `TRUE` to return also filtered features.
 
 ```{r plot-isotopes}
 ms$map_isotopes(
@@ -317,13 +323,29 @@ The method `MassSpecEngine$plot_suspects()` is used to inspect the suspect scree
 ms$plot_suspects(colorBy = "targets+replicates")
 ```
 
+```{r include=FALSE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
+
 # More to come
 
 Future integration:
 
 - Correcting matrix for better comparison between influent and effluent
 - Annotation of adducts and in-source fragments
-- Formula/compound assignment via patRoon
 - Screening of transformation products using the *biotransformer* tool via patRoon
 - Fold-change and other statistic analysis for inter-sample correlation
 

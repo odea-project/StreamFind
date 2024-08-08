@@ -41,12 +41,17 @@
       
       features <- lapply(features, function(x) {
         if ("isotope" %in% colnames(x)) {
-          iso <- vapply(x$isotope, function(z) z[["step"]], NA_integer_)
+          iso <- vapply(x$isotope, function(z) {
+            if (length(z) == 0) {
+              NA_integer_
+            } else {
+              z[["step"]]
+            }
+          }, NA_integer_)
           iso[is.na(iso)] <- 0
           sel <- iso > 0
           x$filtered[sel] <- TRUE
         }
-        
         x
       })
 
