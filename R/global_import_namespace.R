@@ -22,8 +22,6 @@
 #' 
 #'
 #' @importFrom plyr round_any
-#' 
-#' @importFrom tidyr spread
 #'
 #' @importFrom jsonlite toJSON fromJSON
 #'

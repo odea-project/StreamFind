@@ -476,6 +476,7 @@ Plots scores of the model.
   interactive = TRUE,
   pcs = 1:2,
   title = NULL,
+  colorGroups = NULL,
   showText = TRUE,
   showLegend = TRUE
 )}\if{html}{\out{</div>}}
@@ -491,6 +492,8 @@ Plots scores of the model.
 \item{\code{pcs}}{A numeric vector (length 2) with the principle components to plot.}
 
 \item{\code{title}}{A string with the title.}
+
+\item{\code{colorGroups}}{A factor character vector with the color groups for the scores.}
 
 \item{\code{showText}}{Logical (length 1), set to \code{TRUE} to show the text annotations.}
 
