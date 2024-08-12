@@ -227,7 +227,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                   value[pols %in% "negative"],
                   adducts = list("[M+H]+", "[M-H]-")
                 )
+                value@analysisInfo <- value@analysisInfo[order(value@analysisInfo$analysis), ]
+                value@features <- value@features[value@analysisInfo$analysis]
               }
+              
+              browser()
               
               filtered <- lapply(patRoon::analyses(value), function(x) value@features[[x]][0, ])
               names(filtered) <- patRoon::analyses(value)
@@ -1114,41 +1118,37 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       value <- unlist(value)
       
+      if (length(value) > length(analyses)) {
+        
+        value <- vapply(private$.analyses[analyses], function(x) {
+          spectra_headers <- x$spectra_headers
+          polarity <- spectra_headers$polarity
+          
+          scans_pos <- length(polarity[polarity == 1])
+          scans_neg <- length(polarity[polarity == -1])
+          
+          ratio <- scans_pos/scans_neg
+          
+          if (ratio < 1.2 & ratio > 0.8) {
+            warning("Multiple polarities detected! Currently, find_features algorithms cannot handled multiple polarities properly.", )
+            return(NA_character_)
+            
+          } else if (ratio > 1.2) {
+            per_pos_pol <- round((scans_pos / nrow(spectra_headers)) * 100, digits = 0)
+            # warning("Multiple polarities detected but positive polarity is present in ", per_pos_pol, "% of the spectra! Advisable to remove data from negative ionization." )
+            return("positive")
+            
+          } else {
+            per_neg_pol <- round((scans_neg / nrow(spectra_headers)) * 100, digits = 0)
+            # warning("Multiple polarities detected but negative polarity is present in ", per_neg_pol, "% of the spectra! Advisable to remove data from positive ionization." )
+            return("negative")
+          }
+        }, "")
+        
+        names(value) <- analyses
+      }
+      
       value
-
-      # if (length(polarities) > length(analyses)) {
-      #   message("\U2139 Multiple polarities detected in each analysis! Some find_features algorithms cannot handled multiple polarities properly.")
-      # }
-
-      # if (length(polarities) > length(analyses)) {
-      #
-      #   polarities <- vapply(private$.analyses[analyses], function(x) {
-      #     spectra_headers <- x$spectra_headers
-      #     polarity <- spectra_headers$polarity
-      #
-      #     scans_pos <- length(polarity[polarity == 1])
-      #     scans_neg <- length(polarity[polarity == -1])
-      #
-      #     ratio <- scans_pos/scans_neg
-      #
-      #     if (ratio < 1.2 & ratio > 0.8) {
-      #       warning("Multiple polarities detected! Currently, find_features algorithms cannot handled multiple polarities properly.", )
-      #       return(NA_character_)
-      #
-      #     } else if (ratio > 1.2) {
-      #       per_pos_pol <- round((scans_pos / nrow(spectra_headers)) * 100, digits = 0)
-      #       warning("Multiple polarities detected but positive polarity is present in ", per_pos_pol, "% of the spectra! Advisable to remove data from negative ionization." )
-      #       return("positive")
-      #
-      #     } else {
-      #       per_neg_pol <- round((scans_neg / nrow(spectra_headers)) * 100, digits = 0)
-      #       warning("Multiple polarities detected but negative polarity is present in ", per_neg_pol, "% of the spectra! Advisable to remove data from positive ionization." )
-      #       return("negative")
-      #     }
-      #   }, "")
-      #
-      #   names(polarities) <- analyses
-      # }
     },
 
     #' @description Gets the spectra headers data.table of each analysis.
@@ -5420,6 +5420,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                     heights = c(0.35, 0.5, 0.15)) {
 
       fts <- self$get_features(analyses, groups, mass, mz, rt, drift, ppm, sec, millisec, filtered)
+      
+      if (nrow(fts) == 0) {
+        message("\U2717 Features not found for the targets!")
+        return(NULL)
+      }
 
       eic <- self$get_features_eic(analyses = unique(fts$analysis), features = fts,
         rtExpand = rtExpand, mzExpand = mzExpand, filtered = filtered, loaded = loaded
