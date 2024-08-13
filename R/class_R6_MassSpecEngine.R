@@ -227,6 +227,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                   value[pols %in% "negative"],
                   adducts = list("[M+H]+", "[M-H]-")
                 )
+                
                 if ("features" %in% is(value)) {
                   value@analysisInfo <- value@analysisInfo[order(value@analysisInfo$analysis), ]
                   value@features <- value@features[order(names(value@features))]
@@ -1147,6 +1148,36 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         names(value) <- analyses
       }
       
+      if (length(value) > length(analyses)) {
+        
+        value <- vapply(private$.analyses[analyses], function(x) {
+          spectra_headers <- x$spectra_headers
+          polarity <- spectra_headers$polarity
+          
+          scans_pos <- length(polarity[polarity == 1])
+          scans_neg <- length(polarity[polarity == -1])
+          
+          ratio <- scans_pos/scans_neg
+          
+          if (ratio < 1.2 & ratio > 0.8) {
+            warning("Multiple polarities detected! Currently, find_features algorithms cannot handled multiple polarities properly.", )
+            return(NA_character_)
+            
+          } else if (ratio > 1.2) {
+            per_pos_pol <- round((scans_pos / nrow(spectra_headers)) * 100, digits = 0)
+            # warning("Multiple polarities detected but positive polarity is present in ", per_pos_pol, "% of the spectra! Advisable to remove data from negative ionization." )
+            return("positive")
+            
+          } else {
+            per_neg_pol <- round((scans_neg / nrow(spectra_headers)) * 100, digits = 0)
+            # warning("Multiple polarities detected but negative polarity is present in ", per_neg_pol, "% of the spectra! Advisable to remove data from positive ionization." )
+            return("negative")
+          }
+        }, "")
+        
+        names(value) <- analyses
+      }
+      
       value
     },
 
@@ -2030,10 +2061,15 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
             fts <- fts[fts$feature %in% target_id, ]
           }
           
+          fts$replicate <- self$get_replicate_names()[fts$analysis]
+          
           return(fts)
           
         } else if (is.numeric(target_id)) {
+          
           fts <- fts[target_id, ]
+          
+          fts$replicate <- self$get_replicate_names()[fts$analysis]
           
           return(fts)
         }
@@ -2077,6 +2113,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
               ids <- ids[!duplicated(names(ids))]
               fts$name <- ids[fts$group]
             }
+            
+            fts$replicate <- self$get_replicate_names()[fts$analysis]
             
             return(fts)
           }
@@ -2133,6 +2171,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         
         fts$name <- ids
         
+        fts$replicate <- self$get_replicate_names()[fts$analysis]
+        
         return(fts[sel])
       }
       
@@ -2176,8 +2216,12 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         
         fts$name <- ids
         
+        fts$replicate <- self$get_replicate_names()[fts$analysis]
+        
         return(fts[sel])
       }
+      
+      fts$replicate <- self$get_replicate_names()[fts$analysis]
       
       fts
     },
@@ -2619,15 +2663,31 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
             rpls <- self$get_replicate_names()
             fts_temp <- copy(fts)
             fts_temp$analysis <- rpls[fts_temp$analysis]
-            fts_av <- fts_temp[, .(intensity = mean(intensity), sd = sd(intensity)), by = c("group", "analysis")]
+            fts_av <- fts_temp[, .(intensity = mean(intensity), sd = sd(intensity), n = length(intensity)), by = c("group", "analysis")]
             fts_av$sd[is.na(fts_av$sd)] <- 0 
             fts_av$sd <- round(fts_av$sd / fts_av$intensity * 100, digits = 0)
+            
             fts_sd <- copy(fts_av)
+            fts_n <- copy(fts_av)
+            
             fts_sd$intensity <- NULL
+            fts_sd$n <- NULL
             fts_sd$analysis <- paste(fts_sd$analysis, "_sd", sep = "")
             fts_sd <- data.table::dcast(fts_sd[, c("group", "analysis", "sd"), with = TRUE], group ~ analysis, value.var = "sd")
             fts_sd[is.na(fts_sd)] <- 0
+            
+            tbl_rpls <- table(rpls)
+            fts_n$tn <- tbl_rpls[fts_n$analysis]
+            fts_n$n <- round(fts_n$n / fts_n$tn * 100, digits = 0)
+            fts_n$intensity <- NULL
+            fts_n$tn <- NULL
+            fts_n$sd <- NULL
+            fts_n$analysis <- paste(fts_n$analysis, "_n", sep = "")
+            fts_n <- data.table::dcast(fts_n[, c("group", "analysis", "n"), with = TRUE], group ~ analysis, value.var = "n")
+            fts_n[is.na(fts_n)] <- 0
+            
             fts_av$sd <- NULL
+            fts_av$n <- NULL
             fts_av <- data.table::dcast(fts_av, group ~ analysis, value.var = "intensity")
             fts_av[is.na(fts_av)] <- 0
             
@@ -2669,7 +2729,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         
         if (intensities) fgroups <- fgroups[fts_av, on = "group"]
         
-        if (average && sdValues) fgroups <- fgroups[fts_sd, on = "group"]
+        if (average && sdValues) {
+          fgroups <- fgroups[fts_sd, on = "group"]
+          fgroups <- fgroups[fts_n, on = "group"]
+        }
         
         fgroups
         
@@ -5430,6 +5493,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                     heights = c(0.35, 0.5, 0.15)) {
 
       fts <- self$get_features(analyses, groups, mass, mz, rt, drift, ppm, sec, millisec, filtered)
+      
+      if (nrow(fts) == 0) {
+        message("\U2717 Features not found for the targets!")
+        return(NULL)
+      }
 
       eic <- self$get_features_eic(analyses = unique(fts$analysis), features = fts,
         rtExpand = rtExpand, mzExpand = mzExpand, filtered = filtered, loaded = loaded
