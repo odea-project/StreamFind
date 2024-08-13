@@ -70,33 +70,33 @@ ps <- list(
   
   MassSpecSettings_FindFeatures_openms(),
   
-  MassSpecSettings_AnnotateFeatures_StreamFind()
+  MassSpecSettings_AnnotateFeatures_StreamFind(),
   
-  # MassSpecSettings_GroupFeatures_openms(),
-  # 
-  # MassSpecSettings_FindInternalStandards_StreamFind(database = dbis, ppm = 8, sec = 10),
-  # 
-  # MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE),
-  # 
-  # MassSpecSettings_FilterFeatures_patRoon(absMinIntensity = 5000, maxReplicateIntRSD = 30, blankThreshold = 10, absMinReplicateAbundance = 3),
-  # 
-  # MassSpecSettings_LoadFeaturesEIC_StreamFind(rtExpand = 60, mzExpand = 0.0005),
-  # 
-  # MassSpecSettings_CalculateQuality_StreamFind(),
-  # 
-  # MassSpecSettings_FilterFeatures_StreamFind(minSnRatio = 5),
-  # 
-  # MassSpecSettings_LoadFeaturesMS1_StreamFind(),
-  # 
-  # MassSpecSettings_LoadFeaturesMS2_StreamFind(),
-  # 
-  # MassSpecSettings_LoadMSPeakLists_StreamFind(), # Check patRoon function for issues with MSPeakLists!!!
-  # 
-  # #MassSpecSettings_GenerateFormulas_genform(),
-  # 
-  # #MassSpecSettings_GenerateCompounds_metfrag()
-  # 
-  # MassSpecSettings_SuspectScreening_StreamFind(database = dbsus, ppm = 5, sec = 10)
+  MassSpecSettings_GroupFeatures_openms(),
+
+  MassSpecSettings_FindInternalStandards_StreamFind(database = dbis, ppm = 8, sec = 10),
+
+  MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE),
+
+  MassSpecSettings_FilterFeatures_patRoon(absMinIntensity = 5000, maxReplicateIntRSD = 30, blankThreshold = 10, absMinReplicateAbundance = 3),
+
+  MassSpecSettings_LoadFeaturesEIC_StreamFind(rtExpand = 60, mzExpand = 0.0005),
+
+  MassSpecSettings_CalculateQuality_StreamFind(),
+
+  MassSpecSettings_FilterFeatures_StreamFind(minSnRatio = 5),
+
+  MassSpecSettings_LoadFeaturesMS1_StreamFind(),
+
+  MassSpecSettings_LoadFeaturesMS2_StreamFind(),
+
+  MassSpecSettings_LoadMSPeakLists_StreamFind(), # Check patRoon function for issues with MSPeakLists!!!
+
+  #MassSpecSettings_GenerateFormulas_genform(),
+
+  #MassSpecSettings_GenerateCompounds_metfrag()
+
+  MassSpecSettings_SuspectScreening_StreamFind(database = dbsus, ppm = 5, sec = 10)
 )
 
 ms <- MassSpecEngine$new(files = ms_files_df[10, ], settings = ps)
