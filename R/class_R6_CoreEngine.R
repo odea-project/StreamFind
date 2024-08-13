@@ -1248,7 +1248,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
         return(invisible(self))
       }
       
-      shiny::shinyApp(ui = .make_app_ui(self), server = .make_app_server(engine_type, engine_save_file))
+      shiny::shinyApp(ui = .make_app_ui(), server = .make_app_server(engine_type, engine_save_file))
     },
     
     ## ___ info -----

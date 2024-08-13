@@ -18,7 +18,7 @@
 #' 
 #' @noRd
 #' 
-.mod_analyses_Server <- function(id, engine, reactive_files, reactive_overview, reactive_warnings, reactive_history, volumes, file_types) {
+.mod_analyses_Server <- function(id, engine, reactive_files, reactive_overview, reactive_warnings, reactive_history, reactive_file_types, volumes) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
@@ -33,6 +33,8 @@
         htmltools::div(style = sprintf("min-width: %dpx; height: %dpx; display: flex; align-items: center;", 40, 40),x)
       })
     }
+    
+    file_types <- reactive_file_types()
     
     check_overView_state <- shiny::reactiveVal(FALSE)
     

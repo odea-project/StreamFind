@@ -7,7 +7,7 @@
 #' 
 #' @noRd
 #'  
-.make_app_server <- function(engine_type, engine_save_file) {
+.make_app_server <- function(engine_type = NULL, engine_save_file = NULL) {
 
   server <- function(input, output, session) {
     
@@ -57,29 +57,72 @@
       }
     }
     
-    # _Constants -----
+    # _Reactive Variables -----
+    reactive_wdir <- shiny::reactiveVal(getwd())
+    reactive_engine_type <- shiny::reactiveVal(NA_character_)
+    reactive_engine_save_file <- shiny::reactiveVal(NA_character_)
+    reactive_file_types <- shiny::reactiveVal(NA_character_)
+    reactive_warnings <- shiny::reactiveVal(list())
+    reactive_headers <- shiny::reactiveVal(list())
+    reactive_files <- shiny::reactiveVal(NA_character_)
+    reactive_overview <- shiny::reactiveVal(data.table())
+    reactive_history <- shiny::reactiveVal(list())
+    reactive_saved_history <- shiny::reactiveVal(list())
+    reactive_workflow <- shiny::reactiveVal(list())
     
-    ## Engine -----
-    engine_call <- get(engine_type, envir = .GlobalEnv)
-    engine_call_new <- engine_call[["new"]]
-    engine <- suppressMessages(do.call(engine_call_new, list()))
-    engine$load(engine_save_file)
-    
-    ## Other -----
-    wdir <- getwd()
-    save_file <- engine$save_file
+    # _Constants/Mutable -----
     mandatory_header_names <- c("name", "author", "file", "date")
     volumes <- .get_volumes()
-    file_types <- .get_valid_file_types(engine_type)
+    engine <- NULL
+    
+    # _Setup App -----
+    
+    ## Engine -----
+    if (is.null(engine_type)) engine_type <- "CoreEngine"
+    if (is.null(engine_save_file)) engine_save_file <- NA_character_
+    
+    reactive_engine_type(engine_type)
+    reactive_engine_save_file(engine_save_file)
+    
+    observeEvent(reactive_engine_save_file(), {
+      engine_save_file <- reactive_engine_save_file()
+      if (!is.na(engine_save_file)) {
+        if (!grepl(".sqlite$", engine_save_file)) {
+          msg <- paste("The file", engine_save_file, "is not an sqlite file!")
+          shiny::showNotification(msg, duration = 10, type = "error")
+          reactive_engine_save_file(NA_character_)
+        }
+        # if (!file.exists(engine_save_file)) file.create(engine_save_file)
+      }
+    })
+    
+    observeEvent(reactive_engine_type(), {
+      engine_type <- reactive_engine_type()
+      engine_call <- get(engine_type, envir = .GlobalEnv)
+      engine_call_new <- engine_call[["new"]]
+      engine <<- suppressMessages(do.call(engine_call_new, list()))
+      if (!is.na(engine_save_file)) engine$load(engine_save_file)
+      reactive_headers(engine$get_headers())
+      reactive_files(engine$get_files())
+      reactive_overview(engine$get_overview())
+      reactive_history(engine$history)
+      reactive_saved_history(engine$history)
+      reactive_workflow(engine$settings)
+      reactive_file_types(.get_valid_file_types(engine_type))
+    })
+    
+    output$engine_type_ui <- shiny::renderUI({
+      tags$span(reactive_engine_type())
+    })
   
     # _Reactive values -----
-    reactive_warnings <- shiny::reactiveVal(list())
-    reactive_headers <- shiny::reactiveVal(engine$get_headers())
-    reactive_files <- shiny::reactiveVal(engine$get_files())
-    reactive_overview <- shiny::reactiveVal(engine$get_overview())
-    reactive_history <- shiny::reactiveVal(engine$history)
-    reactive_saved_history <- shiny::reactiveVal(engine$history)
-    reactive_workflow <- shiny::reactiveVal(engine$settings)
+    # reactive_warnings <- shiny::reactiveVal(list())
+    # reactive_headers <- shiny::reactiveVal(engine$get_headers())
+    # reactive_files <- shiny::reactiveVal(engine$get_files())
+    # reactive_overview <- shiny::reactiveVal(engine$get_overview())
+    # reactive_history <- shiny::reactiveVal(engine$history)
+    # reactive_saved_history <- shiny::reactiveVal(engine$history)
+    # reactive_workflow <- shiny::reactiveVal(engine$settings)
     
     # _Warnings -----
     
@@ -110,7 +153,10 @@
     
     ## event Save -----
     shiny::observeEvent(input$save_engine_button, {
-      engine$save(save_file)
+      
+      # TODO if file is not yet defined as for creating a file then
+      
+      engine$save(reactive_engine_save_file())
       reactive_warnings(.remove_notifications(reactive_warnings(), "unsaved_changes"))
       reactive_headers(engine$get_headers())
       reactive_files(engine$get_files())
@@ -131,7 +177,7 @@
     
     ## event Reset -----
     shiny::observeEvent(input$reset_engine_button, {
-      engine$load(save_file)
+      engine$load(reactive_engine_save_file())
       reactive_warnings(.remove_notifications(reactive_warnings(), "unsaved_changes"))
       reactive_headers(engine$get_headers())
       reactive_files(engine$get_files())
@@ -144,7 +190,7 @@
     # _Overview -----
     
     ## _Info -----
-    output$wdir <- shiny::renderUI({ htmltools::HTML(paste("<b>Working directory:</b>", wdir)) })
+    output$wdir <- shiny::renderUI({ htmltools::HTML(paste("<b>Working directory:</b>", reactive_wdir())) })
     
     ## _Headers -----
     output$headers_ui <- shiny::renderUI({
@@ -191,7 +237,7 @@
     
     ## _Analyses -----
     output$analyses_ui <- shiny::renderUI({
-      .mod_analyses_Server("analyses", engine, reactive_files, reactive_overview, reactive_warnings, reactive_history, volumes, file_types)
+      .mod_analyses_Server("analyses", engine, reactive_files, reactive_overview, reactive_warnings, reactive_history, reactive_file_types, volumes)
       .mod_analyses_UI("analyses")
     })
     
@@ -264,6 +310,8 @@
     
     # _Explorer -----
     output$explorer_ui <- shiny::renderUI({
+      engine_type <- reactive_engine_type()
+      
       if (engine_type %in% "MassSpecEngine") {
         .mod_MassSpecEngine_summary_Server("summary", engine, reactive_overview, volumes)
         .mod_MassSpecEngine_summary_UI("summary", engine)
@@ -273,13 +321,14 @@
         .mod_RamanEngine_summary_UI("summary", engine)
         
       } else {
-        htmltools::div("Explorer not implemented for engine type ", engine_type)
+        shiny::showNotification(paste0("Explorer not implemented for ", engine_type), duration = 5, type = "warning")
+        htmltools::div(" ")
       }
     })
     
     # _Workflow -----
     output$workflow_ui <- shiny::renderUI({
-      .mod_workflow_Server("workflow", engine, engine_type, reactive_workflow, reactive_warnings, reactive_history, volumes)
+      .mod_workflow_Server("workflow", engine, reactive_engine_type, reactive_workflow, reactive_warnings, reactive_history, volumes)
       .mod_workflow_UI("workflow")
     })
     

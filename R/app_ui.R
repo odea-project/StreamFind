@@ -6,11 +6,13 @@
 #' 
 #' @noRd
 #'
-.make_app_ui <- function(self) {
+.make_app_ui <- function() {
 
   ui <- shinydashboard::dashboardPage(skin = "black",
     
-    shinydashboard::dashboardHeader(title = is(self), shinydashboard::dropdownMenuOutput("warningMenu")),
+    shinydashboard::dashboardHeader(title = shiny::uiOutput("engine_type_ui"),
+      shinydashboard::dropdownMenuOutput("warningMenu")
+    ),
     
     shinydashboard::dashboardSidebar(
       
@@ -47,7 +49,9 @@
         
         shinydashboard::tabItem(tabName = "results", shiny::fluidRow()),
         
-        shinydashboard::tabItem(tabName = "history", shiny::fluidRow(shinydashboard::box(width = 12, solidHeader = TRUE, shiny::dataTableOutput("history_table"))))
+        shinydashboard::tabItem(tabName = "history", shiny::fluidRow(
+          shinydashboard::box(width = 12, solidHeader = TRUE, shiny::dataTableOutput("history_table")))
+        )
       )
     )
   )

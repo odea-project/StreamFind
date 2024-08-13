@@ -8,13 +8,29 @@
 #' 
 .mod_MassSpecEngine_summary_UI <- function(id, engine) {
   ns <- shiny::NS(id)
-  htmltools::tagList(
-    shinydashboard::box(title = "Spectra summary", width = 12, solidHeader = TRUE, shiny::uiOutput(ns("summary_plot_ui"))),
-    shiny::column(12, shiny::uiOutput(ns("summary_plot_controls"))),
-    shinydashboard::box(title = "Chromatograms", width = 12, solidHeader = TRUE, shiny::uiOutput(ns("chrom_plot_ui"))),
-    shiny::column(12, shiny::uiOutput(ns("chrom_plot_controls"))),
-    shinydashboard::box(title = "Extract Ion Chromatograms", width = 12, solidHeader = TRUE, shiny::uiOutput(ns("eics_interface"))),
+  
+  shinydashboard::tabBox(width = 12, height = "1080px",
+    shiny::tabPanel("Spectra",
+      shiny::column(12, shiny::uiOutput(ns("summary_plot_controls"))),
+      shiny::uiOutput(ns("summary_plot_ui"))
+    ),
+    shiny::tabPanel("Chromatograms",
+      shiny::column(12, shiny::uiOutput(ns("chrom_plot_controls"))),
+      shiny::uiOutput(ns("chrom_plot_ui"))
+    ),
+    shiny::tabPanel("Extract Ion Chromatograms",
+      shiny::uiOutput(ns("eics_interface"))
+    )
   )
+  
+  
+  # htmltools::tagList(
+  #   shinydashboard::box(title = "Spectra summary", width = 12, solidHeader = TRUE, shiny::uiOutput(ns("summary_plot_ui"))),
+  #   shiny::column(12, shiny::uiOutput(ns("summary_plot_controls"))),
+  #   shinydashboard::box(title = "Chromatograms", width = 12, solidHeader = TRUE, shiny::uiOutput(ns("chrom_plot_ui"))),
+  #   shiny::column(12, shiny::uiOutput(ns("chrom_plot_controls"))),
+  #   shinydashboard::box(title = "Extract Ion Chromatograms", width = 12, solidHeader = TRUE, shiny::uiOutput(ns("eics_interface"))),
+  # )
 }
 
 #' @title .mod_MassSpecEngine_summary_Server
