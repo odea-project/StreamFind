@@ -1628,6 +1628,7 @@
                                    "</br> group: ", ft$group,
                                    "</br> feature: ", ft$feature,
                                    "</br> analysis: ", ft$analysis,
+                                   "</br> replicate: ", ft$replicate,
                                    "</br> <i>m/z</i>: ", round(ft$mz, digits = 4),
                                    "</br> rt: ", round(df$rt, digits = 0),
                                    "</br> intensity: ", round(df$intensity, digits = 0)
@@ -1674,6 +1675,7 @@
         "</br> group: ", ft_nf$group,
         "</br> feature: ", ft_nf$feature,
         "</br> analysis: ", ft_nf$analysis,
+        "</br> replicate: ", ft_nf$replicate,
         "</br> intensity: ", round(ft_nf$intensity, digits = 0),
         "</br> width: ", round(ft_nf$rtmax - ft_nf$rtmin, digits = 0),
         "</br> dppm: ", round(((ft_nf$mzmax - ft_nf$mzmin) / ft_nf$mz) *
@@ -1737,6 +1739,7 @@
           "</br> group: ", ft_f$group,
           "</br> feature: ", ft_f$feature,
           "</br> analysis: ", ft_f$analysis,
+          "</br> replicate: ", ft_f$replicate,
           "</br> intensity: ", round(ft_f$intensity, digits = 0),
           "</br> width: ", round(ft_f$rtmax - ft_f$rtmin, digits = 0),
           "</br> dppm: ", round(((ft_f$mzmax - ft_f$mzmin) / ft_f$mz) *

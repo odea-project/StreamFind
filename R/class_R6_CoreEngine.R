@@ -666,7 +666,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' @param value A data.frame or data.table with metadata for the analyses.
     #' The data.frame or data.table must have an analysis column and the same 
     #' number of rows as the number of analyses in the engine. Metadata is added
-    #' using any extra columns of the data.frame or data.table.
+    #' using any extra columns of the data.frame or data.table that do not repeat 
+    #' with the names in the overview data.table of the project (e.g., `analysis`, 
+    #' `replicate`, `blank`, `file`, `polarity`, `traces`, `features`, `groups`).
     #'
     #' @return Invisible.
     #'
@@ -681,25 +683,27 @@ CoreEngine <- R6::R6Class("CoreEngine",
             
             if (ncol(value) >= 2) {
               value <- value[order(value$analysis), ]
-              setcolorder(value, "analysis")
               
-              col_names <- colnames(value)
-              col_names <- col_names[2:length(col_names)]
-              
-              value <- split(value, value$analysis)
-              
-              private$.analyses <- Map(
-                function(x, y) {
-                  
-                  cols <- colnames(y)
-                  cols <- cols[2:length(cols)]
-                  
-                  for (i in cols) x$metadata[[i]] <- y[[i]][1]
-                  
-                  x
-                },
-                private$.analyses, value
-              )
+              if (identical(value$analysis, self$get_analysis_names())) {
+                
+                setcolorder(value, "analysis")
+                col_names <- colnames(value)
+                col_names <- col_names[2:length(col_names)]
+                value <- split(value, value$analysis)
+                
+                private$.analyses <- Map(
+                  function(x, y) {
+                    
+                    cols <- colnames(y)
+                    cols <- cols[2:length(cols)]
+                    
+                    for (i in cols) x$metadata[[i]] <- y[[i]][1]
+                    
+                    x
+                  },
+                  private$.analyses, value
+                )
+              }
               
               private$.register("added", "analyses", "metadata", paste(col_names, collapse = "; "))
               message("\U2713 Metadata ", paste(col_names, collapse = ", "), " added!")

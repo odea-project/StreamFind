@@ -542,7 +542,9 @@ Adds metadata to analyses.
 \item{\code{value}}{A data.frame or data.table with metadata for the analyses.
 The data.frame or data.table must have an analysis column and the same
 number of rows as the number of analyses in the engine. Metadata is added
-using any extra columns of the data.frame or data.table.}
+using any extra columns of the data.frame or data.table that do not repeat
+with the names in the overview data.table of the project (e.g., \code{analysis},
+\code{replicate}, \code{blank}, \code{file}, \code{polarity}, \code{traces}, \code{features}, \code{groups}).}
 }
 \if{html}{\out{</div>}}
 }

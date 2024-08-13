@@ -2061,10 +2061,15 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
             fts <- fts[fts$feature %in% target_id, ]
           }
           
+          fts$replicate <- self$get_replicate_names()[fts$analysis]
+          
           return(fts)
           
         } else if (is.numeric(target_id)) {
+          
           fts <- fts[target_id, ]
+          
+          fts$replicate <- self$get_replicate_names()[fts$analysis]
           
           return(fts)
         }
@@ -2108,6 +2113,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
               ids <- ids[!duplicated(names(ids))]
               fts$name <- ids[fts$group]
             }
+            
+            fts$replicate <- self$get_replicate_names()[fts$analysis]
             
             return(fts)
           }
@@ -2164,6 +2171,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         
         fts$name <- ids
         
+        fts$replicate <- self$get_replicate_names()[fts$analysis]
+        
         return(fts[sel])
       }
       
@@ -2207,8 +2216,12 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         
         fts$name <- ids
         
+        fts$replicate <- self$get_replicate_names()[fts$analysis]
+        
         return(fts[sel])
       }
+      
+      fts$replicate <- self$get_replicate_names()[fts$analysis]
       
       fts
     },
@@ -2650,15 +2663,31 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
             rpls <- self$get_replicate_names()
             fts_temp <- copy(fts)
             fts_temp$analysis <- rpls[fts_temp$analysis]
-            fts_av <- fts_temp[, .(intensity = mean(intensity), sd = sd(intensity)), by = c("group", "analysis")]
+            fts_av <- fts_temp[, .(intensity = mean(intensity), sd = sd(intensity), n = length(intensity)), by = c("group", "analysis")]
             fts_av$sd[is.na(fts_av$sd)] <- 0 
             fts_av$sd <- round(fts_av$sd / fts_av$intensity * 100, digits = 0)
+            
             fts_sd <- copy(fts_av)
+            fts_n <- copy(fts_av)
+            
             fts_sd$intensity <- NULL
+            fts_sd$n <- NULL
             fts_sd$analysis <- paste(fts_sd$analysis, "_sd", sep = "")
             fts_sd <- data.table::dcast(fts_sd[, c("group", "analysis", "sd"), with = TRUE], group ~ analysis, value.var = "sd")
             fts_sd[is.na(fts_sd)] <- 0
+            
+            tbl_rpls <- table(rpls)
+            fts_n$tn <- tbl_rpls[fts_n$analysis]
+            fts_n$n <- round(fts_n$n / fts_n$tn * 100, digits = 0)
+            fts_n$intensity <- NULL
+            fts_n$tn <- NULL
+            fts_n$sd <- NULL
+            fts_n$analysis <- paste(fts_n$analysis, "_n", sep = "")
+            fts_n <- data.table::dcast(fts_n[, c("group", "analysis", "n"), with = TRUE], group ~ analysis, value.var = "n")
+            fts_n[is.na(fts_n)] <- 0
+            
             fts_av$sd <- NULL
+            fts_av$n <- NULL
             fts_av <- data.table::dcast(fts_av, group ~ analysis, value.var = "intensity")
             fts_av[is.na(fts_av)] <- 0
             
@@ -2700,7 +2729,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         
         if (intensities) fgroups <- fgroups[fts_av, on = "group"]
         
-        if (average && sdValues) fgroups <- fgroups[fts_sd, on = "group"]
+        if (average && sdValues) {
+          fgroups <- fgroups[fts_sd, on = "group"]
+          fgroups <- fgroups[fts_n, on = "group"]
+        }
         
         fgroups
         
