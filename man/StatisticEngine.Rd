@@ -414,6 +414,8 @@ Plots the raw data in analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_data(
   analyses = NULL,
+  features = NULL,
+  transpose = FALSE,
   interactive = TRUE,
   xLab = NULL,
   yLab = NULL,

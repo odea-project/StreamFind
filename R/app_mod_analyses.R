@@ -18,7 +18,7 @@
 #' 
 #' @noRd
 #' 
-.mod_analyses_Server <- function(id, engine, reactive_files, reactive_overview, reactive_warnings, reactive_history, reactive_file_types, volumes) {
+.mod_analyses_Server <- function(id, engine, reactive_files, reactive_analyses, reactive_warnings, reactive_history, reactive_file_types, volumes) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
@@ -39,7 +39,7 @@
     check_overView_state <- shiny::reactiveVal(FALSE)
     
     output$overview_analyses <- shiny::renderUI({
-      analyses <- reactive_overview()
+      analyses <- reactive_analyses()
       number_analyses <- nrow(analyses)
       if (number_analyses > 0) {
         replicates <- unique(c(analyses$replicate, analyses$blank))
@@ -62,9 +62,9 @@
           
           #### event Remove analysis -----
           shiny::observeEvent(input[[button_id]], {
-            analyses <- reactive_overview()
+            analyses <- reactive_analyses()
             analyses <- analyses[analyses$analysis != name, ]
-            reactive_overview(analyses)
+            reactive_analyses(analyses)
           }, ignoreInit = TRUE)
           
           #### event Update analyses -----
@@ -99,7 +99,7 @@
     
     output$analyses_overview_buttons <- shiny::renderUI({
       if ("analyses_overview_needs_update" %in% names(reactive_warnings())) {
-        analyses <- reactive_overview()
+        analyses <- reactive_analyses()
         analyses$blank[is.na(analyses$blank)] <- "NA"
         number_analyses <- nrow(analyses)
         equal_rpl <- all(vapply(seq_len(number_analyses), function(i) input[[paste0("set_replicate_name_", analyses$analysis[i])]] == analyses$replicate[i], FALSE))
@@ -146,11 +146,11 @@
     })
     
     shiny::observeEvent(input$update_analyses_button, {
-      replicates <- vapply(reactive_overview()$analysis, function(name) input[[paste0("set_replicate_name_", name)]], NA_character_)
+      replicates <- vapply(reactive_analyses()$analysis, function(name) input[[paste0("set_replicate_name_", name)]], NA_character_)
       replicates[replicates == "NA"] <- NA_character_
-      blanks <- vapply(reactive_overview()$analysis, function(name) input[[paste0("set_blank_name_", name)]], NA_character_)
+      blanks <- vapply(reactive_analyses()$analysis, function(name) input[[paste0("set_blank_name_", name)]], NA_character_)
       blanks[blanks == "NA"] <- NA_character_
-      overview <- reactive_overview()
+      overview <- reactive_analyses()
       if (engine$has_results()) {
         shiny::showModal(shiny::modalDialog(title = "Attention",
           "Modifying the replicate or blank names removes any results in the engine! Do you want to proceed with the operation?",
@@ -159,7 +159,7 @@
         shiny::observeEvent(input$confirm_yes, {
           overview$replicate <- replicates
           overview$blank <- blanks
-          reactive_overview(overview)
+          reactive_analyses(overview)
           warnings <- reactive_warnings()
           warnings[["analyses_overview_needs_update"]] <- NULL
           reactive_warnings(warnings)
@@ -168,7 +168,7 @@
       } else {
         overview$replicate <- replicates
         overview$blank <- blanks
-        reactive_overview(overview)
+        reactive_analyses(overview)
         warnings <- reactive_warnings()
         warnings[["analyses_overview_needs_update"]] <- NULL
         reactive_warnings(warnings)
@@ -177,7 +177,7 @@
     })
     
     shiny::observeEvent(input$reset_analyses_button, {
-      analyses <- reactive_overview()
+      analyses <- reactive_analyses()
       analyses$blank[is.na(analyses$blank)] <- "NA"
       number_analyses <- nrow(analyses)
       lapply(seq_len(number_analyses), function(i) {
