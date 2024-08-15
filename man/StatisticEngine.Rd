@@ -428,6 +428,10 @@ Plots the raw data in analyses.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
+\item{\code{features}}{A numeric vector with the features (columns of data matrix) to plot.}
+
+\item{\code{transpose}}{Logical, if TRUE the data is transposed (i.e., column names are used as legend).}
+
 \item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
 
 \item{\code{xLab}}{A string with the title for the x axis.}

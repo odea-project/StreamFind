@@ -46,5 +46,3 @@ ms$run_app()
 raman <- RamanEngine$new(files = raman_files)
 raman$save(paste0(getwd(), "/raman.sqlite"))
 raman$run_app()
-
-

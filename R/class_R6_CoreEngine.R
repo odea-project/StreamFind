@@ -1215,7 +1215,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' 
     run_app = function() {
       self$save()
-      engine_save_file <- self$save_file
+      file <- self$save_file
       engine_type <- is(self)
       
       if (!requireNamespace("shiny", quietly = TRUE)) {
@@ -1248,7 +1248,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
         return(invisible(self))
       }
       
-      shiny::shinyApp(ui = .make_app_ui(), server = .make_app_server(engine_type, engine_save_file))
+      run_app(file = file, engine_type = engine_type)
     },
     
     ## ___ info -----
