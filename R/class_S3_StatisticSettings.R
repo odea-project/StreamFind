@@ -303,3 +303,56 @@ validate.StatisticSettings_PrepareClassification_knn <- function(x) {
     checkmate::test_number(x$parameters$l)
   )
 }
+
+
+
+
+
+# ______________________________________________________________________________________________________________________
+# PrepareData -----
+# ______________________________________________________________________________________________________________________
+
+#' @title StatisticSettings_PrepareData_autoscale
+#' 
+#' @description Auto scale and centers data using the \code{prep.autoscale} function from the \pkg{mdatools} package.
+#' 
+#' @param center Logical (length 1) indicating if the data should be centered.
+#' @param scale Logical (length 1) indicating if the data should be scaled.
+#' 
+#' @return A ProcessingSettings S3 class object with subclass StatisticSettings_PrepareData_autoscale.
+#'
+#' @export
+#' 
+StatisticSettings_PrepareData_autoscale <- function(center = TRUE, scale = TRUE) {
+  
+  settings <- list(
+    engine = "Statistic",
+    call = "PrepareData",
+    algorithm = "autoscale",
+    parameters = list(
+      center = center,
+      scale = scale
+    ),
+    version = as.character(packageVersion("StreamFind")),
+    software = "mdatools",
+    developer = "Sergey Kucheryavskiy",
+    contact = "svk@bio.aau.dk",
+    link = "https://github.com/svkucheryavski/mdatools",
+    doi = "10.1016/j.chemolab.2020.103937"
+  )
+  
+  as.ProcessingSettings(settings)
+}
+
+#' @export
+#' @noRd
+#' 
+validate.StatisticSettings_PrepareData_autoscale <- function(x) {
+  all(
+    checkmate::test_choice(x$engine, "Statistic"),
+    checkmate::test_choice(x$call, "PrepareData"),
+    checkmate::test_choice(x$algorithm, "autoscale"),
+    checkmate::test_logical(x$parameters$center, max.len = 1),
+    checkmate::test_logical(x$parameters$scale, max.len = 1)
+  )
+}
