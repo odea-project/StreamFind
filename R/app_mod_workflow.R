@@ -296,6 +296,31 @@
         }
       }
     })
+
+#save_workflow
+shiny::observeEvent(input$save_workflow, {
+  rw <- unname(reactive_workflow_local())
+  
+  if (length(rw) == 0) {
+    shiny::showNotification("No workflow to save.", duration = 5, type = "warning")
+    return()
+  }
+
+  save_directory <- volumes
+  timestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
+  file_name <- paste0("workflow_", timestamp, ".rds")
+  file_path <- file.path(save_directory, file_name)
+
+  tryCatch({
+    saveRDS(rw, file_path)
+    shiny::showNotification(paste("Workflow saved successfully at:", file_path), duration = 5, type = "message")
+    reactive_workflow(rw)
+  }, error = function(e) {
+    shiny::showNotification(paste("Error saving workflow:", e$message), duration = 5, type = "error")
+    print(paste("Error saving workflow:", e$message))
+  })
+})
+
     
     # observer for clear workflow
     shiny::observeEvent(input$clear_workflow, {
