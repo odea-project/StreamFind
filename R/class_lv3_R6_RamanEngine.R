@@ -167,7 +167,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #'
     get_spectra = function(analyses = NULL, rt = NULL, shift = NULL, minIntensity = 0, raw_spectra = FALSE) {
 
-      analyses <- private$.check_analyses_argument(analyses)
+      analyses <- .check_analyses_argument(self$analyses, analyses)
       
       if (is.null(analyses)) return(data.frame())
       
@@ -226,7 +226,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #' 
     get_spectra_matrix = function(analyses = NULL) {
       
-      analyses <- private$.check_analyses_argument(analyses)
+      analyses <- .check_analyses_argument(self$analyses, analyses)
       
       mat <- self$get_spectra(analyses)
       
@@ -252,7 +252,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #'
     subset_analyses = function(analyses = NULL) {
       
-      analyses <- private$.check_analyses_argument(analyses)
+      analyses <- .check_analyses_argument(self$analyses, analyses)
       
       if (!is.null(analyses)) {
         
@@ -432,7 +432,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #'
     remove_analyses = function(analyses = NULL) {
       
-      analyses <- private$.check_analyses_argument(analyses)
+      analyses <- .check_analyses_argument(self$analyses, analyses)
       
       if (!is.null(analyses)) {
         
@@ -619,7 +619,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
       
       if (!self$has_spectra_peaks()) return(NULL)
       
-      analyses <- private$.check_analyses_argument(analyses)
+      analyses <- .check_analyses_argument(self$analyses, analyses)
       
       if (is.null(analyses)) return(NULL)
       
@@ -740,7 +740,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
       
       if (!self$has_chromatograms_peaks()) return(NULL)
       
-      analyses <- private$.check_analyses_argument(analyses)
+      analyses <- .check_analyses_argument(self$analyses, analyses)
       
       if (is.null(analyses)) return(NULL)
       

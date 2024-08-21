@@ -13,7 +13,7 @@
 #'
 #' @export
 #'
-ProjectHeaders <- function(...) {
+ProjectHeaders_S3 <- function(...) {
 
   x <- list(...)
 
@@ -36,92 +36,93 @@ ProjectHeaders <- function(...) {
   if (!"author" %in% x_names) x$author <- NA_character_
   if (!"file" %in% x_names) x$file <- NA_character_
   if (!"date" %in% x_names) x$date <- Sys.time()
-  
+
   if (!is.na(x$file)) {
     if (!grepl(".sqlite", x$file)) {
-      warning("ProjectHeaders file must have extension .sqlite!")
+      warning("ProjectHeaders_S3 file must have extension .sqlite!")
       x$file <- NA_character_
-      
+
     } else {
       if (!file.exists(x$file)) file.create(x$file)
     }
   }
-  
-  if (validate.ProjectHeaders(x)) {
-    structure(x, class = "ProjectHeaders")
+
+  if (validate.ProjectHeaders_S3(x)) {
+    structure(x, class = "ProjectHeaders_S3")
   } else {
     NULL
   }
 }
 
-#' @describeIn validate Validates a ProjectHeaders S3 object.
-#' 
-#' @param x A ProjectHeaders S3 object.
-#' 
+#' validate
+#'
+#' @param x A ProjectHeaders_S3 S3 object.
+#'
 #' @export
-#' 
-validate.ProjectHeaders <- function(x) {
-  
+#' @noRd
+#'
+validate.ProjectHeaders_S3 <- function(x) {
+
   if (missing(x)) x <- NULL
-  
+
   valid <- FALSE
-  
+
   if (is.list(x)) {
     valid <- TRUE
-    
+
     if (!all(vapply(x, function(x) length(x) == 1, FALSE))) {
       warning("All headers must be of length 1!")
       valid <- FALSE
     }
-    
+
     if (length(unique(names(x))) != length(x)) {
-      warning("ProjectHeaders must have names and not permitted duplicated names!")
+      warning("ProjectHeaders_S3 must have names and not permitted duplicated names!")
       valid <- FALSE
     }
-    
+
     if (!all(c("name", "author", "file", "date") %in% names(x))) {
-      warning("ProjectHeaders must contain at least entries name, author, file and date!")
+      warning("ProjectHeaders_S3 must contain at least entries name, author, file and date!")
       valid <- FALSE
     }
-    
+
     if ("name" %in% names(x)) {
       if (!is.character(x$name)) {
-        warning("ProjectHeaders entry name must be character length 1!")
+        warning("ProjectHeaders_S3 entry name must be character length 1!")
         valid <- FALSE
       }
     }
-    
+
     if ("author" %in% names(x)) {
       if (!is.character(x$author)) {
-        warning("ProjectHeaders entry author must be character length 1!")
+        warning("ProjectHeaders_S3 entry author must be character length 1!")
         valid <- FALSE
       }
     }
-    
+
     if ("file" %in% names(x)) {
       if (!is.na(x$file)) {
         if (!file.exists(x$file)) {
-          warning("ProjectHeaders entry file must exist!")
+          warning("ProjectHeaders_S3 entry file must exist!")
           valid <- FALSE
         }
       }
     }
-    
+
     if ("date" %in% names(x)) {
       if (!all(grepl("POSIXct|POSIXt", class(x$date)))) {
-        warning("ProjectHeaders entry date class must be POSIXct or POSIXt length 1!")
+        warning("ProjectHeaders_S3 entry date class must be POSIXct or POSIXt length 1!")
         valid <- FALSE
       }
     }
   }
-  
+
   valid
 }
 
 #' @export
 #' @noRd
 #'
-print.ProjectHeaders <- function(x, ...) {
+print.ProjectHeaders_S3 <- function(x, ...) {
   cat("\n")
   cat(
     " ", class(x), "\n"
@@ -133,6 +134,6 @@ print.ProjectHeaders <- function(x, ...) {
 }
 
 #' @noRd
-as.ProjectHeaders <- function(value) {
-  ProjectHeaders(value = value)
+as.ProjectHeaders_S3 <- function(value) {
+  ProjectHeaders_S3(value = value)
 }

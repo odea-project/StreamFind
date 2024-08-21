@@ -1,21 +1,187 @@
 
 ## S7 Trial
-
-# a <- MassSpecSettings_BinSpectra_StreamFind_S7()
-# run(a)
-# export(a)
-# b <- ProcessingSettings_S7()
-# c <- read(b, file = "settings.json")
-# show(c)
-# ?ProcessingSettings_S7
+ms_files <- StreamFindData::get_ms_file_paths()
+db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
+cols <- c("name", "formula", "mass", "rt", "fragments", "tag")
+db <- db[, cols, with = FALSE]
+dbis <- db[grepl("IS", db$tag), ]
+dbsus <- db[!grepl("IS", db$tag), ]
 
 
+# dbis$mz <- dbis$mass + 1.00726
+MassSpecTargets(mz = dbis, polarities = c("positive", "negative"))
+
+ms <- MassSpecEngine$new(analyses = ms_files[1:3])
+ms$get_spectra_ms2(analyses = c(1, 2), mass = dbsus[2:3, ])
 
 
+
+ms$get_spectra(analyses = c(1, 2), mass = dbsus[c(2:3,9), ])
+
+
+
+
+
+is(rcpp_parse_ms_analysis(ms_files[1]))
+
+
+
+
+a <- MassSpecAnalyses()
+a$replicates["a"]
+
+View(a[[1]])
+
+
+
+a <- MassSpecAnalyses(ms_files[1:3])
+a$spectra_tic
+
+
+
+ms <- MassSpecEngine$new(analyses = ms_files[1:3])
+ms$analyses$replicates <- c("blank", "rep1", "rep1")
+ms$analyses@blanks <- c("blank", "blank", "blank")
+ms$analyses$info
+
+a <- add(a, ms_files[4])
+a$replicates
+
+
+ms$get_spectra_tic()
+
+
+
+
+
+
+
+
+
+
+
+
+
+is(a, "StreamFind::Analyses")
+
+a@info
+
+NTS()
+
+a <- MassSpecAnalyses()
+a@spectra_headers
+
+a <- MassSpecSettings_AnnotateFeatures_StreamFind()
+b <- MassSpecSettings_BinSpectra_StreamFind()
+w <- Workflow(settings = list(a, b))
+
+show(w)
+
+a$call
+w <- w[[-1]]
+
+show(w)
+save(w)
+read(Workflow(), "workflow.json")
+w$length
+
+
+show(Analyses(df))
+
+df <- data.frame(a = c(1, 2), b = c(3, 4))
+rownames(df) <- c("test1", "test2")
+
+a <- StatisticAnalyses(analyses = df)
+show(a)
+a@names
+a@length
+
+
+
+export(a)
+
+a@run <- "test"
+
+run(a)
+export(a)
+
+as.ProcessingSettings(MassSpecSettings_AverageSpectra_StreamFind())
+
+
+new("ProjectHeaders_S4", headers = list(name = "test", author = "test", date = Sys.time()))
+
+a <- ProjectHeaders(name = "test", author = "test", date = Sys.time())
+
+a$date
+
+
+Workflow()
+
+
+a <- ProcessingSettings()
+b <- ProcessingSettings()
+b$engine
+
+b@run
+
+c <- read(b, file = "settings.json")
+show(c)
+
+as.ProcessingSettings(MassSpecSettings_BinSpectra_StreamFind())
+
+show(MassSpecSettings_BinSpectra_StreamFind())
+
+w <- Workflow(settings = list(a))
+w[[2]] <- b
+
+
+save(Workflow(settings = list(a)))
+
+read(Workflow(), "workflow.json")
+
+
+w[1]
+w$methods
+
+ca <- ProjectHeaders(headers = list(name = "test", author = "test"))
+
+ca@headers
+
+is(ca)
+
+a <- list(a = "test")
+
+a$a
+
+ca
 
 ## Core development
 
 core <- CoreEngine$new()
+core$save(paste0(getwd(), "/core.sqlite"))
+core$load()
+
+anas <- list(a = c(1, 2), b = c(3, 4))
+
+core$add_analyses(anas)
+
+
+core$add_settings()
+
+
+
+core$workflow
+
+
+
+
+
+
+
+core$workflow <- Workflow()
+
+core$headers$description <- "Example project" 
+
 core$run_app()
 
 # S3 classes: ProjectHeaders, ProcessingSettings, Analysis

@@ -53,7 +53,7 @@ Rcpp::List rcpp_parse_ms_analysis(std::string file_path) {
     hdl["tic"] = hd.tic;
     // hdl["title"] = hd.title;
     hdl["rt"] = hd.rt;
-    hdl["drift"] = hd.drift;
+    hdl["mobility"] = hd.drift;
     // hdl["filter_string"] = hd.filter_string;
     // hdl["config"] = hd.config;
     // hdl["injection_ion_time"] = hd.injection_ion_time;
@@ -136,7 +136,7 @@ Rcpp::List rcpp_parse_ms_spectra_headers(std::string file_path) {
   list_out["tic"] = headers.tic;
   // list_out["title"] = headers.title;
   list_out["rt"] = headers.rt;
-  list_out["drift"] = headers.drift;
+  list_out["mobility"] = headers.drift;
   // list_out["filter_string"] = headers.filter_string;
   // list_out["config"] = headers.config;
   // list_out["injection_ion_time"] = headers.injection_ion_time;
@@ -204,7 +204,7 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
   // const std::vector<double> pre_mzhigh = hd["pre_mzhigh"];
   const std::vector<double> pre_ce = hd["pre_ce"];
   const std::vector<double> rt = hd["rt"];
-  const std::vector<double> drift = hd["drift"];
+  const std::vector<double> drift = hd["mobility"];
   
   const double minIntLv1 = minIntensityMS1;
   const double minIntLv2 = minIntensityMS2;
@@ -291,7 +291,7 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
     // out["pre_mzhigh"] = pre_mzhigh_out;
     out["pre_ce"] = pre_ce_out;
     out["rt"] = rt_out;
-    out["drift"] = drift_out;
+    out["mobility"] = drift_out;
     out["mz"] = mz_out;
     out["intensity"] = intensity_out;
     
@@ -311,8 +311,8 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
     const std::vector<double> df_mzmax = targets["mzmax"];
     const std::vector<double> df_rtmin = targets["rtmin"];
     const std::vector<double> df_rtmax = targets["rtmax"];
-    const std::vector<double> df_driftmin = targets["driftmin"];
-    const std::vector<double> df_driftmax = targets["driftmax"];
+    const std::vector<double> df_driftmin = targets["mobilitymin"];
+    const std::vector<double> df_driftmax = targets["mobilitymax"];
     
     sc::MS_TARGETS tg = {
       tg_idx,
@@ -491,7 +491,7 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
     // out["pre_mzhigh"] = pre_mzhigh_out;
     out["pre_ce"] = pre_ce_out;
     out["rt"] = rt_out;
-    out["drift"] = drift_out;
+    out["mobility"] = drift_out;
     out["mz"] = mz_out;
     out["intensity"] = intensity_out;
 

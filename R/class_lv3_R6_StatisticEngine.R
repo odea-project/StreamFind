@@ -210,7 +210,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #' @description Gets model scores.
     #'
     get_model_scores = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
+      analyses <- .check_analyses_argument(self$analyses, analyses)
       m <- self$model
       if (is.null(m)) {
         warning("Model not found! Not done.")
@@ -248,7 +248,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #' @description Gets model residuals.
     #' 
     get_model_residuals = function(analyses = NULL) {
-      analyses <- private$.check_analyses_argument(analyses)
+      analyses <- .check_analyses_argument(self$analyses, analyses)
       m <- self$model
       if (is.null(m)) {
         warning("Model not found! Not done.")
@@ -624,7 +624,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #' 
     plot_data = function(analyses = NULL, features = NULL, transpose = FALSE, interactive = TRUE, xLab = NULL, yLab = NULL, title = NULL) {
       
-      analyses <- private$.check_analyses_argument(analyses)
+      analyses <- .check_analyses_argument(self$analyses, analyses)
       
       mat <- self$data
       

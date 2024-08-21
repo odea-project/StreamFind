@@ -2,25 +2,25 @@
 #' @noRd
 .process.MassSpecSettings_BinSpectra_qBinning <- function(settings, self, private) {
   
-  message("Binning spectra with qBinning...", appendLF = TRUE)
-  
-  if (self$get_number_analyses() == 0) {
-    warning("There are no analyses! Add MS analyses as mzML or mzXML files!")
-    return(FALSE)
-  }
-  
-  if (!any(self$has_loaded_spectra())) self$load_spectra()
-  
-  if (!any(self$has_loaded_spectra())) {
-    warning("Spectra not found in MS analyses.")
-    return(FALSE)
-  }
-  
-  spectra <- self$get_spectra()
-  
-  # TODO Max Implementation qBinning method
-  
-  # self$add_features_eic(eics, replace = TRUE)
+  # message("Binning spectra with qBinning...", appendLF = TRUE)
+  # 
+  # if (self$get_number_analyses() == 0) {
+  #   warning("There are no analyses! Add MS analyses as mzML or mzXML files!")
+  #   return(FALSE)
+  # }
+  # 
+  # if (!any(self$has_loaded_spectra())) self$load_spectra()
+  # 
+  # if (!any(self$has_loaded_spectra())) {
+  #   warning("Spectra not found in MS analyses.")
+  #   return(FALSE)
+  # }
+  # 
+  # spectra <- self$get_spectra()
+  # 
+  # # TODO Max Implementation qBinning method
+  # 
+  # # self$add_features_eic(eics, replace = TRUE)
   
   FALSE
 }

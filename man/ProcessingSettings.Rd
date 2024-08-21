@@ -5,22 +5,21 @@
 \title{\strong{ProcessingSettings} S3 class constructor, methods and functions}
 \usage{
 ProcessingSettings(
-  engine = NA_character_,
-  call = NA_character_,
-  algorithm = NA_character_,
-  parameters = NULL,
-  version = NA_character_,
-  software = NA_character_,
-  developer = NA_character_,
-  contact = NA_character_,
-  link = NA_character_,
-  doi = NA_character_
+  engine = class_missing,
+  method = class_missing,
+  algorithm = class_missing,
+  parameters = class_missing,
+  number_permitted = class_missing,
+  version = class_missing,
+  software = class_missing,
+  developer = class_missing,
+  contact = class_missing,
+  link = class_missing,
+  doi = class_missing
 )
 }
 \arguments{
 \item{engine}{Character of length one with the name of the engine where the processing settings are to be applied.}
-
-\item{call}{Character of length one with the name of the method where the processing settings are to be applied.}
 
 \item{algorithm}{Character of length one with the name of the algorithm to be used.}
 
@@ -37,6 +36,8 @@ ProcessingSettings(
 \item{link}{Character of length one with the a web link.}
 
 \item{doi}{Character of length one with the DOI of algorithm.}
+
+\item{call}{Character of length one with the name of the method where the processing settings are to be applied.}
 }
 \value{
 A ProcessingSettings S3 class

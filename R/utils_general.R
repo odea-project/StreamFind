@@ -1,4 +1,21 @@
 
+#' @noRd
+.get_available_engines <- function() {
+  StreamFind_env <- as.environment("package:StreamFind")
+  available_engines <- ls(envir = StreamFind_env, pattern = "Engine")
+  available_engines <- available_engines[sapply(available_engines, function(x) "R6ClassGenerator" %in% is(get(x, envir = .GlobalEnv)))]
+  # available_engines <- available_engines[!available_engines %in% "CoreEngine"]
+  available_engines
+}
+
+#' @noRd
+.get_available_settings <- function(engine = NA_character_) {
+  StreamFind_env <- as.environment("package:StreamFind")
+  if (grepl("Engine$", engine)) engine <- gsub("Engine", "", engine)
+  engine_settings_key <- paste0(engine, "Settings_")
+  return(ls(envir = StreamFind_env, pattern = paste0("^", engine_settings_key)))
+}
+
 #' .trim_vector
 #' 
 #' @description Asset function for fast trimming of a vector based on a list of ranges.
@@ -402,14 +419,10 @@
   .save_cache_backend(file, category, data, hash)
 }
 
-#' @title .convert_to_json
-#'
-#' @description Converts an object to json string using custom conditions.
-#' 
 #' @noRd
-.convert_to_json <- function(data) {
+.convert_to_json <- function(x) {
   jsonlite::toJSON(
-    data,
+    x,
     dataframe = "columns",
     Date = "ISO8601",
     POSIXt = "string",
@@ -422,3 +435,95 @@
     force = TRUE
   )
 }
+
+#' @noRd
+.save_data_to_file <- function(data, format, name, path) {
+  write(data, file = paste0(path, "/", name, ".", format))
+}
+
+#' Registers changes in the history private field.
+#' @noRd
+.register = function(action = NA_character_, data = NA_character_, name = NA_character_, details = NA_character_) {
+  date_time <- Sys.time()
+  if (is.null(private$.history)) private$.history <- list()
+  private$.history[[as.character.POSIXt(date_time)]] <- data.table(
+    "time" = date_time,
+    "action" = action,
+    "data" = data,
+    "name" = name,
+    "details" = details
+  )
+  invisible(self)
+}
+
+#' Checks the analyses argument as a character/integer vector to match analyses names. Returns a valid character 
+#' vector with analysis names or `NULL` for non-matching. If `analyses` is `NULL`, returns all analysis names.
+#' @noRd
+.check_analyses_argument = function(obj, value) {
+  if (is.null(value)) {
+    obj@names
+  } else {
+    analyses <- obj@names[value]
+    if (!all(analyses %in% obj@names)) {
+      warning("Defined analyses not found!")
+      NULL
+    } else {
+      analyses
+    }
+  }
+}
+
+#' Gets an entry from the analyses private field.
+#' @noRd
+.get_analyses_entry = function(analyses = NULL, value = NA_character_) {
+  analyses <- .check_analyses_argument(self$analyses, analyses)
+  if (is.null(analyses)) return(NULL)
+  output <- lapply(private$.analyses, function(x, value) {
+    temp <- x[[value]]
+    names(temp) <- rep(x$name, length(temp))
+    temp
+  }, value = value)
+  output <- unname(output)
+  output <- unlist(output, recursive = FALSE, use.names = TRUE)
+  output[names(output) %in% analyses]
+}
+
+#' Converts each element in the list `analyses` to an Analysis S3 class object.
+#' @noRd
+.validate_list_analyses = function(analyses = NULL, childClass = "Analysis") {
+  
+  if (is.list(analyses)) {
+    
+    if (all(c("name") %in% names(analyses))) {
+      ana_name <- analyses$name
+      analyses <- list(analyses)
+      names(analyses) <- ana_name
+    }
+    
+    analyses <- lapply(analyses, function(x) do.call(childClass, x))
+    
+    if (all(vapply(analyses, function(x) is(x, childClass), FALSE))) {
+      ana_names <- vapply(analyses, function(x) x$name, "")
+      names(analyses) <- ana_names
+      
+    } else {
+      warning("Not done, check the conformity of the analyses list!")
+      analyses <- NULL
+    }
+    
+  } else {
+    warning("Not done, check the conformity of the analyses list!")
+    analyses <- NULL
+  }
+  
+  analyses
+}
+
+#' Checks if settings are already stored.
+#' @noRd
+.settings_already_stored = function(settings) {
+  any(vapply(private$.workflow, function(x, settings) {
+    identical(x, settings)
+  }, settings = settings, FALSE))
+}
+

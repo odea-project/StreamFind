@@ -50,95 +50,85 @@ MassSpecAnalysis <- function(name = NA_character_,
     "metadata" = metadata
   ))
 
-  if (validate.MassSpecAnalysis(x)) {
-    
-    x <- structure(x, class = c("MassSpecAnalysis", "Analysis"))
-    
-    x
-    
-  } else {
-    NULL
-  }
+  x <- structure(x, class = c("MassSpecAnalysis", "Analysis"))
+
+  x
 }
 
-#' @describeIn validate Validates an MassSpecAnalysis S3 object.
-#' 
-#' @export
-#' 
-validate.MassSpecAnalysis <- function(x = NULL) {
-  
-  valid <- validate.Analysis(x)
-
-  if (valid) {
-    name <- x$name
-    
-    if (length(x$file) != 1 || !is.character(x$file)) {
-      warning("Analysis file path entry not conform!")
-      valid <- FALSE
-    } else if (!is.na(x$file) && !file.exists(x$file)) {
-      warning(paste0(x$file, " does not exist!"))
-      valid <- FALSE
-    }
-    
-    if (length(x$format) != 1) {
-      warning("Analysis format not conform!")
-      valid <- FALSE
-    } else if (!(x$format %in% c("mzML", "mzXML"))) {
-      warning("Analysis format must be 'mzML' ot 'mzXML'!")
-      valid <- FALSE
-    }
-
-    if (length(x$type) != 1) {
-      warning("Analysis type entry not conform!")
-      valid <- FALSE
-      
-    } else if (!(x$type %in% c("MS", "IM-MS", "MS/MS-DDA", "MS/MS-DIA", "MS/MS-AllIons", "IM-MS/MS-DDA", "IM-MS/MS-DIA", "IM-MS/MS-AllIons", "SRM"))) {
-      warning("Analysis type must be 'MS', 'IM-MS', 'MS/MS-DDA', 'MS/MS-DIA', 'MS/MS-AllIons', 'IM-MS/MS-DDA', 'IM-MS/MS-DIA', 'IM-MS/MS-AllIons', or 'SRM'!")
-      valid <- FALSE
-    }
-
-    if (!is.integer(x$spectra_number) &&
-        length(x$spectra_number) != 1) {
-      warning("Analysis spectra_numebr entry not conform!")
-      valid <- FALSE
-    }
-
-    if (!is.integer(x$chromatograms_number) &&
-        length(x$chromatograms_number) != 1) {
-      warning("Analysis chromatograms_number entry not conform!")
-      valid <- FALSE
-    }
-    
-    if (!is.data.frame(x$spectra_headers)) {
-      warning("Analysis spectra_headers entry not conform!")
-      valid <- FALSE
-    }
-    
-    if (!is.data.frame(x$chromatograms_headers)) {
-      warning("Analysis chromatograms_headers entry not conform!")
-      valid <- FALSE
-    }
-
-    if (!is.data.frame(x$spectra)) {
-      warning("Analysis spectra entry not conform!")
-      valid <- FALSE
-    }
-
-    if (!is.data.frame(x$chromatograms)) {
-      warning("Analysis chromatograms entry not conform!")
-      valid <- FALSE
-    }
-
-    if (!is.list(x$metadata)) {
-      warning("Analysis metadata entry not conform!")
-      valid <- FALSE
-    }
-    
-    if (!valid) warning("Issue/s found with analysis ", x$name, "!")
-  }
-
-  valid
-}
+# validate.MassSpecAnalysis <- function(x = NULL) {
+#   
+#   valid <- validate.Analysis(x)
+# 
+#   if (valid) {
+#     name <- x$name
+#     
+#     if (length(x$file) != 1 || !is.character(x$file)) {
+#       warning("Analysis file path entry not conform!")
+#       valid <- FALSE
+#     } else if (!is.na(x$file) && !file.exists(x$file)) {
+#       warning(paste0(x$file, " does not exist!"))
+#       valid <- FALSE
+#     }
+#     
+#     if (length(x$format) != 1) {
+#       warning("Analysis format not conform!")
+#       valid <- FALSE
+#     } else if (!(x$format %in% c("mzML", "mzXML"))) {
+#       warning("Analysis format must be 'mzML' ot 'mzXML'!")
+#       valid <- FALSE
+#     }
+# 
+#     if (length(x$type) != 1) {
+#       warning("Analysis type entry not conform!")
+#       valid <- FALSE
+#       
+#     } else if (!(x$type %in% c("MS", "IM-MS", "MS/MS-DDA", "MS/MS-DIA", "MS/MS-AllIons", "IM-MS/MS-DDA", "IM-MS/MS-DIA", "IM-MS/MS-AllIons", "SRM"))) {
+#       warning("Analysis type must be 'MS', 'IM-MS', 'MS/MS-DDA', 'MS/MS-DIA', 'MS/MS-AllIons', 'IM-MS/MS-DDA', 'IM-MS/MS-DIA', 'IM-MS/MS-AllIons', or 'SRM'!")
+#       valid <- FALSE
+#     }
+# 
+#     if (!is.integer(x$spectra_number) &&
+#         length(x$spectra_number) != 1) {
+#       warning("Analysis spectra_numebr entry not conform!")
+#       valid <- FALSE
+#     }
+# 
+#     if (!is.integer(x$chromatograms_number) &&
+#         length(x$chromatograms_number) != 1) {
+#       warning("Analysis chromatograms_number entry not conform!")
+#       valid <- FALSE
+#     }
+#     
+#     if (!is.data.frame(x$spectra_headers)) {
+#       warning("Analysis spectra_headers entry not conform!")
+#       valid <- FALSE
+#     }
+#     
+#     if (!is.data.frame(x$chromatograms_headers)) {
+#       warning("Analysis chromatograms_headers entry not conform!")
+#       valid <- FALSE
+#     }
+# 
+#     if (!is.data.frame(x$spectra)) {
+#       warning("Analysis spectra entry not conform!")
+#       valid <- FALSE
+#     }
+# 
+#     if (!is.data.frame(x$chromatograms)) {
+#       warning("Analysis chromatograms entry not conform!")
+#       valid <- FALSE
+#     }
+# 
+#     if (!is.list(x$metadata)) {
+#       warning("Analysis metadata entry not conform!")
+#       valid <- FALSE
+#     }
+#     
+#     if (!valid) warning("Issue/s found with analysis ", x$name, "!")
+#   }
+# 
+#   valid
+# }
 
 #' @export
 #' @noRd
