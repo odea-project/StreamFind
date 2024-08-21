@@ -341,62 +341,137 @@
       }
     })
 
-    # function settings details
-    output$function_code <- shiny::renderUI({
-      shiny::req(reactive_selected_settings())
-      rw <- reactive_workflow_local()
-      function_name <- reactive_selected_settings()
-      settings <- rw[[function_name]]
-      
-      create_parameter_ui <- function(param_name, param_value) {
-        value_display <- if (is.atomic(param_value) && length(param_value) == 1) {
-          as.character(param_value)
-        } else if (is.list(param_value)) {
-          shiny::tags$ul(
-            style = "list-style-type: none; padding-left: 0;",
-            lapply(names(param_value), function(sub_param) {
-              shiny::tags$li(
-                shiny::tags$span(style = "color: #2980B9; font-weight: bold;", sub_param), ": ",
-                if (is.atomic(param_value[[sub_param]])) {
-                  as.character(param_value[[sub_param]])
-                } else {
-                  # TODO check if processing settings constructors can be simplified
-                  "Complex structure"
-                }
-              )
-            })
+
+output$function_code <- shiny::renderUI({
+  shiny::req(reactive_selected_settings())
+  
+  rw <- reactive_workflow_local()
+  function_name <- reactive_selected_settings()
+  
+  # Ensure the function exists in the workflow
+  shiny::req(function_name %in% names(rw))
+  
+  settings <- rw[[function_name]]
+  
+  # Define help links for known functions
+help_links <- list(
+  "AnnotateFeatures_StreamFind" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_AnnotateFeatures_StreamFind.html",
+  "AverageSpectra_StreamFind" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_AverageSpectra_StreamFind.html",
+  "BinSpectra_StreamFind" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_BinSpectra_StreamFind.html",
+  "CalculateQuality_StreamFind" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_CalculateQuality_StreamFind.html",
+  "CalculateSpectraCharges_StreamFind" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_CalculateSpectraCharges_StreamFind.html",
+  "CentroidSpectra_qCentroids" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_CentroidSpectra_qCentroids.html",
+  "ClusterSpectra_StreamFind" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_ClusterSpectra_StreamFind.html",
+  "CorrectChromatogramsBaseline_airpls" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_CorrectChromatogramsBaseline_airpls.html",
+  "CorrectChromatogramsBaseline_baseline" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_CorrectChromatogramsBaseline_baseline.html",
+  "CorrectSpectraBaseline_airpls" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_CorrectSpectraBaseline_airpls.html",
+  "CorrectSpectraBaseline_baseline" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_CorrectSpectraBaseline_baseline.html",
+  "DeconvoluteSpectra_StreamFind" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_DeconvoluteSpectra_StreamFind.html",
+  "FillFeatures_StreamFind" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_FillFeatures_StreamFind.html",
+  "FilterFeatures_patRoon" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_FilterFeatures_patRoon.html",
+  "FilterFeatures_StreamFind" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_FilterFeatures_StreamFind.html",
+  "FindFeatures_kpic2" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_FindFeatures_kpic2.html",
+  "FindFeatures_openms" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_FindFeatures_openms.html",
+  "FindFeatures_qPeaks" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_FindFeatures_qPeaks.html",
+  "FindFeatures_xcms3_centwave" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_FindFeatures_xcms3_centwave.html",
+  "FindFeatures_xcms3_matchedfilter" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_FindFeatures_xcms3_matchedfilter.html",
+  "FindInternalStandards_StreamFind" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_FindInternalStandards_StreamFind.html",
+  "GenerateCompounds_metfrag" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_GenerateCompounds_metfrag.html",
+  "GenerateFormulas_genform" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_GenerateFormulas_genform.html",
+  "GroupFeatures_openms" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_GroupFeatures_openms.html",
+  "GroupFeatures_xcms3_peakdensity" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_GroupFeatures_xcms3_peakdensity.html",
+  "GroupFeatures_xcms3_peakdensity_peakgroups" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups.html",
+  "IntegrateChromatograms_StreamFind" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_IntegrateChromatograms_StreamFind.html",
+  "LoadFeaturesEIC_StreamFind" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_LoadFeaturesEIC_StreamFind.html",
+  "LoadFeaturesMS1_StreamFind" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_LoadFeaturesMS1_StreamFind.html",
+  "LoadFeaturesMS2_StreamFind" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_LoadFeaturesMS2_StreamFind.html",
+  "LoadMSPeakLists_patRoon" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_LoadMSPeakLists_patRoon.html",
+  "LoadMSPeakLists_StreamFind" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_LoadMSPeakLists_StreamFind.html",
+  "NormalizeSpectra_blockweight" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_NormalizeSpectra_blockweight.html",
+  "NormalizeSpectra_meancenter" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_NormalizeSpectra_meancenter.html",
+  "NormalizeSpectra_minmax" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_NormalizeSpectra_minmax.html",
+  "NormalizeSpectra_scale" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_NormalizeSpectra_scale.html",
+  "NormalizeSpectra_snv" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_NormalizeSpectra_snv.html",
+  "SmoothChromatograms_movingaverage" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_SmoothChromatograms_movingaverage.html",
+  "SmoothChromatograms_savgol" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_SmoothChromatograms_savgol.html",
+  "SmoothSpectra_movingaverage" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_SmoothSpectra_movingaverage.html",
+  "SmoothSpectra_savgol" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_SmoothSpectra_savgol.html",
+  "SubtractBlankSpectra_StreamFind" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_SubtractBlankSpectra_StreamFind.html",
+  "SuspectScreening_forident" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_SuspectScreening_forident.html",
+  "SuspectScreening_patRoon" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_SuspectScreening_patRoon.html",
+  "SuspectScreening_StreamFind" = "https://odea-project.github.io/StreamFind/reference/MassSpecSettings_SuspectScreening_StreamFind.html"
+)
+  
+  # Extract short function name by removing trailing " - X"
+  short_function_name <- gsub(" - \\d+$", "", function_name)  # Remove trailing " - X"
+  
+  help_url <- help_links[[short_function_name]]
+  
+  
+  create_parameter_ui <- function(param_name, param_value) {
+    value_display <- if (is.atomic(param_value) && length(param_value) == 1) {
+      as.character(param_value)
+    } else if (is.list(param_value)) {
+      shiny::tags$ul(
+        style = "list-style-type: none; padding-left: 0;",
+        lapply(names(param_value), function(sub_param) {
+          shiny::tags$li(
+            shiny::tags$span(style = "color: #2980B9; font-weight: bold;", sub_param), ": ",
+            if (is.atomic(param_value[[sub_param]])) {
+              as.character(param_value[[sub_param]])
+            } else {
+              "Complex structure"
+            }
           )
-        } else {
-          "Complex structure"
-        }
-        
-        shiny::tagList(
-          shiny::tags$dt(shiny::tags$strong(param_name)),
-          shiny::tags$dd(value_display)
-        )
-      }
-  
-      # Separate parameters from other details
-      param_names <- names(settings$parameters)
-      other_names <- setdiff(names(settings), c("parameters"))
-  
+        })
+      )
+    } else {
+      "Complex structure"
+    }
+    
+    shiny::tagList(
+      shiny::tags$dt(shiny::tags$strong(param_name)),
+      shiny::tags$dd(value_display)
+    )
+  }
+
+  param_names <- names(settings$parameters)
+  other_names <- setdiff(names(settings), c("parameters"))
+
+  shiny::tags$div(
+    class = "function-details",
+    shiny::tags$dl(
+      lapply(other_names, function(param) {
+        create_parameter_ui(param, settings[[param]])
+      })
+    ),
+    shiny::tags$div(
+      class = "parameters-section",
+      shiny::tags$h4("Parameters"),
+      shiny::tags$dl(
+        lapply(param_names, function(param) {
+          create_parameter_ui(param, settings$parameters[[param]])
+        })
+      )
+    ),
+    # Add help link section
+    if (!is.null(help_url)) {
       shiny::tags$div(
-        class = "function-details",
-        shiny::tags$dl(
-          lapply(other_names, function(param) {
-            create_parameter_ui(param, settings[[param]])
-          })
-        ),
-        shiny::tags$div(
-          class = "parameters-section",
-          shiny::tags$h4("Parameters"),
-          shiny::tags$dl(
-            lapply(param_names, function(param) {
-              create_parameter_ui(param, settings$parameters[[param]])
-            })
-          )
+        style = "margin-top: 20px;",
+        shiny::tags$a(
+          href = help_url,
+          target = "_blank",
+          "View Help Documentation",
+          style = "color: #3498DB; text-decoration: underline; cursor: pointer; font-size: 16px;"
         )
       )
-    })
+    } else {
+      shiny::tags$div(style = "margin-top: 20px;", "No help documentation available.")
+    }
+  )
+})
+
+
+
   })
 }
