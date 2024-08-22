@@ -37,9 +37,31 @@ View(a[[1]])
 a <- MassSpecAnalyses(ms_files[1:3])
 a$spectra_tic
 
-
-
 ms <- MassSpecEngine$new(analyses = ms_files[1:3])
+ms$run(MassSpecSettings_FindFeatures_openms())
+ms$run(MassSpecSettings_AnnotateFeatures_StreamFind())
+ms$run(MassSpecSettings_GroupFeatures_openms())
+ms$run(MassSpecSettings_FillFeatures_StreamFind())
+ms$run(MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE))
+ms$run(MassSpecSettings_FilterFeatures_patRoon(absMinIntensity = 50000))
+
+
+ms$plot_features(mass = dbis)
+ms$get_features_eic(mass = dbis[3, ])
+ms$get_features_ms1(mass = dbis[3, ])
+ms$get_features_ms2(mass = dbis[3, ])
+ms$get_groups(mass = dbis)
+ms$get_groups_ms1(mass = dbis[3, ])
+ms$get_groups_ms2(mass = dbis[3, ])
+
+View(ms$get_MSPeakLists(useLoadedData = FALSE))
+
+
+ms$NTS$feature_list
+ms$NTS$filtered
+
+
+
 ms$analyses$replicates <- c("blank", "rep1", "rep1")
 ms$analyses@blanks <- c("blank", "blank", "blank")
 ms$analyses$info

@@ -380,6 +380,18 @@ MassSpecTargets <- S7::new_class("MassSpecTargets", package = "StreamFind",
       }
     }
     
+    if (!is.null(polarities) && !"polarity" %in% colnames(targets)) {
+      if (length(polarities) > 1) {
+        if ("analysis" %in% colnames(targets)) {
+          if (all(targets$analysis %in% names(polarities))) {
+            targets$polarity <- polarities[targets$analysis]
+          }
+        }
+      } else if (length(polarities) == nrow(targets)) {
+        targets$polarity <- polarities
+      }
+    }
+    
     cols <- c("id", "mz", "rt", "mobility", "mzmin", "mzmax", "rtmin", "rtmax", "mobilitymin", "mobilitymax", "analysis", "polarity")
     
     targets <- targets[, cols[cols %in% colnames(targets)], with = FALSE]

@@ -43,6 +43,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       } else {
         warning("Invalid headers object! Not added.")
       }
+      invisible(self)
     },
     
     #' @field workflow `Workflow` S7 class object.
@@ -53,16 +54,23 @@ CoreEngine <- R6::R6Class("CoreEngine",
       } else {
         warning("Invalid workflow object! Not added.")
       }
+      invisible(self)
     },
     
     #' @field analyses `Analyses` S7 class object.
     analyses = function(value) {
       if (missing(value)) return(private$.analyses)
       if (is(value, "StreamFind::Analyses")) {
+        
+        # TODO check if results must change to keep/remove the analyses
+        # maybe keep results from analyses remaining in the engine
+        # possibly delegate action to data specific engine
+        
         private$.analyses <- value
       } else {
         warning("Invalid analyses object! Not added.")
       }
+      invisible(self)
     },
     
     #' @field results List of results.
@@ -78,9 +86,12 @@ CoreEngine <- R6::R6Class("CoreEngine",
         } else {
           warning("Invalid results object! Not added.")
         }
+      } else if (is(value, "StreamFind::Results")) {
+        private$.results[[value@name]] <- value
       } else {
         warning("Invalid results object! Not added.")
       }
+      invisible(self)
     },
     
     #' @field history Audit trail of changes.
@@ -97,6 +108,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       } else {
         warning("Invalid file path! Not added.")
       }
+      invisible(self)
     }
   ),
     
@@ -376,8 +388,10 @@ CoreEngine <- R6::R6Class("CoreEngine",
         warning(paste0(call, " not available!"))
         return(invisible(self))
       }
+      
       message("\U2699 Running ", settings$method, " using ", settings$algorithm)
-      processed <- do.call("run", list(settings, self, private))
+      processed <- run(settings, self)
+      
       if (processed) {
         if (settings$method %in% self$workflow@methods) {
           if (settings$number_permitted > 1) {
@@ -387,7 +401,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
             self$workflow[setting_idx] <- settings
           }
         } else {
-          self$workflow[length(self$workflow) + 1] <- settings
+          self$workflow[[length(self$workflow) + 1]] <- settings
         }
       }
       invisible(self)

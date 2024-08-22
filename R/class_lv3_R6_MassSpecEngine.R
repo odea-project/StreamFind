@@ -33,7 +33,6 @@
 #' @template arg-ms-mzExpand
 #' @template arg-ms-rtWindow
 #' @template arg-ms-mzWindow
-#' @template arg-ms-loaded
 #' @template arg-ms-groups
 #' @template arg-ms-intensities
 #' @template arg-ms-average
@@ -76,502 +75,30 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
   
   active = list(
     
-    #' @field analysisInfo The analysisInfo data.frame with the list of analyses.
-    #'
-    analysisInfo = function() {
-      
-      if (self$has_results("patRoon")) {
-        anaInfo <- private$.results$patRoon$data@analysisInfo
-        anaInfo <- anaInfo[anaInfo$analysis %in% self$get_analysis_names(), ]
-        anaInfo
-        
-      } else if (self$get_number_analyses() > 0) {
-        anaInfo <- self$get_overview()
-        anaInfo <- data.frame(
-          "path" = dirname(anaInfo$file),
-          "analysis" = anaInfo$analysis,
-          "group" = anaInfo$replicate,
-          "blank" = anaInfo$blank
-        )
-        anaInfo$blank[is.na(anaInfo$blank)] <- ""
-        anaInfo
-        
-      } else {
-        data.frame()
-      }
-    },
-    
-    #' @field features The features S4 class object from patRoon.
+    #' @field NTS Get/Set the NTS results.
     #' 
-    features = function(value) {
+    NTS = function(value) {
       
-      if (missing(value)) {
-        
-        if (self$has_results("patRoon")) {
-          pat <- private$.results$patRoon$data
-          
-          if ("featureGroups" %in% is(pat)) pat <- pat@features
-          
-          pat
-          
-        } else {
-          NULL
-        }
-        
-      } else {
-        
-        if ("features" %in% is(value)) {
-          
-          if (self$has_results("patRoon")) {
-            
-            if (identical(self$analysisInfo$analysis, value@analysisInfo$analysis)) {
-              
-              if ("features" %in% is(private$.results$patRoon$data)) {
-                
-                if (all(unname(self$get_analysis_names()) %in% names(value@features))) {
-                  private$.results$patRoon$data <- value
-                  
-                } else {
-                  warning("Feature list names not matching analysis names! Not done.")
-                }
-                
-              } else if ("featureGroups" %in% is(private$.results$patRoon$data)) {
-                
-                if (identical(unname(self$get_analysis_names()), names(value@features))) {
-                  
-                  if (all(vapply(value@features, function(x) "group" %in% colnames(x), FALSE))) {
-                    
-                    private$.results$patRoon$data@features <- value[unname(self$get_analysis_names())]
-                    
-                    fg <- self$featureGroups[unname(self$get_analysis_names())]
-                    
-                    fg_left <- unique(unlist(lapply(value@features, function(x) x$group)))
-                    
-                    fg_left <- fg_left[!is.na(fg_left)]
-                    
-                    fg <- fg[, fg_left]
-                    
-                    private$.results$patRoon$data <- fg
-                    
-                    if (self$has_MSPeakLists()) {
-                      self$MSPeakLists <- self$MSPeakLists[patRoon::analyses(fg), patRoon::groupNames(fg)]
-                    }
-                    
-                    if (self$has_formulas()) {
-                      self$formulas <- self$formulas[patRoon::analyses(fg), patRoon::groupNames(fg)]
-                    }
-                    
-                    if (self$has_compounds()) {
-                      self$compounds <- self$compounds[patRoon::groupNames(fg)]
-                    }
-                    
-                  } else {
-                    warning("Feature groups not present in features! Not done.")
-                  }
-                  
-                } else {
-                  warning("Feature list names not matching analysis names! Not done.")
-                }
-                
-              } else {
-                warning("Features not found! Not done.")
-              } 
-              
-            } else {
-              warning("Analyses not the same in features! Not done.")
-            }
-            
-          } else {
-            
-            if (identical(patRoon::analyses(value), unname(self$get_analysis_names()))) {
-              
-              pols <- self$get_spectra_polarity()
-              
-              if (length(unique(pols)) > 1 && !("featuresSet" %in% is(value))) {
-                value <- patRoon::makeSet(
-                  value[pols %in% "positive"],
-                  value[pols %in% "negative"],
-                  adducts = list("[M+H]+", "[M-H]-")
-                )
-                
-                if ("features" %in% is(value)) {
-                  value@analysisInfo <- value@analysisInfo[order(value@analysisInfo$analysis), ]
-                  value@features <- value@features[order(names(value@features))]
-                }
-              }
-              
-              filtered <- lapply(patRoon::analyses(value), function(x) value@features[[x]][0, ])
-              names(filtered) <- patRoon::analyses(value)
-              
-              self$add_results(
-                list(
-                  "patRoon" = list(
-                    "data" = value,
-                    "filtered" = filtered,
-                    "mspl" = NULL,
-                    "formulas" = NULL,
-                    "compounds" = NULL,
-                    "software" = "patRoon",
-                    "version" = as.character(packageVersion("patRoon"))
-                  )
-                )
-              )
-            } else {
-              
-              # TODO add features from scratch loading analyses files, mostly when the engine is empty
-              
-            } 
-          }
-          
-        } else {
-          warning("Features must be an S4 class object! Not done.")
-        }
-        
-        invisible(self)
-      }
-    },
-    
-    #' @field filtered_features The filtered features as list of data.table objects for each analysis.
-    #' 
-    filtered_features = function(value) {
+      if (missing(value)) return(self$results[["NTS"]])
       
-      if (missing(value)) {
+      if (is(value, "StreamFind::NTS")) {
         
-        if (self$has_results("patRoon")) {
-          private$.results$patRoon$filtered
-          
-        } else {
-          NULL
-        }
-        
-      } else {
-        
-        if (self$has_results("patRoon")) {
-          
-          value <- lapply(value, function(x) {
-            setnames(x, "feature", "ID", skip_absent = TRUE)
-            setnames(x, "rt", "ret", skip_absent = TRUE)
-            setnames(x, "rtmin", "retmin", skip_absent = TRUE)
-            setnames(x, "rtmax", "retmax", skip_absent = TRUE)
-          })
-          
-          if ("filtered" %in% names(private$.results$patRoon)) {
-            
-            if (identical(unname(self$get_analysis_names()), names(value))) {
-              
-              filtered_feature_list <- self$filtered_features[unname(self$get_analysis_names())]
-              
-              value <- Map(
-                function(x, y) {
-                  if (nrow(y) > 0 && nrow(x) > 0) x <- x[!(x$ID %in% y$ID), ]
-                  y <- rbindlist(list(y, x), fill = TRUE)
-                  y
-                },
-                value, filtered_feature_list
-              )
-              
-              private$.results$patRoon$filtered <- value
-              
-            } else {
-              warning("Filtered feature list names not matching analysis names! Not done.")
-            }
-            
+        if (value@number_analyses > 0) {
+          engine_analyses_names <- unname(self$analyses$names)
+          value_analyses_names <- patRoon::analyses(value$features)
+          if (identical(engine_analyses_names, value_analyses_names)) {
+            self$results <- value
           } else {
-            warning("Filtered features not found! Not done.")
+            # TODO check if some analyses are in engine and subset engine to match NTS
+            warning("Analyses names do not match! Not done.")
           }
-          
         } else {
-          warning("Filetered features not found! Not done.")
+          warning("NTS results object is empty! Not done.")
         }
-        
-        invisible(self)
-      }
-    },
-    
-    #' @field feature_list List of features data.table objects for each analysis.
-    #'
-    feature_list = function(value) {
-      
-      if (missing(value)) {
-        
-        if (self$has_results("patRoon")) {
-          
-          pat <- private$.results$patRoon$data
-          
-          if (self$has_groups()) pat <- pat@features
-          
-          f_list <- pat@features
-          
-          filtered_list <- private$.results$patRoon$filtered
-          
-          f_list <- Map(
-            function(x, y) {
-              
-              if (nrow(x) > 0) x <- x[!(x$ID %in% y$ID), ]
-              
-              y <- rbindlist(list(y, x), fill = TRUE)
-              
-              y
-            },
-            filtered_list, f_list
-          )
-          
-          if ("featuresSet" %in% is(pat)) {
-            
-            for (x in names(f_list)) {
-              
-              pol <- self$get_spectra_polarity(x)
-              
-              if ("positive" %in% pol) adduct_val <- -1.007276
-              if ("negative" %in% pol) adduct_val <- 1.007276
-              
-              sel_to_change <- round(f_list[[x]]$mz, 0) == round(f_list[[x]]$mass, 0)
-              
-              f_list[[x]]$mz[sel_to_change] <- f_list[[x]]$mz - adduct_val
-              f_list[[x]]$mzmin[sel_to_change] <- f_list[[x]]$mzmin - adduct_val
-              f_list[[x]]$mzmax[sel_to_change] <- f_list[[x]]$mzmax - adduct_val
-            }
-          }
-          
-          f_list <- lapply(f_list, function(x) {
-            z <- copy(x)
-            setnames(z, "ID", "feature")
-            setnames(z, "ret", "rt")
-            setnames(z, "retmin", "rtmin")
-            setnames(z, "retmax", "rtmax")
-          })
-          
-          f_list
-          
-        } else {
-          NULL
-        }
-        
       } else {
-        
-        if (self$has_results("patRoon")) {
-          
-          value <- lapply(value, function(x) {
-            setnames(x, "feature", "ID", skip_absent = TRUE)
-            setnames(x, "rt", "ret", skip_absent = TRUE)
-            setnames(x, "rtmin", "retmin", skip_absent = TRUE)
-            setnames(x, "rtmax", "retmax", skip_absent = TRUE)
-          })
-          
-          if ("features" %in% is(private$.results$patRoon$data)) {
-            
-            if (identical(names(private$.results$patRoon$data@features), names(value))) {
-              private$.results$patRoon$data@features <- value
-              
-            } else {
-              warning("Feature list names not matching analysis names! Not done.")
-            }
-            
-          } else if ("featureGroups" %in% is(private$.results$patRoon$data)) {
-            
-            if (identical(names(private$.results$patRoon$data@features@features), names(value))) {
-              
-              if (all(vapply(value, function(x) "group" %in% colnames(x), FALSE))) {
-                
-                private$.results$patRoon$data@features@features <- value
-                
-                fg <- self$featureGroups
-                
-                fg_left <- unique(unlist(lapply(value, function(x)x$group[!x$filtered])))
-                
-                fg_left <- fg_left[!is.na(fg_left)]
-                
-                if (length(fg_left) > 0) {
-                  fg <- fg[, fg_left]
-                  private$.results$patRoon$data <- fg
-                }
-                
-              } else {
-                warning("Feature groups not present in features! Not done.")
-              }
-              
-            } else {
-              warning("Feature list names not matching analysis names! Not done.")
-            }
-            
-          } else {
-            warning("Features not found! Not done.")
-          }
-          
-        } else {
-          warning("Features not found! Not done.")
-        }
-        
-        invisible(self)
+        warning("Value must be an NTS results object! Not done.")
       }
-    },
-    
-    #' @field featureGroups The featureGroups S4 class object from patRoon.
-    #' 
-    featureGroups = function(value) {
-      
-      if (missing(value)) {
-        
-        if (self$has_results("patRoon")) {
-          pat <- private$.results$patRoon$data
-          
-          if ("featureGroups" %in% is(pat)) return(pat)
-          
-          NULL
-          
-        } else {
-          NULL
-        }
-        
-      } else {
-        
-        if (self$has_results("patRoon")) {
-          
-          if ("featureGroups" %in% is(value)) {
-            
-            if (identical(patRoon::analyses(value), unname(self$get_analysis_names()))) {
-              private$.results$patRoon$data <- value
-              
-            } else {
-              warning("Feature list names not matching analysis names! Not done.")
-            }
-            
-          } else {
-            warning("Value must be a featureGroups S4 class object! Not done.")
-          }
-          
-        } else if (identical(patRoon::analyses(value), unname(self$get_analysis_names()))) {
-          
-          filtered <- lapply(patRoon::analyses(value), function(x) value@features@features[[x]][0, ])
-          names(filtered) <- patRoon::analyses(value)
-          
-          self$add_results(
-            list("patRoon" = list(
-              "data" = value,
-              "filtered" = filtered,
-              "mspl" = NULL,
-              "formulas" = NULL,
-              "compounds" = NULL,
-              "software" = "patRoon",
-              "version" = as.character(packageVersion("patRoon"))
-            ))
-          )
-          
-        } else {
-          # TODO add features from scratch loading analyses, as features
-        }
-        
-        invisible(self)
-      }
-    },
-    
-    #' @field MSPeakLists The MSPeakLists S4 class object from patRoon.
-    #' 
-    MSPeakLists = function(value) {
-      
-      if (missing(value)) {
-        
-        if (self$has_results("patRoon")) {
-          mspl <- private$.results$patRoon$mspl
-          
-          if ("MSPeakLists" %in% is(mspl)) return(mspl)
-          
-          NULL
-          
-        } else {
-          NULL
-        }
-        
-      } else {
-        
-        if ("MSPeakLists" %in% is(value)) {
-          
-          if (all(value@origFGNames %in% patRoon::groupNames(self$featureGroups))) {
-            
-            private$.results$patRoon$mspl <- value
-            
-          } else {
-            warning("Feature groups in MSPeakLists do not match groups in the engine! Not done.")
-          }
-        } else {
-          warning("Value must be an MSPeakLists S4 class object! Not done.")
-        }
-        
-        invisible(self)
-      }
-    },
-    
-    #' @field formulas The formulas S4 class object from patRoon.
-    #' 
-    formulas = function(value) {
-      
-      if (missing(value)) {
-        
-        if (self$has_results("patRoon")) {
-          formulas <- private$.results$patRoon$formulas
-          
-          if ("formulas" %in% is(formulas)) return(formulas)
-          
-          NULL
-          
-        } else {
-          NULL
-        }
-        
-      } else {
-        
-        if ("formulas" %in% is(value)) {
-          
-          if (all(value@origFGNames %in% patRoon::groupNames(self$featureGroups))) {
-            
-            private$.results$patRoon$formulas <- value
-            
-          } else {
-            warning("Feature groups in formulas do not match groups in the engine! Not done.")
-          }
-        } else {
-          warning("Value must be a formulas S4 class object! Not done.")
-        }
-        
-        invisible(self)
-      }
-    },
-    
-    #' @field compounds The compounds S4 class object from patRoon.
-    #' 
-    compounds = function(value) {
-      
-      if (missing(value)) {
-        
-        if (self$has_results("patRoon")) {
-          res <- private$.results$patRoon$compounds
-          
-          if ("compounds" %in% is(res)) return(res)
-          
-          NULL
-          
-        } else {
-          NULL
-        }
-        
-      } else {
-        
-        if ("compounds" %in% is(value)) {
-          
-          if (all(value@origFGNames %in% patRoon::groupNames(self$featureGroups))) {
-            
-            private$.results$patRoon$compounds <- value
-            
-          } else {
-            warning("Feature groups in compounds do not match groups in the engine! Not done.")
-          }
-          
-        } else {
-          warning("Value must be a compounds S4 class object! Not done.")
-        }
-        
-        invisible(self)
-      }
+      invisible(self)
     },
     
     #' @field chromatograms `data.table` with processed chromatograms for each analyses.
@@ -1078,7 +605,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       if (nrow(targets) > 0) {
         
-        targets$polarity <- as.numeric(targets$polarity)
+        if ("polarity" %in% colnames(targets)) targets$polarity <- as.numeric(targets$polarity)
         
         targets$precursor <- FALSE
         
@@ -1175,7 +702,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           if ("analysis" %in% colnames(targets)) targets <- targets[targets$analysis %in% x$name, ]
           
           cache <- lapply(seq_len(nrow(targets)), function(i) {
-            .load_chache(paste0("parsed_ms_spectra_", targets$id[i]), x$file, levels, targets[i, ], minIntensityMS1, minIntensityMS2)
+            .load_chache(paste0("parsed_ms_spectra_", gsub("-", "", targets$id[i])), x$file, levels, targets[i, ], minIntensityMS1, minIntensityMS2)
           })
           
           names(cache) <- targets$id
@@ -1204,7 +731,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
               for (i in names(spec)) {
                 if (nrow(spec[[i]]) > 0) {
                   if (!is.null(cache[[i]]$hash)) {
-                    .save_cache(paste0("parsed_ms_spectra_", i), spec[[i]], cache[[i]]$hash)
+                    .save_cache(paste0("parsed_ms_spectra_", gsub("-", "", i)), spec[[i]], cache[[i]]$hash)
                     message("\U1f5ab Parsed spectra for ", i, " cached!")
                   }
                 }
@@ -1633,78 +1160,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       }
     },
     
-    #' @description Gets the list of features for each analysis.
-    #' 
-    #' @return A list of data.table objects for each analysis.
-    #'
-    get_feature_list = function(analyses = NULL, filtered = FALSE) {
-      
-      analyses <- .check_analyses_argument(self$analyses, analyses)
-      
-      if (self$has_results("patRoon")) {
-        
-        pat <- private$.results$patRoon$data
-        
-        if (self$has_groups()) pat <- pat@features
-        
-        f_list <- pat@features
-        
-        f_list <- f_list[analyses]
-        
-        if (filtered) {
-          
-          if (is.null(private$.results$patRoon$filtered)) {
-            private$.results$patRoon$filtered <- lapply(self$get_analysis_names(), function(x) data.table()) 
-          }
-          
-          filtered_list <- private$.results$patRoon$filtered[analyses]
-          
-          f_list <- Map(
-            function(x, y) {
-              
-              if (nrow(x) > 0) x <- x[!(x$ID %in% y$ID), ]
-              
-              y <- rbindlist(list(y, x), fill = TRUE)
-              
-              y
-            },
-            filtered_list, f_list
-          )
-        }
-        
-        if ("featuresSet" %in% is(pat)) {
-          
-          for (x in names(f_list)) {
-            
-            pol <- self$get_spectra_polarity(x)
-            
-            if ("positive" %in% pol) adduct_val <- -1.007276
-            if ("negative" %in% pol) adduct_val <- 1.007276
-            
-            sel_to_change <- round(f_list[[x]]$mz, 0) == round(f_list[[x]]$mass, 0)
-            
-            f_list[[x]]$mz[sel_to_change] <- f_list[[x]]$mz - adduct_val
-            f_list[[x]]$mzmin[sel_to_change] <- f_list[[x]]$mzmin - adduct_val
-            f_list[[x]]$mzmax[sel_to_change] <- f_list[[x]]$mzmax - adduct_val
-          }
-        }
-        
-        f_list <- lapply(f_list, function(x) {
-          z <- copy(x)
-          setnames(z, "ID", "feature")
-          setnames(z, "ret", "rt")
-          setnames(z, "retmin", "rtmin")
-          setnames(z, "retmax", "rtmax")
-        })
-        
-        f_list
-        
-      } else {
-        NULL
-      }
-    },
-    
-    #' @description Gets a data.table with all features in analyses or as selected by the arguments.
+    #' @description Gets a data.table with all features from NTS results or as selected by the arguments.
     #'
     get_features = function(analyses = NULL,
                             features = NULL,
@@ -1723,7 +1179,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       fts <- NULL
       
-      if (self$has_results("patRoon")) fts <- self$feature_list[analyses]
+      if (self$has_results("NTS")) fts <- self$NTS$feature_list[analyses]
       
       if (is.null(fts)) return(data.table())
       
@@ -1926,7 +1382,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 rtExpand = 120,
                                 mzExpand = NULL,
                                 filtered = FALSE,
-                                loaded = TRUE) {
+                                useLoadedData = TRUE) {
       
       fts <- self$get_features(analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
       
@@ -1934,7 +1390,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       analysis_names <- unique(fts$analysis)
       
-      if (loaded & any(self$has_features_eic(analysis_names))) {
+      if (useLoadedData & any(self$has_features_eic(analysis_names))) {
         
         eic_list <- lapply(seq_len(nrow(fts)), function(x, fts) {
           temp <- fts[x, ]
@@ -2013,7 +1469,14 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         fts$mzmin <- fts$mzmin - mzExpand
         fts$mzmax <- fts$mzmax + mzExpand
         
-        eic <- self$get_spectra(analyses = analyses, levels = 1, mz = fts, id = fts$feature, useRawData = TRUE, useLoadedData = TRUE)
+        eic <- self$get_spectra(
+          analyses = analyses,
+          levels = 1,
+          mz = data.table::copy(fts),
+          id = fts$feature,
+          useRawData = TRUE,
+          useLoadedData = TRUE
+        )
         
         eic <- eic[, c("analysis", "polarity", "id", "rt", "mz", "intensity"), with = FALSE]
         
@@ -2053,7 +1516,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 presence = 0.8,
                                 minIntensity = 1000,
                                 filtered = FALSE,
-                                loaded = TRUE) {
+                                useLoadedData = TRUE) {
       
       fts <- self$get_features(analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
       
@@ -2071,7 +1534,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       analysis_names <- unique(fts$analysis)
       
-      if (loaded & any(self$has_loaded_features_ms1(analysis_names))) {
+      if (useLoadedData & any(self$has_loaded_features_ms1(analysis_names))) {
         
         ms1_list <- lapply(seq_len(nrow(fts)), function(x, fts) {
           temp <- fts[x, ]
@@ -2143,7 +1606,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       } else {
         ms1 <- self$get_spectra_ms1(
           analyses = unique(fts$analysis),
-          mz = fts,
+          mz = data.table::copy(fts),
           id = fts$feature,
           mzClust = mzClust,
           presence = presence,
@@ -2169,7 +1632,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         ms1$name <- tar_ids[unique_ms1_id]
       }
       
-      copy(ms1)
+      data.table::copy(ms1)
     },
     
     #' @description Gets a data.table of averaged MS2 spectrum for features in the analyses or as selected from the 
@@ -2189,7 +1652,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 presence = 0.8,
                                 minIntensity = 0,
                                 filtered = FALSE,
-                                loaded = TRUE) {
+                                useLoadedData = TRUE) {
       
       fts <- self$get_features(analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
       
@@ -2197,7 +1660,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       analysis_names <- unique(fts$analysis)
       
-      if (loaded & any(self$has_loaded_features_ms2(analysis_names))) {
+      if (useLoadedData & any(self$has_loaded_features_ms2(analysis_names))) {
         
         ms2_list <- lapply(seq_len(nrow(fts)), function(x, fts) {
           temp <- fts[x, ]
@@ -2276,7 +1739,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       } else {
         ms2 <- self$get_spectra_ms2(
           analyses = unique(fts$analysis),
-          mz = fts,
+          mz = data.table::copy(fts),
           id = fts$feature,
           isolationWindow = isolationWindow,
           mzClust = mzClust,
@@ -2305,7 +1768,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         ms2$name <- tar_ids[unique_ms2_id]
       }
       
-      copy(ms2)
+      data.table::copy(ms2)
     },
     
     #' @description Gets a data.table with feature groups from the analyses.
@@ -2442,7 +1905,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                               mzClustFeatures = 0.003,
                               presenceFeatures = 0.8,
                               minIntensityFeatures = 1000,
-                              loaded = TRUE,
+                              useLoadedData = TRUE,
                               mzClust = 0.003,
                               presence = 0.8,
                               minIntensity = 1000,
@@ -2469,7 +1932,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         presence = presenceFeatures,
         minIntensity = minIntensityFeatures,
         filtered = filtered,
-        loaded = loaded
+        useLoadedData = useLoadedData
       )
       
       ms1 <- ms1[ms1$intensity > minIntensity, ]
@@ -2506,7 +1969,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       ms1$id <- ms1$group
       
-      ms1_list <- rcpp_ms_cluster_spectra(ms1, mzClust, presence, verbose)
+      ms1_list <- rcpp_ms_cluster_spectra(ms1, mzClust, presence, verbose = FALSE)
       
       ms1_df <- rbindlist(ms1_list, fill = TRUE)
       
@@ -2549,7 +2012,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                               mzClustFeatures = 0.003,
                               presenceFeatures = 0.8,
                               minIntensityFeatures = 100,
-                              loaded = TRUE,
+                              useLoadedData = TRUE,
                               mzClust = 0.003,
                               presence = 0.8,
                               minIntensity = 100,
@@ -2575,7 +2038,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         presence = presenceFeatures,
         minIntensity = minIntensityFeatures,
         filtered = filtered,
-        loaded = loaded
+        useLoadedData = useLoadedData
       )
       
       ms2 <- ms2[ms2$intensity > minIntensity, ]
@@ -2611,7 +2074,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       
       ms2$id <- ms2$group
       
-      ms2_list <- rcpp_ms_cluster_spectra(ms2, mzClust, presence, verbose)
+      ms2_list <- rcpp_ms_cluster_spectra(ms2, mzClust, presence, verbose = FALSE)
       
       ms2_df <- rbindlist(ms2_list, fill = TRUE)
       
@@ -2644,7 +2107,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' of each feature are then average by \pkg{patRoon} to produce the feature group spectra using the parameters 
     #' of the function \link[patRoon]{getDefAvgPListParams}.
     #' 
-    #' @param useLoaded Logical of length one. When `TRUE` and both MS1 and MS2 are loaded to features, 
+    #' @param useLoadedData Logical of length one. When `TRUE` and both MS1 and MS2 are loaded to features, 
     #' these are used otherwise the native function `generateMSPeakLists` from \pkg{patRoon} is used instead.
     #' @param maxMSRtWindow Maximum chromatographic peak window used for spectrum 
     #' averaging (in seconds, +/- retention time). If NULL all spectra from a feature 
@@ -2686,7 +2149,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' that precursor peaks in both MS and MS/MS data may still be removed by
     #' intensity thresholds (this is unlike the filter method function).
     #'
-    get_MSPeakLists = function(useLoaded = TRUE,
+    get_MSPeakLists = function(useLoadedData = TRUE,
                                maxMSRtWindow = 10,
                                precursorMzWindow = 4,
                                clusterMzWindow = 0.005,
@@ -2702,7 +2165,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         return(NULL)
       }
       
-      if (!useLoaded) {
+      if (!useLoadedData) {
         
         if (!self$has_groups()) {
           warning("Feature groups not found! Not loaded.")
@@ -2721,7 +2184,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         )
         
         mspl <- patRoon::generateMSPeakLists(
-          self$featureGroups,
+          self$NTS$features,
           algorithm = "mzr",
           maxMSRtWindow = maxMSRtWindow,
           precursorMzWindow = precursorMzWindow,
@@ -4153,14 +3616,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     has_features = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       if (is.null(analyses)) return(FALSE)
-      if (self$has_results("patRoon")) {
-        if ("features" %in% is(private$.results$patRoon$data)) {
-          length(private$.results$patRoon$data[analyses]) > 0
-        } else if ("featureGroups" %in% is(private$.results$patRoon$data)) {
-          length(private$.results$patRoon$data@features[analyses]) > 0
-        } else {
-          FALSE
-        }
+      if (self$has_results("NTS")) {
+        self$NTS$number_features > 0
       } else {
         FALSE
       }
@@ -4172,9 +3629,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     has_groups = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       if (is.null(analyses)) return(FALSE)
-      if (self$has_results("patRoon")) {
-        if ("featureGroups" %in% is(private$.results$patRoon$data)) {
-          length(private$.results$patRoon$data@features[analyses, ]) > 0
+      if (self$has_results("NTS")) {
+        if ("featureGroups" %in% is(self$NTS$features)) {
+          self$NTS$number_features > 0
         } else {
           FALSE
         }
@@ -4188,7 +3645,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     has_loaded_features_ms1 = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       if (is.null(analyses)) return(FALSE)
-      has_loaded <- any(vapply(self$features@features[analyses], function(x) {
+      if (!self$has_results("NTS")) return(FALSE)
+      has_loaded <- any(vapply(self$NTS$feature_list[analyses], function(x) {
         if ("ms1" %in% colnames(x)) {
           any(vapply(x$ms1, is.data.frame, FALSE))
         } else {
@@ -4203,7 +3661,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     has_loaded_features_ms2 = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       if (is.null(analyses)) return(FALSE)
-      has_loaded <- any(vapply(self$features@features[analyses], function(x) {
+      if (!self$has_results("NTS")) return(FALSE)
+      has_loaded <- any(vapply(self$NTS$feature_list[analyses], function(x) {
         if ("ms2" %in% colnames(x)) {
           any(vapply(x$ms2, is.data.frame, FALSE))
         } else {
@@ -4219,7 +3678,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     has_features_eic = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       if (is.null(analyses)) return(FALSE)
-      has_loaded <- any(vapply(self$features@features[analyses], function(x) {
+      if (!self$has_results("NTS")) return(FALSE)
+      has_loaded <- any(vapply(self$NTS$feature_list[analyses], function(x) {
         if ("eic" %in% colnames(x)) {
           any(vapply(x$eic, is.data.frame, FALSE))
         } else {
@@ -4234,7 +3694,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     has_suspects = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       if (is.null(analyses)) return(FALSE)
-      has_loaded <- vapply(self$features@features[analyses], function(x) {
+      if (!self$has_results("NTS")) return(FALSE)
+      has_loaded <- vapply(sself$NTS$feature_list[analyses], function(x) {
         if ("suspects" %in% colnames(x)) {
           any(vapply(x$suspects, function(z) !is.null(z), FALSE))
         } else {
@@ -4855,7 +4316,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                              millisec = 5,
                              rtExpand = 120,
                              mzExpand = NULL,
-                             loaded = TRUE,
+                             useLoadedData = TRUE,
                              filtered = FALSE,
                              legendNames = NULL,
                              title = NULL,
@@ -4879,7 +4340,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         rtExpand = rtExpand,
         mzExpand = mzExpand,
         filtered = filtered,
-        loaded = loaded
+        useLoadedData = useLoadedData
       )
 
       eic <- eic[, `:=`(intensity = sum(intensity)), by = c("analysis", "polarity", "feature", "rt")][]
@@ -4952,14 +4413,14 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                  presence = 0.8,
                                  minIntensity = 1000,
                                  filtered = FALSE,
-                                 loaded = TRUE,
+                                 useLoadedData = TRUE,
                                  legendNames = NULL,
                                  title = NULL,
                                  colorBy = "targets",
                                  interactive = TRUE) {
 
       ms1 <- self$get_features_ms1(analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
-        rtWindow, mzWindow, mzClust, presence, minIntensity, filtered, loaded
+        rtWindow, mzWindow, mzClust, presence, minIntensity, filtered, useLoadedData
       )
 
       if (nrow(ms1) == 0) {
@@ -4994,14 +4455,14 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                  presence = 0.8,
                                  minIntensity = 0,
                                  filtered = FALSE,
-                                 loaded = TRUE,
+                                 useLoadedData = TRUE,
                                  legendNames = NULL,
                                  title = NULL,
                                  colorBy = "targets",
                                  interactive = TRUE) {
 
       ms2 <- self$get_features_ms2(analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
-        isolationWindow, mzClust, presence, minIntensity, filtered, loaded
+        isolationWindow, mzClust, presence, minIntensity, filtered, useLoadedData
       )
 
       if (nrow(ms2) == 0) {
@@ -5079,7 +4540,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                mzClustFeatures = 0.005,
                                presenceFeatures = 0.8,
                                minIntensityFeatures = 1000,
-                               loaded = TRUE,
+                               useLoadedData = TRUE,
                                mzClust = 0.005,
                                presence = 0.8,
                                minIntensity = 1000,
@@ -5097,7 +4558,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       }
 
       ms1 <- self$get_groups_ms1(groups, mass, mz, rt, mobility, ppm, sec, millisec, rtWindow, mzWindow, mzClustFeatures, 
-        presenceFeatures, minIntensityFeatures, loaded, mzClust, presence, minIntensity, groupBy, filtered
+        presenceFeatures, minIntensityFeatures, useLoadedData, mzClust, presence, minIntensity, groupBy, filtered
       )
 
       if (nrow(ms1) == 0) {
@@ -5130,7 +4591,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                mzClustFeatures = 0.003,
                                presenceFeatures = 0.8,
                                minIntensityFeatures = 100,
-                               loaded = TRUE,
+                               useLoadedData = TRUE,
                                mzClust = 0.003,
                                presence = TRUE,
                                minIntensity = 100,
@@ -5148,7 +4609,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       }
 
       ms2 <- self$get_groups_ms2(groups, mass, mz, rt, mobility, ppm, sec, millisec, isolationWindow, mzClustFeatures,
-        presenceFeatures, minIntensityFeatures, loaded, mzClust, presence, minIntensity, groupBy, filtered
+        presenceFeatures, minIntensityFeatures, useLoadedData, mzClust, presence, minIntensity, groupBy, filtered
       )
 
       if (nrow(ms2) == 0) {
@@ -5183,7 +4644,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                     millisec = 5,
                                     rtExpand = 120,
                                     mzExpand = 0.005,
-                                    loaded = TRUE,
+                                    useLoadedData = TRUE,
                                     filtered = FALSE,
                                     legendNames = NULL,
                                     title = NULL,
@@ -5197,7 +4658,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       }
 
       eic <- self$get_features_eic(analyses = unique(fts$analysis), features = fts,
-        rtExpand = rtExpand, mzExpand = mzExpand, filtered = filtered, loaded = loaded
+        rtExpand = rtExpand, mzExpand = mzExpand, filtered = filtered, useLoadedData = useLoadedData
       )
 
       eic <- eic[, `:=`(intensity = sum(intensity)), by = c("analysis", "polarity", "feature", "rt")][]
@@ -5400,7 +4861,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                              filtered = FALSE,
                              rtExpand = 120,
                              mzExpand = 0.005,
-                             loaded = TRUE,
+                             useLoadedData = TRUE,
                              colorBy = "targets") {
       
       if (any(self$has_suspects())) {
@@ -5434,7 +4895,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           rtExpand = rtExpand,
           mzExpand = mzExpand,
           filtered = filtered,
-          loaded = loaded
+          useLoadedData = useLoadedData
         )
         
         eic <- eic[, `:=`(intensity = sum(intensity)), by = c("analysis", "polarity", "feature", "rt")][]

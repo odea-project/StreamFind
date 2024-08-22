@@ -29,21 +29,7 @@ List of function elements to access specific reference help pages.}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{analysisInfo}}{The analysisInfo data.frame with the list of analyses.}
-
-\item{\code{features}}{The features S4 class object from patRoon.}
-
-\item{\code{filtered_features}}{The filtered features as list of data.table objects for each analysis.}
-
-\item{\code{feature_list}}{List of features data.table objects for each analysis.}
-
-\item{\code{featureGroups}}{The featureGroups S4 class object from patRoon.}
-
-\item{\code{MSPeakLists}}{The MSPeakLists S4 class object from patRoon.}
-
-\item{\code{formulas}}{The formulas S4 class object from patRoon.}
-
-\item{\code{compounds}}{The compounds S4 class object from patRoon.}
+\item{\code{NTS}}{Get/Set the NTS results.}
 
 \item{\code{chromatograms}}{\code{data.table} with processed chromatograms for each analyses.}
 
@@ -67,7 +53,6 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-get_blank_names}{\code{MassSpecEngine$get_blank_names()}}
 \item \href{#method-MassSpecEngine-get_files}{\code{MassSpecEngine$get_files()}}
 \item \href{#method-MassSpecEngine-get_formats}{\code{MassSpecEngine$get_formats()}}
-\item \href{#method-MassSpecEngine-get_metadata}{\code{MassSpecEngine$get_metadata()}}
 \item \href{#method-MassSpecEngine-get_instruments}{\code{MassSpecEngine$get_instruments()}}
 \item \href{#method-MassSpecEngine-get_software}{\code{MassSpecEngine$get_software()}}
 \item \href{#method-MassSpecEngine-get_spectra_number}{\code{MassSpecEngine$get_spectra_number()}}
@@ -89,7 +74,6 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-get_chromatograms_number}{\code{MassSpecEngine$get_chromatograms_number()}}
 \item \href{#method-MassSpecEngine-get_chromatograms_headers}{\code{MassSpecEngine$get_chromatograms_headers()}}
 \item \href{#method-MassSpecEngine-get_chromatograms}{\code{MassSpecEngine$get_chromatograms()}}
-\item \href{#method-MassSpecEngine-get_feature_list}{\code{MassSpecEngine$get_feature_list()}}
 \item \href{#method-MassSpecEngine-get_features}{\code{MassSpecEngine$get_features()}}
 \item \href{#method-MassSpecEngine-get_features_eic}{\code{MassSpecEngine$get_features_eic()}}
 \item \href{#method-MassSpecEngine-get_features_ms1}{\code{MassSpecEngine$get_features_ms1()}}
@@ -101,6 +85,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-get_isotopes}{\code{MassSpecEngine$get_isotopes()}}
 \item \href{#method-MassSpecEngine-get_suspects}{\code{MassSpecEngine$get_suspects()}}
 \item \href{#method-MassSpecEngine-get_internal_standards}{\code{MassSpecEngine$get_internal_standards()}}
+\item \href{#method-MassSpecEngine-get_metadata}{\code{MassSpecEngine$get_metadata()}}
 \item \href{#method-MassSpecEngine-add_analyses}{\code{MassSpecEngine$add_analyses()}}
 \item \href{#method-MassSpecEngine-add_files}{\code{MassSpecEngine$add_files()}}
 \item \href{#method-MassSpecEngine-add_results}{\code{MassSpecEngine$add_results()}}
@@ -132,7 +117,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-has_spectra_peaks}{\code{MassSpecEngine$has_spectra_peaks()}}
 \item \href{#method-MassSpecEngine-has_deconvoluted_spectra}{\code{MassSpecEngine$has_deconvoluted_spectra()}}
 \item \href{#method-MassSpecEngine-has_spectra_charges}{\code{MassSpecEngine$has_spectra_charges()}}
-\item \href{#method-MassSpecEngine-plot_raw_spectra}{\code{MassSpecEngine$plot_raw_spectra()}}
+\item \href{#method-MassSpecEngine-plot_raw_data}{\code{MassSpecEngine$plot_raw_data()}}
 \item \href{#method-MassSpecEngine-plot_spectra}{\code{MassSpecEngine$plot_spectra()}}
 \item \href{#method-MassSpecEngine-plot_chromatograms}{\code{MassSpecEngine$plot_chromatograms()}}
 \item \href{#method-MassSpecEngine-plot_chromatograms_baseline}{\code{MassSpecEngine$plot_chromatograms_baseline()}}
@@ -292,26 +277,6 @@ Gets the file format of each analysis.'
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_metadata"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_metadata}{}}}
-\subsection{Method \code{get_metadata()}}{
-Gets metadata from each analysis.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_metadata(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A data.table.
 }
 }
 \if{html}{\out{<hr>}}
@@ -594,7 +559,7 @@ Gets spectra from each analysis.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -603,8 +568,8 @@ Gets spectra from each analysis.
   isolationWindow = 1.3,
   minIntensityMS1 = 0,
   minIntensityMS2 = 0,
-  raw_spectra = FALSE,
-  loaded_spectra = TRUE
+  useRawData = FALSE,
+  useLoadedData = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -638,7 +603,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -667,9 +632,9 @@ data (i.e., MS1 data).}
 \item{\code{minIntensityMS2}}{Numeric value with the minimum intensity of level 2
 data (i.e., MS2 data).}
 
-\item{\code{raw_spectra}}{Logical of length one. Set to \code{TRUE} for parsing raw spectra not spectra results/processed.}
+\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in results/processed.}
 
-\item{\code{loaded_spectra}}{Logical of length one. Set to \code{TRUE} for parsing loaded spectra not raw data files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
 }
 \if{html}{\out{</div>}}
 }
@@ -702,11 +667,13 @@ Gets spectra extract ion chromatograms (EIC) from the analyses based on targets 
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
-  id = NULL
+  id = NULL,
+  useRawData = TRUE,
+  useLoadedData = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -738,7 +705,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -752,6 +719,10 @@ in milliseconds.}
 \item{\code{id}}{Character with the same length as \emph{m/z} and retention time
 targets to be used as identifier/s. When not given, the id is built as a
 combination of the \emph{m/z} and retention time ranges or values.}
+
+\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in results/processed.}
+
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
 }
 \if{html}{\out{</div>}}
 }
@@ -767,14 +738,16 @@ Gets level 1 spectra from the analyses based on targets as a data.frame.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
   id = NULL,
   mzClust = 0.003,
   presence = 0.8,
-  minIntensity = 1000
+  minIntensity = 1000,
+  useRawData = TRUE,
+  useLoadedData = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -806,7 +779,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -828,6 +801,10 @@ on the mass resolution of the MS data.}
 spectra) to 1 (i.e., must be present in all spectra) for traces during clustering of spectra.}
 
 \item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
+
+\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in results/processed.}
+
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
 }
 \if{html}{\out{</div>}}
 }
@@ -843,7 +820,7 @@ Gets level 2 spectra from the analyses based on targets as a data.frame.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -851,7 +828,9 @@ Gets level 2 spectra from the analyses based on targets as a data.frame.
   isolationWindow = 1.3,
   mzClust = 0.005,
   presence = 0.8,
-  minIntensity = 0
+  minIntensity = 0,
+  useRawData = TRUE,
+  useLoadedData = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -883,7 +862,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -909,6 +888,10 @@ on the mass resolution of the MS data.}
 spectra) to 1 (i.e., must be present in all spectra) for traces during clustering of spectra.}
 
 \item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
+
+\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in results/processed.}
+
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
 }
 \if{html}{\out{</div>}}
 }
@@ -929,9 +912,6 @@ Gets the number of chromatograms in each analysis.
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A character vector.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_chromatograms_headers"></a>}}
@@ -949,9 +929,6 @@ Gets the chromatograms headers data.table of each analysis.
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A data.table.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_chromatograms"></a>}}
@@ -963,8 +940,8 @@ Gets chromatograms from each analysis.
   analyses = NULL,
   chromatograms = NULL,
   minIntensity = NULL,
-  raw_chromatograms = FALSE,
-  loaded_chromatograms = TRUE
+  useRawData = FALSE,
+  useLoadedData = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -977,45 +954,18 @@ Gets chromatograms from each analysis.
 
 \item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
 
-\item{\code{raw_chromatograms}}{Logical of length one. Set to \code{TRUE} for parsing raw chromatograms not chromatograms
-results/processed.}
+\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in results/processed.}
 
-\item{\code{loaded_chromatograms}}{Logical of length one. Set to \code{TRUE} for parsing loaded chromatograms not
-chromatograms from raw data files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A data.table with chromatogram/s.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_feature_list"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_feature_list}{}}}
-\subsection{Method \code{get_feature_list()}}{
-Gets the list of features for each analysis.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_feature_list(analyses = NULL, filtered = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-
-\item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A list of data.table objects for each analysis.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_features"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_features}{}}}
 \subsection{Method \code{get_features()}}{
-Gets a data.table with all features in analyses or as selected by the arguments.
+Gets a data.table with all features from NTS results or as selected by the arguments.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_features(
   analyses = NULL,
@@ -1023,7 +973,7 @@ Gets a data.table with all features in analyses or as selected by the arguments.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -1062,7 +1012,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -1090,14 +1040,14 @@ Gets a data.table with feature EICs following the targets from the arguments.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
   rtExpand = 120,
   mzExpand = NULL,
   filtered = FALSE,
-  loaded = TRUE
+  useLoadedData = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -1132,7 +1082,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -1151,7 +1101,7 @@ right the mass range.}
 
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
-\item{\code{loaded}}{Logical (length 1). When \code{TRUE} and if available, loaded data will be used instead of raw data.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1169,7 +1119,7 @@ arguments.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -1179,7 +1129,7 @@ arguments.
   presence = 0.8,
   minIntensity = 1000,
   filtered = FALSE,
-  loaded = TRUE
+  useLoadedData = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -1214,7 +1164,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -1243,7 +1193,7 @@ spectra) to 1 (i.e., must be present in all spectra) for traces during clusterin
 
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
-\item{\code{loaded}}{Logical (length 1). When \code{TRUE} and if available, loaded data will be used instead of raw data.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1261,7 +1211,7 @@ arguments.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -1270,7 +1220,7 @@ arguments.
   presence = 0.8,
   minIntensity = 0,
   filtered = FALSE,
-  loaded = TRUE
+  useLoadedData = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -1305,7 +1255,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -1330,7 +1280,7 @@ spectra) to 1 (i.e., must be present in all spectra) for traces during clusterin
 
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
-\item{\code{loaded}}{Logical (length 1). When \code{TRUE} and if available, loaded data will be used instead of raw data.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1346,7 +1296,7 @@ Gets a data.table with feature groups from the analyses.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -1386,7 +1336,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -1424,7 +1374,7 @@ Gets a data.table of averaged MS1 spectrum for feature groups in the analyses.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -1433,7 +1383,7 @@ Gets a data.table of averaged MS1 spectrum for feature groups in the analyses.
   mzClustFeatures = 0.003,
   presenceFeatures = 0.8,
   minIntensityFeatures = 1000,
-  loaded = TRUE,
+  useLoadedData = TRUE,
   mzClust = 0.003,
   presence = 0.8,
   minIntensity = 1000,
@@ -1470,7 +1420,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -1497,7 +1447,7 @@ in any spectra) to 1 (i.e., must be present in all spectra) for traces during cl
 
 \item{\code{minIntensityFeatures}}{Numeric (length 1) with the minimum intensity for features.}
 
-\item{\code{loaded}}{Logical (length 1). When \code{TRUE} and if available, loaded data will be used instead of raw data.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
 
 \item{\code{mzClust}}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
 on the mass resolution of the MS data.}
@@ -1526,7 +1476,7 @@ Gets a data.table of averaged MS2 spectrum for feature groups in the analyses.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -1534,7 +1484,7 @@ Gets a data.table of averaged MS2 spectrum for feature groups in the analyses.
   mzClustFeatures = 0.003,
   presenceFeatures = 0.8,
   minIntensityFeatures = 100,
-  loaded = TRUE,
+  useLoadedData = TRUE,
   mzClust = 0.003,
   presence = 0.8,
   minIntensity = 100,
@@ -1571,7 +1521,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -1594,7 +1544,7 @@ in any spectra) to 1 (i.e., must be present in all spectra) for traces during cl
 
 \item{\code{minIntensityFeatures}}{Numeric (length 1) with the minimum intensity for features.}
 
-\item{\code{loaded}}{Logical (length 1). When \code{TRUE} and if available, loaded data will be used instead of raw data.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
 
 \item{\code{mzClust}}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
 on the mass resolution of the MS data.}
@@ -1621,7 +1571,7 @@ of each feature are then average by \pkg{patRoon} to produce the feature group s
 of the function \link[patRoon]{getDefAvgPListParams}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_MSPeakLists(
-  useLoaded = TRUE,
+  useLoadedData = TRUE,
   maxMSRtWindow = 10,
   precursorMzWindow = 4,
   clusterMzWindow = 0.005,
@@ -1637,7 +1587,7 @@ of the function \link[patRoon]{getDefAvgPListParams}.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{useLoaded}}{Logical of length one. When \code{TRUE} and both MS1 and MS2 are loaded to features,
+\item{\code{useLoadedData}}{Logical of length one. When \code{TRUE} and both MS1 and MS2 are loaded to features,
 these are used otherwise the native function \code{generateMSPeakLists} from \pkg{patRoon} is used instead.}
 
 \item{\code{maxMSRtWindow}}{Maximum chromatographic peak window used for spectrum
@@ -1706,7 +1656,7 @@ Gets a data.table of feature isotopes (i.e., isotope clusters) in the analyses.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -1749,7 +1699,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -1779,7 +1729,7 @@ and time (\code{sec}) deviations.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 5,
   sec = 10,
   millisec = 5,
@@ -1828,7 +1778,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -1883,6 +1833,26 @@ Gets a data.table with internal standards found by the \code{find_internal_stand
 analysis replicate group.}
 }
 \if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-get_metadata"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_metadata}{}}}
+\subsection{Method \code{get_metadata()}}{
+Gets metadata from each analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_metadata(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A data.table.
 }
 }
 \if{html}{\out{<hr>}}
@@ -1964,7 +1934,7 @@ Loads all spectra from all analyses.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -2006,7 +1976,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -2220,7 +2190,7 @@ A new cloned MassSpecEngine object with only the groups as defined by the \code{
 \if{html}{\out{<a id="method-MassSpecEngine-has_ion_mobility"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-has_ion_mobility}{}}}
 \subsection{Method \code{has_ion_mobility()}}{
-Checks if analyses have have drift time from ion mobility, returning \code{TRUE} or \code{FALSE} for
+Checks if analyses have have mobility time from ion mobility, returning \code{TRUE} or \code{FALSE} for
 each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_ion_mobility(analyses = NULL)}\if{html}{\out{</div>}}
@@ -2472,18 +2442,18 @@ Checks if there are charges assigned to spectra, returning \code{TRUE} or \code{
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-plot_raw_spectra"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_raw_spectra}{}}}
-\subsection{Method \code{plot_raw_spectra()}}{
+\if{html}{\out{<a id="method-MassSpecEngine-plot_raw_data"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_raw_data}{}}}
+\subsection{Method \code{plot_raw_data()}}{
 Plots raw spectra in 3D for given MS analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_raw_spectra(
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_raw_data(
   analyses = NULL,
   levels = NULL,
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -2532,7 +2502,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -2567,9 +2537,9 @@ the added targets as legend of the plot.}
 \item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
 Mixed use (e.g. \code{analyses+polarities}) is also possible.}
 
-\item{\code{xVal}}{Character length one. Possible values are "mz", "rt" or "drift".}
+\item{\code{xVal}}{Character length one. Possible values are "mz", "rt" or "mobility".}
 
-\item{\code{yVal}}{Character length one. Possible values are "mz", "rt" or "drift".}
+\item{\code{yVal}}{Character length one. Possible values are "mz", "rt" or "mobility".}
 
 \item{\code{xLab}}{A string with the title for the x axis.}
 
@@ -2592,7 +2562,7 @@ Plots spectra given MS analyses.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -2601,8 +2571,8 @@ Plots spectra given MS analyses.
   isolationWindow = 1.3,
   minIntensityMS1 = 0,
   minIntensityMS2 = 0,
-  raw_spectra = FALSE,
-  loaded_spectra = TRUE,
+  useRawData = FALSE,
+  useLoadedData = TRUE,
   averaged = TRUE,
   baseline = FALSE,
   legendNames = TRUE,
@@ -2647,7 +2617,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -2676,10 +2646,9 @@ data (i.e., MS1 data).}
 \item{\code{minIntensityMS2}}{Numeric value with the minimum intensity of level 2
 data (i.e., MS2 data).}
 
-\item{\code{raw_spectra}}{Logical of length one. Set to \code{TRUE} for plotting the spectra in results not the raw spectra.}
+\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in results/processed.}
 
-\item{\code{loaded_spectra}}{Logical of length one. Set to \code{TRUE} for parsing loaded spectra not
-spectra from raw data files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
 
 \item{\code{averaged}}{Logical of length one. Set to \code{TRUE} for plotting the averaged spectra.}
 
@@ -2691,7 +2660,8 @@ the added targets as legend of the plot.}
 \item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
 Mixed use (e.g. \code{analyses+polarities}) is also possible.}
 
-\item{\code{xVal}}{Character length one. Possible values are "mz", "rt", "drift" or "mass".}
+\item{\code{xVal}}{Character length one. Possible values are "mz", "rt", "mobility" or "mass".
+spectra from raw data files.}
 
 \item{\code{xLab}}{A string with the title for the x axis.}
 
@@ -2718,8 +2688,8 @@ Plots chromatograms in the analyses.
   analyses = NULL,
   chromatograms = NULL,
   minIntensity = NULL,
-  raw_chromatograms = FALSE,
-  loaded_chromatograms = TRUE,
+  useRawData = FALSE,
+  useLoadedData = TRUE,
   title = NULL,
   colorBy = "targets",
   legendNames = NULL,
@@ -2740,11 +2710,9 @@ Plots chromatograms in the analyses.
 
 \item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
 
-\item{\code{raw_chromatograms}}{Logical of length one. Set to \code{TRUE} for parsing raw chromatograms not chromatograms
-results/processed.}
+\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in results/processed.}
 
-\item{\code{loaded_chromatograms}}{Logical of length one. Set to \code{TRUE} for parsing loaded chromatograms not
-chromatograms from raw data files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
 
 \item{\code{title}}{A string with the title.}
 
@@ -2825,7 +2793,7 @@ Plots spectra extract ion chromatograms (EIC) and \emph{m/z} vs retention time f
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -2867,7 +2835,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -2915,7 +2883,7 @@ Plots spectra extract ion chromatograms (EIC) from the analyses based on targets
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -2959,7 +2927,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -3118,7 +3086,7 @@ Plots level 2 spectra from the analyses based on targets.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -3162,7 +3130,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -3213,7 +3181,7 @@ Plots level 1 spectra from the analyses based on targets.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -3257,7 +3225,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -3307,13 +3275,13 @@ Plots features from analyses.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
   rtExpand = 120,
   mzExpand = NULL,
-  loaded = TRUE,
+  useLoadedData = TRUE,
   filtered = FALSE,
   legendNames = NULL,
   title = NULL,
@@ -3357,7 +3325,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -3374,7 +3342,7 @@ retention time range.}
 \item{\code{mzExpand}}{Numeric (length 1) with the mass or mass-to-charge ratio (\emph{m/z}) (in Da) for expanding left and
 right the mass range.}
 
-\item{\code{loaded}}{Logical (length 1). When \code{TRUE} and if available, loaded data will be used instead of raw data.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
 
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
@@ -3411,7 +3379,7 @@ Plots a map of the retention time vs \emph{m/z} of features from analyses.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -3458,7 +3426,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -3504,7 +3472,7 @@ Plots level 1 spectra from features in the analyses.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -3514,7 +3482,7 @@ Plots level 1 spectra from features in the analyses.
   presence = 0.8,
   minIntensity = 1000,
   filtered = FALSE,
-  loaded = TRUE,
+  useLoadedData = TRUE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
@@ -3553,7 +3521,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -3582,7 +3550,7 @@ spectra) to 1 (i.e., must be present in all spectra) for traces during clusterin
 
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
-\item{\code{loaded}}{Logical (length 1). When \code{TRUE} and if available, loaded data will be used instead of raw data.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
 
 \item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
 the added targets as legend of the plot.}
@@ -3609,7 +3577,7 @@ Plots level 2 spectra from features in the analyses.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -3618,7 +3586,7 @@ Plots level 2 spectra from features in the analyses.
   presence = 0.8,
   minIntensity = 0,
   filtered = FALSE,
-  loaded = TRUE,
+  useLoadedData = TRUE,
   legendNames = NULL,
   title = NULL,
   colorBy = "targets",
@@ -3657,7 +3625,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -3682,7 +3650,7 @@ spectra) to 1 (i.e., must be present in all spectra) for traces during clusterin
 
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
-\item{\code{loaded}}{Logical (length 1). When \code{TRUE} and if available, loaded data will be used instead of raw data.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
 
 \item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
 the added targets as legend of the plot.}
@@ -3708,7 +3676,7 @@ Plots feature groups EIC.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -3754,7 +3722,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -3805,7 +3773,7 @@ Plots level 1 spectra from feature groups in the analyses.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -3814,7 +3782,7 @@ Plots level 1 spectra from feature groups in the analyses.
   mzClustFeatures = 0.005,
   presenceFeatures = 0.8,
   minIntensityFeatures = 1000,
-  loaded = TRUE,
+  useLoadedData = TRUE,
   mzClust = 0.005,
   presence = 0.8,
   minIntensity = 1000,
@@ -3855,7 +3823,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -3882,7 +3850,7 @@ in any spectra) to 1 (i.e., must be present in all spectra) for traces during cl
 
 \item{\code{minIntensityFeatures}}{Numeric (length 1) with the minimum intensity for features.}
 
-\item{\code{loaded}}{Logical (length 1). When \code{TRUE} and if available, loaded data will be used instead of raw data.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
 
 \item{\code{mzClust}}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
 on the mass resolution of the MS data.}
@@ -3921,7 +3889,7 @@ Plots level 1 spectra from feature groups in the analyses.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -3929,7 +3897,7 @@ Plots level 1 spectra from feature groups in the analyses.
   mzClustFeatures = 0.003,
   presenceFeatures = 0.8,
   minIntensityFeatures = 100,
-  loaded = TRUE,
+  useLoadedData = TRUE,
   mzClust = 0.003,
   presence = TRUE,
   minIntensity = 100,
@@ -3970,7 +3938,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -3993,7 +3961,7 @@ in any spectra) to 1 (i.e., must be present in all spectra) for traces during cl
 
 \item{\code{minIntensityFeatures}}{Numeric (length 1) with the minimum intensity for features.}
 
-\item{\code{loaded}}{Logical (length 1). When \code{TRUE} and if available, loaded data will be used instead of raw data.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
 
 \item{\code{mzClust}}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
 on the mass resolution of the MS data.}
@@ -4034,13 +4002,13 @@ target feature groups.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
   rtExpand = 120,
   mzExpand = 0.005,
-  loaded = TRUE,
+  useLoadedData = TRUE,
   filtered = FALSE,
   legendNames = NULL,
   title = NULL,
@@ -4078,7 +4046,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -4095,7 +4063,7 @@ retention time range.}
 \item{\code{mzExpand}}{Numeric (length 1) with the mass or mass-to-charge ratio (\emph{m/z}) (in Da) for expanding left and
 right the mass range.}
 
-\item{\code{loaded}}{Logical (length 1). When \code{TRUE} and if available, loaded data will be used instead of raw data.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
 
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
@@ -4121,7 +4089,7 @@ Method to plot the intensity profile of feature groups across the analyses.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -4162,7 +4130,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -4208,7 +4176,7 @@ Plots suspects.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 4,
   sec = 10,
   millisec = 5,
@@ -4221,7 +4189,7 @@ Plots suspects.
   filtered = FALSE,
   rtExpand = 120,
   mzExpand = 0.005,
-  loaded = TRUE,
+  useLoadedData = TRUE,
   colorBy = "targets"
 )}\if{html}{\out{</div>}}
 }
@@ -4260,7 +4228,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
@@ -4295,7 +4263,7 @@ retention time range.}
 \item{\code{mzExpand}}{Numeric (length 1) with the mass or mass-to-charge ratio (\emph{m/z}) (in Da) for expanding left and
 right the mass range.}
 
-\item{\code{loaded}}{Logical (length 1). When \code{TRUE} and if available, loaded data will be used instead of raw data.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
 
 \item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
 Mixed use (e.g. \code{analyses+polarities}) is also possible.}
@@ -4322,7 +4290,7 @@ Maps isotopic clusters in the analyses.
   mass = NULL,
   mz = NULL,
   rt = NULL,
-  drift = NULL,
+  mobility = NULL,
   ppm = 20,
   sec = 60,
   millisec = 5,
@@ -4372,7 +4340,7 @@ arguments are not used.}
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
 
-\item{\code{drift}}{A vector with target drift time values (in milliseconds) or
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 

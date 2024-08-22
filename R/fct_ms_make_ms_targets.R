@@ -6,7 +6,7 @@
 #'
 #' @template arg-ms-mz
 #' @template arg-ms-rt
-#' @template arg-ms-drift
+#' @template arg-ms-mobility
 #' @template arg-ms-ppm
 #' @template arg-ms-sec
 #' @template arg-ms-millisec
@@ -16,6 +16,8 @@
 #' *driftmax*.
 #'
 #' @export
+#' 
+#' @noRd
 #'
 make_ms_targets <- function(mz = NULL, rt = NULL, drift = NULL, ppm = 20, sec = 60, millisec = 5, id = NULL) {
   

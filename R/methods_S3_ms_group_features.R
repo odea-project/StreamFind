@@ -13,24 +13,24 @@
   }
   
   pat_features <- self$features
-
+  
   algorithm <- settings$algorithm
   
   if (grepl("_", algorithm, fixed = FALSE)) algorithm <- gsub("^(.*?)_.*$", "\\1", algorithm)
-
+  
   if ("xcms" %in% algorithm || "xcms3" %in% algorithm) {
     if (!requireNamespace("xcms")) {
       warning("xcms package is not installed!")
       return(FALSE)
     }
   }
-
+  
   parameters <- settings$parameters
-
+  
   if ("class" %in% names(parameters)) {
     parameters[["Class"]] <- parameters$class
     parameters[["class"]] <- NULL
-
+    
     parameters <- lapply(parameters, function(z) {
       if (is.list(z) & length(z) > 0) {
         z[[1]]
@@ -38,25 +38,25 @@
         z
       }
     })
-
+    
     if (parameters$Class %in% "PeakGroupsParam") {
       parameters$peakGroupsMatrix <- as.matrix(parameters$peakGroupsMatrix)
     }
-
+    
     if (parameters$Class %in% "PeakGroupsParam") {
       parameters$subset <- as.integer(parameters$subset)
     }
-
+    
     parameters <- do.call("new", parameters)
-
+    
   } else if (is.list(parameters)) {
-
+    
     parameters <- lapply(parameters, function(par) {
       if (is.list(par)) {
         if ("class" %in% names(par)) {
           par[["Class"]] <- par$class
           par[["class"]] <- NULL
-
+          
           par <- lapply(par, function(z) {
             if (is.list(z) & length(z) > 0) {
               z[[1]]
@@ -64,41 +64,41 @@
               z
             }
           })
-
+          
           if (par$Class %in% "PeakGroupsParam") {
             par$peakGroupsMatrix <- as.matrix(par$peakGroupsMatrix)
           }
-
+          
           if (par$Class %in% "PeakGroupsParam") {
             par$subset <- as.integer(par$subset)
           }
-
+          
           par <- do.call("new", par)
         }
       }
       par
     })
   }
-
+  
   if (algorithm == "xcms3") {
     if ("Param" %in% is(parameters)) {
       parameters <- list("groupParam" = parameters)
     }
-
+    
     parameters$groupParam@sampleGroups <- self$get_replicate_names()
-
+    
     if ("rtalign" %in% names(parameters)) {
       if (parameters$rtalign) {
         parameters$preGroupParam@sampleGroups <- self$get_replicate_names()
       }
     }
-
+    
     # when multiple polarities it makes setFeatureGroups, no rt alignment possible
     if (length(unique(self$get_spectra_polarity())) > 1) {
       parameters <- parameters["groupParam"]
     }
   }
-
+  
   ag <- list("obj" = pat_features, "algorithm" = algorithm)
   
   if (!"verbose" %in% names(parameters)) parameters[["verbose"]] <- TRUE
@@ -106,7 +106,7 @@
   pat <- do.call(patRoon::groupFeatures, c(ag, parameters))
   
   self$featureGroups <- pat
-
+  
   TRUE
 }
 
