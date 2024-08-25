@@ -8,3 +8,5 @@ services:
     volumes:
       - .:/app
     container_name: streamfind
+    stdin_open: true
+    tty: true

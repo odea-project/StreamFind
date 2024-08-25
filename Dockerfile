@@ -39,14 +39,10 @@ RUN R -e "BiocManager::install(c('ncdf4', 'rJava', 'magick', 'mzR', 'rcdklibs', 
 # Install patRoon
 RUN R -e "BiocManager::install('rickhelmus/patRoon', dependencies = TRUE)"
 
-# Set the working directory in the container
-WORKDIR /app
+# Copy the start.sh script to the container
+COPY start.sh /start.sh
 
-# Copy your app file into the container
-COPY dev/dev_app.R /app/app.R
+# Give execute permission to the script
+RUN chmod +x /start.sh
 
-# Expose port 3838 (default for Shiny)
-EXPOSE 3838
-
-# Command to run the Shiny app
-CMD ["R", "-e", "shiny::runApp('/app/app.R', host = '0.0.0.0', port = 3838)"]
+ENTRYPOINT ["/start.sh"]
