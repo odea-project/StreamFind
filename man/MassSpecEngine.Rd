@@ -99,15 +99,7 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-subset_analyses}{\code{MassSpecEngine$subset_analyses()}}
 \item \href{#method-MassSpecEngine-subset_features}{\code{MassSpecEngine$subset_features()}}
 \item \href{#method-MassSpecEngine-subset_groups}{\code{MassSpecEngine$subset_groups()}}
-\item \href{#method-MassSpecEngine-has_ion_mobility}{\code{MassSpecEngine$has_ion_mobility()}}
-\item \href{#method-MassSpecEngine-has_loaded_spectra}{\code{MassSpecEngine$has_loaded_spectra()}}
-\item \href{#method-MassSpecEngine-has_loaded_chromatograms}{\code{MassSpecEngine$has_loaded_chromatograms()}}
-\item \href{#method-MassSpecEngine-has_features}{\code{MassSpecEngine$has_features()}}
-\item \href{#method-MassSpecEngine-has_groups}{\code{MassSpecEngine$has_groups()}}
-\item \href{#method-MassSpecEngine-has_loaded_features_ms1}{\code{MassSpecEngine$has_loaded_features_ms1()}}
-\item \href{#method-MassSpecEngine-has_loaded_features_ms2}{\code{MassSpecEngine$has_loaded_features_ms2()}}
-\item \href{#method-MassSpecEngine-has_features_eic}{\code{MassSpecEngine$has_features_eic()}}
-\item \href{#method-MassSpecEngine-has_suspects}{\code{MassSpecEngine$has_suspects()}}
+\item \href{#method-MassSpecEngine-has_NTS}{\code{MassSpecEngine$has_NTS()}}
 \item \href{#method-MassSpecEngine-has_MSPeakLists}{\code{MassSpecEngine$has_MSPeakLists()}}
 \item \href{#method-MassSpecEngine-has_formulas}{\code{MassSpecEngine$has_formulas()}}
 \item \href{#method-MassSpecEngine-has_compounds}{\code{MassSpecEngine$has_compounds()}}
@@ -167,7 +159,6 @@ List of function elements to access specific reference help pages.}
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print'><code>StreamFind::CoreEngine$print()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_analyses'><code>StreamFind::CoreEngine$print_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_headers'><code>StreamFind::CoreEngine$print_headers()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_results"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_results'><code>StreamFind::CoreEngine$print_results()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_workflow'><code>StreamFind::CoreEngine$print_workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run'><code>StreamFind::CoreEngine$run()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_app"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_app'><code>StreamFind::CoreEngine$run_app()</code></a></span></li>
@@ -186,8 +177,7 @@ Creates an R6 MassSpecEngine class object.
   file = NULL,
   headers = NULL,
   workflow = NULL,
-  analyses = NULL,
-  results = NULL
+  analyses = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -1047,7 +1037,7 @@ Gets a data.table with feature EICs following the targets from the arguments.
   rtExpand = 120,
   mzExpand = NULL,
   filtered = FALSE,
-  useLoadedData = TRUE
+  useLoadedData = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -2187,162 +2177,14 @@ A new cloned MassSpecEngine object with only the groups as defined by the \code{
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_ion_mobility"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_ion_mobility}{}}}
-\subsection{Method \code{has_ion_mobility()}}{
-Checks if analyses have have mobility time from ion mobility, returning \code{TRUE} or \code{FALSE} for
-each analysis.
+\if{html}{\out{<a id="method-MassSpecEngine-has_NTS"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_NTS}{}}}
+\subsection{Method \code{has_NTS()}}{
+Checks if there are NTS results, returning \code{TRUE} or \code{FALSE}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_ion_mobility(analyses = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_NTS()}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_loaded_spectra"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_loaded_spectra}{}}}
-\subsection{Method \code{has_loaded_spectra()}}{
-Checks for loaded spectra in given analyses names/indices, returning \code{TRUE} or \code{FALSE} for each
-analysis.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_loaded_spectra(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_loaded_chromatograms"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_loaded_chromatograms}{}}}
-\subsection{Method \code{has_loaded_chromatograms()}}{
-Checks for loaded chromatograms in given analyses names/indices, returning \code{TRUE} or \code{FALSE} for
-each analysis.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_loaded_chromatograms(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_features"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_features}{}}}
-\subsection{Method \code{has_features()}}{
-Checks if given analyses have features, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_features(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_groups"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_groups}{}}}
-\subsection{Method \code{has_groups()}}{
-Checks if there are feature groups from grouping features across analyses, returning \code{TRUE}
-or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_groups(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_loaded_features_ms1"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_loaded_features_ms1}{}}}
-\subsection{Method \code{has_loaded_features_ms1()}}{
-Checks for loaded features MS1 in given analyses names/indices, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_loaded_features_ms1(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_loaded_features_ms2"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_loaded_features_ms2}{}}}
-\subsection{Method \code{has_loaded_features_ms2()}}{
-Checks for loaded features MS2 in given analyses names/indices, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_loaded_features_ms2(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_features_eic"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_features_eic}{}}}
-\subsection{Method \code{has_features_eic()}}{
-Checks for presence of feature extracted ion chromatograms (EICs) in given analyses names/indices,
-returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_features_eic(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_suspects"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_suspects}{}}}
-\subsection{Method \code{has_suspects()}}{
-Checks for presence of suspects in given analyses names/indices, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_suspects(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-has_MSPeakLists"></a>}}

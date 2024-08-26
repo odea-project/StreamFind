@@ -1,5 +1,5 @@
 
-## S7 Trial
+# S7 Trial -----
 ms_files <- StreamFindData::get_ms_file_paths()
 db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
 cols <- c("name", "formula", "mass", "rt", "fragments", "tag")
@@ -7,24 +7,60 @@ db <- db[, cols, with = FALSE]
 dbis <- db[grepl("IS", db$tag), ]
 dbsus <- db[!grepl("IS", db$tag), ]
 
+## CoreEngine -----
+core_file = paste0(getwd(), "/core.sqlite")
+core <- CoreEngine$new()
+core$save(core_file)
+core$load(core_file)
+core <- CoreEngine$new(file = core_file)
+
+
+a <- MassSpecAnalyses(ms_files[1:3])
+
+a <- add(a, ms_files[4])
+a <- remove(a, 4)
+
+a[1] <- ms_files[4]
+
+show(a)
+
+a$spectra_tic
+
 
 # dbis$mz <- dbis$mass + 1.00726
 MassSpecTargets(mz = dbis, polarities = c("positive", "negative"))
 
+
+
 ms <- MassSpecEngine$new(analyses = ms_files[1:3])
 ms$get_spectra_ms2(analyses = c(1, 2), mass = dbsus[2:3, ])
-
-
 
 ms$get_spectra(analyses = c(1, 2), mass = dbsus[c(2:3,9), ])
 
 
 
+core <- load(core_file)
+
+core$analyses
+
+is(core)
+
+.get_available_engines()
+
+
+core@run()
+
+
+
+core <- CoreEngine$new()
 
 
 is(rcpp_parse_ms_analysis(ms_files[1]))
 
+ms <- MassSpecEngine$new()
+ms$analyses
 
+ms$NTS
 
 
 a <- MassSpecAnalyses()
@@ -35,16 +71,35 @@ View(a[[1]])
 
 
 a <- MassSpecAnalyses(ms_files[1:3])
+
+a <- remove(a, 2)
+
+
+a[1] <- ms_files[4]
+
 a$spectra_tic
 
-ms <- MassSpecEngine$new(analyses = ms_files[1:3])
+ms <- MassSpecEngine$new(analyses = ms_files[13:15])
+
+# ms$analyses <- ms$analyses[-3]
+# ms$analyses <- add(ms$analyses, ms_files[3])
 ms$run(MassSpecSettings_FindFeatures_openms())
 ms$run(MassSpecSettings_AnnotateFeatures_StreamFind())
+ms$run(MassSpecSettings_FindInternalStandards_StreamFind(database = dbis, ppm = 8, sec = 10))
 ms$run(MassSpecSettings_GroupFeatures_openms())
 ms$run(MassSpecSettings_FillFeatures_StreamFind())
 ms$run(MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE))
 ms$run(MassSpecSettings_FilterFeatures_patRoon(absMinIntensity = 50000))
 
+ms$get_suspects(database = dbis)
+
+ms$analyses <- ms$analyses[-3]
+
+ms$NTS <- ms$NTS[1 , 1:5]
+
+show(ms$NTS[1:2])
+
+ms$get_features()
 
 ms$plot_features(mass = dbis)
 ms$get_features_eic(mass = dbis[3, ])
@@ -71,9 +126,6 @@ a$replicates
 
 
 ms$get_spectra_tic()
-
-
-
 
 
 
@@ -341,6 +393,7 @@ fGroupsNorm <- patRoon::normInts(ms$featureGroups, featNorm = "istd", standards 
 
 
 
+ms$NTS@features[[1]]
 
 
 

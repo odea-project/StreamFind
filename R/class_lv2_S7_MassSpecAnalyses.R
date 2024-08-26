@@ -17,7 +17,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses", package = "StreamFind", pa
     replicates = S7::new_property(S7::class_character,
       getter = function(self) vapply(self@analyses, function(x) x$replicate, NA_character_),
       setter = function(self, value) {
-        if (length(value) != self@length) {
+        if (length(value) != length(self)) {
           warning("Length of replicates not conform!")
           return(self)
         }
@@ -25,9 +25,17 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses", package = "StreamFind", pa
           warning("Replicates must be character!")
           return(self)
         }
-        for (i in seq_len(self@length)) {
-          self@analyses[[i]]$replicate <- value[i]
+        for (i in seq_len(length(self))) self@analyses[[i]]$replicate <- value[i]
+        
+        if (self$has_NTS) {
+          if (self@results$NTS$has_features) {
+            self@results$NTS$features@analysisInfo$group <- value
+            if (self@results$NTS$has_groups) {
+              self@results$NTS$features@features@analysisInfo$group <- value
+            }
+          }
         }
+        
         self
       }
     ),
@@ -36,7 +44,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses", package = "StreamFind", pa
     blanks = S7::new_property(S7::class_character,
       getter = function(self) vapply(self@analyses, function(x) x$blank, NA_character_),
       setter = function(self, value) {
-        if (length(value) != self@length) {
+        if (length(value) != length(self)) {
           warning("Length of blanks not conform!")
           return(self)
         }
@@ -48,8 +56,14 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses", package = "StreamFind", pa
           warning("Blank names must be in replicate names!")
           return(self)
         }
-        for (i in seq_len(self@length)) {
-          self@analyses[[i]]$blank <- value[i]
+        for (i in seq_len(length(self))) self@analyses[[i]]$blank <- value[i]
+        if (self$has_NTS) {
+          if (self@results$NTS$has_features) {
+            self@results$NTS$features@analysisInfo$blank <- value
+            if (self@results$NTS$has_groups) {
+              self@results$NTS$features@features@analysisInfo$blank <- value
+            }
+          }
         }
         self
       }
@@ -208,7 +222,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses", package = "StreamFind", pa
     
     ## __info -----
     info = S7::new_property(S7::class_data.frame, getter = function(self) {
-      if (self@length > 0) {
+      if (length(self) > 0) {
         pols <- self@spectra_polarity
         pols <- unlist(pols)
         
@@ -226,19 +240,41 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses", package = "StreamFind", pa
       } else {
         data.frame()
       }
+    }),
+    
+    ## __has_ion_mobility -----
+    has_ion_mobility = S7::new_property(S7::class_logical, getter = function(self) {
+      if (length(self) == 0) return(FALSE)
+      vapply(self@analyses, function(x) any(x$spectra_headers$mobility > 0), FALSE)
+    }),
+    
+    ## __has_loaded_spectra -----
+    has_loaded_spectra = S7::new_property(S7::class_logical, getter = function(self) {
+      if (length(self) == 0) return(FALSE)
+      vapply(self@analyses, function(x) nrow(x$spectra) > 0, FALSE)
+    }),
+    
+    ## __has_loaded_chromatograms -----
+    has_loaded_chromatograms = S7::new_property(S7::class_logical, getter = function(self) {
+      if (length(self) == 0) return(FALSE)
+      vapply(self@analyses, function(x) nrow(x$chromatograms) > 0, FALSE)
+    }),
+    
+    ## __has_NTS -----
+    has_NTS = S7::new_property(S7::class_logical, getter = function(self) {
+      if (length(self) == 0) return(FALSE)
+      !is.null(self@results[["NTS"]])
     })
   ),
 
   constructor = function(files = NULL) {
     analyses <- .get_MassSpecAnalysis_from_files(files)
-    S7::new_object(Analyses(), engine = "MassSpecEngine", possible_formats = c("mzML", "mzXML"), analyses = analyses)
+    S7::new_object(Analyses(), possible_formats = c(".mzML|.mzXML"), analyses = analyses)
   },
 
   validator = function(self) {
     valid <- all(
-      checkmate::test_character(self@engine, len = 1),
-      checkmate::test_choice(self@engine, choices = "MassSpecEngine"),
-      checkmate::test_true(identical(self@possible_formats, c("mzML", "mzXML"))),
+      checkmate::test_true(identical(self@possible_formats, c(".mzML|.mzXML"))),
       if (length(self) > 0) checkmate::test_true(identical(names(self@analyses), unname(self@names)))
     )
     if (!valid) return(FALSE)
@@ -248,14 +284,40 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses", package = "StreamFind", pa
 
 #' @export
 #' @noRd
-S7::method(add, MassSpecAnalyses) <- function(x, files) {
-  analyses <- .get_MassSpecAnalysis_from_files(files)
-  if (any(vapply(analyses, function(a) a$name %in% x@names, FALSE))) {
+S7::method(names, Analyses) <- function(x) {
+  vapply(self@analyses, function(x) x$name, NA_character_)
+}
+
+#' @export
+#' @noRd
+S7::method(add, MassSpecAnalyses) <- function(x, value) {
+  
+  if (is.character(value)) {
+    if (grepl(x@possible_formats, value)) {
+      value <- .get_MassSpecAnalysis_from_files(value)
+    } else {
+      warning("File/s not valid!")
+      return(x)
+    }
+  }
+  
+  if (!all(vapply(value, function(a) is(a, "MassSpecAnalysis"), FALSE))) {
+    warning("Analysis/s not valid!")
+    return(x)
+  }
+  if (any(vapply(value, function(a) a$name %in% x@names, FALSE))) {
     warning("Analysis names already exist!")
     return(x)
   }
-  analyses <- c(x@analyses, analyses)
+  
+  analyses <- c(x@analyses, value)
   analyses <- analyses[order(names(analyses))]
+  
+  if (length(analyses) > length(x@analyses)) {
+    warning("All results removed!")
+    x@results <- list()
+  }
+  
   x@analyses <- analyses
   x
 }
@@ -266,11 +328,44 @@ S7::method(remove, MassSpecAnalyses) <- function(x, value) {
   if (is.character(value)) {
     x$analyses <- x$analyses[!x$names %in% value]
     x@analyses <- x@analyses[order(names(x@analyses))]
+    if (x@has_NTS) x@results$NTS <- x@results$NTS[!x$names %in% value]
   } else if (is.numeric(value)) {
     x@analyses <- x@analyses[-value]
     x@analyses <- x@analyses[order(names(x@analyses))]
+    if (x@has_NTS) x@results$NTS <- x@results$NTS[-value]
   }
+  
   x
+}
+
+#' @export
+#' @noRd
+S7::method(`[`, MassSpecAnalyses) <- function(x, i) {
+  x@analyses <- x@analyses[i]
+  if (x@has_NTS) x@results$NTS <- x@results$NTS[i]
+  return(x)
+}
+
+#' @export
+#' @noRd
+S7::method(`[<-`, Analyses) <- function(x, i, value) {
+  warning("Method not implemented in MassSpecAnalyses! Use add or remove methods instead.")
+  return(x)
+}
+
+#' @export
+#' @noRd
+S7::method(`[[`, Analyses) <- function(x, i) {
+  x@analyses <- x@analyses[[i]]
+  if (x@has_NTS) x@results$NTS <- x@results$NTS[[i]]
+  return(x)
+}
+
+#' @export
+#' @noRd
+S7::method(`[[<-`, Analyses) <- function(x, i, value) {
+  warning("Method not implemented in MassSpecAnalyses! Use add or remove methods instead." )
+  return(x)
 }
 
 #' @noRd

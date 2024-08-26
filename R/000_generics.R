@@ -23,6 +23,10 @@ add <- S7::new_generic("add", "x")
 #'@noRd
 remove <- S7::new_generic("remove", "x")
 
+#' @export
+#'@noRd
+load <- S7::new_generic("load", "x")
+
 #' @noRd
 .process <- function(settings, self, private) {
   UseMethod(".process")

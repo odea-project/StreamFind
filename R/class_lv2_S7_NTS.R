@@ -4,22 +4,31 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
   
   properties = list(
     
+    ## __features -----
     features = S7::new_property(S7::as_class(methods::getClassDef("workflowStep", package = "patRoon"))),
     
+    ## __filtered -----
     filtered = S7::new_property(S7::class_list, default = list()),
     
+    ## __mspl -----
     mspl = S7::new_property(S7::as_class(methods::getClassDef("workflowStep", package = "patRoon"))),
     
+    ## __formulas -----
     formulas = S7::new_property(S7::as_class(methods::getClassDef("formulas", package = "patRoon"))),
     
+    ## __compounds -----
     compounds = S7::new_property(S7::as_class(methods::getClassDef("compounds", package = "patRoon"))),
     
+    ## __analysisInfo -----
     analysisInfo = S7::new_property(S7::class_data.frame, getter = function(self) self@features@analysisInfo),
     
+    ## __number_analyses -----
     number_analyses = S7::new_property(S7::class_integer, getter = function(self) length(patRoon::analyses(self@features))),
     
+    ## __number_features -----
     number_features = S7::new_property(S7::class_integer, getter = function(self) length(self@features)),
     
+    ## __feature_list -----
     feature_list = S7::new_property(S7::class_list,
       
       getter = function(self) {
@@ -129,7 +138,75 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
           return(self)
         }
       }
-    )
+    ),
+    
+    ## __has_features -----
+    has_features = S7::new_property(S7::class_logical, getter = function(self) self@number_features > 0),
+    
+    ## __has_groups -----
+    has_groups = S7::new_property(S7::class_logical, getter = function(self) {
+      if ("featureGroups" %in% is(self@features)) {
+        if (length(self@features) > 0) return(TRUE)
+        return(FALSE)
+      }
+      FALSE
+    }),
+    
+    ## __has_features_ms1 -----
+    has_features_ms1 = S7::new_property(S7::class_logical, getter = function(self) {
+      if (self@number_features > 0) {
+        any(vapply(self$feature_list, function(x) {
+          if ("ms2" %in% colnames(x)) {
+            any(vapply(x$ms2, is.data.frame, FALSE))
+          } else {
+            FALSE
+          }
+        }, FALSE))
+      }
+      FALSE
+    }),
+    
+    ## __has_features_ms2 -----
+    has_features_ms2 = S7::new_property(S7::class_logical, getter = function(self) {
+      if (self@number_features > 0) {
+        any(vapply(self$feature_list, function(x) {
+          if ("ms2" %in% colnames(x)) {
+            any(vapply(x$ms2, is.data.frame, FALSE))
+          } else {
+            FALSE
+          }
+        }, FALSE))
+      }
+      FALSE
+    }),
+    
+    ## __has_features_eic -----
+    has_features_eic = S7::new_property(S7::class_logical, getter = function(self) {
+      if (self@number_features > 0) {
+        any(vapply(self$feature_list, function(x) {
+          if ("eic" %in% colnames(x)) {
+            any(vapply(x$eic, is.data.frame, FALSE))
+          } else {
+            FALSE
+          }
+        }, FALSE))
+      }
+      FALSE
+    }),
+    
+    ## __has_features_suspects -----
+    has_features_suspects = S7::new_property(S7::class_logical, getter = function(self) {
+      if (self@number_features > 0) {
+        any(vapply(self$feature_list, function(x) {
+          if ("suspects" %in% colnames(x)) {
+            any(vapply(x$suspects, is.data.frame, FALSE))
+          } else {
+            FALSE
+          }
+        }, FALSE))
+      }
+      FALSE
+    })
   ),
   
   constructor = function(
@@ -151,7 +228,6 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
     
     S7::new_object(
       Results(), 
-      engine = "MassSpecEngine",
       name = "NTS",
       software = "patRoon",
       version = as.character(packageVersion("patRoon")),
@@ -165,8 +241,6 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
   
   validator = function(self) {
     valid <- all(
-      checkmate::test_character(self@engine, len = 1),
-      checkmate::test_true(self@engine == "MassSpecEngine"),
       checkmate::test_true(self@name == "NTS"),
       checkmate::test_true(self@software == "patRoon"),
       checkmate::test_character(self@version, len = 1),
@@ -186,6 +260,53 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
 
 #' @export
 #' @noRd
+S7::method(show, NTS) <- function(x) {
+  
+  cat("\n")
+  cat("NTS\n")
+  cat("\n")
+  cat("  Number of analyses: ", x@number_analyses, "\n")
+  if (x@has_groups) {
+    cat("  Number of groups: ", x@number_features, "\n")
+  } else {
+    cat("  Number of features: ", x@number_features, "\n")
+  }
+  cat("\n")
+  print(x@features)
+  cat("\n")
+  
+  cat("\n")
+  cat("  Filtered features: ", "\n")
+  print(vapply(x@filtered, function(z) nrow(z), 0))
+  cat("\n")
+  
+  if (length(x@mspl) > 0) {
+    cat("\n")
+    print(x@mspl)
+    cat("\n")
+  }
+  
+  if (length(x@formulas) > 0) {
+    cat("\n")
+    print(x@formulas)
+    cat("\n")
+  }
+  
+  if (length(x@compounds) > 0) {
+    cat("\n")
+    print(x@compounds)
+    cat("\n")
+  }
+}
+
+#' @export
+#' @noRd
+S7::method(print, NTS) <- function(x, ...) {
+  show(x)
+}
+
+#' @export
+#' @noRd
 S7::method(`$`, NTS) <- function(x, i) {
   S7::prop(x, i)
 }
@@ -199,21 +320,39 @@ S7::method(`$<-`, NTS) <- function(x, i, value) {
 
 #' @export
 #' @noRd
-S7::method(`[`, NTS) <- function(x, i) {
-  if (x@length > 0) {
-    x@features[i]
-    x@filtered[i]
-    if (length(x@mspl) > 0) x@mspl[i]
-    if (length(x@formulas) > 0) x@formulas[i]
-    if (length(x@compounds) > 0) x@compounds[i]
+S7::method(`[`, NTS) <- function(x, i, j) {
+  if (missing(j)) {
+    x@features <- x@features[i]
+    x@filtered <- x@filtered[i]
+    if (length(x@mspl) > 0) x@mspl <- x@mspl[i]
+    if (length(x@formulas) > 0) x@formulas <- x@formulas[i]
+    if (length(x@compounds) > 0) x@compounds <- x@compounds[i]
+    return(x)
+  } else if (missing(i)) {
+    x@features <- x@features[, j]
+    if (length(x@mspl) > 0) x@mspl <- x@mspl[, j]
+    if (length(x@formulas) > 0) x@formulas <- x@formulas[, j]
+    if (length(x@compounds) > 0) x@compounds <- x@compounds[, j]
+    return(x)
+  } else {
+    x@features <- x@features[i, j]
+    x@filtered <- x@filtered[i]
+    if (length(x@mspl) > 0) x@mspl <- x@mspl[i, j]
+    if (length(x@formulas) > 0) x@formulas <- x@formulas[i, j]
+    if (length(x@compounds) > 0) x@compounds <- x@compounds[i, j]
+    return(x)
   }
-  x
 }
 
 #' @export
 #' @noRd
 S7::method(`[[`, NTS) <- function(x, i) {
-  
+  x@features <- x@features[[i]]
+  x@filtered <- x@filtered[[i]]
+  if (length(x@mspl) > 0) x@mspl <- x@mspl[[i]]
+  if (length(x@formulas) > 0) x@formulas <- x@formulas[[i]]
+  if (length(x@compounds) > 0) x@compounds <- x@compounds[[i]]
+  x
 }
 
 #' Adds an extra column to data.frame object in features.

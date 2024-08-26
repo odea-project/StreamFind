@@ -82,7 +82,7 @@ Workflow <- S7::new_class("Workflow", package = "StreamFind",
       }
       
       methods <- self@methods
-      
+
       available_methods <- .get_available_settings(engine)
       if (!all(methods %in% available_methods)) {
         warning("All methods must be available for the engine!")

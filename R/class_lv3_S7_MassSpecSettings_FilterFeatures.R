@@ -57,12 +57,17 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
     return(FALSE)
   }
   
-  if (length(engine$analyses) == 0) {
+  if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
   
-  if (!engine$has_features()) {
+  if (!engine$has_NTS()) {
+    warning("No NTS object available! Not done.")
+    return(FALSE)
+  }
+  
+  if (!engine$NTS$has_features) {
     warning("There are no features! Run find_features first!")
     return(FALSE)
   }
@@ -95,7 +100,7 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
   #
   .filter_excludeIsotopes = function(value = NULL, engine) {
     
-    if (any(engine$has_features()) && is.logical(value) && length(value) == 1) {
+    if (engine$NTS$has_features && is.logical(value) && length(value) == 1) {
       
       features <- engine$NTS$feature_list
       
@@ -126,7 +131,7 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
   #
   .filter_minSnRatio <- function(value = 3, engine) {
     
-    if (any(engine$has_features()) && is.numeric(value) && length(value) == 1) {
+    if (engine$NTS$has_features && is.numeric(value) && length(value) == 1) {
       
       features <- engine$NTS$feature_list
       
@@ -838,7 +843,17 @@ S7::method(run, MassSpecSettings_FilterFeatures_patRoon) <- function(x, engine =
     return(FALSE)
   }
   
-  if (engine$has_features()) {
+  if (!engine$has_analyses()) {
+    warning("There are no analyses! Not done.")
+    return(FALSE)
+  }
+  
+  if (!engine$has_NTS()) {
+    warning("No NTS object available! Not done.")
+    return(FALSE)
+  }
+  
+  if (engine$NTS$has_features) {
     nts <- engine$NTS
     pat <- nts$features
     
@@ -854,9 +869,7 @@ S7::method(run, MassSpecSettings_FilterFeatures_patRoon) <- function(x, engine =
     "mzDefectRange", "chromWidthRange", "qualityRange", "negate"
   )
   
-  if ("features" %in% is(pat$data)) {
-    parameters <- parameters[names(parameters) %in% possible_only_in_features]
-  }
+  if ("features" %in% is(pat$data)) parameters <- parameters[names(parameters) %in% possible_only_in_features]
   
   filter_fun <- patRoon::filter
   

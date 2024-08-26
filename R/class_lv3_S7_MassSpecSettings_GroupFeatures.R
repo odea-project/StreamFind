@@ -11,22 +11,17 @@
     return(FALSE)
   }
   
-  if (length(engine$analyses) == 0) {
+  if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
   
-  if (!engine$has_results("NTS")) {
+  if (!engine$has_NTS()) {
     warning("No NTS object available! Not done.")
     return(FALSE)
   }
   
-  nts <- engine$results[["NTS"]]
-  
-  if (!is(nts, "StreamFind::NTS")) {
-    warning("NTS object is not of class NTS! Not done.")
-    return(FALSE)
-  }
+  nts <- engine$NTS
   
   if (nts@number_features == 0) {
     warning("NTS object is empty! Not done.")
@@ -141,76 +136,75 @@
   }
 }
 
-#' @noRd
-.extract_time_alignment <- function(pat, self) {
-  if ("featureGroupsXCMS3" %in% is(pat)) {
-    
-    if (xcms::hasAdjustedRtime(pat@xdata)) {
-      rtAdj <- xcms::adjustedRtime(pat@xdata)
-      pkAdj <- xcms::processHistory(pat@xdata,
-                                    type = "Retention time correction"
-      )[[1]]
-      pkAdj <- pkAdj@param
-      
-      addAdjPoints <- FALSE
-      if ("PeakGroupsParam" %in% is(pkAdj)) {
-        addAdjPoints <- TRUE
-        pkAdj <- xcms::peakGroupsMatrix(pkAdj)
-      }
-      
-      # hasSpectra = all(self$has_loaded_spectra())
-      hasSpectra <- FALSE
-      
-      if (!hasSpectra) {
-        rtOrg <- lapply(self$get_files(), function(x) {
-          file_link <- mzR::openMSfile(x, backend = "pwiz")
-          sH <- suppressWarnings(mzR::header(file_link))
-          suppressWarnings(mzR::close(file_link))
-          sH$retentionTime
-        })
-      }
-      
-      alignment <- lapply(self$get_analysis_names(),
-        function(ana, rtOrg, rtAdj, addAdjPoints, pkAdj, all_ana) {
-          ana_idx <- which(all_ana %in% ana)
-          n_ana <- length(all_ana)
-          
-          rts <- names(rtAdj)
-          ana_idx_string <- paste0(
-            "F",
-            paste(rep("0", nchar(n_ana) - nchar(ana_idx)), collapse = ""),
-            ana_idx
-          )
-          rts <- grepl(ana_idx_string, rts)
-          rts <- rtAdj[rts]
-          
-          temp <- data.frame(
-            "rt_original" = rtOrg[[ana]],
-            "rt_adjusted" = rts
-          )
-          
-          temp$adjustment <- temp$rt_original - temp$rt_adjusted
-          
-          if (addAdjPoints) {
-            adjPoints <- unique(pkAdj[, ana_idx])
-            adjPoints <- adjPoints[adjPoints %in% temp$rt_original]
-            temp$adjPoints[temp$rt_original %in% adjPoints] <- adjPoints
-          }
-          row.names(temp) <- seq_len(nrow(temp))
-          temp
-        },
-        rtOrg = rtOrg,
-        rtAdj = rtAdj,
-        addAdjPoints = addAdjPoints,
-        pkAdj = pkAdj,
-        all_ana = self$get_analysis_names()
-      )
-      
-      return(alignment)
-    }
-  }
-  NULL
-}
+# .extract_time_alignment <- function(pat, self) {
+#   if ("featureGroupsXCMS3" %in% is(pat)) {
+#     
+#     if (xcms::hasAdjustedRtime(pat@xdata)) {
+#       rtAdj <- xcms::adjustedRtime(pat@xdata)
+#       pkAdj <- xcms::processHistory(pat@xdata,
+#                                     type = "Retention time correction"
+#       )[[1]]
+#       pkAdj <- pkAdj@param
+#       
+#       addAdjPoints <- FALSE
+#       if ("PeakGroupsParam" %in% is(pkAdj)) {
+#         addAdjPoints <- TRUE
+#         pkAdj <- xcms::peakGroupsMatrix(pkAdj)
+#       }
+#       
+#       # hasSpectra = all(self$has_loaded_spectra())
+#       hasSpectra <- FALSE
+#       
+#       if (!hasSpectra) {
+#         rtOrg <- lapply(self$get_files(), function(x) {
+#           file_link <- mzR::openMSfile(x, backend = "pwiz")
+#           sH <- suppressWarnings(mzR::header(file_link))
+#           suppressWarnings(mzR::close(file_link))
+#           sH$retentionTime
+#         })
+#       }
+#       
+#       alignment <- lapply(self$get_analysis_names(),
+#         function(ana, rtOrg, rtAdj, addAdjPoints, pkAdj, all_ana) {
+#           ana_idx <- which(all_ana %in% ana)
+#           n_ana <- length(all_ana)
+#           
+#           rts <- names(rtAdj)
+#           ana_idx_string <- paste0(
+#             "F",
+#             paste(rep("0", nchar(n_ana) - nchar(ana_idx)), collapse = ""),
+#             ana_idx
+#           )
+#           rts <- grepl(ana_idx_string, rts)
+#           rts <- rtAdj[rts]
+#           
+#           temp <- data.frame(
+#             "rt_original" = rtOrg[[ana]],
+#             "rt_adjusted" = rts
+#           )
+#           
+#           temp$adjustment <- temp$rt_original - temp$rt_adjusted
+#           
+#           if (addAdjPoints) {
+#             adjPoints <- unique(pkAdj[, ana_idx])
+#             adjPoints <- adjPoints[adjPoints %in% temp$rt_original]
+#             temp$adjPoints[temp$rt_original %in% adjPoints] <- adjPoints
+#           }
+#           row.names(temp) <- seq_len(nrow(temp))
+#           temp
+#         },
+#         rtOrg = rtOrg,
+#         rtAdj = rtAdj,
+#         addAdjPoints = addAdjPoints,
+#         pkAdj = pkAdj,
+#         all_ana = self$get_analysis_names()
+#       )
+#       
+#       return(alignment)
+#     }
+#   }
+#   NULL
+# }
 
 # ______________________________________________________________________________________________________________________
 # xcms3_peakdensity -----

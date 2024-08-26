@@ -57,13 +57,20 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
     return(FALSE)
   }
   
-  if (length(engine$analyses) == 0) {
+  if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
   
-  if (!engine$has_groups()) {
-    warning("There are no features groups! Run find_features and group_features first!")
+  if (!engine$has_NTS()) {
+    warning("No NTS object available! Not done.")
+    return(FALSE)
+  }
+  
+  nts <- engine$NTS
+  
+  if (!nts@has_groups) {
+    warning("NTS object does not have feature groups! Not done.")
     return(FALSE)
   }
 
@@ -73,8 +80,6 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
   N <- NULL
   . <- NULL
   .N <- NULL
-  
-  nts <- engine$NTS
   
   cache <- .load_chache("fill_features", nts, x)
   

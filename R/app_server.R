@@ -50,11 +50,9 @@ app_server <- function(input, output, session) {
   library(data.table)
   
   # _Utility Functions -----
-  .use_initial_model <- function(reactive_engine_type, reactive_engine_save_file, reactive_clean_start) {
-    StreamFind_env <- as.environment("package:StreamFind")
-    available_engines <- ls(envir = StreamFind_env, pattern = "Engine")
-    available_engines <- available_engines[sapply(available_engines, function(x) "R6ClassGenerator" %in% is(get(x, envir = .GlobalEnv)))]
-    available_engines <- available_engines[!available_engines %in% "CoreEngine"]
+  .use_initial_model <- function(reactive_engine_type, reactive_engine_save_file, reactive_clean_start, volumes) {
+    
+    available_engines <- .get_available_engines()
     
     time_var <- format(Sys.time(), "%Y%m%d%H%M%S")
     
@@ -181,10 +179,7 @@ app_server <- function(input, output, session) {
   mandatory_header_names <- c("name", "author", "file", "date")
   volumes <- .get_volumes()
   engine <- NULL
-  StreamFind_env <- as.environment("package:StreamFind")
-  available_engines <- ls(envir = StreamFind_env, pattern = "Engine")
-  available_engines <- available_engines[sapply(available_engines, function(x) "R6ClassGenerator" %in% is(get(x, envir = .GlobalEnv)))]
-  available_engines <- available_engines[!available_engines %in% "CoreEngine"]
+  available_engines <- .get_available_engines()
   
   # _Reactive Variables -----
   reactive_wdir <- shiny::reactiveVal(getwd())
@@ -241,12 +236,14 @@ app_server <- function(input, output, session) {
       engine_call_new <- engine_call[["new"]]
       engine <<- suppressMessages(do.call(engine_call_new, list()))
       if (!is.na(reactive_engine_save_file())) engine$load(reactive_engine_save_file())
-      reactive_headers(engine$get_headers())
-      reactive_files(engine$get_files())
-      reactive_analyses(engine$get_overview())
+      
+      browser()
+      
+      reactive_headers(engine$headers)
+      reactive_analyses(engine$analyses)
       reactive_history(engine$history)
       reactive_saved_history(engine$history)
-      reactive_workflow(engine$settings)
+      reactive_workflow(engine$workflow)
       reactive_file_types(.get_valid_file_types(engine_type))
       reactive_clean_start(FALSE)
     }
@@ -309,12 +306,11 @@ app_server <- function(input, output, session) {
   shiny::observeEvent(input$save_engine_button, {
     engine$save(reactive_engine_save_file())
     reactive_warnings(.remove_notifications(reactive_warnings(), "unsaved_changes"))
-    reactive_headers(engine$get_headers())
-    reactive_files(engine$get_files())
-    reactive_analyses(engine$get_overview())
+    reactive_headers(engine$headers)
+    reactive_analyses(engine$analyses)
     reactive_history(engine$history)
     reactive_saved_history(engine$history)
-    reactive_workflow(engine$settings)
+    reactive_workflow(engine$workflow)
   })
   
   ## event Save Engine File -----
@@ -325,9 +321,8 @@ app_server <- function(input, output, session) {
       file_path <- file_info$datapath
       engine$save(file_path)
       reactive_warnings(.remove_notifications(reactive_warnings(), "unsaved_changes"))
-      reactive_headers(engine$get_headers())
-      reactive_files(engine$get_files())
-      reactive_analyses(engine$get_overview())
+      reactive_headers(engine$headers)
+      reactive_analyses(engine$analyses)
       reactive_history(engine$history)
       reactive_saved_history(engine$history)
       reactive_workflow(engine$settings)
@@ -348,18 +343,16 @@ app_server <- function(input, output, session) {
   shiny::observeEvent(input$reset_engine_button, {
     if (is.na(reactive_engine_save_file())) {
       reactive_warnings(.remove_notifications(reactive_warnings(), "unsaved_changes"))
-      reactive_headers(engine$get_headers())
-      reactive_files(engine$get_files())
-      reactive_analyses(engine$get_overview())
+      reactive_headers(engine$headers)
+      reactive_analyses(engine$analyses)
       reactive_history(engine$history)
       reactive_saved_history(engine$history)
-      reactive_workflow(engine$settings)
+      reactive_workflow(engine$workflow)
     } else {
       engine$load(reactive_engine_save_file())
       reactive_warnings(.remove_notifications(reactive_warnings(), "unsaved_changes"))
-      reactive_headers(engine$get_headers())
-      reactive_files(engine$get_files())
-      reactive_analyses(engine$get_overview())
+      reactive_headers(engine$headers)
+      reactive_analyses(engine$analyses)
       reactive_history(engine$history)
       reactive_saved_history(engine$history)
       reactive_workflow(engine$settings)

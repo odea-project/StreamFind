@@ -86,22 +86,17 @@ S7::method(run, MassSpecSettings_AnnotateFeatures_StreamFind) <- function(x, eng
     return(FALSE)
   }
   
-  if (length(engine$analyses) == 0) {
+  if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
   
-  if (!engine$has_results("NTS")) {
+  if (!engine$has_NTS()) {
     warning("No NTS object available! Not done.")
     return(FALSE)
   }
   
-  nts <- engine$results[["NTS"]]
-  
-  if (!is(nts, "StreamFind::NTS")) {
-    warning("NTS object is not of class NTS! Not done.")
-    return(FALSE)
-  }
+  nts <- engine$NTS
   
   if (nts@number_features == 0) {
     warning("NTS object is empty! Not done.")

@@ -57,11 +57,20 @@ MassSpecTargets <- S7::new_class("MassSpecTargets", package = "StreamFind",
     
     checkmate::assert_character(as.character(id), null.ok = TRUE)
     
-    if (is.data.frame(mz) & "name" %in% colnames(mz)) data.table::setnames(mz, "name", "id")
+    if (is.data.frame(mz) & "name" %in% colnames(mz)) {
+      mz$id <- mz$name
+      mz$name <- NULL
+    }
     
-    if (is.data.frame(rt) & "name" %in% colnames(rt)) data.table::setnames(rt, "name", "id")
+    if (is.data.frame(rt) & "name" %in% colnames(rt)) {
+      rt$id <- rt$name
+      rt$name <- NULL
+    }
     
-    if (is.data.frame(mobility) & "name" %in% colnames(mobility)) data.table::setnames(mobility, "name", "id")
+    if (is.data.frame(mobility) & "name" %in% colnames(mobility)) {
+      mobility$id <- mobility$name
+      mobility$name <- NULL
+    }
     
     targets <- data.table::data.table(
       mz = 0, rt = 0, mobility = 0,

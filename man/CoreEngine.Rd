@@ -26,7 +26,8 @@ in the app can be saved in the \strong{sqlite} file and then loaded for scriptin
 
 \item{\code{history}}{Audit trail of changes.}
 
-\item{\code{file}}{\code{EngineSaveFile} S7 class object.}
+\item{\code{file}}{An \code{EngineSaveFile} S7 class object. When setting the value it can be also a character with an
+\code{sqlite} file path to save the engine.}
 }
 \if{html}{\out{</div>}}
 }
@@ -38,7 +39,6 @@ in the app can be saved in the \strong{sqlite} file and then loaded for scriptin
 \item \href{#method-CoreEngine-print_headers}{\code{CoreEngine$print_headers()}}
 \item \href{#method-CoreEngine-print_analyses}{\code{CoreEngine$print_analyses()}}
 \item \href{#method-CoreEngine-print_workflow}{\code{CoreEngine$print_workflow()}}
-\item \href{#method-CoreEngine-print_results}{\code{CoreEngine$print_results()}}
 \item \href{#method-CoreEngine-save}{\code{CoreEngine$save()}}
 \item \href{#method-CoreEngine-load}{\code{CoreEngine$load()}}
 \item \href{#method-CoreEngine-has_settings}{\code{CoreEngine$has_settings()}}
@@ -64,13 +64,7 @@ in the app can be saved in the \strong{sqlite} file and then loaded for scriptin
 \subsection{Method \code{new()}}{
 Creates a \code{CoreEngine} R6 class object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$new(
-  file = NULL,
-  headers = NULL,
-  workflow = NULL,
-  analyses = NULL,
-  results = NULL
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$new(file = NULL, headers = NULL, workflow = NULL, analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -126,16 +120,6 @@ Prints the analyses.
 Prints the workflow.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$print_workflow()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-print_results"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-print_results}{}}}
-\subsection{Method \code{print_results()}}{
-Prints the results names in the engine.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$print_results()}\if{html}{\out{</div>}}
 }
 
 }

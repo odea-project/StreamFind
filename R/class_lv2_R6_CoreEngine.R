@@ -22,9 +22,6 @@ CoreEngine <- R6::R6Class("CoreEngine",
     ## ___ .analyses -----
     .analyses = NULL,
     
-    ## ___ .results -----
-    .results = NULL,
-    
     ## ___ .file -----
     .file = NULL,
     
@@ -61,11 +58,6 @@ CoreEngine <- R6::R6Class("CoreEngine",
     analyses = function(value) {
       if (missing(value)) return(private$.analyses)
       if (is(value, "StreamFind::Analyses")) {
-        
-        # TODO check if results must change to keep/remove the analyses
-        # maybe keep results from analyses remaining in the engine
-        # possibly delegate action to data specific engine
-        
         private$.analyses <- value
       } else {
         warning("Invalid analyses object! Not added.")
@@ -76,18 +68,18 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' @field results List of results.
     #' 
     results = function(value) {
-      if (missing(value)) return(private$.results)
+      if (missing(value)) return(self$analyses$results)
       if (is(value, "list")) {
         if (all(vapply(value, is, "StreamFind::Results"))) {
           results_names <- vapply(value, function(x) x@name, "")
           for (i in seq_along(results_names)) {
-            private$.results[[results_names[i]]] <- value[[i]]
+            self$analyses$results[[results_names[i]]] <- value[[i]]
           }
         } else {
           warning("Invalid results object! Not added.")
         }
       } else if (is(value, "StreamFind::Results")) {
-        private$.results[[value@name]] <- value
+        self$analyses$results[[value@name]] <- value
       } else {
         warning("Invalid results object! Not added.")
       }
@@ -100,13 +92,26 @@ CoreEngine <- R6::R6Class("CoreEngine",
       private$.history 
     },
     
-    #' @field file `EngineSaveFile` S7 class object. 
+    #' @field file An `EngineSaveFile` S7 class object. When setting the value it can be also a character with an 
+    #' `sqlite` file path to save the engine.
+    #'  
     file = function(value) {
       if (missing(value)) return(private$.file)
       if (is(value, "StreamFind::EngineSaveFile")) {
         private$.file <- value
+      } else if (is.character(value)) {
+        if (tools::file_ext(value) == "sqlite") {
+          if (!file.exists(value)) file.create(value)
+          tryCatch({
+            private$.file <- EngineSaveFile(file = value)
+          }, error = function(e) {
+            warning(e)
+          })
+        } else {
+          warning("File must have extension .sqlite!")
+        }
       } else {
-        warning("Invalid file path! Not added.")
+        warning("Invalid file object! Not added.")
       }
       invisible(self)
     }
@@ -124,27 +129,24 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' @param workflow A `Workflow` S7 class object.
     #' @param results A list of `Results` S7 class objects.
     #'
-    initialize = function(file = NULL, headers = NULL, workflow = NULL, analyses = NULL, results = NULL) {
-      private$.headers <- ProjectHeaders()
-      private$.workflow <- Workflow()
-      engine_type <- gsub("Engine", "", is(self))
-      if (engine_type == "Core") {
-        analyses_call <- "Analyses"
-        private$.analyses <- Analyses()
-      } else {
-        analyses_call <- paste0(engine_type, "Analyses")
-        private$.analyses <- do.call(analyses_call, list())
-      }
-      private$.results <- list() 
-      self$file <- EngineSaveFile(engine = is(self), file = NA_character_)
+    initialize = function(file = NULL, headers = NULL, workflow = NULL, analyses = NULL) {
+      self$file <- EngineSaveFile()
       
-      if (!is.null(file)) self$file <- EngineSaveFile(engine = is(self), file = file)
-      
-      if (self$file@is_saved) {
-        self$load()
-        message("\U2713 Engine loaded!")
-        return(invisible(self))
+      if (!is.null(file)) {
+        tryCatch({
+          self$file <- file
+          if (self$file$engine %in% is(self)) {
+            self$load()
+            return(invisible(self))
+          }
+        }, error = function(e) {
+          warning(e)
+        }, warning = function(w) {
+          warning(w)
+        })
       }
+      
+      self$headers <- ProjectHeaders()
       
       if (!is.null(headers)) {
         if (is(headers, "StreamFind::ProjectHeaders")) {
@@ -154,12 +156,23 @@ CoreEngine <- R6::R6Class("CoreEngine",
         }
       }
       
+      self$workflow <- Workflow()
+      
       if (!is.null(workflow)) {
         if (is(workflow, "StreamFind::Workflow")) {
           self$workflow <- workflow
         } else {
           warning("Workflow not added! Not valid.")
         }
+      }
+      
+      engine_type <- gsub("Engine", "", is(self))
+      
+      if (engine_type == "Core") {
+        private$.analyses <- Analyses()
+      } else {
+        analyses_call <- paste0(engine_type, "Analyses")
+        private$.analyses <- do.call(analyses_call, list())
       }
       
       if (!is.null(analyses)) {
@@ -172,18 +185,6 @@ CoreEngine <- R6::R6Class("CoreEngine",
           } else {
             warning("Analyses not added! Not valid.")
           }
-        }
-      }
-      
-      if (!is.null(results)) {
-        if (is(results, "list")) {
-          if (all(vapply(results, is, "StreamFind::Results"))) {
-            private$.results <- results
-          } else {
-            warning("Results not added! Not valid.")
-          }
-        } else {
-          warning("Results not added! Not valid.")
         }
       }
       
@@ -209,8 +210,6 @@ CoreEngine <- R6::R6Class("CoreEngine",
       self$print_workflow()
       
       self$print_analyses()
-      
-      self$print_results()
     },
     
     #' @description Prints the headers.
@@ -231,23 +230,6 @@ CoreEngine <- R6::R6Class("CoreEngine",
       show(self$workflow)
     },
     
-    #' @description Prints the results names in the engine.
-    #'
-    print_results = function() {
-      cat("\n")
-      cat("Results")
-      if (length(private$.results) > 0) {
-        cat("\n")
-        names_results <- names(private$.results)
-        cat(
-          paste0(" ", seq_len(length(names_results)), ": ", names_results),
-          sep = "\n"
-        )
-      } else {
-        cat(" empty \n")
-      }
-    },
-    
     ## ___ save/load -----
     
     #' @description Saves the engine data as an **sqlite** file.
@@ -257,20 +239,31 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' headers.
     #'
     save = function(file = NA_character_) {
-      if (is.na(file)) file <- self$file@path
+      if (is.na(file)) file <- self$file$path
       if (is.na(file)) file <- paste0(getwd(), "/" ,is(self), "_", format(private$.headers$date, "%Y%m%d%H%M%S"), ".sqlite")
       if (!file.exists(file)) file.create(file)
-      if (!self$file@path %in% file) self$file@path <- file
+      if (!self$file$path %in% file) {
+        tryCatch({
+          self$file <- EngineSaveFile(file = file)
+        }, error = function(e) {
+          warning(e)
+          return(invisible(self))
+        }, warning = function(w) {
+          warning(w)
+          return(invisible(self))
+        })
+      }
+      
       data <- list(
         headers = self$headers,
         workflow = self$workflow,
         analyses = self$analyses,
-        history = self$history,
-        results = self$results,
-        file = self$file
+        history = self$history
       )
+      
       hash <- .make_hash(is(self))
       .save_cache(is(self), data, hash, file)
+      
       if (file.exists(file)) {
         message("\U2713 Engine data saved in ", file, "!")
       } else {
@@ -284,35 +277,42 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' @param file A string with the full file path of the **sqlite** file containing the engine data saved.
     #' 
     load = function(file = NA_character_) {
-      if (is.na(file)) file <- self$file@path
-      if (is.na(file)) file <- file.choose()
+      if (is.na(file)) file <- self$file$path
       
       if (!file.exists(file)) {
         warning("File does not exist!")
         return(invisible(self))
       }
       
-      if (!self$file@path %in% file) self$file@path <- file
+      if (!self$file$path %in% file) {
+        tryCatch({
+          self$file <- EngineSaveFile(file = file)
+        }, error = function(e) {
+          warning("File not valid! Not loaded.")
+          return(invisible(self))
+        }, warning = function(w) {
+          warning(w)
+          return(invisible(self))
+        })
+      }
       
-      if (self$file@is_saved && is(self) == self$file@engine) {
+      if (is(self) == self$file$engine) {
+        
         hash <- .make_hash(is(self))
-        data <- .load_cache_backend(self$file@path, is(self), hash)
+        data <- .load_cache_backend(self$file$path, is(self), hash)
         
         if (!is.null(data)) {
           private$.headers <- data$headers
           private$.workflow <- data$workflow
           private$.analyses <- data$analyses
           private$.history <- data$history
-          private$.results <- data$results
           message("\U2713 Engine data loaded from ", file, "!")
-          
         } else {
           warning("No data loaded from cache!")
         }
       } else {
         warning("No data loaded from cache!")
       }
-      
       invisible(self)
     },
     
@@ -451,8 +451,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
           headers = as.list(self$headers),
           settings = as.list(self$workflow),
           analyses = as.list(self$analyses),
-          history = as.list(self$history),
-          results = as.list(self$results)
+          history = as.list(self$history)
         )
         js_all <- .convert_to_json(list_all)
         write(js_all, file = paste0(path, "/", name, ".", "json"))
