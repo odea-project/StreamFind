@@ -23,3 +23,16 @@ Results <- S7::new_class("Results", package = "StreamFind",
     NULL
   }
 )
+
+#' @export
+#' @noRd
+S7::method(`$`, Results) <- function(x, i) {
+  S7::prop(x, i)
+}
+
+#' @export
+#' @noRd
+S7::method(`$<-`, Results) <- function(x, i, value) {
+  S7::prop(x, i) <- value
+  x
+}

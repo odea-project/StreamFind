@@ -116,20 +116,15 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     
     #' @description Creates an R6 class *StatisticEngine*. Child of *CoreEngine* R6 class.
     #'
-    #' @param data Data.frame, data-table or matrix with data.
+    #' @param file Character of length one with the full path to the `sqlite` save file of the engine.
+    #' @param headers A `ProjectHeaders` S7 class object.
+    #' @param analyses A `StatisticAnalyses` S7 class object or a `character vector` with full file paths to `.csv` 
+    #' files or a `data.frame` or `matrix` as described in `?StatisticAnalyses`.
+    #' @param workflow A `Workflow` S7 class object.
     #'
-    initialize = function(data = NULL, headers = NULL, settings = NULL, analyses = NULL, results = NULL) {
-      if (!is.null(analyses)) {
-        if (is(analyses, "StatisticAnalysis")) analyses <- list(analyses)
-        if (!all(vapply(analyses, function(x) is(x, "StatisticAnalysis"), FALSE))) {
-          warning("The argument analyses must be a StatisticAnalysis object or a list of StatisticAnalysis objects! Not done.")
-          analyses <- NULL
-        }
-        if (!private$.check_list_analyses_data_conformity(analyses)) analyses <- NULL
-      }
-      super$initialize(headers, settings, analyses, results)
-      if (!is.null(data)) self$add_data(data)
-      private$.register("created", "StatisticEngine", headers$name, paste(c(headers$author, headers$path), collapse = ", "))
+    initialize = function(file = NULL, headers = NULL, workflow = NULL, analyses = NULL) {
+      super$initialize(file, headers, workflow, analyses)
+      invisible(self)
     },
     
     ## ___ get -----
@@ -137,50 +132,25 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #' @description Gets an overview data.frame of all the analyses.
     #'
     get_overview = function() {
-      if (length(private$.analyses) > 0) {
-        ov <- super$get_overview()
-        ov$nvars <- vapply(private$.analyses, function(x) ncol(x$data), 0)
-        ov$class <- vapply(private$.analyses, function(x) x$class, NA_character_)
-        row.names(ov) <- seq_len(nrow(ov))
-        ov
-      } else {
-       data.frame()
-      }
+      self$analyses$info
     },
     
     #' @description Gets the class of each analysis.
     #' 
     get_classes = function() {
-      if (length(private$.analyses) > 0) {
-        classes <- vapply(private$.analyses, function(x) x$class, NA_character_)
-        names(classes) <- self$get_analysis_names()
-        classes
-      } else {
-        NULL
-      }
+      self$analyses$classes
     },
     
     #' @description Gets the concentration of each analysis.
     #' 
     get_concentrations = function() {
-      if (length(private$.analyses) > 0) {
-        concentrations <- vapply(private$.analyses, function(x) x$concentration, NA_real_)
-        names(concentrations) <- self$get_analysis_names()
-        concentrations
-      } else {
-        NULL
-      }
+      self$analyses$classes
     },
     
     #' @description Gets the number of variables.
     #' 
     get_number_variables = function() {
-      if (length(private$.analyses) > 0) {
-        nvars <- vapply(private$.analyses, function(x) ncol(x$data), 0)
-        unique(nvars)
-      } else {
-        0
-      }
+      ncol(self$analyses$analyses)
     },
     
     #' @description Gets model explained variance.
@@ -330,7 +300,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       dt
     },
     
-    ## ___ add -----
+    ## ___ add/remove -----
     
     #' @description Adds analyses. Note that when adding new analyses, any existing results are removed.
     #'
@@ -340,51 +310,8 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #' @return Invisible.
     #'
     add_analyses = function(analyses = NULL) {
-      analyses <- private$.validate_list_analyses(analyses, childClass = "StatisticAnalysis")
-      if (!is.null(analyses)) {
-        if (!private$.check_list_analyses_data_conformity(analyses)) return(invisible())
-        n_analyses <- self$get_number_analyses()
-        super$add_analyses(analyses)
-        if (self$get_number_analyses() > n_analyses) self$remove_results()
-      }
+      self$analyses <- add(self$analyses, analyses)
       invisible(self)
-    },
-    
-    #' @description Adds data to the *StatisticEngine* object.
-    #' 
-    #' @note Note that only numeric values are accepted in data and the data column names are used as variable names 
-    #' and data row names are used as analyses names. The data is internally converted to *StatisticAnalysis* objects.
-    #' 
-    #' @param data Data.frame, data-table or matrix with data.
-    #'  
-    add_data = function(data) {
-
-      if (!is.data.frame(data) && !is(data, "data.table") && !is.matrix(data)) {
-        warning("The data must be a data.frame, data.table or matrix! Not done.")
-        return(invisible())
-      }
-      
-      if (nrow(data) == 0) {
-        warning("The data must not be empty! Not done.")
-        return(invisible())
-      }
-     
-      if (!all(vapply(data, is.numeric, FALSE))) {
-        warning("The data must be numeric! Not done.")
-        return(invisible())
-      }
-     
-      if (is(data, "data.table") || is(data, "data.frame")) data <- as.matrix(data)
-      
-      names <- rownames(data)
-      
-      if (is.null(names)) names <- paste0("analysis_", seq_len(nrow(data)))
-      
-      analyses <- list()
-      
-      for (i in seq_len(nrow(data))) analyses[[i]] <- StatisticAnalysis(name = names[i], data = data[i, , drop = FALSE])
-      
-      self$add_analyses(analyses)
     },
     
     #' @description Adds classes to the analyses.
@@ -392,24 +319,15 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #' @param classes A character vector with the classes.
     #' 
     add_classes = function(classes) {
-      
       if (!is.character(classes)) {
         warning("The classes must be a character vector! Not done.")
         return(invisible())
       }
-      
-      if (length(classes) != self$get_number_analyses()) {
+      if (length(classes) != length(self$analyses)) {
         warning("The number of classes must be equal to the number of analyses! Not done.")
         return(invisible())
       }
-      
-      private$.analyses <- Map(function(x, y) {
-        x$class <- y
-        x
-      }, private$.analyses, classes)
-      
-      private$.register("added", "analyses", "classes", paste(unique(classes), collapse = "; "))
-      
+      self$analyses$classes <- classes
       invisible(self)
     },
     
@@ -418,24 +336,27 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #' @param concentrations A numeric vector with the concentrations.
     #' 
     add_concentrations = function(concentrations = NA_real_) {
-      
       if (!is.numeric(concentrations)) {
         warning("The concentrations must be a numeric vector! Not done.")
         return(invisible())
       }
-      
-      if (length(concentrations) != self$get_number_analyses()) {
+      if (length(concentrations) != length(self$analyses)) {
         warning("The number of concentrations must be equal to the number of analyses! Not done.")
         return(invisible())
       }
-      
-      private$.analyses <- Map(function(x, y) {
-        x$concentration <- y
-        x
-      }, private$.analyses, concentrations)
-      
-      private$.register("added", "analyses", "concentrations", paste(unique(concentrations), collapse = "; "))
-      
+      self$analyses$concentrations <- concentrations
+      invisible(self)
+    },
+    
+    #' @description Removes analyses.
+    #' 
+    #' @param analyses A character vector with the names or numeric vector with indices of the analyses to remove.
+    #'
+    #' @return Invisible.
+    #'
+    remove_analyses = function(analyses = NULL) {
+      analyses <- .check_analyses_argument(self$analyses, analyses)
+      self$analyses <- remove(self$analyses, analyses)
       invisible(self)
     },
     

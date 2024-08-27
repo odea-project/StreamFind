@@ -127,7 +127,6 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' @param headers A `ProjectHeaders` S7 class object.
     #' @param analyses An `Analyses` S7 class object.
     #' @param workflow A `Workflow` S7 class object.
-    #' @param results A list of `Results` S7 class objects.
     #'
     initialize = function(file = NULL, headers = NULL, workflow = NULL, analyses = NULL) {
       self$file <- EngineSaveFile()
@@ -316,11 +315,31 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
     
-    ## ___ get -----
+    ## ___ add/remove -----
     
-    ## ___ add -----
+    #' @description Adds analyses. Note that when adding new analyses, any existing results are removed.
+    #'
+    #' @param analyses A Analysis S3 class object or a list with Analysis S3 class objects as elements (see `?Analysis` 
+    #' for more information) or a character vector with full path to analysis files.
+    #'
+    #' @return Invisible.
+    #'
+    add_analyses = function(analyses = NULL) {
+      self$analyses <- add(self$analyses, analyses)
+      invisible(self)
+    },
     
-    ## ___ remove -----
+    #' @description Removes analyses.
+    #' 
+    #' @param analyses A string or a vector of strings with the name/s or numeric with indices of the analyses to remove.
+    #'
+    #' @return Invisible.
+    #'
+    remove_analyses = function(analyses = NULL) {
+      analyses <- .check_analyses_argument(self$analyses, analyses)
+      self$analyses <- remove(self$analyses, analyses)
+      invisible(self)
+    },
     
     ## ___ has -----
     

@@ -1,4 +1,26 @@
 
+raman_files <- StreamFindData::get_raman_file_paths()
+
+ra <- RamanAnalyses(raman_files)
+
+
+ra <- RamanEngine$new(analyses = raman_files)
+
+ra$get_spectra()
+
+StatisticAnalyses()
+
+stat <- StatisticEngine$new()
+
+is(stat$analyses)
+
+ra$spectra
+
+
+Spectra()
+
+
+
 # S7 Trial -----
 ms_files <- StreamFindData::get_ms_file_paths()
 db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
@@ -79,23 +101,43 @@ a[1] <- ms_files[4]
 
 a$spectra_tic
 
-ms <- MassSpecEngine$new(analyses = ms_files[13:15])
-
-# ms$analyses <- ms$analyses[-3]
-# ms$analyses <- add(ms$analyses, ms_files[3])
+ms <- MassSpecEngine$new(analyses = ms_files[19:21])
 ms$run(MassSpecSettings_FindFeatures_openms())
 ms$run(MassSpecSettings_AnnotateFeatures_StreamFind())
 ms$run(MassSpecSettings_FindInternalStandards_StreamFind(database = dbis, ppm = 8, sec = 10))
 ms$run(MassSpecSettings_GroupFeatures_openms())
 ms$run(MassSpecSettings_FillFeatures_StreamFind())
 ms$run(MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE))
-ms$run(MassSpecSettings_FilterFeatures_patRoon(absMinIntensity = 50000))
+ms$run(MassSpecSettings_FilterFeatures_patRoon(absMinIntensity = 10000))
+ms$NTS <- ms$NTS[ , ms$get_suspects(database = dbsus)$group]
+ms$run(MassSpecSettings_LoadFeaturesMS1_StreamFind(filtered = FALSE))
+ms$run(MassSpecSettings_LoadFeaturesMS2_StreamFind(filtered = FALSE))
+ms$run(MassSpecSettings_LoadFeaturesEIC_StreamFind(filtered = FALSE))
+ms$run(MassSpecSettings_CalculateFeaturesQuality_StreamFind())
+ms$run(MassSpecSettings_LoadMSPeakLists_StreamFind())
+ms$run(MassSpecSettings_GenerateFormulas_genform())
+ms$run(MassSpecSettings_GenerateCompounds_metfrag())
+ms$run(MassSpecSettings_SuspectScreening_StreamFind(database = dbsus, ppm = 15, sec = 30))
 
-ms$get_suspects(database = dbis)
+ms$get_suspects(database = dbsus[2, ], ppm = 15, sec = 30)
 
-ms$analyses <- ms$analyses[-3]
 
-ms$NTS <- ms$NTS[1 , 1:5]
+ms$get_features()
+
+View(ms$get_isotopes())
+
+a <- ms$analyses[1]
+
+
+a@results$NTS
+
+View(ms$NTS@formulas["M239_R1157_184"])
+
+ms$NTS$group_names
+
+ms$NTS@compounds[1:2]
+
+View(ms$NTS$formulas)
 
 show(ms$NTS[1:2])
 
@@ -112,7 +154,7 @@ ms$get_groups_ms2(mass = dbis[3, ])
 View(ms$get_MSPeakLists(useLoadedData = FALSE))
 
 
-ms$NTS$feature_list
+
 ms$NTS$filtered
 
 

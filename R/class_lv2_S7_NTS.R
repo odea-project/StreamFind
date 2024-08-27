@@ -152,16 +152,22 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
       FALSE
     }),
     
+    ## __group_names -----
+    group_names = S7::new_property(S7::class_character, getter = function(self) {
+      if (self@has_groups) return(names(self@features))
+      NA_character_
+    }),
+    
     ## __has_features_ms1 -----
     has_features_ms1 = S7::new_property(S7::class_logical, getter = function(self) {
       if (self@number_features > 0) {
-        any(vapply(self$feature_list, function(x) {
-          if ("ms2" %in% colnames(x)) {
-            any(vapply(x$ms2, is.data.frame, FALSE))
+        return(any(vapply(self$feature_list, function(x) {
+          if ("ms1" %in% colnames(x)) {
+            any(vapply(x$ms1, is.data.frame, FALSE))
           } else {
             FALSE
           }
-        }, FALSE))
+        }, FALSE)))
       }
       FALSE
     }),
@@ -169,13 +175,13 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
     ## __has_features_ms2 -----
     has_features_ms2 = S7::new_property(S7::class_logical, getter = function(self) {
       if (self@number_features > 0) {
-        any(vapply(self$feature_list, function(x) {
+        return(any(vapply(self$feature_list, function(x) {
           if ("ms2" %in% colnames(x)) {
             any(vapply(x$ms2, is.data.frame, FALSE))
           } else {
             FALSE
           }
-        }, FALSE))
+        }, FALSE)))
       }
       FALSE
     }),
@@ -183,13 +189,13 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
     ## __has_features_eic -----
     has_features_eic = S7::new_property(S7::class_logical, getter = function(self) {
       if (self@number_features > 0) {
-        any(vapply(self$feature_list, function(x) {
+        return(any(vapply(self$feature_list, function(x) {
           if ("eic" %in% colnames(x)) {
             any(vapply(x$eic, is.data.frame, FALSE))
           } else {
             FALSE
           }
-        }, FALSE))
+        }, FALSE)))
       }
       FALSE
     }),
@@ -197,13 +203,13 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
     ## __has_features_suspects -----
     has_features_suspects = S7::new_property(S7::class_logical, getter = function(self) {
       if (self@number_features > 0) {
-        any(vapply(self$feature_list, function(x) {
+        return(any(vapply(self$feature_list, function(x) {
           if ("suspects" %in% colnames(x)) {
             any(vapply(x$suspects, is.data.frame, FALSE))
           } else {
             FALSE
           }
-        }, FALSE))
+        }, FALSE)))
       }
       FALSE
     })
@@ -248,10 +254,10 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
       checkmate::test_list(self@filtered),
       checkmate::test_true("MSPeakLists" %in% is(self@mspl)),
       checkmate::test_true("formulas" %in% is(self@formulas)),
-      checkmate::test_true("compounds" %in% is(self@compounds)),
-      if (length(self@mspl) > 0) checkmate::test_true(length(self@mspl) == self@length),
-      if (length(self@formulas) > 0) checkmate::test_true(length(self@formulas) == self@length),
-      if (length(self@compounds) > 0) checkmate::test_true(length(self@compounds) == self@length)
+      checkmate::test_true("compounds" %in% is(self@compounds))
+      # if (length(self@mspl) > 0) checkmate::test_true(all(patRoon::analyses(self@mspl) %in% patRoon::analyses(self@features))),
+      # if (length(self@formulas) > 0) checkmate::test_true(all(patRoon::analyses(self@formulas) %in% patRoon::analyses(self@features))),
+      # if (length(self@compounds) > 0) checkmate::test_true(all(names(self@compounds@groupAnnotations) %in% self@group_names))
     )
     if (!valid) return(FALSE)
     NULL
@@ -307,39 +313,36 @@ S7::method(print, NTS) <- function(x, ...) {
 
 #' @export
 #' @noRd
-S7::method(`$`, NTS) <- function(x, i) {
-  S7::prop(x, i)
-}
-
-#' @export
-#' @noRd
-S7::method(`$<-`, NTS) <- function(x, i, value) {
-  S7::prop(x, i) <- value
-  x
-}
-
-#' @export
-#' @noRd
 S7::method(`[`, NTS) <- function(x, i, j) {
   if (missing(j)) {
     x@features <- x@features[i]
     x@filtered <- x@filtered[i]
     if (length(x@mspl) > 0) x@mspl <- x@mspl[i]
-    if (length(x@formulas) > 0) x@formulas <- x@formulas[i]
-    if (length(x@compounds) > 0) x@compounds <- x@compounds[i]
+    if (length(x@formulas) > 0) {
+      x@formulas <- x@formulas[x$group_names]
+      if ("featureFormulas" %in%  slotNames(x@formulas)) {
+        x@formulas@featureFormulas <- x@formulas@featureFormulas[i]
+      }
+    }
+    if (length(x@compounds) > 0) x@compounds <- x@compounds[x$group_names]
     return(x)
   } else if (missing(i)) {
     x@features <- x@features[, j]
     if (length(x@mspl) > 0) x@mspl <- x@mspl[, j]
-    if (length(x@formulas) > 0) x@formulas <- x@formulas[, j]
-    if (length(x@compounds) > 0) x@compounds <- x@compounds[, j]
+    if (length(x@formulas) > 0) x@formulas <- x@formulas[j]
+    if (length(x@compounds) > 0) x@compounds <- x@compounds[j]
     return(x)
   } else {
     x@features <- x@features[i, j]
     x@filtered <- x@filtered[i]
     if (length(x@mspl) > 0) x@mspl <- x@mspl[i, j]
-    if (length(x@formulas) > 0) x@formulas <- x@formulas[i, j]
-    if (length(x@compounds) > 0) x@compounds <- x@compounds[i, j]
+    if (length(x@formulas) > 0) {
+      x@formulas <- x@formulas[j]
+      if ("featureFormulas" %in%  slotNames(x@formulas)) {
+        x@formulas@featureFormulas <- x@formulas@featureFormulas[i]
+      }
+    }
+    if (length(x@compounds) > 0) x@compounds <- x@compounds[j]
     return(x)
   }
 }
@@ -350,9 +353,14 @@ S7::method(`[[`, NTS) <- function(x, i) {
   x@features <- x@features[[i]]
   x@filtered <- x@filtered[[i]]
   if (length(x@mspl) > 0) x@mspl <- x@mspl[[i]]
-  if (length(x@formulas) > 0) x@formulas <- x@formulas[[i]]
-  if (length(x@compounds) > 0) x@compounds <- x@compounds[[i]]
-  x
+  if (length(x@formulas) > 0) {
+    if ("featureFormulas" %in%  slotNames(x@formulas)) {
+      x@formulas@featureFormulas <- x@formulas@featureFormulas[i]
+      x@formulas <- x@formulas[x$group_names]
+    }
+  }
+  if (length(x@compounds) > 0) x@compounds <- x@compounds[x$group_names]
+  return(x)
 }
 
 #' Adds an extra column to data.frame object in features.

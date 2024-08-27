@@ -87,7 +87,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
             self$results <- value
           } else {
             # TODO check if some analyses are in engine and subset engine to match NTS
-            warning("Analyses names do not match! Not done.")
+            warning("Analysis names do not match! Not done.")
           }
         } else {
           warning("NTS results object is empty! Not done.")
@@ -332,7 +332,6 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @param analyses A `MassSpecAnalyses` S7 class object or a `character vector` with full file paths to ms files or 
     #' a `data.frame` as described in `?MassSpecAnalyses`.
     #' @param workflow A `Workflow` S7 class object.
-    #' @param results A list of `Results` S7 class objects.
     #'
     #' @return A new MassSpecEngine class object.
     #'
@@ -738,7 +737,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                 if (nrow(spec[[i]]) > 0) {
                   if (!is.null(cache[[i]]$hash)) {
                     .save_cache(paste0("parsed_ms_spectra_", gsub("-", "", i)), spec[[i]], cache[[i]]$hash)
-                    message("\U1f5ab Parsed spectra for ", i, " cached!")
+                    # message("\U1f5ab Parsed spectra for ", i, " cached!")
                   }
                 }
               }
@@ -2502,7 +2501,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           pol <- self$get_spectra_polarity(analysis)
          
           it <- seq_len(nrow(database))
-         
+          
           suspects <- lapply(it, function(x, analysis, database, ppm, sec) {
            
             x_rt <- database$rt[x]
@@ -2511,7 +2510,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
            
             if (!is.na(x_mz)) {
               x_mz <- database$mz[x]
-             
+              
               temp <- self$get_features(
                 analyses = analysis,
                 mz = x_mz,
@@ -2883,187 +2882,27 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       # metadata
     },
     
-    ## ___ add/update -----
+    ## ___ add/remove -----
     
     #' @description Adds analyses. Note that when adding new analyses, any existing results are removed.
     #'
     #' @param analyses A MassSpecAnalysis S3 class object or a list with MassSpecAnalysis S3 class objects as 
-    #' elements (see `?MassSpecAnalysis` for more information).
+    #' elements (see `?MassSpecAnalysis` for more information) or a character vector with full path to mzML/mzXML files.
     #'
     #' @return Invisible.
     #'
     add_analyses = function(analyses = NULL) {
-      
-      analyses <- private$.validate_list_analyses(analyses, childClass = "MassSpecAnalysis")
-      
-      if (!is.null(analyses)) {
-        
-        n_analyses <- self$get_number_analyses()
-        
-        super$add_analyses(analyses)
-        
-        if (self$get_number_analyses() > n_analyses) self$remove_results()
-      }
-      
+      self$analyses <- add(self$analyses, analyses)
       invisible(self)
     },
     
-    #' @description Adds analyses based on mzML/mzXML files. Note that when adding new mzML/mzXML files, any existing 
-    #' grouping or features are removed.
+    #' @description Removes analyses.
     #'
     #' @return Invisible.
     #'
-    add_files = function(files = NULL) {
-      
-      if (!is.null(files)) {
-        
-        if (is.data.frame(files)) {
-          
-          if (all(c("path", "analysis") %in% colnames(files))) {
-            files$file <- vapply(seq_len(nrow(files)), function(x) {
-              list.files(files$path[x], pattern = files$analysis[x], full.names = TRUE, recursive = FALSE)
-            }, "")
-          }
-          
-          if ("file" %in% colnames(files)) {
-            
-            if ("replicate" %in% colnames(files)) {
-              replicates <- as.character(files$replicate)
-            } else if ("group" %in% colnames(files)) {
-              replicates <- as.character(files$group)
-            } else {
-              replicates <- rep(NA_character_, nrow(files))
-            }
-            
-            if ("blank" %in% colnames(files)) {
-              blanks <- as.character(files$blank)
-            } else {
-              blanks <- rep(NA_character_, nrow(files))
-            }
-            
-            files <- files$file
-            
-          } else {
-            files <- ""
-          }
-          
-        } else {
-          replicates <- rep(NA_character_, length(files))
-          blanks <- rep(NA_character_, length(files))
-        }
-        
-        possible_ms_file_formats <- ".mzML|.mzXML"
-        
-        valid_files <- vapply(files,
-                              FUN.VALUE = FALSE,
-                              function(x, possible_ms_file_formats) {
-                                if (!file.exists(x)) {
-                                  return(FALSE)
-                                }
-                                if (FALSE %in% grepl(possible_ms_file_formats, x)) {
-                                  return(FALSE)
-                                }
-                                TRUE
-                              }, possible_ms_file_formats = possible_ms_file_formats
-        )
-        
-        if (!all(valid_files)) {
-          warning("File/s not valid!")
-          return(NULL)
-        }
-        
-        names(replicates) <- as.character(files)
-        
-        names(blanks) <- as.character(files)
-        
-        analyses <- lapply(files, function(x) {
-          
-          cache <- .load_chache("parsed_ms_analyses", x)
-          
-          if (!is.null(cache$data)) {
-            message("\U2139 ", basename(x), " analysis loaded from cache!")
-            cache$data
-            
-          } else {
-            
-            message("\U2699 Parsing ", basename(x), "...", appendLF = FALSE)
-            
-            ana <- rcpp_parse_ms_analysis(x)
-            
-            class_ana <- class(ana)[1]
-            
-            if (!class_ana %in% "MassSpecAnalysis") {
-              message(" Not Done!")
-              return(NULL)
-            }
-            
-            message(" Done!")
-            
-            rpl <- replicates[x]
-            
-            if (is.na(rpl)) {
-              rpl <- ana$name
-              rpl <- sub("-[^-]+$", "", rpl)
-            }
-            
-            ana$replicate <- rpl
-            
-            blk <- blanks[x]
-            
-            if (!is.na(blk)) ana$blank <- blk
-            
-            ana$blank <- blk
-            
-            if (!is.null(cache$hash)) {
-              .save_cache("parsed_ms_analyses", ana, cache$hash)
-              message("\U1f5ab Parsed analysis cached!")
-            }
-            
-            ana
-          }
-        })
-        
-        names(analyses) <- vapply(analyses, function(x) x[["name"]], "")
-        
-        analyses <- analyses[order(names(analyses))]
-        
-        if (all(vapply(analyses, function(x) "MassSpecAnalysis" %in% is(x), FALSE))) {
-          self$add_analyses(analyses)
-          
-        } else {
-          warning("Not all added files could be converted as MassSpecAnalysis!")
-        }
-        
-      } else {
-        warning("Files were not added!")
-      }
-      
-      invisible(self)
-    },
-    
-    #' @description Adds data from results to the engine.
-    #'
-    #' @param value A named list with data from results.
-    #'
-    #' @return Invisible.
-    #'
-    add_results = function(value = NULL) {
-      
-      value_names <- names(value)
-      
-      if (!is.null(value_names)) {
-        
-        if ("patRoon" %in% value_names) {
-          order_analysis <- patRoon::analyses(value[["patRoon"]]$data)
-          private$.analyses <- private$.analyses[order_analysis]
-        }
-        
-        super$add_results(value)
-        
-      } else {
-        warning("Not done, the value must be a named list!")
-      }
-      
+    remove_analyses = function(analyses = NULL) {
+      analyses <- .check_analyses_argument(self$analyses, analyses)
+      self$analyses <- remove(self$analyses, analyses)
       invisible(self)
     },
     
@@ -5034,45 +4873,6 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
 
       invisible(self)
-    },
-
-    ## ___ info -----
-
-    ### ___ processing_function_calls -----
-
-    #' @description A data.table with available data processing methods.
-    #'
-    processing_methods = function() {
-      ps <- list()
-      ps[["CentroidSpectra"]] <- 1
-      ps[["BinSpectra"]] <- 1
-      ps[["FindFeatures"]] <- 1
-      ps[["AnnotateFeatures"]] <- 1
-      ps[["LoadFeaturesEIC"]] <- 1
-      ps[["LoadFeaturesMS1"]] <- 1
-      ps[["LoadFeaturesMS2"]] <- 1
-      ps[["LoadMSPeakLists"]] <- 1
-      ps[["GroupFeatures"]] <- 1
-      ps[["FillFeatures"]] <- 1
-      ps[["FilterFeatures"]] <- Inf
-      ps[["SuspectScreening"]] <- 1
-      ps[["FindInternalStandards"]] <- 1
-      ps[["CalculateQuality"]] <- 1
-      ps[["GenerateFormulas"]] <- 1
-      ps[["GenerateCompounds"]] <- 1
-      ps[["SmoothChromatograms"]] <- 1
-      ps[["CorrectChromatogramsBaseline"]] <- 1
-      ps[["IntegrateChromatograms"]] <- 1
-      ps[["ClusterSpectra"]] <- 1
-      ps[["CalculateSpectraCharges"]] <- 1
-      ps[["DeconvoluteSpectra"]] <- 1
-      ps[["SmoothSpectra"]] <- Inf
-      ps[["CorrectSpectraBaseline"]] <- 1
-      ps[["NormalizeSpectra"]] <- Inf
-      ps[["AverageSpectra"]] <- 1
-      ps[["SubtractBlankSpectra"]] <- 1
-      ps[["NormalizeFeatures"]] <- 1
-      data.table(name = names(ps), max = unlist(ps))
     }
   )
 )

@@ -88,6 +88,7 @@ Note that only the model MCR is valid for quantification and concentrations must
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_analyses'><code>StreamFind::CoreEngine$print_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_headers'><code>StreamFind::CoreEngine$print_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_workflow'><code>StreamFind::CoreEngine$print_workflow()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_analyses'><code>StreamFind::CoreEngine$remove_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run'><code>StreamFind::CoreEngine$run()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_app"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_app'><code>StreamFind::CoreEngine$run_app()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_workflow'><code>StreamFind::CoreEngine$run_workflow()</code></a></span></li>
@@ -102,35 +103,24 @@ Note that only the model MCR is valid for quantification and concentrations must
 Creates an R6 class \emph{StatisticEngine}. Child of \emph{CoreEngine} R6 class.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$new(
-  data = NULL,
+  file = NULL,
   headers = NULL,
-  settings = NULL,
-  analyses = NULL,
-  results = NULL
+  workflow = NULL,
+  analyses = NULL
 )}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{data}}{Data.frame, data-table or matrix with data.}
+\item{\code{file}}{Character of length one with the full path to the \code{sqlite} save file of the engine.}
 
-\item{\code{headers}}{A named list with headers or a ProjectHeaders S3 class object.
-Each list element must have length one. There is no type restrictions
-except for name (must be type character length 1), author (must be type
-character length 1), file (must be type character length 1) and date (must
-be class POSIXct or class POSIXt length 1). See more information in
-\code{?ProjectHeaders}.}
+\item{\code{headers}}{A \code{ProjectHeaders} S7 class object.}
 
-\item{\code{settings}}{A named list of ProcessingSettings objects or a
-single ProcessingSettings object. The list names should match
-the call name of each ProcessingSettings object. Alternatively, a named
-list with call name, algorithm and parameters to be transformed and added
-as ProcessingSettings object.}
+\item{\code{workflow}}{A \code{Workflow} S7 class object.}
 
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-
-\item{\code{results}}{A named list of objects from processing methods.}
+\item{\code{analyses}}{A \code{StatisticAnalyses} S7 class object or a \verb{character vector} with full file paths to \code{.csv}
+files or a \code{data.frame} or \code{matrix} as described in \code{?StatisticAnalyses}.}
 }
 \if{html}{\out{</div>}}
 }

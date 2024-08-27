@@ -264,6 +264,12 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses", package = "StreamFind", pa
     has_NTS = S7::new_property(S7::class_logical, getter = function(self) {
       if (length(self) == 0) return(FALSE)
       !is.null(self@results[["NTS"]])
+    }),
+    
+    ## __NTS -----
+    NTS = S7::new_property(S7::class_list, getter = function(self) {
+      if (self$has_NTS) return(self@results[["NTS"]])
+      NULL
     })
   ),
 
@@ -348,14 +354,14 @@ S7::method(`[`, MassSpecAnalyses) <- function(x, i) {
 
 #' @export
 #' @noRd
-S7::method(`[<-`, Analyses) <- function(x, i, value) {
-  warning("Method not implemented in MassSpecAnalyses! Use add or remove methods instead.")
+S7::method(`[<-`, MassSpecAnalyses) <- function(x, i, value) {
+  x <- add(x, value)
   return(x)
 }
 
 #' @export
 #' @noRd
-S7::method(`[[`, Analyses) <- function(x, i) {
+S7::method(`[[`, MassSpecAnalyses) <- function(x, i) {
   x@analyses <- x@analyses[[i]]
   if (x@has_NTS) x@results$NTS <- x@results$NTS[[i]]
   return(x)
@@ -363,8 +369,8 @@ S7::method(`[[`, Analyses) <- function(x, i) {
 
 #' @export
 #' @noRd
-S7::method(`[[<-`, Analyses) <- function(x, i, value) {
-  warning("Method not implemented in MassSpecAnalyses! Use add or remove methods instead." )
+S7::method(`[[<-`, MassSpecAnalyses) <- function(x, i, value) {
+  x <- add(x, value)
   return(x)
 }
 

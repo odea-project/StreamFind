@@ -18,14 +18,6 @@ assembly of Non-Target Screening data processing workflows.
 \section{Super class}{
 \code{\link[StreamFind:CoreEngine]{StreamFind::CoreEngine}} -> \code{MassSpecEngine}
 }
-\section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
-\describe{
-\item{\code{help}}{(\code{list()})\cr
-List of function elements to access specific reference help pages.}
-}
-\if{html}{\out{</div>}}
-}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
@@ -49,6 +41,7 @@ List of function elements to access specific reference help pages.}
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-MassSpecEngine-new}{\code{MassSpecEngine$new()}}
+\item \href{#method-MassSpecEngine-get_analysis_names}{\code{MassSpecEngine$get_analysis_names()}}
 \item \href{#method-MassSpecEngine-get_replicate_names}{\code{MassSpecEngine$get_replicate_names()}}
 \item \href{#method-MassSpecEngine-get_blank_names}{\code{MassSpecEngine$get_blank_names()}}
 \item \href{#method-MassSpecEngine-get_files}{\code{MassSpecEngine$get_files()}}
@@ -87,19 +80,18 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-get_internal_standards}{\code{MassSpecEngine$get_internal_standards()}}
 \item \href{#method-MassSpecEngine-get_metadata}{\code{MassSpecEngine$get_metadata()}}
 \item \href{#method-MassSpecEngine-add_analyses}{\code{MassSpecEngine$add_analyses()}}
-\item \href{#method-MassSpecEngine-add_files}{\code{MassSpecEngine$add_files()}}
-\item \href{#method-MassSpecEngine-add_results}{\code{MassSpecEngine$add_results()}}
+\item \href{#method-MassSpecEngine-remove_analyses}{\code{MassSpecEngine$remove_analyses()}}
 \item \href{#method-MassSpecEngine-load_spectra}{\code{MassSpecEngine$load_spectra()}}
 \item \href{#method-MassSpecEngine-load_chromatograms}{\code{MassSpecEngine$load_chromatograms()}}
-\item \href{#method-MassSpecEngine-remove_analyses}{\code{MassSpecEngine$remove_analyses()}}
 \item \href{#method-MassSpecEngine-remove_features}{\code{MassSpecEngine$remove_features()}}
 \item \href{#method-MassSpecEngine-remove_features_ms1}{\code{MassSpecEngine$remove_features_ms1()}}
 \item \href{#method-MassSpecEngine-remove_features_ms2}{\code{MassSpecEngine$remove_features_ms2()}}
 \item \href{#method-MassSpecEngine-remove_groups}{\code{MassSpecEngine$remove_groups()}}
-\item \href{#method-MassSpecEngine-subset_analyses}{\code{MassSpecEngine$subset_analyses()}}
 \item \href{#method-MassSpecEngine-subset_features}{\code{MassSpecEngine$subset_features()}}
 \item \href{#method-MassSpecEngine-subset_groups}{\code{MassSpecEngine$subset_groups()}}
 \item \href{#method-MassSpecEngine-has_NTS}{\code{MassSpecEngine$has_NTS()}}
+\item \href{#method-MassSpecEngine-has_features}{\code{MassSpecEngine$has_features()}}
+\item \href{#method-MassSpecEngine-has_groups}{\code{MassSpecEngine$has_groups()}}
 \item \href{#method-MassSpecEngine-has_MSPeakLists}{\code{MassSpecEngine$has_MSPeakLists()}}
 \item \href{#method-MassSpecEngine-has_formulas}{\code{MassSpecEngine$has_formulas()}}
 \item \href{#method-MassSpecEngine-has_compounds}{\code{MassSpecEngine$has_compounds()}}
@@ -137,7 +129,6 @@ List of function elements to access specific reference help pages.}
 \item \href{#method-MassSpecEngine-plot_spectra_peaks}{\code{MassSpecEngine$plot_spectra_peaks()}}
 \item \href{#method-MassSpecEngine-check_correspondence}{\code{MassSpecEngine$check_correspondence()}}
 \item \href{#method-MassSpecEngine-report}{\code{MassSpecEngine$report()}}
-\item \href{#method-MassSpecEngine-processing_methods}{\code{MassSpecEngine$processing_methods()}}
 \item \href{#method-MassSpecEngine-clone}{\code{MassSpecEngine$clone()}}
 }
 }
@@ -192,13 +183,28 @@ Creates an R6 MassSpecEngine class object.
 
 \item{\code{analyses}}{A \code{MassSpecAnalyses} S7 class object or a \verb{character vector} with full file paths to ms files or
 a \code{data.frame} as described in \code{?MassSpecAnalyses}.}
-
-\item{\code{results}}{A list of \code{Results} S7 class objects.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
 A new MassSpecEngine class object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-get_analysis_names"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_analysis_names}{}}}
+\subsection{Method \code{get_analysis_names()}}{
+Gets the analysis replicate names.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_analysis_names(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+}
+\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -1858,7 +1864,7 @@ Adds analyses. Note that when adding new analyses, any existing results are remo
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with MassSpecAnalysis S3 class objects as
-elements (see \code{?MassSpecAnalysis} for more information).}
+elements (see \code{?MassSpecAnalysis} for more information) or a character vector with full path to mzML/mzXML files.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1867,44 +1873,18 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-add_files"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_files}{}}}
-\subsection{Method \code{add_files()}}{
-Adds analyses based on mzML/mzXML files. Note that when adding new mzML/mzXML files, any existing
-grouping or features are removed.
+\if{html}{\out{<a id="method-MassSpecEngine-remove_analyses"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-remove_analyses}{}}}
+\subsection{Method \code{remove_analyses()}}{
+Removes analyses.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_files(files = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$remove_analyses(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{files}}{A character vector with full file path/s of \emph{mzML}
-or \emph{mzXML} file/s or a data.frame with the columns \emph{file}, \emph{replicate}
-and \emph{blank} with the full file path of \emph{mzML} or \emph{mzXML} file/s
-(character), the replicate group name (character) and the associated blank
-replicate group name (character). Note the file paths must have the extension
-\emph{.mzML} or \emph{.mzXML}.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-add_results"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_results}{}}}
-\subsection{Method \code{add_results()}}{
-Adds data from results to the engine.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_results(value = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A named list with data from results.}
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2022,26 +2002,6 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-remove_analyses"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-remove_analyses}{}}}
-\subsection{Method \code{remove_analyses()}}{
-Removes analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$remove_analyses(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-remove_features"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-remove_features}{}}}
 \subsection{Method \code{remove_features()}}{
@@ -2115,26 +2075,6 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-subset_analyses"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-subset_analyses}{}}}
-\subsection{Method \code{subset_analyses()}}{
-Subsets a MassSpecEngine object on analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$subset_analyses(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A new cloned MassSpecEngine object with only the analyses as defined by the analyses argument.
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-subset_features"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-subset_features}{}}}
 \subsection{Method \code{subset_features()}}{
@@ -2183,6 +2123,26 @@ A new cloned MassSpecEngine object with only the groups as defined by the \code{
 Checks if there are NTS results, returning \code{TRUE} or \code{FALSE}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_NTS()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-has_features"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_features}{}}}
+\subsection{Method \code{has_features()}}{
+Checks if there are features from NTS results, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_features()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-has_groups"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_groups}{}}}
+\subsection{Method \code{has_groups()}}{
+Checks if there are feature groups from NTS results, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_groups()}\if{html}{\out{</div>}}
 }
 
 }
@@ -4478,16 +4438,6 @@ the report settings file. See \link[patRoon]{report}.}
 \subsection{Returns}{
 An interactive HTML report from the package \pkg{patRoon}.
 }
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-processing_methods"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-processing_methods}{}}}
-\subsection{Method \code{processing_methods()}}{
-A data.table with available data processing methods.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$processing_methods()}\if{html}{\out{</div>}}
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-clone"></a>}}

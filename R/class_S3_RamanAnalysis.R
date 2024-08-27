@@ -39,42 +39,36 @@ RamanAnalysis <- function(name = NA_character_,
   }
 }
 
-#' @describeIn validate Validates a RamanAnalysis S3 object
-#' 
-#' @param x A RamanAnalysis S3 object.
-#' 
-#' @export
-#' 
-validate.RamanAnalysis <- function(x = NULL) {
-  
-  valid <- validate.Analysis(x)
-
-  if (valid) {
-    name <- x$name
-    
-    if (length(x$file) != 1 || !is.character(x$file)) {
-      warning("Analysis file path entry not conform!")
-      valid <- FALSE
-    } else if (!is.na(x$file) && !file.exists(x$file)) {
-      warning(paste0(x$file, " does not exist!"))
-      valid <- FALSE
-    }
-
-    if (!is.data.frame(x$spectra)) {
-      warning("Analysis spectra entry not conform!")
-      valid <- FALSE
-    }
-
-    if (!is.list(x$metadata)) {
-      warning("Analysis metadata entry not conform!")
-      valid <- FALSE
-    }
-    
-    if (!valid) warning("Issue/s found with analysis ", x$name, "!")
-  }
-
-  valid
-}
+# validate.RamanAnalysis <- function(x = NULL) {
+#   
+#   valid <- validate.Analysis(x)
+# 
+#   if (valid) {
+#     name <- x$name
+#     
+#     if (length(x$file) != 1 || !is.character(x$file)) {
+#       warning("Analysis file path entry not conform!")
+#       valid <- FALSE
+#     } else if (!is.na(x$file) && !file.exists(x$file)) {
+#       warning(paste0(x$file, " does not exist!"))
+#       valid <- FALSE
+#     }
+# 
+#     if (!is.data.frame(x$spectra)) {
+#       warning("Analysis spectra entry not conform!")
+#       valid <- FALSE
+#     }
+# 
+#     if (!is.list(x$metadata)) {
+#       warning("Analysis metadata entry not conform!")
+#       valid <- FALSE
+#     }
+#     
+#     if (!valid) warning("Issue/s found with analysis ", x$name, "!")
+#   }
+# 
+#   valid
+# }
 
 #' @export
 #' @noRd

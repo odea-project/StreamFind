@@ -12,9 +12,9 @@ The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecti
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{raw_spectra}}{List of raw spectra \code{data.table} objects for each analysis.}
+\item{\code{raw_spectra}}{Named list of raw spectra \code{data.table} objects for each analysis.}
 
-\item{\code{spectra}}{List of spectra \code{data.table} objects for each analysis.}
+\item{\code{spectra}}{Named list of spectra \code{data.table} objects for each analysis or replicate.}
 }
 \if{html}{\out{</div>}}
 }
@@ -22,13 +22,16 @@ The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecti
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-RamanEngine-new}{\code{RamanEngine$new()}}
+\item \href{#method-RamanEngine-get_analysis_names}{\code{RamanEngine$get_analysis_names()}}
+\item \href{#method-RamanEngine-get_replicate_names}{\code{RamanEngine$get_replicate_names()}}
+\item \href{#method-RamanEngine-get_blank_names}{\code{RamanEngine$get_blank_names()}}
+\item \href{#method-RamanEngine-get_files}{\code{RamanEngine$get_files()}}
 \item \href{#method-RamanEngine-get_overview}{\code{RamanEngine$get_overview()}}
 \item \href{#method-RamanEngine-get_spectra}{\code{RamanEngine$get_spectra()}}
 \item \href{#method-RamanEngine-get_spectra_matrix}{\code{RamanEngine$get_spectra_matrix()}}
-\item \href{#method-RamanEngine-subset_analyses}{\code{RamanEngine$subset_analyses()}}
-\item \href{#method-RamanEngine-add_files}{\code{RamanEngine$add_files()}}
+\item \href{#method-RamanEngine-add_analyses}{\code{RamanEngine$add_analyses()}}
 \item \href{#method-RamanEngine-remove_analyses}{\code{RamanEngine$remove_analyses()}}
-\item \href{#method-RamanEngine-has_spectra}{\code{RamanEngine$has_spectra()}}
+\item \href{#method-RamanEngine-has_processed_spectra}{\code{RamanEngine$has_processed_spectra()}}
 \item \href{#method-RamanEngine-plot_spectra}{\code{RamanEngine$plot_spectra()}}
 \item \href{#method-RamanEngine-plot_spectra_baseline}{\code{RamanEngine$plot_spectra_baseline()}}
 \item \href{#method-RamanEngine-plot_spectra_peaks}{\code{RamanEngine$plot_spectra_peaks()}}
@@ -70,40 +73,88 @@ The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecti
 \subsection{Method \code{new()}}{
 Creates an R6 class \emph{RamanEngine}. Child of \emph{CoreEngine} R6 class.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$new(
-  files = NULL,
-  headers = NULL,
-  settings = NULL,
-  analyses = NULL,
-  results = NULL
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$new(file = NULL, headers = NULL, workflow = NULL, analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{files}}{Vector with full paths of \strong{.asc} files from Raman analyses.}
+\item{\code{file}}{Character of length one with the full path to the \code{sqlite} save file of the engine.}
 
-\item{\code{headers}}{A named list with headers or a ProjectHeaders S3 class object.
-Each list element must have length one. There is no type restrictions
-except for name (must be type character length 1), author (must be type
-character length 1), file (must be type character length 1) and date (must
-be class POSIXct or class POSIXt length 1). See more information in
-\code{?ProjectHeaders}.}
+\item{\code{headers}}{A \code{ProjectHeaders} S7 class object.}
 
-\item{\code{settings}}{A named list of ProcessingSettings objects or a
-single ProcessingSettings object. The list names should match
-the call name of each ProcessingSettings object. Alternatively, a named
-list with call name, algorithm and parameters to be transformed and added
-as ProcessingSettings object.}
+\item{\code{workflow}}{A \code{Workflow} S7 class object.}
 
-\item{\code{settings}}{A ProcessingSettings S3 class object with the call name applicable to the processing method.
-Alternatively, a named list with \code{call}, \code{algorithm} and \code{parameters} to be transformed and used as ProcessingSettings
-S3 class object. When not given, settings for the processing method will be searched within the engine object.}
+\item{\code{analyses}}{A \code{RamanAnalyses} S7 class object or a \verb{character vector} with full file paths to raman files or
+a \code{data.frame} as described in \code{?RamanAnalyses}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-get_analysis_names"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-get_analysis_names}{}}}
+\subsection{Method \code{get_analysis_names()}}{
+Gets the analysis replicate names.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$get_analysis_names(analyses = NULL)}\if{html}{\out{</div>}}
+}
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-get_replicate_names"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-get_replicate_names}{}}}
+\subsection{Method \code{get_replicate_names()}}{
+Gets the analysis replicate names.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$get_replicate_names(analyses = NULL)}\if{html}{\out{</div>}}
+}
 
-\item{\code{results}}{A named list of objects from processing methods.}
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-get_blank_names"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-get_blank_names}{}}}
+\subsection{Method \code{get_blank_names()}}{
+Gets the analysis blank replicate names.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$get_blank_names(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-get_files"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-get_files}{}}}
+\subsection{Method \code{get_files()}}{
+Gets the full file paths of each analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$get_files(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -129,7 +180,7 @@ Gets a \code{data.table} with spectra from analyses.
   rt = NULL,
   shift = NULL,
   minIntensity = 0,
-  raw_spectra = FALSE
+  useRawData = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -144,7 +195,7 @@ Gets a \code{data.table} with spectra from analyses.
 
 \item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
 
-\item{\code{raw_spectra}}{Logical of length one. Set to \code{TRUE} for parsing raw spectra not spectra results/processed.}
+\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw spectra not spectra results/processed.}
 }
 \if{html}{\out{</div>}}
 }
@@ -167,38 +218,20 @@ Gets a matrix with spectra from analyses.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-RamanEngine-subset_analyses"></a>}}
-\if{latex}{\out{\hypertarget{method-RamanEngine-subset_analyses}{}}}
-\subsection{Method \code{subset_analyses()}}{
-Subsets on analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$subset_analyses(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A new cloned engine with only the analyses as defined by the analyses argument.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-RamanEngine-add_files"></a>}}
-\if{latex}{\out{\hypertarget{method-RamanEngine-add_files}{}}}
-\subsection{Method \code{add_files()}}{
+\if{html}{\out{<a id="method-RamanEngine-add_analyses"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-add_analyses}{}}}
+\subsection{Method \code{add_analyses()}}{
 Adds analyses based on asc files. Note that when adding new files, any existing results are removed.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$add_files(files = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$add_analyses(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{files}}{Vector with full paths of \strong{.asc} files from Raman analyses.}
+\item{\code{analyses}}{A RamanAnalysis S3 class object or a list with RamanAnalysis S3 class objects as
+elements (see \code{?RamanAnalysis} for more information) or a character vector with with full paths of \strong{.asc} files
+from Raman analyses.}
 }
 \if{html}{\out{</div>}}
 }
@@ -227,12 +260,12 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-RamanEngine-has_spectra"></a>}}
-\if{latex}{\out{\hypertarget{method-RamanEngine-has_spectra}{}}}
-\subsection{Method \code{has_spectra()}}{
+\if{html}{\out{<a id="method-RamanEngine-has_processed_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-has_processed_spectra}{}}}
+\subsection{Method \code{has_processed_spectra()}}{
 Checks if there are spectra, returning \code{TRUE} or \code{FALSE}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$has_spectra()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$has_processed_spectra()}\if{html}{\out{</div>}}
 }
 
 }
@@ -247,7 +280,7 @@ Plots spectra for given \emph{RamanAnalyses}.
   rt = NULL,
   shift = NULL,
   minIntensity = 0,
-  raw_spectra = FALSE,
+  useRawData = FALSE,
   xVal = "shift",
   xLab = NULL,
   yLab = NULL,
@@ -270,7 +303,7 @@ Plots spectra for given \emph{RamanAnalyses}.
 
 \item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
 
-\item{\code{raw_spectra}}{Logical of length one. Set to \code{TRUE} for parsing raw spectra not spectra results/processed.}
+\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw spectra not spectra results/processed.}
 
 \item{\code{xVal}}{Character of length one. Possible are "rt" or "shift" for using the retention time or the shift
 as x axis, respectively.}
@@ -415,7 +448,7 @@ Plots chromatograms from analyses with spectra coupled to LC.
   rt = NULL,
   shift = NULL,
   minIntensity = 0,
-  raw_spectra = FALSE,
+  useRawData = FALSE,
   xLab = NULL,
   yLab = NULL,
   title = NULL,
@@ -437,7 +470,7 @@ Plots chromatograms from analyses with spectra coupled to LC.
 
 \item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
 
-\item{\code{raw_spectra}}{Logical of length one. Set to \code{TRUE} for parsing raw spectra not spectra results/processed.}
+\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw spectra not spectra results/processed.}
 
 \item{\code{xLab}}{A string with the title for the x axis.}
 

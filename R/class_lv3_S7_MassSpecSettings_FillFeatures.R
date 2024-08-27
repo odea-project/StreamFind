@@ -81,11 +81,11 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
   . <- NULL
   .N <- NULL
   
-  cache <- .load_chache("fill_features", nts, x)
+  cache <- .load_chache("fill_features", nts$features, x)
   
   if (!is.null(cache$data)) {
     message("\U2139 Filled features loaded from cache!")
-    nts <- cache$data
+    nts$features <- cache$data
     engine$NTS <- nts
     return(TRUE)
   }
@@ -280,13 +280,12 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
   fg@ftindex <- fg_index
   fg@features@features <- fts_filled[names(fg@features@features)]
   
-  nts$features <- fg
-  
   if (!is.null(cache$hash)) {
-    .save_cache("fill_features", nts, cache$hash)
+    .save_cache("fill_features", fg, cache$hash)
     message("\U1f5ab Filled features cached!")
   }
   
+  nts$features <- fg
   engine$NTS <- nts
   TRUE
 }

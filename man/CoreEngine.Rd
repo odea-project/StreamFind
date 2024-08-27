@@ -41,6 +41,8 @@ in the app can be saved in the \strong{sqlite} file and then loaded for scriptin
 \item \href{#method-CoreEngine-print_workflow}{\code{CoreEngine$print_workflow()}}
 \item \href{#method-CoreEngine-save}{\code{CoreEngine$save()}}
 \item \href{#method-CoreEngine-load}{\code{CoreEngine$load()}}
+\item \href{#method-CoreEngine-add_analyses}{\code{CoreEngine$add_analyses()}}
+\item \href{#method-CoreEngine-remove_analyses}{\code{CoreEngine$remove_analyses()}}
 \item \href{#method-CoreEngine-has_settings}{\code{CoreEngine$has_settings()}}
 \item \href{#method-CoreEngine-has_analyses}{\code{CoreEngine$has_analyses()}}
 \item \href{#method-CoreEngine-has_results}{\code{CoreEngine$has_results()}}
@@ -77,8 +79,6 @@ Creates a \code{CoreEngine} R6 class object.
 \item{\code{workflow}}{A \code{Workflow} S7 class object.}
 
 \item{\code{analyses}}{An \code{Analyses} S7 class object.}
-
-\item{\code{results}}{A list of \code{Results} S7 class objects.}
 }
 \if{html}{\out{</div>}}
 }
@@ -157,6 +157,47 @@ Loads the engine data from an \strong{sqlite} file.
 \item{\code{file}}{A string with the full file path of the \strong{sqlite} file containing the engine data saved.}
 }
 \if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-add_analyses"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-add_analyses}{}}}
+\subsection{Method \code{add_analyses()}}{
+Adds analyses. Note that when adding new analyses, any existing results are removed.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$add_analyses(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A Analysis S3 class object or a list with Analysis S3 class objects as elements (see \code{?Analysis}
+for more information) or a character vector with full path to analysis files.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-remove_analyses"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-remove_analyses}{}}}
+\subsection{Method \code{remove_analyses()}}{
+Removes analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$remove_analyses(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A string or a vector of strings with the name/s or numeric with indices of the analyses to remove.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
 }
 }
 \if{html}{\out{<hr>}}
