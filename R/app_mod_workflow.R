@@ -87,6 +87,32 @@
 .mod_workflow_Server <- function(id, engine, engine_type, reactive_workflow, reactive_warnings, reactive_history, volumes) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
+
+    observeEvent(input$update_settings, {
+  rw <- reactive_workflow_local()
+  function_name <- reactive_selected_settings()
+  
+  shiny::req(function_name %in% names(rw))
+  
+  settings <- rw[[function_name]]
+  
+  param_names <- names(settings$parameters)
+  
+  # Update parameters with user inputs
+  for (param_name in param_names) {
+    input_value <- input[[param_name]]
+    if (!is.null(input_value)) {
+      settings$parameters[[param_name]] <- input_value
+    }
+  }
+  
+  # Update the workflow with the modified settings
+  rw[[function_name]] <- settings
+  reactive_workflow_local(rw)
+  
+  shiny::showNotification("Settings updated successfully!", type = "message")
+})
+
     
     .add_notifications <- function(warnings, name_msg, msg) {
       shiny::showNotification(msg, duration = 5, type = "warning")
@@ -361,7 +387,8 @@ shiny::observeEvent(input$save_workflow, {
       if (function_name %in% names(reactive_workflow_local())) {
         htmltools::tagList(
           shiny::h3(paste("Details of", function_name), style = "color: #3498DB; margin-bottom: 20px;"),
-          shiny::uiOutput(ns("function_code"))
+          shiny::uiOutput(ns("function_code")),
+          shiny::actionButton(ns("update_settings"), "Update Settings", class = "btn-primary", style = "color: white; margin-top: 20px;")
         )
       }
     })
@@ -431,9 +458,9 @@ help_links <- list(
   short_function_name <- gsub(" - \\d+$", "", function_name)  # Remove trailing " - X"
   
   help_url <- help_links[[short_function_name]]
-  
-  
-  create_parameter_ui <- function(param_name, param_value) {
+
+
+   create_parameter_ui_noedit <- function(param_name, param_value) {
     value_display <- if (is.atomic(param_value) && length(param_value) == 1) {
       as.character(param_value)
     } else if (is.list(param_value)) {
@@ -445,13 +472,13 @@ help_links <- list(
             if (is.atomic(param_value[[sub_param]])) {
               as.character(param_value[[sub_param]])
             } else {
-              "Complex structure"
+              "NULL"
             }
           )
         })
       )
     } else {
-      "Complex structure"
+      "NULL"
     }
     
     shiny::tagList(
@@ -459,6 +486,40 @@ help_links <- list(
       shiny::tags$dd(value_display)
     )
   }
+  
+  
+create_parameter_ui <- function(param_name, param_value) {
+  ns <- session$ns
+
+  input_element <- NULL
+
+  if (is.logical(param_value)) {
+    input_element <- shiny::checkboxInput(ns(param_name), label = NULL, value = param_value)
+  } else if (is.numeric(param_value)) {
+    input_element <- shiny::numericInput(ns(param_name), label = NULL, value = param_value)
+  } else if (is.character(param_value)) {
+    input_element <- shiny::textInput(ns(param_name), label = NULL, value = param_value)
+  } else if (is.list(param_value) && all(sapply(param_value, is.character))) {
+    input_element <- shiny::tags$ul(
+      style = "list-style-type: none; padding-left: 0;",
+      lapply(seq_along(param_value), function(i) {
+        shiny::tags$li(
+          shiny::textInput(ns(paste0(param_name, "_", i)), label = NULL, value = param_value[[i]])
+        )
+      })
+    )
+  } else {
+    input_element <- shiny::tags$p("Unsupported parameter type")
+  }
+
+  shiny::tagList(
+    shiny::tags$dt(shiny::tags$strong(param_name)),
+    shiny::tags$dd(style = "display: flex; align-items: center;", input_element)
+  )
+}
+
+
+
 
   param_names <- names(settings$parameters)
   other_names <- setdiff(names(settings), c("parameters"))
@@ -467,7 +528,7 @@ help_links <- list(
     class = "function-details",
     shiny::tags$dl(
       lapply(other_names, function(param) {
-        create_parameter_ui(param, settings[[param]])
+        create_parameter_ui_noedit(param, settings[[param]])
       })
     ),
     shiny::tags$div(
