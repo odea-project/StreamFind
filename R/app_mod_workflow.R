@@ -490,10 +490,14 @@ help_links <- list(
   
 create_parameter_ui <- function(param_name, param_value) {
   ns <- session$ns
-
+  
+  # Initialize the input element based on the type of param_value
   input_element <- NULL
-
-  if (is.logical(param_value)) {
+  
+  if (is.null(param_value)) {
+    # Handle NULL by providing an empty text input field
+    input_element <- shiny::textInput(ns(param_name), label = NULL, value = "")
+  } else if (is.logical(param_value)) {
     input_element <- shiny::checkboxInput(ns(param_name), label = NULL, value = param_value)
   } else if (is.numeric(param_value)) {
     input_element <- shiny::numericInput(ns(param_name), label = NULL, value = param_value)
@@ -509,7 +513,9 @@ create_parameter_ui <- function(param_name, param_value) {
       })
     )
   } else {
-    input_element <- shiny::tags$p("Unsupported parameter type")
+    # If param_value type is not handled, treat it as unsupported for now
+    print(paste("Unsupported parameter type for:", param_name, "Class:", class(param_value)))
+    input_element <- shiny::tags$p(paste("Unsupported parameter type: ", class(param_value)))
   }
 
   shiny::tagList(
@@ -517,6 +523,8 @@ create_parameter_ui <- function(param_name, param_value) {
     shiny::tags$dd(style = "display: flex; align-items: center;", input_element)
   )
 }
+
+
 
 
 
