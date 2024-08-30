@@ -3,7 +3,7 @@
 Spectra <- S7::new_class("Spectra", package = "StreamFind", parent = Results,
   
   properties = list(
-    ## __features -----
+    ## __spectra -----
     spectra = S7::new_property(S7::class_list, default = list()),
     ## __averaged -----
     is_averaged = S7::new_property(S7::class_logical, default = FALSE)

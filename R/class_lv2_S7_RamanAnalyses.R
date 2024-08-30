@@ -143,8 +143,8 @@ RamanAnalyses <- S7::new_class("RamanAnalyses", package = "StreamFind", parent =
 
 #' @export
 #' @noRd
-S7::method(names, Analyses) <- function(x) {
-  vapply(self@analyses, function(x) x$name, NA_character_)
+S7::method(names, RamanAnalyses) <- function(x) {
+  vapply(x@analyses, function(x) x$name, NA_character_)
 }
 
 #' @export

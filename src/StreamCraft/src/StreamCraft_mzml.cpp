@@ -55,12 +55,24 @@ int sc::mzml::MZML_SPECTRUM::extract_spec_polarity() const {
 
 double sc::mzml::MZML_SPECTRUM::extract_spec_lowmz() const {
   pugi::xml_node lowmz_node = spec.find_child_by_attribute("cvParam", "name", "lowest observed m/z");
-  return lowmz_node.attribute("value").as_double();
+  if (!lowmz_node) {
+    pugi::xml_node node_scan_window = spec.child("scanList").child("scan").child("scanWindowList").child("scanWindow");
+    node_scan_window = node_scan_window.find_child_by_attribute("cvParam", "name", "scan window lower limit");
+    return node_scan_window.attribute("value").as_double();
+  } else {
+    return lowmz_node.attribute("value").as_double();
+  }
 };
 
 double sc::mzml::MZML_SPECTRUM::extract_spec_highmz() const {
   pugi::xml_node highmz_node = spec.find_child_by_attribute("cvParam", "name", "highest observed m/z");
-  return highmz_node.attribute("value").as_double();
+  if (!highmz_node) {
+    pugi::xml_node node_scan_window = spec.child("scanList").child("scan").child("scanWindowList").child("scanWindow");
+    node_scan_window = node_scan_window.find_child_by_attribute("cvParam", "name", "scan window upper limit");
+    return node_scan_window.attribute("value").as_double();
+  } else {
+    return highmz_node.attribute("value").as_double();
+  }
 };
 
 double sc::mzml::MZML_SPECTRUM::extract_spec_bpmz() const {
@@ -92,10 +104,24 @@ double sc::mzml::MZML_SPECTRUM::extract_scan_rt() const {
   return rt_val;
 };
 
-double sc::mzml::MZML_SPECTRUM::extract_scan_drift() const {
+int sc::mzml::MZML_SPECTRUM::extract_scan_configuration_number() const {
   pugi::xml_node node_scan = spec.child("scanList").child("scan");
-  pugi::xml_node drift_node = node_scan.find_child_by_attribute("cvParam", "name", "ion mobility drift time");
-  return drift_node.attribute("value").as_double();
+  pugi::xml_node function_node = node_scan.find_child_by_attribute("cvParam", "accession", "MS:1000616");
+  if (function_node) {
+    return function_node.attribute("value").as_int();
+  } else{
+    return 0;
+  }
+};
+
+double sc::mzml::MZML_SPECTRUM::extract_scan_mobility() const {
+  pugi::xml_node node_scan = spec.child("scanList").child("scan");
+
+  pugi::xml_node mobility_node = node_scan.find_child_by_attribute("cvParam", "accession", "MS:1002476");
+  if (mobility_node) return mobility_node.attribute("value").as_double();
+  
+  pugi::xml_node mobility_node_tims = node_scan.find_child_by_attribute("cvParam", "accession", "MS:1002815");
+  return mobility_node_tims.attribute("value").as_double();
 };
 
 std::string sc::mzml::MZML_SPECTRUM::extract_scan_filter_string() const {
@@ -559,7 +585,7 @@ std::vector<std::vector<double>> sc::mzml::MZML_CHROMATOGRAM::extract_binary_dat
   return chromatogram;
 }
 
-sc::mzml::MZML::MZML(const std::string& file) {
+sc::mzml::MZML::MZML(const std::string& file) : sc::MS_READER(file) {
 
   file_path = file;
 
@@ -631,28 +657,28 @@ std::vector<pugi::xml_node> sc::mzml::MZML::link_vector_chrom_nodes() const {
   return chrom_nodes;
 };
 
-int sc::mzml::MZML::get_number_spectra() const {
+int sc::mzml::MZML::get_number_spectra() {
   const std::string search_run = "//run";
   const pugi::xpath_node xps_run = root.select_node(search_run.c_str());
   const pugi::xml_node spec_list = xps_run.node().child("spectrumList");
   return spec_list.attribute("count").as_int();
 };
 
-int sc::mzml::MZML::get_number_chromatograms() const {
+int sc::mzml::MZML::get_number_chromatograms() {
   const std::string search_run = "//run";
   const pugi::xpath_node xps_run = root.select_node(search_run.c_str());
   const pugi::xml_node chrom_list = xps_run.node().child("chromatogramList");
   return chrom_list.attribute("count").as_int();
 };
 
-int sc::mzml::MZML::get_number_spectra_binary_arrays() const {
+int sc::mzml::MZML::get_number_spectra_binary_arrays() {
   const std::string search_run = "//run";
   const pugi::xpath_node xps_run = root.select_node(search_run.c_str());
   const pugi::xml_node spec_list = xps_run.node().child("spectrumList");
   return spec_list.first_child().child("binaryDataArrayList").attribute("count").as_int();
 };
 
-std::vector<std::string> sc::mzml::MZML::get_spectra_binary_short_names() const {
+std::vector<std::string> sc::mzml::MZML::get_spectra_binary_short_names() {
   const int number_spectra_binary_arrays = get_number_spectra_binary_arrays();
   std::vector<std::string> names(number_spectra_binary_arrays);
   if (number_spectra_binary_arrays > 0) {
@@ -671,7 +697,7 @@ std::vector<std::string> sc::mzml::MZML::get_spectra_binary_short_names() const 
   return names;
 };
 
-std::vector<sc::MZML_BINARY_METADATA> sc::mzml::MZML::get_spectra_binary_metadata() const {
+std::vector<sc::MZML_BINARY_METADATA> sc::mzml::MZML::get_spectra_binary_metadata() {
   const int number_spectra_binary_arrays = get_number_spectra_binary_arrays();
   std::vector<sc::MZML_BINARY_METADATA> metadata(number_spectra_binary_arrays);
   if (number_spectra_binary_arrays > 0) {
@@ -686,7 +712,7 @@ std::vector<sc::MZML_BINARY_METADATA> sc::mzml::MZML::get_spectra_binary_metadat
   return metadata;
 };
 
-std::string sc::mzml::MZML::get_type() const {
+std::string sc::mzml::MZML::get_type() {
   const int number_spectra = get_number_spectra();
   std::string type = "Unknown";
   if (number_spectra > 0) {
@@ -714,13 +740,13 @@ std::string sc::mzml::MZML::get_type() const {
   return type;
 };
 
-std::string sc::mzml::MZML::get_time_stamp() const {
+std::string sc::mzml::MZML::get_time_stamp() {
   const std::string search_run = "//run";
   const pugi::xpath_node xps_run = root.select_node(search_run.c_str());
   return xps_run.node().attribute("startTimeStamp").as_string();
 };
 
-std::vector<int> sc::mzml::MZML::get_spectra_index(std::vector<int> indices) const {
+std::vector<int> sc::mzml::MZML::get_spectra_index(std::vector<int> indices) {
 
   const int number_spectra = get_number_spectra();
   
@@ -748,7 +774,7 @@ std::vector<int> sc::mzml::MZML::get_spectra_index(std::vector<int> indices) con
   return idxs;
 };
 
-std::vector<int> sc::mzml::MZML::get_spectra_scan_number(std::vector<int> indices) const {
+std::vector<int> sc::mzml::MZML::get_spectra_scan_number(std::vector<int> indices) {
 
   const int number_spectra = get_number_spectra();
   
@@ -776,7 +802,7 @@ std::vector<int> sc::mzml::MZML::get_spectra_scan_number(std::vector<int> indice
   return scans;
 };
 
-std::vector<int> sc::mzml::MZML::get_spectra_array_length(std::vector<int> indices) const {
+std::vector<int> sc::mzml::MZML::get_spectra_array_length(std::vector<int> indices) {
 
   const int number_spectra = get_number_spectra();
   
@@ -804,7 +830,7 @@ std::vector<int> sc::mzml::MZML::get_spectra_array_length(std::vector<int> indic
   return lengths;
 };
 
-std::vector<int> sc::mzml::MZML::get_spectra_level(std::vector<int> indices) const {
+std::vector<int> sc::mzml::MZML::get_spectra_level(std::vector<int> indices) {
 
   const int number_spectra = get_number_spectra();
   
@@ -832,7 +858,35 @@ std::vector<int> sc::mzml::MZML::get_spectra_level(std::vector<int> indices) con
   return levels;
 };
 
-std::vector<int> sc::mzml::MZML::get_spectra_mode(std::vector<int> indices) const {
+std::vector<int> sc::mzml::MZML::get_spectra_configuration(std::vector<int> indices) {
+
+  const int number_spectra = get_number_spectra();
+  
+  std::vector<int> functions;
+
+  if (number_spectra == 0) return functions;
+
+  if (indices.size() == 0) {
+    indices.resize(number_spectra);
+    std::iota(indices.begin(), indices.end(), 0);
+  }
+
+  const int n = indices.size();
+  const std::vector<int> f_indices = indices;
+
+  functions.resize(n);
+
+  // #pragma omp parallel for
+  for (int i = 0; i < n; ++i) {
+    const int& idx = f_indices[i];
+    const sc::MZML_SPECTRUM& spec(spectra_nodes[idx]);
+    functions[i] = spec.extract_scan_configuration_number();
+  }
+
+  return functions;
+};
+
+std::vector<int> sc::mzml::MZML::get_spectra_mode(std::vector<int> indices) {
 
   const int number_spectra = get_number_spectra();
   
@@ -860,7 +914,7 @@ std::vector<int> sc::mzml::MZML::get_spectra_mode(std::vector<int> indices) cons
   return modes;
 };
 
-std::vector<int> sc::mzml::MZML::get_spectra_polarity(std::vector<int> indices) const {
+std::vector<int> sc::mzml::MZML::get_spectra_polarity(std::vector<int> indices) {
 
   const int number_spectra = get_number_spectra();
   
@@ -888,7 +942,7 @@ std::vector<int> sc::mzml::MZML::get_spectra_polarity(std::vector<int> indices) 
   return polarities;
 };
 
-std::vector<double> sc::mzml::MZML::get_spectra_lowmz(std::vector<int> indices) const {
+std::vector<double> sc::mzml::MZML::get_spectra_lowmz(std::vector<int> indices) {
 
   const int number_spectra = get_number_spectra();
   
@@ -916,7 +970,7 @@ std::vector<double> sc::mzml::MZML::get_spectra_lowmz(std::vector<int> indices) 
   return lowmzs;
 };
 
-std::vector<double> sc::mzml::MZML::get_spectra_highmz(std::vector<int> indices) const {
+std::vector<double> sc::mzml::MZML::get_spectra_highmz(std::vector<int> indices) {
 
   const int number_spectra = get_number_spectra();
   
@@ -944,7 +998,7 @@ std::vector<double> sc::mzml::MZML::get_spectra_highmz(std::vector<int> indices)
   return highmzs;
 };
 
-std::vector<double> sc::mzml::MZML::get_spectra_bpmz(std::vector<int> indices) const {
+std::vector<double> sc::mzml::MZML::get_spectra_bpmz(std::vector<int> indices) {
 
   const int number_spectra = get_number_spectra();
   
@@ -972,7 +1026,7 @@ std::vector<double> sc::mzml::MZML::get_spectra_bpmz(std::vector<int> indices) c
   return bpmzs;
 };
 
-std::vector<double> sc::mzml::MZML::get_spectra_bpint(std::vector<int> indices) const {
+std::vector<double> sc::mzml::MZML::get_spectra_bpint(std::vector<int> indices) {
 
   const int number_spectra = get_number_spectra();
   
@@ -1000,7 +1054,7 @@ std::vector<double> sc::mzml::MZML::get_spectra_bpint(std::vector<int> indices) 
   return bpints;
 };
 
-std::vector<double> sc::mzml::MZML::get_spectra_tic(std::vector<int> indices) const {
+std::vector<double> sc::mzml::MZML::get_spectra_tic(std::vector<int> indices) {
 
   const int number_spectra = get_number_spectra();
   
@@ -1028,7 +1082,7 @@ std::vector<double> sc::mzml::MZML::get_spectra_tic(std::vector<int> indices) co
   return tics;
 };
 
-std::vector<double> sc::mzml::MZML::get_spectra_rt(std::vector<int> indices) const {
+std::vector<double> sc::mzml::MZML::get_spectra_rt(std::vector<int> indices) {
 
   const int number_spectra = get_number_spectra();
   
@@ -1056,7 +1110,7 @@ std::vector<double> sc::mzml::MZML::get_spectra_rt(std::vector<int> indices) con
   return rts;
 };
 
-std::vector<double> sc::mzml::MZML::get_spectra_drift(std::vector<int> indices) const {
+std::vector<double> sc::mzml::MZML::get_spectra_mobility(std::vector<int> indices) {
 
   const int number_spectra = get_number_spectra();
   
@@ -1078,13 +1132,13 @@ std::vector<double> sc::mzml::MZML::get_spectra_drift(std::vector<int> indices) 
   for (int i = 0; i < n; ++i) {
     const int& idx = f_indices[i];
     const sc::MZML_SPECTRUM& spec(spectra_nodes[idx]);
-    dts[i] = spec.extract_scan_drift();
+    dts[i] = spec.extract_scan_mobility();
   }
 
   return dts;
 };
 
-std::vector<int> sc::mzml::MZML::get_spectra_precursor_scan(std::vector<int> indices) const {
+std::vector<int> sc::mzml::MZML::get_spectra_precursor_scan(std::vector<int> indices) {
 
   const int number_spectra = get_number_spectra();
   
@@ -1112,7 +1166,7 @@ std::vector<int> sc::mzml::MZML::get_spectra_precursor_scan(std::vector<int> ind
   return scans;
 };
 
-std::vector<double> sc::mzml::MZML::get_spectra_precursor_mz(std::vector<int> indices) const {
+std::vector<double> sc::mzml::MZML::get_spectra_precursor_mz(std::vector<int> indices) {
 
   const int number_spectra = get_number_spectra();
   
@@ -1140,7 +1194,7 @@ std::vector<double> sc::mzml::MZML::get_spectra_precursor_mz(std::vector<int> in
   return mzs;
 };
 
-std::vector<double> sc::mzml::MZML::get_spectra_precursor_window_mz(std::vector<int> indices) const {
+std::vector<double> sc::mzml::MZML::get_spectra_precursor_window_mz(std::vector<int> indices) {
 
   const int number_spectra = get_number_spectra();
   
@@ -1168,7 +1222,7 @@ std::vector<double> sc::mzml::MZML::get_spectra_precursor_window_mz(std::vector<
   return mzs;
 };
 
-std::vector<double> sc::mzml::MZML::get_spectra_precursor_window_mzlow(std::vector<int> indices) const {
+std::vector<double> sc::mzml::MZML::get_spectra_precursor_window_mzlow(std::vector<int> indices) {
 
   const int number_spectra = get_number_spectra();
   
@@ -1196,7 +1250,7 @@ std::vector<double> sc::mzml::MZML::get_spectra_precursor_window_mzlow(std::vect
   return offsets;
 };
 
-std::vector<double> sc::mzml::MZML::get_spectra_precursor_window_mzhigh(std::vector<int> indices) const {
+std::vector<double> sc::mzml::MZML::get_spectra_precursor_window_mzhigh(std::vector<int> indices) {
 
   const int number_spectra = get_number_spectra();
   
@@ -1224,7 +1278,7 @@ std::vector<double> sc::mzml::MZML::get_spectra_precursor_window_mzhigh(std::vec
   return offsets;
 };
 
-std::vector<double> sc::mzml::MZML::get_spectra_collision_energy(std::vector<int> indices) const {
+std::vector<double> sc::mzml::MZML::get_spectra_collision_energy(std::vector<int> indices) {
 
   const int number_spectra = get_number_spectra();
   
@@ -1252,51 +1306,57 @@ std::vector<double> sc::mzml::MZML::get_spectra_collision_energy(std::vector<int
   return energies;
 };
 
-std::vector<int> sc::mzml::MZML::get_polarity() const {
+std::vector<int> sc::mzml::MZML::get_polarity() {
   const std::vector<int>& polarity = get_spectra_polarity();
   std::set<int> unique_polarity(polarity.begin(), polarity.end());
   return std::vector<int>(unique_polarity.begin(), unique_polarity.end());
 };
 
-std::vector<int> sc::mzml::MZML::get_mode() const {
+std::vector<int> sc::mzml::MZML::get_mode() {
   const std::vector<int>& mode = get_spectra_mode();
   std::set<int> unique_mode(mode.begin(), mode.end());
   return std::vector<int>(unique_mode.begin(), unique_mode.end());
 };
 
-std::vector<int> sc::mzml::MZML::get_level() const {
+std::vector<int> sc::mzml::MZML::get_level() {
   const std::vector<int>& levels = get_spectra_level();
   std::set<int> unique_level(levels.begin(), levels.end());
   return std::vector<int>(unique_level.begin(), unique_level.end());
 };
 
-double sc::mzml::MZML::get_min_mz() const {
+std::vector<int> sc::mzml::MZML::get_configuration() {
+  const std::vector<int>& functions = get_spectra_configuration();
+  std::set<int> unique_function(functions.begin(), functions.end());
+  return std::vector<int>(unique_function.begin(), unique_function.end());
+};
+
+double sc::mzml::MZML::get_min_mz() {
   const std::vector<double>& mz_low = get_spectra_lowmz();
   return *std::min_element(mz_low.begin(), mz_low.end());
 };
 
-double sc::mzml::MZML::get_max_mz() const {
+double sc::mzml::MZML::get_max_mz() {
   const std::vector<double>& mz_high = get_spectra_highmz();
   return *std::max_element(mz_high.begin(), mz_high.end());
 };
 
-double sc::mzml::MZML::get_start_rt() const {
+double sc::mzml::MZML::get_start_rt() {
   const std::vector<double>& rt = get_spectra_rt();
   return *std::min_element(rt.begin(), rt.end());
 };
 
-double sc::mzml::MZML::get_end_rt() const {
+double sc::mzml::MZML::get_end_rt() {
   const std::vector<double>& rt = get_spectra_rt();
   return *std::max_element(rt.begin(), rt.end());
 };
 
-bool sc::mzml::MZML::has_ion_mobility() const {
-  const std::vector<double>& drift = get_spectra_drift();
-  std::set<double> unique_drift(drift.begin(), drift.end());
-  return unique_drift.size() > 1;
+bool sc::mzml::MZML::has_ion_mobility() {
+  const std::vector<double>& mobilily = get_spectra_mobility();
+  std::set<double> unique_mobilily(mobilily.begin(), mobilily.end());
+  return unique_mobilily.size() > 1;
 };
 
-sc::MS_SUMMARY sc::mzml::MZML::get_summary() const {
+sc::MS_SUMMARY sc::mzml::MZML::get_summary() {
   sc::MS_SUMMARY summary;
   summary.file_name = file_name;
   summary.file_path = file_path;
@@ -1310,6 +1370,7 @@ sc::MS_SUMMARY sc::mzml::MZML::get_summary() const {
   summary.polarity = get_polarity();
   summary.mode = get_mode();
   summary.level = get_level();
+  summary.configuration = get_configuration();
   summary.min_mz = get_min_mz();
   summary.max_mz = get_max_mz();
   summary.start_rt = get_start_rt();
@@ -1319,7 +1380,7 @@ sc::MS_SUMMARY sc::mzml::MZML::get_summary() const {
   return summary;
 };
 
-sc::MS_SPECTRA_HEADERS sc::mzml::MZML::get_spectra_headers(std::vector<int> indices) const {
+sc::MS_SPECTRA_HEADERS sc::mzml::MZML::get_spectra_headers(std::vector<int> indices) {
 
   const int number_spectra = get_number_spectra();
 
@@ -1342,7 +1403,6 @@ sc::MS_SPECTRA_HEADERS sc::mzml::MZML::get_spectra_headers(std::vector<int> indi
 
   headers.resize_all(n);
 
-  // #pragma omp parallel for
   for (int i = 0; i < n; i++) {
 
     const int& index = idxs[i];
@@ -1360,15 +1420,11 @@ sc::MS_SPECTRA_HEADERS sc::mzml::MZML::get_spectra_headers(std::vector<int> indi
     headers.bpmz[i] = sp.extract_spec_bpmz();
     headers.bpint[i] = sp.extract_spec_bpint();
     headers.tic[i] = sp.extract_spec_tic();
-    headers.title[i] = sp.extract_spec_title();
+    headers.configuration[i] = sp.extract_scan_configuration_number();
     headers.rt[i] = sp.extract_scan_rt();
-    headers.drift[i] = sp.extract_scan_drift();
-    headers.filter_string[i] = sp.extract_scan_filter_string();
-    headers.config[i] = sp.extract_scan_config();
-    headers.injection_ion_time[i] = sp.extract_scan_injection_ion_time();
+    headers.mobility[i] = sp.extract_scan_mobility();
 
     if (sp.has_precursor()) {
-      headers.precursor_scan[i] = sp.extract_precursor_scan();
       headers.window_mz[i] = sp.extract_window_mz();
       headers.window_mzlow[i] = sp.extract_window_mzlow();
       headers.window_mzhigh[i] = sp.extract_window_mzhigh();
@@ -1377,19 +1433,33 @@ sc::MS_SPECTRA_HEADERS sc::mzml::MZML::get_spectra_headers(std::vector<int> indi
         headers.precursor_mz[i] = sp.extract_ion_mz();
         headers.precursor_intensity[i] = sp.extract_ion_intensity();
         headers.precursor_charge[i] = sp.extract_ion_charge();
+      } else {
+        headers.precursor_mz[i] = 0;
+        headers.precursor_intensity[i] = 0;
+        headers.precursor_charge[i] = 0;
       }
 
       if (sp.has_activation()) {
-        headers.activation_type[i] = sp.extract_activation_type();
         headers.activation_ce[i] = sp.extract_activation_ce();
+      } else {
+        headers.activation_ce[i] = 0;
       }
+
+    } else {
+      headers.window_mz[i] = 0;
+      headers.window_mzlow[i] = 0;
+      headers.window_mzhigh[i] = 0;
+      headers.precursor_mz[i] = 0;
+      headers.precursor_intensity[i] = 0;
+      headers.precursor_charge[i] = 0;
+      headers.activation_ce[i] = 0;
     }
   } // end of i loop
 
   return headers;
 };
 
-sc::MS_CHROMATOGRAMS_HEADERS sc::mzml::MZML::get_chromatograms_headers(std::vector<int> indices) const {
+sc::MS_CHROMATOGRAMS_HEADERS sc::mzml::MZML::get_chromatograms_headers(std::vector<int> indices) {
 
   const int number_chromatograms = get_number_chromatograms();
 
@@ -1427,20 +1497,28 @@ sc::MS_CHROMATOGRAMS_HEADERS sc::mzml::MZML::get_chromatograms_headers(std::vect
       headers.precursor_mz[i] = ch.extract_precursor_mz();
       
       if (ch.has_activation()) {
-        headers.activation_type[i] = ch.extract_activation_type();
         headers.activation_ce[i] = ch.extract_activation_ce();
+      } else {
+        headers.activation_ce[i] = 0;
       }
       
       if (ch.has_product()) {
         headers.product_mz[i] = ch.extract_product_mz();
+      } else {
+        headers.product_mz[i] = 0;
       }
+
+    } else {
+      headers.precursor_mz[i] = 0;
+      headers.activation_ce[i] = 0;
+      headers.product_mz[i] = 0;
     }
   } // end of i loop
 
   return headers;
 };
 
-std::vector<std::vector<std::vector<double>>> sc::mzml::MZML::get_spectra(std::vector<int> indices) const {
+std::vector<std::vector<std::vector<double>>> sc::mzml::MZML::get_spectra(std::vector<int> indices) {
 
   const int number_spectra = get_number_spectra();
 
@@ -1475,7 +1553,7 @@ std::vector<std::vector<std::vector<double>>> sc::mzml::MZML::get_spectra(std::v
   return sp;
 };
 
-std::vector<std::vector<std::vector<double>>> sc::mzml::MZML::get_chromatograms(std::vector<int> indices) const {
+std::vector<std::vector<std::vector<double>>> sc::mzml::MZML::get_chromatograms(std::vector<int> indices) {
 
   const int number_chromatograms = get_number_chromatograms();
 
@@ -1508,7 +1586,7 @@ std::vector<std::vector<std::vector<double>>> sc::mzml::MZML::get_chromatograms(
   return chr;
 };
 
-std::vector<std::vector<std::string>> sc::mzml::MZML::get_software() const {
+std::vector<std::vector<std::string>> sc::mzml::MZML::get_software() {
 
   std::vector<std::vector<std::string>> output(3);
 
@@ -1537,7 +1615,7 @@ std::vector<std::vector<std::string>> sc::mzml::MZML::get_software() const {
   return output;
 };
 
-std::vector<std::vector<std::string>> sc::mzml::MZML::get_hardware() const {
+std::vector<std::vector<std::string>> sc::mzml::MZML::get_hardware() {
 
   std::vector<std::vector<std::string>> output(2);
 
@@ -1592,7 +1670,7 @@ std::vector<std::vector<std::string>> sc::mzml::MZML::get_hardware() const {
   return output;
 };
 
-sc::MS_SPECTRUM sc::mzml::MZML::get_spectrum(const int& idx) const {
+sc::MS_SPECTRUM sc::mzml::MZML::get_spectrum(const int& idx) {
 
   sc::MS_SPECTRUM spectrum;
 
@@ -1611,8 +1689,9 @@ sc::MS_SPECTRUM sc::mzml::MZML::get_spectrum(const int& idx) const {
   spectrum.bpmz = spec.extract_spec_bpmz();
   spectrum.bpint = spec.extract_spec_bpint();
   spectrum.tic = spec.extract_spec_tic();
+  spectrum.configuration = spec.extract_scan_configuration_number();
   spectrum.rt = spec.extract_scan_rt();
-  spectrum.drift = spec.extract_scan_drift();
+  spectrum.mobility = spec.extract_scan_mobility();
 
   if (spec.has_precursor()) {
     spectrum.window_mz = spec.extract_window_mz();
@@ -1623,14 +1702,33 @@ sc::MS_SPECTRUM sc::mzml::MZML::get_spectrum(const int& idx) const {
       spectrum.precursor_mz = spec.extract_ion_mz();
       spectrum.precursor_intensity = spec.extract_ion_intensity();
       spectrum.precursor_charge = spec.extract_ion_charge();
+    } else {
+      spectrum.precursor_mz = 0;
+      spectrum.precursor_intensity = 0;
+      spectrum.precursor_charge = 0;
     }
 
     if (spec.has_activation()) {
       spectrum.activation_ce = spec.extract_activation_ce();
+    } else {
+      spectrum.activation_ce = 0;
     }
+
+  } else {
+    spectrum.window_mz = 0;
+    spectrum.window_mzlow = 0;
+    spectrum.window_mzhigh = 0;
+    spectrum.precursor_mz = 0;
+    spectrum.precursor_intensity = 0;
+    spectrum.precursor_charge = 0;
+    spectrum.activation_ce = 0;
   }
 
   const std::vector<MZML_BINARY_METADATA> mtd = spec.extract_binary_metadata();
+
+  spectrum.binary_arrays_count = mtd.size();
+
+  for (MZML_BINARY_METADATA i : mtd) spectrum.binary_names.push_back(i.data_name_short);
 
   spectrum.binary_data = spec.extract_binary_data(mtd);
 

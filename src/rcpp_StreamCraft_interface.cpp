@@ -53,11 +53,11 @@ Rcpp::List rcpp_parse_ms_analysis(std::string file_path) {
     hdl["tic"] = hd.tic;
     // hdl["title"] = hd.title;
     hdl["rt"] = hd.rt;
-    hdl["mobility"] = hd.drift;
+    hdl["mobility"] = hd.mobility;
     // hdl["filter_string"] = hd.filter_string;
     // hdl["config"] = hd.config;
     // hdl["injection_ion_time"] = hd.injection_ion_time;
-    hdl["pre_scan"] = hd.precursor_scan;
+    // hdl["pre_scan"] = hd.precursor_mz;
     hdl["window_mz"] = hd.window_mz;
     hdl["pre_mzlow"] = hd.window_mzlow;
     hdl["pre_mzhigh"] = hd.window_mzhigh;
@@ -136,15 +136,15 @@ Rcpp::List rcpp_parse_ms_spectra_headers(std::string file_path) {
   list_out["tic"] = headers.tic;
   // list_out["title"] = headers.title;
   list_out["rt"] = headers.rt;
-  list_out["mobility"] = headers.drift;
+  list_out["mobility"] = headers.mobility;
   // list_out["filter_string"] = headers.filter_string;
   // list_out["config"] = headers.config;
   // list_out["injection_ion_time"] = headers.injection_ion_time;
-  list_out["pre_scan"] = headers.precursor_scan;
+  // list_out["pre_scan"] = headers.precursor_scan;
   list_out["window_mz"] = headers.window_mz;
   list_out["pre_mzlow"] = headers.window_mzlow;
   list_out["pre_mzhigh"] = headers.window_mzhigh;
-  list_out["pre_scan"] = headers.precursor_scan;
+  // list_out["pre_scan"] = headers.precursor_scan;
   list_out["pre_mz"] = headers.precursor_mz;
   list_out["pre_charge"] = headers.precursor_charge;
   list_out["pre_intensity"] = headers.precursor_intensity;
@@ -204,7 +204,7 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
   // const std::vector<double> pre_mzhigh = hd["pre_mzhigh"];
   const std::vector<double> pre_ce = hd["pre_ce"];
   const std::vector<double> rt = hd["rt"];
-  const std::vector<double> drift = hd["mobility"];
+  const std::vector<double> mobility = hd["mobility"];
   
   const double minIntLv1 = minIntensityMS1;
   const double minIntLv2 = minIntensityMS2;
@@ -257,7 +257,7 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
     // std::vector<double> pre_mzhigh_out(total_traces);
     std::vector<double> pre_ce_out(total_traces);
     std::vector<double> rt_out(total_traces);
-    std::vector<double> drift_out(total_traces);
+    std::vector<double> mobility_out(total_traces);
     std::vector<double> mz_out(total_traces);
     std::vector<double> intensity_out(total_traces);
 
@@ -276,7 +276,7 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
         // pre_mzhigh_out[trace] = pre_mzhigh[i];
         pre_ce_out[trace] = pre_ce[i];
         rt_out[trace] = rt[i];
-        drift_out[trace] = drift[i];
+        mobility_out[trace] = mobility[i];
         mz_out[trace] = mz_ref[k];
         intensity_out[trace] = intensity_ref[k];
 
@@ -291,7 +291,7 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
     // out["pre_mzhigh"] = pre_mzhigh_out;
     out["pre_ce"] = pre_ce_out;
     out["rt"] = rt_out;
-    out["mobility"] = drift_out;
+    out["mobility"] = mobility_out;
     out["mz"] = mz_out;
     out["intensity"] = intensity_out;
     
@@ -311,8 +311,8 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
     const std::vector<double> df_mzmax = targets["mzmax"];
     const std::vector<double> df_rtmin = targets["rtmin"];
     const std::vector<double> df_rtmax = targets["rtmax"];
-    const std::vector<double> df_driftmin = targets["mobilitymin"];
-    const std::vector<double> df_driftmax = targets["mobilitymax"];
+    const std::vector<double> df_mobilitymin = targets["mobilitymin"];
+    const std::vector<double> df_mobilitymax = targets["mobilitymax"];
     
     sc::MS_TARGETS tg = {
       tg_idx,
@@ -324,8 +324,8 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
       df_mzmax,
       df_rtmin,
       df_rtmax,
-      df_driftmin,
-      df_driftmax
+      df_mobilitymin,
+      df_mobilitymax
     };
 
     std::set<int> idx;
@@ -336,7 +336,7 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
         if (level_filter[j]) {
           if ((rt[j] >= tg.rtmin[i] && rt[j] <= tg.rtmax[i]) || tg.rtmax[i] == 0) {
             if (polarity[j] == tg.polarity[i]) {
-              if ((drift[j] >= tg.driftmin[i] && drift[j] <= tg.driftmax[i]) || tg.driftmax[i] == 0) {
+              if ((mobility[j] >= tg.mobilitymin[i] && mobility[j] <= tg.mobilitymax[i]) || tg.mobilitymax[i] == 0) {
                 if (tg.precursor[i]) {
                   if ((pre_mz[j] >= tg.mzmin[i] && pre_mz[j] <= tg.mzmax[i]) || tg.mzmax[i] == 0) {
                     idx.insert(j);
@@ -373,7 +373,7 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
     // std::vector<double> pre_mzhigh_out;
     std::vector<double> pre_ce_out;
     std::vector<double> rt_out;
-    std::vector<double> drift_out;
+    std::vector<double> mobility_out;
     std::vector<double> mz_out;
     std::vector<double> intensity_out;
     
@@ -387,7 +387,7 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
       // std::vector<double> pre_mzhigh_priv;
       std::vector<double> pre_ce_priv;
       std::vector<double> rt_priv;
-      std::vector<double> drift_priv;
+      std::vector<double> mobility_priv;
       std::vector<double> mz_priv;
       std::vector<double> intensity_priv;
     
@@ -408,7 +408,7 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
         // const double& i_pre_mzlow = pre_mzlow[i_idx[0]];
         // const double& i_pre_mzhigh = pre_mzhigh[i_idx[0]];
         const double& i_rt = rt[i_idx[0]];
-        const double& i_drift = drift[i_idx[0]];
+        const double& i_mobility = mobility[i_idx[0]];
         
         for (int j = 0; j < n_tg; j++) {
           
@@ -416,7 +416,7 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
             
             if (tg.rtmax[j] == 0 || (i_rt >= tg.rtmin[j] && i_rt <= tg.rtmax[j])) {
               
-              if (tg.driftmax[j] == 0 || (i_drift >= tg.driftmin[j] && i_drift <= tg.driftmax[j])) {
+              if (tg.mobilitymax[j] == 0 || (i_mobility >= tg.mobilitymin[j] && i_mobility <= tg.mobilitymax[j])) {
                 
                 if (tg.precursor[j]) {
                   
@@ -433,7 +433,7 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
                         // pre_mzhigh_priv.push_back(i_pre_mzhigh);
                         pre_ce_priv.push_back(pre_ce[i_idx[0]]);
                         rt_priv.push_back(i_rt);
-                        drift_priv.push_back(i_drift);
+                        mobility_priv.push_back(i_mobility);
                         mz_priv.push_back(spectra[0][0][k]);
                         intensity_priv.push_back(spectra[0][1][k]);
                       }
@@ -454,7 +454,7 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
                         // pre_mzhigh_priv.push_back(i_pre_mzhigh);
                         pre_ce_priv.push_back(pre_ce[i_idx[0]]);
                         rt_priv.push_back(i_rt);
-                        drift_priv.push_back(i_drift);
+                        mobility_priv.push_back(i_mobility);
                         mz_priv.push_back(spectra[0][0][k]);
                         intensity_priv.push_back(spectra[0][1][k]);
                       }
@@ -477,7 +477,7 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
         // pre_mzhigh_out.insert(pre_mzhigh_out.end(), pre_mzhigh_priv.begin(), pre_mzhigh_priv.end());
         pre_ce_out.insert(pre_ce_out.end(), pre_ce_priv.begin(), pre_ce_priv.end());
         rt_out.insert(rt_out.end(), rt_priv.begin(), rt_priv.end());
-        drift_out.insert(drift_out.end(), drift_priv.begin(), drift_priv.end());
+        mobility_out.insert(mobility_out.end(), mobility_priv.begin(), mobility_priv.end());
         mz_out.insert(mz_out.end(), mz_priv.begin(), mz_priv.end());
         intensity_out.insert(intensity_out.end(), intensity_priv.begin(), intensity_priv.end());
       }
@@ -491,7 +491,7 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
     // out["pre_mzhigh"] = pre_mzhigh_out;
     out["pre_ce"] = pre_ce_out;
     out["rt"] = rt_out;
-    out["mobility"] = drift_out;
+    out["mobility"] = mobility_out;
     out["mz"] = mz_out;
     out["intensity"] = intensity_out;
 

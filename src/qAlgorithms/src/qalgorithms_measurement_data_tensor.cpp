@@ -1,0 +1,238 @@
+// qalgorithms_measurement_data_tensor.cpp
+
+// internal
+#include "../include/qalgorithms_measurement_data_tensor.h"
+
+// external
+#include <cassert>
+#include <fstream>
+#include <algorithm>
+#include <numeric>
+
+namespace q
+{
+    namespace MeasurementData
+    {
+#pragma region "private methods"
+        // methods
+        float
+        TensorData::calcRTDiff(std::vector<double> &retention_times)
+        {
+            float sum = 0.0;
+            for (size_t i = 1; i < retention_times.size(); ++i)
+            {
+                sum += retention_times[i] - retention_times[i - 1];
+            }
+            return sum / (retention_times.size() - 1);
+        }
+
+        std::vector<TensorData::dataPoint>
+        TensorData::mzmlToDataPoint(
+            sc::MZML &data,
+            const int index)
+        {
+            std::vector<std::vector<double>> spectrum = data.get_spectrum(index).binary_data; // get spectrum at index
+            std::vector<TensorData::dataPoint> dataPoints;                        // create vector of data points
+            dataPoints.reserve(spectrum[0].size());                               // reserve memory for data points
+            
+            std::cout << "spectrum[0].size(): " << spectrum[0].size() << std::endl;
+            
+            for (size_t i = 0; i < spectrum[0].size(); ++i)
+            {
+                if (spectrum[1][i] == 0.0)
+                {
+                    continue; // skip zero values
+                }
+                TensorData::dataPoint dp( // create data point
+                    spectrum[0][i],       // x-axis value
+                    spectrum[1][i],       // y-axis value
+                    true,                 // df value
+                    0.0,                  // dqs centroid value
+                    0.0,                  // dqs binning value
+                    0,                    // scan number
+                    0.0);                 // mz ratio
+                dataPoints.push_back(dp); // add data point to vector
+            }
+            // add end point for later pretreatment
+            TensorData::dataPoint dp(                   // create data point
+                std::numeric_limits<float>::infinity(), // x-axis value
+                0.0,                                    // y-axis value
+                false,                                  // df value
+                0.0,                                    // dqs centroid value
+                0.0,                                    // dqs binning value
+                0,                                      // scan number
+                0.0);                                   // mz ratio
+            dataPoints.push_back(dp);
+            return dataPoints;
+        }
+
+        std::vector<TensorData::dataPoint>
+        TensorData::qbinToDataPoint(
+            q::Algorithms::qBinning::EIC &eic)
+        {
+            std::vector<TensorData::dataPoint> dataPoints;  // create vector of data points
+            dataPoints.reserve(eic.scanNumbers.size() + 1); // reserve memory for data points
+
+            if (!is_sorted(eic.rententionTimes.begin(), eic.rententionTimes.end())) // WILL BE DELETED IN THE FUTURE
+            {
+                auto compare = [&eic](size_t a, size_t b)
+                {
+                    return eic.rententionTimes[a] < eic.rententionTimes[b];
+                };
+                std::vector<size_t> indices(eic.scanNumbers.size());
+                std::iota(indices.begin(), indices.end(), 0);
+                std::sort(indices.begin(), indices.end(), compare);
+                for (size_t i = 0; i < eic.scanNumbers.size(); ++i)
+                {
+                    TensorData::dataPoint dp(               // create data point
+                        eic.rententionTimes[indices[i]],    // x-axis value
+                        eic.intensities_height[indices[i]], // y-axis value
+                        true,                               // df value
+                        eic.DQSC[indices[i]],               // dqs centroid value
+                        eic.DQSB[indices[i]],               // dqs binning value
+                        eic.scanNumbers[indices[i]],        // scan number
+                        eic.mz[indices[i]]);                // mz ratio
+                    dataPoints.push_back(dp);               // add data point to vector
+                }
+            }
+            else
+            {
+                for (size_t i = 0; i < eic.scanNumbers.size(); ++i)
+                {
+                    TensorData::dataPoint dp(      // create data point
+                        eic.rententionTimes[i],    // x-axis value
+                        eic.intensities_height[i], // y-axis value
+                        true,                      // df value
+                        eic.DQSC[i],               // dqs centroid value
+                        eic.DQSB[i],               // dqs binning value
+                        eic.scanNumbers[i],        // scan number
+                        eic.mz[i]);                // mz ratio
+                    dataPoints.push_back(dp);      // add data point to vector
+                }
+            }
+            // add end point for later pretreatment
+            TensorData::dataPoint dp(                   // create data point
+                std::numeric_limits<float>::infinity(), // x-axis value
+                0.0,                                    // y-axis value
+                false,                                  // df value
+                0.0,                                    // dqs centroid value
+                0.0,                                    // dqs binning value
+                0,                                      // scan number
+                0.0);                                   // mz ratio
+            dataPoints.push_back(dp);
+            return dataPoints;
+        }
+#pragma endregion "private methods"
+
+#pragma region "find centroids"
+        std::vector<std::vector<std::unique_ptr<DataType::Peak>>>
+        TensorData::findCentroids_MZML(
+            q::Algorithms::qPeaks &qpeaks,
+            sc::MZML &data,
+            const bool ms1only,
+            const int polarity,
+            const int start_index)
+        {
+            std::vector<int> spectrum_mode = data.get_spectra_mode();         // get spectrum mode (2 for centroid or 1 for profile)
+            std::vector<int> spectrum_polarity = data.get_spectra_polarity(); // get spectrum polarity (positive or negative)
+            // std::vector<std::string> spectrum_mode = data.get_spectra_mode();         // get spectrum mode (centroid or profile)
+            // std::vector<std::string> spectrum_polarity = data.get_spectra_polarity(); // get spectrum polarity (positive or negative)
+            std::vector<int> indices = data.get_spectra_index();                      // get all indices
+            std::vector<int> ms_levels = data.get_spectra_level();                    // get all MS levels
+            std::vector<int> num_datapoints = data.get_spectra_array_length();        // get number of data points
+            double expectedDifference = 0.0;                                          // expected difference between two consecutive x-axis values
+
+            // FILTER MS1 SPECTRA
+            if (ms1only)
+            {
+                indices.erase(std::remove_if(indices.begin(), indices.end(), [&ms_levels](int i)
+                                             { return ms_levels[i] != 1; }),
+                              indices.end()); // keep only MS1 spectra
+            }
+
+            // FILTER POLARITY and START INDEX and ARRAY LENGTH
+            indices.erase(std::remove_if(indices.begin(), indices.end(), [&spectrum_polarity, &num_datapoints, &polarity, &start_index](int i)
+                                         { return spectrum_polarity[i] != polarity || i < start_index || num_datapoints[i] < 5; }),
+                          indices.end()); // keep only spectra with the specified polarity and start index and array length > 5
+
+            // CHECK IF CENTROIDED SPECTRA
+            int num_centroided_spectra = std::count(spectrum_mode.begin(), spectrum_mode.end(), 2);
+            if (num_centroided_spectra > spectrum_mode.size() * .5) // in profile mode sometimes centroided spectra appear as well
+            {
+                std::vector<double> retention_times = data.get_spectra_rt(indices); // get retention times
+                rt_diff = calcRTDiff(retention_times);
+                return transfereCentroids(data, indices, retention_times, start_index);
+            }
+
+            // FILTER SPECTRUM MODE (PROFILE)
+            if (num_centroided_spectra != 0)
+            {
+                indices.erase(std::remove_if(indices.begin(), indices.end(), [&spectrum_mode](int i)
+                                             { return spectrum_mode[i] != 1; }),
+                              indices.end()); // keep only profile spectra
+            }
+
+            std::vector<double> retention_times = data.get_spectra_rt(indices); // get retention times
+            rt_diff = calcRTDiff(retention_times);                              // retention time difference
+
+            std::vector<std::vector<std::unique_ptr<DataType::Peak>>> centroids =
+                std::vector<std::vector<std::unique_ptr<DataType::Peak>>>(indices.size()); // create vector of unique pointers to peaks
+            
+            return centroids;
+            
+            // CALCULATE EXPECTED DIFFERENCE & CHECK FOR ZEROS
+            {
+                std::vector<std::vector<double>> data_vec = data.get_spectrum(indices[start_index]).binary_data; // get first spectrum (x-axis)
+                expectedDifference = calcExpectedDiff(data_vec[0]);                                  // calculate expected difference & check if Orbitrap
+            }
+            
+            const int index = indices[0];                                                       // spectrum index
+            
+            std::cout << "index: " << index << std::endl;
+            
+            std::vector<TensorData::dataPoint> dataPoints = mzmlToDataPoint(data, index);       // convert mzml to data points
+            
+            return centroids;
+            
+            TensorData::treatedData treatedData = pretreatData(dataPoints, expectedDifference); // inter/extrapolate data, and identify data blocks
+            qpeaks.findCentroids(centroids[0], treatedData, index, retention_times[0]);
+            
+
+// #pragma omp parallel for
+//             for (size_t i = 0; i < indices.size(); ++i) // loop over all indices
+//             {
+//                 const int index = indices[i];                                                       // spectrum index
+//                 std::vector<TensorData::dataPoint> dataPoints = mzmlToDataPoint(data, index);       // convert mzml to data points
+//                 TensorData::treatedData treatedData = pretreatData(dataPoints, expectedDifference); // inter/extrapolate data, and identify data blocks
+//                 qpeaks.findCentroids(centroids[i], treatedData, index, retention_times[i]);         // find peaks in data blocks of treated data
+//             } // for
+
+            return centroids;
+        } // readStreamCraftMZML
+#pragma endregion "find centroids"
+
+#pragma region "find peaks"
+        std::vector<std::vector<std::unique_ptr<DataType::Peak>>>
+        TensorData::findPeaks_QBIN(
+            q::Algorithms::qPeaks &qpeaks,
+            std::vector<q::Algorithms::qBinning::EIC> &data)
+        {
+            std::vector<std::vector<std::unique_ptr<DataType::Peak>>> peaks =
+                std::vector<std::vector<std::unique_ptr<DataType::Peak>>>(data.size()); // create vector of unique pointers to peaks
+#pragma omp parallel for
+            for (size_t i = 0; i < data.size(); ++i) // loop over all data
+            {
+                const int num_data_points = data[i].scanNumbers.size(); // number of data points
+                if (num_data_points < 5)
+                {
+                    continue; // skip due to lack of data, i.e., degree of freedom will be zero
+                }
+                std::vector<dataPoint> dataPoints = qbinToDataPoint(data[i]);       // convert qbin to data points
+                treatedData treatedData = pretreatData(dataPoints, rt_diff, false); // inter/extrapolate data, and identify data blocks
+                qpeaks.findPeaks(peaks[i], treatedData);
+            } // parallel for
+            return peaks;
+        } // findPeaks_QBIN
+#pragma endregion "find peaks"
+    } // namespace MeasurementData
+} // namespace q

@@ -3,5 +3,5 @@
 
 ZLIB_CFLAGS := $(shell "${R_HOME}/bin/R" --vanilla --slave -e "cat(zlibbioc::pkgconfig('PKG_CFLAGS'))")
 ZLIB_STATIC := $(shell "${R_HOME}/bin/R" --vanilla --slave -e "cat(zlibbioc::pkgconfig('PKG_LIBS_static'))")
-PKG_CXXFLAGS += $(ZLIB_CFLAGS) $(SHLIB_OPENMP_CXXFLAGS)
+PKG_CXXFLAGS += $(ZLIB_CFLAGS) $(SHLIB_OPENMP_CXXFLAGS) -Wno-unknown-pragmas -mavx2 -mfma
 PKG_LIBS += $(SHLIB_OPENMP_CXXFLAGS) $(ZLIB_STATIC)

@@ -263,12 +263,28 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses", package = "StreamFind", pa
     ## __has_NTS -----
     has_NTS = S7::new_property(S7::class_logical, getter = function(self) {
       if (length(self) == 0) return(FALSE)
-      !is.null(self@results[["NTS"]])
+      if (is.null(self@results[["NTS"]])) return(FALSE)
+      if (!is(self@results[["NTS"]], "StreamFind::NTS")) return(FALSE)
+      TRUE
     }),
     
     ## __NTS -----
     NTS = S7::new_property(S7::class_list, getter = function(self) {
       if (self$has_NTS) return(self@results[["NTS"]])
+      NULL
+    }),
+    
+    ## __has_NTS -----
+    has_Spectra = S7::new_property(S7::class_logical, getter = function(self) {
+      if (length(self) == 0) return(FALSE)
+      if (is.null(self@results[["Spectra"]])) return(FALSE)
+      if (!is(self@results[["Spectra"]], "StreamFind::Spectra")) return(FALSE)
+      TRUE
+    }),
+    
+    ## __NTS -----
+    Spectra = S7::new_property(S7::class_list, getter = function(self) {
+      if (self$has_Spectra) return(self@results[["Spectra"]])
       NULL
     })
   ),
@@ -290,8 +306,8 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses", package = "StreamFind", pa
 
 #' @export
 #' @noRd
-S7::method(names, Analyses) <- function(x) {
-  vapply(self@analyses, function(x) x$name, NA_character_)
+S7::method(names,  MassSpecAnalyses) <- function(x) {
+  vapply(x@analyses, function(x) x$name, NA_character_)
 }
 
 #' @export
@@ -299,7 +315,7 @@ S7::method(names, Analyses) <- function(x) {
 S7::method(add, MassSpecAnalyses) <- function(x, value) {
   
   if (is.character(value)) {
-    if (grepl(x@possible_formats, value)) {
+    if (all(grepl(x@possible_formats, value))) {
       value <- .get_MassSpecAnalysis_from_files(value)
     } else {
       warning("File/s not valid!")

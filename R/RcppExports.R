@@ -37,6 +37,10 @@ rcpp_ms_groups_correspondence <- function(groups, features, verbose) {
     .Call(`_StreamFind_rcpp_ms_groups_correspondence`, groups, features, verbose)
 }
 
+rcpp_centroid_spectra_qCentroids <- function(fileNames, maxScale = 5L, mode = 2L) {
+    .Call(`_StreamFind_rcpp_centroid_spectra_qCentroids`, fileNames, maxScale, mode)
+}
+
 rcpp_parse_asc_file <- function(file_path) {
     .Call(`_StreamFind_rcpp_parse_asc_file`, file_path)
 }

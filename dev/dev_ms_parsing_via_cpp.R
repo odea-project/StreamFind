@@ -10,8 +10,9 @@ files <- all_files[grepl("o3sw", all_files)]
 
 
 
-# path <- "C:/Users/apoli/Documents/example_ms_files"
-# files <- list.files(path, pattern = ".mzML", full.names = TRUE)
+path <- "C:/Users/apoli/Documents/example_ms_files"
+files <- list.files(path, pattern = ".mzML", full.names = TRUE)
+rcpp_centroid_spectra_qCentroids(fileNames = files[4])
 
 ## databases -------------------------------------------------------------------
 db <- StreamFindData::get_ms_tof_spiked_chemicals()

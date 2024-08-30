@@ -493,7 +493,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       if (!is.null(rt)) {
         if (length(rt) == 2 && is.numeric(rt)) {
           rt <- sort(rt)
-          sel <- value$rt >= rt[1] & tic$rt <= rt[2]
+          sel <- value$rt >= rt[1] & value$rt <= rt[2]
           value <- value[sel, ]
         }
       }
@@ -514,7 +514,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       if (!is.null(rt)) {
         if (length(rt) == 2 && is.numeric(rt)) {
           rt <- sort(rt)
-          sel <- value$rt >= rt[1] & tic$rt <= rt[2]
+          sel <- value$rt >= rt[1] & value$rt <= rt[2]
           value <- value[sel, ]
         }
       }
@@ -537,7 +537,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                            isolationWindow = 1.3,
                            minIntensityMS1 = 0,
                            minIntensityMS2 = 0,
-                           useRawData = FALSE,
+                           useRawData = TRUE,
                            useLoadedData = TRUE) {
       
       analyses <- .check_analyses_argument(self$analyses, analyses)
@@ -626,35 +626,39 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         }
       }
       
+      # #__________________________________________________________________
+      # # Extracts spectra results 
+      # #__________________________________________________________________
+      # if (!useRawData) { #self$has_spectra() && !useRawData && 
+      #   
+      #   spec <- rbindlist(self$spectra, fill = TRUE)
+      #   
+      #   if ("analysis" %in% colnames(spec)) {
+      #     spec <- spec[spec$analysis %in% analyses, ]
+      #     
+      #   } else if ("replicate" %in% colnames(spec)) {
+      #     rpl <- self$get_replicate_names()
+      #     rpl <- rpl[analyses]
+      #     spec <- spec[spec$replicate %in% unname(rpl)]
+      #     
+      #     if (!"analysis" %in% colnames(spec)) {
+      #       spec$analysis <- spec$replicate
+      #       setcolorder(spec, c("analysis", "replicate"))
+      #     }
+      #   }
+      #   
+      #   return(spec)
+        
       #__________________________________________________________________
-      # Extracts spectra results 
+      # Extracts spectra from results
       #__________________________________________________________________
-      if (FALSE) { #self$has_spectra() && !useRawData && 
-        
-        spec <- rbindlist(self$spectra, fill = TRUE)
-        
-        if ("analysis" %in% colnames(spec)) {
-          spec <- spec[spec$analysis %in% analyses, ]
-          
-        } else if ("replicate" %in% colnames(spec)) {
-          rpl <- self$get_replicate_names()
-          rpl <- rpl[analyses]
-          spec <- spec[spec$replicate %in% unname(rpl)]
-          
-          if (!"analysis" %in% colnames(spec)) {
-            spec$analysis <- spec$replicate
-            setcolorder(spec, c("analysis", "replicate"))
-          }
-        }
-        
-        return(spec)
-        
-        #__________________________________________________________________
-        # Extracts spectra loaded
-        #__________________________________________________________________
-      } else if (all(self$analyses$has_loaded_spectra[analyses]) && useLoadedData && FALSE) {
+      if (useLoadedData && self$analyses$has_Spectra) {
         
         browser()
+        
+        spec_list <- self$analyses$Spectra$spectra
+        
+        # TODO check if averaged to retrieve replicates not analyses
         
         spec_list <- lapply(self$analyses[analyses]@analyses, function(x) {
           
@@ -707,7 +711,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
           if ("analysis" %in% colnames(targets)) targets <- targets[targets$analysis %in% x$name, ]
           
           cache <- lapply(seq_len(nrow(targets)), function(i) {
-            .load_chache(paste0("parsed_ms_spectra_", gsub("-", "", targets$id[i])), x$file, levels, targets[i, ], minIntensityMS1, minIntensityMS2)
+            .load_chache(paste0("parsed_ms_spectra_", gsub("-|[/]|[.]", "", targets$id[i])), x$file, levels, targets[i, ], minIntensityMS1, minIntensityMS2)
           })
           
           names(cache) <- targets$id
@@ -736,7 +740,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
               for (i in names(spec)) {
                 if (nrow(spec[[i]]) > 0) {
                   if (!is.null(cache[[i]]$hash)) {
-                    .save_cache(paste0("parsed_ms_spectra_", gsub("-", "", i)), spec[[i]], cache[[i]]$hash)
+                    .save_cache(paste0("parsed_ms_spectra_", gsub("-|[/]|[.]", "", i)), spec[[i]], cache[[i]]$hash)
                     # message("\U1f5ab Parsed spectra for ", i, " cached!")
                   }
                 }
@@ -1039,7 +1043,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       #__________________________________________________________________
       # Extracts chromatograms from results via the active binding
       #__________________________________________________________________
-      if (self$has_chromatograms() && !useRawData && !useLoadedData) {
+      if (!useRawData && !useLoadedData) {
         
         chroms <- rbindlist(self$chromatograms, fill = TRUE)
         
@@ -1387,7 +1391,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 rtExpand = 120,
                                 mzExpand = NULL,
                                 filtered = FALSE,
-                                useLoadedData = FALSE) {
+                                useLoadedData = TRUE) {
       
       fts <- self$get_features(analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
       
