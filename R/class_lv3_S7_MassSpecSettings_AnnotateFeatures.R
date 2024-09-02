@@ -91,12 +91,12 @@ S7::method(run, MassSpecSettings_AnnotateFeatures_StreamFind) <- function(x, eng
     return(FALSE)
   }
   
-  if (!engine$has_NTS()) {
+  if (!engine$has_nts()) {
     warning("No NTS object available! Not done.")
     return(FALSE)
   }
   
-  nts <- engine$NTS
+  nts <- engine$nts
   
   if (nts@number_features == 0) {
     warning("NTS object is empty! Not done.")
@@ -162,7 +162,7 @@ S7::method(run, MassSpecSettings_AnnotateFeatures_StreamFind) <- function(x, eng
   
   nts <- .add_features_column(nts, "isotope", iso_col)
   
-  engine$NTS <- nts
+  engine$nts <- nts
 
   message(paste0("\U2713 ", "Features annotated!"))
 

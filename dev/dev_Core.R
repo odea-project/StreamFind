@@ -1,4 +1,44 @@
 
+# Resources -------
+ms_files <- StreamFindData::get_ms_file_paths()
+db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
+cols <- c("name", "formula", "mass", "rt", "fragments", "tag")
+db <- db[, cols, with = FALSE]
+dbis <- db[grepl("IS", db$tag), ]
+dbsus <- db[!grepl("IS", db$tag), ]
+path <- "C:/Users/apoli/Documents/example_ms_files"
+ms_files_complete <- list.files(path, pattern = ".mzML", full.names = TRUE)
+
+
+# NTS workflow -----
+ms <- MassSpecEngine$new(analyses = ms_files_complete[7:24])
+ms$run(MassSpecSettings_FindFeatures_openms())
+ms$run(MassSpecSettings_AnnotateFeatures_StreamFind())
+ms$run(MassSpecSettings_FindInternalStandards_StreamFind(database = dbis, ppm = 8, sec = 10))
+ms$run(MassSpecSettings_GroupFeatures_openms())
+# ms$run(MassSpecSettings_FillFeatures_StreamFind())
+ms$run(MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE))
+ms$run(MassSpecSettings_FilterFeatures_patRoon(absMinIntensity = 5000))
+ms$nts <- ms$nts[ , ms$get_groups(mass = dbsus)$group]
+ms$run(MassSpecSettings_LoadFeaturesMS1_StreamFind(filtered = FALSE))
+ms$run(MassSpecSettings_LoadFeaturesMS2_StreamFind(filtered = FALSE))
+ms$run(MassSpecSettings_LoadFeaturesEIC_StreamFind(filtered = FALSE))
+ms$run(MassSpecSettings_CalculateFeaturesQuality_StreamFind())
+ms$run(MassSpecSettings_LoadMSPeakLists_StreamFind())
+# ms$run(MassSpecSettings_GenerateFormulas_genform())
+ms$run(MassSpecSettings_GenerateCompounds_metfrag())
+# ms$run(MassSpecSettings_SuspectScreening_StreamFind(database = dbsus, ppm = 15, sec = 30))
+
+ms$nts
+
+View(ms$nts$compounds)
+
+patRoon::plotSpectrum(ms$nts$compounds, 1, groupName = "M253_R1015_3567", ms$nts$mspl)
+
+ms$get_features()
+
+ms$get_groups()
+
 raman_files <- StreamFindData::get_raman_file_paths()
 
 ra <- RamanAnalyses(raman_files)
@@ -94,6 +134,9 @@ View(a[[1]])
 
 a <- MassSpecAnalyses(ms_files[1:3])
 
+
+get_spectra(a, analyses = 1)
+
 a <- remove(a, 2)
 
 
@@ -120,6 +163,11 @@ ms$run(MassSpecSettings_GenerateCompounds_metfrag())
 ms$run(MassSpecSettings_SuspectScreening_StreamFind(database = dbsus, ppm = 15, sec = 30))
 
 ms$get_suspects(database = dbsus[2, ], ppm = 15, sec = 30)
+
+plot_spectra_bpc(ms$analyses, levels = 1, yLab = "Test")
+
+
+_groups(ms$analyses, mass = dbsus[2, ])
 
 
 ms$get_features()

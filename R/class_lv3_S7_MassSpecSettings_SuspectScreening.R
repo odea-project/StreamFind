@@ -104,12 +104,12 @@ S7::method(run, MassSpecSettings_SuspectScreening_StreamFind) <- function(x, eng
     return(FALSE)
   }
   
-  if (!engine$has_NTS()) {
+  if (!engine$has_nts()) {
     warning("No NTS object available! Not done.")
     return(FALSE)
   }
   
-  nts <- engine$NTS
+  nts <- engine$nts
   
   if (nts@number_features == 0) {
     warning("NTS object is empty! Not done.")
@@ -121,7 +121,7 @@ S7::method(run, MassSpecSettings_SuspectScreening_StreamFind) <- function(x, eng
   if (!is.null(cache$data)) {
     tryCatch({
       nts <- .add_features_column(nts, "suspects", cache$data)
-      engine$NTS <- nts
+      engine$nts <- nts
       message("\U2139 Suspect screening annotation loaded from cache!")
       return(TRUE)
     }, error = function(e) {
@@ -197,7 +197,7 @@ S7::method(run, MassSpecSettings_SuspectScreening_StreamFind) <- function(x, eng
     }
     
     nts <- .add_features_column(nts, "suspects", sus_col)
-    engine$NTS <- nts
+    engine$nts <- nts
     TRUE
     
   } else {
@@ -293,12 +293,12 @@ S7::method(run, MassSpecSettings_SuspectScreening_forident) <- function(x, engin
     return(FALSE)
   }
   
-  if (!engine$has_NTS()) {
+  if (!engine$has_nts()) {
     warning("No NTS object available! Not done.")
     return(FALSE)
   }
   
-  nts <- engine$NTS
+  nts <- engine$nts
   
   if (nts@number_features == 0) {
     warning("NTS object is empty! Not done.")
@@ -510,12 +510,12 @@ S7::method(run, MassSpecSettings_SuspectScreening_patRoon) <- function(x, engine
     return(FALSE)
   }
   
-  if (!engine$has_NTS()) {
+  if (!engine$has_nts()) {
     warning("No NTS object available! Not done.")
     return(FALSE)
   }
   
-  nts <- engine$NTS
+  nts <- engine$nts
   
   if (nts@has_groups) {
     warning("NTS object does not have feature groups! Not done.")

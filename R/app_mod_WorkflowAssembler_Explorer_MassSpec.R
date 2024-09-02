@@ -1,10 +1,5 @@
-#' @title .mod_MassSpecEngine_summary_UI
-#' 
-#' @description Shiny module UI for MassSpecEngine summary in explorer tab.
-#' 
 #' @noRd
-#' 
-.mod_MassSpecEngine_summary_UI <- function(id, ns) {
+.mod_WorkflowAssembler_Explorer_MassSpec_UI <- function(id, ns) {
   ns2 <- shiny::NS(id)
   
   shinydashboard::tabBox(width = 12, height = "1080px",
@@ -28,13 +23,8 @@
   )
 }
 
-#' @title .mod_MassSpecEngine_summary_Server
-#' 
-#' @description Shiny module server for MassSpecEngine summary in explorer tab.
-#' 
-#' @noRd
-#' 
-.mod_MassSpecEngine_summary_Server <- function(id, ns, engine, reactive_analyses, reactive_volumes) {
+#' @noRd 
+.mod_WorkflowAssembler_Explorer_MassSpec_Server <- function(id, ns, reactive_analyses, reactive_volumes) {
   shiny::moduleServer(id, function(input, output, session) {
     ns2 <- shiny::NS(id)
     
@@ -124,9 +114,9 @@
         selected <- input$spectraAnalysesTable_rows_selected
         if (length(selected) == 0) return()
         if (input$summary_plot_type %in% "TIC") {
-          engine$plot_spectra_tic(analyses = selected, colorBy = input$summary_plot_colorby, level = input$summary_plot_level, rt = input$summary_plot_rt, downsize = input$summary_plot_downsize, interactive = input$summary_plot_interactive)
+          plot_spectra_tic(reactive_analyses(), analyses = selected, colorBy = input$summary_plot_colorby, level = input$summary_plot_level, rt = input$summary_plot_rt, downsize = input$summary_plot_downsize, interactive = input$summary_plot_interactive)
         } else if (input$summary_plot_type %in% "BPC") {
-          engine$plot_spectra_bpc(analyses = selected, colorBy = input$summary_plot_colorby, level = input$summary_plot_level, rt = input$summary_plot_rt, interactive = input$summary_plot_interactive)
+          plot_spectra_bpc(reactive_analyses(), analyses = selected, colorBy = input$summary_plot_colorby, level = input$summary_plot_level, rt = input$summary_plot_rt, interactive = input$summary_plot_interactive)
         }
       }
     })
@@ -138,9 +128,9 @@
         selected <- input$spectraAnalysesTable_rows_selected
         if (length(selected) == 0) return()
         if (input$summary_plot_type %in% "TIC") {
-          engine$plot_spectra_tic(analyses = selected, colorBy = input$summary_plot_colorby, level = input$summary_plot_level, rt = input$summary_plot_rt, downsize = input$summary_plot_downsize, interactive = input$summary_plot_interactive)
+          plot_spectra_tic(reactive_analyses(), analyses = selected, colorBy = input$summary_plot_colorby, level = input$summary_plot_level, rt = input$summary_plot_rt, downsize = input$summary_plot_downsize, interactive = input$summary_plot_interactive)
         } else if (input$summary_plot_type %in% "BPC") {
-          engine$plot_spectra_bpc(analyses = selected, colorBy = input$summary_plot_colorby, level = input$summary_plot_level, rt = input$summary_plot_rt, interactive = input$summary_plot_interactive)
+          plot_spectra_bpc(reactive_analyses(), analyses = selected, colorBy = input$summary_plot_colorby, level = input$summary_plot_level, rt = input$summary_plot_rt, interactive = input$summary_plot_interactive)
         }
       }
     })
@@ -156,9 +146,9 @@
         selected <- input$spectraAnalysesTable_rows_selected
         if (length(selected) == 0) return()
         if (input$summary_plot_type %in% "TIC") {
-          csv <- engine$get_spectra_tic(analyses = selected, level = input$summary_plot_level)
+          csv <- get_spectra_tic(reactive_analyses(), analyses = selected, level = input$summary_plot_level)
         } else if (input$summary_plot_type %in% "BPC") {
-          csv <- engine$get_spectra_bpc(analyses = selected, level = input$summary_plot_level)
+          csv <- get_spectra_bpc(reactive_analyses(), analyses = selected, level = input$summary_plot_level)
         }
         fileinfo <- shinyFiles::parseSavePath(reactive_volumes(), input$summary_plot_save)
         if (nrow(fileinfo) > 0) {
@@ -213,7 +203,7 @@
       if (length(reactive_analyses()) == 0) return()
       selected <- input$chromAnalysesTable_rows_selected
       if (length(selected) == 0) return()
-      engine$plot_chromatograms(analyses = selected, colorBy = input$summary_chrom_colorby, interactive = input$summary_chrom_interactive)
+      plot_chromatograms(reactive_analyses(), analyses = selected, colorBy = input$summary_chrom_colorby, interactive = input$summary_chrom_interactive)
     })
     
     # out Chromatograms plot -----
@@ -221,7 +211,7 @@
       if (length(reactive_analyses()) == 0) return()
       selected <- input$chromAnalysesTable_rows_selected
       if (length(selected) == 0) return()
-      engine$plot_chromatograms(analyses = selected, colorBy = input$summary_chrom_colorby, interactive = input$summary_chrom_interactive)
+      plot_chromatograms(reactive_analyses(), analyses = selected, colorBy = input$summary_chrom_colorby, interactive = input$summary_chrom_interactive)
     })
     
     # event Chromatograms plot export
@@ -233,7 +223,7 @@
       }
       selected <- input$chromAnalysesTable_rows_selected
       if (length(selected) == 0) return()
-      csv <- engine$get_chromatograms(analyses = selected)
+      csv <- get_chromatograms(reactive_analyses(), analyses = selected)
       fileinfo <- shinyFiles::parseSavePath(reactive_volumes(), input$chrom_plot_save)
       if (nrow(fileinfo) > 0) {
         utils::write.csv(csv, fileinfo$datapath, row.names = FALSE)
@@ -356,7 +346,7 @@
       if (is.null(input$eics_chrom_colorby)) return()
       if (nrow(targets()) == 0) return()
       anas <- unique(targets()[["analysis"]])
-      engine$plot_spectra_eic(mz = targets(), colorBy = input$eics_chrom_colorby, interactive = TRUE)
+      plot_spectra_eic(reactive_analyses(), mz = targets(), colorBy = input$eics_chrom_colorby, interactive = TRUE)
     })
     
     # out EICs plot -----
@@ -365,7 +355,7 @@
       if (is.null(input$eics_chrom_colorby)) return()
       if (nrow(targets()) == 0) return()
       anas <- unique(targets()[["analysis"]])
-      engine$plot_spectra_eic(mz = targets(), colorBy = input$eics_chrom_colorby, interactive = TRUE)
+      plot_spectra_eic(reactive_analyses(), mz = targets(), colorBy = input$eics_chrom_colorby, interactive = TRUE)
     })
     
   })

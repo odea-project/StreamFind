@@ -1,10 +1,5 @@
-#' @title .mod_workflow_assembler_UI
-#' 
-#' @description Template for Shiny module UI.
-#' 
 #' @noRd
-#'
-.mod_workflow_assembler_UI <- function(id) {
+.mod_WorkflowAssembler_UI <- function(id) {
   ns <- shiny::NS(id)
   
   shinydashboard::tabItems(
@@ -28,13 +23,8 @@
   )
 }
 
-#' @title .mod_workflow_assembler_Server
-#' 
-#' @description Template for Shiny module server.
-#' 
 #' @noRd
-#'
-.mod_workflow_assembler_Server <- function(id, reactive_clean_start, reactive_engine_type, reactive_engine_save_file, reactive_warnings) {
+.mod_WorkflowAssembler_Server <- function(id, reactive_clean_start, reactive_engine_type, reactive_engine_save_file, reactive_warnings) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
@@ -259,8 +249,8 @@
     
     ## module Headers -----
     output$headers_ui <- shiny::renderUI({
-      .mod_headers_Server("headers", ns, reactive_headers)
-      .mod_headers_UI("headers", ns)
+      .mod_WorkflowAssembler_ProjectHeaders_Server("headers", ns, reactive_headers)
+      .mod_WorkflowAssembler_ProjectHeaders_UI("headers", ns)
     })
     
     ## _Analyses -----
@@ -269,8 +259,8 @@
         shiny::showNotification("Analyses not implemented for CoreEngine", duration = 5, type = "warning")
         return(htmltools::div(" "))
       }
-      .mod_analyses_Server("analyses", ns, reactive_analyses, reactive_warnings, reactive_volumes)
-      .mod_analyses_UI("analyses", ns)
+      .mod_WorkflowAssembler_Analyses_Server("analyses", ns, reactive_analyses, reactive_warnings, reactive_volumes)
+      .mod_WorkflowAssembler_Analyses_UI("analyses", ns)
     })
     
     # _Explorer -----
@@ -284,8 +274,8 @@
           return(htmltools::div(" "))
         }
 
-        .mod_MassSpecEngine_summary_Server("summary", ns, engine, reactive_analyses, reactive_volumes)
-        .mod_MassSpecEngine_summary_UI("summary", ns)
+        .mod_WorkflowAssembler_Explorer_MassSpec_Server("summary", ns, reactive_analyses, reactive_volumes)
+        .mod_WorkflowAssembler_Explorer_MassSpec_UI("summary", ns)
 
       } else if (engine_type %in% "RamanEngine") {
 
@@ -294,8 +284,8 @@
           return(htmltools::div(" "))
         }
 
-        .mod_RamanEngine_summary_Server("summary", engine, reactive_analyses, volumes)
-        .mod_RamanEngine_summary_UI("summary", engine)
+        .mod_WorkflowAssembler_Explorer_Raman_Server("summary", engine, reactive_analyses, volumes)
+        .mod_WorkflowAssembler_Explorer_Raman_UI("summary", engine)
 
       } else {
         shiny::showNotification(paste0("Explorer not implemented for ", engine_type), duration = 5, type = "warning")

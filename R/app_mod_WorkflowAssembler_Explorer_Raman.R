@@ -1,12 +1,6 @@
-#' @title .mod_RamanEngine_summary_UI
-#' 
-#' @description Shiny module UI for RamanEngine summary in explorer tab.
-#' 
-#' @param engine A **RamanEngine** object.
-#' 
+
 #' @noRd
-#' 
-.mod_RamanEngine_summary_UI <- function(id, engine) {
+.mod_WorkflowAssembler_Explorer_Raman_UI <- function(id, engine) {
   ns <- shiny::NS(id)
   
   shinydashboard::tabBox(width = 12, height = "1080px",
@@ -20,17 +14,8 @@
   )
 }
 
-#' @title .mod_RamanEngine_summary_Server
-#' 
-#' @description Shiny module server for RamanEngine summary in explorer tab.
-#' 
-#' @param engine A RamanEngine object.
-#' @param analyses A reactive data.frame of analyses overview.
-#' @param volumes A list of volumes for saving destinations.
-#' 
 #' @noRd
-#' 
-.mod_RamanEngine_summary_Server <- function(id, engine, analyses, volumes) {
+.mod_WorkflowAssembler_Explorer_Raman_Server <- function(id, engine, analyses, volumes) {
   shiny::moduleServer(id, function(input, output, session) {
       ns <- session$ns
       

@@ -1,10 +1,5 @@
-#' @title .mod_analyses_UI
-#' 
-#' @description Shiny module UI for analyses tab.
-#' 
 #' @noRd
-#'
-.mod_analyses_UI <- function(id, ns) {
+.mod_WorkflowAssembler_Analyses_UI <- function(id, ns) {
   ns2 <- shiny::NS(id)
   shiny::column(12,
     shinydashboard::box(title = "Analyses", width = 12, solidHeader = TRUE,
@@ -15,13 +10,8 @@
   )
 }
 
-#' @title .mod_analyses_Server
-#' 
-#' @description Shiny module server for analyses tab.
-#' 
-#' @noRd
-#' 
-.mod_analyses_Server <- function(id, ns, reactive_analyses, reactive_warnings, reactive_volumes) {
+#' @noRd 
+.mod_WorkflowAssembler_Analyses_Server <- function(id, ns, reactive_analyses, reactive_warnings, reactive_volumes) {
   shiny::moduleServer(id, function(input, output, session) {
     ns2 <- shiny::NS(id)
     

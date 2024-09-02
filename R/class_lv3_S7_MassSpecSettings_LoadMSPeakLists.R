@@ -119,12 +119,12 @@ S7::method(run, MassSpecSettings_LoadMSPeakLists_patRoon) <- function(x, engine 
     return(FALSE)
   }
   
-  if (!engine$has_NTS()) {
+  if (!engine$has_nts()) {
     warning("No NTS object available! Not done.")
     return(FALSE)
   }
   
-  nts <- engine$NTS
+  nts <- engine$nts
   
   if (!nts@has_groups) {
     warning("NTS object does not have feature groups! Not done.")
@@ -155,7 +155,7 @@ S7::method(run, MassSpecSettings_LoadMSPeakLists_patRoon) <- function(x, engine 
   )
   
   nts$mspl <- mspl
-  engine$NTS <- nts
+  engine$nts <- nts
   message("\U2713 MSPeakLists loaded!")
   TRUE
 }
@@ -258,12 +258,12 @@ S7::method(run, MassSpecSettings_LoadMSPeakLists_StreamFind) <- function(x, engi
     return(FALSE)
   }
   
-  if (!engine$has_NTS()) {
+  if (!engine$has_nts()) {
     warning("No NTS object available! Not done.")
     return(FALSE)
   }
   
-  nts <- engine$NTS
+  nts <- engine$nts
   
   if (!nts@has_groups) {
     warning("NTS object does not have feature groups! Not done.")
@@ -280,7 +280,7 @@ S7::method(run, MassSpecSettings_LoadMSPeakLists_StreamFind) <- function(x, engi
   mspl <- .convert_ms1_ms2_columns_to_MSPeakLists(engine, parameters)
 
   nts$mspl <- mspl
-  engine$NTS <- nts
+  engine$nts <- nts
   message("\U2713 MSPeakLists loaded!")
   TRUE
 }
@@ -323,7 +323,7 @@ S7::method(run, MassSpecSettings_LoadMSPeakLists_StreamFind) <- function(x, engi
     out
   }
   
-  feature_list <- engine$NTS$feature_list
+  feature_list <- engine$nts$feature_list
   
   plist <- lapply(feature_list, function(x, correct_spectrum) {
     
@@ -478,7 +478,7 @@ S7::method(run, MassSpecSettings_LoadMSPeakLists_StreamFind) <- function(x, engi
     )
     
     plfinal <- new("MSPeakListsSet",
-                   analysisInfo = engine$NTS$analysisInfo,
+                   analysisInfo = engine$nts$analysisInfo,
                    peakLists = plist,
                    metadata = mlist,
                    avgPeakListArgs = pat_param,

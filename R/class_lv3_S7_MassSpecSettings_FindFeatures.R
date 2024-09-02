@@ -129,10 +129,12 @@
   
   if (length(unique(pols)) > 1 && !("featuresSet" %in% is(pat))) {
     pat <- patRoon::makeSet(
-      pat[pols %in% "positive"],
       pat[pols %in% "negative"],
-      adducts = list("[M+H]+", "[M-H]-")
+      pat[pols %in% "positive"],
+      adducts = list("[M-H]-", "[M+H]+")
     )
+    pat@analysisInfo <- pat@analysisInfo[order(pat@analysisInfo$analysis), ]
+    pat@features <- pat@features[pat@analysisInfo$analysis]
   }
   
   filtered <- lapply(patRoon::analyses(pat), function(a) pat@features[[a]][0, ])
@@ -141,7 +143,7 @@
   nts <- NTS(features = pat, filtered = filtered)
   
   if (is(nts, "StreamFind::NTS")) {
-    engine$NTS <- nts
+    engine$nts <- nts
     TRUE
     
   } else {

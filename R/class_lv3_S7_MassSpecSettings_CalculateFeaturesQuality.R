@@ -71,12 +71,12 @@ S7::method(run, MassSpecSettings_CalculateFeaturesQuality_StreamFind) <- functio
     return(FALSE)
   }
   
-  if (!engine$has_NTS()) {
+  if (!engine$has_nts()) {
     warning("No NTS object available! Not done.")
     return(FALSE)
   }
   
-  nts <- engine$NTS
+  nts <- engine$nts
   
   if (!nts@has_features) {
     warning("NTS object does not have features! Not done.")
@@ -108,7 +108,7 @@ S7::method(run, MassSpecSettings_CalculateFeaturesQuality_StreamFind) <- functio
       quality <- cache$data
       tryCatch({
         nts <- .add_features_column(nts, "quality", cache$data)
-        engine$NTS <- nts
+        engine$nts <- nts
         message("\U2139 Calculated features quality parameters loaded from cache!")
         return(TRUE)
       }, error = function(e) {
@@ -436,7 +436,7 @@ S7::method(run, MassSpecSettings_CalculateFeaturesQuality_StreamFind) <- functio
     }
     
     nts <- .add_features_column(nts, "quality", quality)
-    engine$NTS <- nts
+    engine$nts <- nts
     TRUE
     
   } else {

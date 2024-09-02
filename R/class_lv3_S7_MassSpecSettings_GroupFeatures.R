@@ -16,12 +16,12 @@
     return(FALSE)
   }
   
-  if (!engine$has_NTS()) {
+  if (!engine$has_nts()) {
     warning("No NTS object available! Not done.")
     return(FALSE)
   }
   
-  nts <- engine$NTS
+  nts <- engine$nts
   
   if (nts@number_features == 0) {
     warning("NTS object is empty! Not done.")
@@ -128,7 +128,7 @@
   nts <- NTS(features = pat, filtered = nts@filtered)
   
   if (is(nts, "StreamFind::NTS")) {
-    engine$NTS <- nts
+    engine$nts <- nts
     TRUE
     
   } else {

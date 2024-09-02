@@ -62,12 +62,12 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
     return(FALSE)
   }
   
-  if (!engine$has_NTS()) {
+  if (!engine$has_nts()) {
     warning("No NTS object available! Not done.")
     return(FALSE)
   }
   
-  if (!engine$NTS$has_features) {
+  if (!engine$nts$has_features) {
     warning("There are no features! Run find_features first!")
     return(FALSE)
   }
@@ -93,16 +93,16 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
     return(FALSE)
   }
   
-  n_features <- engine$NTS$number_features
+  n_features <- engine$nts$number_features
   
   # Filters features annotated as isotopes when groups are present the
   # isotopes are filtered if present in the all samples of a replicate.
   #
   .filter_excludeIsotopes = function(value = NULL, engine) {
     
-    if (engine$NTS$has_features && is.logical(value) && length(value) == 1) {
+    if (engine$nts$has_features && is.logical(value) && length(value) == 1) {
       
-      features <- engine$NTS$feature_list
+      features <- engine$nts$feature_list
       
       features <- lapply(features, function(x) {
         if ("isotope" %in% colnames(x)) {
@@ -120,7 +120,7 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
         x
       })
       
-      engine$NTS$feature_list <- features
+      engine$nts$feature_list <- features
       
     } else {
       warning("There are no features in the MassSpecEngine!")
@@ -131,9 +131,9 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
   #
   .filter_minSnRatio <- function(value = 3, engine) {
     
-    if (engine$NTS$has_features && is.numeric(value) && length(value) == 1) {
+    if (engine$nts$has_features && is.numeric(value) && length(value) == 1) {
       
-      features <- engine$NTS$feature_list
+      features <- engine$nts$feature_list
       
       features <- lapply(features, function(x) {
         
@@ -147,7 +147,7 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
         x
       })
       
-      engine$NTS$feature_list <- features
+      engine$nts$feature_list <- features
       
     } else {
       warning("There are no features in the MassSpecEngine!")
@@ -635,7 +635,7 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
     )
   }
   
-  n_features_after <- engine$NTS$number_features
+  n_features_after <- engine$nts$number_features
   
   n_features_filtered <- n_features - n_features_after
   
@@ -848,13 +848,13 @@ S7::method(run, MassSpecSettings_FilterFeatures_patRoon) <- function(x, engine =
     return(FALSE)
   }
   
-  if (!engine$has_NTS()) {
+  if (!engine$has_nts()) {
     warning("No NTS object available! Not done.")
     return(FALSE)
   }
   
-  if (engine$NTS$has_features) {
-    nts <- engine$NTS
+  if (engine$nts$has_features) {
+    nts <- engine$nts
     pat <- nts$features
     
   } else {
@@ -899,7 +899,7 @@ S7::method(run, MassSpecSettings_FilterFeatures_patRoon) <- function(x, engine =
   
   nts$feature_list <- feature_list
   
-  engine$NTS <- nts
+  engine$nts <- nts
   
   TRUE
 }

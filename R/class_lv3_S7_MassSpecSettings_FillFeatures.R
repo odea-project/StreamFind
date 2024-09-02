@@ -62,12 +62,12 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
     return(FALSE)
   }
   
-  if (!engine$has_NTS()) {
+  if (!engine$has_nts()) {
     warning("No NTS object available! Not done.")
     return(FALSE)
   }
   
-  nts <- engine$NTS
+  nts <- engine$nts
   
   if (!nts@has_groups) {
     warning("NTS object does not have feature groups! Not done.")
@@ -86,7 +86,7 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
   if (!is.null(cache$data)) {
     message("\U2139 Filled features loaded from cache!")
     nts$features <- cache$data
-    engine$NTS <- nts
+    engine$nts <- nts
     return(TRUE)
   }
   
@@ -286,6 +286,6 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
   }
   
   nts$features <- fg
-  engine$NTS <- nts
+  engine$nts <- nts
   TRUE
 }

@@ -463,7 +463,9 @@
                                      showLegend = TRUE,
                                      xlim = NULL,
                                      ylim = NULL,
-                                     cex = 0.6) {
+                                     cex = 0.6,
+                                     xLab = NULL,
+                                     yLab = NULL) {
   
   eic <- .make_colorBy_varkey(eic, colorBy, legendNames)
   
@@ -493,10 +495,13 @@
   
   if (is.null(cex) || !is.numeric(cex)) cex <- 0.6
   
+  if (is.null(xLab)) xLab <- "Retention time / seconds"
+  if (is.null(yLab)) yLab <- "Intensity / counts"
+  
   plot(eic$rt,
        type = "n",
-       xlab = "Retention time / seconds",
-       ylab = "Intensity / counts",
+       xlab = xLab,
+       ylab = yLab,
        xlim = rtr,
        ylim = intr,
        main = title
@@ -544,7 +549,9 @@
                                           legendNames = NULL,
                                           colorBy = "targets",
                                           title = NULL,
-                                          showLegend = TRUE) {
+                                          showLegend = TRUE,
+                                          xLab = NULL,
+                                          yLab = NULL) {
   
   eic <- .make_colorBy_varkey(eic, colorBy, legendNames)
   
@@ -554,6 +561,8 @@
   eic$loop <- paste0(eic$analysis, eic$id, eic$var)
   loop_key <- unique(eic$loop)
   
+  if (is.null(xLab)) xLab <- "Retention time / seconds"
+  if (is.null(yLab)) yLab <- "Intensity / counts"
   
   title <- list(
     text = title, x = 0.13, y = 0.98,
@@ -562,13 +571,13 @@
   
   xaxis <- list(
     linecolor = toRGB("black"),
-    linewidth = 2, title = "Retention time / seconds",
+    linewidth = 2, title = xLab,
     titlefont = list(size = 12, color = "black")
   )
   
   yaxis <- list(
     linecolor = toRGB("black"),
-    linewidth = 2, title = "Intensity / counts",
+    linewidth = 2, title = yLab,
     titlefont = list(size = 12, color = "black")
   )
   
@@ -603,19 +612,9 @@
   }
   
   if (showLegend) {
-    plot <- plot %>% plotly::layout(
-      legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
-      xaxis = xaxis,
-      yaxis = yaxis,
-      title = title
-    )
+    plot <- plot %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
   } else {
-    plot <- plot %>% plotly::layout(
-      legend = NULL,
-      xaxis = xaxis,
-      yaxis = yaxis,
-      title = title
-    )
+    plot <- plot %>% plotly::layout(legend = NULL, xaxis = xaxis, yaxis = yaxis, title = title)
   }
   
   plot
@@ -629,7 +628,9 @@
                                           legendNames = NULL,
                                           colorBy = "targets",
                                           title = NULL,
-                                          showLegend = TRUE) {
+                                          showLegend = TRUE,
+                                          xLab = NULL,
+                                          yLab = NULL) {
   
   bpc <- .make_colorBy_varkey(bpc, colorBy, legendNames)
   
@@ -639,6 +640,9 @@
   bpc$loop <- paste0(bpc$analysis, bpc$id, bpc$var)
   loop_key <- unique(bpc$loop)
   
+  if (is.null(xLab)) xLab <- "Retention time / seconds"
+  if (is.null(yLab)) yLab <- "Intensity / counts"
+  
   title <- list(
     text = title, x = 0.13, y = 0.98,
     font = list(size = 12, color = "black")
@@ -646,13 +650,13 @@
   
   xaxis <- list(
     linecolor = toRGB("black"),
-    linewidth = 2, title = "Retention time / seconds",
+    linewidth = 2, title = xLab,
     titlefont = list(size = 12, color = "black")
   )
   
   yaxis <- list(
     linecolor = toRGB("black"),
-    linewidth = 2, title = "Intensity / counts",
+    linewidth = 2, title = yLab,
     titlefont = list(size = 12, color = "black")
   )
   
@@ -693,21 +697,10 @@
     if (length(y) >= 1) showL[lt] <- FALSE
   }
   
-  
   if (showLegend) {
-    plot <- plot %>% plotly::layout(
-      legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
-      xaxis = xaxis,
-      yaxis = yaxis,
-      title = title
-    )
+    plot <- plot %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
   } else {
-    plot <- plot %>% plotly::layout(
-      legend = NULL,
-      xaxis = xaxis,
-      yaxis = yaxis,
-      title = title
-    )
+    plot <- plot %>% plotly::layout(legend = NULL, xaxis = xaxis, yaxis = yaxis, title = title)
   }
   
   plot
@@ -717,7 +710,7 @@
 #'
 #' @noRd
 #'
-.plot_spectra_ms2_static <- function(ms2 = NULL, legendNames = NULL, colorBy = "targets", title = NULL) {
+.plot_spectra_ms2_static <- function(ms2 = NULL, legendNames = NULL, colorBy = "targets", title = NULL, xLab = NULL, yLab = NULL) {
   
   ms2 <- .make_colorBy_varkey(ms2, colorBy, legendNames)
   
@@ -729,10 +722,13 @@
   
   ms2$text = paste0(round(ms2$mz, 4))
   
+  if (is.null(xLab)) xLab <- expression(italic("m/z ") / " Da")
+  if (is.null(yLab)) yLab <- "Intensity / counts"
+  
   plot(intensity ~ mz, ms2,
        type = "h",
-       xlab = expression(italic("m/z ") / " Da"),
-       ylab = "Intensity / counts",
+       xlab = xLab,
+       ylab = yLab,
        col = ms2$color,
        lwd = 2,
        ylim = c(0, max(ms2$intensity) * 1.5),
@@ -782,7 +778,7 @@
 #'
 #' @noRd
 #'
-.plot_spectra_ms2_interactive <- function(ms2 = NULL, legendNames = NULL, colorBy = "targets", title = NULL) {
+.plot_spectra_ms2_interactive <- function(ms2 = NULL, legendNames = NULL, colorBy = "targets", title = NULL, xLab = NULL, yLab = NULL) {
   
   ms2 <- .make_colorBy_varkey(ms2, colorBy, legendNames)
   
@@ -830,9 +826,12 @@
   ticksMin <- plyr::round_any(min(ms2$mz, na.rm = TRUE) * 0.9, 10)
   ticksMax <- plyr::round_any(max(ms2$mz, na.rm = TRUE) * 1.1, 10)
   
+  if (is.null(xLab)) xLab <- "<i>m/z</i> / Da"
+  if (is.null(yLab)) yLab <- "Intensity / counts"
+  
   xaxis <- list(
     linecolor = toRGB("black"),
-    linewidth = 2, title = "<i>m/z</i> / Da",
+    linewidth = 2, title = xLab,
     titlefont = list(size = 12, color = "black"),
     range = c(ticksMin, ticksMax),
     dtick = round((max(ms2$mz) / 10), -1),
@@ -842,16 +841,12 @@
   yaxis <- list(
     linecolor = toRGB("black"),
     linewidth = 2,
-    title = "Intensity / counts",
+    title = yLab,
     titlefont = list(size = 12, color = "black"),
     range = c(0, max(ms2$intensity) * 1.5)
   )
   
-  plot <- plot %>% plotly::layout(bargap = 1,
-                                  legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
-                                  title = title, xaxis = xaxis, yaxis = yaxis,
-                                  barmode = "overlay", uniformtext = list(minsize = 6, mode = "show")
-  )
+  plot <- plot %>% plotly::layout(bargap = 1, title = title, xaxis = xaxis, yaxis = yaxis, barmode = "overlay", uniformtext = list(minsize = 6, mode = "show"))
   
   return(plot)
 }
@@ -860,7 +855,7 @@
 #'
 #' @noRd
 #'
-.plot_spectra_ms1_static <- function(ms1 = NULL, legendNames = NULL, colorBy = "targets", title = NULL, showText = FALSE) {
+.plot_spectra_ms1_static <- function(ms1 = NULL, legendNames = NULL, colorBy = "targets", title = NULL, xLab = NULL, yLab = NULL, showText = FALSE) {
   
   ms1 <- .make_colorBy_varkey(ms1, colorBy, legendNames)
   
@@ -872,10 +867,13 @@
   
   ms1$text = paste0(round(ms1$mz, 4))
   
+  if (is.null(xLab)) xLab <- expression(italic("m/z ") / " Da")
+  if (is.null(yLab)) yLab <- "Intensity / counts"
+  
   plot(intensity ~ mz, ms1,
        type = "h",
-       xlab = expression(italic("m/z ") / " Da"),
-       ylab = "Intensity / counts",
+       xlab = xLab,
+       ylab = yLab,
        col = ms1$color,
        lwd = 2,
        ylim = c(0, max(ms1$intensity) * 1.5),
@@ -908,7 +906,7 @@
 #'
 #' @noRd
 #'
-.plot_spectra_ms1_interactive <- function(ms1 = NULL, legendNames = NULL, colorBy = "targets", title = NULL, showText = TRUE) {
+.plot_spectra_ms1_interactive <- function(ms1 = NULL, legendNames = NULL, colorBy = "targets", title = NULL, xLab = NULL, yLab = NULL, showText = FALSE) {
   
   ms1 <- .make_colorBy_varkey(ms1, colorBy, legendNames)
   
@@ -951,9 +949,12 @@
   ticksMin <- plyr::round_any(min(ms1$mz, na.rm = TRUE) * 0.9, 10)
   ticksMax <- plyr::round_any(max(ms1$mz, na.rm = TRUE) * 1.1, 10)
   
+  if (is.null(xLab)) xLab <- "<i>m/z</i> / Da"
+  if (is.null(yLab)) yLab <- "Intensity / counts"
+  
   xaxis <- list(
     linecolor = toRGB("black"),
-    linewidth = 2, title = "<i>m/z</i> / Da",
+    linewidth = 2, title = xLab,
     titlefont = list(size = 12, color = "black"),
     range = c(ticksMin, ticksMax),
     dtick = round((max(ms1$mz) / 10), -1),
@@ -963,16 +964,12 @@
   yaxis <- list(
     linecolor = toRGB("black"),
     linewidth = 2,
-    title = "Intensity / counts",
+    title = yLab,
     titlefont = list(size = 12, color = "black"),
     range = c(0, max(ms1$intensity) * 1.5)
   )
   
-  plot <- plot %>% plotly::layout(bargap = 1,
-                                  legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
-                                  title = title, xaxis = xaxis, yaxis = yaxis,
-                                  barmode = "overlay", uniformtext = list(minsize = 6, mode = "show")
-  )
+  plot <- plot %>% plotly::layout(bargap = 1, title = title, xaxis = xaxis, yaxis = yaxis, barmode = "overlay", uniformtext = list(minsize = 6, mode = "show"))
   
   return(plot)
 }
@@ -985,6 +982,8 @@
                                   features = NULL,
                                   legendNames = NULL,
                                   colorBy = "targets",
+                                  xLab = NULL,
+                                  yLab = NULL,
                                   title = NULL,
                                   showLegend = TRUE,
                                   xlim = NULL,
@@ -1030,10 +1029,13 @@
     plot_qlt <- TRUE
   }
   
+  if (is.null(xLab)) xLab <- "Retention time / seconds"
+  if (is.null(yLab)) yLab <- "Intensity / counts"
+  
   plot(eic$rt,
        type = "n",
-       xlab = "Retention time / seconds",
-       ylab = "Intensity / counts",
+       xlab = xLab,
+       ylab = yLab,
        xlim = rtr,
        ylim = intr,
        main = title
@@ -1156,6 +1158,8 @@
                                        features = NULL,
                                        legendNames = NULL,
                                        colorBy = "targets",
+                                       xLab = NULL,
+                                       yLab = NULL,
                                        title = NULL,
                                        showLegend = TRUE) {
   
@@ -1182,16 +1186,19 @@
     font = list(size = 12, color = "black")
   )
   
+  if (is.null(xLab)) xLab <- "Retention time / seconds"
+  if (is.null(yLab)) yLab <- "Intensity / counts"
+  
   xaxis <- list(
     linecolor = toRGB("black"),
-    linewidth = 2, title = "Retention time / seconds",
+    linewidth = 2, title = xLab,
     range = c(min(eic$rt), max(eic$rt)),
     titlefont = list(size = 12, color = "black")
   )
   
   yaxis <- list(
     linecolor = toRGB("black"),
-    linewidth = 2, title = "Intensity / counts",
+    linewidth = 2, title = yLab,
     titlefont = list(size = 12, color = "black")
   )
   
@@ -1330,7 +1337,6 @@
   
   if (showLegend) {
     plot <- plot %>% plotly::layout(
-      legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
       xaxis = xaxis,
       yaxis = yaxis,
       title = title
@@ -1354,6 +1360,8 @@
 .map_features_static <- function(features,
                                  colorBy = "targets",
                                  legendNames = NULL,
+                                 xLab = NULL,
+                                 yLab = NULL, 
                                  title = NULL,
                                  showLegend = TRUE,
                                  xlim = NULL,
@@ -1395,11 +1403,14 @@
   
   if (is.null(cex) || !is.numeric(cex)) cex <- 0.6
   
+  if (is.null(xLab)) xLab <- "Retention time / seconds"
+  if (is.null(yLab)) yLab <- expression(italic("m/z ") / " Da")
+  
   plot(features$rt,
        features$mz,
        type = "n",
-       xlab = "Retention time / seconds",
-       ylab = expression(italic("m/z ") / " Da"),
+       xlab = xLab,
+       ylab = yLab,
        xlim = rtr,
        ylim = mzr,
        main = title
@@ -1443,7 +1454,10 @@
 .map_features_interactive <- function(features,
                                       colorBy = "targets",
                                       legendNames = NULL,
-                                      xlim = 60, ylim = 5,
+                                      xlim = 60,
+                                      ylim = 5,
+                                      xLab = NULL,
+                                      yLab = NULL,
                                       title = NULL,
                                       showLegend = TRUE) {
   
@@ -1538,9 +1552,12 @@
     font = list(size = 9, color = "black")
   )
   
+  if (is.null(xLab)) xLab <- "Retention time / seconds"
+  if (is.null(yLab)) yLab <- "<i>m/z</i> / Da"
+  
   xaxis <- list(
     linecolor = toRGB("black"),
-    linewidth = 2, title = "Retention time / seconds",
+    linewidth = 2, title = xLab,
     titlefont = list(size = 12, color = "black"),
     range = rtr,
     autotick = TRUE, ticks = "outside"
@@ -1548,14 +1565,13 @@
   
   yaxis <- list(
     linecolor = toRGB("black"),
-    linewidth = 2, title = "<i>m/z</i> / Da",
+    linewidth = 2, title = yLab,
     range = mzr,
     titlefont = list(size = 12, color = "black")
   )
   
   if (showLegend) {
     plot <- plot %>% plotly::layout(
-      legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
       xaxis = xaxis,
       yaxis = yaxis,
       title = title
@@ -1839,10 +1855,6 @@
     which_layout = "merge"
   )
   
-  plotf_2 <- plotf_2 %>% plotly::layout(
-    legend = list(title = list(text = paste("<b>", "targets", "</b>")))
-  )
-  
   return(plotf_2)
 }
 
@@ -1990,7 +2002,6 @@
   )
   
   plot <- plot %>% plotly::layout(
-    legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
     xaxis = xaxis,
     yaxis = yaxis,
     title = title
@@ -2447,6 +2458,8 @@
 .plot_chromatograms_interactive <- function(chromatograms = NULL,
                                             legendNames = NULL,
                                             colorBy = "targets",
+                                            xLab = NULL,
+                                            yLab = NULL,
                                             title = NULL,
                                             showLegend = TRUE) {
   
@@ -2463,15 +2476,18 @@
     font = list(size = 12, color = "black")
   )
   
+  if (is.null(xLab)) xLab <- "Retention time / seconds"
+  if (is.null(yLab)) yLab <- "Intensity / counts"
+  
   xaxis <- list(
     linecolor = toRGB("black"),
-    linewidth = 2, title = "Retention time / seconds",
+    linewidth = 2, title = xLab,
     titlefont = list(size = 12, color = "black")
   )
   
   yaxis <- list(
     linecolor = toRGB("black"),
-    linewidth = 2, title = "Intensity / counts",
+    linewidth = 2, title = yLab,
     titlefont = list(size = 12, color = "black")
   )
   
@@ -2521,7 +2537,6 @@
   
   if (showLegend) {
     plot <- plot %>% plotly::layout(
-      legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
       xaxis = xaxis,
       yaxis = yaxis,
       title = title
@@ -2745,10 +2760,6 @@
     which_layout = "merge"
   )
   
-  plotf <- plotf %>% plotly::layout(
-    legend = list(title = list(text = paste("<b>", "suspects", "</b>")))
-  )
-  
   return(plotf)
 }
 
@@ -2944,7 +2955,6 @@
   
   if (showLegend) {
     plot <- plot %>% plotly::layout(
-      legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
       xaxis = xaxis,
       yaxis = yaxis,
       title = title
@@ -3200,7 +3210,6 @@
   
   if (showLegend) {
     plot <- plot %>% plotly::layout(
-      legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
       xaxis = xaxis,
       yaxis = yaxis,
       title = title
@@ -3339,7 +3348,6 @@
   }
   
   plot <- plot %>% plotly::layout(
-    legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
     xaxis = xaxis,
     yaxis = yaxis,
     title = title
@@ -3491,7 +3499,6 @@
   }
   
   plot <- plot %>% plotly::layout(
-    legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
     xaxis = xaxis,
     yaxis = yaxis,
     title = title
@@ -3615,7 +3622,6 @@
   }
   
   plot <- plot %>% plotly::layout(
-    legend = list(title = list(text = paste("<b>", colorBy, "</b>"))),
     xaxis = xaxis,
     yaxis = yaxis,
     title = title

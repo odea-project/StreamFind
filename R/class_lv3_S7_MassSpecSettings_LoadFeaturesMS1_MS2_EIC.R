@@ -86,7 +86,7 @@ S7::method(run, MassSpecSettings_LoadFeaturesMS1_StreamFind) <- function(x, engi
     return(FALSE)
   }
   
-  nts <- engine$NTS
+  nts <- engine$nts
   
   parameters <- x$parameters
   
@@ -95,7 +95,7 @@ S7::method(run, MassSpecSettings_LoadFeaturesMS1_StreamFind) <- function(x, engi
   if (!is.null(cache$data)) {
     tryCatch({
       nts <- .add_features_column(nts, "ms1", cache$data)
-      engine$NTS <- nts
+      engine$nts <- nts
       message("\U2139 Features MS1 spectra loaded from cache!")
       return(TRUE)
     }, error = function(e) {
@@ -149,7 +149,7 @@ S7::method(run, MassSpecSettings_LoadFeaturesMS1_StreamFind) <- function(x, engi
   }
   
   nts <- .add_features_column(nts, "ms1", ms1_col)
-  engine$NTS <- nts
+  engine$nts <- nts
   message("\U2713 MS1 spectra added to features!")
   TRUE
 }
@@ -232,12 +232,12 @@ S7::method(run, MassSpecSettings_LoadFeaturesMS2_StreamFind) <- function(x, engi
     return(FALSE)
   }
   
-  if (!engine$has_NTS()) {
+  if (!engine$has_nts()) {
     warning("No NTS object available! Not done.")
     return(FALSE)
   }
   
-  nts <- engine$NTS
+  nts <- engine$nts
   
   parameters <- x$parameters
   
@@ -246,7 +246,7 @@ S7::method(run, MassSpecSettings_LoadFeaturesMS2_StreamFind) <- function(x, engi
   if (!is.null(cache$data)) {
     tryCatch({
       nts <- .add_features_column(nts, "ms2", cache$data)
-      engine$NTS <- nts
+      engine$nts <- nts
       message("\U2139 Features MS2 spectra loaded from cache!")
       return(TRUE)
     }, error = function(e) {
@@ -298,7 +298,7 @@ S7::method(run, MassSpecSettings_LoadFeaturesMS2_StreamFind) <- function(x, engi
   }
   
   nts <- .add_features_column(nts, "ms2", ms2_col)
-  engine$NTS <- nts
+  engine$nts <- nts
   message("\U2713 MS2 spectra added to features!")
   TRUE
 }
@@ -372,12 +372,12 @@ S7::method(run, MassSpecSettings_LoadFeaturesEIC_StreamFind) <- function(x, engi
     return(FALSE)
   }
   
-  if (!engine$has_NTS()) {
+  if (!engine$has_nts()) {
     warning("No NTS object available! Not done.")
     return(FALSE)
   }
   
-  nts <- engine$NTS
+  nts <- engine$nts
   
   parameters <- x$parameters
   
@@ -386,7 +386,7 @@ S7::method(run, MassSpecSettings_LoadFeaturesEIC_StreamFind) <- function(x, engi
   if (!is.null(cache$data)) {
     tryCatch({
       nts <- .add_features_column(nts, "eic", cache$data)
-      engine$NTS <- nts
+      engine$nts <- nts
       message("\U2139 Features EIC loaded from cache!")
       return(TRUE)
     }, error = function(e) {
@@ -437,7 +437,7 @@ S7::method(run, MassSpecSettings_LoadFeaturesEIC_StreamFind) <- function(x, engi
   }
   
   nts <- .add_features_column(nts, "eic", eic_col)
-  engine$NTS <- nts
+  engine$nts <- nts
   message("\U2713 EIC added to features!")
   TRUE
 }

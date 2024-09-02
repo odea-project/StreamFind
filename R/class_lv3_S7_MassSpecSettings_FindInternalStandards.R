@@ -73,12 +73,12 @@ S7::method(run, MassSpecSettings_FindInternalStandards_StreamFind) <- function(x
     return(FALSE)
   }
   
-  if (!engine$has_NTS()) {
+  if (!engine$has_nts()) {
     warning("No NTS object available! Not done.")
     return(FALSE)
   }
   
-  nts <- engine$NTS
+  nts <- engine$nts
   
   if (!nts$has_features) {
     warning("There are no features! Run find_features first!")
@@ -90,7 +90,7 @@ S7::method(run, MassSpecSettings_FindInternalStandards_StreamFind) <- function(x
   if (!is.null(cache$data)) {
     tryCatch({
       nts <- .add_features_column(nts, "istd", cache$data)
-      engine$NTS <- nts
+      engine$nts <- nts
       message("\U2139 Internal standards annotation loaded from cache!")
       return(TRUE)
     }, error = function(e) {
@@ -222,7 +222,7 @@ S7::method(run, MassSpecSettings_FindInternalStandards_StreamFind) <- function(x
     
     nts <- .add_features_column(nts, "istd", istd_col)
     
-    engine$NTS <- nts
+    engine$nts <- nts
     
     message("\U2713 ", length(unique(internal_standards$name)), " internal standards found and tagged!")
     

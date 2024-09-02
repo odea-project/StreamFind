@@ -7,9 +7,6 @@
 The \emph{StatisticEngine} R6 class is a framework for performing statistical analysis on data.
 }
 \note{
-Note that only numeric values are accepted in data and the data column names are used as variable names
-and data row names are used as analyses names. The data is internally converted to \emph{StatisticAnalysis} objects.
-
 Note that the model must be created before prediction and data must have the same number of variables as
 the model. Also, any pre-processing applied to the model data should be applied to the data before prediction.
 Note that only numeric values are accepted in data and the data column names are used as variable names
@@ -51,9 +48,9 @@ Note that only the model MCR is valid for quantification and concentrations must
 \item \href{#method-StatisticEngine-get_model_resolved_spectra}{\code{StatisticEngine$get_model_resolved_spectra()}}
 \item \href{#method-StatisticEngine-get_model_contributions}{\code{StatisticEngine$get_model_contributions()}}
 \item \href{#method-StatisticEngine-add_analyses}{\code{StatisticEngine$add_analyses()}}
-\item \href{#method-StatisticEngine-add_data}{\code{StatisticEngine$add_data()}}
 \item \href{#method-StatisticEngine-add_classes}{\code{StatisticEngine$add_classes()}}
 \item \href{#method-StatisticEngine-add_concentrations}{\code{StatisticEngine$add_concentrations()}}
+\item \href{#method-StatisticEngine-remove_analyses}{\code{StatisticEngine$remove_analyses()}}
 \item \href{#method-StatisticEngine-predict}{\code{StatisticEngine$predict()}}
 \item \href{#method-StatisticEngine-classify}{\code{StatisticEngine$classify()}}
 \item \href{#method-StatisticEngine-quantify}{\code{StatisticEngine$quantify()}}
@@ -88,7 +85,6 @@ Note that only the model MCR is valid for quantification and concentrations must
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_analyses'><code>StreamFind::CoreEngine$print_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_headers'><code>StreamFind::CoreEngine$print_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_workflow'><code>StreamFind::CoreEngine$print_workflow()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="remove_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-remove_analyses'><code>StreamFind::CoreEngine$remove_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run'><code>StreamFind::CoreEngine$run()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_app"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_app'><code>StreamFind::CoreEngine$run_app()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_workflow'><code>StreamFind::CoreEngine$run_workflow()</code></a></span></li>
@@ -275,23 +271,6 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-StatisticEngine-add_data"></a>}}
-\if{latex}{\out{\hypertarget{method-StatisticEngine-add_data}{}}}
-\subsection{Method \code{add_data()}}{
-Adds data to the \emph{StatisticEngine} object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$add_data(data)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{data}}{Data.frame, data-table or matrix with data.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-StatisticEngine-add_classes"></a>}}
 \if{latex}{\out{\hypertarget{method-StatisticEngine-add_classes}{}}}
 \subsection{Method \code{add_classes()}}{
@@ -323,6 +302,26 @@ Adds concentrations to the analyses.
 \item{\code{concentrations}}{A numeric vector with the concentrations.}
 }
 \if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-StatisticEngine-remove_analyses"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-remove_analyses}{}}}
+\subsection{Method \code{remove_analyses()}}{
+Removes analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$remove_analyses(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A character vector with the names or numeric vector with indices of the analyses to remove.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
 }
 }
 \if{html}{\out{<hr>}}

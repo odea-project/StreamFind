@@ -1,10 +1,5 @@
-#' @title .mod_headers_UI
-#' 
-#' @description Shiny module UI for headers tab.
-#' 
 #' @noRd
-#'
-.mod_headers_UI <- function(id, ns) {
+.mod_WorkflowAssembler_ProjectHeaders_UI <- function(id, ns) {
   ns2 <- shiny::NS(id)
   
   shiny::column(12,
@@ -32,13 +27,8 @@
   )
 }
 
-#' @title .mod_headers_Server
-#' 
-#' @description Shiny module server for headers tab.
-#' 
-#' @noRd
-#' 
-.mod_headers_Server <- function(id, ns, reactive_headers) {
+#' @noRd 
+.mod_WorkflowAssembler_ProjectHeaders_Server <- function(id, ns, reactive_headers) {
   shiny::moduleServer(id, function(input, output, session) {
     ns2 <- shiny::NS(id)
     

@@ -151,12 +151,12 @@ S7::method(run, MassSpecSettings_GenerateFormulas_genform) <- function(x, engine
     return(FALSE)
   }
   
-  if (!engine$has_NTS()) {
+  if (!engine$has_nts()) {
     warning("No NTS object available! Not done.")
     return(FALSE)
   }
   
-  nts <- engine$NTS
+  nts <- engine$nts
   
   if (!nts@has_groups) {
     warning("NTS object does not have feature groups! Not done.")
@@ -221,7 +221,7 @@ S7::method(run, MassSpecSettings_GenerateFormulas_genform) <- function(x, engine
   
   nts$formulas <- formulas
   
-  engine$NTS <- nts
+  engine$nts <- nts
   
   message(paste0("\U2713 ", length(formulas), " formulas generated and added!"))
   

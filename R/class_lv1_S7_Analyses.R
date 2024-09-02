@@ -1,5 +1,3 @@
-
-#' @export
 #' @noRd
 Analyses <- S7::new_class("Analyses", package = "StreamFind",
   
@@ -48,7 +46,7 @@ Analyses <- S7::new_class("Analyses", package = "StreamFind",
 #' @noRd
 S7::method(show, Analyses) <- function(x, ...) {
   cat("\n")
-  cat("Analyses")
+  cat(is(x))
   if (length(x) > 0) {
     cat("\n")
     overview <- x@info
@@ -61,9 +59,9 @@ S7::method(show, Analyses) <- function(x, ...) {
   cat("Results")
   if (length(x@results) > 0) {
     cat("\n")
-    names_results <- names(x@results)
+    results_class <- vapply(x@results, is, "")
     cat(
-      paste0(" ", seq_len(length(names_results)), ": ", names_results),
+      paste0(" ", seq_len(length(results_class)), ": ", results_class),
       sep = "\n"
     )
   } else {
@@ -157,33 +155,27 @@ S7::method(save, Analyses) <- function(x, format = "json", name = "settings", pa
 
 #' @export
 #' @noRd
-S7::method(add, Analyses) <- function(x, analyses) {
-  if (!is(analyses, "list")) {
+S7::method(add, Analyses) <- function(x, value) {
+  if (!is(value, "list")) {
     warning("Analysis must be a list!")
     return(x)
   }
-  
-  analyses_names <- names(analyses)
-  
-  if (length(analyses_names) == 0) {
+  value_names <- names(value)
+  if (length(value_names) == 0) {
     warning("Analysis names must be provided!")
     return(x)
   }
-  
-  if (any(vapply(analyses_names, function(a) a %in% x@names, FALSE))) {
+  if (any(vapply(value_names, function(a) a %in% names(x), FALSE))) {
     warning("Analysis names already exist!")
     return(x)
   }
-  
-  analyses <- c(x@analyses, analyses)
+  analyses <- c(x@analyses, value)
   analyses <- analyses[order(names(analyses))]
   x@analyses <- analyses
-  
   if (length(x@results) > 0) {
-    warning("All results removed!")
+    # TODO apply subset method to results based on analysis, delegate to each results class
     x@results <- list()
   }
-  
   x
 }
 

@@ -21,13 +21,13 @@ assembly of Non-Target Screening data processing workflows.
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{NTS}}{Get/Set the NTS results.}
+\item{\code{nts}}{Get/Set for the \code{NTS} results class.}
 
-\item{\code{chromatograms}}{\code{data.table} with processed chromatograms for each analyses.}
+\item{\code{spectra}}{Get/set for the \code{Spectra} results class.}
+
+\item{\code{chromatograms}}{Get/set for the chromatograms results class.}
 
 \item{\code{chromatograms_peaks}}{\code{data.table} with integrated peaks from chromatograms for each analyses.}
-
-\item{\code{spectra}}{List of spectra \code{data.table} objects for each analysis.}
 
 \item{\code{spectra_charges}}{\code{data.table} with charges assigned to spectra for each analyses.}
 
@@ -89,7 +89,7 @@ assembly of Non-Target Screening data processing workflows.
 \item \href{#method-MassSpecEngine-remove_groups}{\code{MassSpecEngine$remove_groups()}}
 \item \href{#method-MassSpecEngine-subset_features}{\code{MassSpecEngine$subset_features()}}
 \item \href{#method-MassSpecEngine-subset_groups}{\code{MassSpecEngine$subset_groups()}}
-\item \href{#method-MassSpecEngine-has_NTS}{\code{MassSpecEngine$has_NTS()}}
+\item \href{#method-MassSpecEngine-has_nts}{\code{MassSpecEngine$has_nts()}}
 \item \href{#method-MassSpecEngine-has_features}{\code{MassSpecEngine$has_features()}}
 \item \href{#method-MassSpecEngine-has_groups}{\code{MassSpecEngine$has_groups()}}
 \item \href{#method-MassSpecEngine-has_MSPeakLists}{\code{MassSpecEngine$has_MSPeakLists()}}
@@ -564,7 +564,7 @@ Gets spectra from each analysis.
   isolationWindow = 1.3,
   minIntensityMS1 = 0,
   minIntensityMS2 = 0,
-  useRawData = FALSE,
+  useRawData = TRUE,
   useLoadedData = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -1043,7 +1043,7 @@ Gets a data.table with feature EICs following the targets from the arguments.
   rtExpand = 120,
   mzExpand = NULL,
   filtered = FALSE,
-  useLoadedData = FALSE
+  useLoadedData = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -2117,12 +2117,12 @@ A new cloned MassSpecEngine object with only the groups as defined by the \code{
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_NTS"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_NTS}{}}}
-\subsection{Method \code{has_NTS()}}{
+\if{html}{\out{<a id="method-MassSpecEngine-has_nts"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_nts}{}}}
+\subsection{Method \code{has_nts()}}{
 Checks if there are NTS results, returning \code{TRUE} or \code{FALSE}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_NTS()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_nts()}\if{html}{\out{</div>}}
 }
 
 }
@@ -2492,6 +2492,8 @@ Plots chromatograms in the analyses.
   minIntensity = NULL,
   useRawData = FALSE,
   useLoadedData = TRUE,
+  xLab = NULL,
+  yLab = NULL,
   title = NULL,
   colorBy = "targets",
   legendNames = NULL,
@@ -2515,6 +2517,10 @@ Plots chromatograms in the analyses.
 \item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in results/processed.}
 
 \item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
 
 \item{\code{title}}{A string with the title.}
 
@@ -2691,6 +2697,8 @@ Plots spectra extract ion chromatograms (EIC) from the analyses based on targets
   millisec = 5,
   id = NULL,
   legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
   title = NULL,
   colorBy = "targets",
   showLegend = TRUE,
@@ -2747,6 +2755,10 @@ combination of the \emph{m/z} and retention time ranges or values.}
 \item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
 the added targets as legend of the plot.}
 
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
 \item{\code{title}}{A string with the title.}
 
 \item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
@@ -2775,6 +2787,8 @@ Plots the spectra total ion chromatogram (TIC) of each analysis.
   analyses = NULL,
   levels = c(1, 2),
   rt = NULL,
+  xLab = NULL,
+  yLab = NULL,
   title = NULL,
   colorBy = "analyses",
   legendNames = NULL,
@@ -2797,6 +2811,10 @@ Plots the spectra total ion chromatogram (TIC) of each analysis.
 \item{\code{rt}}{A vector with target retention time values (in seconds) or
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
 
 \item{\code{title}}{A string with the title.}
 
@@ -2831,6 +2849,8 @@ Plots the spectra base peak chromatogram (BPC) of each analysis.
   analyses = NULL,
   levels = c(1, 2),
   rt = NULL,
+  xLab = NULL,
+  yLab = NULL,
   title = NULL,
   colorBy = "analyses",
   legendNames = NULL,
@@ -2852,6 +2872,10 @@ Plots the spectra base peak chromatogram (BPC) of each analysis.
 \item{\code{rt}}{A vector with target retention time values (in seconds) or
 a two columns data.table or data.frame with minimum and maximum retention
 time values (in seconds).}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
 
 \item{\code{title}}{A string with the title.}
 
@@ -2898,6 +2922,8 @@ Plots level 2 spectra from the analyses based on targets.
   presence = 0.8,
   minIntensity = 0,
   legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
   title = NULL,
   colorBy = "targets",
   interactive = TRUE
@@ -2962,6 +2988,10 @@ spectra) to 1 (i.e., must be present in all spectra) for traces during clusterin
 \item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
 the added targets as legend of the plot.}
 
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
 \item{\code{title}}{A string with the title.}
 
 \item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
@@ -2992,6 +3022,8 @@ Plots level 1 spectra from the analyses based on targets.
   presence = 0.8,
   minIntensity = 1000,
   legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
   title = NULL,
   colorBy = "targets",
   showText = FALSE,
@@ -3053,6 +3085,10 @@ spectra) to 1 (i.e., must be present in all spectra) for traces during clusterin
 \item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
 the added targets as legend of the plot.}
 
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
 \item{\code{title}}{A string with the title.}
 
 \item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
@@ -3086,6 +3122,8 @@ Plots features from analyses.
   useLoadedData = TRUE,
   filtered = FALSE,
   legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
   title = NULL,
   colorBy = "targets",
   showLegend = TRUE,
@@ -3151,6 +3189,10 @@ right the mass range.}
 \item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
 the added targets as legend of the plot.}
 
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
 \item{\code{title}}{A string with the title.}
 
 \item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
@@ -3187,6 +3229,8 @@ Plots a map of the retention time vs \emph{m/z} of features from analyses.
   millisec = 5,
   filtered = FALSE,
   legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
   title = NULL,
   colorBy = "targets",
   showLegend = TRUE,
@@ -3244,6 +3288,10 @@ in milliseconds.}
 \item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
 the added targets as legend of the plot.}
 
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
 \item{\code{title}}{A string with the title.}
 
 \item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
@@ -3286,6 +3334,8 @@ Plots level 1 spectra from features in the analyses.
   filtered = FALSE,
   useLoadedData = TRUE,
   legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
   title = NULL,
   colorBy = "targets",
   interactive = TRUE
@@ -3357,6 +3407,10 @@ spectra) to 1 (i.e., must be present in all spectra) for traces during clusterin
 \item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
 the added targets as legend of the plot.}
 
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
 \item{\code{title}}{A string with the title.}
 
 \item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
@@ -3390,6 +3444,8 @@ Plots level 2 spectra from features in the analyses.
   filtered = FALSE,
   useLoadedData = TRUE,
   legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
   title = NULL,
   colorBy = "targets",
   interactive = TRUE
@@ -3457,6 +3513,10 @@ spectra) to 1 (i.e., must be present in all spectra) for traces during clusterin
 \item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
 the added targets as legend of the plot.}
 
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
 \item{\code{title}}{A string with the title.}
 
 \item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
@@ -3486,6 +3546,8 @@ Plots feature groups EIC.
   mzExpand = 0.005,
   filtered = FALSE,
   legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
   title = NULL,
   colorBy = "targets",
   showLegend = TRUE,
@@ -3546,6 +3608,10 @@ right the mass range.}
 \item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
 the added targets as legend of the plot.}
 
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
 \item{\code{title}}{A string with the title.}
 
 \item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
@@ -3591,6 +3657,8 @@ Plots level 1 spectra from feature groups in the analyses.
   groupBy = "groups",
   filtered = FALSE,
   legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
   title = NULL,
   colorBy = "targets",
   interactive = TRUE
@@ -3670,6 +3738,10 @@ groups or feature groups and replicates, respectively.}
 \item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
 the added targets as legend of the plot.}
 
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
 \item{\code{title}}{A string with the title.}
 
 \item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
@@ -3706,6 +3778,8 @@ Plots level 1 spectra from feature groups in the analyses.
   groupBy = "groups",
   filtered = FALSE,
   legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
   title = NULL,
   colorBy = "targets",
   interactive = TRUE
@@ -3780,6 +3854,10 @@ groups or feature groups and replicates, respectively.}
 
 \item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
 the added targets as legend of the plot.}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
 
 \item{\code{title}}{A string with the title.}
 
@@ -3898,6 +3976,7 @@ Method to plot the intensity profile of feature groups across the analyses.
   filtered = FALSE,
   normalized = TRUE,
   legendNames = NULL,
+  yLab = NULL,
   title = NULL
 )}\if{html}{\out{</div>}}
 }
@@ -3949,6 +4028,8 @@ in milliseconds.}
 
 \item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
 the added targets as legend of the plot.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
 
 \item{\code{title}}{A string with the title.}
 }

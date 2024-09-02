@@ -23,7 +23,7 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
     analysisInfo = S7::new_property(S7::class_data.frame, getter = function(self) self@features@analysisInfo),
     
     ## __number_analyses -----
-    number_analyses = S7::new_property(S7::class_integer, getter = function(self) length(patRoon::analyses(self@features))),
+    number_analyses = S7::new_property(S7::class_integer, getter = function(self) length(self@features@analysisInfo$analysis)),
     
     ## __number_features -----
     number_features = S7::new_property(S7::class_integer, getter = function(self) length(self@features)),
@@ -40,17 +40,18 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
         
         f_list <- pat@features
         filtered_list <- self$filtered
+        
         f_list <- Map(
           function(x, y) {
             if (nrow(x) > 0) x <- x[!(x$ID %in% y$ID), ]
-            y <- rbindlist(list(y, x), fill = TRUE)
+            y <- data.table::rbindlist(list(y, x), fill = TRUE)
             y
           },
           filtered_list, f_list
         )
         
         f_list <- lapply(f_list, function(x) {
-          z <- copy(x)
+          z <- data.table::copy(x)
           data.table::setnames(z, "ID", "feature", skip_absent = TRUE)
           data.table::setnames(z, "ret", "rt", skip_absent = TRUE)
           data.table::setnames(z, "retmin", "rtmin", skip_absent = TRUE)
@@ -59,7 +60,8 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
         
         if ("featuresSet" %in% is(pat)) {
           for (x in names(f_list)) {
-            pol <- pat@analysisInfo[[x]]$set
+            sel <- pat@analysisInfo$analysis %in% x
+            pol <- pat@analysisInfo$set[sel]
             if ("positive" %in% pol) adduct_val <- -1.007276
             if ("negative" %in% pol) adduct_val <- 1.007276
             sel_to_change <- round(f_list[[x]]$mz, 0) == round(f_list[[x]]$mass, 0)
@@ -96,7 +98,8 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
           if (identical(patRoon::analyses(self@features), names(value))) {
             if ("featuresSet" %in% is(self$features)) {
               for (x in names(value)) {
-                pol <- self$features@analysisInfo[[x]]$set
+                sel <- self$features@analysisInfo$analysis %in% x
+                pol <- self$features@analysisInfo$set[sel]
                 if ("positive" %in% pol) adduct_val <- -1.007276
                 if ("negative" %in% pol) adduct_val <- 1.007276
                 sel_to_change <- round(value[[x]]$mz, 0) != round(value[[x]]$mass, 0)
@@ -232,9 +235,15 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
       return(NULL)
     }
     
+    if (("featuresSet" %in% is(features) || "featureGroupsSet" %in% is(features))) {
+      mspl = new("MSPeakListsSet", algorithm = NA_character_)
+      formulas = new("formulasSet", algorithm = NA_character_)
+      compounds = new("compoundsSet", algorithm = NA_character_)
+    }
+    
     S7::new_object(
       Results(), 
-      name = "NTS",
+      name = "nts",
       software = "patRoon",
       version = as.character(packageVersion("patRoon")),
       features = features,
@@ -247,7 +256,7 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
   
   validator = function(self) {
     valid <- all(
-      checkmate::test_true(self@name == "NTS"),
+      checkmate::test_true(self@name == "nts"),
       checkmate::test_true(self@software == "patRoon"),
       checkmate::test_character(self@version, len = 1),
       checkmate::test_true(("features" %in% is(self@features)) || ("featureGroups" %in% is(self@features))),
@@ -269,7 +278,7 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
 S7::method(show, NTS) <- function(x) {
   
   cat("\n")
-  cat("NTS\n")
+  cat(is(x))
   cat("\n")
   cat("  Number of analyses: ", x@number_analyses, "\n")
   if (x@has_groups) {
