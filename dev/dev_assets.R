@@ -45,7 +45,6 @@ non_ascii_lines <- grep("[^\x01-\x7F]", file_content, value = TRUE)
 cat("Non-ASCII characters found in the following lines:\n")
 print(non_ascii_lines)
 
-
 # Others -----------------------------------------------------------------------
 
 system.file(package = "StreamFind", dir = "extdata")

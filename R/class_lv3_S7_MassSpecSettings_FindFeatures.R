@@ -689,41 +689,50 @@ S7::method(run, MassSpecSettings_FindFeatures_kpic2) <- function(x, engine = NUL
 }
 
 # ______________________________________________________________________________________________________________________
-# qPeaks -----
+# qalgorithms -----
 # ______________________________________________________________________________________________________________________
 
-#' **MassSpecSettings_FindFeatures_qPeaks**
+#' **MassSpecSettings_FindFeatures_qalgorithms**
 #'
-#' @description Not yet implemented.
+#' @description The qAlgorithms uses a comprehensive peak model developed by 
+#' \href{https://doi.org/10.1021/acs.analchem.4c00494}{Renner et al.} to 
+#' identify peaks within LC-MS data. More information can be found in the
+#' GitHub repository of the \href{https://github.com/odea-project/qAlgorithms}{qAlgorithms} project. 
+#' The qAlgorithms is best used with profile data but centroid data is also possible. Yet, a mass uncertainty 
+#' should by supplied in parts per million (ppm) to account for the m/z deviation in centroid data.
+#' 
+#' @param ppm numeric(1) defining the maximal tolerated m/z deviation in parts per million (ppm) only applicable for
+#' centroid data. For profile data, the ppm value is ignored.
 #'
 #' @noRd
 #'
-MassSpecSettings_FindFeatures_qPeaks <- S7::new_class("MassSpecSettings_FindFeatures_qPeaks",
+MassSpecSettings_FindFeatures_qalgorithms <- S7::new_class("MassSpecSettings_FindFeatures_qalgorithms",
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function() {
+  constructor = function(ppm = 5) {
    
    S7::new_object(ProcessingSettings(
      engine = "MassSpec",
      method = "FindFeatures",
-     algorithm = "qPeaks",
-     parameters = list(),
+     algorithm = "qalgorithms",
+     parameters = list(ppm = ppm),
      number_permitted = 1,
      version = as.character(packageVersion("StreamFind")),
      software = "qAlgorithms",
-     developer = "Max, Gerrit",
-     contact = "max@email.de",
+     developer = "Gerrit Renner",
+     contact = "gerrit.renner@uni-due.de",
      link = "https://github.com/odea-project/qAlgorithms",
-     doi = NA_character_
+     doi = "10.1021/acs.analchem.4c00494"
    ))
   },
   
   validator = function(self) {
    valid <- all(
      checkmate::test_choice(self@engine, "MassSpec"),
-     checkmate::test_choice(self@call, "FindFeatures"),
-     checkmate::test_choice(self@algorithm, "qPeaks")
+     checkmate::test_choice(self@method, "FindFeatures"),
+     checkmate::test_choice(self@algorithm, "qalgorithms"),
+     checkmate::test_numeric(self@parameters$ppm, len = 1)
    )
    if (!valid) return(FALSE)
    NULL
@@ -732,7 +741,7 @@ MassSpecSettings_FindFeatures_qPeaks <- S7::new_class("MassSpecSettings_FindFeat
 
 #' @export
 #' @noRd
-S7::method(run, MassSpecSettings_FindFeatures_qPeaks) <- function(x, engine = NULL) {
-  # .run_find_features_patRoon(x, engine)
+S7::method(run, MassSpecSettings_FindFeatures_qalgorithms) <- function(x, engine = NULL) {
+  .run_find_features_patRoon(x, engine)
   FALSE
 }

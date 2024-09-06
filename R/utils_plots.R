@@ -1245,6 +1245,12 @@
       "</br> rt: ", round(pk$rt, digits = 0),
       "</br> drt: ", round(pk$rtmax - pk$rtmin, digits = 0),
       "</br> intensity: ", round(pk$intensity, digits = 0),
+      "</br> DQS: ",
+      if ("dqsPeak" %in% colnames(pk)) {
+        pk$dqsPeak
+      } else {
+        "NA"
+      },
       "</br> filled: ",
       if ("is_filled" %in% colnames(pk)) {
         ifelse(pk$is_filled == 1, TRUE, FALSE)

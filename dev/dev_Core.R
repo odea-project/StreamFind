@@ -11,23 +11,183 @@ ms_files_complete <- list.files(path, pattern = ".mzML", full.names = TRUE)
 
 
 # NTS workflow -----
-ms <- MassSpecEngine$new(analyses = ms_files_complete[7:24])
+# ms <- MassSpecEngine$new(analyses = ms_files_complete[7:24])
+ms <- MassSpecEngine$new(analyses = ms_files[10:27])
 ms$run(MassSpecSettings_FindFeatures_openms())
-ms$run(MassSpecSettings_AnnotateFeatures_StreamFind())
-ms$run(MassSpecSettings_FindInternalStandards_StreamFind(database = dbis, ppm = 8, sec = 10))
+# ms$run(MassSpecSettings_AnnotateFeatures_StreamFind())
+# ms$run(MassSpecSettings_FindInternalStandards_StreamFind(database = dbis, ppm = 8, sec = 10))
 ms$run(MassSpecSettings_GroupFeatures_openms())
 # ms$run(MassSpecSettings_FillFeatures_StreamFind())
-ms$run(MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE))
-ms$run(MassSpecSettings_FilterFeatures_patRoon(absMinIntensity = 5000))
-ms$nts <- ms$nts[ , ms$get_groups(mass = dbsus)$group]
-ms$run(MassSpecSettings_LoadFeaturesMS1_StreamFind(filtered = FALSE))
-ms$run(MassSpecSettings_LoadFeaturesMS2_StreamFind(filtered = FALSE))
-ms$run(MassSpecSettings_LoadFeaturesEIC_StreamFind(filtered = FALSE))
-ms$run(MassSpecSettings_CalculateFeaturesQuality_StreamFind())
-ms$run(MassSpecSettings_LoadMSPeakLists_StreamFind())
+# ms$run(MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE))
+# ms$run(MassSpecSettings_FilterFeatures_patRoon(absMinIntensity = 5000))
+# ms$nts <- ms$nts[ , ms$get_groups(mass = dbsus)$group]
+# ms$run(MassSpecSettings_LoadFeaturesMS1_StreamFind(filtered = FALSE))
+# ms$run(MassSpecSettings_LoadFeaturesMS2_StreamFind(filtered = FALSE))
+# ms$run(MassSpecSettings_LoadFeaturesEIC_StreamFind(filtered = FALSE))
+# ms$run(MassSpecSettings_CalculateFeaturesQuality_StreamFind())
+# ms$run(MassSpecSettings_LoadMSPeakLists_StreamFind())
 # ms$run(MassSpecSettings_GenerateFormulas_genform())
-ms$run(MassSpecSettings_GenerateCompounds_metfrag())
+# ms$run(MassSpecSettings_GenerateCompounds_metfrag())
 # ms$run(MassSpecSettings_SuspectScreening_StreamFind(database = dbsus, ppm = 15, sec = 30))
+
+res <- rcpp_ms_fill_features(
+  ms$analyses$analyses,
+  ms$get_features(),
+  TRUE, #withinReplicate
+  0, #rtExpand
+  0, #mzExpand
+  5, #minNumberTraces
+  5, #minSignalToNoiseRatio,
+  0.2, #minGaussianFit,
+  1000 #minIntensity
+)
+
+data <- res$`03_tof_ww_is_pos_o3sw_effluent-r003`$M404_R1022_2862_03_tof_ww_is_pos_o3sw_effluent
+plot(data$rt, data$intensity, main = "Gaussian Fit with Symmetric Data Trimming", xlab = "x", ylab = "y (Intensity)", pch = 19, col = "blue", cex = 1.2)
+lines(data$rt, data$fit, col = "red", lwd = 2)
+
+data <- res$`03_tof_ww_is_pos_o3sw_effluent-r003`$M441_R1338_3172_03_tof_ww_is_pos_o3sw_effluent
+plot(data$rt, data$intensity, main = "Gaussian Fit with Symmetric Data Trimming", xlab = "x", ylab = "y (Intensity)", pch = 19, col = "blue", cex = 1.2)
+lines(data$rt, data$fit, col = "red", lwd = 2)
+
+
+plot(
+  res$`03_tof_ww_is_pos_o3sw_effluent-r003`$M331_R1233_1901_03_tof_ww_is_pos_o3sw_effluent$intensity,
+  type = "l",
+  xlab = "N traces",
+  ylab = "Intensity"
+)
+
+data <- res$`03_tof_ww_is_pos_o3sw_effluent-r003`$M331_R1233_1901_03_tof_ww_is_pos_o3sw_effluent
+calculate_plot_gau_fit(data)
+
+calculate_plot_gau_fit <- function(data) {
+  
+  if (nrow(data) < 5) return(cat("Not enough data points for fitting a Gaussian model."))
+  
+  x <- data$rt
+  
+  y <- data$intensity
+  
+  # Step 2: Find the index of the maximum y value
+  max_idx <- which.max(y)
+  x_max <- x[max_idx]
+  
+  # Step 3: Symmetrically trim the data around the x of the maximum y value
+  n_points <- min(max_idx - 1, length(x) - max_idx) # Number of points to keep on each side
+  x_trimmed <- x[(max_idx - n_points):(max_idx + n_points)]
+  y_trimmed <- y[(max_idx - n_points):(max_idx + n_points)]
+  
+  if (length(x_trimmed) < 5) return(cat("Not enough data points for fitting a Gaussian model."))
+  
+  # Step 4: Initial guesses for Gaussian parameters
+  start_params <- list(A = max(y_trimmed), mu = x_max, sigma = sd(x_trimmed))
+  
+  # Step 5: Fit the Gaussian model to the trimmed data using non-linear least squares
+  gaussian_model <- nls(y_trimmed ~ A * exp(-((x_trimmed - mu)^2) / (2 * sigma^2)), 
+                        start = start_params)
+  
+  # Step 6: Extract the fitted parameters
+  fitted_params <- coef(gaussian_model)
+  A_fitted <- fitted_params["A"]
+  mu_fitted <- fitted_params["mu"]
+  sigma_fitted <- fitted_params["sigma"]
+  
+  # Step 7: Generate fitted values based on the model
+  x_fit <- seq(min(x_trimmed), max(x_trimmed), length = 100)
+  y_fit <- A_fitted * exp(-((x_fit - mu_fitted)^2) / (2 * sigma_fitted^2))
+  
+  # Step 8: Calculate the R-squared score (goodness of fit)
+  y_pred <- A_fitted * exp(-((x_trimmed - mu_fitted)^2) / (2 * sigma_fitted^2))
+  ss_total <- sum((y_trimmed - mean(y_trimmed))^2) # Total sum of squares
+  ss_residual <- sum((y_trimmed - y_pred)^2)      # Residual sum of squares
+  r_squared <- 1 - (ss_residual / ss_total)
+  
+  # Step 9: Plot the original data and the Gaussian fit
+  plot(x_trimmed, y_trimmed, main = "Gaussian Fit with Symmetric Data Trimming", 
+       xlab = "x", ylab = "y (Intensity)", pch = 19, col = "blue", cex = 1.2)
+  lines(x_fit, y_fit, col = "red", lwd = 2)
+  
+  # Step 10: Display fitted parameters and R-squared
+  cat("Fitted Amplitude (A):", A_fitted, "\n")
+  cat("Fitted Mean (mu):", mu_fitted, "\n")
+  cat("Fitted Standard Deviation (sigma):", sigma_fitted, "\n")
+  cat("R-squared (Goodness of fit):", r_squared, "\n")
+  
+  
+  
+  
+  # # Step 2: Calculate mean and standard deviation
+  # mean_data <- mean(data)
+  # sd_data <- sd(data)
+  # 
+  # # Step 3: Create Gaussian function to predict values
+  # gaussian <- function(x) {
+  #   (1 / (sd_data * sqrt(2 * pi))) * exp(-((x - mean_data)^2) / (2 * sd_data^2))
+  # }
+  # 
+  # # Step 4: Generate sequence for fitting curve
+  # x_fit <- seq(min(data), max(data), length = length(data))
+  # 
+  # # Step 5: Plot histogram of data and Gaussian fit
+  # plot(seq_along(data), data, type = "l", xlab = "N traces", ylab = "Intensity")
+  # hist_values <- hist(data, breaks = 10, probability = TRUE, col = "lightblue",
+  #                     xlab = "Data", main = "Histogram with Gaussian Fit")
+  # 
+  # # plot(seq_along(hist_values$density), hist_values$density, col = "red", lwd = 2)
+  # 
+  # # Overlay the Gaussian fit curve
+  # lines(x_fit, gaussian(data), col = "red", lwd = 2)
+  # 
+  # # Step 6: Compute the fitted values (Gaussian curve at midpoints of histogram bins)
+  # bin_centers <- hist_values$mids  # Midpoints of histogram bins
+  # predicted <- gaussian(bin_centers)  # Gaussian fit values at bin centers
+  # observed <- hist_values$density    # Actual histogram densities
+  # 
+  # # Step 7: Calculate R-squared (R²)
+  # ss_res <- sum((observed - predicted)^2)  # Sum of squared residuals
+  # ss_tot <- sum((observed - mean(observed))^2)  # Total sum of squares
+  # r_squared <- 1 - (ss_res / ss_tot)
+  # 
+  # # Step 8: Calculate RMSE (Root Mean Squared Error)
+  # rmse <- sqrt(mean((observed - predicted)^2))
+  # 
+  # # Display R-squared and RMSE
+  # cat("R-squared: ", r_squared, "\n")
+  # cat("RMSE: ", rmse, "\n")
+  # 
+  # # Optional: Display mean and standard deviation
+  # cat("Mean: ", mean_data, "\n")
+  # cat("Standard Deviation: ", sd_data, "\n")
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ms$map_features(mass = dbis[7, ], colorBy = "analyses")
+
+# ms$get_features(mass = dbis[7, ])
 
 ms$nts
 

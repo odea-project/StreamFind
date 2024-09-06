@@ -901,7 +901,7 @@ S7::method(get_spectra_eic, MassSpecAnalyses) <- function(x,
     eic <- as.data.table(eic)
     if (!"id" %in% colnames(eic)) eic$id <- NA_character_
     if (!"polarity" %in% colnames(eic)) eic$polarity <- 0
-    eic <- eic[, `:=`(intensity = sum(intensity)), by = c("analysis", "polarity", "id", "rt")][]
+    eic <- eic[, `:=`(intensity = max(intensity)), by = c("analysis", "polarity", "id", "rt")][]
     eic <- eic[, c("analysis", "polarity", "id", "rt", "intensity"), with = FALSE]
     eic <- unique(eic)
   }
@@ -2331,7 +2331,7 @@ S7::method(plot_features, MassSpecAnalyses) <- function(x,
                                                         sec = 60,
                                                         millisec = 5,
                                                         rtExpand = 120,
-                                                        mzExpand = NULL,
+                                                        mzExpand = 0.001,
                                                         useLoadedData = TRUE,
                                                         filtered = FALSE,
                                                         legendNames = NULL,
@@ -2363,7 +2363,9 @@ S7::method(plot_features, MassSpecAnalyses) <- function(x,
   
   intensity <- NULL
   
-  eic <- eic[, `:=`(intensity = sum(intensity)), by = c("analysis", "polarity", "feature", "rt")][]
+  eic <- eic[, `:=`(intensity = max(intensity)), by = c("analysis", "polarity", "feature", "rt")][]
+
+  eic <- unique(eic)
   
   if (nrow(eic) == 0) {
     message("\U2717 Traces not found for the targets!")
@@ -2519,7 +2521,7 @@ S7::method(plot_groups, MassSpecAnalyses) <- function(x,
                                                       sec = 60,
                                                       millisec = 5,
                                                       rtExpand = 15,
-                                                      mzExpand = 0.005,
+                                                      mzExpand = 0.001,
                                                       filtered = FALSE,
                                                       legendNames = NULL,
                                                       xLab = NULL,
@@ -2699,7 +2701,9 @@ S7::method(plot_groups_overview, MassSpecAnalyses) <- function(x,
   
   intensity <- NULL
   
-  eic <- eic[, `:=`(intensity = sum(intensity)), by = c("analysis", "polarity", "feature", "rt")][]
+  eic <- eic[, `:=`(intensity = max(intensity)), by = c("analysis", "polarity", "feature", "rt")][]
+  
+  eic <- unique(eic)
   
   if (nrow(eic) == 0) {
     message("\U2717 Traces and/or features not found for targets!")

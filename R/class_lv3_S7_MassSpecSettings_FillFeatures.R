@@ -9,6 +9,8 @@
 #' 
 #' @template arg-ms-rtExpand
 #' @template arg-ms-mzExpand
+#' @param noise Numeric of length one with the noise threshold.
+#' @param withinReplicate Logical of length one to fill within replicates not global.
 #'
 #' @return A ProcessingSettings S3 class object with subclass MassSpecSettings_FillFeatures_StreamFind.
 #'
@@ -18,13 +20,18 @@ MassSpecSettings_FillFeatures_StreamFind <- S7::new_class("MassSpecSettings_Fill
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(rtExpand = 1, mzExpand = 0.0005) {
+  constructor = function(rtExpand = 1, mzExpand = 0.0005, noise  = 1000, withinReplicate = FALSE) {
     
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "FillFeatures",
       algorithm = "StreamFind",
-      parameters = list(rtExpand = rtExpand, mzExpand = mzExpand),
+      parameters = list(
+        rtExpand = rtExpand,
+        mzExpand = mzExpand,
+        noise = noise,
+        withinReplicate = withinReplicate
+      ),
       number_permitted = 1,
       version = as.character(packageVersion("StreamFind")),
       software = "StreamFind",
@@ -41,7 +48,9 @@ MassSpecSettings_FillFeatures_StreamFind <- S7::new_class("MassSpecSettings_Fill
       checkmate::test_choice(self@method, "FillFeatures"),
       checkmate::test_choice(self@algorithm, "StreamFind"),
       checkmate::test_numeric(self@parameters$rtExpand, len = 1),
-      checkmate::test_numeric(self@parameters$mzExpand, len = 1)
+      checkmate::test_numeric(self@parameters$mzExpand, len = 1),
+      checkmate::test_numeric(self@parameters$noise, len = 1),
+      checkmate::test_logical(self@parameters$withinReplicate, len = 1)
     )
     if (!valid) return(FALSE)
     NULL
@@ -90,70 +99,77 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
     return(TRUE)
   }
   
+  parameters <- x$parameters
+  
   fts <- engine$get_features()
   
   has_adduct_col <- "adduct" %in% colnames(fts)
   
-  rpls <- engine$get_replicate_names()
+  if(parameters$withinReplicate) {
+    rpls <- engine$get_replicate_names()
+    fts$replicate <- rpls[fts$analysis]
+    fts$name <- paste0(fts$group, "_", fts$replicate)
+    eval_presence <- fts[, .N, by = .(name)]
+    max_presence <- max(eval_presence$N)
+    set_incomplete <- eval_presence[N < max_presence]
+  } else {
+    fts$name <- fts$group
+    eval_presence <- fts[, .N, by = .(name)]
+    max_presence <- max(length(engine$analyses))
+    set_incomplete <- eval_presence[N < max_presence]
+  }
   
-  fts$replicate <- rpls[fts$analysis]
-  
-  fts$name <- paste0(fts$group, "_", fts$replicate)
-  
-  rpl_presence <- fts[, .N, by = .(name)]
-  
-  max_anas_in_rpl <- max(rpl_presence$N)
-  
-  rpl_incomplete <- rpl_presence[N < max_anas_in_rpl]
-  
-  if (nrow(rpl_incomplete) == 0) {
+  if (nrow(set_incomplete) == 0) {
     warning("There are incomplete replicates! Nothing to do.")
     return(FALSE)
   }
   
   rt_expand <- x$parameters$rtExpand
-  
   mz_expand <- x$parameters$mzExpand
   
-  to_complete <- fts[fts$name %in% rpl_incomplete$name, ]
-  
+  to_complete <- fts[fts$name %in% set_incomplete$name, ]
   to_complete <- split(to_complete, to_complete$name)
   
   analyses <- engine$analyses$names
+  polarities <- engine$get_spectra_polarity()
+  
+  browser()
   
   to_complete <- lapply(to_complete, function(x) {
     
-    rpl <- x$replicate[1]
-    
-    rpl_anas <- analyses[rpls %in% rpl]
-    
-    missing_anas <- rpl_anas[!rpl_anas %in% x$analysis]
-    
-    if (!"polarity" %in% names(x)) {
-      polarity <- engine$get_spectra_polarity()[x$analysis[1]]
-      polarity[polarity == "positive"] <- 1
-      polarity[polarity == "negative"] <- -1
+    if (parameters$withinReplicate) {
+      rpl <- x$replicate[1]
+      rpl_anas <- analyses[rpls %in% rpl]
+      missing_anas <- rpl_anas[!rpl_anas %in% x$analysis]
     } else {
-      polarity <- x$polarity[1]
+      missing_anas <- analyses[!analyses %in% x$analysis]
     }
+    
+    polarity <- polarities[missing_anas]
+    polarity[polarity == "positive"] <- 1
+    polarity[polarity == "negative"] <- -1
+    polarity <- as.numeric(polarity)
+    
+    mass <- rep(mean(x$mass), length(missing_anas))
+    mz <- mass + (polarity * 1.007276)
+    mzmin <- (mz - max(x$mz - x$mzmin)) - mz_expand
+    mzmax <- (mz + max(x$mzmax - x$mz)) + mz_expand
     
     out <- data.table::data.table(
       analysis = missing_anas,
       feature = NA_character_,
       rt = mean(x$rt),
-      mz = mean(x$mz),
+      mz = mz,
       area = 0,
       intensity = 0,
       rtmin = min(x$rtmin) - rt_expand,
       rtmax = max(x$rtmax) + rt_expand,
-      mzmin = min(x$mzmin) - mz_expand,
-      mzmax = max(x$mzmax) + mz_expand,
+      mzmin = mzmin,
+      mzmax = mzmax,
       filtered = FALSE,
-      mass = mean(x$mass),
+      mass = mass,
       polarity = polarity,
-      group = x$group[1],
-      replicate = rpl,
-      name = x$name[1]
+      group = x$group[1]
     )
     
     # TODO add drift and other info when present
@@ -162,12 +178,14 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
   })
   
   to_complete <- data.table::rbindlist(to_complete)
-  to_complete$name <- paste0(to_complete$name, "_", to_complete$analysis)
+  to_complete$name <- paste0(to_complete$group, "_", to_complete$analysis)
   
-  spec <- engine$get_spectra(mz = data.table::copy(to_complete), levels = 1)
+  spec <- engine$get_spectra(mz = data.table::copy(to_complete), levels = 1, minIntensityMS1 = parameters$noise)
   spec <- split(spec, spec$id)
   
   to_complete <- split(to_complete, to_complete$name)
+  
+  browser()
   
   new_fts <- lapply(names(to_complete), function(x) {
     

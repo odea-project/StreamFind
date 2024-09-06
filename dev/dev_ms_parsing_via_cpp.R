@@ -12,7 +12,17 @@ files <- all_files[grepl("o3sw", all_files)]
 
 path <- "C:/Users/apoli/Documents/example_ms_files"
 files <- list.files(path, pattern = ".mzML", full.names = TRUE)
-rcpp_centroid_spectra_qCentroids(fileNames = files[4])
+
+qA_path <- "C:/Users/apoli/Documents/github/qAlgorithms/qAlgorithms.exe"
+qA_res <- paste0(system2(qA_path, args = c("-h"), stdout = TRUE), collapse = "\n")
+
+system2("C:/Users/apoli/Documents/github/qAlgorithms/qAlgorithms.exe -h", stdout = TRUE)
+
+system2("C:/qAlgorithms/qAlgorithms.exe",
+  args = c("-i", files[4], "-o", paste0(getwd(), "/log/qAlgorithms"), "-printpeaks"),
+  stdout = TRUE
+)
+
 
 ## databases -------------------------------------------------------------------
 db <- StreamFindData::get_ms_tof_spiked_chemicals()
@@ -37,7 +47,7 @@ targets <- make_ms_targets(
     rt = c(carb_rt, diu_rt)
   ),
   ppm = ppm_dev,
-  sec = sec_dev
+  # sec = sec_dev
 )
 
 neutral_targets <- make_ms_targets(

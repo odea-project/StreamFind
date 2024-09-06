@@ -44,7 +44,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_parse_ms_spectra
-Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis, std::vector<int> levels, Rcpp::DataFrame targets, double minIntensityMS1, double minIntensityMS2);
+Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis, std::vector<int> levels, Rcpp::DataFrame targets, float minIntensityMS1, float minIntensityMS2);
 RcppExport SEXP _StreamFind_rcpp_parse_ms_spectra(SEXP analysisSEXP, SEXP levelsSEXP, SEXP targetsSEXP, SEXP minIntensityMS1SEXP, SEXP minIntensityMS2SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -52,8 +52,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::List >::type analysis(analysisSEXP);
     Rcpp::traits::input_parameter< std::vector<int> >::type levels(levelsSEXP);
     Rcpp::traits::input_parameter< Rcpp::DataFrame >::type targets(targetsSEXP);
-    Rcpp::traits::input_parameter< double >::type minIntensityMS1(minIntensityMS1SEXP);
-    Rcpp::traits::input_parameter< double >::type minIntensityMS2(minIntensityMS2SEXP);
+    Rcpp::traits::input_parameter< float >::type minIntensityMS1(minIntensityMS1SEXP);
+    Rcpp::traits::input_parameter< float >::type minIntensityMS2(minIntensityMS2SEXP);
     rcpp_result_gen = Rcpp::wrap(rcpp_parse_ms_spectra(analysis, levels, targets, minIntensityMS1, minIntensityMS2));
     return rcpp_result_gen;
 END_RCPP
@@ -67,6 +67,25 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::List >::type analysis(analysisSEXP);
     Rcpp::traits::input_parameter< std::vector<int> >::type idx(idxSEXP);
     rcpp_result_gen = Rcpp::wrap(rcpp_parse_ms_chromatograms(analysis, idx));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_ms_fill_features
+Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses, Rcpp::DataFrame features, bool withinReplicate, float rtExpand, float mzExpand, int minNumberTraces, float minSignalToNoiseRatio, float minGaussianFit, float minIntensity);
+RcppExport SEXP _StreamFind_rcpp_ms_fill_features(SEXP analysesSEXP, SEXP featuresSEXP, SEXP withinReplicateSEXP, SEXP rtExpandSEXP, SEXP mzExpandSEXP, SEXP minNumberTracesSEXP, SEXP minSignalToNoiseRatioSEXP, SEXP minGaussianFitSEXP, SEXP minIntensitySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type analyses(analysesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type features(featuresSEXP);
+    Rcpp::traits::input_parameter< bool >::type withinReplicate(withinReplicateSEXP);
+    Rcpp::traits::input_parameter< float >::type rtExpand(rtExpandSEXP);
+    Rcpp::traits::input_parameter< float >::type mzExpand(mzExpandSEXP);
+    Rcpp::traits::input_parameter< int >::type minNumberTraces(minNumberTracesSEXP);
+    Rcpp::traits::input_parameter< float >::type minSignalToNoiseRatio(minSignalToNoiseRatioSEXP);
+    Rcpp::traits::input_parameter< float >::type minGaussianFit(minGaussianFitSEXP);
+    Rcpp::traits::input_parameter< float >::type minIntensity(minIntensitySEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_ms_fill_features(analyses, features, withinReplicate, rtExpand, mzExpand, minNumberTraces, minSignalToNoiseRatio, minGaussianFit, minIntensity));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -133,19 +152,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// rcpp_centroid_spectra_qCentroids
-Rcpp::List rcpp_centroid_spectra_qCentroids(std::vector<std::string> fileNames, int maxScale, int mode);
-RcppExport SEXP _StreamFind_rcpp_centroid_spectra_qCentroids(SEXP fileNamesSEXP, SEXP maxScaleSEXP, SEXP modeSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::vector<std::string> >::type fileNames(fileNamesSEXP);
-    Rcpp::traits::input_parameter< int >::type maxScale(maxScaleSEXP);
-    Rcpp::traits::input_parameter< int >::type mode(modeSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_centroid_spectra_qCentroids(fileNames, maxScale, mode));
-    return rcpp_result_gen;
-END_RCPP
-}
 // rcpp_parse_asc_file
 Rcpp::List rcpp_parse_asc_file(std::string file_path);
 RcppExport SEXP _StreamFind_rcpp_parse_asc_file(SEXP file_pathSEXP) {
@@ -176,11 +182,11 @@ static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_parse_ms_chromatograms_headers", (DL_FUNC) &_StreamFind_rcpp_parse_ms_chromatograms_headers, 1},
     {"_StreamFind_rcpp_parse_ms_spectra", (DL_FUNC) &_StreamFind_rcpp_parse_ms_spectra, 5},
     {"_StreamFind_rcpp_parse_ms_chromatograms", (DL_FUNC) &_StreamFind_rcpp_parse_ms_chromatograms, 2},
+    {"_StreamFind_rcpp_ms_fill_features", (DL_FUNC) &_StreamFind_rcpp_ms_fill_features, 9},
     {"_StreamFind_rcpp_fill_bin_spectra", (DL_FUNC) &_StreamFind_rcpp_fill_bin_spectra, 5},
     {"_StreamFind_rcpp_ms_annotation_isotopes", (DL_FUNC) &_StreamFind_rcpp_ms_annotation_isotopes, 11},
     {"_StreamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_StreamFind_rcpp_ms_cluster_spectra, 4},
     {"_StreamFind_rcpp_ms_groups_correspondence", (DL_FUNC) &_StreamFind_rcpp_ms_groups_correspondence, 3},
-    {"_StreamFind_rcpp_centroid_spectra_qCentroids", (DL_FUNC) &_StreamFind_rcpp_centroid_spectra_qCentroids, 3},
     {"_StreamFind_rcpp_parse_asc_file", (DL_FUNC) &_StreamFind_rcpp_parse_asc_file, 1},
     {"_StreamFind_rcpp_write_asc_file", (DL_FUNC) &_StreamFind_rcpp_write_asc_file, 3},
     {NULL, NULL, 0}

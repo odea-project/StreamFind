@@ -75,5 +75,5 @@ Encoding: UTF-8
 Language: en-US
 RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE, r6 = TRUE)
-SystemRequirements: C++20
+SystemRequirements: C++17
 LinkingTo: Rcpp

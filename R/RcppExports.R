@@ -21,6 +21,10 @@ rcpp_parse_ms_chromatograms <- function(analysis, idx) {
     .Call(`_StreamFind_rcpp_parse_ms_chromatograms`, analysis, idx)
 }
 
+rcpp_ms_fill_features <- function(analyses, features, withinReplicate = FALSE, rtExpand = 0, mzExpand = 0, minNumberTraces = 5L, minSignalToNoiseRatio = 3, minGaussianFit = 0.5, minIntensity = 0) {
+    .Call(`_StreamFind_rcpp_ms_fill_features`, analyses, features, withinReplicate, rtExpand, mzExpand, minNumberTraces, minSignalToNoiseRatio, minGaussianFit, minIntensity)
+}
+
 rcpp_fill_bin_spectra <- function(spectra, bin_mat, bins, overlap = 0, summaryFunction = "max") {
     .Call(`_StreamFind_rcpp_fill_bin_spectra`, spectra, bin_mat, bins, overlap, summaryFunction)
 }
@@ -35,10 +39,6 @@ rcpp_ms_cluster_spectra <- function(spectra, mzClust = 0.005, presence = 0.8, ve
 
 rcpp_ms_groups_correspondence <- function(groups, features, verbose) {
     .Call(`_StreamFind_rcpp_ms_groups_correspondence`, groups, features, verbose)
-}
-
-rcpp_centroid_spectra_qCentroids <- function(fileNames, maxScale = 5L, mode = 2L) {
-    .Call(`_StreamFind_rcpp_centroid_spectra_qCentroids`, fileNames, maxScale, mode)
 }
 
 rcpp_parse_asc_file <- function(file_path) {

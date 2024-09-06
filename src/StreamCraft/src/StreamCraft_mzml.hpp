@@ -65,32 +65,32 @@ namespace sc {
         int extract_spec_level() const;
         int extract_spec_mode() const;
         int extract_spec_polarity() const;
-        double extract_spec_lowmz() const;
-        double extract_spec_highmz() const;
-        double extract_spec_bpmz() const;
-        double extract_spec_bpint() const;
-        double extract_spec_tic() const;
+        float extract_spec_lowmz() const;
+        float extract_spec_highmz() const;
+        float extract_spec_bpmz() const;
+        float extract_spec_bpint() const;
+        float extract_spec_tic() const;
         std::string extract_spec_title() const;
-        double extract_scan_rt() const;
+        float extract_scan_rt() const;
         int extract_scan_configuration_number() const;
-        double extract_scan_mobility() const;
+        float extract_scan_mobility() const;
         std::string extract_scan_filter_string() const;
         int extract_scan_config() const;
-        double extract_scan_injection_ion_time() const;
+        float extract_scan_injection_ion_time() const;
         int extract_precursor_scan() const;
-        double extract_window_mz() const;
-        double extract_window_mzlow() const;
-        double extract_window_mzhigh() const;
-        double extract_ion_mz() const;
-        double extract_ion_intensity() const;
+        float extract_window_mz() const;
+        float extract_window_mzlow() const;
+        float extract_window_mzhigh() const;
+        float extract_ion_mz() const;
+        float extract_ion_intensity() const;
         int extract_ion_charge() const;
         std::string extract_activation_type() const;
-        double extract_activation_ce() const;
+        float extract_activation_ce() const;
         bool has_precursor() const { return spec.child("precursorList").child("precursor"); }
         bool has_selected_ion() const { return spec.child("precursorList").child("precursor").child("selectedIonList").child("selectedIon"); }
         bool has_activation() const { return spec.child("precursorList").child("precursor").child("activation"); }
         std::vector<MZML_BINARY_METADATA> extract_binary_metadata() const;
-        std::vector<std::vector<double>> extract_binary_data(const std::vector<MZML_BINARY_METADATA>&  mtd) const;
+        std::vector<std::vector<float>> extract_binary_data(const std::vector<MZML_BINARY_METADATA>&  mtd) const;
       
       private:
         const pugi::xml_node& spec;
@@ -103,14 +103,14 @@ namespace sc {
         std::string extract_id() const;
         int extract_array_length() const;
         int extract_polarity() const;
-        double extract_precursor_mz() const;
+        float extract_precursor_mz() const;
         std::string extract_activation_type() const;
-        double extract_activation_ce() const;
-        double extract_product_mz() const;
+        float extract_activation_ce() const;
+        float extract_product_mz() const;
         bool has_precursor() const { return chrom.child("precursor"); }
         bool has_activation() const { return chrom.child("precursor").child("activation"); }
         bool has_product() const { return chrom.child("product"); }
-        std::vector<std::vector<double>> extract_binary_data() const;
+        std::vector<std::vector<float>> extract_binary_data() const;
       
       private:
         const pugi::xml_node& chrom;
@@ -138,7 +138,7 @@ namespace sc {
 
         std::vector<std::string> get_spectra_binary_short_names();
         std::vector<MZML_BINARY_METADATA> get_spectra_binary_metadata();
-        void write_spectra(const std::vector<std::vector<std::vector<double>>>& spectra, const std::vector<std::string>& names, MS_SPECTRA_MODE mode, bool compress, bool save, std::string save_suffix);
+        void write_spectra(const std::vector<std::vector<std::vector<float>>>& spectra, const std::vector<std::string>& names, MS_SPECTRA_MODE mode, bool compress, bool save, std::string save_suffix);
 
         std::string get_format() override { return format; };
         int get_number_spectra() override;
@@ -153,33 +153,33 @@ namespace sc {
         std::vector<int> get_spectra_configuration(std::vector<int> indices = {}) override;
         std::vector<int> get_spectra_mode(std::vector<int> indices = {}) override;
         std::vector<int> get_spectra_polarity(std::vector<int> indices = {}) override;
-        std::vector<double> get_spectra_lowmz(std::vector<int> indices = {}) override;
-        std::vector<double> get_spectra_highmz(std::vector<int> indices = {}) override;
-        std::vector<double> get_spectra_bpmz(std::vector<int> indices = {}) override;
-        std::vector<double> get_spectra_bpint(std::vector<int> indices = {}) override;
-        std::vector<double> get_spectra_tic(std::vector<int> indices = {}) override;
-        std::vector<double> get_spectra_rt(std::vector<int> indices = {}) override;
-        std::vector<double> get_spectra_mobility(std::vector<int> indices = {}) override;
+        std::vector<float> get_spectra_lowmz(std::vector<int> indices = {}) override;
+        std::vector<float> get_spectra_highmz(std::vector<int> indices = {}) override;
+        std::vector<float> get_spectra_bpmz(std::vector<int> indices = {}) override;
+        std::vector<float> get_spectra_bpint(std::vector<int> indices = {}) override;
+        std::vector<float> get_spectra_tic(std::vector<int> indices = {}) override;
+        std::vector<float> get_spectra_rt(std::vector<int> indices = {}) override;
+        std::vector<float> get_spectra_mobility(std::vector<int> indices = {}) override;
         std::vector<int> get_spectra_precursor_scan(std::vector<int> indices = {}) override;
-        std::vector<double> get_spectra_precursor_mz(std::vector<int> indices = {}) override;
-        std::vector<double> get_spectra_precursor_window_mz(std::vector<int> indices = {}) override;
-        std::vector<double> get_spectra_precursor_window_mzlow(std::vector<int> indices = {}) override;
-        std::vector<double> get_spectra_precursor_window_mzhigh(std::vector<int> indices = {}) override;
-        std::vector<double> get_spectra_collision_energy(std::vector<int> indices = {}) override;
+        std::vector<float> get_spectra_precursor_mz(std::vector<int> indices = {}) override;
+        std::vector<float> get_spectra_precursor_window_mz(std::vector<int> indices = {}) override;
+        std::vector<float> get_spectra_precursor_window_mzlow(std::vector<int> indices = {}) override;
+        std::vector<float> get_spectra_precursor_window_mzhigh(std::vector<int> indices = {}) override;
+        std::vector<float> get_spectra_collision_energy(std::vector<int> indices = {}) override;
         std::vector<int> get_polarity() override;
         std::vector<int> get_mode() override;
         std::vector<int> get_level() override;
         std::vector<int> get_configuration() override;
-        double get_min_mz() override;
-        double get_max_mz() override;
-        double get_start_rt() override;
-        double get_end_rt() override;
+        float get_min_mz() override;
+        float get_max_mz() override;
+        float get_start_rt() override;
+        float get_end_rt() override;
         bool has_ion_mobility() override;
         MS_SUMMARY get_summary() override;
         MS_SPECTRA_HEADERS get_spectra_headers(std::vector<int> indices = {}) override;
         MS_CHROMATOGRAMS_HEADERS get_chromatograms_headers(std::vector<int> indices = {}) override;
-        std::vector<std::vector<std::vector<double>>> get_spectra(std::vector<int> indices = {}) override;
-        std::vector<std::vector<std::vector<double>>> get_chromatograms(std::vector<int> indices = {}) override;
+        std::vector<std::vector<std::vector<float>>> get_spectra(std::vector<int> indices = {}) override;
+        std::vector<std::vector<std::vector<float>>> get_chromatograms(std::vector<int> indices = {}) override;
         std::vector<std::vector<std::string>> get_software() override;
         std::vector<std::vector<std::string>> get_hardware() override;
         MS_SPECTRUM get_spectrum(const int& idx) override;
