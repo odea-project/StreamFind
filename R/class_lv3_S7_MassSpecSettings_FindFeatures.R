@@ -109,20 +109,45 @@
   
   for (a in patRoon::analyses(pat)) {
     pol <- engine$get_spectra_polarity(a)
+    
+    # TODO make case for polarity switching
     if (grepl("postive", pol) && grepl("negative", pol)) {
       warning("Multiple polarities in analyses", i, "! Mass for features could not be estimated.")
+      pat@features[[a]]$polarity <- 0
       pat@features[[a]]$mass <- NA_real_
       next
     }
+    
     if (grepl("unkown", pol)) {
       warning("Unknown polarity in analyses", i, "! Mass for features could not be estimated.")
+      pat@features[[a]]$polarity <- 0
       pat@features[[a]]$mass <- NA_real_
       next
     }
-    if ("positive" %in% pol) adduct_val <- -1.007276
-    if ("negative" %in% pol) adduct_val <- 1.007276
-    pat@features[[a]]$mass <- pat@features[[a]]$mz + adduct_val
+    
+    if ("positive" %in% pol) {
+      adduct_val <- -1.007276
+      pat@features[[a]]$polarity <- 1
+      pat@features[[a]]$mass <- pat@features[[a]]$mz + adduct_val
+      pat@features[[a]]$adduct <- "[M+H]+"
+    }
+    
+    if ("negative" %in% pol) {
+      adduct_val <- 1.007276
+      pat@features[[a]]$polarity <- -1
+      pat@features[[a]]$mass <- pat@features[[a]]$mz + adduct_val
+      pat@features[[a]]$adduct <- "[M-H]-"
+    }
+    
     pat@features[[a]]$filtered <- FALSE
+    pat@features[[a]]$filled <- FALSE
+    pat@features[[a]]$quality <- list(rep(list(), nrow(pat@features[[a]])))
+    pat@features[[a]]$isotope <- list(rep(list(), nrow(pat@features[[a]])))
+    pat@features[[a]]$eic <- list(rep(list(), nrow(pat@features[[a]])))
+    pat@features[[a]]$ms1 <- list(rep(list(), nrow(pat@features[[a]])))
+    pat@features[[a]]$ms2 <- list(rep(list(), nrow(pat@features[[a]])))
+    pat@features[[a]]$istd <- list(rep(list(), nrow(pat@features[[a]])))
+    pat@features[[a]]$suspects <- list(rep(list(), nrow(pat@features[[a]])))
   }
   
   pols <- engine$get_spectra_polarity()

@@ -314,6 +314,7 @@ S7::method(run, MassSpecSettings_LoadFeaturesMS2_StreamFind) <- function(x, engi
 #' @template arg-ms-rtExpand
 #' @template arg-ms-mzExpand
 #' @template arg-ms-filtered
+#' @param minTracesIntensity Numeric of length one with the minimum intensity of traces to extract for EIC.
 #'
 #' @return A `MassSpecSettings_LoadFeaturesEIC_StreamFind` object.
 #'
@@ -323,16 +324,17 @@ MassSpecSettings_LoadFeaturesEIC_StreamFind <- S7::new_class("MassSpecSettings_L
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(rtExpand = 120, mzExpand = 0, filtered = FALSE) {
+  constructor = function(filtered = FALSE, rtExpand = 120, mzExpand = 0, minTracesIntensity = 0) {
    
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "LoadFeaturesEIC",
       algorithm = "StreamFind",
       parameters = list(
+        "filtered" = filtered,
         "rtExpand" = rtExpand,
         "mzExpand" = mzExpand,
-        "filtered" = filtered
+        "minTracesIntensity" = minTracesIntensity
       ),
       number_permitted = 1,
       version = as.character(packageVersion("StreamFind")),
@@ -351,6 +353,7 @@ MassSpecSettings_LoadFeaturesEIC_StreamFind <- S7::new_class("MassSpecSettings_L
       checkmate::test_choice(self@algorithm, "StreamFind"),
       checkmate::test_number(self@parameters$rtExpand),
       checkmate::test_number(self@parameters$mzExpand),
+      checkmate::test_number(self@parameters$minTracesIntensity),
       checkmate::test_logical(self@parameters$filtered, max.len = 1)
     )
     if (!valid) return(FALSE)
@@ -378,15 +381,27 @@ S7::method(run, MassSpecSettings_LoadFeaturesEIC_StreamFind) <- function(x, engi
   }
   
   nts <- engine$nts
+
+  if (!nts@has_features) {
+    warning("NTS object does not have features! Not done.")
+    return(FALSE)
+  }
   
+  feature_list <- nts$feature_list
+  
+  feature_list <- lapply(feature_list, function(z) {
+    if ("eic" %in% colnames(z)) z$eic <- rep(list(), nrow(z))
+    z
+  })
+    
   parameters <- x$parameters
   
-  cache <- .load_chache("load_features_eic", nts$features, x)
+  cache <- .load_chache("load_features_eic", feature_list, x)
   
   if (!is.null(cache$data)) {
+    feature_list <- cache$data
     tryCatch({
-      nts <- .add_features_column(nts, "eic", cache$data)
-      engine$nts <- nts
+      engine$nts$feature_list <- feature_list
       message("\U2139 Features EIC loaded from cache!")
       return(TRUE)
     }, error = function(e) {
@@ -395,49 +410,26 @@ S7::method(run, MassSpecSettings_LoadFeaturesEIC_StreamFind) <- function(x, engi
     })
   }
   
-  eic <- engine$get_features_eic(
-    rtExpand = parameters$rtExpand,
-    mzExpand = parameters$mzExpand,
-    filtered = parameters$filtered,
-    useLoadedData = FALSE
+  feature_list <- rcpp_ms_load_features_eic(
+    engine$analyses$analyses,
+    feature_list,
+    parameters$filtered,
+    parameters$rtExpand,
+    parameters$mzExpand,
+    parameters$minTracesIntensity
   )
   
-  analyses <- engine$get_analysis_names()
-  
-  features <- nts$feature_list
-  
-  eic_col <- lapply(analyses, function(x, features, eic) {
-    
-    ana_eic <- eic[eic$analysis %in% x, ]
-    
-    fts_all <- features[[x]]$feature
-    
-    fts_eic <- lapply(fts_all, function(z, ana_eic) {
-      
-      ft_eic <- ana_eic[ana_eic$feature %in% z, ]
-      
-      if (nrow(ft_eic) > 0) {
-        ft_eic[["group"]] <- NULL
-        ft_eic[["analysis"]] <- NULL
-        ft_eic[["feature"]] <- NULL
-        ft_eic[["name"]] <- NULL
-        ft_eic
-      } else {
-        NULL
-      }
-    }, ana_eic = ana_eic)
-    
-    fts_eic
-    
-  }, features = features, eic = eic)
-  
   if (!is.null(cache$hash)) {
-    .save_cache("load_features_eic", eic_col, cache$hash)
+    .save_cache("load_features_eic", feature_list, cache$hash)
     message("\U1f5ab Features EIC spectra saved to cache!")
   }
   
-  nts <- .add_features_column(nts, "eic", eic_col)
-  engine$nts <- nts
-  message("\U2713 EIC added to features!")
-  TRUE
+  tryCatch({
+    engine$nts$feature_list <- feature_list
+    message("\U2713 EIC added to features!")
+    return(TRUE)
+  }, error = function(e) {
+    warning(e)
+    return(FALSE)
+  })
 }

@@ -21,8 +21,16 @@ rcpp_parse_ms_chromatograms <- function(analysis, idx) {
     .Call(`_StreamFind_rcpp_parse_ms_chromatograms`, analysis, idx)
 }
 
-rcpp_ms_fill_features <- function(analyses, features, withinReplicate = FALSE, rtExpand = 0, mzExpand = 0, minNumberTraces = 5L, minSignalToNoiseRatio = 3, minGaussianFit = 0.5, minIntensity = 0) {
-    .Call(`_StreamFind_rcpp_ms_fill_features`, analyses, features, withinReplicate, rtExpand, mzExpand, minNumberTraces, minSignalToNoiseRatio, minGaussianFit, minIntensity)
+rcpp_ms_load_features_eic <- function(analyses, features, filtered = FALSE, rtExpand = 0, mzExpand = 0, minTracesIntensity = 0) {
+    .Call(`_StreamFind_rcpp_ms_load_features_eic`, analyses, features, filtered, rtExpand, mzExpand, minTracesIntensity)
+}
+
+rcpp_ms_fill_features <- function(analyses, features, withinReplicate = FALSE, rtExpand = 0, mzExpand = 0, minTracesIntensity = 0, minNumberTraces = 5L, baseCut = 0, minSignalToNoiseRatio = 3, minGaussianFit = 0.5) {
+    .Call(`_StreamFind_rcpp_ms_fill_features`, analyses, features, withinReplicate, rtExpand, mzExpand, minTracesIntensity, minNumberTraces, baseCut, minSignalToNoiseRatio, minGaussianFit)
+}
+
+rcpp_ms_calculate_features_quality <- function(analyses, features, filtered = FALSE, rtExpand = 0, mzExpand = 0, minTracesIntensity = 0, minNumberTraces = 5L, baseCut = 0) {
+    .Call(`_StreamFind_rcpp_ms_calculate_features_quality`, analyses, features, filtered, rtExpand, mzExpand, minTracesIntensity, minNumberTraces, baseCut)
 }
 
 rcpp_fill_bin_spectra <- function(spectra, bin_mat, bins, overlap = 0, summaryFunction = "max") {

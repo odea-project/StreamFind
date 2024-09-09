@@ -14,33 +14,85 @@ ms_files_complete <- list.files(path, pattern = ".mzML", full.names = TRUE)
 # ms <- MassSpecEngine$new(analyses = ms_files_complete[7:24])
 ms <- MassSpecEngine$new(analyses = ms_files[10:27])
 ms$run(MassSpecSettings_FindFeatures_openms())
+ms$run(MassSpecSettings_GroupFeatures_openms())
+ms$run(MassSpecSettings_FillFeatures_StreamFind())
 # ms$run(MassSpecSettings_AnnotateFeatures_StreamFind())
 # ms$run(MassSpecSettings_FindInternalStandards_StreamFind(database = dbis, ppm = 8, sec = 10))
-ms$run(MassSpecSettings_GroupFeatures_openms())
-# ms$run(MassSpecSettings_FillFeatures_StreamFind())
+# ms$run(MassSpecSettings_CalculateFeaturesQuality_StreamFind(minNumberTraces = 5))
 # ms$run(MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE))
 # ms$run(MassSpecSettings_FilterFeatures_patRoon(absMinIntensity = 5000))
 # ms$nts <- ms$nts[ , ms$get_groups(mass = dbsus)$group]
 # ms$run(MassSpecSettings_LoadFeaturesMS1_StreamFind(filtered = FALSE))
 # ms$run(MassSpecSettings_LoadFeaturesMS2_StreamFind(filtered = FALSE))
 # ms$run(MassSpecSettings_LoadFeaturesEIC_StreamFind(filtered = FALSE))
-# ms$run(MassSpecSettings_CalculateFeaturesQuality_StreamFind())
 # ms$run(MassSpecSettings_LoadMSPeakLists_StreamFind())
 # ms$run(MassSpecSettings_GenerateFormulas_genform())
 # ms$run(MassSpecSettings_GenerateCompounds_metfrag())
 # ms$run(MassSpecSettings_SuspectScreening_StreamFind(database = dbsus, ppm = 15, sec = 30))
 
+
+res <- rcpp_ms_load_features_eic(
+  ms$analyses$analyses,
+  ms$nts$feature_list,
+  filtered = FALSE,
+  rtExpand = 0,
+  mzExpand = 0,
+  minTracesIntensity = 1000
+)
+
+
+View(ms$nts$feature_list)
+
+
+
+clear_cache("fill_features")
+
+
+res <- rcpp_ms_calculate_features_quality(
+  ms$analyses$analyses,
+  ms$nts$feature_list,
+  filtered = FALSE,
+  rtExpand = 0,
+  mzExpand = 0,
+  minTracesIntensity = 0,
+  minNumberTraces = 6,
+  baseCut = 0.3
+)
+
+
+
+ms$plot_groups(groups = "M200_R988_7")
+
+
+View(ms$get_features()[11945])
+
+
+ms$get_features()
+
+
 res <- rcpp_ms_fill_features(
   ms$analyses$analyses,
   ms$get_features(),
-  TRUE, #withinReplicate
-  0, #rtExpand
-  0, #mzExpand
-  5, #minNumberTraces
-  5, #minSignalToNoiseRatio,
-  0.2, #minGaussianFit,
-  1000 #minIntensity
+  withinReplicate = TRUE,
+  rtExpand = 0,
+  mzExpand = 0,
+  minTracesIntensity = 1000,
+  minNumberTraces = 5,
+  baseCut  = 0.3,
+  minSignalToNoiseRatio = 3,
+  minGaussianFit = 0.2
 )
+
+res <- lapply(res, data.table::rbindlist)
+res <- data.table::rbindlist(res)
+
+
+res <- lapply(res, function(x) {
+  dg <- x$group[duplicated(x$group)]
+  x[x$group %in% dg, ]
+})
+
+ms$nts$feature_list
 
 data <- res$`03_tof_ww_is_pos_o3sw_effluent-r003`$M404_R1022_2862_03_tof_ww_is_pos_o3sw_effluent
 plot(data$rt, data$intensity, main = "Gaussian Fit with Symmetric Data Trimming", xlab = "x", ylab = "y (Intensity)", pch = 19, col = "blue", cex = 1.2)

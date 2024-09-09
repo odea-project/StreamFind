@@ -4,6 +4,9 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
   
   properties = list(
     
+    ## __features_properties -----
+    features_properties = S7::new_property(S7::class_character),
+    
     ## __features -----
     features = S7::new_property(S7::as_class(methods::getClassDef("workflowStep", package = "patRoon"))),
     
@@ -241,11 +244,53 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
       compounds = new("compoundsSet", algorithm = NA_character_)
     }
     
+    features_properties <- c(
+      "ID", "ret", "mz", "area", "intensity", "retmin", "retmax", "mzmin", "mzmax", "mass", "polarity", "adduct",
+      "filtered", "filled", "quality", "isotope", "istd", "ms1", "ms2", "eic", "suspects"
+    )
+    
+    if ("features" %in% is(features)) {
+      features@features <- lapply(features@features, function(x) {
+        if (nrow(x) > 0) {
+          if (!"polarity" %in% colnames(x)) warning("Polarity column not found in features but required!")
+          if (!"mass" %in% colnames(x)) warning("Mass column not found in features but required!")
+          if (!"filtered" %in% colnames(x)) x$filtered <- FALSE
+          if (!"filled" %in% colnames(x)) x$filled <- FALSE
+          if (!"quality" %in% colnames(x)) x$quality <- list(rep(list(), nrow(x)))
+          if (!"isotope" %in% colnames(x)) x$isotope <- list(rep(list(), nrow(x)))
+          if (!"eic" %in% colnames(x)) x$eic <- list(rep(list(), nrow(x)))
+          if (!"ms1" %in% colnames(x)) x$ms1 <- list(rep(list(), nrow(x)))
+          if (!"ms2" %in% colnames(x)) x$ms2 <- list(rep(list(), nrow(x)))
+          if (!"istd" %in% colnames(x)) x$istd <- list(rep(list(), nrow(x)))
+          if (!"suspects" %in% colnames(x)) x$suspects <- list(rep(list(), nrow(x)))
+        }
+        x
+      })
+    } else if ("featureGroups" %in% is(features)) {
+      features@features@features <- lapply(features@features@features, function(x) {
+        if (nrow(x) > 0) {
+          if (!"polarity" %in% colnames(x)) warning("Polarity column not found in features but required!")
+          if (!"mass" %in% colnames(x)) warning("Mass column not found in features but required!")
+          if (!"filtered" %in% colnames(x)) x$filtered <- FALSE
+          if (!"filled" %in% colnames(x)) x$filled <- FALSE
+          if (!"quality" %in% colnames(x)) x$quality <- list(rep(list(), nrow(x)))
+          if (!"isotope" %in% colnames(x)) x$isotope <- list(rep(list(), nrow(x)))
+          if (!"eic" %in% colnames(x)) x$eic <- list(rep(list(), nrow(x)))
+          if (!"ms1" %in% colnames(x)) x$ms1 <- list(rep(list(), nrow(x)))
+          if (!"ms2" %in% colnames(x)) x$ms2 <- list(rep(list(), nrow(x)))
+          if (!"istd" %in% colnames(x)) x$istd <- list(rep(list(), nrow(x)))
+          if (!"suspects" %in% colnames(x)) x$suspects <- list(rep(list(), nrow(x)))
+        }
+        x
+      })
+    }
+    
     S7::new_object(
-      Results(), 
+      Results(),
       name = "nts",
       software = "patRoon",
       version = as.character(packageVersion("patRoon")),
+      features_properties = features_properties,
       features = features,
       filtered = filtered,
       mspl = mspl,
