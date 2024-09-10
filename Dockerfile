@@ -1,31 +1,31 @@
-# Use an official R base image
-FROM r-base:latest
+# Use RStudio as base image
+FROM rocker/rstudio:4
 
-# Install system dependencies
+# Set the working directory
+WORKDIR /app
+
+# Install system dependencies for R packages (if necessary)
 RUN apt-get update && apt-get install -y \
     libcurl4-openssl-dev \
     libssl-dev \
     libxml2-dev \
-    libfontconfig1-dev \
-    libharfbuzz-dev \
-    libfribidi-dev \
-    libfreetype6-dev \
     libpng-dev \
-    libtiff5-dev \
-    libjpeg-dev \
-    libnetcdf-dev \
-    default-jdk \
     libmagick++-dev \
-    libglu1-mesa-dev \
-    libgl1-mesa-dev \
-    libudunits2-dev \
-    libgdal-dev
+    zlib1g-dev \
+    default-jdk \
+    libnetcdf-dev
 
-# Install Shiny
-RUN R -e "install.packages('shiny', repos='http://cran.rstudio.com/')"
+# Install Shiny and learnr
+RUN R -e "install.packages(c('shiny', 'learnr'), repos='http://cran.rstudio.com/')"
 
 # Install BiocManager and remotes
 RUN R -e "install.packages(c('BiocManager', 'remotes'), repos='http://cran.rstudio.com/')"
+
+# Install svglite and ragg for kableExtra and pkgdown
+RUN R -e "install.packages(c('svglite', 'ragg'), repos='http://cran.rstudio.com/')"
+
+# Install required Bioconductor packages
+RUN R -e "BiocManager::install(c('MSnbase', 'xcms', 'mzR', 'CAMERA', 'rcdk', 'rJava', 'kableExtra', 'magick'), dependencies = TRUE)"
 
 # Install StreamFind
 RUN R -e "BiocManager::install('odea-project/StreamFind', dependencies = TRUE)"

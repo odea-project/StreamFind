@@ -111,7 +111,7 @@
   reactive_workflow_local(rw)
   
   shiny::showNotification("Settings updated successfully!", type = "message")
-})
+  })
 
     
     .add_notifications <- function(warnings, name_msg, msg) {
@@ -323,8 +323,8 @@
       }
     })
 
-#save_workflow
-shiny::observeEvent(input$save_workflow, {
+  #save_workflow
+  shiny::observeEvent(input$save_workflow, {
   rw <- unname(reactive_workflow_local())
   
   if (length(rw) == 0) {
@@ -345,7 +345,7 @@ shiny::observeEvent(input$save_workflow, {
     shiny::showNotification(paste("Error saving workflow:", e$message), duration = 5, type = "error")
     print(paste("Error saving workflow:", e$message))
   })
-})
+  })
 
     
     # observer for clear workflow
@@ -523,11 +523,6 @@ create_parameter_ui <- function(param_name, param_value) {
     shiny::tags$dd(style = "display: flex; align-items: center;", input_element)
   )
 }
-
-
-
-
-
 
   param_names <- names(settings$parameters)
   other_names <- setdiff(names(settings), c("parameters"))
