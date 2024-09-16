@@ -6,22 +6,28 @@
 \title{\strong{MassSpecSettings_CalculateFeaturesQuality_StreamFind}}
 \usage{
 MassSpecSettings_CalculateFeaturesQuality_StreamFind(
-  rtExpand = 120,
-  mzExpand = 3e-04,
-  minTraces = 6,
-  filtered = FALSE
+  filtered = FALSE,
+  rtExpand = 0,
+  mzExpand = 0,
+  minTracesIntensity = 0,
+  minNumberTraces = 6,
+  baseCut = 0
 )
 }
 \arguments{
+\item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
+
 \item{rtExpand}{Numeric (length 1) with the retention time values (in seconds) for expanding left and right the
 retention time range.}
 
 \item{mzExpand}{Numeric (length 1) with the mass or mass-to-charge ratio (\emph{m/z}) (in Da) for expanding left and
 right the mass range.}
 
+\item{baseCut}{Numeric of length 1 with the base cut for calculating feature Gaussian fit.}
+
 \item{minTraces}{Numeric of length 1 with the minimum number traces for calculating feature quality.}
 
-\item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
+\item{minIntensity}{Numeric of length 1 with the minimum intensity of spectra traces for calculating feature quality.}
 }
 \value{
 A \code{MassSpecSettings_CalculateFeaturesQuality_StreamFind} object.

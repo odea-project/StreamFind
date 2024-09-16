@@ -4,14 +4,35 @@
 \alias{MassSpecSettings_FillFeatures_StreamFind}
 \title{\strong{MassSpecSettings_FillFeatures_StreamFind}}
 \usage{
-MassSpecSettings_FillFeatures_StreamFind(rtExpand = 1, mzExpand = 5e-04)
+MassSpecSettings_FillFeatures_StreamFind(
+  withinReplicate = TRUE,
+  rtExpand = 0,
+  mzExpand = 0,
+  minTracesIntensity = 1000,
+  minNumberTraces = 5,
+  baseCut = 0.3,
+  minSignalToNoiseRatio = 3,
+  minGaussianFit = 0.2
+)
 }
 \arguments{
+\item{withinReplicate}{Logical of length one to fill within replicates not global.}
+
 \item{rtExpand}{Numeric (length 1) with the retention time values (in seconds) for expanding left and right the
 retention time range.}
 
 \item{mzExpand}{Numeric (length 1) with the mass or mass-to-charge ratio (\emph{m/z}) (in Da) for expanding left and
 right the mass range.}
+
+\item{minNumberTraces}{Integer of length one with the minimum number of traces to consider a feature.}
+
+\item{baseCut}{Numeric of length one with the base cut for building Gaussian model.}
+
+\item{minSignalToNoiseRatio}{Numeric of length one with the minimum signal to noise ratio to consider a feature.}
+
+\item{minGaussianFit}{Numeric of length one with the minimum Gaussian fit to consider a feature.}
+
+\item{minIntenisty}{Numeric of length one with the minimum intensity to collect spectra data for extracted ion chromatograms.}
 }
 \value{
 A ProcessingSettings S3 class object with subclass MassSpecSettings_FillFeatures_StreamFind.

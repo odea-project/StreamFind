@@ -139,6 +139,16 @@
       pat@features[[a]]$adduct <- "[M-H]-"
     }
     
+    pat@features[[a]]$mz <- round(pat@features[[a]]$mz, 5)
+    pat@features[[a]]$mzmin <- round(pat@features[[a]]$mzmin, 5)
+    pat@features[[a]]$mzmax <- round(pat@features[[a]]$mzmax, 5)
+    pat@features[[a]]$mass <- round(pat@features[[a]]$mass, 5)
+    pat@features[[a]]$ret <- round(pat@features[[a]]$ret, 2)
+    pat@features[[a]]$retmin <- round(pat@features[[a]]$retmin, 2)
+    pat@features[[a]]$retmax <- round(pat@features[[a]]$retmax, 2)
+    pat@features[[a]]$intensity <- round(pat@features[[a]]$intensity, 2)
+    pat@features[[a]]$area <- round(pat@features[[a]]$area, 2)
+    
     pat@features[[a]]$filtered <- FALSE
     pat@features[[a]]$filled <- FALSE
     pat@features[[a]]$quality <- list(rep(list(), nrow(pat@features[[a]])))

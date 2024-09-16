@@ -192,7 +192,7 @@ S7::method(run, MassSpecSettings_FindInternalStandards_StreamFind) <- function(x
           
           if (length(istd_idx) > 0) {
             istd_temp <- istd[istd_idx, ]
-            istd_temp <- istd_temp[, c("name", "formula", "error_mass", "error_rt", "rec"), with = FALSE]
+            istd_temp <- istd_temp[, c("name", "error_mass", "error_rt", "rec"), with = FALSE]
             
             if (nrow(istd_temp) > 0) {
               istd_temp

@@ -278,6 +278,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses", package = "StreamFind", pa
           "spectra" = vapply(self@analyses, function(x) round(x$spectra_number, digits = 0), 0),
           "chromatograms" = vapply(self@analyses, function(x) round(x$chromatograms_number, digits = 0), 0)
         )
+        
         row.names(df) <- seq_len(nrow(df))
         df
       } else {
@@ -2318,6 +2319,75 @@ S7::method(plot_spectra_ms2, MassSpecAnalyses) <- function(x,
   }
 }
 
+#' @noRd
+S7::method(plot_features_count, MassSpecAnalyses) <- function(x,
+                                                              analyses = NULL,
+                                                              filtered = FALSE,
+                                                              yLab = NULL,
+                                                              title = NULL,
+                                                              colorBy = "analyses") {
+  
+  info <- x$info
+  
+  if (x$has_nts) {
+    if (x@results$nts$has_features) {
+      if (x@results$nts$has_groups) {
+        info$features <- vapply(x@results$nts$features@features@features, function(x) nrow(x), 0)
+      } else {
+        info$features <- vapply(x@results$nts$features@features, function(x) nrow(x), 0)
+      }
+      if (filtered) info$features <- info$features + vapply(x@results$nts$filtered, function(x) nrow(x), 0)
+    }
+  }
+  
+  if ("replicates" %in% colorBy) info$analysis <- info$replicate
+  
+  features <- NULL
+  polarity <- NULL
+  
+  info <- info[, .(
+    features = mean(features),
+    features_sd = sd(features),
+    n_analysis = length(features),
+    polarity = unique(polarity)
+  ), by = c("analysis")]
+  
+  info$features_sd[is.na(info$features_sd)] <- 0
+  
+  info <- unique(info)
+  
+  info$hover_text <- paste(
+    info$analysis, "<br>",
+    "N.: ", info$n_analysis, "<br>",
+    "Polarity: ", info$polarity, "<br>",
+    "Features: ", info$features, " (SD: ", info$features_sd, ")"
+  )
+  
+  info <- info[order(info$analysis), ]
+  
+  colors_tag <- StreamFind:::.get_colors(info$analysis)
+  
+  if (is.null(yLab)) yLab <- "Number of features"
+  
+  plotly::plot_ly(
+    x = info$analysis,
+    y = info$features,
+    marker = list(color = unname(colors_tag)),
+    type = "bar",
+    text = info$hover_text,
+    hoverinfo = "text",
+    error_y = list(
+      type = "data",
+      array = info$features_sd,
+      color = "darkred",
+      symmetric = FALSE,
+      visible = TRUE
+    )
+  ) %>% plotly::layout(
+    xaxis = list(title = NULL),
+    yaxis = list(title = yLab)
+  )
+}
 
 #' @noRd
 S7::method(plot_features, MassSpecAnalyses) <- function(x,
@@ -2393,6 +2463,7 @@ S7::method(map_features, MassSpecAnalyses) <- function(x,
                                                        ppm = 20,
                                                        sec = 60,
                                                        millisec = 5,
+                                                       neutral_mass = TRUE,
                                                        filtered = FALSE,
                                                        legendNames = NULL,
                                                        xLab = NULL,
@@ -2414,10 +2485,78 @@ S7::method(map_features, MassSpecAnalyses) <- function(x,
   
   if (grepl("replicates", colorBy)) fts$replicate <- x$replicates[fts$analysis]
   
+  if (neutral_mass) {
+    fts$mzmin <- fts$mass - (fts$mz - fts$mzmin)
+    fts$mzmax <- fts$mass + (fts$mzmax - fts$mz)
+    fts$mz <- fts$mass
+  }
+  
   if (!interactive) {
     .map_features_static(fts, colorBy, legendNames, xLab, yLab, title, showLegend, xlim, ylim, cex)
   } else {
     .map_features_interactive(fts, colorBy, legendNames, xlim, ylim, xLab, yLab, title)
+  }
+}
+
+#' @noRd
+S7::method(map_features_intensity, MassSpecAnalyses) <- function(x,
+                                                                 analyses = NULL,
+                                                                 features = NULL,
+                                                                 mass = NULL,
+                                                                 mz = NULL,
+                                                                 rt = NULL,
+                                                                 mobility = NULL,
+                                                                 ppm = 20,
+                                                                 sec = 60,
+                                                                 millisec = 5,
+                                                                 neutral_mass = TRUE,
+                                                                 filtered = FALSE,
+                                                                 legendNames = NULL,
+                                                                 xLab = NULL,
+                                                                 yLab = NULL,
+                                                                 title = NULL,
+                                                                 colorBy = "targets",
+                                                                 showLegend = TRUE,
+                                                                 xlim = 30,
+                                                                 ylim = 0.05,
+                                                                 cex = 0.6,
+                                                                 interactive = TRUE) {
+  
+  fts <- get_features(x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
+  
+  if (nrow(fts) == 0) {
+    message("\U2717 Features not found for the targets!")
+    return(NULL)
+  }
+  
+  if (grepl("replicates", colorBy)) fts$replicate <- x$replicates[fts$analysis]
+  
+  fts <- .make_colorBy_varkey(fts, colorBy, legendNames)
+  
+  if (!interactive) {
+    .map_features_static(fts, colorBy, legendNames, xLab, yLab, title, showLegend, xlim, ylim, cex)
+  } else {
+    plotly::plot_ly(
+      data = fts,
+      x = ~rt,
+      y = ~intensity, 
+      color = ~var,
+      type = 'scatter',
+      mode = 'markers',
+      colors = StreamFind:::.get_colors(unique(fts$var)), 
+      text = ~paste("<br>Analysis: ", analysis,
+                    "<br>Mass: ", mass,
+                    "<br>MZ: ", mz,
+                    "<br>RT: ", rt,
+                    "<br>Intensity: ", intensity),
+      hoverinfo = 'text'
+    ) %>%
+      plotly::layout(
+        title = NULL,
+        xaxis = list(title = "Retention Time (Seconds)"),
+        yaxis = list(title = "Intensity (Counts)"),
+        legend = list(title = "Analysis")
+      )
   }
 }
 

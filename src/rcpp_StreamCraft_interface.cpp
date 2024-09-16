@@ -608,23 +608,31 @@ float calculate_gaussian_rsquared(const std::vector<float>& x, const std::vector
 
 Rcpp::List calculate_gaussian_fit(const std::vector<float>& rt, const std::vector<float>& intensity, const float& baseCut) {
   
+  float noise = 0;
+  float sn = 0;
+  float A_fitted = 0;
+  float mu_fitted = 0;
+  float sigma_fitted = 0;
+  float r_squared = 0;
+  
   Rcpp::List quality = Rcpp::List::create(
-    Rcpp::Named("noise") = 0,
-    Rcpp::Named("sn") = 0,
-    Rcpp::Named("gauss_a") = 0,
-    Rcpp::Named("gauss_u") = 0,
-    Rcpp::Named("gauss_s") = 0,
-    Rcpp::Named("gauss_f") = 0
+    Rcpp::Named("noise") = noise,
+    Rcpp::Named("sn") = sn,
+    Rcpp::Named("gauss_a") = A_fitted,
+    Rcpp::Named("gauss_u") = mu_fitted,
+    Rcpp::Named("gauss_s") = sigma_fitted,
+    Rcpp::Named("gauss_f") = r_squared
   );
   
   size_t max_position = find_max_index(intensity);
   const float max_intensity = intensity[max_position];
   
   const size_t min_position = find_min_index(intensity);
-  const float min_intensity = intensity[min_position];
-  const float sn = max_intensity / min_intensity;
-  
-  quality["noise"] = min_intensity;
+  noise = intensity[min_position];
+  sn = max_intensity / noise;
+  noise = round(noise);
+  sn = round(sn * 10) / 10;
+  quality["noise"] = noise;
   quality["sn"] = sn;
   
   const float low_cut = max_intensity * baseCut;
@@ -667,13 +675,18 @@ Rcpp::List calculate_gaussian_fit(const std::vector<float>& rt, const std::vecto
   
   max_position = find_max_index(int_trimmed);
   
-  float A_fitted = int_trimmed[max_position];
-  float mu_fitted = rt_trimmed[max_position];
-  float sigma_fitted = (rt_trimmed.back() - rt_trimmed.front()) / 4.0;
+  A_fitted = int_trimmed[max_position];
+  mu_fitted = rt_trimmed[max_position];
+  sigma_fitted = (rt_trimmed.back() - rt_trimmed.front()) / 4.0;
   
   fit_gaussian(rt_trimmed, int_trimmed, A_fitted, mu_fitted, sigma_fitted);
   
-  float r_squared = calculate_gaussian_rsquared(rt_trimmed, int_trimmed, A_fitted, mu_fitted, sigma_fitted);
+  r_squared = calculate_gaussian_rsquared(rt_trimmed, int_trimmed, A_fitted, mu_fitted, sigma_fitted);
+  
+  A_fitted = round(A_fitted);
+  mu_fitted = round(mu_fitted * 10) / 10;
+  sigma_fitted = round(sigma_fitted * 10) / 10;
+  r_squared = round(r_squared * 10000) / 10000;
   
   quality["gauss_a"] = A_fitted;
   quality["gauss_u"] = mu_fitted;
@@ -849,7 +862,7 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
                                  float rtExpand = 0,
                                  float mzExpand = 0,
                                  float minTracesIntensity = 0,
-                                 int minNumberTraces = 5,
+                                 float minNumberTraces = 5,
                                  float baseCut = 0,
                                  float minSignalToNoiseRatio = 3,
                                  float minGaussianFit = 0.5) {
@@ -967,6 +980,8 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
   std::vector<std::vector<std::string>> ana_targets_groups(number_analyses);
   std::vector<std::vector<std::string>> ana_targets_replicates(number_analyses);
   
+  Rcpp::Rcout << "Building targets for filling " << number_unique_id << " feature groups...";
+  
   for (int k = 0; k < number_unique_id; k++) {
     
     std::vector<int> indices;
@@ -1057,11 +1072,17 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
     }
   }
   
+  Rcpp::Rcout << "Done!" << std::endl;
+  
   for (int j = 0; j < number_analyses; j++) {
     
     Rcpp::List out_analyses;
     
-    if (ana_targets[j].index.size() == 0) continue;
+    int n_j_targets = ana_targets[j].id.size();
+    
+    if (n_j_targets == 0) continue;
+    
+    Rcpp::Rcout << "Extracting " << ana_targets[j].id.size() << " EICs from analysis " << analyses_names[j] << "...";
     
     const Rcpp::List& analysis = analyses[j];
     
@@ -1075,11 +1096,42 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
     
     sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(ana_targets[j], headers, minTracesIntensity, 0);
     
+    const int n_traces = res.id.size();
+    
+    Rcpp::Rcout << " Done! " << std::endl;
+    
+    for (int i = 0; i < n_j_targets; i++) {
+      
+      const std::string& id_i = ana_targets[j].id[i];
+      
+      int count;
+      
+      for (int i = 0; i < n_traces; i++) if (res.id[i] == id_i) count++;
+      
+      if (count < minNumberTraces) {
+        ana_targets[j].index.erase(ana_targets[j].index.begin() + i);
+        ana_targets[j].id.erase(ana_targets[j].id.begin() + i);
+        ana_targets[j].level.erase(ana_targets[j].level.begin() + i);
+        ana_targets[j].polarity.erase(ana_targets[j].polarity.begin() + i);
+        ana_targets[j].precursor.erase(ana_targets[j].precursor.begin() + i);
+        ana_targets[j].mzmin.erase(ana_targets[j].mzmin.begin() + i);
+        ana_targets[j].mzmax.erase(ana_targets[j].mzmax.begin() + i);
+        ana_targets[j].rtmin.erase(ana_targets[j].rtmin.begin() + i);
+        ana_targets[j].rtmax.erase(ana_targets[j].rtmax.begin() + i);
+        ana_targets[j].mobilitymin.erase(ana_targets[j].mobilitymin.begin() + i);
+        ana_targets[j].mobilitymax.erase(ana_targets[j].mobilitymax.begin() + i);
+        ana_targets_groups[j].erase(ana_targets_groups[j].begin() + i);
+        ana_targets_replicates[j].erase(ana_targets_replicates[j].begin() + i);
+      }
+    }
+    
+    n_j_targets = ana_targets[j].id.size();
+    
+    Rcpp::Rcout << "Filling " << n_j_targets << " features from analysis " << analyses_names[j] << "...";
+    
     const std::vector<std::string> tg_id = ana_targets[j].id;
     
-    const int n_tg = tg_id.size();
-    
-    for (int i = 0; i < n_tg; i++) {
+    for (int i = 0; i < n_j_targets; i++) {
       
       const std::string& id_i = tg_id[i];
       
@@ -1090,15 +1142,15 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
       if (n_res_i < minNumberTraces) continue;
       
       merge_traces_within_rt(res_i.rt, res_i.mz, res_i.intensity);
-      
+
       Rcpp::List quality = calculate_gaussian_fit(res_i.rt, res_i.intensity, baseCut);
-      
+
       const float& sn = quality["sn"];
-      
+
       const float& gauss_f = quality["gauss_f"];
-      
+
       if (sn < minSignalToNoiseRatio) continue;
-      
+
       if (gauss_f < minGaussianFit) continue;
       
       const float area_i = trapezoidal_area(res_i.rt, res_i.intensity);
@@ -1115,14 +1167,14 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
 
       const float mzmax_i = *std::max_element(res_i.mz.begin(), res_i.mz.end());
 
-      const float rtmin_i = *std::min_element(res_i.mz.begin(), res_i.mz.end());
+      const float rtmin_i = *std::min_element(res_i.rt.begin(), res_i.rt.end());
 
-      const float rtmax_i = *std::max_element(res_i.mz.begin(), res_i.mz.end());
+      const float rtmax_i = *std::max_element(res_i.rt.begin(), res_i.rt.end());
 
       std::string adduct_i = "[M+H]+";
       if (res_i.polarity[0] < 0) adduct_i = "[M-H]-";
 
-      std::string feature = "filled_" + std::to_string(i +1);
+      std::string feature = "filled_" + std::to_string(i + 1);
       
       // std::string enc_rt = sc::encode_little_endian_from_float(res_i.rt, 4);
       // std::string enc_mz = sc::encode_little_endian_from_float(res_i.mz, 4);
@@ -1143,7 +1195,7 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
       Rcpp::List list_quality;
       list_quality.push_back(quality);
       
-      Rcpp::List empty_list;
+      Rcpp::List empty_list = Rcpp::List::create(R_NilValue);
 
       Rcpp::List out_targets;
       out_targets["analysis"] = analyses_names[j];
@@ -1175,6 +1227,8 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
     }
     
     out.push_back(out_analyses);
+    
+    Rcpp::Rcout << " Done! " << std::endl;
   }
   
   out.names() = analyses_names;
@@ -1189,7 +1243,7 @@ Rcpp::List rcpp_ms_calculate_features_quality(Rcpp::List analyses,
                                               float rtExpand = 0,
                                               float mzExpand = 0,
                                               float minTracesIntensity = 0,
-                                              int minNumberTraces = 5,
+                                              float minNumberTraces = 5,
                                               float baseCut = 0) {
 
   const int number_analyses = analyses.size();

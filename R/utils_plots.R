@@ -1236,81 +1236,92 @@
     
     hT <- paste(
       "</br> feature: ", pk$feature,
-      ifelse("group" %in% colnames(pk),
-             paste("</br> group: ", pk$group), ""
-      ),
+      ifelse("group" %in% colnames(pk), paste("</br> group: ", pk$group), ""),
       "</br> analysis: ", pk$analysis,
       "</br> <i>m/z</i>: ", round(pk$mz, digits = 4),
       "</br> dppm: ", round(((pk$mzmax - pk$mzmin) / pk$mz) * 1E6, digits = 0),
       "</br> rt: ", round(pk$rt, digits = 0),
       "</br> drt: ", round(pk$rtmax - pk$rtmin, digits = 0),
       "</br> intensity: ", round(pk$intensity, digits = 0),
-      "</br> DQS: ",
+      
       if ("dqsPeak" %in% colnames(pk)) {
-        pk$dqsPeak
+        paste("</br> DQS: ", pk$dqsPeak)
       } else {
-        "NA"
+        ""
       },
-      "</br> filled: ",
-      if ("is_filled" %in% colnames(pk)) {
-        ifelse(pk$is_filled == 1, TRUE, FALSE)
+      
+      if ("filled" %in% colnames(pk)) {
+        paste("</br> filled: ", pk$filled)
       } else {
-        FALSE
+        ""
       },
+      
       if (plot_qlt) {
         q_t <- pk$quality[[1]]
-        
-        if (length(q_t$rt) > 4) {
+        if (length(q_t) > 0) {
           paste(
             "</br> noise: ", q_t$noise,
             "</br> sn: ", q_t$sn,
-            "</br> gaufit: ", round(q_t$gaufit, digits = 4),
-            "</br> A: ", q_t$A,
-            "</br> mu: ", q_t$mu,
-            "</br> sigma: ", q_t$sigma
+            "</br> gaufit: ", round(q_t$gauss_f, digits = 4),
+            "</br> A: ", q_t$gauss_a,
+            "</br> mu: ", q_t$gauss_u,
+            "</br> sigma: ", q_t$gauss_s
           )
+        } else {
+          ""
         }
       } else {
         ""
       },
+      
       if ("isotope" %in% colnames(pk)) {
-        paste(
-          "</br> iso_cluster: ", vapply(pk$isotope, function(x) x$cluster, NA_real_),
-          "</br> iso_size: ", vapply(pk$isotope, function(x) x$cluster_size, NA_real_),
-          "</br> isotope: ", vapply(pk$isotope, function(x) x$tag, NA_character_),
-          "</br> carbons: ", vapply(pk$isotope, function(x) x$carbons, NA_real_)
-        )
+        iso <- pk$isotope[[1]]
+        if (length(iso) > 0) {
+          browser()
+          paste(
+            "</br> iso_cluster: ", vapply(pk$isotope, function(x) x$cluster, NA_real_),
+            "</br> iso_size: ", vapply(pk$isotope, function(x) x$cluster_size, NA_real_),
+            "</br> isotope: ", vapply(pk$isotope, function(x) x$tag, NA_character_),
+            "</br> carbons: ", vapply(pk$isotope, function(x) x$carbons, NA_real_)
+          )
+        } else {
+          ""
+        }
       } else {
         ""
       }
     )
     
-    if (plot_qlt) {
-      
-      if (length(q_t$rt) > 4) {
-        plot <- plot %>%  plotly::add_trace(
-          x = q_t$rt,
-          y = q_t$predicted,
-          type = 'scatter',
-          name = lt,
-          legendgroup = lt,
-          mode = 'lines',
-          line = list(dash = 'dash', color = unname(cl[lt])),
-          showlegend = FALSE
-        )
-        
-        plot <- plot %>%  plotly::add_trace(
-          x = q_t$rt,
-          y = rep(q_t$noise, length(q_t$rt)),
-          type = 'scatter',
-          name = lt,
-          legendgroup = lt,
-          mode = 'lines',
-          line = list(dash = 'dot', color = unname(cl[lt])),
-          showlegend = FALSE
-        )
-      }
-    }
+    # if (plot_qlt) {
+    #   
+    #   if (length(q_t) > 0) {
+    #     qlt_eic <- pk$eic[[1]]
+    #     pred_eic <- vapply(qlt_eic$rt, function(x) q_t$gauss_a * exp(-((x - q_t$gauss_u)^2) / (2 * q_t$gauss_s^2)), 0)
+    #     raise_val <- max(pk_eic$intensity) - max(pred_eic)
+    #     pred_eic <- pred_eic + raise_val
+    #     plot <- plot %>%  plotly::add_trace(
+    #       x = qlt_eic$rt,
+    #       y = pred_eic,
+    #       type = 'scatter',
+    #       name = lt,
+    #       legendgroup = lt,
+    #       mode = 'lines',
+    #       line = list(dash = 'dash', color = unname(cl[lt])),
+    #       showlegend = FALSE
+    #     )
+    #     
+    #     plot <- plot %>%  plotly::add_trace(
+    #       x = qlt_eic$rt,
+    #       y = rep(q_t$noise, length(qlt_eic$rt)),
+    #       type = 'scatter',
+    #       name = lt,
+    #       legendgroup = lt,
+    #       mode = 'lines',
+    #       line = list(dash = 'dot', color = unname(cl[lt])),
+    #       showlegend = FALSE
+    #     )
+    #   }
+    # }
     
     plot <- plot %>% add_trace(
       x = pk_eic$rt,
@@ -2120,23 +2131,17 @@
 
 .plot_internal_standards_qc_interactive <- function(istd, analyses) {
   
-  if (!is.data.frame(istd)) {
-    return(NULL)
-  }
+  if (!is.data.frame(istd)) return(NULL)
   
-  if (nrow(istd) == 0) {
-    return(NULL)
-  }
+  if (nrow(istd) == 0) return(NULL)
   
-  if (!("analysis" %in% colnames(istd)) & "replicate" %in% colnames(istd)) {
-    istd$analysis <- istd$replicate
-  }
+  if (!("analysis" %in% colnames(istd)) & "replicate" %in% colnames(istd)) istd$analysis <- istd$replicate
   
   leg <- unique(istd$name)
   
   colors <- .get_colors(leg)
   
-  if ("freq" %in% colnames(istd)) p0 <- plot_ly(istd, x = analyses)
+  p0 <- plot_ly(istd, x = analyses)
   
   p1 <- plot_ly(istd, x = analyses)
   
@@ -2153,15 +2158,23 @@
   
   p5 <- plot_ly(istd, x = analyses)
   
+  freq_template <- rep(0, length(analyses))
+  names(freq_template) <- analyses
+  
   for (i in unique(istd$name)) {
+    
     df <- istd[istd$name == i, ]
     
     showLegendInSecond <- FALSE
     
     if ("freq" %in% colnames(istd)) {
+      sel <- which(df$analysis %in% analyses)
+      freq <- freq_template
+      freq[sel] <- df$freq
+      freq <- freq / max(freq, na.rm = TRUE) * 100
       p0 <- p0 %>% add_trace(df,
-                             x = df$analysis,
-                             y = df$freq / max(istd$freq, na.rm = TRUE) * 100,
+                             x = analyses,
+                             y = freq,
                              type = "scatter", mode = "markers",
                              marker = list(size = 5, color = colors[i]),
                              connectgaps = FALSE,
@@ -2344,7 +2357,7 @@
     linecolor = toRGB("black"), linewidth = 2,
     title = "Presence / %",
     titlefont = list(size = 12, color = "black"),
-    range = c(0, 110)
+    range = c(-10, 110)
   )
   
   yaxis1 <- list(

@@ -129,8 +129,8 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
     parameters$minGaussianFit
   )
   
-  res <- lapply(res, data.table::rbindlist)
-  res <- data.table::rbindlist(res)
+  res <- lapply(res, function(x) data.table::rbindlist(x, fill = TRUE))
+  res <- data.table::rbindlist(res, fill = TRUE)
   
   fg <- nts$features
   fg_groups <- fg@groups

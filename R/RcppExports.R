@@ -25,16 +25,20 @@ rcpp_ms_load_features_eic <- function(analyses, features, filtered = FALSE, rtEx
     .Call(`_StreamFind_rcpp_ms_load_features_eic`, analyses, features, filtered, rtExpand, mzExpand, minTracesIntensity)
 }
 
-rcpp_ms_fill_features <- function(analyses, features, withinReplicate = FALSE, rtExpand = 0, mzExpand = 0, minTracesIntensity = 0, minNumberTraces = 5L, baseCut = 0, minSignalToNoiseRatio = 3, minGaussianFit = 0.5) {
+rcpp_ms_fill_features <- function(analyses, features, withinReplicate = FALSE, rtExpand = 0, mzExpand = 0, minTracesIntensity = 0, minNumberTraces = 5, baseCut = 0, minSignalToNoiseRatio = 3, minGaussianFit = 0.5) {
     .Call(`_StreamFind_rcpp_ms_fill_features`, analyses, features, withinReplicate, rtExpand, mzExpand, minTracesIntensity, minNumberTraces, baseCut, minSignalToNoiseRatio, minGaussianFit)
 }
 
-rcpp_ms_calculate_features_quality <- function(analyses, features, filtered = FALSE, rtExpand = 0, mzExpand = 0, minTracesIntensity = 0, minNumberTraces = 5L, baseCut = 0) {
+rcpp_ms_calculate_features_quality <- function(analyses, features, filtered = FALSE, rtExpand = 0, mzExpand = 0, minTracesIntensity = 0, minNumberTraces = 5, baseCut = 0) {
     .Call(`_StreamFind_rcpp_ms_calculate_features_quality`, analyses, features, filtered, rtExpand, mzExpand, minTracesIntensity, minNumberTraces, baseCut)
 }
 
 rcpp_fill_bin_spectra <- function(spectra, bin_mat, bins, overlap = 0, summaryFunction = "max") {
     .Call(`_StreamFind_rcpp_fill_bin_spectra`, spectra, bin_mat, bins, overlap, summaryFunction)
+}
+
+rcpp_ms_annotation_isotopes_V2 <- function(features, maxIsotopes = 5L, mode = "small molecules", maxCharge = 1L, rtWindowAlignment = 0.3, maxGaps = 1L, maxCarbons = 80, maxHetero = 15, maxHalogens = 10, verbose = FALSE) {
+    .Call(`_StreamFind_rcpp_ms_annotation_isotopes_V2`, features, maxIsotopes, mode, maxCharge, rtWindowAlignment, maxGaps, maxCarbons, maxHetero, maxHalogens, verbose)
 }
 
 rcpp_ms_annotation_isotopes <- function(features, maxIsotopes = 5L, elements = as.character( c("C","H", "N", "O", "S", "Cl", "Br")), mode = "small molecules", maxCharge = 1L, rtWindowAlignment = 0.3, maxGaps = 1L, maxCarbons = 80, maxHetero = 15, maxHalogens = 10, verbose = FALSE) {
@@ -43,6 +47,10 @@ rcpp_ms_annotation_isotopes <- function(features, maxIsotopes = 5L, elements = a
 
 rcpp_ms_cluster_spectra <- function(spectra, mzClust = 0.005, presence = 0.8, verbose = FALSE) {
     .Call(`_StreamFind_rcpp_ms_cluster_spectra`, spectra, mzClust, presence, verbose)
+}
+
+rcpp_ms_group_features <- function(features, rt_dev = 10, verbose = FALSE) {
+    .Call(`_StreamFind_rcpp_ms_group_features`, features, rt_dev, verbose)
 }
 
 rcpp_ms_groups_correspondence <- function(groups, features, verbose) {

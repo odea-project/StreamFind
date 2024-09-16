@@ -6,19 +6,22 @@
 \title{\strong{MassSpecSettings_LoadFeaturesEIC_StreamFind}}
 \usage{
 MassSpecSettings_LoadFeaturesEIC_StreamFind(
+  filtered = FALSE,
   rtExpand = 120,
   mzExpand = 0,
-  filtered = FALSE
+  minTracesIntensity = 0
 )
 }
 \arguments{
+\item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
+
 \item{rtExpand}{Numeric (length 1) with the retention time values (in seconds) for expanding left and right the
 retention time range.}
 
 \item{mzExpand}{Numeric (length 1) with the mass or mass-to-charge ratio (\emph{m/z}) (in Da) for expanding left and
 right the mass range.}
 
-\item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
+\item{minTracesIntensity}{Numeric of length one with the minimum intensity of traces to extract for EIC.}
 }
 \value{
 A \code{MassSpecSettings_LoadFeaturesEIC_StreamFind} object.

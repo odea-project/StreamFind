@@ -12,8 +12,48 @@ ms_files_complete <- list.files(path, pattern = ".mzML", full.names = TRUE)
 
 # NTS workflow -----
 # ms <- MassSpecEngine$new(analyses = ms_files_complete[7:24])
+
 ms <- MassSpecEngine$new(analyses = ms_files[10:27])
 ms$run(MassSpecSettings_FindFeatures_openms())
+
+
+# ms$get_features(analyses = 4, mass = dbis)
+
+# ms$run(MassSpecSettings_AnnotateFeatures_StreamFind())
+
+# which(ms$nts$feature_list[[4]]$feature %in% "f_3479650755034549175") - 1
+
+which(ms$nts$feature_list[[4]]$feature %in% "f_14501746324183792357") - 1
+
+
+
+
+res <- rcpp_ms_annotation_isotopes_V2(
+  ms$nts$feature_list[4],
+  maxIsotopes = 8L,
+  mode = "small molecules",
+  maxCharge = 2L,
+  rtWindowAlignment = 0.3,
+  maxGaps = 1L,
+  maxCarbons = 80,
+  maxHetero = 15,
+  maxHalogens = 10,
+  verbose = FALSE
+)
+
+res <- res[res$iso_size > 1, ]
+
+
+
+res$features_mz
+
+
+map_features_intensity(ms$analyses, interactive = TRUE, colorBy = "replicates")
+
+
+
+
+
 ms$run(MassSpecSettings_GroupFeatures_openms())
 ms$run(MassSpecSettings_FillFeatures_StreamFind())
 # ms$run(MassSpecSettings_AnnotateFeatures_StreamFind())
@@ -40,6 +80,7 @@ res <- rcpp_ms_load_features_eic(
   minTracesIntensity = 1000
 )
 
+res$`01_tof_ww_is_neg_blank-r002`
 
 View(ms$nts$feature_list)
 
@@ -49,8 +90,8 @@ clear_cache("fill_features")
 
 
 res <- rcpp_ms_calculate_features_quality(
-  ms$analyses$analyses,
-  ms$nts$feature_list,
+  ms$analyses$analyses[1:3],
+  ms$nts$feature_list[1:3],
   filtered = FALSE,
   rtExpand = 0,
   mzExpand = 0,
@@ -58,6 +99,185 @@ res <- rcpp_ms_calculate_features_quality(
   minNumberTraces = 6,
   baseCut = 0.3
 )
+
+
+fts <- ms$get_features(analyses = 1)
+plot_features_distribution(fts)
+fts <- fts[fts$intensity > 5000, ]
+fts2 <- rcpp_ms_group_features(fts, 30, FALSE)
+fts2 <- cbind(fts[, c("analysis", "group"), with = FALSE], fts2)
+
+
+plot_features_distribution <- function(fts) {
+  plotly::plot_ly(
+    data = fts,
+    x = ~rt,  # X-axis values
+    y = ~intensity,  # Y-axis values
+    color = ~analysis,  # Coloring by analysis category
+    # size = ~mass,  # Dot size based on intensity
+    type = 'scatter',  # Use scatter plot
+    mode = 'markers',  # Show markers
+    # marker = list(
+    #   sizemode = 'diameter',
+    #   opacity = 0.6
+    #   # line = list(width = 1)  # Set line width to a single value
+    # ),
+    colors = StreamFind:::.get_colors(unique(fts$analysis)),  # Custom color scale
+    text = ~paste("Intensity: ", intensity, "<br>Analysis: ", analysis),  # Hover information
+    hoverinfo = 'text'  # Use the custom hover text
+  ) %>%
+    plotly::layout(
+      title = "Scatter Plot with Intensity-based Sizes",
+      xaxis = list(title = "RT"),
+      yaxis = list(title = "Mass"),
+      legend = list(title = "Analysis")
+    )
+}
+
+
+
+
+
+View(fts2[fts2$group %in% "M304_R646_13253", ])
+View(fts2[fts2$rtclust %in% 20, ])
+View(fts2[fts2$group2 %in% "1821_22", ])
+
+fts2_l <- fts2[order(fts2$rtclust),]
+fts2_l <- split(fts2_l, fts2_l$rtclust)
+
+test <- hist(fts2$intensity, breaks = 100, col = "lightblue", xlab = "Intensity", ylab = "Frequency", main = "Histogram of Intensity Values")
+plot(test$density, test$mids, type = "l", col = "red", lwd = 2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+plot_clusters <- function(n, fts2_l) {
+  # plotly::plot_ly(fts2_l[[n]], x = ~rt, y = ~mass, z = ~intensity, type = "heatmap", colors = c("blue", "red")) %>%
+  #   plotly::layout(title = "Heatmap of RT and Mass", xaxis = list(title = "RT"), yaxis = list(title = "Mass"))
+  plotly::plot_ly(
+    data = fts2_l[[n]],
+    x = ~rt,  # X-axis values
+    y = ~mass,  # Y-axis values
+    color = ~analysis,  # Coloring by analysis category
+    size = ~intensity,  # Dot size based on intensity
+    type = 'scatter',  # Use scatter plot
+    mode = 'markers',  # Show markers
+    marker = list(
+      sizemode = 'diameter',
+      opacity = 0.6
+      # line = list(width = 1)  # Set line width to a single value
+    ),
+    colors = StreamFind:::.get_colors(unique(fts2_l[[n]]$analysis)),  # Custom color scale
+    text = ~paste("Intensity: ", intensity, "<br>Analysis: ", analysis),  # Hover information
+    hoverinfo = 'text'  # Use the custom hover text
+  ) %>%
+    plotly::layout(
+      title = "Scatter Plot with Intensity-based Sizes",
+      xaxis = list(title = "RT"),
+      yaxis = list(title = "Mass"),
+      legend = list(title = "Analysis")
+    )
+  
+  # fts2_l[[n]] <- fts2_l[[n]][order(fts2_l[[n]], decreasing = TRUE)]
+  # 
+  # plotly::plot_ly(
+  #   data = fts2_l[[n]],
+  #   x = ~rt,  # X-axis values
+  #   y = ~mass,  # Y-axis values
+  #   color = ~intensity,  # Gradient color by intensity
+  #   # size = ~intensity,  # Dot size based on intensity
+  #   type = 'scatter',  # Use scatter plot
+  #   mode = 'markers',  # Show markers
+  #   marker = list(
+  #     sizemode = 'diameter', 
+  #     opacity = 0.8
+  #   ),
+  #   colorscale = 'Viridis',  # Color scale for gradient (e.g., 'Viridis', 'Inferno', etc.)
+  #   colorbar = list(
+  #     title = 'Intensity',  # Title of the colorbar
+  #     tickprefix = ''
+  #   ),
+  #   text = ~paste("Intensity: ", intensity, "<br>Analysis: ", analysis),  # Hover information
+  #   hoverinfo = 'text'  # Use the custom hover text
+  # ) %>%
+  #   plotly::layout(
+  #     title = "Scatter Plot with Intensity-based Colors and Sizes",
+  #     xaxis = list(title = "RT"),
+  #     yaxis = list(title = "Mass")
+  #   )
+  
+}
+plot_clusters(24, fts2_l)
+
+
+
+#plot(fts2_l[[n]]$rt, fts2_l[[n]]$mass, type = "p", col = StreamFind:::.get_colors(unique(fts2_l[[n]]$analysis))[fts2_l[[n]]$analysis], pch = 19, cex = 1.2)
+#legend("topright", legend = unique(fts2_l[[n]]$analysis), col = StreamFind:::.get_colors(unique(fts2_l[[n]]$analysis)), pch = 1)
+
+
+fts <- fts[order(fts$mass), ]
+fts$massdiff <- c(0, diff(fts$mass))
+fts$massclust <- rep(0, nrow(fts))
+fts$massdev <- fts$mzmax - fts$mzmin
+for (i in 2:nrow(fts)) {
+  if (fts$massdiff[i] <= fts$massdev[i]) {
+    fts$massclust[i] <- fts$massclust[i - 1]
+  } else {
+    fts$massclust[i] <- fts$massclust[i - 1] + 1
+  }
+}
+
+fts <- fts[order(fts$rt), ]
+fts$rtclust <- rep(0, nrow(fts))
+for (i in 2:nrow(fts)) {
+  if (fts$rt[i] < fts$rtmax[i - 1]) {
+    fts$rtclust[i] <- fts$rtclust[i - 1]
+  } else {
+    fts$rtclust[i] <- fts$rtclust[i - 1] + 1
+  }
+}
+
+fts$group2 <- paste0(fts$massclust, "_", fts$rtclust)
+
+unique_groups2 <- unique(fts$group2)
+
+
+
+
+plot(fts$mass, fts$massdiff, type = "l")
+
+
+
+
+plot(fts$rt[1:10000], fts$mass[1:10000], type = "p")
+
+
+fts_1 <- fts[fts$rt < fts$rtmax[1] & fts$rt > fts$rtmin[1], ]
+
+fts_1 <- fts_1[order(fts_1$mz), ]
+
+plot(fts_1$mz, type = "p")
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -71,19 +291,19 @@ ms$get_features()
 
 
 res <- rcpp_ms_fill_features(
-  ms$analyses$analyses,
-  ms$get_features(),
-  withinReplicate = TRUE,
-  rtExpand = 0,
-  mzExpand = 0,
-  minTracesIntensity = 1000,
+  ms$analyses$analyses[1:3],
+  ms$get_features(analyses = 1:3),
+  withinReplicate = FALSE,
+  rtExpand = 1,
+  mzExpand = 0.0005,
+  minTracesIntensity = 500,
   minNumberTraces = 5,
   baseCut  = 0.3,
-  minSignalToNoiseRatio = 3,
+  minSignalToNoiseRatio = 5,
   minGaussianFit = 0.2
 )
 
-res <- lapply(res, data.table::rbindlist)
+res <- lapply(res, function(x) data.table::rbindlist(x, fill = TRUE))
 res <- data.table::rbindlist(res)
 
 

@@ -109,11 +109,19 @@ plot_spectra_ms2 <- S7::new_generic("plot_spectra_ms2", "x")
 
 #' @export
 #' @noRd
+plot_features_count <- S7::new_generic("plot_features_count", "x")
+
+#' @export
+#' @noRd
 plot_features <- S7::new_generic("plot_features", "x")
 
 #' @export
 #' @noRd
 map_features <- S7::new_generic("map_features", "x")
+
+#' @export
+#' @noRd
+map_features_intensity <- S7::new_generic("map_features_intensity", "x")
 
 #' @export
 #' @noRd
