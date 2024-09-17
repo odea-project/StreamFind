@@ -86,10 +86,15 @@ S7::method(run, MassSpecSettings_FindInternalStandards_StreamFind) <- function(x
   }
   
   cache <- .load_chache("find_internal_standards", nts$features, x)
-  
+
   if (!is.null(cache$data)) {
     tryCatch({
-      nts <- .add_features_column(nts, "istd", cache$data)
+      features <- nts$feature_list
+      features <- Map(function(x, y) {
+        x[["istd"]] <- y
+        x
+      }, features, istd_col)
+      nts$feature_list <- features
       engine$nts <- nts
       message("\U2139 Internal standards annotation loaded from cache!")
       return(TRUE)
@@ -220,7 +225,12 @@ S7::method(run, MassSpecSettings_FindInternalStandards_StreamFind) <- function(x
       message("\U1f5ab Internal standards annotation cached!")
     }
     
-    nts <- .add_features_column(nts, "istd", istd_col)
+    features <- Map(function(x, y) {
+      x[["istd"]] <- y
+      x
+    }, features, istd_col)
+    
+    nts$feature_list <- features
     
     engine$nts <- nts
     
