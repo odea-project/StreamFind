@@ -1215,6 +1215,26 @@ S7::method(get_chromatograms, MassSpecAnalyses) <- function(x,
   }
 }
 
+#' @noRd
+S7::method(get_features_count, MassSpecAnalyses) <- function(x, analyses = NULL, filtered = FALSE) {
+  analyses <- .check_analyses_argument(x, analyses)
+  
+  info <- x$info
+  
+  if (x$has_nts) {
+    if (x@results$nts$has_features) {
+      if (x@results$nts$has_groups) {
+        info$features <- vapply(x@results$nts$features@features@features, function(x) nrow(x), 0)
+      } else {
+        info$features <- vapply(x@results$nts$features@features, function(x) nrow(x), 0)
+      }
+      if (filtered) info$features <- info$features + vapply(x@results$nts$filtered, function(x) nrow(x), 0)
+    }
+  }
+  
+  info
+}
+
 
 #' @noRd
 S7::method(get_features, MassSpecAnalyses) <- function(x,
@@ -2327,18 +2347,7 @@ S7::method(plot_features_count, MassSpecAnalyses) <- function(x,
                                                               title = NULL,
                                                               colorBy = "analyses") {
   
-  info <- x$info
-  
-  if (x$has_nts) {
-    if (x@results$nts$has_features) {
-      if (x@results$nts$has_groups) {
-        info$features <- vapply(x@results$nts$features@features@features, function(x) nrow(x), 0)
-      } else {
-        info$features <- vapply(x@results$nts$features@features, function(x) nrow(x), 0)
-      }
-      if (filtered) info$features <- info$features + vapply(x@results$nts$filtered, function(x) nrow(x), 0)
-    }
-  }
+  info <- get_features_count(x, analyses, filtered)
   
   if ("replicates" %in% colorBy) info$analysis <- info$replicate
   

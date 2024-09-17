@@ -57,6 +57,10 @@ get_spectra_ms2 <- S7::new_generic("get_spectra_ms2", "x")
 
 #' @export
 #' @noRd
+get_features_count <- S7::new_generic("get_features_count", "x")
+
+#' @export
+#' @noRd
 get_features <- S7::new_generic("get_features", "x")
 
 #' @export

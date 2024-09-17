@@ -153,6 +153,7 @@
     pat@features[[a]]$filled <- FALSE
     pat@features[[a]]$quality <- list(rep(list(), nrow(pat@features[[a]])))
     pat@features[[a]]$isotope <- list(rep(list(), nrow(pat@features[[a]])))
+    pat@features[[a]]$annotation <- list(rep(list(), nrow(pat@features[[a]])))
     pat@features[[a]]$eic <- list(rep(list(), nrow(pat@features[[a]])))
     pat@features[[a]]$ms1 <- list(rep(list(), nrow(pat@features[[a]])))
     pat@features[[a]]$ms2 <- list(rep(list(), nrow(pat@features[[a]])))

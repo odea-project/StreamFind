@@ -92,8 +92,8 @@ S7::method(run, MassSpecSettings_CalculateFeaturesQuality_StreamFind) <- functio
   feature_list <- nts$feature_list
   
   feature_list <- lapply(feature_list, function(z) {
-    if ("quality" %in% colnames(z)) z$quality <- rep(list(), nrow(z))
-    if ("eic" %in% colnames(z)) z$eic <- rep(list(), nrow(z))
+    if (!"quality" %in% colnames(z)) z$quality <- rep(list(), nrow(z))
+    if (!"eic" %in% colnames(z)) z$eic <- rep(list(), nrow(z))
     z
   })
   

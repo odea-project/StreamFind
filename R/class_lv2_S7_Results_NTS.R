@@ -63,14 +63,10 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
         
         if ("featuresSet" %in% is(pat)) {
           for (x in names(f_list)) {
-            sel <- pat@analysisInfo$analysis %in% x
-            pol <- pat@analysisInfo$set[sel]
-            if ("positive" %in% pol) adduct_val <- -1.007276
-            if ("negative" %in% pol) adduct_val <- 1.007276
-            sel_to_change <- round(f_list[[x]]$mz, 0) == round(f_list[[x]]$mass, 0)
-            f_list[[x]]$mz[sel_to_change] <- f_list[[x]]$mz - adduct_val
-            f_list[[x]]$mzmin[sel_to_change] <- f_list[[x]]$mzmin - adduct_val
-            f_list[[x]]$mzmax[sel_to_change] <- f_list[[x]]$mzmax - adduct_val
+            adduct_val <- f_list[[x]]$polarity * 1.007276
+            f_list[[x]]$mz <- f_list[[x]]$mz + adduct_val
+            f_list[[x]]$mzmin <- f_list[[x]]$mzmin + adduct_val
+            f_list[[x]]$mzmax <- f_list[[x]]$mzmax + adduct_val
           }
         }
         
@@ -101,14 +97,10 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
           if (identical(patRoon::analyses(self@features), names(value))) {
             if ("featuresSet" %in% is(self$features)) {
               for (x in names(value)) {
-                sel <- self$features@analysisInfo$analysis %in% x
-                pol <- self$features@analysisInfo$set[sel]
-                if ("positive" %in% pol) adduct_val <- -1.007276
-                if ("negative" %in% pol) adduct_val <- 1.007276
-                sel_to_change <- round(value[[x]]$mz, 0) != round(value[[x]]$mass, 0)
-                value[[x]]$mz[sel_to_change] <- value[[x]]$mz + adduct_val
-                value[[x]]$mzmin[sel_to_change] <- value[[x]]$mzmin + adduct_val
-                value[[x]]$mzmax[sel_to_change] <- value[[x]]$mzmax + adduct_val
+                adduct_val <- value[[x]]$polarity * -1.007276
+                value[[x]]$mz <- value[[x]]$mz + adduct_val
+                value[[x]]$mzmin <- value[[x]]$mzmin + adduct_val
+                value[[x]]$mzmax <- value[[x]]$mzmax + adduct_val
               }
             }
             self@features@features <- lapply(value, function(x) x[!x$filtered, ])
@@ -121,11 +113,18 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
         } else if ("featureGroups" %in% is(self$features)) {
           if (identical(patRoon::analyses(self@features), names(value))) {
             if (all(vapply(value, function(x) "group" %in% colnames(x), FALSE))) {
-              self@features@features@features <- value
-              fg <- self$features
+              if ("featureGroupsSet" %in% is(self$features)) {
+                for (x in names(value)) {
+                  adduct_val <- value[[x]]$polarity * -1.007276
+                  value[[x]]$mz <- value[[x]]$mz + adduct_val
+                  value[[x]]$mzmin <- value[[x]]$mzmin + adduct_val
+                  value[[x]]$mzmax <- value[[x]]$mzmax + adduct_val
+                }
+              }
               fg_left <- unique(unlist(lapply(value, function(x) x$group[!x$filtered])))
               fg_left <- fg_left[!is.na(fg_left)]
               if (length(fg_left) > 0) {
+                fg <- self$features
                 fg <- fg[, fg_left]
                 self@features <- fg
               }

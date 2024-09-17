@@ -4042,9 +4042,16 @@ the added targets as legend of the plot.}
 \subsection{Method \code{plot_internal_standards_qc()}}{
 Plots the quality control assessment of the internal standards.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_internal_standards_qc()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_internal_standards_qc(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-plot_suspects"></a>}}

@@ -15,9 +15,38 @@ ms_files_complete <- list.files(path, pattern = ".mzML", full.names = TRUE)
 
 ms <- MassSpecEngine$new(analyses = ms_files[10:27])
 ms$run(MassSpecSettings_FindFeatures_openms())
+ms$run(MassSpecSettings_AnnotateFeatures_StreamFind2(maxCharge = 2))
+ms$run(MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE, excludeAdducts = TRUE))
+ms$run(MassSpecSettings_GroupFeatures_openms())
+ms$run(MassSpecSettings_FilterFeatures_StreamFind(minIntensity = 5000))
+ms$run(MassSpecSettings_FillFeatures_StreamFind())
+ms$run(MassSpecSettings_CalculateFeaturesQuality_StreamFind(minNumberTraces = 5))
+ms$run(MassSpecSettings_FilterFeatures_StreamFind(minSnRatio = 5))
 
 
-# ms$get_features(analyses = 4, mass = dbis)
+
+
+res <- rcpp_ms_calculate_features_quality(
+  ms$analyses$analyses[1:3],
+  ms$nts$feature_list[1:3],
+  filtered = FALSE,
+  rtExpand = 0,
+  mzExpand = 0,
+  minTracesIntensity = 0,
+  minNumberTraces = 6,
+  baseCut = 0.3
+)
+
+
+plot_features_count(ms$analyses)
+
+
+
+clear_cache("annotate_features")
+
+fts_all <- ms$get_features(analyses = 4)
+
+fts <- ms$get_features(analyses = 4, mass = dbis)
 
 # ms$run(MassSpecSettings_AnnotateFeatures_StreamFind())
 
@@ -26,19 +55,21 @@ ms$run(MassSpecSettings_FindFeatures_openms())
 which(ms$nts$feature_list[[4]]$feature %in% "f_14501746324183792357") - 1
 
 
+all.equal(fts_all$feature, res$feature)
 
+length(fts_all$feature)
+length(res$feature)
 
-res <- rcpp_ms_annotation_isotopes_V2(
-  ms$nts$feature_list[4],
-  maxIsotopes = 8L,
-  mode = "small molecules",
-  maxCharge = 2L,
+any(duplicated(fts_all$feature))
+any(duplicated(res$feature))
+any(duplicated(res$index))
+
+res <- rcpp_ms_annotate_features(
+  ms$nts$feature_list[1],
   rtWindowAlignment = 0.3,
-  maxGaps = 1L,
-  maxCarbons = 80,
-  maxHetero = 15,
-  maxHalogens = 10,
-  verbose = FALSE
+  maxIsotopes = 8L,
+  maxCharge = 2L,
+  maxGaps = 1L
 )
 
 res <- res[res$iso_size > 1, ]

@@ -139,23 +139,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// rcpp_ms_annotation_isotopes_V2
-Rcpp::List rcpp_ms_annotation_isotopes_V2(Rcpp::List features, int maxIsotopes, std::string mode, int maxCharge, double rtWindowAlignment, int maxGaps, double maxCarbons, double maxHetero, double maxHalogens, bool verbose);
-RcppExport SEXP _StreamFind_rcpp_ms_annotation_isotopes_V2(SEXP featuresSEXP, SEXP maxIsotopesSEXP, SEXP modeSEXP, SEXP maxChargeSEXP, SEXP rtWindowAlignmentSEXP, SEXP maxGapsSEXP, SEXP maxCarbonsSEXP, SEXP maxHeteroSEXP, SEXP maxHalogensSEXP, SEXP verboseSEXP) {
+// rcpp_ms_annotate_features
+Rcpp::List rcpp_ms_annotate_features(Rcpp::List features, double rtWindowAlignment, int maxIsotopes, int maxCharge, int maxGaps);
+RcppExport SEXP _StreamFind_rcpp_ms_annotate_features(SEXP featuresSEXP, SEXP rtWindowAlignmentSEXP, SEXP maxIsotopesSEXP, SEXP maxChargeSEXP, SEXP maxGapsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::List >::type features(featuresSEXP);
-    Rcpp::traits::input_parameter< int >::type maxIsotopes(maxIsotopesSEXP);
-    Rcpp::traits::input_parameter< std::string >::type mode(modeSEXP);
-    Rcpp::traits::input_parameter< int >::type maxCharge(maxChargeSEXP);
     Rcpp::traits::input_parameter< double >::type rtWindowAlignment(rtWindowAlignmentSEXP);
+    Rcpp::traits::input_parameter< int >::type maxIsotopes(maxIsotopesSEXP);
+    Rcpp::traits::input_parameter< int >::type maxCharge(maxChargeSEXP);
     Rcpp::traits::input_parameter< int >::type maxGaps(maxGapsSEXP);
-    Rcpp::traits::input_parameter< double >::type maxCarbons(maxCarbonsSEXP);
-    Rcpp::traits::input_parameter< double >::type maxHetero(maxHeteroSEXP);
-    Rcpp::traits::input_parameter< double >::type maxHalogens(maxHalogensSEXP);
-    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_ms_annotation_isotopes_V2(features, maxIsotopes, mode, maxCharge, rtWindowAlignment, maxGaps, maxCarbons, maxHetero, maxHalogens, verbose));
+    rcpp_result_gen = Rcpp::wrap(rcpp_ms_annotate_features(features, rtWindowAlignment, maxIsotopes, maxCharge, maxGaps));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -254,7 +249,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_ms_fill_features", (DL_FUNC) &_StreamFind_rcpp_ms_fill_features, 10},
     {"_StreamFind_rcpp_ms_calculate_features_quality", (DL_FUNC) &_StreamFind_rcpp_ms_calculate_features_quality, 8},
     {"_StreamFind_rcpp_fill_bin_spectra", (DL_FUNC) &_StreamFind_rcpp_fill_bin_spectra, 5},
-    {"_StreamFind_rcpp_ms_annotation_isotopes_V2", (DL_FUNC) &_StreamFind_rcpp_ms_annotation_isotopes_V2, 10},
+    {"_StreamFind_rcpp_ms_annotate_features", (DL_FUNC) &_StreamFind_rcpp_ms_annotate_features, 5},
     {"_StreamFind_rcpp_ms_annotation_isotopes", (DL_FUNC) &_StreamFind_rcpp_ms_annotation_isotopes, 11},
     {"_StreamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_StreamFind_rcpp_ms_cluster_spectra, 4},
     {"_StreamFind_rcpp_ms_group_features", (DL_FUNC) &_StreamFind_rcpp_ms_group_features, 3},

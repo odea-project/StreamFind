@@ -233,6 +233,7 @@ namespace sf {
     int n;
     std::vector<std::string> feature;
     std::vector<int> index;
+    std::vector<int> polarity;
     std::vector<float> rt;
     std::vector<float> rtmin;
     std::vector<float> rtmax;
@@ -244,6 +245,7 @@ namespace sf {
     FeaturesDataFrame(const Rcpp::List& analysis) {
       
       const std::vector<std::string>& rf_feature = analysis["feature"];
+      const std::vector<int>& rf_polarity = analysis["polarity"];
       const std::vector<float>& rf_rt = analysis["rt"];
       const std::vector<float>& rf_rtmin = analysis["rtmin"];
       const std::vector<float>& rf_rtmax = analysis["rtmax"];
@@ -259,6 +261,7 @@ namespace sf {
       
       feature.resize(n);
       index.resize(n);
+      polarity.resize(n);
       rt.resize(n);
       rtmin.resize(n);
       rtmax.resize(n);
@@ -274,6 +277,7 @@ namespace sf {
       for (int i = 0; i < n; i++) {
         feature[i] = rf_feature[idx[i]];
         index[i] = rf_index[idx[i]];
+        polarity[i] = rf_polarity[idx[i]];
         rt[i] = rf_rt[idx[i]];
         rtmin[i] = rf_rtmin[idx[i]];
         rtmax[i] = rf_rtmax[idx[i]];
@@ -397,6 +401,8 @@ namespace sf {
       const int& number_features,
       const std::vector<float>& mzs,
       const std::vector<float>& rts,
+      const std::vector<int>& pols,
+      const int& pol,
       const float& mz,
       const float& mzmin,
       const float& mzmax,
@@ -417,7 +423,7 @@ namespace sf {
     rtmax = rt + rtW;
     
     for (int z = 0; z < number_features; ++z) {
-      if (rts[z] >= rtmin && rts[z] <= rtmax && mzs[z] >= mz && mzs[z] <= max_mz_chain) {
+      if (rts[z] >= rtmin && rts[z] <= rtmax && mzs[z] > mz && mzs[z] <= max_mz_chain && pols[z] == pol) {
         candidates.push_back(z);
       }
     }
@@ -568,8 +574,8 @@ namespace sf {
               // the mass error might give an indication to check
 
               af.index[mono_index] = mono_index;
-              af.feature[mono_index] = feature;
-              af.component_feature[mono_index] = mono_feature;
+              af.feature[mono_index] = mono_feature;
+              af.component_feature[mono_index] = feature;
               af.iso_step[mono_index] = -1;
               af.iso_cat[mono_index] = "M+";
               af.iso_isotope[mono_index] = "";
@@ -748,7 +754,7 @@ namespace sf {
       af.iso_cat[mono_index] = "M+0";
       af.iso_isotope[mono_index] = "";
       af.iso_charge[mono_index] = iso_chain.charge[0];
-      af.iso_mzr[mono_index] = iso_chain.mzr[0];
+      af.iso_mzr[mono_index] = std::round(iso_chain.mzr[0] * 100000.0) / 100000.0;
       af.iso_mass_distance[mono_index] = 0;
       af.iso_theoretical_mass_distance[mono_index] = 0;
       af.iso_mass_distance_error[mono_index] = 0;
@@ -756,6 +762,9 @@ namespace sf {
       af.iso_theoretical_min_relative_intensity[mono_index] = 0;
       af.iso_theoretical_max_relative_intensity[mono_index] = 0;
       af.iso_size[mono_index] = iso_chain.length;
+      
+      iso_chain.number_carbons = std::round(iso_chain.number_carbons);
+      
       af.iso_number_carbons[mono_index] = iso_chain.number_carbons;
       
       if (iso_chain.length > 1) {
@@ -767,13 +776,13 @@ namespace sf {
           af.iso_step[iso_index] = iso_chain.step[i];
           af.iso_cat[iso_index] = "M+" + std::to_string(iso_chain.step[i]);
           af.iso_charge[iso_index] = iso_chain.charge[i];
-          af.iso_mzr[iso_index] = iso_chain.mzr[i];
-          af.iso_mass_distance[iso_index] = iso_chain.mass_distance[i];
-          af.iso_theoretical_mass_distance[iso_index] = iso_chain.theoretical_mass_distance[i];
-          af.iso_mass_distance_error[iso_index] = iso_chain.mass_distance_error[i];
-          af.iso_relative_intensity[iso_index] = iso_chain.abundance[i];
-          af.iso_theoretical_min_relative_intensity[iso_index] = iso_chain.theoretical_abundance_min[i];
-          af.iso_theoretical_max_relative_intensity[iso_index] = iso_chain.theoretical_abundance_max[i];
+          af.iso_mzr[iso_index] = std::round(iso_chain.mzr[i] * 100000.0) / 100000.0;
+          af.iso_mass_distance[iso_index] = std::round(iso_chain.mass_distance[i] * 100000.0) / 100000.0;
+          af.iso_theoretical_mass_distance[iso_index] = std::round(iso_chain.theoretical_mass_distance[i] * 100000.0) / 100000.0;
+          af.iso_mass_distance_error[iso_index] = std::round(iso_chain.mass_distance_error[i] * 100000.0) / 100000.0;
+          af.iso_relative_intensity[iso_index] = std::round(iso_chain.abundance[i] * 100000.0) / 100000.0;
+          af.iso_theoretical_min_relative_intensity[iso_index] = std::round(iso_chain.theoretical_abundance_min[i] * 100000.0) / 100000.0;
+          af.iso_theoretical_max_relative_intensity[iso_index] = std::round(iso_chain.theoretical_abundance_max[i] * 100000.0) / 100000.0;
           af.iso_size[iso_index] = iso_chain.length;
           af.iso_number_carbons[iso_index] = iso_chain.number_carbons;
           af.iso_isotope[iso_index] = iso_chain.isotope[i];
@@ -784,27 +793,157 @@ namespace sf {
     }
   };
   
+  struct Adduct {
+    std::string element;
+    int polarity;
+    std::string cat;
+    int charge;
+    float mass_distance;
+    
+    Adduct(const std::string& e, const int& p, const std::string& c, const float& md, const int& z) {
+      element = e;
+      polarity = p;
+      cat = c;
+      charge = z;
+      mass_distance = md;
+    };
+  };
+  
+  struct Adducts {
+    
+    std::vector<Adduct> neutralizers {
+      Adduct("H", 1, "[M+H]+", -1.007276, 1),
+      Adduct("H", -1, "[M-H]-", 1.007276, 1)
+    };
+    
+    std::vector<Adduct> all_adducts {
+      
+      // Positive Adducts
+      Adduct("Na", 1, "[M+Na]+", 22.989218, 1),
+      Adduct("K", 1, "[M+K]+", 38.963158, 1),
+      Adduct("NH4", 1, "[M+NH4]+", 18.033823, 1),
+      Adduct("CH3OH", 1, "[M+CH3OH+H]+", 33.033489, 1), // Methanol
+      Adduct("DMSO", 1, "[M+DMSO+H]+", 79.02122, 1), // Dimethyl sulfoxide
+      Adduct("CH3CN", 1, "[M+CH3CN+H]+", 42.033823, 1), // Acetonitrile
+      
+      // Negative Adducts
+      Adduct("Cl", -1, "[M+Cl]-", 34.969402, 1),
+      Adduct("Br", -1, "[M+Br]-", 78.918885, 1),
+      Adduct("CHO2", -1, "[M+CHO2]-", 44.998201, 1), // Formate
+      Adduct("CH3COO", -1, "[M+CH3COO]-", 59.013851, 1), // Acetate
+      Adduct("-2H+Na", -1, "[M-2H+Na]-", 20.974666, 1),
+      Adduct("-2H+K", -1, "[M-2H+K]-", 36.948606, 1)
+      
+    };
+    
+    float neutralizer(const int& pol) {
+      if (pol == 1) return neutralizers[0].mass_distance;
+      return neutralizers[1].mass_distance;
+    };
+    
+    std::vector<Adduct> adducts(const int& pol) {
+      std::vector<Adduct> out;
+      if (pol == 1) for (const Adduct& a : all_adducts) if (a.polarity == 1) out.push_back(a);
+      if (pol == -1) for (const Adduct& a : all_adducts) if (a.polarity == -1) out.push_back(a);
+      return out;
+    };
+  };
+  
+  std::vector<int> find_adduct_candidates(
+      const int& number_features,
+      const std::vector<float>& mzs,
+      const std::vector<float>& rts,
+      const std::vector<int>& pols,
+      const std::vector<int>& iso_step,
+      const int& pol,
+      const float& mz,
+      const float& mzmin,
+      const float& mzmax,
+      const float& rt,
+      float& rtmin,
+      float& rtmax,
+      const float& rtWindowAlignment,
+      const float& max_mz_adducts
+  ) {
+    std::vector<int> candidates;
+    
+    const float left_rt = rt - rtmin;
+    const float right_rt = rtmax - rt;
+    float rtW = right_rt;
+    if (left_rt < right_rt) rtW = left_rt;
+    rtW = rtW * rtWindowAlignment;
+    rtmin = rt - rtW;
+    rtmax = rt + rtW;
+    
+    for (int z = 0; z < number_features; ++z) {
+      if (rts[z] >= rtmin && rts[z] <= rtmax && mzs[z] > mz && mzs[z] <= max_mz_adducts && pols[z] == pol && iso_step[z] == 0) {
+        candidates.push_back(z);
+      }
+    }
+    
+    return candidates;
+  };
+  
+  void annotate_adducts(AnnotatedFeatures& af, const CandidatesChain& candidates_chain, const int& pol) {
+    
+    sf::Adducts all_adducts;
+    
+    const float neutralizer = all_adducts.neutralizer(pol);
+    
+    std::vector<Adduct> adducts = all_adducts.adducts(pol);
+    
+    const int number_candidates = candidates_chain.length;
+    
+    const std::string& mion_feature = candidates_chain.feature[0];
+    const float& mion_mz = candidates_chain.mz[0];
+    const float& mion_mzr = candidates_chain.mzr[0];
+    
+    for (size_t a = 0; a < adducts.size(); ++a) {
+      
+      const Adduct& adduct = adducts[a];
+      
+      const std::string& adduct_element = adduct.element;
+      const std::string& adduct_cat = adduct.cat;
+      const float& adduct_mass_distance = adduct.mass_distance;
+      
+      for (int c = 1; c < number_candidates; ++c) {
+        
+        const int& index = candidates_chain.index[c];
+        
+        if (af.adduct_cat[index] != "") continue;
+        
+        const std::string& feature = candidates_chain.feature[c];
+        const float& mz = candidates_chain.mz[c];
+        
+        const float exp_mass_distance = mz - (mion_mz + neutralizer);
+        
+        const float error = abs(exp_mass_distance - adduct_mass_distance);
+        
+        if (error < mion_mzr) {
+          af.index[index] = index;
+          af.feature[index] = feature;
+          af.component_feature[index] = mion_feature;
+          af.adduct_cat[index] = adduct_cat;
+          af.adduct_element[index] = adduct_element;
+          af.adduct_error[index] = std::round(error * 100000.0) / 100000.0;
+          break;
+        }
+      }
+    }
+  }
+  
 }; // namespace sf
 
 // [[Rcpp::export]]
-Rcpp::List rcpp_ms_annotation_isotopes_V2(
-  Rcpp::List features,
-  int maxIsotopes = 5,
-  std::string mode = "small molecules",
-  int maxCharge = 1,
-  double rtWindowAlignment = 0.3,
-  int maxGaps = 1,
-  double maxCarbons = 80,
-  double maxHetero = 15,
-  double maxHalogens = 10,
-  bool verbose = false
-) {
+Rcpp::List rcpp_ms_annotate_features(Rcpp::List features,
+                                     double rtWindowAlignment = 0.3,
+                                     int maxIsotopes = 5,
+                                     int maxCharge = 1,
+                                     int maxGaps = 1) {
 
-  Rcpp::List list_out;
-  
   sf::Isotopes isotopes;
   
-  std::vector<std::string> elements = {"C","H", "N", "O", "S", "Cl", "Br"};
+  std::vector<std::string> elements = {"C","H", "N", "O", "S", "Cl", "Br", "Si"};
   
   isotopes.filter(elements);
   
@@ -820,13 +959,11 @@ Rcpp::List rcpp_ms_annotation_isotopes_V2(
   
   for (int a = 0; a < number_analyses; a++) {
     
-    const Rcpp::List& analysis = features[a];
+    Rcpp::List analysis = features[a];
     
     const sf::FeaturesDataFrame fdf(analysis);
     
     const std::vector<std::string> fts = analysis["feature"];
-    const int n2 = fts.size();
-    Rcpp::Rcout << "n2: " << n2 << std::endl;
     
     const int number_features = fdf.n;
     
@@ -841,6 +978,7 @@ Rcpp::List rcpp_ms_annotation_isotopes_V2(
       if (af.iso_step[index] > 0) continue; // already isotope
       
       const std::string& feature = fdf.feature[f];
+      const int& polarity = fdf.polarity[f];
       const float& rt = fdf.rt[f];
       float rtmin = fdf.rtmin[f];
       float rtmax = fdf.rtmax[f];
@@ -850,11 +988,12 @@ Rcpp::List rcpp_ms_annotation_isotopes_V2(
       const float max_mz_chain = (mz + maxIsotopes) * 1.05;
       
       std::vector<int> candidates = sf::find_isotopic_candidates(
-        number_features, fdf.mz, fdf.rt, mz, mzmin, mzmax, rt, rtmin, rtmax, rtWindowAlignment, max_mz_chain);
+        number_features, fdf.mz, fdf.rt, fdf.polarity, polarity, mz, mzmin, mzmax, rt, rtmin, rtmax, rtWindowAlignment, max_mz_chain);
       
       const int number_candidates = candidates.size();
       
-      if (number_candidates > 1) {
+      if (number_candidates > 0) {
+        candidates.insert(candidates.begin(), f);
         sf::CandidatesChain candidates_chain(candidates, fdf.feature, fdf.index, fdf.mz, fdf.mzmin, fdf.mzmax, fdf.rt, fdf.intensity);
         annotate_isotopes(af, combinations, candidates_chain, maxIsotopes, maxCharge, maxGaps);
         
@@ -880,29 +1019,99 @@ Rcpp::List rcpp_ms_annotation_isotopes_V2(
     
     Rcpp::Rcout << "Done!" << std::endl;
     
-    list_out["index"] = af.index;
-    list_out["feature"] = af.feature;
-    list_out["mz"] = fdf.mz;
-    list_out["rt"] = fdf.rt;
-    list_out["intensity"] = fdf.intensity;
-    list_out["component_feature"] = af.component_feature;
-    list_out["iso_size"] = af.iso_size;
-    list_out["iso_charge"] = af.iso_charge;
-    list_out["iso_step"] = af.iso_step;
-    list_out["iso_cat"] = af.iso_cat;
-    list_out["iso_isotope"] = af.iso_isotope;
-    list_out["iso_mzr"] = af.iso_mzr;
-    list_out["iso_relative_intensity"] = af.iso_relative_intensity;
-    list_out["iso_theoretical_min_relative_intensity"] = af.iso_theoretical_min_relative_intensity;
-    list_out["iso_theoretical_max_relative_intensity"] = af.iso_theoretical_max_relative_intensity;
-    list_out["iso_mass_distance"] = af.iso_mass_distance;
-    list_out["iso_theoretical_mass_distance"] = af.iso_theoretical_mass_distance;
-    list_out["iso_error"] = af.iso_mass_distance_error;
-    list_out["iso_number_carbons"] = af.iso_number_carbons;
-    list_out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+    Rcpp::Rcout << "Annotating adducts in " << number_features << " features...";
+    
+    for (int f = 0; f < number_features; f++) {
+      
+      const int& index = fdf.index[f];
+      
+      if (af.iso_step[index] > 0) continue; // already isotope
+      
+      if (af.adduct_cat[index] != "") continue; // already adduct
+      
+      const int& polarity = fdf.polarity[f];
+      const float& rt = fdf.rt[f];
+      float rtmin = fdf.rtmin[f];
+      float rtmax = fdf.rtmax[f];
+      const float& mz = fdf.mz[f];
+      const float& mzmin = fdf.mzmin[f];
+      const float& mzmax = fdf.mzmax[f];
+      const float max_mz_adducts = (mz + 100);
+      
+      std::vector<int> candidates = sf::find_adduct_candidates(
+        number_features, fdf.mz, fdf.rt, fdf.polarity, af.iso_step, polarity, mz, mzmin, mzmax, rt, rtmin, rtmax, rtWindowAlignment, max_mz_adducts);
+      
+      const int number_candidates = candidates.size();
+      
+      if (number_candidates > 0) {
+        candidates.insert(candidates.begin(), f);
+        sf::CandidatesChain candidates_chain(candidates, fdf.feature, fdf.index, fdf.mz, fdf.mzmin, fdf.mzmax, fdf.rt, fdf.intensity);
+        sf::annotate_adducts(af, candidates_chain, polarity);
+      }
+    }
+    
+    Rcpp::Rcout << "Done!" << std::endl;
+    
+    Rcpp::List list_annotation;
+    
+    for (int f = 0; f < number_features; f++) {
+      Rcpp::List temp = Rcpp::List::create(
+        Rcpp::Named("index") = af.index[f],
+        Rcpp::Named("feature") = af.feature[f],
+        Rcpp::Named("component_feature") = af.component_feature[f],
+        Rcpp::Named("iso_size") = af.iso_size[f],
+        Rcpp::Named("iso_charge") = af.iso_charge[f],
+        Rcpp::Named("iso_step") = af.iso_step[f],
+        Rcpp::Named("iso_cat") = af.iso_cat[f],
+        Rcpp::Named("iso_isotope") = af.iso_isotope[f],
+        Rcpp::Named("iso_mzr") = af.iso_mzr[f],
+        Rcpp::Named("iso_relative_intensity") = af.iso_relative_intensity[f],
+        Rcpp::Named("iso_theoretical_min_relative_intensity") = af.iso_theoretical_min_relative_intensity[f],
+        Rcpp::Named("iso_theoretical_max_relative_intensity") = af.iso_theoretical_max_relative_intensity[f],
+        Rcpp::Named("iso_mass_distance") = af.iso_mass_distance[f],
+        Rcpp::Named("iso_theoretical_mass_distance") = af.iso_theoretical_mass_distance[f],
+        Rcpp::Named("iso_error") = af.iso_mass_distance_error[f],
+        Rcpp::Named("iso_number_carbons") = af.iso_number_carbons[f],
+        Rcpp::Named("adduct_element") = af.adduct_element[f],
+        Rcpp::Named("adduct_cat") = af.adduct_cat[f],
+        Rcpp::Named("adduct_error") = af.adduct_error[f]
+      );
+      
+      list_annotation.push_back(temp);
+    }
+    
+    analysis["annotation"] = list_annotation;
+    
+    features[a] = analysis;
+    
+    
+    
+    // list_out["index"] = af.index;
+    // list_out["feature"] = af.feature;
+    // list_out["mz"] = fdf.mz;
+    // list_out["rt"] = fdf.rt;
+    // list_out["intensity"] = fdf.intensity;
+    // list_out["component_feature"] = af.component_feature;
+    // list_out["iso_size"] = af.iso_size;
+    // list_out["iso_charge"] = af.iso_charge;
+    // list_out["iso_step"] = af.iso_step;
+    // list_out["iso_cat"] = af.iso_cat;
+    // list_out["iso_isotope"] = af.iso_isotope;
+    // list_out["iso_mzr"] = af.iso_mzr;
+    // list_out["iso_relative_intensity"] = af.iso_relative_intensity;
+    // list_out["iso_theoretical_min_relative_intensity"] = af.iso_theoretical_min_relative_intensity;
+    // list_out["iso_theoretical_max_relative_intensity"] = af.iso_theoretical_max_relative_intensity;
+    // list_out["iso_mass_distance"] = af.iso_mass_distance;
+    // list_out["iso_theoretical_mass_distance"] = af.iso_theoretical_mass_distance;
+    // list_out["iso_error"] = af.iso_mass_distance_error;
+    // list_out["iso_number_carbons"] = af.iso_number_carbons;
+    // list_out["adduct_element"] = af.adduct_element;
+    // list_out["adduct_cat"] = af.adduct_cat;
+    // list_out["adduct_error"] = af.adduct_error;
+    // list_out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
     
   }
   
-  return list_out;
+  return features;
 };
 

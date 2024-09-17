@@ -1104,7 +1104,7 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
       
       const std::string& id_i = ana_targets[j].id[i];
       
-      int count;
+      int count = 0;
       
       for (int i = 0; i < n_traces; i++) if (res.id[i] == id_i) count++;
       

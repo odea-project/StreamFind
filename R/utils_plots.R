@@ -2351,27 +2351,53 @@
     }
   }
   
+  if ("group" %in% colnames(istd)) {
+    rt_error <- c(
+      (min(istd$error_rt, na.rm = TRUE) - max(istd$error_rt_sd, na.rm = TRUE)) * 0.9,
+      (max(istd$error_rt, na.rm = TRUE) + max(istd$error_rt_sd, na.rm = TRUE)) * 1.1)
+    
+    mz_error <- c(
+      (min(istd$error_mass, na.rm = TRUE) - max(istd$error_mass_sd, na.rm = TRUE)) * 0.9,
+      (max(istd$error_mass, na.rm = TRUE) + max(istd$error_mass_sd, na.rm = TRUE)) * 1.1)
+    
+    time_range <- c(0, (max(istd$rtr, na.rm = TRUE) + max(istd$rtr_sd, na.rm = TRUE)) * 1.1)
+    
+    mass_range <- c(0, (max(istd$mzr, na.rm = TRUE) + max(istd$mzr_sd, na.rm = TRUE)) * 1.1)
+    
+  } else {
+    rt_error <- c(min(istd$error_rt, na.rm = TRUE) * 0.9, max(istd$error_rt, na.rm = TRUE) * 1.1)
+    mz_error <- c(min(istd$error_mass, na.rm = TRUE) * 0.9, max(istd$error_mass, na.rm = TRUE) * 1.1)
+    time_range <- c(0, max(istd$rtr, na.rm = TRUE) * 1.1)
+    mass_range <- c(0, max(istd$mzr, na.rm = TRUE) * 1.1)
+  }
+  
+  if (rt_error[1] < -10) rt_error <- c(-10, rt_error[2])
+  if (rt_error[2] < 10) rt_error <- c(rt_error[1], 10)
+  if (mz_error[1] < -5) mz_error <- c(-5, mz_error[2])
+  if (mz_error[2] < 5) mz_error <- c(mz_error[1], 5)
+  if (time_range[2] < 25) time_range <- c(0, 10)
+  
   xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = NULL)
   
   yaxis0 <- list(
     linecolor = toRGB("black"), linewidth = 2,
     title = "Presence / %",
     titlefont = list(size = 12, color = "black"),
-    range = c(-10, 110)
+    range = c(0, 110)
   )
   
   yaxis1 <- list(
     linecolor = toRGB("black"), linewidth = 2,
     title = "RT / s",
     titlefont = list(size = 12, color = "black"),
-    range = c(-15, 15)
+    range = rt_error
   )
   
   yaxis2 <- list(
     linecolor = toRGB("black"), linewidth = 2,
     title = "Mass / ppm",
     titlefont = list(size = 12, color = "black"),
-    range = c(-10, 10)
+    range = mz_error
   )
   
   yaxis3 <- list(
@@ -2385,14 +2411,14 @@
     linecolor = toRGB("black"), linewidth = 2,
     title = "Width / s",
     titlefont = list(size = 12, color = "black"),
-    range = c(0, 60)
+    range = time_range
   )
   
   yaxis5 <- list(
     linecolor = toRGB("black"), linewidth = 2,
     title = "Width / Da",
     titlefont = list(size = 12, color = "black"),
-    range = c(0, 0.01)
+    range = mass_range
   )
   
   plotList <- list()

@@ -6,13 +6,19 @@
 \usage{
 MassSpecSettings_FilterFeatures_StreamFind(
   minSnRatio = NULL,
-  excludeIsotopes = NULL
+  excludeIsotopes = NULL,
+  excludeAdducts = NULL,
+  minIntensity = NULL
 )
 }
 \arguments{
 \item{minSnRatio}{Numeric (length 1) with the minimum signal-to-noise ratio.}
 
 \item{excludeIsotopes}{Logical (length 1) with \code{TRUE} for filtering annotated isotopes (only prevails the monoisotopic features).}
+
+\item{excludeAdducts}{Logical (length 1) with \code{TRUE} for filtering annotated adducts.}
+
+\item{minIntensity}{Numeric (length 1) with the minimum intensity threshold.}
 }
 \value{
 A \code{MassSpecSettings_FilterFeatures_StreamFind} object.

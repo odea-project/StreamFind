@@ -37,8 +37,8 @@ rcpp_fill_bin_spectra <- function(spectra, bin_mat, bins, overlap = 0, summaryFu
     .Call(`_StreamFind_rcpp_fill_bin_spectra`, spectra, bin_mat, bins, overlap, summaryFunction)
 }
 
-rcpp_ms_annotation_isotopes_V2 <- function(features, maxIsotopes = 5L, mode = "small molecules", maxCharge = 1L, rtWindowAlignment = 0.3, maxGaps = 1L, maxCarbons = 80, maxHetero = 15, maxHalogens = 10, verbose = FALSE) {
-    .Call(`_StreamFind_rcpp_ms_annotation_isotopes_V2`, features, maxIsotopes, mode, maxCharge, rtWindowAlignment, maxGaps, maxCarbons, maxHetero, maxHalogens, verbose)
+rcpp_ms_annotate_features <- function(features, rtWindowAlignment = 0.3, maxIsotopes = 5L, maxCharge = 1L, maxGaps = 1L) {
+    .Call(`_StreamFind_rcpp_ms_annotate_features`, features, rtWindowAlignment, maxIsotopes, maxCharge, maxGaps)
 }
 
 rcpp_ms_annotation_isotopes <- function(features, maxIsotopes = 5L, elements = as.character( c("C","H", "N", "O", "S", "Cl", "Br")), mode = "small molecules", maxCharge = 1L, rtWindowAlignment = 0.3, maxGaps = 1L, maxCarbons = 80, maxHetero = 15, maxHalogens = 10, verbose = FALSE) {

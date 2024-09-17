@@ -9,6 +9,8 @@
 #'
 #' @param minSnRatio Numeric (length 1) with the minimum signal-to-noise ratio.
 #' @param excludeIsotopes Logical (length 1) with `TRUE` for filtering annotated isotopes (only prevails the monoisotopic features).
+#' @param excludeAdducts Logical (length 1) with `TRUE` for filtering annotated adducts.
+#' @param minIntensity Numeric (length 1) with the minimum intensity threshold.
 #'
 #' @return A `MassSpecSettings_FilterFeatures_StreamFind` object.
 #'
@@ -18,13 +20,18 @@ MassSpecSettings_FilterFeatures_StreamFind <- S7::new_class("MassSpecSettings_Fi
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(minSnRatio = NULL, excludeIsotopes = NULL) {
+  constructor = function(minSnRatio = NULL, excludeIsotopes = NULL, excludeAdducts = NULL, minIntensity = NULL) {
     
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "FilterFeatures",
       algorithm = "StreamFind",
-      parameters = list( minSnRatio = minSnRatio, excludeIsotopes = excludeIsotopes),
+      parameters = list(
+        minSnRatio = minSnRatio,
+        excludeIsotopes = excludeIsotopes,
+        excludeAdducts = excludeAdducts,
+        minIntensity = minIntensity
+      ),
       number_permitted = Inf,
       version = as.character(packageVersion("StreamFind")),
       software = "StreamFind",
@@ -41,7 +48,9 @@ MassSpecSettings_FilterFeatures_StreamFind <- S7::new_class("MassSpecSettings_Fi
       checkmate::test_choice(self@method, "FilterFeatures"),
       checkmate::test_choice(self@algorithm, "StreamFind"),
       checkmate::test_numeric(self@parameters$minSnRatio, len = 1, null.ok = TRUE),
-      checkmate::test_logical(self@parameters$excludeIsotopes, len = 1, null.ok = TRUE)
+      checkmate::test_logical(self@parameters$excludeIsotopes, len = 1, null.ok = TRUE),
+      checkmate::test_logical(self@parameters$excludeAdducts, len = 1, null.ok = TRUE),
+      checkmate::test_numeric(self@parameters$minIntensity, len = 1, null.ok = TRUE)
     )
     if (!valid) return(FALSE)
     NULL
@@ -76,28 +85,8 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
   
   filters <- names(parameters)
   
-  possible_feature_filters <- c(
-    "minSnRatio",
-    # "blank",
-    # "maxGroupSd",
-    # "minGroupAbundance",
-    "excludeIsotopes",
-    # "excludeAdducts",
-    # "rtFilter",
-    # "massFilter",
-    "onlySuspects"
-  )
-  
-  if (!all(filters %in% possible_feature_filters)) {
-    warning("At least one of the filters is not recognized.")
-    return(FALSE)
-  }
-  
   n_features <- engine$nts$number_features
   
-  # Filters features annotated as isotopes when groups are present the
-  # isotopes are filtered if present in the all samples of a replicate.
-  #
   .filter_excludeIsotopes = function(value = NULL, engine) {
     
     if (engine$nts$has_features && is.logical(value) && length(value) == 1) {
@@ -105,12 +94,12 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
       features <- engine$nts$feature_list
       
       features <- lapply(features, function(x) {
-        if ("isotope" %in% colnames(x)) {
-          iso <- vapply(x$isotope, function(z) {
+        if ("annotation" %in% colnames(x)) {
+          iso <- vapply(x$annotation, function(z) {
             if (length(z) == 0) {
               NA_integer_
             } else {
-              z[["step"]]
+              z[["iso_step"]]
             }
           }, NA_integer_)
           iso[is.na(iso)] <- 0
@@ -127,8 +116,35 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
     }
   }
   
-  # Filters features and feature groups with minimum signal-to-noise ratio.
-  #
+  .filter_excludeAdducts = function(value = NULL, engine) {
+    
+    if (engine$nts$has_features && is.logical(value) && length(value) == 1) {
+      
+      features <- engine$nts$feature_list
+      
+      features <- lapply(features, function(x) {
+        if ("annotation" %in% colnames(x)) {
+          res <- vapply(x$annotation, function(z) {
+            if (length(z) == 0) {
+              NA_character_
+            } else {
+              z[["adduct_cat"]]
+            }
+          }, NA_character_)
+          res[is.na(res)] <- ""
+          sel <- res != ""
+          x$filtered[sel] <- TRUE
+        }
+        x
+      })
+      
+      engine$nts$feature_list <- features
+      
+    } else {
+      warning("There are no features in the MassSpecEngine!")
+    }
+  }
+  
   .filter_minSnRatio <- function(value = 3, engine) {
     
     if (engine$nts$has_features && is.numeric(value) && length(value) == 1) {
@@ -138,7 +154,13 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
       features <- lapply(features, function(x) {
         
         if ("quality" %in% colnames(x)) {
-          qlt <- vapply(x$quality, function(z) if (!is.null(z)) z[["sn"]] else NA_real_, NA_real_)
+          qlt <- vapply(x$quality, function(z) {
+            if (length(z) == 0) {
+              NA_real_
+            } else {
+              z[["sn"]]
+            }
+          }, NA_real_)
           qlt[is.na(qlt)] <- 0
           sel <- qlt <= value
           x$filtered[sel] <- TRUE
@@ -154,50 +176,44 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
     }
   }
   
-  # # Filters features and feature groups with minimum intensity.
-  # #
-  # .filter_minIntensity = function(value = 5000) {
-  # 
-  #   if (any(engine$has_features())) {
-  # 
-  #     if (is.numeric(value) & length(value) == 1) {
-  # 
-  #       message("\U2699 Filtering by minIntensity...", appendLF = FALSE)
-  # 
-  #       # if (engine$has_groups()) {
-  #       #   rpl <- unique(engine$get_replicate_names())
-  #       #   groups <- engine$get_groups(filtered = FALSE, intensities = TRUE, average = TRUE, metadata = FALSE)
-  #       #   groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1,function(x) max(x) <= value)
-  #       #   groups <- groups$group[groups_sel]
-  #       #   private$.tag_filtered(groups, "minIntensity")
-  #       #
-  #       # } else {
-  #         private$.analyses <- lapply(private$.analyses, function(x) {
-  #           sel <- (x$features$intensity <= value) & (!x$features$filtered)
-  #           x$features$filtered[sel] <- TRUE
-  #           x$features$filter[sel] <- "minIntensity"
-  #           x
-  #         })
-  #       # }
-  # 
-  #       private$.register(
-  #         "filter_features",
-  #         "features",
-  #         "minIntensity",
-  #         "StreamFind",
-  #         as.character(packageVersion("StreamFind")),
-  #         paste0(value, " counts")
-  #       )
-  # 
-  #       message(" Done!")
-  # 
-  #     } else {
-  #       stop("The value for minimum intensity filtering must be numeric and of length one!")
-  #     }
-  #   } else {
-  #     warning("There are no features in the MassSpecEngine!")
-  #   }
-  # },
+  .filter_minIntensity <- function(value = 1000, engine) {
+    
+    if (engine$nts$has_features && is.numeric(value) && length(value) == 1) {
+      
+      if (engine$nts@has_groups) {
+        rpl <- unique(engine$analyses$replicates)
+        groups <- engine$get_groups(filtered = FALSE, intensities = TRUE, average = TRUE, metadata = FALSE)
+        groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1,function(x) max(x) <= value)
+        groups <- groups$group[groups_sel]
+        
+        feature_list <- engine$nts$feature_list
+        
+        feature_list <- lapply(feature_list, function(x, groups) {
+          sel <- x$group %in% groups
+          x$filtered[sel] <- TRUE
+          x
+        }, groups = groups)
+        
+        engine$nts$feature_list <- feature_list
+        
+      } else {
+        
+        features <- engine$nts$feature_list
+        
+        feature_list <- lapply(feature_list, function(x) {
+          sel <- x$intensity <= value
+          x$filtered[sel] <- TRUE
+          x
+        })
+        
+        engine$nts$feature_list <- features
+      }
+    } else {
+      warning("There are no features in the MassSpecEngine!")
+    }
+  }
+  
+  
   # 
   # # Filters features with max replicate group intensity deviation.
   # #
@@ -613,7 +629,7 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
     if (is.null(parameters[[filters[i]]])) next
     
     switch(filters[i],
-           # minIntensity = (private$.filter_minIntensity(parameters[[filters[i]]])),
+           minIntensity = .filter_minIntensity(parameters[[filters[i]]], engine),
            
            minSnRatio = .filter_minSnRatio(parameters[[filters[i]]], engine),
            
@@ -623,7 +639,9 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
            
            # minGroupAbundance = (private$.filter_minGroupAbundance(parameters[[filters[i]]])),
            
-           excludeIsotopes = .filter_excludeIsotopes(parameters[[filters[i]]], engine)
+           excludeIsotopes = .filter_excludeIsotopes(parameters[[filters[i]]], engine),
+           
+           excludeAdducts = .filter_excludeAdducts(parameters[[filters[i]]], engine)
            
            # rtFilter = private$.filter_rtFilter(parameters[[filters[i]]]),
            

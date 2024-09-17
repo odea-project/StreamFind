@@ -171,7 +171,7 @@ S7::method(run, MassSpecSettings_AnnotateFeatures_StreamFind) <- function(x, eng
 }
 
 # ______________________________________________________________________________________________________________________
-# StreamFind -----
+# StreamFind2 -----
 # ______________________________________________________________________________________________________________________
 
 #' **MassSpecSettings_AnnotateFeatures_StreamFind2**
@@ -199,11 +199,9 @@ MassSpecSettings_AnnotateFeatures_StreamFind2 <- S7::new_class("MassSpecSettings
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(maxIsotopes = 5,
-                         elements = c("C", "H", "N", "O", "S", "Cl", "Br"),
-                         mode = "small molecules",
+  constructor = function(rtWindowAlignment = 0.3,
+                         maxIsotopes = 8,
                          maxCharge = 1,
-                         rtWindowAlignment = 0.3,
                          maxGaps = 1) {
     
     S7::new_object(ProcessingSettings(
@@ -212,8 +210,6 @@ MassSpecSettings_AnnotateFeatures_StreamFind2 <- S7::new_class("MassSpecSettings
       algorithm = "StreamFind2",
       parameters = list(
         maxIsotopes = maxIsotopes,
-        elements = elements,
-        mode = mode,
         maxCharge = maxCharge,
         rtWindowAlignment = rtWindowAlignment,
         maxGaps = maxGaps
@@ -236,12 +232,7 @@ MassSpecSettings_AnnotateFeatures_StreamFind2 <- S7::new_class("MassSpecSettings
       checkmate::test_count(self@parameters$maxIsotopes),
       checkmate::test_count(self@parameters$maxCharge),
       checkmate::test_count(self@parameters$maxGaps),
-      checkmate::test_number(self@parameters$rtWindowAlignment),
-      checkmate::test_choice(self@parameters$mode, "small molecules"),
-      checkmate::test_vector(self@parameters$elements, any.missing = FALSE, min.len = 1),
-      vapply(self@parameters$elements, function(i) {
-        checkmate::test_choice(i, c("C", "H", "N", "O", "S", "Cl", "Br", "Si", "Ge"))
-      }, FALSE)
+      checkmate::test_number(self@parameters$rtWindowAlignment)
     )
     if (!valid) return(FALSE)
     NULL
@@ -274,69 +265,36 @@ S7::method(run, MassSpecSettings_AnnotateFeatures_StreamFind2) <- function(x, en
     return(FALSE)
   }
   
-  features <- nts$feature_list
+  feature_list <- nts$feature_list
   
-  features <- lapply(features, function(x) {
-    x$index <- seq_len(nrow(x))
-    x
-  })
-  
-  cache <- .load_chache("annotate_features", names(features), features, x)
+  cache <- .load_chache("annotate_features", feature_list, x)
   
   if (!is.null(cache$data)) {
     message("\U2139 Features annotation loaded from cache!")
-    isotopes <- cache$data
+    nts$feature_list <- cache$data
+    engine$nts <- nts
+    return(TRUE)
     
   } else {
     
     parameters <- x$parameters
     
-    message("\U2699 Annotating features from ", nts@number_analyses, " analyses...", appendLF = FALSE)
-    
-    isotopes <- lapply(features, function(x) {
-      do.call("rcpp_ms_annotation_isotopes", c(list("features" = x), parameters))
-    })
-    
-    names(isotopes) <- names(features)
-    
-    message(" Done!")
+    feature_list <- rcpp_ms_annotate_features(
+      feature_list,
+      rtWindowAlignment = parameters$rtWindowAlignment,
+      maxIsotopes = as.integer(parameters$maxIsotopes),
+      maxCharge = as.integer(parameters$maxCharge),
+      maxGaps = as.integer(parameters$maxGaps)
+    )
     
     if (!is.null(cache$hash)) {
-      .save_cache("annotate_features", isotopes, cache$hash)
+      .save_cache("annotate_features", feature_list, cache$hash)
       message("\U1f5ab Annotated features cached!")
     }
+    
+    nts$feature_list <- feature_list
+    engine$nts <- nts
+    message(paste0("\U2713 ", "Features annotated!"))
+    TRUE
   }
-  
-  iso_col <- lapply(names(isotopes), function(x, isotopes, features) {
-    
-    temp_i <- isotopes[[x]]$output2
-    
-    temp_i_fts <- vapply(temp_i, function(x) x$feature, NA_character_)
-    
-    names(temp_i) <- temp_i_fts
-    
-    temp_f <- data.table::copy(features[[x]])
-    
-    temp_f_fts <- temp_f$feature
-    
-    if (!all(temp_i_fts %in% temp_f_fts)) stop("Annotated features do not exist in features!")
-    
-    temp_i <- temp_i[temp_f_fts]
-    
-    if (!identical(names(temp_i), temp_f_fts)) stop("Annotated features do not match features!")
-    
-    temp_i
-    
-  }, isotopes = isotopes, features = features)
-  
-  names(iso_col) <- names(features)
-  
-  nts <- .add_features_column(nts, "isotope", iso_col)
-  
-  engine$nts <- nts
-  
-  message(paste0("\U2713 ", "Features annotated!"))
-  
-  TRUE
-  
 }

@@ -2606,12 +2606,15 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
 
     #' @description Plots the quality control assessment of the internal standards.
     #'
-    plot_internal_standards_qc = function() {
+    plot_internal_standards_qc = function(analyses = NULL) {
+      analyses <- .check_analyses_argument(self$analyses, analyses)
       if (self$has_groups()) {
         istd <- self$get_internal_standards(average = TRUE)
+        istd <- istd[istd$replicate %in% self$analyses$replicates[analyses], ]
         .plot_internal_standards_qc_interactive(istd, self$get_replicate_names())
       } else {
         istd <- self$get_internal_standards(average = FALSE)
+        istd <- istd[istd$analysis %in% analyses, ]
         .plot_internal_standards_qc_interactive(istd, self$get_analysis_names())
       }
     },
