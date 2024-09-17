@@ -233,15 +233,16 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
     
     const int number_spectra_extracted = spectra.size();
     
-    if (number_spectra != number_spectra_extracted) return empty_df;
-    
     const int number_arrays = spectra[0].size();
     
     if (number_arrays == 0) return empty_df;
     
     int total_traces = 0;
     
-    for (int i = 0; i < number_spectra; i++) total_traces += spectra[i][0].size();
+    for (int i = 0; i < number_spectra_extracted; i++) {
+      const int n = spectra[i][0].size(); 
+      total_traces += n;
+    }
     
     std::vector<int> polarity_out(total_traces);
     std::vector<int> level_out(total_traces);
@@ -253,27 +254,21 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
     std::vector<float> intensity_out(total_traces);
 
     int trace = 0;
-    
-    #pragma omp parallel for
-    for (int i = 0; i < number_spectra; i++) {
+    for (int i = 0; i < number_spectra_extracted; i++) {
       const std::vector<float>& mz_ref = spectra[i][0];
       const std::vector<float>& intensity_ref = spectra[i][1];
       const int n = mz_ref.size();
       
       for (int k = 0; k < n; k++) {
-        polarity_out[trace] = polarity[i];
-        level_out[trace] = level[i];
-        pre_mz_out[trace] = pre_mz[i];
-        pre_ce_out[trace] = pre_ce[i];
-        rt_out[trace] = rt[i];
-        mobility_out[trace] = mobility[i];
+        polarity_out[trace] = polarity[indices[i]];
+        level_out[trace] = level[indices[i]];
+        pre_mz_out[trace] = pre_mz[indices[i]];
+        pre_ce_out[trace] = pre_ce[indices[i]];
+        rt_out[trace] = rt[indices[i]];
+        mobility_out[trace] = mobility[indices[i]];
         mz_out[trace] = mz_ref[k];
         intensity_out[trace] = intensity_ref[k];
-
-        #pragma omp critical
-        {
-          trace += 1;
-        }
+        trace += 1;
       }
     }
     
@@ -1100,13 +1095,13 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
     
     Rcpp::Rcout << " Done! " << std::endl;
     
-    for (int i = 0; i < n_j_targets; i++) {
+    for (int i = n_j_targets - 1; i >= 0; --i) {
       
       const std::string& id_i = ana_targets[j].id[i];
       
       int count = 0;
       
-      for (int i = 0; i < n_traces; i++) if (res.id[i] == id_i) count++;
+      for (int z = 0; z < n_traces; z++) if (res.id[z] == id_i) count++;
       
       if (count < minNumberTraces) {
         ana_targets[j].index.erase(ana_targets[j].index.begin() + i);
