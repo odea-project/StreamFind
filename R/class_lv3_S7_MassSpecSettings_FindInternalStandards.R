@@ -93,7 +93,7 @@ S7::method(run, MassSpecSettings_FindInternalStandards_StreamFind) <- function(x
       features <- Map(function(x, y) {
         x[["istd"]] <- y
         x
-      }, features, istd_col)
+      }, features, cache$data)
       nts$feature_list <- features
       engine$nts <- nts
       message("\U2139 Internal standards annotation loaded from cache!")

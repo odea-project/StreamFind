@@ -88,6 +88,10 @@ get_groups_ms1 <- S7::new_generic("get_groups_ms1", "x")
 get_groups_ms2 <- S7::new_generic("get_groups_ms2", "x")
 
 #' @export
+#' @noRd
+get_suspects <- S7::new_generic("get_suspects", "x")
+
+#' @export
 #'@noRd
 plot_spectra_tic <- S7::new_generic("plot_spectra_tic", "x")
 

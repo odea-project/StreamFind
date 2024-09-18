@@ -1,19 +1,40 @@
 
 # Resources -------
 ms_files <- StreamFindData::get_ms_file_paths()
+ms_files <- ms_files[grepl("blank|influent|o3sw", ms_files)]
+ms_files_df <- data.frame(
+  "file" = ms_files,
+  "replicate" = c(
+    rep("blank_neg", 3),
+    rep("blank_pos", 3),
+    rep("in_neg", 3),
+    rep("in_pos", 3),
+    rep("out_neg", 3),
+    rep("out_pos", 3)
+  ),
+  "blank" = c(
+    rep("blank_neg", 3),
+    rep("blank_pos", 3),
+    rep("blank_neg", 3),
+    rep("blank_pos", 3),
+    rep("blank_neg", 3),
+    rep("blank_pos", 3)
+  )
+)
+
 db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
 cols <- c("name", "formula", "mass", "rt", "fragments", "tag")
 db <- db[, cols, with = FALSE]
 dbis <- db[grepl("IS", db$tag), ]
 dbsus <- db[!grepl("IS", db$tag), ]
+
 path <- "C:/Users/apoli/Documents/example_ms_files"
 ms_files_complete <- list.files(path, pattern = ".mzML", full.names = TRUE)
 
 
 # NTS workflow -----
 # ms <- MassSpecEngine$new(analyses = ms_files_complete[7:24])
-
-ms <- MassSpecEngine$new(analyses = ms_files[10:27])
+ms <- MassSpecEngine$new(analyses = ms_files_df)
 ms$run(MassSpecSettings_FindFeatures_openms())
 ms$run(MassSpecSettings_AnnotateFeatures_StreamFind2(maxCharge = 2))
 ms$run(MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE, excludeAdducts = TRUE))
@@ -22,6 +43,71 @@ ms$run(MassSpecSettings_FilterFeatures_StreamFind(minIntensity = 5000))
 ms$run(MassSpecSettings_FillFeatures_StreamFind())
 ms$run(MassSpecSettings_CalculateFeaturesQuality_StreamFind(minNumberTraces = 5))
 ms$run(MassSpecSettings_FilterFeatures_StreamFind(minSnRatio = 5))
+
+View(ms$get_features(mass = dbis, filtered = TRUE))
+
+
+# Eval Isotopes and Adducts -----
+
+all_fts <- ms$get_features(filtered = TRUE)[vapply(ms$get_features(filtered = TRUE)[["annotation"]], function(x) length(x) > 0, FALSE), ]
+fts <- all_fts[vapply(all_fts[["annotation"]], function(x) x$adduct_cat != "" & x$adduct_time_error > 1, FALSE), ]
+time_error <- vapply(fts[["annotation"]], function(x) x$adduct_time_error, 0)
+colors <- StreamFind:::.get_colors(unique(fts$analysis))
+fts$color <- colors[fts$analysis]
+plot(time_error, col = fts$color, main = "Density Plot of Adduct Time Error", xlab = "Time Error", ylab = "Density")
+legend("topright", legend = unique(fts$analysis), col = colors, pch = 1)
+
+comp_fts <- unique(vapply(fts[["annotation"]], function(x) x$component_feature, ""))
+fts2 <- all_fts[vapply(all_fts[["annotation"]], function(x) x$component_feature %in% comp_fts & x$iso_step == 0, FALSE), ]
+comp_fts2 <- vapply(fts2[["annotation"]], function(x) x$component_feature, "")
+fts2 <- split(fts2, comp_fts2)
+fts2 <- fts2[vapply(fts2, function(x) nrow(x) > 2, FALSE)]
+
+ms$plot_features(features = fts2[[11]])
+
+all_fts <- ms$get_features(filtered = TRUE)[vapply(ms$get_features(filtered = TRUE)[["annotation"]], function(x) length(x) > 0, FALSE), ]
+fts <- all_fts[vapply(all_fts[["annotation"]], function(x) x$iso_step > 0 & x$iso_time_error > 3 , FALSE), ]
+time_error <- vapply(fts[["annotation"]], function(x) x$iso_time_error, 0)
+colors <- StreamFind:::.get_colors(unique(fts$analysis))
+fts$color <- colors[fts$analysis]
+plot(time_error, col = fts$color, main = "Density Plot of Isotope Time Error", xlab = "Time Error", ylab = "Density")
+legend("topright", legend = unique(fts$analysis), col = colors, pch = 1)
+
+comp_fts <- unique(vapply(fts[["annotation"]], function(x) x$component_feature, ""))
+fts2 <- all_fts[vapply(all_fts[["annotation"]], function(x) x$component_feature %in% comp_fts , FALSE), ]
+comp_fts2 <- vapply(fts2[["annotation"]], function(x) x$component_feature, "")
+fts2 <- split(fts2, comp_fts2)
+fts2 <- fts2[vapply(fts2, function(x) nrow(x) > 2, FALSE)]
+
+ms$plot_features(features = fts2[[2]])
+
+
+
+
+ms$get_suspects(database = dbis, ppm = 15, sec = 30)
+
+
+clear_cache("annotate_features")
+
+
+
+
+ms$plot_features(features = c("f_11694816100682506556", "f_2475152984827434235"))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

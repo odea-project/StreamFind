@@ -1243,6 +1243,7 @@
       "</br> rt: ", round(pk$rt, digits = 0),
       "</br> drt: ", round(pk$rtmax - pk$rtmin, digits = 0),
       "</br> intensity: ", round(pk$intensity, digits = 0),
+      "</br> filtered: ", pk$filtered,
       
       if ("dqsPeak" %in% colnames(pk)) {
         paste("</br> DQS: ", pk$dqsPeak)
@@ -1260,8 +1261,8 @@
         q_t <- pk$quality[[1]]
         if (length(q_t) > 0) {
           paste(
-            "</br> noise: ", q_t$noise,
-            "</br> sn: ", q_t$sn,
+            "</br> noise: ", round(q_t$noise, digits = 0),
+            "</br> sn: ", round(q_t$sn, digits = 1),
             "</br> gaufit: ", round(q_t$gauss_f, digits = 4),
             "</br> A: ", q_t$gauss_a,
             "</br> mu: ", q_t$gauss_u,
@@ -1274,15 +1275,19 @@
         ""
       },
       
-      if ("isotope" %in% colnames(pk)) {
-        iso <- pk$isotope[[1]]
-        if (length(iso) > 0) {
-          browser()
+      if ("annotation" %in% colnames(pk)) {
+        anno <- pk$annotation[[1]]
+        if (length(anno) > 0) {
           paste(
-            "</br> iso_cluster: ", vapply(pk$isotope, function(x) x$cluster, NA_real_),
-            "</br> iso_size: ", vapply(pk$isotope, function(x) x$cluster_size, NA_real_),
-            "</br> isotope: ", vapply(pk$isotope, function(x) x$tag, NA_character_),
-            "</br> carbons: ", vapply(pk$isotope, function(x) x$carbons, NA_real_)
+            "</br> component: ", vapply(pk$annotation, function(x) x$component_feature, NA_character_),
+            "</br> isotope: ", vapply(pk$annotation, function(x) x$iso_cat, NA_character_),
+            "</br> iso_elements: ", vapply(pk$annotation, function(x) x$iso_isotope, NA_character_),
+            "</br> iso_number_carbons: ", vapply(pk$annotation, function(x) round(x$iso_number_carbons, digits = 0), NA_real_),
+            "</br> iso_mass_error: ", vapply(pk$annotation, function(x) round(x$iso_mass_error, digits = 5), NA_real_),
+            "</br> iso_time_error: ", vapply(pk$annotation, function(x) round(x$iso_time_error, digits = 1), NA_real_),
+            "</br> adduct: ", vapply(pk$annotation, function(x) x$adduct_cat, NA_character_),
+            "</br> adduct_mass_error: ", vapply(pk$annotation, function(x) round(x$adduct_mass_error, digits = 5), NA_real_),
+            "</br> adduct_time_error: ", vapply(pk$annotation, function(x) round(x$adduct_time_error, digits = 1), NA_real_)
           )
         } else {
           ""

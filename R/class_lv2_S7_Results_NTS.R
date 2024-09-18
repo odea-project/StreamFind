@@ -128,6 +128,7 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
                 fg <- fg[, fg_left]
                 self@features <- fg
               }
+              self@features@features@features <- lapply(value, function(x) x[!x$filtered, ])
               self@filtered <- lapply(value, function(x) x[x$filtered, ])
               self
             } else {

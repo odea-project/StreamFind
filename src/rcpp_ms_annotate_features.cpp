@@ -305,10 +305,12 @@ namespace sf {
     std::vector<float> iso_mass_distance;
     std::vector<float> iso_theoretical_mass_distance;
     std::vector<float> iso_mass_distance_error;
+    std::vector<float> iso_time_error;
     std::vector<float> iso_number_carbons;
     std::vector<std::string> adduct_element;
     std::vector<std::string> adduct_cat;
-    std::vector<float> adduct_error;
+    std::vector<float> adduct_time_error;
+    std::vector<float> adduct_mass_error;
     
     AnnotatedFeatures(const int& n) {
       index.resize(n);
@@ -326,10 +328,12 @@ namespace sf {
       iso_mass_distance.resize(n);
       iso_theoretical_mass_distance.resize(n);
       iso_mass_distance_error.resize(n);
+      iso_time_error.resize(n);
       iso_number_carbons.resize(n);
       adduct_element.resize(n);
       adduct_cat.resize(n);
-      adduct_error.resize(n);
+      adduct_time_error.resize(n);
+      adduct_mass_error.resize(n);
     };
   };
   
@@ -437,11 +441,13 @@ namespace sf {
     std::vector<int> charge;
     std::vector<int> step;
     std::vector<float> mz;
+    std::vector<float> rt;
     std::vector<float> mzr;
     std::vector<std::string> isotope;
     std::vector<float> mass_distance;
     std::vector<float> theoretical_mass_distance;
     std::vector<float> mass_distance_error;
+    std::vector<float> time_error;
     std::vector<float> abundance;
     std::vector<float> theoretical_abundance_min;
     std::vector<float> theoretical_abundance_max;
@@ -452,18 +458,21 @@ namespace sf {
                   const int& mono_index,
                   const std::string& mono_feature,
                   const float& mono_mz,
-                  const float& mono_mzr) {
+                  const float& mono_mzr,
+                  const float& mono_rt) {
       
       index.resize(1);
       feature.resize(1);
       charge.resize(1);
       step.resize(1);
       mz.resize(1);
+      rt.resize(1);
       mzr.resize(1);
       abundance.resize(1);
       mass_distance.resize(1);
       theoretical_mass_distance.resize(1);
       mass_distance_error.resize(1);
+      time_error.resize(1);
       isotope.resize(1);
       theoretical_abundance_min.resize(1);
       theoretical_abundance_max.resize(1);
@@ -472,11 +481,13 @@ namespace sf {
       feature[0] = mono_feature;
       charge[0] = z;
       mz[0] = mono_mz;
+      rt[0] = mono_rt;
       mzr[0] = mono_mzr;
       abundance[0] = 1;
       mass_distance[0] = 0;
       theoretical_mass_distance[0] = 0;
       mass_distance_error[0] = 0;
+      time_error[0] = 0;
       isotope[0] = "";
       number_carbons = 0;
       length = 1;
@@ -509,14 +520,15 @@ namespace sf {
     const std::string& mono_feature = candidates_chain.feature[0];
     const int& mono_index = candidates_chain.index[0];
     const float& mono_mz = candidates_chain.mz[0];
+    const float& mono_rt = candidates_chain.rt[0];
     const float& mono_intensity = candidates_chain.intensity[0];
     const float& mono_mzr = candidates_chain.mzr[0];
     
-    std::vector<sf::IsotopicChain> isotopic_chains = { IsotopicChain(1, mono_index, mono_feature, mono_mz, mono_mzr) };
+    std::vector<sf::IsotopicChain> isotopic_chains = { IsotopicChain(1, mono_index, mono_feature, mono_mz, mono_mzr, mono_rt) };
     
     if (maxCharge > 1) {
       for (int z = 2; z <= maxCharge; z++) {
-        isotopic_chains.push_back(sf::IsotopicChain(z, mono_index, mono_feature, mono_mz, mono_mzr));
+        isotopic_chains.push_back(sf::IsotopicChain(z, mono_index, mono_feature, mono_mz, mono_mzr, mono_rt));
       }
     }
     
@@ -555,10 +567,12 @@ namespace sf {
           const std::string& feature = candidates_chain.feature[candidate];
           const int& index = candidates_chain.index[candidate];
           const float& mz = candidates_chain.mz[candidate];
+          const float& rt = candidates_chain.rt[candidate];
           const float& intensity = candidates_chain.intensity[candidate];
           const bool& was_annotated = af.iso_step[index] > 0;
 
           float candidate_mass_distance = mz - mono_mz;
+          float candidate_time_error = std::abs(rt - mono_rt);
           float candidate_mass_distance_min = candidate_mass_distance - mzr;
           float candidate_mass_distance_max = candidate_mass_distance + mzr;
 
@@ -584,6 +598,7 @@ namespace sf {
               af.iso_mass_distance[mono_index] = candidate_mass_distance;
               af.iso_theoretical_mass_distance[mono_index] = 0;
               af.iso_mass_distance_error[mono_index] = std::abs(candidate_mass_distance - 1.007276);
+              af.iso_time_error[mono_index] = candidate_time_error;
               af.iso_relative_intensity[mono_index] = intensity / mono_intensity;
               af.iso_theoretical_min_relative_intensity[mono_index] = 0;
               af.iso_theoretical_max_relative_intensity[mono_index] = 0;
@@ -700,10 +715,12 @@ namespace sf {
                   iso_chain.step[i] = i;
                   iso_chain.mz[i] = mz;
                   iso_chain.mzr[i] = mzr;
+                  iso_chain.rt[i] = rt;
                   iso_chain.isotope[i] = concat_combination;
                   iso_chain.mass_distance[i] = candidate_mass_distance;
                   iso_chain.theoretical_mass_distance[i] = mass_distances[c];
                   iso_chain.mass_distance_error[i] = candidate_mass_distance_error;
+                  iso_chain.time_error[i] = candidate_time_error;
                   iso_chain.abundance[i] = rel_int;
                   iso_chain.theoretical_abundance_min[i] = min_rel_int;
                   iso_chain.theoretical_abundance_max[i] = max_rel_int;
@@ -717,10 +734,12 @@ namespace sf {
                   iso_chain.charge.push_back(charge);
                   iso_chain.mz.push_back(mz);
                   iso_chain.mzr.push_back(mzr);
+                  iso_chain.rt.push_back(rt);
                   iso_chain.isotope.push_back(concat_combination);
                   iso_chain.mass_distance.push_back(candidate_mass_distance);
                   iso_chain.theoretical_mass_distance.push_back(mass_distances[c]);
                   iso_chain.mass_distance_error.push_back(candidate_mass_distance_error);
+                  iso_chain.time_error.push_back(candidate_time_error);
                   iso_chain.abundance.push_back(rel_int);
                   iso_chain.theoretical_abundance_min.push_back(min_rel_int);
                   iso_chain.theoretical_abundance_max.push_back(max_rel_int);
@@ -758,6 +777,7 @@ namespace sf {
       af.iso_mass_distance[mono_index] = 0;
       af.iso_theoretical_mass_distance[mono_index] = 0;
       af.iso_mass_distance_error[mono_index] = 0;
+      af.iso_time_error[mono_index] = 0;
       af.iso_relative_intensity[mono_index] = 1;
       af.iso_theoretical_min_relative_intensity[mono_index] = 0;
       af.iso_theoretical_max_relative_intensity[mono_index] = 0;
@@ -780,6 +800,7 @@ namespace sf {
           af.iso_mass_distance[iso_index] = std::round(iso_chain.mass_distance[i] * 100000.0) / 100000.0;
           af.iso_theoretical_mass_distance[iso_index] = std::round(iso_chain.theoretical_mass_distance[i] * 100000.0) / 100000.0;
           af.iso_mass_distance_error[iso_index] = std::round(iso_chain.mass_distance_error[i] * 100000.0) / 100000.0;
+          af.iso_time_error[iso_index] = std::round(iso_chain.time_error[i] * 10.0) / 10.0;
           af.iso_relative_intensity[iso_index] = std::round(iso_chain.abundance[i] * 100000.0) / 100000.0;
           af.iso_theoretical_min_relative_intensity[iso_index] = std::round(iso_chain.theoretical_abundance_min[i] * 100000.0) / 100000.0;
           af.iso_theoretical_max_relative_intensity[iso_index] = std::round(iso_chain.theoretical_abundance_max[i] * 100000.0) / 100000.0;
@@ -896,6 +917,7 @@ namespace sf {
     
     const std::string& mion_feature = candidates_chain.feature[0];
     const float& mion_mz = candidates_chain.mz[0];
+    const float& mion_rt = candidates_chain.rt[0];
     const float& mion_mzr = candidates_chain.mzr[0];
     
     for (size_t a = 0; a < adducts.size(); ++a) {
@@ -914,18 +936,19 @@ namespace sf {
         
         const std::string& feature = candidates_chain.feature[c];
         const float& mz = candidates_chain.mz[c];
-        
+        const float& rt = candidates_chain.rt[c];
         const float exp_mass_distance = mz - (mion_mz + neutralizer);
+        const float time_error = std::abs(rt - mion_rt);
+        const float mass_error = abs(exp_mass_distance - adduct_mass_distance);
         
-        const float error = abs(exp_mass_distance - adduct_mass_distance);
-        
-        if (error < mion_mzr) {
+        if (mass_error < mion_mzr) {
           af.index[index] = index;
           af.feature[index] = feature;
           af.component_feature[index] = mion_feature;
           af.adduct_cat[index] = adduct_cat;
           af.adduct_element[index] = adduct_element;
-          af.adduct_error[index] = std::round(error * 100000.0) / 100000.0;
+          af.adduct_time_error[index] = std::round(time_error * 10.0) / 10.0;
+          af.adduct_mass_error[index] = std::round(mass_error * 100000.0) / 100000.0;
           break;
         }
       }
@@ -1009,6 +1032,7 @@ Rcpp::List rcpp_ms_annotate_features(Rcpp::List features,
         af.iso_mass_distance[index] = 0;
         af.iso_theoretical_mass_distance[index] = 0;
         af.iso_mass_distance_error[index] = 0;
+        af.iso_time_error[index] = 0;
         af.iso_relative_intensity[index] = 1;
         af.iso_theoretical_min_relative_intensity[index] = 0;
         af.iso_theoretical_max_relative_intensity[index] = 0;
@@ -1070,11 +1094,13 @@ Rcpp::List rcpp_ms_annotate_features(Rcpp::List features,
         Rcpp::Named("iso_theoretical_max_relative_intensity") = af.iso_theoretical_max_relative_intensity[f],
         Rcpp::Named("iso_mass_distance") = af.iso_mass_distance[f],
         Rcpp::Named("iso_theoretical_mass_distance") = af.iso_theoretical_mass_distance[f],
-        Rcpp::Named("iso_error") = af.iso_mass_distance_error[f],
+        Rcpp::Named("iso_mass_error") = af.iso_mass_distance_error[f],
+        Rcpp::Named("iso_time_error") = af.iso_time_error[f],
         Rcpp::Named("iso_number_carbons") = af.iso_number_carbons[f],
         Rcpp::Named("adduct_element") = af.adduct_element[f],
         Rcpp::Named("adduct_cat") = af.adduct_cat[f],
-        Rcpp::Named("adduct_error") = af.adduct_error[f]
+        Rcpp::Named("adduct_time_error") = af.adduct_time_error[f],
+        Rcpp::Named("adduct_mass_error") = af.adduct_mass_error[f]
       );
       
       list_annotation.push_back(temp);
