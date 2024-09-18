@@ -89,6 +89,14 @@ get_groups_ms2 <- S7::new_generic("get_groups_ms2", "x")
 
 #' @export
 #' @noRd
+get_components <- S7::new_generic("get_components", "x")
+
+#' @export
+#' @noRd
+get_internal_standards <- S7::new_generic("get_internal_standards", "x")
+
+#' @export
+#' @noRd
 get_suspects <- S7::new_generic("get_suspects", "x")
 
 #' @export
@@ -162,6 +170,10 @@ plot_groups_overview <- S7::new_generic("plot_groups_overview", "x")
 #' @export
 #' @noRd
 plot_groups_profile <- S7::new_generic("plot_groups_profile", "x")
+
+#' @export
+#' @noRd
+plot_internal_standards <- S7::new_generic("plot_internal_standards", "x")
 
 # Chromatograms generics -----
 

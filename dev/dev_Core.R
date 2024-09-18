@@ -43,8 +43,24 @@ ms$run(MassSpecSettings_FilterFeatures_StreamFind(minIntensity = 5000))
 ms$run(MassSpecSettings_FillFeatures_StreamFind())
 ms$run(MassSpecSettings_CalculateFeaturesQuality_StreamFind(minNumberTraces = 5))
 ms$run(MassSpecSettings_FilterFeatures_StreamFind(minSnRatio = 5))
+ms$run(MassSpecSettings_FindInternalStandards_StreamFind(database = dbis, ppm = 8, sec = 10))
 
-View(ms$get_features(mass = dbis, filtered = TRUE))
+fts <- ms$get_features()
+fts <- fts[fts$group %in% fts$group[fts$filled], ]
+
+# TODO add annotation when filling?
+
+get_components(ms$analyses, mass = dbis[3, ], ppm = 15, sec = 30, filtered = TRUE)
+
+get_suspects(ms$analyses, database = dbis, ppm = 15, sec = 30, filtered = TRUE, onGroups = TRUE)
+ms$get_features(mass = dbis, filtered = TRUE)
+
+get_internal_standards(ms$analyses)
+
+plot_internal_standards(ms$analyses, presence = F, recovery = F)
+
+
+# View(ms$get_features(mass = dbis, filtered = TRUE))
 
 
 # Eval Isotopes and Adducts -----
@@ -55,7 +71,7 @@ time_error <- vapply(fts[["annotation"]], function(x) x$adduct_time_error, 0)
 colors <- StreamFind:::.get_colors(unique(fts$analysis))
 fts$color <- colors[fts$analysis]
 plot(time_error, col = fts$color, main = "Density Plot of Adduct Time Error", xlab = "Time Error", ylab = "Density")
-legend("topright", legend = unique(fts$analysis), col = colors, pch = 1)
+# legend("topright", legend = unique(fts$analysis), col = colors, pch = 1)
 
 comp_fts <- unique(vapply(fts[["annotation"]], function(x) x$component_feature, ""))
 fts2 <- all_fts[vapply(all_fts[["annotation"]], function(x) x$component_feature %in% comp_fts & x$iso_step == 0, FALSE), ]
@@ -66,12 +82,12 @@ fts2 <- fts2[vapply(fts2, function(x) nrow(x) > 2, FALSE)]
 ms$plot_features(features = fts2[[11]])
 
 all_fts <- ms$get_features(filtered = TRUE)[vapply(ms$get_features(filtered = TRUE)[["annotation"]], function(x) length(x) > 0, FALSE), ]
-fts <- all_fts[vapply(all_fts[["annotation"]], function(x) x$iso_step > 0 & x$iso_time_error > 3 , FALSE), ]
+fts <- all_fts[vapply(all_fts[["annotation"]], function(x) x$iso_step > 0 & x$iso_time_error > 0 , FALSE), ]
 time_error <- vapply(fts[["annotation"]], function(x) x$iso_time_error, 0)
 colors <- StreamFind:::.get_colors(unique(fts$analysis))
 fts$color <- colors[fts$analysis]
 plot(time_error, col = fts$color, main = "Density Plot of Isotope Time Error", xlab = "Time Error", ylab = "Density")
-legend("topright", legend = unique(fts$analysis), col = colors, pch = 1)
+# legend("topright", legend = unique(fts$analysis), col = colors, pch = 1)
 
 comp_fts <- unique(vapply(fts[["annotation"]], function(x) x$component_feature, ""))
 fts2 <- all_fts[vapply(all_fts[["annotation"]], function(x) x$component_feature %in% comp_fts , FALSE), ]
@@ -87,7 +103,7 @@ ms$plot_features(features = fts2[[2]])
 ms$get_suspects(database = dbis, ppm = 15, sec = 30)
 
 
-clear_cache("annotate_features")
+clear_cache("find_internal_standards")
 
 
 
