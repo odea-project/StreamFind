@@ -50,7 +50,10 @@ fts <- fts[fts$group %in% fts$group[fts$filled], ]
 
 # TODO add annotation when filling?
 
-get_components(ms$analyses, mass = dbis[3, ], ppm = 15, sec = 30, filtered = TRUE)
+map_components(ms$analyses, mass = dbis[3, ], ppm = 15, sec = 30, filtered = TRUE, colorBy = "groups+analyses")
+
+colnames(res)
+
 
 get_suspects(ms$analyses, database = dbis, ppm = 15, sec = 30, filtered = TRUE, onGroups = TRUE)
 ms$get_features(mass = dbis, filtered = TRUE)

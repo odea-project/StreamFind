@@ -599,7 +599,7 @@ namespace sf {
               af.iso_theoretical_mass_distance[mono_index] = 0;
               af.iso_mass_distance_error[mono_index] = std::abs(candidate_mass_distance - 1.007276);
               af.iso_time_error[mono_index] = candidate_time_error;
-              af.iso_relative_intensity[mono_index] = intensity / mono_intensity;
+              af.iso_relative_intensity[mono_index] = mono_intensity / intensity;
               af.iso_theoretical_min_relative_intensity[mono_index] = 0;
               af.iso_theoretical_max_relative_intensity[mono_index] = 0;
               af.iso_size[mono_index] = 0;

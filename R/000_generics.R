@@ -45,6 +45,10 @@ get_spectra <- S7::new_generic("get_spectra", "x")
 
 #' @export
 #' @noRd
+load_spectra <- S7::new_generic("load_spectra", "x")
+
+#' @export
+#' @noRd
 get_spectra_eic <- S7::new_generic("get_spectra_eic", "x")
 
 #' @export
@@ -173,6 +177,14 @@ plot_groups_profile <- S7::new_generic("plot_groups_profile", "x")
 
 #' @export
 #' @noRd
+map_components <- S7::new_generic("map_components", "x")
+
+#' @export
+#' @noRd
+plot_components <- S7::new_generic("plot_components", "x")
+
+#' @export
+#' @noRd
 plot_internal_standards <- S7::new_generic("plot_internal_standards", "x")
 
 # Chromatograms generics -----
@@ -183,9 +195,19 @@ get_chromatograms <- S7::new_generic("get_chromatograms", "x")
 
 #' @export
 #' @noRd
+get_chromatograms_peaks <- S7::new_generic("get_chromatograms_peaks", "x")
+
+#' @export
+#' @noRd
+load_chromatograms <- S7::new_generic("load_chromatograms", "x")
+
+#' @export
+#' @noRd
 plot_chromatograms <- S7::new_generic("plot_chromatograms", "x")
 
-
+#' @export
+#' @noRd
+plot_chromatograms_peaks <- S7::new_generic("plot_chromatograms_peaks", "x")
 
 
 

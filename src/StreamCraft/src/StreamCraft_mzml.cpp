@@ -440,7 +440,7 @@ std::vector<std::vector<float>> sc::mzml::MZML_CHROMATOGRAM::extract_binary_data
 
   std::vector<std::vector<float>> chromatogram;
 
-  const int number_traces = chrom.attribute("defaultArrayLength").as_int();
+  // const int number_traces = chrom.attribute("defaultArrayLength").as_int();
 
   const pugi::xml_node node_binary_list = chrom.child("binaryDataArrayList");
 
@@ -554,11 +554,11 @@ std::vector<std::vector<float>> sc::mzml::MZML_CHROMATOGRAM::extract_binary_data
 
     chromatogram[counter] = sc::decode_little_endian_to_float(decoded_string, mtd.precision_int / 8);
 
-    const int bin_array_size = chromatogram[counter].size();
+    // const int bin_array_size = chromatogram[counter].size();
 
-    if (bin_array_size != number_traces) {
-      throw std::runtime_error("Number of traces in binary array does not match the value of the chromatogram header!");
-    }
+    // if (bin_array_size != number_traces) {
+    //   throw std::runtime_error("Number of traces in binary array does not match the value of the chromatogram header!");
+    // }
 
     if (mtd.data_name_short == "time") {
       pugi::xml_node node_unit = bin.find_child_by_attribute("cvParam", "unitCvRef", "UO");

@@ -1,3 +1,66 @@
+#' @title .moving_average
+#' 
+#' @description Smooths a vector using a moving average window. Optionally, a time window can be given to also limit the
+#' window time.
+#' 
+#' @noRd
+#' 
+.moving_average <- function(vec, windowSize,  timeVec = NULL, timeWindow = NULL) {
+  
+  output <- numeric(length(vec))
+  
+  use_time <- FALSE
+  
+  if (is.numeric(timeVec) && length(timeVec) == length(vec) && is.numeric(timeWindow)) {
+    use_time <- TRUE
+  }
+  
+  all_idx <- seq_len(length(vec))
+  
+  for (z in seq_len(length(vec))) {
+    
+    if (use_time) {
+      idx <- which(abs(timeVec - timeVec[z]) <= timeWindow)
+      
+    } else {
+      idx <- all_idx
+    }
+    
+    left_window <- idx >= max(min(idx), z - windowSize) & idx < z
+    
+    left_window <- idx[left_window]
+    
+    left_size <- length(left_window)
+    
+    if (left_size > 0) left_window = vec[left_window]
+    
+    right_window <- idx <= min(max(idx), z + windowSize) & idx > z
+    
+    right_window <- idx[right_window]
+    
+    right_size <- length(right_window)
+    
+    if (right_size > 0) right_window <- vec[right_window]
+    
+    if (left_size == 0) {
+      output[z] <- vec[z]
+      next
+    }
+    
+    if (right_size == 0) {
+      output[z] <- vec[z]
+      next
+    }
+    
+    if (left_size < right_size) left_window <- c(left_window, rep(0, right_size - left_size))
+    
+    if (right_size < left_size) right_window <- c(right_window, rep(0, left_size - right_size))
+    
+    output[z] <- mean(c(left_window, vec[z], right_window))
+  }
+  
+  output
+}
 
 #' @title .find_peaks
 #' 
@@ -6,14 +69,7 @@
 #' 
 #' @noRd
 #' 
-.find_peaks <- function(self, data, xVar,
-                        merge,
-                        closeByThreshold,
-                        minPeakHeight,
-                        minPeakDistance,
-                        maxPeakWidth,
-                        minPeakWidth,
-                        minSN) {
+.find_peaks <- function(data, xVar, merge, closeByThreshold, minPeakHeight, minPeakDistance, maxPeakWidth, minPeakWidth, minSN) {
   
   plotLevel <- 0
   
@@ -22,8 +78,6 @@
   ana <- unique(data$analysis)
   
   chrom <- unique(data$id)
-  
-  org_int <- self$get_chromatograms(analyses = ana, chromatograms = chrom, raw_chromatograms = TRUE)[["intensity"]]
   
   xVec <- data[[xVar]]
   
@@ -57,7 +111,7 @@
     plot(xVec, vec, type = "l",main = "Found peaks")
     points(pks$xVal, pks$intensity, pch = 16, col = "red", cex = 1.5)
     text(x = pks$xVal, y = pks$intensity, adj = c(-0.4, 0.25),
-      labels = pks$index, cex = 0.6, col = "darkred", font = NULL, srt = 90
+         labels = pks$index, cex = 0.6, col = "darkred", font = NULL, srt = 90
     )
   }
   
@@ -166,7 +220,7 @@
       points(pks$xVal, pks$intensity, pch = 16, col = "red", cex = 1.5)
       points(pks$xVal[pks$merged], pks$intensity[pks$merged], pch = 16, col = "darkgreen", cex = 1.5)
       text(x = pks$xVal, y = pks$intensity, adj = c(-0.4, 0.25),
-        labels = pks$index, cex = 0.6, col = "darkred", font = NULL, srt = 90
+           labels = pks$index, cex = 0.6, col = "darkred", font = NULL, srt = 90
       )
     }
     
@@ -207,7 +261,7 @@
     return(.trapezoidal_integration(peak_xVec, peak_intensity))
   }
   
-  integrated_areas <- vapply(pks$index, function(i) {.integrate_peak_area(xVec, org_int, pks$min[i], pks$max[i])}, 0)
+  integrated_areas <- vapply(pks$index, function(i) {.integrate_peak_area(xVec, vec, pks$min[i], pks$max[i])}, 0)
   
   pks$area <- integrated_areas
   
@@ -269,83 +323,4 @@
   }
   
   pks
-}
-
-
-
-#' @noRd
-.process.MassSpecSettings_IntegrateChromatograms_StreamFind <- function(settings, self, private) {
-  
-  if (!self$has_chromatograms()) {
-    warning("Chromatograms not found! Not done.")
-    return(FALSE)
-  }
-  
-  if (!requireNamespace("pracma", quietly = TRUE)) {
-    warning("Package pracma not found but required! Not done.")
-    return(FALSE)
-  }
-  
-  if (!validate(settings)) return(FALSE)
-  
-  parameters <- settings$parameters
-  
-  chroms <- self$chromatograms
-  
-  chrom_peaks <- lapply(chroms, function(s) {
-    
-    if (nrow(s) == 0) return(data.table())
-    
-    s <- split(s, s$id)
-    
-    s <- lapply(s, function(x) {
-      
-      pks <- .find_peaks(
-        self, x, "rt",
-        parameters$merge,
-        parameters$closeByThreshold,
-        parameters$minPeakHeight,
-        parameters$minPeakDistance,
-        parameters$maxPeakWidth,
-        parameters$minPeakWidth,
-        parameters$minSN
-      )
-      
-      if (nrow(pks) == 0) return(data.table())
-
-      setnames(pks, c("xVal", "min", "max"), c("rt", "rtmin", "rtmax"))
-      
-      pks$analysis <- unique(x$analysis)
-      
-      pks$id <- unique(x$id)
-      
-      pks$polarity <- unique(x$polarity)
-      
-      pks$pre_ce <- unique(x$pre_ce)
-      
-      pks$pre_mz <- unique(x$pre_mz)
-      
-      pks$pro_mz <- unique(x$pro_mz)
-      
-      setnames(pks, "index", "peak")
-      
-      pks$index <- unique(x$index)
-      
-      setcolorder(pks, c("analysis", "id", "index", "peak", "polarity", "pre_ce", "pre_mz", "pro_mz"))
-      
-      pks
-    })
-    
-    all_pks <- rbindlist(s, fill = TRUE)
-    
-    all_pks
-  })
-  
-  names(chrom_peaks) <- names(chroms)
-  
-  self$chromatograms_peaks <- chrom_peaks
-  
-  message(paste0("\U2713 ", "Chromatograms integrated!"))
-  
-  TRUE
 }

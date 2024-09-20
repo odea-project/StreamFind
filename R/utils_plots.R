@@ -2134,6 +2134,276 @@
   }
 }
 
+#' .map_isotopes_interactive
+#'
+#' @noRd
+#'
+.map_components_interactive <- function(components, colorBy = "targets", legendNames = NULL, xlim = 60, ylim = 5,
+                                        xLab = NULL, yLab = NULL, title = NULL, showLegend = TRUE) {
+  
+  if (grepl("groups", colorBy) && "group" %in% colnames(components)) {
+    components$id <- components$group
+    colorBy <- sub("groups", "targets", colorBy)
+  } else {
+    components$id <- components$component
+  }
+  
+  components <- .make_colorBy_varkey(components, colorBy, legendNames)
+  
+  if (length(xlim) == 1) {
+    rtr <- c(min(components$rtmin) - xlim, max(components$rtmax) + xlim)
+  } else if (length(xlim) == 2) {
+    rtr <- xlim
+  } else {
+    rtr <- c(min(components$rtmin), max(components$rtmax))
+  }
+  
+  if (length(ylim) == 1) {
+    mzr <- c(min(components$mzmin) - ylim, max(components$mzmax) + ylim)
+  } else if (length(ylim) == 2) {
+    mzr <- ylim
+  } else {
+    mzr <- c(min(components$mzmin), max(components$mzmax))
+  }
+  
+  cl <- .get_colors(unique(components$var))
+  
+  plotlegend <- rep(TRUE, length(cl))
+  
+  names(plotlegend) <- names(cl)
+
+  plot_qlt <- FALSE
+  
+  if ("quality" %in% colnames(components)) {
+    plot_qlt <- TRUE
+  }
+    
+  plot <- plot_ly()
+  
+  for (i in seq_len(nrow(components))) {
+    
+    x0 <- components$rtmin[i]
+    x1 <- components$rtmax[i]
+    y0 <- components$mzmin[i]
+    y1 <- components$mzmax[i]
+    
+    plot <- plot %>% add_trace(
+      x = c(x0, x1, x1, x0, x0),
+      y = c(y0, y0, y1, y1, y0),
+      type = "scatter",
+      mode = "lines",
+      fill = "none",
+      line = list(color = cl[components$var[i]]),
+      opacity = 0.2,
+      name = components$var[i],
+      legendgroup = components$var[i],
+      showlegend = FALSE
+    )
+  }
+  
+  for (i in seq_len(nrow(components))) {
+    ft <- components[i, ]
+    
+    x <- ft$rt
+    y <- ft$mz
+    
+    plot <- plot %>% add_trace(
+      x = x, y = y,
+      type = "scatter", mode = "markers+text",
+      marker = list(size = 15 * ft$iso_relative_intensity, color = cl[ft$var]),
+      name = ft$var,
+      legendgroup = ft$var,
+      showlegend = ifelse(ft$iso_cat == "M", FALSE, plotlegend[ft$var]),
+      text =  paste0(ft$iso_cat, " ", ft$iso_isotope),
+      textposition = "midle right",
+      textfont = list(size = 12, color = cl[ft$var]),
+      hovertext = paste(
+        "</br> analysis: ", ft$analysis,
+        "</br> component: ", ft$component,
+        "</br> feature: ", ft$feature,
+        "</br> <i>m/z</i>: ", round(y, digits = 4),
+        "</br> dppm: ", round(((ft$mzmax - ft$mzmin) / y) * 1E6, digits = 0),
+        "</br> rt: ", round(x, digits = 0),
+        "</br> drt: ", round(ft$rtmax - ft$rtmin, digits = 0),
+        
+        if ("dqsPeak" %in% colnames(ft)) {
+          paste("</br> DQS: ", ft$dqsPeak)
+        } else {
+          ""
+        },
+        
+        if ("filled" %in% colnames(ft)) {
+          paste("</br> filled: ", ft$filled)
+        } else {
+          ""
+        },
+        
+        if (plot_qlt) {
+          q_t <- ft$quality[[1]]
+          if (length(q_t) > 0) {
+            paste(
+              "</br> noise: ", round(q_t$noise, digits = 0),
+              "</br> sn: ", round(q_t$sn, digits = 1),
+              "</br> gaufit: ", round(q_t$gauss_f, digits = 4),
+              "</br> A: ", q_t$gauss_a,
+              "</br> mu: ", q_t$gauss_u,
+              "</br> sigma: ", q_t$gauss_s
+            )
+          } else {
+            ""
+          }
+        } else {
+          ""
+        },
+        "</br> intensity: ", round(ft$intensity, digits = 0),
+        "</br> rel_intensity (%): ", round(ft$iso_relative_intensity * 100, digits = 2),
+        "</br> isotope: ", ft$iso_cat,
+        "</br> iso_elements: ", ft$iso_isotope,
+        "</br> iso_number_carbons: ", round(ft$iso_number_carbons, digits = 0),
+        "</br> iso_mass_error: ", round(ft$iso_mass_error, digits = 5),
+        "</br> iso_time_error: ", round(ft$iso_time_error, digits = 1),
+        "</br> adduct: ", ft$adduct_cat,
+        "</br> adduct_mass_error: ", round(ft$adduct_mass_error, digits = 5),
+        "</br> adduct_time_error: ", round(ft$adduct_time_error, digits = 1)
+      )
+    )
+    
+    if (isTRUE(plotlegend[ft$var]) & ft$iso_cat != "M") {
+      plotlegend[ft$var] <- FALSE
+    }
+  }
+  
+  title <- list(
+    text = title, x = 0.1, y = 0.98,
+    font = list(size = 9, color = "black")
+  )
+  
+  if (is.null(xLab)) {
+    xLab <- "Retention time / seconds"
+  }
+  
+  if (is.null(yLab)) {
+    yLab <- "<i>m/z</i> / Da"
+  }
+  
+  xaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2, title = xLab,
+    titlefont = list(size = 12, color = "black"),
+    range = rtr,
+    autotick = TRUE, ticks = "outside"
+  )
+  
+  yaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2, title = yLab,
+    range = mzr,
+    titlefont = list(size = 12, color = "black")
+  )
+  
+  plot <- plot %>% plotly::layout(
+    xaxis = xaxis,
+    yaxis = yaxis,
+    title = title
+  )
+  
+  plot
+}
+
+#' .map_components_static
+#'
+#' @noRd
+#'
+.map_components_static <- function(components, colorBy = "targets", legendNames = NULL, xlim = 60, ylim = 5,
+                                   xLab = NULL, yLab = NULL, title = NULL, showLegend = TRUE) {
+  
+  if (grepl("groups", colorBy) && "group" %in% colnames(components)) {
+    components$id <- components$group
+    colorBy <- sub("groups", "targets", colorBy)
+  } else {
+    components$id <- components$component
+  }
+  
+  components <- .make_colorBy_varkey(components, colorBy, legendNames)
+  
+  if (length(xlim) == 1) {
+    rtr <- c(min(components$rtmin) - xlim, max(components$rtmax) + xlim)
+  } else if (length(xlim) == 2) {
+    rtr <- xlim
+  } else {
+    rtr <- c(min(components$rtmin), max(components$rtmax))
+  }
+  
+  ylim_oufset <- 1 + (0.02 * length(unique(components$var)))
+  
+  if (length(ylim) == 1) {
+    mzr <- c(min(components$mzmin) - ylim, (max(components$mzmax) + ylim) * ylim_oufset)
+  } else if (length(ylim) == 2) {
+    mzr <- ylim
+  } else {
+    mzr <- c(min(components$mzmin), max(components$mzmax) * ylim_oufset)
+  }
+  
+  cl <- .get_colors(unique(components$var))
+  
+  if (is.null(xLab)) {
+    xLab <- "Retention time / seconds"
+  }
+  
+  if (is.null(yLab)) {
+    yLab <- expression(italic("m/z ") / " Da")
+  }
+  
+  plot(components$rt,
+       components$mz,
+       type = "n",
+       xlab = xLab,
+       ylab = yLab,
+       xlim = rtr,
+       ylim = mzr,
+       main = title
+  )
+  
+  rect(
+    xleft = components$rtmin,
+    xright = components$rtmax,
+    ybottom = components$mzmin,
+    ytop = components$mzmax,
+    col = paste0(cl[components$var], "70"),
+    border = paste0(cl[components$var], "70")
+  )
+  
+  points(
+    x = components$rt,
+    y = components$mz,
+    type = "p",
+    pch = 19,
+    cex = 1.5 * components$iso_relative_intensity,
+    col = cl[components$var]
+  )
+  
+  for (i in seq_len(nrow(components))) {
+    text(
+      components$rt[i] + 0.2,
+      components$mz[i],
+      paste0(components$iso_cat, " ", components$iso_istope)[i],
+      pos = 4, col = cl[components$var[i]], cex = 0.6
+    )
+  }
+  
+  if (showLegend) {
+    legend(
+      "topleft",
+      legend = names(cl),
+      col = cl,
+      pch = 19,
+      lty = 1,
+      cex = 0.7,
+      bty = "n"
+    )
+  }
+}
+
 .plot_internal_standards_qc_interactive <- function(istd, analyses, presence, recovery, deviations, widths) {
   
   if (!is.data.frame(istd)) return(NULL)

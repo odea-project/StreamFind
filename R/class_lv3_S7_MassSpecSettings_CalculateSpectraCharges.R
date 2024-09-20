@@ -1,34 +1,98 @@
 
-#' @noRd
-.process.MassSpecSettings_CalculateSpectraCharges_StreamFind <- function(settings, self, private) {
+# ______________________________________________________________________________________________________________________
+# StreamFind -----
+# ______________________________________________________________________________________________________________________
 
-  parameters <- settings$parameters
+#' **MassSpecSettings_CalculateSpectraCharges_StreamFind**
+#'
+#' @description Calculates spectral charges from multi-charged compounds (e.g. proteins and monoclonal antibodies) for
+#' mass deconvolution.
+#' 
+#' @param roundVal Numeric (length 1) with the rounding value for the m/z values before applying charge clustering.
+#' @param relLowCut Numeric (length 1) with the relative low cut for the charge clustering.
+#' @param absLowCut Numeric (length 1) with the absolute low cut for the charge clustering.
+#'
+#' @return A MassSpecSettings_CalculateSpectraCharges_StreamFind object.
+#'
+#' @export
+#'
+MassSpecSettings_CalculateSpectraCharges_StreamFind <- S7::new_class("MassSpecSettings_CalculateSpectraCharges_StreamFind",
+  parent = ProcessingSettings,
+  package = "StreamFind",
   
-  roundVal <- parameters$roundVal
+  constructor = function(roundVal = 35, relLowCut = 0.2, absLowCut = 300) {
+    
+    S7::new_object(ProcessingSettings(
+      engine = "MassSpec",
+      method = "CalculateSpectraCharges",
+      algorithm = "StreamFind",
+      parameters = list(
+        roundVal = roundVal,
+        relLowCut = relLowCut,
+        absLowCut = absLowCut
+      ),
+      number_permitted = 1,
+      version = as.character(packageVersion("StreamFind")),
+      software = "StreamFind",
+      developer = "Ricardo Cunha",
+      contact = "cunha@iuta.de",
+      link = "https://odea-project.github.io/StreamFind",
+      doi = NA_character_
+    ))
+  },
   
-  relLowCut <- parameters$relLowCut
+  validator = function(self) {
+    valid <- all(
+      checkmate::test_choice(self@engine, "MassSpec"),
+      checkmate::test_choice(self@method, "CalculateSpectraCharges"),
+      checkmate::test_choice(self@algorithm, "StreamFind"),
+      checkmate::test_number(self@parameters$roundVal),
+      checkmate::test_number(self@parameters$relLowCut),
+      checkmate::test_number(self@parameters$absLowCut)
+    )
+    if (!valid) return(FALSE)
+    NULL
+  }
+)
+
+#' @export
+#' @noRd
+S7::method(run, MassSpecSettings_CalculateSpectraCharges_StreamFind) <- function(x, engine = NULL) {
   
-  absLowCut <- parameters$absLowCut
-  
-  if (!self$has_spectra()) {
-    warning("Spectra not found! Not done.")
+  if (!is(engine, "MassSpecEngine")) {
+    warning("Engine is not a MassSpecEngine object!")
     return(FALSE)
   }
   
-  spec_list <- self$spectra
+  if (!engine$has_analyses()) {
+    warning("There are no analyses! Not done.")
+    return(FALSE)
+  }
   
-  charges <- lapply(spec_list, function(x, roundVal, relLowCut, absLowCut) {
+  if (!engine$has_spectra()) {
+    warning("No spectra results object available! Not done.")
+    return(FALSE)
+  }
+  
+  spec_list <- engine$spectra$spectra
+  
+  parameters <- x$parameters
+  roundVal <- parameters$roundVal
+  relLowCut <- parameters$relLowCut
+  absLowCut <- parameters$absLowCut
+  
+  charges <- lapply(spec_list, function(z, roundVal, relLowCut, absLowCut) {
     
     mz <- NULL
     . <- NULL
     
-    if (nrow(x) > 0) {
+    if (nrow(z) > 0) {
       
       intensity <- NULL
       
-      x$cluster <- round(x$mz / roundVal) * roundVal
+      z$cluster <- round(z$mz / roundVal) * roundVal
       
-      sp <- data.table::copy(x)
+      sp <- data.table::copy(z)
       
       data.table::setorder(sp, -intensity)
       
@@ -87,9 +151,9 @@
       
       if (nrow(sp2) == 0) return(data.table::data.table())
       
-      # plot_charges_temp <- function(x, sp, sp2, absLowCut, relLowCut, roundVal) {
+      # plot_charges_temp <- function(z, sp, sp2, absLowCut, relLowCut, roundVal) {
       #   
-      #   plot(x$mz, x$intensity, type = 'l', main = "Clusters, overlap window and low intensity threshold (lowCut)")
+      #   plot(z$mz, z$intensity, type = 'l', main = "Clusters, overlap window and low intensity threshold (lowCut)")
       #   
       #   aboveLowCut <- sp$cluster %in% sp2$cluster
       #   aboveLowCut <- sp[aboveLowCut, ]
@@ -156,12 +220,12 @@
       #   )
       # }
       # 
-      # if (FALSE) plot_charges_temp(x, sp, sp2, absLowCut, relLowCut, roundVal)
+      # if (FALSE) plot_charges_temp(z, sp, sp2, absLowCut, relLowCut, roundVal)
       
-      res <- x[x$mz == 0, ]
+      res <- z[z$mz == 0, ]
       
       for (i in seq_len(nrow(sp2))) {
-        temp <- x[x$cluster == sp2$cluster[i] & x$mz == sp2$mz[i], ]
+        temp <- z[z$cluster == sp2$cluster[i] & z$mz == sp2$mz[i], ]
         res <- rbind(res, temp)
       }
       
@@ -206,8 +270,8 @@
       
       res$outlier[!res$outlier] <- mass_vec < (mean(mass_vec) - sd(mass_vec)) | mass_vec > (mean(mass_vec) + sd(mass_vec))
       
-      # plot_charges_annotated <- function(x, res) {
-      #   plot(x$mz, x$intensity, type = 'l', ylim = c(0, max(x$intensity) * 1.4))
+      # plot_charges_annotated <- function(z, res) {
+      #   plot(z$mz, z$intensity, type = 'l', ylim = c(0, max(z$intensity) * 1.4))
       #   
       #   no_outlier <- !res$outlier
       #   is_outlier <- res$outlier
@@ -227,25 +291,23 @@
       #   }
       # }
       # 
-      # if (FALSE) plot_charges_annotated(x, res)
+      # if (FALSE) plot_charges_annotated(z, res)
       
       res <- res[!res$outlier, ]
       
       res$outlier <- NULL
       
       res
-
+      
     } else {
       data.table::data.table()
     }
     
   }, roundVal = roundVal, relLowCut = relLowCut, absLowCut = absLowCut)
-
+  
   names(charges) <- names(spec_list)
   
-  self$spectra_charges <- charges
-
+  engine$spectra$charges <- charges
   message(paste0("\U2713 ", "Spectra charges calculated!"))
-  
   TRUE
 }

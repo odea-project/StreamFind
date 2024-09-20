@@ -101,17 +101,17 @@ basename(ms_files)
 With the *mzML* files, a *MassSpecEngine* is created to pre-process the MS data and the analysis replicate names are modified to properly assign the analyses within each replicate measurement.
 
 ```{r}
-ms <- MassSpecEngine$new(files = ms_files, headers = list(name = "BSA Quality Evaluation Project"))
+ms <- MassSpecEngine$new(analyses = ms_files, headers = list(name = "BSA Quality Evaluation Project"))
 
 # Changes the analysis replicate names
-ms$add_replicate_names(sub("_\\d+$", "", ms$get_analysis_names()))
+ms$analyses$replicates <- sub("_\\d+$", "", ms$analyses$names)
 
 # Overview
 ms
 ```
 
 ```{r, fig.cap="Total ion chromatograms (TIC) for each analysis replicate."}
-ms$plot_spectra_tic(colorBy = "replicates")
+# ms$plot_spectra_tic(colorBy = "replicates")
 ```
 
 The data processing workflow is based on applied processing methods within the engine. As pre-processing, the following steps are applied:
@@ -123,12 +123,13 @@ The data processing workflow is based on applied processing methods within the e
 The individual processing steps are applied according to *ProcessingSettings*. Below, the integration of the TIC is shown using the dedicated *ProcessingSettings* after loading the TIC chromatograms from the analysis files and smoothing using a moving average approach.
 
 ```{r}
-ms$load_chromatograms("TIC")
+ms$load_chromatograms(chromatograms = "TIC")
+ms$analyses$has_chromatograms
 ```
 
 ```{r}
 # Smoothing of the TIC chromatogram for improving peak finding
-ms$process(MassSpecSettings_SmoothChromatograms_movingaverage(windowSize = 5))
+ms$run(MassSpecSettings_SmoothChromatograms_movingaverage(windowSize = 5))
 ```
 
 ```{r}
@@ -147,32 +148,33 @@ ps_ic
 ```
 
 ```{r}
-ms$process(ps_ic)
+ms$run(ps_ic)
 ```
 
 ```{r ,fig.cap="TIC with integrated peaks."}
-ms$plot_chromatograms_peaks(colorBy = "replicates")
+# ms$plot_chromatograms_peaks(colorBy = "replicates")
 ```
 
 The average retention time of the main peak was `r mean(ms$chromatograms_peaks$rt)` seconds with a standard deviation of `r sd(ms$chromatograms_peaks$rt)`. The following step is to estimate the *m/z* range of BSA for deconvolution of charges.
 
 ```{r, fig.cap="Spectra of BSA for each analysis replicate at the peak maximum."}
-ms$plot_spectra_ms1(rt = mean(rbindlist(ms$chromatograms_peaks)$rt), sec = 0.5,
-  colorBy = "replicates", presence = 0.1, minIntensity = 1000, interactive = FALSE
-)
+# ms$plot_spectra_ms1(rt = mean(rbindlist(ms$chromatograms$peaks)$rt), sec = 0.5,
+#   colorBy = "replicates", presence = 0.1, minIntensity = 1000, interactive = FALSE
+# )
 ```
 
 According to the MS1 spectra, the *m/z* from 1200 to 2000 can be added to the dedicated *ProcessingSettings* for deconvolution, as shown below. The first step is to load from the mzML files the traces within the retention time and *m/z* ranges selected.
 
 ```{r}
 # Average retention time of the main peak
-av_rt <- mean(rbindlist(ms$chromatograms_peaks)$rt)
+av_rt <- mean(rbindlist(ms$chromatograms$peaks)$rt)
 
 # Range of m/z and rt for deconvolution
 spectra_ranges <- data.table("mzmin" = 1200, "mzmax" = 2000, "rtmin" = av_rt - 1, "rtmax" = av_rt + 1)
 
 # Load the spectra within the ranges
 ms$load_spectra(mz = spectra_ranges)
+ms$analyses$has_spectra
 ```
 
 The workflow is an ordered list of *ProcessingSettings* objects for each workflow step, which is added to the engine. The exact parameters for each method can be optimized individually by calling the specific method directly. Once the settings are added, the workflow can be inspected with the `print_workflow()` method.
@@ -189,10 +191,8 @@ ms_workflow_settings <- list(
   MassSpecSettings_NormalizeSpectra_blockweight()
 )
 
-# Remove the settings added to integrate the TIC chromatograms
-ms$remove_settings()
-
-ms$add_settings(ms_workflow_settings)
+# Replaces the settings added to integrate the TIC chromatograms
+ms$workflow <- StreamFind::Workflow(ms_workflow_settings)
 
 ms$print_workflow()
 ```

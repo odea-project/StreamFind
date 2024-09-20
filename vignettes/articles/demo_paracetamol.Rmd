@@ -78,68 +78,67 @@ The data is pre-processed using StreamFind's built-in data dedicated engines for
 ## MS
 
 ```{r ms-setup, include=FALSE}
-ms <- MassSpecEngine$new(files = c(ms_files, ms_files_extra[c(5:40, 49:60)]), headers = list(name = "BSA Quality Evaluation Project"))
+ms <- MassSpecEngine$new(analyses = c(ms_files, ms_files_extra[c(5:40, 49:60)]), headers = list(name = "BSA Quality Evaluation Project"))
 
-ms$add_replicate_names(
-  c(rep("fiz_a1", 3),
-    rep("fiz_a2", 3),
-    rep("fiz_a3", 3),
-    rep("fiz_b1", 3),
-    rep("fiz_b2", 3),
-    rep("fiz_b3", 3),
-    rep("fiz_c1", 3),
-    rep("fiz_c2", 3),
-    rep("fiz_c3", 3),
-    rep("fiz_caff1", 3),
-    rep("fiz_caff2", 3),
-    rep("fiz_caff3", 3),
-    rep("fiz_ass1", 3),
-    rep("fiz_ass2", 3),
-    rep("fiz_ass3", 3),
-    rep("fiz_d1", 3),
-    rep("fiz_d2", 3),
-    rep("fiz_d3", 3),
-    rep("fiz_acid1", 3),
-    rep("fiz_acid2", 3),
-    rep("fiz_acid3", 3),
-    rep("ass_n_1", 3),
-    rep("ass_n_2", 3),
-    rep("ass_n_3", 3),
-    rep("ass_1", 3),
-    rep("ass_2", 3),
-    rep("ass_3", 3),
-    rep("caff_1", 3),
-    rep("caff_2", 3),
-    rep("caff_3", 3),
-    rep("par_1", 3),
-    rep("par_2", 3),
-    rep("par_3", 3),
-    rep("blank", 23),
-    rep("fiz_e01", 3),
-    rep("fiz_e02", 3),
-    rep("fiz_e03", 3),
-    rep("fiz_e04", 3),
-    rep("fiz_e05", 3),
-    rep("fiz_e06", 3),
-    rep("fiz_e07", 3),
-    rep("fiz_e08", 3),
-    rep("fiz_e09", 3),
-    rep("fiz_e10", 3),
-    rep("fiz_e11", 3),
-    rep("fiz_e12", 3),
-    rep("blank_e", 12)
-  )
+ms$analyses$replicates <- c(
+  rep("fiz_a1", 3),
+  rep("fiz_a2", 3),
+  rep("fiz_a3", 3),
+  rep("fiz_b1", 3),
+  rep("fiz_b2", 3),
+  rep("fiz_b3", 3),
+  rep("fiz_c1", 3),
+  rep("fiz_c2", 3),
+  rep("fiz_c3", 3),
+  rep("fiz_caff1", 3),
+  rep("fiz_caff2", 3),
+  rep("fiz_caff3", 3),
+  rep("fiz_ass1", 3),
+  rep("fiz_ass2", 3),
+  rep("fiz_ass3", 3),
+  rep("fiz_d1", 3),
+  rep("fiz_d2", 3),
+  rep("fiz_d3", 3),
+  rep("fiz_acid1", 3),
+  rep("fiz_acid2", 3),
+  rep("fiz_acid3", 3),
+  rep("ass_n_1", 3),
+  rep("ass_n_2", 3),
+  rep("ass_n_3", 3),
+  rep("ass_1", 3),
+  rep("ass_2", 3),
+  rep("ass_3", 3),
+  rep("caff_1", 3),
+  rep("caff_2", 3),
+  rep("caff_3", 3),
+  rep("par_1", 3),
+  rep("par_2", 3),
+  rep("par_3", 3),
+  rep("blank", 23),
+  rep("fiz_e01", 3),
+  rep("fiz_e02", 3),
+  rep("fiz_e03", 3),
+  rep("fiz_e04", 3),
+  rep("fiz_e05", 3),
+  rep("fiz_e06", 3),
+  rep("fiz_e07", 3),
+  rep("fiz_e08", 3),
+  rep("fiz_e09", 3),
+  rep("fiz_e10", 3),
+  rep("fiz_e11", 3),
+  rep("fiz_e12", 3),
+  rep("blank_e", 12)
 )
 
-ms <- ms$subset_analyses(analyses = c(1:63, 73:99, 118:121, 123:158, 161:170))
+ms$analyses <- ms$analyses[c(1:63, 73:99, 118:121, 123:158, 161:170)]
 
-ms$add_blank_names(c(rep("blank", 94), rep("blank_e", 140 - 94)))
+ms$analyses$blanks <- c(rep("blank", 94), rep("blank_e", 140 - 94))
 
 ms$load_spectra()
 ```
 
 ```{r ms-overview, echo=FALSE}
-ov <- ms$get_overview()[, 1:3]
+ov <- ms$analyses$info[, 1:3]
 data.table::setorder(ov, replicate)
 ov$description <- c(
   rep("Aspirin standard", 9),
@@ -173,7 +172,7 @@ ms_workflow_settings <- list(
   MassSpecSettings_NormalizeSpectra_blockweight()
 )
 
-ms$add_settings(ms_workflow_settings)
+ms$workflow <- StreamFind::Workflow(ms_workflow_settings)
 
 ms$print_workflow()
 ```
