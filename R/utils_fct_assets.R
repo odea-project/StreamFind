@@ -1,10 +1,3 @@
-#' @title .moving_average
-#' 
-#' @description Smooths a vector using a moving average window. Optionally, a time window can be given to also limit the
-#' window time.
-#' 
-#' @noRd
-#' 
 .moving_average <- function(vec, windowSize,  timeVec = NULL, timeWindow = NULL) {
   
   output <- numeric(length(vec))
@@ -323,4 +316,58 @@
   }
   
   pks
+}
+
+.baseline_correction <- function(vec, method, opts) {
+  
+  mat <- matrix(as.numeric(vec), nrow = 1)
+  
+  mat <- do.call(baseline::baseline, c(list(spectra = mat, method = method), opts))
+  
+  i_baseline <- as.numeric(mat@baseline)
+  
+  i_corrected <- as.numeric(mat@corrected)
+  
+  # i_baseline[i_baseline > vec] <- vec[i_baseline > vec]
+  # 
+  # i_baseline[i_baseline < 0] <- vec[i_baseline < 0]
+  # 
+  # i_corrected <- vec - i_baseline
+  # 
+  # i_corrected[i_corrected < 0] <- 0
+  
+  list("mat" = mat, "baseline" = i_baseline, "corrected" = i_corrected)
+}
+
+.WhittakerSmooth_by_zmzhang <- function(x, w, lambda, differences = 1) {
+  x=matrix(x,nrow = 1, ncol=length(x))
+  L=length(x)
+  E=Matrix::spMatrix(L,L,i=seq(1,L),j=seq(1,L),rep(1,L))
+  D=as(Matrix::diff(E,1,differences),"CsparseMatrix")
+  W=as(Matrix::spMatrix(L,L,i=seq(1,L),j=seq(1,L),w),"CsparseMatrix")
+  background=Matrix::solve((W+lambda*Matrix::t(D)%*%D),Matrix::t((w*x)));
+  return(as.vector(background))
+}
+
+.airPLS_by_zmzhang <- function(x, lambda = 10, differences = 1, itermax = 20){
+  x = as.vector(x)
+  m = length(x)
+  w = rep(1,m)
+  control = 1
+  i = 1
+  while(control==1){
+    z = .WhittakerSmooth_by_zmzhang(x,w,lambda,differences)
+    d = x-z
+    sum_smaller = abs(sum(d[d<0])) 
+    if(sum_smaller<0.001*sum(abs(x))||i==itermax)
+    {
+      control = 0
+    }
+    w[d>=0] = 0
+    w[d<0] = exp(i*abs(d[d<0])/sum_smaller)
+    w[1] = exp(i*max(d[d<0])/sum_smaller)
+    w[m] = exp(i*max(d[d<0])/sum_smaller)
+    i=i+1
+  }
+  return(z)
 }

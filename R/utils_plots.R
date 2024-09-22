@@ -3199,8 +3199,7 @@
 #'
 #' @noRd
 #'
-.plot_spec_charges_interactive <- function(spec = NULL,
-                                           res = NULL,
+.plot_spec_charges_interactive <- function(res = NULL,
                                            legendNames = NULL,
                                            colorBy = "targets",
                                            title = NULL,
@@ -3233,14 +3232,14 @@
   xaxis <- list(
     linecolor = toRGB("black"),
     linewidth = 2, title = xlab,
-    range = c(min(spec$mz), max(spec$mz)),
+    range = c(min(res$mz), max(res$mz)),
     titlefont = list(size = 12, color = "black")
   )
   
   yaxis <- list(
     linecolor = toRGB("black"),
     linewidth = 2, title = ylab,
-    range = c(min(spec$intensity), max(spec$intensity) * 1.3),
+    range = c(min(res$intensity), max(res$intensity) * 1.3),
     titlefont = list(size = 12, color = "black")
   )
   
@@ -3254,28 +3253,27 @@
   
   names(showL) <- leg
   
-  
   for (t in ids) {
     select_vector <- res$unique_ids == t
-    
     lt <- unique(res$var[select_vector])
-    
     pk <- res[select_vector, ]
     
-    sp <- spec[spec$analysis %in% pk$analysis[1] & spec$id %in% pk$id[1], ]
-    
     plot <- plot %>% add_trace(
-      x = sp$mz,
-      y = sp$intensity,
-      type = "scatter", mode = "lines",
-      line = list(width = 0.3, color = unname(cl[lt])),
+      x = pk$mz,
+      y = pk$intensity,
+      type = "bar",
+      width = 0.05,
+      marker = list(
+        color = unname(cl[lt]),
+        line = list(color = unname(cl[lt]), width = 0.05)
+      ),
       name = lt,
       legendgroup = lt,
       showlegend = showL[lt],
       hovertemplate = paste("<br>mz: %{x}<br>", "int: %{y}")
     )
     
-    if (nrow(sp) >= 1) showL[lt] <- FALSE
+    if (nrow(pk) >= 1) showL[lt] <- FALSE
     
     plot <- plot %>% add_trace(
       x = pk$mz,

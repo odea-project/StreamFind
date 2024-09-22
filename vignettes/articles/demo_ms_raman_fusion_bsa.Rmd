@@ -228,22 +228,22 @@ The four different BSA products were measured using an online coupling of size e
 A new engine is created with the unified file for each BSA product and then plotted as a time series.
 
 ```{r}
-raman <- RamanEngine$new(raman_unified_files)
+raman <- RamanEngine$new(analyses = raman_unified_files)
 
 # Modifying the replicate names to match the MS analyses
-raman$add_replicate_names(unique(ms$get_replicate_names())[1:4])
+raman$analyses$replicates <- unique(ms$analyses$replicates)[1:4]
 
 raman
 ```
 
 ```{r, include=FALSE}
-corr_spectra <- raman$spectra
+corr_spectra <- raman$spectra$spectra
 corr_spectra_4 <- corr_spectra[[4]]
 corr_spectra_4$rt <- corr_spectra_4$rt - 68.545
 corr_spectra_4 <- corr_spectra_4[corr_spectra_4$rt > 0, ]
 corr_spectra[[4]] <- corr_spectra_4
 corr_spectra <- lapply(corr_spectra, function(x) x[x$rt < 800, ])
-raman$spectra <- corr_spectra
+raman$spectra <- StreamFind::Spectra(spectra = corr_spectra)
 ```
 
 
@@ -274,7 +274,7 @@ raman_workflow_settings <- list(
   RamanSettings_NormalizeSpectra_blockweight()
 )
 
-raman$add_settings(raman_workflow_settings)
+raman$workflow <- StreamFind::Workflow(raman_workflow_settings)
 
 raman$print_workflow()
 ```
@@ -349,7 +349,7 @@ A statistic analysis is performed with the *StatisticEngine* for evaluation of t
 The fused data is used to create a PCA model with the *StatisticEngine* using processing settings based on the [mdatools](https://www.mdatools.com/docs/pca.html) package.
 
 ```{r}
-stat <- StatisticEngine$new(data = fusedMat)
+stat <- StatisticEngine$new(analyses = fusedMat)
 stat$process(StatisticSettings_MakeModel_pca_mdatools(ncomp = 2, alpha = 0.05, gamma = 0.02))
 summary(stat$model) # summary method is from mdatools
 ```

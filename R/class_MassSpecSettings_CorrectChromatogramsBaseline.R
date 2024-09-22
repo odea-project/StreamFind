@@ -1,0 +1,241 @@
+
+# ______________________________________________________________________________________________________________________
+# baseline -----
+# ______________________________________________________________________________________________________________________
+
+#' **MassSpecSettings_CorrectChromatogramsBaseline_baseline**
+#'
+#' @description Performs baseline correction to chromatograms using the \pkg{baseline} package.
+#' 
+#' @param method Character (length 1) with the method to be used for baseline correction. Possible values are "als",
+#' "fillPeaks", "irls", "lowpass", "medianWindow", "modpolyfit", "peakDetection", "rfbaseline", "rollingBall", "shirley" 
+#' and "TAP".
+#' @param args List with additional arguments for the selected method. See the documentation of the \pkg{baseline} package
+#' for more details.
+#'
+#' @return A MassSpecSettings_CorrectChromatogramsBaseline_baseline object.
+#'
+#' @export
+#'
+MassSpecSettings_CorrectChromatogramsBaseline_baseline <- S7::new_class("MassSpecSettings_CorrectChromatogramsBaseline_baseline",
+  parent = ProcessingSettings,
+  package = "StreamFind",
+  
+  constructor = function(method = "als", args = list(lambda = 5, p = 0.05, maxit = 10)) {
+    
+    S7::new_object(ProcessingSettings(
+      engine = "MassSpec",
+      method = "CorrectChromatogramsBaseline",
+      algorithm = "baseline",
+      parameters = list(
+        method = method,
+        args = args
+      ),
+      number_permitted = Inf,
+      version = as.character(packageVersion("StreamFind")),
+      software = "baseline",
+      developer = "Kristian Hovde Liland",
+      contact = "kristian.liland@nmbu.no",
+      link = "https://github.com/khliland/baseline/",
+      doi = "10.1366/000370210792434350"
+    ))
+  },
+  
+  validator = function(self) {
+    valid <- all(
+      checkmate::test_choice(self@engine, "MassSpec"),
+      checkmate::test_choice(self@method, "CorrectChromatogramsBaseline"),
+      checkmate::test_choice(self@algorithm, "baseline"),
+      checkmate::test_choice(self@parameters$method, c("als", "fillPeaks", "irls", "lowpass", "medianWindow", "modpolyfit", 
+                                                    "peakDetection", "rfbaseline", "rollingBall", "shirley", "TAP")),
+      checkmate::test_list(self@parameters$args, len = 1)
+    )
+    if (!valid) return(FALSE)
+    NULL
+  }
+)
+
+#' @export
+#' @noRd
+S7::method(run, MassSpecSettings_CorrectChromatogramsBaseline_baseline) <- function(x, engine = NULL) {
+  
+  if (!requireNamespace("baseline", quietly = TRUE)) {
+    warning("Package baseline not found but required! Not done.")
+    return(FALSE)
+  }
+  
+  if (!is(engine, "MassSpecEngine")) {
+    warning("Engine is not a MassSpecEngine object!")
+    return(FALSE)
+  }
+  
+  if (!engine$has_analyses()) {
+    warning("There are no analyses! Not done.")
+    return(FALSE)
+  }
+  
+  if (!engine$has_chromatograms()) {
+    warning("No chromatograms results object available! Not done.")
+    return(FALSE)
+  }
+  
+  baseline_method <- x$parameters$method
+  baseline_args <- x$parameters$args
+  
+  chrom_list <- engine$chromatograms$chromatograms
+  
+  chrom_list <- lapply(chrom_list, function(z, baseline_method, baseline_args) {
+    
+    if (nrow(z) > 0) {
+      
+      if ("id" %in% colnames(z)) {
+        temp_x <- split(z, z$id)
+        
+        temp_x <- lapply(temp_x, function(z) {
+          baseline_data <- .baseline_correction(z$intensity, baseline_method, baseline_args)
+          z$baseline <- baseline_data$baseline
+          z$raw <- z$intensity
+          z$intensity <- baseline_data$corrected
+          z
+        })
+        
+        z <- rbindlist(temp_x)
+        
+      } else {
+        baseline_data <- .baseline_correction(z$intensity, baseline_method, baseline_args)
+        z$baseline <- baseline_data$baseline
+        z$raw <- z$intensity
+        z$intensity <- baseline_data$corrected
+      }
+    }
+    
+    z
+    
+  }, baseline_method = baseline_method, baseline_args = baseline_args)
+  
+  engine$chromatograms$chromatograms <- chrom_list
+  message(paste0("\U2713 ", "Chromatograms beseline corrected!"))
+  TRUE
+}
+
+# ______________________________________________________________________________________________________________________
+# airpls -----
+# ______________________________________________________________________________________________________________________
+
+#' **MassSpecSettings_CorrectChromatogramsBaseline_airpls**
+#'
+#' @description Performs baseline correction using adaptive iteratively reweighted Penalized Least Squares (airPLS) 
+#' based on the algorithm from Zhi-Min Zhang.
+#' 
+#' @param lambda Numeric (length 1) with the smoothing intensity. the higher the `lambda` the higher the smoothing.
+#' @param differences Integer (length 1) indicating the order of the difference of penalties
+#' @param itermax Integer (length 1) with the maximum number of iterations.
+#'
+#' @return A MassSpecSettings_CorrectChromatogramsBaseline_airpls object.
+#' 
+#' @references
+#' 
+#' \insertRef{airpls01}{StreamFind}
+#'
+#' @export
+#'
+MassSpecSettings_CorrectChromatogramsBaseline_airpls <- S7::new_class("MassSpecSettings_CorrectChromatogramsBaseline_airpls",
+  parent = ProcessingSettings,
+  package = "StreamFind",
+  
+  constructor = function(lambda = 10, differences = 1, itermax = 20) {
+    
+    S7::new_object(ProcessingSettings(
+      engine = "MassSpec",
+      method = "CorrectChromatogramsBaseline",
+      algorithm = "airpls",
+      parameters = list(lambda = lambda, differences = differences, itermax = itermax),
+      number_permitted = Inf,
+      version = as.character(packageVersion("StreamFind")),
+      software = "airPLS",
+      developer = "Zhi-Min Zhang",
+      contact = "zmzhang@csu.edu.cn",
+      link = "https://github.com/zmzhang/airPLS",
+      doi = "10.1039/b922045c"
+    ))
+  },
+  
+  validator = function(self) {
+    valid <- all(
+      checkmate::test_choice(self@engine, "MassSpec"),
+      checkmate::test_choice(self@method, "CorrectChromatogramsBaseline"),
+      checkmate::test_choice(self@algorithm, "airpls"),
+      checkmate::test_number(self@parameters$lambda),
+      checkmate::test_integer(as.integer(self@parameters$differences)),
+      checkmate::test_integer(as.integer(self@parameters$itermax))
+    )
+    if (!valid) return(FALSE)
+    NULL
+  }
+)
+
+#' @export
+#' @noRd
+S7::method(run, MassSpecSettings_CorrectChromatogramsBaseline_airpls) <- function(x, engine = NULL) {
+  
+  if (!requireNamespace("Matrix", quietly = TRUE)) {
+    warning("Package Matrix not found but required! Not done.")
+    return(FALSE)
+  }
+  
+  if (!is(engine, "MassSpecEngine")) {
+    warning("Engine is not a MassSpecEngine object!")
+    return(FALSE)
+  }
+  
+  if (!engine$has_analyses()) {
+    warning("There are no analyses! Not done.")
+    return(FALSE)
+  }
+  
+  if (!engine$has_chromatograms()) {
+    warning("No chromatograms results object available! Not done.")
+    return(FALSE)
+  }
+  
+  lambda = x$parameters$lambda
+  differences = x$parameters$differences
+  itermax = x$parameters$itermax
+  
+  chrom_list <- engine$chromatograms$chromatograms
+  
+  chrom_list <- lapply(chrom_list, function(z, lambda, differences, itermax) {
+    
+    if (nrow(z) > 0) {
+      
+      if ("id" %in% colnames(z)) {
+        temp_x <- split(z, z$id)
+        
+        temp_x <- lapply(temp_x, function(z) {
+          baseline_data <- .airPLS_by_zmzhang(z$intensity, lambda, differences, itermax)
+          z$baseline <- baseline_data
+          z$raw <- z$intensity
+          baseline_data[baseline_data > z$intensity] <- z$intensity[baseline_data > z$intensity]
+          z$intensity <- z$intensity - baseline_data
+          z
+        })
+        
+        z <- rbindlist(temp_x)
+        
+      } else {
+        baseline_data <- .airPLS_by_zmzhang(z$intensity, lambda, differences, itermax)
+        z$baseline <- baseline_data
+        z$raw <- z$intensity
+        baseline_data[baseline_data > z$intensity] <- z$intensity[baseline_data > z$intensity]
+        z$intensity <- z$intensity - baseline_data
+      }
+    }
+    
+    z
+    
+  }, lambda = lambda, differences = differences, itermax = itermax)
+  
+  engine$chromatograms$chromatograms <- chrom_list
+  message(paste0("\U2713 ", "Chromatograms beseline corrected!"))
+  TRUE
+}
