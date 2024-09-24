@@ -106,120 +106,6 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         warning("Value must be a Chromatograms object! Not done.") 
       }
       invisible(self)
-    },
-    
-    #' @field chromatograms_peaks `data.table` with integrated peaks from chromatograms for each analyses.
-    #' 
-    chromatograms_peaks = function(value) {
-      
-      if (missing(value)) {
-        
-        if (self$has_chromatograms_peaks()) {
-          pks <- private$.results$chromatograms
-          pks <- lapply(pks, function(x) x$peaks)
-          
-          pks
-          
-        } else {
-          data.table()
-        }
-        
-      } else {
-        
-        if (self$has_results("chromatograms")) {
-          
-          if (identical(names(private$.results$chromatograms), names(value))) {
-            private$.results$chromatograms <- Map(function(x, y) {
-              x$peaks <- y
-              x
-            }, private$.results$chromatograms, value)
-          }
-        }
-        
-        invisible(self)
-      }
-    },
-    
-    #' @field spectra_charges `data.table` with charges assigned to spectra for each analyses.
-    #' 
-    spectra_charges = function(value) {
-      
-      if (missing(value)) {
-        
-        if (self$has_spectra_charges()) {
-          res <- private$.results$spectra
-          res <- lapply(res, function(x) x$charges)
-          
-          res
-          
-        } else {
-          data.table()
-        }
-        
-      } else {
-        
-        if (self$has_results("spectra")) {
-          
-          if (identical(names(private$.results$spectra), names(value))) {
-            private$.results$spectra <- Map(function(x, y) {
-              x$charges <- y
-              x
-            }, private$.results$spectra, value)
-          }
-        }
-        
-        invisible(self)
-      }
-    },
-    
-    #' @field deconvoluted_spectra List of deconvoluted spectra for each analysis.
-    #' 
-    deconvoluted_spectra = function(value) {
-      
-      if (missing(value)) {
-        
-        if (self$has_deconvoluted_spectra()) {
-          res <- private$.results$spectra
-          res <- lapply(res, function(x) x$deconvoluted)
-          
-          res
-          
-        } else {
-          data.table()
-        }
-        
-      } else {
-        
-        if (self$has_results("spectra")) {
-          
-          if (identical(names(private$.results$spectra), names(value))) {
-            private$.results$spectra <- Map(function(x, y) {
-              x$deconvoluted <- y
-              x
-            }, private$.results$spectra, value)
-          }
-        }
-        
-        invisible(self)
-      }
-    },
-    
-    #' @field spectra_peaks `data.table` with integrated spectra peaks for each analysis.
-    #' 
-    spectra_peaks = function() {
-      
-      if (self$has_spectra_peaks()) {
-        pks <- private$.results$spectra$data
-        pks <- lapply(pks, function(x) x$peaks)
-        pks <- rbindlist(pks)
-        
-        if (nrow(pks) > 0) pks$replicate <- self$get_replicate_names()[pks$analysis]
-        
-        pks
-        
-      } else {
-        data.table()
-      }
     }
   ),
   
@@ -418,38 +304,15 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                            minIntensityMS2 = 0,
                            useRawData = TRUE,
                            useLoadedData = TRUE) {
-      
-      get_spectra(self$analyses, analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id, allTraces, 
+      get_spectra(self$analyses,
+                  analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id, allTraces, 
                   isolationWindow, minIntensityMS1, minIntensityMS2, useRawData, useLoadedData)
     },
     
     #' @description Gets a matrix with spectra from analyses.
     #' 
     get_spectra_matrix = function(analyses = NULL) {
-      
-      analyses <- .check_analyses_argument(self$analyses, analyses)
-      
-      mat <- self$get_spectra(analyses)
-      
-      if (nrow(mat) == 0) return(matrix())
-      
-      mat <- mat[order(mat$analysis), ]
-      
-      if ("bins" %in% colnames(mat)) {
-        col_key <- unique(mat$bins)
-      } else if ("mobility" %in% colnames(mat)) {
-        col_key <- unique(paste0("r", mat$rt, "_m", mat$mz, "_d", mat$mobility, "_p", mat$polarity, "_l", mat$level))
-      } else {
-        col_key <- unique(paste0("r", mat$rt, "_m", mat$mz, "_p", mat$polarity, "_l", mat$level))
-      }
-      
-      matrix(
-        mat$intensity,
-        nrow = length(unique(mat$analysis)),
-        ncol = length(col_key),
-        byrow = TRUE,
-        dimnames = list(as.character(unique(mat$analysis)), as.character(col_key))
-      )
+      get_spectra_matrix(self$analyses, analyses)
     },
     
     #' @description Gets spectra extract ion chromatograms (EIC) from the analyses based on targets as a data.table.
@@ -465,8 +328,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                id = NULL,
                                useRawData = TRUE,
                                useLoadedData = FALSE) {
-      
-      get_spectra_eic(self$analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, useRawData, useLoadedData)
+      get_spectra_eic(self$analyses,
+                      analyses, mass, mz, rt, mobility, ppm, sec, millisec, id,
+                      useRawData, useLoadedData)
     },
     
     #' @description Gets level 1 spectra from the analyses based on targets as a data.frame.
@@ -485,8 +349,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                minIntensity = 1000,
                                useRawData = TRUE,
                                useLoadedData = FALSE) {
-      
-      get_spectra_ms1(self$analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, mzClust, presence, minIntensity, useRawData, useLoadedData)
+      get_spectra_ms1(self$analyses,
+                      analyses, mass, mz, rt, mobility, ppm, sec, millisec, id,
+                      mzClust, presence, minIntensity, useRawData, useLoadedData)
     },
     
     #' @description Gets level 2 spectra from the analyses based on targets as a data.frame.
@@ -506,8 +371,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                minIntensity = 0,
                                useRawData = TRUE,
                                useLoadedData = FALSE) {
-      
-      get_spectra_ms2(self$analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, isolationWindow, mzClust, presence, minIntensity, useRawData, useLoadedData)
+      get_spectra_ms2(self$analyses,
+                      analyses, mass, mz, rt, mobility, ppm, sec, millisec, id,
+                      isolationWindow, mzClust, presence, minIntensity, useRawData, useLoadedData)
     },
     
     #' @description Gets the number of chromatograms in each analysis.
@@ -554,7 +420,6 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                             sec = 60,
                             millisec = 5,
                             filtered = FALSE) {
-      
       get_features(self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
     },
     
@@ -573,8 +438,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 mzExpand = NULL,
                                 filtered = FALSE,
                                 useLoadedData = TRUE) {
-      
-      get_features_eic(self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand, mzExpand, filtered, useLoadedData)
+      get_features_eic(self$analyses,
+                       analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
+                       rtExpand, mzExpand, filtered, useLoadedData)
     },
     
     #' @description Gets a data.table of averaged MS1 spectrum for features in the analyses or as selected from the 
@@ -596,8 +462,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 minIntensity = 1000,
                                 filtered = FALSE,
                                 useLoadedData = TRUE) {
-      
-      get_features_ms1(self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, rtWindow, mzWindow, mzClust, presence, minIntensity, filtered, useLoadedData)
+      get_features_ms1(self$analyses,
+                       analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
+                       rtWindow, mzWindow, mzClust, presence, minIntensity, filtered, useLoadedData)
     },
     
     #' @description Gets a data.table of averaged MS2 spectrum for features in the analyses or as selected from the 
@@ -618,8 +485,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 minIntensity = 0,
                                 filtered = FALSE,
                                 useLoadedData = TRUE) {
-      
-      get_features_ms2(self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, isolationWindow, mzClust, presence, minIntensity, filtered, useLoadedData)
+      get_features_ms2(self$analyses, analyses,
+                       features, mass, mz, rt, mobility, ppm, sec, millisec,
+                       isolationWindow, mzClust, presence, minIntensity, filtered, useLoadedData)
     },
     
     #' @description Gets a data.table with feature groups from the analyses.
@@ -642,8 +510,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                           average = FALSE,
                           sdValues = FALSE,
                           metadata = FALSE) {
-      
-      get_groups(self$analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered, intensities, average, sdValues, metadata)
+      get_groups(self$analyses,
+                 groups, mass, mz, rt, mobility, ppm, sec, millisec,
+                 filtered, intensities, average, sdValues, metadata)
     },
     
     #' @description Gets a data.table of averaged MS1 spectrum for feature groups in the analyses.
@@ -667,8 +536,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                               minIntensity = 1000,
                               groupBy = "groups",
                               filtered = FALSE) {
-      
-      get_groups_ms1(self$analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtWindow, mzWindow, mzClustFeatures, presenceFeatures, minIntensityFeatures, useLoadedData, mzClust, presence, minIntensity, groupBy, filtered)
+      get_groups_ms1(self$analyses,
+                     groups, mass, mz, rt, mobility, ppm, sec, millisec,
+                     rtWindow, mzWindow, mzClustFeatures, presenceFeatures, minIntensityFeatures,
+                     useLoadedData, mzClust, presence, minIntensity, groupBy, filtered)
     },
     
     #' @description Gets a data.table of averaged MS2 spectrum for feature groups in the analyses.
@@ -691,8 +562,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                               minIntensity = 100,
                               groupBy = "groups",
                               filtered = FALSE) {
-      
-      get_groups_ms2(self$analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, isolationWindow, mzClustFeatures, presenceFeatures, minIntensityFeatures, useLoadedData, mzClust, presence, minIntensity, groupBy, filtered)
+      get_groups_ms2(self$analyses,
+                     groups, mass, mz, rt, mobility, ppm, sec, millisec,
+                     isolationWindow, mzClustFeatures, presenceFeatures, minIntensityFeatures,
+                     useLoadedData, mzClust, presence, minIntensity, groupBy, filtered)
     },
     
     #' @description Creates S4 class `MSPeakLists`. Note that feature groups are required. The MS and MSMS spectra 
@@ -826,7 +699,6 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                               sec = 60,
                               millisec = 5,
                               filtered = FALSE) {
-      
       get_components(self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
     },
     
@@ -857,8 +729,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                             minIntensity = 0,
                             filtered = FALSE,
                             onGroups = TRUE) {
-      
-      get_suspects(self$analyses, analyses, database, features, mass, mz, rt, mobility, ppm, sec, millisec, 
+      get_suspects(self$analyses,
+                   analyses, database, features, mass, mz, rt, mobility, ppm, sec, millisec, 
                    ppmMS2, minFragments, isolationWindow, mzClust, presence, minIntensity, filtered, onGroups)
     },
     
@@ -893,7 +765,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     
     #' @description Adds analyses. Note that when adding new analyses, any existing results are removed.
     #'
-    #' @param analyses A MassSpecAnalysis S3 class object or a list with MassSpecAnalysis S3 class objects as 
+    #' @param analyses A MassSpecAnalysis class object or a list with MassSpecAnalysis class objects as 
     #' elements (see `?MassSpecAnalysis` for more information) or a character vector with full path to mzML/mzXML files.
     #'
     #' @return Invisible.
@@ -933,8 +805,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                             isolationWindow = 1.3,
                             minIntensityMS1 = 0,
                             minIntensityMS2 = 0) {
-      
-      self$analyses <- load_spectra(self$analyses, analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id, allTraces, isolationWindow, minIntensityMS1, minIntensityMS2)
+      self$analyses <- load_spectra(self$analyses,
+                                    analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
+                                    allTraces, isolationWindow, minIntensityMS1, minIntensityMS2)
       invisible(self)
     },
     
@@ -945,307 +818,6 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     load_chromatograms = function(analyses = NULL, minIntensity = NULL, chromatograms = NULL) {
       self$analyses <- load_chromatograms(self$analyses, analyses, minIntensity, chromatograms)
       invisible(self)
-    },
-    
-    ## ___ remove -----
-    
-    #' @description Removes features. Note that feature groups are also removed when features is set to `NULL` 
-    #'
-    #' @return Invisible.
-    #'
-    remove_features = function(features = NULL, filtered = FALSE) {
-      
-      if (is.null(features) & !filtered) {
-        
-        self$remove_results("patRoon")
-        
-        private$.register("removed", "results", "features", "all")
-        
-        message("\U2713 Removed all features!")
-        
-        return(invisible(self))
-      }
-      
-      if (filtered && self$has_results("patRoon")) {
-        
-        n_filtered_features <- sum(vapply(private$.results$patRoon$filtered, nrow, 0))
-        
-        private$.results$patRoon$filtered <- lapply(private$.results$patRoon$filtered, function(x) {
-          x <- x[0, ]
-          x[["suspects"]] <- NULL
-          x[["isotopes"]] <- NULL
-          x[["ms2"]] <- NULL
-          x[["ms1"]] <- NULL
-          x[["istd"]] <- NULL
-          x
-        })
-        
-        private$.register("removed", "results", "filtered features", n_filtered_features)
-        message("\U2713 Removed ", n_filtered_features, " feature/s!")
-      }
-      
-      if (is.data.frame(features) && self$has_results("patRoon")) {
-        
-        if (all(c("analysis", "feature") %in% colnames(features))) {
-          
-          n_feat_before <- length(self$features)
-          
-          original_features <- self$features
-          
-          feature_list <- original_features@features
-          
-          feature_list <- lapply(names(feature_list), function(x, features, feature_list) {
-            
-            ft_to_rem <- features[features$analysis %in% x, ]
-            
-            fl <- feature_list[[x]]
-            
-            if (nrow(ft_to_rem) > 0) fl <- fl[!(fl$ID %in% features$feature)]
-            
-            fl
-            
-          }, features = features, feature_list = feature_list)
-          
-          names(feature_list) <- names(self$features@features)
-          
-          original_features@features <- feature_list
-          
-          self$features <- original_features
-          
-          filtered_feature_list <- self$filtered_features
-          
-          filtered_feature_list <- lapply(names(filtered_feature_list), function(x, features, filtered_feature_list) {
-            
-            ft_to_rem <- features[features$analysis %in% x, ]
-            
-            fl <- filtered_feature_list[[x]]
-            
-            if (nrow(ft_to_rem) > 0) fl <- fl[!(fl$ID %in% features$feature)]
-            
-            fl
-            
-          }, features = features, filtered_feature_list = filtered_feature_list)
-          
-          names(filtered_feature_list) <- names(self$filtered_features)
-          
-          private$.results$patRoon$filtered <- filtered_feature_list
-          
-          n_feat_after <- length(self$features)
-          
-          if (n_feat_after < n_feat_before) {
-            
-            private$.register("removed", "results", "features", n_feat_before - n_feat_after)
-            message("\U2713 Removed ", n_feat_before - n_feat_after, " feature/s!")
-            
-          } else {
-            message("\U2717 There are no features to remove!")
-          }
-          
-        } else {
-          warning("\U2717 Features data.frame not conform!")
-        }
-        
-      } else {
-        message("\U2717 There are no features to remove!")
-      }
-      
-      invisible(self)
-    },
-    
-    #' @description Removes loaded MS1 spectra from features in the analyses. In practice, the column \emph{ms1} in 
-    #' the features data.table of each analysis object is removed.
-    #'
-    #' @return Invisible.
-    #'
-    remove_features_ms1 = function() {
-      if (self$has_features()) {
-        feature_list <- nts$feature_list
-        feature_list <- lapply(feature_list, function(x) {
-          x[["ms1"]] <- NULL
-          x
-        })
-        
-        self$nts$feature_list <- feature_list
-        message("\U2713 Removed all MS1 spectra from features!")
-      } else {
-        message("\U2717 Features not present!")
-      }
-      invisible(self)
-    },
-    
-    #' @description Removes loaded MS2 spectra from features in the analyses. In practice, the column \emph{ms2} in 
-    #' the features data.table of each analysis object is removed.
-    #'
-    #' @return Invisible.
-    #'
-    remove_features_ms2 = function() {
-      if (self$has_features()) {
-        feature_list <- nts$feature_list
-        feature_list <- lapply(feature_list, function(x) {
-          x[["ms2"]] <- NULL
-          x
-        })
-        self$nts$feature_list <- feature_list
-        message("\U2713 Removed all MS2 spectra from features!")
-      } else {
-        message("\U2717 Features not present!")
-      }
-      invisible(self)
-    },
-    
-    #' @description Removes feature groups.
-    #'
-    #' @return Invisible.
-    #'
-    remove_groups = function(groups = NULL, filtered = FALSE) {
-      
-      if (is.null(groups) & !filtered) {
-        
-        original_features <- self$features
-        
-        feature_list <- original_features@features
-        
-        feature_list <- lapply(feature_list, function(x) {
-          x[["group"]] <- NULL
-          x
-        })
-        
-        names(feature_list) <- names(self$features@features)
-        
-        original_features@features <- feature_list
-        
-        self$remove_results("patRoon")
-        
-        self$features <- original_features
-        
-        self$remove_features(filtered = TRUE)
-        
-        private$.register("removed", "results", "feature groups", "all")
-        message("\U2713 Removed all groups!")
-        
-        return(invisible(self))
-      }
-      
-      if (self$has_groups()) {
-        
-        if (filtered) self$remove_features(filtered = TRUE)
-        
-        if ((is.character(groups) || is.numeric(groups)) && length(groups) > 0) {
-          
-          n_groups <- length(self$featureGroups)
-          
-          gr_to_keep <- patRoon::groupNames(self$featureGroups)
-          
-          gr_to_keep <- gr_to_keep[!(gr_to_keep %in% groups)]
-          
-          fg <- self$featureGroups[, gr_to_keep]
-          
-          n_groups_after <- length(fg)
-          
-          self$featureGroups <- fg
-          
-          if (self$has_MSPeakLists()) {
-            self$MSPeakLists <- self$MSPeakLists[patRoon::analyses(fg), patRoon::groupNames(fg)]
-          }
-          
-          if (self$has_formulas()) {
-            self$formulas <- self$formulas[patRoon::analyses(fg), patRoon::groupNames(fg)]
-          }
-          
-          if (self$has_compounds()) {
-            self$compounds <- self$compounds[patRoon::groupNames(fg)]
-          }
-          
-          if (n_groups_after < n_groups) {
-            private$.register("removed", "results", "feature groups", n_groups - n_groups_after)
-            message("\U2713 Removed ", n_groups - n_groups_after, " group/s!")
-          }
-          
-        } else {
-          message("\U2717 There are no groups to remove!")
-        }
-      } else {
-        message("\U2717 There are no groups to remove!")
-      }
-      
-      invisible(self)
-    },
-    
-    ## ___ subset -----
-    
-    #' @description Subsets a MassSpecEngine object on features from analyses.
-    #'
-    #' @return A new cloned MassSpecEngine object with only the features as defined by the features argument.
-    #'
-    subset_features = function(features = NULL) {
-      
-      if (is.data.frame(features)) {
-        cols_must_have <- c("analysis", "feature")
-        
-        if (all(cols_must_have %in% colnames(features))) {
-          
-          all_fts <- self$get_features(filtered = TRUE)
-          n_all <- nrow(all_fts)
-          
-          if (n_all > 0) {
-            
-            unique_fts_ids <- paste0(all_fts$analysis, all_fts$feature)
-            keep_fts <- paste0(features$analysis, features$feature)
-            rem_fts <- !(unique_fts_ids %in% keep_fts)
-            rem_fts <- all_fts[rem_fts, ]
-            
-            if (nrow(rem_fts) > 0) {
-              new_ms <- self$clone()
-              new_ms <- suppressMessages(new_ms$remove_features(rem_fts, filtered = FALSE))
-              message("\U2713 Subset with ", length(new_ms$features), " features created!")
-              return(new_ms)
-              
-            } else {
-              message("\U2717 There are no features to subset!")
-            }
-            
-          } else {
-            message("\U2717 There are no features to subset!")
-          }
-          
-        } else {
-          message("\U2717 Data.frame with analysis and feature IDs not given!")
-        }
-        
-      } else {
-        message("\U2717 Data.frame with analysis and feature IDs not given!")
-      }
-      
-      NULL
-    },
-    
-    #' @description Subsets a MassSpecEngine object on feature groups. Note that when sub-setting groups, features 
-    #' that lose correspondence are removed.
-    #'
-    #' @return A new cloned MassSpecEngine object with only the groups as defined by the `groups` argument.
-    #'
-    subset_groups = function(groups = NULL) {
-      
-      if (self$has_groups() && (is.character(groups) || is.numeric(groups)) && length(groups) > 0) {
-        
-        all_fg <- patRoon::groupNames(self$featureGroups)
-        rem_fg <- all_fg[!(all_fg %in% groups)]
-        
-        if (length(rem_fg) > 0) {
-          new_ms <- self$clone(deep = TRUE)
-          new_ms <- suppressMessages(new_ms$remove_groups(rem_fg, filtered = TRUE))
-          message("\U2713 Subset with ", length(all_fg) - length(rem_fg), " feature groups created!")
-          return(new_ms)
-          
-        } else {
-          message("\U2717 There are no groups to subset!")
-        }
-        
-      } else {
-        message("\U2717 There are no groups to subset!")
-      }
-      
-      NULL
     },
     
     ## ___ has -----
@@ -1372,14 +944,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 yLab = NULL,
                                 zLab = NULL) {
       
-      spec <- self$get_spectra(
-        analyses, levels,
-        mass, mz, rt, mobility, ppm, sec, millisec, id,
-        allTraces = allTraces,
-        isolationWindow,
-        minIntensityMS1,
-        minIntensityMS2
-      )
+      spec <- self$get_spectra(analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
+        allTraces = allTraces, isolationWindow, minIntensityMS1, minIntensityMS2)
       
       if (nrow(spec) == 0) {
         message("\U2717 Traces not found for the targets!")
@@ -1394,9 +960,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       }
       
       if ("feature" %in% colnames(spec)) spec$id <- spec$feature
-      
       if ("replicates" %in% colorBy) spec$replicate <- self$get_replicate_names()[spec$analysis]
-      
       .plot_spectra_interactive(spec, colorBy, legendNames, xVal, yVal, xLab, yLab, zLab)
     },
     
@@ -1432,8 +996,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                             cex = 0.6,
                             showLegend = TRUE,
                             interactive = TRUE) {
-      
-      plot_spectra(self$analyses, analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id, allTraces, isolationWindow, minIntensityMS1, minIntensityMS2, useRawData, useLoadedData, legendNames, colorBy, xVal, xLab, yLab, title, cex, showLegend, interactive)
+      plot_spectra(self$analyses,
+                   analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
+                   allTraces, isolationWindow, minIntensityMS1, minIntensityMS2, useRawData, useLoadedData,
+                   legendNames, colorBy, xVal, xLab, yLab, title, cex, showLegend, interactive)
     },
     
     #' @description Plots chromatograms in the analyses.
@@ -1453,8 +1019,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                   ylim = NULL,
                                   cex = 0.6,
                                   interactive = TRUE) {
-      
-      plot_chromatograms(self$analyses, analyses, chromatograms, minIntensity, useRawData, useLoadedData, xLab, yLab, title, colorBy, legendNames, showLegend, xlim, ylim, cex, interactive)
+      plot_chromatograms(self$analyses, analyses, chromatograms, minIntensity, useRawData, useLoadedData, xLab, yLab, 
+                         title, colorBy, legendNames, showLegend, xlim, ylim, cex, interactive)
     },
     
     #' @description Plots chromatograms corrected baseline for given analyses.
@@ -1470,8 +1036,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                            showLegend = TRUE,
                                            colorBy = "analyses",
                                            interactive = TRUE) {
-      
-      plot_chromatograms_baseline(self$analyses, analyses, chromatograms, xLab, yLab, title, cex, showLegend, colorBy, interactive)
+      plot_chromatograms_baseline(self$analyses, analyses, chromatograms, xLab, yLab, title, cex, showLegend, colorBy, 
+                                  interactive)
     },
     
     #' @description Plots spectra extract ion chromatograms (EIC) and \emph{m/z} vs retention time from the analyses.
@@ -1507,8 +1073,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 ppmMark = 5,
                                 secMark = 10,
                                 numberRows = 1) {
-      
-      plot_spectra_xic(self$analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, legendNames, plotTargetMark, targetsMark, ppmMark, secMark, numberRows)
+      plot_spectra_xic(self$analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id,
+                       legendNames, plotTargetMark, targetsMark, ppmMark, secMark, numberRows)
     },
     
     #' @description Plots spectra extract ion chromatograms (EIC) from the analyses based on targets.
@@ -1532,8 +1098,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 ylim = NULL,
                                 cex = 0.6,
                                 interactive = TRUE) {
-      
-      plot_spectra_eic(self$analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, legendNames, xLab, yLab, title, colorBy, showLegend, xlim, ylim, cex, interactive)
+      plot_spectra_eic(self$analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, legendNames, xLab, 
+                       yLab, title, colorBy, showLegend, xlim, ylim, cex, interactive)
     },
     
     #' @description Plots the spectra total ion chromatogram (TIC) of each analysis.
@@ -1554,8 +1120,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 cex = 0.6,
                                 downsize = 1,
                                 interactive = TRUE) {
-      
-      plot_spectra_tic(self$analyses, analyses, levels, rt, xLab, yLab, title, colorBy, legendNames, showLegend, xlim, ylim, cex, downsize, interactive)
+      plot_spectra_tic(self$analyses, analyses, levels, rt, xLab, yLab, title, colorBy, legendNames, showLegend, xlim, 
+                       ylim, cex, downsize, interactive)
     },
     
     #' @description Plots the spectra base peak chromatogram (BPC) of each analysis.
@@ -1575,8 +1141,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 ylim = NULL,
                                 cex = 0.6,
                                 interactive = TRUE) {
-      
-      plot_spectra_bpc(self$analyses, analyses, levels, rt, xLab, yLab, title, colorBy, legendNames, showLegend, xlim, ylim, cex, interactive)
+      plot_spectra_bpc(self$analyses, analyses, levels, rt, xLab, yLab, title, colorBy, legendNames, showLegend, xlim, 
+                       ylim, cex, interactive)
     },
 
     #' @description Plots level 2 spectra from the analyses based on targets.
@@ -1600,8 +1166,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 title = NULL,
                                 colorBy = "targets",
                                 interactive = TRUE) {
-
-      ms2 <- plot_spectra_ms2(self$analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, isolationWindow, mzClust, presence, minIntensity, legendNames, xLab, yLab, title, colorBy, interactive)
+      ms2 <- plot_spectra_ms2(self$analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, isolationWindow, 
+                              mzClust, presence, minIntensity, legendNames, xLab, yLab, title, colorBy, interactive)
     },
 
     #' @description Plots level 1 spectra from the analyses based on targets.
@@ -1625,8 +1191,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 colorBy = "targets",
                                 showText = FALSE,
                                 interactive = TRUE) {
-
-      ms1 <- plot_spectra_ms1(self$analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, mzClust, presence, minIntensity, legendNames, xLab, yLab, title, colorBy, showText, interactive)
+      ms1 <- plot_spectra_ms1(self$analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, mzClust, 
+                              presence, minIntensity, legendNames, xLab, yLab, title, colorBy, showText, interactive)
     },
 
     #' @description Plots features from analyses.
@@ -1654,8 +1220,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                              ylim = NULL,
                              cex = 0.6,
                              interactive = TRUE) {
-
-      plot_features(self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand, mzExpand, useLoadedData, filtered, legendNames, xLab, yLab, title, colorBy, showLegend, xlim, ylim, cex, interactive)
+      plot_features(self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand, mzExpand, 
+                    useLoadedData, filtered, legendNames, xLab, yLab, title, colorBy, showLegend, xlim, ylim, cex, 
+                    interactive)
     },
 
     #' @description Plots a map of the retention time vs \emph{m/z} of features from analyses.
@@ -1680,8 +1247,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                             ylim = 0.05,
                             cex = 0.6,
                             interactive = TRUE) {
-
-      map_features(self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered, legendNames, xLab, yLab, title, colorBy, showLegend, xlim, ylim, cex, interactive)
+      map_features(self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered, 
+                   legendNames, xLab, yLab, title, colorBy, showLegend, xlim, ylim, cex, interactive)
     },
 
     #' @description Plots level 1 spectra from features in the analyses.
@@ -1708,8 +1275,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                  title = NULL,
                                  colorBy = "targets",
                                  interactive = TRUE) {
-
-      plot_features_ms1(self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, rtWindow, mzWindow, mzClust, presence, minIntensity, filtered, useLoadedData, legendNames, xLab, yLab, title, colorBy, interactive)
+      plot_features_ms1(self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, rtWindow, 
+                        mzWindow, mzClust, presence, minIntensity, filtered, useLoadedData, legendNames, xLab, yLab, 
+                        title, colorBy, interactive)
     },
 
     #' @description Plots level 2 spectra from features in the analyses.
@@ -1735,8 +1303,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                  title = NULL,
                                  colorBy = "targets",
                                  interactive = TRUE) {
-
-      plot_features_ms2(self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, isolationWindow, mzClust, presence, minIntensity, filtered, useLoadedData, legendNames, xLab, yLab, title, colorBy, interactive)
+      plot_features_ms2(self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, isolationWindow, 
+                        mzClust, presence, minIntensity, filtered, useLoadedData, legendNames, xLab, yLab, title, 
+                        colorBy, interactive)
     },
 
     #' @description Plots feature groups EIC.
@@ -1762,8 +1331,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                            ylim = NULL,
                            cex = 0.6,
                            interactive = TRUE) {
-
-      plot_groups(self$analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand, mzExpand, filtered, legendNames, xLab, yLab, title, colorBy, showLegend, xlim, ylim, cex, interactive)
+      plot_groups(self$analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand, mzExpand, filtered, 
+                  legendNames, xLab, yLab, title, colorBy, showLegend, xlim, ylim, cex, interactive)
     },
 
     #' @description Plots level 1 spectra from feature groups in the analyses.
@@ -1793,8 +1362,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                title = NULL,
                                colorBy = "targets",
                                interactive = TRUE) {
-
-      plot_groups_ms1(self$analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtWindow, mzWindow, mzClustFeatures, presenceFeatures, minIntensityFeatures, useLoadedData, mzClust, presence, minIntensity, groupBy, filtered, legendNames, xLab, yLab, title, colorBy, interactive)
+      plot_groups_ms1(self$analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtWindow, mzWindow, 
+                      mzClustFeatures, presenceFeatures, minIntensityFeatures, useLoadedData, mzClust, presence, 
+                      minIntensity, groupBy, filtered, legendNames, xLab, yLab, title, colorBy, interactive)
     },
 
     #' @description Plots level 1 spectra from feature groups in the analyses.
@@ -1823,8 +1393,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                title = NULL,
                                colorBy = "targets",
                                interactive = TRUE) {
-      
-      plot_groups_ms2(self$analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, isolationWindow, mzClustFeatures, presenceFeatures, minIntensityFeatures, useLoadedData, mzClust, presence, minIntensity, groupBy, filtered, legendNames, xLab, yLab, title, colorBy, interactive)
+      plot_groups_ms2(self$analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, isolationWindow, 
+                      mzClustFeatures, presenceFeatures, minIntensityFeatures, useLoadedData, mzClust, presence, 
+                      minIntensity, groupBy, filtered, legendNames, xLab, yLab, title, colorBy, interactive)
     },
 
     #' @description Method to give an overview of the EIC, alignment and intensity variance from features within 
@@ -1848,8 +1419,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                     legendNames = NULL,
                                     title = NULL,
                                     heights = c(0.35, 0.5, 0.15)) {
-
-      plot_groups_overview(self$analyses, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand, mzExpand, useLoadedData, filtered, legendNames, title, heights)
+      plot_groups_overview(self$analyses, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand, 
+                           mzExpand, useLoadedData, filtered, legendNames, title, heights)
     },
     
     #' @description Method to plot the intensity profile of feature groups across the analyses.
@@ -1870,8 +1441,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                    legendNames = NULL,
                                    yLab = NULL,
                                    title = NULL) {
-      
-      plot_groups_profile(self$analyses, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered, normalized, legendNames, yLab, title)
+      plot_groups_profile(self$analyses, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered, 
+                          normalized, legendNames, yLab, title)
     },
     
     #' @description Maps feature components in the analyses.
@@ -1895,8 +1466,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                               title = NULL,
                               colorBy = "targets",
                               interactive = TRUE) {
-      
-      map_components(self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered, xlim, ylim, showLegend, legendNames, xLab, yLab, title, colorBy, interactive)
+      map_components(self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered, xlim, 
+                     ylim, showLegend, legendNames, xLab, yLab, title, colorBy, interactive)
     },
 
     #' @description Plots the quality control assessment of the internal standards.
@@ -1939,63 +1510,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                              mzExpand = 0.005,
                              useLoadedData = TRUE,
                              colorBy = "targets") {
-      
-      if (any(self$has_suspects())) {
-        
-        suspects <- self$get_suspects(
-          analyses,
-          database,
-          features,
-          mass,
-          mz,
-          rt,
-          mobility,
-          ppm,
-          sec,
-          millisec,
-          ppmMS2,
-          minFragments,
-          isolationWindow ,
-          mzClust,
-          presence,
-          minIntensity,
-          filtered,
-          onGroups = FALSE
-        )
-        
-        if (nrow(suspects) == 0) return(NULL)
-        
-        eic <- self$get_features_eic(
-          analyses = unique(suspects$analysis),
-          features = suspects$feature,
-          rtExpand = rtExpand,
-          mzExpand = mzExpand,
-          filtered = filtered,
-          useLoadedData = useLoadedData
-        )
-        
-        eic <- eic[, `:=`(intensity = sum(intensity)), by = c("analysis", "polarity", "feature", "rt")][]
-        
-        if (nrow(eic) == 0) {
-          message("\U2717 Traces and/or features not found for targets!")
-          return(NULL)
-        }
-        
-        if (grepl("replicates", colorBy)) {
-          eic$replicate <- self$get_replicate_names()[eic$analysis]
-          suspects$replicate <- self$get_replicate_names()[suspects$analysis]
-        }
-        
-        suspects <- .make_colorBy_varkey(suspects, colorBy, TRUE)
-        
-        leg <- suspects$var
-        names(leg) <- paste0(suspects$feature, "_", suspects$analysis)
-        eic$uid <- paste0(eic$feature, "_", eic$analysis)
-        suspects$uid <- paste0(suspects$feature, "_", suspects$analysis)
-        eic$var <- leg[eic$uid]
-        
-        .plot_suspects_interactive(suspects, eic, heights = c(0.5, 0.5))
-      }
+      plot_suspects(self$analyses, analyses, database, features, mass, mz, rt, mobility, ppm, sec, millisec, ppmMS2,
+                    minFragments, isolationWindow, mzClust, presence, minIntensity, filtered, rtExpand, mzExpand, 
+                    useLoadedData, colorBy)
     },
     
     #' @description Plots peaks from chromatograms from analyses.
@@ -2012,8 +1529,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                         xLab = NULL,
                                         yLab = NULL,
                                         interactive = TRUE) {
-      
-      plot_chromatograms_peaks(self$analyses, analyses, chromatograms, legendNames, title, colorBy, showLegend, xlim, ylim, cex, xLab, yLab, interactive)
+      plot_chromatograms_peaks(self$analyses, analyses, chromatograms, legendNames, title, colorBy, showLegend, xlim, 
+                               ylim, cex, xLab, yLab, interactive)
     },
     
     #' @description Plots charge assignment of deconvoluted spectra from analyses.
@@ -2029,7 +1546,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                     xLab = NULL,
                                     yLab = NULL,
                                     interactive = TRUE) {
-      plot_spectra_charges(self$analyses, analyses, legendNames, title, colorBy, showLegend, xlim, ylim, cex, xLab, yLab, interactive)
+      plot_spectra_charges(self$analyses, analyses, legendNames, title, colorBy, showLegend, xlim, ylim, cex, xLab, 
+                           yLab, interactive)
     },
 
     #' @description Plots peaks from spectra from analyses.

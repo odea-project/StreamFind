@@ -509,6 +509,319 @@ void merge_traces_within_rt(std::vector<float>& rt, std::vector<float>& mz, std:
   intensity = intensity_out;
 }
 
+Rcpp::List cluster_spectra(const Rcpp::List& spectra, const float& mzClust = 0.005, const float& presence = 0.8) {
+  
+  const std::vector<std::string>& names_spectra = spectra.names();
+  
+  const std::vector<std::string> must_have_names = { "polarity", "level", "rt", "mz", "intensity" };
+  
+  const int n_must_have_names = must_have_names.size();
+  
+  std::vector<bool> has_must_have_names(n_must_have_names, false);
+  
+  bool has_pre_ce = false;
+  bool has_pre_mz = false;
+  
+  for (size_t i = 0; i < must_have_names.size(); ++i) {
+    for (size_t j = 0; j < names_spectra.size(); ++j) {
+      if (must_have_names[i] == names_spectra[j]) has_must_have_names[i] = true;
+      if (names_spectra[j] == "pre_ce") has_pre_ce = true;
+      if (names_spectra[j] == "pre_mz") has_pre_mz = true;
+    }
+  }
+  
+  for (bool value : has_must_have_names) {
+    if (!value) {
+      throw std::runtime_error("The spectra must have the columns polarity, level, rt, pre_mz, mz and intensity!");
+    }
+  }
+  
+  const std::vector<int>& org_polarity = spectra["polarity"];
+  const std::vector<int>& org_level = spectra["level"];
+  const std::vector<float>& org_rt = spectra["rt"];
+  const std::vector<float>& org_mz = spectra["mz"];
+  const std::vector<float>& org_intensity = spectra["intensity"];
+  
+  const int n_traces = org_polarity.size();
+  
+  std::vector<float> org_pre_ce(n_traces);
+  
+  if (has_pre_ce) {
+    const std::vector<float>& org_pre_ce_origin = spectra["pre_ce"];
+    for (int i=0; i<n_traces; ++i) {
+      org_pre_ce[i] = org_pre_ce_origin[i];
+    }
+  }
+  
+  std::vector<float> org_pre_mz(n_traces);
+  
+  if (has_pre_mz) {
+    const std::vector<float>& org_pre_mz_origin = spectra["pre_mz"];
+    for (int i=0; i<n_traces; ++i) {
+      org_pre_mz[i] = org_pre_mz_origin[i];
+    }
+  }
+  
+  std::vector<int> idx(n_traces);
+  std::iota(idx.begin(), idx.end(), 0);
+  
+  std::sort(idx.begin(), idx.end(), [&](int i, int j){return org_mz[i] < org_mz[j];});
+  
+  std::vector<float> rt(n_traces);
+  float* rt_ptr = rt.data();
+  
+  std::vector<float> mz(n_traces);
+  float* mz_ptr = mz.data();
+  
+  std::vector<float> intensity(n_traces);
+  float* intensity_ptr = intensity.data();
+  
+  std::vector<float> pre_ce(n_traces);
+  float* pre_ce_ptr = pre_ce.data();
+  
+  std::vector<float> pre_mz(n_traces);
+  float* pre_mz_ptr = pre_mz.data();
+  
+  for (const int& x : idx) {
+    *(rt_ptr++) = org_rt[x];
+    *(mz_ptr++) = org_mz[x];
+    *(intensity_ptr++) = org_intensity[x];
+    *(pre_ce_ptr++) = org_pre_ce[x];
+    *(pre_mz_ptr++) = org_pre_mz[x];
+  }
+  
+  std::set<float> unique_rt_set;
+  
+  for (const float& r : rt) {
+    unique_rt_set.insert(r);
+  }
+  
+  std::vector<float> unique_rt(unique_rt_set.begin(), unique_rt_set.end());
+  
+  std::set<float> unique_pre_ce_set;
+  
+  for (const float& c : pre_ce) {
+    unique_pre_ce_set.insert(c);
+  }
+  
+  std::vector<float> unique_pre_ce(unique_pre_ce_set.begin(), unique_pre_ce_set.end());
+  
+  rt_ptr = rt.data();
+  pre_ce_ptr = pre_ce.data();
+  mz_ptr = mz.data();
+  intensity_ptr = intensity.data();
+  
+  std::vector<float> mz_diff(n_traces - 1);
+  
+  for (int j = 1; j < n_traces; ++j) {
+    mz_diff[j - 1] = mz[j] - mz[j - 1];
+  }
+  
+  float itMzClust = mzClust;
+  
+  int counter = 0;
+  
+  bool hasFromSameScan = true;
+  
+  Rcpp::List out;
+  
+  while (hasFromSameScan) {
+    
+    counter = counter + 1;
+    
+    std::vector<float> new_mz;
+    
+    std::vector<float> new_intensity;
+    
+    std::vector<int> all_clusters(mz_diff.size(), 0);
+    
+    for (size_t j = 0; j < mz_diff.size(); ++j) {
+      if (mz_diff[j] > itMzClust) all_clusters[j] = 1;
+    }
+    
+    std::partial_sum(all_clusters.begin(), all_clusters.end(), all_clusters.begin());
+    
+    all_clusters.insert(all_clusters.begin(), 0);
+    
+    for (int &val : all_clusters) {
+      val += 1;
+    }
+    
+    int n_all_clusters = all_clusters.size();
+    
+    std::vector<int> idx_clusters(all_clusters.size());
+    std::iota(idx_clusters.begin(), idx_clusters.end(), 0);
+    
+    std::set<int> clusters_set;
+    
+    for (const int& cl : all_clusters) {
+      clusters_set.insert(cl);
+    }
+    
+    std::vector<int> clusters(clusters_set.begin(), clusters_set.end());
+    
+    int n_clusters = clusters.size();
+    
+    std::vector<bool> fromSameScan(n_clusters, true);
+    
+    for (int z=0; z<n_clusters; ++z) {
+      
+      std::vector<int> temp_idx;
+      
+      for (int j=0; j<n_all_clusters; ++j) {
+        if (all_clusters[j] == clusters[z]) temp_idx.push_back(j);
+      }
+      
+      int n = temp_idx.size();
+      
+      std::vector<float> temp_rt(n);
+      float* temp_rt_ptr = temp_rt.data();
+      
+      std::vector<float> temp_pre_ce(n);
+      float* temp_pre_ce_ptr = temp_pre_ce.data();
+      
+      std::vector<float> temp_mz(n);
+      float* temp_mz_ptr = temp_mz.data();
+      
+      std::vector<float> temp_intensity(n);
+      float* temp_intensity_ptr = temp_intensity.data();
+      
+      for (const int& x : temp_idx) {
+        *(temp_rt_ptr++) = *(rt_ptr + x);
+        *(temp_pre_ce_ptr++) = *(pre_ce_ptr + x);
+        *(temp_mz_ptr++) = *(mz_ptr + x);
+        *(temp_intensity_ptr++) = *(intensity_ptr + x);
+      }
+      
+      std::set<float> unique_temp_rt_set;
+      
+      for (const float& r : temp_rt) {
+        unique_temp_rt_set.insert(r);
+      }
+      
+      std::vector<float> unique_temp_rt(unique_temp_rt_set.begin(), unique_temp_rt_set.end());
+
+      std::set<float> unique_temp_pre_ce_set;
+      
+      for (const float& r : temp_pre_ce) {
+        unique_temp_pre_ce_set.insert(r);
+      }
+      
+      std::vector<float> unique_temp_pre_ce(unique_temp_pre_ce_set.begin(), unique_temp_pre_ce_set.end());
+      
+      fromSameScan[z] = unique_temp_rt.size() < temp_rt.size();
+      
+      if (counter > 10) fromSameScan[z] = false;
+      
+      if (itMzClust < 0.0001) fromSameScan[z] = false;
+      
+      // when traces are twice in a given scan for cluster breaks the for loop and decreases the itMzClust
+      if (fromSameScan[z]) {
+        itMzClust = itMzClust - 0.0001;
+        break;
+      }
+      
+      bool enough_presence = false;
+      
+      if (unique_temp_pre_ce.size() < unique_pre_ce.size()) {
+        enough_presence = unique_rt.size() * (unique_temp_pre_ce.size() / unique_pre_ce.size()) * presence <= unique_temp_rt.size();
+        
+      } else {
+        enough_presence = unique_rt.size() * presence <= unique_temp_rt.size();
+      }
+      
+      // when is not enough present skips the m/z cluster
+      if (!enough_presence) continue;
+      
+      auto max_intensity_ptr = std::max_element(temp_intensity.begin(), temp_intensity.end());
+      new_intensity.push_back(*max_intensity_ptr);
+      
+      int size_temp_mz = temp_mz.size();
+      
+      float mz_sum = 0, mz_numWeight = 0;
+      
+      for (int w = 0; w < size_temp_mz; w++) {
+        mz_numWeight = mz_numWeight + temp_mz[w] * temp_intensity[w];
+        mz_sum = mz_sum + temp_intensity[w];
+      }
+      
+      float mean_mz = mz_numWeight / mz_sum;
+      
+      new_mz.push_back(mean_mz);
+      
+    } // end of clusters for loop
+    
+    if (new_mz.size() > 0) {
+      
+      float rt_mean = 0;
+      
+      for (float val : rt) {
+        rt_mean += val;
+      }
+      
+      rt_mean = rt_mean / rt.size();
+      
+      if (has_pre_mz) {
+        
+        float pre_mz_mean = 0;
+        
+        std::vector<bool> is_pre(new_mz.size(), false);
+        
+        for (const float& val : pre_mz) {
+          pre_mz_mean += val;
+        }
+        
+        pre_mz_mean = pre_mz_mean / pre_mz.size();
+        
+        if (!std::isnan(pre_mz_mean)) {
+          for (size_t p = 0; p < new_mz.size(); p++) {
+            if ((new_mz[p] >= pre_mz_mean - mzClust) && (new_mz[p] <= pre_mz_mean + mzClust)) {
+              is_pre[p] = true;
+            }
+          }
+        }
+        
+        const  std::vector<int> polarity_out(new_mz.size(), org_polarity[0]);
+        const  std::vector<int> level_out(new_mz.size(), org_level[0]);
+        const  std::vector<float> pre_mz_out(new_mz.size(), pre_mz_mean);
+        const  std::vector<float> rt_out(new_mz.size(), rt_mean);
+        
+        out["polarity"] = polarity_out;
+        out["level"] = level_out;
+        out["pre_mz"] = pre_mz_out;
+        out["rt"] = rt_out;
+        out["mz"] = new_mz;
+        out["intensity"] = new_intensity;
+        out["is_pre"] = is_pre;
+        
+      } else {
+        
+        const  std::vector<int> polarity_out(new_mz.size(), org_polarity[0]);
+        const  std::vector<int> level_out(new_mz.size(), org_level[0]);
+        const  std::vector<float> rt_out(new_mz.size(), rt_mean);
+        
+        out["polarity"] = polarity_out;
+        out["level"] = level_out;
+        out["rt"] = rt_out;
+        out["mz"] = new_mz;
+        out["intensity"] = new_intensity;
+        
+      }
+    }
+    
+    hasFromSameScan = false;
+    
+    for (const bool& l : fromSameScan) {
+      if (l) {
+        hasFromSameScan = true;
+        break;
+      }
+    }
+  } // end of while loop
+  
+  return out;
+}
+
 float mean(const std::vector<float>& v) {
   return accumulate(v.begin(), v.end(), 0.0) / v.size();
 }
@@ -794,7 +1107,11 @@ Rcpp::List rcpp_ms_load_features_eic(Rcpp::List analyses,
     
     int counter = 0;
     for (int j = 0; j < n_features; j++) {
+      
       if (!filtered) if (fts_filtered[j]) continue;
+      
+      const int eic_size = fts_eic[j].size();
+      if (eic_size > 0) continue;
       
       targets.index.push_back(counter);
       counter++;
@@ -835,15 +1152,316 @@ Rcpp::List rcpp_ms_load_features_eic(Rcpp::List analyses,
       merge_traces_within_rt(res_j.rt, res_j.mz, res_j.intensity);
       
       Rcpp::List eic = Rcpp::List::create(
+        Rcpp::Named("polarity") = res_j.polarity,
+        Rcpp::Named("level") = res_j.level,
         Rcpp::Named("rt") = res_j.rt,
         Rcpp::Named("mz") = res_j.mz,
         Rcpp::Named("intensity") = res_j.intensity
       );
       
+      eic.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+      
       fts_eic[j] = eic;
     }
     
     features_i["eic"] = fts_eic;
+    features[i] = features_i;
+  }
+  
+  return features;
+}
+
+// [[Rcpp::export]]
+Rcpp::List rcpp_ms_load_features_ms1(Rcpp::List analyses,
+                                     Rcpp::List features,
+                                     bool filtered,
+                                     std::vector<float> rtWindow,
+                                     std::vector<float> mzWindow,
+                                     float minTracesIntensity,
+                                     float mzClust,
+                                     float presence) {
+  
+  const int number_analyses = analyses.size();
+  
+  if (number_analyses == 0) return features;
+  
+  std::vector<std::string> analyses_names(number_analyses);
+  
+  for (int i = 0; i < number_analyses; i++) {
+    Rcpp::List analysis = analyses[i];
+    std::string name = analysis["name"];
+    analyses_names[i] = name;
+  }
+  
+  const int number_features_analyses = features.size();
+  
+  if (number_features_analyses != number_analyses) return features;
+  
+  std::vector<std::string> features_analyses_names = features.names();
+  
+  int rtWindowMax_idx = find_max_index(rtWindow);
+  int rtWindowMin_idx = find_min_index(rtWindow);
+  int mzWindowMax_idx = find_max_index(mzWindow);
+  int mzWindowMin_idx = find_min_index(mzWindow);
+  
+  for (int i = 0; i < number_analyses; i++) {
+    
+    if (features_analyses_names[i] != analyses_names[i]) return features;
+    
+    Rcpp::List features_i = features[i];
+    
+    const std::vector<std::string>& features_i_names = features_i.names();
+    
+    const int n_features_i_names = features_i_names.size();
+    
+    if (n_features_i_names == 0) return features;
+    
+    std::vector<std::string> must_have_names = {
+      "feature", "rt", "rtmax", "rtmin", "mz", "mzmax", "mzmin", "polarity", "filtered", "eic"
+    };
+    
+    const int n_must_have_names = must_have_names.size();
+    
+    std::vector<bool> has_must_have_names(n_must_have_names, false);
+    
+    for (int j = 0; j < n_must_have_names; ++j) {
+      for (int k = 0; k < n_features_i_names; ++k) {
+        if (must_have_names[j] == features_i_names[k]) has_must_have_names[j] = true;
+      }
+    }
+    
+    for (bool value : has_must_have_names) {
+      if (!value) {
+        return features;
+      }
+    }
+    
+    const std::vector<std::string>& fts_id = features_i["feature"];
+    const std::vector<bool>& fts_filtered = features_i["filtered"];
+    const std::vector<int>& fts_polarity = features_i["polarity"];
+    const std::vector<float>& fts_rt = features_i["rt"];
+    const std::vector<float>& fts_mz = features_i["mz"];
+    const std::vector<float>& fts_intensity = features_i["intensity"];
+    std::vector<Rcpp::List> fts_ms1 = features_i["ms1"];
+    
+    const int n_features = fts_id.size();
+    
+    if (n_features == 0) return features;
+    
+    sc::MS_TARGETS targets;
+    
+    int counter = 0;
+    for (int j = 0; j < n_features; j++) {
+      if (!filtered) if (fts_filtered[j]) continue;
+      
+      const int ms1_size = fts_ms1[j].size();
+      if (ms1_size > 0) continue;
+      
+      targets.index.push_back(counter);
+      counter++;
+      targets.id.push_back(fts_id[j]);
+      targets.level.push_back(1);
+      targets.polarity.push_back(fts_polarity[j]);
+      targets.precursor.push_back(false);
+      targets.mzmin.push_back(fts_mz[j] + mzWindow[mzWindowMin_idx]);
+      targets.mzmax.push_back(fts_mz[j] + mzWindow[mzWindowMax_idx]);
+      targets.rtmin.push_back(fts_rt[j] + rtWindow[rtWindowMin_idx]);
+      targets.rtmax.push_back(fts_rt[j] + rtWindow[rtWindowMax_idx]);
+      targets.mobilitymin.push_back(0);
+      targets.mobilitymax.push_back(0);
+    }
+    
+    if (targets.id.size() == 0) continue;
+    
+    const Rcpp::List& analysis = analyses[i];
+    
+    sc::MS_SPECTRA_HEADERS headers = get_analysis_headers(analysis);
+    
+    const std::string file = analysis["file"];
+    
+    if (!std::filesystem::exists(file)) continue;
+    
+    sc::MS_ANALYSIS ana(file);
+    
+    sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, headers, minTracesIntensity, 0);
+    
+    for (int j = 0; j < n_features; j++) {
+      
+      if (!filtered) if (fts_filtered[j]) continue;
+      
+      const std::string& id_j = fts_id[j];
+      
+      sc::MS_TARGETS_SPECTRA res_j = res[id_j];
+      
+      const int n_res_j = res_j.rt.size();
+      
+      if (n_res_j == 0) continue;
+      
+      const Rcpp::List ms1 = Rcpp::List::create(
+        Rcpp::Named("polarity") = res_j.polarity,
+        Rcpp::Named("level") = res_j.level,
+        Rcpp::Named("pre_mz") = res_j.pre_mz,
+        Rcpp::Named("pre_ce") = res_j.pre_ce,
+        Rcpp::Named("rt") = res_j.rt,
+        Rcpp::Named("mz") = res_j.mz,
+        Rcpp::Named("intensity") = res_j.intensity
+      );
+      
+      Rcpp::List ms1_clustered = cluster_spectra(ms1, mzClust, presence);
+      
+      ms1_clustered.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+      
+      fts_ms1[j] = ms1_clustered;
+    }
+    
+    features_i["ms1"] = fts_ms1;
+    features[i] = features_i;
+  }
+  
+  return features;
+}
+
+// [[Rcpp::export]]
+Rcpp::List rcpp_ms_load_features_ms2(Rcpp::List analyses,
+                                     Rcpp::List features,
+                                     bool filtered,
+                                     float minTracesIntensity,
+                                     float isolationWindow,
+                                     float mzClust,
+                                     float presence) {
+  
+  const int number_analyses = analyses.size();
+  
+  if (number_analyses == 0) return features;
+  
+  std::vector<std::string> analyses_names(number_analyses);
+  
+  for (int i = 0; i < number_analyses; i++) {
+    Rcpp::List analysis = analyses[i];
+    std::string name = analysis["name"];
+    analyses_names[i] = name;
+  }
+  
+  const int number_features_analyses = features.size();
+  
+  if (number_features_analyses != number_analyses) return features;
+  
+  std::vector<std::string> features_analyses_names = features.names();
+  
+  for (int i = 0; i < number_analyses; i++) {
+    
+    if (features_analyses_names[i] != analyses_names[i]) return features;
+    
+    Rcpp::List features_i = features[i];
+    
+    const std::vector<std::string>& features_i_names = features_i.names();
+    
+    const int n_features_i_names = features_i_names.size();
+    
+    if (n_features_i_names == 0) return features;
+    
+    std::vector<std::string> must_have_names = {
+      "feature", "rt", "rtmax", "rtmin", "mz", "mzmax", "mzmin", "polarity", "filtered", "eic"
+    };
+    
+    const int n_must_have_names = must_have_names.size();
+    
+    std::vector<bool> has_must_have_names(n_must_have_names, false);
+    
+    for (int j = 0; j < n_must_have_names; ++j) {
+      for (int k = 0; k < n_features_i_names; ++k) {
+        if (must_have_names[j] == features_i_names[k]) has_must_have_names[j] = true;
+      }
+    }
+    
+    for (bool value : has_must_have_names) {
+      if (!value) {
+        return features;
+      }
+    }
+    
+    const std::vector<std::string>& fts_id = features_i["feature"];
+    const std::vector<bool>& fts_filtered = features_i["filtered"];
+    const std::vector<int>& fts_polarity = features_i["polarity"];
+    const std::vector<float>& fts_rt = features_i["rt"];
+    const std::vector<float>& fts_rtmin = features_i["rtmin"];
+    const std::vector<float>& fts_rtmax = features_i["rtmax"];
+    const std::vector<float>& fts_mz = features_i["mz"];
+    const std::vector<float>& fts_intensity = features_i["intensity"];
+    std::vector<Rcpp::List> fts_ms2 = features_i["ms2"];
+    
+    const int n_features = fts_id.size();
+    
+    if (n_features == 0) return features;
+    
+    sc::MS_TARGETS targets;
+    
+    int counter = 0;
+    for (int j = 0; j < n_features; j++) {
+      
+      if (!filtered) if (fts_filtered[j]) continue;
+      
+      const int ms2_size = fts_ms2[j].size();
+      if (ms2_size > 0) continue;
+      
+      targets.index.push_back(counter);
+      counter++;
+      targets.id.push_back(fts_id[j]);
+      targets.level.push_back(2);
+      targets.polarity.push_back(fts_polarity[j]);
+      targets.precursor.push_back(true);
+      targets.mzmin.push_back(fts_mz[j] - (isolationWindow / 2));
+      targets.mzmax.push_back(fts_mz[j] + (isolationWindow / 2));
+      targets.rtmin.push_back(fts_rtmin[j] - 1);
+      targets.rtmax.push_back(fts_rtmax[j] + 1);
+      targets.mobilitymin.push_back(0);
+      targets.mobilitymax.push_back(0);
+    }
+    
+    if (targets.id.size() == 0) continue;
+    
+    const Rcpp::List& analysis = analyses[i];
+    
+    sc::MS_SPECTRA_HEADERS headers = get_analysis_headers(analysis);
+    
+    const std::string file = analysis["file"];
+    
+    if (!std::filesystem::exists(file)) continue;
+    
+    sc::MS_ANALYSIS ana(file);
+    
+    sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, headers, 0, minTracesIntensity);
+    
+    for (int j = 0; j < n_features; j++) {
+      
+      if (!filtered) if (fts_filtered[j]) continue;
+      
+      const std::string& id_j = fts_id[j];
+      
+      sc::MS_TARGETS_SPECTRA res_j = res[id_j];
+      
+      const int n_res_j = res_j.rt.size();
+      
+      if (n_res_j == 0) continue;
+      
+      const  Rcpp::List ms2 = Rcpp::List::create(
+        Rcpp::Named("polarity") = res_j.polarity,
+        Rcpp::Named("level") = res_j.level,
+        Rcpp::Named("pre_mz") = res_j.pre_mz,
+        Rcpp::Named("pre_ce") = res_j.pre_ce,
+        Rcpp::Named("rt") = res_j.rt,
+        Rcpp::Named("mz") = res_j.mz,
+        Rcpp::Named("intensity") = res_j.intensity
+      );
+      
+      Rcpp::List ms2_clustered = cluster_spectra(ms2, mzClust, presence);
+      
+      ms2_clustered.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+      
+      fts_ms2[j] = ms2_clustered;
+    }
+    
+    features_i["ms2"] = fts_ms2;
     features[i] = features_i;
   }
   
@@ -1179,6 +1797,8 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
       // enc_intensity = sc::encode_base64(enc_intensity);
       
       Rcpp::List eic = Rcpp::List::create(
+        Rcpp::Named("polarity") = res_i.polarity,
+        Rcpp::Named("level") = res_i.level,
         Rcpp::Named("rt") = res_i.rt,
         Rcpp::Named("mz") = res_i.mz,
         Rcpp::Named("intensity") = res_i.intensity
@@ -1392,6 +2012,8 @@ Rcpp::List rcpp_ms_calculate_features_quality(Rcpp::List analyses,
         intensity = res_j.intensity;
         merge_traces_within_rt(rt, mz, intensity);
         Rcpp::List eic = Rcpp::List::create(
+          Rcpp::Named("polarity") = res_j.polarity,
+          Rcpp::Named("level") = res_j.level,
           Rcpp::Named("rt") = rt,
           Rcpp::Named("mz") = mz,
           Rcpp::Named("intensity") = intensity

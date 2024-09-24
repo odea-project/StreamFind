@@ -88,15 +88,22 @@ S7::method(run, MassSpecSettings_LoadFeaturesMS1_StreamFind) <- function(x, engi
   
   nts <- engine$nts
   
+  feature_list <- nts$feature_list
+  
+  feature_list <- lapply(feature_list, function(z) {
+    if (!"ms1" %in% colnames(z)) z$ms1 <- rep(list(), nrow(z))
+    z
+  })
+  
   parameters <- x$parameters
   
-  cache <- .load_chache("load_features_ms1", nts$features, x)
+  cache <- .load_chache("load_features_ms1", feature_list, x)
   
   if (!is.null(cache$data)) {
+    feature_list <- cache$data
     tryCatch({
-      nts <- .add_features_column(nts, "ms1", cache$data)
-      engine$nts <- nts
-      message("\U2139 Features MS1 spectra loaded from cache!")
+      engine$nts$feature_list <- feature_list
+      message("\U2139 Features MS1 loaded from cache!")
       return(TRUE)
     }, error = function(e) {
       warning(e)
@@ -104,54 +111,30 @@ S7::method(run, MassSpecSettings_LoadFeaturesMS1_StreamFind) <- function(x, engi
     })
   }
   
-  ms1 <- engine$get_features_ms1(
+  feature_list <- rcpp_ms_load_features_ms1(
+    analyses = engine$analyses$analyses,
+    features = feature_list,
+    filtered = parameters$filtered,
     rtWindow = parameters$rtWindow,
     mzWindow = parameters$mzWindow,
+    minTracesIntensity = parameters$minIntensity,
     mzClust = parameters$mzClust,
-    presence = parameters$presence,
-    minIntensity = parameters$minIntensity,
-    filtered = parameters$filtered,
-    useLoadedData = FALSE
+    presence = parameters$presence
   )
   
-  analyses <- engine$get_analysis_names()
-  
-  features <- nts$feature_list
-  
-  ms1_col <- lapply(analyses, function(x, ms1, features) {
-    
-    ana_ms1 <- ms1[ms1$analysis %in% x, ]
-    
-    fts_all <- features[[x]]$feature
-    
-    fts_ms1 <- lapply(fts_all, function(z, ana_ms1) {
-      
-      ft_ms1 <- ana_ms1[ana_ms1$feature %in% z, ]
-      
-      if (nrow(ft_ms1) > 0) {
-        ft_ms1[["group"]] <- NULL
-        ft_ms1[["analysis"]] <- NULL
-        ft_ms1[["feature"]] <- NULL
-        ft_ms1
-        
-      } else {
-        NULL
-      }
-    }, ana_ms1 = ana_ms1)
-    
-    fts_ms1
-    
-  }, ms1 = ms1, features = features)
-  
   if (!is.null(cache$hash)) {
-    .save_cache("load_features_ms1", ms1_col, cache$hash)
+    .save_cache("load_features_ms1", feature_list, cache$hash)
     message("\U1f5ab Features MS1 spectra saved to cache!")
   }
   
-  nts <- .add_features_column(nts, "ms1", ms1_col)
-  engine$nts <- nts
-  message("\U2713 MS1 spectra added to features!")
-  TRUE
+  tryCatch({
+    engine$nts$feature_list <- feature_list
+    message("\U2713 MS1 added to features!")
+    return(TRUE)
+  }, error = function(e) {
+    warning(e)
+    return(FALSE)
+  })
 }
 
 # ______________________________________________________________________________________________________________________
@@ -239,15 +222,22 @@ S7::method(run, MassSpecSettings_LoadFeaturesMS2_StreamFind) <- function(x, engi
   
   nts <- engine$nts
   
+  feature_list <- nts$feature_list
+  
+  feature_list <- lapply(feature_list, function(z) {
+    if (!"ms2" %in% colnames(z)) z$ms2 <- rep(list(), nrow(z))
+    z
+  })
+  
   parameters <- x$parameters
   
-  cache <- .load_chache("load_features_ms2", nts$features, x)
+  cache <- .load_chache("load_features_ms2", feature_list, x)
   
   if (!is.null(cache$data)) {
+    feature_list <- cache$data
     tryCatch({
-      nts <- .add_features_column(nts, "ms2", cache$data)
-      engine$nts <- nts
-      message("\U2139 Features MS2 spectra loaded from cache!")
+      engine$nts$feature_list <- feature_list
+      message("\U2139 Features MS2 loaded from cache!")
       return(TRUE)
     }, error = function(e) {
       warning(e)
@@ -255,52 +245,29 @@ S7::method(run, MassSpecSettings_LoadFeaturesMS2_StreamFind) <- function(x, engi
     })
   }
   
-  ms2 <- engine$get_features_ms2(
-    isolationWindow =  parameters$isolationWindow,
-    mzClust = parameters$mzClust,
-    presence = parameters$presence,
-    minIntensity = parameters$minIntensity,
+  feature_list <- rcpp_ms_load_features_ms2(
+    analyses = engine$analyses$analyses,
+    features = feature_list,
     filtered = parameters$filtered,
-    useLoadedData = FALSE
+    minTracesIntensity = parameters$minIntensity,
+    isolationWindow = parameters$isolationWindow,
+    mzClust = parameters$mzClust,
+    presence = parameters$presence
   )
   
-  analyses <- engine$get_analysis_names()
-  
-  features <- nts$feature_list
-  
-  ms2_col <- lapply(analyses, function(x, ms2, features) {
-    
-    ana_ms2 <- ms2[ms2$analysis %in% x, ]
-    
-    fts_all <- features[[x]]$feature
-    
-    fts_ms2 <- lapply(fts_all, function(z, ana_ms2) {
-      
-      ft_ms2 <- ana_ms2[ana_ms2$feature %in% z, ]
-      
-      if (nrow(ft_ms2) > 0) {
-        ft_ms2[["group"]] <- NULL
-        ft_ms2[["analysis"]] <- NULL
-        ft_ms2[["feature"]] <- NULL
-        ft_ms2
-      } else {
-        NULL
-      }
-    }, ana_ms2 = ana_ms2)
-    
-    fts_ms2
-    
-  }, ms2 = ms2, features = features)
-  
   if (!is.null(cache$hash)) {
-    .save_cache("load_features_ms2", ms2_col, cache$hash)
+    .save_cache("load_features_ms2", feature_list, cache$hash)
     message("\U1f5ab Features MS2 spectra saved to cache!")
   }
   
-  nts <- .add_features_column(nts, "ms2", ms2_col)
-  engine$nts <- nts
-  message("\U2713 MS2 spectra added to features!")
-  TRUE
+  tryCatch({
+    engine$nts$feature_list <- feature_list
+    message("\U2713 MS2 added to features!")
+    return(TRUE)
+  }, error = function(e) {
+    warning(e)
+    return(FALSE)
+  })
 }
 
 # ______________________________________________________________________________________________________________________
@@ -314,7 +281,7 @@ S7::method(run, MassSpecSettings_LoadFeaturesMS2_StreamFind) <- function(x, engi
 #' @template arg-ms-rtExpand
 #' @template arg-ms-mzExpand
 #' @template arg-ms-filtered
-#' @param minTracesIntensity Numeric of length one with the minimum intensity of traces to extract for EIC.
+#' @param minIntensity Numeric of length one with the minimum intensity of traces to extract for EIC.
 #'
 #' @return A `MassSpecSettings_LoadFeaturesEIC_StreamFind` object.
 #'
@@ -324,7 +291,7 @@ MassSpecSettings_LoadFeaturesEIC_StreamFind <- S7::new_class("MassSpecSettings_L
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(filtered = FALSE, rtExpand = 120, mzExpand = 0, minTracesIntensity = 0) {
+  constructor = function(filtered = FALSE, rtExpand = 120, mzExpand = 0, minIntensity = 0) {
    
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
@@ -334,7 +301,7 @@ MassSpecSettings_LoadFeaturesEIC_StreamFind <- S7::new_class("MassSpecSettings_L
         "filtered" = filtered,
         "rtExpand" = rtExpand,
         "mzExpand" = mzExpand,
-        "minTracesIntensity" = minTracesIntensity
+        "minIntensity" = minIntensity
       ),
       number_permitted = 1,
       version = as.character(packageVersion("StreamFind")),
@@ -353,7 +320,7 @@ MassSpecSettings_LoadFeaturesEIC_StreamFind <- S7::new_class("MassSpecSettings_L
       checkmate::test_choice(self@algorithm, "StreamFind"),
       checkmate::test_number(self@parameters$rtExpand),
       checkmate::test_number(self@parameters$mzExpand),
-      checkmate::test_number(self@parameters$minTracesIntensity),
+      checkmate::test_number(self@parameters$minIntensity),
       checkmate::test_logical(self@parameters$filtered, max.len = 1)
     )
     if (!valid) return(FALSE)
@@ -390,7 +357,7 @@ S7::method(run, MassSpecSettings_LoadFeaturesEIC_StreamFind) <- function(x, engi
   feature_list <- nts$feature_list
   
   feature_list <- lapply(feature_list, function(z) {
-    if ("eic" %in% colnames(z)) z$eic <- rep(list(), nrow(z))
+    if (!"eic" %in% colnames(z)) z$eic <- rep(list(), nrow(z))
     z
   })
     
@@ -416,7 +383,7 @@ S7::method(run, MassSpecSettings_LoadFeaturesEIC_StreamFind) <- function(x, engi
     parameters$filtered,
     parameters$rtExpand,
     parameters$mzExpand,
-    parameters$minTracesIntensity
+    parameters$minIntensity
   )
   
   if (!is.null(cache$hash)) {

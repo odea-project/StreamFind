@@ -26,14 +26,6 @@ assembly of Non-Target Screening data processing workflows.
 \item{\code{spectra}}{Get/set for the \code{Spectra} results class.}
 
 \item{\code{chromatograms}}{Get/set for the chromatograms results class.}
-
-\item{\code{chromatograms_peaks}}{\code{data.table} with integrated peaks from chromatograms for each analyses.}
-
-\item{\code{spectra_charges}}{\code{data.table} with charges assigned to spectra for each analyses.}
-
-\item{\code{deconvoluted_spectra}}{List of deconvoluted spectra for each analysis.}
-
-\item{\code{spectra_peaks}}{\code{data.table} with integrated spectra peaks for each analysis.}
 }
 \if{html}{\out{</div>}}
 }
@@ -84,12 +76,6 @@ assembly of Non-Target Screening data processing workflows.
 \item \href{#method-MassSpecEngine-remove_analyses}{\code{MassSpecEngine$remove_analyses()}}
 \item \href{#method-MassSpecEngine-load_spectra}{\code{MassSpecEngine$load_spectra()}}
 \item \href{#method-MassSpecEngine-load_chromatograms}{\code{MassSpecEngine$load_chromatograms()}}
-\item \href{#method-MassSpecEngine-remove_features}{\code{MassSpecEngine$remove_features()}}
-\item \href{#method-MassSpecEngine-remove_features_ms1}{\code{MassSpecEngine$remove_features_ms1()}}
-\item \href{#method-MassSpecEngine-remove_features_ms2}{\code{MassSpecEngine$remove_features_ms2()}}
-\item \href{#method-MassSpecEngine-remove_groups}{\code{MassSpecEngine$remove_groups()}}
-\item \href{#method-MassSpecEngine-subset_features}{\code{MassSpecEngine$subset_features()}}
-\item \href{#method-MassSpecEngine-subset_groups}{\code{MassSpecEngine$subset_groups()}}
 \item \href{#method-MassSpecEngine-has_nts}{\code{MassSpecEngine$has_nts()}}
 \item \href{#method-MassSpecEngine-has_features}{\code{MassSpecEngine$has_features()}}
 \item \href{#method-MassSpecEngine-has_groups}{\code{MassSpecEngine$has_groups()}}
@@ -1876,7 +1862,7 @@ Adds analyses. Note that when adding new analyses, any existing results are remo
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A MassSpecAnalysis S3 class object or a list with MassSpecAnalysis S3 class objects as
+\item{\code{analyses}}{A MassSpecAnalysis class object or a list with MassSpecAnalysis class objects as
 elements (see \code{?MassSpecAnalysis} for more information) or a character vector with full path to mzML/mzXML files.}
 }
 \if{html}{\out{</div>}}
@@ -2020,121 +2006,6 @@ Loads all chromatograms from all analyses.
 }
 \subsection{Returns}{
 Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-remove_features"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-remove_features}{}}}
-\subsection{Method \code{remove_features()}}{
-Removes features. Note that feature groups are also removed when features is set to \code{NULL}
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$remove_features(features = NULL, filtered = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{features}}{A character vector with the feature IDs or a data.frame or data.table with a column named \code{feature}
-with the feature IDs. A column named \code{analysis} can be given to specify from which analyses the features matched.}
-
-\item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-remove_features_ms1"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-remove_features_ms1}{}}}
-\subsection{Method \code{remove_features_ms1()}}{
-Removes loaded MS1 spectra from features in the analyses. In practice, the column \emph{ms1} in
-the features data.table of each analysis object is removed.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$remove_features_ms1()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-remove_features_ms2"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-remove_features_ms2}{}}}
-\subsection{Method \code{remove_features_ms2()}}{
-Removes loaded MS2 spectra from features in the analyses. In practice, the column \emph{ms2} in
-the features data.table of each analysis object is removed.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$remove_features_ms2()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-remove_groups"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-remove_groups}{}}}
-\subsection{Method \code{remove_groups()}}{
-Removes feature groups.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$remove_groups(groups = NULL, filtered = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{groups}}{A numeric or character vector with the number or ID of feature groups, respectively.}
-
-\item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-subset_features"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-subset_features}{}}}
-\subsection{Method \code{subset_features()}}{
-Subsets a MassSpecEngine object on features from analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$subset_features(features = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{features}}{A character vector with the feature IDs or a data.frame or data.table with a column named \code{feature}
-with the feature IDs. A column named \code{analysis} can be given to specify from which analyses the features matched.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A new cloned MassSpecEngine object with only the features as defined by the features argument.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-subset_groups"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-subset_groups}{}}}
-\subsection{Method \code{subset_groups()}}{
-Subsets a MassSpecEngine object on feature groups. Note that when sub-setting groups, features
-that lose correspondence are removed.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$subset_groups(groups = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{groups}}{A numeric or character vector with the number or ID of feature groups, respectively.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A new cloned MassSpecEngine object with only the groups as defined by the \code{groups} argument.
 }
 }
 \if{html}{\out{<hr>}}

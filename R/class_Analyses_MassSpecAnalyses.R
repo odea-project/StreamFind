@@ -254,9 +254,6 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses", package = "StreamFind", pa
           if (nrow(x$chromatograms) > 0) {
             x$chromatograms
           } else {
-            levels <- unique(x$spectra_level)
-            # levels <- as.numeric(unlist(strsplit(levels, ", ")))
-            targets <- MassSpecTargets()@targets
             rcpp_parse_ms_chromatograms(x, idx = seq_along(x$number_chromatograms))
           }
         })
@@ -351,7 +348,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses", package = "StreamFind", pa
     spectra = S7::new_property(S7::class_list,
       getter = function(self) {
         if (self$has_spectra) return(self@results[["spectra"]])
-        if (any(self$spectra_number > 0)) return(Spectra(self$spectra_raw))
+        if (any(self$spectra_number > 0)) return(StreamFind::Spectra(self$spectra_raw))
         NULL
       },
       setter = function(self, value) {
@@ -394,7 +391,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses", package = "StreamFind", pa
     chromatograms = S7::new_property(S7::class_list,
       getter = function(self) {
         if (self$has_chromatograms) return(self@results[["chromatograms"]])
-        if (any(self$chromatograms_number > 0)) return(Spectra(self$chromatograms_raw))
+        if (any(self$chromatograms_number > 0)) return(StreamFind::Chromatograms(self$chromatograms_raw))
         NULL
       },
       setter = function(self, value) {
@@ -443,12 +440,10 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses", package = "StreamFind", pa
 
 # Methods -----
 
-
 #' @noRd
 S7::method(names,  MassSpecAnalyses) <- function(x) {
   vapply(x@analyses, function(x) x$name, NA_character_)
 }
-
 
 #' @noRd
 S7::method(add, MassSpecAnalyses) <- function(x, value) {
@@ -478,7 +473,6 @@ S7::method(add, MassSpecAnalyses) <- function(x, value) {
   x
 }
 
-
 #' @noRd
 S7::method(remove, MassSpecAnalyses) <- function(x, value) {
   if (is.character(value)) {
@@ -493,7 +487,6 @@ S7::method(remove, MassSpecAnalyses) <- function(x, value) {
   x
 }
 
-
 #' @noRd
 S7::method(`[`, MassSpecAnalyses) <- function(x, i) {
   x@analyses <- x@analyses[i]
@@ -501,13 +494,11 @@ S7::method(`[`, MassSpecAnalyses) <- function(x, i) {
   x
 }
 
-
 #' @noRd
 S7::method(`[<-`, MassSpecAnalyses) <- function(x, i, value) {
   x <- add(x, value)
   x
 }
-
 
 #' @noRd
 S7::method(`[[`, MassSpecAnalyses) <- function(x, i) {
@@ -516,18 +507,18 @@ S7::method(`[[`, MassSpecAnalyses) <- function(x, i) {
   x
 }
 
-
 #' @noRd
 S7::method(`[[<-`, MassSpecAnalyses) <- function(x, i, value) {
   x <- add(x, value)
   x
 }
 
-
 #' @noRd
 S7::method(as.list, MassSpecAnalyses) <- function(x) {
   
   if (x$has_nts) {
+    
+    # TODO make as.list method for MassSpecAnalyses results
     
     browser()
     
@@ -546,7 +537,7 @@ S7::method(read, MassSpecAnalyses) <- function(x, file) {
       
       browser()
       
-      # TODO add read method for NTS
+      # TODO add read method for MassSpecAnalyses NTS and other results
       
       return(Analyses(jsonlite::fromJSON(file)))
     }
@@ -868,6 +859,52 @@ S7::method(get_spectra, MassSpecAnalyses) <- function(x,
     warning("Defined analyses not found!")
     data.table::data.table()
   }
+}
+
+#' @export
+#' @noRd
+S7::method(get_spectra_matrix, MassSpecAnalyses) <- function(x, analyses = NULL) {
+  if (!x$has_spectra) {
+    warning("No spectra results object available!")
+    return(matrix())
+  }
+  
+  analyses <- .check_analyses_argument(x, analyses)
+  
+  spec_list <- x$spectra$spectra
+  
+  if (x$spectra$is_averaged) {
+    rpl <- x$replicates
+    rpl <- unique(rpl[analyses])
+    spec_list <- spec_list[rpl]
+  } else {
+    spec_list <- spec_list[analyses]
+  }
+  
+  intensity <- NULL
+  
+  spec_list <- spec_list[vapply(spec_list, function(z) nrow(z) > 0, FALSE)]
+
+  spec_list <- lapply(spec_list, function(z) {
+    if (!"bins" %in% colnames(z)) {
+      if ("mass" %in% colnames(z)) z$mz <- z$mass
+      if (!"level" %in% colnames(z)) z$level <- 1
+      
+      if ("mobility" %in% colnames(z)) {
+        z$bins <- paste0("r", z$rt, "_m", z$mz, "_d", z$mobility, "_p", z$polarity, "_l", z$level)
+      } else {
+        z$bins <- paste0("r", z$rt, "_m", z$mz, "_p", z$polarity, "_l", z$level)
+      }
+    }
+    
+    z <- z[, .(intensity = mean(intensity)), by = c("bins")]
+    z <- data.table::dcast(z, formula = 1 ~ bins, value.var = "intensity")[, -1]
+    z
+  })
+  
+  spec <- as.matrix(rbindlist(spec_list, fill = TRUE))
+  rownames(spec) <- names(spec_list)
+  spec
 }
 
 #' @noRd
@@ -2146,8 +2183,8 @@ S7::method(get_features_eic, MassSpecAnalyses) <- function(x,
                                                            ppm = 20,
                                                            sec = 60,
                                                            millisec = 5,
-                                                           rtExpand = NULL,
-                                                           mzExpand = NULL,
+                                                           rtExpand = 0,
+                                                           mzExpand = 0,
                                                            filtered = FALSE,
                                                            useLoadedData = TRUE) {
   
@@ -2156,93 +2193,56 @@ S7::method(get_features_eic, MassSpecAnalyses) <- function(x,
   if (nrow(fts) == 0) return(data.table())
   
   if (useLoadedData) {
-    if (x$has_nts) {
-      if (x$nts$has_features_eic) {
-        useLoadedData <- TRUE
-      } else {
-        useLoadedData <- FALSE
-      }
+    if (x$nts$has_features_eic) {
+      useLoadedData <- TRUE
     } else {
       useLoadedData <- FALSE
     }
   }
   
-  if (is.null(rtExpand)) rtExpand <- 0
-  if (is.null(mzExpand)) mzExpand <- 0
-  
-  if (useLoadedData) {
+  if (!useLoadedData) {
+    fts_ana_split_vector <- fts$analysis
+    fts$analysis <- NULL
+    fts_list <- split(fts, fts_ana_split_vector)
+    ana_list <- x$analyses[names(fts_list)]
     
-    eic_list <- lapply(seq_len(nrow(fts)), function(x, fts) {
-      temp <- fts[x, ]
-      
-      temp_ms <- temp[["eic"]][[1]]
-      
-      if (is.null(temp_ms)) return(data.table())
-      
-      temp_ms$analysis <- temp$analysis
-      
-      temp_ms$feature <- temp$feature
-      
-      temp_ms
-    }, fts = fts)
+    fts <- rcpp_ms_load_features_eic(
+      analyses = ana_list,
+      features = fts_list,
+      filtered = filtered,
+      rtExpand = rtExpand,
+      mzExpand = mzExpand,
+      minTracesIntensity = 0
+    )
     
-    eic <- rbindlist(eic_list, fill = TRUE)
-    
-    add_filtered <- FALSE
-    
-    if (any(fts$filtered)) {
-      if (nrow(eic) == 0) {
-        add_filtered <- TRUE
-      } else if (any(!(fts$feature[fts$filtered] %in% eic$feature))) {
-        add_filtered <- TRUE
-      }
-    }
-    
-    if (add_filtered) {
-      fts_filtered <- fts[fts$filtered, ]
-      fts_filtered <- fts_filtered[!(fts_filtered$feature %in% eic$feature), ]
-      fts_filtered$rtmin <- fts_filtered$rtmin - rtExpand
-      fts_filtered$rtmax <- fts_filtered$rtmax + rtExpand
-      fts_filtered$mzmin <- fts_filtered$mzmin - mzExpand
-      fts_filtered$mzmax <- fts_filtered$mzmax + mzExpand
-      
-      eic_2 <- get_spectra(x, analyses = analyses, levels = 1, mz = fts_filtered, id = fts_filtered$feature)
-      
-      eic_2 <- eic_2[, c("analysis", "polarity", "id", "rt", "mz", "intensity"), with = FALSE]
-      
-      setnames(eic_2, "id", "feature")
-      
-      eic <- list(eic, eic_2)
-      
-      eic <- rbindlist(eic, fill = TRUE)
-    }
-    
-    if (nrow(eic) == 0) return(data.table())
-    
-  } else {
-    
-    fts$rtmin <- fts$rtmin - rtExpand
-    fts$rtmax <- fts$rtmax + rtExpand
-    fts$mzmin <- fts$mzmin - mzExpand
-    fts$mzmax <- fts$mzmax + mzExpand
-    
-    eic <- get_spectra(x, analyses = analyses, levels = 1, mz = data.table::copy(fts), id = fts$feature, useRawData = TRUE, useLoadedData = TRUE)
-    
-    eic <- eic[, c("analysis", "polarity", "id", "rt", "mz", "intensity"), with = FALSE]
-    
-    setnames(eic, "id", "feature")
+    fts <- data.table::rbindlist(fts, idcol = "analysis", fill = TRUE)
   }
+  
+  eic_list <- lapply(seq_len(nrow(fts)), function(x, fts) {
+    temp <- fts[x, ]
+    temp_ms <- temp[["eic"]][[1]]
+    if (is.null(temp_ms)) return(data.table())
+    temp_ms$analysis <- temp$analysis
+    temp_ms$feature <- temp$feature
+    temp_ms
+  }, fts = fts)
+  
+  eic <- data.table::rbindlist(eic_list, fill = TRUE)
+  data.table::setcolorder(eic, c("analysis", "feature"))
+  
+  unique_fts_id <- paste0(fts$analysis, "-", fts$feature)
+  unique_eic_id <- paste0(eic$analysis, "-", eic$feature)
   
   if ("group" %in% colnames(fts)) {
     fgs <- fts$group
-    names(fgs) <- fts$feature
-    eic$group <- fgs[eic$feature]
+    names(fgs) <- unique_fts_id
+    eic$group <- fgs[unique_eic_id]
   }
   
   if ("name" %in% colnames(fts)) {
     tar_ids <- fts$name
-    names(tar_ids) <- fts$feature
-    eic$name <- tar_ids[eic$feature]
+    names(tar_ids) <- unique_fts_id
+    eic$name <- tar_ids[unique_eic_id]
   }
   
   eic
@@ -2272,93 +2272,47 @@ S7::method(get_features_ms1, MassSpecAnalyses) <- function(x,
   
   if (nrow(fts) == 0) return(data.table())
   
-  if (!is.null(rtWindow) & length(rtWindow) == 2 & is.numeric(rtWindow)) {
-    fts$rtmin <- fts$rt + rtWindow[1]
-    fts$rtmax <- fts$rt + rtWindow[2]
-  }
-  
-  if (!is.null(mzWindow) & length(mzWindow) == 2 & is.numeric(mzWindow)) {
-    fts$mzmin <- fts$mz + mzWindow[1]
-    fts$mzmax <- fts$mz + mzWindow[2]
-  }
-  
   if (useLoadedData) {
-    if (x$has_nts) {
-      if (x$nts$has_features_ms1) {
-        useLoadedData <- TRUE
-      } else {
-        useLoadedData <- FALSE
-      }
+    if (x$nts$has_features_ms1) {
+      useLoadedData <- TRUE
     } else {
       useLoadedData <- FALSE
     }
   }
   
-  if (useLoadedData) {
+  if (!useLoadedData) {
+    fts_ana_split_vector <- fts$analysis
+    fts$analysis <- NULL
+    fts_list <- split(fts, fts_ana_split_vector)
+    ana_list <- x$analyses[names(fts_list)]
     
-    ms1_list <- lapply(seq_len(nrow(fts)), function(x, fts) {
-      temp <- fts[x, ]
-      
-      temp_ms <- temp[["ms1"]][[1]]
-      
-      if (is.null(temp_ms)) return(data.table())
-      
-      temp_ms$analysis <- temp$analysis
-      
-      temp_ms$feature <- temp$feature
-      
-      temp_ms
-    }, fts = fts)
-    
-    ms1 <- rbindlist(ms1_list, fill = TRUE)
-    
-    add_filtered <- FALSE
-    
-    if (any(fts$filtered)) {
-      if (nrow(ms1) == 0) {
-        add_filtered <- TRUE
-      } else if (any(!(fts$feature[fts$filtered] %in% ms1$feature))) {
-        add_filtered <- TRUE
-      }
-    }
-    
-    if (add_filtered) {
-      fts_filtered <- fts[fts$filtered, ]
-      fts_filtered <- fts_filtered[!(fts_filtered$feature %in% ms1$feature), ]
-      
-      ms1_2 <- get_spectra_ms1(x,
-        analyses = unique(fts$analysis),
-        mz = fts_filtered,
-        id = fts_filtered$feature,
-        mzClust = mzClust,
-        presence = presence,
-        minIntensity = minIntensity
-      )
-      
-      setnames(ms1_2, "id", "feature")
-      
-      ms1 <- list(ms1, ms1_2)
-      
-      ms1 <- rbindlist(ms1, fill = TRUE)
-    }
-    
-    if (nrow(ms1) == 0) return(data.table())
-    
-  } else {
-    ms1 <- get_spectra_ms1(x,
-      analyses = unique(fts$analysis),
-      mz = data.table::copy(fts),
-      id = fts$feature,
+    fts <- rcpp_ms_load_features_ms1(
+      analyses = ana_list,
+      features = fts_list,
+      filtered = filtered,
+      rtWindow = rtWindow,
+      mzWindow = mzWindow,
+      minTracesIntensity = minIntensity,
       mzClust = mzClust,
-      presence = presence,
-      minIntensity = minIntensity
+      presence = presence
     )
     
-    setnames(ms1, "id", "feature")
+    fts <- data.table::rbindlist(fts, idcol = "analysis", fill = TRUE)
   }
   
-  unique_fts_id <- paste0(fts$analysis, "-", fts$feature)
+  ms1_list <- lapply(seq_len(nrow(fts)), function(x, fts) {
+    temp <- fts[x, ]
+    temp_ms <- temp[["ms1"]][[1]]
+    if (is.null(temp_ms)) return(data.table())
+    temp_ms$analysis <- temp$analysis
+    temp_ms$feature <- temp$feature
+    temp_ms
+  }, fts = fts)
   
+  ms1 <- rbindlist(ms1_list, fill = TRUE)
+  data.table::setcolorder(ms1, c("analysis", "feature"))
+  
+  unique_fts_id <- paste0(fts$analysis, "-", fts$feature)
   unique_ms1_id <- paste0(ms1$analysis, "-", ms1$feature)
   
   if ("group" %in% colnames(fts)) {
@@ -2373,7 +2327,7 @@ S7::method(get_features_ms1, MassSpecAnalyses) <- function(x,
     ms1$name <- tar_ids[unique_ms1_id]
   }
   
-  data.table::copy(ms1)
+  ms1
 }
 
 
@@ -2400,88 +2354,45 @@ S7::method(get_features_ms2, MassSpecAnalyses) <- function(x,
   if (nrow(fts) == 0) return(data.table())
   
   if (useLoadedData) {
-    if (x$has_nts) {
-      if (x$nts$has_features_ms2) {
-        useLoadedData <- TRUE
-      } else {
-        useLoadedData <- FALSE
-      }
+    if (x$nts$has_features_ms1) {
+      useLoadedData <- TRUE
     } else {
       useLoadedData <- FALSE
     }
   }
   
-  if (useLoadedData) {
+  if (!useLoadedData) {
+    fts_ana_split_vector <- fts$analysis
+    fts$analysis <- NULL
+    fts_list <- split(fts, fts_ana_split_vector)
+    ana_list <- x$analyses[names(fts_list)]
     
-    ms2_list <- lapply(seq_len(nrow(fts)), function(x, fts) {
-      temp <- fts[x, ]
-      
-      temp_ms <- temp[["ms2"]][[1]]
-      
-      if (is.null(temp_ms)) return(data.table())
-      
-      temp_ms$analysis <- temp$analysis
-      
-      temp_ms$feature <- temp$feature
-      
-      temp_ms
-    }, fts = fts)
-    
-    ms2 <- rbindlist(ms2_list, fill = TRUE)
-    
-    add_filtered <- FALSE
-    
-    if (any(fts$filtered)) {
-      if (nrow(ms2) == 0) {
-        add_filtered <- TRUE
-      } else if (any(!(fts$feature[fts$filtered] %in% ms2$feature))) {
-        add_filtered <- TRUE
-      }
-    }
-    
-    if (add_filtered) {
-      fts_filtered <- fts[fts$filtered, ]
-      fts_filtered <- fts_filtered[!(fts_filtered$feature %in% ms2$feature), ]
-      
-      ms2_2 <- get_spectra_ms2(x,
-        analyses = unique(fts$analysis),
-        mz = fts_filtered,
-        id = fts_filtered$feature,
-        isolationWindow = isolationWindow,
-        mzClust = mzClust,
-        presence = presence,
-        minIntensity = minIntensity
-      )
-      
-      if (nrow(ms2_2) == 0) return(data.table())
-      
-      setnames(ms2_2, "id", "feature", skip_absent = TRUE)
-      
-      ms2 <- list(ms2, ms2_2)
-      
-      ms2 <- rbindlist(ms2, fill = TRUE)
-    }
-    
-    if (nrow(ms2) == 0) return(data.table())
-    
-  } else {
-    ms2 <- get_spectra_ms2(x,
-      analyses = unique(fts$analysis),
-      mz = data.table::copy(fts),
-      id = fts$feature,
+    fts <- rcpp_ms_load_features_ms2(
+      analyses = ana_list,
+      features = fts_list,
+      filtered = filtered,
+      minTracesIntensity = minIntensity,
       isolationWindow = isolationWindow,
       mzClust = mzClust,
-      presence = presence,
-      minIntensity = minIntensity
+      presence = presence
     )
     
-    if (nrow(ms2) == 0) return(data.table())
-    
-    setnames(ms2, "id", "feature", skip_absent = TRUE)
+    fts <- data.table::rbindlist(fts, idcol = "analysis", fill = TRUE)
   }
   
-  unique_fts_id <- paste0(fts$analysis, "-", fts$feature)
+  ms2_list <- lapply(seq_len(nrow(fts)), function(x, fts) {
+    temp <- fts[x, ]
+    temp_ms <- temp[["ms2"]][[1]]
+    if (is.null(temp_ms)) return(data.table())
+    temp_ms$analysis <- temp$analysis
+    temp_ms$feature <- temp$feature
+    temp_ms
+  }, fts = fts)
   
+  ms2 <- rbindlist(ms2_list, fill = TRUE)
+  data.table::setcolorder(ms2, c("analysis", "feature"))
+  
+  unique_fts_id <- paste0(fts$analysis, "-", fts$feature)
   unique_ms2_id <- paste0(ms2$analysis, "-", ms2$feature)
   
   if ("group" %in% colnames(fts)) {
@@ -2493,10 +2404,10 @@ S7::method(get_features_ms2, MassSpecAnalyses) <- function(x,
   if ("name" %in% colnames(fts)) {
     tar_ids <- fts$name
     names(tar_ids) <- unique_fts_id
-    ms2$name <- tar_ids[unique_ms2_id]
+    ms1$name <- tar_ids[unique_ms2_id]
   }
   
-  data.table::copy(ms2)
+  ms2
 }
 
 
@@ -2600,7 +2511,7 @@ S7::method(get_groups, MassSpecAnalyses) <- function(x,
         mass = round(mean(mass), digits = 4),
         rtdev = round(max(rtmax - rtmin), digits = 0),
         massdev = round(max(mzmax - mzmin), digits = 4),
-        presence = round(length(feature) / self$get_number_analyses() * 100, digits = 1),
+        presence = round(length(feature) / length(x) * 100, digits = 1),
         maxint = round(max(intensity), digits = 0),
         sn = round(max(vapply(quality, function(x) if (!is.null(x)) x$sn else 0, 0), na.rm = TRUE), digits = 1),
         iso = min(vapply(isotope, function(x) if (!is.null(x)) x$step else 0, 0)),
@@ -2655,7 +2566,7 @@ S7::method(get_groups_ms1, MassSpecAnalyses) <- function(x,
   
   if (nrow(fgs) == 0) return(data.table())
   
-  fts <- self$get_features(features = fgs$group)
+  fts <- get_features(x, features = fgs$group)
   
   if (nrow(fts) == 0) return(data.table())
   
@@ -2765,7 +2676,7 @@ S7::method(get_groups_ms2, MassSpecAnalyses) <- function(x,
   
   if (nrow(fgs) == 0) return(data.table())
   
-  fts <- self$get_features(features = fgs$group, filtered = filtered)
+  fts <- get_features(x, features = fgs$group, filtered = filtered)
   
   if (nrow(fts) == 0) return(data.table())
   
@@ -3330,7 +3241,7 @@ S7::method(get_internal_standards, MassSpecAnalyses) <- function(x, average = TR
           "feature"
         )
         
-        if (self$has_groups()) cols <- c(cols, "group")
+        if (x$nts$has_groups) cols <- c(cols, "group")
         
         istd <- istd[, cols, with = FALSE]
         istd$intensity <- round(istd$intensity, digits = 0)
@@ -3889,7 +3800,7 @@ S7::method(plot_groups_overview, MassSpecAnalyses) <- function(x,
   eic$var <- leg[eic$uid]
   fts$var <- leg
   
-  analyses <- .check_analyses_argument(self$analyses, analyses)
+  analyses <- .check_analyses_argument(x, analyses)
   
   .plot_groups_overview_aux(fts, eic, heights, analyses)
 }
@@ -3919,7 +3830,7 @@ S7::method(plot_groups_profile, MassSpecAnalyses) <- function(x,
   }
   
   if (!"polarity" %in% colnames(fts)) {
-    polarities <- self$get_spectra_polarity()
+    polarities <- x$spectra_polarity
     fts$polarity <- polarities[fts$analysis]
   }
   
@@ -3942,7 +3853,7 @@ S7::method(plot_groups_profile, MassSpecAnalyses) <- function(x,
   
   colors <- .get_colors(u_leg)
   
-  analyses <- .check_analyses_argument(self$analyses, analyses)
+  analyses <- .check_analyses_argument(x, analyses)
   
   showLeg <- rep(TRUE, length(u_leg))
   names(showLeg) <- u_leg
@@ -4099,7 +4010,92 @@ S7::method(plot_internal_standards, MassSpecAnalyses) <- function(x,
   
 }
 
-
+#' @noRd
+S7::method(plot_suspects, MassSpecAnalyses) <- function(x,
+                                                        analyses = NULL,
+                                                        database = NULL,
+                                                        features = NULL,
+                                                        mass = NULL,
+                                                        mz = NULL,
+                                                        rt = NULL,
+                                                        mobility = NULL,
+                                                        ppm = 4,
+                                                        sec = 10,
+                                                        millisec = 5,
+                                                        ppmMS2 = 10,
+                                                        minFragments = 3,
+                                                        isolationWindow = 1.3,
+                                                        mzClust = 0.003,
+                                                        presence = 0.8,
+                                                        minIntensity = 0,
+                                                        filtered = FALSE,
+                                                        rtExpand = 120,
+                                                        mzExpand = 0.005,
+                                                        useLoadedData = TRUE,
+                                                        colorBy = "targets") {
+  
+  if (!x$has_nts) return(NULL)
+  
+  if (!x$nts$has_features_suspects) return(NULL)
+  
+  suspects <- get_suspects(
+    x,
+    analyses,
+    database,
+    features,
+    mass,
+    mz,
+    rt,
+    mobility,
+    ppm,
+    sec,
+    millisec,
+    ppmMS2,
+    minFragments,
+    isolationWindow ,
+    mzClust,
+    presence,
+    minIntensity,
+    filtered,
+    onGroups = FALSE
+  )
+    
+  if (nrow(suspects) == 0) return(NULL)
+    
+  eic <- get_features_eic(
+    x,
+    analyses = unique(suspects$analysis),
+    features = suspects$feature,
+    rtExpand = rtExpand,
+    mzExpand = mzExpand,
+    filtered = filtered,
+    useLoadedData = useLoadedData
+  )
+  
+  intensity <- NULL
+    
+  eic <- eic[, `:=`(intensity = sum(intensity)), by = c("analysis", "polarity", "feature", "rt")][]
+    
+  if (nrow(eic) == 0) {
+    message("\U2717 Traces and/or features not found for targets!")
+    return(NULL)
+  }
+    
+  if (grepl("replicates", colorBy)) {
+    eic$replicate <- x$replicates[eic$analysis]
+    suspects$replicate <- x$replicates[suspects$analysis]
+  }
+    
+  suspects <- .make_colorBy_varkey(suspects, colorBy, TRUE)
+  
+  leg <- suspects$var
+  names(leg) <- paste0(suspects$feature, "_", suspects$analysis)
+  eic$uid <- paste0(eic$feature, "_", eic$analysis)
+  suspects$uid <- paste0(suspects$feature, "_", suspects$analysis)
+  eic$var <- leg[eic$uid]
+  
+  .plot_suspects_interactive(suspects, eic, heights = c(0.5, 0.5))
+}
 
 
 

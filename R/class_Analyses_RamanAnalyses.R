@@ -447,6 +447,41 @@ S7::method(get_spectra, RamanAnalyses) <- function(x,
   spec
 }
 
+#' @export
+#' @noRd
+S7::method(get_spectra_matrix, RamanAnalyses) <- function(x, analyses = NULL) {
+  if (!x$has_spectra) {
+    warning("No spectra results object available!")
+    return(matrix())
+  }
+  
+  analyses <- .check_analyses_argument(x, analyses)
+  
+  spec_list <- x$spectra$spectra
+  
+  if (x$spectra$is_averaged) {
+    rpl <- x$replicates
+    rpl <- unique(rpl[analyses])
+    spec_list <- spec_list[rpl]
+  } else {
+    spec_list <- spec_list[analyses]
+  }
+  
+  spec_list <- spec_list[vapply(spec_list, function(z) nrow(z) > 0, FALSE)]
+  
+  intensity <- NULL
+  
+  spec_list <- lapply(spec_list, function(z) {
+    z <- z[, .(intensity = mean(intensity)), by = c("shift")]
+    z <- data.table::dcast(z, formula = 1 ~ shift, value.var = "intensity")[, -1]
+    z
+  })
+  
+  spec <- as.matrix(rbindlist(spec_list, fill = TRUE))
+  rownames(spec) <- names(spec_list)
+  spec
+}
+
 # Plot Methods ------
 
 #' @export

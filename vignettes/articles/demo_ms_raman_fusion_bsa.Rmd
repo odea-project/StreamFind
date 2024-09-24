@@ -299,26 +299,21 @@ raman$plot_spectra()
 The fusion of MS and Raman data is performed by combining the processed data from both engines. The data is then merged into a single data frame for statistical evaluation using a MachineLearningEngine, which is under development.
 
 ```{r}
-rSpec <- raman$get_spectra()
-mrSpec <- matrix(rSpec$intensity, nrow = length(unique(rSpec$replicate)), ncol = length(unique(rSpec$shift)), byrow = TRUE, dimnames = list(as.character(unique(rSpec$replicate)), as.character(unique(rSpec$shift))))
-
-mSpec <- ms$get_spectra()
-mmSpec <- matrix(mSpec$intensity, nrow = length(unique(mSpec$replicate)), ncol = length(unique(mSpec$bins)), byrow = TRUE, dimnames = list(unique(mSpec$replicate), unique(mSpec$bins)))
-
-fusedMat <- cbind(mmSpec, mrSpec)
-
-attr(fusedMat, "xaxis.name") = "Keys"
-attr(fusedMat, "xaxis.values") = seq_len(ncol(fusedMat))
+ms_mat <- get_spectra_matrix(ms$analyses)
+raman_mat <- get_spectra_matrix(raman$analyses)
+fused_mat <- cbind(ms_mat, raman_mat)
+attr(fused_mat, "xaxis.name") = "Keys"
+attr(fused_mat, "xaxis.values") = seq_len(ncol(fused_mat))
 ```
 
 ```{r}
-cl <- StreamFind:::.get_colors(rownames(fusedMat))
+cl <- StreamFind:::.get_colors(rownames(fused_mat))
 fig <- plot_ly()
-xVal <- seq_len(length(fusedMat[1, ]))
-for (i in seq_len(nrow(fusedMat))) {
+xVal <- seq_len(length(fused_mat[1, ]))
+for (i in seq_len(nrow(fused_mat))) {
   fig <- fig %>% add_trace(
     x = xVal,
-    y = fusedMat[i, ],
+    y = fused_mat[i, ],
     type = "scatter", mode = "lines",
     line = list(width = 0.5, color = unname(cl[i])),
     name = names(cl)[i],
@@ -349,9 +344,9 @@ A statistic analysis is performed with the *StatisticEngine* for evaluation of t
 The fused data is used to create a PCA model with the *StatisticEngine* using processing settings based on the [mdatools](https://www.mdatools.com/docs/pca.html) package.
 
 ```{r}
-stat <- StatisticEngine$new(analyses = fusedMat)
-stat$process(StatisticSettings_MakeModel_pca_mdatools(ncomp = 2, alpha = 0.05, gamma = 0.02))
-summary(stat$model) # summary method is from mdatools
+stat <- StatisticEngine$new(analyses = fused_mat)
+stat$run(StatisticSettings_MakeModel_pca_mdatools(ncomp = 2, alpha = 0.05, gamma = 0.02))
+summary(stat$model$model) # summary method is from mdatools
 ```
 
 ```{r, fig.cap="PCA scores plot for the fused data."}

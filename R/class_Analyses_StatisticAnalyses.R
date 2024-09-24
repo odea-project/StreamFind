@@ -23,7 +23,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses", package = "StreamFind", 
     
     ## __info -----
     info = S7::new_property(S7::class_data.frame, getter = function(self) {
-      if (self@length > 0) {
+      if (length(self) > 0) {
         df <- data.frame(
           "analysis" = self@names,
           "features" = ncol(self@analyses)
@@ -45,26 +45,26 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses", package = "StreamFind", 
     }, default = data.frame()),
     
     ## __has_matrix -----
-    has_matrix = S7::new_property(S7::class_logical, getter = function(self) {
+    has_data = S7::new_property(S7::class_logical, getter = function(self) {
       if (length(self) == 0) return(FALSE)
-      if (is.null(self@results[["matrix"]])) {
+      if (is.null(self@results[["data"]])) {
         if (nrow(self$analyses) == 0) return(FALSE)
       }
-      if (!is(self@results[["matrix"]], "StreamFind::Matrix")) return(FALSE)
+      if (!is(self@results[["data"]], "StreamFind::Data")) return(FALSE)
       TRUE
     }),
     
-    ## __matrix -----
-    matrix = S7::new_property(S7::class_list,
+    ## __data -----
+    data = S7::new_property(S7::class_list,
       getter = function(self) {
-        if (!is.null(self@results[["matrix"]])) return(self@results[["matrix"]])
-        StreamFind::Matrix(self$analyses)
+        if (!is.null(self@results[["data"]])) return(self@results[["data"]])
+        StreamFind::Data(data = self$analyses)
       },
       setter = function(self, value) {
-        if (is(value, "StreamFind::Matrix")) {
-          self@results[["matrix"]] <- value
+        if (is(value, "StreamFind::Data")) {
+          self@results[["data"]] <- value
         } else {
-          warning("Value must be a Matrix results object! Not done.")
+          warning("Value must be a Data results object! Not done.")
         }
         self
       }
@@ -248,14 +248,14 @@ S7::method(`[[<-`, StatisticAnalyses) <- function(x, i, value) {
 
 #' @export
 #' @noRd
-S7::method(plot_matrix, Analyses) <- function(x,
-                                              analyses = NULL,
-                                              features = NULL,
-                                              transpose = FALSE,
-                                              interactive = TRUE,
-                                              xLab = NULL,
-                                              yLab = NULL,
-                                              title = NULL) {
+S7::method(plot_data, Analyses) <- function(x,
+                                            analyses = NULL,
+                                            features = NULL,
+                                            transpose = FALSE,
+                                            interactive = TRUE,
+                                            xLab = NULL,
+                                            yLab = NULL,
+                                            title = NULL) {
   
   analyses <- .check_analyses_argument(x, analyses)
   

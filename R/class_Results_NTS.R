@@ -169,7 +169,7 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
       if (self@number_features > 0) {
         return(any(vapply(self$feature_list, function(x) {
           if ("ms1" %in% colnames(x)) {
-            any(vapply(x$ms1, is.data.frame, FALSE))
+            any(vapply(x$ms1, function(z) length(z) > 0, FALSE))
           } else {
             FALSE
           }
@@ -183,7 +183,7 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
       if (self@number_features > 0) {
         return(any(vapply(self$feature_list, function(x) {
           if ("ms2" %in% colnames(x)) {
-            any(vapply(x$ms2, is.data.frame, FALSE))
+            any(vapply(x$ms2, function(z) length(z) > 0, FALSE))
           } else {
             FALSE
           }
@@ -197,7 +197,7 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
       if (self@number_features > 0) {
         return(any(vapply(self$feature_list, function(x) {
           if ("eic" %in% colnames(x)) {
-            any(vapply(x$eic, is.data.frame, FALSE))
+            any(vapply(x$eic, function(z) length(z) > 0, FALSE))
           } else {
             FALSE
           }
@@ -211,7 +211,7 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
       if (self@number_features > 0) {
         return(any(vapply(self$feature_list, function(x) {
           if ("suspects" %in% colnames(x)) {
-            any(vapply(x$suspects, is.data.frame, FALSE))
+            any(vapply(x$suspects, function(z) length(z) > 0, FALSE))
           } else {
             FALSE
           }

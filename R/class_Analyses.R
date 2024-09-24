@@ -173,7 +173,7 @@ S7::method(add, Analyses) <- function(x, value) {
   analyses <- analyses[order(names(analyses))]
   x@analyses <- analyses
   if (length(x@results) > 0) {
-    # TODO apply subset method to results based on analysis, delegate to each results class
+    warning("All results removed!")
     x@results <- list()
   }
   x

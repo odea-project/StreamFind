@@ -41,11 +41,11 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
   # _ active bindings -----
   active = list(
     
-    #' @field matrix Matrix of the data, where rows represent analyses and columns variables.
+    #' @field data Data object.
     #'
-    matrix = function(value) {
-      if (missing(value)) return(self$analyses$matrix)
-      self$analyses$matrix <- value
+    data = function(value) {
+      if (missing(value)) return(self$analyses$data)
+      self$analyses$data <- value
       invisible(self)
     },
     
@@ -501,19 +501,19 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     
     ## ___ plot -----
     
-    #' @description Plots the data matrix.
+    #' @description Plots the data.
     #' 
     #' @param features A numeric vector with the features (columns of data matrix) to plot.
     #' @param transpose Logical, if TRUE the data is transposed (i.e., column names are used as legend).
     #' 
-    plot_matrix = function(analyses = NULL,
+    plot_data = function(analyses = NULL,
                           features = NULL,
                           transpose = FALSE,
                           interactive = TRUE,
                           xLab = NULL,
                           yLab = NULL,
                           title = NULL) {
-      plot_matrix(self$matrix, analyses, features, transpose, interactive, xLab, yLab, title)
+      plot_data(self$data, analyses, features, transpose, interactive, xLab, yLab, title)
     },
     
     #' @description Plots the model explained cumulative variance.

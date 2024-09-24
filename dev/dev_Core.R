@@ -44,6 +44,49 @@ ms$run(MassSpecSettings_FillFeatures_StreamFind())
 ms$run(MassSpecSettings_CalculateFeaturesQuality_StreamFind(minNumberTraces = 5))
 ms$run(MassSpecSettings_FilterFeatures_StreamFind(minSnRatio = 5))
 ms$run(MassSpecSettings_FindInternalStandards_StreamFind(database = dbis, ppm = 8, sec = 10))
+ms$nts <- ms$nts[ , ms$get_groups(mass = dbsus)$group]
+ms$run(MassSpecSettings_LoadFeaturesMS1_StreamFind(filtered = FALSE))
+ms$run(MassSpecSettings_LoadFeaturesMS2_StreamFind(filtered = FALSE))
+ms$run(MassSpecSettings_LoadFeaturesEIC_StreamFind(filtered = FALSE))
+
+clear_cache("calculate_quality")
+clear_cache("fill_features")
+clear_cache("load_features_eic")
+clear_cache("load_features_ms1")
+clear_cache("load_features_ms2")
+
+ms$plot_groups_ms2(mass = dbsus)
+
+ms$plot_features(mass = dbsus, legendNames = TRUE)
+
+ms$nts$has_features_eic
+
+get_features_eic(ms$analyses)
+
+
+fts <- rcpp_ms_load_features_ms1(
+  ms$analyses$analyses,
+  ms$nts$feature_list,
+  filtered = FALSE,
+  rtWindow = c(-2, 2),
+  mzWindow = c(-1, 6),
+  minTracesIntensity = 1000,
+  mzClust = 0.005,
+  presence = 0.8
+)
+
+fts <- rcpp_ms_load_features_ms2(
+  ms$analyses$analyses,
+  ms$nts$feature_list,
+  filtered = FALSE,
+  minTracesIntensity = 50,
+  isolationWindow = 1.3,
+  mzClust = 0.005,
+  presence = 0.8
+)
+
+fts[[18]]$ms2[[1]]
+
 
 fts <- ms$get_features()
 fts <- fts[fts$group %in% fts$group[fts$filled], ]

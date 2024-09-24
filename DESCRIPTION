@@ -96,7 +96,7 @@ Collate:
     'class_Results_Chromatograms.R'
     'class_Results_NTS.R'
     'class_Results_Model.R'
-    'class_Results_Matrix.R'
+    'class_Results_Data.R'
     'class_MassSpecTargets.R'
     'class_Analyses.R'
     'class_Analyses_MassSpecAnalyses.R'
@@ -156,7 +156,6 @@ Collate:
     'run_app.R'
     'streamFind-package.R'
     'zzz.R'
-    'methods_S3_statistic_make_model.R'
     'methods_S3_statistic_prepare_classification.R'
     'methods_S3_statistic_prepare_data.R'
 VignetteBuilder: knitr

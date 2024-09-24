@@ -73,12 +73,12 @@ StatisticSettings_MakeModel_pca_mdatools <- S7::new_class("StatisticSettings_Mak
       checkmate::test_choice(self@engine, "Statistic"),
       checkmate::test_choice(self@method, "MakeModel"),
       checkmate::test_choice(self@algorithm, "pca_mdatools"),
-      checkmate::test_number(self@parameters$ncomp),
-      checkmate::test_integer(self@parameters$exclrows),
-      checkmate::test_integer(self@parameters$exclcols),
-      checkmate::test_matrix(self@parameters$x.test),
+      checkmate::test_number(self@parameters$ncomp, null.ok = TRUE),
+      checkmate::test_number(self@parameters$exclrows, null.ok = TRUE),
+      checkmate::test_number(self@parameters$exclcols, null.ok = TRUE),
+      checkmate::test_matrix(self@parameters$x.test, null.ok = TRUE),
       checkmate::test_choice(self@parameters$method, c("svd", "nipals")),
-      checkmate::test_integer(self@parameters$rand),
+      checkmate::test_number(self@parameters$rand, null.ok = TRUE),
       checkmate::test_choice(self@parameters$lim.type, c("jm", "chisq", "ddmoments", "ddrobust")),
       checkmate::test_number(self@parameters$alpha),
       checkmate::test_number(self@parameters$gamma),
@@ -108,7 +108,7 @@ S7::method(run, StatisticSettings_MakeModel_pca_mdatools) <- function(x, engine 
     return(FALSE)
   }
   
-  mat <- engine$matrix
+  mat <- engine$data$data
   
   ncomp = x$parameters$ncomp
   if (is.null(ncomp)) ncomp = min(nrow(mat) - 1, ncol(mat), 20)
@@ -129,7 +129,7 @@ S7::method(run, StatisticSettings_MakeModel_pca_mdatools) <- function(x, engine 
     method = method, rand = rand, lim.type = lim.type, alpha = alpha, gamma = gamma, info = info
   )
   
-  engine$model <- m
+  engine$model <- StreamFind::Model(model = m)
   message(paste0("\U2713 ", "PCA model added!"))
   TRUE
 }
@@ -196,11 +196,11 @@ StatisticSettings_MakeModel_mcrpure_mdatools <- S7::new_class("StatisticSettings
       checkmate::test_choice(self@engine, "Statistic"),
       checkmate::test_choice(self@method, "MakeModel"),
       checkmate::test_choice(self@algorithm, "mcrpure_mdatools"),
-      checkmate::test_number(self@parameters$ncomp),
-      checkmate::test_integer(self@parameters$purevars),
-      checkmate::test_number(self@parameters$offset),
-      checkmate::test_integer(self@parameters$exclrows),
-      checkmate::test_integer(self@parameters$exclcols),
+      checkmate::test_number(self@parameters$ncomp, null.ok = TRUE),
+      checkmate::test_number(self@parameters$purevars, null.ok = TRUE),
+      checkmate::test_number(self@parameters$offset, null.ok = TRUE),
+      checkmate::test_number(self@parameters$exclrows, null.ok = TRUE),
+      checkmate::test_number(self@parameters$exclcols, null.ok = TRUE),
       checkmate::test_character(self@parameters$info)
     )
     if (!valid) return(FALSE)
@@ -212,6 +212,11 @@ StatisticSettings_MakeModel_mcrpure_mdatools <- S7::new_class("StatisticSettings
 #' @noRd
 S7::method(run, StatisticSettings_MakeModel_mcrpure_mdatools) <- function(x, engine = NULL) {
   
+  if (!requireNamespace("mdatools", quietly = TRUE)) {
+    warning("The package 'mdatools' is not available! Not done.")
+    return(FALSE)
+  }
+  
   if (!is(engine, "StatisticEngine")) {
     warning("Engine is not a StatisticEngine object!")
     return(FALSE)
@@ -222,8 +227,34 @@ S7::method(run, StatisticSettings_MakeModel_mcrpure_mdatools) <- function(x, eng
     return(FALSE)
   }
   
+  mat <- engine$data$data
   
+  if (nrow(mat) < 2) {
+    warning("The data matrix must have at least 2 rows! Not done.")
+    return(FALSE)
+  }
   
+  ncomp = x$parameters$ncomp
+  if (is.null(ncomp)) ncomp = min(nrow(mat) - 1, ncol(mat), 20)
+  purevars <- x$parameters$purevars 
+  offset <- x$parameters$offset
+  exclrows <- x$parameters$exclrows
+  exclcols <- x$parameters$exclcols
+  info <- x$parameters$info
+  
+  m <- mdatools::mcrpure(
+    x = mat,
+    ncomp = ncomp,
+    purevars = purevars,
+    offset = offset,
+    exclrows = exclrows,
+    exclcols = exclcols,
+    info = info
+  )
+  
+  engine$model <- StreamFind::Model(model = m)
+  message(paste0("\U2713 ", "MCR purity model added!"))
+  TRUE
 }
 
 # ______________________________________________________________________________________________________________________
@@ -309,13 +340,13 @@ StatisticSettings_MakeModel_mcrals_mdatools <- S7::new_class("StatisticSettings_
       checkmate::test_choice(self@engine, "Statistic"),
       checkmate::test_choice(self@method, "MakeModel"),
       checkmate::test_choice(self@algorithm, "mcrals_mdatools"),
-      checkmate::test_number(self@parameters$ncomp),
+      checkmate::test_number(self@parameters$ncomp, null.ok = TRUE),
       checkmate::test_list(self@parameters$cont.constraints),
       checkmate::test_list(self@parameters$spec.constraints),
       checkmate::test_choice(self@parameters$cont.solver, c("mcrals.nnls", "mcrals.ols")),
       checkmate::test_choice(self@parameters$spec.solver, c("mcrals.nnls", "mcrals.ols")),
-      checkmate::test_integer(self@parameters$exclrows),
-      checkmate::test_integer(self@parameters$exclcols),
+      checkmate::test_number(self@parameters$exclrows, null.ok = TRUE),
+      checkmate::test_number(self@parameters$exclcols, null.ok = TRUE),
       checkmate::test_logical(self@parameters$verbose, max.len = 1),
       checkmate::test_number(self@parameters$max.niter),
       checkmate::test_number(self@parameters$tol),
@@ -330,6 +361,11 @@ StatisticSettings_MakeModel_mcrals_mdatools <- S7::new_class("StatisticSettings_
 #' @noRd
 S7::method(run, StatisticSettings_MakeModel_mcrals_mdatools) <- function(x, engine = NULL) {
   
+  if (!requireNamespace("mdatools", quietly = TRUE)) {
+    warning("The package 'mdatools' is not available! Not done.")
+    return(FALSE)
+  }
+  
   if (!is(engine, "StatisticEngine")) {
     warning("Engine is not a StatisticEngine object!")
     return(FALSE)
@@ -340,6 +376,54 @@ S7::method(run, StatisticSettings_MakeModel_mcrals_mdatools) <- function(x, engi
     return(FALSE)
   }
   
+  mat <- engine$data$data
   
+  ncomp = x$parameters$ncomp
+  if (is.null(ncomp)) ncomp = min(nrow(mat) - 1, ncol(mat), 20)
+  spec.ini <- matrix(runif(ncol(mat) * ncomp), ncol(mat), ncomp)
+  cont.forced <- matrix(NA, nrow(mat), ncomp)
+  spec.forced <- matrix(NA, ncol(mat), ncomp)
   
+  if (x$parameters$cont.solver == "mcrals.nnls") {
+    cont.solver <- mdatools::mcrals.nnls
+  } else if (x$parameters$cont.solver == "mcrals.ols") {
+    cont.solver <- mdatools::mcrals.ols
+  }
+  
+  if (x$parameters$spec.solver == "mcrals.nnls") {
+    spec.solver <- mdatools::mcrals.nnls
+  } else if (x$parameters$spec.solver == "mcrals.ols") {
+    spec.solver <- mdatools::mcrals.ols
+  }
+  
+  cont.constraints <- x$parameters$cont.constraints
+  spec.constraints <- x$parameters$spec.constraints
+  exclrows <- x$parameters$exclrows
+  exclcols <- x$parameters$exclcols
+  verbose <- x$parameters$verbose
+  max.niter <- x$parameters$max.niter
+  tol <- x$parameters$tol
+  info <- x$parameters$info
+  
+  m <- mdatools::mcrals(
+    x = mat,
+    ncomp = ncomp,
+    cont.constraints = cont.constraints,
+    spec.constraints = spec.constraints,
+    spec.ini = spec.ini,
+    cont.forced = cont.forced,
+    spec.forced = spec.forced,
+    cont.solver = cont.solver,
+    spec.solver = spec.solver,
+    exclrows = exclrows,
+    exclcols = exclcols,
+    verbose = verbose,
+    max.niter = max.niter,
+    tol = tol,
+    info = info
+  )
+  
+  engine$model <- StreamFind::Model(model = m)
+  message(paste0("\U2713 ", "MCR-ALS model added!"))
+  TRUE
 }

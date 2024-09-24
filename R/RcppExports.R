@@ -25,6 +25,14 @@ rcpp_ms_load_features_eic <- function(analyses, features, filtered = FALSE, rtEx
     .Call(`_StreamFind_rcpp_ms_load_features_eic`, analyses, features, filtered, rtExpand, mzExpand, minTracesIntensity)
 }
 
+rcpp_ms_load_features_ms1 <- function(analyses, features, filtered, rtWindow, mzWindow, minTracesIntensity, mzClust, presence) {
+    .Call(`_StreamFind_rcpp_ms_load_features_ms1`, analyses, features, filtered, rtWindow, mzWindow, minTracesIntensity, mzClust, presence)
+}
+
+rcpp_ms_load_features_ms2 <- function(analyses, features, filtered, minTracesIntensity, isolationWindow, mzClust, presence) {
+    .Call(`_StreamFind_rcpp_ms_load_features_ms2`, analyses, features, filtered, minTracesIntensity, isolationWindow, mzClust, presence)
+}
+
 rcpp_ms_fill_features <- function(analyses, features, withinReplicate = FALSE, rtExpand = 0, mzExpand = 0, minTracesIntensity = 0, minNumberTraces = 5, baseCut = 0, minSignalToNoiseRatio = 3, minGaussianFit = 0.5) {
     .Call(`_StreamFind_rcpp_ms_fill_features`, analyses, features, withinReplicate, rtExpand, mzExpand, minTracesIntensity, minNumberTraces, baseCut, minSignalToNoiseRatio, minGaussianFit)
 }

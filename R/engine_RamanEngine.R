@@ -109,19 +109,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #' @description Gets a matrix with spectra from analyses.
     #' 
     get_spectra_matrix = function(analyses = NULL) {
-      analyses <- .check_analyses_argument(self$analyses, analyses)
-      mat <- self$get_spectra(analyses)
-      mat <- mat[order(mat$analysis), ]
-      matrix(
-        mat$intensity,
-        nrow = length(unique(mat$analysis)),
-        ncol = length(unique(mat$shift)),
-        byrow = TRUE,
-        dimnames = list(
-          as.character(unique(mat$analysis)),
-          as.character(round(unique(mat$shift), digits = 1))
-        )
-      )
+      get_spectra_matrix(self$analyses, analyses)
     },
     
     ## ___ add/remove -----
