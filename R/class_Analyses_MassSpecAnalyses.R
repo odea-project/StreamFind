@@ -1943,17 +1943,17 @@ S7::method(plot_chromatograms_baseline, MassSpecAnalyses) <- function(x,
 #' @noRd
 S7::method(get_features_count, MassSpecAnalyses) <- function(x, analyses = NULL, filtered = FALSE) {
   analyses <- .check_analyses_argument(x, analyses)
-  
   info <- x$info
+  info <- info[info$analysis %in% analyses, ]
   
   if (x$has_nts) {
     if (x@results$nts$has_features) {
       if (x@results$nts$has_groups) {
-        info$features <- vapply(x@results$nts$features@features@features, function(x) nrow(x), 0)
+        info$features <- vapply(x@results$nts$features@features@features[analyses], function(x) nrow(x), 0)
       } else {
-        info$features <- vapply(x@results$nts$features@features, function(x) nrow(x), 0)
+        info$features <- vapply(x@results$nts$features@features[analyses], function(x) nrow(x), 0)
       }
-      if (filtered) info$features <- info$features + vapply(x@results$nts$filtered, function(x) nrow(x), 0)
+      if (filtered) info$features <- info$features + vapply(x@results$nts$filtered[analyses], function(x) nrow(x), 0)
     }
   }
   
@@ -2787,6 +2787,11 @@ S7::method(get_components, MassSpecAnalyses) <- function(x,
   
   fts$uid <- paste0(fts$analysis, "-", fts$feature)
   
+  if ("name" %in% colnames(fts)) {
+    names_fts <- fts$name
+    names(names_fts) <- fts$uid
+  }
+  
   all_fts <- x$nts$feature_list
   
   all_fts <- Map(function(x, y) {
@@ -2800,11 +2805,15 @@ S7::method(get_components, MassSpecAnalyses) <- function(x,
     cf <- vapply(z[["annotation"]], function(k) k$component_feature, "")
     z$uid <- paste0(z$analysis, "-", cf)
     z <- z[z$uid %in% fts_uid, ]
+    if ("name" %in% colnames(fts)) {
+      z$name <- names_fts[z$uid]
+    }
     z$analysis <- NULL
     z
   }, fts_uid = fts$uid)
   
   all_fts <- lapply(all_fts, function(z) {
+    if (nrow(z) == 0) return(data.table::data.table()) 
     annotation <- lapply(z[["annotation"]], function(k) data.table::as.data.table(k))
     annotation <- data.table::rbindlist(annotation)
     feature <- NULL
@@ -3281,8 +3290,8 @@ S7::method(plot_features_count, MassSpecAnalyses) <- function(x,
   polarity <- NULL
   
   info <- info[, .(
-    features = mean(features),
-    features_sd = sd(features),
+    features = round(mean(features), digits = 0),
+    features_sd = round(sd(features), digits = 0),
     n_analysis = length(features),
     polarity = unique(polarity)
   ), by = c("analysis")]
@@ -4001,13 +4010,12 @@ S7::method(plot_internal_standards, MassSpecAnalyses) <- function(x,
   if (x$nts$has_groups) {
     istd <- get_internal_standards(x, average = TRUE)
     istd <- istd[istd$replicate %in% x$replicates[analyses], ]
-    .plot_internal_standards_qc_interactive(istd, x$replicates, presence, recovery, deviations, widths)
+    .plot_internal_standards_qc_interactive(istd, x$replicates[analyses], presence, recovery, deviations, widths)
   } else {
     istd <- get_internal_standards(x, average = FALSE)
     istd <- istd[istd$analysis %in% analyses, ]
-    .plot_internal_standards_qc_interactive(istd, x$replicates, presence, recovery, deviations, widths)
+    .plot_internal_standards_qc_interactive(istd, x$names[analyses], presence, recovery, deviations, widths)
   }
-  
 }
 
 #' @noRd

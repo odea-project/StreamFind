@@ -301,25 +301,23 @@ S7::method(run, MassSpecSettings_LoadMSPeakLists_StreamFind) <- function(x, engi
     
     names(s) <- t
     
-    if (!is.null(s[[1]])) {
+    if (length(s[[1]]) > 0) {
       n_traces <- nrow(s[[1]])
       
       if (n_traces > 0) {
-        s[[1]][["id"]] <- seq_len(n_traces)
-        
-        if (!"is_pre" %in% colnames(s[[1]])) {
-          s[[1]][["is_pre"]] <- rep(FALSE, n_traces)
-        }
-        
+        s[[1]]$id <- seq_len(n_traces)
+        if (!"is_pre" %in% colnames(s[[1]])) s[[1]]$is_pre <- rep(FALSE, n_traces)
         cols_to_keep <- c("id", "mz", "intensity", "is_pre")
         s[[1]] <- s[[1]][, cols_to_keep, with = FALSE]
-        
         colnames(s[[1]]) <- c("ID", "mz", "intensity", "precursor")
+      } else {
+        s <- NULL
       }
+    } else {
+      s <- NULL
     }
     
     out <- c(out, s)
-    
     out
   }
   
@@ -350,9 +348,9 @@ S7::method(run, MassSpecSettings_LoadMSPeakLists_StreamFind) <- function(x, engi
         t_mz_min <- features$mzmin[features$group %in% x2]
         t_mz_max <- features$mzmax[features$group %in% x2]
         
-        MS[[1]][["is_pre"]] <- vapply(MS[[1]][["mz"]], function(x, t_mz_min, t_mz_max) {
-          x >= t_mz_min - half_clustWindow  & x <= t_mz_max + half_clustWindow
-        }, t_mz_min = t_mz_min, t_mz_max = t_mz_max, FALSE
+        MS[[1]]$is_pre <- vapply(MS[[1]]$mz, function(x3, t_mz_min, t_mz_max) {
+            x3 >= t_mz_min - half_clustWindow & x3 <= t_mz_max + half_clustWindow
+          }, t_mz_min = t_mz_min, t_mz_max = t_mz_max, FALSE
         )
       }
       
