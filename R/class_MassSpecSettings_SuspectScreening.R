@@ -246,7 +246,7 @@ MassSpecSettings_SuspectScreening_forident <- S7::new_class("MassSpecSettings_Su
     
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
-      method = "AnnotateFeatures",
+      method = "SuspectScreening",
       algorithm = "forident",
       parameters = list(
         "addMS2" = addMS2,
@@ -454,7 +454,7 @@ MassSpecSettings_SuspectScreening_patRoon <- S7::new_class("MassSpecSettings_Sus
     
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
-      method = "AnnotateFeatures",
+      method = "SuspectScreening",
       algorithm = "patRoon",
       parameters = list(
         "suspects" = suspects,
@@ -517,14 +517,12 @@ S7::method(run, MassSpecSettings_SuspectScreening_patRoon) <- function(x, engine
   
   nts <- engine$nts
   
-  if (nts@has_groups) {
+  if (!nts@has_groups) {
     warning("NTS object does not have feature groups! Not done.")
     return(FALSE)
   }
   
   parameters <- x$parameters
-  
-  return(FALSE)
   
   res <- patRoon::screenSuspects(
     fGroups = nts$features,
@@ -540,25 +538,24 @@ S7::method(run, MassSpecSettings_SuspectScreening_patRoon) <- function(x, engine
   
   suspect_list <- res@screenInfo
   
-  return(FALSE)
+  nts$features <- res
   
   features <- nts$feature_list
   
-  features <- lapply(names(features), function(x, suspect_list) {
+  features <- lapply(features, function(x, suspect_list) {
     
-    fts <- x$features
-    
-    has_suspect_features <- any(suspect_list$group %in% fts$group)
+    has_suspect_features <- any(suspect_list$group %in% x$group)
     
     if (has_suspect_features) {
       
-      suspects_l <- lapply(seq_len(nrow(fts)), function(z, suspect_list) {
+      suspects_l <- lapply(seq_len(nrow(x)), function(z, suspect_list) {
         
-        ft <- fts[z, ]
+        ft <- x[z, ]
         
         sus_idx <- which(suspect_list$group %in% ft$group)
         
         if (length(sus_idx) > 0) {
+          
           sus_temp <- suspect_list[sus_idx, ]
           
           if ("rt" %in% colnames(sus_temp)) {
@@ -576,6 +573,7 @@ S7::method(run, MassSpecSettings_SuspectScreening_patRoon) <- function(x, engine
             setnames(sus_temp, "neutralMass", "exp_mass")
             setnames(sus_temp, "d_mz", "error_mass")
           }
+          
           # TODO make case for mz column
           
           sus_temp[["group"]] <- NULL
@@ -595,16 +593,15 @@ S7::method(run, MassSpecSettings_SuspectScreening_patRoon) <- function(x, engine
         
       }, suspect_list = suspect_list)
       
-      fts$suspects <- suspects_l
-      
-    } else {
-      fts$suspects <- lapply(fts$feature, function(x) NULL)
+      x$suspects <- suspects_l
     }
     
-    fts
+    x
     
   }, suspect_list = suspect_list)
   
+  nts$feature_list <- features
+  engine$nts <- nts
+  message("\U2713 Suspect screening done with patRoon!")
   TRUE
-  
 }
