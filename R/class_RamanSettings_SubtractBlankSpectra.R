@@ -65,6 +65,13 @@ S7::method(run, RamanSettings_SubtractBlankSpectra_StreamFind) <- function(x, en
     return(FALSE)
   }
   
+  spec_list <- engine$spectra$spectra
+  
+  spec_list <- Map(function(i, j) {
+    i$analysis <- j
+    i
+  }, spec_list, names(spec_list))
+  
   ntozero <- x$parameters$negativeToZero
   
   blks <- engine$analyses$blanks
@@ -91,11 +98,11 @@ S7::method(run, RamanSettings_SubtractBlankSpectra_StreamFind) <- function(x, en
     
     if (nrow(z) == 0) return(z)
     
-    if (!"replicate" %in% colnames(z)) {
+    if (!engine$spectra$is_averaged) {
       rp <- engine$analyses$replicates[z$analysis[1]]
       
     } else {
-      rp <- unique(z$replicate)
+      rp <- z$analysis[1]
     }
     
     if (rp %in% blks) return(data.table::data.table())
@@ -138,12 +145,7 @@ S7::method(run, RamanSettings_SubtractBlankSpectra_StreamFind) <- function(x, en
     
     if (ntozero) z$intensity[z$intensity < 0] <- 0
     
-    if ("analysis" %in% colnames(z) && "replicate" %in% colnames(z)) {
-      if (unique(z$analysis) == unique(z$replicate)) {
-        z[["analysis"]] <- NULL
-      }
-    }
-    
+    z$analysis <- NULL
     z <- unique(z)
     
     z
@@ -151,5 +153,5 @@ S7::method(run, RamanSettings_SubtractBlankSpectra_StreamFind) <- function(x, en
   
   engine$spectra$spectra <- spec_sub
   message(paste0("\U2713 ", "Blank spectra subtracted in spectra!"))
-  TRUE
+  invisible(TRUE)
 }

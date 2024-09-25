@@ -67,6 +67,14 @@ get_internal_standards <- S7::new_generic("get_internal_standards", "x")
 
 #' @export
 #' @noRd
+get_model_data <- S7::new_generic("get_model_data", "x")
+
+#' @export
+#' @noRd
+get_model_prediction <- S7::new_generic("get_model_prediction", "x")
+
+#' @export
+#' @noRd
 get_spectra <- S7::new_generic("get_spectra", "x")
 
 #' @export
@@ -157,7 +165,15 @@ plot_components <- S7::new_generic("plot_components", "x")
 
 #' @export
 #' @noRd
+plot_contributions <- S7::new_generic("plot_contributions", "x")
+
+#' @export
+#' @noRd
 plot_data <- S7::new_generic("plot_data", "x")
+
+#' @export
+#' @noRd
+plot_explained_variance <- S7::new_generic("plot_explained_variance", "x")
 
 #' @export
 #' @noRd
@@ -205,6 +221,26 @@ plot_internal_standards <- S7::new_generic("plot_internal_standards", "x")
 
 #' @export
 #' @noRd
+plot_loadings <- S7::new_generic("plot_loadings", "x")
+
+#' @export
+#' @noRd
+plot_prediction <- S7::new_generic("plot_prediction", "x")
+
+#' @export
+#' @noRd
+plot_residuals <- S7::new_generic("plot_residuals", "x")
+
+#' @export
+#' @noRd
+plot_resolved_spectra <- S7::new_generic("plot_resolved_spectra", "x")
+
+#' @export
+#' @noRd
+plot_scores <- S7::new_generic("plot_scores", "x")
+
+#' @export
+#' @noRd
 plot_spectra <- S7::new_generic("plot_spectra", "x")
 
 #' @export
@@ -242,6 +278,10 @@ plot_spectra_xic <- S7::new_generic("plot_spectra_xic", "x")
 #' @export
 #' @noRd
 plot_suspects <- S7::new_generic("plot_suspects", "x")
+
+#' @export
+#' @noRd
+predict <- S7::new_generic("predict", "x")
 
 # Q -----
 

@@ -129,7 +129,7 @@ S7::method(run, StatisticSettings_MakeModel_pca_mdatools) <- function(x, engine 
     method = method, rand = rand, lim.type = lim.type, alpha = alpha, gamma = gamma, info = info
   )
   
-  engine$model <- StreamFind::Model(model = m)
+  engine$model <- StreamFind::PCA(model = m)
   message(paste0("\U2713 ", "PCA model added!"))
   TRUE
 }
@@ -252,7 +252,7 @@ S7::method(run, StatisticSettings_MakeModel_mcrpure_mdatools) <- function(x, eng
     info = info
   )
   
-  engine$model <- StreamFind::Model(model = m)
+  engine$model <- StreamFind::MCRPURE(model = m)
   message(paste0("\U2713 ", "MCR purity model added!"))
   TRUE
 }
@@ -423,7 +423,103 @@ S7::method(run, StatisticSettings_MakeModel_mcrals_mdatools) <- function(x, engi
     info = info
   )
   
-  engine$model <- StreamFind::Model(model = m)
+  engine$model <- StreamFind::StatisticModel(model = m)
   message(paste0("\U2713 ", "MCR-ALS model added!"))
   TRUE
+}
+
+# ______________________________________________________________________________________________________________________
+# knn -----
+# ______________________________________________________________________________________________________________________
+
+#' **StatisticSettings_MakeModel_knn**
+#'
+#' @description Makes a classification model using the k-nearest neighbors (knn) algorithm from package \pkg{class}.
+#' 
+#' @param k Integer (length 1) with the number of neighbors to be used.
+#' @param l Integer (length 1) with the minimum vote for definite decision, otherwise doubt.
+#' (More precisely, less than k-l dissenting votes are allowed, even if k is increased by ties.)
+#' 
+#' @references
+#' \insertRef{class01}{StreamFind}
+#' 
+#' @return A StatisticSettings_MakeModel_knn object.
+#'
+#' @export
+#' 
+StatisticSettings_MakeModel_knn <- S7::new_class("StatisticSettings_MakeModel_knn",
+  parent = ProcessingSettings,
+  package = "StreamFind",
+  
+  constructor = function(k = 3, l = 0) {
+   
+    S7::new_object(ProcessingSettings(
+      engine = "Statistic",
+      method = "MakeModel",
+      algorithm = "knn",
+      parameters = list(
+        k = k,
+        l = l,
+        prob = TRUE
+      ),
+      number_permitted = 1,
+      version = as.character(packageVersion("StreamFind")),
+      software = "class",
+      developer = "Brian D. Ripley",
+      contact = "ripley@stats.ox.ac.uk",
+      link = "https://cran.r-project.org/web/packages/class/index.html",
+      doi = "ISBN 0-387-95457-0"
+    ))
+  },
+  
+  validator = function(self) {
+    valid <- all(
+      checkmate::test_choice(self@engine, "Statistic"),
+      checkmate::test_choice(self@method, "MakeModel"),
+      checkmate::test_choice(self@algorithm, "knn"),
+      checkmate::test_number(self@parameters$k),
+      checkmate::test_number(self@parameters$l)
+    )
+    if (!valid) return(FALSE)
+    NULL
+  }
+)
+
+#' @export
+#' @noRd
+S7::method(run, StatisticSettings_MakeModel_knn) <- function(x, engine = NULL) {
+  
+  if (!requireNamespace("class", quietly = TRUE)) {
+    warning("The package 'class' is not available! Not done.")
+    return(FALSE)
+  }
+  
+  if (!is(engine, "StatisticEngine")) {
+    warning("Engine is not a StatisticEngine object!")
+    return(FALSE)
+  }
+  
+  if (!engine$has_analyses()) {
+    warning("There are no analyses! Not done.")
+    return(FALSE)
+  }
+  
+  train = engine$analyses$analyses
+  cl = engine$analyses$classes
+  
+  if (nrow(train) != length(cl)) {
+    warning("The number of rows in the training data must be equal to the number of classes! Not done.")
+    return(FALSE)
+  }
+  
+  conditions <- list(
+    train = train,
+    cl = cl,
+    args = x$parameters
+  )
+  
+  func <- class::knn
+  engine$model <- StreamFind::KNN(model = list("func" = func, "conditions" = conditions))
+  message(paste0("\U2713 ", "KNN classification model added!"))
+  invisible(TRUE)
 }

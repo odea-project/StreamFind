@@ -193,7 +193,7 @@ S7::method(run, RamanSettings_CorrectSpectraBaseline_airpls) <- function(x, engi
     return(FALSE)
   }
   
-  if (!engine$has_chromatograms()) {
+  if (!engine$has_spectra()) {
     warning("No spectra results object available! Not done.")
     return(FALSE)
   }
@@ -237,5 +237,5 @@ S7::method(run, RamanSettings_CorrectSpectraBaseline_airpls) <- function(x, engi
   
   engine$spectra$spectra <- spec_list
   message(paste0("\U2713 ", "Spectra beseline corrected!"))
-  TRUE
+  invisible(TRUE)
 }

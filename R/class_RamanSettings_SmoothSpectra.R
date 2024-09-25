@@ -94,7 +94,7 @@ S7::method(run, RamanSettings_SmoothSpectra_movingaverage) <- function(x, engine
   
   engine$spectra$spectra <- spec_list
   message(paste0("\U2713 ", "Spectra smoothed!"))
-  TRUE
+  invisible(TRUE)
 }
 
 # ______________________________________________________________________________________________________________________
@@ -207,5 +207,5 @@ S7::method(run, RamanSettings_SmoothSpectra_savgol) <- function(x, engine = NULL
   
   engine$spectra$spectra <- spec_list
   message(paste0("\U2713 ", "Spectra smoothed!"))
-  TRUE
+  invisible(TRUE)
 }

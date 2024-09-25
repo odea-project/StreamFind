@@ -185,77 +185,71 @@ ms$run_workflow()
 ms$plot_spectra()
 ```
 
-```{r ms-spectra}
-ms$get_spectra()[1:10, ]
-```
-
 ## Raman
 
 ```{r raman-setup, include=FALSE}
-raman_all <- RamanEngine$new(c(raman_files, raman_files_extra))
+raman <- RamanEngine$new(analyses = c(raman_files, raman_files_extra))
 
-raman_all$add_replicate_names(
-  c(
-    rep("ass_1", 3),
-    rep("ass_2", 3),
-    rep("ass_3", 3),
-    rep("caff_1", 3),
-    rep("caff_2", 3),
-    rep("caff_3", 3),
-    rep("blank", 9),
-    rep("fiz_c1", 3),
-    rep("fiz_c2", 3),
-    rep("fiz_c3", 3),
-    rep("fiz_ass_n_1", 3),
-    rep("fiz_ass_n_2", 3),
-    rep("fiz_ass_n_3", 3),
-    rep("fiz_ass1", 3),
-    rep("fiz_ass2", 3),
-    rep("fiz_ass3", 3),
-    rep("fiz_caff1", 3),
-    rep("fiz_caff2", 3),
-    rep("fiz_caff3", 3),
-    rep("fiz_a1", 3),
-    rep("fiz_a2", 3),
-    rep("fiz_a3", 3),
-    rep("fiz_d1", 3),
-    rep("fiz_d2", 3),
-    rep("fiz_d3", 3),
-    rep("fiz_b1", 3),
-    rep("fiz_b2", 3),
-    rep("fiz_b3", 3),
-    rep("background", 4),
-    rep("blank_e", 9),
-    rep("fiz_acid1", 3),
-    rep("fiz_acid2", 3),
-    rep("fiz_acid3", 3),
-    rep("fiz_e01", 3),
-    rep("fiz_e02", 3),
-    rep("fiz_e03", 3),
-    rep("fiz_e04", 3),
-    rep("fiz_e05", 3),
-    rep("fiz_e06", 3),
-    rep("fiz_e07", 3),
-    rep("fiz_e08", 3),
-    rep("fiz_e09", 3),
-    rep("fiz_e10", 3),
-    rep("fiz_e11", 3),
-    rep("fiz_e12", 3),
-    rep("par_1", 3),
-    rep("par_odd", 3),
-    rep("par_3", 3),
-    rep("par_2", 3),
-    rep("cali_150_mgml", 9),
-    rep("cali_010_mgml", 9),
-    rep("cali_025_mgml", 9),
-    rep("cali_050_mgml", 9),
-    rep("cali_075_mgml", 9),
-    rep("background", 4)
-  )
+raman$analyses$replicates <- c(
+  rep("ass_1", 3),
+  rep("ass_2", 3),
+  rep("ass_3", 3),
+  rep("caff_1", 3),
+  rep("caff_2", 3),
+  rep("caff_3", 3),
+  rep("blank", 9),
+  rep("fiz_c1", 3),
+  rep("fiz_c2", 3),
+  rep("fiz_c3", 3),
+  rep("fiz_ass_n_1", 3),
+  rep("fiz_ass_n_2", 3),
+  rep("fiz_ass_n_3", 3),
+  rep("fiz_ass1", 3),
+  rep("fiz_ass2", 3),
+  rep("fiz_ass3", 3),
+  rep("fiz_caff1", 3),
+  rep("fiz_caff2", 3),
+  rep("fiz_caff3", 3),
+  rep("fiz_a1", 3),
+  rep("fiz_a2", 3),
+  rep("fiz_a3", 3),
+  rep("fiz_d1", 3),
+  rep("fiz_d2", 3),
+  rep("fiz_d3", 3),
+  rep("fiz_b1", 3),
+  rep("fiz_b2", 3),
+  rep("fiz_b3", 3),
+  rep("background", 4),
+  rep("blank_e", 9),
+  rep("fiz_acid1", 3),
+  rep("fiz_acid2", 3),
+  rep("fiz_acid3", 3),
+  rep("fiz_e01", 3),
+  rep("fiz_e02", 3),
+  rep("fiz_e03", 3),
+  rep("fiz_e04", 3),
+  rep("fiz_e05", 3),
+  rep("fiz_e06", 3),
+  rep("fiz_e07", 3),
+  rep("fiz_e08", 3),
+  rep("fiz_e09", 3),
+  rep("fiz_e10", 3),
+  rep("fiz_e11", 3),
+  rep("fiz_e12", 3),
+  rep("par_1", 3),
+  rep("par_odd", 3),
+  rep("par_3", 3),
+  rep("par_2", 3),
+  rep("cali_150_mgml", 9),
+  rep("cali_010_mgml", 9),
+  rep("cali_025_mgml", 9),
+  rep("cali_050_mgml", 9),
+  rep("cali_075_mgml", 9),
+  rep("background", 4)
 )
 
-raman <- raman_all$subset_analyses(analyses = c(1:36, 46:90, 95:151, 155:160))
-raman$add_blank_names(c(rep("blank", 81), rep("blank_e", 9), rep("blank", 9), rep("blank_e", 36), rep("blank", 9)))
+raman$analyses <- raman$analyses[c(1:36, 46:90, 95:151, 155:160)]
+raman$analyses$blanks <- c(rep("blank", 81), rep("blank_e", 9), rep("blank", 9), rep("blank_e", 36), rep("blank", 9))
 ```
 
 ```{r raman-overview, echo=FALSE}
@@ -283,32 +277,20 @@ scroll_box(width = "100%", height = "400px")
 ```
 
 ```{r raman-workflow}
-raman_workflow_settings <- list(
-  RamanSettings_AverageSpectra_StreamFind(),
-  RamanSettings_SubtractBlankSpectra_StreamFind(),
-  RamanSettings_SmoothSpectra_savgol(fl = 21, forder = 4, dorder = 0),
-  RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(-100, 350))),
-  RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(1800, 2500))),
-  RamanSettings_CorrectSpectraBaseline_airpls(lambda = 45, differences = 1, itermax = 30),
-  RamanSettings_NormalizeSpectra_minmax(),
-  RamanSettings_NormalizeSpectra_blockweight()
-)
-
-raman$add_settings(raman_workflow_settings)
+run(RamanSettings_AverageSpectra_StreamFind(), raman)
+run(RamanSettings_SubtractBlankSpectra_StreamFind(), raman)
+run(RamanSettings_SmoothSpectra_savgol(fl = 21, forder = 4, dorder = 0), raman)
+run(RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(-100, 350))), raman)
+run(RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(1800, 2500))), raman)
+run(RamanSettings_CorrectSpectraBaseline_airpls(lambda = 45, differences = 1, itermax = 30), raman)
+run(RamanSettings_NormalizeSpectra_minmax(), raman)
+run(RamanSettings_NormalizeSpectra_blockweight(), raman)
 
 raman$print_workflow()
 ```
 
-```{r raman-run-workflow}
-raman$run_workflow()
-```
-
 ```{r plot-raman-spectra, fig.cap="Pre-processed Raman spectra for analysis replicate."}
 raman$plot_spectra()
-```
-
-```{r raman-spectra}
-raman$get_spectra()[1:10, ]
 ```
 
 # Fusion
@@ -323,35 +305,6 @@ fused_mat <- cbind(ms_spec_mat, raman_spec_mat)
 fused_mat <- mdatools::prep.autoscale(fused_mat, center = TRUE, scale = FALSE)
 ```
 
-```{r plot-fused, include=FALSE, fig.cap="Fused spectra."}
-cl <- StreamFind:::.get_colors(rownames(fused_mat))
-fig <- plot_ly()
-xVal <- seq_len(length(fused_mat[1, ]))
-for (i in seq_len(nrow(fused_mat))) {
-  fig <- fig %>% add_trace(
-    x = xVal,
-    y = fused_mat[i, ],
-    type = "scatter", mode = "lines",
-    line = list(width = 0.5, color = unname(cl[i])),
-    name = names(cl)[i],
-    legendgroup = names(cl)[i],
-    showlegend = TRUE
-  )
-}
-xaxis <- list(
-  linecolor = toRGB("black"),
-  linewidth = 2, title = "Bins",
-  titlefont = list(size = 12, color = "black")
-)
-yaxis <- list(
-  linecolor = toRGB("black"),
-  linewidth = 2, title = "Intensity",
-  titlefont = list(size = 12, color = "black")
-)
-fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis)
-fig
-```
-
 # Statistic analysis
 
 ## Unsupervised
@@ -359,24 +312,26 @@ fig
 Principle Components Analysis (PCA) can be used for unsupervised evaluation, meaning that we assume that the main (or train) set of analyses are of good quality and we test new analyses to evaluate the proximity to the main set. One could say that it is a supervised approach but in the sense that we assume the quality of the main set. Yet, we are not classifying the possible deviation of the new analyses which would be a clear supervised approach, as we show in the next sub chapter.
 
 ```{r sets-show}
-main_set <- fused_mat[c(7:9, 16:21, 25:33), ]
+main_set_idx <- c(1:3, 4:5)
+
+main_set <- fused_mat[main_set_idx, ]
 rownames(main_set)
 
-test_set <- fused_mat[c(1:6, 10:15, 22:24, 34:42), ]
+test_set <- fused_mat[-main_set_idx, ]
 rownames(test_set)
 ```
 
 ```{r pca-engine, fig.cap="PCA model (native plot from mdatools R package).", fig.height=9}
-stat <- StatisticEngine$new(data = main_set)
+stat <- StatisticEngine$new(analyses = main_set)
 # the alpha and gamma parameters are used to evaluate the model limits
-stat$process(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 1E-4, gamma = 1E-5))
+stat$run(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 0.01, gamma = 0.001))
 # original plot from mdatools R package
-plot(stat$model)
+plot(stat$model, show.labels = TRUE)
 ```
 
 ```{r pca-predict, fig.cap="PCA model prediction distances. For more information about the distances plese consult the mdatools guide in https://mdatools.com/docs/pca--distances-and-limits.html."}
 stat$predict(test_set)
-stat$plot_predicted_distances()
+stat$plot_prediction(pc = 3)
 ```
 
 ## Supervised (classification)
@@ -398,11 +353,11 @@ labels <- c(rep("ass", 2), rep("caff", 2), rep("fiz", 2), rep("fiz_acid", 2), re
 ```
 
 ```{r knn-engine}
-stat2 <- StatisticEngine$new(data = train_set)
+stat2 <- StatisticEngine$new(analyses = train_set)
 stat2$add_classes(labels)
-stat2$process(StatisticSettings_PrepareClassification_knn(k = 3))
-stat2$classify(test_set)
-stat2$classification_results
+stat2$run(StatisticSettings_MakeModel_knn(k = 3))
+stat2$predict(test_set)
+stat2$model$prediction$results
 ```
 
 ## Only MS

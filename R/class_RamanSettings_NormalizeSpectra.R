@@ -93,7 +93,7 @@ S7::method(run, RamanSettings_NormalizeSpectra_minmax) <- function(x, engine = N
   
   engine$spectra$spectra <- spec_list
   message(paste0("\U2713 ", "Spectra normalized!"))
-  TRUE
+  invisible(TRUE)
 }
 
 # ______________________________________________________________________________________________________________________
@@ -196,12 +196,8 @@ S7::method(run, RamanSettings_NormalizeSpectra_snv) <- function(x, engine = NULL
   })
   
   self$spectra <- spec_list
-  
   message(paste0("\U2713 ", "Spectra normalized!"))
-  
-  TRUE
-  
-  
+  invisible(TRUE)
 }
 
 # ______________________________________________________________________________________________________________________
@@ -296,9 +292,7 @@ S7::method(run, RamanSettings_NormalizeSpectra_scale) <- function(x, engine = NU
   
   engine$spectra$spectra <- spec_list
   message(paste0("\U2713 ", "Spectra normalized!"))
-  TRUE
-  
-  
+  invisible(TRUE)
 }
 
 # ______________________________________________________________________________________________________________________
@@ -391,7 +385,7 @@ S7::method(run, RamanSettings_NormalizeSpectra_blockweight) <- function(x, engin
   
   engine$spectra$spectra <- spec_list
   message(paste0("\U2713 ", "Spectra normalized!"))
-  TRUE
+  invisible(TRUE)
 }
 
 # ______________________________________________________________________________________________________________________
@@ -486,7 +480,5 @@ S7::method(run, RamanSettings_NormalizeSpectra_meancenter) <- function(x, engine
   
   engine$spectra$spectra <- spec_list
   message(paste0("\U2713 ", "Spectra normalized!"))
-  TRUE
-  
-  
+  invisible(TRUE)
 }

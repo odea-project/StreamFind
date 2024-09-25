@@ -34,7 +34,7 @@ Analyses <- S7::new_class("Analyses", package = "StreamFind",
   validator = function(self) {
     valid <- all(
       checkmate::test_character(self@possible_formats),
-      checkmate::test_list(self@analyses),
+      checkmate::test_list(self@analyses) || checkmate::test_data_frame(self@analyses),
       checkmate::test_list(self@results)
     )
     if (!valid) return(FALSE)

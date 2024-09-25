@@ -92,8 +92,9 @@ RamanAnalyses <- S7::new_class("RamanAnalyses", package = "StreamFind", parent =
       if (length(self) == 0) return(FALSE)
       if (is.null(self@results[["spectra"]])) {
         if (length(self$raw_spectra) == 0) return(FALSE)
+      } else{
+        if (!is(self@results[["spectra"]], "StreamFind::Spectra")) return(FALSE)
       }
-      if (!is(self@results[["spectra"]], "StreamFind::Spectra")) return(FALSE)
       TRUE
     }),
     
@@ -217,14 +218,14 @@ S7::method(remove, RamanAnalyses) <- function(x, value) {
 #' @noRd
 S7::method(`[`, RamanAnalyses) <- function(x, i) {
   x@analyses <- x@analyses[i]
-  if (x@has_processed_spectra) {
-    Spectra_names <- names(x@results$Spectra)
-    if (!x@results$Spectra$is_averaged) {
-      x@results$Spectra <- x@results$Spectra[x$names %in% Spectra_names]
-      x@results$Spectra <- x@results$Spectra[order(names(x@results$Spectra))]
+  if (!is.null(x$results$spectra)) {
+    spectra_names <- names(x@results$spectra$spectra)
+    if (!x@results$spectra$is_averaged) {
+      x@results$spectra <- x@results$spectra[x$names %in% spectra_names]
+      x@results$spectra <- x@results$spectra[order(names(x@results$Spectra))]
     } else {
-      x@results$Spectra <- x@results$Spectra[x$replicates %in% Spectra_names]
-      x@results$Spectra <- x@results$Spectra[order(names(x@results$Spectra))]
+      x@results$spectra <- x@results$spectra[x$replicates %in% spectra_names]
+      x@results$spectra <- x@results$spectra[order(names(x@results$Spectra))]
     }
   }
   return(x)

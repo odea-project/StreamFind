@@ -65,12 +65,17 @@ S7::method(run, MassSpecSettings_SubtractBlankSpectra_StreamFind) <- function(x,
     return(FALSE)
   }
   
+  spec_list <- engine$spectra$spectra
+  
+  spec_list <- Map(function(i, j) {
+    i$analysis <- j
+    i
+  }, spec_list, names(spec_list))
+  
   ntozero <- x$parameters$negativeToZero
   
   blks <- engine$analyses$blanks
-  
   names(blks) <- engine$analyses$replicates
-  
   blk_anas <- engine$analyses$replicates
   blk_anas <- blk_anas[blk_anas %in% blks]
   
@@ -91,11 +96,11 @@ S7::method(run, MassSpecSettings_SubtractBlankSpectra_StreamFind) <- function(x,
     
     if (nrow(z) == 0) return(z)
     
-    if (!"replicate" %in% colnames(z)) {
+    if (!engine$spectra$is_averaged) {
       rp <- engine$analyses$replicates[z$analysis[1]]
       
     } else {
-      rp <- unique(z$replicate)
+      rp <- z$analysis[1]
     }
     
     if (rp %in% blks) return(data.table::data.table())
@@ -133,17 +138,11 @@ S7::method(run, MassSpecSettings_SubtractBlankSpectra_StreamFind) <- function(x,
     }
     
     z$blank <- blk
-    
     z$intensity <- z$intensity - blk
     
     if (ntozero) z$intensity[z$intensity < 0] <- 0
     
-    if ("analysis" %in% colnames(z) && "replicate" %in% colnames(z)) {
-      if (unique(z$analysis) == unique(z$replicate)) {
-        z[["analysis"]] <- NULL
-      }
-    }
-    
+    z$analysis <- NULL
     z <- unique(z)
     
     z

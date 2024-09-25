@@ -142,7 +142,7 @@ S7::method(run, RamanSettings_AverageSpectra_StreamFind) <- function(x, engine =
     spectra$spectra <- av_list
     engine$spectra <- spectra
     message(paste0("\U2713 ", "Averaged spectra!"))
-    TRUE
+    invisible(TRUE)
   } else {
     FALSE
   }

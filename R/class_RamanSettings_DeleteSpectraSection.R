@@ -102,5 +102,5 @@ S7::method(run, RamanSettings_DeleteSpectraSection_StreamFind) <- function(x, en
   
   engine$spectra$spectra <- spec_del
   message(paste0("\U2713 ", "Spectra section deleted!"))
-  TRUE
+  invisible(TRUE)
 }

@@ -296,7 +296,7 @@ raman$plot_spectra()
 
 # Fusion
 
-The fusion of MS and Raman data is performed by combining the processed data from both engines. The data is then merged into a single data frame for statistical evaluation using a MachineLearningEngine, which is under development.
+The fusion of MS and Raman data is performed by combining the processed data from both engines. The data is then merged into a single data frame for statistical evaluation using a StatisticEngine.
 
 ```{r}
 ms_mat <- get_spectra_matrix(ms$analyses)
@@ -345,21 +345,28 @@ The fused data is used to create a PCA model with the *StatisticEngine* using pr
 
 ```{r}
 stat <- StatisticEngine$new(analyses = fused_mat)
+```
+
+```{r}
+plot_data(stat$analyses)
+```
+
+```{r}
 stat$run(StatisticSettings_MakeModel_pca_mdatools(ncomp = 2, alpha = 0.05, gamma = 0.02))
-summary(stat$model$model) # summary method is from mdatools
+summary(stat$model) # summary method is from mdatools
 ```
 
 ```{r, fig.cap="PCA scores plot for the fused data."}
-stat$plot_model_scores()
+plot_scores(stat$analyses)
 ```
 
 ```{r, fig.cap="PCA loadings plot for the fused data."}
-stat$plot_model_loadings(colorKey = rep(c("MS", "Raman"), c(ncol(mmSpec), ncol(mrSpec))))
+plot_loadings(stat$analyses, colorKey = rep(c("MS", "Raman"), c(ncol(ms_mat), ncol(raman_mat))))
 ```
 
 ```{r, fig.cap="PCA summary plot using the original mdatools R package.", fig.height=9}
 # the mdatools S3 class model object is obtained via the active binding of the StatisticEngine
-plot(stat$model) # plot method from mdatools
+plot(stat$model, show.labels = TRUE) # plot method from mdatools
 ```
 
 ## MCR purity
@@ -368,11 +375,10 @@ Another approach for the statistic analysis is to use the MCR pure model (based 
 
 ```{r}
 # Note that the model in the engine will be overwritten by the new mcr pure model
-stat$process(StatisticSettings_MakeModel_mcrpure_mdatools(ncomp = 2, offset = 0.05))
+stat$run(StatisticSettings_MakeModel_mcrpure_mdatools(ncomp = 2, offset = 0.05))
 summary(stat$model)
 ```
 
 ```{r, fig.cap="MCR pure model resolved spectra and the original spectra from the fused data."}
-stat$plot_model_resolved_spectra()
+plot_resolved_spectra(stat$analyses)
 ```
-

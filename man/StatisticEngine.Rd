@@ -41,11 +41,6 @@ Note that only the model MCR is valid for quantification and concentrations must
 \item \href{#method-StatisticEngine-get_classes}{\code{StatisticEngine$get_classes()}}
 \item \href{#method-StatisticEngine-get_concentrations}{\code{StatisticEngine$get_concentrations()}}
 \item \href{#method-StatisticEngine-get_number_variables}{\code{StatisticEngine$get_number_variables()}}
-\item \href{#method-StatisticEngine-get_model_explained_variance}{\code{StatisticEngine$get_model_explained_variance()}}
-\item \href{#method-StatisticEngine-get_model_scores}{\code{StatisticEngine$get_model_scores()}}
-\item \href{#method-StatisticEngine-get_model_loadings}{\code{StatisticEngine$get_model_loadings()}}
-\item \href{#method-StatisticEngine-get_model_residuals}{\code{StatisticEngine$get_model_residuals()}}
-\item \href{#method-StatisticEngine-get_model_resolved_spectra}{\code{StatisticEngine$get_model_resolved_spectra()}}
 \item \href{#method-StatisticEngine-get_model_contributions}{\code{StatisticEngine$get_model_contributions()}}
 \item \href{#method-StatisticEngine-add_analyses}{\code{StatisticEngine$add_analyses()}}
 \item \href{#method-StatisticEngine-add_classes}{\code{StatisticEngine$add_classes()}}
@@ -55,13 +50,13 @@ Note that only the model MCR is valid for quantification and concentrations must
 \item \href{#method-StatisticEngine-classify}{\code{StatisticEngine$classify()}}
 \item \href{#method-StatisticEngine-quantify}{\code{StatisticEngine$quantify()}}
 \item \href{#method-StatisticEngine-plot_data}{\code{StatisticEngine$plot_data()}}
-\item \href{#method-StatisticEngine-plot_model_explained_variance}{\code{StatisticEngine$plot_model_explained_variance()}}
-\item \href{#method-StatisticEngine-plot_model_scores}{\code{StatisticEngine$plot_model_scores()}}
-\item \href{#method-StatisticEngine-plot_model_residuals}{\code{StatisticEngine$plot_model_residuals()}}
-\item \href{#method-StatisticEngine-plot_model_loadings}{\code{StatisticEngine$plot_model_loadings()}}
-\item \href{#method-StatisticEngine-plot_model_resolved_spectra}{\code{StatisticEngine$plot_model_resolved_spectra()}}
+\item \href{#method-StatisticEngine-plot_explained_variance}{\code{StatisticEngine$plot_explained_variance()}}
+\item \href{#method-StatisticEngine-plot_scores}{\code{StatisticEngine$plot_scores()}}
+\item \href{#method-StatisticEngine-plot_residuals}{\code{StatisticEngine$plot_residuals()}}
+\item \href{#method-StatisticEngine-plot_loadings}{\code{StatisticEngine$plot_loadings()}}
+\item \href{#method-StatisticEngine-plot_resolved_spectra}{\code{StatisticEngine$plot_resolved_spectra()}}
 \item \href{#method-StatisticEngine-plot_model_contributions}{\code{StatisticEngine$plot_model_contributions()}}
-\item \href{#method-StatisticEngine-plot_predicted_distances}{\code{StatisticEngine$plot_predicted_distances()}}
+\item \href{#method-StatisticEngine-plot_prediction}{\code{StatisticEngine$plot_prediction()}}
 \item \href{#method-StatisticEngine-processing_methods}{\code{StatisticEngine$processing_methods()}}
 \item \href{#method-StatisticEngine-clone}{\code{StatisticEngine$clone()}}
 }
@@ -160,77 +155,6 @@ Gets the number of variables.
 \if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$get_number_variables()}\if{html}{\out{</div>}}
 }
 
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-StatisticEngine-get_model_explained_variance"></a>}}
-\if{latex}{\out{\hypertarget{method-StatisticEngine-get_model_explained_variance}{}}}
-\subsection{Method \code{get_model_explained_variance()}}{
-Gets model explained variance.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$get_model_explained_variance()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-StatisticEngine-get_model_scores"></a>}}
-\if{latex}{\out{\hypertarget{method-StatisticEngine-get_model_scores}{}}}
-\subsection{Method \code{get_model_scores()}}{
-Gets model scores.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$get_model_scores(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-StatisticEngine-get_model_loadings"></a>}}
-\if{latex}{\out{\hypertarget{method-StatisticEngine-get_model_loadings}{}}}
-\subsection{Method \code{get_model_loadings()}}{
-Gets model loadings.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$get_model_loadings()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-StatisticEngine-get_model_residuals"></a>}}
-\if{latex}{\out{\hypertarget{method-StatisticEngine-get_model_residuals}{}}}
-\subsection{Method \code{get_model_residuals()}}{
-Gets model residuals.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$get_model_residuals(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-StatisticEngine-get_model_resolved_spectra"></a>}}
-\if{latex}{\out{\hypertarget{method-StatisticEngine-get_model_resolved_spectra}{}}}
-\subsection{Method \code{get_model_resolved_spectra()}}{
-Gets model resolved spectra.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$get_model_resolved_spectra(pcs = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{pcs}}{Integer vector with the principle components.}
-}
-\if{html}{\out{</div>}}
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-StatisticEngine-get_model_contributions"></a>}}
@@ -406,12 +330,12 @@ Plots the data.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-StatisticEngine-plot_model_explained_variance"></a>}}
-\if{latex}{\out{\hypertarget{method-StatisticEngine-plot_model_explained_variance}{}}}
-\subsection{Method \code{plot_model_explained_variance()}}{
+\if{html}{\out{<a id="method-StatisticEngine-plot_explained_variance"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-plot_explained_variance}{}}}
+\subsection{Method \code{plot_explained_variance()}}{
 Plots the model explained cumulative variance.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_model_explained_variance(
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_explained_variance(
   interactive = TRUE,
   xLab = NULL,
   yLab = NULL,
@@ -434,12 +358,12 @@ Plots the model explained cumulative variance.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-StatisticEngine-plot_model_scores"></a>}}
-\if{latex}{\out{\hypertarget{method-StatisticEngine-plot_model_scores}{}}}
-\subsection{Method \code{plot_model_scores()}}{
+\if{html}{\out{<a id="method-StatisticEngine-plot_scores"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-plot_scores}{}}}
+\subsection{Method \code{plot_scores()}}{
 Plots scores of the model.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_model_scores(
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_scores(
   analyses = NULL,
   interactive = TRUE,
   pcs = 1:2,
@@ -471,12 +395,12 @@ Plots scores of the model.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-StatisticEngine-plot_model_residuals"></a>}}
-\if{latex}{\out{\hypertarget{method-StatisticEngine-plot_model_residuals}{}}}
-\subsection{Method \code{plot_model_residuals()}}{
+\if{html}{\out{<a id="method-StatisticEngine-plot_residuals"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-plot_residuals}{}}}
+\subsection{Method \code{plot_residuals()}}{
 Plots residuals of the model.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_model_residuals(
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_residuals(
   analyses = NULL,
   interactive = TRUE,
   xLab = NULL,
@@ -502,12 +426,12 @@ Plots residuals of the model.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-StatisticEngine-plot_model_loadings"></a>}}
-\if{latex}{\out{\hypertarget{method-StatisticEngine-plot_model_loadings}{}}}
-\subsection{Method \code{plot_model_loadings()}}{
+\if{html}{\out{<a id="method-StatisticEngine-plot_loadings"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-plot_loadings}{}}}
+\subsection{Method \code{plot_loadings()}}{
 Plots model loadings.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_model_loadings(
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_loadings(
   interactive = TRUE,
   pcs = 1:2,
   colorKey = NULL,
@@ -536,12 +460,12 @@ Plots model loadings.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-StatisticEngine-plot_model_resolved_spectra"></a>}}
-\if{latex}{\out{\hypertarget{method-StatisticEngine-plot_model_resolved_spectra}{}}}
-\subsection{Method \code{plot_model_resolved_spectra()}}{
+\if{html}{\out{<a id="method-StatisticEngine-plot_resolved_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-plot_resolved_spectra}{}}}
+\subsection{Method \code{plot_resolved_spectra()}}{
 Plots model resolved spectra.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_model_resolved_spectra(
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_resolved_spectra(
   interactive = TRUE,
   pcs = NULL,
   original = TRUE,
@@ -601,32 +525,18 @@ Plots model contributions.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-StatisticEngine-plot_predicted_distances"></a>}}
-\if{latex}{\out{\hypertarget{method-StatisticEngine-plot_predicted_distances}{}}}
-\subsection{Method \code{plot_predicted_distances()}}{
-Plots scores of the model.
+\if{html}{\out{<a id="method-StatisticEngine-plot_prediction"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-plot_prediction}{}}}
+\subsection{Method \code{plot_prediction()}}{
+Plots prediction of the model.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_predicted_distances(
-  pc = NULL,
-  interactive = TRUE,
-  title = NULL,
-  showText = TRUE,
-  showLegend = TRUE
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_prediction(...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{pc}}{Integer (length 1) with the principle component to use for categorization.}
-
-\item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
-
-\item{\code{title}}{A string with the title.}
-
-\item{\code{showText}}{Logical (length 1), set to \code{TRUE} to show the text annotations.}
-
-\item{\code{showLegend}}{Logical (length 1). Set to \code{TRUE} to show legend.}
+\item{\code{...}}{Additional arguments passed to the plotting function.}
 }
 \if{html}{\out{</div>}}
 }
