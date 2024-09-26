@@ -318,6 +318,59 @@ S7::method(predict, StatisticAnalyses) <- function(x, data) {
   x
 }
 
+#' @export
+#' @noRd
+S7::method(test, StatisticAnalyses) <- function(x, data) {
+  if (!is.data.frame(data) && !is(data, "data.table") && !is.matrix(data)) {
+    warning("The data must be a data.frame, data.table or matrix! Not done.")
+    return(x)
+  }
+  
+  if (nrow(data) == 0) {
+    warning("The data must not be empty! Not done.")
+    return(x)
+  }
+  
+  if (!all(vapply(data, is.numeric, FALSE))) {
+    warning("The data must be numeric! Not done.")
+    return(x)
+  }
+  
+  if (is(data, "data.table") || is(data, "data.frame")) data <- as.data.frame(data)
+  
+  names <- rownames(data)
+  
+  if (is.null(names)) {
+    names <- paste0("analysis_", seq_len(nrow(data)) + length(x))
+    
+  } else {
+    
+    if (any(names %in% names(x))) {
+      warning("Some analysis names are already in the analyses! Not done.")
+      return(x)
+    }
+  }
+  
+  if (is.null(x$model)) {
+    warning("Model not found! Not done.")
+    return(x)
+  }
+  
+  if (ncol(data) != x$number_variables) {
+    warning("The number of variables in the data must be equal to the number of variables in the model! Not done.")
+    return(x)
+  }
+  
+  if (!requireNamespace("mdatools", quietly = TRUE)) {
+    warning("Package mdatools not found but required! Not done.")
+    return(x)
+  }
+  
+  x$model <- test(x$model, data)
+  message(paste0("\U2713 ", "Test results added!"))
+  x
+}
+
 # Get Methods -----
 
 #' @export

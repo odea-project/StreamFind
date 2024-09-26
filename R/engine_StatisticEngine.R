@@ -222,6 +222,20 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       invisible(self)
     },
     
+    #' @description Tests the model using the data.
+    #' 
+    #' @note Note that the model must be created before testing and data must have the same number of variables as 
+    #' the model. Also, any pre-processing applied to the model data should be applied to the data before testing. 
+    #' Note that only numeric values are accepted in data and the data column names are used as variable names 
+    #' and data row names are used as analyses names.
+    #' 
+    #' @param data Data.frame, data-table or matrix with data.
+    #' 
+    test = function(data = NULL) {
+      self$analyses <- test(self$analyses, data)
+      invisible(self)
+    },
+    
     #' @description Classifies the data using the classification labels of the analysis.
     #' 
     #' @note Note that the classification must be prepared before using the method `prepare_classification` and data 

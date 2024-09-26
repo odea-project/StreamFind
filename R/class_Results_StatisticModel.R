@@ -7,16 +7,18 @@ StatisticModel <- S7::new_class("StatisticModel", package = "StreamFind", parent
   
   properties = list(
     model = S7::new_property(S7::class_list, default = list()),
+    test = S7::new_property(S7::class_list, default = list()),
     prediction = S7::new_property(S7::class_list, default = list())
   ),
   
   constructor = function(model = list()) {
     S7::new_object(
-      Results(), 
+      Results(),
       name = "StatisticModel",
       software = "StreamFind",
       version = as.character(packageVersion("StreamFind")),
       model = model,
+      test = list(),
       prediction = list()
     )
   },
@@ -25,6 +27,7 @@ StatisticModel <- S7::new_class("StatisticModel", package = "StreamFind", parent
     valid <- all(
       checkmate::test_true(self@software == "StreamFind"),
       checkmate::test_list(self@model),
+      checkmate::test_list(self@test),
       checkmate::test_list(self@prediction)
     )
     if (!valid) return(FALSE)
@@ -39,7 +42,16 @@ StatisticModel <- S7::new_class("StatisticModel", package = "StreamFind", parent
 PCA <- S7::new_class("PCA", package = "StreamFind", parent = StatisticModel,
 
   properties = list(
-    
+    test = S7::new_property(S7::class_list, default = list(),
+      getter = function(self) {
+        if (length(self$model$res$test) == 0) return(NULL)
+        self$model$res$test
+      },
+      setter = function(self, value) {
+        if (length(self$model) > 0) self$model$res$test <- value
+        self
+      }
+    )
   ),
   
   constructor = function(model = list()) {
@@ -88,6 +100,14 @@ S7::method(get_model_data,  PCA) <- function(x) {
 S7::method(predict,  PCA) <- function(x, data) {
   res <- stats::predict(x$model, data)
   x@prediction <- list("results" = res, "data" = data)
+  x
+}
+
+#' @noRd
+S7::method(test,  PCA) <- function(x, data) {
+  res <- stats::predict(x$model, data)
+  res$data <- data
+  x$test <- res
   x
 }
 

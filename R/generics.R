@@ -311,6 +311,10 @@ show <- S7::new_generic("show", "x")
 
 # T -----
 
+#' @export
+#' @noRd
+test <- S7::new_generic("test", "x")
+
 # U -----
 
 # V -----

@@ -330,7 +330,13 @@ plot(stat$model, show.labels = TRUE)
 ```
 
 ```{r pca-predict, fig.cap="PCA model prediction distances. For more information about the distances plese consult the mdatools guide in https://mdatools.com/docs/pca--distances-and-limits.html."}
+
+stat$test(test_set)
+
 stat$predict(test_set)
+
+plot(stat$model, show.labels = TRUE)
+
 stat$plot_prediction(pc = 3)
 ```
 
