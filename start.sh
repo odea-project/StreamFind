@@ -11,15 +11,15 @@ if [ "$option" == "1" ]; then
     echo "Starting Shiny App..."
     R -e "shiny::runApp('/app/dev/dev_app.R', port=3838, host='0.0.0.0')"
 elif [ "$option" == "2" ]; then
-echo "Starting RStudio Server..."
+    echo "Starting RStudio Server..."
     rstudio-server start
     sleep 5
     tail -f /dev/null
 elif [ "$option" == "3" ]; then
     echo "Starting both Shiny App and RStudio Server..."
-    rstudio-server start
+    rstudio-server start &
     R -e "shiny::runApp('/app/dev/dev_app.R', port=3838, host='0.0.0.0')" &
-    tail -f /dev/null
+    wait # Ensures that both processes are properly handled
 else
-    echo "Invalid option. Please select 1 or 2."
+    echo "Invalid option. Please select 1, 2, or 3."
 fi

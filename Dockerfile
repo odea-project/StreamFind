@@ -4,7 +4,7 @@ FROM rocker/rstudio:4
 # Set the working directory
 WORKDIR /app
 
-# Install system dependencies for R packages (if necessary)
+# Install dependencies for streamFind
 RUN apt-get update && apt-get install -y \
     libcurl4-openssl-dev \
     libssl-dev \
