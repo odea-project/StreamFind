@@ -1,10 +1,11 @@
-version: '3.8'
-
+version: '3'
 services:
-  streamfind:
-    build: .
+  my_r_app:
+    image: my-r-app
     ports:
       - "3838:3838"
+      - "8787:8787"
     volumes:
       - .:/app
-    container_name: streamfind
+    stdin_open: true
+    tty: true

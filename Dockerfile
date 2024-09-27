@@ -1,28 +1,48 @@
-# Use a base R image with the required R version
-FROM rocker/r-ver:4.3.0
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    libcurl4-openssl-dev \
-    libssl-dev \
-    libxml2-dev \
-    g++ \
-    make \
-    libz-dev
-
-# Install required R packages
-RUN R -e "install.packages(c('remotes', 'patRoon', 'learnr', 'shiny'))"
-RUN R -e "remotes::install_github('odea-project/StreamFind', dependencies=TRUE)"
-RUN R -e "remotes::install_github('odea-project/StreamFindData')"
-
-# Copy the project files into the container
-COPY . /app
+# Use RStudio as base image
+FROM rocker/rstudio:4
 
 # Set the working directory
 WORKDIR /app
 
-# Expose the Shiny app port
-EXPOSE 3838
+# Install dependencies for streamFind
+RUN apt-get update && apt-get install -y \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libxml2-dev \
+    libpng-dev \
+    libmagick++-dev \
+    zlib1g-dev \
+    default-jdk \
+    libnetcdf-dev
 
-# Run the Shiny app
-CMD ["R", "-e", "shiny::runApp('/app/dev/dev_app.R', port=3838, host='0.0.0.0')"]
+# Install Shiny and learnr
+RUN R -e "install.packages(c('shiny', 'learnr'), repos='http://cran.rstudio.com/')"
+
+# Install BiocManager and remotes
+RUN R -e "install.packages(c('BiocManager', 'remotes'), repos='http://cran.rstudio.com/')"
+
+# Install svglite and ragg for kableExtra and pkgdown
+RUN R -e "install.packages(c('svglite', 'ragg'), repos='http://cran.rstudio.com/')"
+
+# Install required Bioconductor packages
+RUN R -e "BiocManager::install(c('MSnbase', 'xcms', 'mzR', 'CAMERA', 'rcdk', 'rJava', 'kableExtra', 'magick'), dependencies = TRUE)"
+
+# Install StreamFind
+RUN R -e "BiocManager::install('odea-project/StreamFind', dependencies = TRUE)"
+
+# Install StreamFindData
+RUN R -e "BiocManager::install('odea-project/StreamFindData')"
+
+# Install patRoon dependencies
+RUN R -e "BiocManager::install(c('ncdf4', 'rJava', 'magick', 'mzR', 'rcdklibs', 'MSnbase', 'rcdk', 'xcms', 'CAMERA'), dependencies = TRUE)"
+
+# Install patRoon
+RUN R -e "BiocManager::install('rickhelmus/patRoon', dependencies = TRUE)"
+
+# Copy the start.sh script to the container
+COPY start.sh /start.sh
+
+# Give execute permission to the script
+RUN chmod +x /start.sh
+
+ENTRYPOINT ["/start.sh"]

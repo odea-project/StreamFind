@@ -53,6 +53,39 @@ if (!require("BiocManager", quietly = TRUE))
 BiocManager::install("odea-project/StreamFind", dependencies = TRUE)
 ```
 
+## Docker Setup
+
+Build the Docker Image
+
+``` r
+docker build -t my-r-app .
+```
+Start the Container
+
+``` r
+docker-compose up
+```
+Once the container is up, you'll be prompted to select the service you want to run:
+
+Option 1: Run Shiny App
+Starts the Shiny application, accessible at http://localhost:3838.
+
+Option 2: Run RStudio Server
+Starts the RStudio Server, accessible at http://localhost:8787.
+
+Default credentials:
+
+Username: rstudio
+
+Password: rstudio
+
+Option 3: Run Both Shiny App and RStudio Server
+
+Stopping the Container
+``` r
+docker-compose down
+```
+
 ## Other dependencies
 
 The StreamFind depends on other open source software to process
