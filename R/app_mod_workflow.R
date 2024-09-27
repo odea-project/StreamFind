@@ -70,8 +70,13 @@
     "))
   )
 }
-
-.mod_workflow_Server <- function(id, engine, engine_type, reactive_workflow, reactive_warnings, reactive_history, volumes) {
+#' @title .mod_workflow_Server
+#' 
+#' @description Shiny module server for workflow tab.
+#' 
+#' @noRd
+#'
+.mod_workflow_Server <- function(id, engine, reactive_engine_type, reactive_workflow, reactive_warnings, reactive_history, volumes) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
@@ -100,7 +105,10 @@
       warnings[[name_msg]] <- msg
       return(warnings)
     }
-
+    
+    engine_type <- reactive_engine_type()
+    
+    # list of settings and quantity possible in engine
     available_processing_methods <- engine$processing_methods()
     StreamFind_env <- as.environment("package:StreamFind")
     engine_data_type <- gsub("Engine", "", is(engine))
@@ -110,7 +118,15 @@
     Settings_functions <- Settings_functions[sapply(Settings_functions, function(x) any(sapply(available_processing_methods$name, function(y) grepl(y, x))))]
     Settings_functions_short <- gsub(engine_settings_key, "", Settings_functions)
     names(Settings_functions) <- Settings_functions_short
-
+    if (length(Settings_functions) == 0) {
+      shiny::showNotification("No settings functions found for ", engine_type, " engine!", duration = 5, type = "warning")
+      Settings_functions_short <- NULL
+    } else {
+      Settings_functions <- Settings_functions[sapply(Settings_functions, function(x) is.function(get(x, envir = .GlobalEnv)))]
+      Settings_functions <- Settings_functions[sapply(Settings_functions, function(x) any(sapply(available_processing_methods$name, function(y) grepl(y, x))))]
+      Settings_functions_short <- gsub(engine_settings_key, "", Settings_functions)
+      names(Settings_functions) <- Settings_functions_short
+    }
     reactive_workflow_local <- shiny::reactiveVal(list())
     init_workflow <- reactive_workflow()
     reactive_workflow_local(init_workflow)

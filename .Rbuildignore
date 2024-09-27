@@ -4,6 +4,7 @@
 dev_history.R
 ^dev$
 $run_dev.*
+^.here$
 ^LICENSE\.md$
 ^README\.Rmd$
 ^man-roxygen$

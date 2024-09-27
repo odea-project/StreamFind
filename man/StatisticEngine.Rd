@@ -414,6 +414,8 @@ Plots the raw data in analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_data(
   analyses = NULL,
+  features = NULL,
+  transpose = FALSE,
   interactive = TRUE,
   xLab = NULL,
   yLab = NULL,
@@ -425,6 +427,10 @@ Plots the raw data in analyses.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+
+\item{\code{features}}{A numeric vector with the features (columns of data matrix) to plot.}
+
+\item{\code{transpose}}{Logical, if TRUE the data is transposed (i.e., column names are used as legend).}
 
 \item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
 
