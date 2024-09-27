@@ -478,12 +478,12 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       }
     },
     
-    #' @description Plots prediction of the model.
+    #' @description Plots the residual distance of the model.
     #' 
     #' @param ... Additional arguments passed to the plotting function.
     #' 
-    plot_prediction = function(...) {
-      plot_prediction(self$analyses, ...)
+    plot_residual_distance = function(...) {
+      plot_residual_distance(self$analyses, ...)
     },
     
     ## ___ info -----

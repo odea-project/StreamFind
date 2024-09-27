@@ -12,6 +12,11 @@ the model. Also, any pre-processing applied to the model data should be applied 
 Note that only numeric values are accepted in data and the data column names are used as variable names
 and data row names are used as analyses names.
 
+Note that the model must be created before testing and data must have the same number of variables as
+the model. Also, any pre-processing applied to the model data should be applied to the data before testing.
+Note that only numeric values are accepted in data and the data column names are used as variable names
+and data row names are used as analyses names.
+
 Note that the classification must be prepared before using the method \code{prepare_classification} and data
 must have the same number of variables as the analyses in the engine.
 
@@ -47,6 +52,7 @@ Note that only the model MCR is valid for quantification and concentrations must
 \item \href{#method-StatisticEngine-add_concentrations}{\code{StatisticEngine$add_concentrations()}}
 \item \href{#method-StatisticEngine-remove_analyses}{\code{StatisticEngine$remove_analyses()}}
 \item \href{#method-StatisticEngine-predict}{\code{StatisticEngine$predict()}}
+\item \href{#method-StatisticEngine-test}{\code{StatisticEngine$test()}}
 \item \href{#method-StatisticEngine-classify}{\code{StatisticEngine$classify()}}
 \item \href{#method-StatisticEngine-quantify}{\code{StatisticEngine$quantify()}}
 \item \href{#method-StatisticEngine-plot_data}{\code{StatisticEngine$plot_data()}}
@@ -56,7 +62,7 @@ Note that only the model MCR is valid for quantification and concentrations must
 \item \href{#method-StatisticEngine-plot_loadings}{\code{StatisticEngine$plot_loadings()}}
 \item \href{#method-StatisticEngine-plot_resolved_spectra}{\code{StatisticEngine$plot_resolved_spectra()}}
 \item \href{#method-StatisticEngine-plot_model_contributions}{\code{StatisticEngine$plot_model_contributions()}}
-\item \href{#method-StatisticEngine-plot_prediction}{\code{StatisticEngine$plot_prediction()}}
+\item \href{#method-StatisticEngine-plot_residual_distance}{\code{StatisticEngine$plot_residual_distance()}}
 \item \href{#method-StatisticEngine-processing_methods}{\code{StatisticEngine$processing_methods()}}
 \item \href{#method-StatisticEngine-clone}{\code{StatisticEngine$clone()}}
 }
@@ -255,6 +261,23 @@ Invisible.
 Predicts the data using the model.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$predict(data = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{data}}{Data.frame, data-table or matrix with data.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-StatisticEngine-test"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-test}{}}}
+\subsection{Method \code{test()}}{
+Tests the model using the data.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$test(data = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -525,12 +548,12 @@ Plots model contributions.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-StatisticEngine-plot_prediction"></a>}}
-\if{latex}{\out{\hypertarget{method-StatisticEngine-plot_prediction}{}}}
-\subsection{Method \code{plot_prediction()}}{
-Plots prediction of the model.
+\if{html}{\out{<a id="method-StatisticEngine-plot_residual_distance"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-plot_residual_distance}{}}}
+\subsection{Method \code{plot_residual_distance()}}{
+Plots the residual distance of the model.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_prediction(...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_residual_distance(...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

@@ -11,7 +11,13 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses", package = "StreamFind", 
     ## __names -----
     names = S7::new_property(S7::class_character,
       getter = function(self) {
-        rownames(self@analyses)
+        analyses <- rownames(self@analyses)
+        if (self$has_model) {
+          if (self$has_test) analyses <- c(analyses, rownames(self@results[["model"]]$model$res$test$data))
+          if (self$has_prediction) analyses <- c(analyses, rownames(self@results[["model"]]$model$res$prediction$data))
+        }
+        
+        analyses
       }
     ),
     
@@ -100,18 +106,29 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses", package = "StreamFind", 
       }
     ),
     
+    ## __has_test -----
+    has_test = S7::new_property(S7::class_logical, getter = function(self) {
+      if (!self$has_model) return(FALSE)
+      if (is.null(self@results[["model"]]$model$res$test)) return(FALSE)
+      TRUE
+    }),
+    
+    ## __test -----
+    test = S7::new_property(S7::class_list, getter = function(self) {
+      if (self$has_test) return(self@results[["model"]]$model$test)
+      NULL
+    }),
+    
     ## has_prediction -----
     has_prediction = S7::new_property(S7::class_logical, getter = function(self) {
-      if (length(self) == 0) return(FALSE)
-      if (is.null(self@results[["model"]])) return(FALSE)
-      if (!is(self@results[["model"]], "StreamFind::StatisticModel")) return(FALSE)
-      if (length(self@results[["model"]]$prediction) == 0) return(FALSE)
+      if (!self$has_model) return(FALSE)
+      if (is.null(self@results[["model"]]$model$res$prediction)) return(FALSE)
       TRUE
     }),
     
     ## __prediction -----
     prediction = S7::new_property(S7::class_list, getter = function(self) {
-      if (self$has_prediction) return(self@results[["model"]]$prediction)
+      if (self$has_prediction) return(self@results[["model"]]$model$prediction)
       NULL
     })
   ),
@@ -400,6 +417,11 @@ S7::method(plot_data, StatisticAnalyses) <- function(x,
   
   mat <- x$data$data
   
+  if (x$has_model) {
+    if (x$has_test) mat <- rbind(mat, x$model$test$data)
+    if (x$has_prediction) mat <- rbind(mat, x$model$prediction$data)
+  }
+  
   mat <- mat[analyses, , drop = FALSE]
   
   if (nrow(mat) == 0) {
@@ -465,357 +487,36 @@ S7::method(plot_data, StatisticAnalyses) <- function(x,
 
 #' @export
 #' @noRd
-S7::method(plot_prediction, StatisticAnalyses) <- function(x, ...) {
-  if (!x$has_prediction) {
-    warning("Prediction not found! Not done.")
-    return(NULL)
-  }
-  plot_prediction(x$model, ...)
+S7::method(plot_residual_distance, StatisticAnalyses) <- function(x, ...) {
+  plot_residual_distance(x$model, ...)
 }
 
 #' @export
 #' @noRd
-S7::method(plot_explained_variance, StatisticAnalyses) <- function(x,
-                                                                   interactive = TRUE,
-                                                                   xLab = NULL,
-                                                                   yLab = NULL,
-                                                                   title = NULL) {
-  
-  if (!x$has_model) {
-    warning("Model not found! Not done.")
-    return(NULL)
-  }
-  
-  variance <- get_model_data(x$model)$explained_variance
-  
-  if (is.null(variance)) {
-    warning("Explained variance not found! Not done.")
-    return(NULL)
-  }
-  
-  variance <- cumsum(variance)
-  
-  if (is.null(xLab)) xLab <- "Principle Components"
-  if (is.null(yLab)) yLab <- "Explained Variance (%)"
-  
-  if (!interactive) {
-    plot(variance, type = "b", xlab = xLab, ylab = yLab, main = "Explained Variance")
-    
-  } else {
-    
-    fig <- plot_ly()
-    
-    fig <- fig %>% add_trace(
-      x = seq_along(variance),
-      y = variance,
-      type = "scatter",
-      mode = "lines+markers",
-      line = list(width = 2),
-      marker = list(size = 10),
-      name = "Explained Variance",
-      showlegend = TRUE
-    )
-    
-    xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"), dtick = 1)
-    yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
-    
-    fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
-    
-    fig
-  }
+S7::method(plot_explained_variance, StatisticAnalyses) <- function(x, ...) {
+  plot_explained_variance(x$model, ...)
 }
 
 #' @export
 #' @noRd
-S7::method(plot_scores, StatisticAnalyses) <- function(x,
-                                                       analyses = NULL,
-                                                       interactive = TRUE,
-                                                       pcs = 1:2,
-                                                       title = NULL,
-                                                       colorGroups = NULL,
-                                                       showText = TRUE,
-                                                       showLegend = TRUE) {
-  
-  if (!x$has_model) {
-    warning("Model not found! Not done.")
-    return(NULL)
-  }
-  
-  analyses <- .check_analyses_argument(x, analyses)
-  dt <- get_model_data(x$model)$scores
-  
-  if (is.null(dt)) {
-    warning("Scores not found! Not done.")
-    return(NULL)
-  }
-  
-  dt <- dt[analyses, , drop = FALSE]
-  dt <- as.data.frame(dt)
-  
-  if (length(pcs) > 2) {
-    warning("The number of principle components cannot be larger than 2! Not done.")
-    return(NULL)
-  }
-  
-  if (any(pcs < 1) || any(pcs > ncol(dt))) {
-    warning("The principle components must be in the range of the number of components in the model! Not done.")
-    return(NULL)
-  }
-  
-  var <- get_model_data(x$model)$explained_variance
-  
-  if (!interactive) {
-    
-    NULL
-    
-  } else {
-    
-    if (!is.null(colorGroups)) {
-      
-      if (length(colorGroups) != nrow(dt)) {
-        warning("The color groups must have the same length as the number of analyses in the scores! Not done.")
-        return(NULL)
-      }
-      
-      colorGroups <- gsub(" ", "_", colorGroups)
-      dt$var_name <- as.character(colorGroups)
-      cl <- .get_colors(unique(colorGroups))
-      text <- paste0(rownames(dt), "\n", dt$var_name)
-    } else {
-      dt$var_name <- rownames(dt)
-      cl <- .get_colors(rownames(dt))
-      text <- rownames(dt)
-    }
-    
-    dt <- dt[order(dt$var_name), ]
-    
-    if (ncol(dt) == 1) {
-      x_val = seq_len(nrow(dt))
-      y_val = dt[[1]]
-      xLab = "Analysis Index"
-      if (!is.null(var)) {
-        yLab = paste0("PC", pcs, "(", round(var[pcs], digits = 0) ,"%)")
-      } else {
-        yLab = paste0("PC", pcs)
-      }
-    } else {
-      x_val = dt[[pcs[1]]]
-      y_val = dt[[pcs[2]]]
-      
-      if (!is.null(var)) {
-        xLab = paste0("PC", pcs[1], "(", round(var[pcs[1]], digits = 0) ,"%)")
-        yLab = paste0("PC", pcs[2], "(", round(var[pcs[2]], digits = 0) ,"%)")
-      } else {
-        xLab = paste0("PC", pcs[1])
-        yLab = paste0("PC", pcs[2])
-      }
-    }
-    
-    if (!showText) text <- NULL
-    
-    fig <- plot_ly()
-    
-    fig <- fig %>% add_trace(
-      x = x_val,
-      y = y_val,
-      type = "scatter",
-      mode = "markers+text",
-      name = dt$var_name,
-      legendgroup = dt$var_name,
-      marker = list(size = 10, color = cl[dt$var_name]),
-      text = text,
-      textfont = list(size = 14, color = cl[dt$var_name]),
-      textposition = "top",
-      showlegend = showLegend
-    )
-    
-    xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"))
-    yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
-    
-    fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
-    
-    fig
-  }
+S7::method(plot_scores, StatisticAnalyses) <- function(x, ...) {
+  dots <- list(...)
+  if ("analyses" %in% names(dots)) dots$analyses <- .check_analyses_argument(x, dots$analyses)
+  plot_scores(x$model, ...)
 }
 
 #' @export
 #' @noRd
-S7::method(plot_loadings, StatisticAnalyses) <- function(x,
-                                                         interactive = TRUE,
-                                                         pcs = 1:2,
-                                                         colorKey = NULL,
-                                                         title = NULL,
-                                                         showText = TRUE,
-                                                         showLegend = TRUE) {
-  
-  if (!x$has_model) {
-    warning("Model not found! Not done.")
-    return(NULL)
-  }
-  
-  dt <- get_model_data(x$model)$loadings
-  
-  if (is.null(dt)) {
-    warning("Loadings not found! Not done.")
-    return(NULL)
-  }
-  
-  dt <- as.data.frame(dt)
-  
-  if (length(pcs) > 2) {
-    warning("The number of principle components cannot be larger than 2! Not done.")
-    return(NULL)
-  }
-  
-  if (any(pcs < 1) || any(pcs > ncol(dt))) {
-    warning("The principle components must be in the range of the number of components in the model! Not done.")
-    return(NULL)
-  }
-  
-  dt <- dt[, pcs, drop = FALSE]
-  
-  var <- get_model_data(x$model)$explained_variance
-  
-  if (!interactive) {
-    
-    NULL
-    
-  } else {
-    
-    if (!is.null(colorKey)) {
-      
-      if (length(colorKey) != nrow(dt)) {
-        warning("The color key must have the same length as the number of variables in the loadings! Not done.")
-        return(NULL)
-      }
-      
-      cl <- .get_colors(colorKey)
-      
-    } else {
-      cl <- .get_colors(1)
-    }
-    
-    if (length(cl) == 1) showLegend <- FALSE
-    
-    fig <- plot_ly()
-    
-    if (ncol(dt) == 1) {
-      x = seq_len(nrow(dt))
-      y = dt[, 1]
-      xLab = "Analysis Index"
-      if (!is.null(var)) {
-        yLab = paste0("PC", pcs, "(", round(var[pcs], digits = 0) ,"%)")
-      } else {
-        yLab = paste0("PC", pcs)
-      }
-      
-    } else {
-      x = dt[, 1]
-      y = dt[, 2]
-      
-      if (!is.null(var)) {
-        xLab = paste0("PC", pcs[1], "(", round(var[pcs[1]], digits = 0) ,"%)")
-        yLab = paste0("PC", pcs[2], "(", round(var[pcs[2]], digits = 0) ,"%)")
-      } else {
-        xLab = paste0("PC", pcs[1])
-        yLab = paste0("PC", pcs[2])
-      }
-    }
-    
-    if (showText) text <- rownames(dt) else text <- NULL
-    
-    fig <- fig %>% add_trace(
-      x = x,
-      y = y,
-      type = "scatter",
-      mode = "markers+text",
-      color = names(cl),
-      colors = cl,
-      text = text,
-      textfont = list(size = 14, color = cl),
-      textposition = "top",
-      marker = list(size = 10, color = cl),
-      name = names(cl),
-      legendgroup = names(cl),
-      showlegend = showLegend
-    )
-    
-    xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"))
-    yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
-    
-    fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
-    
-    fig
-  }
+S7::method(plot_loadings, StatisticAnalyses) <- function(x, ...) {
+  plot_loadings(x$model, ...)
 }
 
 #' @export
 #' @noRd
-S7::method(plot_residuals, StatisticAnalyses) <- function(x,
-                                                          analyses = NULL,
-                                                          interactive = TRUE,
-                                                          xLab = NULL,
-                                                          yLab = NULL,
-                                                          title = NULL) {
-  
-  if (!x$has_model) {
-    warning("Model not found! Not done.")
-    return(NULL)
-  }
-  
-  analyses <- .check_analyses_argument(x, analyses)
-  dt <- get_model_data(x$model)$residuals
-  
-  if (is.null(dt)) {
-    warning("Residuals not found! Not done.")
-    return(NULL)
-  }
-  
-  dt <- dt[analyses, , drop = FALSE]
-  dt <- as.data.frame(dt)
-  
-  if (is.null(dt)) return(NULL)
-  if (is.null(xLab)) xLab <- "Variable Index"
-  if (is.null(yLab)) yLab <- "Intensity"
-  
-  if (!interactive) {
-    
-    NULL
-    
-  } else {
-    
-    cl <- .get_colors(rownames(dt))
-    
-    fig <- plot_ly()
-    
-    xVal <- seq_len(ncol(dt))
-    
-    for (i in seq_len(nrow(dt))) {
-      
-      fig <- fig %>% add_trace(
-        x = xVal,
-        y = unlist(dt[i, ]),
-        type = "scatter", mode = "lines",
-        line = list(width = 0.5, color = unname(cl[i])),
-        hoverinfo = "text",
-        text = paste(
-          "</br> analysis:  ", rownames(dt)[i],
-          "</br> variable:  ", colnames(dt),
-          "</br> intensity: ", "%{y}"
-        ),
-        name = names(cl)[i],
-        legendgroup = names(cl)[i],
-        showlegend = TRUE
-      )
-    }
-    
-    xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"))
-    yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
-    
-    fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
-    
-    fig
-  }
+S7::method(plot_residuals, StatisticAnalyses) <- function(x, ...) {
+  dots <- list(...)
+  if ("analyses" %in% names(dots)) dots$analyses <- .check_analyses_argument(x, dots$analyses)
+  plot_residuals(x$model, ...)
 }
 
 #' @export

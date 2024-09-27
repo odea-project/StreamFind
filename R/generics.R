@@ -169,6 +169,10 @@ plot_contributions <- S7::new_generic("plot_contributions", "x")
 
 #' @export
 #' @noRd
+plot_cumulative_explained_variance <- S7::new_generic("plot_cumulative_explained_variance", "x")
+
+#' @export
+#' @noRd
 plot_data <- S7::new_generic("plot_data", "x")
 
 #' @export
@@ -225,11 +229,11 @@ plot_loadings <- S7::new_generic("plot_loadings", "x")
 
 #' @export
 #' @noRd
-plot_prediction <- S7::new_generic("plot_prediction", "x")
+plot_residuals <- S7::new_generic("plot_residuals", "x")
 
 #' @export
 #' @noRd
-plot_residuals <- S7::new_generic("plot_residuals", "x")
+plot_residual_distance <- S7::new_generic("plot_residual_distance", "x")
 
 #' @export
 #' @noRd

@@ -423,7 +423,9 @@ S7::method(run, StatisticSettings_MakeModel_mcrals_mdatools) <- function(x, engi
     info = info
   )
   
-  engine$model <- StreamFind::StatisticModel(model = m)
+  attr(m$resspec, "features") <- colnames(mat)
+  attr(m$rescont, "analyses") <- engine$analyses$names
+  engine$model <- StreamFind::MCRALS(model = m)
   message(paste0("\U2713 ", "MCR-ALS model added!"))
   TRUE
 }
@@ -519,7 +521,7 @@ S7::method(run, StatisticSettings_MakeModel_knn) <- function(x, engine = NULL) {
   )
   
   func <- class::knn
-  engine$model <- StreamFind::KNN(model = list("func" = func, "conditions" = conditions))
+  engine$model <- StreamFind::KNN(model = list("func" = func, "conditions" = conditions, "res" = list()))
   message(paste0("\U2713 ", "KNN classification model added!"))
   invisible(TRUE)
 }

@@ -321,23 +321,17 @@ test_set <- fused_mat[-main_set_idx, ]
 rownames(test_set)
 ```
 
-```{r pca-engine, fig.cap="PCA model (native plot from mdatools R package).", fig.height=9}
+```{r pca-engine, fig.cap="PCA model (native plot from mdatools R package).", fig.height=9, warning=FALSE}
 stat <- StatisticEngine$new(analyses = main_set)
 # the alpha and gamma parameters are used to evaluate the model limits
 stat$run(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 0.01, gamma = 0.001))
 # original plot from mdatools R package
-plot(stat$model, show.labels = TRUE)
+plot(stat$model, showText = TRUE)
 ```
 
-```{r pca-predict, fig.cap="PCA model prediction distances. For more information about the distances plese consult the mdatools guide in https://mdatools.com/docs/pca--distances-and-limits.html."}
-
-stat$test(test_set)
-
+```{r pca-predict, warning=FALSE, fig.cap="PCA model prediction distances. For more information about the distances plese consult the mdatools guide in https://mdatools.com/docs/pca--distances-and-limits.html."}
 stat$predict(test_set)
-
-plot(stat$model, show.labels = TRUE)
-
-stat$plot_prediction(pc = 3)
+plot(stat$model, showText = TRUE)
 ```
 
 ## Supervised (classification)
@@ -411,7 +405,7 @@ In the case of only using Raman data for evaluation of quality deviations, the s
 # Quantification with Raman
 
 ```{r ov-raman-conc, include=FALSE}
-raman_quant <- raman_all$subset_analyses(analyses = c(19:27, 161:205, 155:157))
+raman_quant <- raman$subset_analyses(analyses = c(19:27, 161:205, 155:157))
 raman_quant$add_blank_names(rep("blank", 57))
 
 ov_quant <- data.table::copy(raman_quant$get_overview()[, 1:3])
