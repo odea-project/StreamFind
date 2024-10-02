@@ -85,7 +85,7 @@ DT::datatable(ms$analyses$info)
 <br>  
 
 ```{r}
-ms$plot_spectra_tic(levels = 1, interactive = TRUE, colorBy = "replicates", title = "Total Ion Chromatograms (TICs)")
+ms$plot_spectra_tic(levels = 1, interactive = FALSE, colorBy = "replicates", title = "Total Ion Chromatograms (TICs)")
 ```
 
 <br>  

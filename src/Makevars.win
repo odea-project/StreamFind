@@ -1,6 +1,8 @@
 #PKG_CXXFLAGS += -I"$(R_HOME)/include" $(SHLIB_OPENMP_CXXFLAGS)
 #PKG_LIBS += -L"$(R_HOME)/bin/x64" $(SHLIB_OPENMP_CXXFLAGS) -lz
-ZLIB_CFLAGS := $(shell "${R_HOME}/bin/R" --vanilla --slave -e "cat(zlibbioc::pkgconfig('PKG_CFLAGS'))")
-ZLIB_STATIC := $(shell "${R_HOME}/bin/R" --vanilla --slave -e "cat(zlibbioc::pkgconfig('PKG_LIBS_static'))")
-PKG_CXXFLAGS += $(ZLIB_CFLAGS) $(SHLIB_OPENMP_CXXFLAGS)
-PKG_LIBS += $(SHLIB_OPENMP_CXXFLAGS) $(ZLIB_STATIC)
+#ZLIB_CFLAGS := $(shell "${R_HOME}/bin/R" --vanilla --slave -e "cat(zlibbioc::pkgconfig('PKG_CFLAGS'))")
+#ZLIB_STATIC := $(shell "${R_HOME}/bin/R" --vanilla --slave -e "cat(zlibbioc::pkgconfig('PKG_LIBS_static'))")
+
+RHDF5_LIBS = $(shell "$(R_HOME)/bin${R_ARCH_BIN}/Rscript" -e 'Rhdf5lib::pkgconfig("PKG_CXX_LIBS")')
+PKG_CXXFLAGS += $(SHLIB_OPENMP_CXXFLAGS) -D__USE_MINGW_ANSI_STDIO
+PKG_LIBS += $(SHLIB_OPENMP_CXXFLAGS) $(RHDF5_LIBS)

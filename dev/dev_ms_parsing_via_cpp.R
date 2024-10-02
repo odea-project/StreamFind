@@ -126,9 +126,40 @@ cols <- c("name", "formula", "mass", "rt")
 
 # NTS Working group -------------------------------------------------------------
 
+library(rhdf5)
+
+mz5file <- "C:/Users/apoli/Documents/github/StreamCraft/excluded/example.mz5"
+
+res <- test_read_hdf5(mz5file)
+
+length(res)
+
+file_contents <- rhdf5::h5ls(mz5file, all = TRUE)
+
+file_contents$name
+
+h5f <- rhdf5::H5Fopen(mz5file)
+for (i in 2) { #seq_len(length(file_contents$name))
+  print(file_contents$name[i])
+  data <- rhdf5::h5read(h5f, file_contents$name[i], compoundAsDataFrame = FALSE, bit64conversion = 'bit64', read.attributes = TRUE)
+  str(data)
+}
+rhdf5::H5Fclose(h5f)
+
+file_dump <- h5dump(mz5file, load = FALSE)
+spectrum_metadata_structure <- file_dump$SpectrumMetaData
+str(spectrum_metadata_structure)
+spectrum_metadata_info <- file_contents$SpectrumMetadata
 
 
 
+
+rhdf5::H5Fclose(h5f)
+str(spectrum_metadata)
+
+#h5f$SpectrumIntensity
+
+rhdf5::h5closeAll()
 # spectra ----------------------------------------------------------------------
 # clear_cache("all")
 

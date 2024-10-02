@@ -9,6 +9,8 @@
 
 namespace sf {
   
+  // MARK: Isotope
+
   struct Isotope {
     std::string element;
     std::string isotope;
@@ -33,6 +35,8 @@ namespace sf {
       min(min),
       max(max) {};
   };
+
+  // MARK: Isotopes
 
   struct Isotopes {
     std::vector<Isotope> data = {
@@ -122,6 +126,8 @@ namespace sf {
     };
   };
   
+  // MARK: IsotopeCombinations
+
   struct IsotopeCombinations {
     std::vector<int> step;
     std::vector<std::string> isotopes_str;
@@ -229,6 +235,8 @@ namespace sf {
     };
   };
 
+  // MARK: FeaturesDataFrame
+
   struct FeaturesDataFrame {
     int n;
     std::vector<std::string> feature;
@@ -289,6 +297,8 @@ namespace sf {
     };
   };
   
+  // MARK: AnnotatedFeatures
+
   struct AnnotatedFeatures {
     std::vector<int> index;
     std::vector<std::string> feature;
@@ -337,6 +347,8 @@ namespace sf {
     };
   };
   
+  // MARK: CandidatesChain
+
   struct CandidatesChain {
     int length;
     std::vector<std::string> feature;
@@ -401,6 +413,8 @@ namespace sf {
     };
   };
   
+  // MARK: find_isotopic_candidates
+
   std::vector<int> find_isotopic_candidates(
       const int& number_features,
       const std::vector<float>& mzs,
@@ -435,6 +449,8 @@ namespace sf {
     return candidates;
   };
   
+  // MARK: IsotopicChain
+
   struct IsotopicChain {
     std::vector<int> index;
     std::vector<std::string> feature;
@@ -494,6 +510,8 @@ namespace sf {
     };
   };
   
+  // MARK: is_max_gap_reached
+
   bool is_max_gap_reached(const int& s, const int& maxGaps, const std::vector<int>& steps) {
     if (steps.size() < 2) return false;
     if (s < maxGaps) return false;
@@ -504,6 +522,8 @@ namespace sf {
     return false;
   };
   
+  // MARK: annotate_isotopes
+
   void annotate_isotopes(AnnotatedFeatures& af,
                          const IsotopeCombinations& combinations,
                          const CandidatesChain& candidates_chain,
@@ -814,6 +834,8 @@ namespace sf {
     }
   };
   
+  // MARK: Adduct
+
   struct Adduct {
     std::string element;
     int polarity;
@@ -830,6 +852,8 @@ namespace sf {
     };
   };
   
+  // MARK: Adducts
+
   struct Adducts {
     
     std::vector<Adduct> neutralizers {
@@ -870,6 +894,8 @@ namespace sf {
     };
   };
   
+  // MARK: find_adduct_candidates
+
   std::vector<int> find_adduct_candidates(
       const int& number_features,
       const std::vector<float>& mzs,
@@ -905,6 +931,8 @@ namespace sf {
     return candidates;
   };
   
+  // MARK: annotate_adducts
+
   void annotate_adducts(AnnotatedFeatures& af, const CandidatesChain& candidates_chain, const int& pol) {
     
     sf::Adducts all_adducts;
@@ -956,6 +984,8 @@ namespace sf {
   }
   
 }; // namespace sf
+
+// MARK: rcpp_ms_annotate_features 
 
 // [[Rcpp::export]]
 Rcpp::List rcpp_ms_annotate_features(Rcpp::List features,

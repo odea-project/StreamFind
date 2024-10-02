@@ -1,6 +1,8 @@
 #ifndef STREAMCRAFT_LIB_HPP
 #define STREAMCRAFT_LIB_HPP
 
+#pragma once
+
 #include <vector>
 #include <string>
 

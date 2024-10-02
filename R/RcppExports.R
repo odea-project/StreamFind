@@ -73,3 +73,11 @@ rcpp_write_asc_file <- function(file, metadata_list, spectra) {
     invisible(.Call(`_StreamFind_rcpp_write_asc_file`, file, metadata_list, spectra))
 }
 
+test_read_hdf5 <- function(file_name) {
+    .Call(`_StreamFind_test_read_hdf5`, file_name)
+}
+
+test_create_hdf5 <- function() {
+    .Call(`_StreamFind_test_create_hdf5`)
+}
+

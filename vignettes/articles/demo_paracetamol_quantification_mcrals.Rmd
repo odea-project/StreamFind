@@ -130,8 +130,8 @@ data.table::setorder(ov_quant, replicate)
 ov_quant$concentration <- as.numeric(c(rep(0, 9), sub(".*?(\\d+).*", "\\1", ov_quant$replicate[10:nrow(ov_quant)]))) / 10
 ov_quant$concentration[ov_quant$replicate %in% "par_3"] <- NA_real_
 kable(ov_quant, caption = "Overview of Raman analyses and respective analysis replicate groups and blanks.") %>%
-kable_styling(font_size = 12, bootstrap_options = c("striped", "hover", "condensed", "responsive"), fixed_thead = TRUE) %>%
-scroll_box(width = "100%", height = "400px")
+  kable_styling(font_size = 12, bootstrap_options = c("striped", "hover", "condensed", "responsive"), fixed_thead = TRUE) %>%
+  scroll_box(width = "100%", height = "400px")
 ```
 
 # Pre-processing
@@ -172,16 +172,20 @@ The quantification of paracetamol from the Raman spectra is performed using the 
 ```{r mcrals-show}
 stat3 <- StatisticEngine$new(analyses = raman$get_spectra_matrix())
 stat3$add_concentrations(c(1, 2.5, 5.0, 7.5, 15.0, NA_real_)) # add concentrations, with NA for unknown
-
 stat3$run(StatisticSettings_MakeModel_mcrals_mdatools(ncomp = 3))
 
-plot_resolved_spectra(stat3$model)
 
-plot_explained_variance(stat3$model)
+plot_contributions(stat3$model)
 
-plot(stat3$model)
+#plot_resolved_spectra(stat3$model)
+#plot_explained_variance(stat3$model)
+#plot(stat3$model)
+#get_model_data(stat3$model)
+#summary(stat3$model)
+```
+
+```{r}
 get_model_data(stat3$model)
-summary(stat3$model)
 ```
 
 ```{r mcrals-resolved-spec, fig.cap="Resolved spectra for each component and the spectra for each analysis replicate (i.e., each concentration)."}

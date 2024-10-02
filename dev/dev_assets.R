@@ -20,6 +20,10 @@ devtools::load_all() #Ctrl+Shift+L
 # Lists TODOs
 todor::todor()
 
+
+#chattr::chattr_use("copilot")
+chattr::chattr_app()
+
 zlibbioc::pkgconfig()
 
 # Code lines -------------------------------------------------------------------

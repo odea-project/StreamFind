@@ -273,6 +273,27 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// test_read_hdf5
+Rcpp::List test_read_hdf5(const std::string& file_name);
+RcppExport SEXP _StreamFind_test_read_hdf5(SEXP file_nameSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const std::string& >::type file_name(file_nameSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_read_hdf5(file_name));
+    return rcpp_result_gen;
+END_RCPP
+}
+// test_create_hdf5
+Rcpp::List test_create_hdf5();
+RcppExport SEXP _StreamFind_test_create_hdf5() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(test_create_hdf5());
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_parse_ms_analysis", (DL_FUNC) &_StreamFind_rcpp_parse_ms_analysis, 1},
@@ -293,6 +314,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_ms_groups_correspondence", (DL_FUNC) &_StreamFind_rcpp_ms_groups_correspondence, 3},
     {"_StreamFind_rcpp_parse_asc_file", (DL_FUNC) &_StreamFind_rcpp_parse_asc_file, 1},
     {"_StreamFind_rcpp_write_asc_file", (DL_FUNC) &_StreamFind_rcpp_write_asc_file, 3},
+    {"_StreamFind_test_read_hdf5", (DL_FUNC) &_StreamFind_test_read_hdf5, 1},
+    {"_StreamFind_test_create_hdf5", (DL_FUNC) &_StreamFind_test_create_hdf5, 0},
     {NULL, NULL, 0}
 };
 

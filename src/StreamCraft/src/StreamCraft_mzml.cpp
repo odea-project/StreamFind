@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <set>
 #include <stdexcept>
+#include <cmath>
 
 int sc::mzml::MZML_SPECTRUM::extract_spec_index() const {
   return spec.attribute("index").as_int();
@@ -719,8 +720,20 @@ std::string sc::mzml::MZML::get_type() {
     const std::vector<int>& level = get_level();
     const std::vector<float>& pre_mz = get_spectra_precursor_mz();
     const std::vector<float>& pre_mzhigh = get_spectra_precursor_window_mzhigh();
-    bool no_pre_mz = std::all_of(pre_mz.begin(), pre_mz.end(), [](float d) { return std::isnan(d); });
-    bool no_pre_mzhigh = std::all_of(pre_mzhigh.begin(), pre_mzhigh.end(), [](float d) { return std::isnan(d); });
+    bool no_pre_mz = true;
+    for (const auto& d : pre_mz) {
+        if (d != 0) {
+            no_pre_mz = false;
+            break;
+        }
+    }
+    bool no_pre_mzhigh = true;
+    for (const auto& d : pre_mzhigh) {
+        if (d != 0) {
+            no_pre_mzhigh = false;
+            break;
+        }
+    }
     if (level.size() > 1) {
       if (no_pre_mz) {
         if (no_pre_mzhigh) {

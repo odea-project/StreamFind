@@ -43,7 +43,8 @@ Imports:
     RSQLite,
     withr,
     fst,
-    zlibbioc
+    zlibbioc,
+    Rhdf5lib
 Suggests: 
     StreamFindData,
     mzR,
@@ -71,8 +72,8 @@ Encoding: UTF-8
 Language: en-US
 RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE, r6 = TRUE)
-SystemRequirements: C++17
-LinkingTo: Rcpp
+SystemRequirements: GNU make, C++17
+LinkingTo: Rhdf5lib, Rcpp
 RdMacros: 
     Rdpack
 Collate: 
