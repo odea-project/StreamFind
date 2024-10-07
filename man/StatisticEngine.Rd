@@ -32,6 +32,8 @@ Note that only the model MCR is valid for quantification and concentrations must
 
 \item{\code{model}}{Statistic model.}
 
+\item{\code{quantification}}{Quantification results.}
+
 \item{\code{prediction_results}}{Prediction results from model.}
 
 \item{\code{classification_results}}{Classification results.}

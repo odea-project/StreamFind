@@ -108,7 +108,7 @@ S7::method(run, StatisticSettings_MakeModel_pca_mdatools) <- function(x, engine 
     return(FALSE)
   }
   
-  mat <- engine$data$data
+  mat <- engine$analyses$analyses
   
   ncomp = x$parameters$ncomp
   if (is.null(ncomp)) ncomp = min(nrow(mat) - 1, ncol(mat), 20)
@@ -227,7 +227,7 @@ S7::method(run, StatisticSettings_MakeModel_mcrpure_mdatools) <- function(x, eng
     return(FALSE)
   }
   
-  mat <- engine$data$data
+  mat <- engine$analyses$analyses
   
   if (nrow(mat) < 2) {
     warning("The data matrix must have at least 2 rows! Not done.")
@@ -376,7 +376,7 @@ S7::method(run, StatisticSettings_MakeModel_mcrals_mdatools) <- function(x, engi
     return(FALSE)
   }
   
-  mat <- engine$data$data
+  mat <- engine$analyses$analyses
   
   ncomp = x$parameters$ncomp
   if (is.null(ncomp)) ncomp = min(nrow(mat) - 1, ncol(mat), 20)

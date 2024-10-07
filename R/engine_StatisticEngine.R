@@ -57,6 +57,14 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       invisible(self)
     },
     
+    #' @field quantification Quantification results.
+    #'
+    quantification = function(value) {
+      if (missing(value)) return(self$analyses$quantification)
+      self$analyses$quantification <- value
+      invisible(self)
+    },
+    
     #' @field prediction_results Prediction results from model.
     #'
     prediction_results = function() {  
@@ -353,21 +361,21 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #' @param transpose Logical, if TRUE the data is transposed (i.e., column names are used as legend).
     #' 
     plot_data = function(analyses = NULL,
-                          features = NULL,
-                          transpose = FALSE,
-                          interactive = TRUE,
-                          xLab = NULL,
-                          yLab = NULL,
-                          title = NULL) {
+                         features = NULL,
+                         transpose = FALSE,
+                         interactive = TRUE,
+                         xLab = NULL,
+                         yLab = NULL,
+                         title = NULL) {
       plot_data(self$analyses, analyses, features, transpose, interactive, xLab, yLab, title)
     },
     
     #' @description Plots the model explained cumulative variance.
     #' 
     plot_explained_variance = function(interactive = TRUE,
-                                             xLab = NULL,
-                                             yLab = NULL,
-                                             title = NULL) {
+                                       xLab = NULL,
+                                       yLab = NULL,
+                                       title = NULL) {
       plot_explained_variance(self$analyses, interactive, xLab, yLab, title)
     },
     

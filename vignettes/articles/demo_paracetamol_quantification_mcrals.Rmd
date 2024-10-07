@@ -39,6 +39,11 @@ raman_dir <- paste0(main_dir, "/raman")
 raman_dir_extra <- paste0(main_dir, "/raman/extra")
 raman_files <- list.files(raman_dir, pattern = ".asc", full.names = TRUE)
 raman_files_extra <- list.files(raman_dir_extra, pattern = ".asc", full.names = TRUE)
+raman_files <- c(raman_files, raman_files_extra)
+names(raman_files) <- basename(raman_files)
+raman_files <- raman_files[sort(basename(raman_files))]
+#data.frame("file" = basename(raman_files), "path" = raman_files, row.names = NULL)
+raman_files <- raman_files[c(19:27, 28:36, 73:81, 155:157, 161:205)]
 ```
 
 <style>
@@ -57,72 +62,34 @@ pre code {
 
 ***
 
-This article demonstrates how StreamFind can be used to assess quality deviations of Fizamol paracetamol products using Mass Spectrometry (MS) combined with Raman Spectroscopy data. Each product was measured with MS and Raman. The data is pre-processed and fused to be used in unsupervised and supervised statistical analysis. Finally, the quality of the products is evaluated based on the statistical analysis. The quantity of paracetamol in the products is also estimated via statistic analysis.
+This article demonstrates how StreamFind can be used to quantity the active product ingredient (API) in Fizamol (i.e., 
+paracetamol) from Raman data. 
+A calibration curve is acquired with pure paracetamol diluted in water at different concentrations.
 
-```{r raman-setup, include=FALSE}
-raman <- RamanEngine$new(analyses = c(raman_files, raman_files_extra))
+```{r raman-setup}
+# Creates the engine for Raman data
+raman <- RamanEngine$new(analyses = raman_files)
 
+# Modifies the replicates names
 raman$analyses$replicates <- c(
-  rep("ass_1", 3),
-  rep("ass_2", 3),
-  rep("ass_3", 3),
-  rep("caff_1", 3),
-  rep("caff_2", 3),
-  rep("caff_3", 3),
   rep("blank", 9),
-  rep("fiz_c1", 3),
-  rep("fiz_c2", 3),
-  rep("fiz_c3", 3),
-  rep("fiz_ass_n_1", 3),
-  rep("fiz_ass_n_2", 3),
-  rep("fiz_ass_n_3", 3),
-  rep("fiz_ass1", 3),
-  rep("fiz_ass2", 3),
-  rep("fiz_ass3", 3),
-  rep("fiz_caff1", 3),
-  rep("fiz_caff2", 3),
-  rep("fiz_caff3", 3),
-  rep("fiz_a1", 3),
-  rep("fiz_a2", 3),
-  rep("fiz_a3", 3),
-  rep("fiz_d1", 3),
-  rep("fiz_d2", 3),
-  rep("fiz_d3", 3),
-  rep("fiz_b1", 3),
-  rep("fiz_b2", 3),
-  rep("fiz_b3", 3),
-  rep("background", 4),
-  rep("blank_e", 9),
-  rep("fiz_acid1", 3),
-  rep("fiz_acid2", 3),
-  rep("fiz_acid3", 3),
-  rep("fiz_e01", 3),
-  rep("fiz_e02", 3),
-  rep("fiz_e03", 3),
-  rep("fiz_e04", 3),
-  rep("fiz_e05", 3),
-  rep("fiz_e06", 3),
-  rep("fiz_e07", 3),
-  rep("fiz_e08", 3),
-  rep("fiz_e09", 3),
-  rep("fiz_e10", 3),
-  rep("fiz_e11", 3),
-  rep("fiz_e12", 3),
-  rep("par_1", 3),
-  rep("par_odd", 3),
+  rep("fiz_a", 9),
+  rep("fiz_b", 9),
   rep("par_3", 3),
-  rep("par_2", 3),
   rep("cali_150_mgml", 9),
   rep("cali_010_mgml", 9),
   rep("cali_025_mgml", 9),
   rep("cali_050_mgml", 9),
-  rep("cali_075_mgml", 9),
-  rep("background", 4)
+  rep("cali_075_mgml", 9)
 )
 
-raman$analyses <- raman$analyses[c(19:27, 161:205, 155:157)]
-raman$analyses$blanks <- c(rep("blank", 57))
+# Modifies the blanks names
+raman$analyses$blanks <- c(rep("blank", length(raman$analyses)))
 ```
+
+<br>
+
+<br>
 
 ```{r raman-overview, echo=FALSE}
 ov_quant <- raman$get_overview()[, 1:3]
@@ -133,6 +100,10 @@ kable(ov_quant, caption = "Overview of Raman analyses and respective analysis re
   kable_styling(font_size = 12, bootstrap_options = c("striped", "hover", "condensed", "responsive"), fixed_thead = TRUE) %>%
   scroll_box(width = "100%", height = "400px")
 ```
+
+<br>
+
+<br>
 
 # Pre-processing
 
@@ -170,34 +141,18 @@ raman$plot_spectra()
 The quantification of paracetamol from the Raman spectra is performed using the Multivariate Curve Resolution (MCR) with Alternating Least Squares (ALS) method via integration of the [mdatools](https://mdatools.com/docs/mcr--als.html) R package.
 
 ```{r mcrals-show}
-stat3 <- StatisticEngine$new(analyses = raman$get_spectra_matrix())
-stat3$add_concentrations(c(1, 2.5, 5.0, 7.5, 15.0, NA_real_)) # add concentrations, with NA for unknown
-stat3$run(StatisticSettings_MakeModel_mcrals_mdatools(ncomp = 3))
+stat <- StatisticEngine$new(analyses = raman$get_spectra_matrix())
+stat$run(StatisticSettings_MakeModel_mcrals_mdatools(ncomp = 2))
+```
 
-
-plot_contributions(stat3$model)
-
-#plot_resolved_spectra(stat3$model)
-#plot_explained_variance(stat3$model)
-#plot(stat3$model)
-#get_model_data(stat3$model)
-#summary(stat3$model)
+```{r mcrals-resolved-spec, fig.cap="Overview plot for the MCR-ALS model"}
+plot(stat$model)
 ```
 
 ```{r}
-get_model_data(stat3$model)
+stat$run(StatisticSettings_Quantify_mcrals(concentrations = c(1, 2.5, 5.0, 7.5, 15.0, NA_real_, NA_real_, NA_real_))) # concentrations with NA for unknown
 ```
-
-```{r mcrals-resolved-spec, fig.cap="Resolved spectra for each component and the spectra for each analysis replicate (i.e., each concentration)."}
-stat3$plot_resolved_spectra()
-```
-
-```{r mcrals-cont, fig.cap="Contributions for each analysis replicate."}
-stat3$plot_model_contributions()
-```
-
-The `quantify` method can be used to estimate the concentration of the paracetamol analyses with unknown concentration. The quantification is applied to each component, returning a list with the r square of the linear model and the estimated concentration as `data.table`. Note that the explained variance for each component is important to evaluate the calculated concentration. The best estimation is from the component with the combined explained variance and r square closer to 100 and 1, respectively.
 
 ```{r}
-stat3$quantify()
+stat$quantification@quantities
 ```

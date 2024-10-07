@@ -480,6 +480,7 @@ S7::method(get_spectra_matrix, RamanAnalyses) <- function(x, analyses = NULL) {
   
   spec <- as.matrix(rbindlist(spec_list, fill = TRUE))
   rownames(spec) <- names(spec_list)
+  attr(spec, "xValues") <- as.numeric(colnames(spec))
   spec
 }
 

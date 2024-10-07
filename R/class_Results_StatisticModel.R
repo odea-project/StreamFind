@@ -139,7 +139,7 @@ S7::method(plot_explained_variance, StatisticModel) <- function(x,
     )
 
     xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"), dtick = 1)
-    yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
+    yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"), range = c(0, 120))
 
     fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
 
@@ -187,7 +187,6 @@ S7::method(plot_cumulative_explained_variance, StatisticModel) <- function(x,
     fig <- fig %>% add_trace(
       x = variance$pc,
       y = variance$expvar,
-      color = variance$result,
       type = "scatter",
       mode = "lines+markers",
       line = list(width = 2, color = cl[variance$result]),
@@ -197,7 +196,7 @@ S7::method(plot_cumulative_explained_variance, StatisticModel) <- function(x,
     )
 
     xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"), dtick = 1)
-    yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
+    yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"), range = c(0, 120))
 
     fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
 
@@ -976,14 +975,11 @@ S7::method(summary, MCRALS) <- function(x) {
 }
 
 #' @noRd
-S7::method(plot, MCRALS) <- function(x, ...) {
-  plot(x$model, ...)
-}
-
-#' @noRd
 S7::method(predict, MCRALS) <- function(x, data) {
   res <- stats::predict(x$model, data)
-  res$categories <- mdatools::categorize(x$model, res, x$model$ncomp.selected)
+  res <- list("rescont" = res)
+  colnames(res$rescont) <- colnames(x$model$rescont)
+  rownames(res$rescont) <- unique(rownames(data))
   res$data <- data
   x$prediction <- res
   x
@@ -992,7 +988,9 @@ S7::method(predict, MCRALS) <- function(x, data) {
 #' @noRd
 S7::method(test, MCRALS) <- function(x, data) {
   res <- stats::predict(x$model, data)
-  res$categories <- mdatools::categorize(x$model, res, x$model$ncomp.selected)
+  res <- list("rescont" = res)
+  colnames(res$rescont) <- colnames(x$model$rescont)
+  rownames(res$rescont) <- unique(rownames(data))
   res$data <- data
   x$test <- res
   x
@@ -1028,6 +1026,24 @@ S7::method(get_model_data, MCRALS) <- function(x) {
   contributions$result <- "model"
   contributions$analysis <- attr(model$rescont, "analyses")
   contributions <- data.table::as.data.table(contributions)
+  
+  prediction <- model$res$prediction
+  if (length(prediction) > 0) {
+    prediction_contributions <- as.data.frame(prediction$rescont)
+    prediction_contributions$result <- "prediction"
+    prediction_contributions$analysis <- rownames(prediction$rescont)
+    prediction_contributions <- data.table::as.data.table(prediction_contributions)
+    contributions <- rbind(contributions, prediction_contributions)
+  }
+  
+  test <- model$res$test
+  if (length(test) > 0) {
+    test_contributions <- as.data.frame(test$rescont)
+    test_contributions$result <- "test"
+    test_contributions$analysis <- rownames(test$rescont)
+    test_contributions <- data.table::as.data.table(test_contributions)
+    contributions <- rbind(contributions, test_contributions)
+  }
 
   list(
     "ncomp" = x$model$ncomp,
@@ -1158,6 +1174,80 @@ S7::method(plot_contributions, MCRALS) <- function(x,
     yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
     
     fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
+    
+    fig
+  }
+}
+
+#' @noRd
+S7::method(plot, MCRALS) <- function(x, ...) {
+  dots <- list(...)
+  
+  if ("iteractive" %in% names(dots)) {
+    interactive <- dots$interactive
+  } else {
+    interactive <- TRUE
+  }
+  
+  if (!interactive) {
+    plot(x$model, ...)
+  } else {
+    plotList <- list()
+    
+    plotList[[1]] <- plot_resolved_spectra(x, ...)
+    
+    plotList[[2]] <- plot_contributions(x, ...)
+    
+    plotList[[3]] <- plot_explained_variance(x, ...)
+    
+    plotList[[4]] <- plot_cumulative_explained_variance(x, ...)
+    
+    annotations <- list(
+      list(
+        x = 0.2,
+        y = 1.0,
+        text = "Resolved Spectra",
+        xref = "paper",
+        yref = "paper",
+        xanchor = "center",
+        yanchor = "bottom",
+        showarrow = FALSE
+      ),
+      list(
+        x = 0.8,
+        y = 1,
+        text = "Resolved Contributions",
+        xref = "paper",
+        yref = "paper",
+        xanchor = "center",
+        yanchor = "bottom",
+        showarrow = FALSE
+      ),
+      list(
+        x = 0.2,
+        y = 0.4,
+        text = "Explained Variance",
+        xref = "paper",
+        yref = "paper",
+        xanchor = "center",
+        yanchor = "bottom",
+        showarrow = FALSE
+      ),
+      list(
+        x = 0.8,
+        y = 0.4,
+        text = "Cumulative Explained Variance",
+        xref = "paper",
+        yref = "paper",
+        xanchor = "center",
+        yanchor = "bottom",
+        showarrow = FALSE
+      )
+    )
+    
+    fig <- plotly::subplot(plotList, nrows = 2, margin = 0.07, titleY = TRUE, titleX = TRUE, which_layout = "merge")
+    
+    fig <- fig %>% plotly::layout(annotations = annotations)
     
     fig
   }

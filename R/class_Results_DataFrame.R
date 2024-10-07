@@ -8,12 +8,14 @@ DataFrame <- S7::new_class("DataFrame", package = "StreamFind", parent = Results
   ),
   
   constructor = function(data = data.frame()) {
+    dt <- as.data.frame(data)
+    attributes(df) <- c(attributes(df), attributes(data)[-which(names(attributes(data)) == "dim")])
     S7::new_object(
-      Results(), 
+      Results(),
       name = "DataFrame",
       software = "StreamFind",
       version = as.character(packageVersion("StreamFind")),
-      data = as.data.frame(data)
+      data = as.data.frame(dt)
     )
   },
   

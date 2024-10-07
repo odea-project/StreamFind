@@ -11,15 +11,29 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses", package = "StreamFind", 
     ## __names -----
     names = S7::new_property(S7::class_character,
       getter = function(self) {
-        analyses <- rownames(self@analyses)
-        if (self$has_model) {
-          if (self$has_test) analyses <- c(analyses, rownames(self@results[["model"]]$model$res$test$data))
-          if (self$has_prediction) analyses <- c(analyses, rownames(self@results[["model"]]$model$res$prediction$data))
+        out <- rownames(self$analyses)
+        if (is(self$results[["model"]], "StreamFind::StatisticModel")) {
+          has_test <- !is.null(self$results[["model"]]$model$res$test)
+          has_prediction <- !is.null(self$results[["model"]]$model$res$prediction)
+          if (has_test) out <- c(out, rownames(self$results[["model"]]$model$res$test$data))
+          if (has_prediction) out <- c(out, rownames(self$results[["model"]]$model$res$prediction$data))
         }
-        
-        analyses
+        out
       }
     ),
+    
+    ## __type -----
+    type = S7::new_property(S7::class_character, getter = function(self) {
+      out <- rep("model", nrow(self$analyses))
+      if (is(self$results[["model"]], "StreamFind::StatisticModel")) {
+        has_test <- !is.null(self$results[["model"]]$model$res$test$data)
+        has_prediction <- !is.null(self$results[["model"]]$model$res$prediction$data)
+        if (has_test) out <- c(out, rep("test", nrow(self$results[["model"]]$model$res$test$data)))
+        if (has_prediction) out <- c(out, rep("prediction", nrow(self$results[["model"]]$model$res$prediction$data)))
+      }
+      names(out) <- self$names
+      out
+    }),
     
     ## __classes -----
     classes = S7::new_property(S7::class_character, default = character()),
@@ -30,20 +44,22 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses", package = "StreamFind", 
     ## __info -----
     info = S7::new_property(S7::class_data.frame, getter = function(self) {
       if (length(self) > 0) {
+        analyses_names <- self$names
         df <- data.frame(
-          "analysis" = self@names,
+          "analysis" = analyses_names,
+          "type" = self@type,
           "features" = ncol(self@analyses)
         )
         
         if (length(self@classes) > 0) {
-          df <- cbind(df, "class" = self@classes)
+          df <- cbind(df, "class" = c(self@classes, rep(NA_character_, length(self@type) - length(self@classes))))
         }
         
         if (length(self@concentrations) > 0) {
-          df <- cbind(df, "concentration" = self@concentrations)
+          df <- cbind(df, "concentration" = c(self@concentrations, rep(NA_real_, length(self@type) - length(self@concentrations))))
         }
         
-       row.names(df) <- seq_len(nrow(df))
+       row.names(df) <- seq_len(length(analyses_names))
        df
       } else {
         data.frame()
@@ -59,9 +75,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses", package = "StreamFind", 
     ## __has_data -----
     has_data = S7::new_property(S7::class_logical, getter = function(self) {
       if (length(self) == 0) return(FALSE)
-      if (is.null(self@results[["data"]])) {
-        if (nrow(self$analyses) == 0) return(FALSE)
-      }
+      if (is.null(self@results[["data"]])) if (nrow(self$analyses) == 0) return(FALSE)
       if (!is(self@results[["data"]], "StreamFind::DataFrame")) return(FALSE)
       TRUE
     }),
@@ -69,11 +83,20 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses", package = "StreamFind", 
     ## __data -----
     data = S7::new_property(S7::class_list,
       getter = function(self) {
-        if (!is.null(self@results[["data"]])) return(self@results[["data"]])
-        StreamFind::DataFrame(data = self$analyses)
+        if (!is.null(self@results[["data"]])) {
+          data <- self@results[["data"]]
+        } else {
+          data <- StreamFind::DataFrame(data = self$analyses)
+        }
+        if (self$has_model) {
+          if (self$has_test) data$data <- rbind(data$data, self$test$data)
+          if (self$has_prediction) data$data <- rbind(data$data, self$prediction$data)
+        }
+        data
       },
       setter = function(self, value) {
         if (is(value, "StreamFind::DataFrame")) {
+          self@results[["results"]] <- list()
           self@results[["data"]] <- value
         } else {
           warning("Value must be a Data results object! Not done.")
@@ -115,11 +138,11 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses", package = "StreamFind", 
     
     ## __test -----
     test = S7::new_property(S7::class_list, getter = function(self) {
-      if (self$has_test) return(self@results[["model"]]$model$test)
+      if (self$has_test) return(self@results[["model"]]$model$res$test)
       NULL
     }),
     
-    ## has_prediction -----
+    ## __has_prediction -----
     has_prediction = S7::new_property(S7::class_logical, getter = function(self) {
       if (!self$has_model) return(FALSE)
       if (is.null(self@results[["model"]]$model$res$prediction)) return(FALSE)
@@ -128,9 +151,33 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses", package = "StreamFind", 
     
     ## __prediction -----
     prediction = S7::new_property(S7::class_list, getter = function(self) {
-      if (self$has_prediction) return(self@results[["model"]]$model$prediction)
+      if (self$has_prediction) return(self@results[["model"]]$model$res$prediction)
       NULL
-    })
+    }),
+    
+    ## __has_quantification -----
+    has_quantification = S7::new_property(S7::class_logical, getter = function(self) {
+      if (length(self) == 0) return(FALSE)
+      if (is.null(self@results[["quantification"]])) return(FALSE)
+      if (!is(self@results[["quantification"]], "StreamFind::Quantification")) return(FALSE)
+      TRUE
+    }),
+    
+    ## __quantification -----
+    quantification = S7::new_property(S7::class_list,
+      getter = function(self) {
+        if (self$has_quantification) return(self@results[["quantification"]])
+        NULL
+      },
+      setter = function(self, value) {
+        if (is(value, "StreamFind::Quantification")) {
+          self@results[["quantification"]] <- value
+        } else {
+          warning("Value must be a Quantification results object! Not done.")
+        }
+        self
+      }
+    )
   ),
   
   constructor = function(analyses = NULL, classes = character(), concentrations = numeric(), ...) {
@@ -144,7 +191,9 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses", package = "StreamFind", 
     }
     
     if (is.data.frame(analyses) || is.matrix(analyses)) {
+      attr_analyses <- attributes(analyses)[-which(names(attributes(analyses)) %in% c("dimnames", "dim"))]
       analyses <- as.data.frame(analyses)
+      attributes(analyses) <- c(attributes(analyses), attr_analyses)
       if (nrow(analyses) > 0) {
         if (length(rownames(analyses)) == 0) {
           rownames(analyses) <- paste0("analysis_", seq_len(nrow(analyses)))
@@ -164,11 +213,11 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses", package = "StreamFind", 
       checkmate::test_character(rownames(self@analyses), len = nrow(self@analyses)),
       checkmate::test_numeric(as.matrix(self@analyses))
     ) && if (length(self@classes) > 0) {
-      length(self@classes) == nrow(self@analyses)
+      length(self@classes) == length(self)
     } else {
       TRUE
     } && if (length(self@concentrations) > 0) {
-      length(self@concentrations) == nrow(self@analyses)
+      length(self@concentrations) == length(self)
     } else {
       TRUE
     }
@@ -181,7 +230,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses", package = "StreamFind", 
 
 #' @noRd
 S7::method(names,  StatisticAnalyses) <- function(x) {
-  rownames(x@analyses)
+  x@names
 }
 
 #' @export
@@ -220,8 +269,8 @@ S7::method(add, StatisticAnalyses) <- function(x, value) {
     }
     
     x@analyses <- rbind(x@analyses, value)
-    
     x@analyses <- x@analyses[order(rownames(x@analyses)), ]
+    x@results <- list()
   }
   return(x)
 }
@@ -232,11 +281,13 @@ S7::method(remove, StatisticAnalyses) <- function(x, value) {
   if (is.character(value)) {
     if (value %in% x@names) {
       x@analyses <- x@analyses[-which(rownames(x@analyses) == value), ]
+      x@results <- list()
     }
   }
   if (is.numeric(value)) {
     if (all(value <= nrow(x@analyses))) {
       x@analyses <- x@analyses[-value, ]
+      x@results <- list()
     }
   }
   return(x)
@@ -247,8 +298,10 @@ S7::method(remove, StatisticAnalyses) <- function(x, value) {
 S7::method(`[`, StatisticAnalyses) <- function(x, i) {
   if (is.character(i)) {
     x@analyses <- x@analyses[rownames(x@analyses) %in% i, ]
+    x@results <- list()
   } else if (is.numeric(i)) {
     x@analyses <- x@analyses[i, ]
+    x@results <- list()
   } else {
     warning("Index must be character or numeric!")
   }
@@ -267,8 +320,10 @@ S7::method(`[<-`, StatisticAnalyses) <- function(x, i, value) {
 S7::method(`[[`, StatisticAnalyses) <- function(x, i) {
   if (is.character(i)) {
     x@analyses <- x@analyses[rownames(x@analyses) %in% i, ]
+    x@results <- list()
   } else if (is.numeric(i)) {
     x@analyses <- x@analyses[i, ]
+    x@results <- list()
   } else {
     warning("Index must be character or numeric!")
   }
@@ -413,20 +468,19 @@ S7::method(plot_data, StatisticAnalyses) <- function(x,
                                                      yLab = NULL,
                                                      title = NULL) {
   
-  analyses <- .check_analyses_argument(x, analyses)
-  
   mat <- x$data$data
   
-  if (x$has_model) {
-    if (x$has_test) mat <- rbind(mat, x$model$test$data)
-    if (x$has_prediction) mat <- rbind(mat, x$model$prediction$data)
-  }
-  
-  mat <- mat[analyses, , drop = FALSE]
+  if (!is.null(analyses)) mat <- mat[analyses, , drop = FALSE]
   
   if (nrow(mat) == 0) {
     warning("Analyses not found! Not done.")
     return(NULL)
+  }
+  
+  if (x$has_model) {
+    new_analyses_names <- paste0(x$type, "_", x$names)
+    names(new_analyses_names) <- x$names
+    rownames(mat) <- new_analyses_names[rownames(mat)]
   }
   
   if (!is.null(features)) {
@@ -456,7 +510,9 @@ S7::method(plot_data, StatisticAnalyses) <- function(x,
     
     cl <- .get_colors(rownames(mat))
     fig <- plotly::plot_ly()
-    xVal <- seq_len(ncol(mat))
+    
+    if (is.null(attr(mat, "xValues"))) xVal <- seq_len(ncol(mat))
+    else xVal <- attr(mat, "xValues")
     
     for (i in seq_len(nrow(mat))) {
       fig <- fig %>% plotly::add_trace(
@@ -465,9 +521,9 @@ S7::method(plot_data, StatisticAnalyses) <- function(x,
         type = "scatter", mode = "lines",
         line = list(width = 0.5, color = unname(cl[i])),
         text = paste0(
-          rep(rownames(mat)[i], length(xVal))
-          # "\n",
-          # rep(colnames(mat), each = nrow(mat))
+          "Analysis: ", rownames(mat)[i], "<br>",
+          "Variable: ", xVal, "<br>",
+          "Intensity: ", unlist(mat[i, ])
         ),
         hoverinfo = "text",
         name = names(cl)[i],
@@ -521,75 +577,6 @@ S7::method(plot_residuals, StatisticAnalyses) <- function(x, ...) {
 
 #' @export
 #' @noRd
-S7::method(plot_resolved_spectra, StatisticAnalyses) <- function(x,
-                                                                 interactive = TRUE,
-                                                                 pcs = NULL,
-                                                                 original = TRUE,
-                                                                 title = NULL,
-                                                                 showText = TRUE,
-                                                                 showLegend = TRUE) {
-  
-  if (!x$has_model) {
-    warning("Model not found! Not done.")
-    return(NULL)
-  }
-  
-  dt <- get_model_data(x$model)$resolved
-  
-  if (is.null(dt)) {
-    warning("Loadings not found! Not done.")
-    return(NULL)
-  }
-  
-  if (!is.null(pcs)) {
-    checkmate::assert_integerish(pcs)
-    dt <- dt[pcs, , drop = FALSE]
-  }
-  
-  dt <- as.data.frame(dt)
-  
-  if (original) {
-    data <- t(x$data$data)
-    dt <- cbind(data, dt)
-    for (i in seq_len(ncol(dt))) dt[, i] <- dt[, i] / max(dt[, i])
-  }
-  
-  if (!interactive) {
-    
-    NULL
-    
-  } else {
-    
-    cl <- .get_colors(colnames(dt))
-    
-    fig <- plot_ly()
-    
-    x = seq_len(nrow(dt))
-    
-    xLab = "Var Index"
-    
-    yLab = "Intensity"
-    
-    for (i in seq_len(length(cl))) {
-      
-      fig <- fig %>% add_trace(
-        x = x,
-        y = dt[, i],
-        type = "scatter",
-        mode = "markers+lines",
-        line = list(size = 0.3, color = cl[i]),
-        marker = list(size = 2, color = cl[i]),
-        name = names(cl[i]),
-        legendgroup = names(cl[i]),
-        showlegend = TRUE
-      )
-    }
-    
-    xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"))
-    yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
-    
-    fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
-    
-    fig
-  }
+S7::method(plot_resolved_spectra, StatisticAnalyses) <- function(x, ...) {
+  plot_resolved_spectra(x$model, ...)
 }
