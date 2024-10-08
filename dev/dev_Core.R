@@ -37,7 +37,7 @@ ms_files_complete <- list.files(path, pattern = ".mzML", full.names = TRUE)
 ms <- MassSpecEngine$new(analyses = ms_files_df)
 
 ms$run(MassSpecSettings_FindFeatures_openms())
-ms$run(MassSpecSettings_AnnotateFeatures_StreamFind2(maxCharge = 2))
+ms$run(MassSpecSettings_AnnotateFeatures_StreamFind(maxCharge = 2))
 ms$run(MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE, excludeAdducts = TRUE))
 ms$run(MassSpecSettings_GroupFeatures_openms())
 ms$run(MassSpecSettings_FilterFeatures_StreamFind(minIntensity = 5000))

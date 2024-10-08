@@ -51,11 +51,11 @@ namespace sf {
       Isotope("Cl", "37Cl", 1.997050, 0.24229, 0.75771, 1, 10),
       Isotope("Br", "81Br", 1.997953, 0.49314, 0.50686, 1, 10),
       Isotope("Si", "29Si", 0.999568, 0.04683, 0.92230, 1, 10),
-      Isotope("Si", "30Si", 1.996844, 0.03087, 0.92230, 1, 10),
-      Isotope("Ge", "72Ge", 1.997828, 0.27662, 0.21234, 1, 10),
-      Isotope("Ge", "73Ge", 2.999212, 0.07717, 0.21234, 1, 10),
-      Isotope("Ge", "74Ge", 3.996930, 0.35943, 0.21234, 1, 10),
-      Isotope("Ge", "76Ge", 5.997155, 0.07444, 0.21234, 1, 10)
+      Isotope("Si", "30Si", 1.996844, 0.03087, 0.92230, 1, 10)
+      // Isotope("Ge", "72Ge", 1.997828, 0.27662, 0.21234, 1, 10),
+      // Isotope("Ge", "73Ge", 2.999212, 0.07717, 0.21234, 1, 10),
+      // Isotope("Ge", "74Ge", 3.996930, 0.35943, 0.21234, 1, 10),
+      // Isotope("Ge", "76Ge", 5.997155, 0.07444, 0.21234, 1, 10)
     };
     
     std::vector<std::string> elements() {
@@ -181,7 +181,7 @@ namespace sf {
             if (n > 1 &&  (iso == "15N" || iso == "33S")) continue;
             
             combination.push_back(iso);
-            std::sort(combination.begin(), combination.end());
+            std::stable_sort(combination.begin(), combination.end());
             new_combinations_set.insert(combination);
           }
         }
@@ -217,7 +217,7 @@ namespace sf {
 
       std::vector<int> order_idx(length);
       std::iota(order_idx.begin(), order_idx.end(), 0);
-      std::sort(order_idx.begin(), order_idx.end(), [&](int i, int j){return mass_distances_unordered[i] < mass_distances_unordered[j];});
+      std::stable_sort(order_idx.begin(), order_idx.end(), [&](int i, int j){return mass_distances_unordered[i] < mass_distances_unordered[j];});
 
       tensor_combinations.resize(length);
       tensor_mass_distances.resize(length);
@@ -280,7 +280,7 @@ namespace sf {
       
       std::vector<int> idx(n);
       std::iota(idx.begin(), idx.end(), 0);
-      std::sort(idx.begin(), idx.end(), [&rf_mz](int i, int j){return rf_mz[i] < rf_mz[j];});
+      std::stable_sort(idx.begin(), idx.end(), [&rf_mz](int i, int j){return rf_mz[i] < rf_mz[j];});
       
       for (int i = 0; i < n; i++) {
         feature[i] = rf_feature[idx[i]];
@@ -384,14 +384,11 @@ namespace sf {
       mzr_left.resize(length);
       mzr_right.resize(length);
       
-      const float* all_mz_ptr = all_mz.data();
-      float* mz_ptr = mz.data();
-      
-      for (const int& x : candidates) *(mz_ptr++) = *(all_mz_ptr + x);
+      for (int i = 0; i < length; i++) mz[i] = all_mz[candidates[i]];
       
       std::vector<int> idx(length);
       std::iota(idx.begin(), idx.end(), 0);
-      std::sort(idx.begin(), idx.end(), [&](int i, int j){return mz[i] < mz[j];});
+      std::stable_sort(idx.begin(), idx.end(), [&](int i, int j){return mz[i] < mz[j];});
       
       for (int i = 0; i < length; i++) {
         feature[i] = all_feature[candidates[idx[i]]];
@@ -417,10 +414,12 @@ namespace sf {
 
   std::vector<int> find_isotopic_candidates(
       const int& number_features,
+      const std::vector<std::string>& features,
       const std::vector<float>& mzs,
       const std::vector<float>& rts,
       const std::vector<int>& pols,
       const int& pol,
+      const std::string& feature,
       const float& mz,
       const float& mzmin,
       const float& mzmax,
@@ -441,7 +440,7 @@ namespace sf {
     rtmax = rt + rtW;
     
     for (int z = 0; z < number_features; ++z) {
-      if (rts[z] >= rtmin && rts[z] <= rtmax && mzs[z] > mz && mzs[z] <= max_mz_chain && pols[z] == pol) {
+      if (rts[z] >= rtmin && rts[z] <= rtmax && mzs[z] > mz && mzs[z] <= max_mz_chain && pols[z] == pol && features[z] != feature) {
         candidates.push_back(z);
       }
     }
@@ -802,9 +801,7 @@ namespace sf {
       af.iso_theoretical_min_relative_intensity[mono_index] = 0;
       af.iso_theoretical_max_relative_intensity[mono_index] = 0;
       af.iso_size[mono_index] = iso_chain.length;
-      
       iso_chain.number_carbons = std::round(iso_chain.number_carbons);
-      
       af.iso_number_carbons[mono_index] = iso_chain.number_carbons;
       
       if (iso_chain.length > 1) {
@@ -1041,15 +1038,22 @@ Rcpp::List rcpp_ms_annotate_features(Rcpp::List features,
       const float max_mz_chain = (mz + maxIsotopes) * 1.05;
       
       std::vector<int> candidates = sf::find_isotopic_candidates(
-        number_features, fdf.mz, fdf.rt, fdf.polarity, polarity, mz, mzmin, mzmax, rt, rtmin, rtmax, rtWindowAlignment, max_mz_chain);
+        number_features,
+        fdf.feature, fdf.mz, fdf.rt, fdf.polarity,
+        polarity, feature, mz, mzmin, mzmax, rt, rtmin, rtmax,
+        rtWindowAlignment, max_mz_chain
+      );
       
       const int number_candidates = candidates.size();
       
       if (number_candidates > 0) {
-        candidates.insert(candidates.begin(), f);
-        sf::CandidatesChain candidates_chain(candidates, fdf.feature, fdf.index, fdf.mz, fdf.mzmin, fdf.mzmax, fdf.rt, fdf.intensity);
-        annotate_isotopes(af, combinations, candidates_chain, maxIsotopes, maxCharge, maxGaps);
         
+        candidates.insert(candidates.begin(), f);
+
+        sf::CandidatesChain candidates_chain(candidates, fdf.feature, fdf.index, fdf.mz, fdf.mzmin, fdf.mzmax, fdf.rt, fdf.intensity);
+
+        annotate_isotopes(af, combinations, candidates_chain, maxIsotopes, maxCharge, maxGaps);
+
       } else {
         af.index[index] = index;
         af.feature[index] = feature;
@@ -1106,11 +1110,14 @@ Rcpp::List rcpp_ms_annotate_features(Rcpp::List features,
     
     Rcpp::Rcout << "Done!" << std::endl;
     
-    Rcpp::List list_annotation;
+    Rcpp::List list_annotation(number_features);
     
     for (int f = 0; f < number_features; f++) {
+      
+      const int& index = fdf.index[f];
+      
       Rcpp::List temp = Rcpp::List::create(
-        Rcpp::Named("index") = af.index[f],
+        Rcpp::Named("index") = index,
         Rcpp::Named("feature") = af.feature[f],
         Rcpp::Named("component_feature") = af.component_feature[f],
         Rcpp::Named("iso_size") = af.iso_size[f],
@@ -1133,14 +1140,12 @@ Rcpp::List rcpp_ms_annotate_features(Rcpp::List features,
         Rcpp::Named("adduct_mass_error") = af.adduct_mass_error[f]
       );
       
-      list_annotation.push_back(temp);
+      list_annotation[index] = temp;
     }
     
     analysis["annotation"] = list_annotation;
     
     features[a] = analysis;
-    
-    
     
     // list_out["index"] = af.index;
     // list_out["feature"] = af.feature;

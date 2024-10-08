@@ -1264,9 +1264,9 @@
             "</br> noise: ", round(q_t$noise, digits = 0),
             "</br> sn: ", round(q_t$sn, digits = 1),
             "</br> gaufit: ", round(q_t$gauss_f, digits = 4),
-            "</br> A: ", q_t$gauss_a,
-            "</br> mu: ", q_t$gauss_u,
-            "</br> sigma: ", q_t$gauss_s
+            "</br> A: ", round(q_t$gauss_a, digits = 2),
+            "</br> mu: ", round(q_t$gauss_u, digits = 2),
+            "</br> sigma: ", round(q_t$gauss_s, digits = 2)
           )
         } else {
           ""
@@ -1722,24 +1722,40 @@
         "</br> filtered: ", ft_nf$filtered,
         "</br> filter: ", ft_nf$filter,
         if ("quality" %in% colnames(ft_nf)) {
-          paste(
-            "</br> noise: ", vapply(ft_nf$quality, function(x) x$noise, NA_real_),
-            "</br> sn: ", vapply(ft_nf$quality, function(x) x$sn, NA_real_),
-            "</br> gaufit: ", round(vapply(ft_nf$quality, function(x) x$gaufit, NA_real_), digits = 4),
-            "</br> A: ", vapply(ft_nf$quality, function(x) x$A, NA_real_),
-            "</br> mu: ", vapply(ft_nf$quality, function(x) x$mu, NA_real_),
-            "</br> sigma: ", vapply(ft_nf$quality, function(x) x$sigma, NA_real_)
-          )
+          q_t <- ft_nf$quality
+          q_t <- lapply(q_t, function(x) if (length(x) == 0) list(noise = 0, sn = 0, gauss_f = 0, gauss_a = 0, gauss_u = 0, gauss_s = 0) else x)
+          if (length(q_t) > 0) {
+            paste(
+              "</br> noise: ", vapply(q_t, function(x) round(x$noise, digits = 0), 0),
+              "</br> sn: ", vapply(q_t, function(x) round(x$sn, digits = 1), 0),
+              "</br> gaufit: ", vapply(q_t, function(x) round(x$gauss_f, digits = 4), 0),
+              "</br> A: ", vapply(q_t, function(x) round(x$gauss_a, digits = 2), 0),
+              "</br> mu: ", vapply(q_t, function(x) round(x$gauss_u, digits = 2), 0),
+              "</br> sigma: ", vapply(q_t, function(x) round(x$gauss_s, digits = 2), 0)
+            )
+          } else {
+            ""
+          }
         } else {
           ""
         },
-        if ("isotope" %in% colnames(ft_nf)) {
-          paste(
-            "</br> iso_cluster: ", vapply(ft_nf$isotope, function(x) x$cluster, NA_real_),
-            "</br> iso_size: ", vapply(ft_nf$isotope, function(x) x$cluster_size, NA_real_),
-            "</br> isotope: ", vapply(ft_nf$isotope, function(x) x$tag, NA_character_),
-            "</br> carbons: ", vapply(ft_nf$isotope, function(x) x$carbons, NA_real_)
-          )
+        if ("annotation" %in% colnames(ft_nf)) {
+          anno <- ft_nf$annotation[[1]]
+          if (length(anno) > 0) {
+            paste(
+              "</br> component: ", vapply(ft_nf$annotation, function(x) x$component_feature, NA_character_),
+              "</br> isotope: ", vapply(ft_nf$annotation, function(x) x$iso_cat, NA_character_),
+              "</br> iso_elements: ", vapply(ft_nf$annotation, function(x) x$iso_isotope, NA_character_),
+              "</br> iso_number_carbons: ", vapply(ft_nf$annotation, function(x) round(x$iso_number_carbons, digits = 0), NA_real_),
+              "</br> iso_mass_error: ", vapply(ft_nf$annotation, function(x) round(x$iso_mass_error, digits = 5), NA_real_),
+              "</br> iso_time_error: ", vapply(ft_nf$annotation, function(x) round(x$iso_time_error, digits = 1), NA_real_),
+              "</br> adduct: ", vapply(ft_nf$annotation, function(x) x$adduct_cat, NA_character_),
+              "</br> adduct_mass_error: ", vapply(ft_nf$annotation, function(x) round(x$adduct_mass_error, digits = 5), NA_real_),
+              "</br> adduct_time_error: ", vapply(ft_nf$annotation, function(x) round(x$adduct_time_error, digits = 1), NA_real_)
+            )
+          } else {
+            ""
+          }
         } else {
           ""
         }
@@ -2697,14 +2713,14 @@
     linecolor = toRGB("black"), linewidth = 2,
     title = "Presence / %",
     titlefont = list(size = 12, color = "black"),
-    range = c(-10, 120)
+    range = c(-10, 200)
   )
   
   yaxis_recovery <- list(
     linecolor = toRGB("black"), linewidth = 2,
     title = "Recovery / %",
     titlefont = list(size = 12, color = "black"),
-    range = c(0, 200)
+    range = c(-10, 200)
   )
   
   yaxis_deviation_rt <- list(

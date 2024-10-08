@@ -158,5 +158,4 @@ Collate:
     'run_app.R'
     'streamFind-package.R'
     'zzz.R'
-    'methods_S3_statistic_prepare_data.R'
 VignetteBuilder: knitr

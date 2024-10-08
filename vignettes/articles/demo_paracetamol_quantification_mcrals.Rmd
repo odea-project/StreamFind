@@ -1,7 +1,7 @@
 ---
-title: 'Detection of quality deviations in paracetamol products'
+title: 'Quantification of Active Product Ingredient in a Pharmaceutical'
 subtitle: |
-  | Fusion of Mass Spectrometry and Raman Spectroscopy Data
+  | Raman Spectroscopy Data and Multivariate Curve Resolution with Alternating Least Squares (MCR-ALS)
   | <br>
 author:
   name: Ricardo Cunha
@@ -15,7 +15,7 @@ output:
     toc_float: true
 vignette: >
   %\VignetteEncoding{UTF-8}
-  %\VignetteIndexEntry{Fusion of Mass Spectrometry and Raman Spectroscopy Data}
+  %\VignetteIndexEntry{Quantification of Active Product Ingredient in a Pharmaceutical}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
   chunk_output_type: console
@@ -34,7 +34,6 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.align =
 
 #main_dir <- "E:/iSoft/Paracetamol" # StreamFind Workstation
 main_dir <- "C:/Users/apoli/Documents/iSoft/Paracetamol" # Ricardo laptop
-
 raman_dir <- paste0(main_dir, "/raman")
 raman_dir_extra <- paste0(main_dir, "/raman/extra")
 raman_files <- list.files(raman_dir, pattern = ".asc", full.names = TRUE)
@@ -57,25 +56,26 @@ pre code {
 </style>
 
 <br>
-
 <br>
 
 ***
 
 This article demonstrates how StreamFind can be used to quantity the active product ingredient (API) in Fizamol (i.e., 
-paracetamol) from Raman data. 
-A calibration curve is acquired with pure paracetamol diluted in water at different concentrations.
+paracetamol) from Raman data and using the Multivariate Curve Resolution with Alternating Least Squares (MCR-ALS) 
+statistical method. A calibration curve is acquired with pure paracetamol diluted in water at different concentrations.
+Two Fizamol tablets (*fiz_a* and *fiz_b*) are diluted in water to a concentration of approx. 10 mg/ml and pure 
+paracetamol (*par*) at 10 mg/ml are measured for quantification. Water is used as a blank.
 
 ```{r raman-setup}
 # Creates the engine for Raman data
 raman <- RamanEngine$new(analyses = raman_files)
 
-# Modifies the replicates names
+# Modifies the replicate names
 raman$analyses$replicates <- c(
   rep("blank", 9),
   rep("fiz_a", 9),
   rep("fiz_b", 9),
-  rep("par_3", 3),
+  rep("par", 3),
   rep("cali_150_mgml", 9),
   rep("cali_010_mgml", 9),
   rep("cali_025_mgml", 9),
@@ -83,12 +83,11 @@ raman$analyses$replicates <- c(
   rep("cali_075_mgml", 9)
 )
 
-# Modifies the blanks names
+# Modifies the blank names
 raman$analyses$blanks <- c(rep("blank", length(raman$analyses)))
 ```
 
 <br>
-
 <br>
 
 ```{r raman-overview, echo=FALSE}
@@ -102,33 +101,47 @@ kable(ov_quant, caption = "Overview of Raman analyses and respective analysis re
 ```
 
 <br>
-
 <br>
 
-# Pre-processing
-
-The data is pre-processed using StreamFind's built-in data dedicated engines for MS and Raman data. Pre-processing workflows for each data type are executed before data fusion to improve statistic analysis.
-
-```{r plot-raman-conc-raw, fig.cap="Raw averaged Raman spectra for each analysis replicate."}
+```{r plot-raman-conc-raw, fig.cap="Raw Raman spectra for each analysis replicate."}
 raman$plot_spectra(colorBy = "replicates")
 ```
 
+# Pre-processing Raman Data
+
+The data is pre-processed using a workflow that includes the following steps:
+
+1. Averaging the spectra for each analysis replicate.
+2. Subtracting the blank spectra.
+3. Smoothing the spectra using the Savitzky-Golay method.
+4. Deleting the spectra sections that are not relevant for the analysis.
+5. Correcting the spectra baseline using the Asymmetric Least Squares (airPLS) method.
+
+The methods ca be applied one at the time or used to bluid a Workflow object that will apply all methods in sequence 
+within engine, as shown below.
+
 ```{r raman-conc-workflow}
-raman_workflow_settings <- list(
-  RamanSettings_AverageSpectra_StreamFind(),
-  RamanSettings_SubtractBlankSpectra_StreamFind(),
-  RamanSettings_SmoothSpectra_savgol(fl = 21, forder = 4, dorder = 0),
-  RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(-100, 350))),
-  RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(1800, 2500))),
-  RamanSettings_CorrectSpectraBaseline_airpls(lambda = 45, differences = 1, itermax = 30)
+# Creates the workflow for Raman data
+# with an ordered list of processing settings
+raman_workflow <- StreamFind::Workflow(
+  list(
+    RamanSettings_AverageSpectra_StreamFind(),
+    RamanSettings_SubtractBlankSpectra_StreamFind(),
+    RamanSettings_SmoothSpectra_savgol(fl = 21, forder = 4, dorder = 0),
+    RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(-100, 350))),
+    RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(1800, 2500))),
+    RamanSettings_CorrectSpectraBaseline_airpls(lambda = 45, differences = 1, itermax = 30)
+  )
 )
 
-raman$workflow <- StreamFind::Workflow(raman_workflow_settings)
-
-raman$print_workflow()
+show(raman_workflow)
 ```
 
 ```{r raman-conc-run-workflow}
+# Adds the workflow to the engine
+raman$workflow <- raman_workflow
+
+# Runs the workflow
 raman$run_workflow()
 ```
 
@@ -136,12 +149,26 @@ raman$run_workflow()
 raman$plot_spectra()
 ```
 
-## Applying MCR-ALS
+## Applying MCR-ALS for Quantification
 
-The quantification of paracetamol from the Raman spectra is performed using the Multivariate Curve Resolution (MCR) with Alternating Least Squares (ALS) method via integration of the [mdatools](https://mdatools.com/docs/mcr--als.html) R package.
+The quantification of paracetamol from the pre-processed Raman spectra is performed using the Multivariate Curve 
+Resolution (MCR) with Alternating Least Squares (ALS) method via integration of the [mdatools](https://mdatools.com/docs/mcr--als.html) R package.
+
+```{r}
+# Gets a matrix with spectra from the Raman engine
+raman_matrix <- raman$get_spectra_matrix()
+str(raman_matrix)
+```
 
 ```{r mcrals-show}
-stat <- StatisticEngine$new(analyses = raman$get_spectra_matrix())
+# Creates the statistic engine for the statistic analysis
+stat <- StatisticEngine$new(analyses = raman_matrix)
+
+stat
+```
+
+```{r}
+# Applies the MCR-ALS method with the run method of the engine
 stat$run(StatisticSettings_MakeModel_mcrals_mdatools(ncomp = 2))
 ```
 
@@ -150,9 +177,21 @@ plot(stat$model)
 ```
 
 ```{r}
-stat$run(StatisticSettings_Quantify_mcrals(concentrations = c(1, 2.5, 5.0, 7.5, 15.0, NA_real_, NA_real_, NA_real_))) # concentrations with NA for unknown
+# Applies the quantification method with the run method of the engine
+# Concentrations with NA for unknown values
+stat$run(
+  StatisticSettings_Quantify_mcrals(
+    concentrations = c(1, 2.5, 5.0, 7.5, 15.0, NA_real_, NA_real_, NA_real_)
+  )
+)
 ```
 
+The MCR-ALS was applied with two components and the quantification results are shown below. The component with the 
+highest combined explained variance and R<sup>2</sup> values for the calibration curve should be used for quantification. 
+The analysis *par* should have about 10 in mg/ml of paracetamol while the analyses *fiz_a* and *fiz_b* should a little 
+less than 10 mg/ml due to presence of formulation ingredients and possible loss of API during sample preparation.
+
 ```{r}
+# Gets the quantification results
 stat$quantification@quantities
 ```

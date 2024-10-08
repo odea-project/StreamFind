@@ -1,4 +1,4 @@
-
+#' @export
 #' @noRd
 MassSpecAnalyses <- S7::new_class("MassSpecAnalyses", package = "StreamFind", parent = Analyses,
 
@@ -440,11 +440,13 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses", package = "StreamFind", pa
 
 # Methods -----
 
+#' @export
 #' @noRd
 S7::method(names,  MassSpecAnalyses) <- function(x) {
   vapply(x@analyses, function(x) x$name, NA_character_)
 }
 
+#' @export
 #' @noRd
 S7::method(add, MassSpecAnalyses) <- function(x, value) {
   if (is.character(value)) {
@@ -473,6 +475,7 @@ S7::method(add, MassSpecAnalyses) <- function(x, value) {
   x
 }
 
+#' @export
 #' @noRd
 S7::method(remove, MassSpecAnalyses) <- function(x, value) {
   if (is.character(value)) {
@@ -487,6 +490,7 @@ S7::method(remove, MassSpecAnalyses) <- function(x, value) {
   x
 }
 
+#' @export
 #' @noRd
 S7::method(`[`, MassSpecAnalyses) <- function(x, i) {
   x@analyses <- x@analyses[i]
@@ -494,12 +498,14 @@ S7::method(`[`, MassSpecAnalyses) <- function(x, i) {
   x
 }
 
+#' @export
 #' @noRd
 S7::method(`[<-`, MassSpecAnalyses) <- function(x, i, value) {
   x <- add(x, value)
   x
 }
 
+#' @export
 #' @noRd
 S7::method(`[[`, MassSpecAnalyses) <- function(x, i) {
   x@analyses <- x@analyses[[i]]
@@ -507,12 +513,14 @@ S7::method(`[[`, MassSpecAnalyses) <- function(x, i) {
   x
 }
 
+#' @export
 #' @noRd
 S7::method(`[[<-`, MassSpecAnalyses) <- function(x, i, value) {
   x <- add(x, value)
   x
 }
 
+#' @export
 #' @noRd
 S7::method(as.list, MassSpecAnalyses) <- function(x) {
   
@@ -527,7 +535,7 @@ S7::method(as.list, MassSpecAnalyses) <- function(x) {
   list("analyses" = x@analyses, "results" = x@results)
 }
 
-
+#' @export
 #' @noRd
 S7::method(read, MassSpecAnalyses) <- function(x, file) {
   if (grepl(".json", file)) {
@@ -550,6 +558,7 @@ S7::method(read, MassSpecAnalyses) <- function(x, file) {
 
 # Get Spectra ------
 
+#' @export
 #' @noRd
 S7::method(get_spectra_tic, MassSpecAnalyses) <- function(x, analyses = NULL, levels = c(1, 2), rt = NULL) {
   analyses <- .check_analyses_argument(x, analyses)
@@ -566,7 +575,7 @@ S7::method(get_spectra_tic, MassSpecAnalyses) <- function(x, analyses = NULL, le
   value
 }
 
-
+#' @export
 #' @noRd
 S7::method(get_spectra_bpc, MassSpecAnalyses) <- function(x, analyses = NULL, levels = c(1, 2), rt = NULL) {
   analyses <- .check_analyses_argument(x, analyses)
@@ -583,7 +592,7 @@ S7::method(get_spectra_bpc, MassSpecAnalyses) <- function(x, analyses = NULL, le
   value
 }
 
-
+#' @export
 #' @noRd
 S7::method(get_spectra, MassSpecAnalyses) <- function(x,
                                                       analyses = NULL,
@@ -907,6 +916,7 @@ S7::method(get_spectra_matrix, MassSpecAnalyses) <- function(x, analyses = NULL)
   spec
 }
 
+#' @export
 #' @noRd
 S7::method(load_spectra, MassSpecAnalyses) <- function(x,
                                                        analyses = NULL,
@@ -959,6 +969,7 @@ S7::method(load_spectra, MassSpecAnalyses) <- function(x,
   x
 }
 
+#' @export
 #' @noRd
 S7::method(get_spectra_eic, MassSpecAnalyses) <- function(x,
                                                           analyses = NULL,
@@ -997,7 +1008,7 @@ S7::method(get_spectra_eic, MassSpecAnalyses) <- function(x,
   eic
 }
 
-
+#' @export
 #' @noRd
 S7::method(get_spectra_ms1, MassSpecAnalyses) <- function(x,
                                                           analyses = NULL,
@@ -1076,7 +1087,7 @@ S7::method(get_spectra_ms1, MassSpecAnalyses) <- function(x,
   ms1_df
 }
 
-
+#' @export
 #' @noRd
 S7::method(get_spectra_ms2, MassSpecAnalyses) <- function(x,
                                                           analyses = NULL,
@@ -1158,6 +1169,7 @@ S7::method(get_spectra_ms2, MassSpecAnalyses) <- function(x,
 
 # Plot Spectra -----
 
+#' @export
 #' @noRd
 S7::method(plot_spectra, MassSpecAnalyses) <- function(x,
                                                        analyses = NULL,
@@ -1251,6 +1263,7 @@ S7::method(plot_spectra, MassSpecAnalyses) <- function(x,
   }
 }
 
+#' @export
 #' @noRd
 S7::method(plot_spectra_tic, MassSpecAnalyses) <- function(x,
                                                            analyses = NULL,
@@ -1284,7 +1297,7 @@ S7::method(plot_spectra_tic, MassSpecAnalyses) <- function(x,
   }
 }
 
-
+#' @export
 #' @noRd
 S7::method(plot_spectra_bpc, MassSpecAnalyses) <- function(x,
                                                            analyses = NULL,
@@ -1314,7 +1327,7 @@ S7::method(plot_spectra_bpc, MassSpecAnalyses) <- function(x,
   }
 }
 
-
+#' @export
 #' @noRd
 S7::method(plot_spectra_eic, MassSpecAnalyses) <- function(x,
                                                            analyses = NULL,
@@ -1353,6 +1366,7 @@ S7::method(plot_spectra_eic, MassSpecAnalyses) <- function(x,
   }
 }
 
+#' @export
 #' @noRd
 S7::method(plot_spectra_xic, MassSpecAnalyses) <- function(x,
                                                            analyses = NULL,
@@ -1398,6 +1412,7 @@ S7::method(plot_spectra_xic, MassSpecAnalyses) <- function(x,
   )
 }
 
+#' @export
 #' @noRd
 S7::method(plot_spectra_ms1, MassSpecAnalyses) <- function(x,
                                                            analyses = NULL,
@@ -1436,7 +1451,7 @@ S7::method(plot_spectra_ms1, MassSpecAnalyses) <- function(x,
   }
 }
 
-
+#' @export
 #' @noRd
 S7::method(plot_spectra_ms2, MassSpecAnalyses) <- function(x,
                                                            analyses = NULL,
@@ -1475,6 +1490,7 @@ S7::method(plot_spectra_ms2, MassSpecAnalyses) <- function(x,
   }
 }
 
+#' @export
 #' @noRd
 S7::method(plot_spectra_baseline, MassSpecAnalyses) <- function(x,
                                                                 analyses = NULL,
@@ -1560,6 +1576,7 @@ S7::method(plot_spectra_baseline, MassSpecAnalyses) <- function(x,
   }
 }
 
+#' @export
 #' @noRd
 S7::method(plot_spectra_charges, MassSpecAnalyses) <- function(x,
                                                                analyses = NULL,
@@ -1607,6 +1624,7 @@ S7::method(plot_spectra_charges, MassSpecAnalyses) <- function(x,
 
 # Chromatograms ------
 
+#' @export
 #' @noRd
 S7::method(get_chromatograms, MassSpecAnalyses) <- function(x,
                                                             analyses = NULL,
@@ -1752,6 +1770,7 @@ S7::method(get_chromatograms, MassSpecAnalyses) <- function(x,
   }
 }
 
+#' @export
 #' @noRd
 S7::method(load_chromatograms, MassSpecAnalyses) <- function(x, analyses = NULL, minIntensity = NULL, chromatograms = NULL) {
   analyses <- .check_analyses_argument(x, analyses)
@@ -1769,6 +1788,7 @@ S7::method(load_chromatograms, MassSpecAnalyses) <- function(x, analyses = NULL,
   x
 }
 
+#' @export
 #' @noRd
 S7::method(get_chromatograms_peaks, MassSpecAnalyses) <- function(x, analyses = NULL, chromatograms = NULL) {
   
@@ -1820,6 +1840,7 @@ S7::method(get_chromatograms_peaks, MassSpecAnalyses) <- function(x, analyses = 
   pks
 }
 
+#' @export
 #' @noRd
 S7::method(plot_chromatograms, MassSpecAnalyses) <- function(x,
                                                              analyses = NULL,
@@ -1859,6 +1880,7 @@ S7::method(plot_chromatograms, MassSpecAnalyses) <- function(x,
   }
 }
 
+#' @export
 #' @noRd
 S7::method(plot_chromatograms_peaks, MassSpecAnalyses) <- function(x,
                                                                    analyses = NULL,
@@ -1900,6 +1922,7 @@ S7::method(plot_chromatograms_peaks, MassSpecAnalyses) <- function(x,
   }
 }
 
+#' @export
 #' @noRd
 S7::method(plot_chromatograms_baseline, MassSpecAnalyses) <- function(x,
                                                                       analyses = NULL,
@@ -1940,6 +1963,7 @@ S7::method(plot_chromatograms_baseline, MassSpecAnalyses) <- function(x,
 
 # Get NTS ------
 
+#' @export
 #' @noRd
 S7::method(get_features_count, MassSpecAnalyses) <- function(x, analyses = NULL, filtered = FALSE) {
   analyses <- .check_analyses_argument(x, analyses)
@@ -1960,7 +1984,7 @@ S7::method(get_features_count, MassSpecAnalyses) <- function(x, analyses = NULL,
   info
 }
 
-
+#' @export
 #' @noRd
 S7::method(get_features, MassSpecAnalyses) <- function(x,
                                                        analyses = NULL,
@@ -2171,7 +2195,7 @@ S7::method(get_features, MassSpecAnalyses) <- function(x,
   fts
 }
 
-
+#' @export
 #' @noRd
 S7::method(get_features_eic, MassSpecAnalyses) <- function(x,
                                                            analyses = NULL,
@@ -2248,7 +2272,7 @@ S7::method(get_features_eic, MassSpecAnalyses) <- function(x,
   eic
 }
 
-
+#' @export
 #' @noRd
 S7::method(get_features_ms1, MassSpecAnalyses) <- function(x,
                                                            analyses = NULL,
@@ -2330,7 +2354,7 @@ S7::method(get_features_ms1, MassSpecAnalyses) <- function(x,
   ms1
 }
 
-
+#' @export
 #' @noRd
 S7::method(get_features_ms2, MassSpecAnalyses) <- function(x,
                                                            analyses = NULL,
@@ -2410,7 +2434,7 @@ S7::method(get_features_ms2, MassSpecAnalyses) <- function(x,
   ms2
 }
 
-
+#' @export
 #' @noRd
 S7::method(get_groups, MassSpecAnalyses) <- function(x,
                                                      groups = NULL,
@@ -2536,7 +2560,7 @@ S7::method(get_groups, MassSpecAnalyses) <- function(x,
   }
 }
 
-
+#' @export
 #' @noRd
 S7::method(get_groups_ms1, MassSpecAnalyses) <- function(x,
                                                          groups = NULL,
@@ -2647,7 +2671,7 @@ S7::method(get_groups_ms1, MassSpecAnalyses) <- function(x,
   copy(ms1_df)
 }
 
-
+#' @export
 #' @noRd
 S7::method(get_groups_ms2, MassSpecAnalyses) <- function(x,
                                                          groups = NULL,
@@ -2755,6 +2779,7 @@ S7::method(get_groups_ms2, MassSpecAnalyses) <- function(x,
   copy(ms2_df)
 }
 
+#' @export
 #' @noRd
 S7::method(get_components, MassSpecAnalyses) <- function(x,
                                                          analyses = NULL,
@@ -2840,6 +2865,7 @@ S7::method(get_components, MassSpecAnalyses) <- function(x,
   all_fts
 }
 
+#' @export
 #' @noRd
 S7::method(get_suspects, MassSpecAnalyses) <- function(x,
                                                        analyses = NULL,
@@ -3114,6 +3140,7 @@ S7::method(get_suspects, MassSpecAnalyses) <- function(x,
   suspects
 }
 
+#' @export
 #' @noRd
 S7::method(get_internal_standards, MassSpecAnalyses) <- function(x, average = TRUE) {
   
@@ -3153,7 +3180,7 @@ S7::method(get_internal_standards, MassSpecAnalyses) <- function(x, average = TR
             x$iso_size
           }
         }, NA_real_)
-        istd$iso_c <- vapply(istd$isotope, function(x) {
+        istd$iso_c <- vapply(istd$annotation, function(x) {
           if (length(x) == 0) {
             NA_real_
           } else {
@@ -3274,6 +3301,7 @@ S7::method(get_internal_standards, MassSpecAnalyses) <- function(x, average = TR
 
 # Plot NTS -----
 
+#' @export
 #' @noRd
 S7::method(plot_features_count, MassSpecAnalyses) <- function(x,
                                                               analyses = NULL,
@@ -3333,6 +3361,7 @@ S7::method(plot_features_count, MassSpecAnalyses) <- function(x,
   )
 }
 
+#' @export
 #' @noRd
 S7::method(plot_features, MassSpecAnalyses) <- function(x,
                                                         analyses = NULL,
@@ -3395,7 +3424,7 @@ S7::method(plot_features, MassSpecAnalyses) <- function(x,
   }
 }
 
-
+#' @export
 #' @noRd
 S7::method(map_features, MassSpecAnalyses) <- function(x,
                                                        analyses = NULL,
@@ -3442,6 +3471,7 @@ S7::method(map_features, MassSpecAnalyses) <- function(x,
   }
 }
 
+#' @export
 #' @noRd
 S7::method(map_features_intensity, MassSpecAnalyses) <- function(x,
                                                                  analyses = NULL,
@@ -3504,7 +3534,7 @@ S7::method(map_features_intensity, MassSpecAnalyses) <- function(x,
   }
 }
 
-
+#' @export
 #' @noRd
 S7::method(plot_features_ms1, MassSpecAnalyses) <- function(x,
                                                             analyses = NULL,
@@ -3549,7 +3579,7 @@ S7::method(plot_features_ms1, MassSpecAnalyses) <- function(x,
   }
 }
 
-
+#' @export
 #' @noRd
 S7::method(plot_features_ms2, MassSpecAnalyses) <- function(x,
                                                             analyses = NULL,
@@ -3592,7 +3622,7 @@ S7::method(plot_features_ms2, MassSpecAnalyses) <- function(x,
   }
 }
 
-
+#' @export
 #' @noRd
 S7::method(plot_groups, MassSpecAnalyses) <- function(x,
                                                       groups = NULL,
@@ -3642,7 +3672,7 @@ S7::method(plot_groups, MassSpecAnalyses) <- function(x,
   )
 }
 
-
+#' @export
 #' @noRd
 S7::method(plot_groups_ms1, MassSpecAnalyses) <- function(x,
                                                           groups = NULL,
@@ -3697,7 +3727,7 @@ S7::method(plot_groups_ms1, MassSpecAnalyses) <- function(x,
   }
 }
 
-
+#' @export
 #' @noRd
 S7::method(plot_groups_ms2, MassSpecAnalyses) <- function(x,
                                                           groups = NULL,
@@ -3751,7 +3781,7 @@ S7::method(plot_groups_ms2, MassSpecAnalyses) <- function(x,
   }
 }
 
-
+#' @export
 #' @noRd
 S7::method(plot_groups_overview, MassSpecAnalyses) <- function(x,
                                                                analyses = NULL,
@@ -3814,6 +3844,7 @@ S7::method(plot_groups_overview, MassSpecAnalyses) <- function(x,
   .plot_groups_overview_aux(fts, eic, heights, analyses)
 }
 
+#' @export
 #' @noRd
 S7::method(plot_groups_profile, MassSpecAnalyses) <- function(x,
                                                               analyses = NULL,
@@ -3954,6 +3985,7 @@ S7::method(plot_groups_profile, MassSpecAnalyses) <- function(x,
   plot
 }
 
+#' @export
 #' @noRd
 S7::method(map_components, MassSpecAnalyses) <- function(x,
                                                          analyses = NULL,
@@ -3995,6 +4027,7 @@ S7::method(map_components, MassSpecAnalyses) <- function(x,
   
 }
 
+#' @export
 #' @noRd
 S7::method(plot_internal_standards, MassSpecAnalyses) <- function(x,
                                                                   analyses = NULL,
@@ -4018,6 +4051,7 @@ S7::method(plot_internal_standards, MassSpecAnalyses) <- function(x,
   }
 }
 
+#' @export
 #' @noRd
 S7::method(plot_suspects, MassSpecAnalyses) <- function(x,
                                                         analyses = NULL,

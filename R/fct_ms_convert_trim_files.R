@@ -68,8 +68,7 @@ check_compatible_ms_formats_for_conversion <- function() {
 #' #> convert_ms_files(file, outfile = "mzML", optList = optList)
 #'
 #'
-convert_ms_files <- function(files = NULL, outputFormat = "mzML",
-                             outputPath = NULL, optList = NULL) {
+convert_ms_files <- function(files = NULL, outputFormat = "mzML", outputPath = NULL, optList = NULL) {
   # files = "E:\\02_QC_pos-r001.d"
 
   files <- gsub("\\\\", "/", files)

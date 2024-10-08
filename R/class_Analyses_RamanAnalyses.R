@@ -1,4 +1,3 @@
-
 #' @export
 #' @noRd
 RamanAnalyses <- S7::new_class("RamanAnalyses", package = "StreamFind", parent = Analyses,
@@ -260,123 +259,6 @@ S7::method(`[[`, RamanAnalyses) <- function(x, i) {
 S7::method(`[[<-`, RamanAnalyses) <- function(x, i, value) {
   warning("Method not implemented in RamanAnalyses! Use add or remove methods instead." )
   return(x)
-}
-
-#' @noRd
-.get_RamanAnalysis_from_files <- function(files = NULL) {
-  if (!is.null(files)) {
-    
-    if (is.data.frame(files)) {
-      
-      if ("file" %in% colnames(files)) {
-        
-        if ("replicate" %in% colnames(files)) {
-          replicates <- as.character(files$replicate)
-        } else {
-          replicates <- rep(NA_character_, nrow(files))
-        }
-        
-        if ("blank" %in% colnames(files)) {
-          blanks <- as.character(files$blank)
-        } else {
-          blanks <- rep(NA_character_, nrow(files))
-        }
-        
-        files <- files$file
-        
-      } else {
-        files <- ""
-      }
-      
-    } else {
-      replicates <- rep(NA_character_, length(files))
-      blanks <- rep(NA_character_, length(files))
-    }
-    
-    possible_ms_file_formats <- ".asc"
-    
-    valid_files <- vapply(files,
-      FUN.VALUE = FALSE,
-      function(x, possible_ms_file_formats) {
-        if (!file.exists(x)) {
-          return(FALSE)
-        }
-        if (FALSE %in% grepl(possible_ms_file_formats, x)) {
-          return(FALSE)
-        }
-        TRUE
-      }, possible_ms_file_formats = possible_ms_file_formats
-    )
-    
-    if (!all(valid_files)) {
-      warning("File/s not valid!")
-      return(list())
-    }
-    
-    names(replicates) <- as.character(files)
-    
-    names(blanks) <- as.character(files)
-    
-    analyses <- lapply(files, function(x) {
-      
-      cache <- .load_chache("parsed_raman_analyses", x)
-      
-      if (!is.null(cache$data)) {
-        message("\U2139 Analysis loaded from cache!")
-        cache$data
-        
-      } else {
-        
-        message("\U2699 Parsing ", basename(x), "...", appendLF = FALSE)
-        
-        ana <- rcpp_parse_asc_file(x)
-        
-        class_ana <- class(ana)[1]
-        
-        if (!class_ana %in% "RamanAnalysis") {
-          message(" Not Done!")
-          return(NULL)
-        }
-        
-        message(" Done!")
-        
-        rpl <- replicates[x]
-        
-        if (is.na(rpl)) {
-          rpl <- ana$name
-          rpl <- sub("-[^-]+$", "", rpl)
-        }
-        
-        ana$replicate <- rpl
-        
-        blk <- blanks[x]
-        
-        if (!is.na(blk)) ana$blank <- blk
-        
-        ana$blank <- blk
-        
-        if (!is.null(cache$hash)) {
-          .save_cache("parsed_raman_analyses", ana, cache$hash)
-          message("\U1f5ab Parsed file cached!")
-        }
-        
-        ana
-      }
-    })
-    
-    names(analyses) <- vapply(analyses, function(x) x[["name"]], "")
-    
-    analyses <- analyses[order(names(analyses))]
-    
-    if (all(vapply(analyses, function(x) "RamanAnalysis" %in% is(x), FALSE))) {
-      analyses
-    } else {
-      warning("Not all added files could be converted as RamanAnalysis!")
-      list()
-    }
-  } else {
-    list()
-  }
 }
 
 # Get Methods ------
@@ -654,5 +536,124 @@ S7::method(plot_chromatograms, RamanAnalyses) <- function(x,
   } else {
     warning("Column rt not found in spectra data.table!")
     NULL
+  }
+}
+
+# Utility functions ------
+
+#' @noRd
+.get_RamanAnalysis_from_files <- function(files = NULL) {
+  if (!is.null(files)) {
+    
+    if (is.data.frame(files)) {
+      
+      if ("file" %in% colnames(files)) {
+        
+        if ("replicate" %in% colnames(files)) {
+          replicates <- as.character(files$replicate)
+        } else {
+          replicates <- rep(NA_character_, nrow(files))
+        }
+        
+        if ("blank" %in% colnames(files)) {
+          blanks <- as.character(files$blank)
+        } else {
+          blanks <- rep(NA_character_, nrow(files))
+        }
+        
+        files <- files$file
+        
+      } else {
+        files <- ""
+      }
+      
+    } else {
+      replicates <- rep(NA_character_, length(files))
+      blanks <- rep(NA_character_, length(files))
+    }
+    
+    possible_ms_file_formats <- ".asc"
+    
+    valid_files <- vapply(files,
+      FUN.VALUE = FALSE,
+      function(x, possible_ms_file_formats) {
+        if (!file.exists(x)) {
+          return(FALSE)
+        }
+        if (FALSE %in% grepl(possible_ms_file_formats, x)) {
+          return(FALSE)
+        }
+        TRUE
+      }, possible_ms_file_formats = possible_ms_file_formats
+    )
+    
+    if (!all(valid_files)) {
+      warning("File/s not valid!")
+      return(list())
+    }
+    
+    names(replicates) <- as.character(files)
+    
+    names(blanks) <- as.character(files)
+    
+    analyses <- lapply(files, function(x) {
+      
+      cache <- .load_chache("parsed_raman_analyses", x)
+      
+      if (!is.null(cache$data)) {
+        message("\U2139 Analysis loaded from cache!")
+        cache$data
+        
+      } else {
+        
+        message("\U2699 Parsing ", basename(x), "...", appendLF = FALSE)
+        
+        ana <- rcpp_parse_asc_file(x)
+        
+        class_ana <- class(ana)[1]
+        
+        if (!class_ana %in% "RamanAnalysis") {
+          message(" Not Done!")
+          return(NULL)
+        }
+        
+        message(" Done!")
+        
+        rpl <- replicates[x]
+        
+        if (is.na(rpl)) {
+          rpl <- ana$name
+          rpl <- sub("-[^-]+$", "", rpl)
+        }
+        
+        ana$replicate <- rpl
+        
+        blk <- blanks[x]
+        
+        if (!is.na(blk)) ana$blank <- blk
+        
+        ana$blank <- blk
+        
+        if (!is.null(cache$hash)) {
+          .save_cache("parsed_raman_analyses", ana, cache$hash)
+          message("\U1f5ab Parsed file cached!")
+        }
+        
+        ana
+      }
+    })
+    
+    names(analyses) <- vapply(analyses, function(x) x[["name"]], "")
+    
+    analyses <- analyses[order(names(analyses))]
+    
+    if (all(vapply(analyses, function(x) "RamanAnalysis" %in% is(x), FALSE))) {
+      analyses
+    } else {
+      warning("Not all added files could be converted as RamanAnalysis!")
+      list()
+    }
+  } else {
+    list()
   }
 }

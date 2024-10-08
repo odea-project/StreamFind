@@ -417,7 +417,8 @@ S7::method(`[[`, NTS) <- function(x, i) {
   return(x)
 }
 
-#' Adds an extra column to data.frame object in features.
+# Utility functions -----
+
 #' @noRd
 .add_features_column = function(nts = NULL, name = NULL, data = NULL) {
   if (!is(nts, "StreamFind::NTS")) {

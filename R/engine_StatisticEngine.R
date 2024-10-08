@@ -244,115 +244,6 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       invisible(self)
     },
     
-    #' @description Classifies the data using the classification labels of the analysis.
-    #' 
-    #' @note Note that the classification must be prepared before using the method `prepare_classification` and data 
-    #' must have the same number of variables as the analyses in the engine.
-    #' 
-    #' @param data Data.frame, data-table or matrix with data.
-    #' 
-    classify = function(data = NULL) {
-      
-      if (!self$has_results("classification")) {
-        warning("Classification instructions not found! Not done.")
-        return(invisible())
-      }
-      
-      classification <- self$get_results("classification")[[1]]
-      
-      train_data <- list()
-      train_data[[classification$conditions$train_var]] <- self$data
-      train_data[[classification$conditions$label_var]] <- factor(self$get_classes())
-      train_data[[classification$conditions$test_var]] <- data
-      
-      res <- do.call(classification$func, c(train_data, classification$conditions$args))
-      
-      # check is res has attr prob
-      if (!is.null(attr(res, "prob"))) {
-        prob = round(attr(res, "prob"), digits = 1)
-      } else {
-       prob = NULL
-      }
-      
-      res <- data.table::data.table(analysis = rownames(data), class = res)
-      
-      res$probability <- prob
-      
-      classification$data <- data
-      
-      classification$results <- res
-      
-      self$add_results(list("classification" = classification))
-      
-      message(paste0("\U2713 ", "Classification results added!"))
-      
-      invisible(self)
-    },
-    
-    #' @description Evaluates the model for quantification.
-    #' 
-    #' @note Note that only the model MCR is valid for quantification and concentrations must be added to analyses.
-    #' 
-    quantify = function() {
-      
-      if (is.null(self$model)) {
-        warning("Model not found! Not done.")
-        return(invisible())
-      }
-      
-      if (is(self$model) != "mcr") {
-        warning("Model must be MCR for quantification! Not done.")
-        return(invisible())
-      }
-      
-      if (all(is.na(self$get_concentrations()))) {
-        warning("Concentrations must be added to the analyses for quantification! Not done.")
-        return(invisible())
-      }
-      
-      concentrations <- self$get_concentrations()
-      
-      contributions <- self$get_model_contributions()
-      
-      res <- list()
-      
-      for (i in seq_len(ncol(contributions))) {
-        
-        c_i <- concentrations
-        
-        x <- c_i[!is.na(c_i)]
-        
-        y <- stat3$get_model_contributions()[, i][!is.na(c_i)]
-        
-        linear_model <- lm(x  ~  y)
-        
-        summary_linear_model <- summary(linear_model)
-        
-        r_squared <- summary_linear_model$r.squared
-        
-        to_quantify <- is.na(c_i)
-        
-        for (j in seq_len(length(c_i))) {
-          
-          if (to_quantify[j]) {
-            mcr_val <- data.frame(y = contributions[, i][j])
-            c_i[j] <- stats::predict(linear_model, newdata = mcr_val)
-          }
-        }
-        
-        res[[colnames(contributions)[i]]] <- list(
-          "r_squared" = r_squared,
-          "quantification" = data.table::data.table(
-            "analysis" = rownames(contributions),
-            "mcr_value" = contributions[, i],
-            "concentration" = c_i
-          )
-        )
-      }
-      
-      res
-    },
-    
     ## ___ plot -----
     
     #' @description Plots the data.
@@ -436,54 +327,12 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #' 
     #' @param pcs Integer vectors with the principle component to use for categorization.
     #' 
-    plot_model_contributions = function(interactive = TRUE,
-                                        pcs = NULL,
-                                        title = NULL,
-                                        showText = TRUE,
-                                        showLegend = TRUE) {
-      
-      dt <- self$get_model_contributions(pcs)
-      
-      if (is.null(dt)) return(NULL)
-      
-      if (!interactive) {
-        
-        NULL
-        
-      } else {
-        
-        cl <- .get_colors(colnames(dt))
-        
-        fig <- plot_ly()
-        
-        x = rownames(dt)
-        
-        xLab = "Analysis Index"
-        
-        yLab = "Contribution"
-        
-        for (i in seq_len(length(cl))) {
-          
-          fig <- fig %>% add_trace(
-            x = x,
-            y = dt[, i],
-            type = "scatter",
-            mode = "markers+lines",
-            line = list(size = 0.3, color = cl[i], dash = 'dash'),
-            marker = list(size = 5, color = cl[i]),
-            name = names(cl[i]),
-            legendgroup = names(cl[i]),
-            showlegend = TRUE
-          )
-        }
-        
-        xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"))
-        yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
-        
-        fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
-        
-        fig
-      }
+    plot_contributions = function(interactive = TRUE,
+                                  pcs = NULL,
+                                  title = NULL,
+                                  showText = TRUE,
+                                  showLegend = TRUE) {
+      plot_contributions(self$analyses, interactive, pcs, title, showText, showLegend)
     },
     
     #' @description Plots the residual distance of the model.
@@ -492,20 +341,6 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #' 
     plot_residual_distance = function(...) {
       plot_residual_distance(self$analyses, ...)
-    },
-    
-    ## ___ info -----
-    
-    ### ___ processing_function_calls -----
-    
-    #' @description A data.table with available data processing methods.
-    #'
-    processing_methods = function() {
-      ps <- list()
-      ps[["MakeModel"]] <- 1
-      ps[["PrepareClassification"]] <- 1
-      ps[["PrepareData"]] <- Inf
-      data.table(name = names(ps), max = unlist(ps))
     }
   )
 )

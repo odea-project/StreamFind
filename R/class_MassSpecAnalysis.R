@@ -1,26 +1,5 @@
-#' **MassSpecAnalysis** S3 class constructor, methods and functions
-#'
-#' @description
-#' Creates a *MassSpecAnalysis* S3 class object.
-#'
-#' @param name *mzML* or *mzXML* file name without extension.
-#' @param replicate Character with length one, representing the analysis replicate group name.
-#' @param blank Character with length one, representing the associated blank replicate group name.
-#' @param file *mzML* or *mzXML* full file path (with extension).
-#' @param format Character with length one. One of *mzML* or *mzXML*.
-#' @param type Character with length one defining the type of analysis.
-#' @param spectra_number Integer with the number of spectra in the file.
-#' @param spectra_headers data.table run information for each spectrum.
-#' @param spectra data.table with the raw spectra (only present if loaded).
-#' @param chromatograms_number Integer with the number of chromatograms in the file.
-#' @param chromatograms_headers data.table headers information for each chromatogram.
-#' @param chromatograms data.table with the raw chromatograms (only present if loaded).
-#' @param metadata List with flexible storage for experimental metadata (e.g., concentration, location, etc.).
-#'
-#' @return An *MassSpecAnalysis* S3 class object.
-#'
 #' @export
-#'
+#' @noRd
 MassSpecAnalysis <- function(name = NA_character_,
                              replicate = NA_character_,
                              blank = NA_character_,
@@ -58,7 +37,6 @@ MassSpecAnalysis <- function(name = NA_character_,
 
 #' @export
 #' @noRd
-#'
 print.MassSpecAnalysis <- function(x, ...) {
   cat("\n")
   cat(
@@ -81,6 +59,7 @@ print.MassSpecAnalysis <- function(x, ...) {
   cat("\n")
 }
 
+#' @export
 #' @noRd
 as.MassSpecAnalysis <- function(value) {
   if (length(value) == 1 & is.list(value)) value <- value[[1]]

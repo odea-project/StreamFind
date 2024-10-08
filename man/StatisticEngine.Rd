@@ -16,11 +16,6 @@ Note that the model must be created before testing and data must have the same n
 the model. Also, any pre-processing applied to the model data should be applied to the data before testing.
 Note that only numeric values are accepted in data and the data column names are used as variable names
 and data row names are used as analyses names.
-
-Note that the classification must be prepared before using the method \code{prepare_classification} and data
-must have the same number of variables as the analyses in the engine.
-
-Note that only the model MCR is valid for quantification and concentrations must be added to analyses.
 }
 \section{Super class}{
 \code{\link[StreamFind:CoreEngine]{StreamFind::CoreEngine}} -> \code{StatisticEngine}
@@ -55,17 +50,14 @@ Note that only the model MCR is valid for quantification and concentrations must
 \item \href{#method-StatisticEngine-remove_analyses}{\code{StatisticEngine$remove_analyses()}}
 \item \href{#method-StatisticEngine-predict}{\code{StatisticEngine$predict()}}
 \item \href{#method-StatisticEngine-test}{\code{StatisticEngine$test()}}
-\item \href{#method-StatisticEngine-classify}{\code{StatisticEngine$classify()}}
-\item \href{#method-StatisticEngine-quantify}{\code{StatisticEngine$quantify()}}
 \item \href{#method-StatisticEngine-plot_data}{\code{StatisticEngine$plot_data()}}
 \item \href{#method-StatisticEngine-plot_explained_variance}{\code{StatisticEngine$plot_explained_variance()}}
 \item \href{#method-StatisticEngine-plot_scores}{\code{StatisticEngine$plot_scores()}}
 \item \href{#method-StatisticEngine-plot_residuals}{\code{StatisticEngine$plot_residuals()}}
 \item \href{#method-StatisticEngine-plot_loadings}{\code{StatisticEngine$plot_loadings()}}
 \item \href{#method-StatisticEngine-plot_resolved_spectra}{\code{StatisticEngine$plot_resolved_spectra()}}
-\item \href{#method-StatisticEngine-plot_model_contributions}{\code{StatisticEngine$plot_model_contributions()}}
+\item \href{#method-StatisticEngine-plot_contributions}{\code{StatisticEngine$plot_contributions()}}
 \item \href{#method-StatisticEngine-plot_residual_distance}{\code{StatisticEngine$plot_residual_distance()}}
-\item \href{#method-StatisticEngine-processing_methods}{\code{StatisticEngine$processing_methods()}}
 \item \href{#method-StatisticEngine-clone}{\code{StatisticEngine$clone()}}
 }
 }
@@ -291,33 +283,6 @@ Tests the model using the data.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-StatisticEngine-classify"></a>}}
-\if{latex}{\out{\hypertarget{method-StatisticEngine-classify}{}}}
-\subsection{Method \code{classify()}}{
-Classifies the data using the classification labels of the analysis.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$classify(data = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{data}}{Data.frame, data-table or matrix with data.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-StatisticEngine-quantify"></a>}}
-\if{latex}{\out{\hypertarget{method-StatisticEngine-quantify}{}}}
-\subsection{Method \code{quantify()}}{
-Evaluates the model for quantification.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$quantify()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-StatisticEngine-plot_data"></a>}}
 \if{latex}{\out{\hypertarget{method-StatisticEngine-plot_data}{}}}
 \subsection{Method \code{plot_data()}}{
@@ -519,12 +484,12 @@ Plots model resolved spectra.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-StatisticEngine-plot_model_contributions"></a>}}
-\if{latex}{\out{\hypertarget{method-StatisticEngine-plot_model_contributions}{}}}
-\subsection{Method \code{plot_model_contributions()}}{
+\if{html}{\out{<a id="method-StatisticEngine-plot_contributions"></a>}}
+\if{latex}{\out{\hypertarget{method-StatisticEngine-plot_contributions}{}}}
+\subsection{Method \code{plot_contributions()}}{
 Plots model contributions.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_model_contributions(
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$plot_contributions(
   interactive = TRUE,
   pcs = NULL,
   title = NULL,
@@ -565,16 +530,6 @@ Plots the residual distance of the model.
 }
 \if{html}{\out{</div>}}
 }
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-StatisticEngine-processing_methods"></a>}}
-\if{latex}{\out{\hypertarget{method-StatisticEngine-processing_methods}{}}}
-\subsection{Method \code{processing_methods()}}{
-A data.table with available data processing methods.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$processing_methods()}\if{html}{\out{</div>}}
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-StatisticEngine-clone"></a>}}

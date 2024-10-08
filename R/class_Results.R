@@ -1,4 +1,3 @@
-
 #' @export
 #' @noRd
 Results <- S7::new_class("Results", package = "StreamFind",

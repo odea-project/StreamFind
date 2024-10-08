@@ -914,7 +914,10 @@ float calculate_gaussian_rsquared(const std::vector<float>& x, const std::vector
   return 1 - (ss_residual / ss_total);
 }
 
-Rcpp::List calculate_gaussian_fit(const std::vector<float>& rt, const std::vector<float>& intensity, const float& baseCut) {
+Rcpp::List calculate_gaussian_fit(const std::string& ft,
+                                  const std::vector<float>& rt,
+                                  const std::vector<float>& intensity,
+                                  const float& baseCut) {
   
   float noise = 0;
   float sn = 0;
@@ -924,6 +927,7 @@ Rcpp::List calculate_gaussian_fit(const std::vector<float>& rt, const std::vecto
   float r_squared = 0;
   
   Rcpp::List quality = Rcpp::List::create(
+    Rcpp::Named("feature") = ft,
     Rcpp::Named("noise") = noise,
     Rcpp::Named("sn") = sn,
     Rcpp::Named("gauss_a") = A_fitted,
@@ -1151,7 +1155,11 @@ Rcpp::List rcpp_ms_load_features_eic(Rcpp::List analyses,
       
       merge_traces_within_rt(res_j.rt, res_j.mz, res_j.intensity);
       
+      const int n = res_j.rt.size();
+      const std::vector<std::string> id_vec = std::vector<std::string>(n, id_j);
+      
       Rcpp::List eic = Rcpp::List::create(
+        Rcpp::Named("feature") = id_vec,
         Rcpp::Named("polarity") = res_j.polarity,
         Rcpp::Named("level") = res_j.level,
         Rcpp::Named("rt") = res_j.rt,
@@ -1297,7 +1305,10 @@ Rcpp::List rcpp_ms_load_features_ms1(Rcpp::List analyses,
       
       if (n_res_j == 0) continue;
       
+      const std::vector<std::string> id_vec = std::vector<std::string>(n_res_j, id_j);
+      
       const Rcpp::List ms1 = Rcpp::List::create(
+        Rcpp::Named("feature") = id_vec,
         Rcpp::Named("polarity") = res_j.polarity,
         Rcpp::Named("level") = res_j.level,
         Rcpp::Named("pre_mz") = res_j.pre_mz,
@@ -1444,7 +1455,10 @@ Rcpp::List rcpp_ms_load_features_ms2(Rcpp::List analyses,
       
       if (n_res_j == 0) continue;
       
+      const std::vector<std::string> id_vec = std::vector<std::string>(n_res_j, id_j);
+      
       const  Rcpp::List ms2 = Rcpp::List::create(
+        Rcpp::Named("feature") = id_vec,
         Rcpp::Named("polarity") = res_j.polarity,
         Rcpp::Named("level") = res_j.level,
         Rcpp::Named("pre_mz") = res_j.pre_mz,
@@ -1756,7 +1770,7 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
       
       merge_traces_within_rt(res_i.rt, res_i.mz, res_i.intensity);
 
-      Rcpp::List quality = calculate_gaussian_fit(res_i.rt, res_i.intensity, baseCut);
+      Rcpp::List quality = calculate_gaussian_fit(id_i, res_i.rt, res_i.intensity, baseCut);
 
       const float& sn = quality["sn"];
 
@@ -1796,7 +1810,11 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
       // enc_mz = sc::encode_base64(enc_mz);
       // enc_intensity = sc::encode_base64(enc_intensity);
       
+      const int n = res_i.rt.size();
+      const std::vector<std::string> id_vec = std::vector<std::string>(n, id_i);
+      
       Rcpp::List eic = Rcpp::List::create(
+        Rcpp::Named("feature") = id_vec,
         Rcpp::Named("polarity") = res_i.polarity,
         Rcpp::Named("level") = res_i.level,
         Rcpp::Named("rt") = res_i.rt,
@@ -2012,6 +2030,7 @@ Rcpp::List rcpp_ms_calculate_features_quality(Rcpp::List analyses,
         intensity = res_j.intensity;
         merge_traces_within_rt(rt, mz, intensity);
         Rcpp::List eic = Rcpp::List::create(
+          Rcpp::Named("feature") = id_j,
           Rcpp::Named("polarity") = res_j.polarity,
           Rcpp::Named("level") = res_j.level,
           Rcpp::Named("rt") = rt,
@@ -2022,6 +2041,7 @@ Rcpp::List rcpp_ms_calculate_features_quality(Rcpp::List analyses,
       }
       
       Rcpp::List quality = Rcpp::List::create(
+        Rcpp::Named("feature") = id_j,
         Rcpp::Named("noise") = 0,
         Rcpp::Named("sn") = 0,
         Rcpp::Named("gauss_a") = 0,
@@ -2032,7 +2052,7 @@ Rcpp::List rcpp_ms_calculate_features_quality(Rcpp::List analyses,
 
       const int n = rt.size();
 
-      if (n > minNumberTraces) quality = calculate_gaussian_fit(rt, intensity, baseCut);
+      if (n > minNumberTraces) quality = calculate_gaussian_fit(id_j, rt, intensity, baseCut);
       
       fts_quality[j] = quality;
     }

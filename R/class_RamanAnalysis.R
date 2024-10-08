@@ -1,19 +1,5 @@
-#' **RamanAnalysis** S3 class constructor, methods and functions
-#'
-#' @description Creates a *RamanAnalysis* S3 class object.
-#'
-#' @param name *asc* file name without extension.
-#' @param replicate Character with length one, representing the analysis replicate group name.
-#' @param blank Character with length one, representing the associated blank replicate group name.
-#' @param file *asc* full file path (with extension).
-#' @param type String with the type of analysis.
-#' @param metadata List of analysis metadata taken from the *asc* file or added.
-#' @param spectra data.table with the raw spectra.
-#'
-#' @return An *RamanAnalysis* S3 class object.
-#'
 #' @export
-#'
+#' @noRd
 RamanAnalysis <- function(name = NA_character_,
                           replicate = NA_character_,
                           blank = NA_character_,

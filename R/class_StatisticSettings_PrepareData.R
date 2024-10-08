@@ -57,6 +57,11 @@ StatisticSettings_PrepareData_autoscale <- S7::new_class("StatisticSettings_Prep
 #' @noRd
 S7::method(run, StatisticSettings_PrepareData_autoscale) <- function(x, engine = NULL) {
   
+  if (!requireNamespace("mdatools", quietly = TRUE)) {
+    warning("The package 'mdatools' is not available! Not done.")
+    return(FALSE)
+  }
+  
   if (!is(engine, "StatisticEngine")) {
     warning("Engine is not a StatisticEngine object!")
     return(FALSE)
@@ -67,8 +72,14 @@ S7::method(run, StatisticSettings_PrepareData_autoscale) <- function(x, engine =
     return(FALSE)
   }
   
- 
+  mat <- engine$analyses$analyses
   
+  center = x$parameters$center
+  scale = x$parameters$scale
   
+  mat <- mdatools::prep.autoscale(mat, center = center, scale = scale)
   
+  engine$data <- mat
+  message(paste0("\U2713 ", "Data auto scaled!"))
+  TRUE
 }

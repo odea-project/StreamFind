@@ -1,4 +1,3 @@
-
 #' @export
 #' @noRd
 Workflow <- S7::new_class("Workflow", package = "StreamFind",

@@ -151,8 +151,7 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
       
       features <- engine$nts$feature_list
       
-      features <- lapply(features, function(x) {
-        
+      features <- lapply(features, function(x) { 
         if ("quality" %in% colnames(x)) {
           qlt <- vapply(x$quality, function(z) {
             if (length(z) == 0) {

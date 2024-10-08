@@ -1,4 +1,3 @@
-
 #' @export
 #' @noRd
 ProcessingSettings <- S7::new_class("ProcessingSettings", package = "StreamFind",

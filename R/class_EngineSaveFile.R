@@ -1,4 +1,3 @@
-
 #' @export
 #' @noRd
 EngineSaveFile <- S7::new_class("EngineSaveFile", package = "StreamFind",
