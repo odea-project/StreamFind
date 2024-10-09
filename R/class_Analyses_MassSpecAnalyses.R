@@ -2000,17 +2000,17 @@ S7::method(get_features, MassSpecAnalyses) <- function(x,
   
   analyses <- .check_analyses_argument(x, analyses)
   
-  if (is.null(analyses)) return(data.table())
+  if (is.null(analyses)) return(data.table::data.table())
   
   fts <- NULL
   
   if (x$has_nts) fts <- x$nts$feature_list[analyses]
   
-  if (is.null(fts)) return(data.table())
+  if (is.null(fts)) return(data.table::data.table())
   
-  fts <- rbindlist(fts, idcol = "analysis", fill = TRUE)
+  fts <- data.table::rbindlist(fts, idcol = "analysis", fill = TRUE)
   
-  if (nrow(fts) == 0) return(data.table())
+  if (nrow(fts) == 0) return(data.table::data.table())
   
   if (!filtered) fts <- fts[!fts$filtered, ]
   
@@ -2087,7 +2087,7 @@ S7::method(get_features, MassSpecAnalyses) <- function(x,
       }
     }
     
-    return(data.table())
+    return(data.table::data.table())
   }
   
   if (!is.null(mass)) {
@@ -2120,20 +2120,20 @@ S7::method(get_features, MassSpecAnalyses) <- function(x,
     for (i in seq_len(nrow(targets))) {
       
       if ("mobility" %in% colnames(fts)) {
-        sel[between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
-              between(fts$rt, targets$rtmin[i], targets$rtmax[i]) &
-              between(fts$mobility, targets$mobilitymin[i], targets$mobilitymax[i])] <- TRUE
+        sel[data.table::between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
+              data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i]) &
+              data.table::between(fts$mobility, targets$mobilitymin[i], targets$mobilitymax[i])] <- TRUE
         
-        ids[between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
-              between(fts$rt, targets$rtmin[i], targets$rtmax[i]) &
-              between(fts$mobility, targets$mobilitymin[i], targets$mobilitymax[i])] <- targets$id[i]
+        ids[data.table::between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
+              data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i]) &
+              data.table::between(fts$mobility, targets$mobilitymin[i], targets$mobilitymax[i])] <- targets$id[i]
         
       } else {
-        sel[between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
-              between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
+        sel[data.table::between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
+              data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
         
-        ids[between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
-              between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- targets$id[i]
+        ids[data.table::between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
+              data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- targets$id[i]
       }
     }
     
@@ -2166,20 +2166,20 @@ S7::method(get_features, MassSpecAnalyses) <- function(x,
     for (i in seq_len(nrow(targets))) {
       
       if ("mobility" %in% colnames(fts)) {
-        sel[between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
-              between(fts$rt, targets$rtmin[i], targets$rtmax[i]) &
-              between(fts$mobility, targets$mobilitymin[i], targets$mobilitymax[i])] <- TRUE
+        sel[data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
+              data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i]) &
+              data.table::between(fts$mobility, targets$mobilitymin[i], targets$mobilitymax[i])] <- TRUE
         
-        ids[between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
-              between(fts$rt, targets$rtmin[i], targets$rtmax[i]) &
-              between(fts$mobility, targets$mobilitymin[i], targets$mobilitymax[i])] <- targets$id[i]
+        ids[data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
+              data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i]) &
+              data.table::between(fts$mobility, targets$mobilitymin[i], targets$mobilitymax[i])] <- targets$id[i]
         
       } else {
-        sel[between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
-              between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
+        sel[data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
+              data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
         
-        ids[between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
-              between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- targets$id[i]
+        ids[data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
+              data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- targets$id[i]
       }
     }
     
@@ -2245,7 +2245,7 @@ S7::method(get_features_eic, MassSpecAnalyses) <- function(x,
   eic_list <- lapply(seq_len(nrow(fts)), function(x, fts) {
     temp <- fts[x, ]
     temp_ms <- temp[["eic"]][[1]]
-    if (is.null(temp_ms)) return(data.table())
+    if (is.null(temp_ms)) return(data.table::data.table())
     temp_ms$analysis <- temp$analysis
     temp_ms$feature <- temp$feature
     temp_ms
@@ -2294,7 +2294,7 @@ S7::method(get_features_ms1, MassSpecAnalyses) <- function(x,
   
   fts <- get_features(x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
   
-  if (nrow(fts) == 0) return(data.table())
+  if (nrow(fts) == 0) return(data.table::data.table())
   
   if (useLoadedData) {
     if (x$nts$has_features_ms1) {
@@ -2327,13 +2327,13 @@ S7::method(get_features_ms1, MassSpecAnalyses) <- function(x,
   ms1_list <- lapply(seq_len(nrow(fts)), function(x, fts) {
     temp <- fts[x, ]
     temp_ms <- temp[["ms1"]][[1]]
-    if (is.null(temp_ms)) return(data.table())
+    if (is.null(temp_ms)) return(data.table::data.table())
     temp_ms$analysis <- temp$analysis
     temp_ms$feature <- temp$feature
     temp_ms
   }, fts = fts)
   
-  ms1 <- rbindlist(ms1_list, fill = TRUE)
+  ms1 <- data.table::rbindlist(ms1_list, fill = TRUE)
   data.table::setcolorder(ms1, c("analysis", "feature"))
   
   unique_fts_id <- paste0(fts$analysis, "-", fts$feature)
@@ -2375,7 +2375,7 @@ S7::method(get_features_ms2, MassSpecAnalyses) <- function(x,
   
   fts <- get_features(x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
   
-  if (nrow(fts) == 0) return(data.table())
+  if (nrow(fts) == 0) return(data.table::data.table())
   
   if (useLoadedData) {
     if (x$nts$has_features_ms1) {
@@ -2407,13 +2407,13 @@ S7::method(get_features_ms2, MassSpecAnalyses) <- function(x,
   ms2_list <- lapply(seq_len(nrow(fts)), function(x, fts) {
     temp <- fts[x, ]
     temp_ms <- temp[["ms2"]][[1]]
-    if (is.null(temp_ms)) return(data.table())
+    if (is.null(temp_ms)) return(data.table::data.table())
     temp_ms$analysis <- temp$analysis
     temp_ms$feature <- temp$feature
     temp_ms
   }, fts = fts)
   
-  ms2 <- rbindlist(ms2_list, fill = TRUE)
+  ms2 <- data.table::rbindlist(ms2_list, fill = TRUE)
   data.table::setcolorder(ms2, c("analysis", "feature"))
   
   unique_fts_id <- paste0(fts$analysis, "-", fts$feature)
@@ -2451,9 +2451,9 @@ S7::method(get_groups, MassSpecAnalyses) <- function(x,
                                                      sdValues = FALSE,
                                                      metadata = FALSE) {
   
-  if (!x$has_nts) return(data.table())
+  if (!x$has_nts) return(data.table::data.table())
   
-  if (!x$nts$has_groups) return(data.table())
+  if (!x$nts$has_groups) return(data.table::data.table())
   
   fts <- get_features(x,
     analyses = NULL,
@@ -2465,21 +2465,21 @@ S7::method(get_groups, MassSpecAnalyses) <- function(x,
   if (nrow(fts) > 0) {
     g_ids <- unique(fts$group)
     
-    fgroups <- data.table("group" = g_ids)
+    fgroups <- data.table::data.table("group" = g_ids)
     
     if (intensities) {
       
       if (average) {
         intensity <- NULL
         rpls <- x$replicates
-        fts_temp <- copy(fts)
+        fts_temp <- data.table::copy(fts)
         fts_temp$analysis <- rpls[fts_temp$analysis]
         fts_av <- fts_temp[, .(intensity = mean(intensity), sd = sd(intensity), n = length(intensity)), by = c("group", "analysis")]
         fts_av$sd[is.na(fts_av$sd)] <- 0 
         fts_av$sd <- round(fts_av$sd / fts_av$intensity * 100, digits = 0)
         
-        fts_sd <- copy(fts_av)
-        fts_n <- copy(fts_av)
+        fts_sd <- data.table::copy(fts_av)
+        fts_n <- data.table::copy(fts_av)
         
         fts_sd$intensity <- NULL
         fts_sd$n <- NULL
@@ -2556,7 +2556,7 @@ S7::method(get_groups, MassSpecAnalyses) <- function(x,
     fgroups
     
   } else {
-    data.table()
+    data.table::data.table()
   }
 }
 
@@ -2588,11 +2588,11 @@ S7::method(get_groups_ms1, MassSpecAnalyses) <- function(x,
     intensities = FALSE, average = FALSE, sdValues = FALSE, metadata = FALSE
   )
   
-  if (nrow(fgs) == 0) return(data.table())
+  if (nrow(fgs) == 0) return(data.table::data.table())
   
   fts <- get_features(x, features = fgs$group)
   
-  if (nrow(fts) == 0) return(data.table())
+  if (nrow(fts) == 0) return(data.table::data.table())
   
   ms1 <- get_features_ms1(x,
     analyses = unique(fts$analysis),
@@ -2608,7 +2608,7 @@ S7::method(get_groups_ms1, MassSpecAnalyses) <- function(x,
   
   ms1 <- ms1[ms1$intensity > minIntensity, ]
   
-  if (nrow(ms1) == 0) return(data.table())
+  if (nrow(ms1) == 0) return(data.table::data.table())
   
   polarities <- unique(x$spectra_polarity[unique(ms1$analysis)])
   
@@ -2644,7 +2644,7 @@ S7::method(get_groups_ms1, MassSpecAnalyses) <- function(x,
   
   ms1_list <- rcpp_ms_cluster_spectra(ms1, mzClust, presence, verbose = FALSE)
   
-  ms1_df <- rbindlist(ms1_list, fill = TRUE)
+  ms1_df <- data.table::rbindlist(ms1_list, fill = TRUE)
   
   ms1_df$group <- ms1_df$id
   
@@ -2659,7 +2659,7 @@ S7::method(get_groups_ms1, MassSpecAnalyses) <- function(x,
     
   } else {
     ms1_df <- ms1_df[order(ms1_df$analysis), ]
-    setnames(ms1_df, "analysis", "replicate")
+    data.table::setnames(ms1_df, "analysis", "replicate")
   }
   
   if ("name" %in% colnames(fgs)) {
@@ -2668,7 +2668,7 @@ S7::method(get_groups_ms1, MassSpecAnalyses) <- function(x,
     ms1_df$name <- tar_ids[ms1_df$group]
   }
   
-  copy(ms1_df)
+  data.table::copy(ms1_df)
 }
 
 #' @export
@@ -2698,11 +2698,11 @@ S7::method(get_groups_ms2, MassSpecAnalyses) <- function(x,
     intensities = FALSE, average = FALSE, sdValues = FALSE, metadata = FALSE
   )
   
-  if (nrow(fgs) == 0) return(data.table())
+  if (nrow(fgs) == 0) return(data.table::data.table())
   
   fts <- get_features(x, features = fgs$group, filtered = filtered)
   
-  if (nrow(fts) == 0) return(data.table())
+  if (nrow(fts) == 0) return(data.table::data.table())
   
   ms2 <- get_features_ms2(x,
     analyses = unique(fts$analysis),
@@ -2717,7 +2717,7 @@ S7::method(get_groups_ms2, MassSpecAnalyses) <- function(x,
   
   ms2 <- ms2[ms2$intensity > minIntensity, ]
   
-  if (nrow(ms2) == 0) return(data.table())
+  if (nrow(ms2) == 0) return(data.table::data.table())
   
   polarities <- unique(x$spectra_polarity[unique(ms2$analysis)])
   
@@ -2752,7 +2752,7 @@ S7::method(get_groups_ms2, MassSpecAnalyses) <- function(x,
   
   ms2_list <- rcpp_ms_cluster_spectra(ms2, mzClust, presence, verbose = FALSE)
   
-  ms2_df <- rbindlist(ms2_list, fill = TRUE)
+  ms2_df <- data.table::rbindlist(ms2_list, fill = TRUE)
   
   ms2_df$group <- ms2_df$id
   
@@ -2767,7 +2767,7 @@ S7::method(get_groups_ms2, MassSpecAnalyses) <- function(x,
     
   } else {
     ms2_df <- ms2_df[order(ms2_df$analysis), ]
-    setnames(ms2_df, "analysis", "replicate")
+    data.table::setnames(ms2_df, "analysis", "replicate")
   }
   
   if ("name" %in% colnames(fgs)) {
@@ -2776,7 +2776,7 @@ S7::method(get_groups_ms2, MassSpecAnalyses) <- function(x,
     ms2_df$name <- tar_ids[ms2_df$group]
   }
   
-  copy(ms2_df)
+  data.table::copy(ms2_df)
 }
 
 #' @export
@@ -2844,6 +2844,7 @@ S7::method(get_components, MassSpecAnalyses) <- function(x,
     feature <- NULL
     z <- z[annotation, on = .(feature)]
     z$annotation <- NULL
+    z <- z[order(z$component_feature), ]
     z
   })
   
@@ -2889,20 +2890,20 @@ S7::method(get_suspects, MassSpecAnalyses) <- function(x,
   
   if (!x$has_nts) {
     warning("No NTS results found!")
-    return(data.table())
+    return(data.table::data.table())
   }
   
   if (!x$nts$has_features) {
     warning("Features not found!")
-    return(data.table())
+    return(data.table::data.table())
   }
   
   if (is.null(database)) {
-    features <- x$get_features(analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
+    features <- get_features(x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
     
     if (nrow(features) == 0) {
       message("\U2717 Features not found for targets!")
-      return(data.table())
+      return(data.table::data.table())
     }
     
     features[["name"]] <- NULL
@@ -2918,48 +2919,54 @@ S7::method(get_suspects, MassSpecAnalyses) <- function(x,
         
         features <- features[sel, ]
         
-        suspects <- features[["suspects"]]
+        suspects_l <- features[["suspects"]]
         
-        out <- lapply(seq_len(length(suspects)), function(z, suspects, features) {
-          temp <- suspects[[z]]
+        suspects <- lapply(seq_len(length(suspects_l)), function(z, suspects_l, features) {
+          temp <- suspects_l[[z]]
+          
           temp_ft <- features[z, ]
           temp_ft[["suspects"]] <- NULL
-          temp$feature <- temp_ft$feature
-          temp <- merge(temp, temp_ft, by = "feature", all = TRUE)
+          temp_ft$rt <- NULL
+          temp_ft$intensity <- NULL
+          temp_ft$area <- NULL
+          temp_ft$mass <- NULL
           
-          browser()
+          if ("group" %in% colnames(temp)) {
+            temp <- merge(temp, temp_ft, by = c("feature", "group"), all = TRUE)
+          } else {
+            temp <- merge(temp, temp_ft, by = "feature", all = TRUE)
+          }
           
-          setcolorder(temp, colnames(temp)[2:(which(colnames(temp) %in% "analysis"))])
+          data.table::setcolorder(temp, c("analysis", "replicate"))
           
           temp
-        }, suspects = suspects, features = features)
+          
+        }, suspects_l = suspects_l, features = features)
         
-        out <- rbindlist(out, fill = TRUE)
-        
-        return(out)
+        suspects <- data.table::rbindlist(suspects, fill = TRUE)
         
       } else {
         warning("Suspects were not found! Run suspect_screening or give a database for searching for suspects.")
-        return(data.table())
+        return(data.table::data.table())
       }
       
     } else {
       warning("Suspects were not found! Run suspect_screening or give a database.")
-      return(data.table())
+      return(data.table::data.table())
     }
     
   } else {
     
-    database <- as.data.table(database)
+    database <- data.table::as.data.table(database)
     
     valid_db <- FALSE
     
     if (is.data.frame(database)) {
-      database <- as.data.table(database)
+      database <- data.table::as.data.table(database)
       if (any(c("mass", "neutralMass") %in% colnames(database)) | "mz" %in% colnames(database)) {
         if ("name" %in% colnames(database)) {
           if ("neutralMass" %in% colnames(database)) {
-            setnames(database, "neutralMass", "mass")
+            data.table::setnames(database, "neutralMass", "mass")
           }
           valid_db <- TRUE
         }
@@ -2968,7 +2975,7 @@ S7::method(get_suspects, MassSpecAnalyses) <- function(x,
     
     if (!valid_db) {
       warning("Argument database must be a data.frame with at least the columns name and mass or mz!")
-      return(data.table())
+      return(data.table::data.table())
     }
     
     if (!"rt" %in% colnames(database)) {
@@ -2986,12 +2993,12 @@ S7::method(get_suspects, MassSpecAnalyses) <- function(x,
       suspects <- get_features(x, analyses, mz = database, ppm = ppm, sec = sec, millisec = millisec, filtered = filtered)
     } else {
       warning("Argument database must be a data.frame with at least the columns name and mass or mz!")
-      return(data.table())
+      return(data.table::data.table())
     }
     
     if (nrow(suspects) == 0) {
       message("\U2717 No suspects found!")
-      return(data.table())
+      return(data.table::data.table())
     }
     
     suspects <- split(suspects, suspects$analysis)
@@ -3048,11 +3055,11 @@ S7::method(get_suspects, MassSpecAnalyses) <- function(x,
             fragments <- suspect_db$fragments
             
             if (!is.na(fragments)) {
-              ms2 <- data.table()
+              ms2 <- data.table::data.table()
               
               if ("ms2" %in% colnames(z)) {
                 ms2 <- z$ms2[i][[1]]
-                if (length(ms2) == 0) ms2 <- data.table()
+                if (length(ms2) == 0) ms2 <- data.table::data.table()
               }
               
               if (nrow(ms2) == 0) {
@@ -3070,7 +3077,7 @@ S7::method(get_suspects, MassSpecAnalyses) <- function(x,
               if (nrow(ms2) > 0) {
                 fragments <- unlist(strsplit(fragments, split = "; ", fixed = TRUE))
                 fragments <- strsplit(fragments, " ")
-                fragments <- data.table(
+                fragments <- data.table::data.table(
                   "mz" = vapply(fragments, function(x) as.numeric(x[1]), NA_real_),
                   "intensity" = vapply(fragments, function(x) as.numeric(x[2]), NA_real_)
                 )
@@ -3133,10 +3140,12 @@ S7::method(get_suspects, MassSpecAnalyses) <- function(x,
       groups_df <- groups_df[temp_vals, on = .(group)]
       data.table::setkey(groups_df, group)
       groups_df <- groups_df[unique(group), mult = "first"]
-      setcolorder(groups_df, c("group", "name", "id_level", "error_mass", "error_rt", "shared_fragments"))
+      data.table::setcolorder(groups_df, c("group", "name", "id_level", "error_mass", "error_rt", "shared_fragments"))
+      data.table::setkey(groups_df, NULL)
       return(groups_df)
     }
   }
+  
   suspects
 }
 

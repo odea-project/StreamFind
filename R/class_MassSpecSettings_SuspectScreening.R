@@ -116,7 +116,7 @@ S7::method(run, MassSpecSettings_SuspectScreening_StreamFind) <- function(x, eng
     return(FALSE)
   }
 
-  cache <- .load_chache("suspect_sreening", nts$features, x)
+  cache <- .load_chache("suspect_screening", nts$features, x)
   
   if (!is.null(cache$data)) {
     tryCatch({
@@ -150,16 +150,12 @@ S7::method(run, MassSpecSettings_SuspectScreening_StreamFind) <- function(x, eng
     
     suspect_cols <- colnames(suspect_features)
     
-    suspect_cols <- c(suspect_cols[1:which(suspect_cols %in% "analysis") - 1])
-    
     suspect_features_l <- split(suspect_features, suspect_features$analysis)
     
     features <- nts$feature_list
     
     sus_col <- lapply(names(features), function(x, features, suspect_features_l, suspect_cols) {
-      
       suspects <- suspect_features_l[[x]]
-      
       fts <- features[[x]]
       
       if (!is.null(suspects)) {
@@ -169,30 +165,29 @@ S7::method(run, MassSpecSettings_SuspectScreening_StreamFind) <- function(x, eng
           
           if (length(sus_idx) > 0) {
             sus_temp <- suspects[sus_idx, ]
-            sus_temp <- sus_temp[, suspect_cols, with = FALSE]
+            sus_temp[["analysis"]] <- NULL
             
             if (nrow(sus_temp) > 0) {
-              sus_temp  
+              sus_temp
             } else {
-              NULL
+              list()
             }
           } else {
-            NULL
+            list()
           }
-          
         }, suspects = suspects, suspect_cols = suspect_cols)
         
         suspects_l
         
       } else {
-        lapply(fts$feature, function(x) NULL)
+        lapply(fts$feature, function(x) list())
       }
     }, features = features, suspect_features_l = suspect_features_l, suspect_cols = suspect_cols)
     
     names(sus_col) <- names(features)
     
     if (!is.null(cache$hash)) {
-      .save_cache("suspect_sreening", sus_col, cache$hash)
+      .save_cache("suspect_screening", sus_col, cache$hash)
       message("\U1f5ab Suspect screening annotation cached!")
     }
     

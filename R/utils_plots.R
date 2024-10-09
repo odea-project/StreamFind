@@ -2981,24 +2981,40 @@
             FALSE
           },
           if ("quality" %in% colnames(ft)) {
-            paste(
-              "</br> noise: ", vapply(ft$quality, function(x) x$noise, NA_real_),
-              "</br> sn: ", vapply(ft$quality, function(x) x$sn, NA_real_),
-              "</br> gaufit: ", round(vapply(ft$quality, function(x) x$gaufit, NA_real_), digits = 4),
-              "</br> A: ", vapply(ft$quality, function(x) x$A, NA_real_),
-              "</br> mu: ", vapply(ft$quality, function(x) x$mu, NA_real_),
-              "</br> sigma: ", vapply(ft$quality, function(x) x$sigma, NA_real_)
-            )
+            q_t <- ft$quality
+            q_t <- lapply(q_t, function(x) if (length(x) == 0) list(noise = 0, sn = 0, gauss_f = 0, gauss_a = 0, gauss_u = 0, gauss_s = 0) else x)
+            if (length(q_t) > 0) {
+              paste(
+                "</br> noise: ", vapply(q_t, function(x) round(x$noise, digits = 0), 0),
+                "</br> sn: ", vapply(q_t, function(x) round(x$sn, digits = 1), 0),
+                "</br> gaufit: ", vapply(q_t, function(x) round(x$gauss_f, digits = 4), 0),
+                "</br> A: ", vapply(q_t, function(x) round(x$gauss_a, digits = 2), 0),
+                "</br> mu: ", vapply(q_t, function(x) round(x$gauss_u, digits = 2), 0),
+                "</br> sigma: ", vapply(q_t, function(x) round(x$gauss_s, digits = 2), 0)
+              )
+            } else {
+              ""
+            }
           } else {
             ""
           },
-          if ("isotope" %in% colnames(ft)) {
-            paste(
-              "</br> iso_cluster: ", vapply(ft$isotope, function(x) x$cluster, NA_real_),
-              "</br> iso_size: ", vapply(ft$isotope, function(x) x$cluster_size, NA_real_),
-              "</br> isotope: ", vapply(ft$isotope, function(x) x$tag, NA_character_),
-              "</br> carbons: ", vapply(ft$isotope, function(x) x$carbons, NA_real_)
-            )
+          if ("annotation" %in% colnames(ft)) {
+            anno <- ft$annotation[[1]]
+            if (length(anno) > 0) {
+              paste(
+                "</br> component: ", vapply(ft$annotation, function(x) x$component_feature, NA_character_),
+                "</br> isotope: ", vapply(ft$annotation, function(x) x$iso_cat, NA_character_),
+                "</br> iso_elements: ", vapply(ft$annotation, function(x) x$iso_isotope, NA_character_),
+                "</br> iso_number_carbons: ", vapply(ft$annotation, function(x) round(x$iso_number_carbons, digits = 0), NA_real_),
+                "</br> iso_mass_error: ", vapply(ft$annotation, function(x) round(x$iso_mass_error, digits = 5), NA_real_),
+                "</br> iso_time_error: ", vapply(ft$annotation, function(x) round(x$iso_time_error, digits = 1), NA_real_),
+                "</br> adduct: ", vapply(ft$annotation, function(x) x$adduct_cat, NA_character_),
+                "</br> adduct_mass_error: ", vapply(ft$annotation, function(x) round(x$adduct_mass_error, digits = 5), NA_real_),
+                "</br> adduct_time_error: ", vapply(ft$annotation, function(x) round(x$adduct_time_error, digits = 1), NA_real_)
+              )
+            } else {
+              ""
+            }
           } else {
             ""
           }
@@ -3007,6 +3023,8 @@
       showleg[which(leg %in% g)] <- FALSE
     }
   }
+  
+  max_mz <- 0
   
   plot2 <- plot_ly()
   
@@ -3024,6 +3042,9 @@
         bar_widths <- rep(0.2, nrow(data))
         
         data$intensity <- data$intensity / max(data$intensity)
+        
+        temp_max_mz <- max(data$mz)
+        if (temp_max_mz > max_mz) max_mz <- temp_max_mz
         
         plot2 <- plot2 %>% add_trace(
           data = data,
@@ -3043,7 +3064,7 @@
         
         fragments <- unlist(strsplit(fragments, split = "; ", fixed = TRUE))
         fragments <- strsplit(fragments, " ")
-        fragments <- data.table(
+        fragments <- data.table::data.table(
           "mz" = vapply(fragments, function(x) as.numeric(x[1]), NA_real_),
           "intensity" = vapply(fragments, function(x) as.numeric(x[2]), NA_real_)
         )
@@ -3067,9 +3088,35 @@
           hovertemplate = paste("Database:","<br><i>m/z</i>: %{x:.4f}", "<br>intensity: %{y:.0f}"),
           showlegend = FALSE
         )
+        
+        # add annotation text to the plot2 in the max y and max x the text "experimental spectra" and "database spectra" in the max x and min y of the plot region
+        
+        
       }
     }
   }
+  
+  plot2 <- plot2 %>% add_trace(
+    x = max_mz,
+    y = 1.1,
+    type = "scatter",
+    mode = "text",
+    text = "<i>Experimental spectra</i>",
+    textposition = "top left",
+    textfont = list(color = "black"),
+    showlegend = FALSE
+  )
+  
+  plot2 <- plot2 %>% add_trace(
+    x = max_mz,
+    y = -1.1,
+    type = "scatter",
+    mode = "text",
+    text = "<i>Database spectra</i>",
+    textposition = "bottom left",
+    textfont = list(color = "black"),
+    showlegend = FALSE
+  )
   
   xaxis1 <- list(
     linecolor = toRGB("black"), linewidth = 2,

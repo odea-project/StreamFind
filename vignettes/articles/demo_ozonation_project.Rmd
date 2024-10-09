@@ -449,30 +449,18 @@ ms$map_components(
 
 ## Suspects
 
-The method `MassSpecEngine$plot_suspects()` is used to inspect the suspect screening results. A second plot is added 
-to compare the experimental fragmentation pattern (top) with the fragmentation pattern of the respective reference 
-standard (down) added within the database. The `colorBy` argument can be set to *targets+replicates* to legend the plot 
-with combined keys of suspect target names and analysis replicate names.
+The methods `MassSpecEngine$get_suspects()` and `MassSpecEngine$plot_suspects()` can be used to inspect the suspect 
+screening results. In the plot function, a second plot is added to compare the experimental fragmentation pattern (top) 
+with the fragmentation pattern of the respective reference standard (down) added within the database. The `colorBy` 
+argument can be set to *targets+replicates* to legend the plot with combined keys of suspect target names and analysis 
+replicate names.
+
+```{r}
+ms$get_suspects()
+```
 
 ```{r plot-suspects}
 ms$plot_suspects(colorBy = "targets+replicates")
-```
-
-```{r include=FALSE}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ```
 
 # More to come
@@ -480,7 +468,7 @@ ms$plot_suspects(colorBy = "targets+replicates")
 Future integration:
 
 - Correcting matrix for better comparison between influent and effluent
-- Annotation of adducts and in-source fragments
+- Annotation of in-source fragments
 - Screening of transformation products using the *biotransformer* tool via patRoon
 - Fold-change and other statistic analysis for inter-sample correlation
 
