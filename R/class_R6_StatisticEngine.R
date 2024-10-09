@@ -43,16 +43,30 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     
     #' @field data Matrix of the data, where rows represent analyses and columns variables.
     #'
-    data = function() {
-      if (self$has_results("data")) {
-        res <- self$get_results("data")
-        res
+    data = function(value) {
+      
+      if (missing(value)) {
+        if (self$has_results("data")) {
+          res <- self$get_results("data")
+          res[[1]]
+        } else {
+          res <- lapply(self$get_analyses(), function(x) x$data)
+          names <- self$get_analysis_names()
+          res <- do.call(rbind, res)
+          rownames(res) <- names
+          res
+        }
       } else {
-        res <- lapply(self$get_analyses(), function(x) x$data)
-        names <- self$get_analysis_names()
-        res <- do.call(rbind, res)
-        rownames(res) <- names
-        res
+        if (!is.matrix(value)) {
+          warning("The data must be a matrix! Not done.")
+          return(invisible(self))
+        }
+        if (!all(vapply(value, is.numeric, FALSE))) {
+          warning("The data must be numeric! Not done.")
+          return(invisible(self))
+        }
+        self$add_results(list("data" = value))
+        invisible(self)
       }
     },
     
@@ -228,8 +242,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
         warning("Loadings not found! Not done.")
         return(NULL)
       }
-      browser()
-      as.data.table(dt)
+      dt
     },
     
     #' @description Gets model residuals.
@@ -606,7 +619,10 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     
     #' @description Plots the raw data in analyses.
     #' 
-    plot_data = function(analyses = NULL, interactive = TRUE, xLab = NULL, yLab = NULL, title = NULL) {
+    #' @param features A numeric vector with the features (columns of data matrix) to plot.
+    #' @param transpose Logical, if TRUE the data is transposed (i.e., column names are used as legend).
+    #' 
+    plot_data = function(analyses = NULL, features = NULL, transpose = FALSE, interactive = TRUE, xLab = NULL, yLab = NULL, title = NULL) {
       
       analyses <- private$.check_analyses_argument(analyses)
       
@@ -619,13 +635,28 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
         return(NULL)
       }
       
-      if (is.null(xLab)) xLab <- "Variable Index"
+      if (!is.null(features)) {
+        if (!is.numeric(features)) {
+          warning("The features must be numeric! Not done.")
+          return(NULL)
+        }
+        mat <- mat[, features, drop = FALSE]
+      }
       
-      if (is.null(yLab)) yLab <- "Intensity"
+      if (transpose) {
+        mat <- as.matrix(t(mat))
+        if (is.null(xLab)) xLab <- "Analysis Index"
+        if (is.null(yLab)) yLab <- "Intensity"
+      } else {
+        if (is.null(xLab)) xLab <- "Variable Index"
+        if (is.null(yLab)) yLab <- "Intensity"
+      }
       
       if (!interactive) {
-        
-        NULL
+        cl <- .get_colors(rownames(mat))
+        plot(1:ncol(mat), mat[1, ], type = "l", col = unname(cl[1]), xlab = xLab, ylab = yLab, main = title, ylim = range(mat))
+        for (i in 2:nrow(mat)) lines(1:ncol(mat), mat[i, ], col = unname(cl[i]))
+        legend("topright", legend = rownames(mat), col = unname(cl), lty = 1, cex = 0.8)
         
       } else {
         
@@ -642,6 +673,12 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
             y = mat[i, ],
             type = "scatter", mode = "lines",
             line = list(width = 0.5, color = unname(cl[i])),
+            text = paste0(
+              rep(rownames(mat)[i], length(xVal))
+              # "\n",
+              # rep(colnames(mat), each = nrow(mat))
+            ),
+            hoverinfo = "text",
             name = names(cl)[i],
             legendgroup = names(cl)[i],
             showlegend = TRUE
@@ -1234,6 +1271,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       ps <- list()
       ps[["MakeModel"]] <- 1
       ps[["PrepareClassification"]] <- 1
+      ps[["PrepareData"]] <- Inf
       data.table(name = names(ps), max = unlist(ps))
     }
   )

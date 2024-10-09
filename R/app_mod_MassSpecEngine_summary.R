@@ -8,12 +8,25 @@
 #' 
 .mod_MassSpecEngine_summary_UI <- function(id, engine) {
   ns <- shiny::NS(id)
-  htmltools::tagList(
-    shinydashboard::box(title = "Spectra summary", width = 12, solidHeader = TRUE, shiny::uiOutput(ns("summary_plot_ui"))),
-    shiny::column(12, shiny::uiOutput(ns("summary_plot_controls"))),
-    shinydashboard::box(title = "Chromatograms", width = 12, solidHeader = TRUE, shiny::uiOutput(ns("chrom_plot_ui"))),
-    shiny::column(12, shiny::uiOutput(ns("chrom_plot_controls"))),
-    shinydashboard::box(title = "Extract Ion Chromatograms", width = 12, solidHeader = TRUE, shiny::uiOutput(ns("eics_interface"))),
+  
+  shinydashboard::tabBox(width = 12, height = "1080px",
+    shiny::tabPanel("Spectra",
+      shiny::fluidRow(
+        shiny::column(12, shiny::uiOutput(ns("summary_plot_controls"))),
+        shiny::column(12, shiny::uiOutput(ns("summary_plot_ui"))),
+        shiny::column(12, DT::dataTableOutput(ns("spectraAnalysesTable")))
+      )
+    ),
+    shiny::tabPanel("Chromatograms",
+      shiny::fluidRow(
+        shiny::column(12, shiny::uiOutput(ns("chrom_plot_controls"))),
+        shiny::column(12, shiny::uiOutput(ns("chrom_plot_ui"))),
+        shiny::column(12, DT::dataTableOutput(ns("chromAnalysesTable")))
+      )
+    ),
+    shiny::tabPanel("Extract Ion Chromatograms",
+      shiny::uiOutput(ns("eics_interface"))
+    )
   )
 }
 
@@ -29,6 +42,7 @@
 #' 
 .mod_MassSpecEngine_summary_Server <- function(id, engine, analyses, volumes) {
   shiny::moduleServer(id, function(input, output, session) {
+    
     ns <- session$ns
     
     shinyFiles::shinyFileSave(input, "summary_plot_save", roots = volumes, defaultRoot = "wd", session = session)
@@ -42,9 +56,22 @@
     rt_start <- round(min(engine$get_spectra_lowest_rt()), digits = 0)
     colorby_spectra <- c("analyses", "replicates", "polarities", "analyses+polarities", "replicates+polarities")
     colorby_chromatograms <- c(
-      "targets", "analyses", "replicates", "polarities",
-      "targets+polarities", "analyses+polarities", "replicates+polarities", "targets+analyses", "targets+replicates"
+      "targets", "analyses",
+      "replicates", "polarities",
+      "targets+polarities",
+      "analyses+polarities",
+      "replicates+polarities",
+      "targets+analyses",
+      "targets+replicates"
     )
+    
+    output$spectraAnalysesTable <- DT::renderDT({
+      DT::datatable(
+        analyses()[, c("analysis", "replicate", "blank", "polarity"), with = FALSE],
+        selection = list(mode = 'multiple', selected = 1, target = 'row'),
+        options = list(pageLength = 10)
+      )
+    })
     
     # out Summary plot UI -----
     output$summary_plot_ui <- shiny::renderUI({
@@ -53,9 +80,9 @@
       } else if (has_spectra()) {
         if (!is.null(input$summary_plot_interactive)) {
           if (input$summary_plot_interactive) {
-            shinycssloaders::withSpinner(plotly::plotlyOutput(ns("summary_plotly"), height = "500px"), color = "black")
+            shinycssloaders::withSpinner(plotly::plotlyOutput(ns("summary_plotly"), height = "600px"), color = "black")
           } else {
-            shinycssloaders::withSpinner(shiny::plotOutput(ns("summary_plot"), height = "500px"), color = "black")
+            shinycssloaders::withSpinner(shiny::plotOutput(ns("summary_plot"), height = "600px"), color = "black")
           }
         }
       } else {
@@ -68,11 +95,12 @@
       if (nrow(analyses()) == 0) return()
       if (has_spectra()) {
         htmltools::div(style = "display: flex; align-items: center;",
+          htmltools::div(style = "margin-left: 20px;", shiny::checkboxInput(ns("summary_plot_interactive"), label = "Interactive", value = TRUE, width = 100)),
           htmltools::div(style = "margin-left: 20px;", shiny::selectInput(ns("summary_plot_type"), label = "Type", choices = c("TIC", "BPC"), selected = "TIC", width = 100)),
           htmltools::div(style = "margin-left: 20px;", shiny::selectInput(ns("summary_plot_colorby"), label = "Color by", choices = colorby_spectra, selected = "analyses", width = 200)),
           htmltools::div(style = "margin-left: 20px;", shiny::sliderInput(ns("summary_plot_level"), label = "MS levels", min = min(levels), max = max(levels), value = levels, step = 1, width = 200)),
           htmltools::div(style = "margin-left: 20px;", shiny::sliderInput(ns("summary_plot_rt"), label = "Retention Time (Seconds)", min = rt_start, max = rt_end, value = c(rt_start, rt_end), step = 1, width = 200)),
-          htmltools::div(style = "margin-left: 20px;", shiny::checkboxInput(ns("summary_plot_interactive"), label = "Interactive", value = FALSE, width = 100)),
+          htmltools::div(style = "margin-left: 20px;", shiny::numericInput(ns("summary_plot_downsize"), label = "Downsize Integer", min = 1, max = 100, value = 1, step = 1, width = 140)),
           htmltools::div(style = "margin-left: 20px;", shinyFiles::shinySaveButton(ns("summary_plot_save"), "Save Plot Data (.csv)", "Save Plot Data (.csv)", filename = "spectra_summary_data", filetype = list(csv = "csv"))),
           htmltools::div(style =  "margin-bottom: 20px;")
         )
@@ -83,10 +111,12 @@
     output$summary_plotly <- plotly::renderPlotly({
       if (nrow(analyses()) == 0) return()
       if (!is.null(input$summary_plot_type) && input$summary_plot_interactive) {
+        selected <- input$spectraAnalysesTable_rows_selected
+        if (length(selected) == 0) return()
         if (input$summary_plot_type %in% "TIC") {
-          engine$plot_spectra_tic(colorBy = input$summary_plot_colorby, level = input$summary_plot_level, rt = input$summary_plot_rt, interactive = input$summary_plot_interactive)
+          engine$plot_spectra_tic(analyses = selected, colorBy = input$summary_plot_colorby, level = input$summary_plot_level, rt = input$summary_plot_rt, downsize = input$summary_plot_downsize, interactive = input$summary_plot_interactive)
         } else if (input$summary_plot_type %in% "BPC") {
-          engine$plot_spectra_bpc(colorBy = input$summary_plot_colorby, level = input$summary_plot_level, rt = input$summary_plot_rt, interactive = input$summary_plot_interactive)
+          engine$plot_spectra_bpc(analyses = selected, colorBy = input$summary_plot_colorby, level = input$summary_plot_level, rt = input$summary_plot_rt, interactive = input$summary_plot_interactive)
         }
       }
     })
@@ -95,10 +125,12 @@
     output$summary_plot <- shiny::renderPlot({
       if (nrow(analyses()) == 0) return()
       if (!is.null(input$summary_plot_type) && !input$summary_plot_interactive) {
+        selected <- input$spectraAnalysesTable_rows_selected
+        if (length(selected) == 0) return()
         if (input$summary_plot_type %in% "TIC") {
-          engine$plot_spectra_tic(colorBy = input$summary_plot_colorby, level = input$summary_plot_level, rt = input$summary_plot_rt, interactive = input$summary_plot_interactive)
+          engine$plot_spectra_tic(analyses = selected, colorBy = input$summary_plot_colorby, level = input$summary_plot_level, rt = input$summary_plot_rt, downsize = input$summary_plot_downsize, interactive = input$summary_plot_interactive)
         } else if (input$summary_plot_type %in% "BPC") {
-          engine$plot_spectra_bpc(colorBy = input$summary_plot_colorby, level = input$summary_plot_level, rt = input$summary_plot_rt, interactive = input$summary_plot_interactive)
+          engine$plot_spectra_bpc(analyses = selected, colorBy = input$summary_plot_colorby, level = input$summary_plot_level, rt = input$summary_plot_rt, interactive = input$summary_plot_interactive)
         }
       }
     })
@@ -111,10 +143,12 @@
         return()
       }
       if (!is.null(input$summary_plot_type)) {
+        selected <- input$spectraAnalysesTable_rows_selected
+        if (length(selected) == 0) return()
         if (input$summary_plot_type %in% "TIC") {
-          csv <- engine$get_spectra_tic(level = input$summary_plot_level)
+          csv <- engine$get_spectra_tic(analyses = selected, level = input$summary_plot_level)
         } else if (input$summary_plot_type %in% "BPC") {
-          csv <- engine$get_spectra_bpc(level = input$summary_plot_level)
+          csv <- engine$get_spectra_bpc(analyses = selected, level = input$summary_plot_level)
         }
         fileinfo <- shinyFiles::parseSavePath(volumes, input$summary_plot_save)
         if (nrow(fileinfo) > 0) {
@@ -124,6 +158,14 @@
       }
     })
     
+    output$chromAnalysesTable <- DT::renderDT({
+      DT::datatable(
+        analyses()[, c("analysis", "replicate", "blank", "polarity"), with = FALSE],
+        selection = list(mode = 'multiple', selected = 1, target = 'row'),
+        options = list(pageLength = 10)
+      )
+    })
+    
     # out Chromatograms plot UI -----
     output$chrom_plot_ui <- shiny::renderUI({
       if (nrow(analyses()) == 0) {
@@ -131,9 +173,9 @@
       } else if (has_chromatograms()) {
         if (!is.null(input$summary_chrom_interactive)) {
           if (input$summary_chrom_interactive) {
-            plotly::plotlyOutput(ns("chrom_plotly"), height = "500px")
+            plotly::plotlyOutput(ns("chrom_plotly"), height = "600px")
           } else {
-            shiny::plotOutput(ns("chrom_plot"), height = "500px")
+            shiny::plotOutput(ns("chrom_plot"), height = "600px")
           }
         }
       } else {
@@ -146,8 +188,8 @@
       if (nrow(analyses()) == 0) return()
       if (has_chromatograms()) {
         htmltools::div(style = "display: flex; align-items: center;",
+          htmltools::div(style = "margin-left: 20px;", shiny::checkboxInput(ns("summary_chrom_interactive"), label = "Interactive", value = TRUE, width = 100)),
           htmltools::div(style = "margin-left: 20px;", shiny::selectInput(ns("summary_chrom_colorby"), label = "Color by", choices = colorby_chromatograms, selected = "targets", width = 200)),
-          htmltools::div(style = "margin-left: 20px;", shiny::checkboxInput(ns("summary_chrom_interactive"), label = "Interactive", value = FALSE, width = 100)),
           htmltools::div(style = "margin-left: 20px;", shinyFiles::shinySaveButton(ns("chrom_plot_save"), "Save Plot Data (.csv)", "Save Plot Data (.csv)", filename = "chrom_data", filetype = list(csv = "csv"))),
           htmltools::div(style =  "margin-bottom: 20px;")
         )
@@ -157,13 +199,17 @@
     # out Chromatograms plotly -----
     output$chrom_plotly <- plotly::renderPlotly({
       if (nrow(analyses()) == 0) return()
-      engine$plot_chromatograms(colorBy = input$summary_chrom_colorby, interactive = input$summary_chrom_interactive)
+      selected <- input$chromAnalysesTable_rows_selected
+      if (length(selected) == 0) return()
+      engine$plot_chromatograms(analyses = selected, colorBy = input$summary_chrom_colorby, interactive = input$summary_chrom_interactive)
     })
     
     # out Chromatograms plot -----
     output$chrom_plot <- shiny::renderPlot({
       if (nrow(analyses()) == 0) return()
-      engine$plot_chromatograms(colorBy = input$summary_chrom_colorby, interactive = input$summary_chrom_interactive)
+      selected <- input$chromAnalysesTable_rows_selected
+      if (length(selected) == 0) return()
+      engine$plot_chromatograms(analyses = selected, colorBy = input$summary_chrom_colorby, interactive = input$summary_chrom_interactive)
     })
     
     # event Chromatograms plot export
@@ -173,7 +219,9 @@
         shiny::showNotification(msg, duration = 5, type = "warning")
         return()
       }
-      csv <- engine$get_chromatograms()
+      selected <- input$chromAnalysesTable_rows_selected
+      if (length(selected) == 0) return()
+      csv <- engine$get_chromatograms(analyses = selected)
       fileinfo <- shinyFiles::parseSavePath(volumes, input$chrom_plot_save)
       if (nrow(fileinfo) > 0) {
         utils::write.csv(csv, fileinfo$datapath, row.names = FALSE)
@@ -192,6 +240,7 @@
         
         htmltools::div(
           htmltools::div(style = "display: flex; align-items: center;",
+            htmltools::div(style = "margin-left: 20px;", shiny::selectInput(ns("eics_analyses"), label = "Analyses", multiple = TRUE, choices = analyses()[["analysis"]], width = 200)),
             htmltools::div(style = "margin-left: 20px;", shiny::textInput(ns("eics_mass"), label = "Mass (Da)", value = 238.0547, width = 200)),
             htmltools::div(style = "margin-left: 20px;", shiny::textInput(ns("eics_rt"), label = "Retention Time (Seconds)", value = 1157, width = 200)),
             htmltools::div(style = "margin-left: 20px;", shiny::textInput(ns("eics_ppm"), label = "Mass Deviation (ppm)", value = 20, width = 200)),
@@ -214,6 +263,14 @@
     
     # event EICs extract -----
     shiny::observeEvent(input$eics_extract, {
+      anas <- input$eics_analyses
+      
+      if (length(anas) == 0) {
+        msg <- "No analyses selected!"
+        shiny::showNotification(msg, duration = 5, type = "warning")
+        return()
+      }
+      
       mass <- as.numeric(input$eics_mass)
       rt <- as.numeric(input$eics_rt)
       ppm <- as.numeric(input$eics_ppm)
@@ -226,13 +283,16 @@
       tar <- make_ms_targets(mz = mass, rt = rt, drift = 0, ppm = ppm, sec = sec, millisec = 0)
       data.table::setnames(tar, c("mz", "mzmin", "mzmax"), c("mass", "min", "max"))
       
-      if (is.null(targets())) {
-        targets(tar)
-      } else {
-        unified <- targets()
-        unified <- rbind(unified, tar)
-        unified <- unique(unified)
-        targets(unified)
+      for (i in 1:length(anas)) {
+        tar$analysis <- anas[i]
+        if (is.null(targets())) {
+          targets(tar)
+        } else {
+          unified <- targets()
+          unified <- rbind(unified, tar)
+          unified <- unique(unified)
+          targets(unified)
+        }
       }
     })
     
@@ -241,6 +301,7 @@
       if (is.null(targets())) return()
       if (nrow(targets()) == 0) return()
       lapply(1:nrow(targets()), function(i) {
+        
         shiny::observeEvent(input[[paste0("eics_del_", i)]], {
           unified <- targets()
           unified <- unified[-i, ]
@@ -249,7 +310,7 @@
         
         htmltools::div(
           shiny::actionButton(ns(paste0("eics_del_", i)), label = NULL, icon = shiny::icon("trash"), width = '40px'),
-          htmltools::tags$b("  Mass/RT/Mobility: "), targets()[i, "id"], htmltools::br()
+          htmltools::tags$b("  Analysis/Mass/RT/Mobility: "), paste0(targets()[i, "analysis"], " ", targets()[i, "id"]), htmltools::br()
         )
       })
     })
@@ -270,14 +331,24 @@
     output$eics_plotly <- plotly::renderPlotly({
       if (is.null(targets())) return()
       if (is.null(input$eics_chrom_colorby)) return()
-      engine$plot_spectra_eic(mass = targets(), colorBy = input$eics_chrom_colorby, interactive = TRUE)
+      if (nrow(targets()) == 0) return()
+      anas <- unique(targets()[["analysis"]])
+      mass <- targets()
+      mass$analysis <- NULL
+      mass <- unique(mass)
+      engine$plot_spectra_eic(analyses = anas, mass = mass, colorBy = input$eics_chrom_colorby, interactive = TRUE)
     })
     
     # out EICs plot -----
     output$eics_plot <- plotly::renderPlotly({
       if (is.null(targets())) return()
       if (is.null(input$eics_chrom_colorby)) return()
-      engine$plot_spectra_eic(mass = targets(), colorBy = input$eics_chrom_colorby, interactive = TRUE)
+      if (nrow(targets()) == 0) return()
+      anas <- unique(targets()[["analysis"]])
+      mass <- targets()
+      mass$analysis <- NULL
+      mass <- unique(mass)
+      engine$plot_spectra_eic(analyses = anas, mass = mass, colorBy = input$eics_chrom_colorby, interactive = TRUE)
     })
     
   })
