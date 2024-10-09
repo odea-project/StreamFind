@@ -175,8 +175,9 @@ ms$run(ps_ic)
 ms$plot_chromatograms_peaks(colorBy = "replicates")
 ```
 
-The average retention time of the main peak was `r mean(ms$chromatograms_peaks$rt)` seconds with a standard deviation 
-of `r sd(ms$chromatograms_peaks$rt)`. The following step is to estimate the *m/z* range of BSA for deconvolution of charges.
+The average retention time of the main peak was `r mean(data.table::rbindlist(ms$chromatograms$peaks)$rt)` seconds with 
+a standard deviation of `r sd(data.table::rbindlist(ms$chromatograms$peaks)$rt)`. The following step is to estimate the 
+*m/z* range of BSA for deconvolution of charges.
 
 ```{r}
 # Average retention time of the main peak

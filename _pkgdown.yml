@@ -24,8 +24,6 @@ reference:
   desc: >
     A data processing workflow in StreamFind is assemble by creating an ordered list of proessing settings objects. 
     Each processing method is assigened to a processing engine and an algorithm.
-  contents:
-    - ProcessingSettings
 
 - subtitle: MassSpec Settings
   contents:
@@ -44,3 +42,4 @@ reference:
     - convert_ms_files
     - trim_ms_files_spectra
     - clear_cache
+    - run_app

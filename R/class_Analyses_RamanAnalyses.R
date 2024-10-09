@@ -161,7 +161,7 @@ S7::method(names, RamanAnalyses) <- function(x) {
 S7::method(add, RamanAnalyses) <- function(x, value) {
   
   if (is.character(value)) {
-    if (grepl(x@possible_formats, value)) {
+    if (all(grepl(x@possible_formats, value))) {
       value <- .get_RamanAnalysis_from_files(value)
     } else {
       warning("File/s not valid!")
@@ -182,7 +182,7 @@ S7::method(add, RamanAnalyses) <- function(x, value) {
   analyses <- analyses[order(names(analyses))]
   
   if (length(analyses) > length(x@analyses)) {
-    warning("All results removed!")
+    message("All results removed!")
     x@results <- list()
   }
   
@@ -200,7 +200,7 @@ S7::method(remove, RamanAnalyses) <- function(x, value) {
     x@analyses <- x@analyses[-value]
     x@analyses <- x@analyses[order(names(x@analyses))]
   }
-  if (x@has_processed_spectra) {
+  if (!is.null(x@results[["spectra"]])) {
     Spectra_names <- names(x@results$Spectra)
     if (!x@results$Spectra$is_averaged) {
       x@results$Spectra <- x@results$Spectra[x$names %in% Spectra_names]

@@ -781,7 +781,7 @@ S7::method(get_spectra, MassSpecAnalyses) <- function(x,
       if ("analysis" %in% colnames(targets)) targets <- targets[targets$analysis %in% a$name, ]
       
       cache <- lapply(seq_len(nrow(targets)), function(i) {
-        .load_chache(paste0("parsed_ms_spectra_", gsub("-|[/]|[.]", "", targets$id[i])), a$file, levels, targets[i, ], minIntensityMS1, minIntensityMS2)
+        .load_chache(paste0("parsed_ms_spectra_", gsub("-|[/]|[.]|[() ]", "", targets$id[i])), a$file, levels, targets[i, ], minIntensityMS1, minIntensityMS2)
       })
       
       names(cache) <- targets$id
@@ -821,7 +821,7 @@ S7::method(get_spectra, MassSpecAnalyses) <- function(x,
           for (i in names(spec)) {
             if (nrow(spec[[i]]) > 0) {
               if (!is.null(cache[[i]]$hash)) {
-                .save_cache(paste0("parsed_ms_spectra_", gsub("-|[/]|[.]", "", i)), spec[[i]], cache[[i]]$hash)
+                .save_cache(paste0("parsed_ms_spectra_", gsub("-|[/]|[.]|[() ]", "", i)), spec[[i]], cache[[i]]$hash)
                 # message("\U1f5ab Parsed spectra for ", i, " cached!")
               }
             }
