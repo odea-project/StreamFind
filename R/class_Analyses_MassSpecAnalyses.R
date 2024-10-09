@@ -1801,9 +1801,9 @@ S7::method(get_chromatograms_peaks, MassSpecAnalyses) <- function(x, analyses = 
   if (length(pks) == 0) return(data.table::data.table())
   
   if (x$chromatograms$is_averaged) {
-    pks <- rbindlist(x$chromatograms$peaks, idcol = "replicate", fill = TRUE)
+    pks <- data.table::rbindlist(x$chromatograms$peaks, idcol = "replicate", fill = TRUE)
   } else {
-    pks <- rbindlist(x$chromatograms$peaks, idcol = "analysis", fill = TRUE)
+    pks <- data.table::rbindlist(x$chromatograms$peaks, idcol = "analysis", fill = TRUE)
   }
   
   if ("analysis" %in% colnames(pks)) {
@@ -1816,7 +1816,7 @@ S7::method(get_chromatograms_peaks, MassSpecAnalyses) <- function(x, analyses = 
     
     if (!"analysis" %in% colnames(pks)) {
       pks$analysis <- pks$replicate
-      setcolorder(pks, c("analysis", "replicate"))
+      data.table::setcolorder(pks, c("analysis", "replicate"))
     }
   }
   

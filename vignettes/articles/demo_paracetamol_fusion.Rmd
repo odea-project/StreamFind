@@ -1,5 +1,5 @@
 ---
-title: 'Detection of quality deviations in paracetamol products'
+title: 'Detection of Quality Deviations in Paracetamol Products'
 subtitle: |
   | Fusion of Mass Spectrometry and Raman Spectroscopy Data
   | <br>
@@ -15,7 +15,7 @@ output:
     toc_float: true
 vignette: >
   %\VignetteEncoding{UTF-8}
-  %\VignetteIndexEntry{Fusion of Mass Spectrometry and Raman Spectroscopy Data}
+  %\VignetteIndexEntry{Detection of Quality Deviations in Paracetamol Products}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
   chunk_output_type: console
@@ -30,7 +30,9 @@ library(plotly)
 library(data.table)
 library(StreamFind)
 
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.align = "center", fig.width = 9, results = "markup", comment = "")
+knitr::opts_chunk$set(
+  echo = TRUE, message = FALSE, warning = FALSE, fig.align = "center", fig.width = 9, results = "markup", comment = ""
+)
 
 #main_dir <- "E:/iSoft/Paracetamol" # StreamFind Workstation
 
@@ -69,11 +71,16 @@ pre code {
 
 ***
 
-This article demonstrates how StreamFind can be used to assess quality deviations of Fizamol paracetamol products using Mass Spectrometry (MS) combined with Raman Spectroscopy data. Each product was measured with MS and Raman. The data is pre-processed and fused to be used in unsupervised and supervised statistical analysis. Finally, the quality of the products is evaluated based on the statistical analysis. The quantity of paracetamol in the products is also estimated via statistic analysis.
+This article demonstrates how StreamFind can be used to assess quality deviations of Fizamol paracetamol products using 
+Mass Spectrometry (MS) combined with Raman Spectroscopy data. Each product was measured with MS and Raman. The data is 
+pre-processed and fused to be used in unsupervised and supervised statistical analysis. Finally, the quality of the 
+products is evaluated based on the statistical analysis. The quantity of paracetamol in the products is also estimated 
+via statistic analysis.
 
 # Pre-processing
 
-The data is pre-processed using StreamFind's built-in data dedicated engines for MS and Raman data. Pre-processing workflows for each data type are executed before data fusion to improve statistic analysis.
+The data is pre-processed using StreamFind's built-in data dedicated engines for MS and Raman data. Pre-processing 
+workflows for each data type are executed before data fusion to improve statistic analysis.
 
 ## MS
 
@@ -164,7 +171,7 @@ scroll_box(width = "100%", height = "400px")
 <br>
 
 ```{r ms-workflow}
-ms_workflow_settings <- list(
+ms_workflow <- list(
   MassSpecSettings_BinSpectra_StreamFind(bins = list("rt" = 5, "mz" = 2), refBinAnalysis = 1),
   MassSpecSettings_NormalizeSpectra_minmax(),
   MassSpecSettings_AverageSpectra_StreamFind(),
@@ -172,7 +179,7 @@ ms_workflow_settings <- list(
   MassSpecSettings_NormalizeSpectra_blockweight()
 )
 
-ms$workflow <- StreamFind::Workflow(ms_workflow_settings)
+ms$workflow <- StreamFind::Workflow(ms_workflow)
 
 ms$print_workflow()
 ```
@@ -301,15 +308,20 @@ The statistical analysis is performed on the fused data for combining orthogonal
 ms_spec_mat <- ms$get_spectra_matrix()
 raman_spec_mat <- raman$get_spectra_matrix()
 fused_mat <- cbind(ms_spec_mat, raman_spec_mat)
-# the matrix is mean centered using the mdatools R package
+# The fused matrix is mean centered using the mdatools R package
 fused_mat <- mdatools::prep.autoscale(fused_mat, center = TRUE, scale = FALSE)
+str(fused_mat)
 ```
 
 # Statistic analysis
 
 ## Unsupervised
 
-Principle Components Analysis (PCA) can be used for unsupervised evaluation, meaning that we assume that the main (or train) set of analyses are of good quality and we test new analyses to evaluate the proximity to the main set. One could say that it is a supervised approach but in the sense that we assume the quality of the main set. Yet, we are not classifying the possible deviation of the new analyses which would be a clear supervised approach, as we show in the next sub chapter.
+Principle Components Analysis (PCA) can be used for unsupervised evaluation, meaning that we assume that the main 
+(or train) set of analyses are of good quality and we test new analyses to evaluate the proximity to the main set. 
+One could say that it is a supervised approach but in the sense that we assume the quality of the main set. Yet, we are 
+not classifying the possible deviation of the new analyses which would be a clear supervised approach, as we show in 
+the next sub chapter.
 
 ```{r sets-show}
 main_set_idx <- c(1:3, 4:5)
@@ -323,9 +335,8 @@ rownames(test_set)
 
 ```{r pca-engine, fig.cap="PCA model (native plot from mdatools R package).", fig.height=9, warning=FALSE}
 stat <- StatisticEngine$new(analyses = main_set)
-# the alpha and gamma parameters are used to evaluate the model limits
+# The alpha and gamma parameters are used to evaluate the model limits
 stat$run(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 0.01, gamma = 0.001))
-# original plot from mdatools R package
 plot(stat$model, showText = TRUE)
 ```
 
@@ -360,112 +371,53 @@ stat2$predict(test_set)
 stat2$model$prediction$results
 ```
 
-## Only MS
+<!-- ## Only MS -->
 
-```{r pca-only-ms}
-ms_spec_mat <- mdatools::prep.autoscale(ms_spec_mat, center = TRUE, scale = FALSE)
-main_set_ms <- ms_spec_mat[c(7:9, 16:21, 25:33), ]
-test_set_ms <- ms_spec_mat[c(1:6, 10:15, 22:24, 34:42), ]
-stat_ms <- StatisticEngine$new(data = main_set_ms)
-stat_ms$process(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 1E-4, gamma = 1E-5))
-```
+<!-- ```{r pca-only-ms} -->
+<!-- ms_spec_mat <- mdatools::prep.autoscale(ms_spec_mat, center = TRUE, scale = FALSE) -->
+<!-- main_set_ms <- ms_spec_mat[c(7:9, 16:21, 25:33), ] -->
+<!-- test_set_ms <- ms_spec_mat[c(1:6, 10:15, 22:24, 34:42), ] -->
+<!-- stat_ms <- StatisticEngine$new(data = main_set_ms) -->
+<!-- stat_ms$process(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 1E-4, gamma = 1E-5)) -->
+<!-- ``` -->
 
-```{r plot-pca-only-ms, fig.cap="PCA model for MS data only (native plot from mdatools R package).", fig.height=9}
-plot(stat_ms$model)
-```
+<!-- ```{r plot-pca-only-ms, fig.cap="PCA model for MS data only (native plot from mdatools R package).", fig.height=9} -->
+<!-- plot(stat_ms$model) -->
+<!-- ``` -->
 
-```{r pca-omly-ms-predict, fig.cap="PCA model prediction distances for only MS data."}
-stat_ms$predict(test_set_ms)
-stat_ms$plot_predicted_distances()
-```
+<!-- ```{r pca-omly-ms-predict, fig.cap="PCA model prediction distances for only MS data."} -->
+<!-- stat_ms$predict(test_set_ms) -->
+<!-- stat_ms$plot_predicted_distances() -->
+<!-- ``` -->
 
-Using MS data only for evaluation of quality deviations would not separate completely the analyses when compared to fused MS and Raman data. Thus, the contribution of Raman spectroscopy to explain structural deviations brings an advantage for routine quality evaluation of paracetamol and other pharmaceuticals. 
+<!-- Using MS data only for evaluation of quality deviations would not separate completely the analyses when compared to  -->
+<!-- fused MS and Raman data. Thus, the contribution of Raman spectroscopy to explain structural deviations brings an  -->
+<!-- advantage for routine quality evaluation of paracetamol and other pharmaceuticals.  -->
 
-## Only Raman
+<!-- ## Only Raman -->
 
-```{r pca-only-raman}
-raman_spec_mat <- mdatools::prep.autoscale(raman_spec_mat, center = TRUE, scale = FALSE)
-main_set_raman <- raman_spec_mat[c(7:9, 16:21, 25:33), ]
-test_set_raman <- raman_spec_mat[c(1:6, 10:15, 22:24, 34:42), ]
-stat_raman <- StatisticEngine$new(data = main_set_raman)
-stat_raman$process(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 1E-4, gamma = 1E-5))
-```
+<!-- ```{r pca-only-raman} -->
+<!-- raman_spec_mat <- mdatools::prep.autoscale(raman_spec_mat, center = TRUE, scale = FALSE) -->
+<!-- main_set_raman <- raman_spec_mat[c(7:9, 16:21, 25:33), ] -->
+<!-- test_set_raman <- raman_spec_mat[c(1:6, 10:15, 22:24, 34:42), ] -->
+<!-- stat_raman <- StatisticEngine$new(data = main_set_raman) -->
+<!-- stat_raman$process(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 1E-4, gamma = 1E-5)) -->
+<!-- ``` -->
 
-```{r plot-pca-only-raman, fig.cap="PCA model for Raman data only (native plot from mdatools R package).", fig.height=9}
-plot(stat_raman$model)
-```
+<!-- ```{r plot-pca-only-raman, fig.cap="PCA model for Raman data only (native plot from mdatools R package).", fig.height=9} -->
+<!-- plot(stat_raman$model) -->
+<!-- ``` -->
 
-```{r pca-omly-raman-predict, fig.cap="PCA model prediction distances for only Raman data."}
-stat_raman$predict(test_set_raman)
-stat_raman$plot_predicted_distances()
-```
+<!-- ```{r pca-omly-raman-predict, fig.cap="PCA model prediction distances for only Raman data."} -->
+<!-- stat_raman$predict(test_set_raman) -->
+<!-- stat_raman$plot_predicted_distances() -->
+<!-- ``` -->
 
-In the case of only using Raman data for evaluation of quality deviations, the separation of the analyses is clearer than when using fused MS and Raman data. This is due to the fact that the Raman data is more sensitive to structural deviations in the analyses. The lack of aspirin and acetic acid signals in the MS data probably contributed to the less clear separation of the analyses when using only MS data. On the contrary, because the signal of caffeine (*m/z* 194 Da) was visible in the MS data, a separation of the caffeine contaminated analyses was obtained also for MS only data. MS data is more precise when the goal is identification of the active product ingredient (i.e, paracetamol) therefore, the fusion of MS and Raman data is recommended for quality evaluation of pharmaceuticals as both techniques are complementary.
-
-# Quantification with Raman
-
-```{r ov-raman-conc, include=FALSE}
-raman_quant <- raman$subset_analyses(analyses = c(19:27, 161:205, 155:157))
-raman_quant$add_blank_names(rep("blank", 57))
-
-ov_quant <- data.table::copy(raman_quant$get_overview()[, 1:3])
-data.table::setorder(ov_quant, replicate)
-ov_quant$concentration <- as.numeric(c(rep(0, 9), sub(".*?(\\d+).*", "\\1", ov_quant$replicate[10:nrow(ov_quant)]))) / 10
-ov_quant$concentration[ov_quant$replicate %in% "par_3"] <- NA_real_
-
-kable(ov_quant, caption = "Overview of Raman analyses for quantification with respective concentration.") %>%
-kable_styling(font_size = 12, bootstrap_options = c("striped", "hover", "condensed", "responsive"), fixed_thead = TRUE) %>%
-scroll_box(width = "100%", height = "400px")
-```
-
-```{r plot-raman-conc-raw, fig.cap="Raw averaged Raman spectra for each analysis replicate."}
-raman_quant$plot_spectra(colorBy = "replicates")
-```
-
-```{r raman-conc-workflow}
-raman_workflow_settings <- list(
-  RamanSettings_AverageSpectra_StreamFind(),
-  RamanSettings_SubtractBlankSpectra_StreamFind(),
-  RamanSettings_SmoothSpectra_savgol(fl = 21, forder = 4, dorder = 0),
-  RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(-100, 350))),
-  RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(1800, 2500))),
-  RamanSettings_CorrectSpectraBaseline_airpls(lambda = 45, differences = 1, itermax = 30)
-)
-
-raman_quant$add_settings(raman_workflow_settings)
-
-raman_quant$print_workflow()
-```
-
-```{r raman-conc-run-workflow}
-raman_quant$run_workflow()
-```
-
-```{r plot-raman-conc-spectra, fig.cap="Pre-processed Raman spectra for analysis replicate."}
-raman_quant$plot_spectra()
-```
-
-## Applying MCR-ALS
-
-The quantification of paracetamol from the Raman spectra is performed using the Multivariate Curve Resolution (MCR) with Alternating Least Squares (ALS) method via integration of the [mdatools](https://mdatools.com/docs/mcr--als.html) R package.
-
-```{r mcrals-show}
-stat3 <- StatisticEngine$new(data = raman_quant$get_spectra_matrix())
-stat3$add_concentrations(c(1, 2.5, 5.0, 7.5, 15.0, NA_real_)) # add concentrations, with NA for unknown
-stat3$process(StatisticSettings_MakeModel_mcrals_mdatools(ncomp = 3))
-summary(stat3$model)
-```
-
-```{r mcrals-resolved-spec, fig.cap="Resolved spectra for each component and the spectra for each analysis replicate (i.e., each concentration)."}
-stat3$plot_model_resolved_spectra()
-```
-
-```{r mcrals-cont, fig.cap="Contributions for each analysis replicate."}
-stat3$plot_model_contributions()
-```
-
-The `quantify` method can be used to estimate the concentration of the paracetamol analyses with unknown concentration. The quantification is applied to each component, returning a list with the r square of the linear model and the estimated concentration as `data.table`. Note that the explained variance for each component is important to evaluate the calculated concentration. The best estimation is from the component with the combined explained variance and r square closer to 100 and 1, respectively.
-
-```{r}
-stat3$quantify()
-```
+<!-- In the case of only using Raman data for evaluation of quality deviations, the separation of the analyses is clearer  -->
+<!-- than when using fused MS and Raman data. This is due to the fact that the Raman data is more sensitive to structural  -->
+<!-- deviations in the analyses. The lack of aspirin and acetic acid signals in the MS data probably contributed to the less  -->
+<!-- clear separation of the analyses when using only MS data. On the contrary, because the signal of caffeine (*m/z* 194 Da)  -->
+<!-- was visible in the MS data, a separation of the caffeine contaminated analyses was obtained also for MS only data. MS  -->
+<!-- data is more precise when the goal is identification of the active product ingredient (i.e, paracetamol) therefore,  -->
+<!-- the fusion of MS and Raman data is recommended for quality evaluation of pharmaceuticals as both techniques are  -->
+<!-- complementary. -->

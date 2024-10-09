@@ -210,7 +210,6 @@ workflow <- StreamFind::Workflow(
       maxGaps = 1
     ),
     
-    # Filter features using the StreamFind algorithm
     # Excludes annotated isotopes and adducts
     MassSpecSettings_FilterFeatures_StreamFind(
       excludeIsotopes = TRUE,
@@ -259,7 +258,7 @@ workflow <- StreamFind::Workflow(
     ),
     
     # Filter features based on minimum signal-to-noise ratio (s/n)
-    # The s/n is calculated using the CalculateFeaturesQuality
+    # The s/n is calculated using the CalculateFeaturesQuality method
     MassSpecSettings_FilterFeatures_StreamFind(
       minSnRatio = 5
     ),
@@ -315,7 +314,8 @@ show(workflow)
 # show(workflow[[7]])
 ```
 
-Then, the *Workflow* can be added to the *MassSpecEngine*. Note that the order will matter when the workflow is applied!
+Then, the *Workflow* object can be added to the *MassSpecEngine*. Note that the order will matter when the workflow 
+is applied!
 
 ```{r add-settings}
 # Adds the workflow to the engine. The order matters!
@@ -461,6 +461,24 @@ ms$get_suspects()
 
 ```{r plot-suspects}
 ms$plot_suspects(colorBy = "targets+replicates")
+```
+
+# Methods from patRoon
+
+The NTS object holds the original objects from the [patRoon](https://github.com/rickhelmus/patRoon) package, which can 
+be accessed directly. For instance, the S4 class `features` or `featureGroups` objects are can be accessed via the *NTS*
+object with `ms$nts$features`. The `patRoon` package provides a set of functions for the native objects and can be 
+applied the `ms$nts$features` object, as shown below. See more information in the 
+[patRoon reference documentation](https://rickhelmus.github.io/patRoon/reference/index.html).
+
+```{r}
+# Native patRoon object
+ms$nts$features
+```
+
+```{r}
+# Using the native patRoon's plotUpSet method
+patRoon::plotUpSet(ms$nts$features)
 ```
 
 # More to come

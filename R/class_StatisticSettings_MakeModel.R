@@ -252,6 +252,8 @@ S7::method(run, StatisticSettings_MakeModel_mcrpure_mdatools) <- function(x, eng
     info = info
   )
   
+  attr(m$resspec, "features") <- colnames(mat)
+  attr(m$rescont, "analyses") <- rownames(mat)
   engine$model <- StreamFind::MCRPURE(model = m)
   message(paste0("\U2713 ", "MCR purity model added!"))
   TRUE
@@ -424,7 +426,7 @@ S7::method(run, StatisticSettings_MakeModel_mcrals_mdatools) <- function(x, engi
   )
   
   attr(m$resspec, "features") <- colnames(mat)
-  attr(m$rescont, "analyses") <- engine$analyses$names
+  attr(m$rescont, "analyses") <- rownames(mat)
   engine$model <- StreamFind::MCRALS(model = m)
   message(paste0("\U2713 ", "MCR-ALS model added!"))
   TRUE
