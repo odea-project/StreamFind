@@ -63,7 +63,7 @@ docker build -t my-r-app .
 Start the Container
 
 ``` r
-docker-compose up
+docker run -it -p 3838:3838 -p 8787:8787 -v $(pwd):/app my-r-app
 ```
 Once the container is up, you'll be prompted to select the service you want to run:
 
@@ -81,10 +81,6 @@ Password: rstudio
 
 Option 3: Run Both Shiny App and RStudio Server
 
-Stopping the Container
-``` r
-docker-compose down
-```
 
 ## Other dependencies
 
