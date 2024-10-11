@@ -49,97 +49,6 @@ app_server <- function(input, output, session) {
   library(sortable)
   library(data.table)
   
-  # _Utility Functions -----
-  .use_initial_model <- function(reactive_app_mode, reactive_engine_type, reactive_engine_save_file, reactive_clean_start, reactive_show_init_modal, volumes) {
-    
-    available_engines <- .get_available_engines()
-    
-    time_var <- format(Sys.time(), "%Y%m%d%H%M%S")
-    
-    model_elements <- list()
-    
-    model_elements[[1]] <- shiny::img(src = "www/logo_StreamFind.png", width = 250, style = "display: block; margin-left: auto; margin-right: auto;")
-    
-    model_elements[[2]] <- shiny::fluidRow(shiny::p("Select an engine to start a new project: ", style = "text-align: center;margin-top: 40px;"))
-    
-    model_elements[[3]] <- htmltools::div(lapply(available_engines, function(obj) shiny::actionButton(inputId = paste0(time_var, "_select_", obj), label = obj)), style = "text-align: center;")
-    
-    model_elements[[4]] <- shiny::fluidRow(shiny::p("Load an existing engine: ", style = "text-align: center;margin-top: 40px;"))
-    
-    shinyFiles::shinyFileChoose(input, paste0(time_var, "_select_LoadEngine"), roots = volumes, defaultRoot = "wd", session = session, filetypes = list(sqlite = "sqlite"))
-    
-    model_elements[[5]] <- htmltools::div(shinyFiles::shinyFilesButton(paste0(time_var, "_select_LoadEngine"), "Load Engine (.sqlite)", "Load Engine from .sqlite file", multiple = FALSE), style = "text-align: center;")
-    
-    shiny::showModal(shiny::modalDialog(
-      title = " ",
-      easyClose = TRUE,
-      footer = shiny::tagList(shiny::modalButton("Cancel")),
-      do.call(tagList, model_elements)
-    ))
-    
-    available_engines <- c(available_engines, "LoadEngine")
-    
-    lapply(available_engines, function(obj) {
-      
-      shiny::observeEvent(input[[paste0(time_var, "_select_", obj)]], {
-        
-        if (paste0(time_var, "_select_LoadEngine") %in% paste0(time_var, "_select_", obj) ) {
-          input_name <- paste0(time_var, "_select_LoadEngine")
-          req(input[[input_name]])
-          fileinfo <- shinyFiles::parseFilePaths(volumes, input[[input_name]])
-          if (nrow(fileinfo) > 0) {
-            engine_save_file <- fileinfo$datapath
-            
-            db <- .openCacheDBScope(file = engine_save_file)
-            engine_name <- DBI::dbListTables(db)
-            
-            if (length(engine_name) == 0) {
-              msg <- paste("The file", engine_save_file, "is not a valid engine file!")
-              shiny::showNotification(msg, duration = 10, type = "error")
-              reactive_engine_save_file(NA_character_)
-              shiny::removeModal()
-              reactive_show_init_modal(TRUE)
-              return()
-            }
-            
-            if (!engine_name %in% available_engines) {
-              msg <- paste("The engine", engine_name, "is not valid!")
-              shiny::showNotification(msg, duration = 10, type = "error")
-              reactive_engine_save_file(NA_character_)
-              shiny::removeModal()
-              reactive_show_init_modal(TRUE)
-              return()
-            }
-            
-            if (engine_name %in% available_engines) {
-              reactive_app_mode("WorkflowAssembler")
-              reactive_engine_type(engine_name)
-              reactive_engine_save_file(engine_save_file)
-              reactive_clean_start(TRUE)
-              reactive_show_init_modal(FALSE)
-              shiny::removeModal()
-              return()
-            }
-          }
-          
-        } else {
-          reactive_engine_save_file(NA_character_)
-          reactive_engine_type(obj)
-          shiny::removeModal()
-          if (!obj %in% "CoreEngine") {
-            reactive_show_init_modal(FALSE)
-            reactive_app_mode("WorkflowAssembler")
-            reactive_clean_start(TRUE)
-            reactive
-          } else {
-            reactive_show_init_modal(TRUE)
-          }
-          return()
-        }
-      })
-    })
-  }
-  
   # _Global Reactive Variables -----
   reactive_app_mode <- shiny::reactiveVal(NA_character_)
   reactive_engine_type <- shiny::reactiveVal(NA_character_)
@@ -167,12 +76,12 @@ app_server <- function(input, output, session) {
   init_engine_save_file <- golem::get_golem_options("file")
   if (!is.null(init_engine_save_file)) reactive_engine_save_file(init_engine_save_file)
   
-  ## obs Engine Save File Validity -----
+  ## obs Engine Save File Format Validity -----
   shiny::observeEvent(reactive_engine_save_file(), {
     engine_save_file <- reactive_engine_save_file()
     if (!is.na(engine_save_file)) {
-      if (!grepl(".sqlite$", engine_save_file)) {
-        msg <- paste("The file", engine_save_file, "is not an sqlite file!")
+      if (!grepl(".sqlite$|.rds$", engine_save_file)) {
+        msg <- paste("The file", engine_save_file, "is not an sqlite or rds file!")
         shiny::showNotification(msg, duration = 10, type = "error")
         reactive_engine_save_file(NA_character_)
       }
@@ -233,7 +142,15 @@ app_server <- function(input, output, session) {
   shiny::observe({
     if (reactive_show_init_modal()) {
       reactive_show_init_modal(FALSE)
-      .use_initial_model(reactive_app_mode, reactive_engine_type, reactive_engine_save_file, reactive_clean_start, reactive_show_init_modal, .get_volumes())
+      .app_util_use_initial_model(
+        reactive_app_mode,
+        reactive_engine_type,
+        reactive_engine_save_file,
+        reactive_clean_start,
+        reactive_show_init_modal,
+        .app_util_get_volumes(),
+        input, output, session
+      )
     }
   })
   

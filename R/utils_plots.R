@@ -725,13 +725,17 @@
   if (is.null(xLab)) xLab <- expression(italic("m/z ") / " Da")
   if (is.null(yLab)) yLab <- "Intensity / counts"
   
+  min_int <- min(ms2$intensity, na.rm = TRUE)
+  
+  if (min_int > 0) min_int <- 0
+  
   plot(intensity ~ mz, ms2,
        type = "h",
        xlab = xLab,
        ylab = yLab,
        col = ms2$color,
        lwd = 2,
-       ylim = c(0, max(ms2$intensity) * 1.5),
+       ylim = c(min_int * 1.5, max(ms2$intensity) * 1.5),
        main = title,
        yaxs = "i",
        xaxt = "n"
@@ -763,6 +767,8 @@
   axis(1, seq(ticksMin, ticksMax, 10), lwd = 1.5, cex.axis = 0.8)
   axis(1, seq(ticksMin, ticksMax, 5), labels = FALSE, lwd = 1, col = "darkgray")
   axis(1, seq(ticksMin, ticksMax, 2.5), labels = FALSE, lwd = 0.5, col = "darkgray")
+  
+  abline(h = 0, col = "black", lwd = 1)
   
   legend(
     "topleft",

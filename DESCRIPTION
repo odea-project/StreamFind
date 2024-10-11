@@ -146,7 +146,7 @@ Collate:
     'engine_RamanEngine.R'
     'engine_StatisticEngine.R'
     'app_config.R'
-    'app_fct_utils.R'
+    'app_utils.R'
     'app_mod_workflow.R'
     'app_mod_WorkflowAssembler_Analyses.R'
     'app_mod_WorkflowAssembler_Explorer_MassSpec.R'

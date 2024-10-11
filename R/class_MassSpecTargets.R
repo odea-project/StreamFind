@@ -80,6 +80,16 @@ MassSpecTargets <- S7::new_class("MassSpecTargets", package = "StreamFind",
       
       targets <- mz
       
+      if (is.data.frame(rt)) if (nrow(rt) == nrow(targets)) {
+        targets <- cbind(targets, rt)
+        rt <- NULL
+      }
+      
+      if (is.data.frame(mobility)) if (nrow(mobility) == nrow(targets)) {
+        targets <- cbind(targets, mobility)
+        mobility <- NULL
+      } 
+      
       if (!cols_mz %in% colnames(mz) && !any(cols_mz_ranges %in% colnames(mz)) && cols_mass %in% colnames(mz)) {
         
         if (!is.null(polarities) && (!is.null(analyses) || "analysis" %in% colnames(mz))) {
@@ -96,9 +106,9 @@ MassSpecTargets <- S7::new_class("MassSpecTargets", package = "StreamFind",
         }
         
         if (is.null(polarities) && !"polarity" %in% colnames(mz)) {
-          warning("No polarity column found in mz data frame but only mass was given!")
-        
-        # case 1: polarity is given in as column for each target
+          warning("No polarity reference was given!")
+          
+          # case 1: polarity is given in as column for each target
         } else if (is.null(polarities) && "polarity" %in% colnames(mz)) {
           targets$mz <- 0
           for (i in seq_len(nrow(targets))) {
@@ -122,8 +132,8 @@ MassSpecTargets <- S7::new_class("MassSpecTargets", package = "StreamFind",
               warning("Polarity column must contain positive, negative or both!")
             }
           }
-        
-        # case 2: polarity is given as named vector and requires analyses argument with same size
+          
+          # case 2: polarity is given as named vector and requires analyses argument with same size
         } else if (!is.null(polarities) && !is.null(analyses) && length(polarities) == length(analyses)) {
           targets$mz <- 0
           targets <- lapply(analyses, function(x, t) {
@@ -151,8 +161,8 @@ MassSpecTargets <- S7::new_class("MassSpecTargets", package = "StreamFind",
             t
           }, t = targets)
           targets <- data.table::rbindlist(targets)
-        
-        ## case 3: polarity is given but analyses in as col name
+          
+          ## case 3: polarity is given but analyses in as col name
         } else if (!is.null(polarities) && "analysis" %in% colnames(mz)) {
           targets$mz <- 0
           targets$polarity <- polarities[targets$analysis]
@@ -174,8 +184,8 @@ MassSpecTargets <- S7::new_class("MassSpecTargets", package = "StreamFind",
               targets <- data.table::rbindlist(targets)
             }
           }
-        
-        # case 4: polarity is given with the same length as targets
+          
+          # case 4: polarity is given with the same length as targets
         } else if (!is.null(polarities) && length(polarities) == nrow(targets)) {
           targets$mz <- 0
           targets$polarity <- polarities
@@ -197,8 +207,8 @@ MassSpecTargets <- S7::new_class("MassSpecTargets", package = "StreamFind",
               targets <- data.table::rbindlist(targets)
             }
           }
-        
-        # case 5: poalrity is of length two positive and negative
+          
+          # case 5: poalrity is of length two positive and negative
         } else if (!is.null(polarities) && length(polarities) == 2) {
           targets$mz <- 0
           targets <- lapply(c("positive", "negative"), function(p, t) {
@@ -214,6 +224,61 @@ MassSpecTargets <- S7::new_class("MassSpecTargets", package = "StreamFind",
           targets <- data.table::rbindlist(targets)
         } else {
           warning("Polarity could not be calculated from mass!")
+        }
+        
+      } else {
+        
+        if (!is.null(polarities) && (!is.null(analyses) || "analysis" %in% colnames(mz))) {
+          checkmate::assert_character(polarities, null.ok = TRUE)
+          checkmate::assert_named(polarities, type = "named")
+          checkmate::assert_true(length(polarities) == length(analyses) || (length(polarities) == nrow(mz) && "analysis" %in% colnames(mz)))
+          checkmate::assert_true(all(names(polarities) %in% analyses) || all(names(polarities) %in% mz[["analysis"]]))
+        } else if (!is.null(polarities)) {
+          checkmate::assert_character(polarities, null.ok = TRUE)
+          checkmate::assert_true(
+            (all(polarities %in% c("positive", "negative")) && length(polarities) == 2) ||
+              (all(polarities %in% c("positive", "negative")) && length(polarities) == nrow(targets))
+          )
+        }
+        
+        if (is.null(polarities) && !"polarity" %in% colnames(mz)) {
+          warning("No polarity column found in mz data frame but only mass was given!")
+          
+          # case 1: polarity is given as named vector and requires analyses argument with same size
+        } else if (!is.null(polarities) && !is.null(analyses) && length(polarities) == length(analyses)) {
+          targets <- lapply(analyses, function(x, t) {
+            t$analysis <- x
+            pol <- polarities[x]
+            if (pol %in% "positive") {
+              t$polarity <- pol
+            } else if (pol %in% "negative") {
+              t$polarity <- pol
+            } else if (grepl("positive", pol) && grepl("negative", pol)) {
+              warning("Polarity column with mz defined must contain positive or negative!")
+            }
+            t
+          }, t = targets)
+          targets <- data.table::rbindlist(targets)
+          
+          ## case 3: polarity is given but analyses in as col name
+        } else if (!is.null(polarities) && "analysis" %in% colnames(mz)) {
+          targets$polarity <- polarities[targets$analysis]
+          for (i in seq_len(nrow(targets))) {
+            if (grepl("positive", targets$polarity[i]) && grepl("negative", targets$polarity[i])) {
+              warning("Polarity column with mz defined must contain positive or negative!")
+            }
+          }
+          
+          # case 4: polarity is given with the same length as targets
+        } else if (!is.null(polarities) && length(polarities) == nrow(targets)) {
+          targets$polarity <- polarities
+          
+          # case 5: polarity is of length two positive and negative
+        } else if (!is.null(polarities) && length(polarities) == 2) {
+          warning("Polarity column with mz defined must contain positive or negative!")
+          
+        } else {
+          warning("Polarity could not be assigned!")
         }
       }
       
@@ -278,9 +343,14 @@ MassSpecTargets <- S7::new_class("MassSpecTargets", package = "StreamFind",
       
       if ("polarity" %in% colnames(mz)) targets$polarity <- mz$polarity
       
-    } else if (is.data.frame(rt)) {
+    } else if (is.data.frame(rt) && is.null(mz)) {
       
       targets <- rt
+      
+      if (is.data.frame(mobility)) if (nrow(mobility) == nrow(targets)) {
+        targets <- cbind(targets, mobility)
+        mobility <- NULL
+      }
       
       if (cols_rt %in% colnames(rt) && !all(cols_rt_ranges %in% colnames(rt))) {
         targets$rtmin <- targets$rt - sec
@@ -318,7 +388,7 @@ MassSpecTargets <- S7::new_class("MassSpecTargets", package = "StreamFind",
       
       if ("polarity" %in% colnames(rt)) targets$polarity <- rt$polarity
       
-    } else if (is.data.frame(mobility)) {
+    } else if (is.data.frame(mobility) && is.null(mz) && is.null(rt)) {
       
       targets <- mobility
       

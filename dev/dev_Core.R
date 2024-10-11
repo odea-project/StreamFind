@@ -164,8 +164,15 @@ ms$plot_features(features = c("f_11694816100682506556", "f_2475152984827434235")
 
 
 
+core <- CoreEngine$new()
 
 
+core$headers <- ProjectHeaders(name = "Ricardo")
+
+
+core$save()
+
+core$load()
 
 
 

@@ -15,7 +15,7 @@
   shiny::moduleServer(id, function(input, output, session) {
     ns2 <- shiny::NS(id)
     
-    .add_notifications <- function(warnings, name_msg, msg) {
+    .app_util_add_notifications <- function(warnings, name_msg, msg) {
       shiny::showNotification(msg, duration = 5, type = "warning")
       warnings[[name_msg]] <- msg
       return(warnings)

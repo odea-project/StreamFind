@@ -88,7 +88,7 @@
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    .add_notifications <- function(warnings, name_msg, msg) {
+    .app_util_add_notifications <- function(warnings, name_msg, msg) {
       shiny::showNotification(msg, duration = 5, type = "warning")
       warnings[[name_msg]] <- msg
       return(warnings)
@@ -138,7 +138,7 @@
       if (!identical(init_rw, rw)) {
         if (!"workflow_not_updated" %in% names(reactive_warnings())) {
           msg <- "Workflow not updated in engine"
-          reactive_warnings(.add_notifications(reactive_warnings(), "workflow_not_updated", msg))
+          reactive_warnings(.app_util_add_notifications(reactive_warnings(), "workflow_not_updated", msg))
         }
         shiny::actionButton(ns("save_workflow"), "Save Workflow", class = "btn-danger")
       }

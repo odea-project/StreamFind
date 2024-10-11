@@ -44,8 +44,8 @@ run_app <- function(onStart = NULL, options = list(), enableBookmarking = NULL, 
   if ("file" %in% names(dots)) {
     file <- dots$file
     if (!is.na(file)) {
-      if (!grepl(".sqlite$", file)) {
-        msg <- paste("The file", file, "is not an sqlite file!")
+      if (!grepl(".sqlite$|.rds$", file)) {
+        msg <- paste("The file", file, "is not an sqlite or rds file!")
         stop(msg)
       } else {
         if (!file.exists(file)) {

@@ -623,6 +623,7 @@ S7::method(get_spectra, MassSpecAnalyses) <- function(x,
   polarities <- x$spectra_polarity[analyses]
   
   if (!is.null(mass)) {
+    if (is.vector(mass)) mass <- data.frame("mass" = mass)
     targets <- MassSpecTargets(mass, rt, mobility, ppm, sec, millisec, id, analyses, polarities)
   } else {
     targets <- MassSpecTargets(mz, rt, mobility, ppm, sec, millisec, id, analyses, polarities)
@@ -2092,14 +2093,20 @@ S7::method(get_features, MassSpecAnalyses) <- function(x,
   
   if (!is.null(mass)) {
     
+    polarities <- x$spectra_polarity[analyses]
+    
     if (is.data.frame(mass)) {
       colnames(mass) <- gsub("mass", "mz", colnames(mass))
       colnames(mass) <- gsub("neutralMass", "mz", colnames(mass))
       colnames(mass) <- gsub("min", "mzmin", colnames(mass))
       colnames(mass) <- gsub("max", "mzmax", colnames(mass))
+    } else if (is.vector(mass)) {
+      mass <- data.frame("mass" = mass)
     }
     
-    targets <- MassSpecTargets(mass, rt, mobility, ppm, sec, millisec)
+    id = NULL
+    
+    targets <- MassSpecTargets(mass, rt, mobility, ppm, sec, millisec, id, analyses, polarities)
     targets <- targets@targets
     
     for (i in seq_len(nrow(targets))) {
@@ -2145,7 +2152,9 @@ S7::method(get_features, MassSpecAnalyses) <- function(x,
   }
   
   if (!is.null(mz)) {
-    targets <- MassSpecTargets(mz, rt, mobility, ppm, sec, millisec)
+    polarities <- x$spectra_polarity[analyses]
+    id = NULL
+    targets <- MassSpecTargets(mz, rt, mobility, ppm, sec, millisec, id, analyses, polarities)
     targets <- targets@targets
     
     for (i in seq_len(nrow(targets))) {

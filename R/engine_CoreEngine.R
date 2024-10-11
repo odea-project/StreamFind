@@ -65,7 +65,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
     
-    #' @field results List of results.
+    #' @field results List of results in the analyses.
     #' 
     results = function(value) {
       if (missing(value)) return(self$analyses$results)
@@ -93,23 +93,18 @@ CoreEngine <- R6::R6Class("CoreEngine",
     },
     
     #' @field file An `EngineSaveFile` S7 class object. When setting the value it can be also a character with an 
-    #' `sqlite` file path to save the engine.
+    #' `sqlite` or `rds` file path to save the engine.
     #'  
     file = function(value) {
       if (missing(value)) return(private$.file)
       if (is(value, "StreamFind::EngineSaveFile")) {
         private$.file <- value
       } else if (is.character(value)) {
-        if (tools::file_ext(value) == "sqlite") {
-          if (!file.exists(value)) file.create(value)
-          tryCatch({
-            private$.file <- EngineSaveFile(file = value)
-          }, error = function(e) {
-            warning(e)
-          })
-        } else {
-          warning("File must have extension .sqlite!")
-        }
+        tryCatch({
+          private$.file <- EngineSaveFile(file = value)
+        }, error = function(e) {
+          warning(e)
+        })
       } else {
         warning("Invalid file object! Not added.")
       }
@@ -123,7 +118,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     #' @description Creates a `CoreEngine` R6 class object.
     #' 
-    #' @param file Character of length one with the full path to the `sqlite` save file of the engine.
+    #' @param file Character of length one with the full path to the `sqlite` or `rds` save file of the engine.
     #' @param headers A `ProjectHeaders` S7 class object.
     #' @param analyses An `Analyses` S7 class object.
     #' @param workflow A `Workflow` S7 class object.
@@ -231,16 +226,17 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     ## ___ save/load -----
     
-    #' @description Saves the engine data as an **sqlite** file.
+    #' @description Saves the engine data as an **sqlite** or **rds** file.
     #' 
-    #' @param file A string with the full file path of the **sqlite** file. If \code{NA} (the default) and no save file 
-    #' is defined in the engine, the file name is automatically created with the engine class name and the date in the 
-    #' headers.
+    #' @param file A string with the full file path of the **sqlite** or **rds** file. If \code{NA} (the default) and 
+    #' no save file is defined in the engine, the file name is automatically created with the engine class name and the 
+    #' date in the headers in the **rds** format.
+    #' 
+    #' @return Invisible.
     #'
     save = function(file = NA_character_) {
       if (is.na(file)) file <- self$file$path
-      if (is.na(file)) file <- paste0(getwd(), "/" ,is(self), "_", format(private$.headers$date, "%Y%m%d%H%M%S"), ".sqlite")
-      if (!file.exists(file)) file.create(file)
+      if (is.na(file)) file <- paste0(getwd(), "/" ,is(self), "_", format(private$.headers$date, "%Y%m%d%H%M%S"), ".rds")
       if (!self$file$path %in% file) {
         tryCatch({
           self$file <- EngineSaveFile(file = file)
@@ -253,27 +249,49 @@ CoreEngine <- R6::R6Class("CoreEngine",
         })
       }
       
-      data <- list(
-        headers = self$headers,
-        workflow = self$workflow,
-        analyses = self$analyses,
-        history = self$history
-      )
-      
-      hash <- .make_hash(is(self))
-      .save_cache(is(self), data, hash, file)
+      if (self$file$format %in% "sqlite") {
+        data <- list(
+          engine = is(self),
+          headers = self$headers,
+          workflow = self$workflow,
+          analyses = self$analyses,
+          history = self$history
+        )
+        
+        hash <- .make_hash(is(self))
+        .save_cache(is(self), data, hash, file)
+        
+      } else if (self$file$format %in% "rds") {
+        
+        data <- list(
+          engine = is(self),
+          headers = self$headers,
+          workflow = self$workflow,
+          analyses = self$analyses,
+          history = self$history
+        )
+        
+        saveRDS(data, file)
+        
+      } else {
+        warning("File format not valid!")
+        return(invisible(self))
+      }
       
       if (file.exists(file)) {
         message("\U2713 Engine data saved in ", file, "!")
       } else {
         warning("Data not saved!")
       }
+      
       invisible(self)
     },
     
-    #' @description Loads the engine data from an **sqlite** file.
+    #' @description Loads the engine data from an **sqlite** or **rds** file.
     #' 
-    #' @param file A string with the full file path of the **sqlite** file containing the engine data saved.
+    #' @param file A string with the full file path of the **sqlite** or **rds** file containing the engine data saved.
+    #' 
+    #' @return Invisible.
     #' 
     load = function(file = NA_character_) {
       if (is.na(file)) file <- self$file$path
@@ -296,18 +314,36 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
       
       if (is(self) == self$file$engine) {
-        
-        hash <- .make_hash(is(self))
-        data <- .load_cache_backend(self$file$path, is(self), hash)
-        
-        if (!is.null(data)) {
-          private$.headers <- data$headers
-          private$.workflow <- data$workflow
-          private$.analyses <- data$analyses
-          private$.history <- data$history
-          message("\U2713 Engine data loaded from ", file, "!")
+        if (self$file$format %in% "sqlite") {
+          hash <- .make_hash(is(self))
+          data <- .load_cache_backend(self$file$path, is(self), hash)
+          if (!is.null(data)) {
+            private$.headers <- data$headers
+            private$.workflow <- data$workflow
+            private$.analyses <- data$analyses
+            private$.history <- data$history
+            message("\U2713 Engine data loaded from ", file, "!")
+          } else {
+            warning("No data loaded from cache!")
+          }
+          
+        } else if (self$file$format %in% "rds") {
+          data <- readRDS(file)
+          if (is(data, "list")) {
+            if (data$engine %in% is(self)) {
+              private$.headers <- data$headers
+              private$.workflow <- data$workflow
+              private$.analyses <- data$analyses
+              private$.history <- data$history
+              message("\U2713 Engine data loaded from ", file, "!")
+            } else {
+              warning("Engine type not matching with current engine! Not done.")
+            }
+          } else {
+            warning("The object in file is not a list!")
+          }
         } else {
-          warning("No data loaded from cache!")
+          warning("File format not valid!")
         }
       } else {
         warning("No data loaded from cache!")
@@ -319,8 +355,10 @@ CoreEngine <- R6::R6Class("CoreEngine",
     
     #' @description Adds analyses. Note that when adding new analyses, any existing results are removed.
     #'
-    #' @param analyses A Analysis S3 class object or a list with Analysis S3 class objects as elements (see `?Analysis` 
-    #' for more information) or a character vector with full path to analysis files.
+    #' @param analyses An engine specific analysis object or a list of engine specific analysis objects.
+    #' 
+    #' @destails By adding analyses to the engine the results are removed as data reprocessing must be done. The 
+    #' analyses object can be a specific engine analysis object or a file path to a engine specific format. 
     #'
     #' @return Invisible.
     #'
@@ -447,12 +485,14 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #'
     export_headers = function(format = "json", name = "headers", path = getwd()) {
       save(self$headers, format, name, path)
+      invisible(self)
     },
     
     #' @description Exports the workflow as \emph{json} (the default) or \emph{rds}.
     #'
     export_workflow = function(format = "json", name = "settings", path = getwd()) {
       save(self$workflow, format, name, path)
+      invisible(self)
     },
     
     #' @description Exports the analyses as \emph{json} (the default) or \emph{rds}.
@@ -532,56 +572,18 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
     
-    #' @description Imports a CoreEngine saved as \emph{json} or \emph{rds}.
-    #'
-    #' @param file A \emph{json} or \emph{rds} file.
-    #'
-    #' @return Invisible.
-    #'
-    import = function(file = NA_character_) {
-      if (file.exists(file)) {
-        if (tools::file_ext(file) %in% "json") {
-          data <- fromJSON(file)
-          if (is(data, "list")) {
-            if ("headers" %in% names(data)) self$headers <- ProjectHeaders(data$headers)
-            if ("workflow" %in% names(data)) self$workflow <- Workflow(data$workflow)
-            if ("analyses" %in% names(data)) self$analyses <- Analyses(data$analyses)
-            # if ("history" %in% names(data)) self$history <- data$history
-            # if ("results" %in% names(data)) self$results <- data$results
-          } else {
-            warning("The object in file is not a list!")
-          }
-        }
-        
-        if (file_ext(file) %in% "rds") {
-          data <- readRDS(file)
-          if (is(data, "list")) {
-            if ("headers" %in% names(data)) self$headers <- ProjectHeaders(data$headers)
-            if ("workflow" %in% names(data)) self$workflow <- Workflow(data$workflow)
-            if ("analyses" %in% names(data)) self$analyses <- Analyses(data$analyses)
-            # if ("history" %in% names(data)) self$history <- data$history
-            # if ("results" %in% names(data)) self$results <- data$results
-          } else {
-            warning("The object in file is not a list!")
-          }
-        }
-      } else {
-        warning("File not found in given path!")
-      }
-      invisible(self)
-    },
-    
     ## ___ app -----
     
     #' @description Runs a Shiny app to explore and manage the engine.
     #' 
-    #' @note The engine data is saved in an **sqlite** file and loaded in the app. If save file is defined in the engine
-    #' it is used, otherwise the save file name is automatically set to the engine class name and the date. Changes made
-    #' in the app can be saved in the **sqlite** file and then loaded for scripting.
+    #' @note The engine data is saved in an **rds** file and loaded in the app. If save file is defined in the engine
+    #' it is used, otherwise the save file name is automatically set to the engine class name and the date in the format
+    #' **rds**. Changes made in the app can be saved in the **rds** file and then loaded to continue working on the 
+    #' engine by scripting.
     #' 
     run_app = function() {
       self$save()
-      file <- self$save_file
+      file <- self$file$path
       engine_type <- is(self)
       
       if (!requireNamespace("shiny", quietly = TRUE)) {

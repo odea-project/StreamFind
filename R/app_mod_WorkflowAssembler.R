@@ -28,47 +28,18 @@
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    .add_notifications <- function(warnings, name_msg, msg) {
-      shiny::showNotification(msg, duration = 5, type = "warning")
-      warnings[[name_msg]] <- msg
-      return(warnings)
-    }
-    
-    .remove_notifications <- function(warnings, name_msgs) {
-      warnings[name_msgs] <- NULL
-      return(warnings)
-    }
-    
-    .wrap_analyses_ui_in_divs <- function(elements) {
-      lapply(elements, function(x) {
-        htmltools::div(style = sprintf("min-width: %dpx; height: %dpx; display: flex; align-items: center;", 40, 40),x)
-      })
-    }
-    
-    .get_valid_file_types <- function(engine_type) {
-      if (engine_type %in% "MassSpecEngine") {
-        c("mzML", "mzXML")
-      } else if (engine_type %in% "RamanEngine") {
-        c("asc")
-      } else {
-        c("txt", "csv")
-      }
-    }
-    
     # _Global Constants/Mutable -----
     pkg_resources <- system.file(package = "StreamFind", dir = "extdata")
     mandatory_header_names <- c("name", "author", "file", "date")
-    volumes <- .get_volumes()
+    volumes <- .app_util_get_volumes()
     engine <- NULL
     
     # _Global Reactive Variables -----
     reactive_wdir <- shiny::reactiveVal(getwd())
     reactive_volumes <- shiny::reactiveVal(volumes)
-    
     reactive_headers <- shiny::reactiveVal(NULL)
     reactive_analyses <- shiny::reactiveVal(NULL)
     reactive_workflow <- shiny::reactiveVal(NULL)
-    
     reactive_saved_headers <- shiny::reactiveVal(NULL)
     reactive_saved_analyses <- shiny::reactiveVal(NULL)
     reactive_saved_workflow <- shiny::reactiveVal(NULL)
@@ -77,8 +48,8 @@
     shiny::observeEvent(reactive_engine_save_file(), {
       engine_save_file <- reactive_engine_save_file()
       if (!is.na(engine_save_file)) {
-        if (!grepl(".sqlite$", engine_save_file)) {
-          msg <- paste("The file", engine_save_file, "is not an sqlite file!")
+        if (!grepl(".sqlite$|.rds$", engine_save_file)) {
+          msg <- paste("The file", engine_save_file, "is not an sqlite or rds file!")
           shiny::showNotification(msg, duration = 10, type = "error")
           reactive_engine_save_file(NA_character_)
         }
@@ -98,10 +69,10 @@
             engine$load(reactive_engine_save_file())
           }, warning = function(w) {
             msg <- paste("Warning for", reactive_engine_save_file(), ":", conditionMessage(w))
-            reactive_warnings(.add_notifications(reactive_warnings(), "load_engine", msg))
+            reactive_warnings(.app_util_add_notifications(reactive_warnings(), "load_engine", msg))
           }, error = function(e) {
             msg <- paste("Error for", reactive_engine_save_file(), ":", conditionMessage(e))
-            reactive_warnings(.add_notifications(reactive_warnings(), "load_engine", msg))
+            reactive_warnings(.app_util_add_notifications(reactive_warnings(), "load_engine", msg))
           })
         }
         
@@ -126,10 +97,10 @@
         identical(reactive_workflow(), reactive_saved_workflow())
       )
       if (!equal_history && !has_unsaved_changes) {
-        reactive_warnings(.add_notifications(reactive_warnings(), "unsaved_changes", "Unsaved changes in the engine!"))
+        reactive_warnings(.app_util_add_notifications(reactive_warnings(), "unsaved_changes", "Unsaved changes in the engine!"))
       }
       if (equal_history) {
-        reactive_warnings(.remove_notifications(reactive_warnings(), "unsaved_changes"))
+        reactive_warnings(.app_util_remove_notifications(reactive_warnings(), "unsaved_changes"))
       }
     })
     
@@ -145,8 +116,8 @@
             label = "Save Engine",
             title = "Save the engine as .sqlite",
             class = "btn-success",
-            filename = gsub(".sqlite", "", basename(filename)),
-            filetype = list(sqlite = "sqlite"), style = "width: 200px;")
+            filename = gsub(".sqlite|.rds", "", basename(filename)),
+            filetype = list(sqlite = "sqlite", rds = "rds"), style = "width: 200px;")
         )
       }
     })
@@ -154,7 +125,7 @@
     ## event Save -----
     shiny::observeEvent(input$save_engine_button, {
       engine$save(reactive_engine_save_file())
-      reactive_warnings(.remove_notifications(reactive_warnings(), "unsaved_changes"))
+      reactive_warnings(.app_util_remove_notifications(reactive_warnings(), "unsaved_changes"))
       reactive_headers(engine$headers)
       reactive_analyses(engine$analyses)
       reactive_workflow(engine$workflow)
@@ -173,7 +144,7 @@
         engine$analyses <- reactive_analyses()
         engine$workflow <- reactive_workflow()
         engine$save(file_path)
-        reactive_warnings(.remove_notifications(reactive_warnings(), "unsaved_changes"))
+        reactive_warnings(.app_util_remove_notifications(reactive_warnings(), "unsaved_changes"))
         reactive_headers(engine$headers)
         reactive_analyses(engine$analyses)
         reactive_workflow(engine$workflow)
@@ -196,7 +167,7 @@
     ## event Reset -----
     shiny::observeEvent(input$reset_engine_button, {
       if (is.na(reactive_engine_save_file())) {
-        reactive_warnings(.remove_notifications(reactive_warnings(), "unsaved_changes"))
+        reactive_warnings(.app_util_remove_notifications(reactive_warnings(), "unsaved_changes"))
         reactive_headers(engine$headers)
         reactive_analyses(engine$analyses)
         reactive_workflow(engine$workflow)
@@ -205,7 +176,7 @@
         reactive_saved_workflow(engine$workflow)
       } else {
         engine$load(reactive_engine_save_file())
-        reactive_warnings(.remove_notifications(reactive_warnings(), "unsaved_changes"))
+        reactive_warnings(.app_util_remove_notifications(reactive_warnings(), "unsaved_changes"))
         reactive_headers(engine$headers)
         reactive_analyses(engine$analyses)
         reactive_workflow(engine$workflow)
@@ -233,7 +204,7 @@
       if (length(file_info) > 0) {
         setwd(file_info)
         reactive_wdir(file_info)
-        volumes <<- .get_volumes()
+        volumes <<- .app_util_get_volumes()
         reactive_volumes(volumes)
       }
     })
@@ -259,6 +230,8 @@
         shiny::showNotification("Analyses not implemented for CoreEngine", duration = 5, type = "warning")
         return(htmltools::div(" "))
       }
+      
+      # As the Analyses S7 children classes have similar structure/interface, we can use the same module for all
       .mod_WorkflowAssembler_Analyses_Server("analyses", ns, reactive_analyses, reactive_warnings, reactive_volumes)
       .mod_WorkflowAssembler_Analyses_UI("analyses", ns)
     })

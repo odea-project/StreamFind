@@ -10,29 +10,42 @@ EngineSaveFile <- S7::new_class("EngineSaveFile", package = "StreamFind",
     
     dir = S7::new_property(S7::class_character, getter = function(self) dirname(self@path), default = NA_character_),
     
+    format = S7::new_property(S7::class_character, getter = function(self) {
+      if (is.na(self@path)) return(NA_character_)
+      tools::file_ext(self@path)
+    }),
+    
     engine = S7::new_property(S7::class_character, getter = function(self) {
       if (is.na(self@path)) return(NA_character_)
-      db <- .openCacheDBScope(file = self@path)
-      engine_name <- DBI::dbListTables(db)
-      if (length(engine_name) == 0) return(NA_character_)
-      engine_name
+      
+      if (self$format %in% "sqlite") {
+        db <- .openCacheDBScope(file = self@path)
+        engine_name <- DBI::dbListTables(db)
+        if (length(engine_name) == 0) return(NA_character_)
+        engine_name
+      } else if (self$format %in% "rds") {
+        data <- readRDS(self@path)
+        if (is.list(data)) if ("engine" %in% names(data)) return(data$engine)
+        NA_character_
+      } else {
+        NA_character_
+      }
     })
   ),
   
   constructor = function(file = NA_character_) {
-    if (!is.na(file) && tools::file_ext(file) != "sqlite") stop("File is not an sqlite file!")
-    if (!file.exists(file)) if (tools::file_ext(file) %in% "sqlite") file.create(file)
-    
     if (!is.na(file)) {
-      db <- .openCacheDBScope(file = file)
-      engine_name <- DBI::dbListTables(db)
       
-      if (length(engine_name) != 0) {
-        if (length(engine_name) > 1) {
-          stop("Engine name is not unique!")
+      if (!tools::file_ext(file) %in% c("sqlite", "rds")) {
+        warning("File is not an sqlite or rds file!")
+        file = NA_character_
+        
+      } else {
+        file_format <- tools::file_ext(file)
+        if (!file.exists(file)) {
+          if (file_format %in% "sqlite") file.create(file)
+          if (file_format %in% "rds") saveRDS(StreamFind::CoreEngine$new(), file)
         }
-        
-        
       }
     }
     
@@ -48,8 +61,8 @@ EngineSaveFile <- S7::new_class("EngineSaveFile", package = "StreamFind",
       return(FALSE)
     }
     
-    if (!tools::file_ext(self@path) %in% "sqlite") {
-      warning("File is not an sqlite file!")
+    if (!tools::file_ext(self@path) %in% c("sqlite", "rds")) {
+      warning("File is not an sqlite or rds file!")
       return(FALSE)
     }
     

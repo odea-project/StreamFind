@@ -1157,11 +1157,13 @@ Rcpp::List rcpp_ms_load_features_eic(Rcpp::List analyses,
       
       const int n = res_j.rt.size();
       const std::vector<std::string> id_vec = std::vector<std::string>(n, id_j);
+      const std::vector<int> level_vec = std::vector<int>(n, res_j.level[0]);
+      const std::vector<int> polarity_vec = std::vector<int>(n, res_j.polarity[0]);
       
       Rcpp::List eic = Rcpp::List::create(
         Rcpp::Named("feature") = id_vec,
-        Rcpp::Named("polarity") = res_j.polarity,
-        Rcpp::Named("level") = res_j.level,
+        Rcpp::Named("polarity") = polarity_vec,
+        Rcpp::Named("level") = level_vec,
         Rcpp::Named("rt") = res_j.rt,
         Rcpp::Named("mz") = res_j.mz,
         Rcpp::Named("intensity") = res_j.intensity
