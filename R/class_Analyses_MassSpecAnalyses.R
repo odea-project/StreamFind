@@ -170,18 +170,14 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses", package = "StreamFind", pa
         polarity <- unique(x$spectra_headers$polarity)
         
         if (length(polarity) > 1) {
+          # tries to infer short polarity switching from scans
           polarities <- x$spectra_headers$polarity
           scans_pos <- length(polarities[polarities == 1])
           scans_neg <- length(polarities[polarities == -1])
           ratio <- scans_pos/scans_neg
-          if (ratio < 1.2 & ratio > 0.8) {
-            warning("Multiple polarities detected! Currently, find_features algorithms cannot handled multiple polarities properly.")
-            return(NA_character_)
-          } else if (ratio > 1.2) {
-            per_pos_pol <- round((scans_pos / nrow(x$spectra_headers)) * 100, digits = 0)
+          if (ratio > 1.5) {
             polarity <- 1
-          } else {
-            per_neg_pol <- round((scans_neg / nrow(x$spectra_headers)) * 100, digits = 0)
+          } else if (ratio < 0.5) {
             polarity <- -1
           }
         }
@@ -4092,7 +4088,8 @@ S7::method(plot_suspects, MassSpecAnalyses) <- function(x,
                                                         rtExpand = 120,
                                                         mzExpand = 0.005,
                                                         useLoadedData = TRUE,
-                                                        colorBy = "targets") {
+                                                        colorBy = "targets",
+                                                        interactive = TRUE) {
   
   if (!x$has_nts) return(NULL)
   
@@ -4154,17 +4151,12 @@ S7::method(plot_suspects, MassSpecAnalyses) <- function(x,
   suspects$uid <- paste0(suspects$feature, "_", suspects$analysis)
   eic$var <- leg[eic$uid]
   
-  .plot_suspects_interactive(suspects, eic, heights = c(0.5, 0.5))
+  if (!interactive) {
+    .plot_suspects_static(suspects, eic)
+  } else {
+    .plot_suspects_interactive(suspects, eic, heights = c(0.5, 0.5))
+  }
 }
-
-
-
-
-
-
-
-
-
 
 #' @noRd
 # S7::method(, MassSpecAnalyses) <- function(x, ) {

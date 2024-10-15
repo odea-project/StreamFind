@@ -194,8 +194,14 @@ S7::method(save, Workflow) <- function(x, format = "json", name = "workflow", pa
       })
       names(settings) <- x@names
       settings <- .convert_to_json(settings)
+      .save_data_to_file(settings, format, name, path)
+      
+    } else if (format %in% "rds") {
+      saveRDS(x, paste0(path, "/", name, ".", format))
+      
+    } else {
+      warning("Format not supported!")
     }
-    .save_data_to_file(settings, format, name, path)
   } else {
     warning("No settings to save!")
   }

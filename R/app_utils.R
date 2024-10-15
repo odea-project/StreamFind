@@ -55,13 +55,13 @@
   
   shinyFiles::shinyFileChoose(input, paste0(time_var, "_select_LoadEngine"), roots = volumes, defaultRoot = "wd", session = session, filetypes = list(sqlite = "sqlite", rds = "rds"))
   
-  model_elements[[5]] <- htmltools::div(shinyFiles::shinyFilesButton(paste0(time_var, "_select_LoadEngine"), "Load Engine (.sqlite)", "Load Engine from .sqlite file", multiple = FALSE), style = "text-align: center;")
+  model_elements[[5]] <- htmltools::div(shinyFiles::shinyFilesButton(paste0(time_var, "_select_LoadEngine"), "Load Engine (.sqlite or .rds)", "Load Engine from .sqlite or .rds file", multiple = FALSE), style = "text-align: center;")
   
   shiny::showModal(shiny::modalDialog(
     title = " ",
     easyClose = TRUE,
     footer = shiny::tagList(shiny::modalButton("Cancel")),
-    do.call(tagList, model_elements)
+    do.call(shiny::tagList, model_elements)
   ))
   
   available_engines <- c(available_engines, "LoadEngine")
@@ -72,7 +72,7 @@
       
       if (paste0(time_var, "_select_LoadEngine") %in% paste0(time_var, "_select_", obj) ) {
         input_name <- paste0(time_var, "_select_LoadEngine")
-        req(input[[input_name]])
+        shiny::req(input[[input_name]])
         fileinfo <- shinyFiles::parseFilePaths(volumes, input[[input_name]])
         if (nrow(fileinfo) > 0) {
           engine_save_file <- fileinfo$datapath

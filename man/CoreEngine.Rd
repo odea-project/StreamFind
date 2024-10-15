@@ -9,9 +9,10 @@ The \code{CoreEngine} R6 class is a basic data processor with generic methods fo
 \note{
 If there are \code{ProcessingSettings} objects with the same method names it is better to use \code{run_workflow()}.
 
-The engine data is saved in an \strong{sqlite} file and loaded in the app. If save file is defined in the engine
-it is used, otherwise the save file name is automatically set to the engine class name and the date. Changes made
-in the app can be saved in the \strong{sqlite} file and then loaded for scripting.
+The engine data is saved in an \strong{rds} file and loaded in the app. If save file is defined in the engine
+it is used, otherwise the save file name is automatically set to the engine class name and the date in the format
+\strong{rds}. Changes made in the app can be saved in the \strong{rds} file and then loaded to continue working on the
+engine by scripting.
 }
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
@@ -22,12 +23,12 @@ in the app can be saved in the \strong{sqlite} file and then loaded for scriptin
 
 \item{\code{analyses}}{\code{Analyses} S7 class object.}
 
-\item{\code{results}}{List of results.}
+\item{\code{results}}{List of results in the analyses.}
 
 \item{\code{history}}{Audit trail of changes.}
 
 \item{\code{file}}{An \code{EngineSaveFile} S7 class object. When setting the value it can be also a character with an
-\code{sqlite} file path to save the engine.}
+\code{sqlite} or \code{rds} file path to save the engine.}
 }
 \if{html}{\out{</div>}}
 }
@@ -55,7 +56,6 @@ in the app can be saved in the \strong{sqlite} file and then loaded for scriptin
 \item \href{#method-CoreEngine-import_headers}{\code{CoreEngine$import_headers()}}
 \item \href{#method-CoreEngine-import_workflow}{\code{CoreEngine$import_workflow()}}
 \item \href{#method-CoreEngine-import_analyses}{\code{CoreEngine$import_analyses()}}
-\item \href{#method-CoreEngine-import}{\code{CoreEngine$import()}}
 \item \href{#method-CoreEngine-run_app}{\code{CoreEngine$run_app()}}
 \item \href{#method-CoreEngine-clone}{\code{CoreEngine$clone()}}
 }
@@ -72,7 +72,7 @@ Creates a \code{CoreEngine} R6 class object.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{Character of length one with the full path to the \code{sqlite} save file of the engine.}
+\item{\code{file}}{Character of length one with the full path to the \code{sqlite} or \code{rds} save file of the engine.}
 
 \item{\code{headers}}{A \code{ProjectHeaders} S7 class object.}
 
@@ -127,7 +127,7 @@ Prints the workflow.
 \if{html}{\out{<a id="method-CoreEngine-save"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-save}{}}}
 \subsection{Method \code{save()}}{
-Saves the engine data as an \strong{sqlite} file.
+Saves the engine data as an \strong{sqlite} or \strong{rds} file.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$save(file = NA_character_)}\if{html}{\out{</div>}}
 }
@@ -135,18 +135,21 @@ Saves the engine data as an \strong{sqlite} file.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{A string with the full file path of the \strong{sqlite} file. If \code{NA} (the default) and no save file
-is defined in the engine, the file name is automatically created with the engine class name and the date in the
-headers.}
+\item{\code{file}}{A string with the full file path of the \strong{sqlite} or \strong{rds} file. If \code{NA} (the default) and
+no save file is defined in the engine, the file name is automatically created with the engine class name and the
+date in the headers in the \strong{rds} format.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-load"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-load}{}}}
 \subsection{Method \code{load()}}{
-Loads the engine data from an \strong{sqlite} file.
+Loads the engine data from an \strong{sqlite} or \strong{rds} file.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$load(file = NA_character_)}\if{html}{\out{</div>}}
 }
@@ -154,9 +157,12 @@ Loads the engine data from an \strong{sqlite} file.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{A string with the full file path of the \strong{sqlite} file containing the engine data saved.}
+\item{\code{file}}{A string with the full file path of the \strong{sqlite} or \strong{rds} file containing the engine data saved.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
 }
 }
 \if{html}{\out{<hr>}}
@@ -171,11 +177,15 @@ Adds analyses. Note that when adding new analyses, any existing results are remo
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A Analysis S3 class object or a list with Analysis S3 class objects as elements (see \code{?Analysis}
-for more information) or a character vector with full path to analysis files.}
+\item{\code{analyses}}{An engine specific analysis object or a list of engine specific analysis objects.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Details}{
+By adding analyses to the engine the results are removed as data reprocessing must be done. The
+analyses object can be a specific engine analysis object or a file path to a engine specific format.
+}
+
 \subsection{Returns}{
 Invisible.
 }
@@ -402,26 +412,6 @@ Invisible.
 Imports analyses from an \emph{rds} or \emph{json} file.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$import_analyses(file = NA_character_)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{file}}{A \emph{json} or \emph{rds} file.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-import"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-import}{}}}
-\subsection{Method \code{import()}}{
-Imports a CoreEngine saved as \emph{json} or \emph{rds}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$import(file = NA_character_)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

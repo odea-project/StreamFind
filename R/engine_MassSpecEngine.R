@@ -1509,10 +1509,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                              rtExpand = 120,
                              mzExpand = 0.005,
                              useLoadedData = TRUE,
-                             colorBy = "targets") {
+                             colorBy = "targets",
+                             interactive = TRUE) {
       plot_suspects(self$analyses, analyses, database, features, mass, mz, rt, mobility, ppm, sec, millisec, ppmMS2,
                     minFragments, isolationWindow, mzClust, presence, minIntensity, filtered, rtExpand, mzExpand, 
-                    useLoadedData, colorBy)
+                    useLoadedData, colorBy, interactive)
     },
     
     #' @description Plots peaks from chromatograms from analyses.

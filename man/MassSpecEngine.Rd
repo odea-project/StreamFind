@@ -128,7 +128,6 @@ assembly of Non-Target Screening data processing workflows.
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_analyses'><code>StreamFind::CoreEngine$has_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_results"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_results'><code>StreamFind::CoreEngine$has_results()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_settings'><code>StreamFind::CoreEngine$has_settings()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import'><code>StreamFind::CoreEngine$import()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_analyses'><code>StreamFind::CoreEngine$import_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_headers'><code>StreamFind::CoreEngine$import_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_workflow'><code>StreamFind::CoreEngine$import_workflow()</code></a></span></li>
@@ -4080,7 +4079,8 @@ Plots suspects.
   rtExpand = 120,
   mzExpand = 0.005,
   useLoadedData = TRUE,
-  colorBy = "targets"
+  colorBy = "targets",
+  interactive = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -4157,6 +4157,8 @@ right the mass range.}
 
 \item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
 Mixed use (e.g. \code{analyses+polarities}) is also possible.}
+
+\item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
 }

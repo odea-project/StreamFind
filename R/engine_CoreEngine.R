@@ -357,7 +357,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #'
     #' @param analyses An engine specific analysis object or a list of engine specific analysis objects.
     #' 
-    #' @destails By adding analyses to the engine the results are removed as data reprocessing must be done. The 
+    #' @details By adding analyses to the engine the results are removed as data reprocessing must be done. The 
     #' analyses object can be a specific engine analysis object or a file path to a engine specific format. 
     #'
     #' @return Invisible.

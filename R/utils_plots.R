@@ -2915,6 +2915,120 @@
   plot
 }
 
+#' .plot_suspects_static
+#'
+#' @noRd
+#'
+.plot_suspects_static <- function(suspects, eic, heights) {
+  
+  leg <- unique(eic$var)
+  
+  colors <- .get_colors(leg)
+  
+  par(mfrow = c(2, 1), mar = c(4, 4, 2, 1))
+  
+  plot(NULL,
+    xlim = c(min(eic$rt), max(eic$rt)),
+    ylim = c(0, max(eic$intensity)), 
+    xlab = "Retention time (s)",
+    ylab = "Intensity (counts)"
+  )
+  
+  for (g in leg) {
+    
+    uid <- unique(eic$uid[eic$var == g])
+    
+    for (u in uid) {
+      df <- eic[eic$uid == u, ]
+      if (nrow(df) == 0) next
+      
+      lines(df$rt, df$intensity, col = colors[which(leg == g)], lwd = 0.5)
+      
+      ft <- suspects[suspects$uid == u, ]
+      if (nrow(ft) > 0) {
+        df_filled <- df[df$rt >= ft$rtmin & df$rt <= ft$rtmax, ]
+        polygon(
+          c(df_filled$rt, rev(df_filled$rt)),
+          c(df_filled$intensity, rep(0, nrow(df_filled))),
+          col = adjustcolor(colors[which(leg == g)], alpha.f = 0.5),
+          border = NA
+        )
+      }
+    }
+  }
+  
+  legend("topright", legend = leg, col = colors, lty = 1, cex = 0.8, bty = "n")
+  
+  plot(NULL,
+    xlim = c(
+      min(vapply(suspects$ms2, function(x) {
+        if (length(x) > 0) {
+          min(x$mz, na.rm = TRUE)
+        } else {
+          0
+        }
+      }, 0)),
+      max(vapply(suspects$ms2, function(x) {
+        if (length(x) > 0) {
+          max(x$mz, na.rm = TRUE)
+        } else {
+          0
+        }
+      }, 0))
+    ), 
+    ylim = c(-1.1, 1.1),
+    xlab = "m/z (Da)",
+    ylab = "Normalized Intensity"
+  )
+  
+  max_mz <- 0
+  
+  for (g in leg) {
+    uid <- unique(suspects$uid[suspects$var == g])
+    
+    for (u in uid) {
+      data <- suspects$ms2[suspects$uid == u][[1]]
+      fragments <- suspects$fragments[suspects$uid == u]
+      
+      if (!is.null(data) && !is.na(fragments)) {
+        
+        data$intensity <- data$intensity / max(data$intensity)
+        
+        temp_max_mz <- max(data$mz)
+        
+        if (temp_max_mz > max_mz) max_mz <- temp_max_mz
+        
+        rect(data$mz - 0.5, 0, data$mz + 0.5, data$intensity, col = colors[which(leg == g)], border = NA)
+        
+        fragments <- unlist(strsplit(fragments, split = "; ", fixed = TRUE))
+        fragments <- strsplit(fragments, " ")
+        fragments <- data.table::data.table(
+          "mz" = vapply(fragments, function(x) as.numeric(x[1]), NA_real_),
+          "intensity" = vapply(fragments, function(x) as.numeric(x[2]), NA_real_)
+        )
+        
+        fragments$intensity <- fragments$intensity / max(fragments$intensity)
+        
+        fragments$intensity <- -fragments$intensity
+        
+        rect(
+          fragments$mz - 0.5, 0, fragments$mz + 0.5, fragments$intensity,
+          col = colors[which(leg == g)],
+          border = NA
+        )
+      }
+    }
+  }
+  
+  abline(h = 0, lty = 1)
+  
+  text(x = max_mz - 0.1, y = 1.05, labels = "Experimental spectra", pos = 2)
+  
+  text(x = max_mz - 0.1, y = -1.05, labels = "Database spectra", pos = 2)
+  
+  par(mfrow = c(1, 1))
+}
+
 #' .plot_suspects_interactive
 #'
 #' @noRd

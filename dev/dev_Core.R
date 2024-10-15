@@ -31,8 +31,21 @@ dbsus <- db[!grepl("IS", db$tag), ]
 path <- "C:/Users/apoli/Documents/example_ms_files"
 ms_files_complete <- list.files(path, pattern = ".mzML", full.names = TRUE)
 
-
 # NTS workflow -----
+
+## MS Targets -----
+
+ms <- MassSpecEngine$new(analyses = ms_files_complete[grepl("pn_", ms_files_complete)][1:3])
+ms$get_spectra_headers(analyses = 1)
+ms$get_spectra_polarity()
+
+MassSpecTargets(mz = dbsus, analyses = names(ms$analyses), polarities = ms$get_spectra_polarity())
+MassSpecTargets(mz = dbsus$mass[1], rt = dbsus$rt[1], polarities = "positive")
+MassSpecTargets()
+
+
+
+
 # ms <- MassSpecEngine$new(analyses = ms_files_complete[7:24])
 ms <- MassSpecEngine$new(analyses = ms_files_df)
 

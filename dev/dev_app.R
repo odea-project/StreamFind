@@ -7,7 +7,8 @@ all_ms_files <- StreamFindData::get_ms_file_paths()
 mrm_files <- all_ms_files[grepl("mrm", all_ms_files)]
 ms_files <- all_ms_files[grepl("influent|blank", all_ms_files)]
 raman_files <- StreamFindData::get_raman_file_paths()
-dev_files <- list.files("E:/example_ms_files", pattern = "mzML", full.names = TRUE)[1:3]
+dev_file_path <- "C:/Users/apoli/Documents/example_ms_files"
+dev_files <- list.files(dev_file_path, pattern = "mzML", full.names = TRUE)[1:3]
 ## settings -------------------------------------------------------------------
 workflow <- StreamFind::Workflow(
   list(
