@@ -3883,10 +3883,9 @@ S7::method(plot_groups_profile, MassSpecAnalyses) <- function(x,
     return(NULL)
   }
   
-  if (!"polarity" %in% colnames(fts)) {
-    polarities <- x$spectra_polarity
-    fts$polarity <- polarities[fts$analysis]
-  }
+  polarities <- x$spectra_polarity
+  
+  if (!"polarity" %in% colnames(fts)) fts$polarity <- polarities[fts$analysis]
   
   if (normalized && "intensity_rel" %in% colnames(fts)) fts$intensity <- as.numeric(fts$intensity_rel)
   

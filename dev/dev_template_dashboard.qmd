@@ -1,0 +1,105 @@
+---
+title: "Short Dashboard for Mass Spectrometry"
+logo: C:/Users/cunha/Documents/007_CodeProjects/StreamFindData/inst/extdata/logo_StreamFind.png
+format:
+  dashboard:
+    theme: lux
+    self-contained: true
+    embed-resources: true
+    nav-buttons:
+      - icon: github
+        href: https://github.com/odea-project/StreamFind
+editor_options:
+  chunk_output_type: console
+---
+
+```{r}
+#| include: false
+
+options(DT.options = list(
+  bPaginate = TRUE, 
+  dom = "lfrtip",
+  pageLength = 20,
+  lengthMenu =c(10, 15, 20, 25, 50, 75, 100),
+  language = list(info = 'Showing page _PAGE_ of _PAGES_')
+))
+```
+
+```{r}
+#| include: false
+
+library(knitr)
+library(kableExtra)
+library(data.table)
+library(DT)
+library(magrittr)
+library(ggplot2)
+library(plotly)
+library(StreamFind)
+```
+
+```{r}
+#| include: false
+
+ms_files <- StreamFindData::get_ms_file_paths()[10:27]
+db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
+cols <- c("name", "formula", "mass", "rt", "fragments", "tag")
+db <- db[, cols, with = FALSE]
+dbis <- db[grepl("IS", db$tag), ]
+dbsus <- db[!grepl("IS", db$tag), ]
+path <- "C:/Users/apoli/Documents/example_ms_files"
+```
+
+# Analyses
+
+## Row {.tabset}
+
+::: {.card title="Analyses Overview"}
+
+```{r}
+#| code-fold: show
+
+ms <- MassSpecEngine$new(analyses = ms_files)
+```
+
+```{r}
+DT::datatable(ms$analyses$info)
+```
+
+:::
+
+::: {.card title="Total Ion Chromatograms"}
+
+```{r}
+ms$plot_spectra_tic(levels = 1, interactive = TRUE, colorBy = "replicates", title = "Total Ion Chromatograms (TICs)")
+```
+
+:::
+
+# Processing {scrolling="true"}
+
+## Row {.tabset}
+
+::: {.card title="Find Features"}
+
+Extracted ion chromatograms of Metoprolol-D7 (*m/z* 274.2274) and Carbamazepine-D10 (*m/z* 246.1577) in analysis 124 are shown below.
+
+```{r}
+plot_spectra_xic(ms$analyses, analyses = 5, mass = dbis[c(4, 8), ], ppm = 50, sec = 30)
+```
+
+```{r}
+ffs <- MassSpecSettings_FindFeatures_openms()
+ffs
+```
+
+```{r}
+ms$run(ffs)
+```
+
+```{r}
+plot_features_count(ms$analyses)
+```
+
+
+:::

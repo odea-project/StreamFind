@@ -1230,11 +1230,9 @@
       marker = list(size = 2, color = unname(cl[lt])),
       name = lt,
       legendgroup = lt,
-      showlegend = showL[lt],
+      showlegend = FALSE,
       hovertemplate = paste("<br>rt: %{x}<br>", "int: %{y}")
     )
-    
-    if (length(y) >= 1) showL[lt] <- FALSE
     
     pk <- features[features$unique_ids %in% t, ]
     
@@ -1354,12 +1352,15 @@
       xend = pk$rt,
       y = 0,
       yend = pk$intensity,
+      name = lt,
       legendgroup = lt,
-      showlegend = FALSE,
+      showlegend = showL[lt],
       line = list(color = unname(cl[lt]), size = 0.5),
       hoverinfo = "text",
       text = hT
     )
+    
+    if (nrow(pk) >= 1) showL[lt] <- FALSE
     
   }
   

@@ -33,6 +33,7 @@ execute:
 
 ```{r}
 #| include: false
+
 options(DT.options = list(
   dom = "lfrtip",
   autoWidth = TRUE,
@@ -49,6 +50,7 @@ options(DT.options = list(
 
 ```{r}
 #| include: false
+
 library(knitr)
 library(kableExtra)
 library(data.table)
@@ -61,6 +63,7 @@ library(StreamFind)
 
 ```{r}
 #| include: false
+
 ms_files <- StreamFindData::get_ms_file_paths()[10:27]
 db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
 cols <- c("name", "formula", "mass", "rt", "fragments", "tag")
@@ -85,7 +88,7 @@ DT::datatable(ms$analyses$info)
 <br>  
 
 ```{r}
-ms$plot_spectra_tic(levels = 1, interactive = FALSE, colorBy = "replicates", title = "Total Ion Chromatograms (TICs)")
+ms$plot_spectra_tic(levels = 1, interactive = TRUE, colorBy = "replicates", title = "Total Ion Chromatograms (TICs)")
 ```
 
 <br>  
