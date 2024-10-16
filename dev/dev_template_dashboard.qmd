@@ -1,6 +1,6 @@
 ---
 title: "Short Dashboard for Mass Spectrometry"
-logo: C:/Users/cunha/Documents/007_CodeProjects/StreamFindData/inst/extdata/logo_StreamFind.png
+logo: "`r file.path(system.file(package = 'StreamFind', dir = 'extdata'), 'logo_StreamFind.png')`"
 format:
   dashboard:
     theme: lux
@@ -20,7 +20,7 @@ options(DT.options = list(
   bPaginate = TRUE, 
   dom = "lfrtip",
   pageLength = 20,
-  lengthMenu =c(10, 15, 20, 25, 50, 75, 100),
+  lengthMenu = c(10, 15, 20, 25, 50, 75, 100),
   language = list(info = 'Showing page _PAGE_ of _PAGES_')
 ))
 ```

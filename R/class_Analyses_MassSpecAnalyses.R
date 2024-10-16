@@ -3922,7 +3922,7 @@ S7::method(plot_groups_profile, MassSpecAnalyses) <- function(x,
     if (!all(analyses %in% df$analysis)) {
       extra <- data.frame(
         "analysis" = analyses[!analyses %in% df$analysis],
-        "polarity" = polarities[!analyses %in% df$analysis],
+        "polarity" =  polarities[!names(polarities) %in% df$analysis & names(polarities) %in% analyses],
         "var" = g,
         "intensity" = 0
       )
