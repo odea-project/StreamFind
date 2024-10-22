@@ -129,7 +129,12 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
     parameters$minGaussianFit
   )
   
-  res <- lapply(res, function(x) data.table::rbindlist(x, fill = TRUE))
+  res <- lapply(res, function(z) {
+    temp <- data.table::rbindlist(z, fill = TRUE)
+    if (nrow(temp) > 0) temp <- temp[!duplicated(temp$group), ]
+    temp
+  })
+  
   res <- data.table::rbindlist(res, fill = TRUE)
   
   fg <- nts$features
@@ -151,18 +156,20 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
   # neutralize mz values when featureGroups is a set
   if ("featureGroupsSet" %in% is(fg)) {
     if (identical(patRoon::analyses(fg), names(all_fts))) {
-      for (x in names(all_fts)) {
-        sel <- fg@analysisInfo$analysis %in% x
+      for (a in names(all_fts)) {
+        sel <- fg@analysisInfo$analysis %in% a
         pol <- fg@analysisInfo$set[sel]
         if ("positive" %in% pol) adduct_val <- -1.007276
         if ("negative" %in% pol) adduct_val <- 1.007276
-        sel_to_change <- round(all_fts[[x]]$mz, 0) != round(all_fts[[x]]$mass, 0)
-        all_fts[[x]]$mz[sel_to_change] <- all_fts[[x]]$mz + adduct_val
-        all_fts[[x]]$mzmin[sel_to_change] <- all_fts[[x]]$mzmin + adduct_val
-        all_fts[[x]]$mzmax[sel_to_change] <- all_fts[[x]]$mzmax + adduct_val
+        sel_to_change <- round(all_fts[[a]]$mz, 0) != round(all_fts[[a]]$mass, 0)
+        all_fts[[a]]$mz[sel_to_change] <- all_fts[[a]]$mz + adduct_val
+        all_fts[[a]]$mzmin[sel_to_change] <- all_fts[[a]]$mzmin + adduct_val
+        all_fts[[a]]$mzmax[sel_to_change] <- all_fts[[a]]$mzmax + adduct_val
       }
     }
   }
+  
+  message("\U2699 Adding filled features to groups")
   
   for (i in seq_len(nrow(res))) {
     ana_idx <- which(fg_analyses == res$analysis[i])

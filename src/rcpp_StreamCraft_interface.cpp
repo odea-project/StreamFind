@@ -1824,6 +1824,8 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
         Rcpp::Named("intensity") = res_i.intensity
       );
       
+      eic.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+      
       Rcpp::List list_eic;
       list_eic.push_back(eic);
       

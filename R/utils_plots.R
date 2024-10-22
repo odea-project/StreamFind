@@ -1688,10 +1688,9 @@
   for (g in leg) {
     ft2 <- features[features$var == g, ]
     
+    if (!"filled" %in% colnames(ft2)) ft2$filled <- FALSE
     
-    if (!"is_filled" %in% colnames(ft2)) ft2$is_filled <- FALSE
-    
-    ft_nf <- ft2[!ft2$is_filled, ]
+    ft_nf <- ft2[!ft2$filled, ]
     
     plot2 <- plot2 %>% add_trace(
       x = ft_nf$rt,
@@ -1723,11 +1722,9 @@
         "</br> replicate: ", ft_nf$replicate,
         "</br> intensity: ", round(ft_nf$intensity, digits = 0),
         "</br> width: ", round(ft_nf$rtmax - ft_nf$rtmin, digits = 0),
-        "</br> dppm: ", round(((ft_nf$mzmax - ft_nf$mzmin) / ft_nf$mz) *
-                                1E6, digits = 1),
-        "</br> filled: ", ft_nf$is_filled,
+        "</br> dppm: ", round(((ft_nf$mzmax - ft_nf$mzmin) / ft_nf$mz) * 1E6, digits = 1),
+        "</br> filled: ", ft_nf$filled,
         "</br> filtered: ", ft_nf$filtered,
-        "</br> filter: ", ft_nf$filter,
         if ("quality" %in% colnames(ft_nf)) {
           q_t <- ft_nf$quality
           q_t <- lapply(q_t, function(x) if (length(x) == 0) list(noise = 0, sn = 0, gauss_f = 0, gauss_a = 0, gauss_u = 0, gauss_s = 0) else x)
@@ -1769,7 +1766,7 @@
       )
     )
     
-    ft_f <- ft2[ft2$is_filled, ]
+    ft_f <- ft2[ft2$filled, ]
     
     if (nrow(ft_f) > 0) {
       plot2 <- plot2 %>% add_trace(
@@ -1803,9 +1800,47 @@
           "</br> replicate: ", ft_f$replicate,
           "</br> intensity: ", round(ft_f$intensity, digits = 0),
           "</br> width: ", round(ft_f$rtmax - ft_f$rtmin, digits = 0),
-          "</br> dppm: ", round(((ft_f$mzmax - ft_f$mzmin) / ft_f$mz) *
-                                  1E6, digits = 1),
-          "</br> filled: ", ft_f$is_filled
+          "</br> dppm: ", round(((ft_f$mzmax - ft_f$mzmin) / ft_f$mz) * 1E6, digits = 1),
+          "</br> filled: ", ft_f$filled,
+          "</br> filtered: ", ft_f$filtered,
+          if ("quality" %in% colnames(ft_f)) {
+            q_t <- ft_f$quality
+            q_t <- lapply(q_t, function(x) if (length(x) == 0) list(noise = 0, sn = 0, gauss_f = 0, gauss_a = 0, gauss_u = 0, gauss_s = 0) else x)
+            if (length(q_t) > 0) {
+              paste(
+                "</br> noise: ", vapply(q_t, function(x) round(x$noise, digits = 0), 0),
+                "</br> sn: ", vapply(q_t, function(x) round(x$sn, digits = 1), 0),
+                "</br> gaufit: ", vapply(q_t, function(x) round(x$gauss_f, digits = 4), 0),
+                "</br> A: ", vapply(q_t, function(x) round(x$gauss_a, digits = 2), 0),
+                "</br> mu: ", vapply(q_t, function(x) round(x$gauss_u, digits = 2), 0),
+                "</br> sigma: ", vapply(q_t, function(x) round(x$gauss_s, digits = 2), 0)
+              )
+            } else {
+              ""
+            }
+          } else {
+            ""
+          },
+          if ("annotation" %in% colnames(ft_f)) {
+            anno <- ft_f$annotation[[1]]
+            if (length(anno) > 0) {
+              paste(
+                "</br> component: ", vapply(ft_f$annotation, function(x) x$component_feature, NA_character_),
+                "</br> isotope: ", vapply(ft_f$annotation, function(x) x$iso_cat, NA_character_),
+                "</br> iso_elements: ", vapply(ft_f$annotation, function(x) x$iso_isotope, NA_character_),
+                "</br> iso_number_carbons: ", vapply(ft_f$annotation, function(x) round(x$iso_number_carbons, digits = 0), NA_real_),
+                "</br> iso_mass_error: ", vapply(ft_f$annotation, function(x) round(x$iso_mass_error, digits = 5), NA_real_),
+                "</br> iso_time_error: ", vapply(ft_f$annotation, function(x) round(x$iso_time_error, digits = 1), NA_real_),
+                "</br> adduct: ", vapply(ft_f$annotation, function(x) x$adduct_cat, NA_character_),
+                "</br> adduct_mass_error: ", vapply(ft_f$annotation, function(x) round(x$adduct_mass_error, digits = 5), NA_real_),
+                "</br> adduct_time_error: ", vapply(ft_f$annotation, function(x) round(x$adduct_time_error, digits = 1), NA_real_)
+              )
+            } else {
+              ""
+            }
+          } else {
+            ""
+          }
         )
       )
     }

@@ -2245,12 +2245,39 @@ S7::method(get_features_eic, MassSpecAnalyses) <- function(x,
     )
     
     fts <- data.table::rbindlist(fts, idcol = "analysis", fill = TRUE)
+    
+  } else {
+    
+    sel <- vapply(fts$eic, function(z) is.data.frame(z), TRUE)
+    fts_without_eic <- fts[!sel, ]
+    fts_with_eic <- fts[sel, ]
+    
+    if (nrow(fts_without_eic) > 0) {
+      fts_without_eic_ana_split_vector <- fts_without_eic$analysis
+      fts_without_eic$analysis <- NULL
+      fts_without_eic_list <- split(fts_without_eic, fts_without_eic_ana_split_vector)
+      ana_list <- x$analyses[names(fts_without_eic_list)]
+      
+      fts_without_eic <- rcpp_ms_load_features_eic(
+        analyses = ana_list,
+        features = fts_without_eic_list,
+        filtered = filtered,
+        rtExpand = rtExpand,
+        mzExpand = mzExpand,
+        minTracesIntensity = 0
+      )
+      
+      fts_without_eic <- data.table::rbindlist(fts_without_eic, idcol = "analysis", fill = TRUE)
+      
+      fts <- data.table::rbindlist(list(fts_without_eic, fts_with_eic), fill = TRUE)
+    }
   }
   
-  eic_list <- lapply(seq_len(nrow(fts)), function(x, fts) {
-    temp <- fts[x, ]
+  eic_list <- lapply(seq_len(nrow(fts)), function(z, fts) {
+    temp <- fts[z, ]
     temp_ms <- temp[["eic"]][[1]]
     if (is.null(temp_ms)) return(data.table::data.table())
+    if (!is.data.frame(temp_ms)) temp_ms <- data.table::as.data.table(temp_ms)
     temp_ms$analysis <- temp$analysis
     temp_ms$feature <- temp$feature
     temp_ms
@@ -2522,10 +2549,13 @@ S7::method(get_groups, MassSpecAnalyses) <- function(x,
     }
     
     if (metadata) {
+      
       cols <- colnames(fts)
-      if (!"istd" %in% cols) fts[["istd"]] <- list(NULL)
-      if (!"quality" %in% cols) fts[["quality"]] <- list(NULL)
-      if (!"isotope" %in% cols) fts[["isotope"]] <- list(NULL)
+      
+      if (!"istd" %in% cols) fts[["istd"]] <- list(rep(list(), nrow(fts)))
+      if (!"quality" %in% cols) fts[["quality"]] <- list(rep(list(), nrow(fts)))
+      if (!"annotation" %in% cols) fts[["isotope"]] <- list(rep(list(), nrow(fts)))
+      
       rtmin <- NULL
       rtmax <- NULL
       mzmin <- NULL
@@ -2542,9 +2572,9 @@ S7::method(get_groups, MassSpecAnalyses) <- function(x,
         massdev = round(max(mzmax - mzmin), digits = 4),
         presence = round(length(feature) / length(x) * 100, digits = 1),
         maxint = round(max(intensity), digits = 0),
-        sn = round(max(vapply(quality, function(x) if (!is.null(x)) x$sn else 0, 0), na.rm = TRUE), digits = 1),
-        iso = min(vapply(isotope, function(x) if (!is.null(x)) x$step else 0, 0)),
-        istd = paste0(unique(vapply(istd, function(x) if (!is.null(x)) x$name else NA_character_, NA_character_)), collapse = "; "),
+        sn = round(max(vapply(quality, function(z) if (length(z) > 0) z$sn else 0, 0), na.rm = TRUE), digits = 1),
+        iso = min(vapply(annotation, function(z) if (length(z) > 0) z$step else 0, 0)),
+        istd = paste0(unique(vapply(istd, function(z) if (length(z) > 0) x$name else NA_character_, NA_character_)), collapse = "; "),
         filtered = all(filtered)
       ), by = "group"]
       
