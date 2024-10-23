@@ -1,4 +1,5 @@
-.mod_workflow_UI <- function(id) {
+#' @noRd
+.mod_WorkflowAssembler_workflow_UI <- function(id) {
   ns <- shiny::NS(id)
   htmltools::tagList(
     shiny::fluidRow(
@@ -70,43 +71,31 @@
     "))
   )
 }
-#' @title .mod_workflow_Server
-#' 
-#' @description Shiny module server for workflow tab.
-#' 
+
 #' @noRd
-#'
-.mod_workflow_Server <- function(id, engine, reactive_engine_type, reactive_workflow, reactive_warnings, reactive_history, volumes) {
+.mod_WorkflowAssembler_workflow_Server <- function(id, engine, reactive_engine_type, reactive_workflow, reactive_warnings, reactive_history, volumes) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    .app_util_add_notifications <- function(warnings, name_msg, msg) {
-
-    observeEvent(input$update_settings, {
+    shiny::observeEvent(input$update_settings, {
       rw <- reactive_workflow_local()
       function_name <- reactive_selected_settings()
       shiny::req(function_name %in% names(rw))
-
+      
       settings <- rw[[function_name]]
       param_names <- names(settings$parameters)
-
+      
       for (param_name in param_names) {
         input_value <- input[[param_name]]
         if (!is.null(input_value)) {
           settings$parameters[[param_name]] <- input_value
         }
       }
-
+      
       rw[[function_name]] <- settings
       reactive_workflow_local(rw)
       shiny::showNotification("Settings updated successfully!", type = "message")
     })
-
-    .add_notifications <- function(warnings, name_msg, msg) {
-      shiny::showNotification(msg, duration = 5, type = "warning")
-      warnings[[name_msg]] <- msg
-      return(warnings)
-    }
     
     engine_type <- reactive_engine_type()
     
