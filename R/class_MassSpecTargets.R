@@ -9,6 +9,7 @@ MassSpecTargets <- S7::new_class("MassSpecTargets", package = "StreamFind",
   ),
   
   constructor = function(
+    mass = NULL,
     mz = NULL,
     rt = NULL,
     mobility = NULL,
@@ -23,11 +24,26 @@ MassSpecTargets <- S7::new_class("MassSpecTargets", package = "StreamFind",
     cols_mz <- c("mz")
     cols_rt <- c("rt")
     cols_mobility <- c("mobility")
+    cols_mass_ranges <- c("min", "max")
     cols_mz_ranges <- c("mzmin", "mzmax")
     cols_rt_ranges = c("rtmin", "rtmax")
     cols_mobility_ranges = c("mobilitymin", "mobilitymax")
     
     targets <- NULL
+    
+    if (is.data.frame(mass)) {
+      checkmate::assert_true(cols_mass %in% colnames(mass) || all(cols_mass_ranges %in% colnames(mass)))
+      targets <- mass
+      
+    } else if (!is.null(mass)) {
+      checkmate::assert_numeric(mass)
+      
+      if (is.vector(mass)) {
+        targets <- data.table::data.table("mass" = mass)
+      } else {
+        warning("mz must be a data frame or a numeric vector!")
+      }
+    }
     
     if (is.data.frame(mz)) {
       checkmate::assert_true(cols_mz %in% colnames(mz) || all(cols_mz_ranges %in% colnames(mz)) || cols_mass %in% colnames(mz))
@@ -131,8 +147,11 @@ MassSpecTargets <- S7::new_class("MassSpecTargets", package = "StreamFind",
     if (!is.null(targets)) {
       
       if (is.null(polarities) && !"polarity" %in% colnames(targets)) {
-        warning("No polarity reference was given!")
-        targets <- data.table::data.table()
+        targets <- lapply(c("positive", "negative"), function(p, t) {
+          t$polarity <- p
+          t
+        }, t = targets)
+        targets <- data.table::rbindlist(targets)
         
       } else if (!"polarity" %in% colnames(targets)) {
         
@@ -189,6 +208,13 @@ MassSpecTargets <- S7::new_class("MassSpecTargets", package = "StreamFind",
           pols <- rep(1, nrow(targets))
           pols[targets$polarity %in% "negative"] <- -1
           targets$mz <- targets$mass + (1.007276 * pols)
+        }
+        
+        if (!cols_mass %in% colnames(targets) && !cols_mz %in% colnames(targets) && all(cols_mass_ranges %in% colnames(targets))) {
+          pols <- rep(1, nrow(targets))
+          pols[targets$polarity %in% "negative"] <- -1
+          targets$mzmin <- targets$min + (1.007276 * pols)
+          targets$mzmax <- targets$max + (1.007276 * pols)
         }
         
         if (cols_mz %in% colnames(targets) && !all(cols_mz_ranges %in% colnames(targets))) {

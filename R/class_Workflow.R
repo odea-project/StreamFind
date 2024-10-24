@@ -15,7 +15,7 @@ Workflow <- S7::new_class("Workflow", package = "StreamFind",
     
     names = S7::new_property(S7::class_character,
       getter = function(self) {
-        vapply(self@settings, function(x) paste0(x$method, "_", x$algorithm), NA_character_)
+        names(self@settings)
       },
       default = NA_character_
     ),
@@ -25,6 +25,7 @@ Workflow <- S7::new_class("Workflow", package = "StreamFind",
     overview = S7::new_property(S7::class_data.frame, getter = function(self) {
       if (length(self) > 0) {
         data.frame(
+          index = seq_along(self@settings),
           method = vapply(self@settings, function(x) x$method, NA_character_),
           algorithm = vapply(self@settings, function(x) x$algorithm, NA_character_),
           number_permitted = vapply(self@settings, function(x) x$number_permitted, NA_real_),
@@ -54,6 +55,13 @@ Workflow <- S7::new_class("Workflow", package = "StreamFind",
       })
     } else {
       settings <- settings@settings
+    }
+    
+    if (length(settings) > 0) {
+      w_names <- vapply(settings, function(z) paste0(z$method, "_", z$algorithm), NA_character_)
+      w_idx <- seq_along(w_names)
+      w_names <- paste0(w_idx, "_", w_names)
+      names(settings) <- w_names
     }
     
     S7::new_object(S7::S7_object(), settings = settings)
@@ -124,43 +132,59 @@ S7::method(`$`, Workflow) <- function(x, i) {
 #' @export
 #' @noRd
 S7::method(`[`, Workflow) <- function(x, i) {
-  if (is.numeric(i)) {
-    if (any(i < 1) || any(i > length(x))) stop("Index out of bounds!")
+  if (is.numeric(i) || is.logical(i) || is.character(i)) {
     x@settings[i]
   } else {
-    stop("Index must be numeric!")
+    stop("Index must be numeric, logical or character!")
   }
 }
 
 #' @export
 #' @noRd
 S7::method(`[<-`, Workflow) <- function(x, i, value) {
-  if (is.numeric(i)) {
+  if (is.numeric(i) || is.logical(i) || is.character(i)) {
     x@settings[i] <- value
+    
+    if (length(x$settings) > 0) {
+      w_names <- vapply(x$settings, function(z) paste0(z$method, "_", z$algorithm), NA_character_)
+      w_idx <- seq_along(w_names)
+      w_names <- paste0(w_idx, "_", w_names)
+      names(x@settings) <- w_names
+    }
+    
     x
+    
   } else {
-    stop("Index must be numeric!")
+    stop("Index must be numeric, logical or character!")
   }
 }
 
 #' @export
 #' @noRd
 S7::method(`[[`, Workflow) <- function(x, i) {
-  if (is.numeric(i)) {
+  if (is.numeric(i) || is.logical(i) || is.character(i)) {
     x@settings[[i]]
   } else {
-    stop("Index must be numeric!")
+    stop("Index must be numeric, logical or character!")
   }
 }
 
 #' @export
 #' @noRd
 S7::method(`[[<-`, Workflow) <- function(x, i, value) {
-  if (is.numeric(i)) {
+  if (is.numeric(i) || is.logical(i) || is.character(i)) {
     x@settings[[i]] <- value
+    
+    if (length(x$settings) > 0) {
+      w_names <- vapply(x$settings, function(z) paste0(z$method, "_", z$algorithm), NA_character_)
+      w_idx <- seq_along(w_names)
+      w_names <- paste0(w_idx, "_", w_names)
+      names(x@settings) <- w_names
+    }
+    
     x
   } else {
-    stop("Index must be numeric!")
+    stop("Index must be numeric, logical or character!")
   }
 }
 
@@ -168,7 +192,7 @@ S7::method(`[[<-`, Workflow) <- function(x, i, value) {
 #' @noRd
 S7::method(as.list, Workflow) <- function(x) {
   settings <- lapply(x@settings, function(s) as.list(s))
-  names(settings) <- x@calls
+  names(settings) <- names(x@settings)
   settings
 }
 
@@ -216,9 +240,13 @@ S7::method(read, Workflow) <- function(x, file) {
     }
   } else if (grepl(".rds", file)) {
     res <- readRDS(file)
-    if (is(res, "StreamFind::Workflow")) return(res)
+    if (is(res, "StreamFind::Workflow")) {
+      return(res)
+    } else {
+      warning("File is not a Workflow object!")
+    }
   }
-  NULL
+  x
 }
 
 #' @export

@@ -35,6 +35,11 @@ ms_files_complete <- list.files(path, pattern = ".mzML", full.names = TRUE)
 
 ## MS Targets -----
 
+
+StreamFind::MassSpecTargets(
+  mass = dbis$mass[3],
+)@targets
+
 ms <- MassSpecEngine$new(analyses = ms_files_complete[grepl("pn_", ms_files_complete)][1:3])
 ms$get_spectra_headers(analyses = 1)
 ms$get_spectra_polarity()
@@ -43,8 +48,8 @@ MassSpecTargets(mz = dbsus, analyses = names(ms$analyses), polarities = ms$get_s
 MassSpecTargets(mz = dbsus$mass[1], rt = dbsus$rt[1], polarities = "positive")
 MassSpecTargets()
 
-
-
+get_features(ms$analyses, mass = dbis$mass[7])
+plot_spectra_eic(ms$analyses, analyses = c(1, 4), mass = dbis$mass[7])
 
 # ms <- MassSpecEngine$new(analyses = ms_files_complete[7:24])
 ms <- MassSpecEngine$new(analyses = ms_files_df)

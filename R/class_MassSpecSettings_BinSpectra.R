@@ -53,9 +53,9 @@ MassSpecSettings_BinSpectra_StreamFind <- S7::new_class("MassSpecSettings_BinSpe
       checkmate::test_choice(self@method, "BinSpectra"),
       checkmate::test_choice(self@algorithm, "StreamFind"),
       checkmate::test_character(self@parameters$unitsVal, len = 1, null.ok = TRUE),
-      checkmate::test_integer(self@parameters$unitsNumber, len = 1, null.ok = TRUE),
+      checkmate::test_numeric(self@parameters$unitsNumber, len = 1, null.ok = TRUE),
       checkmate::test_list(self@parameters$bins, null.ok = TRUE),
-      checkmate::test_integer(as.integer(self@parameters$refBinAnalysis), len = 1, null.ok = TRUE)
+      checkmate::test_numeric(self@parameters$refBinAnalysis, len = 1, null.ok = TRUE)
     )
     if (!valid) return(FALSE)
     NULL

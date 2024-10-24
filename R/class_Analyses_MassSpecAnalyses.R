@@ -618,12 +618,7 @@ S7::method(get_spectra, MassSpecAnalyses) <- function(x,
   
   polarities <- x$spectra_polarity[analyses]
   
-  if (!is.null(mass)) {
-    if (is.vector(mass)) mass <- data.frame("mass" = mass)
-    targets <- MassSpecTargets(mass, rt, mobility, ppm, sec, millisec, id, analyses, polarities)
-  } else {
-    targets <- MassSpecTargets(mz, rt, mobility, ppm, sec, millisec, id, analyses, polarities)
-  }
+  targets <- MassSpecTargets(mass, mz, rt, mobility, ppm, sec, millisec, id, analyses, polarities)
   
   targets <- targets@targets
   
@@ -2087,77 +2082,21 @@ S7::method(get_features, MassSpecAnalyses) <- function(x,
     return(data.table::data.table())
   }
   
-  if (!is.null(mass)) {
-    
-    polarities <- x$spectra_polarity[analyses]
-    
-    if (is.data.frame(mass)) {
-      colnames(mass) <- gsub("mass", "mz", colnames(mass))
-      colnames(mass) <- gsub("neutralMass", "mz", colnames(mass))
-      colnames(mass) <- gsub("min", "mzmin", colnames(mass))
-      colnames(mass) <- gsub("max", "mzmax", colnames(mass))
-    } else if (is.vector(mass)) {
-      mass <- data.frame("mass" = mass)
-    }
-    
-    id = NULL
-    
-    targets <- MassSpecTargets(mass, rt, mobility, ppm, sec, millisec, id, analyses, polarities)
-    targets <- targets@targets
-    
-    for (i in seq_len(nrow(targets))) {
-      
-      if (targets$rtmax[i] == 0) targets$rtmax[i] <- max(fts$rtmax)
-      
-      if (targets$mzmax[i] == 0) targets$mzmax[i] <- max(fts$mass)
-      
-      if ("mobility" %in% colnames(fts)) {
-        if (targets$mobilitymax[i] == 0) targets$mobilitymax[i] <- max(fts$mobility)
-      }
-    }
-    
-    sel <- rep(FALSE, nrow(fts))
-    
-    ids <- rep(NA_character_, nrow(fts))
-    
-    for (i in seq_len(nrow(targets))) {
-      
-      if ("mobility" %in% colnames(fts)) {
-        sel[data.table::between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
-              data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i]) &
-              data.table::between(fts$mobility, targets$mobilitymin[i], targets$mobilitymax[i])] <- TRUE
-        
-        ids[data.table::between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
-              data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i]) &
-              data.table::between(fts$mobility, targets$mobilitymin[i], targets$mobilitymax[i])] <- targets$id[i]
-        
-      } else {
-        sel[data.table::between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
-              data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
-        
-        ids[data.table::between(fts$mass, targets$mzmin[i], targets$mzmax[i]) &
-              data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- targets$id[i]
-      }
-    }
-    
-    fts$name <- ids
-    
-    fts$replicate <- x$replicates[fts$analysis]
-    
-    return(fts[sel])
-  }
+  polarities <- x$spectra_polarity[analyses]
   
-  if (!is.null(mz)) {
-    polarities <- x$spectra_polarity[analyses]
-    id = NULL
-    targets <- MassSpecTargets(mz, rt, mobility, ppm, sec, millisec, id, analyses, polarities)
-    targets <- targets@targets
+  id <- NULL
+  
+  targets <- MassSpecTargets(mass, mz,  rt, mobility, ppm, sec, millisec, id, analyses, polarities)
+  
+  targets <- targets@targets
+  
+  if (nrow(targets) > 0) {
     
     for (i in seq_len(nrow(targets))) {
       
       if (targets$rtmax[i] == 0) targets$rtmax[i] <- max(fts$rtmax)
       
-      if (targets$mzmax[i] == 0) targets$mzmax[i] <- max(fts$mzmax)
+      if (targets$mzmax[i] == 0) targets$mzmax[i] <- max(fts$mz)
       
       if ("mobility" %in% colnames(fts)) {
         if (targets$mobilitymax[i] == 0) targets$mobilitymax[i] <- max(fts$mobility)
@@ -2168,22 +2107,33 @@ S7::method(get_features, MassSpecAnalyses) <- function(x,
     
     ids <- rep(NA_character_, nrow(fts))
     
+    if ("polarity" %in% colnames(targets) && nrow(targets) > 0) {
+      for (i in seq_len(nrow(targets))) {
+        if (targets$polarity[i] == "positive") targets$polarity[i] <- 1
+        if (targets$polarity[i] == "negative") targets$polarity[i] <- -1
+      }
+    }
+    
     for (i in seq_len(nrow(targets))) {
       
       if ("mobility" %in% colnames(fts)) {
-        sel[data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
+        sel[fts$analysis == targets$analysis[i] & fts$polarity == targets$polarity[i] &
+              data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
               data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i]) &
               data.table::between(fts$mobility, targets$mobilitymin[i], targets$mobilitymax[i])] <- TRUE
         
-        ids[data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
+        ids[fts$analysis == targets$analysis[i] & fts$polarity == targets$polarity[i] &
+              data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
               data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i]) &
               data.table::between(fts$mobility, targets$mobilitymin[i], targets$mobilitymax[i])] <- targets$id[i]
         
       } else {
-        sel[data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
+        sel[fts$analysis == targets$analysis[i] & fts$polarity == targets$polarity[i] &
+              data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
               data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
         
-        ids[data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
+        ids[fts$analysis == targets$analysis[i] & fts$polarity == targets$polarity[i] &
+              data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
               data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- targets$id[i]
       }
     }

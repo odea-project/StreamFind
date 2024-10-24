@@ -109,15 +109,22 @@
       if ("unsaved_changes" %in% names(reactive_warnings())) {
         shinyFiles::shinyFileSave(input, "save_engine_button_file", roots = reactive_volumes(), defaultRoot = "wd", session = session)
         filename <- reactive_engine_save_file()
-        if (is.na(filename)) filename <- ""
+        if (is.na(filename)) filename <- reactive_engine_type()
+        
+        if (grepl(".sqlite", filename)) {
+          extensions <- list(sqlite = "sqlite", rds = "rds")
+        } else {
+          extensions <- list(rds = "rds", sqlite = "sqlite")
+        }
+        
         htmltools::div(style = "margin-bottom: 20px;",
           shinyFiles::shinySaveButton(
             ns("save_engine_button_file"),
             label = "Save Engine",
-            title = "Save the engine as .sqlite",
+            title = "Save the engine as .sqlite or .rds",
             class = "btn-success",
             filename = gsub(".sqlite|.rds", "", basename(filename)),
-            filetype = list(sqlite = "sqlite", rds = "rds"), style = "width: 200px;")
+            filetype = extensions, style = "width: 200px;")
         )
       }
     })
@@ -267,16 +274,18 @@
     })
     
     # _Workflow -----
-    # output$workflow_ui <- shiny::renderUI({
-    #   
-    #   if (reactive_engine_type() %in% "CoreEngine") {
-    #     shiny::showNotification("Workflow not implemented for CoreEngine", duration = 5, type = "warning")
-    #     return(htmltools::div(" "))
-    #   }
-    #   
-    #   .mod_workflow_Server("workflow", engine, reactive_engine_type, reactive_workflow, reactive_warnings, volumes)
-    #   .mod_workflow_UI("workflow")
-    # })
+    output$workflow_ui <- shiny::renderUI({
+      
+      engine_type <- reactive_engine_type()
+
+      if (engine_type %in% "CoreEngine") {
+        shiny::showNotification("Workflow not implemented for CoreEngine", duration = 5, type = "warning")
+        return(htmltools::div(" "))
+      }
+
+      .mod_WorkflowAssembler_workflow_Server("workflow", ns, engine, engine_type, reactive_workflow, reactive_saved_workflow, reactive_warnings, reactive_volumes)
+      .mod_WorkflowAssembler_workflow_UI("workflow", ns)
+    })
     
     # _History -----
     # output$historyTable <- DT::renderDT({
